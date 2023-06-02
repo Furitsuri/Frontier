@@ -12,12 +12,12 @@ public class TitleManager : MonoBehaviour
         TITLE_END,
     }
 
-    TitlePhase phase;
+    TitlePhase m_Phase;
 
     // Start is called before the first frame update
     void Start()
     {
-        phase = TitlePhase.TITLE_START;
+        m_Phase = TitlePhase.TITLE_START;
     }
 
     // Update is called once per frame
@@ -28,18 +28,18 @@ public class TitleManager : MonoBehaviour
 
     public IEnumerator Title()
     {
-        while (phase != TitlePhase.TITLE_END)
+        while (m_Phase != TitlePhase.TITLE_END)
         {
             yield return null;
-            Debug.Log(phase);
+            Debug.Log(m_Phase);
 
-            switch (phase)
+            switch (m_Phase)
             {
                 // äOïîÇ©ÇÁåƒÇ—èoÇµÇë“Ç¬
                 case TitlePhase.TITLE_START:
                     break;
                 case TitlePhase.TITLE_GAME_START:
-                    phase = TitlePhase.TITLE_END;
+                    m_Phase = TitlePhase.TITLE_END;
                     break;
                 case TitlePhase.TITLE_EXIT:
                     // èIóπ
@@ -53,11 +53,11 @@ public class TitleManager : MonoBehaviour
     public void PressStart()
     {
         Debug.Log("Press Start");
-        phase = TitlePhase.TITLE_GAME_START;
+        m_Phase = TitlePhase.TITLE_GAME_START;
     }
 
     public bool isGameStart()
     {
-        return phase == TitlePhase.TITLE_GAME_START;
+        return m_Phase == TitlePhase.TITLE_GAME_START;
     }
 }

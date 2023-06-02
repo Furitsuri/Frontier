@@ -12,7 +12,7 @@ namespace TMPro
     public class TMP_PhoneNumberValidator : TMP_InputValidator
     {
         // Custom text input validation function
-        public override char Validate(ref string text, ref int pos, char ch)
+        override public char Validate(ref string text, ref int pos, char ch)
         {
             Debug.Log("Trying to validate...");
             

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BattleManager : MonoBehaviour
@@ -15,56 +16,107 @@ public class BattleManager : MonoBehaviour
         BATTLE_END,
     }
 
-    public static BattleManager instance = null;
-    StageGrid grid;
-    BattlePhase phase;
-
-    private void Awake()
+    public enum TurnType
     {
-        grid = GetComponent<StageGrid>();
+        PLAYER_TURN = 0,
+        ENEMY_TURN,
+    }
+
+    public static BattleManager instance = null;
+    public GameObject m_StageGridObject;
+    private PhaseManagerBase m_PhaseManager;
+    private StageGrid m_StageGrid;
+    private BattlePhase m_Phase;
+    private List<Player> m_Players = new List<Player>(Constants.CHARACTER_MAX_NUM);
+    private List<Enemy> m_Enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
+    // 現在選択中のキャラクターインデックス
+    public int SelectCharacterIndex { get; private set; } = -1;
+
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+        }
+
+        DontDestroyOnLoad(gameObject);
+
+        if (StageGrid.instance == null)
+        {
+            Instantiate(m_StageGridObject);
+        }
+
+        m_PhaseManager = new PlayerPhaseManager();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        phase = BattlePhase.BATTLE_START;
+        m_PhaseManager.Init();
+
+        // 各プレイヤーキャラクターの位置を設定
+        for (int i = 0; i < m_Players.Count; ++i)
+        {
+            Player player = m_Players[i];
+            // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
+            int gridIndex                               = player.param.initGridIndex;
+            // プレイヤーの画面上の位置を設定
+            player.transform.position                   = m_StageGrid.getGridCharaStandPos(gridIndex);
+            // 対応するグリッドに立っているプレイヤーのインデックスを設定
+            m_StageGrid.getGridInfo(gridIndex).charaIndex = player.param.characterIndex;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        // 現在のグリッド上に存在するキャラクター情報を更新
+        SelectCharacterIndex = StageGrid.instance.getCurrentGridInfo().charaIndex;
+
+        m_PhaseManager.Update();
+    }
+
+    void LateUpdate()
+    {
+        m_PhaseManager.LateUpdate();
+    }
+
+    // プレイヤー行動フェーズ
+    void PlayerPhase()
+    {
+        m_Phase = BattlePhase.BATTLE_PLAYER_COMMAND;
     }
 
     public IEnumerator Battle()
     {
-        while (phase != BattlePhase.BATTLE_END)
+        while (m_Phase != BattlePhase.BATTLE_END)
         {
             yield return null;
-            Debug.Log(phase);
+            Debug.Log(m_Phase);
 
-            switch (phase)
+            switch (m_Phase)
             {
                 case BattlePhase.BATTLE_START:
-                    phase = BattlePhase.BATTLE_PLAYER_COMMAND;
+                    m_Phase = BattlePhase.BATTLE_PLAYER_COMMAND;
                     break;
                 case BattlePhase.BATTLE_PLAYER_COMMAND:
-                    // INPUTの終了を待つ
-                    yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
-
-                    phase = BattlePhase.BATTLE_PLAYER_EXECUTE;
+                    PlayerPhase();
                     break;
                 case BattlePhase.BATTLE_PLAYER_EXECUTE:
-                    phase = BattlePhase.BATTLE_ENEMY_COMMAND;
+                    m_Phase = BattlePhase.BATTLE_ENEMY_COMMAND;
                     break;
                 case BattlePhase.BATTLE_ENEMY_COMMAND:
-                    phase = BattlePhase.BATTLE_ENEMY_EXECUTE;
+                    m_Phase = BattlePhase.BATTLE_ENEMY_EXECUTE;
                     break;
                 case BattlePhase.BATTLE_ENEMY_EXECUTE:
-                    phase = BattlePhase.BATTLE_RESULT;
+                    m_Phase = BattlePhase.BATTLE_RESULT;
                     break;
                 case BattlePhase.BATTLE_RESULT:
-                    phase = BattlePhase.BATTLE_END;
+                    m_Phase = BattlePhase.BATTLE_END;
                     break;
                 case BattlePhase.BATTLE_END:
                     break;
@@ -72,8 +124,30 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // プレイヤーをリストに登録.
+    public void AddPlayerToList( Player player )
+    {
+        m_Players.Add( player );
+    }
+
+    public void registStageGrid( StageGrid script )
+    {
+        m_StageGrid = script;
+    }
+
+    public void GetPlayerFromIndex( ref Player.Parameter param, int index)
+    {
+        foreach (Player player in m_Players)
+        {
+            if (player.param.characterIndex == index)
+            {
+                param = player.param;
+            }
+        }
+    }
+
     public bool isEnd()
     {
-        return phase == BattlePhase.BATTLE_END;
+        return m_Phase == BattlePhase.BATTLE_END;
     }
 }
