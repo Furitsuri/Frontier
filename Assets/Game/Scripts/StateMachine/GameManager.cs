@@ -15,11 +15,11 @@ public class GameManager : MonoBehaviour
     }
 
     public static GameManager instance = null;
-    public GameObject m_BattleManager;
+    public BattleManager m_BattleManager;
     GameObject m_StageImage;
     public float stageStartDelay = 2f;				// ステージ開始時に表示する時間(秒)
 
-    private GamePhase phase;
+    private GamePhase m_Phase;
 
     void Awake()
     {
@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
 
         Invoke("StageLevelImage", stageStartDelay);
 
-        phase = GamePhase.GAME_START;
+        m_Phase = GamePhase.GAME_START;
     }
 
     // ステージレベル表示終了
@@ -65,29 +65,29 @@ public class GameManager : MonoBehaviour
 
     IEnumerator GameFlow()
     {
-        while (phase != GamePhase.GAME_END)
+        while (m_Phase != GamePhase.GAME_END)
         {
-            Debug.Log(phase);
+            Debug.Log(m_Phase);
             yield return null;
 
-            switch (phase)
+            switch (m_Phase)
             {
                 case GamePhase.GAME_START:
-                    phase = GamePhase.GAME_TITLE_MENU;
+                    m_Phase = GamePhase.GAME_TITLE_MENU;
                     break;
                 case GamePhase.GAME_TITLE_MENU:
 
-                    phase = GamePhase.GAME_BATTLE;
+                    m_Phase = GamePhase.GAME_BATTLE;
                     break;
                 case GamePhase.GAME_BATTLE:
-                    // StartCoroutine(m_BattleManager.Battle());
+                    StartCoroutine(m_BattleManager.Battle());
                     // Battleの終了を待つ
-                    // yield return new WaitUntil(() => m_BattleManager.isEnd());
+                    yield return new WaitUntil(() => m_BattleManager.isEnd());
 
-                    phase = GamePhase.GAME_END_SCENE;
+                    m_Phase = GamePhase.GAME_END_SCENE;
                     break;
                 case GamePhase.GAME_END_SCENE:
-                    phase = GamePhase.GAME_END;
+                    m_Phase = GamePhase.GAME_END;
                     break;
                 case GamePhase.GAME_END:
                     break;
