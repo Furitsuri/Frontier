@@ -303,20 +303,25 @@ public class StageGrid : MonoBehaviour
             }
         }
 
+        Dijkstra dijkstra = new Dijkstra(pathIndexs.Count);
+
         // 出発グリッドからのインデックスの差を取得
-        for( int i = 0; i + 1 < pathIndexs.Count; ++i )
+        for ( int i = 0; i + 1 < pathIndexs.Count; ++i )
         {
             for( int j = i + 1; j < pathIndexs.Count; ++j )
             {
-                int diff = (pathIndexs[j] - pathIndexs[i]);
-                if (diff == -1 && (pathIndexs[i] % gridNumX != 0) ||             // 左に存在(左端を除く)
-                    diff == 1 && (pathIndexs[i] % gridNumX != gridNumX - 1) ||   // 右に存在(右端を除く)
-                    Math.Abs(diff) == gridNumX)                                  // 上または下に存在
+                int diff = pathIndexs[j] - pathIndexs[i];
+                if ( (diff == -1 && (pathIndexs[i] % gridNumX != 0) ) ||           // 左に存在(左端を除く)
+                     (diff == 1 && (pathIndexs[i] % gridNumX != gridNumX - 1)) ||  // 右に存在(右端を除く)
+                      Math.Abs(diff) == gridNumX)                                  // 上または下に存在
                 {
                     // 隣接していると判断されるので、ダイクストラの情報に入れる
+                    dijkstra.Add(i, j);
                 }
             }
         }
+
+        // ダイクストラから最短経路を得る
 
         return pathIndexs;
     }
