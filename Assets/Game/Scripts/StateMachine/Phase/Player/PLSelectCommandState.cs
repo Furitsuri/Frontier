@@ -4,22 +4,21 @@ using UnityEngine;
 
 public class PLSelectCommandState : PhaseStateBase
 {
-    enum BaseCommand
-    {
-        COMMAND_MOVE = 0,
-        COMMAND_ATTACK,
-        COMMAND_WAIT,
-
-        COMMAND_MAX,
-    }
-
     public int SelectCommandIndex { get; set; } = 0;
+    private bool[] enableCommands = new bool[(int)Character.BaseCommand.COMMAND_MAX_NUM];
+    private Player selectPlayer;
 
     override public void Init()
     {
         base.Init();
 
-        SelectCommandIndex = (int)BaseCommand.COMMAND_MOVE;
+        selectPlayer = BattleManager.instance.GetPlayerFromIndex(BattleManager.instance.SelectCharacterIndex);
+        for( int i =0; i < (int)Character.BaseCommand.COMMAND_MAX_NUM; ++i )
+        {
+            enableCommands[i] = selectPlayer.tmpParam.isEndCommand[i];
+        }
+
+        SelectCommandIndex = (int)Character.BaseCommand.COMMAND_MOVE;
 
         // UI側へこのスクリプトを登録し、UIを表示
         var instance = BattleUISystem.Instance;
@@ -34,13 +33,13 @@ public class PLSelectCommandState : PhaseStateBase
         // 簡易的なキー操作実装
         if (Input.GetKeyDown(KeyCode.UpArrow)) { SelectCommandIndex--; }
         if (Input.GetKeyDown(KeyCode.DownArrow)) { SelectCommandIndex++; }
-        if ((int)BaseCommand.COMMAND_MAX <= SelectCommandIndex)
+        if ((int)Character.BaseCommand.COMMAND_MAX_NUM <= SelectCommandIndex)
         {
             SelectCommandIndex = 0;
         }
         else if (SelectCommandIndex < 0)
         {
-            SelectCommandIndex = SelectCommandIndex = (int)BaseCommand.COMMAND_MAX - 1;
+            SelectCommandIndex = SelectCommandIndex = (int)Character.BaseCommand.COMMAND_MAX_NUM - 1;
         }
 
         if (Input.GetKeyUp(KeyCode.Space))

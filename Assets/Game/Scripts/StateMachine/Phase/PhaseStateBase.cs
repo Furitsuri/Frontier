@@ -13,7 +13,7 @@ public class PhaseStateBase
     // ‰Šú‰»
     virtual public void Init()
     {
-
+        TransitIndex = -1;
     }
 
     // XV

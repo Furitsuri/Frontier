@@ -25,6 +25,9 @@ public class PlayerPhaseManager : PhaseManagerBase
         m_RootState.m_ChildStates[0].m_ChildStates[1]   = new PLAttackState();
         m_RootState.m_ChildStates[0].m_ChildStates[2]   = new PLWaitState();
 
+        m_RootState.m_ChildStates[0].m_ChildStates[0].m_ChildStates    = new PhaseStateBase[1];
+        m_RootState.m_ChildStates[0].m_ChildStates[0].m_ChildStates[0] = m_RootState.m_ChildStates[0];
+
         m_CurrentState = m_RootState;
     }
 }

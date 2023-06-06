@@ -2,19 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class Define
-{
-    
-}
-
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
 public class GridMesh : MonoBehaviour
 {
-
+    MeshFilter meshFilter;
 
     void Awake()
     {
+        meshFilter = GetComponent<MeshFilter>();
         // ステージグリッドに自身を登録
         StageGrid.instance.AddGridMeshToList(this);
     }
@@ -38,7 +34,11 @@ public class GridMesh : MonoBehaviour
         );
 
         // MeshFilterを通してメッシュをMeshRendererにセット  
-        var filter = GetComponent<MeshFilter>();
-        filter.sharedMesh = mesh;
+        meshFilter.sharedMesh = mesh;
+    }
+
+    public void ClearDraw()
+    {
+        meshFilter.sharedMesh = null;
     }
 }
