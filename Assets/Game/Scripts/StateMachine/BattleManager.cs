@@ -83,6 +83,13 @@ public class BattleManager : MonoBehaviour
     void LateUpdate()
     {
         m_PhaseManager.LateUpdate();
+
+        // ステージグリッド上のキャラ情報を更新
+        StageGrid.instance.ClearGridsCharaIndex();
+        foreach( Player player in m_Players )
+        {
+            m_StageGrid.getGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
+        }
     }
 
     // プレイヤー行動フェーズ
@@ -135,15 +142,17 @@ public class BattleManager : MonoBehaviour
         m_StageGrid = script;
     }
 
-    public void GetPlayerFromIndex( ref Player.Parameter param, int index)
+    public Player GetPlayerFromIndex( int index)
     {
         foreach (Player player in m_Players)
         {
             if (player.param.characterIndex == index)
             {
-                param = player.param;
+                return player;
             }
         }
+
+        return null;
     }
 
     public bool isEnd()

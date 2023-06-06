@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -264,6 +265,28 @@ public class StageGrid : MonoBehaviour
         }
     }
 
+    public void clearGridsCondition()
+    {
+        // 全てのグリッドの移動可否情報を初期化
+        for (int i = 0; i < gridTotalNum; ++i)
+        {
+            gridInfo[i].isMoveable = false;
+        }
+
+        foreach( var grid in gridMeshs )
+        {
+            grid.ClearDraw();
+        }
+    }
+
+    public void ClearGridsCharaIndex()
+    {
+        for (int i = 0; i < gridTotalNum; ++i)
+        {
+            gridInfo[i].charaIndex = -1;
+        }
+    }
+
     public void AddGridMeshToList( GridMesh script )
     {
         gridMeshs.Add( script );
@@ -315,15 +338,20 @@ public class StageGrid : MonoBehaviour
                      (diff == 1 && (pathIndexs[i] % gridNumX != gridNumX - 1)) ||  // 右に存在(右端を除く)
                       Math.Abs(diff) == gridNumX)                                  // 上または下に存在
                 {
-                    // 隣接していると判断されるので、ダイクストラの情報に入れる
+                    // 移動可能な隣接グリッド情報をダイクストラに入れる
                     dijkstra.Add(i, j);
                 }
             }
         }
 
-        // ダイクストラから最短経路を得る
+        // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
+        List<int> minRouteIndexs = dijkstra.GetMinRoute(pathIndexs.IndexOf(departGridIndex), pathIndexs.IndexOf(destGridIndex));
+        for( int i = 0; i < minRouteIndexs.Count; ++i )
+        {
+            minRouteIndexs[i] = pathIndexs[ minRouteIndexs[i] ];
+        }
 
-        return pathIndexs;
+        return minRouteIndexs;
     }
 
 #if UNITY_EDITOR

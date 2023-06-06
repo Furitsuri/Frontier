@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
+using Unity.VisualScripting;
 
 public class Dijkstra
 {
@@ -16,7 +17,7 @@ public class Dijkstra
     {
         N = n;
         _graph = new List<Edge>[n];
-        for (int i = 0; i < n; i++) _graph[i] = new List<Edge>(8);
+        for (int i = 0; i < n; i++) _graph[i] = new List<Edge>(4);
     }
 
     /// <summary>
@@ -26,53 +27,59 @@ public class Dijkstra
     /// <param name="b">接続先の頂点</param>
     /// <param name="cost">コスト</param>
     public void Add(int a, int b, int cost = 1)
-            => _graph[a].Add(new Edge(b, cost));
+            => _graph[a].Add(new Edge(a, b, cost));
 
-    /// <summary>
-    /// 最短経路のコストを取得
-    /// </summary>
-    /// <param name="start">開始頂点</param>
-    public int[] GetMinCost(int start)
+    public List<int> GetMinRoute( int startIndex, int goalIndex )
     {
-        // コストをスタート頂点以外を無限大に
-        var cost = new int[N];
-        for (int i = 0; i < N; i++) cost[i] = int.MaxValue;
-        cost[start] = 0;
+        var List = new List<int>(64);
 
-        // 未確定の頂点を格納する優先度付きキュー(コストが小さいほど優先度が高い)
-        var q = new Queue<Vertex>(256);   //= new PriorityQueue<Vertex>(N * 10, Comparer<Vertex>.Create((a, b) => b.CompareTo(a)));
-        q.Enqueue(new Vertex(start, 0));
+        // コストをスタート頂点以外を無限大に
+        var cost = new (int, int)[N];   // item1 : 移動コスト item2 : item1におけるfromノードインデックス
+        for (int i = 0; i < N; i++) cost[i] = (int.MaxValue, -1);
+        cost[startIndex].Item1 = 0;
+
+        // 未確定の頂点を格納するキュー
+        var q = new Queue<Vertex>(256);
+        q.Enqueue(new Vertex(startIndex, 0));
 
         while (q.Count > 0)
         {
             var v = q.Dequeue();
 
             // 記録されているコストと異なる(コストがより大きい)場合は無視
-            if (v.cost != cost[v.index]) continue;
+            if (v.cost > cost[v.index].Item1) continue;
 
             // 今回確定した頂点からつながる頂点に対して更新を行う
             foreach (var e in _graph[v.index])
             {
-                if (cost[e.to] > v.cost + e.cost)
+                if (cost[e.to].Item1 > v.cost + e.cost)
                 {
                     // 既に記録されているコストより小さければコストを更新
-                    cost[e.to] = v.cost + e.cost;
-                    q.Enqueue(new Vertex(e.to, cost[e.to]));
+                    cost[e.to] = (v.cost + e.cost, e.from);
+                    q.Enqueue(new Vertex(e.to, cost[e.to].Item1));
                 }
             }
         }
 
-        // 確定したコストを返す
-        return cost;
+        for( int i = goalIndex; i != startIndex; i = cost[i].Item2 )
+        {
+            List.Add(i);
+        }
+        List.Reverse();
+
+        return List;
     }
+
 
     public struct Edge
     {
-        public int to;                      // 接続先の頂点
+        public int from;                   // 接続元の頂点
+        public int to;                     // 接続先の頂点
         public int cost;                   // 辺のコスト
 
-        public Edge(int to, int cost)
+        public Edge(int from, int to, int cost)
         {
+            this.from = from;
             this.to = to;
             this.cost = cost;
         }
@@ -80,7 +87,7 @@ public class Dijkstra
 
     public struct Vertex : IComparable<Vertex>
     {
-        public int index;                   // 頂点の番号
+        public int index;                  // 頂点の番号
         public int cost;                   // 記録したコスト
 
         public Vertex(int index, int cost)

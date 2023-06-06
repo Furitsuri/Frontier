@@ -19,4 +19,18 @@ public class Player : Character
     {
         
     }
+
+    // 
+    override public void setAnimator(ANIME_TAG animTag, bool b)
+    {
+        string[] animName =
+        {
+            "Wait",
+            "Run",
+            "Attack"
+        };
+        // TODO : animName‚Ì”‚ÆANIME_TAG‚Ì”‚ª•sˆê’v‚Ìê‡‚ÉƒGƒ‰[‚ğ•Ô‚·
+
+        animator.SetBool(animName[(int)animTag], b);
+    }
 }

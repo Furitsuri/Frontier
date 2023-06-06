@@ -1,9 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class Character : MonoBehaviour
 {
+    public enum BaseCommand
+    {
+        COMMAND_MOVE = 0,
+        COMMAND_ATTACK,
+        COMMAND_WAIT,
+
+        COMMAND_MAX_NUM,
+    }
     // キャラクターの持つパラメータ
     public struct Parameter
     {
@@ -13,15 +22,30 @@ public class Character : MonoBehaviour
         public int initGridIndex;
         // 移動レンジ
         public int moveRange;
-        // 行動済みか
-        public bool isEndAction;
-
-        public void Init()
+        
+        public Parameter( int charaIndex = -1, int gridIndex = -1, int range = 0 )
         {
-            characterIndex  = 0;
-            initGridIndex   = 0;
-            moveRange       = 0;
-            isEndAction     = false;
+            characterIndex  = charaIndex;
+            initGridIndex   = gridIndex;
+            moveRange       = range;
+        }
+    }
+
+    // 戦闘中のみ使用するパラメータ
+    public struct TmpParameter
+    {
+        public bool[] isEndCommand;
+        public int gridIndex;
+
+        public TmpParameter(bool isEnd = false, int index = -1)
+        {
+            isEndCommand = new bool[(int)BaseCommand.COMMAND_MAX_NUM];
+            for( int i = 0; i < (int)BaseCommand.COMMAND_MAX_NUM; ++i )
+            {
+                isEndCommand[i] = isEnd;
+            }
+
+            gridIndex = index;
         }
     }
 
@@ -43,14 +67,24 @@ public class Character : MonoBehaviour
         MOVE_TYPE_NUM,
     }
 
-    private Animator animator;
+    public enum ANIME_TAG
+    {
+        ANIME_TAG_WAIT = 0,
+        ANIME_TAG_MOVE,
+        ANIME_TAG_ATTACK,
+        ANIME_TAG_NUM,
+    }
+
+    protected Animator animator;
     public Parameter param;
+    public TmpParameter tmpParam;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
 
-        param.Init();
+        param = new Parameter();
+        tmpParam = new TmpParameter();
     }
 
     // Start is called before the first frame update
@@ -68,8 +102,11 @@ public class Character : MonoBehaviour
     public Vector2[] moveableGrid()
     {
 
-
-
         return new Vector2[0];
+    }
+
+    virtual public void setAnimator( ANIME_TAG animTag, bool b)
+    {
+
     }
 }
