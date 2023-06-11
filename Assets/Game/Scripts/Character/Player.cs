@@ -11,26 +11,31 @@ public class Player : Character
         this.param.characterIndex = 0;
         this.param.moveRange = 3;
         this.param.initGridIndex = 0;
+        this.param.charaTag = CHARACTER_TAG.CHARACTER_PLAYER;
+        this.param.UICameraLengthY = 1.2f;
+        this.param.UICameraLengthZ = 1.5f;
+        this.param.UICameraLookAtCorrectY = 1.0f;
         BattleManager.instance.AddPlayerToList(this);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    // 
+ 
     override public void setAnimator(ANIME_TAG animTag, bool b)
     {
         string[] animName =
         {
             "Wait",
             "Run",
-            "Attack"
+            "Attack01"
         };
         // TODO : animName‚Ì”‚ÆANIME_TAG‚Ì”‚ª•sˆê’v‚Ìê‡‚ÉƒGƒ‰[‚ğ•Ô‚·
 
-        animator.SetBool(animName[(int)animTag], b);
+        switch( animTag )
+        {
+            case ANIME_TAG.ANIME_TAG_ATTACK_01:
+                animator.SetTrigger(animName[(int)animTag]);
+                break;
+            default:
+                animator.SetBool(animName[(int)animTag], b);
+                break;
+        }
     }
 }

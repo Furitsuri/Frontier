@@ -30,7 +30,7 @@ public class PLMoveState : PhaseStateBase
         movePathList = new List<int>(64);
 
         // 現在選択中のキャラクター情報を取得して移動範囲を表示
-        selectPlayer = BattleManager.instance.GetPlayerFromIndex(BattleManager.instance.SelectCharacterIndex);
+        selectPlayer = BattleManager.instance.SearchPlayerFromCharaIndex(BattleManager.instance.SelectCharacterIndex);
         if( selectPlayer == null )
         {
             // ASSERT表示
@@ -59,7 +59,7 @@ public class PLMoveState : PhaseStateBase
                         m_Phase = PLMovePhase.PL_MOVE_EXECUTE;
 
                         // 移動グリッドを求める
-                        movePathList = StageGrid.instance.extractDepart2DestGoalGridIndexs( departGridIndex, destIndex );
+                        movePathList = StageGrid.instance.ExtractDepart2DestGoalGridIndexs( departGridIndex, destIndex );
 
                         // PlayerをmovePathListの順に移動させる
                         moveGridPos = new List<Vector3>(movePathList.Count);
@@ -112,8 +112,6 @@ public class PLMoveState : PhaseStateBase
 
     public override void Exit()
     {
-
-
         base.Exit();
     }
 

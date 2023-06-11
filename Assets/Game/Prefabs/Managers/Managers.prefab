@@ -89,7 +89,9 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -121,6 +123,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 5828325252940564872}
     m_Modifications:
     - target: {fileID: 4416445694361636889, guid: a1cf95fad4d662e4db11a99f19a4e08e, type: 3}
@@ -172,6 +175,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a1cf95fad4d662e4db11a99f19a4e08e, type: 3}
 --- !u!4 &5414421939643685339 stripped
 Transform:
@@ -183,11 +189,16 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 4437783012391827164}
     m_Modifications:
     - target: {fileID: 1165383333655782330, guid: 64106ab33cb736245a5ca0496f332184, type: 3}
       propertyPath: m_Name
       value: BattleUI
+      objectReference: {fileID: 0}
+    - target: {fileID: 3207390291572807617, guid: 64106ab33cb736245a5ca0496f332184, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3367835694174574229, guid: 64106ab33cb736245a5ca0496f332184, type: 3}
       propertyPath: m_Pivot.x
@@ -290,6 +301,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 64106ab33cb736245a5ca0496f332184, type: 3}
 --- !u!224 &6024493666463429863 stripped
 RectTransform:

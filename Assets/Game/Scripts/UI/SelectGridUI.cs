@@ -6,6 +6,7 @@ public class SelectGridUI : MonoBehaviour
 {
     private float m_GridSize = 0;
     private LineRenderer m_LineRenderer;
+    public bool m_isAttackTarget;
 
     // Start is called before the first frame update
     void Start()
@@ -28,7 +29,11 @@ public class SelectGridUI : MonoBehaviour
 
     }
 
-    // 四角形ラインを作成
+    /// <summary>
+    /// 指定した位置(centralPos)に四角形ラインを作成します
+    /// </summary>
+    /// <param name="gridSize">1グリッドのサイズ</param>
+    /// /// <param name="centralPos">指定グリッドの中心位置</param>
     void setSquareLine(float gridSize, ref Vector3 centralPos)
     {
         float halfSize = 0.5f * gridSize;

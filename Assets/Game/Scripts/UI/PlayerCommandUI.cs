@@ -5,19 +5,14 @@ using UnityEngine;
 
 public class PlayerCommandUI : MonoBehaviour
 {
-    private int m_SelectCommandIndex;
     private TextMeshProUGUI[] m_TMPs;
     private PLSelectCommandState m_PLSelectScript;
+    private bool[] m_Enables;
 
     void Awake()
     {
         // キャッシュとして保持
         m_TMPs = gameObject.GetComponentsInChildren<TextMeshProUGUI>();
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
     }
 
     // Update is called once per frame
@@ -28,21 +23,32 @@ public class PlayerCommandUI : MonoBehaviour
 
     void UpdateSelectBaseCommand()
     {
-        m_SelectCommandIndex = m_PLSelectScript.SelectCommandIndex;
-
         // 一度全てを白色に設定
         foreach( TextMeshProUGUI tmp in m_TMPs )
         {
             tmp.color = Color.white;
         }
+        // 使用出来ないコマンドを灰色に
+        for( int i = 0; i < m_Enables.Length; ++i )
+        {
+            if (m_Enables[i])
+            {
+                m_TMPs[i].color = Color.gray;
+            }
+        }
 
         // 選択項目を赤色に設定
-        m_TMPs[m_SelectCommandIndex].color = Color.red;
+        m_TMPs[m_PLSelectScript.SelectCommandIndex].color = Color.red;
     }
 
     // スクリプトの登録
     public void registPLCommandScript( PLSelectCommandState script )
     {
         m_PLSelectScript = script;
+    }
+
+    public void RegistUnenableCommandIndexs( ref bool[] enables )
+    {
+        m_Enables = enables;
     }
 }
