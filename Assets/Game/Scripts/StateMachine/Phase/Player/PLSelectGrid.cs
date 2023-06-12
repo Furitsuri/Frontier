@@ -20,7 +20,7 @@ public class PLSelectGrid : PhaseStateBase
         StageGrid.instance.OperateCurrentGrid();
 
         // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
-        int selectCharaIndex = StageGrid.instance.getCurrentGridInfo().charaIndex;
+        int selectCharaIndex = StageGrid.instance.GetCurrentGridInfo().charaIndex;
 
         var player = BattleManager.instance.SearchPlayerFromCharaIndex(selectCharaIndex);
         if ( player != null && !player.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT])

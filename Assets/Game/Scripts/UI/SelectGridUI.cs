@@ -22,10 +22,9 @@ public class SelectGridUI : MonoBehaviour
 
     void UpdateSelectGridCursor()
     {
-        Vector3 centralPos = StageGrid.instance.getCurrentGridInfo().charaStandPos;
+        Vector3 centralPos = StageGrid.instance.GetCurrentGridInfo().charaStandPos;
 
         setSquareLine(_GridSize, ref centralPos);
-
     }
 
     /// <summary>

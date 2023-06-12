@@ -35,7 +35,7 @@ public class PLMoveState : PhaseStateBase
         {
             // ASSERT表示
         }
-        StageGrid.instance.DrawGridsCondition(departGridIndex, selectPlayer.param.moveRange, TurnType.PLAYER_TURN);
+        StageGrid.instance.DrawMoveableGrids(departGridIndex, selectPlayer.param.moveRange, TurnType.PLAYER_TURN);
     }
 
     public override void Update()
@@ -51,7 +51,7 @@ public class PLMoveState : PhaseStateBase
                 // 選択したグリッドが移動可能であれば選択グリッドへ遷移
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
-                    var info = StageGrid.instance.getCurrentGridInfo();
+                    var info = StageGrid.instance.GetCurrentGridInfo();
                     if (info.isMoveable)
                     {
                         // 移動実行処理へ遷移
@@ -66,7 +66,7 @@ public class PLMoveState : PhaseStateBase
                         for (int i = 0; i < movePathList.Count; ++i)
                         {
                             // パスのインデックスからグリッド座標を得る
-                            moveGridPos.Add(StageGrid.instance.getGridInfo(movePathList[i]).charaStandPos);
+                            moveGridPos.Add(StageGrid.instance.GetGridInfo(movePathList[i]).charaStandPos);
                         }
                         // 処理軽減のためtranformをキャッシュ
                         PLTransform = selectPlayer.transform;
