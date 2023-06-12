@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class SelectGridUI : MonoBehaviour
 {
-    private float m_GridSize = 0;
-    private LineRenderer m_LineRenderer;
-    public bool m_isAttackTarget;
+    private float _GridSize = 0;
+    private LineRenderer _LineRenderer;
 
     // Start is called before the first frame update
     void Start()
     {
-        m_GridSize      = StageGrid.instance.gridSize;
-        m_LineRenderer  = gameObject.GetComponent<LineRenderer>();
+        _GridSize      = StageGrid.instance.gridSize;
+        _LineRenderer  = gameObject.GetComponent<LineRenderer>();
     }
 
     // Update is called once per frame
@@ -25,7 +24,7 @@ public class SelectGridUI : MonoBehaviour
     {
         Vector3 centralPos = StageGrid.instance.getCurrentGridInfo().charaStandPos;
 
-        setSquareLine(m_GridSize, ref centralPos);
+        setSquareLine(_GridSize, ref centralPos);
 
     }
 
@@ -48,7 +47,7 @@ public class SelectGridUI : MonoBehaviour
         };
 
         // SetVertexCountÇÕîpé~Ç≥ÇÍÇƒÇ¢ÇÈÇÕÇ∏ÇæÇ™ÅAégópÇµÇ»Ç¢Ç∆ê≥èÌÇ…ï`âÊÇ≥ÇÍÇ»Ç©Ç¡ÇΩÇΩÇﬂégóp(2023/5/26)
-        m_LineRenderer.SetVertexCount(linePoints.Length);
-        m_LineRenderer.SetPositions(linePoints);
+        _LineRenderer.SetVertexCount(linePoints.Length);
+        _LineRenderer.SetPositions(linePoints);
     }
 }

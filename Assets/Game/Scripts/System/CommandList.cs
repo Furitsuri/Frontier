@@ -5,64 +5,65 @@ using UnityEngine;
 
 public class CommandList
 {
-    private LinkedList<int> list;
-    private LinkedListNode<int> currentNode;
+    private LinkedList<int> _list;
+    private LinkedListNode<int> _currentNode;
 
     // 使用するコマンドのインデックス配列を渡して初期化
     public void Init(ref List<int> setCommandIndexs)
     {
         if (setCommandIndexs.Count <= 0)
         {
-            // TODO : ERROR処理
+            Debug.Assert(false);
+            setCommandIndexs.Add(0);
         }
 
-        list = new LinkedList<int>(setCommandIndexs);
+        _list = new LinkedList<int>(setCommandIndexs);
 
-        currentNode = list.First;
+        _currentNode = _list.First;
     }
 
     public void Update()
     {
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if( currentNode == list.First )
+            if( _currentNode == _list.First )
             {
-                currentNode = list.Last;
+                _currentNode = _list.Last;
             }
             else
             {
-                currentNode = currentNode.Previous;
+                _currentNode = _currentNode.Previous;
             }
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (currentNode == list.Last)
+            if (_currentNode == _list.Last)
             {
-                currentNode = list.First;
+                _currentNode = _list.First;
             }
             else
             {
-                currentNode = currentNode.Next;
+                _currentNode = _currentNode.Next;
             }
         }
     }
 
     public void InsertCommand(int index)
     {
-        LinkedListNode<int> current = list.First;
+        LinkedListNode<int> current = _list.First;
 
         while ( current != null )
         {
             // 同じ値が存在する場合は仕様違反
             if( current.Value == index )
             {
-                // TODO : ERROR処理
+                Debug.Assert(false);
                 return;
             }
             // indexの値より大きい値の直前に挿入
             if( index < current.Value )
             {
-                list.AddBefore(current, index);
+                _list.AddBefore(current, index);
                 return;
             }
 
@@ -70,29 +71,29 @@ public class CommandList
         }
 
         // 存在しなかった場合は末尾に追加
-        list.AddLast(index);
+        _list.AddLast(index);
     }
     public void DeleteCommand(int index)
     {
-        foreach (var item in list)
+        foreach (var item in _list)
         {
             if (item == index)
             {
-                list.Remove(item);
+                _list.Remove(item);
             }
         }
 
-        currentNode = list.First;
+        _currentNode = _list.First;
     }
 
     public int GetCurrentIndex()
     {
-        if( currentNode == null )
+        if( _currentNode == null )
         {
-            // TODO : ERROR処理
+            Debug.Assert(false);
             return 0;
         }
 
-        return currentNode.Value;
+        return _currentNode.Value;
     }
 }

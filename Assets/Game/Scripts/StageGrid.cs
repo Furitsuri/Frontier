@@ -18,19 +18,19 @@ public class StageGrid : MonoBehaviour
         // キャラクターの立ち位置座標
         public Vector3 charaStandPos;
         // 移動の可否
-        public bool    isMoveable;
+        public bool isMoveable;
         // 攻撃の可否
-        public bool    isAttackable;
+        public bool isAttackable;
         // グリッド上に存在するキャラのインデックス
         public int charaIndex;
         // 初期化
         // TODO : C# 10.0 からは引数なしコンストラクタで定義可能(2023.5時点の最新Unityバージョンでは使用できない)
         public void Init()
         {
-            charaStandPos   = Vector3.zero;
-            isMoveable      = false;
-            isAttackable    = false;
-            charaIndex      = -1;
+            charaStandPos = Vector3.zero;
+            isMoveable = false;
+            isAttackable = false;
+            charaIndex = -1;
         }
     }
 
@@ -45,19 +45,19 @@ public class StageGrid : MonoBehaviour
 
     [SerializeField]
     [HideInInspector]
-    private int gridNumX;
+    private int _gridNumX;
     [SerializeField]
     [HideInInspector]
-    private int gridNumZ;
+    private int _gridNumZ;
     public GameObject m_StageObject;
     public GameObject m_GridMeshObject;
-    public float gridSize           = 1f;
-    public UnityEngine.Color color  = UnityEngine.Color.white;
-    public Face face                = Face.zx;
-    public bool back                = true;
-    public bool isAdjustStageScale  = false;
+    public float gridSize = 1f;
+    public UnityEngine.Color color = UnityEngine.Color.white;
+    public Face face = Face.zx;
+    public bool back = true;
+    public bool isAdjustStageScale = false;
 
-    private int gridTotalNum = 0;
+    private int _gridTotalNum = 0;
     private float widthX, widthZ;
     private Mesh mesh;
     private GridInfo[] gridInfo;
@@ -65,7 +65,7 @@ public class StageGrid : MonoBehaviour
     private List<int> attackRangeIndexs;
     private bool isAttackTargetSelect = false;
 
-    public int CurrentGridIndex { get; private set; } = 0;
+    public CurrentGrid currentGrid { get; private set; } = CurrentGrid.GetInstance();
 
     void Awake()
     {
@@ -90,8 +90,8 @@ public class StageGrid : MonoBehaviour
         // ステージ情報から各サイズを参照する
         if (isAdjustStageScale)
         {
-            gridNumX = (int)(Math.Floor(m_StageObject.GetComponent<Renderer>().bounds.size.x) / gridSize);
-            gridNumZ = (int)(Math.Floor(m_StageObject.GetComponent<Renderer>().bounds.size.z) / gridSize);
+            _gridNumX = (int)(Math.Floor(m_StageObject.GetComponent<Renderer>().bounds.size.x) / gridSize);
+            _gridNumZ = (int)(Math.Floor(m_StageObject.GetComponent<Renderer>().bounds.size.z) / gridSize);
         }
 
         // メッシュを描画
@@ -100,6 +100,8 @@ public class StageGrid : MonoBehaviour
 
         // グリッド情報の初期化
         InitGridInfo();
+
+        currentGrid.Init(0, _gridNumX, _gridNumZ);
     }
 
     Mesh ReGrid(Mesh mesh)
@@ -122,24 +124,24 @@ public class StageGrid : MonoBehaviour
         int[] lines;
         UnityEngine.Color[] colors;
 
-        widthX                  = gridSize * gridNumX / 2.0f;
-        widthZ                  = gridSize * gridNumZ / 2.0f;
+        widthX                  = gridSize * _gridNumX / 2.0f;
+        widthZ                  = gridSize * _gridNumZ / 2.0f;
         Vector2 startPosition   = new Vector2(-widthX, -widthZ);
         Vector2 endPosition     = -startPosition;
-        resolution              = 2 * (gridNumX + gridNumZ + 2);
+        resolution              = 2 * (_gridNumX + _gridNumZ + 2);
         vertices                = new Vector3[resolution];
         uvs                     = new Vector2[resolution];
         lines                   = new int[resolution];
         colors                  = new UnityEngine.Color[resolution];
 
         // X方向の頂点
-        for (int i = 0; count < 2 * (gridNumX + 1); ++i, count = 2 * i)
+        for (int i = 0; count < 2 * (_gridNumX + 1); ++i, count = 2 * i)
         {
             vertices[count]     = new Vector3(startPosition.x + ((float)i * gridSize), startPosition.y, 0);
             vertices[count + 1] = new Vector3(startPosition.x + ((float)i * gridSize), endPosition.y, 0);
         }
         // Y(Z)方向の頂点
-        for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (gridNumX + 1))
+        for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_gridNumX + 1))
         {
             vertices[count]     = new Vector3(startPosition.x, endPosition.y - ((float)i * gridSize), 0);
             vertices[count + 1] = new Vector3(endPosition.x, endPosition.y - ((float)i * gridSize), 0);
@@ -180,19 +182,19 @@ public class StageGrid : MonoBehaviour
     // グリッド情報の初期化
     void InitGridInfo()
     {
-        gridTotalNum    = gridNumX * gridNumZ;
-        gridInfo        = new GridInfo[gridTotalNum];
+        _gridTotalNum    = _gridNumX * _gridNumZ;
+        gridInfo        = new GridInfo[_gridTotalNum];
 
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             // 初期化
             gridInfo[i].Init();
             // グリッド位置からキャラの立ち位置への補正値
             float charaPosCorrext = 0.5f * gridSize;
             // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
-            float posX = -widthX + i % gridNumX * gridSize + charaPosCorrext;
+            float posX = -widthX + i % _gridNumX * gridSize + charaPosCorrext;
             // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
-            float posZ = -widthZ + i / gridNumX * gridSize + charaPosCorrext;
+            float posZ = -widthZ + i / _gridNumX * gridSize + charaPosCorrext;
             // 上記値から各グリッドのキャラの立ち位置を決定
             gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
         }
@@ -203,19 +205,19 @@ public class StageGrid : MonoBehaviour
         // 負の値になれば終了
         if (moveRange < 0) return;
         // 範囲外のグリッドは考慮しない
-        if (gridIndex < 0 || gridTotalNum <= gridIndex) return;
+        if (gridIndex < 0 || _gridTotalNum <= gridIndex) return;
 
         gridInfo[gridIndex].isMoveable = true;
 
         // 左端を除外
-        if( gridIndex%gridNumX != 0 )
+        if( gridIndex%_gridNumX != 0 )
             RegistMoveableGrid(gridIndex - 1, moveRange - 1);    // gridIndexからX軸方向へ-1
         // 右端を除外
-        if( ( gridIndex + 1 )%gridNumX != 0 )
+        if( ( gridIndex + 1 )%_gridNumX != 0 )
             RegistMoveableGrid(gridIndex + 1, moveRange - 1);    // gridIndexからX軸方向へ+1
         // Z軸方向への加算と減算はそのまま
-        RegistMoveableGrid(gridIndex - gridNumX, moveRange - 1); // gridIndexからZ軸方向へ-1
-        RegistMoveableGrid(gridIndex + gridNumX, moveRange - 1); // gridIndexからZ軸方向へ+1
+        RegistMoveableGrid(gridIndex - _gridNumX, moveRange - 1); // gridIndexからZ軸方向へ-1
+        RegistMoveableGrid(gridIndex + _gridNumX, moveRange - 1); // gridIndexからZ軸方向へ+1
     }
 
     void RegistAttackableGrid(int gridIndex, int atkRangeMin, int atkRangeMax)
@@ -223,7 +225,7 @@ public class StageGrid : MonoBehaviour
         // 負の値になれば終了
         if (atkRangeMax < 0) return;
         // 範囲外のグリッドは考慮しない
-        if (gridIndex < 0 || gridTotalNum <= gridIndex) return;
+        if (gridIndex < 0 || _gridTotalNum <= gridIndex) return;
         // 攻撃最小レンジの値が1未満の状態のグリッドのみ攻撃可能
         if( atkRangeMin < 1 )
         {
@@ -231,17 +233,22 @@ public class StageGrid : MonoBehaviour
         }
 
         // 左端を除外
-        if (gridIndex % gridNumX != 0)
+        if (gridIndex % _gridNumX != 0)
             RegistAttackableGrid(gridIndex - 1, atkRangeMin - 1, atkRangeMax - 1);    // gridIndexからX軸方向へ-1
         // 右端を除外
-        if ((gridIndex + 1) % gridNumX != 0)
+        if ((gridIndex + 1) % _gridNumX != 0)
             RegistAttackableGrid(gridIndex + 1, atkRangeMin - 1, atkRangeMax - 1);    // gridIndexからX軸方向へ+1
         // Z軸方向への加算と減算はそのまま
-        RegistAttackableGrid(gridIndex - gridNumX, atkRangeMin - 1, atkRangeMax - 1); // gridIndexからZ軸方向へ-1
-        RegistAttackableGrid(gridIndex + gridNumX, atkRangeMin - 1, atkRangeMax - 1); // indexからZ軸方向へ+1
+        RegistAttackableGrid(gridIndex - _gridNumX, atkRangeMin - 1, atkRangeMax - 1); // gridIndexからZ軸方向へ-1
+        RegistAttackableGrid(gridIndex + _gridNumX, atkRangeMin - 1, atkRangeMax - 1); // indexからZ軸方向へ+1
     }
 
-    //頂点配列データーをすべて指定の方向へ回転移動させる
+    /// <summary>
+    /// 頂点配列データをすべて指定の方向へ回転移動させます
+    /// </summary>
+    /// <param name="vertices">回転させる頂点配列データ</param>
+    /// <param name="rotDirection">回転方向</param>
+    /// <returns>回転させた頂点配列データ</returns>
     Vector3[] RotationVertices(Vector3[] vertices, Vector3 rotDirection)
     {
         Vector3[] ret = new Vector3[vertices.Length];
@@ -253,35 +260,36 @@ public class StageGrid : MonoBehaviour
     }
 
     /// <summary>
-    /// 現在のグリッドを操作する
+    /// 現在のグリッドをキー入力で操作します
     /// </summary>
     public void OperateCurrentGrid()
     {
-        // 攻撃フェーズ状態では攻撃可能範囲グリッド内のみグリッド選択可能
+        // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
         if (BattleManager.instance.IsAttackPhaseState())
         {
-
+            // if (Input.GetKeyDown(KeyCode.LeftArrow)) { CurrentGridIndex -= 1; }
+            // if (Input.GetKeyDown(KeyCode.RightArrow)) { CurrentGridIndex += 1; }
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow)) { CurrentGridIndex += gridNumX; }
-            if (Input.GetKeyDown(KeyCode.DownArrow)) { CurrentGridIndex -= gridNumX; }
-            if (Input.GetKeyDown(KeyCode.LeftArrow)) { CurrentGridIndex -= 1; }
-            if (Input.GetKeyDown(KeyCode.RightArrow)) { CurrentGridIndex += 1; }
+            if (Input.GetKeyDown(KeyCode.UpArrow))      { currentGrid.Up(); }
+            if (Input.GetKeyDown(KeyCode.DownArrow))    { currentGrid.Down(); }
+            if (Input.GetKeyDown(KeyCode.LeftArrow))    { currentGrid.Left(); }
+            if (Input.GetKeyDown(KeyCode.RightArrow))   { currentGrid.Right(); }
         }
     }
 
     // 各セル状態の描画
     public void DrawGridsCondition(int departIndex, int moveable, BattleManager.TurnType type)
     {
-        if (departIndex < 0 || gridTotalNum <= departIndex)
+        if (departIndex < 0 || _gridTotalNum <= departIndex)
         {
             Debug.Assert(false, "StageGrid : Irregular Index.");
             departIndex = 0;
         }
 
         // 全てのグリッドの移動可否情報を初期化
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             gridInfo[i].isMoveable = false;
         }
@@ -293,7 +301,7 @@ public class StageGrid : MonoBehaviour
 
         int count = 0;
         // グリッドの状態をメッシュで描画
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             if (gridInfo[i].isMoveable)
             {
@@ -307,14 +315,14 @@ public class StageGrid : MonoBehaviour
 
     public void DrawAttackableGrids(int departIndex, int attackableRangeMin, int attackableRangeMax)
     {
-        if (departIndex < 0 || gridTotalNum <= departIndex)
+        if (departIndex < 0 || _gridTotalNum <= departIndex)
         {
             Debug.Assert(false, "StageGrid : Irregular Index.");
             departIndex = 0;
         }
 
         // 全てのグリッドの攻撃可否情報を初期化
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             gridInfo[i].isAttackable = false;
         }
@@ -324,7 +332,7 @@ public class StageGrid : MonoBehaviour
 
         int count = 0;
         // グリッドの状態をメッシュで描画
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             if (gridInfo[i].isAttackable)
             {
@@ -339,7 +347,7 @@ public class StageGrid : MonoBehaviour
     public void clearGridsCondition()
     {
         // 全てのグリッドの移動可否情報を初期化
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             gridInfo[i].isMoveable = false;
         }
@@ -352,7 +360,7 @@ public class StageGrid : MonoBehaviour
 
     public void ClearGridsCharaIndex()
     {
-        for (int i = 0; i < gridTotalNum; ++i)
+        for (int i = 0; i < _gridTotalNum; ++i)
         {
             gridInfo[i].charaIndex = -1;
         }
@@ -376,7 +384,7 @@ public class StageGrid : MonoBehaviour
     // 選択中グリッド情報の取得
     public ref GridInfo getCurrentGridInfo()
     {
-        return ref gridInfo[ CurrentGridIndex ];
+        return ref gridInfo[ currentGrid.GetIndex() ];
     }
 
     // 指定グリッド情報の取得
@@ -414,9 +422,9 @@ public class StageGrid : MonoBehaviour
             for( int j = i + 1; j < pathIndexs.Count; ++j )
             {
                 int diff = pathIndexs[j] - pathIndexs[i];
-                if ( (diff == -1 && (pathIndexs[i] % gridNumX != 0) ) ||           // 左に存在(左端を除く)
-                     (diff == 1 && (pathIndexs[i] % gridNumX != gridNumX - 1)) ||  // 右に存在(右端を除く)
-                      Math.Abs(diff) == gridNumX)                                  // 上または下に存在
+                if ( (diff == -1 && (pathIndexs[i] % _gridNumX != 0) ) ||           // 左に存在(左端を除く)
+                     (diff == 1 && (pathIndexs[i] % _gridNumX != _gridNumX - 1)) ||  // 右に存在(右端を除く)
+                      Math.Abs(diff) == _gridNumX)                                  // 上または下に存在
                 {
                     // 移動可能な隣接グリッド情報をダイクストラに入れる
                     dijkstra.Add(i, j);
@@ -460,7 +468,7 @@ public class StageGrid : MonoBehaviour
             character = btlInstance.SearchCharacterFromCharaIndex( info.charaIndex );
             if (character != null && character.param.charaTag == Character.CHARACTER_TAG.CHARACTER_ENEMY)
             {
-                CurrentGridIndex = attackRangeIndexs[i];
+                currentGrid.SetIndex( attackRangeIndexs[i] );
 
                 break;
             }
@@ -477,8 +485,8 @@ public class StageGrid : MonoBehaviour
 
             // ステージ情報からサイズを決める際はサイズ編集を不可にする
             EditorGUI.BeginDisabledGroup(script.isAdjustStageScale);
-            script.gridNumX = EditorGUILayout.IntField("X方向グリッド数", script.gridNumX);
-            script.gridNumZ = EditorGUILayout.IntField("Z方向グリッド数", script.gridNumZ);
+            script._gridNumX = EditorGUILayout.IntField("X方向グリッド数", script._gridNumX);
+            script._gridNumZ = EditorGUILayout.IntField("Z方向グリッド数", script._gridNumZ);
             EditorGUI.EndDisabledGroup();
 
             base.OnInspectorGUI();
