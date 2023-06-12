@@ -24,13 +24,13 @@ public class BattleManager : MonoBehaviour
     }
 
     public static BattleManager instance = null;
-    public GameObject m_StageGridObject;
-    private PhaseManagerBase m_PhaseManager;
-    private StageGrid m_StageGrid;
-    private BattlePhase m_Phase;
-    private List<Player> m_Players = new List<Player>(Constants.CHARACTER_MAX_NUM);
-    private List<Enemy> m_Enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
-    private Character m_PrevCharacter = null;
+    public GameObject stageGridObject;
+    private BattlePhase _phase;
+    private PhaseManagerBase _phaseManager;
+    private StageGrid _stageGrid;
+    private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
+    private List<Enemy> _enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
+    private Character _prevCharacter = null;
     // 現在選択中のキャラクターインデックス
     public int SelectCharacterIndex { get; private set; } = -1;
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
@@ -51,15 +51,15 @@ public class BattleManager : MonoBehaviour
 
         if (StageGrid.instance == null)
         {
-            Instantiate(m_StageGridObject);
+            Instantiate(stageGridObject);
         }
 
-        m_PhaseManager = new PlayerPhaseManager();
+        _phaseManager = new PlayerPhaseManager();
     }
 
     void Start()
     {
-        m_PhaseManager.Init();
+        _phaseManager.Init();
 
         // 向きの値を設定
         Quaternion[] rot = new Quaternion[(int)Constants.Direction.NUM_MAX];
@@ -70,31 +70,31 @@ public class BattleManager : MonoBehaviour
 
 
         // 各プレイヤーキャラクターの位置を設定
-        for (int i = 0; i < m_Players.Count; ++i)
+        for (int i = 0; i < _players.Count; ++i)
         {
-            Player player = m_Players[i];
+            Player player = _players[i];
             // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
             int gridIndex                               = player.param.initGridIndex;
             // プレイヤーの画面上の位置を設定
-            player.transform.position                   = m_StageGrid.getGridCharaStandPos(gridIndex);
+            player.transform.position                   = _stageGrid.getGridCharaStandPos(gridIndex);
             // 向きを設定
             player.transform.rotation = rot[(int)player.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
-            m_StageGrid.getGridInfo(gridIndex).charaIndex = player.param.characterIndex;
+            _stageGrid.getGridInfo(gridIndex).charaIndex = player.param.characterIndex;
         }
 
         // 各エネミーキャラクターの位置を設定
-        for (int i = 0; i < m_Enemies.Count; ++i)
+        for (int i = 0; i < _enemies.Count; ++i)
         {
-            Enemy enemy = m_Enemies[i];
+            Enemy enemy = _enemies[i];
             // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
             int gridIndex = enemy.param.initGridIndex;
             // エネミーの画面上の位置を設定
-            enemy.transform.position = m_StageGrid.getGridCharaStandPos(gridIndex);
+            enemy.transform.position = _stageGrid.getGridCharaStandPos(gridIndex);
             // 向きを設定
             enemy.transform.rotation = rot[(int)enemy.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
-            m_StageGrid.getGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
+            _stageGrid.getGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
         }
     }
 
@@ -106,29 +106,29 @@ public class BattleManager : MonoBehaviour
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
 
-        m_PhaseManager.Update();
+        _phaseManager.Update();
     }
 
     void LateUpdate()
     {
-        m_PhaseManager.LateUpdate();
+        _phaseManager.LateUpdate();
 
         // ステージグリッド上のキャラ情報を更新
         StageGrid.instance.ClearGridsCharaIndex();
-        foreach( Player player in m_Players )
+        foreach( Player player in _players )
         {
-            m_StageGrid.getGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
+            _stageGrid.getGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
         }
-        foreach (Enemy enemy in m_Enemies)
+        foreach (Enemy enemy in _enemies)
         {
-            m_StageGrid.getGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
+            _stageGrid.getGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
         }
     }
 
     // プレイヤー行動フェーズ
     void PlayerPhase()
     {
-        m_Phase = BattlePhase.BATTLE_PLAYER_COMMAND;
+        _phase = BattlePhase.BATTLE_PLAYER_COMMAND;
     }
 
     /// <summary>
@@ -146,12 +146,12 @@ public class BattleManager : MonoBehaviour
             BattleUI.ToggleEnemyParameter(true);
 
             // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if (character != null && m_PrevCharacter != character)
+            if (character != null && _prevCharacter != character)
             {
                 character.gameObject.SetLayerRecursively(LayerMask.NameToLayer("ParamRender"));
             }
 
-            m_PrevCharacter = character;
+            _prevCharacter = character;
         }
         else
         {
@@ -161,46 +161,46 @@ public class BattleManager : MonoBehaviour
             BattleUI.ToggleEnemyParameter(character != null && character.param.charaTag == Character.CHARACTER_TAG.CHARACTER_ENEMY);
 
             // 前フレームで選択したキャラと異なる場合はレイヤーを元に戻す
-            if (m_PrevCharacter != null && m_PrevCharacter != character)
+            if (_prevCharacter != null && _prevCharacter != character)
             {
-                m_PrevCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Character"));
+                _prevCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Character"));
             }
             // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if (character != null && m_PrevCharacter != character)
+            if (character != null && _prevCharacter != character)
             {
                 character.gameObject.SetLayerRecursively(LayerMask.NameToLayer("ParamRender"));
             }
 
-            m_PrevCharacter = character;
+            _prevCharacter = character;
         }
     }
 
     public IEnumerator Battle()
     {
-        while (m_Phase != BattlePhase.BATTLE_END)
+        while (_phase != BattlePhase.BATTLE_END)
         {
             yield return null;
-            Debug.Log(m_Phase);
+            Debug.Log(_phase);
 
-            switch (m_Phase)
+            switch (_phase)
             {
                 case BattlePhase.BATTLE_START:
-                    m_Phase = BattlePhase.BATTLE_PLAYER_COMMAND;
+                    _phase = BattlePhase.BATTLE_PLAYER_COMMAND;
                     break;
                 case BattlePhase.BATTLE_PLAYER_COMMAND:
                     PlayerPhase();
                     break;
                 case BattlePhase.BATTLE_PLAYER_EXECUTE:
-                    m_Phase = BattlePhase.BATTLE_ENEMY_COMMAND;
+                    _phase = BattlePhase.BATTLE_ENEMY_COMMAND;
                     break;
                 case BattlePhase.BATTLE_ENEMY_COMMAND:
-                    m_Phase = BattlePhase.BATTLE_ENEMY_EXECUTE;
+                    _phase = BattlePhase.BATTLE_ENEMY_EXECUTE;
                     break;
                 case BattlePhase.BATTLE_ENEMY_EXECUTE:
-                    m_Phase = BattlePhase.BATTLE_RESULT;
+                    _phase = BattlePhase.BATTLE_RESULT;
                     break;
                 case BattlePhase.BATTLE_RESULT:
-                    m_Phase = BattlePhase.BATTLE_END;
+                    _phase = BattlePhase.BATTLE_END;
                     break;
                 case BattlePhase.BATTLE_END:
                     break;
@@ -211,18 +211,18 @@ public class BattleManager : MonoBehaviour
     // プレイヤーをリストに登録
     public void AddPlayerToList( Player player )
     {
-        m_Players.Add( player );
+        _players.Add( player );
     }
 
     // エネミーをリストに登録
     public void AddEnemyToList( Enemy enemy )
     {
-        m_Enemies.Add( enemy );
+        _enemies.Add( enemy );
     }
 
     public void registStageGrid( StageGrid script )
     {
-        m_StageGrid = script;
+        _stageGrid = script;
     }
 
     /// <summary>
@@ -257,9 +257,14 @@ public class BattleManager : MonoBehaviour
         return AttackerCharacter != null;
     }
 
+    /// <summary>
+    /// キャラクターインデックスを素に該当するプレイヤーを探します
+    /// </summary>
+    /// <param name="characterIndex">検索するプレイヤーキャラクターのインデックス</param>
+    /// <returns>該当したプレイヤーキャラクター</returns>
     public Player SearchPlayerFromCharaIndex( int characterIndex)
     {
-        foreach (Player player in m_Players)
+        foreach (Player player in _players)
         {
             if (player.param.characterIndex == characterIndex)
             {
@@ -270,16 +275,21 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// キャラクターインデックスを素に該当するキャラクターを探します
+    /// </summary>
+    /// <param name="characterIndex">検索するキャラクターのインデックス</param>
+    /// <returns>該当したキャラクター</returns>
     public Character SearchCharacterFromCharaIndex(int characterIndex)
     {
-        foreach (Player player in m_Players)
+        foreach (Player player in _players)
         {
             if (player.param.characterIndex == characterIndex)
             {
                 return player;
             }
         }
-        foreach (Enemy enemy in m_Enemies)
+        foreach (Enemy enemy in _enemies)
         {
             if (enemy.param.characterIndex == characterIndex)
             {
@@ -290,13 +300,21 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// 現在選択しているグリッド上のキャラクターを取得します
+    /// </summary>
+    /// <returns>選択しているグリッド上のキャラクター</returns>
     public Character GetSelectCharacter()
     {
         return SearchCharacterFromCharaIndex(SelectCharacterIndex);
     }
 
+    /// <summary>
+    /// 終了常態かどうかを判定します
+    /// </summary>
+    /// <returns>true : 終了</returns>
     public bool isEnd()
     {
-        return m_Phase == BattlePhase.BATTLE_END;
+        return _phase == BattlePhase.BATTLE_END;
     }
 }

@@ -12,14 +12,13 @@ public class PLAttackState : PhaseStateBase
         PL_ATTACK_END,
     }
 
-    private PLAttackPhase m_Phase = PLAttackPhase.PL_ATTACK_SELECT_GRID;
-    private Character attackCharacter = null;
-    private Character targetCharacter = null;
-    private int curentGridIndex = -1;
-    private List<int> attackableGrids = new List<int>(64);
-    private CharacterAttackSequence attackSequence = null;
-    List<Vector3> moveGridPos;
-    Transform PLTransform;
+    private PLAttackPhase _phase = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+    private Character _attackCharacter = null;
+    private Character _targetCharacter = null;
+    private int _curentGridIndex = -1;
+    private List<int> _attackableGrids = new List<int>(64);
+    private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
+
     override public void Init()
     {
         var stgInstance = StageGrid.instance;
@@ -27,23 +26,23 @@ public class PLAttackState : PhaseStateBase
 
         base.Init();
 
-        m_Phase         = PLAttackPhase.PL_ATTACK_SELECT_GRID;
-        curentGridIndex = stgInstance.CurrentGridIndex;
+        _phase         = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+        _curentGridIndex = stgInstance.currentGrid.GetIndex();
 
         // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-        attackCharacter = btlInstance.SearchPlayerFromCharaIndex(btlInstance.SelectCharacterIndex);
-        if (attackCharacter == null)
+        _attackCharacter = btlInstance.SearchPlayerFromCharaIndex(btlInstance.SelectCharacterIndex);
+        if (_attackCharacter == null)
         {
             Debug.Assert(false, "SelectPlayer Irregular.");
             return;
         }
-        var param = attackCharacter.param;
-        stgInstance.DrawAttackableGrids(curentGridIndex, param.attackRangeMin, param.attackRangeMax);
+        var param = _attackCharacter.param;
+        stgInstance.DrawAttackableGrids(_curentGridIndex, param.attackRangeMin, param.attackRangeMax);
 
         // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
         stgInstance.ApplyAttackTargetGridIndexs(0);
         // アタッカーキャラクターの設定
-        btlInstance.SetAttackerCharacter( attackCharacter );
+        btlInstance.SetAttackerCharacter( _attackCharacter );
     }
 
     public override void Update()
@@ -52,7 +51,7 @@ public class PLAttackState : PhaseStateBase
 
         base.Update();
 
-        switch(m_Phase)
+        switch(_phase)
         {
             case PLAttackPhase.PL_ATTACK_SELECT_GRID:
                 // グリッドの操作
@@ -64,17 +63,19 @@ public class PLAttackState : PhaseStateBase
                     var character = btlInstance.GetSelectCharacter();
                     if( character != null && character.param.charaTag == Character.CHARACTER_TAG.CHARACTER_ENEMY )
                     {
-                        // targetCharacterに代入
-                        targetCharacter = character;
-                        attackSequence = new CharacterAttackSequence(attackCharacter, targetCharacter);
+                        // _targetCharacterに代入
+                        _targetCharacter = character;
+                        _attackSequence.Init(_attackCharacter, _targetCharacter);
+
+                        _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
                     }
                 }
                 break;
             case PLAttackPhase.PL_ATTACK_EXECUTE:
 
-                if ( attackSequence.Update() )
+                if ( _attackSequence.Update() )
                 {
-                    m_Phase = PLAttackPhase.PL_ATTACK_END;
+                    _phase = PLAttackPhase.PL_ATTACK_END;
                 }
                 
                 break;

@@ -26,7 +26,7 @@ public class PLMoveState : PhaseStateBase
 
         movingIndex = 0;
         m_Phase = PLMovePhase.PL_MOVE_SELECT_GRID;
-        departGridIndex = StageGrid.instance.CurrentGridIndex;
+        departGridIndex = StageGrid.instance.currentGrid.GetIndex();
         movePathList = new List<int>(64);
 
         // 現在選択中のキャラクター情報を取得して移動範囲を表示
@@ -55,7 +55,7 @@ public class PLMoveState : PhaseStateBase
                     if (info.isMoveable)
                     {
                         // 移動実行処理へ遷移
-                        int destIndex = StageGrid.instance.CurrentGridIndex;
+                        int destIndex = StageGrid.instance.currentGrid.GetIndex();
                         m_Phase = PLMovePhase.PL_MOVE_EXECUTE;
 
                         // 移動グリッドを求める

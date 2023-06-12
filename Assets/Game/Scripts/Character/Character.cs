@@ -137,6 +137,10 @@ public class Character : MonoBehaviour
         return new Vector2[0];
     }
 
+    virtual public void setAnimator(ANIME_TAG animTag)
+    {
+
+    }
     virtual public void setAnimator( ANIME_TAG animTag, bool b)
     {
 

@@ -17,7 +17,19 @@ public class Player : Character
         this.param.UICameraLookAtCorrectY = 1.0f;
         BattleManager.instance.AddPlayerToList(this);
     }
- 
+
+    override public void setAnimator(ANIME_TAG animTag)
+    {
+        string[] animName =
+        {
+            "Wait",
+            "Run",
+            "Attack01"
+        };
+        // TODO : animNameの数とANIME_TAGの数が不一致の場合にエラーを返す
+
+        animator.SetTrigger(animName[(int)animTag]);
+    }
     override public void setAnimator(ANIME_TAG animTag, bool b)
     {
         string[] animName =
@@ -28,14 +40,6 @@ public class Player : Character
         };
         // TODO : animNameの数とANIME_TAGの数が不一致の場合にエラーを返す
 
-        switch( animTag )
-        {
-            case ANIME_TAG.ANIME_TAG_ATTACK_01:
-                animator.SetTrigger(animName[(int)animTag]);
-                break;
-            default:
-                animator.SetBool(animName[(int)animTag], b);
-                break;
-        }
+        animator.SetBool(animName[(int)animTag], b);
     }
 }
