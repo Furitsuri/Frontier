@@ -40,9 +40,11 @@ public class PLAttackState : PhaseStateBase
         stgInstance.DrawAttackableGrids(_curentGridIndex, param.attackRangeMin, param.attackRangeMax);
 
         // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-        stgInstance.ApplyAttackTargetGridIndexs(0);
-        // アタッカーキャラクターの設定
-        btlInstance.SetAttackerCharacter( _attackCharacter );
+        if( stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_ENEMY) )
+        {
+            // アタッカーキャラクターの設定
+            btlInstance.SetAttackerCharacter(_attackCharacter);
+        }
     }
 
     public override void Update()

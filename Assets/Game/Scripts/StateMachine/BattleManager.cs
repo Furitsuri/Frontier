@@ -80,7 +80,7 @@ public class BattleManager : MonoBehaviour
             // 向きを設定
             player.transform.rotation = rot[(int)player.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
-            _stageGrid.getGridInfo(gridIndex).charaIndex = player.param.characterIndex;
+            _stageGrid.GetGridInfo(gridIndex).charaIndex = player.param.characterIndex;
         }
 
         // 各エネミーキャラクターの位置を設定
@@ -94,14 +94,14 @@ public class BattleManager : MonoBehaviour
             // 向きを設定
             enemy.transform.rotation = rot[(int)enemy.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
-            _stageGrid.getGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
+            _stageGrid.GetGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
         }
     }
 
     void Update()
     {
         // 現在のグリッド上に存在するキャラクター情報を更新
-        SelectCharacterIndex = StageGrid.instance.getCurrentGridInfo().charaIndex;
+        SelectCharacterIndex = StageGrid.instance.GetCurrentGridInfo().charaIndex;
 
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
@@ -117,11 +117,11 @@ public class BattleManager : MonoBehaviour
         StageGrid.instance.ClearGridsCharaIndex();
         foreach( Player player in _players )
         {
-            _stageGrid.getGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
+            _stageGrid.GetGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
         }
         foreach (Enemy enemy in _enemies)
         {
-            _stageGrid.getGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
+            _stageGrid.GetGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
         }
     }
 
