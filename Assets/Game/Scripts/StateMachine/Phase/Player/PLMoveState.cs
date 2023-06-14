@@ -73,7 +73,7 @@ public class PLMoveState : PhaseStateBase
 
                         movingIndex = 0;
                         // 移動アニメーション開始
-                        selectPlayer.setAnimator(Character.ANIME_TAG.ANIME_TAG_MOVE, true);
+                        selectPlayer.setAnimator(Character.ANIME_TAG.MOVE, true);
                         // グリッド情報更新
                         selectPlayer.tmpParam.gridIndex = destIndex;
 
@@ -95,7 +95,7 @@ public class PLMoveState : PhaseStateBase
                     movingIndex++;
 
                     if( moveGridPos.Count <= movingIndex) {
-                        selectPlayer.setAnimator(Character.ANIME_TAG.ANIME_TAG_MOVE, false);
+                        selectPlayer.setAnimator(Character.ANIME_TAG.MOVE, false);
                         m_Phase = PLMovePhase.PL_MOVE_END;
                     }
                 }

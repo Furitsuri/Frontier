@@ -57,7 +57,7 @@ public class CharacterAttackSequence
                 }
                 break;
             case Phase.ATTACK:
-                _attackCharacter.setAnimator(Character.ANIME_TAG.ANIME_TAG_ATTACK_01);
+                _attackCharacter.setAnimator(Character.ANIME_TAG.ATTACK_01);
                 break;
             case Phase.COUNTER:
                 break;

@@ -20,26 +20,10 @@ public class Player : Character
 
     override public void setAnimator(ANIME_TAG animTag)
     {
-        string[] animName =
-        {
-            "Wait",
-            "Run",
-            "Attack01"
-        };
-        // TODO : animNameの数とANIME_TAGの数が不一致の場合にエラーを返す
-
-        animator.SetTrigger(animName[(int)animTag]);
+        _animator.SetTrigger(_animNames[(int)animTag]);
     }
     override public void setAnimator(ANIME_TAG animTag, bool b)
     {
-        string[] animName =
-        {
-            "Wait",
-            "Run",
-            "Attack01"
-        };
-        // TODO : animNameの数とANIME_TAGの数が不一致の場合にエラーを返す
-
-        animator.SetBool(animName[(int)animTag], b);
+        _animator.SetBool(_animNames[(int)animTag], b);
     }
 }
