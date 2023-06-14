@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -34,9 +35,11 @@ public class Character : MonoBehaviour
 
     public enum ANIME_TAG
     {
-        ANIME_TAG_WAIT = 0,
-        ANIME_TAG_MOVE,
-        ANIME_TAG_ATTACK_01,
+        WAIT = 0,
+        MOVE,
+        ATTACK_01,
+        DAMAGED,
+
         ANIME_TAG_NUM,
     }
 
@@ -95,6 +98,7 @@ public class Character : MonoBehaviour
     {
         public bool[] isEndCommand;
         public int gridIndex;
+        public int expectedChangeHP;
 
         public TmpParameter(bool isEnd = false, int index = -1)
         {
@@ -105,16 +109,29 @@ public class Character : MonoBehaviour
             }
 
             gridIndex = index;
+            expectedChangeHP = 0;
         }
     }
 
-    protected Animator animator;
+    protected string[] _animNames =
+    {
+        "Wait",
+        "Run",
+        "Attack01",
+        "GetHit"
+    };
+
+    protected Character _opponent;
+    protected Animator _animator;
     public Parameter param;
     public TmpParameter tmpParam;
-
+    
     void Awake()
     {
-        animator = GetComponent<Animator>();
+        // タグとアニメーションの数は一致していること
+        Debug.Assert( _animNames.Length != (int)ANIME_TAG.ANIME_TAG_NUM );
+
+        _animator = GetComponent<Animator>();
 
         param = new Parameter(0, 0, 0, Constants.Direction.FORWARD);
         tmpParam = new TmpParameter(false, 0);
@@ -144,5 +161,36 @@ public class Character : MonoBehaviour
     virtual public void setAnimator( ANIME_TAG animTag, bool b)
     {
 
+    }
+
+    /// <summary>
+    /// 対戦相手を設定します
+    /// </summary>
+    /// <param name="opponent">対戦相手</param>
+    public void SetOpponentCharacter( Character opponent )
+    {
+        _opponent = opponent;
+    }
+
+    /// <summary>
+    /// 対戦相手の設定をリセットします
+    /// </summary>
+    public void ResetOpponentCharacter()
+    {
+        _opponent = null;
+    }
+
+    /// <summary>
+    /// 対戦相手にダメージを与えるイベントを発生させます
+    /// ※攻撃アニメーションから呼び出し
+    /// </summary>
+    virtual public void AttackOpponentEvent()
+    {
+        if( _opponent == null )
+        {
+            Debug.Assert( false );
+        }
+
+        _opponent.setAnimator(ANIME_TAG.DAMAGED);
     }
 }

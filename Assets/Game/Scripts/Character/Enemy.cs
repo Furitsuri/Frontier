@@ -7,7 +7,6 @@ public class Enemy : Character
     // Start is called before the first frame update
     void Start()
     {
-        
         // TODO : 試運転用にパラメータをセット。後ほど削除
         this.param.characterIndex = 5;
         this.param.moveRange = 2;
@@ -25,14 +24,6 @@ public class Enemy : Character
 
     override public void setAnimator(ANIME_TAG animTag, bool b)
     {
-        string[] animName =
-        {
-            "Wait",
-            "Run",
-            "Attack"
-        };
-        // TODO : animNameの数とANIME_TAGの数が不一致の場合にエラーを返す
-
-        animator.SetBool(animName[(int)animTag], b);
+        _animator.SetBool(_animNames[(int)animTag], b);
     }
 }

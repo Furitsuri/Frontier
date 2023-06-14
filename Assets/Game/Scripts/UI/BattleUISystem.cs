@@ -14,8 +14,11 @@ public class BattleUISystem : MonoBehaviour
     public CharacterParameterUI PlayerParameter;  // 選択グリッド上に存在するキャラクターのパラメータ表示UI
     public CharacterParameterUI EnemyParameter;   // 攻撃対象キャラクターのパラメータ表示UI
 
+    [Header("AttackCursor")]
+    public AttackCursorUI AttackCursor;           // 攻撃対象を示すカーソル(攻撃対象選択画面にて表示)
+
     [Header("PlayerCommand")]
-    public PlayerCommandUI PLCommandWindow;
+    public PlayerCommandUI PLCommandWindow;       // プレイヤーの選択コマンド
 
     void Awake()
     {
@@ -42,8 +45,24 @@ public class BattleUISystem : MonoBehaviour
         EnemyParameter.gameObject.SetActive(isActive);
     }
 
+    public void ToggleAttackCursorP2E(bool isActive)
+    {
+        AttackCursor.attackCursorP2E.gameObject.SetActive(isActive);
+    }
+
+    public void ToggleAttackCursorE2P(bool isActive)
+    {
+        AttackCursor.attackCursorE2P.gameObject.SetActive(isActive);
+    }
+
     public void TogglePLCommand( bool isActive )
     {
         PLCommandWindow.gameObject.SetActive( isActive );
+    }
+
+    public void ToggleBattleExpect( bool isActive )
+    {
+        PlayerParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
+        EnemyParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
     }
 }

@@ -23,6 +23,7 @@ public class PLAttackState : PhaseStateBase
     {
         var stgInstance = StageGrid.instance;
         var btlInstance = BattleManager.instance;
+        var btlUIInstance = BattleUISystem.Instance;
 
         base.Init();
 
@@ -44,6 +45,8 @@ public class PLAttackState : PhaseStateBase
         {
             // アタッカーキャラクターの設定
             btlInstance.SetAttackerCharacter(_attackCharacter);
+            // アタックカーソルUI表示
+            btlUIInstance.ToggleAttackCursorP2E(true);
         }
     }
 
