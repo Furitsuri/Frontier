@@ -16,4 +16,6 @@ static public class Constants
     public const float ADD_GRID_POS_Y = 0.02f;
     // キャラクターの移動速度
     public const float CHARACTER_MOVE_SPEED = 3.0f;
+    // 攻撃シーケンスにおける待ち時間
+    public const float ATTACK_SEQUENCE_WAIT_TIME = 0.75f;
 }

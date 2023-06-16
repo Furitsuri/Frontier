@@ -22,7 +22,7 @@ public class GridMesh : MonoBehaviour
         meshFilter = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
         // ステージグリッドに自身を登録
-        StageGrid.instance.AddGridMeshToList(this);
+        StageGrid.Instance.AddGridMeshToList(this);
     }
 
     // グリッドのメッシュを描画

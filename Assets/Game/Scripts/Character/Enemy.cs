@@ -22,6 +22,11 @@ public class Enemy : Character
         BattleManager.instance.AddEnemyToList(this);
     }
 
+    override public void setAnimator(ANIME_TAG animTag)
+    {
+        _animator.SetTrigger(_animNames[(int)animTag]);
+    }
+
     override public void setAnimator(ANIME_TAG animTag, bool b)
     {
         _animator.SetBool(_animNames[(int)animTag], b);

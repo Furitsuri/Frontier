@@ -22,6 +22,7 @@ public class CharacterAttackSequence
     private Quaternion _atkCharaInitialRotation;
     private Quaternion _tgtCharaInitialRotation;
     private float _startRotarionTimer = 0f;
+    private float _elapsedTime = 0f;
     private const float START_ROTATION_TIME = 0.2f;
 
     public void Init(Character attackChara, Character targetChara)
@@ -34,6 +35,12 @@ public class CharacterAttackSequence
         _startRotarionTimer = 0f;
         _atkCharaInitialRotation = _atkCharaTransform.rotation;
         _tgtCharaInitialRotation = _tgtCharaTransform.rotation;
+
+        // 対戦相手として設定
+        _attackCharacter.SetOpponentCharacter(_targetCharacter);
+        _targetCharacter.SetOpponentCharacter(_attackCharacter);
+
+        _elapsedTime = 0f;
     }
 
     // Update is called once per frame
@@ -53,13 +60,25 @@ public class CharacterAttackSequence
 
                 if ( START_ROTATION_TIME <= _startRotarionTimer )
                 {
+                    _attackCharacter.setAnimator(Character.ANIME_TAG.ATTACK_01);
+
                     _phase = Phase.ATTACK;
                 }
                 break;
             case Phase.ATTACK:
-                _attackCharacter.setAnimator(Character.ANIME_TAG.ATTACK_01);
+                if( _attackCharacter.IsEndAnimation(Character.ANIME_TAG.ATTACK_01))
+                {
+                    // ダメージUIを非表示
+                    BattleUISystem.Instance.ToggleDamageUI(false);
+                    _phase = Phase.COUNTER;
+                }
+                
                 break;
             case Phase.COUNTER:
+                if( Constants.ATTACK_SEQUENCE_WAIT_TIME < (_elapsedTime += Time.deltaTime) )
+                {
+                    _phase = Phase.END;
+                }
                 break;
             case Phase.END:
                 return true;
