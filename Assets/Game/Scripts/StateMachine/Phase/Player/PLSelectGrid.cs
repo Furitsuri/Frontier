@@ -12,15 +12,16 @@ public class PLSelectGrid : PhaseStateBase
         BattleUISystem.Instance.ToggleSelectGrid( true );
     }
 
-    override public void Update()
+    override public bool Update()
     {
-        base.Update();
+        // グリッド選択より遷移が戻ることはないため基底の更新は行わない
+        // if( base.Update() ) { return true; }
 
         // グリッドの操作
-        StageGrid.instance.OperateCurrentGrid();
+        StageGrid.Instance.OperateCurrentGrid();
 
         // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
-        int selectCharaIndex = StageGrid.instance.GetCurrentGridInfo().charaIndex;
+        int selectCharaIndex = StageGrid.Instance.GetCurrentGridInfo().charaIndex;
 
         var player = BattleManager.instance.SearchPlayerFromCharaIndex(selectCharaIndex);
         if ( player != null && !player.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT])
@@ -28,9 +29,12 @@ public class PLSelectGrid : PhaseStateBase
             if (Input.GetKeyUp(KeyCode.Space))
             {
                 TransitIndex = 0;   // 遷移
-                return;
+
+                return true;
             }
         }
+
+        return false;
     }
 
     override public void Exit()

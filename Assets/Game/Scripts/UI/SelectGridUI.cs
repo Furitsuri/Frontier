@@ -10,7 +10,7 @@ public class SelectGridUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _GridSize      = StageGrid.instance.gridSize;
+        _GridSize      = StageGrid.Instance.gridSize;
         _LineRenderer  = gameObject.GetComponent<LineRenderer>();
     }
 
@@ -22,7 +22,7 @@ public class SelectGridUI : MonoBehaviour
 
     void UpdateSelectGridCursor()
     {
-        Vector3 centralPos = StageGrid.instance.GetCurrentGridInfo().charaStandPos;
+        Vector3 centralPos = StageGrid.Instance.GetCurrentGridInfo().charaStandPos;
 
         setSquareLine(_GridSize, ref centralPos);
     }

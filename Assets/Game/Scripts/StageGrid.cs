@@ -34,6 +34,13 @@ public class StageGrid : MonoBehaviour
         }
     }
 
+    // キャラクターの位置を元に戻す際に使用します
+    public struct Footprint
+    {
+        public int gridIndex;
+        public Quaternion rotation;
+    }
+
     public enum Face
     {
         xy,
@@ -41,7 +48,7 @@ public class StageGrid : MonoBehaviour
         yz,
     };
 
-    public static StageGrid instance = null;
+    public static StageGrid Instance = null;
 
     [SerializeField]
     [HideInInspector]
@@ -61,6 +68,7 @@ public class StageGrid : MonoBehaviour
     private float _widthX, _widthZ;
     private Mesh _mesh;
     private GridInfo[] _gridInfo;
+    private Footprint _footprint;
     private List<GridMesh> _gridMeshs;
     private List<int> _attackableGridIndexs;
 
@@ -69,11 +77,11 @@ public class StageGrid : MonoBehaviour
     void Awake()
     {
         // インスタンスの作成
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = this;
+            Instance = this;
         }
-        else if (instance != this)
+        else if (Instance != this)
         {
             Destroy(gameObject);
         }
@@ -206,7 +214,7 @@ public class StageGrid : MonoBehaviour
     /// </summary>
     /// <param name="gridIndex">登録対象のグリッドインデックス</param>
     /// <param name="moveableRange">移動可能範囲値</param>
-    void RegistMoveableGrid(int gridIndex, int moveableRange)
+    void RegistMoveableGrid(int gridIndex, int moveableRange, int attackableRange)
     {
         // 負の値になれば終了
         if (moveableRange < 0) return;
@@ -215,15 +223,23 @@ public class StageGrid : MonoBehaviour
 
         _gridInfo[gridIndex].isMoveable = true;
 
+        // 移動範囲の端の箇所で攻撃レンジを展開して、攻撃範囲についても登録する
+        if (moveableRange == 0)
+        {
+            RegistAttackableGrid(gridIndex, attackableRange, attackableRange);
+
+            return;
+        }
+
         // 左端を除外
-        if( gridIndex%_gridNumX != 0 )
-            RegistMoveableGrid(gridIndex - 1, moveableRange - 1);    // gridIndexからX軸方向へ-1
+        if ( gridIndex%_gridNumX != 0 )
+            RegistMoveableGrid(gridIndex - 1, moveableRange - 1, attackableRange);      // gridIndexからX軸方向へ-1
         // 右端を除外
         if( ( gridIndex + 1 )%_gridNumX != 0 )
-            RegistMoveableGrid(gridIndex + 1, moveableRange - 1);    // gridIndexからX軸方向へ+1
+            RegistMoveableGrid(gridIndex + 1, moveableRange - 1, attackableRange);      // gridIndexからX軸方向へ+1
         // Z軸方向への加算と減算はそのまま
-        RegistMoveableGrid(gridIndex - _gridNumX, moveableRange - 1); // gridIndexからZ軸方向へ-1
-        RegistMoveableGrid(gridIndex + _gridNumX, moveableRange - 1); // gridIndexからZ軸方向へ+1
+        RegistMoveableGrid(gridIndex - _gridNumX, moveableRange - 1, attackableRange);  // gridIndexからZ軸方向へ-1
+        RegistMoveableGrid(gridIndex + _gridNumX, moveableRange - 1, attackableRange);  // gridIndexからZ軸方向へ+1
     }
 
     /// <summary>
@@ -296,9 +312,9 @@ public class StageGrid : MonoBehaviour
     /// 移動可能グリッドを描画します
     /// </summary>
     /// <param name="departIndex">移動キャラクターが存在するグリッドのインデックス値</param>
-    /// <param name="moveable"></param>
-    /// <param name="type"></param>
-    public void DrawMoveableGrids(int departIndex, int moveable, BattleManager.TurnType type)
+    /// <param name="moveableRange">移動可能範囲値</param>
+    /// <param name="attackableRange">攻撃可能範囲値</param>
+    public void DrawMoveableGrids(int departIndex, int moveableRange, int attackableRange)
     {
         if (departIndex < 0 || _gridTotalNum <= departIndex)
         {
@@ -313,9 +329,10 @@ public class StageGrid : MonoBehaviour
         }
 
         // 移動可否情報を各グリッドに登録
-        RegistMoveableGrid(departIndex, moveable);
+        RegistMoveableGrid(departIndex, moveableRange, attackableRange);
         // 中心グリッドを除く
         _gridInfo[departIndex].isMoveable = false;
+        _gridInfo[departIndex].isAttackable = false;
 
         int count = 0;
         // グリッドの状態をメッシュで描画
@@ -327,6 +344,14 @@ public class StageGrid : MonoBehaviour
                 _gridMeshs[count++].DrawGridMesh(ref _gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.MOVE);
 
                 Debug.Log("Moveable Grid Index : " + i);
+            }
+
+            if (!_gridInfo[i].isMoveable && _gridInfo[i].isAttackable)
+            {
+                Instantiate(m_GridMeshObject);  // 仮
+                _gridMeshs[count++].DrawGridMesh(ref _gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
+
+                Debug.Log("Attackable Grid Index : " + i);
             }
         }
     }
@@ -360,7 +385,7 @@ public class StageGrid : MonoBehaviour
         {
             if (_gridInfo[i].isAttackable)
             {
-                Instantiate(m_GridMeshObject);  // 仮
+                Instantiate(m_GridMeshObject);  // TODO : 仮
                 _gridMeshs[count++].DrawGridMesh(ref _gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
 
                 Debug.Log("Attackable Grid Index : " + i);
@@ -368,12 +393,16 @@ public class StageGrid : MonoBehaviour
         }
     }
 
-    public void clearGridsCondition()
+    /// <summary>
+    /// 全てのグリッドの可否情報を初期化し、描画を消去します
+    /// </summary>
+    public void ClearGridsCondition()
     {
-        // 全てのグリッドの移動可否情報を初期化
+        // 全てのグリッドの移動・攻撃可否情報を初期化
         for (int i = 0; i < _gridTotalNum; ++i)
         {
-            _gridInfo[i].isMoveable = false;
+            _gridInfo[i].isMoveable     = false;
+            _gridInfo[i].isAttackable   = false;
         }
 
         foreach( var grid in _gridMeshs )
@@ -516,6 +545,27 @@ public class StageGrid : MonoBehaviour
         }
 
         return 0 < _attackableGridIndexs.Count;
+    }
+
+    /// <summary>
+    /// キャラクターの位置及び向きを保持します
+    /// </summary>
+    /// <param name="footprint">保持する値</param>
+    public void LeaveFootprint( Footprint footprint )
+    {
+        _footprint = footprint;
+    }
+
+    /// <summary>
+    /// 保持していた位置及び向きを指定のキャラクターに設定します
+    /// </summary>
+    /// <param name="character">指定するキャラクター</param>
+    public void FollowFootprint(Character character)
+    {
+        currentGrid.SetIndex(_footprint.gridIndex);
+        character.tmpParam.gridIndex = _footprint.gridIndex;
+        character.transform.position = GetCurrentGridInfo().charaStandPos;
+        character.transform.rotation = _footprint.rotation;
     }
 
 #if UNITY_EDITOR

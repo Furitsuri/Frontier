@@ -123,15 +123,17 @@ public class Character : MonoBehaviour
 
     protected Character _opponent;
     protected Animator _animator;
+    protected Animation _animation;
     public Parameter param;
     public TmpParameter tmpParam;
     
     void Awake()
     {
         // タグとアニメーションの数は一致していること
-        Debug.Assert( _animNames.Length != (int)ANIME_TAG.ANIME_TAG_NUM );
+        Debug.Assert( _animNames.Length == (int)ANIME_TAG.ANIME_TAG_NUM );
 
         _animator = GetComponent<Animator>();
+        _animation = GetComponent<Animation>();
 
         param = new Parameter(0, 0, 0, Constants.Direction.FORWARD);
         tmpParam = new TmpParameter(false, 0);
@@ -146,12 +148,6 @@ public class Character : MonoBehaviour
     void Update()
     {
         
-    }
-
-    public Vector2[] moveableGrid()
-    {
-
-        return new Vector2[0];
     }
 
     virtual public void setAnimator(ANIME_TAG animTag)
@@ -181,6 +177,24 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
+    /// 指定のアニメーションが終了したかを判定します
+    /// </summary>
+    /// <param name="animTag">アニメーションタグ</param>
+    /// <returns>true : 終了, false : 未終了</returns>
+    public bool IsEndAnimation(ANIME_TAG animTag)
+    {
+        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
+        // animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
+        if (stateInfo.IsName(_animNames[(int)animTag]) && 1f <= stateInfo.normalizedTime)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// 対戦相手にダメージを与えるイベントを発生させます
     /// ※攻撃アニメーションから呼び出し
     /// </summary>
@@ -192,5 +206,10 @@ public class Character : MonoBehaviour
         }
 
         _opponent.setAnimator(ANIME_TAG.DAMAGED);
+        // モーションと同時にHPを減らす
+        _opponent.param.CurHP += _opponent.tmpParam.expectedChangeHP;
+        // ダメージUIを表示
+        BattleUISystem.Instance.ToggleDamageUI(true);
+        BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
     }
 }

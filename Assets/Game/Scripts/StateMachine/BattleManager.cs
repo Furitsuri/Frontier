@@ -49,7 +49,7 @@ public class BattleManager : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        if (StageGrid.instance == null)
+        if (StageGrid.Instance == null)
         {
             Instantiate(stageGridObject);
         }
@@ -101,7 +101,7 @@ public class BattleManager : MonoBehaviour
     void Update()
     {
         // 現在のグリッド上に存在するキャラクター情報を更新
-        SelectCharacterIndex = StageGrid.instance.GetCurrentGridInfo().charaIndex;
+        SelectCharacterIndex = StageGrid.Instance.GetCurrentGridInfo().charaIndex;
 
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
@@ -111,10 +111,8 @@ public class BattleManager : MonoBehaviour
 
     void LateUpdate()
     {
-        _phaseManager.LateUpdate();
-
         // ステージグリッド上のキャラ情報を更新
-        StageGrid.instance.ClearGridsCharaIndex();
+        StageGrid.Instance.ClearGridsCharaIndex();
         foreach( Player player in _players )
         {
             _stageGrid.GetGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
@@ -123,6 +121,8 @@ public class BattleManager : MonoBehaviour
         {
             _stageGrid.GetGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
         }
+
+        _phaseManager.LateUpdate();
     }
 
     // プレイヤー行動フェーズ
@@ -242,15 +242,23 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     public void ResetAttackerCharacter()
     {
-        AttackerCharacter = null;
+        if( AttackerCharacter == null )
+        {
+            return;
+        }
+
+        // 選択しているキャラインデックスを攻撃対象キャラから元に戻す
+        SelectCharacterIndex = AttackerCharacter.param.characterIndex;
+
         AttackerCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Character"));
+        AttackerCharacter = null;
     }
 
 
     /// <summary>
     /// 攻撃フェーズ状態かどうかを確認します
     /// </summary>
-    /// <returns>true ; 攻撃フェーズ状態である false : 攻撃フェーズ状態ではない </returns>
+    /// <returns>true : 攻撃フェーズ状態である false : 攻撃フェーズ状態ではない </returns>
     public bool IsAttackPhaseState()
     {
         // 攻撃フェーズ状態の際にはAttackerCharacterが必ずnullではない
@@ -306,7 +314,37 @@ public class BattleManager : MonoBehaviour
     /// <returns>選択しているグリッド上のキャラクター</returns>
     public Character GetSelectCharacter()
     {
-        return SearchCharacterFromCharaIndex(SelectCharacterIndex);
+        return SearchCharacterFromCharaIndex(StageGrid.Instance.GetCurrentGridInfo().charaIndex);
+    }
+
+    /// <summary>
+    /// ダメージ予測を適応します
+    /// </summary>
+    /// <param name="attacker">攻撃キャラクター</param>
+    /// <param name="target">標的キャラクター</param>
+    public void ApplyDamageExpect(Character attacker, Character target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        target.tmpParam.expectedChangeHP = Mathf.Min(target.param.Def - attacker.param.Atk, 0);
+    }
+
+    /// <summary>
+    /// ダメージ予測をリセットします
+    /// </summary>
+    /// <param name="attacker">攻撃キャラクター</param>
+    /// <param name="target">標的キャラクター</param>
+    public void ResetDamageExpect(Character attacker, Character target)
+    {
+        if( target == null )
+        {
+            return;
+        }
+
+        target.tmpParam.expectedChangeHP = 0;
     }
 
     /// <summary>

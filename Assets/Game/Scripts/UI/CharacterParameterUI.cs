@@ -79,25 +79,38 @@ public class CharacterParameterUI : MonoBehaviour
         TMPAtkValue.text = $"{param.Atk}";
         TMPDefValue.text = $"{param.Def}";
 
-        var tmpParam = selectCharacter.tmpParam;
-        TMPDiffHPValue.text = $"{tmpParam.expectedChangeHP}";
+        int changeHP = selectCharacter.tmpParam.expectedChangeHP;
+        if( 0 < changeHP)
+        {
+            TMPDiffHPValue.text = $"+{changeHP}";
+        }
+        else if( changeHP < 0 )
+        {
+            TMPDiffHPValue.text = $"{changeHP}";
+        }
+        else
+        {
+            // ダメージが0の場合は表示しない
+            TMPDiffHPValue.text = "";
+        }
+
         // テキストの色を反映
-        ApplyTextColor(ref tmpParam);
+        ApplyTextColor(changeHP);
     }
 
     /// <summary>
     /// テキストの色を反映します
     /// </summary>
     /// <param name="tmpParam">該当キャラクターの一時パラメータ</param>
-    void ApplyTextColor( ref Character.TmpParameter tmpParam )
+    void ApplyTextColor( int changeHP )
     {
-        if (tmpParam.expectedChangeHP < 0)
+        if (changeHP < 0)
         {
-            TMPCurHPValue.color = Color.red;
+            TMPDiffHPValue.color = Color.red;
         }
-        else if (0 < tmpParam.expectedChangeHP)
+        else if (0 < changeHP)
         {
-            TMPCurHPValue.color = Color.green;
+            TMPDiffHPValue.color = Color.green;
         }
     }
 

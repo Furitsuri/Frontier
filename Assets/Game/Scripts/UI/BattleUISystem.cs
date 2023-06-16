@@ -7,18 +7,21 @@ public class BattleUISystem : MonoBehaviour
     public static BattleUISystem Instance { get; private set; }
 
     [Header("SelectGrid")]
-    public SelectGridUI SelectGridCursor;         // グリッド選択に用いるカーソル
-    public SelectGridUI AttackTargetCursor;       // 攻撃対象グリッド選択に用いるカーソル
+    public SelectGridUI SelectGridCursor;           // グリッド選択に用いるカーソル
+    public SelectGridUI AttackTargetCursor;         // 攻撃対象グリッド選択に用いるカーソル
 
     [Header("PlayerParam")]
-    public CharacterParameterUI PlayerParameter;  // 選択グリッド上に存在するキャラクターのパラメータ表示UI
-    public CharacterParameterUI EnemyParameter;   // 攻撃対象キャラクターのパラメータ表示UI
+    public CharacterParameterUI PlayerParameter;    // 選択グリッド上に存在するキャラクターのパラメータ表示UI
+    public CharacterParameterUI EnemyParameter;     // 攻撃対象キャラクターのパラメータ表示UI
 
     [Header("AttackCursor")]
-    public AttackCursorUI AttackCursor;           // 攻撃対象を示すカーソル(攻撃対象選択画面にて表示)
+    public AttackCursorUI AttackCursor;             // 攻撃対象を示すカーソル(攻撃対象選択画面にて表示)
 
     [Header("PlayerCommand")]
-    public PlayerCommandUI PLCommandWindow;       // プレイヤーの選択コマンド
+    public PlayerCommandUI PLCommandWindow;         // プレイヤーの選択コマンド
+
+    [Header("DamageUI")]
+    public DamageUI Damage;                         // ダメージ表記
 
     void Awake()
     {
@@ -64,5 +67,33 @@ public class BattleUISystem : MonoBehaviour
     {
         PlayerParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
         EnemyParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
+    }
+
+    public void ToggleDamageUI( bool isActive )
+    {
+        Damage.gameObject.SetActive( isActive );
+    }
+
+    public void SetDamageUIPosByCharaPos( Character character, int damageValue )
+    {
+        // キャラクターの座標からカメラ(スクリーン)座標に変換
+        var characterWorldPos   = character.transform.position;
+        var characterScreenPos  = Camera.main.WorldToScreenPoint( characterWorldPos );
+
+        Damage.transform.position   = characterScreenPos;
+        int absDamage = Mathf.Abs( damageValue );
+        Damage.damageText.text      = damageValue.ToString();
+        if( damageValue < 0 )
+        {
+            Damage.damageText.color = Color.red;
+        }
+        else if( 0 < damageValue )
+        {
+            Damage.damageText.color = Color.green;
+        }
+        else
+        {
+            Damage.damageText.color = Color.white;
+        }
     }
 }

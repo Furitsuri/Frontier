@@ -22,51 +22,66 @@ public class PLMoveState : PhaseStateBase
 
     override public void Init()
     {
+        var btlInstance = BattleManager.instance;
+
         base.Init();
 
         movingIndex = 0;
         m_Phase = PLMovePhase.PL_MOVE_SELECT_GRID;
-        departGridIndex = StageGrid.instance.currentGrid.GetIndex();
+        departGridIndex = StageGrid.Instance.currentGrid.GetIndex();
         movePathList = new List<int>(64);
 
         // 現在選択中のキャラクター情報を取得して移動範囲を表示
-        selectPlayer = BattleManager.instance.SearchPlayerFromCharaIndex(BattleManager.instance.SelectCharacterIndex);
-        if( selectPlayer == null )
-        {
-            // ASSERT表示
-        }
-        StageGrid.instance.DrawMoveableGrids(departGridIndex, selectPlayer.param.moveRange, TurnType.PLAYER_TURN);
+        selectPlayer = (Player)btlInstance.GetSelectCharacter();
+        Debug.Assert(selectPlayer != null);
+
+        var param = selectPlayer.param;
+
+        // キャラクターの現在の位置情報を保持
+        StageGrid.Footprint footprint = new StageGrid.Footprint();
+        footprint.gridIndex = selectPlayer.tmpParam.gridIndex;
+        footprint.rotation = selectPlayer.transform.rotation;
+        StageGrid.Instance.LeaveFootprint( footprint );
+
+        // 移動可能グリッドを表示
+        StageGrid.Instance.DrawMoveableGrids(departGridIndex, param.moveRange, param.attackRangeMax);
     }
 
-    public override void Update()
+    public override bool Update()
     {
-        base.Update();
+        if( base.Update() )
+        {
+            // キャラクターのグリッドの位置に選択グリッドの位置を戻す
+            StageGrid.Instance.FollowFootprint(selectPlayer);
+
+            return true;
+        }
 
         switch( m_Phase )
         {
             case PLMovePhase.PL_MOVE_SELECT_GRID:
                 // グリッドの操作
-                StageGrid.instance.OperateCurrentGrid();
+                StageGrid.Instance.OperateCurrentGrid();
 
                 // 選択したグリッドが移動可能であれば選択グリッドへ遷移
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
-                    var info = StageGrid.instance.GetCurrentGridInfo();
+                    var info = StageGrid.Instance.GetCurrentGridInfo();
                     if (info.isMoveable)
                     {
                         // 移動実行処理へ遷移
-                        int destIndex = StageGrid.instance.currentGrid.GetIndex();
+                        int destIndex = StageGrid.Instance.currentGrid.GetIndex();
                         m_Phase = PLMovePhase.PL_MOVE_EXECUTE;
 
                         // 移動グリッドを求める
-                        movePathList = StageGrid.instance.ExtractDepart2DestGoalGridIndexs( departGridIndex, destIndex );
+                        movePathList = StageGrid.Instance.ExtractDepart2DestGoalGridIndexs( departGridIndex, destIndex );
 
                         // PlayerをmovePathListの順に移動させる
                         moveGridPos = new List<Vector3>(movePathList.Count);
                         for (int i = 0; i < movePathList.Count; ++i)
                         {
                             // パスのインデックスからグリッド座標を得る
-                            moveGridPos.Add(StageGrid.instance.GetGridInfo(movePathList[i]).charaStandPos);
+                            moveGridPos.Add(StageGrid.Instance.GetGridInfo(movePathList[i]).charaStandPos);
                         }
                         // 処理軽減のためtranformをキャッシュ
                         PLTransform = selectPlayer.transform;
@@ -78,9 +93,6 @@ public class PLMoveState : PhaseStateBase
                         selectPlayer.tmpParam.gridIndex = destIndex;
 
                         m_Phase = PLMovePhase.PL_MOVE_EXECUTE;
-                        
-
-                        return;
                     }
                 }
                 break;
@@ -99,21 +111,24 @@ public class PLMoveState : PhaseStateBase
                         m_Phase = PLMovePhase.PL_MOVE_END;
                     }
                 }
-                
                 break;
-            case PLMovePhase.PL_MOVE_END:
-                TransitIndex = 0;
-                StageGrid.instance.clearGridsCondition();
+            case PLMovePhase.PL_MOVE_END: 
+                // 移動したキャラクターの移動コマンドを選択不可にする
                 selectPlayer.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_MOVE] = true;
-                
-                break;
+                // コマンド選択に戻る
+                Back();
+
+                return true;
         }
+
+        return false;
     }
 
     public override void Exit()
     {
         base.Exit();
-    }
 
-    
+        // グリッド状態の描画をクリア
+        StageGrid.Instance.ClearGridsCondition();
+    }
 }
