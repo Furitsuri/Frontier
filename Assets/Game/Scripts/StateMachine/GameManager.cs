@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
 
         DontDestroyOnLoad( gameObject );
 
-        if (BattleManager.instance == null)
+        if (BattleManager.Instance == null)
         {
             Instantiate(m_BattleManager);
         }

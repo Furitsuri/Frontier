@@ -4,6 +4,24 @@ using UnityEngine;
 
 public class Enemy : Character
 {
+    /// <summary>
+    /// 思考タイプ
+    /// </summary>
+    enum ThinkingType
+    {
+        NEAR = 0,   // 自分の距離に近い敵を優先
+
+        NUM
+    }
+
+    public struct Plan
+    {
+        // 移動目標グリッドインデックス値
+        int destGridIndex;
+        // 攻撃目標ユニットインデックス値
+        int targetCharaIndex;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -19,7 +37,7 @@ public class Enemy : Character
         this.param.UICameraLengthY = 0.8f;
         this.param.UICameraLengthZ = 1.4f;
         this.param.UICameraLookAtCorrectY = 0.45f;
-        BattleManager.instance.AddEnemyToList(this);
+        BattleManager.Instance.AddEnemyToList(this);
     }
 
     override public void setAnimator(ANIME_TAG animTag)

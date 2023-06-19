@@ -35,7 +35,7 @@ public class CharacterParameterUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var btlInstance = BattleManager.instance;
+        var btlInstance = BattleManager.Instance;
 
         Character selectCharacter = null;
 

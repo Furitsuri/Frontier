@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static BattleManager;
 
 public class PLMoveState : PhaseStateBase
 {
@@ -22,7 +21,7 @@ public class PLMoveState : PhaseStateBase
 
     override public void Init()
     {
-        var btlInstance = BattleManager.instance;
+        var btlInstance = BattleManager.Instance;
 
         base.Init();
 

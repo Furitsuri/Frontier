@@ -43,7 +43,7 @@ public class PLConfirmTurnEnd : PhaseStateBase
             if( _commandList.GetCurrentIndex() == (int)ConfirmTag.YES )
             {
                 // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
-                BattleManager.instance.ApplyAllPlayerWaitEnd();
+                BattleManager.Instance.ApplyAllPlayerWaitEnd();
             }
 
             Back();

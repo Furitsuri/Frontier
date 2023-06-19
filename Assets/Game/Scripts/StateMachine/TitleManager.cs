@@ -20,12 +20,6 @@ public class TitleManager : MonoBehaviour
         m_Phase = TitlePhase.TITLE_START;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public IEnumerator Title()
     {
         while (m_Phase != TitlePhase.TITLE_END)
