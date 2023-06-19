@@ -7,6 +7,7 @@ public class PhaseManagerBase
 {
     protected PhaseStateBase m_RootState;
     protected PhaseStateBase m_CurrentState;
+    protected bool _isFirstUpdate = false;
 
     virtual public void Init()
     {
@@ -14,12 +15,22 @@ public class PhaseManagerBase
         CreateStateTree();
 
         m_CurrentState.Init();
+
+        _isFirstUpdate = true;
     }
 
-    virtual public void Update()
+    virtual public bool Update()
     {
         // 現在実行中のステートを更新
-        m_CurrentState.Update();
+        if( m_CurrentState.Update() )
+        {
+            if( m_CurrentState.IsBack() && m_CurrentState.m_Parent == null )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     virtual public void LateUpdate()
@@ -42,6 +53,13 @@ public class PhaseManagerBase
 
     // 遷移の木構造を作成
     virtual protected void CreateStateTree()
+    {
+    }
+
+    /// <summary>
+    /// フェーズアニメーションを再生します
+    /// </summary>
+    virtual protected void StartPhaseAnim()
     {
     }
 }

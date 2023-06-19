@@ -41,7 +41,7 @@ public class PLSelectCommandState : PhaseStateBase
                 commandIndexs.Add(i);
             }
         }
-        _commandList.Init(ref commandIndexs);
+        _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL);
 
         // UI側へこのスクリプトを登録し、UIを表示
         var instance = BattleUISystem.Instance;
@@ -91,9 +91,9 @@ public class PLSelectCommandState : PhaseStateBase
 
     override public void Exit()
     {
-        base.Exit();
-
         // UIを非表示
         BattleUISystem.Instance.TogglePLCommand(false);
+
+        base.Exit();
     }
 }

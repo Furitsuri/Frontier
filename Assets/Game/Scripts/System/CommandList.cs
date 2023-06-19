@@ -5,11 +5,22 @@ using UnityEngine;
 
 public class CommandList
 {
+    // コマンドリストの方向
+    public enum CommandDirection
+    {
+        VERTICAL = 0,
+        HORIZONTAL,
+
+        NUM,
+    }
+
     private LinkedList<int> _list;
     private LinkedListNode<int> _currentNode;
+    private KeyCode _transitPrevKey;
+    private KeyCode _transitNextKey;
 
     // 使用するコマンドのインデックス配列を渡して初期化
-    public void Init(ref List<int> setCommandIndexs)
+    public void Init(ref List<int> setCommandIndexs, CommandDirection direction )
     {
         if (setCommandIndexs.Count <= 0)
         {
@@ -20,11 +31,22 @@ public class CommandList
         _list = new LinkedList<int>(setCommandIndexs);
 
         _currentNode = _list.First;
+
+        if( direction == CommandDirection.VERTICAL )
+        {
+            _transitPrevKey = KeyCode.UpArrow;
+            _transitNextKey = KeyCode.DownArrow;
+        }
+        else if( direction == CommandDirection.HORIZONTAL )
+        {
+            _transitPrevKey = KeyCode.LeftArrow;
+            _transitNextKey = KeyCode.RightArrow;
+        }
     }
 
     public void Update()
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKeyDown(_transitPrevKey))
         {
             if( _currentNode == _list.First )
             {
@@ -35,7 +57,7 @@ public class CommandList
                 _currentNode = _currentNode.Previous;
             }
         }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(_transitNextKey))
         {
             if (_currentNode == _list.Last)
             {

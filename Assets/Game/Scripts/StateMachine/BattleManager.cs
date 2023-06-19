@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 
@@ -10,7 +11,6 @@ public class BattleManager : MonoBehaviour
     {
         BATTLE_START = 0,
         BATTLE_PLAYER_COMMAND,
-        BATTLE_PLAYER_EXECUTE,
         BATTLE_ENEMY_COMMAND,
         BATTLE_ENEMY_EXECUTE,
         BATTLE_RESULT,
@@ -21,16 +21,21 @@ public class BattleManager : MonoBehaviour
     {
         PLAYER_TURN = 0,
         ENEMY_TURN,
+
+        NUM
     }
 
     public static BattleManager instance = null;
     public GameObject stageGridObject;
     private BattlePhase _phase;
-    private PhaseManagerBase _phaseManager;
+    private PhaseManagerBase _currentPhaseManager;
     private StageGrid _stageGrid;
+    private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
     private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
     private List<Enemy> _enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
     private Character _prevCharacter = null;
+    private bool _transitNextPhase = false;
+    private int _phaseManagerIndex = 0;
     // 現在選択中のキャラクターインデックス
     public int SelectCharacterIndex { get; private set; } = -1;
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
@@ -54,12 +59,15 @@ public class BattleManager : MonoBehaviour
             Instantiate(stageGridObject);
         }
 
-        _phaseManager = new PlayerPhaseManager();
+        _phaseManagers[(int)TurnType.PLAYER_TURN]   = new PlayerPhaseManager();
+        _phaseManagers[(int)TurnType.ENEMY_TURN]    = new EnemyPhaseManager();
+        _currentPhaseManager                        = _phaseManagers[(int)TurnType.PLAYER_TURN];
+        // _currentPhaseManager = new PlayerPhaseManager();
     }
 
     void Start()
     {
-        _phaseManager.Init();
+        _currentPhaseManager.Init();
 
         // 向きの値を設定
         Quaternion[] rot = new Quaternion[(int)Constants.Direction.NUM_MAX];
@@ -67,7 +75,6 @@ public class BattleManager : MonoBehaviour
         {
             rot[i] = Quaternion.AngleAxis(90 * i, Vector3.up);
         }
-
 
         // 各プレイヤーキャラクターの位置を設定
         for (int i = 0; i < _players.Count; ++i)
@@ -100,13 +107,18 @@ public class BattleManager : MonoBehaviour
 
     void Update()
     {
+        // TODO : 仮。あとでリファクタ
+        if( GameManager.instance.IsInvoking() )
+        {
+            return;
+        }
+
         // 現在のグリッド上に存在するキャラクター情報を更新
         SelectCharacterIndex = StageGrid.Instance.GetCurrentGridInfo().charaIndex;
-
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
-
-        _phaseManager.Update();
+        // フェーズマネージャを更新
+        _transitNextPhase = _currentPhaseManager.Update();
     }
 
     void LateUpdate()
@@ -122,7 +134,17 @@ public class BattleManager : MonoBehaviour
             _stageGrid.GetGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
         }
 
-        _phaseManager.LateUpdate();
+        if (!_transitNextPhase)
+        {
+            _currentPhaseManager.LateUpdate();
+        }
+        else
+        {
+            // 次のマネージャに切り替える
+            _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
+            _currentPhaseManager = _phaseManagers[_phaseManagerIndex];
+            _currentPhaseManager.Init();
+        }
     }
 
     // プレイヤー行動フェーズ
@@ -189,9 +211,6 @@ public class BattleManager : MonoBehaviour
                     break;
                 case BattlePhase.BATTLE_PLAYER_COMMAND:
                     PlayerPhase();
-                    break;
-                case BattlePhase.BATTLE_PLAYER_EXECUTE:
-                    _phase = BattlePhase.BATTLE_ENEMY_COMMAND;
                     break;
                 case BattlePhase.BATTLE_ENEMY_COMMAND:
                     _phase = BattlePhase.BATTLE_ENEMY_EXECUTE;
@@ -270,7 +289,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     /// <param name="characterIndex">検索するプレイヤーキャラクターのインデックス</param>
     /// <returns>該当したプレイヤーキャラクター</returns>
-    public Player SearchPlayerFromCharaIndex( int characterIndex)
+    public Player SearchPlayerFromCharaIndex( int characterIndex )
     {
         foreach (Player player in _players)
         {
@@ -281,6 +300,23 @@ public class BattleManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// 全ての行動可能キャラクターの行動が終了したかを判定します
+    /// </summary>
+    /// <returns>全ての行動可能キャラクターの行動が終了したか</returns>
+    public bool IsEndAllCharacterWaitCommand()
+    {
+        foreach (Player player in _players)
+        {
+            if ( !player.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT] )
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -315,6 +351,18 @@ public class BattleManager : MonoBehaviour
     public Character GetSelectCharacter()
     {
         return SearchCharacterFromCharaIndex(StageGrid.Instance.GetCurrentGridInfo().charaIndex);
+    }
+
+    /// <summary>
+    /// 全てのプレイヤーキャラクターを待機済みに変更します
+    /// 主にターンを終了させる際に使用します
+    /// </summary>
+    public void ApplyAllPlayerWaitEnd()
+    {
+        foreach( Player player in _players )
+        {
+            player.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT] = true;
+        }
     }
 
     /// <summary>
