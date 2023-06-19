@@ -10,7 +10,7 @@ public class PLWaitState : PhaseStateBase
         base.Init();
 
         // 選択中のプレイヤーを取得
-        var selectPlayer = (Player)BattleManager.instance.GetSelectCharacter();
+        var selectPlayer = (Player)BattleManager.Instance.GetSelectCharacter();
         if (selectPlayer == null)
         {
             Debug.Assert(false);

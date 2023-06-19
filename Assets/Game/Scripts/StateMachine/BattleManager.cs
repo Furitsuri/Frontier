@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 
-public class BattleManager : MonoBehaviour
+public class BattleManager : Singleton<BattleManager>
 {
     enum BattlePhase
     {
@@ -25,7 +25,6 @@ public class BattleManager : MonoBehaviour
         NUM
     }
 
-    public static BattleManager instance = null;
     public GameObject stageGridObject;
     private BattlePhase _phase;
     private PhaseManagerBase _currentPhaseManager;
@@ -41,19 +40,8 @@ public class BattleManager : MonoBehaviour
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
     public Character AttackerCharacter { get; private set; } = null;
 
-    void Awake()
+    override protected void Init()
     {
-        if (instance == null)
-        {
-            instance = this;
-        }
-        else if (instance != this)
-        {
-            Destroy(gameObject);
-        }
-
-        DontDestroyOnLoad(gameObject);
-
         if (StageGrid.Instance == null)
         {
             Instantiate(stageGridObject);
@@ -62,10 +50,9 @@ public class BattleManager : MonoBehaviour
         _phaseManagers[(int)TurnType.PLAYER_TURN]   = new PlayerPhaseManager();
         _phaseManagers[(int)TurnType.ENEMY_TURN]    = new EnemyPhaseManager();
         _currentPhaseManager                        = _phaseManagers[(int)TurnType.PLAYER_TURN];
-        // _currentPhaseManager = new PlayerPhaseManager();
     }
 
-    void Start()
+    override protected void OnStart()
     {
         _currentPhaseManager.Init();
 
@@ -105,7 +92,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void Update()
+    override protected void OnUpdate()
     {
         // TODO : 仮。あとでリファクタ
         if( GameManager.instance.IsInvoking() )
@@ -121,7 +108,7 @@ public class BattleManager : MonoBehaviour
         _transitNextPhase = _currentPhaseManager.Update();
     }
 
-    void LateUpdate()
+    override protected void OnLateUpdate()
     {
         // ステージグリッド上のキャラ情報を更新
         StageGrid.Instance.ClearGridsCharaIndex();

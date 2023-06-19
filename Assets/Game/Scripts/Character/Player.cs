@@ -15,7 +15,7 @@ public class Player : Character
         this.param.UICameraLengthY = 1.2f;
         this.param.UICameraLengthZ = 1.5f;
         this.param.UICameraLookAtCorrectY = 1.0f;
-        BattleManager.instance.AddPlayerToList(this);
+        BattleManager.Instance.AddPlayerToList(this);
     }
 
     override public void setAnimator(ANIME_TAG animTag)

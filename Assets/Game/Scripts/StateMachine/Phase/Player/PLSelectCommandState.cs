@@ -18,7 +18,7 @@ public class PLSelectCommandState : PhaseStateBase
         base.Init();
 
         // 選択中のプレイヤーを取得
-        _selectPlayer = (Player)BattleManager.instance.GetSelectCharacter();
+        _selectPlayer = (Player)BattleManager.Instance.GetSelectCharacter();
         if(_selectPlayer == null)
         {
             Debug.Assert( false );

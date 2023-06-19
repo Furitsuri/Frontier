@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static BattleManager;
-using static UnityEngine.GraphicsBuffer;
 
 public class PLAttackState : PhaseStateBase
 {
@@ -22,7 +20,7 @@ public class PLAttackState : PhaseStateBase
     override public void Init()
     {
         var stgInstance = StageGrid.Instance;
-        var btlInstance = BattleManager.instance;
+        var btlInstance = BattleManager.Instance;
         var btlUIInstance = BattleUISystem.Instance;
 
         base.Init();
@@ -53,7 +51,7 @@ public class PLAttackState : PhaseStateBase
     public override bool Update()
     {
         var stgInstance     = StageGrid.Instance;
-        var btlInstance     = BattleManager.instance;
+        var btlInstance     = BattleManager.Instance;
         var btlUIInstance   = BattleUISystem.Instance;
 
         if( base.Update() )
@@ -118,7 +116,7 @@ public class PLAttackState : PhaseStateBase
 
     public override void Exit()
     {
-        var btlInstance     = BattleManager.instance;
+        var btlInstance     = BattleManager.Instance;
         var btlUIInstance   = BattleUISystem.Instance;
         var stgInstance     = StageGrid.Instance;
         // アタッカーキャラクターの設定を解除

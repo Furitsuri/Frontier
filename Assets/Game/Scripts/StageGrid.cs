@@ -11,7 +11,7 @@ using UnityEngine.Assertions;
 using UnityEngine.TextCore.Text;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-public class StageGrid : MonoBehaviour
+public class StageGrid : Singleton<StageGrid>
 {
     public struct GridInfo
     {
@@ -48,8 +48,6 @@ public class StageGrid : MonoBehaviour
         yz,
     };
 
-    public static StageGrid Instance = null;
-
     [SerializeField]
     [HideInInspector]
     private int _gridNumX;
@@ -74,22 +72,10 @@ public class StageGrid : MonoBehaviour
 
     public CurrentGrid currentGrid { get; private set; } = CurrentGrid.GetInstance();
 
-    void Awake()
+    override protected void Init()
     {
-        // インスタンスの作成
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else if (Instance != this)
-        {
-            Destroy(gameObject);
-        }
-
-        DontDestroyOnLoad(gameObject);
-
         // バトルマネージャに登録
-        BattleManager.instance.registStageGrid(this);
+        BattleManager.Instance.registStageGrid(this);
 
         _gridMeshs          = new List<GridMesh>();
         _attackableGridIndexs  = new List<int>();
@@ -293,7 +279,7 @@ public class StageGrid : MonoBehaviour
     public void OperateCurrentGrid()
     {
         // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
-        if (BattleManager.instance.IsAttackPhaseState())
+        if (BattleManager.Instance.IsAttackPhaseState())
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))    { currentGrid.TransitPrevTarget(); }
             if (Input.GetKeyDown(KeyCode.RightArrow))   { currentGrid.TransitNextTarget(); }
@@ -438,7 +424,7 @@ public class StageGrid : MonoBehaviour
     {
         int index = 0;
 
-        if(BattleManager.instance.IsAttackPhaseState())
+        if(BattleManager.Instance.IsAttackPhaseState())
         {
             index = _attackableGridIndexs[currentGrid.GetAtkTargetIndex()];
         }
@@ -518,7 +504,7 @@ public class StageGrid : MonoBehaviour
     public bool RegistAttackTargetGridIndexs( Character.CHARACTER_TAG targetTag )
     {
         Character character = null;
-        var btlInstance = BattleManager.instance;
+        var btlInstance = BattleManager.Instance;
 
         currentGrid.ClearAtkTargetInfo();
         _attackableGridIndexs.Clear();

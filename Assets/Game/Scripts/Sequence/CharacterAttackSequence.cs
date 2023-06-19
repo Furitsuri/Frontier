@@ -19,8 +19,8 @@ public class CharacterAttackSequence
     // TransformÇÕíxÇ¢ÇΩÇﬂÉLÉÉÉbÉVÉÖ
     private Transform _atkCharaTransform = null;
     private Transform _tgtCharaTransform = null;
-    private Quaternion _atkCharaInitialRotation;
-    private Quaternion _tgtCharaInitialRotation;
+    private Quaternion _atkCharaInitialRot;
+    private Quaternion _tgtCharaInitialRot;
     private float _startRotarionTimer = 0f;
     private float _elapsedTime = 0f;
     private const float START_ROTATION_TIME = 0.2f;
@@ -33,8 +33,8 @@ public class CharacterAttackSequence
         _tgtCharaTransform = _targetCharacter.transform;
 
         _startRotarionTimer = 0f;
-        _atkCharaInitialRotation = _atkCharaTransform.rotation;
-        _tgtCharaInitialRotation = _tgtCharaTransform.rotation;
+        _atkCharaInitialRot = _atkCharaTransform.rotation;
+        _tgtCharaInitialRot = _tgtCharaTransform.rotation;
 
         // ëŒêÌëäéËÇ∆ÇµÇƒê›íË
         _attackCharacter.SetOpponentCharacter(_targetCharacter);
@@ -54,9 +54,10 @@ public class CharacterAttackSequence
                 float t = Mathf.Clamp01(_startRotarionTimer/START_ROTATION_TIME);
                 t = Mathf.SmoothStep(0f, 1f, t);
 
-                Quaternion newRotation = Quaternion.LookRotation(_tgtCharaTransform.position - _atkCharaTransform.position);
-                _atkCharaTransform.rotation = Quaternion.Lerp(_atkCharaInitialRotation, newRotation, t);
-                _tgtCharaTransform.rotation = Quaternion.Lerp(_tgtCharaInitialRotation, Quaternion.Inverse(newRotation), t);
+                Quaternion destAttackerRot  = Quaternion.LookRotation(_tgtCharaTransform.position - _atkCharaTransform.position);
+                Quaternion destTargetRot    = Quaternion.LookRotation(_atkCharaTransform.position - _tgtCharaTransform.position);
+                _atkCharaTransform.rotation = Quaternion.Lerp(_atkCharaInitialRot, destAttackerRot, t);
+                _tgtCharaTransform.rotation = Quaternion.Lerp(_tgtCharaInitialRot, destTargetRot, t);
 
                 if ( START_ROTATION_TIME <= _startRotarionTimer )
                 {
