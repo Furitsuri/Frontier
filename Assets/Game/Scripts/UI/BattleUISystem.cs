@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static BattleManager;
 
 public class BattleUISystem : MonoBehaviour
 {
@@ -18,10 +19,16 @@ public class BattleUISystem : MonoBehaviour
     public AttackCursorUI AttackCursor;             // 攻撃対象を示すカーソル(攻撃対象選択画面にて表示)
 
     [Header("PlayerCommand")]
-    public PlayerCommandUI PLCommandWindow;         // プレイヤーの選択コマンド
+    public PlayerCommandUI PLCommandWindow;         // プレイヤーの選択コマンドUI
+
+    [Header("ConfirmTurnEnd")]
+    public ConfirmTurnEndUI ConfirmTurnEnd;         // ターン終了確認UI
 
     [Header("DamageUI")]
     public DamageUI Damage;                         // ダメージ表記
+
+    [Header("PhaseUI")]
+    public PhaseUI Phase;                           // フェーズ表記UI
 
     void Awake()
     {
@@ -95,5 +102,31 @@ public class BattleUISystem : MonoBehaviour
         {
             Damage.damageText.color = Color.white;
         }
+    }
+
+    public void TogglePhaseUI( bool isActive, TurnType turntype )
+    {
+        Phase.gameObject.SetActive( isActive );
+        Phase.PhaseText[(int)turntype].gameObject.SetActive( isActive );
+    }
+
+    public void StartAnimPhaseUI()
+    {
+        Phase.StartAnim();
+    }
+
+    public bool IsPlayingPhaseUI()
+    {
+        return Phase.IsPlayingAnim();
+    }
+
+    public void ToggleConfirmTurnEnd( bool isActive )
+    {
+        ConfirmTurnEnd.gameObject.SetActive( isActive );
+    }
+
+    public void ApplyTestColor2ConfirmTurnEndUI( int selectIndex )
+    {
+        ConfirmTurnEnd.ApplyTextColor(selectIndex);
     }
 }

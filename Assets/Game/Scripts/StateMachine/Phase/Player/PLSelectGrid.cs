@@ -17,6 +17,21 @@ public class PLSelectGrid : PhaseStateBase
         // グリッド選択より遷移が戻ることはないため基底の更新は行わない
         // if( base.Update() ) { return true; }
 
+        // 全てのキャラクターが待機済みになっていれば終了
+        if( BattleManager.instance.IsEndAllCharacterWaitCommand() )
+        {
+            Back();
+
+            return true;
+        }
+
+        // ターン終了確認へ遷移
+        if( Input.GetKeyUp( KeyCode.Escape ) )
+        {
+            TransitIndex = 1;
+            return true;
+        }
+
         // グリッドの操作
         StageGrid.Instance.OperateCurrentGrid();
 

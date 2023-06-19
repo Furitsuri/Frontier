@@ -126,9 +126,9 @@ public class PLMoveState : PhaseStateBase
 
     public override void Exit()
     {
-        base.Exit();
-
         // グリッド状態の描画をクリア
         StageGrid.Instance.ClearGridsCondition();
+
+        base.Exit();
     }
 }

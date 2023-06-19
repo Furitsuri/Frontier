@@ -118,8 +118,6 @@ public class PLAttackState : PhaseStateBase
 
     public override void Exit()
     {
-        base.Exit();
-
         var btlInstance     = BattleManager.instance;
         var btlUIInstance   = BattleUISystem.Instance;
         var stgInstance     = StageGrid.Instance;
@@ -133,5 +131,7 @@ public class PLAttackState : PhaseStateBase
         btlUIInstance.ToggleBattleExpect(false);
         // グリッド状態の描画をクリア
         stgInstance.ClearGridsCondition();
+
+        base.Exit();
     }
 }
