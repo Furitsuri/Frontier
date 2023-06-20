@@ -39,9 +39,10 @@ public class EnemyPhaseManager : PhaseManagerBase
     override protected void CreateTree()
     {
         // 遷移木の作成
-        // TODO : 別のファイル(XMLなど)から読み込んで作成出来ると便利
-
-        RootNode = new EMMoveState();
+        RootNode = new EMSelectState();
+        RootNode.AddChild(new EMMoveState());
+        RootNode.AddChild(new EMAttackState());
+        RootNode.AddChild(new EMWaitState());
 
         CurrentNode = RootNode;
     }

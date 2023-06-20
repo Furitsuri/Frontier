@@ -111,6 +111,16 @@ public class Character : MonoBehaviour
             gridIndex = index;
             expectedChangeHP = 0;
         }
+
+        public void Reset()
+        {
+            for( int i = 0; i < (int)BaseCommand.COMMAND_MAX_NUM; ++i )
+            {
+                isEndCommand[i] = false;
+            }
+
+            expectedChangeHP = 0;
+        }
     }
 
     protected string[] _animNames =
