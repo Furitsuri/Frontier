@@ -1,9 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-// MonoBehaviourÇÕåpè≥ÇµÇ»Ç¢
 public class PhaseStateBase
 {
     public PhaseStateBase m_Parent;
