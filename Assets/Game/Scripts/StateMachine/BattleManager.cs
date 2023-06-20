@@ -341,6 +341,20 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     /// <summary>
+    /// 敵をリストから順番に取得します
+    /// </summary>
+    /// <returns>敵キャラクター</returns>
+    public IEnumerable<Enemy> GetEnemies()
+    {
+        foreach( Enemy enemy in _enemies)
+        {
+            yield return enemy;
+        }
+
+        yield break;
+    }
+
+    /// <summary>
     /// 全てのプレイヤーキャラクターを待機済みに変更します
     /// 主にターンを終了させる際に使用します
     /// </summary>

@@ -7,7 +7,7 @@ public class Enemy : Character
     /// <summary>
     /// 思考タイプ
     /// </summary>
-    enum ThinkingType
+    public enum ThinkingType
     {
         NEAR = 0,   // 自分の距離に近い敵を優先
 
@@ -21,6 +21,8 @@ public class Enemy : Character
         // 攻撃目標ユニットインデックス値
         int targetCharaIndex;
     }
+
+    public ThinkingType ThinkType { get; private set; }
 
     // Start is called before the first frame update
     void Start()
