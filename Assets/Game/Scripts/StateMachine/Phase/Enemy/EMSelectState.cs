@@ -23,6 +23,9 @@ public class EMSelectState : PhaseStateBase
 
         }
 
-        return false;
+        // ‘S‚Ä‚Ì“G‚Ìs“®‚ªI‚í‚Á‚½‚½‚ß–ß‚é
+        Back();
+
+        return true;
     }
 }

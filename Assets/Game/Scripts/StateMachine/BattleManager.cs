@@ -4,6 +4,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
+using static Character;
 
 public class BattleManager : Singleton<BattleManager>
 {
@@ -131,6 +132,8 @@ public class BattleManager : Singleton<BattleManager>
             _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
             _currentPhaseManager = _phaseManagers[_phaseManagerIndex];
             _currentPhaseManager.Init();
+            // 一時パラメータをリセット
+            ResetTmpParamAllCharacter();
         }
     }
 
@@ -379,6 +382,18 @@ public class BattleManager : Singleton<BattleManager>
         }
 
         target.tmpParam.expectedChangeHP = Mathf.Min(target.param.Def - attacker.param.Atk, 0);
+    }
+
+    public void ResetTmpParamAllCharacter()
+    {
+        foreach (Player player in _players)
+        {
+            player.tmpParam.Reset();
+        }
+        foreach (Enemy enemy in _enemies)
+        {
+            enemy.tmpParam.Reset();
+        }
     }
 
     /// <summary>

@@ -38,7 +38,7 @@ public class PlayerPhaseManager : PhaseManagerBase
     override protected void CreateTree()
     {
         // 遷移木の作成
-        // TODO : 別のファイル(XMLなど)から読み込んで作成出来ると便利
+        // TODO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
         RootNode = new PLSelectGrid();
         RootNode.AddChild(new PLSelectCommandState());
