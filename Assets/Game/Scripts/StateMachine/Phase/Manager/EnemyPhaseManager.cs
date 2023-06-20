@@ -36,14 +36,14 @@ public class EnemyPhaseManager : PhaseManagerBase
         return base.Update();
     }
 
-    override protected void CreateStateTree()
+    override protected void CreateTree()
     {
         // 遷移木の作成
         // TODO : 別のファイル(XMLなど)から読み込んで作成出来ると便利
 
-        m_RootState = new EMMoveState();
+        RootNode = new EMMoveState();
 
-        m_CurrentState = m_RootState;
+        CurrentNode = RootNode;
     }
 
     /// <summary>

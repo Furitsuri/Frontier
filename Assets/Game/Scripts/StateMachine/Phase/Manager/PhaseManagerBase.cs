@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class PhaseManagerBase
+public class PhaseManagerBase : Tree<PhaseStateBase>
 {
-    protected PhaseStateBase m_RootState;
-    protected PhaseStateBase m_CurrentState;
     protected bool _isFirstUpdate = false;
 
     virtual public void Init()
     {
         // 遷移木の作成
-        CreateStateTree();
+        CreateTree();
 
-        m_CurrentState.Init();
+        CurrentNode.Init();
 
         _isFirstUpdate = true;
     }
@@ -22,9 +20,9 @@ public class PhaseManagerBase
     virtual public bool Update()
     {
         // 現在実行中のステートを更新
-        if( m_CurrentState.Update() )
+        if( CurrentNode.Update() )
         {
-            if( m_CurrentState.IsBack() && m_CurrentState.m_Parent == null )
+            if( CurrentNode.IsBack() && CurrentNode.Parent == null )
             {
                 return true;
             }
@@ -36,24 +34,19 @@ public class PhaseManagerBase
     virtual public void LateUpdate()
     {
         // ステートの遷移を監視
-        int transitIndex = m_CurrentState.TransitIndex;
+        int transitIndex = CurrentNode.TransitIndex;
         if ( 0 <= transitIndex )
         {
-            m_CurrentState.Exit();
-            m_CurrentState = m_CurrentState.m_ChildStates[transitIndex];
-            m_CurrentState.Init();
+            CurrentNode.Exit();
+            CurrentNode = CurrentNode.Children[transitIndex];
+            CurrentNode.Init();
         }
-        else if( m_CurrentState.IsBack() )
+        else if( CurrentNode.IsBack() )
         {
-            m_CurrentState.Exit();
-            m_CurrentState = m_CurrentState.m_Parent;
-            m_CurrentState.Init();
+            CurrentNode.Exit();
+            CurrentNode = CurrentNode.Parent;
+            CurrentNode.Init();
         }
-    }
-
-    // 遷移の木構造を作成
-    virtual protected void CreateStateTree()
-    {
     }
 
     /// <summary>

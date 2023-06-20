@@ -4,22 +4,22 @@ using UnityEngine;
 
 public class TreeNode<T> where T : TreeNode<T>
 {
-    private TreeNode<T> Parent { get; set; }
-    private List<TreeNode<T>> Children { get; set; }
+    public T Parent { get; private set; }
+    public List<T> Children { get; private set; }
 
     public TreeNode()
     {
         Parent = null;
-        Children = new List<TreeNode<T>>();
+        Children = new List<T>();
     }
 
     /// <summary>
     /// q‚ğİ’è‚µ‚Ü‚·
     /// </summary>
     /// <param name="child">İ’è‚·‚éq</param>
-    public void AddChild(TreeNode<T> child)
+    public void AddChild(T child)
     {
         Children.Add(child);
-        child.Parent = this;
+        child.Parent = this as T;
     }
 }
