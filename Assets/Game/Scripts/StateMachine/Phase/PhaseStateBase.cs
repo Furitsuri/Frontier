@@ -1,9 +1,7 @@
 using UnityEngine;
 
-public class PhaseStateBase
+public class PhaseStateBase : TreeNode<PhaseStateBase>
 {
-    public PhaseStateBase m_Parent;
-    public PhaseStateBase[] m_ChildStates;
     private bool m_isBack = false;
     public int TransitIndex { get; protected set; } = -1;
 

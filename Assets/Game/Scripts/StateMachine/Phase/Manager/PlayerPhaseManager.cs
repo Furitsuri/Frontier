@@ -35,28 +35,19 @@ public class PlayerPhaseManager : PhaseManagerBase
         return base.Update();
     }
 
-    override protected void CreateStateTree()
+    override protected void CreateTree()
     {
         // 遷移木の作成
         // TODO : 別のファイル(XMLなど)から読み込んで作成出来ると便利
 
-        m_RootState = new PLSelectGrid();
-        
-        m_RootState.m_ChildStates = new PhaseStateBase[2];
-        m_RootState.m_ChildStates[0] = new PLSelectCommandState();
-        m_RootState.m_ChildStates[1] = new PLConfirmTurnEnd();
+        RootNode = new PLSelectGrid();
+        RootNode.AddChild(new PLSelectCommandState());
+        RootNode.AddChild(new PLConfirmTurnEnd());
+        RootNode.Children[0].AddChild(new PLMoveState());
+        RootNode.Children[0].AddChild(new PLAttackState());
+        RootNode.Children[0].AddChild(new PLWaitState());
 
-        m_RootState.m_ChildStates[0].m_Parent           = m_RootState;
-        m_RootState.m_ChildStates[1].m_Parent           = m_RootState;
-        m_RootState.m_ChildStates[0].m_ChildStates      = new PhaseStateBase[3];
-        m_RootState.m_ChildStates[0].m_ChildStates[0]   = new PLMoveState();
-        m_RootState.m_ChildStates[0].m_ChildStates[1]   = new PLAttackState();
-        m_RootState.m_ChildStates[0].m_ChildStates[2]   = new PLWaitState();
-        m_RootState.m_ChildStates[0].m_ChildStates[0].m_Parent = m_RootState.m_ChildStates[0];
-        m_RootState.m_ChildStates[0].m_ChildStates[1].m_Parent = m_RootState.m_ChildStates[0];
-        m_RootState.m_ChildStates[0].m_ChildStates[2].m_Parent = m_RootState.m_ChildStates[0];
-
-        m_CurrentState = m_RootState;
+        CurrentNode = RootNode;
     }
 
     /// <summary>
