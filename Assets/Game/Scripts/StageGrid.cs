@@ -9,6 +9,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.TextCore.Text;
+using static Character;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class StageGrid : Singleton<StageGrid>
@@ -21,16 +22,19 @@ public class StageGrid : Singleton<StageGrid>
         public bool isMoveable;
         // 攻撃の可否
         public bool isAttackable;
-        // グリッド上に存在するキャラのインデックス
+        // グリッド上に存在するキャラクターのタイプ
+        public Character.CHARACTER_TAG characterTag;
+        // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // 初期化
         // TODO : C# 10.0 からは引数なしコンストラクタで定義可能(2023.5時点の最新Unityバージョンでは使用できない)
         public void Init()
         {
-            charaStandPos = Vector3.zero;
-            isMoveable = false;
-            isAttackable = false;
-            charaIndex = -1;
+            charaStandPos   = Vector3.zero;
+            isMoveable      = false;
+            isAttackable    = false;
+            characterTag    = CHARACTER_TAG.CHARACTER_NONE;
+            charaIndex      = -1;
         }
     }
 
@@ -203,17 +207,21 @@ public class StageGrid : Singleton<StageGrid>
         var btlMgr = BattleManager.Instance;
 
         ClearGridsCharaIndex();
-        foreach( Player player in btlMgr.GetPlayers() )
+        foreach( Player player in btlMgr.GetPlayerEnumerable() )
         {
-            var gridIndex = player.tmpParam.gridIndex;
-            _gridInfo[gridIndex].charaIndex = player.param.characterIndex;
-            _gridInfo[gridIndex].isMoveable = false;
+            var gridIndex       = player.tmpParam.gridIndex;
+            ref var info        = ref _gridInfo[gridIndex];
+            info.characterTag   = CHARACTER_TAG.CHARACTER_PLAYER;
+            info.charaIndex     = player.param.characterIndex;
+            info.isMoveable     = false;
         }
-        foreach (Enemy enemy in btlMgr.GetEnemies())
+        foreach (Enemy enemy in btlMgr.GetEnemyEnumerable())
         {
-            var gridIndex = enemy.tmpParam.gridIndex;
-            _gridInfo[gridIndex].charaIndex = enemy.param.characterIndex;
-            _gridInfo[gridIndex].isMoveable = false;
+            var gridIndex       = enemy.tmpParam.gridIndex;
+            ref var info        = ref _gridInfo[gridIndex];
+            info.characterTag   = CHARACTER_TAG.CHARACTER_ENEMY;
+            info.charaIndex     = enemy.param.characterIndex;
+            info.isMoveable     = false;
         }
     }
 
@@ -424,6 +432,7 @@ public class StageGrid : Singleton<StageGrid>
         for (int i = 0; i < _gridTotalNum; ++i)
         {
             _gridInfo[i].charaIndex = -1;
+            _gridInfo[i].characterTag = CHARACTER_TAG.CHARACTER_NONE;
         }
     }
 
@@ -493,19 +502,18 @@ public class StageGrid : Singleton<StageGrid>
         Dijkstra dijkstra = new Dijkstra(pathIndexs.Count);
 
         // 出発グリッドからのインデックスの差を取得
-        for ( int i = 0; i < pathIndexs.Count; ++i )
+        for ( int i = 0; i + 1 < pathIndexs.Count; ++i )
         {
-            for( int j = 0; j < pathIndexs.Count; ++j )
+            for( int j = i + 1; j < pathIndexs.Count; ++j )
             {
-                if (i == j) continue;
-
                 int diff = pathIndexs[j] - pathIndexs[i];
                 if ( (diff == -1 && (pathIndexs[i] % _gridNumX != 0) ) ||           // 左に存在(左端を除く)
-                     (diff == 1 && (pathIndexs[i] % _gridNumX != _gridNumX - 1)) || // 右に存在(右端を除く)
+                     (diff == 1 && (pathIndexs[i] % _gridNumX != _gridNumX - 1)) ||  // 右に存在(右端を除く)
                       Math.Abs(diff) == _gridNumX)                                  // 上または下に存在
                 {
                     // 移動可能な隣接グリッド情報をダイクストラに入れる
                     dijkstra.Add(i, j);
+                    dijkstra.Add(j, i);
                 }
             }
         }
@@ -536,7 +544,7 @@ public class StageGrid : Singleton<StageGrid>
             if (info.isAttackable)
             {
                 character = btlInstance.SearchCharacterFromCharaIndex(info.charaIndex);
-                if (character != null && character.param.charaTag == targetTag )
+                if (character != null && character.param.characterTag == targetTag )
                 {
                     _attackableGridIndexs.Add(i);
                 }

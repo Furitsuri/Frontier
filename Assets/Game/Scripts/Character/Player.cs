@@ -8,10 +8,10 @@ public class Player : Character
     void Start()
     {
         // TODO : 試運転用にパラメータをセット。後ほど削除
+        this.param.characterTag = CHARACTER_TAG.CHARACTER_PLAYER;
         this.param.characterIndex = 0;
         this.param.moveRange = 3;
         this.param.initGridIndex = 0;
-        this.param.charaTag = CHARACTER_TAG.CHARACTER_PLAYER;
         this.param.UICameraLengthY = 1.2f;
         this.param.UICameraLengthZ = 1.5f;
         this.param.UICameraLookAtCorrectY = 1.0f;
