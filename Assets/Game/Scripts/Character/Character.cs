@@ -46,6 +46,8 @@ public class Character : MonoBehaviour
     // キャラクターの持つパラメータ
     public struct Parameter
     {
+        // キャラクタータイプ
+        public CHARACTER_TAG characterTag;
         // キャラクター番号
         public int characterIndex;
         // ステージ開始時グリッド座標(インデックス)
@@ -66,8 +68,6 @@ public class Character : MonoBehaviour
         public int attackRangeMin;
         // 攻撃レンジ(最大)
         public int attackRangeMax;
-        // キャラクタータイプ
-        public CHARACTER_TAG charaTag;
         // UI表示用カメラ長さ(Y方向)
         public float UICameraLengthY;
         // UI表示用カメラ長さ(Z方向)
@@ -77,6 +77,7 @@ public class Character : MonoBehaviour
 
         public Parameter( int charaIndex = 0, int gridIndex = 0, int range = 0, Constants.Direction dir = Constants.Direction.FORWARD )
         {
+            characterTag    = CHARACTER_TAG.CHARACTER_NONE;
             characterIndex  = charaIndex;
             initGridIndex   = gridIndex;
             moveRange       = range;
@@ -86,7 +87,6 @@ public class Character : MonoBehaviour
             Atk             = 8;
             Def             = 5;
             initDir         = dir;
-            charaTag        = CHARACTER_TAG.CHARACTER_NONE;
             UICameraLengthY = 1.2f;
             UICameraLengthZ = 1.5f;
             UICameraLookAtCorrectY = 1.0f;

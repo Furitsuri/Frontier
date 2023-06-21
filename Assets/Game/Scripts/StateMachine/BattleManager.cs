@@ -33,11 +33,12 @@ public class BattleManager : Singleton<BattleManager>
     private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
     private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
     private List<Enemy> _enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
+    private CharacterHashtable characterHash = new CharacterHashtable();
     private Character _prevCharacter = null;
     private bool _transitNextPhase = false;
     private int _phaseManagerIndex = 0;
     // 現在選択中のキャラクターインデックス
-    public int SelectCharacterIndex { get; private set; } = -1;
+    public (CHARACTER_TAG tag, int charaIndex) SelectCharacterTupleInfo { get; private set; } = (CHARACTER_TAG.CHARACTER_NONE, -1);
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
     public Character AttackerCharacter { get; private set; } = null;
 
@@ -101,8 +102,13 @@ public class BattleManager : Singleton<BattleManager>
             return;
         }
 
+        var stageGrid = StageGrid.Instance;
+
+        // ステージグリッド上のキャラ情報を更新
+        stageGrid.UpdateGridInfo();
         // 現在のグリッド上に存在するキャラクター情報を更新
-        SelectCharacterIndex = StageGrid.Instance.GetCurrentGridInfo().charaIndex;
+        var gridInfo = stageGrid.GetCurrentGridInfo();
+        SelectCharacterTupleInfo = ( gridInfo.characterTag, gridInfo.charaIndex );
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
         // フェーズマネージャを更新
@@ -111,9 +117,6 @@ public class BattleManager : Singleton<BattleManager>
 
     override protected void OnLateUpdate()
     {
-        // ステージグリッド上のキャラ情報を更新
-        StageGrid.Instance.UpdateGridInfo();
-
         if (!_transitNextPhase)
         {
             _currentPhaseManager.LateUpdate();
@@ -146,7 +149,7 @@ public class BattleManager : Singleton<BattleManager>
         if (AttackerCharacter != null)
         {
             // パラメータ表示を更新
-            var character = SearchCharacterFromCharaIndex(SelectCharacterIndex);
+            var character = GetCharacterFromHashtable(SelectCharacterTupleInfo);
             BattleUI.ToggleEnemyParameter(true);
 
             // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
@@ -160,9 +163,9 @@ public class BattleManager : Singleton<BattleManager>
         else
         {
             // パラメータ表示を更新
-            var character = SearchCharacterFromCharaIndex(SelectCharacterIndex);
-            BattleUI.TogglePlayerParameter(character != null && character.param.charaTag == Character.CHARACTER_TAG.CHARACTER_PLAYER);
-            BattleUI.ToggleEnemyParameter(character != null && character.param.charaTag == Character.CHARACTER_TAG.CHARACTER_ENEMY);
+            Character character = GetCharacterFromHashtable(SelectCharacterTupleInfo);
+            BattleUI.TogglePlayerParameter(character != null && character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER);
+            BattleUI.ToggleEnemyParameter(character != null && character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_ENEMY);
 
             // 前フレームで選択したキャラと異なる場合はレイヤーを元に戻す
             if (_prevCharacter != null && _prevCharacter != character)
@@ -209,18 +212,34 @@ public class BattleManager : Singleton<BattleManager>
         }
     }
 
-    // プレイヤーをリストに登録
+    /// <summary>
+    /// プレイヤーをリストとハッシュに登録します
+    /// </summary>
+    /// <param name="player">登録するプレイヤー</param>
     public void AddPlayerToList( Player player )
     {
+        var param = player.param;
+
         _players.Add( player );
+        characterHash.Add((param.characterTag, param.characterIndex), player);
     }
 
-    // エネミーをリストに登録
+    /// <summary>
+    /// 敵をリストとハッシュに登録します
+    /// </summary>
+    /// <param name="enemy">登録する敵</param>
     public void AddEnemyToList( Enemy enemy )
     {
+        var param = enemy.param;
+
         _enemies.Add( enemy );
+        characterHash.Add((param.characterTag, param.characterIndex), enemy);
     }
 
+    /// <summary>
+    /// ステージグリッドスクリプトを登録します
+    /// </summary>
+    /// <param name="script">登録するスクリプト</param>
     public void registStageGrid( StageGrid script )
     {
         _stageGrid = script;
@@ -248,8 +267,10 @@ public class BattleManager : Singleton<BattleManager>
             return;
         }
 
-        // 選択しているキャラインデックスを攻撃対象キャラから元に戻す
-        SelectCharacterIndex = AttackerCharacter.param.characterIndex;
+        var param = AttackerCharacter.param;
+
+        // 選択しているタグ、及びインデックスを攻撃対象キャラから元に戻す
+        SelectCharacterTupleInfo = (param.characterTag, param.characterIndex);
 
         AttackerCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Character"));
         AttackerCharacter = null;
@@ -267,21 +288,28 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     /// <summary>
-    /// キャラクターインデックスを素に該当するプレイヤーを探します
+    /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
     /// </summary>
-    /// <param name="characterIndex">検索するプレイヤーキャラクターのインデックス</param>
-    /// <returns>該当したプレイヤーキャラクター</returns>
-    public Player SearchPlayerFromCharaIndex( int characterIndex )
+    /// <param name="tag">キャラクタータグ</param>
+    /// <param name="index">キャラクターインデックス</param>
+    /// <returns>指定のキーに対応するキャラクター</returns>
+    public Character GetCharacterFromHashtable( CHARACTER_TAG tag, int index )
     {
-        foreach (Player player in _players)
-        {
-            if (player.param.characterIndex == characterIndex)
-            {
-                return player;
-            }
-        }
+        if (tag == CHARACTER_TAG.CHARACTER_NONE || index < 0) return null;
 
-        return null;
+        return characterHash.Get((tag, index)) as Character;
+    }
+
+    /// <summary>
+    /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
+    /// </summary>
+    /// <param name="tuple">指定するタグとインデックスを持たせたタプル</param>
+    /// <returns>指定のキーに対応するキャラクター</returns>
+    public Character GetCharacterFromHashtable( (CHARACTER_TAG tag, int index) tuple )
+    {
+        if (tuple.tag == CHARACTER_TAG.CHARACTER_NONE || tuple.index < 0) return null;
+
+        return characterHash.Get( tuple ) as Character;
     }
 
     /// <summary>
@@ -339,7 +367,7 @@ public class BattleManager : Singleton<BattleManager>
     /// プレイヤーをリストから順番に取得します
     /// </summary>
     /// <returns>プレイヤーキャラクター</returns>
-    public IEnumerable<Player> GetPlayers()
+    public IEnumerable<Player> GetPlayerEnumerable()
     {
         foreach (Player player in _players)
         {
@@ -353,7 +381,7 @@ public class BattleManager : Singleton<BattleManager>
     /// 敵をリストから順番に取得します
     /// </summary>
     /// <returns>敵キャラクター</returns>
-    public IEnumerable<Enemy> GetEnemies()
+    public IEnumerable<Enemy> GetEnemyEnumerable()
     {
         foreach( Enemy enemy in _enemies)
         {

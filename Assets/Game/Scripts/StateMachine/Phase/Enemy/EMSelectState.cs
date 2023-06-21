@@ -12,7 +12,7 @@ public class EMSelectState : PhaseStateBase
 
     public override bool Update()
     {
-        foreach( Enemy enemy in BattleManager.Instance.GetEnemies() )
+        foreach( Enemy enemy in BattleManager.Instance.GetEnemyEnumerable() )
         {
             if( enemy == null )
             {

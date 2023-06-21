@@ -28,6 +28,7 @@ public class Enemy : Character
     void Start()
     {
         // TODO : 試運転用にパラメータをセット。後ほど削除
+        this.param.characterTag = CHARACTER_TAG.CHARACTER_ENEMY;
         this.param.characterIndex = 5;
         this.param.moveRange = 2;
         this.param.initGridIndex = this.tmpParam.gridIndex = 13;
@@ -35,7 +36,6 @@ public class Enemy : Character
         this.param.Atk = 3;
         this.param.Def = 2;
         this.param.initDir = Constants.Direction.BACK;
-        this.param.charaTag = CHARACTER_TAG.CHARACTER_ENEMY;
         this.param.UICameraLengthY = 0.8f;
         this.param.UICameraLengthZ = 1.4f;
         this.param.UICameraLookAtCorrectY = 0.45f;

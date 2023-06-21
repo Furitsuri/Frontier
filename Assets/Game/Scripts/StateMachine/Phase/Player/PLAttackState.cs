@@ -29,7 +29,7 @@ public class PLAttackState : PhaseStateBase
         _curentGridIndex = stgInstance.currentGrid.GetIndex();
 
         // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-        _attackCharacter = btlInstance.SearchPlayerFromCharaIndex(btlInstance.SelectCharacterIndex);
+        _attackCharacter = btlInstance.GetCharacterFromHashtable(btlInstance.SelectCharacterTupleInfo);
         if (_attackCharacter == null)
         {
             Debug.Assert(false, "SelectPlayer Irregular.");
@@ -80,7 +80,7 @@ public class PLAttackState : PhaseStateBase
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
                     // 選択したキャラクターが敵である場合は攻撃開始
-                    if( _targetCharacter != null && _targetCharacter.param.charaTag == Character.CHARACTER_TAG.CHARACTER_ENEMY )
+                    if( _targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.CHARACTER_ENEMY )
                     {
                         // 攻撃シーケンスを初期化
                         _attackSequence.Init(_attackCharacter, _targetCharacter);

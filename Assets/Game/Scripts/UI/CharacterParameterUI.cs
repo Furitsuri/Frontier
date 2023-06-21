@@ -48,7 +48,7 @@ public class CharacterParameterUI : MonoBehaviour
         // それ以外の状態ではグリッド選択中のキャラクターを取得
         else
         {
-            selectCharacter = btlInstance.SearchCharacterFromCharaIndex(btlInstance.SelectCharacterIndex);
+            selectCharacter = btlInstance.GetCharacterFromHashtable(btlInstance.SelectCharacterTupleInfo);
             _Camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRender");
         }
 
