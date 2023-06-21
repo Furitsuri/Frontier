@@ -17,7 +17,7 @@ public class Dijkstra
     {
         N = n;
         _graph = new List<Edge>[n];
-        for (int i = 0; i < n; i++) _graph[i] = new List<Edge>(4);
+        for (int i = 0; i < n; i++) _graph[i] = new List<Edge>(Constants.NEIGHBORING_GRID_MAX_NUM);
     }
 
     /// <summary>
@@ -29,14 +29,14 @@ public class Dijkstra
     public void Add(int a, int b, int cost = 1)
             => _graph[a].Add(new Edge(a, b, cost));
 
-    public List<int> GetMinRoute( int startIndex, int goalIndex )
+    public List<int> GetMinRoute( int startIndex, int goalIndex, ref List<int> pathList)
     {
         var List = new List<int>(64);
 
         // コストをスタート頂点以外を無限大に
-        var cost = new (int, int)[N];   // item1 : 移動コスト item2 : item1におけるfromノードインデックス
-        for (int i = 0; i < N; i++) cost[i] = (int.MaxValue, -1);
-        cost[startIndex].Item1 = 0;
+        var costInfo = new (int cost, int fromIndex)[N];   // item1 : 移動コスト item2 : item1におけるfromノードインデックス
+        for (int i = 0; i < N; i++) costInfo[i] = (int.MaxValue, -1);
+        costInfo[startIndex].cost = 0;
 
         // 未確定の頂点を格納するキュー
         var q = new Queue<Vertex>(256);
@@ -47,23 +47,23 @@ public class Dijkstra
             var v = q.Dequeue();
 
             // 記録されているコストと異なる(コストがより大きい)場合は無視
-            if (v.cost > cost[v.index].Item1) continue;
+            if (v.cost > costInfo[v.index].cost) continue;
 
             // 今回確定した頂点からつながる頂点に対して更新を行う
             foreach (var e in _graph[v.index])
             {
-                if (cost[e.to].Item1 > v.cost + e.cost)
+                if (costInfo[e.to].cost > v.cost + e.cost)
                 {
                     // 既に記録されているコストより小さければコストを更新
-                    cost[e.to] = (v.cost + e.cost, e.from);
-                    q.Enqueue(new Vertex(e.to, cost[e.to].Item1));
+                    costInfo[e.to] = (v.cost + e.cost, e.from);
+                    q.Enqueue(new Vertex(e.to, costInfo[e.to].cost));
                 }
             }
         }
 
-        for( int i = goalIndex; i != startIndex; i = cost[i].Item2 )
+        for( int i = goalIndex; i != startIndex; i = costInfo[i].fromIndex )
         {
-            List.Add(i);
+            List.Add( pathList[i] );
         }
         List.Reverse();
 
