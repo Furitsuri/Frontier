@@ -47,10 +47,12 @@ public class PLMoveState : PhaseStateBase
 
     public override bool Update()
     {
+        var stageGrid = StageGrid.Instance;
+
         if( base.Update() )
         {
             // キャラクターのグリッドの位置に選択グリッドの位置を戻す
-            StageGrid.Instance.FollowFootprint(_selectPlayer);
+            stageGrid.FollowFootprint(_selectPlayer);
 
             return true;
         }
@@ -59,27 +61,27 @@ public class PLMoveState : PhaseStateBase
         {
             case PLMovePhase.PL_MOVE_SELECT_GRID:
                 // グリッドの操作
-                StageGrid.Instance.OperateCurrentGrid();
+                stageGrid.OperateCurrentGrid();
 
                 // 選択したグリッドが移動可能であれば選択グリッドへ遷移
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
-                    var info = StageGrid.Instance.GetCurrentGridInfo();
+                    var info = stageGrid.GetCurrentGridInfo();
                     if (info.isMoveable)
                     {
                         // 移動実行処理へ遷移
-                        int destIndex = StageGrid.Instance.currentGrid.GetIndex();
+                        int destIndex = stageGrid.currentGrid.GetIndex();
                         _Phase = PLMovePhase.PL_MOVE_EXECUTE;
 
                         // 移動グリッドを求める
-                        _movePathList = StageGrid.Instance.ExtractDepart2DestGoalGridIndexs( _departGridIndex, destIndex );
+                        _movePathList = stageGrid.ExtractDepart2DestGoalGridIndexs( _departGridIndex, destIndex );
 
                         // Playerを_movePathListの順に移動させる
                         _moveGridPos = new List<Vector3>(_movePathList.Count);
                         for (int i = 0; i < _movePathList.Count; ++i)
                         {
                             // パスのインデックスからグリッド座標を得る
-                            _moveGridPos.Add(StageGrid.Instance.GetGridInfo(_movePathList[i]).charaStandPos);
+                            _moveGridPos.Add(stageGrid.GetGridInfo(_movePathList[i]).charaStandPos);
                         }
                         // 処理軽減のためtranformをキャッシュ
                         _PLTransform = _selectPlayer.transform;

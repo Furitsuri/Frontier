@@ -493,13 +493,15 @@ public class StageGrid : Singleton<StageGrid>
         Dijkstra dijkstra = new Dijkstra(pathIndexs.Count);
 
         // 出発グリッドからのインデックスの差を取得
-        for ( int i = 0; i + 1 < pathIndexs.Count; ++i )
+        for ( int i = 0; i < pathIndexs.Count; ++i )
         {
-            for( int j = i + 1; j < pathIndexs.Count; ++j )
+            for( int j = 0; j < pathIndexs.Count; ++j )
             {
+                if (i == j) continue;
+
                 int diff = pathIndexs[j] - pathIndexs[i];
                 if ( (diff == -1 && (pathIndexs[i] % _gridNumX != 0) ) ||           // 左に存在(左端を除く)
-                     (diff == 1 && (pathIndexs[i] % _gridNumX != _gridNumX - 1)) ||  // 右に存在(右端を除く)
+                     (diff == 1 && (pathIndexs[i] % _gridNumX != _gridNumX - 1)) || // 右に存在(右端を除く)
                       Math.Abs(diff) == _gridNumX)                                  // 上または下に存在
                 {
                     // 移動可能な隣接グリッド情報をダイクストラに入れる
@@ -509,11 +511,7 @@ public class StageGrid : Singleton<StageGrid>
         }
 
         // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
-        List<int> minRouteIndexs = dijkstra.GetMinRoute(pathIndexs.IndexOf(departGridIndex), pathIndexs.IndexOf(destGridIndex));
-        for( int i = 0; i < minRouteIndexs.Count; ++i )
-        {
-            minRouteIndexs[i] = pathIndexs[ minRouteIndexs[i] ];
-        }
+        List<int> minRouteIndexs = dijkstra.GetMinRoute(pathIndexs.IndexOf(departGridIndex), pathIndexs.IndexOf(destGridIndex), ref pathIndexs);
         
         return minRouteIndexs;
     }
