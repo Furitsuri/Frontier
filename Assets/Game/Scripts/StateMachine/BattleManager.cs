@@ -112,15 +112,7 @@ public class BattleManager : Singleton<BattleManager>
     override protected void OnLateUpdate()
     {
         // ステージグリッド上のキャラ情報を更新
-        StageGrid.Instance.ClearGridsCharaIndex();
-        foreach( Player player in _players )
-        {
-            _stageGrid.GetGridInfo(player.tmpParam.gridIndex).charaIndex = player.param.characterIndex;
-        }
-        foreach (Enemy enemy in _enemies)
-        {
-            _stageGrid.GetGridInfo(enemy.tmpParam.gridIndex).charaIndex = enemy.param.characterIndex;
-        }
+        StageGrid.Instance.UpdateGridInfo();
 
         if (!_transitNextPhase)
         {
@@ -341,6 +333,20 @@ public class BattleManager : Singleton<BattleManager>
     public Character GetSelectCharacter()
     {
         return SearchCharacterFromCharaIndex(StageGrid.Instance.GetCurrentGridInfo().charaIndex);
+    }
+
+    /// <summary>
+    /// プレイヤーをリストから順番に取得します
+    /// </summary>
+    /// <returns>プレイヤーキャラクター</returns>
+    public IEnumerable<Player> GetPlayers()
+    {
+        foreach (Player player in _players)
+        {
+            yield return player;
+        }
+
+        yield break;
     }
 
     /// <summary>

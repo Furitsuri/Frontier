@@ -196,6 +196,28 @@ public class StageGrid : Singleton<StageGrid>
     }
 
     /// <summary>
+    /// グリッド情報を更新します
+    /// </summary>
+    public void UpdateGridInfo()
+    {
+        var btlMgr = BattleManager.Instance;
+
+        ClearGridsCharaIndex();
+        foreach( Player player in btlMgr.GetPlayers() )
+        {
+            var gridIndex = player.tmpParam.gridIndex;
+            _gridInfo[gridIndex].charaIndex = player.param.characterIndex;
+            _gridInfo[gridIndex].isMoveable = false;
+        }
+        foreach (Enemy enemy in btlMgr.GetEnemies())
+        {
+            var gridIndex = enemy.tmpParam.gridIndex;
+            _gridInfo[gridIndex].charaIndex = enemy.param.characterIndex;
+            _gridInfo[gridIndex].isMoveable = false;
+        }
+    }
+
+    /// <summary>
     /// 移動可能なグリッドを登録します
     /// </summary>
     /// <param name="gridIndex">登録対象のグリッドインデックス</param>
