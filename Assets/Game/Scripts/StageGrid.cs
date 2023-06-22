@@ -65,8 +65,6 @@ public class StageGrid : Singleton<StageGrid>
     public Face face = Face.zx;
     public bool back = true;
     public bool isAdjustStageScale = false;
-
-    private int _gridTotalNum = 0;
     private float _widthX, _widthZ;
     private Mesh _mesh;
     private GridInfo[] _gridInfo;
@@ -74,6 +72,7 @@ public class StageGrid : Singleton<StageGrid>
     private List<GridMesh> _gridMeshs;
     private List<int> _attackableGridIndexs;
 
+    public int GridTotalNum { get; private set; } = 0;
     public CurrentGrid currentGrid { get; private set; } = CurrentGrid.GetInstance();
 
     override protected void Init()
@@ -181,10 +180,10 @@ public class StageGrid : Singleton<StageGrid>
     /// </summary>
     void InitGridInfo()
     {
-        _gridTotalNum    = _gridNumX * _gridNumZ;
-        _gridInfo        = new GridInfo[_gridTotalNum];
+        GridTotalNum    = _gridNumX * _gridNumZ;
+        _gridInfo        = new GridInfo[GridTotalNum];
 
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             // 初期化
             _gridInfo[i].Init();
@@ -235,7 +234,7 @@ public class StageGrid : Singleton<StageGrid>
         // 負の値になれば終了
         if (moveableRange < 0) return;
         // 範囲外のグリッドは考慮しない
-        if (gridIndex < 0 || _gridTotalNum <= gridIndex) return;
+        if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
 
         _gridInfo[gridIndex].isMoveable = true;
 
@@ -269,7 +268,7 @@ public class StageGrid : Singleton<StageGrid>
         // 負の値になれば終了
         if (atkRangeMax < 0) return;
         // 範囲外のグリッドは考慮しない
-        if (gridIndex < 0 || _gridTotalNum <= gridIndex) return;
+        if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
         // 攻撃最小レンジの値が1未満の状態のグリッドのみ攻撃可能
         if( atkRangeMin < 1 )
         {
@@ -332,14 +331,14 @@ public class StageGrid : Singleton<StageGrid>
     /// <param name="attackableRange">攻撃可能範囲値</param>
     public void DrawMoveableGrids(int departIndex, int moveableRange, int attackableRange)
     {
-        if (departIndex < 0 || _gridTotalNum <= departIndex)
+        if (departIndex < 0 || GridTotalNum <= departIndex)
         {
             Debug.Assert(false, "StageGrid : Irregular Index.");
             departIndex = 0;
         }
 
         // 全てのグリッドの移動可否情報を初期化
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             _gridInfo[i].isMoveable = false;
         }
@@ -352,12 +351,12 @@ public class StageGrid : Singleton<StageGrid>
 
         int count = 0;
         // グリッドの状態をメッシュで描画
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             if (_gridInfo[i].isMoveable)
             {
                 Instantiate(m_GridMeshObject);  // 仮
-                _gridMeshs[count++].DrawGridMesh(ref _gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.MOVE);
+                _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.MOVE);
 
                 Debug.Log("Moveable Grid Index : " + i);
             }
@@ -365,7 +364,7 @@ public class StageGrid : Singleton<StageGrid>
             if (!_gridInfo[i].isMoveable && _gridInfo[i].isAttackable)
             {
                 Instantiate(m_GridMeshObject);  // 仮
-                _gridMeshs[count++].DrawGridMesh(ref _gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
+                _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
 
                 Debug.Log("Attackable Grid Index : " + i);
             }
@@ -380,14 +379,14 @@ public class StageGrid : Singleton<StageGrid>
     /// <param name="attackableRangeMax">攻撃可能範囲の最大値</param>
     public void DrawAttackableGrids(int departIndex, int attackableRangeMin, int attackableRangeMax)
     {
-        if (departIndex < 0 || _gridTotalNum <= departIndex)
+        if (departIndex < 0 || GridTotalNum <= departIndex)
         {
             Debug.Assert(false, "StageGrid : Irregular Index.");
             departIndex = 0;
         }
 
         // 全てのグリッドの攻撃可否情報を初期化
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             _gridInfo[i].isAttackable = false;
         }
@@ -397,12 +396,12 @@ public class StageGrid : Singleton<StageGrid>
 
         int count = 0;
         // グリッドの状態をメッシュで描画
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             if (_gridInfo[i].isAttackable)
             {
                 Instantiate(m_GridMeshObject);  // TODO : 仮
-                _gridMeshs[count++].DrawGridMesh(ref _gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
+                _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
 
                 Debug.Log("Attackable Grid Index : " + i);
             }
@@ -415,7 +414,7 @@ public class StageGrid : Singleton<StageGrid>
     public void ClearGridsCondition()
     {
         // 全てのグリッドの移動・攻撃可否情報を初期化
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             _gridInfo[i].isMoveable     = false;
             _gridInfo[i].isAttackable   = false;
@@ -429,7 +428,7 @@ public class StageGrid : Singleton<StageGrid>
 
     public void ClearGridsCharaIndex()
     {
-        for (int i = 0; i < _gridTotalNum; ++i)
+        for (int i = 0; i < GridTotalNum; ++i)
         {
             _gridInfo[i].charaIndex = -1;
             _gridInfo[i].characterTag = CHARACTER_TAG.CHARACTER_NONE;
@@ -441,17 +440,17 @@ public class StageGrid : Singleton<StageGrid>
         _gridMeshs.Add( script );
     }
 
-    public ref Vector3 getGridCharaStandPos( int index )
+    public Vector3 getGridCharaStandPos( int index )
     {
-        return ref _gridInfo[index].charaStandPos;
+        return _gridInfo[index].charaStandPos;
     }
 
     /// <summary>
     /// 現在選択しているグリッドの情報を取得します
     /// 攻撃対象選択状態では選択している攻撃対象が存在するグリッド情報を取得します
     /// </summary>
-    /// <returns>該当するグリッドの情報</returns>
-    public ref GridInfo GetCurrentGridInfo()
+    /// <param name="gridInfo">該当するグリッドの情報</param>
+    public void FetchCurrentGridInfo( out GridInfo gridInfo )
     {
         int index = 0;
 
@@ -464,7 +463,7 @@ public class StageGrid : Singleton<StageGrid>
             index = currentGrid.GetIndex();
         }
 
-        return ref _gridInfo[ index ];
+        gridInfo = _gridInfo[ index ];
     }
 
 
@@ -578,7 +577,9 @@ public class StageGrid : Singleton<StageGrid>
     {
         currentGrid.SetIndex(_footprint.gridIndex);
         character.tmpParam.gridIndex = _footprint.gridIndex;
-        character.transform.position = GetCurrentGridInfo().charaStandPos;
+        GridInfo info;
+        FetchCurrentGridInfo(out info);
+        character.transform.position = info.charaStandPos;
         character.transform.rotation = _footprint.rotation;
     }
 

@@ -14,13 +14,7 @@ public class EMSelectState : PhaseStateBase
     {
         foreach( Enemy enemy in BattleManager.Instance.GetEnemyEnumerable() )
         {
-            if( enemy == null )
-            {
-                Back();
-                return true;
-            }
-
-
+            enemy.DetermineTargetIndexWithAI();
         }
 
         // ‘S‚Ä‚Ì“G‚Ìs“®‚ªI‚í‚Á‚½‚½‚ß–ß‚é

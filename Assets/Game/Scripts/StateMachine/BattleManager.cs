@@ -70,11 +70,11 @@ public class BattleManager : Singleton<BattleManager>
         {
             Player player = _players[i];
             // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-            int gridIndex                               = player.param.initGridIndex;
+            int gridIndex               = player.param.initGridIndex;
             // プレイヤーの画面上の位置を設定
-            player.transform.position                   = _stageGrid.getGridCharaStandPos(gridIndex);
+            player.transform.position   = _stageGrid.getGridCharaStandPos(gridIndex);
             // 向きを設定
-            player.transform.rotation = rot[(int)player.param.initDir];
+            player.transform.rotation   = rot[(int)player.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
             _stageGrid.GetGridInfo(gridIndex).charaIndex = player.param.characterIndex;
         }
@@ -107,8 +107,9 @@ public class BattleManager : Singleton<BattleManager>
         // ステージグリッド上のキャラ情報を更新
         stageGrid.UpdateGridInfo();
         // 現在のグリッド上に存在するキャラクター情報を更新
-        var gridInfo = stageGrid.GetCurrentGridInfo();
-        SelectCharacterTupleInfo = ( gridInfo.characterTag, gridInfo.charaIndex );
+        StageGrid.GridInfo info;
+        stageGrid.FetchCurrentGridInfo(out info);
+        SelectCharacterTupleInfo = ( info.characterTag, info.charaIndex );
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
         // フェーズマネージャを更新
@@ -360,7 +361,10 @@ public class BattleManager : Singleton<BattleManager>
     /// <returns>選択しているグリッド上のキャラクター</returns>
     public Character GetSelectCharacter()
     {
-        return SearchCharacterFromCharaIndex(StageGrid.Instance.GetCurrentGridInfo().charaIndex);
+        StageGrid.GridInfo info;
+        StageGrid.Instance.FetchCurrentGridInfo(out info);
+
+        return SearchCharacterFromCharaIndex(info.charaIndex);
     }
 
     /// <summary>

@@ -26,7 +26,7 @@ public class GridMesh : MonoBehaviour
     }
 
     // グリッドのメッシュを描画
-    public void DrawGridMesh(ref Vector3 position, float gridSize, MeshType meshType)
+    public void DrawGridMesh(in Vector3 position, float gridSize, MeshType meshType)
     {
         var mesh       = new Mesh();
         float halfSize = 0.5f * gridSize;

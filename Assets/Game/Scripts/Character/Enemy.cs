@@ -23,6 +23,7 @@ public class Enemy : Character
     }
 
     public ThinkingType ThinkType { get; private set; }
+    private EMAIBase emAI;
 
     // Start is called before the first frame update
     void Start()
@@ -40,6 +41,19 @@ public class Enemy : Character
         this.param.UICameraLengthZ = 1.4f;
         this.param.UICameraLookAtCorrectY = 0.45f;
         BattleManager.Instance.AddEnemyToList(this);
+
+        // 思考タイプによってemAIに代入する派生クラスを変更する
+        switch(ThinkType)
+        {
+            case ThinkingType.NEAR:
+                emAI = new EMAINearTarget();
+                break;
+            default:
+                emAI = new EMAIBase();
+                break;
+        }
+
+        emAI.Init(this);
     }
 
     override public void setAnimator(ANIME_TAG animTag)
@@ -50,5 +64,14 @@ public class Enemy : Character
     override public void setAnimator(ANIME_TAG animTag, bool b)
     {
         _animator.SetBool(_animNames[(int)animTag], b);
+    }
+
+    /// <summary>
+    /// 思考パターンを用いて目標とする対象と目標座標を決定します
+    /// </summary>
+    public void DetermineTargetIndexWithAI()
+    {
+        // 各グリッドに対する評価値を算出
+        emAI.CreateEvaluationValues( param, tmpParam );
     }
 }

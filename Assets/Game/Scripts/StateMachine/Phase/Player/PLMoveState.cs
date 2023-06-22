@@ -66,7 +66,9 @@ public class PLMoveState : PhaseStateBase
                 // 選択したグリッドが移動可能であれば選択グリッドへ遷移
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
-                    var info = stageGrid.GetCurrentGridInfo();
+                    StageGrid.GridInfo info;
+                    stageGrid.FetchCurrentGridInfo(out info);
+
                     if (info.isMoveable)
                     {
                         // 移動実行処理へ遷移

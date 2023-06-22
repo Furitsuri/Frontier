@@ -20,9 +20,15 @@ public class SelectGridUI : MonoBehaviour
         UpdateSelectGridCursor();
     }
 
+    /// <summary>
+    /// 選択しているカーソル位置を更新します
+    /// </summary>
     void UpdateSelectGridCursor()
     {
-        Vector3 centralPos = StageGrid.Instance.GetCurrentGridInfo().charaStandPos;
+        StageGrid.GridInfo info;
+        StageGrid.Instance.FetchCurrentGridInfo(out info);
+
+        Vector3 centralPos = info.charaStandPos;
 
         setSquareLine(_GridSize, ref centralPos);
     }
