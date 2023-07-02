@@ -25,18 +25,19 @@ public class PLAttackState : PhaseStateBase
 
         base.Init();
 
-        _phase         = PLAttackPhase.PL_ATTACK_SELECT_GRID;
-        _curentGridIndex = stgInstance.currentGrid.GetIndex();
+        _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+        _curentGridIndex    = stgInstance.GetCurrentGridIndex();
 
         // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-        _attackCharacter = btlInstance.GetCharacterFromHashtable(btlInstance.SelectCharacterTupleInfo);
+        _attackCharacter = btlInstance.GetCharacterFromHashtable(btlInstance.SelectCharacterInfo);
         if (_attackCharacter == null)
         {
             Debug.Assert(false, "SelectPlayer Irregular.");
             return;
         }
         var param = _attackCharacter.param;
-        stgInstance.DrawAttackableGrids(_curentGridIndex, param.attackRangeMin, param.attackRangeMax);
+        stgInstance.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
+        stgInstance.DrawAttackableGrids(_curentGridIndex);
 
         // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
         if( stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_ENEMY) )
@@ -82,6 +83,8 @@ public class PLAttackState : PhaseStateBase
                     // 選択したキャラクターが敵である場合は攻撃開始
                     if( _targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.CHARACTER_ENEMY )
                     {
+                        // 選択グリッドを一時非表示
+                        BattleUISystem.Instance.ToggleSelectGrid(false);
                         // 攻撃シーケンスを初期化
                         _attackSequence.Init(_attackCharacter, _targetCharacter);
                         // アタックカーソルUI非表示
@@ -89,7 +92,7 @@ public class PLAttackState : PhaseStateBase
                         // ダメージ予測表示UIを非表示
                         btlUIInstance.ToggleBattleExpect(false);
                         // グリッド状態の描画をクリア
-                        stgInstance.ClearGridsCondition();
+                        stgInstance.ClearGridMeshDraw();
 
                         _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
                     }
@@ -98,6 +101,13 @@ public class PLAttackState : PhaseStateBase
             case PLAttackPhase.PL_ATTACK_EXECUTE:
                 if ( _attackSequence.Update() )
                 {
+                    //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、両方判定)
+                    Character diedCharacter = _attackSequence.GetDiedCharacter();
+                    if (diedCharacter != null )
+                    {
+                        NoticeCharacterDied( diedCharacter.param.characterTag );
+                    }
+
                     _phase = PLAttackPhase.PL_ATTACK_END;
                 }
                 
@@ -128,7 +138,10 @@ public class PLAttackState : PhaseStateBase
         // ダメージ予測表示UIを非表示
         btlUIInstance.ToggleBattleExpect(false);
         // グリッド状態の描画をクリア
-        stgInstance.ClearGridsCondition();
+        stgInstance.UpdateGridInfo();
+        stgInstance.ClearGridMeshDraw();
+        // 選択グリッドを表示
+        BattleUISystem.Instance.ToggleSelectGrid(true);
 
         base.Exit();
     }

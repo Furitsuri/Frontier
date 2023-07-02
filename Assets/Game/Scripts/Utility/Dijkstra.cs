@@ -29,9 +29,9 @@ public class Dijkstra
     public void Add(int a, int b, int cost = 1)
             => _graph[a].Add(new Edge(a, b, cost));
 
-    public List<int> GetMinRoute( int startIndex, int goalIndex, ref List<int> pathList)
+    public List<(int routeIndex, int routeCost)> GetMinRoute( int startIndex, int goalIndex, in List<int> pathList)
     {
-        var List = new List<int>(64);
+        var List = new List<(int routeIndex, int routeCost)>(Constants.DIJKSTRA_ROUTE_INDEXS_MAX_NUM);
 
         // コストをスタート頂点以外を無限大に
         var costInfo = new (int cost, int fromIndex)[N];   // item1 : 移動コスト item2 : item1におけるfromノードインデックス
@@ -63,7 +63,7 @@ public class Dijkstra
 
         for( int i = goalIndex; i != startIndex; i = costInfo[i].fromIndex )
         {
-            List.Add( pathList[i] );
+            List.Add((pathList[i], costInfo[i].cost));
         }
         List.Reverse();
 

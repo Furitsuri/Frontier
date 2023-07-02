@@ -12,10 +12,12 @@ public class CharacterParameterUI : MonoBehaviour
     public TextMeshProUGUI TMPDefValue;
     public TextMeshProUGUI TMPDiffHPValue;
     public RawImage TargetImage;
-    public Character.CHARACTER_TAG tag;
 
+    float _camareAngleY;
+    Character _character;
     Camera _Camera;
     RenderTexture _TargetTexture;
+    bool _isAttacking = false;
 
     void Start()
     {
@@ -37,34 +39,31 @@ public class CharacterParameterUI : MonoBehaviour
     {
         var btlInstance = BattleManager.Instance;
 
-        Character selectCharacter = null;
+        // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
+        Debug.Assert(_character != null);
 
-        // 攻撃フェーズ状態では攻撃キャラクターを取得
-        if (Character.CHARACTER_TAG.CHARACTER_PLAYER == tag && btlInstance.IsAttackPhaseState())
+        if( _isAttacking )
         {
-            selectCharacter = btlInstance.AttackerCharacter;
             _Camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRenderAttacker");
         }
-        // それ以外の状態ではグリッド選択中のキャラクターを取得
         else
         {
-            selectCharacter = btlInstance.GetCharacterFromHashtable(btlInstance.SelectCharacterTupleInfo);
             _Camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRender");
         }
 
-        if (selectCharacter == null)
+        if (_character == null)
         {
             Debug.Assert(false);
 
             return;
         }
 
-        var param = selectCharacter.param;
+        var param = _character.param;
 
         // パラメータ表示を反映
-        UpdateParamRender(selectCharacter, ref param);
+        UpdateParamRender(_character, ref param);
         // カメラ描画を反映
-        UpdateCamraRender(selectCharacter, ref param);
+        UpdateCamraRender(_character, ref param);
     }
 
     /// <summary>
@@ -122,11 +121,29 @@ public class CharacterParameterUI : MonoBehaviour
     /// <param name="param">選択しているキャラクターのパラメータ</param>
     void UpdateCamraRender( Character selectCharacter, ref Character.Parameter param )
     {
-        float angle = (Character.CHARACTER_TAG.CHARACTER_PLAYER == tag) ? 45f : -45f;
         Transform playerTransform = selectCharacter.transform;
-        Vector3 add = Quaternion.AngleAxis(angle, Vector3.up) * playerTransform.forward * param.UICameraLengthZ;
+        Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * param.UICameraLengthZ;
         _Camera.transform.position = playerTransform.position + add + Vector3.up * param.UICameraLengthY;
         _Camera.transform.LookAt(playerTransform.position + Vector3.up * param.UICameraLookAtCorrectY);
         _Camera.Render();
+    }
+
+    public void Init( float angleY )
+    {
+        _camareAngleY = angleY;
+    }
+
+    /// <summary>
+    /// 表示するキャラクターを設定します
+    /// </summary>
+    /// <param name="character">表示キャラクター</param>
+    public void SetCharacter( Character character )
+    {
+        _character = character;
+    }
+
+    public void SetAttacking( bool isAttacking )
+    {
+        _isAttacking = isAttacking;
     }
 }

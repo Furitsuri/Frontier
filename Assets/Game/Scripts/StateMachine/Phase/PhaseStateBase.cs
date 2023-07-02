@@ -2,14 +2,14 @@ using UnityEngine;
 
 public class PhaseStateBase : TreeNode<PhaseStateBase>
 {
-    private bool m_isBack = false;
+    private bool _isBack = false;
     public int TransitIndex { get; protected set; } = -1;
 
     // èâä˙âª
     virtual public void Init()
     {
         TransitIndex = -1;
-        m_isBack = false;
+        _isBack = false;
     }
 
     // çXêV
@@ -33,7 +33,7 @@ public class PhaseStateBase : TreeNode<PhaseStateBase>
     // ñﬂÇÈ
     virtual public bool IsBack()
     {
-        return m_isBack;
+        return _isBack;
     }
 
     /// <summary>
@@ -41,6 +41,11 @@ public class PhaseStateBase : TreeNode<PhaseStateBase>
     /// </summary>
     protected void Back()
     {
-        m_isBack = true;
+        _isBack = true;
+    }
+
+    protected void NoticeCharacterDied( Character.CHARACTER_TAG characterTag )
+    {
+        BattleManager.Instance.SetDiedCharacterTag(characterTag);
     }
 }

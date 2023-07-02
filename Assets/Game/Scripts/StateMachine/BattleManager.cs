@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using static Character;
+using static StageGrid;
 
 public class BattleManager : Singleton<BattleManager>
 {
@@ -12,8 +14,6 @@ public class BattleManager : Singleton<BattleManager>
     {
         BATTLE_START = 0,
         BATTLE_PLAYER_COMMAND,
-        BATTLE_ENEMY_COMMAND,
-        BATTLE_ENEMY_EXECUTE,
         BATTLE_RESULT,
         BATTLE_END,
     }
@@ -35,10 +35,11 @@ public class BattleManager : Singleton<BattleManager>
     private List<Enemy> _enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
     private CharacterHashtable characterHash = new CharacterHashtable();
     private Character _prevCharacter = null;
+    private Character.CHARACTER_TAG _diedCharacterTag = Character.CHARACTER_TAG.CHARACTER_NONE;
     private bool _transitNextPhase = false;
     private int _phaseManagerIndex = 0;
     // 現在選択中のキャラクターインデックス
-    public (CHARACTER_TAG tag, int charaIndex) SelectCharacterTupleInfo { get; private set; } = (CHARACTER_TAG.CHARACTER_NONE, -1);
+    public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.CHARACTER_NONE, -1);
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
     public Character AttackerCharacter { get; private set; } = null;
 
@@ -72,7 +73,7 @@ public class BattleManager : Singleton<BattleManager>
             // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
             int gridIndex               = player.param.initGridIndex;
             // プレイヤーの画面上の位置を設定
-            player.transform.position   = _stageGrid.getGridCharaStandPos(gridIndex);
+            player.transform.position   = _stageGrid.GetGridCharaStandPos(gridIndex);
             // 向きを設定
             player.transform.rotation   = rot[(int)player.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
@@ -86,12 +87,15 @@ public class BattleManager : Singleton<BattleManager>
             // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
             int gridIndex = enemy.param.initGridIndex;
             // エネミーの画面上の位置を設定
-            enemy.transform.position = _stageGrid.getGridCharaStandPos(gridIndex);
+            enemy.transform.position = _stageGrid.GetGridCharaStandPos(gridIndex);
             // 向きを設定
             enemy.transform.rotation = rot[(int)enemy.param.initDir];
             // 対応するグリッドに立っているプレイヤーのインデックスを設定
             _stageGrid.GetGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
         }
+
+        // グリッド情報を更新
+        _stageGrid.UpdateGridInfo();
     }
 
     override protected void OnUpdate()
@@ -102,14 +106,32 @@ public class BattleManager : Singleton<BattleManager>
             return;
         }
 
+        // 全滅チェックを行う
+        if(_diedCharacterTag != CHARACTER_TAG.CHARACTER_NONE )
+        {
+            if(CheckCharacterAnnihilated(_diedCharacterTag))
+            {
+                if (_diedCharacterTag == CHARACTER_TAG.CHARACTER_ENEMY)
+                {
+                    // ステージクリアに遷移
+                }
+                else if (_diedCharacterTag == CHARACTER_TAG.CHARACTER_PLAYER)
+                {
+                    // ゲームオーバーに遷移
+                }
+            }
+            else
+            {
+                ResetDiedCharacter();
+            }
+        }
+
         var stageGrid = StageGrid.Instance;
 
-        // ステージグリッド上のキャラ情報を更新
-        stageGrid.UpdateGridInfo();
         // 現在のグリッド上に存在するキャラクター情報を更新
         StageGrid.GridInfo info;
         stageGrid.FetchCurrentGridInfo(out info);
-        SelectCharacterTupleInfo = ( info.characterTag, info.charaIndex );
+        SelectCharacterInfo = new CharacterHashtable.Key( info.characterTag, info.charaIndex );
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
         // フェーズマネージャを更新
@@ -124,12 +146,13 @@ public class BattleManager : Singleton<BattleManager>
         }
         else
         {
+            // 一時パラメータをリセット
+            ResetTmpParamAllCharacter();
+
             // 次のマネージャに切り替える
             _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
             _currentPhaseManager = _phaseManagers[_phaseManagerIndex];
             _currentPhaseManager.Init();
-            // 一時パラメータをリセット
-            ResetTmpParamAllCharacter();
         }
     }
 
@@ -144,43 +167,102 @@ public class BattleManager : Singleton<BattleManager>
     /// </summary>
     void UpdateCharacterParameter()
     {
-        var BattleUI = BattleUISystem.Instance;
+        var BattleUI                = BattleUISystem.Instance;
+        Character selectCharacter   = GetCharacterFromHashtable(SelectCharacterInfo);
+        bool isAttaking             = IsAttackPhaseState();
 
-        // 攻撃キャラクターが存在する場合は更新しない
-        if (AttackerCharacter != null)
+        BattleUI.PlayerParameter.SetAttacking(false);
+        BattleUI.EnemyParameter.SetAttacking(false);
+
+        // 攻撃対象選択時
+        if (isAttaking)
         {
-            // パラメータ表示を更新
-            var character = GetCharacterFromHashtable(SelectCharacterTupleInfo);
-            BattleUI.ToggleEnemyParameter(true);
+            Debug.Assert(AttackerCharacter != null);
 
-            // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if (character != null && _prevCharacter != character)
+            // 画面構成は以下の通り
+            //   左        右
+            // PLAYER 対 ENEMY
+            // OTHER  対 ENEMY
+            // PLAYER 対 OTHER
+            if ( AttackerCharacter.param.characterTag != Character.CHARACTER_TAG.CHARACTER_ENEMY )
             {
-                character.gameObject.SetLayerRecursively(LayerMask.NameToLayer("ParamRender"));
+                BattleUI.PlayerParameter.SetCharacter(AttackerCharacter);
+                BattleUI.PlayerParameter.SetAttacking(true);
+                BattleUI.EnemyParameter.SetCharacter(selectCharacter);
+            }
+            else
+            {
+                BattleUI.PlayerParameter.SetCharacter(selectCharacter);
+                BattleUI.EnemyParameter.SetCharacter(AttackerCharacter);
+                BattleUI.EnemyParameter.SetAttacking(true);
             }
 
-            _prevCharacter = character;
+            // パラメータ表示を更新
+            BattleUI.TogglePlayerParameter(true);
+            BattleUI.ToggleEnemyParameter(true);
         }
         else
         {
+            // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
+            BattleUI.TogglePlayerParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER);
+            BattleUI.ToggleEnemyParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.CHARACTER_ENEMY);
+
             // パラメータ表示を更新
-            Character character = GetCharacterFromHashtable(SelectCharacterTupleInfo);
-            BattleUI.TogglePlayerParameter(character != null && character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER);
-            BattleUI.ToggleEnemyParameter(character != null && character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_ENEMY);
+            if (selectCharacter != null)
+            {
+                if ( selectCharacter.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER )
+                {
+                    BattleUI.PlayerParameter.SetCharacter(selectCharacter);
+                }
+                else
+                {
+                    BattleUI.EnemyParameter.SetCharacter(selectCharacter);
+                }
+            }
 
             // 前フレームで選択したキャラと異なる場合はレイヤーを元に戻す
-            if (_prevCharacter != null && _prevCharacter != character)
+            if (_prevCharacter != null && _prevCharacter != selectCharacter)
             {
                 _prevCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Character"));
             }
-            // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if (character != null && _prevCharacter != character)
-            {
-                character.gameObject.SetLayerRecursively(LayerMask.NameToLayer("ParamRender"));
-            }
-
-            _prevCharacter = character;
         }
+
+        // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
+        if (selectCharacter != null && _prevCharacter != selectCharacter)
+        {
+            selectCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("ParamRender"));
+        }
+
+        _prevCharacter = selectCharacter;
+    }
+
+    /// <summary>
+    /// 対象のキャラクター群が全滅しているかを確認します
+    /// </summary>
+    bool CheckCharacterAnnihilated(Character.CHARACTER_TAG characterTag)
+    {
+        bool isAnnihilated = true;
+
+        switch (characterTag)
+        {
+            case CHARACTER_TAG.CHARACTER_PLAYER:
+                foreach (Player player in _players)
+                {
+                    if (!player.IsDead()) { isAnnihilated = false; break; }
+                }
+                break;
+            case CHARACTER_TAG.CHARACTER_ENEMY:
+                foreach (Enemy enemy in _enemies)
+                {
+                    if (!enemy.IsDead()) { isAnnihilated = false; break; }
+                }
+                break;
+            case CHARACTER_TAG.CHARACTER_OTHER:
+                // TODO : 必要になれば実装
+                break;
+        }
+
+        return isAnnihilated;
     }
 
     public IEnumerator Battle()
@@ -198,12 +280,6 @@ public class BattleManager : Singleton<BattleManager>
                 case BattlePhase.BATTLE_PLAYER_COMMAND:
                     PlayerPhase();
                     break;
-                case BattlePhase.BATTLE_ENEMY_COMMAND:
-                    _phase = BattlePhase.BATTLE_ENEMY_EXECUTE;
-                    break;
-                case BattlePhase.BATTLE_ENEMY_EXECUTE:
-                    _phase = BattlePhase.BATTLE_RESULT;
-                    break;
                 case BattlePhase.BATTLE_RESULT:
                     _phase = BattlePhase.BATTLE_END;
                     break;
@@ -220,9 +296,10 @@ public class BattleManager : Singleton<BattleManager>
     public void AddPlayerToList( Player player )
     {
         var param = player.param;
+        CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
         _players.Add( player );
-        characterHash.Add((param.characterTag, param.characterIndex), player);
+        characterHash.Add(key, player);
     }
 
     /// <summary>
@@ -232,9 +309,20 @@ public class BattleManager : Singleton<BattleManager>
     public void AddEnemyToList( Enemy enemy )
     {
         var param = enemy.param;
+        CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
         _enemies.Add( enemy );
-        characterHash.Add((param.characterTag, param.characterIndex), enemy);
+        characterHash.Add(key, enemy);
+    }
+
+    /// <summary>
+    /// 該当キャラクターが死亡した際などにリストから対象を削除します
+    /// </summary>
+    /// <param name="enemy">削除対象の敵</param>
+    public void RemoveEnemyFromList( Enemy enemy )
+    {
+        _enemies.Remove(enemy);
+        characterHash.Remove(enemy);
     }
 
     /// <summary>
@@ -258,6 +346,12 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     /// <summary>
+    /// 直近の戦闘で死亡したキャラクターのキャラクタータグを設定します
+    /// </summary>
+    /// <param name="tag">死亡したキャラクターのキャラクタータグ</param>
+    public void SetDiedCharacterTag( Character.CHARACTER_TAG tag ) { _diedCharacterTag = tag; }
+
+    /// <summary>
     /// 攻撃キャラクターの設定を解除します
     /// パラメータUI表示カリングのために変更していたレイヤーを元に戻します
     /// </summary>
@@ -271,11 +365,16 @@ public class BattleManager : Singleton<BattleManager>
         var param = AttackerCharacter.param;
 
         // 選択しているタグ、及びインデックスを攻撃対象キャラから元に戻す
-        SelectCharacterTupleInfo = (param.characterTag, param.characterIndex);
+        SelectCharacterInfo = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
         AttackerCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Character"));
         AttackerCharacter = null;
     }
+
+    /// <summary>
+    /// 死亡キャラクターのキャラクタータグをリセットします
+    /// </summary>
+    public void ResetDiedCharacter() { _diedCharacterTag = CHARACTER_TAG.CHARACTER_NONE;  }
 
 
     /// <summary>
@@ -297,20 +396,21 @@ public class BattleManager : Singleton<BattleManager>
     public Character GetCharacterFromHashtable( CHARACTER_TAG tag, int index )
     {
         if (tag == CHARACTER_TAG.CHARACTER_NONE || index < 0) return null;
+        CharacterHashtable.Key hashKey = new CharacterHashtable.Key( tag, index );
 
-        return characterHash.Get((tag, index)) as Character;
+        return characterHash.Get(hashKey) as Character;
     }
 
     /// <summary>
     /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
     /// </summary>
-    /// <param name="tuple">指定するタグとインデックスを持たせたタプル</param>
+    /// <param name="key">ハッシュキー</param>
     /// <returns>指定のキーに対応するキャラクター</returns>
-    public Character GetCharacterFromHashtable( (CHARACTER_TAG tag, int index) tuple )
+    public Character GetCharacterFromHashtable(CharacterHashtable.Key key)
     {
-        if (tuple.tag == CHARACTER_TAG.CHARACTER_NONE || tuple.index < 0) return null;
+        if (key.characterTag == CHARACTER_TAG.CHARACTER_NONE || key.characterIndex < 0) return null;
 
-        return characterHash.Get( tuple ) as Character;
+        return characterHash.Get( key ) as Character;
     }
 
     /// <summary>

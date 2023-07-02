@@ -2277,7 +2277,6 @@ MonoBehaviour:
   TMPDefValue: {fileID: 4447290663583221617}
   TMPDiffHPValue: {fileID: 536062422471699932}
   TargetImage: {fileID: 1552612664048206619}
-  tag: 0
 --- !u!1 &4264040547982605615
 GameObject:
   m_ObjectHideFlags: 0
@@ -2574,14 +2573,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4559219897479335926}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4122762353497932580}
   m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 163.6384}
@@ -2615,9 +2614,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '<<<
-
-'
+  m_text: '>>>'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -2699,7 +2696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speedPerCharacter: 0.25
-  playOnEnable: 0
+  playOnEnable: 1
   isLoop: 1
 --- !u!1 &4571420759919276021
 GameObject:
@@ -5291,7 +5288,6 @@ MonoBehaviour:
   TMPDefValue: {fileID: 7206877303481371923}
   TMPDiffHPValue: {fileID: 4174125568717500820}
   TargetImage: {fileID: 1864318348394050998}
-  tag: 1
 --- !u!1 &9017199755617789465
 GameObject:
   m_ObjectHideFlags: 0

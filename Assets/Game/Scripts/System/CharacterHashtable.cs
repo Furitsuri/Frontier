@@ -4,18 +4,29 @@ using UnityEngine;
 
 public class CharacterHashtable : Hashtable
 {
-    string[] tagStrings = new string[] {  "PL", "EM", "OT"};
+    static string[] tagStrings = new string[] {  "PL", "EM", "OT"};
 
-    public void Add((Character.CHARACTER_TAG tag, int characterIndex) tuple, Character character )
+    public struct Key
     {
-        string hashKey = ConvertHashKey(tuple.tag, tuple.characterIndex);
+        public Character.CHARACTER_TAG characterTag;
+        public int characterIndex;
+        public Key(Character.CHARACTER_TAG tag, int index)
+        {
+            characterTag = tag;
+            characterIndex = index;
+        }
+    }
+
+    public void Add(Key key, Character character )
+    {
+        string hashKey = ConvertHashKey(key.characterTag, key.characterIndex);
 
         base.Add(hashKey, character);
     }
 
-    public object Get( (Character.CHARACTER_TAG tag, int characterIndex) tuple )
+    public object Get(Key key)
     {
-        string hashKey = ConvertHashKey(tuple.tag, tuple.characterIndex);
+        string hashKey = ConvertHashKey(key.characterTag, key.characterIndex);
 
         return this[hashKey];
     }

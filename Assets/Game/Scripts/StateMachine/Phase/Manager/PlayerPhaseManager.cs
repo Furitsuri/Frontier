@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PlayerPhaseManager : PhaseManagerBase
@@ -10,6 +11,10 @@ public class PlayerPhaseManager : PhaseManagerBase
     override public void Init()
     {
         base.Init();
+
+        // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
+        Player player = BattleManager.Instance.GetPlayerEnumerable().First();
+        StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(player);
     }
 
     /// <summary>
@@ -35,6 +40,9 @@ public class PlayerPhaseManager : PhaseManagerBase
         return base.Update();
     }
 
+    /// <summary>
+    /// 遷移の木構造を作成します
+    /// </summary>
     override protected void CreateTree()
     {
         // 遷移木の作成

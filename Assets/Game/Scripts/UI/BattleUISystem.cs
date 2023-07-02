@@ -12,8 +12,8 @@ public class BattleUISystem : MonoBehaviour
     public SelectGridUI AttackTargetCursor;         // 攻撃対象グリッド選択に用いるカーソル
 
     [Header("PlayerParam")]
-    public CharacterParameterUI PlayerParameter;    // 選択グリッド上に存在するキャラクターのパラメータ表示UI
-    public CharacterParameterUI EnemyParameter;     // 攻撃対象キャラクターのパラメータ表示UI
+    public CharacterParameterUI PlayerParameter;    // プレイヤーor第三勢力キャラクターのパラメータ表示UI
+    public CharacterParameterUI EnemyParameter;     // 敵or第三勢力キャラクターのパラメータ表示UI
 
     [Header("AttackCursor")]
     public AttackCursorUI AttackCursor;             // 攻撃対象を示すカーソル(攻撃対象選択画面にて表示)
@@ -33,6 +33,13 @@ public class BattleUISystem : MonoBehaviour
     void Awake()
     {
         Instance = this;
+    }
+
+    void Start()
+    {
+        // カメラアングルの設定
+        PlayerParameter.Init(45f);
+        EnemyParameter.Init(-45f);
     }
 
     public void ToggleSelectGrid( bool isActive )
