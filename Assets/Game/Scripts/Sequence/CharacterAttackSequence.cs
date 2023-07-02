@@ -10,12 +10,14 @@ public class CharacterAttackSequence
         START,
         ATTACK,
         COUNTER,
+        DIE,
         END
     }
 
     private Phase _phase;
     private Character _attackCharacter = null;
     private Character _targetCharacter = null;
+    private Character _diedCharacter = null;
     // Transformは遅いためキャッシュ
     private Transform _atkCharaTransform = null;
     private Transform _tgtCharaTransform = null;
@@ -23,12 +25,12 @@ public class CharacterAttackSequence
     private Quaternion _tgtCharaInitialRot;
     private float _startRotarionTimer = 0f;
     private float _elapsedTime = 0f;
-    private const float START_ROTATION_TIME = 0.2f;
 
     public void Init(Character attackChara, Character targetChara)
     {
         _attackCharacter = attackChara;
         _targetCharacter = targetChara;
+        _diedCharacter = null;
         _atkCharaTransform = _attackCharacter.transform;
         _tgtCharaTransform = _targetCharacter.transform;
 
@@ -51,7 +53,7 @@ public class CharacterAttackSequence
             case Phase.START:
                 // START_ROTATION_TIMEが経過するまで向きを変更します
                 _startRotarionTimer += Time.deltaTime;
-                float t = Mathf.Clamp01(_startRotarionTimer/START_ROTATION_TIME);
+                float t = Mathf.Clamp01(_startRotarionTimer/ Constants.ATTACK_ROTATIION_TIME);
                 t = Mathf.SmoothStep(0f, 1f, t);
 
                 Quaternion destAttackerRot  = Quaternion.LookRotation(_tgtCharaTransform.position - _atkCharaTransform.position);
@@ -59,7 +61,7 @@ public class CharacterAttackSequence
                 _atkCharaTransform.rotation = Quaternion.Lerp(_atkCharaInitialRot, destAttackerRot, t);
                 _tgtCharaTransform.rotation = Quaternion.Lerp(_tgtCharaInitialRot, destTargetRot, t);
 
-                if ( START_ROTATION_TIME <= _startRotarionTimer )
+                if ( Constants.ATTACK_ROTATIION_TIME <= _startRotarionTimer )
                 {
                     _attackCharacter.setAnimator(Character.ANIME_TAG.ATTACK_01);
 
@@ -67,16 +69,37 @@ public class CharacterAttackSequence
                 }
                 break;
             case Phase.ATTACK:
-                if( _attackCharacter.IsEndAnimation(Character.ANIME_TAG.ATTACK_01))
+                if (_attackCharacter.IsEndAnimation(Character.ANIME_TAG.ATTACK_01))
                 {
-                    // ダメージUIを非表示
-                    BattleUISystem.Instance.ToggleDamageUI(false);
-                    _phase = Phase.COUNTER;
+                    if (_targetCharacter.IsDead())
+                    {
+                        _diedCharacter = _targetCharacter;
+                        _phase = Phase.DIE;
+                    }
+                    else {
+                        // ダメージUIを非表示
+                        BattleUISystem.Instance.ToggleDamageUI(false);
+                        _phase = Phase.COUNTER;
+                    }
                 }
                 
                 break;
             case Phase.COUNTER:
                 if( Constants.ATTACK_SEQUENCE_WAIT_TIME < (_elapsedTime += Time.deltaTime) )
+                {
+                    if (_attackCharacter.IsDead())
+                    {
+                        _diedCharacter = _attackCharacter;
+                        _phase = Phase.DIE;
+                    }
+                    else
+                    {
+                        _phase = Phase.END;
+                    }
+                }
+                break;
+            case Phase.DIE:
+                if (_attackCharacter.IsEndAnimation(Character.ANIME_TAG.DIE))
                 {
                     _phase = Phase.END;
                 }
@@ -88,4 +111,10 @@ public class CharacterAttackSequence
 
         return false;
     }
+
+    /// <summary>
+    /// 死亡キャラクターを返します
+    /// </summary>
+    /// <returns>死亡キャラクター</returns>
+    public Character GetDiedCharacter() { return _diedCharacter; }
 }

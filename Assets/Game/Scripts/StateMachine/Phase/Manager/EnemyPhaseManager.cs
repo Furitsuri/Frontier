@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class EnemyPhaseManager : PhaseManagerBase
@@ -10,6 +11,10 @@ public class EnemyPhaseManager : PhaseManagerBase
     override public void Init()
     {
         base.Init();
+
+        // 選択グリッドを(1番目の)敵のグリッド位置に合わせる
+        Enemy enemy = BattleManager.Instance.GetEnemyEnumerable().First();
+        StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(enemy);
     }
 
     /// <summary>

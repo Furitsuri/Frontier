@@ -10,6 +10,7 @@ public class GridMesh : MonoBehaviour
     {
         MOVE = 0,
         ATTACK,
+        TARGET_ATTACK_BASE,
 
         NUM_MAX
     }
@@ -47,6 +48,7 @@ public class GridMesh : MonoBehaviour
         {
             new Color(0f, 0f, 1f, 0.65f),
             new Color(1f, 0f, 0f, 0.65f),
+            new Color(1f, 1f, 0f, 0.65f),
         };
         Debug.Assert( colors.Length == (int)MeshType.NUM_MAX, "Mesh type num is incorrect." );
 

@@ -23,7 +23,7 @@ public class Enemy : Character
     }
 
     public ThinkingType ThinkType { get; private set; }
-    private EMAIBase emAI;
+    public EMAIBase EmAI { get; private set; }
 
     // Start is called before the first frame update
     void Start()
@@ -46,14 +46,14 @@ public class Enemy : Character
         switch(ThinkType)
         {
             case ThinkingType.NEAR:
-                emAI = new EMAINearTarget();
+                EmAI = new EMAIAggressive();
                 break;
             default:
-                emAI = new EMAIBase();
+                EmAI = new EMAIBase();
                 break;
         }
 
-        emAI.Init(this);
+        EmAI.Init(this);
     }
 
     override public void setAnimator(ANIME_TAG animTag)
@@ -66,12 +66,28 @@ public class Enemy : Character
         _animator.SetBool(_animNames[(int)animTag], b);
     }
 
-    /// <summary>
-    /// 思考パターンを用いて目標とする対象と目標座標を決定します
-    /// </summary>
-    public void DetermineTargetIndexWithAI()
+    public override void Die()
     {
-        // 各グリッドに対する評価値を算出
-        emAI.CreateEvaluationValues( param, tmpParam );
+        base.Die();
+
+        BattleManager.Instance.RemoveEnemyFromList(this);
+        // Destroy(this);
+    }
+
+    /// <summary>
+    /// 目的座標と標的キャラクターを決定する
+    /// </summary>
+    public (bool, bool) DetermineDestinationAndTargetWithAI()
+    {
+        return EmAI.DetermineDestinationAndTarget(param, tmpParam);
+    }
+
+    /// <summary>
+    /// 目標座標と標的キャラクターを取得します
+    /// </summary>
+    public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
+    {
+        destinationIndex    = EmAI.GetDestinationGridIndex();
+        targetCharacter     = EmAI.GetTargetCharacter();
     }
 }

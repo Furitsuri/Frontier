@@ -1,40 +1,61 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Unity.VisualScripting;
 using UnityEditor;
-using UnityEditor.Build.Content;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.TextCore.Text;
 using static Character;
+using static EMAIBase;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class StageGrid : Singleton<StageGrid>
 {
+    /// <summary>
+    /// グリッドに対するフラグ情報
+    /// </summary>
+   public enum BitFlag
+    {
+        NONE = 0,
+        CANNOT_MOVE         = 1 << 0,   // 移動不可
+        ATTACKABLE          = 1 << 1,   // 攻撃可能
+        TARGET_ATTACK_BASE  = 1 << 2,   // ターゲット攻撃候補地点
+        PLAYER_EXIST        = 1 << 3,   // プレイヤーキャラクターが存在
+        ENEMY_EXIST         = 1 << 4,   // 敵キャラクターが存在
+        OTHER_EXIST         = 1 << 5,   // 第三勢力が存在
+    }
     public struct GridInfo
     {
-        // キャラクターの立ち位置座標
+        // キャラクターの立ち位置座標(※)
         public Vector3 charaStandPos;
-        // 移動の可否
-        public bool isMoveable;
-        // 攻撃の可否
-        public bool isAttackable;
         // グリッド上に存在するキャラクターのタイプ
         public Character.CHARACTER_TAG characterTag;
+        // 移動阻害値(※)
+        public int moveResist;
+        // 移動値の見積もり値
+        public int estimatedMoveRange;
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
-        // 初期化
-        // TODO : C# 10.0 からは引数なしコンストラクタで定義可能(2023.5時点の最新Unityバージョンでは使用できない)
+        // フラグ情報
+        public BitFlag flag;
+        // ※ 一度設定された後は変更することがない変数
+
+        /// <summary>
+        /// 初期化します
+        /// TODO：ステージのファイル読込によってmoveRangeをはじめとした値を設定出来るようにしたい
+        ///       また、C# 10.0 からは引数なしコンストラクタで定義可能(2023.5時点の最新Unityバージョンでは使用できない)
+        /// </summary>
         public void Init()
         {
-            charaStandPos   = Vector3.zero;
-            isMoveable      = false;
-            isAttackable    = false;
-            characterTag    = CHARACTER_TAG.CHARACTER_NONE;
-            charaIndex      = -1;
+            charaStandPos           = Vector3.zero;
+            characterTag            = CHARACTER_TAG.CHARACTER_NONE;
+            moveResist              = -1;
+            estimatedMoveRange      = -1;
+            charaIndex              = -1;
+            flag                    = BitFlag.NONE;
+        }
+
+        public bool IsExistCharacter()
+        {
+            return 0 <= charaIndex;
         }
     }
 
@@ -68,12 +89,13 @@ public class StageGrid : Singleton<StageGrid>
     private float _widthX, _widthZ;
     private Mesh _mesh;
     private GridInfo[] _gridInfo;
+    private GridInfo[] _gridInfoBase;
     private Footprint _footprint;
     private List<GridMesh> _gridMeshs;
     private List<int> _attackableGridIndexs;
+    private CurrentGrid _currentGrid = CurrentGrid.GetInstance();
 
     public int GridTotalNum { get; private set; } = 0;
-    public CurrentGrid currentGrid { get; private set; } = CurrentGrid.GetInstance();
 
     override protected void Init()
     {
@@ -97,7 +119,7 @@ public class StageGrid : Singleton<StageGrid>
         // グリッド情報の初期化
         InitGridInfo();
 
-        currentGrid.Init(0, _gridNumX, _gridNumZ);
+        _currentGrid.Init(0, _gridNumX, _gridNumZ);
     }
 
     Mesh ReGrid(Mesh _mesh)
@@ -180,13 +202,15 @@ public class StageGrid : Singleton<StageGrid>
     /// </summary>
     void InitGridInfo()
     {
-        GridTotalNum    = _gridNumX * _gridNumZ;
-        _gridInfo        = new GridInfo[GridTotalNum];
+        GridTotalNum        = _gridNumX * _gridNumZ;
+        _gridInfo           = new GridInfo[GridTotalNum];
+        _gridInfoBase       = new GridInfo[GridTotalNum]; ;
 
         for (int i = 0; i < GridTotalNum; ++i)
         {
             // 初期化
             _gridInfo[i].Init();
+            _gridInfoBase[i].Init();
             // グリッド位置からキャラの立ち位置への補正値
             float charaPosCorrext = 0.5f * gridSize;
             // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
@@ -194,33 +218,19 @@ public class StageGrid : Singleton<StageGrid>
             // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
             float posZ = -_widthZ + i / _gridNumX * gridSize + charaPosCorrext;
             // 上記値から各グリッドのキャラの立ち位置を決定
-            _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
+            _gridInfoBase[i].charaStandPos = _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
+            // TODO : ファイル読み込みから通行不能な箇所などのBitFlag情報を設定出来るようにする
         }
     }
 
     /// <summary>
-    /// グリッド情報を更新します
+    /// _gridInfoの状態を基の状態に戻します
     /// </summary>
-    public void UpdateGridInfo()
+    void ResetGridInfo()
     {
-        var btlMgr = BattleManager.Instance;
-
-        ClearGridsCharaIndex();
-        foreach( Player player in btlMgr.GetPlayerEnumerable() )
+        for (int i = 0; i < GridTotalNum; ++i)
         {
-            var gridIndex       = player.tmpParam.gridIndex;
-            ref var info        = ref _gridInfo[gridIndex];
-            info.characterTag   = CHARACTER_TAG.CHARACTER_PLAYER;
-            info.charaIndex     = player.param.characterIndex;
-            info.isMoveable     = false;
-        }
-        foreach (Enemy enemy in btlMgr.GetEnemyEnumerable())
-        {
-            var gridIndex       = enemy.tmpParam.gridIndex;
-            ref var info        = ref _gridInfo[gridIndex];
-            info.characterTag   = CHARACTER_TAG.CHARACTER_ENEMY;
-            info.charaIndex     = enemy.param.characterIndex;
-            info.isMoveable     = false;
+            _gridInfo[i] = _gridInfoBase[i];
         }
     }
 
@@ -228,62 +238,98 @@ public class StageGrid : Singleton<StageGrid>
     /// 移動可能なグリッドを登録します
     /// </summary>
     /// <param name="gridIndex">登録対象のグリッドインデックス</param>
-    /// <param name="moveableRange">移動可能範囲値</param>
-    void RegistMoveableGrid(int gridIndex, int moveableRange, int attackableRange)
+    /// <param name="moveRange">移動可能範囲値</param>
+    /// <param name="attackRange">攻撃可能範囲値</param>
+    /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
+    /// <param name="isAttackable">攻撃可能か否か</param>
+    /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
+    void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, Character.CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
     {
-        // 負の値になれば終了
-        if (moveableRange < 0) return;
         // 範囲外のグリッドは考慮しない
         if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
-
-        _gridInfo[gridIndex].isMoveable = true;
-
-        // 移動範囲の端の箇所で攻撃レンジを展開して、攻撃範囲についても登録する
-        if (moveableRange == 0)
+        // 移動不可のグリッドに辿り着いた場合は終了
+        if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return;
+        // 既に計算済みのグリッドであれば終了
+        if (moveRange <= _gridInfo[gridIndex].estimatedMoveRange) return;
+        // 自身に対する敵対勢力キャラクターが存在すれば終了
+        StageGrid.BitFlag[] opponentTag = new StageGrid.BitFlag[(int)CHARACTER_TAG.CHARACTER_NUM]
         {
-            RegistAttackableGrid(gridIndex, attackableRange, attackableRange);
+            BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERにおける敵対勢力
+            BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
+            BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
+        };
+        if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, opponentTag[(int)selfTag])) return;
 
-            return;
+        // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
+        int currentMoveRange = (isDeparture) ? moveRange : _gridInfo[gridIndex].moveResist + moveRange;
+        _gridInfo[gridIndex].estimatedMoveRange = currentMoveRange;
+
+        // 負の値であれば終了
+        if (currentMoveRange < 0) return;
+
+        // 攻撃範囲についても登録する
+        if (isAttackable && RegistAttackableEachGrid(gridIndex, attackRange, selfTag, true))
+        {
+            // ターゲットに攻撃可能な位置情報を登録
+            Methods.SetBitFlag(ref _gridInfo[gridIndex].flag, BitFlag.TARGET_ATTACK_BASE);
         }
 
         // 左端を除外
         if ( gridIndex%_gridNumX != 0 )
-            RegistMoveableGrid(gridIndex - 1, moveableRange - 1, attackableRange);      // gridIndexからX軸方向へ-1
+            RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfTag, isAttackable);      // gridIndexからX軸方向へ-1
         // 右端を除外
         if( ( gridIndex + 1 )%_gridNumX != 0 )
-            RegistMoveableGrid(gridIndex + 1, moveableRange - 1, attackableRange);      // gridIndexからX軸方向へ+1
+            RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfTag, isAttackable);      // gridIndexからX軸方向へ+1
         // Z軸方向への加算と減算はそのまま
-        RegistMoveableGrid(gridIndex - _gridNumX, moveableRange - 1, attackableRange);  // gridIndexからZ軸方向へ-1
-        RegistMoveableGrid(gridIndex + _gridNumX, moveableRange - 1, attackableRange);  // gridIndexからZ軸方向へ+1
+        RegistMoveableEachGrid(gridIndex - _gridNumX, currentMoveRange, attackRange, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
+        RegistMoveableEachGrid(gridIndex + _gridNumX, currentMoveRange, attackRange, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
     }
 
     /// <summary>
     /// 攻撃可能なグリッドを登録します
     /// </summary>
     /// <param name="gridIndex">登録対象のグリッドインデックス</param>
-    /// <param name="atkRangeMin">攻撃可能範囲の最小値</param>
-    /// <param name="atkRangeMax">攻撃可能範囲の最大値</param>
-    void RegistAttackableGrid(int gridIndex, int atkRangeMin, int atkRangeMax)
+    /// <param name="attackRange">攻撃可能範囲値</param>
+    /// <param name="selfTag">自身のキャラクタータグ</param>
+    /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
+    bool RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, bool isDeparture = false)
     {
-        // 負の値になれば終了
-        if (atkRangeMax < 0) return;
         // 範囲外のグリッドは考慮しない
-        if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
-        // 攻撃最小レンジの値が1未満の状態のグリッドのみ攻撃可能
-        if( atkRangeMin < 1 )
+        if (gridIndex < 0 || GridTotalNum <= gridIndex) return false;
+        // 移動不可のグリッドには攻撃できない
+        if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return false;
+        // 出発地点でなければ登録
+        if ( !isDeparture )
         {
-            _gridInfo[gridIndex].isAttackable = true;
+            Methods.SetBitFlag(ref _gridInfo[gridIndex].flag, BitFlag.ATTACKABLE);
+
+            switch( selfTag )
+            {
+                case Character.CHARACTER_TAG.CHARACTER_PLAYER:
+                    return (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_ENEMY);
+                case Character.CHARACTER_TAG.CHARACTER_ENEMY:
+                    return (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_PLAYER);
+                default:
+                    return false;
+            }
         }
+
+        // 負の値であれば終了
+        if ( --attackRange < 0 ) return false;
+
+        bool isAttackable = false;
 
         // 左端を除外
         if (gridIndex % _gridNumX != 0)
-            RegistAttackableGrid(gridIndex - 1, atkRangeMin - 1, atkRangeMax - 1);    // gridIndexからX軸方向へ-1
+            isAttackable |= RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag);       // gridIndexからX軸方向へ-1
         // 右端を除外
         if ((gridIndex + 1) % _gridNumX != 0)
-            RegistAttackableGrid(gridIndex + 1, atkRangeMin - 1, atkRangeMax - 1);    // gridIndexからX軸方向へ+1
+            isAttackable |= RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag);       // gridIndexからX軸方向へ+1
         // Z軸方向への加算と減算はそのまま
-        RegistAttackableGrid(gridIndex - _gridNumX, atkRangeMin - 1, atkRangeMax - 1); // gridIndexからZ軸方向へ-1
-        RegistAttackableGrid(gridIndex + _gridNumX, atkRangeMin - 1, atkRangeMax - 1); // indexからZ軸方向へ+1
+        isAttackable |= RegistAttackableEachGrid(gridIndex - _gridNumX, attackRange, selfTag);   // gridIndexからZ軸方向へ-1
+        isAttackable |= RegistAttackableEachGrid(gridIndex + _gridNumX, attackRange, selfTag);   // gridindexからZ軸方向へ+1
+
+        return isAttackable;
     }
 
     /// <summary>
@@ -303,6 +349,34 @@ public class StageGrid : Singleton<StageGrid>
     }
 
     /// <summary>
+    /// グリッド情報を更新します
+    /// </summary>
+    public void UpdateGridInfo()
+    {
+        var btlMgr = BattleManager.Instance;
+
+        // 一度全てのグリッド情報を基に戻す
+        ResetGridInfo();
+        // キャラクターが存在するグリッドの情報を更新
+        foreach (Player player in btlMgr.GetPlayerEnumerable())
+        {
+            var gridIndex               = player.tmpParam.gridIndex;
+            ref var info                = ref _gridInfo[gridIndex];
+            info.characterTag           = CHARACTER_TAG.CHARACTER_PLAYER;
+            info.charaIndex             = player.param.characterIndex;
+            Methods.SetBitFlag(ref info.flag, BitFlag.PLAYER_EXIST);
+        }
+        foreach (Enemy enemy in btlMgr.GetEnemyEnumerable())
+        {
+            var gridIndex               = enemy.tmpParam.gridIndex;
+            ref var info                = ref _gridInfo[gridIndex];
+            info.characterTag           = CHARACTER_TAG.CHARACTER_ENEMY;
+            info.charaIndex             = enemy.param.characterIndex;
+            Methods.SetBitFlag(ref info.flag, BitFlag.ENEMY_EXIST);
+        }
+    }
+
+    /// <summary>
     /// 現在のグリッドをキー入力で操作します
     /// </summary>
     public void OperateCurrentGrid()
@@ -310,19 +384,103 @@ public class StageGrid : Singleton<StageGrid>
         // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
         if (BattleManager.Instance.IsAttackPhaseState())
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow))    { currentGrid.TransitPrevTarget(); }
-            if (Input.GetKeyDown(KeyCode.RightArrow))   { currentGrid.TransitNextTarget(); }
+            if (Input.GetKeyDown(KeyCode.LeftArrow))    { _currentGrid.TransitPrevTarget(); }
+            if (Input.GetKeyDown(KeyCode.RightArrow))   { _currentGrid.TransitNextTarget(); }
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow))      { currentGrid.Up(); }
-            if (Input.GetKeyDown(KeyCode.DownArrow))    { currentGrid.Down(); }
-            if (Input.GetKeyDown(KeyCode.LeftArrow))    { currentGrid.Left(); }
-            if (Input.GetKeyDown(KeyCode.RightArrow))   { currentGrid.Right(); }
+            if (Input.GetKeyDown(KeyCode.UpArrow))      { _currentGrid.Up(); }
+            if (Input.GetKeyDown(KeyCode.DownArrow))    { _currentGrid.Down(); }
+            if (Input.GetKeyDown(KeyCode.LeftArrow))    { _currentGrid.Left(); }
+            if (Input.GetKeyDown(KeyCode.RightArrow))   { _currentGrid.Right(); }
         }
     }
 
-    // 各セル状態の描画
+    /// <summary>
+    /// 選択グリッドを指定のキャラクターのグリッドに合わせます
+    /// </summary>
+    /// <param name="character">指定キャラクター</param>
+    public void ApplyCurrentGrid2CharacterGrid( Character character )
+    {
+        _currentGrid.SetIndex( character.tmpParam.gridIndex );
+    }
+
+    /// <summary>
+    /// 攻撃可能グリッドのうち、攻撃可能キャラクターが存在するグリッドをリストに登録します
+    /// </summary>
+    /// <param name="targetTag">攻撃対象のタグ</param>
+    /// <returns>攻撃可能キャラクターが存在している</returns>
+    public bool RegistAttackTargetGridIndexs(Character.CHARACTER_TAG targetTag)
+    {
+        Character character = null;
+        var btlInstance = BattleManager.Instance;
+
+        _currentGrid.ClearAtkTargetInfo();
+        _attackableGridIndexs.Clear();
+
+        // 攻撃可能、かつ攻撃対象となるキャラクターが存在するグリッドをリストに登録
+        for (int i = 0; i < _gridInfo.Length; ++i)
+        {
+            var info = _gridInfo[i];
+            if (Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE))
+            {
+                character = btlInstance.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                if (character != null && character.param.characterTag == targetTag)
+                {
+                    _attackableGridIndexs.Add(i);
+                }
+            }
+        }
+
+        // 選択グリッドを自動的に攻撃可能キャラクターの存在するグリッドインデックスに設定
+        if (0 < _attackableGridIndexs.Count)
+        {
+            _currentGrid.SetAtkTargetNum(_attackableGridIndexs.Count);
+            _currentGrid.SetAtkTargetIndex(0);
+        }
+
+        return 0 < _attackableGridIndexs.Count;
+    }
+
+    /// <summary>
+    /// グリッドに移動可能情報を登録します
+    /// </summary>
+    /// <param name="departIndex">移動キャラクターが存在するグリッドのインデックス値</param>
+    /// <param name="moveRange">移動可能範囲値</param>
+    /// <param name="attackRange">攻撃可能範囲値</param>
+    /// <param name="selfTag">キャラクタータグ</param>
+    /// <param name="isAttackable">攻撃可能か否か</param>
+    public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, Character.CHARACTER_TAG selfTag, bool isAttackable)
+    {
+        Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageGrid : Irregular Index.");
+
+        // 移動可否情報を各グリッドに登録
+        RegistMoveableEachGrid(departIndex, moveRange, attackRange, selfTag, isAttackable, true);
+
+        // 出発地点へは移動不可に
+        _gridInfo[departIndex].estimatedMoveRange = int.MinValue;
+        Methods.UnsetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE);
+    }
+
+    /// <summary>
+    /// グリッドに攻撃可能情報を登録します
+    /// </summary>
+    /// <param name="departIndex">攻撃キャラクターが存在するグリッドのインデックス値</param>
+    /// <param name="attackRange">攻撃可能範囲値</param>
+    public void RegistAttackAbleInfo(int departIndex, int attackRange, Character.CHARACTER_TAG selfTag)
+    {
+        Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageGrid : Irregular Index.");
+
+        // 全てのグリッドの攻撃可否情報を初期化
+        for (int i = 0; i < GridTotalNum; ++i)
+        {
+            Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE);
+        }
+
+        // 攻撃可否情報を各グリッドに登録
+        RegistAttackableEachGrid(departIndex, attackRange, selfTag, true);
+    }
+
     /// <summary>
     /// 移動可能グリッドを描画します
     /// </summary>
@@ -331,42 +489,36 @@ public class StageGrid : Singleton<StageGrid>
     /// <param name="attackableRange">攻撃可能範囲値</param>
     public void DrawMoveableGrids(int departIndex, int moveableRange, int attackableRange)
     {
-        if (departIndex < 0 || GridTotalNum <= departIndex)
-        {
-            Debug.Assert(false, "StageGrid : Irregular Index.");
-            departIndex = 0;
-        }
-
-        // 全てのグリッドの移動可否情報を初期化
-        for (int i = 0; i < GridTotalNum; ++i)
-        {
-            _gridInfo[i].isMoveable = false;
-        }
-
-        // 移動可否情報を各グリッドに登録
-        RegistMoveableGrid(departIndex, moveableRange, attackableRange);
-        // 中心グリッドを除く
-        _gridInfo[departIndex].isMoveable = false;
-        _gridInfo[departIndex].isAttackable = false;
+        Debug.Assert( 0 <= departIndex && departIndex < GridTotalNum, "StageGrid : Irregular Index.");
 
         int count = 0;
         // グリッドの状態をメッシュで描画
         for (int i = 0; i < GridTotalNum; ++i)
         {
-            if (_gridInfo[i].isMoveable)
+            if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.TARGET_ATTACK_BASE))
             {
-                Instantiate(m_GridMeshObject);  // 仮
+                Instantiate(m_GridMeshObject);  // TODO : 仮
+                _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.TARGET_ATTACK_BASE);
+
+                continue;
+            }
+
+            if (0 <= _gridInfo[i].estimatedMoveRange)
+            {
+                Instantiate(m_GridMeshObject);  // TODO : 仮
                 _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.MOVE);
 
                 Debug.Log("Moveable Grid Index : " + i);
+                continue;
             }
 
-            if (!_gridInfo[i].isMoveable && _gridInfo[i].isAttackable)
+            if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
             {
-                Instantiate(m_GridMeshObject);  // 仮
+                Instantiate(m_GridMeshObject);  // TODO : 仮
                 _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
 
                 Debug.Log("Attackable Grid Index : " + i);
+                continue;
             }
         }
     }
@@ -375,30 +527,15 @@ public class StageGrid : Singleton<StageGrid>
     /// 攻撃可能グリッドを描画します
     /// </summary>
     /// <param name="departIndex">攻撃キャラクターが存在するグリッドのインデックス値</param>
-    /// <param name="attackableRangeMin">攻撃可能範囲の最小値</param>
-    /// <param name="attackableRangeMax">攻撃可能範囲の最大値</param>
-    public void DrawAttackableGrids(int departIndex, int attackableRangeMin, int attackableRangeMax)
+    public void DrawAttackableGrids(int departIndex)
     {
-        if (departIndex < 0 || GridTotalNum <= departIndex)
-        {
-            Debug.Assert(false, "StageGrid : Irregular Index.");
-            departIndex = 0;
-        }
-
-        // 全てのグリッドの攻撃可否情報を初期化
-        for (int i = 0; i < GridTotalNum; ++i)
-        {
-            _gridInfo[i].isAttackable = false;
-        }
-
-        // 移動可否情報を各グリッドに登録
-        RegistAttackableGrid(departIndex, attackableRangeMin, attackableRangeMax);
+        Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageGrid : Irregular Index.");
 
         int count = 0;
         // グリッドの状態をメッシュで描画
         for (int i = 0; i < GridTotalNum; ++i)
         {
-            if (_gridInfo[i].isAttackable)
+            if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
             {
                 Instantiate(m_GridMeshObject);  // TODO : 仮
                 _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, gridSize, GridMesh.MeshType.ATTACK);
@@ -409,29 +546,25 @@ public class StageGrid : Singleton<StageGrid>
     }
 
     /// <summary>
-    /// 全てのグリッドの可否情報を初期化し、描画を消去します
+    /// 全てのグリッドにおける指定のビットフラグの設定を解除します
     /// </summary>
-    public void ClearGridsCondition()
+    public void UnsetGridsBitFlag( BitFlag value )
     {
         // 全てのグリッドの移動・攻撃可否情報を初期化
         for (int i = 0; i < GridTotalNum; ++i)
         {
-            _gridInfo[i].isMoveable     = false;
-            _gridInfo[i].isAttackable   = false;
-        }
-
-        foreach( var grid in _gridMeshs )
-        {
-            grid.ClearDraw();
+            Methods.UnsetBitFlag(ref _gridInfo[i].flag, value);
         }
     }
 
-    public void ClearGridsCharaIndex()
+    /// <summary>
+    /// 全てのグリッドメッシュの描画を消去します
+    /// </summary>
+    public void ClearGridMeshDraw()
     {
-        for (int i = 0; i < GridTotalNum; ++i)
+        foreach( var grid in _gridMeshs )
         {
-            _gridInfo[i].charaIndex = -1;
-            _gridInfo[i].characterTag = CHARACTER_TAG.CHARACTER_NONE;
+            grid.ClearDraw();
         }
     }
 
@@ -440,9 +573,32 @@ public class StageGrid : Singleton<StageGrid>
         _gridMeshs.Add( script );
     }
 
-    public Vector3 getGridCharaStandPos( int index )
+    /// <summary>
+    /// 縦軸と横軸のグリッド数を取得します
+    /// </summary>
+    /// <returns>縦軸と横軸のグリッド数</returns>
+    public ( int, int ) GetGridNumsXZ()
+    {
+        return ( _gridNumX, _gridNumZ );
+    }
+
+    /// <summary>
+    /// 指定グリッドにおけるキャラクターのワールド座標を取得します
+    /// </summary>
+    /// <param name="index">指定グリッド</param>
+    /// <returns>グリッドにおける中心ワールド座標</returns>
+    public Vector3 GetGridCharaStandPos( int index )
     {
         return _gridInfo[index].charaStandPos;
+    }
+
+    /// <summary>
+    /// 現在の選択グリッドのインデックス値を取得します
+    /// </summary>
+    /// <returns>現在の選択グリッドのインデックス値</returns>
+    public int GetCurrentGridIndex()
+    {
+        return _currentGrid.GetIndex();
     }
 
     /// <summary>
@@ -456,16 +612,15 @@ public class StageGrid : Singleton<StageGrid>
 
         if(BattleManager.Instance.IsAttackPhaseState())
         {
-            index = _attackableGridIndexs[currentGrid.GetAtkTargetIndex()];
+            index = _attackableGridIndexs[_currentGrid.GetAtkTargetIndex()];
         }
         else
         {
-            index = currentGrid.GetIndex();
+            index = _currentGrid.GetIndex();
         }
 
         gridInfo = _gridInfo[ index ];
     }
-
 
     /// <summary>
     /// 指定インデックスのグリッド情報を取得します
@@ -482,33 +637,19 @@ public class StageGrid : Singleton<StageGrid>
     /// </summary>
     /// <param name="departGridIndex">出発地グリッドのインデックス</param>
     /// <param name="destGridIndex">目的地グリッドのインデックス</param>
-    public List<int> ExtractDepart2DestGoalGridIndexs(int departGridIndex, int destGridIndex)
+    public List<(int routeIndexs, int routeCost)> ExtractShortestRouteIndexs(int departGridIndex, int destGridIndex, in List<int> candidateRouteIndexs)
     {
-        List<int> pathIndexs = new List<int>(64);
-
-        // スタート地点をパス情報に追加する
-        pathIndexs.Add(departGridIndex);
-
-        // 移動可能グリッドのみ抜き出す
-        for ( int i = 0; i < _gridInfo.Length; ++i )
-        {
-            if (_gridInfo[i].isMoveable )
-            {
-                pathIndexs.Add(i);
-            }
-        }
-
-        Dijkstra dijkstra = new Dijkstra(pathIndexs.Count);
+        Dijkstra dijkstra = new Dijkstra(candidateRouteIndexs.Count);
 
         // 出発グリッドからのインデックスの差を取得
-        for ( int i = 0; i + 1 < pathIndexs.Count; ++i )
+        for ( int i = 0; i + 1 < candidateRouteIndexs.Count; ++i )
         {
-            for( int j = i + 1; j < pathIndexs.Count; ++j )
+            for( int j = i + 1; j < candidateRouteIndexs.Count; ++j )
             {
-                int diff = pathIndexs[j] - pathIndexs[i];
-                if ( (diff == -1 && (pathIndexs[i] % _gridNumX != 0) ) ||           // 左に存在(左端を除く)
-                     (diff == 1 && (pathIndexs[i] % _gridNumX != _gridNumX - 1)) ||  // 右に存在(右端を除く)
-                      Math.Abs(diff) == _gridNumX)                                  // 上または下に存在
+                int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
+                if ( (diff == -1 && (candidateRouteIndexs[i] % _gridNumX != 0) ) ||           // 左に存在(左端を除く)
+                     (diff == 1 && (candidateRouteIndexs[i] % _gridNumX != _gridNumX - 1)) || // 右に存在(右端を除く)
+                      Math.Abs(diff) == _gridNumX)                                            // 上または下に存在
                 {
                     // 移動可能な隣接グリッド情報をダイクストラに入れる
                     dijkstra.Add(i, j);
@@ -518,46 +659,7 @@ public class StageGrid : Singleton<StageGrid>
         }
 
         // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
-        List<int> minRouteIndexs = dijkstra.GetMinRoute(pathIndexs.IndexOf(departGridIndex), pathIndexs.IndexOf(destGridIndex), ref pathIndexs);
-        
-        return minRouteIndexs;
-    }
-
-    /// <summary>
-    /// 攻撃可能グリッドのうち、攻撃可能キャラクターが存在するグリッドをリストに登録します
-    /// </summary>
-    /// <param name="targetTag">攻撃対象のタグ</param>
-    /// <returns>攻撃可能キャラクターが存在している</returns>
-    public bool RegistAttackTargetGridIndexs( Character.CHARACTER_TAG targetTag )
-    {
-        Character character = null;
-        var btlInstance = BattleManager.Instance;
-
-        currentGrid.ClearAtkTargetInfo();
-        _attackableGridIndexs.Clear();
-
-        // 攻撃可能、かつ攻撃対象となるキャラクターが存在するグリッドをリストに登録
-        for (int i = 0; i < _gridInfo.Length; ++i)
-        {
-            var info = _gridInfo[i];
-            if (info.isAttackable)
-            {
-                character = btlInstance.SearchCharacterFromCharaIndex(info.charaIndex);
-                if (character != null && character.param.characterTag == targetTag )
-                {
-                    _attackableGridIndexs.Add(i);
-                }
-            }
-        }
-
-        // 選択グリッドを自動的に攻撃可能キャラクターの存在するグリッドインデックスに設定
-        if( 0 < _attackableGridIndexs.Count )
-        {
-            currentGrid.SetAtkTargetNum( _attackableGridIndexs.Count );
-            currentGrid.SetAtkTargetIndex(0);
-        }
-
-        return 0 < _attackableGridIndexs.Count;
+        return dijkstra.GetMinRoute(candidateRouteIndexs.IndexOf(departGridIndex), candidateRouteIndexs.IndexOf(destGridIndex), candidateRouteIndexs);
     }
 
     /// <summary>
@@ -575,7 +677,7 @@ public class StageGrid : Singleton<StageGrid>
     /// <param name="character">指定するキャラクター</param>
     public void FollowFootprint(Character character)
     {
-        currentGrid.SetIndex(_footprint.gridIndex);
+        _currentGrid.SetIndex(_footprint.gridIndex);
         character.tmpParam.gridIndex = _footprint.gridIndex;
         GridInfo info;
         FetchCurrentGridInfo(out info);

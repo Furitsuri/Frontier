@@ -39,6 +39,7 @@ public class Character : MonoBehaviour
         MOVE,
         ATTACK_01,
         DAMAGED,
+        DIE,
 
         ANIME_TAG_NUM,
     }
@@ -64,10 +65,8 @@ public class Character : MonoBehaviour
         public int Def;
         // 移動レンジ
         public int moveRange;
-        // 攻撃レンジ(最小)
-        public int attackRangeMin;
-        // 攻撃レンジ(最大)
-        public int attackRangeMax;
+        // 攻撃レンジ
+        public int attackRange;
         // UI表示用カメラ長さ(Y方向)
         public float UICameraLengthY;
         // UI表示用カメラ長さ(Z方向)
@@ -81,10 +80,9 @@ public class Character : MonoBehaviour
             characterIndex  = charaIndex;
             initGridIndex   = gridIndex;
             moveRange       = range;
-            attackRangeMin  = 1;
-            attackRangeMax  = 1;
+            attackRange     = 1;
             MaxHP           = CurHP = 20;
-            Atk             = 8;
+            Atk             = 20;
             Def             = 5;
             initDir         = dir;
             UICameraLengthY = 1.2f;
@@ -128,7 +126,8 @@ public class Character : MonoBehaviour
         "Wait",
         "Run",
         "Attack01",
-        "GetHit"
+        "GetHit",
+        "Die"
     };
 
     protected Character _opponent;
@@ -149,24 +148,41 @@ public class Character : MonoBehaviour
         tmpParam = new TmpParameter(false, 0);
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
+    virtual public void setAnimator(ANIME_TAG animTag) { }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    virtual public void setAnimator( ANIME_TAG animTag, bool b) { }
 
-    virtual public void setAnimator(ANIME_TAG animTag)
-    {
+    virtual public void Die() { }
 
-    }
-    virtual public void setAnimator( ANIME_TAG animTag, bool b)
+    /// <summary>
+    /// 対戦相手にダメージを与えるイベントを発生させます
+    /// ※攻撃アニメーションから呼び出し
+    /// </summary>
+    virtual public void AttackOpponentEvent()
     {
+        if (_opponent == null)
+        {
+            Debug.Assert(false);
+        }
 
+        _opponent.param.CurHP += _opponent.tmpParam.expectedChangeHP;
+
+        //　ダメージが0の場合はモーションを取らない
+        if (_opponent.tmpParam.expectedChangeHP != 0)
+        {
+            if (_opponent.param.CurHP <= 0)
+            {
+                _opponent.setAnimator(ANIME_TAG.DIE);
+            }
+            else
+            {
+                _opponent.setAnimator(ANIME_TAG.DAMAGED);
+            }
+        }
+
+        // ダメージUIを表示
+        BattleUISystem.Instance.ToggleDamageUI(true);
+        BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
     }
 
     /// <summary>
@@ -205,21 +221,11 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 対戦相手にダメージを与えるイベントを発生させます
-    /// ※攻撃アニメーションから呼び出し
+    /// 死亡判定を返します
     /// </summary>
-    virtual public void AttackOpponentEvent()
+    /// <returns>死亡しているか否か</returns>
+    public bool IsDead()
     {
-        if( _opponent == null )
-        {
-            Debug.Assert( false );
-        }
-
-        _opponent.setAnimator(ANIME_TAG.DAMAGED);
-        // モーションと同時にHPを減らす
-        _opponent.param.CurHP += _opponent.tmpParam.expectedChangeHP;
-        // ダメージUIを表示
-        BattleUISystem.Instance.ToggleDamageUI(true);
-        BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
+        return param.CurHP <= 0;
     }
 }

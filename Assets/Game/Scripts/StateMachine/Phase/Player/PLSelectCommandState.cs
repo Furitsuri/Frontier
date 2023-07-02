@@ -70,6 +70,7 @@ public class PLSelectCommandState : PhaseStateBase
             if ( endCommand[(int)BaseCommand.COMMAND_MOVE] && !endCommand[(int)BaseCommand.COMMAND_ATTACK] )
             {
                 StageGrid.Instance.FollowFootprint( _selectPlayer );
+                StageGrid.Instance.UpdateGridInfo();
                 endCommand[(int)BaseCommand.COMMAND_MOVE] = false;
             }
 
