@@ -44,8 +44,8 @@ public class PhaseStateBase : TreeNode<PhaseStateBase>
         _isBack = true;
     }
 
-    protected void NoticeCharacterDied( Character.CHARACTER_TAG characterTag )
+    protected void NoticeCharacterDied( CharacterHashtable.Key characterKey )
     {
-        BattleManager.Instance.SetDiedCharacterTag(characterTag);
+        BattleManager.Instance.SetDiedCharacterKey(characterKey);
     }
 }

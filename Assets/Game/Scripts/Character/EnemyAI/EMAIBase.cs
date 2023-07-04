@@ -58,6 +58,10 @@ public class EMAIBase
         return _targetCharacter;
     }
 
+    /// <summary>
+    /// 進行予定の移動ルートを取得します
+    /// </summary>
+    /// <returns>進行予定の移動ルート情報</returns>
     public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
     {
         return _proposedMoveRoute;

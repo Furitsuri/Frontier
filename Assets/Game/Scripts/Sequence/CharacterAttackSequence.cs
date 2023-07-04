@@ -15,9 +15,9 @@ public class CharacterAttackSequence
     }
 
     private Phase _phase;
-    private Character _attackCharacter = null;
-    private Character _targetCharacter = null;
-    private Character _diedCharacter = null;
+    private Character _attackCharacter  = null;
+    private Character _targetCharacter  = null;
+    private Character _diedCharacter    = null;
     // Transformは遅いためキャッシュ
     private Transform _atkCharaTransform = null;
     private Transform _tgtCharaTransform = null;
@@ -28,11 +28,11 @@ public class CharacterAttackSequence
 
     public void Init(Character attackChara, Character targetChara)
     {
-        _attackCharacter = attackChara;
-        _targetCharacter = targetChara;
-        _diedCharacter = null;
-        _atkCharaTransform = _attackCharacter.transform;
-        _tgtCharaTransform = _targetCharacter.transform;
+        _attackCharacter    = attackChara;
+        _targetCharacter    = targetChara;
+        _diedCharacter      = null;
+        _atkCharaTransform  = _attackCharacter.transform;
+        _tgtCharaTransform  = _targetCharacter.transform;
 
         _startRotarionTimer = 0f;
         _atkCharaInitialRot = _atkCharaTransform.rotation;
@@ -99,12 +99,14 @@ public class CharacterAttackSequence
                 }
                 break;
             case Phase.DIE:
-                if (_attackCharacter.IsEndAnimation(Character.ANIME_TAG.DIE))
+                if (_targetCharacter.IsEndAnimation(Character.ANIME_TAG.DIE))
                 {
                     _phase = Phase.END;
                 }
                 break;
             case Phase.END:
+                // ダメージUIを非表示
+                BattleUISystem.Instance.ToggleDamageUI(false);
                 return true;
 
         }

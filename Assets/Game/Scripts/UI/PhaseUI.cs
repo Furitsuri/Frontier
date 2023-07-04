@@ -21,6 +21,10 @@ public class PhaseUI : MonoBehaviour
         _animator.SetTrigger("Crossing");
     }
 
+    /// <summary>
+    /// アニメーションが再生されているかどうかを判定します
+    /// </summary>
+    /// <returns>再生されているか否か</returns>
     public bool IsPlayingAnim()
     {
         var info = _animator.GetCurrentAnimatorStateInfo(0);
@@ -32,10 +36,14 @@ public class PhaseUI : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// ゲームオブジェクト及び下のレイヤーを非有効化にします
+    /// 参照数は0ですが、アニメーションのイベントフラグから呼び出されています
+    /// </summary>
     public void Toggle()
     {
         gameObject.SetActive(false);
-        foreach( TextMeshProUGUI text in PhaseText )
+        foreach (TextMeshProUGUI text in PhaseText)
         {
             text.gameObject.SetActive(false);
         }

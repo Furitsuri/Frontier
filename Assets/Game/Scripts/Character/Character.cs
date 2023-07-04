@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using Unity.VisualScripting;
@@ -82,7 +83,7 @@ public class Character : MonoBehaviour
             moveRange       = range;
             attackRange     = 1;
             MaxHP           = CurHP = 20;
-            Atk             = 20;
+            Atk             = 8;
             Def             = 5;
             initDir         = dir;
             UICameraLengthY = 1.2f;
@@ -172,6 +173,7 @@ public class Character : MonoBehaviour
         {
             if (_opponent.param.CurHP <= 0)
             {
+                _opponent.param.CurHP = 0;
                 _opponent.setAnimator(ANIME_TAG.DIE);
             }
             else
@@ -181,8 +183,8 @@ public class Character : MonoBehaviour
         }
 
         // ダメージUIを表示
-        BattleUISystem.Instance.ToggleDamageUI(true);
         BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
+        BattleUISystem.Instance.ToggleDamageUI(true);
     }
 
     /// <summary>
@@ -227,5 +229,11 @@ public class Character : MonoBehaviour
     public bool IsDead()
     {
         return param.CurHP <= 0;
+    }
+
+    public void Remove()
+    {
+        Destroy(gameObject);
+        Destroy(this);
     }
 }

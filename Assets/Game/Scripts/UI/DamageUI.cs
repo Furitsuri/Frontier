@@ -7,9 +7,4 @@ public class DamageUI : MonoBehaviour
 {
     public TextMeshProUGUI damageText;
     private Transform _characterTransform;
-
-    private void Update()
-    {
-        
-    }
 }

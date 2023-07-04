@@ -13,8 +13,11 @@ public class EnemyPhaseManager : PhaseManagerBase
         base.Init();
 
         // 選択グリッドを(1番目の)敵のグリッド位置に合わせる
-        Enemy enemy = BattleManager.Instance.GetEnemyEnumerable().First();
-        StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(enemy);
+        if (BattleManager.Instance.GetEnemyEnumerable() != null)
+        {
+            Enemy enemy = BattleManager.Instance.GetEnemyEnumerable().First();
+            StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(enemy);
+        }
     }
 
     /// <summary>

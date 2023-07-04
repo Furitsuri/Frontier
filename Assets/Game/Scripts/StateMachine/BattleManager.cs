@@ -33,9 +33,11 @@ public class BattleManager : Singleton<BattleManager>
     private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
     private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
     private List<Enemy> _enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
-    private CharacterHashtable characterHash = new CharacterHashtable();
+    private CharacterHashtable _characterHash = new CharacterHashtable();
     private Character _prevCharacter = null;
-    private Character.CHARACTER_TAG _diedCharacterTag = Character.CHARACTER_TAG.CHARACTER_NONE;
+    private CharacterHashtable.Key _diedCharacterKey;
+    private CharacterHashtable.Key _battleBossCharacterKey;
+    private CharacterHashtable.Key _escortTargetCharacterKey;
     private bool _transitNextPhase = false;
     private int _phaseManagerIndex = 0;
     // 現在選択中のキャラクターインデックス
@@ -53,6 +55,13 @@ public class BattleManager : Singleton<BattleManager>
         _phaseManagers[(int)TurnType.PLAYER_TURN]   = new PlayerPhaseManager();
         _phaseManagers[(int)TurnType.ENEMY_TURN]    = new EnemyPhaseManager();
         _currentPhaseManager                        = _phaseManagers[(int)TurnType.PLAYER_TURN];
+
+        _phase = BattlePhase.BATTLE_START;
+        _diedCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
+
+        // TODO : ステージのファイルから読み込んで設定するように
+        _battleBossCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
+        _escortTargetCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
     }
 
     override protected void OnStart()
@@ -106,40 +115,32 @@ public class BattleManager : Singleton<BattleManager>
             return;
         }
 
-        // 全滅チェックを行う
-        if(_diedCharacterTag != CHARACTER_TAG.CHARACTER_NONE )
-        {
-            if(CheckCharacterAnnihilated(_diedCharacterTag))
-            {
-                if (_diedCharacterTag == CHARACTER_TAG.CHARACTER_ENEMY)
-                {
-                    // ステージクリアに遷移
-                }
-                else if (_diedCharacterTag == CHARACTER_TAG.CHARACTER_PLAYER)
-                {
-                    // ゲームオーバーに遷移
-                }
-            }
-            else
-            {
-                ResetDiedCharacter();
-            }
-        }
-
         var stageGrid = StageGrid.Instance;
 
         // 現在のグリッド上に存在するキャラクター情報を更新
         StageGrid.GridInfo info;
         stageGrid.FetchCurrentGridInfo(out info);
-        SelectCharacterInfo = new CharacterHashtable.Key( info.characterTag, info.charaIndex );
+        SelectCharacterInfo = new CharacterHashtable.Key(info.characterTag, info.charaIndex);
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
+
+        if (BattleUISystem.Instance.StageClear.isActiveAndEnabled) return;
+
+        if (BattleUISystem.Instance.GameOver.isActiveAndEnabled) return;
+        
         // フェーズマネージャを更新
         _transitNextPhase = _currentPhaseManager.Update();
     }
 
     override protected void OnLateUpdate()
     {
+        if (BattleUISystem.Instance.StageClear.isActiveAndEnabled) return;
+
+        if (BattleUISystem.Instance.GameOver.isActiveAndEnabled) return;
+
+        // 勝利、全滅チェックを行う
+        if( CheckVictoryOrDefeat(_diedCharacterKey) ) {  return; }
+
         if (!_transitNextPhase)
         {
             _currentPhaseManager.LateUpdate();
@@ -154,12 +155,6 @@ public class BattleManager : Singleton<BattleManager>
             _currentPhaseManager = _phaseManagers[_phaseManagerIndex];
             _currentPhaseManager.Init();
         }
-    }
-
-    // プレイヤー行動フェーズ
-    void PlayerPhase()
-    {
-        _phase = BattlePhase.BATTLE_PLAYER_COMMAND;
     }
 
     /// <summary>
@@ -259,34 +254,72 @@ public class BattleManager : Singleton<BattleManager>
                 break;
             case CHARACTER_TAG.CHARACTER_OTHER:
                 // TODO : 必要になれば実装
+                isAnnihilated = false;
                 break;
         }
 
         return isAnnihilated;
     }
 
-    public IEnumerator Battle()
+    /// <summary>
+    /// 勝利、敗戦判定を行います
+    /// </summary>
+    /// <param name="diedCharacterKey">死亡したキャラクターのハッシュキー</param>
+    /// <returns>勝利、敗戦処理に遷移するか否か</returns>
+    bool CheckVictoryOrDefeat(CharacterHashtable.Key diedCharacterKey)
     {
-        while (_phase != BattlePhase.BATTLE_END)
+        if (diedCharacterKey.characterTag != CHARACTER_TAG.CHARACTER_NONE)
         {
-            yield return null;
-            Debug.Log(_phase);
-
-            switch (_phase)
+            // ステージにボスが設定されているかのチェック
+            if(_battleBossCharacterKey.characterTag != CHARACTER_TAG.CHARACTER_NONE)
             {
-                case BattlePhase.BATTLE_START:
-                    _phase = BattlePhase.BATTLE_PLAYER_COMMAND;
-                    break;
-                case BattlePhase.BATTLE_PLAYER_COMMAND:
-                    PlayerPhase();
-                    break;
-                case BattlePhase.BATTLE_RESULT:
-                    _phase = BattlePhase.BATTLE_END;
-                    break;
-                case BattlePhase.BATTLE_END:
-                    break;
+                if( diedCharacterKey == _battleBossCharacterKey )
+                {
+                    // ステージクリアに遷移
+                    StartStageClearAnim();
+
+                    return true;
+                }
+            }
+
+            if(_escortTargetCharacterKey.characterTag != CHARACTER_TAG.CHARACTER_NONE)
+            {
+                if (diedCharacterKey == _escortTargetCharacterKey)
+                {
+                    // ゲームオーバーに遷移
+                    StartGameOverAnim();
+
+                    return true;
+                }
+            }
+            
+            if (CheckCharacterAnnihilated(diedCharacterKey.characterTag))
+            {
+                if (diedCharacterKey.characterTag == CHARACTER_TAG.CHARACTER_ENEMY)
+                {
+                    // ステージクリアに遷移
+                    StartStageClearAnim();
+                }
+                else if (diedCharacterKey.characterTag == CHARACTER_TAG.CHARACTER_PLAYER)
+                {
+                    // ゲームオーバーに遷移
+                    StartGameOverAnim();
+                }
+
+                return true;
+            }
+            else
+            {
+                ResetDiedCharacter();
             }
         }
+
+        return false;
+    }
+
+    public IEnumerator Battle()
+    {
+        yield return null;
     }
 
     /// <summary>
@@ -299,7 +332,7 @@ public class BattleManager : Singleton<BattleManager>
         CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
         _players.Add( player );
-        characterHash.Add(key, player);
+        _characterHash.Add(key, player);
     }
 
     /// <summary>
@@ -312,7 +345,17 @@ public class BattleManager : Singleton<BattleManager>
         CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
         _enemies.Add( enemy );
-        characterHash.Add(key, enemy);
+        _characterHash.Add(key, enemy);
+    }
+
+    /// <summary>
+    /// 該当キャラクターが死亡した際などにリストから対象を削除します
+    /// </summary>
+    /// <param name="player">削除対象のプレイヤー</param>
+    public void RemovePlayerFromList(Player player)
+    {
+        _players.Remove(player);
+        _characterHash.Remove(player);
     }
 
     /// <summary>
@@ -322,7 +365,7 @@ public class BattleManager : Singleton<BattleManager>
     public void RemoveEnemyFromList( Enemy enemy )
     {
         _enemies.Remove(enemy);
-        characterHash.Remove(enemy);
+        _characterHash.Remove(enemy);
     }
 
     /// <summary>
@@ -349,7 +392,7 @@ public class BattleManager : Singleton<BattleManager>
     /// 直近の戦闘で死亡したキャラクターのキャラクタータグを設定します
     /// </summary>
     /// <param name="tag">死亡したキャラクターのキャラクタータグ</param>
-    public void SetDiedCharacterTag( Character.CHARACTER_TAG tag ) { _diedCharacterTag = tag; }
+    public void SetDiedCharacterKey( CharacterHashtable.Key key ) { _diedCharacterKey = key; }
 
     /// <summary>
     /// 攻撃キャラクターの設定を解除します
@@ -374,7 +417,11 @@ public class BattleManager : Singleton<BattleManager>
     /// <summary>
     /// 死亡キャラクターのキャラクタータグをリセットします
     /// </summary>
-    public void ResetDiedCharacter() { _diedCharacterTag = CHARACTER_TAG.CHARACTER_NONE;  }
+    public void ResetDiedCharacter()
+    { 
+        _diedCharacterKey.characterTag      = CHARACTER_TAG.CHARACTER_NONE;
+        _diedCharacterKey.characterIndex    = -1;
+    }
 
 
     /// <summary>
@@ -398,7 +445,7 @@ public class BattleManager : Singleton<BattleManager>
         if (tag == CHARACTER_TAG.CHARACTER_NONE || index < 0) return null;
         CharacterHashtable.Key hashKey = new CharacterHashtable.Key( tag, index );
 
-        return characterHash.Get(hashKey) as Character;
+        return _characterHash.Get(hashKey) as Character;
     }
 
     /// <summary>
@@ -410,7 +457,7 @@ public class BattleManager : Singleton<BattleManager>
     {
         if (key.characterTag == CHARACTER_TAG.CHARACTER_NONE || key.characterIndex < 0) return null;
 
-        return characterHash.Get( key ) as Character;
+        return _characterHash.Get( key ) as Character;
     }
 
     /// <summary>
@@ -487,7 +534,7 @@ public class BattleManager : Singleton<BattleManager>
     /// <returns>敵キャラクター</returns>
     public IEnumerable<Enemy> GetEnemyEnumerable()
     {
-        foreach( Enemy enemy in _enemies)
+        foreach (Enemy enemy in _enemies)
         {
             yield return enemy;
         }
@@ -556,5 +603,23 @@ public class BattleManager : Singleton<BattleManager>
     public bool isEnd()
     {
         return _phase == BattlePhase.BATTLE_END;
+    }
+
+    /// <summary>
+    /// ステージクリア時のUIとアニメーションを表示します
+    /// </summary>
+    public void StartStageClearAnim()
+    {
+        BattleUISystem.Instance.ToggleStageClearUI(true);
+        BattleUISystem.Instance.StartStageClearAnim();
+    }
+
+    /// <summary>
+    /// ゲームオーバー時のUIとアニメーションを表示します
+    /// </summary>
+    public void StartGameOverAnim()
+    {
+        BattleUISystem.Instance.ToggleGameOverUI(true);
+        BattleUISystem.Instance.StartGameOverAnim();
     }
 }

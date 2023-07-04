@@ -79,6 +79,7 @@ public class CharacterParameterUI : MonoBehaviour
         TMPDefValue.text = $"{param.Def}";
 
         int changeHP = selectCharacter.tmpParam.expectedChangeHP;
+        changeHP = Mathf.Clamp(changeHP, -param.CurHP, param.MaxHP - param.CurHP);
         if( 0 < changeHP)
         {
             TMPDiffHPValue.text = $"+{changeHP}";

@@ -30,6 +30,12 @@ public class BattleUISystem : MonoBehaviour
     [Header("PhaseUI")]
     public PhaseUI Phase;                           // フェーズ表記UI
 
+    [Header("StageClearUI")]
+    public StageClearUI StageClear;                 // ステージクリアUI
+
+    [Header("GameOver")]
+    public GameOverUI GameOver;                     // ゲームオーバー画面
+
     void Awake()
     {
         Instance = this;
@@ -96,7 +102,7 @@ public class BattleUISystem : MonoBehaviour
 
         Damage.transform.position   = characterScreenPos;
         int absDamage = Mathf.Abs( damageValue );
-        Damage.damageText.text      = damageValue.ToString();
+        Damage.damageText.text      = absDamage.ToString();
         if( damageValue < 0 )
         {
             Damage.damageText.color = Color.red;
@@ -135,5 +141,25 @@ public class BattleUISystem : MonoBehaviour
     public void ApplyTestColor2ConfirmTurnEndUI( int selectIndex )
     {
         ConfirmTurnEnd.ApplyTextColor(selectIndex);
+    }
+
+    public void ToggleStageClearUI( bool isActive )
+    {
+        StageClear.gameObject.SetActive( isActive );
+    }
+
+    public void StartStageClearAnim()
+    {
+        StageClear.StartAnim();
+    }
+
+    public void ToggleGameOverUI(bool isActive)
+    {
+        GameOver.gameObject.SetActive(isActive);
+    }
+
+    public void StartGameOverAnim()
+    {
+        GameOver.StartAnim();
     }
 }
