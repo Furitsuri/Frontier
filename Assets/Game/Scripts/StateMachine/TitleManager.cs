@@ -12,28 +12,28 @@ public class TitleManager : MonoBehaviour
         TITLE_END,
     }
 
-    TitlePhase m_Phase;
+    TitlePhase _phase;
 
     // Start is called before the first frame update
     void Start()
     {
-        m_Phase = TitlePhase.TITLE_START;
+        _phase = TitlePhase.TITLE_START;
     }
 
     public IEnumerator Title()
     {
-        while (m_Phase != TitlePhase.TITLE_END)
+        while (_phase != TitlePhase.TITLE_END)
         {
             yield return null;
-            Debug.Log(m_Phase);
+            Debug.Log(_phase);
 
-            switch (m_Phase)
+            switch (_phase)
             {
                 // 外部から呼び出しを待つ
                 case TitlePhase.TITLE_START:
                     break;
                 case TitlePhase.TITLE_GAME_START:
-                    m_Phase = TitlePhase.TITLE_END;
+                    _phase = TitlePhase.TITLE_END;
                     break;
                 case TitlePhase.TITLE_EXIT:
                     // 終了
@@ -44,14 +44,22 @@ public class TitleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// タイトルからゲームに遷移します
+    /// タイトル画面のButtonから呼び出されます
+    /// </summary>
     public void PressStart()
     {
         Debug.Log("Press Start");
-        m_Phase = TitlePhase.TITLE_GAME_START;
+        _phase = TitlePhase.TITLE_GAME_START;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public bool isGameStart()
     {
-        return m_Phase == TitlePhase.TITLE_GAME_START;
+        return _phase == TitlePhase.TITLE_GAME_START;
     }
 }

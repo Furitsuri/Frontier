@@ -26,4 +26,15 @@ public class Player : Character
     {
         _animator.SetBool(_animNames[(int)animTag], b);
     }
+
+    /// <summary>
+    /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
+    /// モーションのイベントフラグから呼び出します
+    /// </summary>
+    public override void Die()
+    {
+        base.Die();
+
+        BattleManager.Instance.RemovePlayerFromList(this);
+    }
 }

@@ -15,6 +15,31 @@ public class CharacterHashtable : Hashtable
             characterTag = tag;
             characterIndex = index;
         }
+
+        public static bool operator ==( Key a, Key b )
+        {
+            return a.characterTag == b.characterTag && a.characterIndex == b.characterIndex;
+        }
+
+        public static bool operator !=(Key a, Key b)
+        {
+            return a.characterTag != b.characterTag || a.characterIndex != b.characterIndex;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Key)
+            {
+                return this == (Key)obj;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return characterTag.GetHashCode() ^ characterIndex.GetHashCode();
+        }
     }
 
     public void Add(Key key, Character character )

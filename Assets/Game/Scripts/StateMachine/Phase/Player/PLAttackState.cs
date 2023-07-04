@@ -101,13 +101,6 @@ public class PLAttackState : PhaseStateBase
             case PLAttackPhase.PL_ATTACK_EXECUTE:
                 if ( _attackSequence.Update() )
                 {
-                    //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、両方判定)
-                    Character diedCharacter = _attackSequence.GetDiedCharacter();
-                    if (diedCharacter != null )
-                    {
-                        NoticeCharacterDied( diedCharacter.param.characterTag );
-                    }
-
                     _phase = PLAttackPhase.PL_ATTACK_END;
                 }
                 
@@ -129,6 +122,17 @@ public class PLAttackState : PhaseStateBase
         var btlInstance     = BattleManager.Instance;
         var btlUIInstance   = BattleUISystem.Instance;
         var stgInstance     = StageGrid.Instance;
+
+        //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、両方判定)
+        Character diedCharacter = _attackSequence.GetDiedCharacter();
+        if (diedCharacter != null)
+        {
+            var key = new CharacterHashtable.Key(diedCharacter.param.characterTag, diedCharacter.param.characterIndex);
+            NoticeCharacterDied(key);
+            // 破棄
+            diedCharacter.Remove();
+        }
+
         // アタッカーキャラクターの設定を解除
         btlInstance.ResetAttackerCharacter();
         // 予測ダメージをリセット

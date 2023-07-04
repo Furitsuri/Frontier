@@ -78,7 +78,6 @@ public class GameManager : MonoBehaviour
                     _Phase = GamePhase.GAME_TITLE_MENU;
                     break;
                 case GamePhase.GAME_TITLE_MENU:
-
                     _Phase = GamePhase.GAME_BATTLE;
                     break;
                 case GamePhase.GAME_BATTLE:

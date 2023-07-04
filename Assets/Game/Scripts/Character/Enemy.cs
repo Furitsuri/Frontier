@@ -34,7 +34,7 @@ public class Enemy : Character
         this.param.moveRange = 2;
         this.param.initGridIndex = this.tmpParam.gridIndex = 13;
         this.param.MaxHP = this.param.CurHP = 8;
-        this.param.Atk = 3;
+        this.param.Atk = 6;
         this.param.Def = 2;
         this.param.initDir = Constants.Direction.BACK;
         this.param.UICameraLengthY = 0.8f;
@@ -66,12 +66,15 @@ public class Enemy : Character
         _animator.SetBool(_animNames[(int)animTag], b);
     }
 
+    /// <summary>
+    /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
+    /// モーションのイベントフラグから呼び出します
+    /// </summary>
     public override void Die()
     {
         base.Die();
 
         BattleManager.Instance.RemoveEnemyFromList(this);
-        // Destroy(this);
     }
 
     /// <summary>
