@@ -10,7 +10,7 @@ public class EMAttackState : PhaseStateBase
         EM_ATTACK_END,
     }
 
-    private EMAttackPhase _phase = EMAttackPhase.EM_ATTACK_EXECUTE;
+    private EMAttackPhase _phase;
     private Enemy _enemy = null;
     private Character _targetCharacter = null;
     private int _curentGridIndex = -1;
@@ -24,7 +24,6 @@ public class EMAttackState : PhaseStateBase
 
         base.Init();
 
-        _phase              = EMAttackPhase.EM_ATTACK_CONFIRM;
         _curentGridIndex    = stgInstance.GetCurrentGridIndex();
         _enemy              = btlInstance.GetSelectCharacter() as Enemy;
         Debug.Assert(_enemy != null);
@@ -35,7 +34,7 @@ public class EMAttackState : PhaseStateBase
         stgInstance.DrawAttackableGrids(_curentGridIndex);
 
         // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-        if (stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_PLAYER))
+        if (stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_PLAYER, _enemy.EmAI.GetTargetCharacter()))
         {
             // アタッカーキャラクターの設定
             btlInstance.SetAttackerCharacter(_enemy);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static Character;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class EMSelectState : PhaseStateBase
 {
@@ -36,8 +37,13 @@ public class EMSelectState : PhaseStateBase
             }
 
             isExist = true;
+            // 選択グリッドを合わせる
+            StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(_currentEnemy);
 
-            (_isValidDestination, _isValidTarget) = _currentEnemy.DetermineDestinationAndTargetWithAI();
+            if (!_currentEnemy.EmAI.IsDetermined())
+            {
+               (_isValidDestination, _isValidTarget) = _currentEnemy.DetermineDestinationAndTargetWithAI();
+            }
 
             // 攻撃対象がいなかった場合は攻撃済み状態にする
             if (!_isValidTarget)

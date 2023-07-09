@@ -25,8 +25,8 @@ public class CharacterParameterUI : MonoBehaviour
 
         TargetImage.texture = _TargetTexture;
 
-        GameObject cameObject = new GameObject();
-        _Camera = cameObject.AddComponent<Camera>();
+        GameObject gameObject = new GameObject();
+        _Camera = gameObject.AddComponent<Camera>();
         _Camera.enabled = false;
         _Camera.clearFlags = CameraClearFlags.SolidColor;
         _Camera.backgroundColor = new Color(0, 0, 0, 0);
@@ -58,12 +58,10 @@ public class CharacterParameterUI : MonoBehaviour
             return;
         }
 
-        var param = _character.param;
-
         // パラメータ表示を反映
-        UpdateParamRender(_character, ref param);
+        UpdateParamRender(_character, ref _character.param);
         // カメラ描画を反映
-        UpdateCamraRender(_character, ref param);
+        UpdateCamraRender(_character, ref _character.camParam);
     }
 
     /// <summary>
@@ -120,12 +118,12 @@ public class CharacterParameterUI : MonoBehaviour
     /// </summary>
     /// <param name="selectCharacter">選択しているキャラクター</param>
     /// <param name="param">選択しているキャラクターのパラメータ</param>
-    void UpdateCamraRender( Character selectCharacter, ref Character.Parameter param )
+    void UpdateCamraRender( Character selectCharacter, ref Character.CameraParameter camParam )
     {
         Transform playerTransform = selectCharacter.transform;
-        Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * param.UICameraLengthZ;
-        _Camera.transform.position = playerTransform.position + add + Vector3.up * param.UICameraLengthY;
-        _Camera.transform.LookAt(playerTransform.position + Vector3.up * param.UICameraLookAtCorrectY);
+        Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * camParam.UICameraLengthZ;
+        _Camera.transform.position = playerTransform.position + add + Vector3.up * camParam.UICameraLengthY;
+        _Camera.transform.LookAt(playerTransform.position + Vector3.up * camParam.UICameraLookAtCorrectY);
         _Camera.Render();
     }
 

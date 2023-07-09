@@ -9,7 +9,7 @@ public class Singleton<T> : MonoBehaviour where T : Singleton<T>
 
     public static bool IsValid() => Instance != null;
 
-    private void Awake()
+    void Awake()
     {
         if (Instance == null)
         {
@@ -24,17 +24,17 @@ public class Singleton<T> : MonoBehaviour where T : Singleton<T>
         DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
+    void Start()
     {
         OnStart();
     }
 
-    private void Update()
+    void Update()
     {
         OnUpdate();
     }
 
-    private void LateUpdate()
+    void LateUpdate()
     {
         OnLateUpdate();
     }

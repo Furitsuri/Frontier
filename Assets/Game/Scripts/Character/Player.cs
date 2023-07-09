@@ -1,23 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class Player : Character
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        // TODO : 試運転用にパラメータをセット。後ほど削除
-        this.param.characterTag = CHARACTER_TAG.CHARACTER_PLAYER;
-        this.param.characterIndex = 0;
-        this.param.moveRange = 3;
-        this.param.initGridIndex = 0;
-        this.param.UICameraLengthY = 1.2f;
-        this.param.UICameraLengthZ = 1.5f;
-        this.param.UICameraLookAtCorrectY = 1.0f;
-        BattleManager.Instance.AddPlayerToList(this);
-    }
-
     override public void setAnimator(ANIME_TAG animTag)
     {
         _animator.SetTrigger(_animNames[(int)animTag]);

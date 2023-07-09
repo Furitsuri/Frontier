@@ -26,7 +26,7 @@ public class PlayerCommandUI : MonoBehaviour
         // 一度全てを白色に設定
         foreach( TextMeshProUGUI tmp in m_TMPs )
         {
-            tmp.color = Color.white;
+             tmp.color = Color.white;
         }
         // 使用出来ないコマンドを灰色に
         for( int i = 0; i < m_Enables.Length; ++i )

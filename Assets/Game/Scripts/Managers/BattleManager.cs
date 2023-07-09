@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using TMPro.Examples;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using static Character;
@@ -27,19 +28,21 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     public GameObject stageGridObject;
+
     private BattlePhase _phase;
     private PhaseManagerBase _currentPhaseManager;
     private StageGrid _stageGrid;
-    private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
-    private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
-    private List<Enemy> _enemies = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
-    private CharacterHashtable _characterHash = new CharacterHashtable();
-    private Character _prevCharacter = null;
+    private PhaseManagerBase[] _phaseManagers   = new PhaseManagerBase[((int)TurnType.NUM)];
+    private List<Player> _players               = new List<Player>(Constants.CHARACTER_MAX_NUM);
+    private List<Enemy> _enemies                = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
+    private CharacterHashtable _characterHash   = new CharacterHashtable();
+    private Character _prevCharacter            = null;
     private CharacterHashtable.Key _diedCharacterKey;
     private CharacterHashtable.Key _battleBossCharacterKey;
     private CharacterHashtable.Key _escortTargetCharacterKey;
     private bool _transitNextPhase = false;
     private int _phaseManagerIndex = 0;
+    private int _currentStageIndex = 0;
     // 現在選択中のキャラクターインデックス
     public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.CHARACTER_NONE, -1);
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
@@ -51,6 +54,10 @@ public class BattleManager : Singleton<BattleManager>
         {
             Instantiate(stageGridObject);
         }
+
+        // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する
+        FileReadManager.Instance.PlayerLoad(_currentStageIndex);
+        FileReadManager.Instance.EnemyLord(_currentStageIndex);
 
         _phaseManagers[(int)TurnType.PLAYER_TURN]   = new PlayerPhaseManager();
         _phaseManagers[(int)TurnType.ENEMY_TURN]    = new EnemyPhaseManager();
@@ -120,6 +127,9 @@ public class BattleManager : Singleton<BattleManager>
         // 現在のグリッド上に存在するキャラクター情報を更新
         StageGrid.GridInfo info;
         stageGrid.FetchCurrentGridInfo(out info);
+
+        BattleCameraController.Instance.SetLookAtPosition(info.charaStandPos);
+
         SelectCharacterInfo = new CharacterHashtable.Key(info.characterTag, info.charaIndex);
         // キャラクターのパラメータ表示の更新
         UpdateCharacterParameter();
@@ -478,31 +488,6 @@ public class BattleManager : Singleton<BattleManager>
     }
 
     /// <summary>
-    /// キャラクターインデックスを素に該当するキャラクターを探します
-    /// </summary>
-    /// <param name="characterIndex">検索するキャラクターのインデックス</param>
-    /// <returns>該当したキャラクター</returns>
-    public Character SearchCharacterFromCharaIndex(int characterIndex)
-    {
-        foreach (Player player in _players)
-        {
-            if (player.param.characterIndex == characterIndex)
-            {
-                return player;
-            }
-        }
-        foreach (Enemy enemy in _enemies)
-        {
-            if (enemy.param.characterIndex == characterIndex)
-            {
-                return enemy;
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
     /// 現在選択しているグリッド上のキャラクターを取得します
     /// </summary>
     /// <returns>選択しているグリッド上のキャラクター</returns>
@@ -511,7 +496,7 @@ public class BattleManager : Singleton<BattleManager>
         StageGrid.GridInfo info;
         StageGrid.Instance.FetchCurrentGridInfo(out info);
 
-        return SearchCharacterFromCharaIndex(info.charaIndex);
+        return GetCharacterFromHashtable(info.characterTag, info.charaIndex);
     }
 
     /// <summary>
