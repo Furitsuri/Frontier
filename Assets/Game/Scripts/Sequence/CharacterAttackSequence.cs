@@ -42,7 +42,8 @@ public class CharacterAttackSequence
         _attackCharacter.SetOpponentCharacter(_targetCharacter);
         _targetCharacter.SetOpponentCharacter(_attackCharacter);
 
-        _elapsedTime = 0f;
+        _elapsedTime    = 0f;
+        _phase          = Phase.START;
     }
 
     // Update is called once per frame

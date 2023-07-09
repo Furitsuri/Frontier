@@ -40,8 +40,10 @@ public class PLSelectGrid : PhaseStateBase
         // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
         int selectCharaIndex = info.charaIndex;
 
-        var player = BattleManager.Instance.GetCharacterFromHashtable( Character.CHARACTER_TAG.CHARACTER_PLAYER, selectCharaIndex );
-        if ( player != null && !player.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT])
+        Character character = BattleManager.Instance.GetSelectCharacter();
+        if ( character != null && 
+             character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER &&
+             !character.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT])
         {
             if (Input.GetKeyUp(KeyCode.Space))
             {

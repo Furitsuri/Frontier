@@ -14,36 +14,22 @@ public class Enemy : Character
         NUM
     }
 
-    public struct Plan
-    {
-        // 移動目標グリッドインデックス値
-        int destGridIndex;
-        // 攻撃目標ユニットインデックス値
-        int targetCharaIndex;
-    }
-
-    public ThinkingType ThinkType { get; private set; }
+    private ThinkingType _thikType;
     public EMAIBase EmAI { get; private set; }
 
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// 初期化します
+    /// 思考タイプ設定のために、親クラスのInit関数はoverrideしていません
+    /// </summary>
+    /// <param name="type">思考タイプ</param>
+    public void Init(ThinkingType type)
     {
-        // TODO : 試運転用にパラメータをセット。後ほど削除
-        this.param.characterTag = CHARACTER_TAG.CHARACTER_ENEMY;
-        this.param.characterIndex = 5;
-        this.param.moveRange = 2;
-        this.param.initGridIndex = this.tmpParam.gridIndex = 13;
-        this.param.MaxHP = this.param.CurHP = 8;
-        this.param.Atk = 6;
-        this.param.Def = 2;
-        this.param.initDir = Constants.Direction.BACK;
-        this.param.UICameraLengthY = 0.8f;
-        this.param.UICameraLengthZ = 1.4f;
-        this.param.UICameraLookAtCorrectY = 0.45f;
-        BattleManager.Instance.AddEnemyToList(this);
+        base.Init();
+
+        _thikType = type;
 
         // 思考タイプによってemAIに代入する派生クラスを変更する
-        switch(ThinkType)
+        switch (_thikType)
         {
             case ThinkingType.NEAR:
                 EmAI = new EMAIAggressive();

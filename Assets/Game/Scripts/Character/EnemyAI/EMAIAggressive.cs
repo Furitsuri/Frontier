@@ -16,7 +16,7 @@ public class EMAIAggressive : EMAIBase
     /// <param name="tmpParam">自身の一時保持パラメータ</param>
     override public (bool, bool) DetermineDestinationAndTarget( in Character.Parameter selfParam, in Character.TmpParameter selfTmpParam )
     {
-        ResetDestinationAndTarget();
+        _isDetermined = true;
 
         var stageGrid                   = StageGrid.Instance;
         List<int> candidateRouteIndexs  = new List<int>(stageGrid.GridTotalNum);

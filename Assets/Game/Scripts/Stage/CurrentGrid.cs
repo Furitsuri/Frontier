@@ -21,11 +21,11 @@ public sealed class CurrentGrid
     /// <param name="columnNum">”Õ–Ê‚É‚¨‚¯‚é—ñ‚ÉŠY“–‚·‚éƒOƒŠƒbƒh”</param>
     public void Init( int initIndex, int rowNum, int columnNum )
     {
-        _index = initIndex;
-        _rowNum = rowNum;
-        _columnNum = columnNum;
+        _index          = initIndex;
+        _rowNum         = rowNum;
+        _columnNum      = columnNum;
         _atkTargetIndex = 0;
-        _atkTargetNum = 0;
+        _atkTargetNum   = 0;
     }
 
     /// <summary>

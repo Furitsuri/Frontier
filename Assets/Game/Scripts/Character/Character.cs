@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
+[SerializeField]
 public class Character : MonoBehaviour
 {
     public enum BaseCommand
@@ -52,10 +54,6 @@ public class Character : MonoBehaviour
         public CHARACTER_TAG characterTag;
         // キャラクター番号
         public int characterIndex;
-        // ステージ開始時グリッド座標(インデックス)
-        public int initGridIndex;
-        // ステージ開始時向き
-        public Constants.Direction initDir;
         // 最大HP
         public int MaxHP;
         // 現在HP
@@ -68,27 +66,30 @@ public class Character : MonoBehaviour
         public int moveRange;
         // 攻撃レンジ
         public int attackRange;
-        // UI表示用カメラ長さ(Y方向)
-        public float UICameraLengthY;
-        // UI表示用カメラ長さ(Z方向)
-        public float UICameraLengthZ;
-        // UI表示用カメラターゲット(Y方向)
-        public float UICameraLookAtCorrectY;
+        // アクションゲージ最大値
+        public int maxActionGauge;
+        // アクションゲージ現在値
+        public int curActionGauge;
+        // アクションゲージ回復値
+        public int recoveryActionGauge;
+        // ステージ開始時グリッド座標(インデックス)
+        public int initGridIndex;
+        // ステージ開始時向き
+        public Constants.Direction initDir;
 
         public Parameter( int charaIndex = 0, int gridIndex = 0, int range = 0, Constants.Direction dir = Constants.Direction.FORWARD )
         {
-            characterTag    = CHARACTER_TAG.CHARACTER_NONE;
-            characterIndex  = charaIndex;
-            initGridIndex   = gridIndex;
-            moveRange       = range;
-            attackRange     = 1;
-            MaxHP           = CurHP = 20;
-            Atk             = 8;
-            Def             = 5;
-            initDir         = dir;
-            UICameraLengthY = 1.2f;
-            UICameraLengthZ = 1.5f;
-            UICameraLookAtCorrectY = 1.0f;
+            characterTag                    = CHARACTER_TAG.CHARACTER_NONE;
+            characterIndex                  = charaIndex;
+            MaxHP = CurHP                   = 20;
+            Atk                             = 8;
+            Def                             = 5;
+            moveRange                       = range;
+            attackRange                     = 1;
+            maxActionGauge = curActionGauge = 3;
+            recoveryActionGauge             = 1;
+            initGridIndex                   = gridIndex;
+            initDir                         = dir;
         }
     }
 
@@ -122,6 +123,25 @@ public class Character : MonoBehaviour
         }
     }
 
+    [System.Serializable]
+    public struct CameraParameter
+    {
+        // UI表示用カメラ長さ(Y方向)
+        public float UICameraLengthY;
+        // UI表示用カメラ長さ(Z方向)
+        public float UICameraLengthZ;
+        // UI表示用カメラターゲット(Y方向)
+        public float UICameraLookAtCorrectY;
+
+        public CameraParameter( float lengthY, float lengthZ, float lookAtCorrectY )
+        {
+            UICameraLengthY         = lengthY;
+            UICameraLengthZ         = lengthZ;
+            UICameraLookAtCorrectY  = lookAtCorrectY;
+        }
+    }
+
+
     protected string[] _animNames =
     {
         "Wait",
@@ -136,17 +156,23 @@ public class Character : MonoBehaviour
     protected Animation _animation;
     public Parameter param;
     public TmpParameter tmpParam;
+    public CameraParameter camParam;
     
     void Awake()
     {
         // タグとアニメーションの数は一致していること
         Debug.Assert( _animNames.Length == (int)ANIME_TAG.ANIME_TAG_NUM );
 
-        _animator = GetComponent<Animator>();
-        _animation = GetComponent<Animation>();
+        _animator   = GetComponent<Animator>();
+        _animation  = GetComponent<Animation>();
 
-        param = new Parameter(0, 0, 0, Constants.Direction.FORWARD);
-        tmpParam = new TmpParameter(false, 0);
+        param       = new Parameter(0, 0, 0, Constants.Direction.FORWARD);
+        tmpParam    = new TmpParameter(false, 0);
+    }
+
+    virtual public void Init()
+    {
+        tmpParam.gridIndex = param.initGridIndex;
     }
 
     virtual public void setAnimator(ANIME_TAG animTag) { }
@@ -154,6 +180,16 @@ public class Character : MonoBehaviour
     virtual public void setAnimator( ANIME_TAG animTag, bool b) { }
 
     virtual public void Die() { }
+
+    public Character.Parameter LoadCharacterParameter(string path)
+    {
+        string dataStr = "";
+        StreamReader reader = new StreamReader(Application.dataPath + path);
+        dataStr = reader.ReadToEnd();
+        reader.Close();
+
+        return JsonUtility.FromJson<Character.Parameter>(dataStr);
+    }
 
     /// <summary>
     /// 対戦相手にダメージを与えるイベントを発生させます

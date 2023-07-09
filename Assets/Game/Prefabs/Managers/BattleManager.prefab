@@ -45,3 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stageGridObject: {fileID: 3810255508824440438, guid: a459440f3bb1be44ca982570a074f9f1, type: 3}
+  playerPrefab: {fileID: 8422892626600285392, guid: b8ef35a9f0d11004f88ce3e1b7017b26, type: 3}
+  enemyPrefab: {fileID: 0}

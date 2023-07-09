@@ -10,7 +10,11 @@ public class EnemyPhaseManager : PhaseManagerBase
     /// </summary>
     override public void Init()
     {
-        base.Init();
+        // 目標座標や攻撃対象をリセット
+        foreach( Enemy enemy in BattleManager.Instance.GetEnemyEnumerable() )
+        {
+            enemy.EmAI.ResetDestinationAndTarget();
+        }
 
         // 選択グリッドを(1番目の)敵のグリッド位置に合わせる
         if (BattleManager.Instance.GetEnemyEnumerable() != null)
@@ -18,6 +22,8 @@ public class EnemyPhaseManager : PhaseManagerBase
             Enemy enemy = BattleManager.Instance.GetEnemyEnumerable().First();
             StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(enemy);
         }
+
+        base.Init();
     }
 
     /// <summary>

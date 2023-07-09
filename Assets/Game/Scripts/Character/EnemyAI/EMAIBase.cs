@@ -16,6 +16,8 @@ public class EMAIBase
         public List<int> targetCharaIndexs;
     }
 
+    // 既に移動対象や攻撃対象を決定しているか
+    protected bool _isDetermined = false;
     // 移動目標グリッドのインデックス値
     protected int _destinationGridIndex = -1;
     // 攻撃対象のキャラクターのインデックス値
@@ -69,12 +71,20 @@ public class EMAIBase
 
     /// <summary>
     /// 移動目標と攻撃対象キャラクターをリセットします
+    /// TODO : 再行動スキルなどを実装する場合は、対象に再行動を適応した際にこの関数を呼び出してください
     /// </summary>
     public void ResetDestinationAndTarget()
     {
+        _isDetermined           = false;
         _destinationGridIndex   = -1;
         _targetCharacter        = null;
     }
+
+    /// <summary>
+    /// 既に移動対象や攻撃対象を決定しているかどうかの情報を取得します
+    /// </summary>
+    /// <returns>決定の有無</returns>
+    public bool IsDetermined() { return _isDetermined; }
 
     /// <summary>
     /// 移動目標が有効かを判定します

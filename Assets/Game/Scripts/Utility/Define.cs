@@ -2,6 +2,8 @@ static public class Constants
 {
     public enum Direction
     {
+        NONE = -1,
+
         FORWARD,    // Z²³•ûŒü
         RIGHT,      // X²³•ûŒü
         BACK,       // Z²•‰•ûŒü

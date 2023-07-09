@@ -22,16 +22,17 @@ public class StageGrid : Singleton<StageGrid>
         ENEMY_EXIST         = 1 << 4,   // 敵キャラクターが存在
         OTHER_EXIST         = 1 << 5,   // 第三勢力が存在
     }
+
     public struct GridInfo
     {
         // キャラクターの立ち位置座標(※)
         public Vector3 charaStandPos;
-        // グリッド上に存在するキャラクターのタイプ
-        public Character.CHARACTER_TAG characterTag;
         // 移動阻害値(※)
         public int moveResist;
         // 移動値の見積もり値
         public int estimatedMoveRange;
+        // グリッド上に存在するキャラクターのタイプ
+        public Character.CHARACTER_TAG characterTag;
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // フラグ情報
@@ -46,9 +47,9 @@ public class StageGrid : Singleton<StageGrid>
         public void Init()
         {
             charaStandPos           = Vector3.zero;
-            characterTag            = CHARACTER_TAG.CHARACTER_NONE;
             moveResist              = -1;
             estimatedMoveRange      = -1;
+            characterTag            = CHARACTER_TAG.CHARACTER_NONE;
             charaIndex              = -1;
             flag                    = BitFlag.NONE;
         }
@@ -241,7 +242,7 @@ public class StageGrid : Singleton<StageGrid>
     /// <param name="moveRange">移動可能範囲値</param>
     /// <param name="attackRange">攻撃可能範囲値</param>
     /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
-    /// <param name="isAttackable">攻撃可能か否か</param>
+    /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
     /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
     void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, Character.CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
     {
@@ -268,12 +269,8 @@ public class StageGrid : Singleton<StageGrid>
         if (currentMoveRange < 0) return;
 
         // 攻撃範囲についても登録する
-        if (isAttackable && RegistAttackableEachGrid(gridIndex, attackRange, selfTag, true))
-        {
-            // ターゲットに攻撃可能な位置情報を登録
-            Methods.SetBitFlag(ref _gridInfo[gridIndex].flag, BitFlag.TARGET_ATTACK_BASE);
-        }
-
+        if (isAttackable && _gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_NONE)
+            RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
         // 左端を除外
         if ( gridIndex%_gridNumX != 0 )
             RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfTag, isAttackable);      // gridIndexからX軸方向へ-1
@@ -288,48 +285,61 @@ public class StageGrid : Singleton<StageGrid>
     /// <summary>
     /// 攻撃可能なグリッドを登録します
     /// </summary>
-    /// <param name="gridIndex">登録対象のグリッドインデックス</param>
+    /// <param name="gridIndex">対象のグリッドインデックス</param>
     /// <param name="attackRange">攻撃可能範囲値</param>
     /// <param name="selfTag">自身のキャラクタータグ</param>
-    /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-    bool RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, bool isDeparture = false)
+    /// <param name="departIndex">出発グリッドインデックス</param>
+    void RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, int departIndex)
     {
         // 範囲外のグリッドは考慮しない
-        if (gridIndex < 0 || GridTotalNum <= gridIndex) return false;
+        if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
         // 移動不可のグリッドには攻撃できない
-        if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return false;
+        if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return;
         // 出発地点でなければ登録
-        if ( !isDeparture )
+        if ( gridIndex != departIndex)
         {
             Methods.SetBitFlag(ref _gridInfo[gridIndex].flag, BitFlag.ATTACKABLE);
 
             switch( selfTag )
             {
                 case Character.CHARACTER_TAG.CHARACTER_PLAYER:
-                    return (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_ENEMY);
+                    if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_ENEMY ||
+                        _gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_OTHER)
+                    {
+                        Methods.SetBitFlag( ref _gridInfo[departIndex].flag, BitFlag.TARGET_ATTACK_BASE);
+                    }
+                    break;
                 case Character.CHARACTER_TAG.CHARACTER_ENEMY:
-                    return (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_PLAYER);
+                    if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_PLAYER ||
+                        _gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_OTHER)
+                    {
+                        Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.TARGET_ATTACK_BASE);
+                    }
+                    break;
+                case Character.CHARACTER_TAG.CHARACTER_OTHER:
+                    if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_PLAYER ||
+                        _gridInfo[gridIndex].characterTag == CHARACTER_TAG.CHARACTER_ENEMY)
+                    {
+                        Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.TARGET_ATTACK_BASE);
+                    }
+                    break;
                 default:
-                    return false;
+                    break;
             }
         }
 
         // 負の値であれば終了
-        if ( --attackRange < 0 ) return false;
-
-        bool isAttackable = false;
+        if ( --attackRange < 0 ) return;
 
         // 左端を除外
         if (gridIndex % _gridNumX != 0)
-            isAttackable |= RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag);       // gridIndexからX軸方向へ-1
+            RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag, departIndex);       // gridIndexからX軸方向へ-1
         // 右端を除外
         if ((gridIndex + 1) % _gridNumX != 0)
-            isAttackable |= RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag);       // gridIndexからX軸方向へ+1
+            RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag, departIndex);       // gridIndexからX軸方向へ+1
         // Z軸方向への加算と減算はそのまま
-        isAttackable |= RegistAttackableEachGrid(gridIndex - _gridNumX, attackRange, selfTag);   // gridIndexからZ軸方向へ-1
-        isAttackable |= RegistAttackableEachGrid(gridIndex + _gridNumX, attackRange, selfTag);   // gridindexからZ軸方向へ+1
-
-        return isAttackable;
+        RegistAttackableEachGrid(gridIndex - _gridNumX, attackRange, selfTag, departIndex);   // gridIndexからZ軸方向へ-1
+        RegistAttackableEachGrid(gridIndex + _gridNumX, attackRange, selfTag, departIndex);   // gridindexからZ軸方向へ+1
     }
 
     /// <summary>
@@ -410,7 +420,7 @@ public class StageGrid : Singleton<StageGrid>
     /// </summary>
     /// <param name="targetTag">攻撃対象のタグ</param>
     /// <returns>攻撃可能キャラクターが存在している</returns>
-    public bool RegistAttackTargetGridIndexs(Character.CHARACTER_TAG targetTag)
+    public bool RegistAttackTargetGridIndexs(Character.CHARACTER_TAG targetTag, Character target = null)
     {
         Character character = null;
         var btlInstance = BattleManager.Instance;
@@ -436,7 +446,25 @@ public class StageGrid : Singleton<StageGrid>
         if (0 < _attackableGridIndexs.Count)
         {
             _currentGrid.SetAtkTargetNum(_attackableGridIndexs.Count);
-            _currentGrid.SetAtkTargetIndex(0);
+
+            // 攻撃対象が既に決まっている場合は対象を探す
+            if (target != null && 1 < _attackableGridIndexs.Count)
+            {
+                for( int i = 0; i < _attackableGridIndexs.Count; ++i )
+                {
+                    var info = GetGridInfo(_attackableGridIndexs[i]);
+                    Character chara = BattleManager.Instance.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                    if( target == chara )
+                    {
+                        _currentGrid.SetAtkTargetIndex(i);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                _currentGrid.SetAtkTargetIndex(0);
+            }
         }
 
         return 0 < _attackableGridIndexs.Count;
@@ -475,10 +503,11 @@ public class StageGrid : Singleton<StageGrid>
         for (int i = 0; i < GridTotalNum; ++i)
         {
             Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE);
+            Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.TARGET_ATTACK_BASE);
         }
 
         // 攻撃可否情報を各グリッドに登録
-        RegistAttackableEachGrid(departIndex, attackRange, selfTag, true);
+        RegistAttackableEachGrid(departIndex, attackRange, selfTag, departIndex);
     }
 
     /// <summary>
