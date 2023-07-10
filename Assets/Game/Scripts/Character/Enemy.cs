@@ -9,7 +9,8 @@ public class Enemy : Character
     /// </summary>
     public enum ThinkingType
     {
-        NEAR = 0,   // 自分の距離に近い敵を優先
+        AGGERESSIVE = 0,    // 積極的に移動し、攻撃後の結果の評価値が高い対象を狙う
+        WAITING,            // 自身の行動範囲に対象が入ってこない限り動かない。動き始めた後はAGGRESSIVEと同じ動作
 
         NUM
     }
@@ -31,7 +32,7 @@ public class Enemy : Character
         // 思考タイプによってemAIに代入する派生クラスを変更する
         switch (_thikType)
         {
-            case ThinkingType.NEAR:
+            case ThinkingType.AGGERESSIVE:
                 EmAI = new EMAIAggressive();
                 break;
             default:

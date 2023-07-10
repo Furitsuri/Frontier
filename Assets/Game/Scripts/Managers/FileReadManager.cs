@@ -71,16 +71,16 @@ public class FileReadManager : Singleton<FileReadManager>
         for( int i = 0; i < Params.Length; ++i )
         {
             int prefabIndex = Params[i].Prefab;
-            GameObject warriorObject = Instantiate(PlayersPrefab[prefabIndex]);
-            if (warriorObject == null) continue;
+            GameObject playerObject = Instantiate(PlayersPrefab[prefabIndex]);
+            if (playerObject == null) continue;
 
-            Player player = warriorObject.GetComponent<Player>();
+            Player player = playerObject.GetComponent<Player>();
             if (player == null) continue;
 
             // ファイルから読み込んだパラメータを設定
             ApplyCharacterParams(ref player.param, Params[i]);
             player.Init();
-            warriorObject.SetActive(true);
+            playerObject.SetActive(true);
 
             BattleManager.Instance.AddPlayerToList(player);
         }

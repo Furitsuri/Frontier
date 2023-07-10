@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -151,7 +152,11 @@ public class Character : MonoBehaviour
         "Die"
     };
 
+    [SerializeField]
+    private GameObject _bulletObject;
+
     protected Character _opponent;
+    protected Bullet _bullet;
     protected Animator _animator;
     protected Animation _animation;
     public Parameter param;
@@ -168,28 +173,45 @@ public class Character : MonoBehaviour
 
         param       = new Parameter(0, 0, 0, Constants.Direction.FORWARD);
         tmpParam    = new TmpParameter(false, 0);
+
+        // 弾オブジェクトが設定されていれば生成
+        // 使用時まで非アクティブにする
+        if(_bulletObject != null )
+        {
+            GameObject bulletObject = Instantiate(_bulletObject);
+            if( bulletObject != null )
+            {
+                _bullet = bulletObject.GetComponent<Bullet>();
+                bulletObject.SetActive(false);
+            }
+        }
     }
 
+    /// <summary>
+    /// 初期化処理を行います
+    /// </summary>
     virtual public void Init()
     {
         tmpParam.gridIndex = param.initGridIndex;
     }
 
+    /// <summary>
+    /// アニメーションを再生します
+    /// </summary>
+    /// <param name="animTag">アニメーションタグ</param>
     virtual public void setAnimator(ANIME_TAG animTag) { }
 
+    /// <summary>
+    /// アニメーションを再生します
+    /// </summary>
+    /// <param name="animTag">アニメーションタグ</param>
+    /// <param name="b">トリガーアニメーションに対して使用</param>
     virtual public void setAnimator( ANIME_TAG animTag, bool b) { }
 
+    /// <summary>
+    /// 死亡処理を行います
+    /// </summary>
     virtual public void Die() { }
-
-    public Character.Parameter LoadCharacterParameter(string path)
-    {
-        string dataStr = "";
-        StreamReader reader = new StreamReader(Application.dataPath + path);
-        dataStr = reader.ReadToEnd();
-        reader.Close();
-
-        return JsonUtility.FromJson<Character.Parameter>(dataStr);
-    }
 
     /// <summary>
     /// 対戦相手にダメージを与えるイベントを発生させます
@@ -221,6 +243,29 @@ public class Character : MonoBehaviour
         // ダメージUIを表示
         BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
         BattleUISystem.Instance.ToggleDamageUI(true);
+    }
+
+    /// <summary>
+    /// 弾を発射します
+    /// イベントとしてモーションから呼ばれます
+    /// </summary>
+    virtual public void FireBullet()
+    {
+        if (_bullet == null || _opponent == null) return;
+
+        _bullet.gameObject.SetActive(true);
+
+        // 射出地点、目標地点などを設定して弾を発射
+        var firingPoint = transform.position;
+        firingPoint.y += camParam.UICameraLookAtCorrectY;
+        _bullet.SetFiringPoint(firingPoint);
+        var targetCoordinate = _opponent.transform.position;
+        targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
+        _bullet.SetTargetCoordinate(targetCoordinate);
+        var gridLength = StageGrid.Instance.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
+        _bullet.SetFlightTimeFromGridLength( gridLength );
+
+        _bullet.StartUpdateCoroutine(_bullet.gameObject.SetActive);
     }
 
     /// <summary>
@@ -267,9 +312,18 @@ public class Character : MonoBehaviour
         return param.CurHP <= 0;
     }
 
+    /// <summary>
+    /// ゲームオブジェクトを削除します
+    /// </summary>
     public void Remove()
     {
         Destroy(gameObject);
         Destroy(this);
     }
+
+    /// <summary>
+    /// 設定されている弾を取得します
+    /// </summary>
+    /// <returns>Prefabに設定されている弾</returns>
+    public Bullet GetBullet() { return _bullet; }
 }
