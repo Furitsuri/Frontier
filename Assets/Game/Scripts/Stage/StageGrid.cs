@@ -594,7 +594,9 @@ public class StageGrid : Singleton<StageGrid>
         foreach( var grid in _gridMeshs )
         {
             grid.ClearDraw();
+            grid.Remove();
         }
+        _gridMeshs.Clear();
     }
 
     public void AddGridMeshToList( GridMesh script )
@@ -712,6 +714,21 @@ public class StageGrid : Singleton<StageGrid>
         FetchCurrentGridInfo(out info);
         character.transform.position = info.charaStandPos;
         character.transform.rotation = _footprint.rotation;
+    }
+
+    /// <summary>
+    /// 指定されたインデックス間のグリッド長を返します
+    /// </summary>
+    /// <param name="fromIndex">始点インデックス</param>
+    /// <param name="toIndex">終点インデックス</param>
+    /// <returns>グリッド長</returns>
+    public float CalcurateGridLength( int fromIndex, int toIndex )
+    {
+        var from        = _gridInfo[fromIndex].charaStandPos;
+        var to          = _gridInfo[toIndex].charaStandPos;
+        var gridLength  = (from - to).magnitude / gridSize;
+
+        return gridLength;
     }
 
 #if UNITY_EDITOR

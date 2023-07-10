@@ -63,4 +63,13 @@ public class GridMesh : MonoBehaviour
     {
         meshFilter.sharedMesh = null;
     }
+
+    /// <summary>
+    /// ゲームオブジェクトを削除します
+    /// </summary>
+    public void Remove()
+    {
+        Destroy(gameObject);
+        Destroy(this);
+    }
 }

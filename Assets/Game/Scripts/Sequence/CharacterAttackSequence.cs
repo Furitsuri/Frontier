@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CharacterAttackSequence
@@ -9,6 +10,7 @@ public class CharacterAttackSequence
     {
         START,
         ATTACK,
+        ATTACK_BULLET,
         COUNTER,
         DIE,
         END
@@ -21,6 +23,7 @@ public class CharacterAttackSequence
     // Transformは遅いためキャッシュ
     private Transform _atkCharaTransform = null;
     private Transform _tgtCharaTransform = null;
+    private Bullet _bullet = null;
     private Quaternion _atkCharaInitialRot;
     private Quaternion _tgtCharaInitialRot;
     private float _startRotarionTimer = 0f;
@@ -28,22 +31,22 @@ public class CharacterAttackSequence
 
     public void Init(Character attackChara, Character targetChara)
     {
-        _attackCharacter    = attackChara;
-        _targetCharacter    = targetChara;
-        _diedCharacter      = null;
-        _atkCharaTransform  = _attackCharacter.transform;
-        _tgtCharaTransform  = _targetCharacter.transform;
-
-        _startRotarionTimer = 0f;
-        _atkCharaInitialRot = _atkCharaTransform.rotation;
-        _tgtCharaInitialRot = _tgtCharaTransform.rotation;
+        _attackCharacter        = attackChara;
+        _targetCharacter        = targetChara;
+        _diedCharacter          = null;
+        _atkCharaTransform      = _attackCharacter.transform;
+        _tgtCharaTransform      = _targetCharacter.transform;
+        _bullet                 = null;
+        _atkCharaInitialRot     = _atkCharaTransform.rotation;
+        _tgtCharaInitialRot     = _tgtCharaTransform.rotation;
 
         // 対戦相手として設定
         _attackCharacter.SetOpponentCharacter(_targetCharacter);
         _targetCharacter.SetOpponentCharacter(_attackCharacter);
 
-        _elapsedTime    = 0f;
-        _phase          = Phase.START;
+        _startRotarionTimer = 0f;
+        _elapsedTime        = 0f;
+        _phase              = Phase.START;
     }
 
     // Update is called once per frame
@@ -66,7 +69,16 @@ public class CharacterAttackSequence
                 {
                     _attackCharacter.setAnimator(Character.ANIME_TAG.ATTACK_01);
 
-                    _phase = Phase.ATTACK;
+                    // 弾持ちの場合は弾がヒットするのを待つ
+                    _bullet = _attackCharacter.GetBullet();
+                    if ( _bullet == null )
+                    {
+                        _phase = Phase.ATTACK;
+                    }
+                    else
+                    {
+                        _phase = Phase.ATTACK_BULLET;
+                    }
                 }
                 break;
             case Phase.ATTACK:
@@ -83,7 +95,23 @@ public class CharacterAttackSequence
                         _phase = Phase.COUNTER;
                     }
                 }
-                
+                break;
+            case Phase.ATTACK_BULLET:
+                if(_bullet.IsHit() )
+                {
+                    // 弾の攻撃ヒットについてはモーションイベントからではなくスクリプト上から呼ぶ
+                    _attackCharacter.AttackOpponentEvent();
+
+                    if (_targetCharacter.IsDead())
+                    {
+                        _diedCharacter = _targetCharacter;
+                        _phase = Phase.DIE;
+                    }
+                    else
+                    {
+                        _phase = Phase.COUNTER;
+                    }
+                }
                 break;
             case Phase.COUNTER:
                 if( Constants.ATTACK_SEQUENCE_WAIT_TIME < (_elapsedTime += Time.deltaTime) )
@@ -108,6 +136,10 @@ public class CharacterAttackSequence
             case Phase.END:
                 // ダメージUIを非表示
                 BattleUISystem.Instance.ToggleDamageUI(false);
+                // 対戦相手設定をリセット
+                _attackCharacter.ResetOpponentCharacter();
+                _targetCharacter.ResetOpponentCharacter();
+
                 return true;
 
         }
