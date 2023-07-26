@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 public class Arrow : Bullet
 {
-    override public IEnumerator UpdateTransformCoroutine(UnityAction<bool> callback)
+    override public IEnumerator UpdateTransformCoroutine(UnityAction callback)
     {
         _isHit = false;
 
@@ -38,5 +38,7 @@ public class Arrow : Bullet
         transform.position = _targetCoordinate;
         gameObject.SetActive(false);
         _isHit = true;
+
+        callback();
     }
 }

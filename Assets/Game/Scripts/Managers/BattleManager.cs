@@ -36,10 +36,11 @@ public class BattleManager : Singleton<BattleManager>
     private List<Player> _players               = new List<Player>(Constants.CHARACTER_MAX_NUM);
     private List<Enemy> _enemies                = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
     private CharacterHashtable _characterHash   = new CharacterHashtable();
-    private Character _prevCharacter            = null;
     private CharacterHashtable.Key _diedCharacterKey;
     private CharacterHashtable.Key _battleBossCharacterKey;
     private CharacterHashtable.Key _escortTargetCharacterKey;
+    private Character _prevCharacter = null;
+    private StageGrid.GridInfo _prevInfo;
     private bool _transitNextPhase = false;
     private int _phaseManagerIndex = 0;
     private int _currentStageIndex = 0;
@@ -122,13 +123,14 @@ public class BattleManager : Singleton<BattleManager>
             return;
         }
 
-        var stageGrid = StageGrid.Instance;
-
         // 現在のグリッド上に存在するキャラクター情報を更新
         StageGrid.GridInfo info;
-        stageGrid.FetchCurrentGridInfo(out info);
-
-        BattleCameraController.Instance.SetLookAtPosition(info.charaStandPos);
+        _stageGrid.FetchCurrentGridInfo(out info);
+        if(_prevInfo.charaStandPos != info.charaStandPos)
+        {
+            BattleCameraController.Instance.SetLookAtBasedOnSelectCursor(info.charaStandPos);
+            _prevInfo = info;
+        } 
 
         SelectCharacterInfo = new CharacterHashtable.Key(info.characterTag, info.charaIndex);
         // キャラクターのパラメータ表示の更新
@@ -201,10 +203,6 @@ public class BattleManager : Singleton<BattleManager>
                 BattleUI.EnemyParameter.SetCharacter(AttackerCharacter);
                 BattleUI.EnemyParameter.SetAttacking(true);
             }
-
-            // パラメータ表示を更新
-            BattleUI.TogglePlayerParameter(true);
-            BattleUI.ToggleEnemyParameter(true);
         }
         else
         {
@@ -396,6 +394,9 @@ public class BattleManager : Singleton<BattleManager>
     {
         AttackerCharacter = character;
         AttackerCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer("ParamRenderAttacker"));
+
+        BattleUISystem.Instance.TogglePlayerParameter(true);
+        BattleUISystem.Instance.ToggleEnemyParameter(true);
     }
 
     /// <summary>

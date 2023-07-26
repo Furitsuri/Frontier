@@ -73,4 +73,37 @@ public static class Methods
         flagsValue &= ~flagsValue; // flagsValue = 0でも問題ない
         flags = (T)Enum.ToObject(typeof(T), flagsValue);
     }
+
+    /// <summary>
+    /// より味方に近いキャラクターを比較して返します
+    /// </summary>
+    /// <param name="former">前者</param>
+    /// <param name="latter">後者</param>
+    /// <returns>前者と後者のうち、より味方に近い側</returns>
+    public static Character CompareAllyCharacter( Character former, Character latter )
+    {
+        var formerTag = former.param.characterTag;
+        var latterTag = latter.param.characterTag;
+
+        if ( formerTag != Character.CHARACTER_TAG.CHARACTER_PLAYER )
+        {
+            if( latterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER )
+            {
+                return latter;
+            }
+            else
+            {
+                if( formerTag == Character.CHARACTER_TAG.CHARACTER_OTHER )
+                {
+                    return former;
+                }
+                else
+                {
+                    return latter;
+                }
+            }
+        }
+
+        return former;
+    }
 }

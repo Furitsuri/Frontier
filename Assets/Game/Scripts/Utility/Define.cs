@@ -26,7 +26,14 @@ static public class Constants
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
     // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
+    // 攻撃時に相手に近接するまでの時間
+    public const float ATTACK_CLOSING_TIME = 0.55f;
+    // 攻撃後に相手から距離を取るまでの時間
+    public const float ATTACK_DISTANCING_TIME = 0.23f;
     // 攻撃シーケンスにおける待ち時間
     public const float ATTACK_SEQUENCE_WAIT_TIME = 0.75f;
-    
+    // 攻撃シーケンスにおける攻撃開始までの待ち時間
+    public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
+    // 攻撃シーケンスにおける終了待ち時間
+    public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
 }
