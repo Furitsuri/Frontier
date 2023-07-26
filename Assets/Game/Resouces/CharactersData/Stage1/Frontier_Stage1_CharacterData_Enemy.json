@@ -1,0 +1,55 @@
+{
+    "CharacterParams": [
+        {
+            "Param": {
+                "CharacterTag": 1,
+                "CharacterIndex": 1,
+                "MaxHP": 8,
+                "Atk": 7,
+                "Def": 3,
+                "MoveRange": 2,
+                "AtkRange": 1,
+                "ActGaugeMax": 1,
+                "ActRecovery": 0,
+                "InitGridIndex": 53,
+                "InitDir": 2,
+                "Prefab": 0
+            },
+            "ThinkType": 0
+        },
+        {
+            "Param": {
+                "CharacterTag": 1,
+                "CharacterIndex": 2,
+                "MaxHP": 8,
+                "Atk": 7,
+                "Def": 3,
+                "MoveRange": 2,
+                "AtkRange": 1,
+                "ActGaugeMax": 1,
+                "ActRecovery": 0,
+                "InitGridIndex": 55,
+                "InitDir": 2,
+                "Prefab": 0
+            },
+            "ThinkType": 0
+        },
+        {
+            "Param": {
+                "CharacterTag": 1,
+                "CharacterIndex": 3,
+                "MaxHP": 10,
+                "Atk": 6,
+                "Def": 5,
+                "MoveRange": 3,
+                "AtkRange": 1,
+                "ActGaugeMax": 2,
+                "ActRecovery": 1,
+                "InitGridIndex": 64,
+                "InitDir": 2,
+                "Prefab": 1
+            },
+            "ThinkType": 0
+        }
+    ]
+}

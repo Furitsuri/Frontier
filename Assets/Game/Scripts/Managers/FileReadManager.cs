@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using TMPro.SpriteAssetUtilities;
 using Palmmedia.ReportGenerator.Core.Common;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 public class FileReadManager : Singleton<FileReadManager>
 {
@@ -18,8 +20,14 @@ public class FileReadManager : Singleton<FileReadManager>
     [SerializeField]
     public string[] EnemyParamFilePath;
 
+    [SerializeField]
+    public string CloseAtkCameraParamFilePath;
+
+    [SerializeField]
+    public string RangedAtkCameraParamFilePath;
+
     [System.Serializable]
-    public struct ParamData
+    public struct CharacterParamData
     {
         public int CharacterTag;
         public int CharacterIndex;
@@ -38,20 +46,26 @@ public class FileReadManager : Singleton<FileReadManager>
     [System.Serializable]
     public struct NpcParamData
     {
-        public ParamData Param;
+        public CharacterParamData Param;
         public int ThinkType;
     }
 
     [System.Serializable]
     public class PlayerParamContainer
     {
-        public ParamData[] CharacterParams;
+        public CharacterParamData[] CharacterParams;
     }
 
     [System.Serializable]
     public class NpcParamContainer
     {
         public NpcParamData[] CharacterParams;
+    }
+
+    [System.Serializable]
+    public class CameraParamContainer
+    {
+        public List<BattleCameraController.CameraParamData[]> CameraParams;
     }
 
     /// <summary>
@@ -61,12 +75,12 @@ public class FileReadManager : Singleton<FileReadManager>
     public void PlayerLoad( int stageIndex )
     {
         // JSONファイルの読み込み
-        string json = File.ReadAllText(PlayerParamFilePath[0]);
+        string json = File.ReadAllText(PlayerParamFilePath[stageIndex]);
         // JSONデータのデシリアライズ
         var dataContainer = JsonUtility.FromJson<PlayerParamContainer>(json);
         if (dataContainer == null) return;
         // デシリアライズされたデータを配列に格納
-        ParamData[] Params = dataContainer.CharacterParams;
+        CharacterParamData[] Params = dataContainer.CharacterParams;
         
         for( int i = 0; i < Params.Length; ++i )
         {
@@ -92,8 +106,9 @@ public class FileReadManager : Singleton<FileReadManager>
     /// <param name="stageIndex">ステージナンバー</param>
     public void EnemyLord( int stageIndex )
     {
-        string json = File.ReadAllText(EnemyParamFilePath[0]);
+        string json = File.ReadAllText(EnemyParamFilePath[stageIndex]);
         var dataContainer = JsonUtility.FromJson<NpcParamContainer>(json);
+        if( dataContainer == null ) return;
         NpcParamData[] Params = dataContainer.CharacterParams;
 
         for (int i = 0; i < Params.Length; ++i)
@@ -114,7 +129,25 @@ public class FileReadManager : Singleton<FileReadManager>
         }
     }
 
-    private void ApplyCharacterParams( ref Character.Parameter param, in ParamData data )
+    /// <summary>
+    /// 
+    /// </summary>
+    public void CameraParamLord()
+    {
+        string json = File.ReadAllText(CloseAtkCameraParamFilePath);
+        var dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>(json);
+        if (dataContainer == null) return;
+        List <BattleCameraController.CameraParamData[]> closeParams = dataContainer.CameraParams;
+
+        json = File.ReadAllText(RangedAtkCameraParamFilePath);
+        dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>(json);
+        if (dataContainer == null) return;
+        List<BattleCameraController.CameraParamData[]> rangedParams = dataContainer.CameraParams;
+
+        BattleCameraController.Instance.SetCameraParamDatas(closeParams, rangedParams);
+    }
+
+    private void ApplyCharacterParams( ref Character.Parameter param, in CharacterParamData data )
     {
         param.characterTag              = (Character.CHARACTER_TAG)data.CharacterTag;
         param.characterIndex            = data.CharacterIndex;

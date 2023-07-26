@@ -1,0 +1,50 @@
+{
+    "CameraParams": [
+        [
+            {
+                "Phase": "close",
+                "Length": 2.7,
+                "Roll": 0.0,
+                "Pitch": 15.0,
+                "Yaw": -145.0
+            },
+            {
+                "Phase": "attack",
+                "Length": 2.0,
+                "Roll": 0.0,
+                "Pitch": 30.0,
+                "Yaw": -100.0
+            },
+            {
+                "Phase": "wait",
+                "Length": 3.0,
+                "Roll": 0.0,
+                "Pitch": 30.0,
+                "Yaw": -100.0
+            }
+        ],
+        [
+            {
+                "Phase": "close",
+                "Length": 2.7,
+                "Roll": 0.0,
+                "Pitch": 15.0,
+                "Yaw": 145.0
+            },
+            {
+                "Phase": "attack",
+                "Length": 2.0,
+                "Roll": 0.0,
+                "Pitch": 30.0,
+                "Yaw": 100.0
+            },
+            {
+                "Phase": "wait",
+                "Length": 3.0,
+                "Roll": 0.0,
+                "Pitch": 30.0,
+                "Yaw": 100.0
+            }
+        ]
+    ]
+}

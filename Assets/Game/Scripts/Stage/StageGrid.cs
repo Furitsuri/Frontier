@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using static Character;
-using static EMAIBase;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class StageGrid : Singleton<StageGrid>
@@ -80,6 +79,9 @@ public class StageGrid : Singleton<StageGrid>
     [SerializeField]
     [HideInInspector]
     private int _gridNumZ;
+    [SerializeField]
+    public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
+
     public GameObject m_StageObject;
     public GameObject m_GridMeshObject;
     public float gridSize = 1f;
@@ -661,6 +663,15 @@ public class StageGrid : Singleton<StageGrid>
     public ref GridInfo GetGridInfo( int index )
     {
         return ref _gridInfo[index];
+    }
+
+    public void ToggleMeshDisplay(bool isDisplay)
+    {
+        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+        if( meshRenderer != null )
+        {
+            meshRenderer.enabled = isDisplay;
+        }
     }
 
     /// <summary>

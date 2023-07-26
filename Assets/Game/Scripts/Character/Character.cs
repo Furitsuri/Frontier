@@ -48,6 +48,17 @@ public class Character : MonoBehaviour
         ANIME_TAG_NUM,
     }
 
+    public enum CLOSED_ATTACK_PHASE
+    {
+        NONE = -1,
+
+        CLOSINGE,
+        ATTACK,
+        DISTANCING,
+
+        CLOSED_ATTACK_PHASE_NUM,
+    }
+
     // キャラクターの持つパラメータ
     public struct Parameter
     {
@@ -154,11 +165,13 @@ public class Character : MonoBehaviour
 
     [SerializeField]
     private GameObject _bulletObject;
-
+    private float _elapsedTime = 0f;
+    private bool _isTransitNextPhaseCamera = false;
     protected Character _opponent;
     protected Bullet _bullet;
     protected Animator _animator;
     protected Animation _animation;
+    protected CLOSED_ATTACK_PHASE _closingAttackPhase;
     public Parameter param;
     public TmpParameter tmpParam;
     public CameraParameter camParam;
@@ -192,7 +205,8 @@ public class Character : MonoBehaviour
     /// </summary>
     virtual public void Init()
     {
-        tmpParam.gridIndex = param.initGridIndex;
+        tmpParam.gridIndex  = param.initGridIndex;
+        _elapsedTime        = 0f;
     }
 
     /// <summary>
@@ -265,7 +279,71 @@ public class Character : MonoBehaviour
         var gridLength = StageGrid.Instance.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
         _bullet.SetFlightTimeFromGridLength( gridLength );
 
-        _bullet.StartUpdateCoroutine(_bullet.gameObject.SetActive);
+        _bullet.StartUpdateCoroutine(AttackOpponentEvent);
+
+        // 発射と同時に次のカメラに遷移させる
+        _isTransitNextPhaseCamera = true;
+    }
+
+    /// <summary>
+    /// 近接攻撃を開始します
+    /// </summary>
+    public void PlayClosedAttack()
+    {
+        _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
+        _elapsedTime = 0f;
+
+        setAnimator(Character.ANIME_TAG.MOVE, true);
+    }
+
+    /// <summary>
+    /// 近接攻撃時の流れを更新します
+    /// </summary>
+    /// <param name="departure">近接攻撃の開始地点</param>
+    /// <param name="destination">近接攻撃の終了地点</param>
+    public void UpdateClosedAttack( in Vector3 departure, in Vector3 destination )
+    {
+        if (GetBullet() != null) return; 
+
+        float t = 0f;
+
+        switch( _closingAttackPhase )
+        {
+            case CLOSED_ATTACK_PHASE.CLOSINGE:
+                _elapsedTime += Time.deltaTime;
+                t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_CLOSING_TIME);
+                t = Mathf.SmoothStep(0f, 1f, t);
+                gameObject.transform.position = Vector3.Lerp(departure, destination, t);
+                if (1.0f <= t)
+                {
+                    _elapsedTime = 0f;
+                    setAnimator(Character.ANIME_TAG.ATTACK_01);
+
+                    _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
+                }
+                break;
+            case CLOSED_ATTACK_PHASE.ATTACK:
+                if( IsPlayinghAnimation(Character.ANIME_TAG.WAIT) )
+                {
+                    setAnimator(Character.ANIME_TAG.MOVE, false);
+
+                    _closingAttackPhase = CLOSED_ATTACK_PHASE.DISTANCING;
+                }
+                break;
+            case CLOSED_ATTACK_PHASE.DISTANCING:
+                // 攻撃前の場所に戻る
+                _elapsedTime += Time.deltaTime;
+                t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_DISTANCING_TIME);
+                t = Mathf.SmoothStep(0f, 1f, t);
+                gameObject.transform.position = Vector3.Lerp(destination, departure, t);
+                if (1.0f <= t)
+                {
+                    _elapsedTime = 0f;
+                    _closingAttackPhase = CLOSED_ATTACK_PHASE.NONE;
+                }
+                break;
+            default: break;
+        }
     }
 
     /// <summary>
@@ -285,6 +363,30 @@ public class Character : MonoBehaviour
         _opponent = null;
     }
 
+    public bool IsPlayer() { return param.characterTag == CHARACTER_TAG.CHARACTER_PLAYER; }
+
+    public bool IsEnemy() { return param.characterTag == CHARACTER_TAG.CHARACTER_ENEMY; }
+
+    public bool IsOther() { return param.characterTag == CHARACTER_TAG.CHARACTER_OTHER; }
+
+    /// <summary>
+    /// 指定のアニメーションを再生中かを判定します
+    /// </summary>
+    /// <param name="animTag">アニメーションタグ</param>
+    /// <returns>true : 再生中, false : 再生していない</returns>
+    public bool IsPlayinghAnimation(ANIME_TAG animTag)
+    {
+        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
+        // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
+        if (stateInfo.IsName(_animNames[(int)animTag]) && stateInfo.normalizedTime < 1f)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// 指定のアニメーションが終了したかを判定します
     /// </summary>
@@ -294,13 +396,27 @@ public class Character : MonoBehaviour
     {
         AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
-        // animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
+        // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
         if (stateInfo.IsName(_animNames[(int)animTag]) && 1f <= stateInfo.normalizedTime)
         {
             return true;
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public bool IsTransitNextPhaseCamera()
+    {
+        return _isTransitNextPhaseCamera;
+    }
+
+    public void ResetTransitNextPhaseCamera()
+    {
+        _isTransitNextPhaseCamera = false;
     }
 
     /// <summary>

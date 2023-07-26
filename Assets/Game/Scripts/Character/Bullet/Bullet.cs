@@ -49,12 +49,12 @@ public class Bullet : MonoBehaviour
     /// Bullet‚ğActive‚É‚µ‚½Œã‚ÉŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢
     /// </summary>
     /// <returns></returns>
-    virtual public IEnumerator UpdateTransformCoroutine( UnityAction<bool> callback )
+    virtual public IEnumerator UpdateTransformCoroutine( UnityAction callback )
     {
         yield return null;
     }
 
-    public Coroutine StartUpdateCoroutine(UnityAction<bool> callback)
+    public Coroutine StartUpdateCoroutine(UnityAction callback)
     {
         return StartCoroutine(UpdateTransformCoroutine(callback));
     }
