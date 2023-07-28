@@ -59,7 +59,6 @@ public class BattleCameraController : Singleton<BattleCameraController>
 
     private CameraMode _mode;
     private AttackSequenceCameraPhase _atkCameraPhase;
-    private AttackType _attackType;
     private Camera _mainCamera;
     private List<CameraParamData[]> _closeAtkCameraParamDatas;
     private List<CameraParamData[]> _rangedAtkCameraParamDatas;
@@ -290,18 +289,6 @@ public class BattleCameraController : Singleton<BattleCameraController>
         _baseDir                    = _baseTransform.forward;
         _lookAtPosition             = _lookAtTransform.position;
         _fadeElapsedTime            = 0f;
-
-        // 攻撃タイプの設定
-        if ( attacker.GetBullet() == null )
-        {
-            if( attacker.IsPlayer() ) { _attackType = AttackType.ALLY_CLOSE_ATTACK; }
-            else { _attackType = AttackType.OPPONENT_CLOSE_ATTACK; }
-        }
-        else
-        {
-            if (attacker.IsPlayer()) { _attackType = AttackType.ALLY_RANGED_ATTACK; }
-            else { _attackType = AttackType.OPPONENT_RANGED_ATTACK; }
-        }
 
         // 一度パラメータを非表示
         BattleUISystem.Instance.TogglePlayerParameter(false);

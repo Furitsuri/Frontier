@@ -149,14 +149,16 @@ public class FileReadManager : Singleton<FileReadManager>
 
     private void ApplyCharacterParams( ref Character.Parameter param, in CharacterParamData data )
     {
-        param.characterTag              = (Character.CHARACTER_TAG)data.CharacterTag;
-        param.characterIndex            = data.CharacterIndex;
-        param.CurHP = param.MaxHP       = data.MaxHP;
-        param.Atk                       = data.Atk;
-        param.Def                       = data.Def;
-        param.moveRange                 = data.MoveRange;
-        param.attackRange               = data.AtkRange;
-        param.initGridIndex             = data.InitGridIndex;
-        param.initDir                   = (Constants.Direction)data.InitDir;
+        param.characterTag                          = (Character.CHARACTER_TAG)data.CharacterTag;
+        param.characterIndex                        = data.CharacterIndex;
+        param.CurHP = param.MaxHP                   = data.MaxHP;
+        param.Atk                                   = data.Atk;
+        param.Def                                   = data.Def;
+        param.moveRange                             = data.MoveRange;
+        param.attackRange                           = data.AtkRange;
+        param.curActionGauge = param.maxActionGauge = data.ActGaugeMax;
+        param.recoveryActionGauge                   = data.ActRecovery;
+        param.initGridIndex                         = data.InitGridIndex;
+        param.initDir                               = (Constants.Direction)data.InitDir;
     }
 }
