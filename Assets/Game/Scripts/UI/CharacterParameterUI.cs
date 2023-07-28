@@ -1,37 +1,65 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CharacterParameterUI : MonoBehaviour
 {
-    public TextMeshProUGUI TMPMaxHPValue;
-    public TextMeshProUGUI TMPCurHPValue;
-    public TextMeshProUGUI TMPAtkValue;
-    public TextMeshProUGUI TMPDefValue;
+    [SerializeField]
+    private TextMeshProUGUI TMPMaxHPValue;
+    [SerializeField]
+    private TextMeshProUGUI TMPCurHPValue;
+    [SerializeField]
+    private TextMeshProUGUI TMPAtkValue;
+    [SerializeField]
+    private TextMeshProUGUI TMPDefValue;
+    [SerializeField]
     public TextMeshProUGUI TMPDiffHPValue;
-    public RawImage TargetImage;
+    [SerializeField]
+    private TextMeshProUGUI TMPActRecoveryValue;
+    [SerializeField]
+    private RawImage TargetImage;
+    [SerializeField]
+    private RectTransform PanelTransform;
+    [SerializeField]
+    private RawImage ActGaugeElemImage;
+    [SerializeField]
+    private float BlinkingDuration;
 
-    float _camareAngleY;
-    Character _character;
-    Camera _Camera;
-    RenderTexture _TargetTexture;
-    bool _isAttacking = false;
+    private Character _character;
+    private Camera _camera;
+    private RenderTexture _targetTexture;
+    private List<RawImage> _actGaugeElems;
+    private float _camareAngleY;
+    private float _alpha;
+    private float _blinkingElapsedTime;
+    private bool _isAttacking = false;
+    private bool _toggle = false;
 
     void Start()
     {
-        _TargetTexture = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
+        _targetTexture          = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
+        TargetImage.texture     = _targetTexture;
+        GameObject gameObject   = new GameObject();
+        _camera                 = gameObject.AddComponent<Camera>();
+        _camera.enabled         = false;
+        _camera.clearFlags      = CameraClearFlags.SolidColor;
+        _camera.backgroundColor = new Color(0, 0, 0, 0);
+        _camera.targetTexture   = _targetTexture;
+        _camera.cullingMask     = 1 << LayerMask.NameToLayer("ParamRender");
+        _actGaugeElems          = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
 
-        TargetImage.texture = _TargetTexture;
-
-        GameObject gameObject = new GameObject();
-        _Camera = gameObject.AddComponent<Camera>();
-        _Camera.enabled = false;
-        _Camera.clearFlags = CameraClearFlags.SolidColor;
-        _Camera.backgroundColor = new Color(0, 0, 0, 0);
-        _Camera.targetTexture = _TargetTexture;
-        _Camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRender");
+        var gaugePosX = PanelTransform.position.x;
+        var gaugePosY = PanelTransform.position.y;
+        var parentTransform = PanelTransform.transform;
+        for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i) {
+            var elem = Instantiate(ActGaugeElemImage);
+            _actGaugeElems.Add( elem );
+            elem.gameObject.SetActive(false);
+            elem.transform.SetParent(PanelTransform, true);
+        }
     }
 
     // Update is called once per frame
@@ -44,11 +72,11 @@ public class CharacterParameterUI : MonoBehaviour
 
         if( _isAttacking )
         {
-            _Camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRenderAttacker");
+            _camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRenderAttacker");
         }
         else
         {
-            _Camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRender");
+            _camera.cullingMask = 1 << LayerMask.NameToLayer("ParamRender");
         }
 
         if (_character == null)
@@ -59,9 +87,9 @@ public class CharacterParameterUI : MonoBehaviour
         }
 
         // パラメータ表示を反映
-        UpdateParamRender(_character, ref _character.param);
+        UpdateParamRender(_character, _character.param);
         // カメラ描画を反映
-        UpdateCamraRender(_character, ref _character.camParam);
+        UpdateCamraRender(_character, _character.camParam);
     }
 
     /// <summary>
@@ -69,12 +97,15 @@ public class CharacterParameterUI : MonoBehaviour
     /// </summary>
     /// <param name="selectCharacter">選択しているキャラクター</param>
     /// <param name="param">選択しているキャラクターのパラメータ</param>
-    void UpdateParamRender(Character selectCharacter, ref Character.Parameter param)
+    void UpdateParamRender(Character selectCharacter, in Character.Parameter param)
     {
-        TMPMaxHPValue.text = $"{param.MaxHP}";
-        TMPCurHPValue.text = $"{param.CurHP}";
-        TMPAtkValue.text = $"{param.Atk}";
-        TMPDefValue.text = $"{param.Def}";
+        Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
+
+        TMPMaxHPValue.text          = $"{param.MaxHP}";
+        TMPCurHPValue.text          = $"{param.CurHP}";
+        TMPAtkValue.text            = $"{param.Atk}";
+        TMPDefValue.text            = $"{param.Def}";
+        TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
 
         int changeHP = selectCharacter.tmpParam.expectedChangeHP;
         changeHP = Mathf.Clamp(changeHP, -param.CurHP, param.MaxHP - param.CurHP);
@@ -94,6 +125,39 @@ public class CharacterParameterUI : MonoBehaviour
 
         // テキストの色を反映
         ApplyTextColor(changeHP);
+
+        // アクションゲージの表示
+        for ( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+        {
+            var elem = _actGaugeElems[i];
+
+            if (i <= param.maxActionGauge - 1)
+            {
+                elem.gameObject.SetActive(true);
+
+                if (i <= param.curActionGauge - 1)
+                {
+                    elem.color = Color.green;
+
+                    // アクションゲージ使用時は点滅させる
+                    if ((param.curActionGauge - param.consumptionActionGauge) <= i)
+                    {
+                        _blinkingElapsedTime    = Mathf.Clamp(  _blinkingElapsedTime + (Time.deltaTime * ( _toggle ? -1: 1 )), 0f, BlinkingDuration);
+                        _alpha                  = Mathf.Clamp01(_blinkingElapsedTime / BlinkingDuration);
+                        elem.color              = new Color( 0, 1, 0, _alpha);
+                        if (_blinkingElapsedTime <= 0f || BlinkingDuration <= _blinkingElapsedTime) _toggle = !_toggle;
+                    }
+                }
+                else
+                {
+                    elem.color = Color.gray;
+                }
+            }
+            else
+            {
+                elem.gameObject.SetActive(false);
+            }
+        }
     }
 
     /// <summary>
@@ -118,13 +182,13 @@ public class CharacterParameterUI : MonoBehaviour
     /// </summary>
     /// <param name="selectCharacter">選択しているキャラクター</param>
     /// <param name="param">選択しているキャラクターのパラメータ</param>
-    void UpdateCamraRender( Character selectCharacter, ref Character.CameraParameter camParam )
+    void UpdateCamraRender( Character selectCharacter, in Character.CameraParameter camParam )
     {
-        Transform playerTransform = selectCharacter.transform;
-        Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * camParam.UICameraLengthZ;
-        _Camera.transform.position = playerTransform.position + add + Vector3.up * camParam.UICameraLengthY;
-        _Camera.transform.LookAt(playerTransform.position + Vector3.up * camParam.UICameraLookAtCorrectY);
-        _Camera.Render();
+        Transform playerTransform   = selectCharacter.transform;
+        Vector3 add                 = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * camParam.UICameraLengthZ;
+        _camera.transform.position  = playerTransform.position + add + Vector3.up * camParam.UICameraLengthY;
+        _camera.transform.LookAt(playerTransform.position + Vector3.up * camParam.UICameraLookAtCorrectY);
+        _camera.Render();
     }
 
     public void Init( float angleY )
@@ -141,6 +205,10 @@ public class CharacterParameterUI : MonoBehaviour
         _character = character;
     }
 
+    /// <summary>
+    /// 攻撃状態か否かを設定します
+    /// </summary>
+    /// <param name="isAttacking">攻撃状態か</param>
     public void SetAttacking( bool isAttacking )
     {
         _isAttacking = isAttacking;

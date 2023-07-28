@@ -84,25 +84,12 @@ public class Character : MonoBehaviour
         public int curActionGauge;
         // アクションゲージ回復値
         public int recoveryActionGauge;
+        // アクションゲージ消費値
+        public int consumptionActionGauge;
         // ステージ開始時グリッド座標(インデックス)
         public int initGridIndex;
         // ステージ開始時向き
         public Constants.Direction initDir;
-
-        public Parameter( int charaIndex = 0, int gridIndex = 0, int range = 0, Constants.Direction dir = Constants.Direction.FORWARD )
-        {
-            characterTag                    = CHARACTER_TAG.CHARACTER_NONE;
-            characterIndex                  = charaIndex;
-            MaxHP = CurHP                   = 20;
-            Atk                             = 8;
-            Def                             = 5;
-            moveRange                       = range;
-            attackRange                     = 1;
-            maxActionGauge = curActionGauge = 3;
-            recoveryActionGauge             = 1;
-            initGridIndex                   = gridIndex;
-            initDir                         = dir;
-        }
     }
 
     // 戦闘中のみ使用するパラメータ
@@ -183,8 +170,6 @@ public class Character : MonoBehaviour
 
         _animator   = GetComponent<Animator>();
         _animation  = GetComponent<Animation>();
-
-        param       = new Parameter(0, 0, 0, Constants.Direction.FORWARD);
         tmpParam    = new TmpParameter(false, 0);
 
         // 弾オブジェクトが設定されていれば生成
