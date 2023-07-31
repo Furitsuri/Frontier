@@ -14,6 +14,8 @@ static public class Constants
 
     // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;
+    // キャラクターが装備出来るスキルの最大数
+    public const int EQUIPABLE_SKILL_MAX_NUM = 4;
     // キャラクターのアクションゲージの最大数
     public const int ACTION_GAUGE_MAX = 10;
     // 1グリッドに隣接するグリッドの最大数

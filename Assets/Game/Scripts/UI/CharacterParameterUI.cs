@@ -16,7 +16,7 @@ public class CharacterParameterUI : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI TMPDefValue;
     [SerializeField]
-    public TextMeshProUGUI TMPDiffHPValue;
+    private TextMeshProUGUI TMPDiffHPValue;
     [SerializeField]
     private TextMeshProUGUI TMPActRecoveryValue;
     [SerializeField]
@@ -25,6 +25,8 @@ public class CharacterParameterUI : MonoBehaviour
     private RectTransform PanelTransform;
     [SerializeField]
     private RawImage ActGaugeElemImage;
+    [SerializeField]
+    private SkillBoxUI[] SkillBoxes;
     [SerializeField]
     private float BlinkingDuration;
 
@@ -36,7 +38,6 @@ public class CharacterParameterUI : MonoBehaviour
     private float _alpha;
     private float _blinkingElapsedTime;
     private bool _isAttacking = false;
-    private bool _toggle = false;
 
     void Start()
     {
@@ -51,9 +52,6 @@ public class CharacterParameterUI : MonoBehaviour
         _camera.cullingMask     = 1 << LayerMask.NameToLayer("ParamRender");
         _actGaugeElems          = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
 
-        var gaugePosX = PanelTransform.position.x;
-        var gaugePosY = PanelTransform.position.y;
-        var parentTransform = PanelTransform.transform;
         for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i) {
             var elem = Instantiate(ActGaugeElemImage);
             _actGaugeElems.Add( elem );
@@ -142,10 +140,9 @@ public class CharacterParameterUI : MonoBehaviour
                     // アクションゲージ使用時は点滅させる
                     if ((param.curActionGauge - param.consumptionActionGauge) <= i)
                     {
-                        _blinkingElapsedTime    = Mathf.Clamp(  _blinkingElapsedTime + (Time.deltaTime * ( _toggle ? -1: 1 )), 0f, BlinkingDuration);
-                        _alpha                  = Mathf.Clamp01(_blinkingElapsedTime / BlinkingDuration);
+                        _blinkingElapsedTime += Time.deltaTime;
+                        _alpha = Mathf.PingPong(_blinkingElapsedTime / BlinkingDuration, 1.0f);
                         elem.color              = new Color( 0, 1, 0, _alpha);
-                        if (_blinkingElapsedTime <= 0f || BlinkingDuration <= _blinkingElapsedTime) _toggle = !_toggle;
                     }
                 }
                 else
@@ -156,6 +153,22 @@ public class CharacterParameterUI : MonoBehaviour
             else
             {
                 elem.gameObject.SetActive(false);
+            }
+        }
+
+        // スキルボックスの表示
+        for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+        {
+            if( param.IsValidSkill(i) )
+            {
+                SkillBoxes[i].gameObject.SetActive(true);
+                string skillName = SkillsData.data[(int)param.equipSkills[i]].Name;
+                SkillBoxes[i].SetSkillName(skillName);
+                SkillBoxes[i].ShowSkillCostImage(SkillsData.data[(int)param.equipSkills[i]].Cost);
+            }
+            else
+            {
+                SkillBoxes[i].gameObject.SetActive(false);
             }
         }
     }
@@ -191,9 +204,34 @@ public class CharacterParameterUI : MonoBehaviour
         _camera.Render();
     }
 
+    /// <summary>
+    /// 初期化します
+    /// </summary>
+    /// <param name="angleY">初期化時のY軸カメラアングル</param>
     public void Init( float angleY )
     {
         _camareAngleY = angleY;
+    }
+
+    /// <summary>
+    /// 差分HP用テキストを返します
+    /// </summary>
+    /// <returns>差分HP用テキスト</returns>
+    public TextMeshProUGUI GetDiffHPText()
+    {
+        return TMPDiffHPValue;
+    }
+
+    /// <summary>
+    /// 指定のスキルボックスUIを取得します
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns>指定値</returns>
+    public SkillBoxUI GetSkillBox( int index )
+    {
+        Debug.Assert( 0 <= index && index < Constants.EQUIPABLE_SKILL_MAX_NUM );
+
+        return SkillBoxes[index];
     }
 
     /// <summary>

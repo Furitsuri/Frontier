@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static SkillsData;
 
 public class PLAttackState : PhaseStateBase
 {
@@ -73,10 +74,14 @@ public class PLAttackState : PhaseStateBase
                 StageGrid.Instance.OperateCurrentGrid();
                 // グリッド上のキャラクターを取得
                 _targetCharacter = btlInstance.GetSelectCharacter();
-                // 予測ダメージを適応する
-                btlInstance.ApplyDamageExpect(_attackCharacter, _targetCharacter);
                 // ダメージ予測表示UIを表示
                 btlUIInstance.ToggleBattleExpect(true);
+                // 使用スキルを選択する
+                _attackCharacter.SelectUseSkills(SituationType.ATTACK);
+                _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+
+                // 予測ダメージを適応する
+                btlInstance.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
@@ -141,6 +146,16 @@ public class PLAttackState : PhaseStateBase
         btlUIInstance.ToggleAttackCursorP2E(false);
         // ダメージ予測表示UIを非表示
         btlUIInstance.ToggleBattleExpect(false);
+        // 使用スキルの点滅を非表示
+        for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i) {
+            btlUIInstance.PlayerParameter.GetSkillBox(i).SetFlickEnabled(false);
+            btlUIInstance.PlayerParameter.GetSkillBox(i).SetUseable(true);
+            btlUIInstance.EnemyParameter.GetSkillBox(i).SetFlickEnabled(false);
+            btlUIInstance.EnemyParameter.GetSkillBox(i).SetUseable(true);
+        }
+        // 使用スキルコスト見積もりをリセット
+        _attackCharacter.param.ResetConsumptionActionGauge();
+        _targetCharacter.param.ResetConsumptionActionGauge();
         // グリッド状態の描画をクリア
         stgInstance.UpdateGridInfo();
         stgInstance.ClearGridMeshDraw();

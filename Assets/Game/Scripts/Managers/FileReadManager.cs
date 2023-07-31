@@ -5,6 +5,7 @@ using TMPro.SpriteAssetUtilities;
 using Palmmedia.ReportGenerator.Core.Common;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using static SkillsData;
 
 public class FileReadManager : Singleton<FileReadManager>
 {
@@ -19,6 +20,9 @@ public class FileReadManager : Singleton<FileReadManager>
 
     [SerializeField]
     public string[] EnemyParamFilePath;
+
+    [SerializeField]
+    public string SkillDataFilePath;
 
     [SerializeField]
     public string CloseAtkCameraParamFilePath;
@@ -41,6 +45,19 @@ public class FileReadManager : Singleton<FileReadManager>
         public int InitGridIndex;
         public int InitDir;
         public int Prefab;
+        public int[] Skills;
+    }
+
+    [System.Serializable]
+    public struct FileSkillData
+    {
+        public string Name;
+        public int Cost;
+        public int Type;
+        public float Param1;
+        public float Param2;
+        public float Param3;
+        public float Param4;
     }
 
     [System.Serializable]
@@ -60,6 +77,12 @@ public class FileReadManager : Singleton<FileReadManager>
     public class NpcParamContainer
     {
         public NpcParamData[] CharacterParams;
+    }
+
+    [System.Serializable]
+    public class SkillDataContainer
+    {
+        public FileSkillData[] SkillsData;
     }
 
     [System.Serializable]
@@ -130,7 +153,21 @@ public class FileReadManager : Singleton<FileReadManager>
     }
 
     /// <summary>
-    /// 
+    /// 各スキルのデータをロードします
+    /// </summary>
+    public void SkillDataLord()
+    {
+        string json = File.ReadAllText(SkillDataFilePath);
+        var dataContainer = JsonUtility.FromJson<SkillDataContainer>(json);
+        if (dataContainer == null) return;
+        for( int i = 0; i < (int)ID.SKILL_NUM; ++i )
+        {
+            ApplySkillsData(ref SkillsData.data[i], dataContainer.SkillsData[i]);
+        }
+    }
+
+    /// <summary>
+    /// カメラのパラメータを読み込みます
     /// </summary>
     public void CameraParamLord()
     {
@@ -147,18 +184,43 @@ public class FileReadManager : Singleton<FileReadManager>
         BattleCameraController.Instance.SetCameraParamDatas(closeParams, rangedParams);
     }
 
-    private void ApplyCharacterParams( ref Character.Parameter param, in CharacterParamData data )
+    /// <summary>
+    /// キャラクターパラメータを適応させます
+    /// </summary>
+    /// <param name="param">適応先のキャラクターパラメータ</param>
+    /// <param name="fdata">適応元のキャラクターパラメータ</param>
+    private void ApplyCharacterParams( ref Character.Parameter param, in CharacterParamData fdata )
     {
-        param.characterTag                          = (Character.CHARACTER_TAG)data.CharacterTag;
-        param.characterIndex                        = data.CharacterIndex;
-        param.CurHP = param.MaxHP                   = data.MaxHP;
-        param.Atk                                   = data.Atk;
-        param.Def                                   = data.Def;
-        param.moveRange                             = data.MoveRange;
-        param.attackRange                           = data.AtkRange;
-        param.curActionGauge = param.maxActionGauge = data.ActGaugeMax;
-        param.recoveryActionGauge                   = data.ActRecovery;
-        param.initGridIndex                         = data.InitGridIndex;
-        param.initDir                               = (Constants.Direction)data.InitDir;
+        param.characterTag                          = (Character.CHARACTER_TAG)fdata.CharacterTag;
+        param.characterIndex                        = fdata.CharacterIndex;
+        param.CurHP = param.MaxHP                   = fdata.MaxHP;
+        param.Atk                                   = fdata.Atk;
+        param.Def                                   = fdata.Def;
+        param.moveRange                             = fdata.MoveRange;
+        param.attackRange                           = fdata.AtkRange;
+        param.curActionGauge = param.maxActionGauge = fdata.ActGaugeMax;
+        param.recoveryActionGauge                   = fdata.ActRecovery;
+        param.initGridIndex                         = fdata.InitGridIndex;
+        param.initDir                               = (Constants.Direction)fdata.InitDir;
+        for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+        {
+            param.equipSkills[i] = (SkillsData.ID)fdata.Skills[i];
+        }
     }
+
+    /// <summary>
+    /// スキルデータを適応させます
+    /// </summary>
+    /// <param name="data">適応先のスキルデータ</param>
+    /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
+    private void ApplySkillsData( ref SkillsData.Data data, in FileSkillData fdata )
+    {
+        data.Name   = fdata.Name;
+        data.Cost   = fdata.Cost;
+        data.Type   = ( SkillsData.SituationType )fdata.Type;
+        data.Param1 = fdata.Param1;
+        data.Param2 = fdata.Param2;
+        data.Param3 = fdata.Param3;
+        data.Param4 = fdata.Param4;
+}
 }

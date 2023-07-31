@@ -15,6 +15,8 @@ public class PlayerPhaseManager : PhaseManagerBase
         // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
         Player player = BattleManager.Instance.GetPlayerEnumerable().First();
         StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(player);
+        // アクションゲージの回復
+        BattleManager.Instance.RecoveryActionGaugeForGroup( Character.CHARACTER_TAG.CHARACTER_PLAYER );
     }
 
     /// <summary>

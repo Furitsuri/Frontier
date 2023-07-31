@@ -54,5 +54,6 @@ MonoBehaviour:
   - Assets/Game/Resouces/CharactersData/Stage1/Frontier_Stage1_CharacterData_Player.json
   EnemyParamFilePath:
   - Assets/Game/Resouces/CharactersData/Stage1/Frontier_Stage1_CharacterData_Enemy.json
+  SkillDataFilePath: Assets/Game/Resouces/SkillData/SkillData.json
   CloseAtkCameraParamFilePath: Assets/Game/Resouces/Camera/Frontier_CharacterAttack_CameraParam_CloseAtk.json
   RangedAtkCameraParamFilePath: Assets/Game/Resouces/Camera/Frontier_CharacterAttack_CameraParam_RangedAtk.json

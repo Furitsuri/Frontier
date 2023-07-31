@@ -9,11 +9,17 @@
                 "Def": 3,
                 "MoveRange": 2,
                 "AtkRange": 1,
-                "ActGaugeMax": 1,
+                "ActGaugeMax": 0,
                 "ActRecovery": 0,
                 "InitGridIndex": 53,
                 "InitDir": 2,
-                "Prefab": 0
+                "Prefab": 0,
+                "Skills": [
+                    -1,
+                    -1,
+                    -1,
+                    -1
+                ]
             },
             "ThinkType": 0
         },
@@ -26,11 +32,17 @@
                 "Def": 3,
                 "MoveRange": 2,
                 "AtkRange": 1,
-                "ActGaugeMax": 1,
+                "ActGaugeMax": 0,
                 "ActRecovery": 0,
                 "InitGridIndex": 55,
                 "InitDir": 2,
-                "Prefab": 0
+                "Prefab": 0,
+                "Skills": [
+                    -1,
+                    -1,
+                    -1,
+                    -1
+                ]
             },
             "ThinkType": 0
         },
@@ -47,7 +59,13 @@
                 "ActRecovery": 1,
                 "InitGridIndex": 64,
                 "InitDir": 2,
-                "Prefab": 1
+                "Prefab": 1,
+                "Skills": [
+                    1,
+                    -1,
+                    -1,
+                    -1
+                ]
             },
             "ThinkType": 0
         }
