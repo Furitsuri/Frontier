@@ -1,0 +1,49 @@
+{
+    "SkillsData": [
+        {
+            "Name": "PARRY",
+            "Cost": 1,
+            "Type": 1,
+            "Param1": 0.1,
+            "Param2": null,
+            "Param3": null,
+            "Param4": null
+        },
+        {
+            "Name": "GUARD",
+            "Cost": 2,
+            "Type": 1,
+            "Param1": 0.5,
+            "Param2": null,
+            "Param3": null,
+            "Param4": null
+        },
+        {
+            "Name": "COUNTER",
+            "Cost": 2,
+            "Type": 1,
+            "Param1": 1,
+            "Param2": null,
+            "Param3": null,
+            "Param4": null
+        },
+        {
+            "Name": "DOUBLE_STRIKE",
+            "Cost": 3,
+            "Type": 0,
+            "Param1": 2,
+            "Param2": null,
+            "Param3": null,
+            "Param4": null
+        },
+        {
+            "Name": "TRIPLE_STRIKE",
+            "Cost": 4,
+            "Type": 0,
+            "Param1": 3,
+            "Param2": null,
+            "Param3": null,
+            "Param4": null
+        }
+    ]
+}

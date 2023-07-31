@@ -70,6 +70,9 @@ public class BattleManager : Singleton<BattleManager>
         // TODO : ステージのファイルから読み込んで設定するように
         _battleBossCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
         _escortTargetCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
+
+        // スキルデータの読込
+        FileReadManager.Instance.SkillDataLord();
     }
 
     override protected void OnStart()
@@ -555,6 +558,9 @@ public class BattleManager : Singleton<BattleManager>
         target.tmpParam.expectedChangeHP = Mathf.Min(target.param.Def - attacker.param.Atk, 0);
     }
 
+    /// <summary>
+    /// 全てのキャラクターの一時パラメータをリセットします
+    /// </summary>
     public void ResetTmpParamAllCharacter()
     {
         foreach (Player player in _players)
@@ -580,6 +586,32 @@ public class BattleManager : Singleton<BattleManager>
         }
 
         target.tmpParam.expectedChangeHP = 0;
+    }
+
+    /// <summary>
+    /// 指定のキャラクター群のアクションゲージを回復させます
+    /// </summary>
+    /// <param name="tag">キャラクター群のタグ</param>
+    public void RecoveryActionGaugeForGroup( CHARACTER_TAG tag )
+    {
+        switch( tag )
+        {
+            case CHARACTER_TAG.CHARACTER_PLAYER:
+                foreach (Player player in _players)
+                {
+                    player.RecoveryActionGauge();
+                }
+                break;
+            case CHARACTER_TAG.CHARACTER_ENEMY:
+                foreach (Enemy enemy in _enemies)
+                {
+                    enemy.RecoveryActionGauge();
+                }
+                break;
+            case CHARACTER_TAG.CHARACTER_OTHER:
+                // TODO : OTHERを作成次第追加
+                break;
+        }
     }
 
     /// <summary>

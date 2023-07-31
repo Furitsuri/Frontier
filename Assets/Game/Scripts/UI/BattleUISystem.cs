@@ -85,8 +85,8 @@ public class BattleUISystem : MonoBehaviour
 
     public void ToggleBattleExpect( bool isActive )
     {
-        PlayerParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
-        EnemyParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
+        PlayerParameter.GetDiffHPText().gameObject.SetActive( isActive );
+        EnemyParameter.GetDiffHPText().gameObject.SetActive( isActive );
     }
 
     public void ToggleDamageUI( bool isActive )

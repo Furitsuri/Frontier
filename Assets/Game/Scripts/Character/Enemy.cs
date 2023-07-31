@@ -35,6 +35,9 @@ public class Enemy : Character
             case ThinkingType.AGGERESSIVE:
                 EmAI = new EMAIAggressive();
                 break;
+            case ThinkingType .WAITING:
+                // TODO : Waitƒ^ƒCƒv‚ğì¬Ÿ‘æ’Ç‰Á
+                break;
             default:
                 EmAI = new EMAIBase();
                 break;

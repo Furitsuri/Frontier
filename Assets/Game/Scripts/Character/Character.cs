@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using static SkillsData;
 
 [SerializeField]
 public class Character : MonoBehaviour
@@ -90,32 +91,55 @@ public class Character : MonoBehaviour
         public int initGridIndex;
         // ステージ開始時向き
         public Constants.Direction initDir;
+        // 装備しているスキル
+        public SkillsData.ID[] equipSkills;
+
+        /// <summary>
+        /// 指定のスキルが有効か否かを返します
+        /// </summary>
+        /// <param name="index">指定インデックス</param>
+        /// <returns>有効か否か</returns>
+        public bool IsValidSkill(int index)
+        {
+            return SkillsData.ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < SkillsData.ID.SKILL_NUM;
+        }
+
+        /// <summary>
+        /// アクションゲージ消費量をリセットします
+        /// </summary>
+        public void ResetConsumptionActionGauge()
+        {
+            consumptionActionGauge = 0;
+        }
+    }
+
+    // バフ・デバフなどで上乗せされるパラメータ
+    public struct ModifiedParameter
+    {
+        // 攻撃力
+        public int Atk;
+        // 防御力
+        public int Def;
+        // 移動レンジ
+        public int moveRange;
+        // アクションゲージ回復値
+        public int recoveryActionGauge;
     }
 
     // 戦闘中のみ使用するパラメータ
     public struct TmpParameter
     {
         public bool[] isEndCommand;
+        public bool[] isUseSkills;
         public int gridIndex;
         public int expectedChangeHP;
-
-        public TmpParameter(bool isEnd = false, int index = -1)
-        {
-            isEndCommand = new bool[(int)BaseCommand.COMMAND_MAX_NUM];
-            for( int i = 0; i < (int)BaseCommand.COMMAND_MAX_NUM; ++i )
-            {
-                isEndCommand[i] = isEnd;
-            }
-
-            gridIndex = index;
-            expectedChangeHP = 0;
-        }
 
         public void Reset()
         {
             for( int i = 0; i < (int)BaseCommand.COMMAND_MAX_NUM; ++i )
             {
                 isEndCommand[i] = false;
+                isUseSkills[i]  = false;
             }
 
             expectedChangeHP = 0;
@@ -152,6 +176,7 @@ public class Character : MonoBehaviour
 
     [SerializeField]
     private GameObject _bulletObject;
+
     private float _elapsedTime = 0f;
     private bool _isTransitNextPhaseCamera = false;
     protected Character _opponent;
@@ -161,16 +186,20 @@ public class Character : MonoBehaviour
     protected CLOSED_ATTACK_PHASE _closingAttackPhase;
     public Parameter param;
     public TmpParameter tmpParam;
+    public ModifiedParameter modifiedParam;
     public CameraParameter camParam;
-    
+
     void Awake()
     {
         // タグとアニメーションの数は一致していること
         Debug.Assert( _animNames.Length == (int)ANIME_TAG.ANIME_TAG_NUM );
 
-        _animator   = GetComponent<Animator>();
-        _animation  = GetComponent<Animation>();
-        tmpParam    = new TmpParameter(false, 0);
+        _animator               = GetComponent<Animator>();
+        _animation              = GetComponent<Animation>();
+        param.equipSkills       = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
+        tmpParam.isEndCommand   = new bool[(int)BaseCommand.COMMAND_MAX_NUM];
+        tmpParam.isUseSkills    = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
+        tmpParam.Reset();
 
         // 弾オブジェクトが設定されていれば生成
         // 使用時まで非アクティブにする
@@ -268,6 +297,13 @@ public class Character : MonoBehaviour
 
         // 発射と同時に次のカメラに遷移させる
         _isTransitNextPhaseCamera = true;
+    }
+
+    /// <summary>
+    /// 戦闘に使用するスキルを選択します
+    /// </summary>
+    virtual public void SelectUseSkills(SituationType type)
+    {
     }
 
     /// <summary>
@@ -427,4 +463,13 @@ public class Character : MonoBehaviour
     /// </summary>
     /// <returns>Prefabに設定されている弾</returns>
     public Bullet GetBullet() { return _bullet; }
+
+    /// <summary>
+    /// アクションゲージをrecoveryActionGaugeの分だけ回復します
+    /// 基本的に自ターン開始時に呼びます
+    /// </summary>
+    public void RecoveryActionGauge()
+    {
+        param.curActionGauge = Mathf.Clamp(param.curActionGauge + param.recoveryActionGauge, 0, param.maxActionGauge);
+    }
 }

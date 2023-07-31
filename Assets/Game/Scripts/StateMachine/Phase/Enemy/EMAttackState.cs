@@ -125,6 +125,17 @@ public class EMAttackState : PhaseStateBase
         btlUIInstance.ToggleAttackCursorP2E(false);
         // ダメージ予測表示UIを非表示
         btlUIInstance.ToggleBattleExpect(false);
+        // 使用スキルの点滅を非表示
+        for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+        {
+            btlUIInstance.PlayerParameter.GetSkillBox(i).SetFlickEnabled(false);
+            btlUIInstance.PlayerParameter.GetSkillBox(i).SetUseable(true);
+            btlUIInstance.EnemyParameter.GetSkillBox(i).SetFlickEnabled(false);
+            btlUIInstance.EnemyParameter.GetSkillBox(i).SetUseable(true);
+        }
+        // 使用スキルコスト見積もりをリセット
+        _enemy.param.ResetConsumptionActionGauge();
+        _targetCharacter.param.ResetConsumptionActionGauge();
         // グリッド状態の描画をクリア
         stgInstance.UpdateGridInfo();
         stgInstance.ClearGridMeshDraw();
