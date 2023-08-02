@@ -30,12 +30,37 @@ public class ColorFlicker<T> where T : IColorEditable
         _enabled = false;
     }
 
+    /// <summary>
+    /// カラーフリックの更新をします
+    /// </summary>
     public void UpdateFlick()
     {
         if (!_enabled) return;
 
         _elapsedTime += Time.deltaTime;
         colorFlickObject.Color = Color.Lerp(startColor, endColor, Mathf.PingPong(_elapsedTime / duration, 1.0f));
+    }
+
+    /// <summary>
+    /// Startの色でフリックを停止します
+    /// </summary>
+    public void StopFlickOnStart()
+    {
+        if (!_enabled) return;
+
+        _enabled = false;
+        colorFlickObject.Color = startColor;
+    }
+
+    /// <summary>
+    /// Endの色でフリックを停止します
+    /// </summary>
+    public void StopFlickOnEnd()
+    {
+        if (!_enabled) return;
+
+        _enabled = false;
+        colorFlickObject.Color = endColor;
     }
 
     /// <summary>

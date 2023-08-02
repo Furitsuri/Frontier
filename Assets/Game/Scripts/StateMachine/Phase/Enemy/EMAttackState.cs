@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static SkillsData;
+
 public class EMAttackState : PhaseStateBase
 {
     private enum EMAttackPhase
@@ -11,7 +13,7 @@ public class EMAttackState : PhaseStateBase
     }
 
     private EMAttackPhase _phase;
-    private Enemy _enemy = null;
+    private Enemy _attackCharacter = null;
     private Character _targetCharacter = null;
     private int _curentGridIndex = -1;
     private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
@@ -25,27 +27,27 @@ public class EMAttackState : PhaseStateBase
         base.Init();
 
         _curentGridIndex    = stgInstance.GetCurrentGridIndex();
-        _enemy              = btlInstance.GetSelectCharacter() as Enemy;
-        Debug.Assert(_enemy != null);
+        _attackCharacter  = btlInstance.GetSelectCharacter() as Enemy;
+        Debug.Assert(_attackCharacter != null);
 
         // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-        var param = _enemy.param;
+        var param = _attackCharacter.param;
         stgInstance.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
         stgInstance.DrawAttackableGrids(_curentGridIndex);
 
         // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-        if (stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_PLAYER, _enemy.EmAI.GetTargetCharacter()))
+        if (stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_PLAYER, _attackCharacter.EmAI.GetTargetCharacter()))
         {
             // アタッカーキャラクターの設定
-            btlInstance.SetAttackerCharacter(_enemy);
+            btlInstance.SetAttackerCharacter(_attackCharacter);
             // アタックカーソルUI表示
             btlUIInstance.ToggleAttackCursorE2P(true);
         }
 
-        _targetCharacter = _enemy.EmAI.GetTargetCharacter();
-        stgInstance.ApplyCurrentGrid2CharacterGrid(_enemy);
+        _targetCharacter = _attackCharacter.EmAI.GetTargetCharacter();
+        stgInstance.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
         // 予測ダメージを適応する
-        btlInstance.ApplyDamageExpect(_enemy, _targetCharacter);
+        btlInstance.ApplyDamageExpect(_attackCharacter, _targetCharacter);
         // ダメージ予測表示UIを表示
         btlUIInstance.ToggleBattleExpect(true);
 
@@ -54,9 +56,9 @@ public class EMAttackState : PhaseStateBase
 
     public override bool Update()
     {
-        var stgInstance = StageGrid.Instance;
-        var btlInstance = BattleManager.Instance;
-        var btlUIInstance = BattleUISystem.Instance;
+        var stgInstance     = StageGrid.Instance;
+        var btlInstance     = BattleManager.Instance;
+        var btlUIInstance   = BattleUISystem.Instance;
 
         // 攻撃可能状態でなければ何もしない
         if (!btlInstance.IsAttackPhaseState())
@@ -67,12 +69,19 @@ public class EMAttackState : PhaseStateBase
         switch (_phase)
         {
             case EMAttackPhase.EM_ATTACK_CONFIRM:
-                if(Input.GetKeyUp(KeyCode.Space))
+                // 使用スキルを選択する
+                _attackCharacter.SelectUseSkills(SituationType.ATTACK);
+                _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+
+                if (Input.GetKeyUp(KeyCode.Space))
                 {
+                    // キャラクターのアクションゲージを消費
+                    _attackCharacter.ConsumeActionGauge();
+                    _targetCharacter.ConsumeActionGauge();
                     // 選択グリッドを一時非表示
                     BattleUISystem.Instance.ToggleSelectGrid(false);
                     // 攻撃シーケンスを初期化
-                    _attackSequence.Init(_enemy, _targetCharacter);
+                    _attackSequence.Init(_attackCharacter, _targetCharacter);
                     // アタックカーソルUI非表示
                     btlUIInstance.ToggleAttackCursorE2P(false);
                     // ダメージ予測表示UIを非表示
@@ -91,7 +100,7 @@ public class EMAttackState : PhaseStateBase
                 break;
             case EMAttackPhase.EM_ATTACK_END:
                 // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                _enemy.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_ATTACK] = true;
+                _attackCharacter.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_ATTACK] = true;
                 // コマンド選択に戻る
                 Back();
 
@@ -120,7 +129,7 @@ public class EMAttackState : PhaseStateBase
         // アタッカーキャラクターの設定を解除
         btlInstance.ResetAttackerCharacter();
         // 予測ダメージをリセット
-        btlInstance.ResetDamageExpect(_enemy, _targetCharacter);
+        btlInstance.ResetDamageExpect(_attackCharacter, _targetCharacter);
         // アタックカーソルUI非表示
         btlUIInstance.ToggleAttackCursorP2E(false);
         // ダメージ予測表示UIを非表示
@@ -134,8 +143,10 @@ public class EMAttackState : PhaseStateBase
             btlUIInstance.EnemyParameter.GetSkillBox(i).SetUseable(true);
         }
         // 使用スキルコスト見積もりをリセット
-        _enemy.param.ResetConsumptionActionGauge();
+        _attackCharacter.param.ResetConsumptionActionGauge();
+        _attackCharacter.skillModifiedParam.Reset();
         _targetCharacter.param.ResetConsumptionActionGauge();
+        _targetCharacter.skillModifiedParam.Reset();
         // グリッド状態の描画をクリア
         stgInstance.UpdateGridInfo();
         stgInstance.ClearGridMeshDraw();

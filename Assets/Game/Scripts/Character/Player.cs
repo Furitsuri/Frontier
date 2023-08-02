@@ -45,14 +45,33 @@ public class Player : Character
             {
                 tmpParam.isUseSkills[i] = !tmpParam.isUseSkills[i];
 
+                int skillID = (int)param.equipSkills[i];
+                var skillData = SkillsData.data[skillID];
+
                 if (tmpParam.isUseSkills[i])
                 {
-                    param.consumptionActionGauge += SkillsData.data[(int)param.equipSkills[i]].Cost;
+                    // コストが現在のアクションゲージ値を越えている場合は無視
+                    if (param.curActionGauge < param.consumptionActionGauge + skillData.Cost)
+                    {
+                        tmpParam.isUseSkills[i] = false;
+                        continue;
+                    }
+
+                    param.consumptionActionGauge += skillData.Cost;
+
+                    skillModifiedParam.AtkNum += skillData.AddAtkNum;
+                    skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
+                    skillModifiedParam.DefMagnification += skillData.AddDefMag;
                 }
                 else
                 {
-                    param.consumptionActionGauge -= SkillsData.data[(int)param.equipSkills[i]].Cost;
+                    param.consumptionActionGauge -= skillData.Cost;
+
+                    skillModifiedParam.AtkNum -= skillData.AddAtkNum;
+                    skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
+                    skillModifiedParam.DefMagnification -= skillData.AddDefMag;
                 }
+
                 BattleUISystem.Instance.PlayerParameter.GetSkillBox(i).SetFlickEnabled(tmpParam.isUseSkills[i]);
             }
         }

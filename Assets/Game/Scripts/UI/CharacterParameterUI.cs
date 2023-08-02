@@ -16,6 +16,8 @@ public class CharacterParameterUI : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI TMPDefValue;
     [SerializeField]
+    private TextMeshProUGUI TMPAtkNumValue;
+    [SerializeField]
     private TextMeshProUGUI TMPDiffHPValue;
     [SerializeField]
     private TextMeshProUGUI TMPActRecoveryValue;
@@ -85,7 +87,7 @@ public class CharacterParameterUI : MonoBehaviour
         }
 
         // パラメータ表示を反映
-        UpdateParamRender(_character, _character.param);
+        UpdateParamRender(_character, _character.param, _character.skillModifiedParam);
         // カメラ描画を反映
         UpdateCamraRender(_character, _character.camParam);
     }
@@ -95,7 +97,7 @@ public class CharacterParameterUI : MonoBehaviour
     /// </summary>
     /// <param name="selectCharacter">選択しているキャラクター</param>
     /// <param name="param">選択しているキャラクターのパラメータ</param>
-    void UpdateParamRender(Character selectCharacter, in Character.Parameter param)
+    void UpdateParamRender(Character selectCharacter, in Character.Parameter param, in Character.SkillModifiedParameter skillParam)
     {
         Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
 
@@ -103,9 +105,11 @@ public class CharacterParameterUI : MonoBehaviour
         TMPCurHPValue.text          = $"{param.CurHP}";
         TMPAtkValue.text            = $"{param.Atk}";
         TMPDefValue.text            = $"{param.Def}";
+        TMPAtkNumValue.text         = $"x {skillParam.AtkNum}";
         TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
+        TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
-        int changeHP = selectCharacter.tmpParam.expectedChangeHP;
+        int changeHP = selectCharacter.tmpParam.totalExpectedChangeHP;
         changeHP = Mathf.Clamp(changeHP, -param.CurHP, param.MaxHP - param.CurHP);
         if( 0 < changeHP)
         {
@@ -163,7 +167,8 @@ public class CharacterParameterUI : MonoBehaviour
             {
                 SkillBoxes[i].gameObject.SetActive(true);
                 string skillName = SkillsData.data[(int)param.equipSkills[i]].Name;
-                SkillBoxes[i].SetSkillName(skillName);
+                var type = SkillsData.data[(int)param.equipSkills[i]].Type;
+                SkillBoxes[i].SetSkillName(skillName, type);
                 SkillBoxes[i].ShowSkillCostImage(SkillsData.data[(int)param.equipSkills[i]].Cost);
             }
             else

@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static SkillsData;
 
@@ -42,7 +43,10 @@ public class Character : MonoBehaviour
     {
         WAIT = 0,
         MOVE,
-        ATTACK_01,
+        SINGLE_ATTACK,
+        DOUBLE_ATTACK,
+        TRIPLE_ATTACK,
+        GUARD,
         DAMAGED,
         DIE,
 
@@ -124,6 +128,24 @@ public class Character : MonoBehaviour
         public int moveRange;
         // アクションゲージ回復値
         public int recoveryActionGauge;
+
+        public void Reset()
+        {
+            Atk = 0; Def = 0; moveRange = 0; recoveryActionGauge = 0;
+        }
+    }
+
+    // スキルによって上乗せされるパラメータ
+    public struct SkillModifiedParameter
+    {
+        public int AtkNum;
+        public float AtkMagnification;
+        public float DefMagnification;
+
+        public void Reset()
+        {
+            AtkNum = 1; AtkMagnification = 1f; DefMagnification = 1f;
+        }
     }
 
     // 戦闘中のみ使用するパラメータ
@@ -133,6 +155,7 @@ public class Character : MonoBehaviour
         public bool[] isUseSkills;
         public int gridIndex;
         public int expectedChangeHP;
+        public int totalExpectedChangeHP;
 
         public void Reset()
         {
@@ -142,7 +165,7 @@ public class Character : MonoBehaviour
                 isUseSkills[i]  = false;
             }
 
-            expectedChangeHP = 0;
+            totalExpectedChangeHP = expectedChangeHP = 0;
         }
     }
 
@@ -169,7 +192,10 @@ public class Character : MonoBehaviour
     {
         "Wait",
         "Run",
-        "Attack01",
+        "SingleAttack",
+        "DoubleAttack",
+        "TripleAttack",
+        "Guard",
         "GetHit",
         "Die"
     };
@@ -187,6 +213,7 @@ public class Character : MonoBehaviour
     public Parameter param;
     public TmpParameter tmpParam;
     public ModifiedParameter modifiedParam;
+    public SkillModifiedParameter skillModifiedParam;
     public CameraParameter camParam;
 
     void Awake()
@@ -200,6 +227,8 @@ public class Character : MonoBehaviour
         tmpParam.isEndCommand   = new bool[(int)BaseCommand.COMMAND_MAX_NUM];
         tmpParam.isUseSkills    = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
         tmpParam.Reset();
+        modifiedParam.Reset();
+        skillModifiedParam.Reset();
 
         // 弾オブジェクトが設定されていれば生成
         // 使用時まで非アクティブにする
@@ -324,6 +353,9 @@ public class Character : MonoBehaviour
     /// <param name="destination">近接攻撃の終了地点</param>
     public void UpdateClosedAttack( in Vector3 departure, in Vector3 destination )
     {
+        Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[3] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
+        var attackAnimtag = attackAnimTags[skillModifiedParam.AtkNum - 1];
+
         if (GetBullet() != null) return; 
 
         float t = 0f;
@@ -338,7 +370,7 @@ public class Character : MonoBehaviour
                 if (1.0f <= t)
                 {
                     _elapsedTime = 0f;
-                    setAnimator(Character.ANIME_TAG.ATTACK_01);
+                    setAnimator(attackAnimtag);
 
                     _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
                 }
@@ -450,6 +482,23 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
+    /// 指定のスキルが使用登録されているかを判定します
+    /// </summary>
+    /// <param name="skillID">指定スキルID</param>
+    /// <returns>使用登録されているか否か</returns>
+    public bool IsSkillInUse( SkillsData.ID skillID )
+    {
+        for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+        {
+            if (!tmpParam.isUseSkills[i]) continue;
+
+            if (param.equipSkills[i] == skillID) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// ゲームオブジェクトを削除します
     /// </summary>
     public void Remove()
@@ -463,6 +512,19 @@ public class Character : MonoBehaviour
     /// </summary>
     /// <returns>Prefabに設定されている弾</returns>
     public Bullet GetBullet() { return _bullet; }
+
+    /// <summary>
+    /// アクションゲージを消費します
+    /// </summary>
+    public void ConsumeActionGauge()
+    {
+        param.curActionGauge -= param.consumptionActionGauge;
+        param.consumptionActionGauge = 0;
+
+        for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i) {
+            BattleUISystem.Instance.PlayerParameter.GetSkillBox(i).StopFlick();
+        }
+    }
 
     /// <summary>
     /// アクションゲージをrecoveryActionGaugeの分だけ回復します

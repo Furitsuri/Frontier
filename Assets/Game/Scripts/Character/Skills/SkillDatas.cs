@@ -25,6 +25,8 @@ public static class SkillsData
         ATTACK = 0,
         DEFENCE,
         PASSIVE,
+
+        TYPE_NUM,
     }
 
     [System.Serializable]
@@ -33,6 +35,10 @@ public static class SkillsData
         public string Name;
         public int Cost;
         public SituationType Type;
+        public int Duration;
+        public float AddAtkMag;
+        public float AddDefMag;
+        public int AddAtkNum;
         public float Param1;
         public float Param2;
         public float Param3;

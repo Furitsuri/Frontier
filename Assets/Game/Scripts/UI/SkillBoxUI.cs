@@ -47,9 +47,12 @@ public class SkillBoxUI : MonoBehaviour
     /// スキル名テキストを設定します
     /// </summary>
     /// <param name="name">設定するスキル名</param>
-    public void SetSkillName( string name )
+    public void SetSkillName( string name, SkillsData.SituationType type )
     {
+        Color[] typeColor = new Color[(int)SkillsData.SituationType.TYPE_NUM] { Color.red, new Color(0.1f, 0.6f, 1.0f), Color.yellow };
+
         TMPSkillName.text = name.Replace( "_", Environment.NewLine );
+        TMPSkillName.color = typeColor[(int)type];
     }
 
     /// <summary>
@@ -67,6 +70,10 @@ public class SkillBoxUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// スキル使用の可否を示します
+    /// </summary>
+    /// <param name="useable">使用の可否</param>
     public void SetUseable( bool useable )
     {
         if( useable )
@@ -77,6 +84,14 @@ public class SkillBoxUI : MonoBehaviour
         {
             CurtainImage.color = new Color(0, 0, 0, 0.75f);
         }
+    }
+
+    /// <summary>
+    /// フリック描画を停止します
+    /// </summary>
+    public void StopFlick()
+    {
+        _imageFlicker.StopFlickOnStart();
     }
 
     /// <summary>
