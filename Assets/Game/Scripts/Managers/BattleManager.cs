@@ -555,7 +555,12 @@ public class BattleManager : Singleton<BattleManager>
             return;
         }
 
-        target.tmpParam.expectedChangeHP = Mathf.Min(target.param.Def - attacker.param.Atk, 0);
+        int targetDef   = (int)((target.param.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
+        int attackerAtk = (int)((attacker.param.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
+        int changeHP    = (targetDef - attackerAtk);
+
+        target.tmpParam.expectedChangeHP        = Mathf.Min(changeHP, 0);
+        target.tmpParam.totalExpectedChangeHP   = Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0);
     }
 
     /// <summary>

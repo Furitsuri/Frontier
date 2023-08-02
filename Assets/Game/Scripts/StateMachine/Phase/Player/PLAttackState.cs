@@ -88,6 +88,9 @@ public class PLAttackState : PhaseStateBase
                     // 選択したキャラクターが敵である場合は攻撃開始
                     if( _targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.CHARACTER_ENEMY )
                     {
+                        // キャラクターのアクションゲージを消費
+                        _attackCharacter.ConsumeActionGauge();
+                        _targetCharacter.ConsumeActionGauge();
                         // 選択グリッドを一時非表示
                         BattleUISystem.Instance.ToggleSelectGrid(false);
                         // 攻撃シーケンスを初期化
@@ -155,7 +158,9 @@ public class PLAttackState : PhaseStateBase
         }
         // 使用スキルコスト見積もりをリセット
         _attackCharacter.param.ResetConsumptionActionGauge();
+        _attackCharacter.skillModifiedParam.Reset();
         _targetCharacter.param.ResetConsumptionActionGauge();
+        _targetCharacter.skillModifiedParam.Reset();
         // グリッド状態の描画をクリア
         stgInstance.UpdateGridInfo();
         stgInstance.ClearGridMeshDraw();

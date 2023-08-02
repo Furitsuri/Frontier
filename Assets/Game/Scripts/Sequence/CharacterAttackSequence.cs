@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using TMPro.Examples;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class CharacterAttackSequence
 {
@@ -12,6 +14,7 @@ public class CharacterAttackSequence
         START,
         WAIT_ATTACK,
         ATTACK,
+        PARRY,
         COUNTER,
         DIE,
         WAIT_END,
@@ -19,17 +22,18 @@ public class CharacterAttackSequence
     }
 
     private Phase _phase;
-    private Character _attackCharacter      = null;
-    private Character _targetCharacter      = null;
-    private Character _diedCharacter        = null;
+    private Character _attackCharacter              = null;
+    private Character _targetCharacter              = null;
+    private Character _diedCharacter                = null;
     // Transformは遅いためキャッシュ
-    private Transform _atkCharaTransform    = null;
-    private Transform _tgtCharaTransform    = null;
-    private Vector3 _departure              = Vector3.zero;
-    private Vector3 _destination            = Vector3.zero;
-    private Quaternion _atkCharaInitialRot  = Quaternion.identity;
-    private Quaternion _tgtCharaInitialRot  = Quaternion.identity;
-    private float _elapsedTime              = 0f;
+    private Transform _atkCharaTransform            = null;
+    private Transform _tgtCharaTransform            = null;
+    private Vector3 _departure                      = Vector3.zero;
+    private Vector3 _destination                    = Vector3.zero;
+    private Quaternion _atkCharaInitialRot          = Quaternion.identity;
+    private Quaternion _tgtCharaInitialRot          = Quaternion.identity;
+    private float _elapsedTime                      = 0f;
+    private Character.ANIME_TAG[] _attackAnimTags   = new Character.ANIME_TAG[3] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
 
     public void Init(Character attackChara, Character targetChara)
     {
@@ -79,19 +83,13 @@ public class CharacterAttackSequence
                 if (Constants.ATTACK_SEQUENCE_WAIT_ATTACK_TIME < (_elapsedTime += Time.deltaTime))
                 {
                     _elapsedTime = 0f;
+                    ExecAttack(_attackCharacter, _targetCharacter);
 
-                    if (_attackCharacter.GetBullet() != null) _attackCharacter.setAnimator(Character.ANIME_TAG.ATTACK_01);
-                    // 相手の面前まで移動してから攻撃
-                    else
-                    {
-                        
-                        _departure      = _atkCharaTransform.position;
-                        _destination    = _tgtCharaTransform.position + _tgtCharaTransform.forward;
-
-                        _attackCharacter.PlayClosedAttack();
-                    }
-
-                    _phase = Phase.ATTACK;
+                    // ガードスキル使用時はガードモーションを再生
+                    if ( _targetCharacter.IsSkillInUse( SkillsData.ID.SKILL_GUARD ) ) _targetCharacter.setAnimator(Character.ANIME_TAG.GUARD, true);
+                    // パリィスキル使用時はパリィ判定専用処理へ遷移
+                    if ( _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY) ) _phase = Phase.PARRY;
+                    else _phase = Phase.ATTACK;
                 }
                 break;
             case Phase.ATTACK:
@@ -107,37 +105,55 @@ public class CharacterAttackSequence
                     }
                 }
 
-                if (_targetCharacter.IsPlayinghAnimation(Character.ANIME_TAG.DAMAGED) || _targetCharacter.IsPlayinghAnimation(Character.ANIME_TAG.DIE))
+                if (_attackCharacter.IsPlayinghAnimation(Character.ANIME_TAG.WAIT))
                 {
                     // カメラ対象とカメラパラメータを変更
                     BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
+                    // ガードスキルを使用時はガードモーションを戻す
+                    if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.setAnimator(Character.ANIME_TAG.GUARD, false);
 
+                    // 対象が死亡している場合は死亡処理へ
                     if (_targetCharacter.IsDead())
                     {
                         _diedCharacter = _targetCharacter;
                         _phase = Phase.DIE;
                     }
-                    else
+                    // 対象がカウンター持ちの場合はカウンター処理へ
+                    else if(_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER))
                     {
-                        _phase = Phase.WAIT_END;
+                        ExecAttack(_targetCharacter, _attackCharacter);
+
+                        _phase = Phase.COUNTER;
                     }
-                    // TODO : 相手がカウンタースキル持ち、かつカウンター可能であればCOUNTERに遷移させる
+                    else _phase = Phase.WAIT_END;
                 }
                 break;
+            case Phase.PARRY:
+                break;
             case Phase.COUNTER:
-                if( Constants.ATTACK_SEQUENCE_WAIT_TIME < (_elapsedTime += Time.deltaTime) )
+                _targetCharacter.UpdateClosedAttack(_departure, _destination);
+
+                // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
+                if (_targetCharacter.GetBullet() != null)
                 {
-                    _elapsedTime = 0f;
+                    if (_targetCharacter.IsTransitNextPhaseCamera())
+                    {
+                        BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _attackCharacter.GetBullet().transform);
+                        _targetCharacter.ResetTransitNextPhaseCamera();
+                    }
+                }
+
+                if (_targetCharacter.IsPlayinghAnimation(Character.ANIME_TAG.WAIT))
+                {
+                    // カメラ対象とカメラパラメータを変更
+                    BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
                     if (_attackCharacter.IsDead())
                     {
                         _diedCharacter = _attackCharacter;
                         _phase = Phase.DIE;
                     }
-                    else
-                    {
-                        _phase = Phase.WAIT_END;
-                    }
+                    else _phase = Phase.WAIT_END;
                 }
                 break;
             case Phase.DIE:
@@ -186,11 +202,29 @@ public class CharacterAttackSequence
     /// <returns>死亡キャラクター</returns>
     public Character GetDiedCharacter() { return _diedCharacter; }
 
+
     /// <summary>
-    /// 
+    /// 攻撃キャラと被攻撃キャラ間との攻撃処理を実行します
     /// </summary>
-    /// <param name="attacker"></param>
-    /// <param name="target"></param>
+    /// <param name="attacker">攻撃キャラクター</param>
+    /// <param name="target">被攻撃キャラクター</param>
+    private void ExecAttack(Character attacker, Character target)
+    {
+        var tag = _attackAnimTags[attacker.skillModifiedParam.AtkNum - 1];
+        if (attacker.GetBullet() != null) attacker.setAnimator(tag);
+        else
+        {
+            _departure      = attacker.transform.position;
+            _destination    = target.transform.position + target.transform.forward;
+            attacker.PlayClosedAttack();
+        }
+    }
+
+    /// <summary>
+    /// 戦闘フィールドに遷移します
+    /// </summary>
+    /// <param name="attacker">攻撃キャラクター</param>
+    /// <param name="target">被攻撃キャラクター</param>
     private void TransitBattleField(Character attacker, Character target)
     {
         var stgGrid = StageGrid.Instance;
@@ -245,17 +279,17 @@ public class CharacterAttackSequence
         // 味方は奥行手前側、敵は奥行奥側の立ち位置とする
         Transform allyTransform     = ally.transform;
         Transform opponentTransform = opponent.transform;
-        allyTransform.position     = centralPos + new Vector3(0f, 0f, -stgGrid.BattlePosLengthFromCentral);
-        opponentTransform.position = centralPos + new Vector3(0f, 0f, stgGrid.BattlePosLengthFromCentral);
-        allyTransform.rotation     = Quaternion.LookRotation(centralPos - allyTransform.position);
-        opponentTransform.rotation = Quaternion.LookRotation(centralPos - opponentTransform.position);
+        allyTransform.position      = centralPos + new Vector3(0f, 0f, -stgGrid.BattlePosLengthFromCentral);
+        opponentTransform.position  = centralPos + new Vector3(0f, 0f, stgGrid.BattlePosLengthFromCentral);
+        allyTransform.rotation      = Quaternion.LookRotation(centralPos - allyTransform.position);
+        opponentTransform.rotation  = Quaternion.LookRotation(centralPos - opponentTransform.position);
     }
 
     /// <summary>
-    /// 
+    /// ステージフィールドに遷移します
     /// </summary>
-    /// <param name="attacker"></param>
-    /// <param name="target"></param>
+    /// <param name="attacker">攻撃キャラクター</param>
+    /// <param name="target">被攻撃キャラクター</param>
     private void TransitStageField(Character attacker, Character target)
     {
         var stgGrid = StageGrid.Instance;
@@ -278,6 +312,5 @@ public class CharacterAttackSequence
         info = StageGrid.Instance.GetGridInfo(target.tmpParam.gridIndex);
         _targetCharacter.transform.position = info.charaStandPos;
         _targetCharacter.transform.rotation = _tgtCharaInitialRot;
-
     }
 }

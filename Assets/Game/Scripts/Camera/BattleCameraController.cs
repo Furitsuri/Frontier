@@ -106,7 +106,7 @@ public class BattleCameraController : Singleton<BattleCameraController>
         switch( _mode )
         {
             case CameraMode.FOLLOWING:
-                // MEMO : positionを決定してからLookAtを設定しないと、Unityの仕様なのか、画面におかしなかくつきが発生するため注意
+                // MEMO : positionを決定してからLookAtを設定しないと、画面にかくつきが発生するため注意
                 _followElapsedTime = Mathf.Clamp( _followElapsedTime + Time.deltaTime, 0f, _followDuration);
                 _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration);
                 break;
@@ -296,8 +296,9 @@ public class BattleCameraController : Singleton<BattleCameraController>
     }
 
     /// <summary>
-    /// 
+    /// 攻撃遷移終了処理を行います
     /// </summary>
+    /// <param name="attacker">攻撃キャラクター</param>
     public void EndAttackSequenceMode(Character attacker)
     {
         _mode               = CameraMode.ATTACK_SEQUENCE;
@@ -311,6 +312,8 @@ public class BattleCameraController : Singleton<BattleCameraController>
     /// <summary>
     /// 次のカメラパラメータインデックス情報に遷移します
     /// </summary>
+    /// <param name="nextBase">遷移先のカメラ位置対象</param>
+    /// <param name="nextLookAt">遷移先のカメラ視線対象</param>
     public void TransitNextPhaseCameraParam( Transform nextBase = null, Transform nextLookAt = null )
     {
         _cameraPhaseIndex   = Mathf.Clamp(++_cameraPhaseIndex, 0, _currentCameraParamDatas.Length - 1);        
