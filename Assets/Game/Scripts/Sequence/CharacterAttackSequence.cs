@@ -21,6 +21,8 @@ public class CharacterAttackSequence
         END
     }
 
+    delegate bool UpdateAttack(in Vector3 arg1, in Vector3 arg2);
+
     private Phase _phase;
     private Character _attackCharacter              = null;
     private Character _targetCharacter              = null;
@@ -34,6 +36,9 @@ public class CharacterAttackSequence
     private Quaternion _tgtCharaInitialRot          = Quaternion.identity;
     private float _elapsedTime                      = 0f;
     private Character.ANIME_TAG[] _attackAnimTags   = new Character.ANIME_TAG[3] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
+    private bool _CounterConditions                 = false;
+    private UpdateAttack _updateAttackerAttack      = null;
+    private UpdateAttack _updateTargetAttack        = null;
 
     public void Init(Character attackChara, Character targetChara)
     {
@@ -46,10 +51,17 @@ public class CharacterAttackSequence
         _tgtCharaInitialRot     = _tgtCharaTransform.rotation;
         _elapsedTime            = 0f;
         _phase                  = Phase.START;
-
         // 対戦相手として設定
         _attackCharacter.SetOpponentCharacter(_targetCharacter);
         _targetCharacter.SetOpponentCharacter(_attackCharacter);
+        // カウンター条件の設定
+        _CounterConditions      = (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER));
+        // 攻撃更新処理の条件別設定
+        if (_CounterConditions && _attackCharacter.GetBullet() != null ) _CounterConditions = _targetCharacter.GetBullet() != null;
+        if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.UpdateClosedAttack;
+        else _updateAttackerAttack = _attackCharacter.UpdateRangedAttack;
+        if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.UpdateClosedAttack;
+        else _updateTargetAttack = _targetCharacter.UpdateRangedAttack;
 
         BattleCameraController.Instance.StartAttackSequenceMode( attackChara, targetChara );
     }
@@ -83,45 +95,35 @@ public class CharacterAttackSequence
                 if (Constants.ATTACK_SEQUENCE_WAIT_ATTACK_TIME < (_elapsedTime += Time.deltaTime))
                 {
                     _elapsedTime = 0f;
-                    ExecAttack(_attackCharacter, _targetCharacter);
+                    StartAttack(_attackCharacter, _targetCharacter);
 
                     // ガードスキル使用時はガードモーションを再生
                     if ( _targetCharacter.IsSkillInUse( SkillsData.ID.SKILL_GUARD ) ) _targetCharacter.setAnimator(Character.ANIME_TAG.GUARD, true);
                     // パリィスキル使用時はパリィ判定専用処理へ遷移
-                    if ( _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY) ) _phase = Phase.PARRY;
-                    else _phase = Phase.ATTACK;
+                    if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.PARRY;
+                    else
+                    {
+                        _phase = Phase.ATTACK;
+                    }
                 }
                 break;
             case Phase.ATTACK:
-                _attackCharacter.UpdateClosedAttack(_departure, _destination);
-
-                // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
-                if (_attackCharacter.GetBullet() != null)
-                {
-                    if (_attackCharacter.IsTransitNextPhaseCamera())
-                    {
-                        BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _attackCharacter.GetBullet().transform);
-                        _attackCharacter.ResetTransitNextPhaseCamera();
-                    }
-                }
-
-                if (_attackCharacter.IsPlayinghAnimation(Character.ANIME_TAG.WAIT))
+                if(_updateAttackerAttack(_departure, _destination))
                 {
                     // カメラ対象とカメラパラメータを変更
                     BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
                     // ガードスキルを使用時はガードモーションを戻す
                     if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.setAnimator(Character.ANIME_TAG.GUARD, false);
-
                     // 対象が死亡している場合は死亡処理へ
                     if (_targetCharacter.IsDead())
                     {
                         _diedCharacter = _targetCharacter;
                         _phase = Phase.DIE;
                     }
-                    // 対象がカウンター持ちの場合はカウンター処理へ
-                    else if(_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER))
+                    else if (_CounterConditions)
                     {
-                        ExecAttack(_targetCharacter, _attackCharacter);
+                        BattleManager.Instance.ApplyDamageExpect(_targetCharacter, _attackCharacter);
+                        StartAttack(_targetCharacter, _attackCharacter);
 
                         _phase = Phase.COUNTER;
                     }
@@ -131,19 +133,7 @@ public class CharacterAttackSequence
             case Phase.PARRY:
                 break;
             case Phase.COUNTER:
-                _targetCharacter.UpdateClosedAttack(_departure, _destination);
-
-                // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
-                if (_targetCharacter.GetBullet() != null)
-                {
-                    if (_targetCharacter.IsTransitNextPhaseCamera())
-                    {
-                        BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _attackCharacter.GetBullet().transform);
-                        _targetCharacter.ResetTransitNextPhaseCamera();
-                    }
-                }
-
-                if (_targetCharacter.IsPlayinghAnimation(Character.ANIME_TAG.WAIT))
+                if (_updateTargetAttack(_departure, _destination))
                 {
                     // カメラ対象とカメラパラメータを変更
                     BattleCameraController.Instance.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
@@ -157,16 +147,12 @@ public class CharacterAttackSequence
                 }
                 break;
             case Phase.DIE:
-                _attackCharacter.UpdateClosedAttack(_departure, _destination);
-
                 if (_targetCharacter.IsEndAnimation(Character.ANIME_TAG.DIE))
                 {
                     _phase = Phase.WAIT_END;
                 }
                 break;
             case Phase.WAIT_END:
-                _attackCharacter.UpdateClosedAttack(_departure, _destination);
-
                 if (Constants.ATTACK_SEQUENCE_WAIT_END_TIME < (_elapsedTime += Time.deltaTime))
                 {
                     _elapsedTime = 0f;
@@ -208,7 +194,7 @@ public class CharacterAttackSequence
     /// </summary>
     /// <param name="attacker">攻撃キャラクター</param>
     /// <param name="target">被攻撃キャラクター</param>
-    private void ExecAttack(Character attacker, Character target)
+    private void StartAttack(Character attacker, Character target)
     {
         var tag = _attackAnimTags[attacker.skillModifiedParam.AtkNum - 1];
         if (attacker.GetBullet() != null) attacker.setAnimator(tag);
