@@ -286,12 +286,13 @@ public class Character : MonoBehaviour
         //　ダメージが0の場合はモーションを取らない
         if (_opponent.tmpParam.expectedChangeHP != 0)
         {
-            if (_opponent.param.CurHP <= 0)
+            if (_opponent.param.CurHP <= 0 )
             {
                 _opponent.param.CurHP = 0;
                 _opponent.setAnimator(ANIME_TAG.DIE);
             }
-            else
+            // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
+            else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
             {
                 _opponent.setAnimator(ANIME_TAG.DAMAGED);
             }
@@ -351,12 +352,13 @@ public class Character : MonoBehaviour
     /// </summary>
     /// <param name="departure">近接攻撃の開始地点</param>
     /// <param name="destination">近接攻撃の終了地点</param>
-    public void UpdateClosedAttack( in Vector3 departure, in Vector3 destination )
+    /// <returns>終了判定</returns>
+    public bool UpdateClosedAttack( in Vector3 departure, in Vector3 destination )
     {
         Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[3] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
         var attackAnimtag = attackAnimTags[skillModifiedParam.AtkNum - 1];
 
-        if (GetBullet() != null) return; 
+        if (GetBullet() != null) return false;
 
         float t = 0f;
 
@@ -393,10 +395,36 @@ public class Character : MonoBehaviour
                 {
                     _elapsedTime = 0f;
                     _closingAttackPhase = CLOSED_ATTACK_PHASE.NONE;
+
+                    return true;
                 }
                 break;
             default: break;
         }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 遠隔攻撃時の流れを更新します
+    /// </summary>
+    /// <param name="departure">近接攻撃の開始地点</param>
+    /// <param name="destination">近接攻撃の終了地点</param>
+    /// <returns>終了判定</returns>
+    public bool UpdateRangedAttack(in Vector3 departure, in Vector3 destination)
+    {
+        if (GetBullet() == null) return false;
+
+        // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
+        if (IsTransitNextPhaseCamera())
+        {
+            BattleCameraController.Instance.TransitNextPhaseCameraParam(null, GetBullet().transform);
+            ResetTransitNextPhaseCamera();
+        }
+
+        if (IsPlayinghAnimation(Character.ANIME_TAG.WAIT)) return true;
+
+        return false;
     }
 
     /// <summary>

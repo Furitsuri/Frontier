@@ -1040,7 +1040,7 @@ PrefabInstance:
     - target: {fileID: 6292442836696797843, guid: bdfd8cae6fd3cbb49ba42f04a0689d78, type: 3}
       propertyPath: TargetCharaParameter
       value: 
-      objectReference: {fileID: 1791383184}
+      objectReference: {fileID: 0}
     - target: {fileID: 7455330237675313731, guid: bdfd8cae6fd3cbb49ba42f04a0689d78, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -1058,17 +1058,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bdfd8cae6fd3cbb49ba42f04a0689d78, type: 3}
---- !u!114 &1791383184 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5358083845632524782, guid: bdfd8cae6fd3cbb49ba42f04a0689d78, type: 3}
-  m_PrefabInstance: {fileID: 1785385350}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab0ae386c3612364e88aa1a3a4561c15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2043674337 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7542479718089580905, guid: bdfd8cae6fd3cbb49ba42f04a0689d78, type: 3}

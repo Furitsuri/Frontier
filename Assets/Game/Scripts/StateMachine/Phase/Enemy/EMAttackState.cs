@@ -46,10 +46,6 @@ public class EMAttackState : PhaseStateBase
 
         _targetCharacter = _attackCharacter.EmAI.GetTargetCharacter();
         stgInstance.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
-        // 予測ダメージを適応する
-        btlInstance.ApplyDamageExpect(_attackCharacter, _targetCharacter);
-        // ダメージ予測表示UIを表示
-        btlUIInstance.ToggleBattleExpect(true);
 
         _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
     }
@@ -72,6 +68,10 @@ public class EMAttackState : PhaseStateBase
                 // 使用スキルを選択する
                 _attackCharacter.SelectUseSkills(SituationType.ATTACK);
                 _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+                // 予測ダメージを適応する
+                btlInstance.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                // ダメージ予測表示UIを表示
+                btlUIInstance.ToggleBattleExpect(true);
 
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
