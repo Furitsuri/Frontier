@@ -23,6 +23,7 @@ public class CharacterAttackSequence
 
     delegate bool UpdateAttack(in Vector3 arg1, in Vector3 arg2);
 
+    private BattleManager _btlMgr;
     private Phase _phase;
     private Character _attackCharacter              = null;
     private Character _targetCharacter              = null;
@@ -42,6 +43,7 @@ public class CharacterAttackSequence
 
     public void Init(Character attackChara, Character targetChara)
     {
+        _btlMgr                 = ManagerProvider.Instance.GetService<BattleManager>();
         _attackCharacter        = attackChara;
         _targetCharacter        = targetChara;
         _diedCharacter          = null;
@@ -122,7 +124,7 @@ public class CharacterAttackSequence
                     }
                     else if (_CounterConditions)
                     {
-                        BattleManager.Instance.ApplyDamageExpect(_targetCharacter, _attackCharacter);
+                        _btlMgr.ApplyDamageExpect(_targetCharacter, _attackCharacter);
                         StartAttack(_targetCharacter, _attackCharacter);
 
                         _phase = Phase.COUNTER;
@@ -217,14 +219,14 @@ public class CharacterAttackSequence
 
         // メッシュ及びattakerとtarget以外のキャラクターを非表示に
         stgGrid.ToggleMeshDisplay(false);
-        foreach (var player in BattleManager.Instance.GetPlayerEnumerable())
+        foreach (var player in _btlMgr.GetPlayerEnumerable())
         {
             if (player != attacker && player != target)
             {
                 player.gameObject.SetActive(false);
             }
         }
-        foreach (var enemy in BattleManager.Instance.GetEnemyEnumerable())
+        foreach (var enemy in _btlMgr.GetEnemyEnumerable())
         {
             if (enemy != attacker && enemy != target)
             {
@@ -282,11 +284,11 @@ public class CharacterAttackSequence
 
         // 非表示にしていたものを表示
         stgGrid.ToggleMeshDisplay(true);
-        foreach (var player in BattleManager.Instance.GetPlayerEnumerable())
+        foreach (var player in _btlMgr.GetPlayerEnumerable())
         {
             player.gameObject.SetActive(true);
         }
-        foreach (var enemy in BattleManager.Instance.GetEnemyEnumerable())
+        foreach (var enemy in _btlMgr.GetEnemyEnumerable())
         {
             enemy.gameObject.SetActive(true);
         }

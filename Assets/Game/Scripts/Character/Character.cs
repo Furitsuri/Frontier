@@ -65,6 +65,7 @@ public class Character : MonoBehaviour
     }
 
     // キャラクターの持つパラメータ
+    [System.Serializable]
     public struct Parameter
     {
         // キャラクタータイプ
@@ -205,6 +206,7 @@ public class Character : MonoBehaviour
 
     private float _elapsedTime = 0f;
     private bool _isTransitNextPhaseCamera = false;
+    protected BattleManager _btlMgr;
     protected Character _opponent;
     protected Bullet _bullet;
     protected Animator _animator;
@@ -218,6 +220,8 @@ public class Character : MonoBehaviour
 
     void Awake()
     {
+        _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+
         // タグとアニメーションの数は一致していること
         Debug.Assert( _animNames.Length == (int)ANIME_TAG.ANIME_TAG_NUM );
 

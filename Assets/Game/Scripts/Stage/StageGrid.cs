@@ -89,6 +89,7 @@ public class StageGrid : Singleton<StageGrid>
     public Face face = Face.zx;
     public bool back = true;
     public bool isAdjustStageScale = false;
+    private BattleManager _btlMgr;
     private float _widthX, _widthZ;
     private Mesh _mesh;
     private GridInfo[] _gridInfo;
@@ -102,11 +103,8 @@ public class StageGrid : Singleton<StageGrid>
 
     override protected void Init()
     {
-        // バトルマネージャに登録
-        BattleManager.Instance.registStageGrid(this);
-
-        _gridMeshs          = new List<GridMesh>();
-        _attackableGridIndexs  = new List<int>();
+        _gridMeshs              = new List<GridMesh>();
+        _attackableGridIndexs   = new List<int>();
 
         // ステージ情報から各サイズを参照する
         if (isAdjustStageScale)
@@ -361,16 +359,23 @@ public class StageGrid : Singleton<StageGrid>
     }
 
     /// <summary>
+    /// 各種設定を行います
+    /// </summary>
+    /// <param name="btlMgr">バトルマネージャ</param>
+    public void Setting( BattleManager btlMgr )
+    {
+        _btlMgr = btlMgr;
+    }
+
+    /// <summary>
     /// グリッド情報を更新します
     /// </summary>
     public void UpdateGridInfo()
     {
-        var btlMgr = BattleManager.Instance;
-
         // 一度全てのグリッド情報を基に戻す
         ResetGridInfo();
         // キャラクターが存在するグリッドの情報を更新
-        foreach (Player player in btlMgr.GetPlayerEnumerable())
+        foreach (Player player in _btlMgr.GetPlayerEnumerable())
         {
             var gridIndex               = player.tmpParam.gridIndex;
             ref var info                = ref _gridInfo[gridIndex];
@@ -378,7 +383,7 @@ public class StageGrid : Singleton<StageGrid>
             info.charaIndex             = player.param.characterIndex;
             Methods.SetBitFlag(ref info.flag, BitFlag.PLAYER_EXIST);
         }
-        foreach (Enemy enemy in btlMgr.GetEnemyEnumerable())
+        foreach (Enemy enemy in _btlMgr.GetEnemyEnumerable())
         {
             var gridIndex               = enemy.tmpParam.gridIndex;
             ref var info                = ref _gridInfo[gridIndex];
@@ -394,7 +399,7 @@ public class StageGrid : Singleton<StageGrid>
     public void OperateCurrentGrid()
     {
         // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
-        if (BattleManager.Instance.IsAttackPhaseState())
+        if (_btlMgr.IsAttackPhaseState())
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))    { _currentGrid.TransitPrevTarget(); }
             if (Input.GetKeyDown(KeyCode.RightArrow))   { _currentGrid.TransitNextTarget(); }
@@ -425,7 +430,6 @@ public class StageGrid : Singleton<StageGrid>
     public bool RegistAttackTargetGridIndexs(Character.CHARACTER_TAG targetTag, Character target = null)
     {
         Character character = null;
-        var btlInstance = BattleManager.Instance;
 
         _currentGrid.ClearAtkTargetInfo();
         _attackableGridIndexs.Clear();
@@ -436,7 +440,7 @@ public class StageGrid : Singleton<StageGrid>
             var info = _gridInfo[i];
             if (Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE))
             {
-                character = btlInstance.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                character = _btlMgr.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
                 if (character != null && character.param.characterTag == targetTag)
                 {
                     _attackableGridIndexs.Add(i);
@@ -455,7 +459,7 @@ public class StageGrid : Singleton<StageGrid>
                 for( int i = 0; i < _attackableGridIndexs.Count; ++i )
                 {
                     var info = GetGridInfo(_attackableGridIndexs[i]);
-                    Character chara = BattleManager.Instance.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                    Character chara = _btlMgr.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
                     if( target == chara )
                     {
                         _currentGrid.SetAtkTargetIndex(i);
@@ -643,7 +647,7 @@ public class StageGrid : Singleton<StageGrid>
     {
         int index = 0;
 
-        if(BattleManager.Instance.IsAttackPhaseState())
+        if(_btlMgr.IsAttackPhaseState())
         {
             index = _attackableGridIndexs[_currentGrid.GetAtkTargetIndex()];
         }

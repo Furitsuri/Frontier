@@ -22,7 +22,7 @@ public class EMSelectState : PhaseStateBase
         // ステージグリッド上のキャラ情報を更新
         StageGrid.Instance.UpdateGridInfo();
 
-        _enemyEnumerator = BattleManager.Instance.GetEnemyEnumerable().GetEnumerator();
+        _enemyEnumerator = _btlMgr.GetEnemyEnumerable().GetEnumerator();
         _currentEnemy = null;
 
         // 行動済みでないキャラクターを選択する

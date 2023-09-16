@@ -4,10 +4,12 @@ public class PhaseStateBase : TreeNode<PhaseStateBase>
 {
     private bool _isBack = false;
     public int TransitIndex { get; protected set; } = -1;
+    protected BattleManager _btlMgr;
 
     // ‰Šú‰»
     virtual public void Init()
     {
+        _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
         TransitIndex = -1;
         _isBack = false;
     }
@@ -46,6 +48,6 @@ public class PhaseStateBase : TreeNode<PhaseStateBase>
 
     protected void NoticeCharacterDied( CharacterHashtable.Key characterKey )
     {
-        BattleManager.Instance.SetDiedCharacterKey(characterKey);
+        _btlMgr.SetDiedCharacterKey(characterKey);
     }
 }

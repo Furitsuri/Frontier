@@ -9,7 +9,6 @@ public class BattleUISystem : MonoBehaviour
 
     [Header("SelectGrid")]
     public SelectGridUI SelectGridCursor;           // グリッド選択に用いるカーソル
-    public SelectGridUI AttackTargetCursor;         // 攻撃対象グリッド選択に用いるカーソル
 
     [Header("PlayerParam")]
     public CharacterParameterUI PlayerParameter;    // プレイヤーor第三勢力キャラクターのパラメータ表示UI
@@ -51,11 +50,6 @@ public class BattleUISystem : MonoBehaviour
     public void ToggleSelectGrid( bool isActive )
     {
         SelectGridCursor.gameObject.SetActive( isActive );
-    }
-
-    public void ToggleAttackTargetGrid(bool isActive)
-    {
-        AttackTargetCursor.gameObject.SetActive(isActive);
     }
 
     public void TogglePlayerParameter( bool isActive )

@@ -44,5 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 587ab899109067847b34853f55e462ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_BattleManager: {fileID: -678750931991529391, guid: f025655eb33b9c6498ee7ff87454f73c, type: 3}
+  _managerProvider: {fileID: 8922468461745508450, guid: 815abdb4467fd75488976f0b0199271e, type: 3}
+  _btlMgr: {fileID: -678750931991529391, guid: f025655eb33b9c6498ee7ff87454f73c, type: 3}
   stageStartDelay: 2

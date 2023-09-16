@@ -18,7 +18,7 @@ public class PLSelectGrid : PhaseStateBase
         // if( base.Update() ) { return true; }
 
         // 全てのキャラクターが待機済みになっていれば終了
-        if( BattleManager.Instance.IsEndAllCharacterWaitCommand() )
+        if( _btlMgr.IsEndAllCharacterWaitCommand() )
         {
             Back();
 
@@ -40,7 +40,7 @@ public class PLSelectGrid : PhaseStateBase
         // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
         int selectCharaIndex = info.charaIndex;
 
-        Character character = BattleManager.Instance.GetSelectCharacter();
+        Character character = _btlMgr.GetSelectCharacter();
         if ( character != null && 
              character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER &&
              !character.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT])

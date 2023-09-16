@@ -14,10 +14,11 @@ public class GameManager : MonoBehaviour
         GAME_END,
     }
 
-    private GameObject m_StageImage;
+    private GameObject _StageImage;
     private GamePhase _Phase;
     public static GameManager instance = null;
-    public BattleManager m_BattleManager;
+    public GameObject _managerProvider;
+    public BattleManager _btlMgr;
     public float stageStartDelay = 2f;				// ステージ開始時に表示する時間(秒)
 
     void Awake()
@@ -33,10 +34,15 @@ public class GameManager : MonoBehaviour
 
         DontDestroyOnLoad( gameObject );
 
-        if (BattleManager.Instance == null)
+        if( ManagerProvider.Instance == null )
         {
-            Instantiate(m_BattleManager);
+            Instantiate( _managerProvider );
         }
+
+        // if (BattleManager.Instance == null)
+        // {
+        //     Instantiate(_btlMgr);
+        // }
 
         InitGame();
     }
@@ -49,7 +55,7 @@ public class GameManager : MonoBehaviour
 
     void InitGame()
     {
-        m_StageImage = GameObject.Find("StageImage");
+        _StageImage = GameObject.Find("StageImage");
 
         Invoke("StageLevelImage", stageStartDelay);
 
@@ -62,7 +68,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void StageLevelImage()
     {
-        m_StageImage.SetActive(false);
+        _StageImage.SetActive(false);
     }
 
     IEnumerator GameFlow()
@@ -81,9 +87,9 @@ public class GameManager : MonoBehaviour
                     _Phase = GamePhase.GAME_BATTLE;
                     break;
                 case GamePhase.GAME_BATTLE:
-                    StartCoroutine(m_BattleManager.Battle());
+                    // StartCoroutine(_btlMgr.Battle());
                     // Battleの終了を待つ
-                    yield return new WaitUntil(() => m_BattleManager.isEnd());
+                    // yield return new WaitUntil(() => _btlMgr.isEnd());
 
                     _Phase = GamePhase.GAME_END_SCENE;
                     break;

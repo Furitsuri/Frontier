@@ -65,8 +65,6 @@ public class CharacterParameterUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var btlInstance = BattleManager.Instance;
-
         // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
         Debug.Assert(_character != null);
 

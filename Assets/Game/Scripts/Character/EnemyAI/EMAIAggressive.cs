@@ -33,7 +33,7 @@ public class EMAIAggressive : EMAIBase
             {
                 foreach (var opponent in candidate.opponents)
                 {
-                    var character = BattleManager.Instance.GetCharacterFromHashtable(opponent);
+                    var character = _btlMgr.GetCharacterFromHashtable(opponent);
                     if (character == null) continue;
                     var eValue = CalcurateEvaluateAttack(selfParam, character.param);
                     if (maxEvaluate.eValue < eValue)
@@ -75,7 +75,7 @@ public class EMAIAggressive : EMAIBase
             }
 
             // 各プレイヤーが存在するグリッドの評価値を計算する
-            foreach (Player player in BattleManager.Instance.GetPlayerEnumerable())
+            foreach (Player player in _btlMgr.GetPlayerEnumerable())
             {
                 int destGridIndex       = player.tmpParam.gridIndex;
                 ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];

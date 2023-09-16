@@ -1,4 +1,4 @@
-Shader "Unlit/ParryRIng" {
+Shader "Unlit/ParryRing" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
         _OutlineColor ("Outline Color", Color) = (1,1,1,1)
@@ -41,7 +41,7 @@ Shader "Unlit/ParryRIng" {
                 // 輪郭線の幅に応じてアウトラインを描画
                 float2 d = fwidth(i.outline.xy);
                 float2 threshold = smoothstep(0.5 - d, 0.5 + d, i.outline.xy);
-                fixed4 outlineColor = fixed4.lerp(_OutlineColor, _OutlineColor.rgb, threshold.x * threshold.y);
+                fixed4 outlineColor = lerp(_OutlineColor, _OutlineColor, threshold.x * threshold.y);
 
                 return outlineColor;
             }

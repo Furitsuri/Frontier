@@ -12,11 +12,14 @@ public class PlayerPhaseManager : PhaseManagerBase
     {
         base.Init();
 
-        // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
-        Player player = BattleManager.Instance.GetPlayerEnumerable().First();
-        StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(player);
-        // アクションゲージの回復
-        BattleManager.Instance.RecoveryActionGaugeForGroup( Character.CHARACTER_TAG.CHARACTER_PLAYER );
+        if (0 < _btlMgr.GetCharacterCount(Character.CHARACTER_TAG.CHARACTER_PLAYER))
+        {
+            // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
+            Player player = _btlMgr.GetPlayerEnumerable().First();
+            StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(player);
+            // アクションゲージの回復
+            _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.CHARACTER_PLAYER);
+        }
     }
 
     /// <summary>

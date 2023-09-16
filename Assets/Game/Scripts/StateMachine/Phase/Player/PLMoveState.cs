@@ -22,7 +22,7 @@ public class PLMoveState : PhaseStateBase
 
     override public void Init()
     {
-        var btlInstance = BattleManager.Instance;
+        _btlMgr         = ManagerProvider.Instance.GetService<BattleManager>();
         var stgInstance = StageGrid.Instance;
 
         base.Init();
@@ -32,7 +32,7 @@ public class PLMoveState : PhaseStateBase
         _departGridIndex = StageGrid.Instance.GetCurrentGridIndex();
 
         // 現在選択中のキャラクター情報を取得して移動範囲を表示
-        _selectPlayer = (Player)btlInstance.GetSelectCharacter();
+        _selectPlayer = (Player)_btlMgr.GetSelectCharacter();
         Debug.Assert(_selectPlayer != null);
 
         var param = _selectPlayer.param;

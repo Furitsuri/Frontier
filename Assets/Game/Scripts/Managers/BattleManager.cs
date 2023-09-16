@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using TMPro.Examples;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.Text;
 using static Character;
 using static StageGrid;
 
-public class BattleManager : Singleton<BattleManager>
+public class BattleManager : MonoBehaviour
 {
     enum BattlePhase
     {
@@ -27,7 +29,8 @@ public class BattleManager : Singleton<BattleManager>
         NUM
     }
 
-    public GameObject stageGridObject;
+    [SerializeField]
+    private GameObject stageGridObject;
 
     private BattlePhase _phase;
     private PhaseManagerBase _currentPhaseManager;
@@ -35,6 +38,7 @@ public class BattleManager : Singleton<BattleManager>
     private PhaseManagerBase[] _phaseManagers   = new PhaseManagerBase[((int)TurnType.NUM)];
     private List<Player> _players               = new List<Player>(Constants.CHARACTER_MAX_NUM);
     private List<Enemy> _enemies                = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
+    private List<Other> _others                 = new List<Other>(Constants.CHARACTER_MAX_NUM);
     private CharacterHashtable _characterHash   = new CharacterHashtable();
     private CharacterHashtable.Key _diedCharacterKey;
     private CharacterHashtable.Key _battleBossCharacterKey;
@@ -49,16 +53,14 @@ public class BattleManager : Singleton<BattleManager>
     // 攻撃フェーズ中において、攻撃を開始するキャラクター
     public Character AttackerCharacter { get; private set; } = null;
 
-    override protected void Init()
+    void Awake()
     {
         if (StageGrid.Instance == null)
         {
             Instantiate(stageGridObject);
+            _stageGrid = StageGrid.Instance;
+            _stageGrid.Setting(this);
         }
-
-        // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する
-        FileReadManager.Instance.PlayerLoad(_currentStageIndex);
-        FileReadManager.Instance.EnemyLord(_currentStageIndex);
 
         _phaseManagers[(int)TurnType.PLAYER_TURN]   = new PlayerPhaseManager();
         _phaseManagers[(int)TurnType.ENEMY_TURN]    = new EnemyPhaseManager();
@@ -68,15 +70,24 @@ public class BattleManager : Singleton<BattleManager>
         _diedCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
 
         // TODO : ステージのファイルから読み込んで設定するように
-        _battleBossCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
-        _escortTargetCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
+        _battleBossCharacterKey     = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
+        _escortTargetCharacterKey   = new CharacterHashtable.Key(Character.CHARACTER_TAG.CHARACTER_NONE, -1);
 
         // スキルデータの読込
         FileReadManager.Instance.SkillDataLord();
     }
 
-    override protected void OnStart()
+    void Start()
     {
+        // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        if (!Methods.IsDebugScene())
+#endif
+        {
+            FileReadManager.Instance.PlayerLoad(_currentStageIndex);
+            FileReadManager.Instance.EnemyLord(_currentStageIndex);
+        }
+
         _currentPhaseManager.Init();
 
         // 向きの値を設定
@@ -118,12 +129,16 @@ public class BattleManager : Singleton<BattleManager>
         _stageGrid.UpdateGridInfo();
     }
 
-    override protected void OnUpdate()
+    void Update()
     {
-        // TODO : 仮。あとでリファクタ
-        if( GameManager.instance.IsInvoking() )
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        if (!Methods.IsDebugScene())
+#endif
         {
-            return;
+            if (GameManager.instance.IsInvoking())
+            {
+                return;
+            }
         }
 
         // 現在のグリッド上に存在するキャラクター情報を更新
@@ -147,7 +162,7 @@ public class BattleManager : Singleton<BattleManager>
         _transitNextPhase = _currentPhaseManager.Update();
     }
 
-    override protected void OnLateUpdate()
+    void LateUpdate()
     {
         if (BattleUISystem.Instance.StageClear.isActiveAndEnabled) return;
 
@@ -529,6 +544,16 @@ public class BattleManager : Singleton<BattleManager>
         }
 
         yield break;
+    }
+
+    public int GetCharacterCount( Character.CHARACTER_TAG tag )
+    {
+        switch( tag )
+        {
+            case CHARACTER_TAG.CHARACTER_PLAYER: return _players.Count;
+            case CHARACTER_TAG.CHARACTER_ENEMY: return _enemies.Count;
+            default: return _others.Count;
+        }
     }
 
     /// <summary>
