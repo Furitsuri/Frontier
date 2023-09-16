@@ -21,7 +21,6 @@ public class PLAttackState : PhaseStateBase
     override public void Init()
     {
         var stgInstance = StageGrid.Instance;
-        var btlInstance = BattleManager.Instance;
         var btlUIInstance = BattleUISystem.Instance;
 
         base.Init();
@@ -30,7 +29,7 @@ public class PLAttackState : PhaseStateBase
         _curentGridIndex    = stgInstance.GetCurrentGridIndex();
 
         // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-        _attackCharacter = btlInstance.GetCharacterFromHashtable(btlInstance.SelectCharacterInfo);
+        _attackCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
         if (_attackCharacter == null)
         {
             Debug.Assert(false, "SelectPlayer Irregular.");
@@ -44,7 +43,7 @@ public class PLAttackState : PhaseStateBase
         if( stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.CHARACTER_ENEMY) )
         {
             // アタッカーキャラクターの設定
-            btlInstance.SetAttackerCharacter(_attackCharacter);
+            _btlMgr.SetAttackerCharacter(_attackCharacter);
             // アタックカーソルUI表示
             btlUIInstance.ToggleAttackCursorP2E(true);
         }
@@ -53,7 +52,6 @@ public class PLAttackState : PhaseStateBase
     public override bool Update()
     {
         var stgInstance     = StageGrid.Instance;
-        var btlInstance     = BattleManager.Instance;
         var btlUIInstance   = BattleUISystem.Instance;
 
         if( base.Update() )
@@ -62,7 +60,7 @@ public class PLAttackState : PhaseStateBase
         }
 
         // 攻撃可能状態でなければ何もしない
-        if(!btlInstance.IsAttackPhaseState())
+        if(!_btlMgr.IsAttackPhaseState())
         {
             return false;
         }
@@ -73,7 +71,7 @@ public class PLAttackState : PhaseStateBase
                 // グリッドの操作
                 StageGrid.Instance.OperateCurrentGrid();
                 // グリッド上のキャラクターを取得
-                _targetCharacter = btlInstance.GetSelectCharacter();
+                _targetCharacter = _btlMgr.GetSelectCharacter();
                 // ダメージ予測表示UIを表示
                 btlUIInstance.ToggleBattleExpect(true);
                 // 使用スキルを選択する
@@ -81,7 +79,7 @@ public class PLAttackState : PhaseStateBase
                 _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
 
                 // 予測ダメージを適応する
-                btlInstance.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
@@ -127,7 +125,6 @@ public class PLAttackState : PhaseStateBase
 
     public override void Exit()
     {
-        var btlInstance     = BattleManager.Instance;
         var btlUIInstance   = BattleUISystem.Instance;
         var stgInstance     = StageGrid.Instance;
 
@@ -142,9 +139,9 @@ public class PLAttackState : PhaseStateBase
         }
 
         // アタッカーキャラクターの設定を解除
-        btlInstance.ResetAttackerCharacter();
+        _btlMgr.ResetAttackerCharacter();
         // 予測ダメージをリセット
-        btlInstance.ResetDamageExpect(_attackCharacter, _targetCharacter);
+        _btlMgr.ResetDamageExpect(_attackCharacter, _targetCharacter);
         // アタックカーソルUI非表示
         btlUIInstance.ToggleAttackCursorP2E(false);
         // ダメージ予測表示UIを非表示

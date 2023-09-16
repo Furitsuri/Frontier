@@ -95,6 +95,15 @@ public class FileReadManager : Singleton<FileReadManager>
         public List<BattleCameraController.CameraParamData[]> CameraParams;
     }
 
+    private BattleManager _btlMgr;
+
+    protected override void OnStart()
+    {
+        base.OnStart();
+
+        _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+    }
+
     /// <summary>
     /// プレイヤー情報をロードし、バトルマネージャ上に設置します
     /// </summary>
@@ -123,7 +132,7 @@ public class FileReadManager : Singleton<FileReadManager>
             player.Init();
             playerObject.SetActive(true);
 
-            BattleManager.Instance.AddPlayerToList(player);
+            _btlMgr.AddPlayerToList(player);
         }
     }
 
@@ -152,7 +161,7 @@ public class FileReadManager : Singleton<FileReadManager>
             enemy.Init((Enemy.ThinkingType)Params[i].ThinkType);
             enemyObject.SetActive(true);
 
-            BattleManager.Instance.AddEnemyToList(enemy);
+            _btlMgr.AddEnemyToList(enemy);
         }
     }
 
@@ -217,11 +226,11 @@ public class FileReadManager : Singleton<FileReadManager>
     /// </summary>
     /// <param name="data">適応先のスキルデータ</param>
     /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
-    private void ApplySkillsData( ref SkillsData.Data data, in FileSkillData fdata )
+    private void ApplySkillsData(ref SkillsData.Data data, in FileSkillData fdata)
     {
         data.Name       = fdata.Name;
         data.Cost       = fdata.Cost;
-        data.Type       = ( SkillsData.SituationType )fdata.Type;
+        data.Type       = (SkillsData.SituationType)fdata.Type;
         data.Duration   = fdata.Duration;
         data.AddAtkMag  = fdata.AddAtkMag;
         data.AddDefMag  = fdata.AddDefMag;
@@ -230,5 +239,39 @@ public class FileReadManager : Singleton<FileReadManager>
         data.Param2     = fdata.Param2;
         data.Param3     = fdata.Param3;
         data.Param4     = fdata.Param4;
-}
+    }
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    /// <summary>
+    /// デバッグ用にユニットを生成します
+    /// </summary>
+    public void DebugBattleLoadUnit( int prefabIndex, ref Character.Parameter param)
+    {
+        GameObject unitObject = Instantiate(PlayersPrefab[prefabIndex]);
+        if (unitObject == null) return;
+
+        if( param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER )
+        {
+            Player player = unitObject.GetComponent<Player>();
+            if (player == null) return;
+
+            player.param = param;
+            player.Init();
+            unitObject.SetActive(true);
+
+            _btlMgr.AddPlayerToList(player);
+        }
+        else
+        {
+            Enemy enemy = unitObject.GetComponent<Enemy>();
+            if (enemy == null) return;
+
+            enemy.param = param;
+            enemy.Init();
+            unitObject.SetActive(true);
+
+            _btlMgr.AddEnemyToList(enemy);
+        }
+    }
+#endif  // DEVELOPMENT_BUILD || UNITY_EDITOR
 }

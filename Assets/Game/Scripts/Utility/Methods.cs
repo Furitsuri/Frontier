@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 public static class Methods
@@ -106,4 +107,12 @@ public static class Methods
 
         return former;
     }
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    public static bool IsDebugScene()
+    {
+        var curSceneName = SceneManager.GetActiveScene().name;
+        return curSceneName.Contains("Debug");
+    }
+#endif  // DEVELOPMENT_BUILD || UNITY_EDITOR
 }

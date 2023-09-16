@@ -16,6 +16,7 @@ public class EMAIBase
         public List<int> targetCharaIndexs;
     }
 
+    protected BattleManager _btlMgr;
     // 既に移動対象や攻撃対象を決定しているか
     protected bool _isDetermined = false;
     // 移動目標グリッドのインデックス値
@@ -38,8 +39,9 @@ public class EMAIBase
     /// </summary>
     virtual public void Init( Enemy mySelf )
     {
-        _gridEvaluationValues = new float[StageGrid.Instance.GridTotalNum];
-        _targetChandidateInfos = new List<TargetCandidateInfo>(64);
+        _btlMgr                 = ManagerProvider.Instance.GetService<BattleManager>();
+        _gridEvaluationValues   = new float[StageGrid.Instance.GridTotalNum];
+        _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
     }
 
     /// <summary>

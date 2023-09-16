@@ -24,7 +24,7 @@ public class Player : Character
     {
         base.Die();
 
-        BattleManager.Instance.RemovePlayerFromList(this);
+        _btlMgr.RemovePlayerFromList(this);
     }
 
     public override void SelectUseSkills(SituationType type)

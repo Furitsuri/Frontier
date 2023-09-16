@@ -24,13 +24,12 @@ public class EMMoveState : PhaseStateBase
 
     override public void Init()
     {
-        var btlInstance = BattleManager.Instance;
         var stageGrid   = StageGrid.Instance;
 
         base.Init();
 
         // 現在選択中のキャラクター情報を取得して移動範囲を表示
-        _enemy = btlInstance.GetSelectCharacter() as Enemy;
+        _enemy = _btlMgr.GetSelectCharacter() as Enemy;
         Debug.Assert(_enemy != null);
         _departGridIndex = stageGrid.GetCurrentGridIndex();
         var param = _enemy.param;

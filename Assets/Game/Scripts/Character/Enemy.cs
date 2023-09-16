@@ -64,7 +64,7 @@ public class Enemy : Character
     {
         base.Die();
 
-        BattleManager.Instance.RemoveEnemyFromList(this);
+        _btlMgr.RemoveEnemyFromList(this);
     }
 
     /// <summary>

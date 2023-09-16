@@ -6,9 +6,12 @@ using UnityEngine;
 public class PhaseManagerBase : Tree<PhaseStateBase>
 {
     protected bool _isFirstUpdate = false;
+    protected BattleManager _btlMgr;
 
     virtual public void Init()
     {
+        _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+
         // �J�ږ؂̍쐬
         CreateTree();
 
