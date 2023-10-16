@@ -3,101 +3,104 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace Frontier
 {
-    enum GamePhase
+    public class GameManager : MonoBehaviour
     {
-        GAME_START = 0,
-        GAME_TITLE_MENU,
-        GAME_BATTLE,
-        GAME_END_SCENE,
-        GAME_END,
-    }
-
-    private GameObject _StageImage;
-    private GamePhase _Phase;
-    public static GameManager instance = null;
-    public GameObject _managerProvider;
-    public BattleManager _btlMgr;
-    public float stageStartDelay = 2f;				// ステージ開始時に表示する時間(秒)
-
-    void Awake()
-    {
-        if (instance == null)
+        enum GamePhase
         {
-            instance = this;
-        }
-        else if( instance != this )
-        {
-            Destroy( gameObject );
+            GAME_START = 0,
+            GAME_TITLE_MENU,
+            GAME_BATTLE,
+            GAME_END_SCENE,
+            GAME_END,
         }
 
-        DontDestroyOnLoad( gameObject );
+        public static GameManager instance = null;
+        private GameObject _StageImage;
+        private GamePhase _Phase;
+        public GameObject _managerProvider;
+        public BattleManager _btlMgr;
+        public float stageStartDelay = 2f;              // ステージ開始時に表示する時間(秒)
 
-        if( ManagerProvider.Instance == null )
+        void Awake()
         {
-            Instantiate( _managerProvider );
-        }
-
-        // if (BattleManager.Instance == null)
-        // {
-        //     Instantiate(_btlMgr);
-        // }
-
-        InitGame();
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {   
-        StartCoroutine(GameFlow());
-    }
-
-    void InitGame()
-    {
-        _StageImage = GameObject.Find("StageImage");
-
-        Invoke("StageLevelImage", stageStartDelay);
-
-        _Phase = GamePhase.GAME_START;
-    }
-
-    /// <summary>
-    /// ステージレベルの画像表示を取りやめます
-    /// Invoke関数で参照されます
-    /// </summary>
-    void StageLevelImage()
-    {
-        _StageImage.SetActive(false);
-    }
-
-    IEnumerator GameFlow()
-    {
-        while (_Phase != GamePhase.GAME_END)
-        {
-            Debug.Log(_Phase);
-            yield return null;
-
-            switch (_Phase)
+            if (instance == null)
             {
-                case GamePhase.GAME_START:
-                    _Phase = GamePhase.GAME_TITLE_MENU;
-                    break;
-                case GamePhase.GAME_TITLE_MENU:
-                    _Phase = GamePhase.GAME_BATTLE;
-                    break;
-                case GamePhase.GAME_BATTLE:
-                    // StartCoroutine(_btlMgr.Battle());
-                    // Battleの終了を待つ
-                    // yield return new WaitUntil(() => _btlMgr.isEnd());
+                instance = this;
+            }
+            else if (instance != this)
+            {
+                Destroy(gameObject);
+            }
 
-                    _Phase = GamePhase.GAME_END_SCENE;
-                    break;
-                case GamePhase.GAME_END_SCENE:
-                    _Phase = GamePhase.GAME_END;
-                    break;
-                case GamePhase.GAME_END:
-                    break;
+            DontDestroyOnLoad(gameObject);
+
+            if (ManagerProvider.Instance == null)
+            {
+                Instantiate(_managerProvider);
+            }
+
+            // if (BattleManager.Instance == null)
+            // {
+            //     Instantiate(_btlMgr);
+            // }
+
+            InitGame();
+        }
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            StartCoroutine(GameFlow());
+        }
+
+        void InitGame()
+        {
+            _StageImage = GameObject.Find("StageImage");
+
+            Invoke("StageLevelImage", stageStartDelay);
+
+            _Phase = GamePhase.GAME_START;
+        }
+
+        /// <summary>
+        /// ステージレベルの画像表示を取りやめます
+        /// Invoke関数で参照されます
+        /// </summary>
+        void StageLevelImage()
+        {
+            _StageImage.SetActive(false);
+        }
+
+        IEnumerator GameFlow()
+        {
+            while (_Phase != GamePhase.GAME_END)
+            {
+                Debug.Log(_Phase);
+                yield return null;
+
+                switch (_Phase)
+                {
+                    case GamePhase.GAME_START:
+                        _Phase = GamePhase.GAME_TITLE_MENU;
+                        break;
+                    case GamePhase.GAME_TITLE_MENU:
+                        _Phase = GamePhase.GAME_BATTLE;
+                        break;
+                    case GamePhase.GAME_BATTLE:
+                        // StartCoroutine(_btlMgr.Battle());
+                        // Battleの終了を待つ
+                        // yield return new WaitUntil(() => _btlMgr.isEnd());
+
+                        _Phase = GamePhase.GAME_END_SCENE;
+                        break;
+                    case GamePhase.GAME_END_SCENE:
+                        _Phase = GamePhase.GAME_END;
+                        break;
+                    case GamePhase.GAME_END:
+                        break;
+                }
             }
         }
     }

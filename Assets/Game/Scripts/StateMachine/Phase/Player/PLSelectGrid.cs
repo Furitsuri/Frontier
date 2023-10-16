@@ -2,65 +2,68 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PLSelectGrid : PhaseStateBase
+namespace Frontier
 {
-    override public void Init()
+    public class PLSelectGrid : PhaseStateBase
     {
-        base.Init();
-
-        // グリッド選択を有効化
-        BattleUISystem.Instance.ToggleSelectGrid( true );
-    }
-
-    override public bool Update()
-    {
-        // グリッド選択より遷移が戻ることはないため基底の更新は行わない
-        // if( base.Update() ) { return true; }
-
-        // 全てのキャラクターが待機済みになっていれば終了
-        if( _btlMgr.IsEndAllCharacterWaitCommand() )
+        override public void Init()
         {
-            Back();
+            base.Init();
 
-            return true;
+            // グリッド選択を有効化
+            Stage.StageController.Instance.SetGridCursorActive(true);
         }
 
-        // ターン終了確認へ遷移
-        if( Input.GetKeyUp( KeyCode.Escape ) )
+        override public bool Update()
         {
-            TransitIndex = 1;
-            return true;
-        }
+            // グリッド選択より遷移が戻ることはないため基底の更新は行わない
+            // if( base.Update() ) { return true; }
 
-        // グリッドの操作
-        StageGrid.Instance.OperateCurrentGrid();
-        StageGrid.GridInfo info;
-        StageGrid.Instance.FetchCurrentGridInfo(out info);
-
-        // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
-        int selectCharaIndex = info.charaIndex;
-
-        Character character = _btlMgr.GetSelectCharacter();
-        if ( character != null && 
-             character.param.characterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER &&
-             !character.tmpParam.isEndCommand[(int)Character.BaseCommand.COMMAND_WAIT])
-        {
-            if (Input.GetKeyUp(KeyCode.Space))
+            // 全てのキャラクターが待機済みになっていれば終了
+            if (_btlMgr.IsEndAllCharacterWaitCommand())
             {
-                TransitIndex = 0;   // 遷移
+                Back();
 
                 return true;
             }
+
+            // ターン終了確認へ遷移
+            if (Input.GetKeyUp(KeyCode.Escape))
+            {
+                TransitIndex = 1;
+                return true;
+            }
+
+            // グリッドの操作
+            Stage.StageController.Instance.OperateGridCursor();
+            Stage.GridInfo info;
+            Stage.StageController.Instance.FetchCurrentGridInfo(out info);
+
+            // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
+            int selectCharaIndex = info.charaIndex;
+
+            Character character = _btlMgr.GetSelectCharacter();
+            if (character != null &&
+                 character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
+                 !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
+            {
+                if (Input.GetKeyUp(KeyCode.Space))
+                {
+                    TransitIndex = 0;   // 遷移
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        return false;
-    }
+        override public void Exit()
+        {
+            // グリッド選択を無効化 → 無効化しないほうが見た目がよかったため、コメントアウト
+            // Stage.StageController.Instance.SetGridCursorActive( false );
 
-    override public void Exit()
-    {
-        // グリッド選択を無効化 → 無効化しないほうが見た目がよかったため、コメントアウト
-        // BattleUISystem.Instance.ToggleSelectGrid( false );
-
-        base.Exit();
+            base.Exit();
+        }
     }
 }

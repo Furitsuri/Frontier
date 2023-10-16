@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8882055041552942919}
   - component: {fileID: -2427109399616375887}
-  - component: {fileID: 1899135670418982983}
+  - component: {fileID: 470131688475136938}
   m_Layer: 0
-  m_Name: SelectGridCursor
+  m_Name: GridCursor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -137,7 +137,7 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 1
   m_ApplyActiveColorSpace: 0
---- !u!114 &1899135670418982983
+--- !u!114 &470131688475136938
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -146,6 +146,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8350404123717608506}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b683f04fd4c48784abe2aae35fff665b, type: 3}
+  m_Script: {fileID: 11500000, guid: 6fde18bc99869374d8b9cd333cf7e273, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

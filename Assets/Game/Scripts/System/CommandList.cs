@@ -44,10 +44,14 @@ public class CommandList
         }
     }
 
-    public void Update()
+    public bool Update()
     {
+        bool isUpdated = false;
+
         if (Input.GetKeyDown(_transitPrevKey))
         {
+            isUpdated = true;
+
             if( _currentNode == _list.First )
             {
                 _currentNode = _list.Last;
@@ -59,6 +63,8 @@ public class CommandList
         }
         if (Input.GetKeyDown(_transitNextKey))
         {
+            isUpdated = true;
+
             if (_currentNode == _list.Last)
             {
                 _currentNode = _list.First;
@@ -68,6 +74,8 @@ public class CommandList
                 _currentNode = _currentNode.Next;
             }
         }
+
+        return isUpdated;
     }
 
     public void InsertCommand(int index)
@@ -108,6 +116,17 @@ public class CommandList
         _currentNode = _list.First;
     }
 
+    public int GetCurrentValue()
+    {
+        if (_currentNode == null)
+        {
+            Debug.Assert(false);
+            return 0;
+        }
+
+        return _currentNode.Value;
+    }
+
     public int GetCurrentIndex()
     {
         if( _currentNode == null )
@@ -116,6 +135,12 @@ public class CommandList
             return 0;
         }
 
-        return _currentNode.Value;
+        int index = 0;
+        for( var node = _list.First; node != null; node = node.Next, ++index )
+        {
+            if( node == _currentNode ) return index;
+        }
+
+        return -1;
     }
 }

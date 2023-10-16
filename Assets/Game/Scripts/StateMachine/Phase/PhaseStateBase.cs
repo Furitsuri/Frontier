@@ -1,53 +1,56 @@
 using UnityEngine;
 
-public class PhaseStateBase : TreeNode<PhaseStateBase>
+namespace Frontier
 {
-    private bool _isBack = false;
-    public int TransitIndex { get; protected set; } = -1;
-    protected BattleManager _btlMgr;
-
-    // 初期化
-    virtual public void Init()
+    public class PhaseStateBase : TreeNode<PhaseStateBase>
     {
-        _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-        TransitIndex = -1;
-        _isBack = false;
-    }
+        private bool _isBack = false;
+        public int TransitIndex { get; protected set; } = -1;
+        protected BattleManager _btlMgr;
 
-    // 更新
-    virtual public bool Update()
-    {
-        if( Input.GetKeyUp( KeyCode.Backspace ) )
+        // 初期化
+        virtual public void Init()
         {
-            Back();
-
-            return true;
+            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            TransitIndex = -1;
+            _isBack = false;
         }
 
-        return false;
-    }
+        // 更新
+        virtual public bool Update()
+        {
+            if (Input.GetKeyUp(KeyCode.Backspace))
+            {
+                Back();
 
-    // 退避
-    virtual public void Exit()
-    {
-    }
+                return true;
+            }
 
-    // 戻る
-    virtual public bool IsBack()
-    {
-        return _isBack;
-    }
+            return false;
+        }
 
-    /// <summary>
-    /// 親の遷移に戻ります
-    /// </summary>
-    protected void Back()
-    {
-        _isBack = true;
-    }
+        // 退避
+        virtual public void Exit()
+        {
+        }
 
-    protected void NoticeCharacterDied( CharacterHashtable.Key characterKey )
-    {
-        _btlMgr.SetDiedCharacterKey(characterKey);
+        // 戻る
+        virtual public bool IsBack()
+        {
+            return _isBack;
+        }
+
+        /// <summary>
+        /// 親の遷移に戻ります
+        /// </summary>
+        protected void Back()
+        {
+            _isBack = true;
+        }
+
+        protected void NoticeCharacterDied(CharacterHashtable.Key characterKey)
+        {
+            _btlMgr.SetDiedCharacterKey(characterKey);
+        }
     }
 }

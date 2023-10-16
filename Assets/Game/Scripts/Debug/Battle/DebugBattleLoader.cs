@@ -3,25 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DebugBattleLoader : MonoBehaviour
+namespace Frontier
 {
-    [SerializeField]
-    private GameObject debugBattleManager;
-    [SerializeField]
-    private GameObject soundManager;
-
-    void Awake()
+    public class DebugBattleLoader : MonoBehaviour
     {
-        //Check if a GameManager has already been assigned to static variable GameManager.instance or if it's still null
-        if (DebugBattleManager.instance == null)
+        [SerializeField]
+        private GameObject debugBattleManager;
+        [SerializeField]
+        private GameObject soundManager;
 
-            //Instantiate gameManager prefab
-            Instantiate(debugBattleManager);
+        void Awake()
+        {
+            //Check if a GameManager has already been assigned to static variable GameManager.instance or if it's still null
+            if (DebugBattleManager.instance == null)
 
-        //Check if a SoundManager has already been assigned to static variable GameManager.instance or if it's still null
-        if (SoundManager.instance == null)
+                //Instantiate gameManager prefab
+                Instantiate(debugBattleManager);
 
-            //Instantiate SoundManager prefab
-            Instantiate(soundManager);
+            //Check if a SoundManager has already been assigned to static variable GameManager.instance or if it's still null
+            if (SoundManager.instance == null)
+
+                //Instantiate SoundManager prefab
+                Instantiate(soundManager);
+        }
     }
 }

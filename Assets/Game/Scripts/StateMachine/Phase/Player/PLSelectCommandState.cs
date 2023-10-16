@@ -5,96 +5,105 @@ using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
-using static Character;
+using static Frontier.Character;
 
-public class PLSelectCommandState : PhaseStateBase
+namespace Frontier
 {
-    public int SelectCommandIndex { get; set; } = 0;
-    private Player _selectPlayer;
-    private CommandList _commandList = new CommandList();
-
-    override public void Init()
+    public class PLSelectCommandState : PhaseStateBase
     {
-        base.Init();
+        public int SelectCommandIndex { get; private set; } = 0;
+        public int SelectCommandValue { get; private set; } = 0;
+        private Player _selectPlayer;
+        private CommandList _commandList = new CommandList();
 
-        // 選択中のプレイヤーを取得
-        _selectPlayer = (Player)_btlMgr.GetSelectCharacter();
-        if(_selectPlayer == null)
+        override public void Init()
         {
-            Debug.Assert( false );
+            base.Init();
 
-            return;
-        }
-
-        var endCommand = _selectPlayer.tmpParam.isEndCommand;
-        if (endCommand[(int)BaseCommand.COMMAND_MOVE] && endCommand[(int)BaseCommand.COMMAND_ATTACK])
-        {
-            return;
-        }
-
-        // 入力ベース情報の設定
-        List<int> commandIndexs = new List<int>((int)Character.BaseCommand.COMMAND_MAX_NUM);
-        for (int i = 0; i < (int)Character.BaseCommand.COMMAND_MAX_NUM; ++i)
-        {
-            if ( !_selectPlayer.tmpParam.isEndCommand[i] )
+            // 選択中のプレイヤーを取得
+            _selectPlayer = (Player)_btlMgr.GetSelectCharacter();
+            if (_selectPlayer == null)
             {
-                commandIndexs.Add(i);
-            }
-        }
-        _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL);
+                Debug.Assert(false);
 
-        // UI側へこのスクリプトを登録し、UIを表示
-        var instance = BattleUISystem.Instance;
-        instance.PLCommandWindow.registPLCommandScript(this);
-        instance.PLCommandWindow.RegistUnenableCommandIndexs(ref _selectPlayer.tmpParam.isEndCommand);
-        instance.TogglePLCommand(true);
-    }
-
-    override public bool Update()
-    {
-        var endCommand = _selectPlayer.tmpParam.isEndCommand;
-
-        // 移動と攻撃が終わっている場合は自動的に終了に
-        if ( endCommand[(int)BaseCommand.COMMAND_MOVE] && endCommand[(int)BaseCommand.COMMAND_ATTACK] )
-        {
-            Back();
-            // 待機を終わらせる
-            endCommand[(int)BaseCommand.COMMAND_WAIT] = true;
-
-            return true;
-        }
-
-        if ( base.Update() )
-        {
-            // 移動のみ終了している場合は移動前に戻れるように          
-            if ( endCommand[(int)BaseCommand.COMMAND_MOVE] && !endCommand[(int)BaseCommand.COMMAND_ATTACK] )
-            {
-                StageGrid.Instance.FollowFootprint( _selectPlayer );
-                StageGrid.Instance.UpdateGridInfo();
-                endCommand[(int)BaseCommand.COMMAND_MOVE] = false;
+                return;
             }
 
-            return true;
+            var endCommand = _selectPlayer.tmpParam.isEndCommand;
+            if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
+            {
+                return;
+            }
+
+            // UI側へこのスクリプトを登録し、UIを表示
+            var instance = BattleUISystem.Instance;
+            List<Character.Command.COMMAND_TAG> executableCommands;
+            _selectPlayer.FetchExecutableCommand(out executableCommands);
+
+            // 入力ベース情報の設定
+            List<int> commandIndexs = new List<int>();
+            foreach ( var executableCmd in executableCommands )
+            {
+                commandIndexs.Add((int)executableCmd);
+            }
+            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL);
+            SelectCommandIndex = _commandList.GetCurrentIndex();
+            SelectCommandValue = _commandList.GetCurrentValue();
+
+            instance.PLCommandWindow.RegistPLCommandScript(this);
+            instance.PLCommandWindow.SetExecutableCommandList(executableCommands);
+            instance.TogglePLCommand(true);
         }
 
-        _commandList.Update();
-        SelectCommandIndex = _commandList.GetCurrentIndex();
-
-        if (Input.GetKeyUp(KeyCode.Space))
+        override public bool Update()
         {
-            TransitIndex = SelectCommandIndex;
+            var endCommand = _selectPlayer.tmpParam.isEndCommand;
 
-            return true;
+            // 移動と攻撃が終わっている場合は自動的に終了に
+            if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
+            {
+                Back();
+                // 待機を終わらせる
+                endCommand[(int)Command.COMMAND_TAG.WAIT] = true;
+
+                return true;
+            }
+
+            if (base.Update())
+            {
+                // 移動のみ終了している場合は移動前に戻れるように          
+                if (endCommand[(int)Command.COMMAND_TAG.MOVE] && !endCommand[(int)Command.COMMAND_TAG.ATTACK])
+                {
+                    Stage.StageController.Instance.FollowFootprint(_selectPlayer);
+                    Stage.StageController.Instance.UpdateGridInfo();
+                    endCommand[(int)Command.COMMAND_TAG.MOVE] = false;
+                }
+
+                return true;
+            }
+
+            if (_commandList.Update())
+            {
+                SelectCommandIndex = _commandList.GetCurrentIndex();
+                SelectCommandValue = _commandList.GetCurrentValue();
+            }
+
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                TransitIndex = SelectCommandValue;
+
+                return true;
+            }
+
+            return false;
         }
 
-        return false;
-    }
+        override public void Exit()
+        {
+            // UIを非表示
+            BattleUISystem.Instance.TogglePLCommand(false);
 
-    override public void Exit()
-    {
-        // UIを非表示
-        BattleUISystem.Instance.TogglePLCommand(false);
-
-        base.Exit();
+            base.Exit();
+        }
     }
 }

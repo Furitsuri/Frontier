@@ -1,159 +1,152 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static BattleManager;
 
-public class BattleUISystem : MonoBehaviour
+namespace Frontier
 {
-    public static BattleUISystem Instance { get; private set; }
-
-    [Header("SelectGrid")]
-    public SelectGridUI SelectGridCursor;           // グリッド選択に用いるカーソル
-
-    [Header("PlayerParam")]
-    public CharacterParameterUI PlayerParameter;    // プレイヤーor第三勢力キャラクターのパラメータ表示UI
-    public CharacterParameterUI EnemyParameter;     // 敵or第三勢力キャラクターのパラメータ表示UI
-
-    [Header("AttackCursor")]
-    public AttackCursorUI AttackCursor;             // 攻撃対象を示すカーソル(攻撃対象選択画面にて表示)
-
-    [Header("PlayerCommand")]
-    public PlayerCommandUI PLCommandWindow;         // プレイヤーの選択コマンドUI
-
-    [Header("ConfirmTurnEnd")]
-    public ConfirmTurnEndUI ConfirmTurnEnd;         // ターン終了確認UI
-
-    [Header("DamageUI")]
-    public DamageUI Damage;                         // ダメージ表記
-
-    [Header("PhaseUI")]
-    public PhaseUI Phase;                           // フェーズ表記UI
-
-    [Header("StageClearUI")]
-    public StageClearUI StageClear;                 // ステージクリアUI
-
-    [Header("GameOver")]
-    public GameOverUI GameOver;                     // ゲームオーバー画面
-
-    void Awake()
+    public class BattleUISystem : MonoBehaviour
     {
-        Instance = this;
-    }
+        public static BattleUISystem Instance { get; private set; }
 
-    void Start()
-    {
-        // カメラアングルの設定
-        PlayerParameter.Init(45f);
-        EnemyParameter.Init(-45f);
-    }
+        [Header("CharacterParameter")]
+        public CharacterParameterPresenter ParameterView;    // キャラクターパラメータ表示
 
-    public void ToggleSelectGrid( bool isActive )
-    {
-        SelectGridCursor.gameObject.SetActive( isActive );
-    }
+        [Header("PlayerCommand")]
+        public PlayerCommandUI PLCommandWindow;         // プレイヤーの選択コマンドUI
 
-    public void TogglePlayerParameter( bool isActive )
-    {
-        PlayerParameter.gameObject.SetActive( isActive );
-    }
+        [Header("ConfirmTurnEnd")]
+        public ConfirmTurnEndUI ConfirmTurnEnd;         // ターン終了確認UI
 
-    public void ToggleEnemyParameter(bool isActive)
-    {
-        EnemyParameter.gameObject.SetActive(isActive);
-    }
+        [Header("DamageUI")]
+        public DamageUI Damage;                         // ダメージ表記
 
-    public void ToggleAttackCursorP2E(bool isActive)
-    {
-        AttackCursor.attackCursorP2E.gameObject.SetActive(isActive);
-    }
+        [Header("PhaseUI")]
+        public PhaseUI Phase;                           // フェーズ表記UI
 
-    public void ToggleAttackCursorE2P(bool isActive)
-    {
-        AttackCursor.attackCursorE2P.gameObject.SetActive(isActive);
-    }
+        [Header("StageClearUI")]
+        public StageClearUI StageClear;                 // ステージクリアUI
 
-    public void TogglePLCommand( bool isActive )
-    {
-        PLCommandWindow.gameObject.SetActive( isActive );
-    }
+        [Header("GameOver")]
+        public GameOverUI GameOver;                     // ゲームオーバー画面
 
-    public void ToggleBattleExpect( bool isActive )
-    {
-        PlayerParameter.GetDiffHPText().gameObject.SetActive( isActive );
-        EnemyParameter.GetDiffHPText().gameObject.SetActive( isActive );
-    }
-
-    public void ToggleDamageUI( bool isActive )
-    {
-        Damage.gameObject.SetActive( isActive );
-    }
-
-    public void SetDamageUIPosByCharaPos( Character character, int damageValue )
-    {
-        // キャラクターの座標からカメラ(スクリーン)座標に変換
-        var characterWorldPos   = character.transform.position;
-        var characterScreenPos  = Camera.main.WorldToScreenPoint( characterWorldPos );
-
-        Damage.transform.position   = characterScreenPos;
-        int absDamage = Mathf.Abs( damageValue );
-        Damage.damageText.text      = absDamage.ToString();
-        if( damageValue < 0 )
+        void Awake()
         {
-            Damage.damageText.color = Color.red;
+            Instance = this;
         }
-        else if( 0 < damageValue )
+
+        public void TogglePlayerParameter(bool isActive)
         {
-            Damage.damageText.color = Color.green;
+            ParameterView.PlayerParameter.gameObject.SetActive(isActive);
         }
-        else
+
+        public void ToggleEnemyParameter(bool isActive)
         {
-            Damage.damageText.color = Color.white;
+            ParameterView.EnemyParameter.gameObject.SetActive(isActive);
         }
-    }
 
-    public void TogglePhaseUI( bool isActive, TurnType turntype )
-    {
-        Phase.gameObject.SetActive( isActive );
-        Phase.PhaseText[(int)turntype].gameObject.SetActive( isActive );
-    }
+        public void ToggleAttackCursorP2E(bool isActive)
+        {
+            ParameterView.AttackDirection.attackCursorP2E.gameObject.SetActive(isActive);
+        }
 
-    public void StartAnimPhaseUI()
-    {
-        Phase.StartAnim();
-    }
+        public void ToggleAttackCursorE2P(bool isActive)
+        {
+            ParameterView.AttackDirection.attackCursorE2P.gameObject.SetActive(isActive);
+        }
 
-    public bool IsPlayingPhaseUI()
-    {
-        return Phase.IsPlayingAnim();
-    }
+        public void TogglePLCommand(bool isActive)
+        {
+            PLCommandWindow.gameObject.SetActive(isActive);
+        }
 
-    public void ToggleConfirmTurnEnd( bool isActive )
-    {
-        ConfirmTurnEnd.gameObject.SetActive( isActive );
-    }
+        public void ToggleBattleExpect(bool isActive)
+        {
+            ParameterView.PlayerParameter.GetDiffHPText().gameObject.SetActive(isActive);
+            ParameterView.EnemyParameter.GetDiffHPText().gameObject.SetActive(isActive);
+        }
 
-    public void ApplyTestColor2ConfirmTurnEndUI( int selectIndex )
-    {
-        ConfirmTurnEnd.ApplyTextColor(selectIndex);
-    }
+        public void ToggleDamageUI(bool isActive)
+        {
+            Damage.gameObject.SetActive(isActive);
+        }
 
-    public void ToggleStageClearUI( bool isActive )
-    {
-        StageClear.gameObject.SetActive( isActive );
-    }
+        public SkillBoxUI GetPlayerParamSkillBox( int index )
+        {
+            return ParameterView.PlayerParameter.GetSkillBox(index);
+        }
 
-    public void StartStageClearAnim()
-    {
-        StageClear.StartAnim();
-    }
+        public SkillBoxUI GetEnemyParamSkillBox(int index)
+        {
+            return ParameterView.EnemyParameter.GetSkillBox(index);
+        }
 
-    public void ToggleGameOverUI(bool isActive)
-    {
-        GameOver.gameObject.SetActive(isActive);
-    }
+        public void SetDamageUIPosByCharaPos(Character character, int damageValue)
+        {
+            // キャラクターの座標からカメラ(スクリーン)座標に変換
+            var characterWorldPos = character.transform.position;
+            var characterScreenPos = Camera.main.WorldToScreenPoint(characterWorldPos);
 
-    public void StartGameOverAnim()
-    {
-        GameOver.StartAnim();
+            Damage.transform.position = characterScreenPos;
+            int absDamage = Mathf.Abs(damageValue);
+            Damage.damageText.text = absDamage.ToString();
+            if (damageValue < 0)
+            {
+                Damage.damageText.color = Color.red;
+            }
+            else if (0 < damageValue)
+            {
+                Damage.damageText.color = Color.green;
+            }
+            else
+            {
+                Damage.damageText.color = Color.white;
+            }
+        }
+
+        public void TogglePhaseUI(bool isActive, BattleManager.TurnType turntype)
+        {
+            Phase.gameObject.SetActive(isActive);
+            Phase.PhaseText[(int)turntype].gameObject.SetActive(isActive);
+        }
+
+        public void StartAnimPhaseUI()
+        {
+            Phase.StartAnim();
+        }
+
+        public bool IsPlayingPhaseUI()
+        {
+            return Phase.IsPlayingAnim();
+        }
+
+        public void ToggleConfirmTurnEnd(bool isActive)
+        {
+            ConfirmTurnEnd.gameObject.SetActive(isActive);
+        }
+
+        public void ApplyTestColor2ConfirmTurnEndUI(int selectIndex)
+        {
+            ConfirmTurnEnd.ApplyTextColor(selectIndex);
+        }
+
+        public void ToggleStageClearUI(bool isActive)
+        {
+            StageClear.gameObject.SetActive(isActive);
+        }
+
+        public void StartStageClearAnim()
+        {
+            StageClear.StartAnim();
+        }
+
+        public void ToggleGameOverUI(bool isActive)
+        {
+            GameOver.gameObject.SetActive(isActive);
+        }
+
+        public void StartGameOverAnim()
+        {
+            GameOver.StartAnim();
+        }
     }
 }

@@ -1,39 +1,42 @@
 using UnityEngine;
 
-public class ManagerProvider : Singleton<ManagerProvider>, IServiceProvider
+namespace Frontier
 {
-    [SerializeField]
-    private GameObject _battleManagerObject;
-    [SerializeField]
-    private GameObject _soundManager;
-
-    private BattleManager _battleManager;
-
-    override protected void Init()
+    public class ManagerProvider : Singleton<ManagerProvider>, IServiceProvider
     {
-        GameObject btlMgr = Instantiate( _battleManagerObject );
-        if( btlMgr != null )
+        [SerializeField]
+        private GameObject _battleManagerObject;
+        [SerializeField]
+        private GameObject _soundManager;
+
+        private BattleManager _battleManager;
+
+        override protected void Init()
         {
-            _battleManager = btlMgr.GetComponent<BattleManager>();
+            GameObject btlMgr = Instantiate(_battleManagerObject);
+            if (btlMgr != null)
+            {
+                _battleManager = btlMgr.GetComponent<BattleManager>();
+            }
+
+            if (_soundManager == null)
+            {
+                Instantiate(_soundManager);
+            }
         }
 
-        if( _soundManager == null )
+        public T GetService<T>()
         {
-            Instantiate( _soundManager );
-        }
-    }
+            if (typeof(T) == typeof(BattleManager))
+            {
+                return (T)(object)_battleManager;
+            }
+            if (typeof(T) == typeof(SoundManager))
+            {
+                return (T)(object)_soundManager;
+            }
 
-    public T GetService<T>()
-    {
-        if( typeof(T) == typeof(BattleManager) )
-        {
-            return (T)(object)_battleManager;
+            return default(T);
         }
-        if (typeof(T) == typeof(SoundManager))
-        {
-            return (T)(object)_soundManager;
-        }
-
-        return default(T);
     }
 }
