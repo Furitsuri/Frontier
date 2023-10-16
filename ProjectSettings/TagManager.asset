@@ -11,8 +11,8 @@ TagManager:
   - Character
   - Water
   - UI
-  - ParamRender
-  - ParamRenderAttacker
+  - ParamRenderLeft
+  - ParamRenderRight
   - 
   - 
   - PostProcessing

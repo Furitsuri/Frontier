@@ -2,10 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EMWaitState : PhaseStateBase
+namespace Frontier
 {
-    public override void Init()
+    public class EMWaitState : PhaseStateBase
     {
-        base.Init();
+        public override void Init()
+        {
+            base.Init();
+        }
     }
 }

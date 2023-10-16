@@ -2,36 +2,39 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DebugBattleManager : MonoBehaviour
+namespace Frontier
 {
-    [SerializeField]
-    private Character.Parameter GenerateUnitParamSetting;
-    [SerializeField]
-    private BattleManager _btlMgr;
-
-    public static DebugBattleManager instance = null;
-
-    void Awake()
+    public class DebugBattleManager : MonoBehaviour
     {
-        if (instance == null)
+        [SerializeField]
+        private Character.Parameter GenerateUnitParamSetting;
+        [SerializeField]
+        private BattleManager _btlMgr;
+
+        public static DebugBattleManager instance = null;
+
+        void Awake()
         {
-            instance = this;
-        }
-        else if (instance != this)
-        {
-            Destroy(gameObject);
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else if (instance != this)
+            {
+                Destroy(gameObject);
+            }
+
+            DontDestroyOnLoad(gameObject);
+
+            if (_btlMgr == null)
+            {
+                Instantiate(_btlMgr);
+            }
         }
 
-        DontDestroyOnLoad(gameObject);
-
-        if (_btlMgr == null)
+        private void Start()
         {
-            Instantiate(_btlMgr);
+            StartCoroutine(_btlMgr.Battle());
         }
-    }
-
-    private void Start()
-    {
-        StartCoroutine( _btlMgr.Battle() );
     }
 }

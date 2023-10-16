@@ -81,20 +81,20 @@ public static class Methods
     /// <param name="former">ëOé“</param>
     /// <param name="latter">å„é“</param>
     /// <returns>ëOé“Ç∆å„é“ÇÃÇ§ÇøÅAÇÊÇËñ°ï˚Ç…ãﬂÇ¢ë§</returns>
-    public static Character CompareAllyCharacter( Character former, Character latter )
+    public static Frontier.Character CompareAllyCharacter( Frontier.Character former, Frontier.Character latter )
     {
         var formerTag = former.param.characterTag;
         var latterTag = latter.param.characterTag;
 
-        if ( formerTag != Character.CHARACTER_TAG.CHARACTER_PLAYER )
+        if ( formerTag != Frontier.Character.CHARACTER_TAG.PLAYER )
         {
-            if( latterTag == Character.CHARACTER_TAG.CHARACTER_PLAYER )
+            if( latterTag == Frontier.Character.CHARACTER_TAG.PLAYER )
             {
                 return latter;
             }
             else
             {
-                if( formerTag == Character.CHARACTER_TAG.CHARACTER_OTHER )
+                if( formerTag == Frontier.Character.CHARACTER_TAG.OTHER )
                 {
                     return former;
                 }

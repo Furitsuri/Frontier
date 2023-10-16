@@ -25,7 +25,7 @@ static public class Constants
     // グリッドのY座標に加算する補正値
     public const float ADD_GRID_POS_Y = 0.02f;
     // キャラクターの移動速度
-    public const float CHARACTER_MOVE_SPEED = 5.0f;
+    public const float CHARACTER_MOVE_SPEED = 7.5f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
     // 攻撃時に向きを定める際の待ち時間
@@ -40,4 +40,9 @@ static public class Constants
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
+
+    public const string LAYER_NAME_CHARACTER            = "Character";
+    public const string LAYER_NAME_LEFT_PARAM_WINDOW    = "ParamRenderLeft";
+    public const string LAYER_NAME_RIGHT_PARAM_WINDOW   = "ParamRenderRight";
+
 }

@@ -1,70 +1,72 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterHashtable : Hashtable
+namespace Frontier
 {
-    static string[] tagStrings = new string[] {  "PL", "EM", "OT"};
-
-    public struct Key
+    public class CharacterHashtable : Hashtable
     {
-        public Character.CHARACTER_TAG characterTag;
-        public int characterIndex;
-        public Key(Character.CHARACTER_TAG tag, int index)
-        {
-            characterTag = tag;
-            characterIndex = index;
-        }
+        static string[] tagStrings = new string[] { "PL", "EM", "OT" };
 
-        public static bool operator ==( Key a, Key b )
+        public struct Key
         {
-            return a.characterTag == b.characterTag && a.characterIndex == b.characterIndex;
-        }
-
-        public static bool operator !=(Key a, Key b)
-        {
-            return a.characterTag != b.characterTag || a.characterIndex != b.characterIndex;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Key)
+            public Character.CHARACTER_TAG characterTag;
+            public int characterIndex;
+            public Key(Character.CHARACTER_TAG tag, int index)
             {
-                return this == (Key)obj;
+                characterTag = tag;
+                characterIndex = index;
             }
 
-            return false;
+            public static bool operator ==(Key a, Key b)
+            {
+                return a.characterTag == b.characterTag && a.characterIndex == b.characterIndex;
+            }
+
+            public static bool operator !=(Key a, Key b)
+            {
+                return a.characterTag != b.characterTag || a.characterIndex != b.characterIndex;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is Key)
+                {
+                    return this == (Key)obj;
+                }
+
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                return characterTag.GetHashCode() ^ characterIndex.GetHashCode();
+            }
         }
 
-        public override int GetHashCode()
+        public void Add(Key key, Character character)
         {
-            return characterTag.GetHashCode() ^ characterIndex.GetHashCode();
+            string hashKey = ConvertHashKey(key.characterTag, key.characterIndex);
+
+            base.Add(hashKey, character);
         }
-    }
 
-    public void Add(Key key, Character character )
-    {
-        string hashKey = ConvertHashKey(key.characterTag, key.characterIndex);
+        public object Get(Key key)
+        {
+            string hashKey = ConvertHashKey(key.characterTag, key.characterIndex);
 
-        base.Add(hashKey, character);
-    }
+            return this[hashKey];
+        }
 
-    public object Get(Key key)
-    {
-        string hashKey = ConvertHashKey(key.characterTag, key.characterIndex);
+        private string ConvertHashKey(Character.CHARACTER_TAG tag, int characterIndex)
+        {
+            // 3åÖà»è„ÇÃê›íËÇÕëzíËÇµÇ»Ç¢
+            Debug.Assert(characterIndex.ToString().Length <= 2);
 
-        return this[hashKey];
-    }
+            string indexString = characterIndex.ToString();
 
-    private string ConvertHashKey(Character.CHARACTER_TAG tag, int characterIndex)
-    {
-        // 3åÖà»è„ÇÃê›íËÇÕëzíËÇµÇ»Ç¢
-        Debug.Assert(characterIndex.ToString().Length <= 2);
+            string hashKey = tagStrings[(int)tag] + ((indexString.Length <= 1) ? "0" + indexString : indexString);
 
-        string indexString = characterIndex.ToString();
-
-        string hashKey = tagStrings[(int)tag] + ((indexString.Length <= 1) ? "0" + indexString :indexString );
-
-        return hashKey;
+            return hashKey;
+        }
     }
 }

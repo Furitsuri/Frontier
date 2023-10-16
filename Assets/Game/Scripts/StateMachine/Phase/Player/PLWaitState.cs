@@ -1,35 +1,38 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Character;
+using static Frontier.Character;
 
-public class PLWaitState : PhaseStateBase
+namespace Frontier
 {
-    public override void Init()
+    public class PLWaitState : PhaseStateBase
     {
-        base.Init();
-
-        // 選択中のプレイヤーを取得
-        var selectPlayer = (Player)_btlMgr.GetSelectCharacter();
-        if (selectPlayer == null)
+        public override void Init()
         {
-            Debug.Assert(false);
+            base.Init();
 
-            return;
+            // 選択中のプレイヤーを取得
+            var selectPlayer = (Player)_btlMgr.GetSelectCharacter();
+            if (selectPlayer == null)
+            {
+                Debug.Assert(false);
+
+                return;
+            }
+
+            // 全てのコマンドを終了に
+            var endCommand = selectPlayer.tmpParam.isEndCommand;
+            endCommand[(int)Command.COMMAND_TAG.MOVE] = true;
+            endCommand[(int)Command.COMMAND_TAG.ATTACK] = true;
+            endCommand[(int)Command.COMMAND_TAG.WAIT] = true;
+
+            // 更新せずに終了
+            Back();
         }
 
-        // 全てのコマンドを終了に
-        var endCommand = selectPlayer.tmpParam.isEndCommand;
-        endCommand[(int)BaseCommand.COMMAND_MOVE]   = true;
-        endCommand[(int)BaseCommand.COMMAND_ATTACK] = true;
-        endCommand[(int)BaseCommand.COMMAND_WAIT]   = true;
-
-        // 更新せずに終了
-        Back();
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
+        public override void Exit()
+        {
+            base.Exit();
+        }
     }
 }

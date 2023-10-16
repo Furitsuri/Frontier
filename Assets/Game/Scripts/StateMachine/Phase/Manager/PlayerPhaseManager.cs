@@ -3,72 +3,75 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class PlayerPhaseManager : PhaseManagerBase
+namespace Frontier
 {
-    /// <summary>
-    /// 初期化を行います
-    /// </summary>
-    override public void Init()
+    public class PlayerPhaseManager : PhaseManagerBase
     {
-        base.Init();
-
-        if (0 < _btlMgr.GetCharacterCount(Character.CHARACTER_TAG.CHARACTER_PLAYER))
+        /// <summary>
+        /// 初期化を行います
+        /// </summary>
+        override public void Init()
         {
-            // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
-            Player player = _btlMgr.GetPlayerEnumerable().First();
-            StageGrid.Instance.ApplyCurrentGrid2CharacterGrid(player);
-            // アクションゲージの回復
-            _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.CHARACTER_PLAYER);
-        }
-    }
+            base.Init();
 
-    /// <summary>
-    /// 更新を行います
-    /// </summary>
-    override public bool Update()
-    {
-        if( _isFirstUpdate )
-        {
-            // フェーズアニメーションの開始
-            StartPhaseAnim();
-
-            _isFirstUpdate = false;
-
-            return false;
-        }
-        // フェーズアニメーション中は操作無効
-        if( BattleUISystem.Instance.IsPlayingPhaseUI() )
-        {
-            return false;
+            if (0 < _btlMgr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
+            {
+                // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
+                Player player = _btlMgr.GetPlayerEnumerable().First();
+                Stage.StageController.Instance.ApplyCurrentGrid2CharacterGrid(player);
+                // アクションゲージの回復
+                _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
+            }
         }
 
-        return base.Update();
-    }
+        /// <summary>
+        /// 更新を行います
+        /// </summary>
+        override public bool Update()
+        {
+            if (_isFirstUpdate)
+            {
+                // フェーズアニメーションの開始
+                StartPhaseAnim();
 
-    /// <summary>
-    /// 遷移の木構造を作成します
-    /// </summary>
-    override protected void CreateTree()
-    {
-        // 遷移木の作成
-        // TODO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
+                _isFirstUpdate = false;
 
-        RootNode = new PLSelectGrid();
-        RootNode.AddChild(new PLSelectCommandState());
-        RootNode.AddChild(new PLConfirmTurnEnd());
-        RootNode.Children[0].AddChild(new PLMoveState());
-        RootNode.Children[0].AddChild(new PLAttackState());
-        RootNode.Children[0].AddChild(new PLWaitState());
+                return false;
+            }
+            // フェーズアニメーション中は操作無効
+            if (BattleUISystem.Instance.IsPlayingPhaseUI())
+            {
+                return false;
+            }
 
-        CurrentNode = RootNode;
-    }
+            return base.Update();
+        }
 
-    /// <summary>
-    /// フェーズアニメーションを再生します
-    /// </summary>
-    override protected void StartPhaseAnim()
-    {
-        BattleUISystem.Instance.TogglePhaseUI(true, BattleManager.TurnType.PLAYER_TURN);
-        BattleUISystem.Instance.StartAnimPhaseUI();
+        /// <summary>
+        /// 遷移の木構造を作成します
+        /// </summary>
+        override protected void CreateTree()
+        {
+            // 遷移木の作成
+            // TODO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
+
+            RootNode = new PLSelectGrid();
+            RootNode.AddChild(new PLSelectCommandState());
+            RootNode.AddChild(new PLConfirmTurnEnd());
+            RootNode.Children[0].AddChild(new PLMoveState());
+            RootNode.Children[0].AddChild(new PLAttackState());
+            RootNode.Children[0].AddChild(new PLWaitState());
+
+            CurrentNode = RootNode;
+        }
+
+        /// <summary>
+        /// フェーズアニメーションを再生します
+        /// </summary>
+        override protected void StartPhaseAnim()
+        {
+            BattleUISystem.Instance.TogglePhaseUI(true, BattleManager.TurnType.PLAYER_TURN);
+            BattleUISystem.Instance.StartAnimPhaseUI();
+        }
     }
 }
