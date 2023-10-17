@@ -61,6 +61,8 @@ namespace Frontier.Stage
         private Footprint _footprint;
         private List<GridMesh> _gridMeshs;
         private List<int> _attackableGridIndexs;
+        private float _operateKeyInterval = 0.13f;
+        private float _operateKeyLastTime = 0;
         
         public int GridTotalNum { get; private set; } = 0;
 
@@ -77,8 +79,8 @@ namespace Frontier.Stage
             // ステージ情報から各サイズを参照する
             if (isAdjustStageScale)
             {
-                _stageModel.SetGridRowNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.x) / _stageModel.GetGridSize()) );
-                _stageModel.SetGridColumnNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.z) / _stageModel.GetGridSize()) );
+                _stageModel.SetGridRowNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.x) / GetGridSize()) );
+                _stageModel.SetGridColumnNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.z) / GetGridSize()) );
             }
 
             // メッシュを描画
@@ -110,8 +112,8 @@ namespace Frontier.Stage
             int[] lines;
             UnityEngine.Color[] colors;
 
-            _stageModel.WidthX = _stageModel.GetGridSize() * _stageModel.GetGridRowNum() / 2.0f;
-            _stageModel.WidthZ = _stageModel.GetGridSize() * _stageModel.GetGridColumnNum() / 2.0f;
+            _stageModel.WidthX = GetGridSize() * _stageModel.GetGridRowNum() / 2.0f;
+            _stageModel.WidthZ = GetGridSize() * _stageModel.GetGridColumnNum() / 2.0f;
             Vector2 startPosition = new Vector2(-_stageModel.WidthX, -_stageModel.WidthZ);
             Vector2 endPosition = -startPosition;
             resolution = 2 * (_stageModel.GetGridRowNum() + _stageModel.GetGridColumnNum() + 2);
@@ -123,14 +125,14 @@ namespace Frontier.Stage
             // X方向の頂点
             for (int i = 0; count < 2 * (_stageModel.GetGridRowNum() + 1); ++i, count = 2 * i)
             {
-                vertices[count] = new Vector3(startPosition.x + ((float)i * _stageModel.GetGridSize()), startPosition.y, 0);
-                vertices[count + 1] = new Vector3(startPosition.x + ((float)i * _stageModel.GetGridSize()), endPosition.y, 0);
+                vertices[count] = new Vector3(startPosition.x + ((float)i * GetGridSize()), startPosition.y, 0);
+                vertices[count + 1] = new Vector3(startPosition.x + ((float)i * GetGridSize()), endPosition.y, 0);
             }
             // Y(Z)方向の頂点
             for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_stageModel.GetGridRowNum() + 1))
             {
-                vertices[count] = new Vector3(startPosition.x, endPosition.y - ((float)i * _stageModel.GetGridSize()), 0);
-                vertices[count + 1] = new Vector3(endPosition.x, endPosition.y - ((float)i * _stageModel.GetGridSize()), 0);
+                vertices[count] = new Vector3(startPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
+                vertices[count + 1] = new Vector3(endPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
             }
 
             for (int i = 0; i < resolution; i++)
@@ -167,11 +169,11 @@ namespace Frontier.Stage
                 _gridInfo[i].Init();
                 _gridInfoBase[i].Init();
                 // グリッド位置からキャラの立ち位置への補正値
-                float charaPosCorrext = 0.5f * _stageModel.GetGridSize();
+                float charaPosCorrext = 0.5f * GetGridSize();
                 // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
-                float posX = -_stageModel.WidthX + i % _stageModel.GetGridRowNum() * _stageModel.GetGridSize() + charaPosCorrext;
+                float posX = -_stageModel.WidthX + i % _stageModel.GetGridRowNum() * GetGridSize() + charaPosCorrext;
                 // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
-                float posZ = -_stageModel.WidthZ + i / _stageModel.GetGridRowNum() * _stageModel.GetGridSize() + charaPosCorrext;
+                float posZ = -_stageModel.WidthZ + i / _stageModel.GetGridRowNum() * GetGridSize() + charaPosCorrext;
                 // 上記値から各グリッドのキャラの立ち位置を決定
                 _gridInfoBase[i].charaStandPos = _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
                 // TODO : ファイル読み込みから通行不能な箇所などのBitFlag情報を設定出来るようにする
@@ -209,9 +211,9 @@ namespace Frontier.Stage
             // 自身に対する敵対勢力キャラクターが存在すれば終了
             StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)CHARACTER_TAG.NUM]
             {
-            BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERにおける敵対勢力
-            BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
-            BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
+                BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERにおける敵対勢力
+                BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
+                BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
             };
             if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, opponentTag[(int)selfTag])) return;
 
@@ -300,11 +302,23 @@ namespace Frontier.Stage
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.UpArrow))      { _gridCursor.Up(); }
-                if (Input.GetKeyDown(KeyCode.DownArrow))    { _gridCursor.Down(); }
-                if (Input.GetKeyDown(KeyCode.LeftArrow))    { _gridCursor.Left(); }
-                if (Input.GetKeyDown(KeyCode.RightArrow))   { _gridCursor.Right(); }
+                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.UpArrow) && OperateKeyControl())      { _gridCursor.Up(); }
+                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) && OperateKeyControl())    { _gridCursor.Down(); }
+                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())    { _gridCursor.Left(); }
+                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())   { _gridCursor.Right(); }
             }
+        }
+
+        private bool OperateKeyControl()
+        {
+            if( _operateKeyInterval <= Time.time - _operateKeyLastTime)
+            {
+                _operateKeyLastTime = Time.time;
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -557,7 +571,7 @@ namespace Frontier.Stage
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.TARGET_ATTACK_BASE))
                 {
                     Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, _stageModel.GetGridSize(), GridMesh.MeshType.TARGET_ATTACK_BASE);
+                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.TARGET_ATTACK_BASE);
 
                     continue;
                 }
@@ -565,7 +579,7 @@ namespace Frontier.Stage
                 if (0 <= _gridInfo[i].estimatedMoveRange)
                 {
                     Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, _stageModel.GetGridSize(), GridMesh.MeshType.MOVE);
+                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.MOVE);
 
                     Debug.Log("Moveable Grid Index : " + i);
                     continue;
@@ -574,7 +588,7 @@ namespace Frontier.Stage
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
                 {
                     Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, _stageModel.GetGridSize(), GridMesh.MeshType.ATTACK);
+                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
 
                     Debug.Log("Attackable Grid Index : " + i);
                     continue;
@@ -597,7 +611,7 @@ namespace Frontier.Stage
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
                 {
                     Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, _stageModel.GetGridSize(), GridMesh.MeshType.ATTACK);
+                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
 
                     Debug.Log("Attackable Grid Index : " + i);
                 }
@@ -638,6 +652,10 @@ namespace Frontier.Stage
             _attackableGridIndexs.Clear();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="script"></param>
         public void AddGridMeshToList(GridMesh script)
         {
             _gridMeshs.Add(script);
@@ -650,6 +668,15 @@ namespace Frontier.Stage
         public (int, int) GetGridNumsXZ()
         {
             return (_stageModel.GetGridRowNum(), _stageModel.GetGridColumnNum());
+        }
+
+        /// <summary>
+        /// グリッドの1辺の大きさ(長さ)を取得します
+        /// </summary>
+        /// <returns>グリッドの1辺の大きさ(長さ)</returns>
+        public float GetGridSize()
+        {
+            return _stageModel.GetGridSize();
         }
 
         /// <summary>
@@ -826,7 +853,7 @@ namespace Frontier.Stage
         {
             var from = _gridInfo[fromIndex].charaStandPos;
             var to = _gridInfo[toIndex].charaStandPos;
-            var gridLength = (from - to).magnitude / _stageModel.GetGridSize();
+            var gridLength = (from - to).magnitude / GetGridSize();
 
             return gridLength;
         }

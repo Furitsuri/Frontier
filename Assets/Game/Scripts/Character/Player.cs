@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using UnityEngine;
 using static Frontier.SkillsData;
 using static UnityEngine.GraphicsBuffer;
@@ -7,31 +8,53 @@ namespace Frontier
     public class Player : Character
     {
         private bool _isPrevMoving = false;
+        private Vector3 _movementDestination = Vector3.zero;
 
         /// <summary>
-        /// 直前フレームで移動を行っていたかのフラグを取得します
+        /// 移動入力受付の可否判定を行います
         /// </summary>
-        /// <returns>直前フレームでの移動実行フラグ</returns>
-        public bool IsPrevMoving() { return _isPrevMoving; }
+        /// <returns>移動入力の受付可否</returns>
+        public bool IsAcceptableMovementOperation( float gridSize )
+        {
+            if( _isPrevMoving )
+            {
+                var diff = _movementDestination - transform.position;
+                diff.y = 0;
+                if(diff.sqrMagnitude <= Mathf.Pow( gridSize * Constants.ACCEPTABLE_INPUT_GRID_SIZE_RATIO, 2f ) ) return true;
+
+                return false;
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// プレイヤーキャラクターの移動時の更新処理を行います
         /// </summary>
-        /// <param name="destination">移動目的座標</param>
-        public void UpdateMove(int gridIndex, in Vector3 destination)
+        /// <param name="gridIndex">キャラクターの現在地となるグリッドのインデックス値</param>
+        /// <param name="gridInfo">指定グリッドの情報</param>
+        public void UpdateMove(int gridIndex, in GridInfo gridInfo)
         {
             bool toggleAnimation = false;
 
-            Vector3 dir = (destination - transform.position).normalized;
+            // 移動可のグリッドに対してのみ目的地を更新
+            if (0 <= gridInfo.estimatedMoveRange)
+            {
+                _movementDestination = gridInfo.charaStandPos;
+                tmpParam.gridIndex = gridIndex;
+            }
+
+            Vector3 dir = (_movementDestination - transform.position).normalized;
             Vector3 afterPos = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * Time.deltaTime;
-            Vector3 afterDir = (destination - afterPos).normalized;
+            Vector3 afterDir = (_movementDestination - afterPos);
+            afterDir.y = 0f;
+            afterDir = afterDir.normalized;
             if (Vector3.Dot(dir, afterDir) <= 0)
             {
-                transform.position = destination;
+                transform.position = _movementDestination;
 
                 if (_isPrevMoving) toggleAnimation = true;
                 _isPrevMoving = false;
-                tmpParam.gridIndex = gridIndex;
             }
             else
             {
@@ -49,6 +72,7 @@ namespace Frontier
         {
             _animator.SetTrigger(_animNames[(int)animTag]);
         }
+
         override public void setAnimator(ANIME_TAG animTag, bool b)
         {
             _animator.SetBool(_animNames[(int)animTag], b);
