@@ -136,8 +136,8 @@ namespace Frontier
                     }
                     break;
                 case PLMovePhase.PL_MOVE:
-                    // 対象プレイヤーの操作(次移動に移行する際は移動完了を待つ)
-                    if (!_selectPlayer.IsPrevMoving())
+                    // 対象プレイヤーの操作
+                    if (_selectPlayer.IsAcceptableMovementOperation( stageGrid.GetGridSize() ))
                     {
                         stageGrid.OperateGridCursor();
                     }
@@ -147,27 +147,30 @@ namespace Frontier
                     var curGridIndex = stageGrid.GetCurrentGridIndex();
                     var plGridIndex = _selectPlayer.tmpParam.gridIndex;
                     stageGrid.FetchCurrentGridInfo(out infor);
+
+                    // 移動更新
+                    _selectPlayer.UpdateMove(curGridIndex, infor);
+
                     if (0 <= infor.estimatedMoveRange)
                     {
                         // 隣り合うグリッドが選択された場合はアニメーションを用いた連続的な移動
-                        if (stageGrid.IsGridNextToEacheOther(curGridIndex, plGridIndex))
+                        // if (stageGrid.IsGridNextToEacheOther(curGridIndex, plGridIndex))
                         {
-                            // 移動更新
-                            var destination = infor.charaStandPos;
-                            _selectPlayer.UpdateMove(curGridIndex, destination);
+                            
                         }
                         // 離れたグリッドが選択された場合は瞬時に移動
-                        else
-                        {
-                            _selectPlayer.SetPosition(curGridIndex, _selectPlayer.transform.rotation);
-                        }
+                        // else
+                        // {
+                        //     _selectPlayer.SetPosition(curGridIndex, _selectPlayer.transform.rotation);
+                        // }
 
                         if (Input.GetKeyUp(KeyCode.Space))
                         {
                             // 出発地点と同一グリッドであれば戻る
                             if (curGridIndex == _departGridIndex)
                                 Back();
-                            else
+                            // キャラクターが存在していないことを確認
+                            else if( 0 == ( infor.flag & ( StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)) )
                                 _Phase = PLMovePhase.PL_MOVE_END;
                             break;
                         }
