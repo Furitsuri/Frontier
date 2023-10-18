@@ -45,4 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _battleManagerObject: {fileID: 2342243875359944016, guid: f025655eb33b9c6498ee7ff87454f73c, type: 3}
-  _soundManager: {fileID: 4416445694361636889, guid: a1cf95fad4d662e4db11a99f19a4e08e, type: 3}
+  _soundManagerObject: {fileID: 4416445694361636889, guid: a1cf95fad4d662e4db11a99f19a4e08e, type: 3}
+  _stageControllerObject: {fileID: 3810255508824440438, guid: a459440f3bb1be44ca982570a074f9f1, type: 3}

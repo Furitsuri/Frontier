@@ -25,7 +25,7 @@ namespace Frontier.Stage
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
             // ステージグリッドに自身を登録
-            Stage.StageController.Instance.AddGridMeshToList(this);
+            ManagerProvider.Instance.GetService<StageController>().AddGridMeshToList(this);
         }
 
         // グリッドのメッシュを描画

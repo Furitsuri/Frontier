@@ -34,32 +34,32 @@ namespace Frontier
                 return true;
             }
 
-            public static bool IsExecutableMoveCommand(Character character)
+            public static bool IsExecutableMoveCommand(Character character, StageController stageCtrl)
             {
                 if (!IsExecutableCommandBase(character)) return false;
 
                 return !character.tmpParam.isEndCommand[(int)COMMAND_TAG.MOVE];
             }
 
-            public static bool IsExecutableAttackCommand(Character character)
+            public static bool IsExecutableAttackCommand(Character character, StageController stageCtrl)
             {
                 if (!IsExecutableCommandBase(character)) return false;
 
                 if( character.tmpParam.isEndCommand[(int)COMMAND_TAG.ATTACK] ) return false;
 
                 // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-                bool isExecutable = StageController.Instance.RegistAttackAbleInfo(character.tmpParam.gridIndex, character.param.attackRange, character.param.characterTag);
+                bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.tmpParam.gridIndex, character.param.attackRange, character.param.characterTag);
            
                 // 実行不可である場合は登録した攻撃情報を全てクリア
                 if( !isExecutable )
                 {
-                    StageController.Instance.ClearAttackableInfo();
+                    stageCtrl.ClearAttackableInfo();
                 }
 
                 return isExecutable;
             }
 
-            public static bool IsExecutableWaitCommand(Character character)
+            public static bool IsExecutableWaitCommand(Character character, StageController stageCtrl)
             {
                 return IsExecutableCommandBase(character);
             }
@@ -269,7 +269,7 @@ namespace Frontier
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
 
-        private delegate bool IsExecutableCommand(Character character);
+        private delegate bool IsExecutableCommand(Character character, StageController stageCtrl);
         private static IsExecutableCommand[] _executableCommandTables =
         {
             Command.IsExecutableMoveCommand,
@@ -370,7 +370,7 @@ namespace Frontier
         /// 弾を発射します
         /// イベントとしてモーションから呼ばれます
         /// </summary>
-        virtual public void FireBullet()
+        virtual public void FireBullet( float gridLength )
         {
             if (_bullet == null || _opponent == null) return;
 
@@ -383,7 +383,7 @@ namespace Frontier
             var targetCoordinate = _opponent.transform.position;
             targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
             _bullet.SetTargetCoordinate(targetCoordinate);
-            var gridLength = Stage.StageController.Instance.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
+            // var gridLength = Stage.StageController.Instance.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
             _bullet.SetFlightTimeFromGridLength(gridLength);
 
             _bullet.StartUpdateCoroutine(AttackOpponentEvent);
@@ -404,11 +404,11 @@ namespace Frontier
         /// </summary>
         /// <param name="gridIndex">マップグリッドのインデックス</param>
         /// <param name="dir">キャラクター角度</param>
-        public void SetPosition(int gridIndex, in Quaternion dir)
+        public void SetPosition(int gridIndex, in Vector3 pos, in Quaternion dir)
         {
             tmpParam.gridIndex = gridIndex;
-            var info = Stage.StageController.Instance.GetGridInfo(gridIndex);
-            transform.position = info.charaStandPos;
+            // var info = Stage.StageController.Instance.GetGridInfo(gridIndex);
+            transform.position = pos;
             transform.rotation = dir;
         }
 
@@ -426,13 +426,13 @@ namespace Frontier
         /// <summary>
         /// 実行可能なコマンドを更新します
         /// </summary>
-        public void UpdateExecutableCommand()
+        public void UpdateExecutableCommand(in StageController stageCtrl)
         {
             _executableCommands.Clear();
 
             for( int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i )
             {
-                if (!_executableCommandTables[i](this)) continue;
+                if (!_executableCommandTables[i](this, stageCtrl)) continue;
 
                 _executableCommands.Add( (Command.COMMAND_TAG)i );
             }
@@ -630,9 +630,9 @@ namespace Frontier
         /// 実行可能なコマンドを抽出します
         /// </summary>
         /// <param name="executableCommands">抽出先の引き数</param>
-        public void FetchExecutableCommand( out List<Command.COMMAND_TAG> executableCommands )
+        public void FetchExecutableCommand( out List<Command.COMMAND_TAG> executableCommands, in StageController stageCtrl )
         {
-            UpdateExecutableCommand();
+            UpdateExecutableCommand(stageCtrl);
 
             executableCommands = _executableCommands;
         }

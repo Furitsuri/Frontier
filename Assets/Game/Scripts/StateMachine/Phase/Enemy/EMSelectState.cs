@@ -22,7 +22,7 @@ namespace Frontier
             base.Init();
 
             // ステージグリッド上のキャラ情報を更新
-            Stage.StageController.Instance.UpdateGridInfo();
+            _stageCtrl.UpdateGridInfo();
 
             _enemyEnumerator = _btlMgr.GetEnemyEnumerable().GetEnumerator();
             _currentEnemy = null;
@@ -40,7 +40,7 @@ namespace Frontier
 
                 isExist = true;
                 // 選択グリッドを合わせる
-                Stage.StageController.Instance.ApplyCurrentGrid2CharacterGrid(_currentEnemy);
+                _stageCtrl.ApplyCurrentGrid2CharacterGrid(_currentEnemy);
 
                 if (!_currentEnemy.EmAI.IsDetermined())
                 {

@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using UnityEngine;
 
 namespace Frontier
@@ -6,12 +7,14 @@ namespace Frontier
     {
         private bool _isBack = false;
         public int TransitIndex { get; protected set; } = -1;
-        protected BattleManager _btlMgr;
+        protected BattleManager _btlMgr = null;
+        protected StageController _stageCtrl = null;
 
         // èâä˙âª
         virtual public void Init()
         {
             _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
             TransitIndex = -1;
             _isBack = false;
         }

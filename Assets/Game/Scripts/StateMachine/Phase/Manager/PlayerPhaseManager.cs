@@ -18,7 +18,7 @@ namespace Frontier
             {
                 // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
                 Player player = _btlMgr.GetPlayerEnumerable().First();
-                Stage.StageController.Instance.ApplyCurrentGrid2CharacterGrid(player);
+                _stageCtrl.ApplyCurrentGrid2CharacterGrid(player);
                 // アクションゲージの回復
                 _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
             }

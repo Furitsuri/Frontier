@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Xsl;
@@ -26,16 +27,14 @@ namespace Frontier
 
         override public void Init()
         {
-            var stageGrid = Stage.StageController.Instance;
-
             base.Init();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
             _enemy = _btlMgr.GetSelectCharacter() as Enemy;
             Debug.Assert(_enemy != null);
-            _departGridIndex = stageGrid.GetCurrentGridIndex();
+            _departGridIndex = _stageCtrl.GetCurrentGridIndex();
             var param = _enemy.param;
-            stageGrid.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
+            _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
             _movePathList = _enemy.EmAI.GetProposedMoveRoute();
             // Enemyを_movePathListの順に移動させる
@@ -43,7 +42,7 @@ namespace Frontier
             for (int i = 0; i < _movePathList.Count; ++i)
             {
                 // パスのインデックスからグリッド座標を得る
-                _moveGridPos.Add(stageGrid.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
+                _moveGridPos.Add(_stageCtrl.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
             }
             _movingIndex = 0;
             _moveWaitTimer = 0f;
@@ -55,15 +54,13 @@ namespace Frontier
             // グリッド情報更新
             _enemy.tmpParam.gridIndex = _enemy.EmAI.GetDestinationGridIndex();
             // 選択グリッドを表示
-            Stage.StageController.Instance.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorActive(true);
 
             _Phase = EMMovePhase.EM_MOVE_WAIT;
         }
 
         public override bool Update()
         {
-            var stageGrid = Stage.StageController.Instance;
-
             switch (_Phase)
             {
                 case EMMovePhase.EM_MOVE_WAIT:
@@ -71,7 +68,7 @@ namespace Frontier
                     if (Constants.ENEMY_SHOW_MOVE_RANGE_TIME <= _moveWaitTimer)
                     {
                         // 選択グリッドを一時非表示
-                        Stage.StageController.Instance.SetGridCursorActive(false);
+                        _stageCtrl.SetGridCursorActive(false);
 
                         _Phase = EMMovePhase.EM_MOVE_EXECUTE;
                     }
@@ -112,16 +109,16 @@ namespace Frontier
         public override void Exit()
         {
             // 敵の位置に選択グリッドを合わせる
-            Stage.StageController.Instance.ApplyCurrentGrid2CharacterGrid(_enemy);
+            _stageCtrl.ApplyCurrentGrid2CharacterGrid(_enemy);
 
             // 選択グリッドを表示
-            Stage.StageController.Instance.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorActive(true);
 
             // ステージグリッド上のキャラ情報を更新
-            Stage.StageController.Instance.UpdateGridInfo();
+            _stageCtrl.UpdateGridInfo();
 
             // グリッド状態の描画をクリア
-            Stage.StageController.Instance.ClearGridMeshDraw();
+            _stageCtrl.ClearGridMeshDraw();
 
             base.Exit();
         }

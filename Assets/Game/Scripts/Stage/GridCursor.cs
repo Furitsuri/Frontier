@@ -16,6 +16,7 @@ namespace Frontier.Stage
 
         private LineRenderer _lineRenderer;
         private StageModel _stageModel = null;
+        private StageController _stageCtrl = null;
         private int _atkTargetIndex = 0;
         private int _atkTargetNum = 0;
 
@@ -26,6 +27,7 @@ namespace Frontier.Stage
         private void Start()
         {
             _lineRenderer = gameObject.GetComponent<LineRenderer>();
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
         }
 
         /// <summary>
@@ -55,7 +57,7 @@ namespace Frontier.Stage
         void UpdateUI()
         {
             GridInfo info;
-            StageController.Instance.FetchCurrentGridInfo(out info);
+            _stageCtrl.FetchCurrentGridInfo(out info);
 
             Vector3 centralPos = info.charaStandPos;
 

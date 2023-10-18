@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using UnityEngine;
 
 namespace Frontier
@@ -7,9 +8,13 @@ namespace Frontier
         [SerializeField]
         private GameObject _battleManagerObject;
         [SerializeField]
-        private GameObject _soundManager;
+        private GameObject _soundManagerObject;
+        [SerializeField]
+        private GameObject _stageControllerObject;
 
         private BattleManager _battleManager;
+        private SoundManager _soundManager;
+        private StageController _stageController;
 
         override protected void Init()
         {
@@ -19,9 +24,16 @@ namespace Frontier
                 _battleManager = btlMgr.GetComponent<BattleManager>();
             }
 
-            if (_soundManager == null)
+            GameObject sndMgr = Instantiate(_soundManagerObject);
+            if (sndMgr != null)
             {
-                Instantiate(_soundManager);
+                _soundManager = sndMgr.GetComponent<SoundManager>();
+            }
+
+            GameObject stgCtrl = Instantiate(_stageControllerObject);
+            if (stgCtrl != null)
+            {
+                _stageController = stgCtrl.GetComponent<StageController>();
             }
         }
 
@@ -34,6 +46,10 @@ namespace Frontier
             if (typeof(T) == typeof(SoundManager))
             {
                 return (T)(object)_soundManager;
+            }
+            if (typeof(T) == typeof(StageController))
+            {
+                return (T)(object)_stageController;
             }
 
             return default(T);
