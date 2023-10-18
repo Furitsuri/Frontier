@@ -150,7 +150,7 @@ namespace Frontier.Stage
         /// <param name="isActive"></param>
         public void SetActive( bool isActive )
         {
-            
+            gameObject.SetActive( isActive );
         }
 
         /// <summary>
