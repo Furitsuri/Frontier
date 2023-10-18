@@ -1,13 +1,17 @@
+using Frontier.Stage;
+
 namespace Frontier
 {
     public class PhaseManagerBase : Tree<PhaseStateBase>
     {
         protected bool _isFirstUpdate = false;
-        protected BattleManager _btlMgr;
+        protected BattleManager _btlMgr = null;
+        protected StageController _stageCtrl = null;
 
         virtual public void Init()
         {
             _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
 
             // �J�ږ؂̍쐬
             CreateTree();

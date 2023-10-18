@@ -9,7 +9,7 @@ using static Frontier.Character;
 namespace Frontier.Stage
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-    public sealed class StageController : Singleton<StageController>
+    public sealed class StageController : MonoBehaviour
     {
         /// <summary>
         /// グリッドに対するフラグ情報
@@ -66,7 +66,7 @@ namespace Frontier.Stage
         
         public int GridTotalNum { get; private set; } = 0;
 
-        override protected void Init()
+        void Awake()
         {
             _gridMeshs = new List<GridMesh>();
             _attackableGridIndexs = new List<int>();
@@ -653,9 +653,10 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 
+        /// グリッドメッシュにこのクラスを登録します
+        /// グリッドメッシュクラスが生成されたタイミングでグリッドメッシュ側から呼び出されます
         /// </summary>
-        /// <param name="script"></param>
+        /// <param name="script">グリッドメッシュクラスのスクリプト</param>
         public void AddGridMeshToList(GridMesh script)
         {
             _gridMeshs.Add(script);

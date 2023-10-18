@@ -16,20 +16,19 @@ namespace Frontier
         }
 
         private PLAttackPhase _phase = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+        private int _curentGridIndex = -1;
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
-        private int _curentGridIndex = -1;
         private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
 
         override public void Init()
         {
-            var stgInstance = Stage.StageController.Instance;
             var btlUIInstance = BattleUISystem.Instance;
 
             base.Init();
 
             _phase = PLAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex = stgInstance.GetCurrentGridIndex();
+            _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
@@ -39,14 +38,14 @@ namespace Frontier
                 return;
             }
             var param = _attackCharacter.param;
-            stgInstance.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
-            stgInstance.DrawAttackableGrids(_curentGridIndex);
+            _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
+            _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (stgInstance.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.ENEMY))
+            if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.ENEMY))
             {
                 // アタッカーキャラクターの設定
-                stgInstance.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
+                _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
                 // アタックカーソルUI表示
                 btlUIInstance.ToggleAttackCursorP2E(true);
             }
@@ -54,7 +53,6 @@ namespace Frontier
 
         public override bool Update()
         {
-            var stgInstance = Stage.StageController.Instance;
             var btlUIInstance = BattleUISystem.Instance;
 
             if (base.Update())
@@ -63,7 +61,7 @@ namespace Frontier
             }
 
             // 攻撃可能状態でなければ何もしない
-            if (stgInstance.GetGridCursorState() != Stage.GridCursor.State.ATTACK)
+            if (_stageCtrl.GetGridCursorState() != Stage.GridCursor.State.ATTACK)
             {
                 return false;
             }
@@ -72,7 +70,7 @@ namespace Frontier
             {
                 case PLAttackPhase.PL_ATTACK_SELECT_GRID:
                     // グリッドの操作
-                    Stage.StageController.Instance.OperateGridCursor();
+                    _stageCtrl.OperateGridCursor();
                     // グリッド上のキャラクターを取得
                     _targetCharacter = _btlMgr.GetSelectCharacter();
                     // ダメージ予測表示UIを表示
@@ -93,7 +91,7 @@ namespace Frontier
                             _attackCharacter.ConsumeActionGauge();
                             _targetCharacter.ConsumeActionGauge();
                             // 選択グリッドを一時非表示
-                            stgInstance.SetGridCursorActive(false);
+                            _stageCtrl.SetGridCursorActive(false);
                             // 攻撃シーケンスを初期化
                             _attackSequence.Init(_attackCharacter, _targetCharacter);
                             // アタックカーソルUI非表示
@@ -101,7 +99,7 @@ namespace Frontier
                             // ダメージ予測表示UIを非表示
                             btlUIInstance.ToggleBattleExpect(false);
                             // グリッド状態の描画をクリア
-                            stgInstance.ClearGridMeshDraw();
+                            _stageCtrl.ClearGridMeshDraw();
 
                             _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
                         }
@@ -129,7 +127,6 @@ namespace Frontier
         public override void Exit()
         {
             var btlUIInstance = BattleUISystem.Instance;
-            var stgInstance = Stage.StageController.Instance;
 
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、両方判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
@@ -142,7 +139,7 @@ namespace Frontier
             }
 
             // アタッカーキャラクターの設定を解除
-            stgInstance.ClearGridCursroBind();
+            _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
             _btlMgr.ResetDamageExpect(_attackCharacter, _targetCharacter);
             // アタックカーソルUI非表示
@@ -163,10 +160,10 @@ namespace Frontier
             _targetCharacter.param.ResetConsumptionActionGauge();
             _targetCharacter.skillModifiedParam.Reset();
             // グリッド状態の描画をクリア
-            stgInstance.UpdateGridInfo();
-            stgInstance.ClearGridMeshDraw();
+            _stageCtrl.UpdateGridInfo();
+            _stageCtrl.ClearGridMeshDraw();
             // 選択グリッドを表示
-            stgInstance.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorActive(true);
 
             base.Exit();
         }

@@ -23,7 +23,7 @@ namespace Frontier
             if (0 < _btlMgr.GetCharacterCount(Character.CHARACTER_TAG.ENEMY) && _btlMgr.GetEnemyEnumerable() != null)
             {
                 Enemy enemy = _btlMgr.GetEnemyEnumerable().First();
-                Stage.StageController.Instance.ApplyCurrentGrid2CharacterGrid(enemy);
+                _stageCtrl.ApplyCurrentGrid2CharacterGrid(enemy);
             }
             // アクションゲージの回復
             _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.ENEMY);

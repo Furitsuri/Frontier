@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,11 +24,8 @@ namespace Frontier
             NUM
         }
 
-        [SerializeField]
-        private GameObject stageGridObject;
-        private Stage.StageController _stageGrid;
-
         private BattlePhase _phase;
+        private StageController _stageCtrl;
         private PhaseManagerBase _currentPhaseManager;
         private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
         private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
@@ -45,13 +43,6 @@ namespace Frontier
 
         void Awake()
         {
-            if (Stage.StageController.Instance == null)
-            {
-                Instantiate(stageGridObject);
-                _stageGrid = Stage.StageController.Instance;
-                _stageGrid.Setting(this);
-            }
-
             _phaseManagers[(int)TurnType.PLAYER_TURN] = new PlayerPhaseManager();
             _phaseManagers[(int)TurnType.ENEMY_TURN] = new EnemyPhaseManager();
             _currentPhaseManager = _phaseManagers[(int)TurnType.PLAYER_TURN];
@@ -69,6 +60,9 @@ namespace Frontier
 
         void Start()
         {
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
+            _stageCtrl.Setting(this);
+
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             if (!Methods.IsDebugScene())
@@ -94,11 +88,11 @@ namespace Frontier
                 // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
                 int gridIndex = player.param.initGridIndex;
                 // プレイヤーの画面上の位置を設定
-                player.transform.position = _stageGrid.GetGridCharaStandPos(gridIndex);
+                player.transform.position = _stageCtrl.GetGridCharaStandPos(gridIndex);
                 // 向きを設定
                 player.transform.rotation = rot[(int)player.param.initDir];
                 // 対応するグリッドに立っているプレイヤーのインデックスを設定
-                _stageGrid.GetGridInfo(gridIndex).charaIndex = player.param.characterIndex;
+                _stageCtrl.GetGridInfo(gridIndex).charaIndex = player.param.characterIndex;
             }
 
             // 各エネミーキャラクターの位置を設定
@@ -108,15 +102,15 @@ namespace Frontier
                 // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
                 int gridIndex = enemy.param.initGridIndex;
                 // エネミーの画面上の位置を設定
-                enemy.transform.position = _stageGrid.GetGridCharaStandPos(gridIndex);
+                enemy.transform.position = _stageCtrl.GetGridCharaStandPos(gridIndex);
                 // 向きを設定
                 enemy.transform.rotation = rot[(int)enemy.param.initDir];
                 // 対応するグリッドに立っているプレイヤーのインデックスを設定
-                _stageGrid.GetGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
+                _stageCtrl.GetGridInfo(gridIndex).charaIndex = enemy.param.characterIndex;
             }
 
             // グリッド情報を更新
-            _stageGrid.UpdateGridInfo();
+            _stageCtrl.UpdateGridInfo();
         }
 
         void Update()
@@ -133,7 +127,7 @@ namespace Frontier
 
             // 現在のグリッド上に存在するキャラクター情報を更新
             Stage.GridInfo info;
-            _stageGrid.FetchCurrentGridInfo(out info);
+            _stageCtrl.FetchCurrentGridInfo(out info);
             BattleCameraController.Instance.SetLookAtBasedOnSelectCursor(info.charaStandPos);
 
             SelectCharacterInfo = new CharacterHashtable.Key(info.characterTag, info.charaIndex);
@@ -314,7 +308,7 @@ namespace Frontier
         /// <param name="script">登録するスクリプト</param>
         public void registStageController(Stage.StageController script)
         {
-            _stageGrid = script;
+            _stageCtrl = script;
         }
 
         /// <summary>
@@ -382,7 +376,7 @@ namespace Frontier
         public Character GetSelectCharacter()
         {
             Stage.GridInfo info;
-            Stage.StageController.Instance.FetchCurrentGridInfo(out info);
+            _stageCtrl.FetchCurrentGridInfo(out info);
 
             return GetCharacterFromHashtable(info.characterTag, info.charaIndex);
         }

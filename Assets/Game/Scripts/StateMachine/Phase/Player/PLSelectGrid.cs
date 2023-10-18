@@ -11,7 +11,7 @@ namespace Frontier
             base.Init();
 
             // グリッド選択を有効化
-            Stage.StageController.Instance.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorActive(true);
         }
 
         override public bool Update()
@@ -35,9 +35,9 @@ namespace Frontier
             }
 
             // グリッドの操作
-            Stage.StageController.Instance.OperateGridCursor();
+            _stageCtrl.OperateGridCursor();
             Stage.GridInfo info;
-            Stage.StageController.Instance.FetchCurrentGridInfo(out info);
+            _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
             int selectCharaIndex = info.charaIndex;
@@ -61,7 +61,7 @@ namespace Frontier
         override public void Exit()
         {
             // グリッド選択を無効化 → 無効化しないほうが見た目がよかったため、コメントアウト
-            // Stage.StageController.Instance.SetGridCursorActive( false );
+            // _stageCtrl.SetGridCursorActive( false );
 
             base.Exit();
         }

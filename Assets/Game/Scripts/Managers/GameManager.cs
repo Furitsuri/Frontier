@@ -41,11 +41,6 @@ namespace Frontier
                 Instantiate(_managerProvider);
             }
 
-            // if (BattleManager.Instance == null)
-            // {
-            //     Instantiate(_btlMgr);
-            // }
-
             InitGame();
         }
 

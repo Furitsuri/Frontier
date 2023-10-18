@@ -38,7 +38,7 @@ namespace Frontier
             // UI側へこのスクリプトを登録し、UIを表示
             var instance = BattleUISystem.Instance;
             List<Character.Command.COMMAND_TAG> executableCommands;
-            _selectPlayer.FetchExecutableCommand(out executableCommands);
+            _selectPlayer.FetchExecutableCommand(out executableCommands, _stageCtrl);
 
             // 入力ベース情報の設定
             List<int> commandIndexs = new List<int>();
@@ -74,8 +74,8 @@ namespace Frontier
                 // 移動のみ終了している場合は移動前に戻れるように          
                 if (endCommand[(int)Command.COMMAND_TAG.MOVE] && !endCommand[(int)Command.COMMAND_TAG.ATTACK])
                 {
-                    Stage.StageController.Instance.FollowFootprint(_selectPlayer);
-                    Stage.StageController.Instance.UpdateGridInfo();
+                    _stageCtrl.FollowFootprint(_selectPlayer);
+                    _stageCtrl.UpdateGridInfo();
                     endCommand[(int)Command.COMMAND_TAG.MOVE] = false;
                 }
 

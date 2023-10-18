@@ -19,21 +19,18 @@ namespace Frontier
         private PLMovePhase _Phase = PLMovePhase.PL_MOVE_SELECT_GRID;
         private int _departGridIndex = -1;
         private int _movingIndex = 0;
-        private Player _selectPlayer;
+        private Player _selectPlayer = null;
         private List<(int routeIndexs, int routeCost)> _movePathList = new List<(int, int)>(Constants.DIJKSTRA_ROUTE_INDEXS_MAX_NUM);
         private List<Vector3> _moveGridPos;
         private Transform _PLTransform;
 
         override public void Init()
         {
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-            var stgInstance = Stage.StageController.Instance;
-
             base.Init();
 
             _movingIndex = 0;
             _Phase = PLMovePhase.PL_MOVE;
-            _departGridIndex = Stage.StageController.Instance.GetCurrentGridIndex();
+            _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
             _selectPlayer = (Player)_btlMgr.GetSelectCharacter();
@@ -45,18 +42,18 @@ namespace Frontier
             Stage.StageController.Footprint footprint = new Stage.StageController.Footprint();
             footprint.gridIndex = _selectPlayer.tmpParam.gridIndex;
             footprint.rotation = _selectPlayer.transform.rotation;
-            stgInstance.LeaveFootprint(footprint);
-            stgInstance.BindGridCursorState( GridCursor.State.MOVE, _selectPlayer);
+            _stageCtrl.LeaveFootprint(footprint);
+            _stageCtrl.BindGridCursorState( GridCursor.State.MOVE, _selectPlayer);
 
             // 移動可能情報を登録及び表示
             bool isAttackable = !_selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
-            stgInstance.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterTag, isAttackable);
-            stgInstance.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
+            _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterTag, isAttackable);
+            _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
         }
 
         public override bool Update()
         {
-            var stageGrid = Stage.StageController.Instance;
+            var stageGrid = _stageCtrl;
 
             if (base.Update())
             {
@@ -108,7 +105,7 @@ namespace Frontier
 
                             _movingIndex = 0;
                             // 選択グリッドを一時非表示
-                            Stage.StageController.Instance.SetGridCursorActive(false);
+                            _stageCtrl.SetGridCursorActive(false);
                             // 移動アニメーション開始
                             _selectPlayer.setAnimator(Character.ANIME_TAG.MOVE, true);
                             // グリッド情報更新
@@ -191,16 +188,16 @@ namespace Frontier
         public override void Exit()
         {
             // 操作対象データをリセット
-            StageController.Instance.ClearGridCursroBind();
+            _stageCtrl.ClearGridCursroBind();
 
             // 選択グリッドを表示
-            Stage.StageController.Instance.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorActive(true);
 
             // ステージグリッド上のキャラ情報を更新
-            Stage.StageController.Instance.UpdateGridInfo();
+            _stageCtrl.UpdateGridInfo();
 
             // グリッド状態の描画をクリア
-            Stage.StageController.Instance.ClearGridMeshDraw();
+            _stageCtrl.ClearGridMeshDraw();
 
             base.Exit();
         }

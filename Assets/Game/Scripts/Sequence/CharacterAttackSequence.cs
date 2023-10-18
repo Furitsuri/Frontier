@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,8 +26,11 @@ namespace Frontier
 
         delegate bool UpdateAttack(in Vector3 arg1, in Vector3 arg2);
 
-        private BattleManager _btlMgr;
         private Phase _phase;
+        private float _elapsedTime = 0f;
+        private bool _CounterConditions = false;
+        private BattleManager _btlMgr = null;
+        private StageController _stageCtrl = null;
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
         private Character _diedCharacter = null;
@@ -37,15 +41,14 @@ namespace Frontier
         private Vector3 _destination = Vector3.zero;
         private Quaternion _atkCharaInitialRot = Quaternion.identity;
         private Quaternion _tgtCharaInitialRot = Quaternion.identity;
-        private float _elapsedTime = 0f;
         private Character.ANIME_TAG[] _attackAnimTags = new Character.ANIME_TAG[3] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
-        private bool _CounterConditions = false;
         private UpdateAttack _updateAttackerAttack = null;
         private UpdateAttack _updateTargetAttack = null;
 
         public void Init(Character attackChara, Character targetChara)
         {
             _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
             _attackCharacter = attackChara;
             _targetCharacter = targetChara;
             _diedCharacter = null;
@@ -165,7 +168,7 @@ namespace Frontier
                         // バトルフィールドからステージフィールドに遷移
                         TransitStageField(_attackCharacter, _targetCharacter);
                         // 攻撃シーケンス用カメラを終了
-                        var info = Stage.StageController.Instance.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
+                        var info = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
                         BattleCameraController.Instance.EndAttackSequenceMode(_attackCharacter);
 
                         _phase = Phase.END;
@@ -217,10 +220,8 @@ namespace Frontier
         /// <param name="target">被攻撃キャラクター</param>
         private void TransitBattleField(Character attacker, Character target)
         {
-            var stgGrid = Stage.StageController.Instance;
-
             // メッシュ及びattakerとtarget以外のキャラクターを非表示に
-            stgGrid.ToggleMeshDisplay(false);
+            _stageCtrl.ToggleMeshDisplay(false);
             foreach (var player in _btlMgr.GetPlayerEnumerable())
             {
                 if (player != attacker && player != target)
@@ -237,7 +238,7 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var centralPos = stgGrid.transform.position;
+            var centralPos = _stageCtrl.transform.position;
 
             // 味方と敵対側で分別
             Character ally = null;
@@ -269,8 +270,8 @@ namespace Frontier
             // 味方は奥行手前側、敵は奥行奥側の立ち位置とする
             Transform allyTransform = ally.transform;
             Transform opponentTransform = opponent.transform;
-            allyTransform.position = centralPos + new Vector3(0f, 0f, -stgGrid.BattlePosLengthFromCentral);
-            opponentTransform.position = centralPos + new Vector3(0f, 0f, stgGrid.BattlePosLengthFromCentral);
+            allyTransform.position = centralPos + new Vector3(0f, 0f, -_stageCtrl.BattlePosLengthFromCentral);
+            opponentTransform.position = centralPos + new Vector3(0f, 0f, _stageCtrl.BattlePosLengthFromCentral);
             allyTransform.rotation = Quaternion.LookRotation(centralPos - allyTransform.position);
             opponentTransform.rotation = Quaternion.LookRotation(centralPos - opponentTransform.position);
         }
@@ -282,10 +283,8 @@ namespace Frontier
         /// <param name="target">被攻撃キャラクター</param>
         private void TransitStageField(Character attacker, Character target)
         {
-            var stgGrid = Stage.StageController.Instance;
-
             // 非表示にしていたものを表示
-            stgGrid.ToggleMeshDisplay(true);
+            _stageCtrl.ToggleMeshDisplay(true);
             foreach (var player in _btlMgr.GetPlayerEnumerable())
             {
                 player.gameObject.SetActive(true);
@@ -296,10 +295,10 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var info = Stage.StageController.Instance.GetGridInfo(attacker.tmpParam.gridIndex);
+            var info = _stageCtrl.GetGridInfo(attacker.tmpParam.gridIndex);
             _attackCharacter.transform.position = info.charaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            info = Stage.StageController.Instance.GetGridInfo(target.tmpParam.gridIndex);
+            info = _stageCtrl.GetGridInfo(target.tmpParam.gridIndex);
             _targetCharacter.transform.position = info.charaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
         }

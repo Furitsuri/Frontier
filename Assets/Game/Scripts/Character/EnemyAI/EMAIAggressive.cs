@@ -20,8 +20,7 @@ namespace Frontier
         {
             _isDetermined = true;
 
-            var stageGrid = Stage.StageController.Instance;
-            List<int> candidateRouteIndexs = new List<int>(stageGrid.GridTotalNum);
+            List<int> candidateRouteIndexs = new List<int>(_stageCtrl.GridTotalNum);
 
             List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates;
 
@@ -50,15 +49,15 @@ namespace Frontier
                 _targetCharacter = maxEvaluate.target;
 
                 // 進行可能グリッドをルート候補に挿入
-                for (int i = 0; i < stageGrid.GridTotalNum; ++i)
+                for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
                 {
-                    if (0 <= stageGrid.GetGridInfo(i).estimatedMoveRange)
+                    if (0 <= _stageCtrl.GetGridInfo(i).estimatedMoveRange)
                     {
                         candidateRouteIndexs.Add(i);
                     }
                 }
                 candidateRouteIndexs.Add(selfTmpParam.gridIndex);   // 現在地点も挿入
-                _proposedMoveRoute = stageGrid.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
+                _proposedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
             }
             // 攻撃範囲内に敵対キャラクターが存在しない場合は、評価値を計算して最も高いグリッド位置へ向かうように
             else
@@ -68,9 +67,9 @@ namespace Frontier
 
                 // 進行可能な全てのグリッドを探索候補に加える
                 var flag = Stage.StageController.BitFlag.CANNOT_MOVE | Stage.StageController.BitFlag.PLAYER_EXIST | Stage.StageController.BitFlag.OTHER_EXIST;
-                for (int i = 0; i < stageGrid.GridTotalNum; ++i)
+                for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
                 {
-                    if (!Methods.CheckBitFlag(stageGrid.GetGridInfo(i).flag, flag))
+                    if (!Methods.CheckBitFlag(_stageCtrl.GetGridInfo(i).flag, flag))
                     {
                         candidateRouteIndexs.Add(i);
                     }
@@ -89,7 +88,7 @@ namespace Frontier
                     evaluateValue += CalcurateEvaluateAttack(selfParam, player.param);
 
                     // 経路コストの逆数を乗算(経路コストが低いほど評価値を大きくするため)
-                    List<(int routeIndexs, int routeCost)> route = stageGrid.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, destGridIndex, candidateRouteIndexs);
+                    List<(int routeIndexs, int routeCost)> route = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, destGridIndex, candidateRouteIndexs);
                     int totalCost = route[^1].routeCost;    // ^1は最後の要素のインデックス(C#8.0以降から使用可能)
                     evaluateValue *= 1f / totalCost;
 
@@ -113,7 +112,7 @@ namespace Frontier
                     if (range < 0) break;
 
                     // グリッド上にキャラクターが存在しないことを確認
-                    if (!Stage.StageController.Instance.GetGridInfo(r.routeIndex).IsExistCharacter()) _destinationGridIndex = r.routeIndex;
+                    if (!_stageCtrl.GetGridInfo(r.routeIndex).IsExistCharacter()) _destinationGridIndex = r.routeIndex;
                 }
             }
 
@@ -126,17 +125,15 @@ namespace Frontier
 
         private bool CheckExistTargetInRange(Character.Parameter selfParam, Character.TmpParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
         {
-            var stageGrid = Stage.StageController.Instance;
-
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
 
             // 自身の移動範囲をステージ上に登録する
             bool isAttackable = !selfTmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
-            stageGrid.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterTag, isAttackable);
+            _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterTag, isAttackable);
 
-            for (int i = 0; i < stageGrid.GridTotalNum; ++i)
+            for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
             {
-                var info = stageGrid.GetGridInfo(i);
+                var info = _stageCtrl.GetGridInfo(i);
                 // 攻撃可能地点かつキャラクターが存在していないグリッドを取得
                 if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.TARGET_ATTACK_BASE) && info.charaIndex < 0)
                 {

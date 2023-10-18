@@ -44,7 +44,6 @@ namespace Frontier
 
         private Character _character;
         private Camera _camera;
-        private StageController _stageCtrl;
         private RenderTexture _targetTexture;
         private List<RawImage> _actGaugeElems;
         private SIDE _side;
@@ -57,7 +56,6 @@ namespace Frontier
 
         void Start()
         {
-            _stageCtrl = StageController.Instance;
             _targetTexture = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
             TargetImage.texture = _targetTexture;
             GameObject gameObject = new GameObject();

@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace Frontier
         }
 
         protected BattleManager _btlMgr;
+        protected StageController _stageCtrl;
         // 既に移動対象や攻撃対象を決定しているか
         protected bool _isDetermined = false;
         // 移動目標グリッドのインデックス値
@@ -42,7 +44,8 @@ namespace Frontier
         virtual public void Init(Enemy mySelf)
         {
             _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-            _gridEvaluationValues = new float[Stage.StageController.Instance.GridTotalNum];
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
+            _gridEvaluationValues = new float[_stageCtrl.GridTotalNum];
             _targetChandidateInfos = new List<TargetCandidateInfo>(64);
         }
 
@@ -144,9 +147,8 @@ namespace Frontier
         protected void ExtractAttackabkeOpponentIndexs(int baseIndex, out List<CharacterHashtable.Key> opponentCharaIndexs)
         {
             opponentCharaIndexs = new List<CharacterHashtable.Key>(4);
-
-            var stageGrid = Stage.StageController.Instance;
-            (int GridRowNum, int GridColumnNum) = stageGrid.GetGridNumsXZ();
+;
+            (int GridRowNum, int GridColumnNum) = _stageCtrl.GetGridNumsXZ();
 
             // 十字方向の判定関数とインデックスをタプルに詰め込む
             (Func<bool> lambda, int index)[] tuples = new (Func<bool>, int)[]
@@ -154,14 +156,14 @@ namespace Frontier
             (() => baseIndex % GridRowNum != 0,                       baseIndex - 1),
             (() => (baseIndex + 1) % GridRowNum != 0,                 baseIndex + 1),
             (() => 0 <= (baseIndex - GridRowNum),                     baseIndex - GridRowNum),
-            (() => (baseIndex + GridRowNum) < stageGrid.GridTotalNum, baseIndex + GridRowNum)
+            (() => (baseIndex + GridRowNum) < _stageCtrl.GridTotalNum, baseIndex + GridRowNum)
          };
 
             foreach (var tuple in tuples)
             {
                 if (tuple.lambda())
                 {
-                    var gridInfo = stageGrid.GetGridInfo(tuple.index);
+                    var gridInfo = _stageCtrl.GetGridInfo(tuple.index);
                     if (gridInfo.characterTag == Character.CHARACTER_TAG.PLAYER || gridInfo.characterTag == Character.CHARACTER_TAG.OTHER)
                     {
                         opponentCharaIndexs.Add(new CharacterHashtable.Key(gridInfo.characterTag, gridInfo.charaIndex));

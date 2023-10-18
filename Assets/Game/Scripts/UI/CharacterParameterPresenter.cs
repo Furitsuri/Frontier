@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,14 +16,14 @@ namespace Frontier
         [Header("ParameterAttackDirection")]
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
-        private BattleManager _btlMgr;
-        private Stage.StageController _stageGrid;
+        private BattleManager _btlMgr = null;
+        private StageController _stageCtrl = null;
         private Character _prevCharacter = null;
 
         void Start()
         {
             _btlMgr     = ManagerProvider.Instance.GetService<BattleManager>();
-            _stageGrid  = Stage.StageController.Instance;
+            _stageCtrl  = ManagerProvider.Instance.GetService<StageController>();
 
             // カメラアングルの設定
             PlayerParameter.Init(45f, CharacterParameterUI.SIDE.LEFT);
@@ -38,10 +39,10 @@ namespace Frontier
         {
             Character selectCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
 
-            var bindCharacter = _stageGrid.GetGridCursorBindCharacter();
+            var bindCharacter = _stageCtrl.GetGridCursorBindCharacter();
 
             // 攻撃対象選択時
-            switch (_stageGrid.GetGridCursorState())
+            switch (_stageCtrl.GetGridCursorState())
             {
                 case Stage.GridCursor.State.ATTACK:
                     Debug.Assert(bindCharacter != null);
