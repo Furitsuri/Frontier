@@ -457,9 +457,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _offsetLength: 0
-  _followDuration: 0.18
+  _followDuration: 0.1
   _fadeDuration: 0.5
-  _atkCameraLerpDuration: 0.2
+  _atkCameraLerpDuration: 0.33
   _mosaicStartFadeRate: 0
   _mosaicBlockSizeMaxRate: 1
 --- !u!114 &753196275

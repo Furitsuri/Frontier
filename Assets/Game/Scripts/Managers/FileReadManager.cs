@@ -110,7 +110,7 @@ namespace Frontier
         /// プレイヤー情報をロードし、バトルマネージャ上に設置します
         /// </summary>
         /// <param name="stageIndex">ステージナンバー</param>
-        public void PlayerLoad(int stageIndex)
+        public void PlayerLoad(int stageIndex, float gridLength)
         {
             // JSONファイルの読み込み
             string json = File.ReadAllText(PlayerParamFilePath[stageIndex]);
@@ -142,7 +142,7 @@ namespace Frontier
         /// 敵情報をロードし、バトルマネージャ上に設置します
         /// </summary>
         /// <param name="stageIndex">ステージナンバー</param>
-        public void EnemyLord(int stageIndex)
+        public void EnemyLord(int stageIndex, float gridLength)
         {
             string json = File.ReadAllText(EnemyParamFilePath[stageIndex]);
             var dataContainer = JsonUtility.FromJson<NpcParamContainer>(json);
@@ -184,7 +184,7 @@ namespace Frontier
         /// <summary>
         /// カメラのパラメータを読み込みます
         /// </summary>
-        public void CameraParamLord()
+        public void CameraParamLord( BattleCameraController cameraController )
         {
             string json = File.ReadAllText(CloseAtkCameraParamFilePath);
             var dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>(json);
@@ -196,7 +196,7 @@ namespace Frontier
             if (dataContainer == null) return;
             List<BattleCameraController.CameraParamData[]> rangedParams = dataContainer.CameraParams;
 
-            BattleCameraController.Instance.SetCameraParamDatas(closeParams, rangedParams);
+            cameraController.SetCameraParamDatas(closeParams, rangedParams);
         }
 
         /// <summary>
