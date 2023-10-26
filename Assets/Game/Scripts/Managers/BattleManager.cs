@@ -25,6 +25,7 @@ namespace Frontier
         }
 
         private BattlePhase _phase;
+        private BattleCameraController _battleCameraCtrl;
         private StageController _stageCtrl;
         private PhaseManagerBase _currentPhaseManager;
         private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
@@ -43,6 +44,11 @@ namespace Frontier
 
         void Awake()
         {
+            var btlCameraObj = GameObject.FindWithTag("MainCamera");
+            if ( btlCameraObj != null ) 
+            {
+                _battleCameraCtrl = btlCameraObj.GetComponent<BattleCameraController>();
+            }
             _phaseManagers[(int)TurnType.PLAYER_TURN] = new PlayerPhaseManager();
             _phaseManagers[(int)TurnType.ENEMY_TURN] = new EnemyPhaseManager();
             _currentPhaseManager = _phaseManagers[(int)TurnType.PLAYER_TURN];
@@ -68,8 +74,8 @@ namespace Frontier
             if (!Methods.IsDebugScene())
 #endif
             {
-                FileReadManager.Instance.PlayerLoad(_currentStageIndex);
-                FileReadManager.Instance.EnemyLord(_currentStageIndex);
+                FileReadManager.Instance.PlayerLoad(_currentStageIndex, _stageCtrl.GetGridSize());
+                FileReadManager.Instance.EnemyLord(_currentStageIndex, _stageCtrl.GetGridSize());
             }
 
             _currentPhaseManager.Init();
@@ -128,7 +134,7 @@ namespace Frontier
             // 現在のグリッド上に存在するキャラクター情報を更新
             Stage.GridInfo info;
             _stageCtrl.FetchCurrentGridInfo(out info);
-            BattleCameraController.Instance.SetLookAtBasedOnSelectCursor(info.charaStandPos);
+            _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
 
             SelectCharacterInfo = new CharacterHashtable.Key(info.characterTag, info.charaIndex);
 
@@ -324,6 +330,15 @@ namespace Frontier
         {
             _diedCharacterKey.characterTag = CHARACTER_TAG.NONE;
             _diedCharacterKey.characterIndex = -1;
+        }
+
+        /// <summary>
+        /// 戦闘カメラコントローラを取得します
+        /// </summary>
+        /// <returns>戦闘カメラコントローラ</returns>
+        public BattleCameraController GetCameraController()
+        {
+            return _battleCameraCtrl;
         }
 
         /// <summary>

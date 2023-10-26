@@ -48,6 +48,10 @@ namespace Frontier
                 _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
                 // アタックカーソルUI表示
                 btlUIInstance.ToggleAttackCursorP2E(true);
+                // 攻撃者の向きを更新
+                GridInfo info;
+                _stageCtrl.FetchCurrentGridInfo(out info);
+                _attackCharacter.OrderRotateToPosition(info.charaStandPos);
             }
         }
 
@@ -72,13 +76,19 @@ namespace Frontier
                     // グリッドの操作
                     _stageCtrl.OperateGridCursor();
                     // グリッド上のキャラクターを取得
+                    var prevTargetCharacter = _targetCharacter;
                     _targetCharacter = _btlMgr.GetSelectCharacter();
+                    // 選択キャラクターが更新された場合は向きを更新
+                    if( prevTargetCharacter != _targetCharacter )
+                    {
+                        var info = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
+                        _attackCharacter.OrderRotateToPosition( info.charaStandPos );
+                    }
                     // ダメージ予測表示UIを表示
                     btlUIInstance.ToggleBattleExpect(true);
                     // 使用スキルを選択する
                     _attackCharacter.SelectUseSkills(SituationType.ATTACK);
                     _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
-
                     // 予測ダメージを適応する
                     _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
@@ -128,7 +138,7 @@ namespace Frontier
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、両方判定)
+            //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
             {

@@ -26,6 +26,10 @@ static public class Constants
     public const float ADD_GRID_POS_Y = 0.02f;
     // キャラクターの移動速度
     public const float CHARACTER_MOVE_SPEED = 7.5f;
+    // キャラクターの回転速度
+    public const float CHARACTER_ROT_SPEED = 10f;
+    // キャラクターの回転終了閾値
+    public const float CHARACTER_ROT_THRESHOLD = 3f;
     // プレイヤーの移動操作時、目標座標に対し入力を受け付けられるグリッドサイズの割合
     public const float ACCEPTABLE_INPUT_GRID_SIZE_RATIO = 0.33f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間

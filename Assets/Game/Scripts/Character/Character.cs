@@ -254,10 +254,14 @@ namespace Frontier
         [SerializeField]
         private GameObject _bulletObject;
 
-        private float _elapsedTime = 0f;
         private bool _isTransitNextPhaseCamera = false;
+        private bool _isOrderedRotation = false;
+        private float _elapsedTime = 0f;
+        private Quaternion _orderdRotation;
         private List<Command.COMMAND_TAG> _executableCommands = new List<Command.COMMAND_TAG>();
-        protected BattleManager _btlMgr;
+        protected bool _isEndAttackMotion = false;
+        protected BattleManager _btlMgr = null;
+        protected StageController _stageCtrl = null;
         protected Character _opponent;
         protected Bullet _bullet;
         protected Animator _animator;
@@ -280,6 +284,7 @@ namespace Frontier
         void Awake()
         {
             _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
 
             // タグとアニメーションの数は一致していること
             Debug.Assert(_animNames.Length == (int)ANIME_TAG.NUM);
@@ -302,6 +307,20 @@ namespace Frontier
                 {
                     _bullet = bulletObject.GetComponent<Bullet>();
                     bulletObject.SetActive(false);
+                }
+            }
+        }
+
+        void Update()
+        {
+            if( _isOrderedRotation )
+            {
+                transform.rotation = Quaternion.Slerp(transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * Time.deltaTime);
+
+                float angleDiff = Quaternion.Angle(transform.rotation, _orderdRotation);
+                if( Math.Abs( angleDiff ) < Constants.CHARACTER_ROT_THRESHOLD)
+                {
+                    _isOrderedRotation = false;
                 }
             }
         }
@@ -367,10 +386,19 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 弾を発射します
-        /// イベントとしてモーションから呼ばれます
+        /// 攻撃終了フラグをONに設定します
+        /// MEMO : モーションからイベントフラグ処理として呼ばれます
         /// </summary>
-        virtual public void FireBullet( float gridLength )
+        virtual public void AttackEnd()
+        {
+            _isEndAttackMotion = true;
+        }
+
+        /// <summary>
+        /// 弾を発射します
+        /// MEMO : モーションからイベントフラグ処理として呼ばれます
+        /// </summary>
+        virtual public void FireBullet()
         {
             if (_bullet == null || _opponent == null) return;
 
@@ -383,9 +411,8 @@ namespace Frontier
             var targetCoordinate = _opponent.transform.position;
             targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
             _bullet.SetTargetCoordinate(targetCoordinate);
-            // var gridLength = Stage.StageController.Instance.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
+            var gridLength = _stageCtrl.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
             _bullet.SetFlightTimeFromGridLength(gridLength);
-
             _bullet.StartUpdateCoroutine(AttackOpponentEvent);
 
             // 発射と同時に次のカメラに遷移させる
@@ -413,14 +440,43 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
+        /// </summary>
+        /// <param name="targetPos">向きを合わせる位置</param>
+        public void OrderRotateToPosition( in Vector3 targetPos )
+        {
+            var selfPos     = _stageCtrl.GetGridCharaStandPos( tmpParam.gridIndex );
+            var direction   = targetPos - selfPos;
+            direction.y     = 0f;
+
+            _orderdRotation     = Quaternion.LookRotation(direction);
+            _isOrderedRotation  = true;
+        }
+
+        /// <summary>
         /// 近接攻撃を開始します
         /// </summary>
-        public void PlayClosedAttack()
+        public void StartClosedAttack()
         {
+            _isEndAttackMotion = false;
+
             _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
             _elapsedTime = 0f;
 
             setAnimator(Character.ANIME_TAG.MOVE, true);
+        }
+
+        /// <summary>
+        /// 遠隔攻撃を開始します
+        /// </summary>
+        public void StartRangedAttack()
+        {
+            Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
+            var attackAnimtag = attackAnimTags[skillModifiedParam.AtkNum - 1];
+
+            _isEndAttackMotion = false;
+
+            setAnimator(attackAnimtag);
         }
 
         /// <summary>
@@ -446,7 +502,7 @@ namespace Frontier
         /// <returns>終了判定</returns>
         public bool UpdateClosedAttack(in Vector3 departure, in Vector3 destination)
         {
-            Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[3] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
+            Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
             var attackAnimtag = attackAnimTags[skillModifiedParam.AtkNum - 1];
 
             if (GetBullet() != null) return false;
@@ -469,7 +525,7 @@ namespace Frontier
                     }
                     break;
                 case CLOSED_ATTACK_PHASE.ATTACK:
-                    if (IsPlayinghAnimation(Character.ANIME_TAG.WAIT))
+                    if (IsEndAttackAnimSequence())
                     {
                         setAnimator(Character.ANIME_TAG.MOVE, false);
 
@@ -509,11 +565,13 @@ namespace Frontier
             // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
             if (IsTransitNextPhaseCamera())
             {
-                BattleCameraController.Instance.TransitNextPhaseCameraParam(null, GetBullet().transform);
-                ResetTransitNextPhaseCamera();
+                _btlMgr.GetCameraController().TransitNextPhaseCameraParam(null, GetBullet().transform);
             }
 
-            if (IsPlayinghAnimation(Character.ANIME_TAG.WAIT)) return true;
+            if (IsEndAttackAnimSequence())
+            {
+                return true;
+            }
 
             return false;
         }
@@ -546,7 +604,7 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 再生中, false : 再生していない</returns>
-        public bool IsPlayinghAnimation(ANIME_TAG animTag)
+        public bool IsPlayingAnimation(ANIME_TAG animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
@@ -578,17 +636,31 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 攻撃アニメーションの終了判定を返します
+        /// MEMO : 複数回連続攻撃の終了判定にIsEndAnimationを使用すると、同じアニメーションを連続的に使用している都合上、
+        ///        正しく判定出来ないため、複製した攻撃アニメーションに専用のイベントフラグを挿入して用いることで、
+        ///        複数回攻撃の最後の攻撃だと判定出来るようにしています
+        /// </summary>
+        /// <returns>攻撃アニメーションが終了しているか</returns>
+        public bool IsEndAttackAnimSequence()
+        {
+            return _isEndAttackMotion;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public bool IsTransitNextPhaseCamera()
         {
-            return _isTransitNextPhaseCamera;
-        }
+            if(_isTransitNextPhaseCamera)
+            {
+                // trueの場合は次回以後の判定のためにfalseに戻す
+                _isTransitNextPhaseCamera = false;
+                return true;
+            }
 
-        public void ResetTransitNextPhaseCamera()
-        {
-            _isTransitNextPhaseCamera = false;
+            return false;
         }
 
         /// <summary>

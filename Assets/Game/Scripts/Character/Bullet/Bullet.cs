@@ -9,6 +9,7 @@ public class Bullet : MonoBehaviour
     protected Vector3 _targetCoordinate;
     protected Vector3 _velocity;
     protected float _flightTime;
+    protected float _gridLength;
     protected bool _isHit;
 
     [SerializeField]
@@ -27,6 +28,7 @@ public class Bullet : MonoBehaviour
 
     /// <summary>
     /// Awake‚ÌÛ‚ÉŒÄ‚Î‚ê‚éŠÖ”‚Å‚·
+    /// Œp³æ‚Åˆ—‚ğ‰Á‚¦‚Ü‚·
     /// </summary>
     virtual protected void OnAwake()
     {
@@ -39,6 +41,7 @@ public class Bullet : MonoBehaviour
 
     /// <summary>
     /// Start‚ÌÛ‚ÉŒÄ‚Î‚ê‚éŠÖ”‚Å‚·
+    /// Œp³æ‚Åˆ—‚ğ‰Á‚¦‚Ü‚·
     /// </summary>
     virtual protected void OnStart()
     {

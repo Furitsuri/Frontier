@@ -67,7 +67,7 @@ namespace Frontier.Stage
         /// <summary>
         /// 指定した位置(centralPos)に四角形ラインを描画します
         /// </summary>
-        /// <param name="GetGridSize()">1グリッドのサイズ</param>
+        /// <param name="gridSize">1グリッドのサイズ</param>
         /// <param name="centralPos">指定グリッドの中心位置</param>
         void DrawSquareLine(float gridSize, ref Vector3 centralPos)
         {
