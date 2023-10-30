@@ -29,7 +29,7 @@ namespace Frontier
 
             public static bool IsExecutableCommandBase(Character character)
             {
-                if (character.tmpParam.isEndCommand[(int)COMMAND_TAG.WAIT]) return false;
+                if (!character.tmpParam.IsExecutableCommand(COMMAND_TAG.WAIT)) return false;
 
                 return true;
             }

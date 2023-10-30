@@ -78,6 +78,7 @@ namespace Frontier
                 FileReadManager.Instance.EnemyLord(_currentStageIndex, _stageCtrl.GetGridSize());
             }
 
+            for (int i = 0; i < _phaseManagers.Length; ++i) _phaseManagers[i].Resist(this, _stageCtrl);
             _currentPhaseManager.Init();
 
             // 向きの値を設定
@@ -155,6 +156,7 @@ namespace Frontier
             // 勝利、全滅チェックを行う
             if (CheckVictoryOrDefeat(_diedCharacterKey)) { return; }
 
+            // フェーズ移動の正否
             if (!_transitNextPhase)
             {
                 _currentPhaseManager.LateUpdate();
@@ -478,11 +480,11 @@ namespace Frontier
         {
             foreach (Player player in _players)
             {
-                player.tmpParam.Reset();
+                player.BePossibleAction();
             }
             foreach (Enemy enemy in _enemies)
             {
-                enemy.tmpParam.Reset();
+                enemy.BePossibleAction();
             }
         }
 
