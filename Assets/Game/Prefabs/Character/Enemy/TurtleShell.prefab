@@ -903,6 +903,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa2aae1c8c9bc4541a65b172e6c11b87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _bulletObject: {fileID: 0}
+  param:
+    characterTag: 0
+    characterIndex: 0
+    MaxHP: 0
+    CurHP: 0
+    Atk: 0
+    Def: 0
+    moveRange: 0
+    attackRange: 0
+    maxActionGauge: 0
+    curActionGauge: 0
+    recoveryActionGauge: 0
+    consumptionActionGauge: 0
+    initGridIndex: 0
+    initDir: 0
+    equipSkills: 
   camParam:
     UICameraLengthY: 0.8
     UICameraLengthZ: 1.4
@@ -950,7 +967,7 @@ GameObject:
   - component: {fileID: 137359634230426430}
   m_Layer: 0
   m_Name: TurtleShell
-  m_TagString: Untagged
+  m_TagString: CharacterSkinMesh
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

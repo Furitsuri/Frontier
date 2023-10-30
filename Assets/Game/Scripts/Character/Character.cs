@@ -204,6 +204,11 @@ namespace Frontier
             public int expectedChangeHP;
             public int totalExpectedChangeHP;
 
+            public bool IsExecutableCommand(Command.COMMAND_TAG cmdTag)
+            {
+                return !isEndCommand[(int)cmdTag];
+            }
+
             public void Reset()
             {
                 for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
@@ -258,6 +263,7 @@ namespace Frontier
         private bool _isOrderedRotation = false;
         private float _elapsedTime = 0f;
         private Quaternion _orderdRotation;
+        private List<(Material material, Color originalColor)> _textureMaterialsAndColors = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands = new List<Command.COMMAND_TAG>();
         protected bool _isEndAttackMotion = false;
         protected BattleManager _btlMgr = null;
@@ -265,7 +271,6 @@ namespace Frontier
         protected Character _opponent;
         protected Bullet _bullet;
         protected Animator _animator;
-        protected Animation _animation;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         public Parameter param;
         public TmpParameter tmpParam;
@@ -290,13 +295,16 @@ namespace Frontier
             Debug.Assert(_animNames.Length == (int)ANIME_TAG.NUM);
 
             _animator = GetComponent<Animator>();
-            _animation = GetComponent<Animation>();
             param.equipSkills = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
             tmpParam.isEndCommand = new bool[(int)Command.COMMAND_TAG.NUM];
             tmpParam.isUseSkills = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
             tmpParam.Reset();
             modifiedParam.Reset();
             skillModifiedParam.Reset();
+
+            // キャラクターモデルのマテリアルが設定されているObjectを取得し、
+            // Materialと初期のColor設定を保存
+            RegistMaterialsRecursively(this.transform, Constants.OBJECT_TAG_NAME_CHARA_SKIN_MESH);
 
             // 弾オブジェクトが設定されていれば生成
             // 使用時まで非アクティブにする
@@ -313,15 +321,54 @@ namespace Frontier
 
         void Update()
         {
-            if( _isOrderedRotation )
+            // 向き回転命令
+            if (_isOrderedRotation)
             {
                 transform.rotation = Quaternion.Slerp(transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * Time.deltaTime);
 
                 float angleDiff = Quaternion.Angle(transform.rotation, _orderdRotation);
-                if( Math.Abs( angleDiff ) < Constants.CHARACTER_ROT_THRESHOLD)
+                if (Math.Abs(angleDiff) < Constants.CHARACTER_ROT_THRESHOLD)
                 {
                     _isOrderedRotation = false;
                 }
+            }
+
+            // 移動と攻撃が終了していれば、行動不可に遷移
+            var endCommand = tmpParam.isEndCommand;
+            if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
+            {
+                BeImpossibleAction();
+            }
+        }
+
+        /// <summary>
+        /// 再帰を用いて、指定のタグで登録されているオブジェクトのマテリアルを登録します
+        /// ※ 色変更の際に用いる
+        /// </summary>
+        /// <param name="parent">オブジェクトの親</param>
+        /// <param name="tagName">検索するタグ名</param>
+        void RegistMaterialsRecursively( Transform parent, string tagName )
+        {
+            Transform children = parent.GetComponentInChildren<Transform>();
+            foreach (Transform child in children)
+            {
+                if (child.CompareTag(tagName))
+                {
+                    // モデルによって、マテリアルがMeshとSkinMeshの両方のパターンに登録されているケースがあるため、
+                    // どちらも検索する
+                    var skinMeshRenderer = child.GetComponent<SkinnedMeshRenderer>();
+                    if (skinMeshRenderer != null)
+                    {
+                        _textureMaterialsAndColors.Add((skinMeshRenderer.material, skinMeshRenderer.material.color));
+                    }
+                    var meshRenderer = child.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        _textureMaterialsAndColors.Add(( meshRenderer.material, meshRenderer.material.color));
+                    }
+                }
+
+                RegistMaterialsRecursively(child, tagName);
             }
         }
 
@@ -443,7 +490,7 @@ namespace Frontier
         /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
         /// </summary>
         /// <param name="targetPos">向きを合わせる位置</param>
-        public void OrderRotateToPosition( in Vector3 targetPos )
+        public void RotateToPosition( in Vector3 targetPos )
         {
             var selfPos     = _stageCtrl.GetGridCharaStandPos( tmpParam.gridIndex );
             var direction   = targetPos - selfPos;
@@ -451,6 +498,39 @@ namespace Frontier
 
             _orderdRotation     = Quaternion.LookRotation(direction);
             _isOrderedRotation  = true;
+        }
+
+        /// <summary>
+        /// 行動終了時など、行動不可の状態にします
+        /// キャラクターモデルの色を変更し、行動不可であることを示す処理も含めます
+        /// </summary>
+        public void BeImpossibleAction()
+        {
+            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            {
+                tmpParam.isEndCommand[i] = true;
+            }
+
+            // 行動終了を示すためにマテリアルの色味をグレーに変更
+            for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
+            {
+                _textureMaterialsAndColors[i].material.color = Color.gray;
+            }
+        }
+
+        /// <summary>
+        /// 行動再開時に行動可能状態にします
+        /// キャラクターのモデルの色を元に戻す処理も含めます
+        /// </summary>
+        public void BePossibleAction()
+        {
+            tmpParam.Reset();
+
+            // マテリアルの色味を通常の色味に戻す
+            for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
+            {
+                _textureMaterialsAndColors[i].material.color = _textureMaterialsAndColors[i].originalColor;
+            }
         }
 
         /// <summary>
