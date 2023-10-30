@@ -924,7 +924,7 @@ GameObject:
   - component: {fileID: 137819884044900622}
   m_Layer: 0
   m_Name: Tiger Archer
-  m_TagString: Untagged
+  m_TagString: CharacterSkinMesh
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1520,6 +1520,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletObject: {fileID: 100000, guid: 82254826db2d20142b30f46ae8020932, type: 3}
+  param:
+    characterTag: 0
+    characterIndex: 0
+    MaxHP: 0
+    CurHP: 0
+    Atk: 0
+    Def: 0
+    moveRange: 0
+    attackRange: 0
+    maxActionGauge: 0
+    curActionGauge: 0
+    recoveryActionGauge: 0
+    consumptionActionGauge: 0
+    initGridIndex: 0
+    initDir: 0
+    equipSkills: 
   camParam:
     UICameraLengthY: 1.2
     UICameraLengthZ: 1.3

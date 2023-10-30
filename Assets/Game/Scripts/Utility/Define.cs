@@ -50,5 +50,6 @@ static public class Constants
     public const string LAYER_NAME_CHARACTER            = "Character";
     public const string LAYER_NAME_LEFT_PARAM_WINDOW    = "ParamRenderLeft";
     public const string LAYER_NAME_RIGHT_PARAM_WINDOW   = "ParamRenderRight";
+    public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH = "CharacterSkinMesh";
 
 }

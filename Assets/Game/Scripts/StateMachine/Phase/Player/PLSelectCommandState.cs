@@ -57,17 +57,14 @@ namespace Frontier
 
         override public bool Update()
         {
-            var endCommand = _selectPlayer.tmpParam.isEndCommand;
-
-            // 移動と攻撃が終わっている場合は自動的に終了に
-            if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
+            bool isImpossibleCmd = _selectPlayer.tmpParam.isEndCommand[(int)Command.COMMAND_TAG.WAIT];
+            if( isImpossibleCmd )
             {
                 Back();
-                // 待機を終わらせる
-                endCommand[(int)Command.COMMAND_TAG.WAIT] = true;
-
                 return true;
             }
+
+            var endCommand = _selectPlayer.tmpParam.isEndCommand;
 
             if (base.Update())
             {

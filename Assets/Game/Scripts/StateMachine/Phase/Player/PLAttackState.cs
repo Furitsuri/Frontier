@@ -51,7 +51,7 @@ namespace Frontier
                 // 攻撃者の向きを更新
                 GridInfo info;
                 _stageCtrl.FetchCurrentGridInfo(out info);
-                _attackCharacter.OrderRotateToPosition(info.charaStandPos);
+                _attackCharacter.RotateToPosition(info.charaStandPos);
             }
         }
 
@@ -82,7 +82,7 @@ namespace Frontier
                     if( prevTargetCharacter != _targetCharacter )
                     {
                         var info = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
-                        _attackCharacter.OrderRotateToPosition( info.charaStandPos );
+                        _attackCharacter.RotateToPosition( info.charaStandPos );
                     }
                     // ダメージ予測表示UIを表示
                     btlUIInstance.ToggleBattleExpect(true);
