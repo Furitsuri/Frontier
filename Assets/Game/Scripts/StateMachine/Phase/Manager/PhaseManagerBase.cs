@@ -8,11 +8,14 @@ namespace Frontier
         protected BattleManager _btlMgr = null;
         protected StageController _stageCtrl = null;
 
+        virtual public void Resist(BattleManager btlMgr, StageController stgCtrl)
+        {
+            _btlMgr = btlMgr;
+            _stageCtrl = stgCtrl;
+        }
+
         virtual public void Init()
         {
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
-
             // �J�ږ؂̍쐬
             CreateTree();
 
@@ -48,7 +51,7 @@ namespace Frontier
             else if (CurrentNode.IsBack())
             {
                 CurrentNode.Exit();
-                CurrentNode = CurrentNode.Parent;
+                 CurrentNode = CurrentNode.Parent;
                 CurrentNode.Init();
             }
         }

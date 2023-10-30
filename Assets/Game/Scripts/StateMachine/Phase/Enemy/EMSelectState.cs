@@ -95,7 +95,7 @@ namespace Frontier
         {
             if (!_isValidDestination) return false;
 
-            if (tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.MOVE)) return false;
+            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.MOVE)) return false;
 
 
             return true;
@@ -105,20 +105,20 @@ namespace Frontier
         {
             if (!_isValidTarget) return false;
 
-            if (tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.ATTACK)) return false;
+            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.ATTACK)) return false;
 
             return true;
         }
 
         private bool IsTransitNextCharacter(Character.TmpParameter tmpParam)
         {
-            if (tmpParam.IsExecutableCommand(Command.COMMAND_TAG.MOVE) && (tmpParam.IsExecutableCommand(Command.COMMAND_TAG.ATTACK)))
+            if (!tmpParam.IsExecutableCommand(Command.COMMAND_TAG.MOVE) && (!tmpParam.IsExecutableCommand(Command.COMMAND_TAG.ATTACK)))
             {
                 tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
                 return true;
             }
 
-            if (tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.WAIT)) return true;
+            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.WAIT)) return true;
 
             return false;
         }
