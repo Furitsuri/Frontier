@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,9 +17,9 @@ namespace Frontier
 
         private CommandList _commandList = new CommandList();
 
-        override public void Init()
+        override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             List<int> commandIndexs = new List<int>((int)ConfirmTag.NUM);
             for (int i = 0; i < (int)ConfirmTag.NUM; ++i)

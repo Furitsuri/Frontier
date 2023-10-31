@@ -11,12 +11,12 @@ namespace Frontier
         protected StageController _stageCtrl = null;
 
         // ‰Šú‰»
-        virtual public void Init()
+        virtual public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
-            TransitIndex = -1;
-            _isBack = false;
+            _btlMgr         = btlMgr;
+            _stageCtrl      = stgCtrl;
+            TransitIndex    = -1;
+            _isBack         = false;
         }
 
         // XV

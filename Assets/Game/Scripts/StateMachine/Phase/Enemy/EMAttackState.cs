@@ -21,11 +21,11 @@ namespace Frontier
         private Character _targetCharacter = null;
         private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
 
-        public override void Init()
+        public override void Init(BattleManager btlMgr, StageController stgCtrl)
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
             _attackCharacter = _btlMgr.GetSelectCharacter() as Enemy;
@@ -80,7 +80,7 @@ namespace Frontier
                         // 選択グリッドを一時非表示
                         _stageCtrl.SetGridCursorActive(false);
                         // 攻撃シーケンスを初期化
-                        _attackSequence.Init(_attackCharacter, _targetCharacter);
+                        _attackSequence.Init(_btlMgr, _stageCtrl, _attackCharacter, _targetCharacter);
                         // アタックカーソルUI非表示
                         btlUIInstance.ToggleAttackCursorE2P(false);
                         // ダメージ予測表示UIを非表示

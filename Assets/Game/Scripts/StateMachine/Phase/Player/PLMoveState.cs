@@ -24,9 +24,9 @@ namespace Frontier
         private List<Vector3> _moveGridPos;
         private Transform _PLTransform;
 
-        override public void Init()
+        override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             _movingIndex = 0;
             _Phase = PLMovePhase.PL_MOVE;

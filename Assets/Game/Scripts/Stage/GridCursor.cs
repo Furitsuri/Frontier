@@ -27,7 +27,6 @@ namespace Frontier.Stage
         private void Start()
         {
             _lineRenderer = gameObject.GetComponent<LineRenderer>();
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
         }
 
         /// <summary>
@@ -36,10 +35,11 @@ namespace Frontier.Stage
         /// <param name="initIndex">初期インデックス値</param>
         /// <param name="rowNum">盤面における行に該当するグリッド数</param>
         /// <param name="columnNum">盤面における列に該当するグリッド数</param>
-        public void Init(int initIndex, ref StageModel stageModel)
+        public void Init(int initIndex, StageModel stageModel, StageController stgCtrl)
         {
             Index           = initIndex;
             _stageModel     = stageModel;
+            _stageCtrl      = stgCtrl;
             _atkTargetIndex = 0;
             _atkTargetNum   = 0;
             GridState       = State.NONE;

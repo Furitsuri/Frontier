@@ -45,7 +45,7 @@ namespace Frontier
                     break;
             }
 
-            EmAI.Init(this);
+            EmAI.Init(this, _btlMgr, _stageCtrl);
         }
 
         override public void setAnimator(ANIME_TAG animTag)

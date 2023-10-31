@@ -78,7 +78,7 @@ namespace Frontier
                 FileReadManager.Instance.EnemyLord(_currentStageIndex, _stageCtrl.GetGridSize());
             }
 
-            for (int i = 0; i < _phaseManagers.Length; ++i) _phaseManagers[i].Resist(this, _stageCtrl);
+            for (int i = 0; i < _phaseManagers.Length; ++i) _phaseManagers[i].Regist(this, _stageCtrl);
             _currentPhaseManager.Init();
 
             // Œü‚«‚Ì’l‚ðÝ’è

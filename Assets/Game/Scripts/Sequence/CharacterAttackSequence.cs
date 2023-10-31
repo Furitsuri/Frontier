@@ -45,11 +45,11 @@ namespace Frontier
         private UpdateAttack _updateAttackerAttack = null;
         private UpdateAttack _updateTargetAttack = null;
 
-        public void Init(Character attackChara, Character targetChara)
+        public void Init(BattleManager btlMgr, StageController stgCtrl, Character attackChara, Character targetChara)
         {
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            _btlMgr = btlMgr;
             _btlCamCtrl = _btlMgr.GetCameraController();
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
+            _stageCtrl = stgCtrl;
             _attackCharacter = attackChara;
             _targetCharacter = targetChara;
             _diedCharacter = null;
