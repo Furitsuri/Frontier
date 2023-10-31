@@ -53,7 +53,7 @@ namespace Frontier
         override protected void CreateTree()
         {
             // 遷移木の作成
-            // TODO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
+            // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
             RootNode = new PLSelectGrid();
             RootNode.AddChild(new PLSelectCommandState());

@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,9 +17,9 @@ namespace Frontier
         private Player _selectPlayer;
         private CommandList _commandList = new CommandList();
 
-        override public void Init()
+        override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             // 選択中のプレイヤーを取得
             _selectPlayer = (Player)_btlMgr.GetSelectCharacter();

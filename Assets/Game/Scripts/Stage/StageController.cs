@@ -89,7 +89,7 @@ namespace Frontier.Stage
 
             // ƒOƒŠƒbƒhî•ñ‚Ì‰Šú‰»
             InitGridInfo();
-            _gridCursor.Init(0, ref _stageModel);
+            _gridCursor.Init(0, _stageModel, this);
         }
 
         Mesh ReGrid(Mesh _mesh)

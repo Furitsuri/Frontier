@@ -25,9 +25,9 @@ namespace Frontier
         private List<Vector3> _moveGridPos;
         private Transform _EMTransform;
 
-        override public void Init()
+        override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
             _enemy = _btlMgr.GetSelectCharacter() as Enemy;

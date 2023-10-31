@@ -41,10 +41,10 @@ namespace Frontier
         /// <summary>
         /// èâä˙âªÇµÇ‹Ç∑
         /// </summary>
-        virtual public void Init(Enemy mySelf)
+        virtual public void Init(Enemy mySelf, BattleManager btlMgr, StageController stgCtrl)
         {
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
+            _btlMgr = btlMgr;
+            _stageCtrl = stgCtrl;
             _gridEvaluationValues = new float[_stageCtrl.GridTotalNum];
             _targetChandidateInfos = new List<TargetCandidateInfo>(64);
         }

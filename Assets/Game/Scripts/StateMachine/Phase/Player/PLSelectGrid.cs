@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,9 +7,9 @@ namespace Frontier
 {
     public class PLSelectGrid : PhaseStateBase
     {
-        override public void Init()
+        override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);

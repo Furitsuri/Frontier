@@ -1,3 +1,4 @@
+using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,11 +16,11 @@ namespace Frontier
         bool _isValidDestination = false;
         bool _isValidTarget = false;
 
-        override public void Init()
+        override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
             bool isExist = false;
 
-            base.Init();
+            base.Init(btlMgr, stgCtrl);
 
             // ステージグリッド上のキャラ情報を更新
             _stageCtrl.UpdateGridInfo();

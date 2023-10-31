@@ -8,7 +8,7 @@ namespace Frontier
         protected BattleManager _btlMgr = null;
         protected StageController _stageCtrl = null;
 
-        virtual public void Resist(BattleManager btlMgr, StageController stgCtrl)
+        virtual public void Regist(BattleManager btlMgr, StageController stgCtrl)
         {
             _btlMgr = btlMgr;
             _stageCtrl = stgCtrl;
@@ -19,7 +19,7 @@ namespace Frontier
             // �J�ږ؂̍쐬
             CreateTree();
 
-            CurrentNode.Init();
+            CurrentNode.Init(_btlMgr,_stageCtrl);
 
             _isFirstUpdate = true;
         }
@@ -46,13 +46,13 @@ namespace Frontier
             {
                 CurrentNode.Exit();
                 CurrentNode = CurrentNode.Children[transitIndex];
-                CurrentNode.Init();
+                CurrentNode.Init(_btlMgr,_stageCtrl);
             }
             else if (CurrentNode.IsBack())
             {
                 CurrentNode.Exit();
                  CurrentNode = CurrentNode.Parent;
-                CurrentNode.Init();
+                CurrentNode.Init(_btlMgr, _stageCtrl);
             }
         }
 
