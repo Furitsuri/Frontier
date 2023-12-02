@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 438236b1bb4dc03468cb3f2d12fa922c
+guid: 6dd7dfa51937f4e488f8e8675699ae97
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable:
@@ -143,6 +143,20 @@ ModelImporter:
       events:
       - time: 0.3409669
         functionName: AttackOpponentEvent
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 2
+        messageOptions: 0
+      - time: 0.16053511
+        functionName: StartParryEvent
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 2
+        messageOptions: 0
+      - time: 0.29765886
+        functionName: StopFramrateOnParryEvent
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

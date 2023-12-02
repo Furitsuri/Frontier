@@ -16,13 +16,13 @@ namespace Frontier.Stage
         /// </summary>
         public enum BitFlag
         {
-            NONE                = 0,
-            CANNOT_MOVE         = 1 << 0,   // 移動不可
-            ATTACKABLE          = 1 << 1,   // 攻撃可能
-            TARGET_ATTACK_BASE  = 1 << 2,   // ターゲット攻撃候補地点
-            PLAYER_EXIST        = 1 << 3,   // プレイヤーキャラクターが存在
-            ENEMY_EXIST         = 1 << 4,   // 敵キャラクターが存在
-            OTHER_EXIST         = 1 << 5,   // 第三勢力が存在
+            NONE                  = 0,
+            CANNOT_MOVE           = 1 << 0,   // 移動不可グリッド
+            ATTACKABLE            = 1 << 1,   // 攻撃可能なグリッド
+            ATTACKABLE_TARGET     = 1 << 2,   // 攻撃対象を攻撃可能なグリッド(ATTACKABLEの内容を実質含んでいる)
+            PLAYER_EXIST          = 1 << 3,   // プレイヤーキャラクターが存在
+            ENEMY_EXIST           = 1 << 4,   // 敵キャラクターが存在
+            OTHER_EXIST           = 1 << 5,   // 第三勢力が存在
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace Frontier.Stage
         /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
         /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
         /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-        void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
+        void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
         {
             // 範囲外のグリッドは考慮しない
             if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
@@ -223,19 +223,18 @@ namespace Frontier.Stage
 
             // 負の値であれば終了
             if (currentMoveRange < 0) return;
-
             // 攻撃範囲についても登録する
-            if (isAttackable && _gridInfo[gridIndex].characterTag == CHARACTER_TAG.NONE)
+            if (isAttackable && ( _gridInfo[gridIndex].characterTag == CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
             // 左端を除外
             if (gridIndex % _stageModel.GetGridRowNum() != 0)
-                RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfTag, isAttackable);      // gridIndexからX軸方向へ-1
-                                                                                                                  // 右端を除外
+                RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexからX軸方向へ-1
+            // 右端を除外
             if ((gridIndex + 1) % _stageModel.GetGridRowNum() != 0)
-                RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfTag, isAttackable);      // gridIndexからX軸方向へ+1
-                                                                                                                  // Z軸方向への加算と減算はそのまま
-            RegistMoveableEachGrid(gridIndex - _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
-            RegistMoveableEachGrid(gridIndex + _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
+                RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexからX軸方向へ+1
+            // Z軸方向への加算と減算はそのまま
+            RegistMoveableEachGrid(gridIndex - _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
+            RegistMoveableEachGrid(gridIndex + _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -255,10 +254,10 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 各種設定を行います
+        /// 初期化を行います
         /// </summary>
         /// <param name="btlMgr">バトルマネージャ</param>
-        public void Setting(BattleManager btlMgr)
+        public void Init(BattleManager btlMgr)
         {
             _btlMgr = btlMgr;
         }
@@ -357,14 +356,12 @@ namespace Frontier.Stage
         /// <param name="attackRange">攻撃可能範囲値</param>
         /// <param name="selfTag">キャラクタータグ</param>
         /// <param name="isAttackable">攻撃可能か否か</param>
-        public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, Character.CHARACTER_TAG selfTag, bool isAttackable)
+        public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, int selfCharaIndex, Character.CHARACTER_TAG selfTag, bool isAttackable)
         {
             Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
 
             // 移動可否情報を各グリッドに登録
-            RegistMoveableEachGrid(departIndex, moveRange, attackRange, selfTag, isAttackable, true);
-
-            Methods.UnsetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE);
+            RegistMoveableEachGrid(departIndex, moveRange, attackRange, selfCharaIndex, selfTag, isAttackable, true);
         }
 
         /// <summary>
@@ -384,7 +381,7 @@ namespace Frontier.Stage
             for (int i = 0; i < GridTotalNum; ++i)
             {
                 Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE);
-                Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.TARGET_ATTACK_BASE);
+                Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE_TARGET);
             }
 
             // 攻撃可否情報を各グリッドに登録
@@ -431,21 +428,21 @@ namespace Frontier.Stage
                         if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.ENEMY ||
                             _gridInfo[gridIndex].characterTag == CHARACTER_TAG.OTHER)
                         {
-                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.TARGET_ATTACK_BASE);
+                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     case CHARACTER_TAG.ENEMY:
                         if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.PLAYER ||
                             _gridInfo[gridIndex].characterTag == CHARACTER_TAG.OTHER)
                         {
-                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.TARGET_ATTACK_BASE);
+                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     case CHARACTER_TAG.OTHER:
                         if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.PLAYER ||
                             _gridInfo[gridIndex].characterTag == CHARACTER_TAG.ENEMY)
                         {
-                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.TARGET_ATTACK_BASE);
+                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     default:
@@ -568,10 +565,10 @@ namespace Frontier.Stage
             // グリッドの状態をメッシュで描画
             for (int i = 0; i < GridTotalNum; ++i)
             {
-                if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.TARGET_ATTACK_BASE))
+                if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE_TARGET))
                 {
                     Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.TARGET_ATTACK_BASE);
+                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACKABLE_TARGET);
 
                     continue;
                 }
@@ -806,9 +803,9 @@ namespace Frontier.Stage
                 for (int j = i + 1; j < candidateRouteIndexs.Count; ++j)
                 {
                     int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
-                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != 0)) ||           // 左に存在(左端を除く)
-                         (diff == 1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != _stageModel.GetGridRowNum() - 1)) || // 右に存在(右端を除く)
-                          Math.Abs(diff) == _stageModel.GetGridRowNum())                                            // 上または下に存在
+                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != 0)) ||                                 // 左に存在(左端を除く)
+                        (diff == 1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != _stageModel.GetGridRowNum() - 1)) ||    // 右に存在(右端を除く)
+                         Math.Abs(diff) == _stageModel.GetGridRowNum())                                                                 // 上または下に存在
                     {
                         // 移動可能な隣接グリッド情報をダイクストラに入れる
                         dijkstra.Add(i, j);

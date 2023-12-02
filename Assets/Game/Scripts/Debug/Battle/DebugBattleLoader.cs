@@ -7,6 +7,7 @@ namespace Frontier
 {
     public class DebugBattleLoader : MonoBehaviour
     {
+        /*
         [SerializeField]
         private GameObject debugBattleManager;
         [SerializeField]
@@ -26,5 +27,6 @@ namespace Frontier
                 //Instantiate SoundManager prefab
                 Instantiate(soundManager);
         }
+        */
     }
 }

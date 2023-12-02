@@ -2,6 +2,7 @@ Shader"Unlit/MosaicShader"
 {
     Properties
     {
+        [NoScaleOffset]
         _MainTex ("Texture", 2D) = "white" {}
         _BlockSize ("Block Size", Range(1, 100)) = 10
         _Intensity ("Intensity", Range(0, 1)) = 0.5

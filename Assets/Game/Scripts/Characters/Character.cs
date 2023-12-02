@@ -85,20 +85,6 @@ namespace Frontier
             NUM,
         }
 
-        public enum ANIME_TAG
-        {
-            WAIT = 0,
-            MOVE,
-            SINGLE_ATTACK,
-            DOUBLE_ATTACK,
-            TRIPLE_ATTACK,
-            GUARD,
-            DAMAGED,
-            DIE,
-
-            NUM,
-        }
-
         public enum CLOSED_ATTACK_PHASE
         {
             NONE = -1,
@@ -198,27 +184,46 @@ namespace Frontier
         // 戦闘中のみ使用するパラメータ
         public struct TmpParameter
         {
+            // 該当コマンドの終了フラグ
             public bool[] isEndCommand;
+            // 該当スキルの使用フラグ
             public bool[] isUseSkills;
+            // 現在位置を示すグリッドインデックス
             public int gridIndex;
+            // 1回の攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮しない)
             public int expectedChangeHP;
+            // 全ての攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮する)
             public int totalExpectedChangeHP;
 
+            /// <summary>
+            /// 指定コマンドが実行可能か否かを判定します
+            /// </summary>
+            /// <param name="cmdTag">指定コマンドのタグ</param>
+            /// <returns>実行可否</returns>
             public bool IsExecutableCommand(Command.COMMAND_TAG cmdTag)
             {
                 return !isEndCommand[(int)cmdTag];
             }
 
+            /// <summary>
+            /// スキルの使用フラグをリセットします
+            /// </summary>
+            public void ResetUseSkill()
+            {
+                for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+                {
+                    isUseSkills[i] = false;
+                }
+            }
+
+            /// <summary>
+            /// 全てのパラメータをリセットします
+            /// </summary>
             public void Reset()
             {
                 for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
                 {
                     isEndCommand[i] = false;
-                }
-
-                for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
-                {
-                    isUseSkills[i] = false;
                 }
 
                 totalExpectedChangeHP = expectedChangeHP = 0;
@@ -243,19 +248,6 @@ namespace Frontier
             }
         }
 
-
-        protected string[] _animNames =
-        {
-            "Wait",
-            "Run",
-            "SingleAttack",
-            "DoubleAttack",
-            "TripleAttack",
-            "Guard",
-            "GetHit",
-            "Die"
-        };
-
         [SerializeField]
         private GameObject _bulletObject;
 
@@ -265,7 +257,11 @@ namespace Frontier
         private Quaternion _orderdRotation;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands = new List<Command.COMMAND_TAG>();
+        private readonly TimeScale _timeScale = new();
+        // 攻撃モーションの終了フラグ
         protected bool _isEndAttackMotion = false;
+        // 攻撃シーケンスにおける残り攻撃回数
+        protected int _atkRemainingNum = 0;
         protected BattleManager _btlMgr = null;
         protected StageController _stageCtrl = null;
         protected Character _opponent;
@@ -278,6 +274,8 @@ namespace Frontier
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
 
+        public bool IsDeclaredDead { get; set; } = false;
+
         private delegate bool IsExecutableCommand(Character character, StageController stageCtrl);
         private static IsExecutableCommand[] _executableCommandTables =
         {
@@ -286,15 +284,14 @@ namespace Frontier
             Command.IsExecutableWaitCommand,
         };
 
+        #region PRIVATE_METHOD
         void Awake()
         {
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
-
             // タグとアニメーションの数は一致していること
-            Debug.Assert(_animNames.Length == (int)ANIME_TAG.NUM);
+            Debug.Assert(AnimDatas.ANIME_CONDITIONS_NAMES.Length == (int)AnimDatas.ANIME_CONDITIONS_TAG.NUM);
 
             _animator = GetComponent<Animator>();
+            _timeScale.OnValueChange = UpdateTimeScale;
             param.equipSkills = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
             tmpParam.isEndCommand = new bool[(int)Command.COMMAND_TAG.NUM];
             tmpParam.isUseSkills = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
@@ -341,6 +338,21 @@ namespace Frontier
             }
         }
 
+        void OnDestroy()
+        {
+            // 戦闘時間管理クラスの登録を解除
+            _btlMgr.TimeScaleCtrl.Unregist(_timeScale);
+        }
+
+        /// <summary>
+        /// キャラクターのタイムスケールを更新します
+        /// </summary>
+        /// <param name="timeScale">スケール値</param>
+        void UpdateTimeScale( float timeScale )
+        {
+            _animator.speed = timeScale;
+        }
+
         /// <summary>
         /// 再帰を用いて、指定のタグで登録されているオブジェクトのマテリアルを登録します
         /// ※ 色変更の際に用いる
@@ -373,26 +385,66 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲートを設定します
+        /// </summary>
+        /// <param name="parryCtrl">パリィ操作クラス</param>
+        void SubscribeParryEvent( SkillParryController parryCtrl )
+        {
+            parryCtrl.ProcessCompleted += ParryEventProcessCompleted;
+        }
+
+        /// <summary>
+        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲート設定を解除します
+        /// </summary>
+        /// <param name="parryCtrl">パリィ操作クラス</param>
+        void UnsubscribeParryEvent(SkillParryController parryCtrl)
+        {
+            parryCtrl.ProcessCompleted -= ParryEventProcessCompleted;
+        }
+
+        /// <summary>
+        /// パリィイベント終了時に呼び出されるデリゲート
+        /// </summary>
+        /// <param name="sender">呼び出しを行うパリィイベントコントローラ</param>
+        /// <param name="e">イベントハンドラ用オブジェクト(この関数ではempty)</param>
+        void ParryEventProcessCompleted( object sender, EventArgs e )
+        {
+            SkillParryController parryCtrl = sender as SkillParryController;
+            parryCtrl.EndParryEvent();
+
+            UnsubscribeParryEvent(parryCtrl);
+        }
+
+        #endregion  // PRIVATE_METHOD
+
+        #region VIRTUAL_PUBLIC_METHOD
+
+        /// <summary>
         /// 初期化処理を行います
         /// </summary>
-        virtual public void Init()
+        virtual public void Init( BattleManager btlMgr, StageController stgCtrl )
         {
+            _btlMgr = btlMgr;
+            _stageCtrl  = stgCtrl;
             tmpParam.gridIndex = param.initGridIndex;
             _elapsedTime = 0f;
+
+            // 戦闘時間管理クラスに自身の時間管理クラスを登録
+            _btlMgr.TimeScaleCtrl.Regist( _timeScale );
         }
 
         /// <summary>
         /// アニメーションを再生します
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
-        virtual public void setAnimator(ANIME_TAG animTag) { }
+        virtual public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag) { }
 
         /// <summary>
         /// アニメーションを再生します
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <param name="b">トリガーアニメーションに対して使用</param>
-        virtual public void setAnimator(ANIME_TAG animTag, bool b) { }
+        virtual public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b) { }
 
         /// <summary>
         /// 死亡処理を行います
@@ -418,27 +470,18 @@ namespace Frontier
                 if (_opponent.param.CurHP <= 0)
                 {
                     _opponent.param.CurHP = 0;
-                    _opponent.setAnimator(ANIME_TAG.DIE);
+                    _opponent.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
                 else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
                 {
-                    _opponent.setAnimator(ANIME_TAG.DAMAGED);
+                    _opponent.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DAMAGED);
                 }
             }
 
             // ダメージUIを表示
             BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
             BattleUISystem.Instance.ToggleDamageUI(true);
-        }
-
-        /// <summary>
-        /// 攻撃終了フラグをONに設定します
-        /// MEMO : モーションからイベントフラグ処理として呼ばれます
-        /// </summary>
-        virtual public void AttackEnd()
-        {
-            _isEndAttackMotion = true;
         }
 
         /// <summary>
@@ -464,6 +507,15 @@ namespace Frontier
 
             // 発射と同時に次のカメラに遷移させる
             _isTransitNextPhaseCamera = true;
+
+            // この攻撃によって相手が倒されるかどうかを判定
+            _opponent.IsDeclaredDead = ( _opponent.param.CurHP + _opponent.tmpParam.expectedChangeHP ) <= 0;
+            if( !IsDeclaredDead && 0 < _atkRemainingNum )
+            {
+                --_atkRemainingNum;
+                AnimDatas.ANIME_CONDITIONS_TAG[] attackAnimTags = new AnimDatas.ANIME_CONDITIONS_TAG[] { AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.DOUBLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.TRIPLE_ATTACK };
+                setAnimator(attackAnimTags[_atkRemainingNum]);
+            }
         }
 
         /// <summary>
@@ -472,6 +524,10 @@ namespace Frontier
         virtual public void SelectUseSkills(SituationType type)
         {
         }
+
+        #endregion // VIRTUAL_PUBLIC_METHOD
+
+        #region PUBLIC_METHOD
 
         /// <summary>
         /// キャラクターの位置を設定します
@@ -543,7 +599,7 @@ namespace Frontier
             _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
             _elapsedTime = 0f;
 
-            setAnimator(Character.ANIME_TAG.MOVE, true);
+            setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
         }
 
         /// <summary>
@@ -551,12 +607,39 @@ namespace Frontier
         /// </summary>
         public void StartRangedAttack()
         {
-            Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
-            var attackAnimtag = attackAnimTags[skillModifiedParam.AtkNum - 1];
+            AnimDatas.ANIME_CONDITIONS_TAG[] attackAnimTags = new AnimDatas.ANIME_CONDITIONS_TAG[] { AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.DOUBLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.TRIPLE_ATTACK };
+            _atkRemainingNum = skillModifiedParam.AtkNum - 1;   // 攻撃回数を1消費
+            var attackAnimtag = attackAnimTags[_atkRemainingNum];
 
             _isEndAttackMotion = false;
 
             setAnimator(attackAnimtag);
+        }
+
+        /// <summary>
+        /// パリィ判定処理を開始します
+        /// MEMO : モーションのイベントフラグから呼び出します
+        /// </summary>
+        public void StartParryEvent()
+        {
+            if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
+            
+            SkillParryController parryCtrl = _btlMgr.SkillCtrl.ParryController;
+            SubscribeParryEvent(parryCtrl);
+            parryCtrl.StartParryEvent(_opponent, this);
+        }
+
+        /// <summary>
+        /// パリィイベント中に現在のフレームレートを停止させます MEMO : モーションのイベントフラグから呼び出します
+        /// (パリィ判定終了前に攻撃判定フレームに到達するのを防ぐための処置です)
+        /// </summary>
+        public void StopFramrateOnParryEvent()
+        {
+            if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
+
+            SkillParryController parryCtrl = _btlMgr.SkillCtrl.ParryController;
+            SubscribeParryEvent(parryCtrl);
+            parryCtrl.DelayBattleTimeScale(0f);
         }
 
         /// <summary>
@@ -582,12 +665,13 @@ namespace Frontier
         /// <returns>終了判定</returns>
         public bool UpdateClosedAttack(in Vector3 departure, in Vector3 destination)
         {
-            Character.ANIME_TAG[] attackAnimTags = new Character.ANIME_TAG[] { Character.ANIME_TAG.SINGLE_ATTACK, Character.ANIME_TAG.DOUBLE_ATTACK, Character.ANIME_TAG.TRIPLE_ATTACK };
+            AnimDatas.ANIME_CONDITIONS_TAG[] attackAnimTags = new AnimDatas.ANIME_CONDITIONS_TAG[] { AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.DOUBLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.TRIPLE_ATTACK };
             var attackAnimtag = attackAnimTags[skillModifiedParam.AtkNum - 1];
 
             if (GetBullet() != null) return false;
 
             float t = 0f;
+            bool isReservedParry = _opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY);
 
             switch (_closingAttackPhase)
             {
@@ -604,10 +688,11 @@ namespace Frontier
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
                     }
                     break;
+
                 case CLOSED_ATTACK_PHASE.ATTACK:
                     if (IsEndAttackAnimSequence())
                     {
-                        setAnimator(Character.ANIME_TAG.MOVE, false);
+                        setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.DISTANCING;
                     }
@@ -647,9 +732,11 @@ namespace Frontier
             {
                 _btlMgr.GetCameraController().TransitNextPhaseCameraParam(null, GetBullet().transform);
             }
-
+            // 攻撃終了した場合はWaitに切り替えて終了通知
             if (IsEndAttackAnimSequence())
             {
+                setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+
                 return true;
             }
 
@@ -668,9 +755,55 @@ namespace Frontier
         /// <summary>
         /// 対戦相手の設定をリセットします
         /// </summary>
-        public void ResetOpponentCharacter()
+        public void ResetOnEndOfAttackSequence()
         {
+            // 対戦相手情報をリセット
             _opponent = null;
+            // 使用スキル情報をリセット
+            tmpParam.ResetUseSkill();
+        }
+
+        /// <summary>
+        /// ゲームオブジェクトを削除します
+        /// </summary>
+        public void Remove()
+        {
+            Destroy(gameObject);
+            Destroy(this);
+        }
+
+        /// <summary>
+        /// アクションゲージを消費します
+        /// </summary>
+        public void ConsumeActionGauge()
+        {
+            param.curActionGauge -= param.consumptionActionGauge;
+            param.consumptionActionGauge = 0;
+
+            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            {
+                BattleUISystem.Instance.GetPlayerParamSkillBox(i).StopFlick();
+            }
+        }
+
+        /// <summary>
+        /// アクションゲージをrecoveryActionGaugeの分だけ回復します
+        /// 基本的に自ターン開始時に呼びます
+        /// </summary>
+        public void RecoveryActionGauge()
+        {
+            param.curActionGauge = Mathf.Clamp(param.curActionGauge + param.recoveryActionGauge, 0, param.maxActionGauge);
+        }
+
+        /// <summary>
+        /// 実行可能なコマンドを抽出します
+        /// </summary>
+        /// <param name="executableCommands">抽出先の引き数</param>
+        public void FetchExecutableCommand(out List<Command.COMMAND_TAG> executableCommands, in StageController stageCtrl)
+        {
+            UpdateExecutableCommand(stageCtrl);
+
+            executableCommands = _executableCommands;
         }
 
         public bool IsPlayer() { return param.characterTag == CHARACTER_TAG.PLAYER; }
@@ -684,12 +817,25 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 再生中, false : 再生していない</returns>
-        public bool IsPlayingAnimation(ANIME_TAG animTag)
+        public bool IsPlayingAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
-            if (stateInfo.IsName(_animNames[(int)animTag]) && stateInfo.normalizedTime < 1f)
+            if (stateInfo.IsName(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]) && stateInfo.normalizedTime < 1f)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool IsEndCurrentAnimation()
+        {
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
+            // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
+            if (1f <= stateInfo.normalizedTime)
             {
                 return true;
             }
@@ -702,12 +848,29 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 終了, false : 未終了</returns>
-        public bool IsEndAnimation(ANIME_TAG animTag)
+        public bool IsEndAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
-            if (stateInfo.IsName(_animNames[(int)animTag]) && 1f <= stateInfo.normalizedTime)
+            if (stateInfo.IsName(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]) && 1f <= stateInfo.normalizedTime)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 現在のアニメーションが終了したかを判定します
+        /// </summary>
+        /// <returns>true : 終了, false : 未終了</returns>
+        public bool IsEndAnimationOnStateName( string stateName )
+        {
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
+            // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
+            if (stateInfo.IsName(stateName) && 1f <= stateInfo.normalizedTime )
             {
                 return true;
             }
@@ -717,14 +880,12 @@ namespace Frontier
 
         /// <summary>
         /// 攻撃アニメーションの終了判定を返します
-        /// MEMO : 複数回連続攻撃の終了判定にIsEndAnimationを使用すると、同じアニメーションを連続的に使用している都合上、
-        ///        正しく判定出来ないため、複製した攻撃アニメーションに専用のイベントフラグを挿入して用いることで、
-        ///        複数回攻撃の最後の攻撃だと判定出来るようにしています
         /// </summary>
         /// <returns>攻撃アニメーションが終了しているか</returns>
         public bool IsEndAttackAnimSequence()
         {
-            return _isEndAttackMotion;
+            return IsEndAnimationOnStateName(AnimDatas.END_ATTACK_ANIME_STATE_NAME) ||  // 最後の攻撃のState名は必ずEND_ATTACK_ANIME_STATE_NAMEで一致させる
+                (_opponent.IsDeclaredDead && IsEndCurrentAnimation());                  // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
         }
 
         /// <summary>
@@ -770,52 +931,11 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ゲームオブジェクトを削除します
-        /// </summary>
-        public void Remove()
-        {
-            Destroy(gameObject);
-            Destroy(this);
-        }
-
-        /// <summary>
-        /// 実行可能なコマンドを抽出します
-        /// </summary>
-        /// <param name="executableCommands">抽出先の引き数</param>
-        public void FetchExecutableCommand( out List<Command.COMMAND_TAG> executableCommands, in StageController stageCtrl )
-        {
-            UpdateExecutableCommand(stageCtrl);
-
-            executableCommands = _executableCommands;
-        }
-
-        /// <summary>
         /// 設定されている弾を取得します
         /// </summary>
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
 
-        /// <summary>
-        /// アクションゲージを消費します
-        /// </summary>
-        public void ConsumeActionGauge()
-        {
-            param.curActionGauge -= param.consumptionActionGauge;
-            param.consumptionActionGauge = 0;
-
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
-            {
-                BattleUISystem.Instance.GetPlayerParamSkillBox(i).StopFlick();
-            }
-        }
-
-        /// <summary>
-        /// アクションゲージをrecoveryActionGaugeの分だけ回復します
-        /// 基本的に自ターン開始時に呼びます
-        /// </summary>
-        public void RecoveryActionGauge()
-        {
-            param.curActionGauge = Mathf.Clamp(param.curActionGauge + param.recoveryActionGauge, 0, param.maxActionGauge);
-        }
+        #endregion // PUBLIC_METHOD
     }
 }

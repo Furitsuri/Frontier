@@ -20,7 +20,6 @@ namespace Frontier
         private GameObject _StageImage;
         private GamePhase _Phase;
         public GameObject _managerProvider;
-        public BattleManager _btlMgr;
         public float stageStartDelay = 2f;              // ステージ開始時に表示する時間(秒)
 
         void Awake()
@@ -72,7 +71,7 @@ namespace Frontier
         {
             while (_Phase != GamePhase.GAME_END)
             {
-                Debug.Log(_Phase);
+                // Debug.Log(_Phase);
                 yield return null;
 
                 switch (_Phase)

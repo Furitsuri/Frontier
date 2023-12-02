@@ -12,7 +12,7 @@ namespace Frontier.Stage
         {
             MOVE = 0,
             ATTACK,
-            TARGET_ATTACK_BASE,
+            ATTACKABLE_TARGET,
 
             NUM_MAX
         }

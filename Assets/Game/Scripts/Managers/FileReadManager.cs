@@ -6,29 +6,41 @@ using Palmmedia.ReportGenerator.Core.Common;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using static Frontier.SkillsData;
+using Frontier.Stage;
 
 namespace Frontier
 {
     public class FileReadManager : Singleton<FileReadManager>
     {
+        [Header("バトルマネージャ")]
+        [SerializeField]
+        private BattleManager _btlMgr;
+
+        [Header("各味方キャラクターのプレハブ")]
         [SerializeField]
         public GameObject[] PlayersPrefab;
 
+        [Header("各敵キャラクターのプレハブ")]
         [SerializeField]
         public GameObject[] EnemiesPrefab;
 
+        [Header("各味方キャラクターのパラメータ参照先")]
         [SerializeField]
         public string[] PlayerParamFilePath;
 
+        [Header("各敵キャラクターのパラメータ参照先")]
         [SerializeField]
         public string[] EnemyParamFilePath;
 
+        [Header("各スキルデータのパラメータ参照先")]
         [SerializeField]
         public string SkillDataFilePath;
 
+        [Header("近接攻撃時のカメラパラメータの参照先")]
         [SerializeField]
         public string CloseAtkCameraParamFilePath;
 
+        [Header("遠隔攻撃時のカメラパラメータの参照先")]
         [SerializeField]
         public string RangedAtkCameraParamFilePath;
 
@@ -97,13 +109,11 @@ namespace Frontier
             public List<BattleCameraController.CameraParamData[]> CameraParams;
         }
 
-        private BattleManager _btlMgr;
-
         protected override void OnStart()
         {
-            base.OnStart();
+            Debug.Assert(_btlMgr != null);
 
-            _btlMgr = ManagerProvider.Instance.GetService<BattleManager>();
+            base.OnStart();
         }
 
         /// <summary>
@@ -131,7 +141,7 @@ namespace Frontier
 
                 // ファイルから読み込んだパラメータを設定
                 ApplyCharacterParams(ref player.param, Params[i]);
-                player.Init();
+                player.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
                 playerObject.SetActive(true);
 
                 _btlMgr.AddPlayerToList(player);
@@ -160,7 +170,8 @@ namespace Frontier
 
                 // ファイルから読み込んだパラメータを設定
                 ApplyCharacterParams(ref enemy.param, Params[i].Param);
-                enemy.Init((Enemy.ThinkingType)Params[i].ThinkType);
+                enemy.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
+                enemy.SetThinkType((Enemy.ThinkingType)Params[i].ThinkType);
                 enemyObject.SetActive(true);
 
                 _btlMgr.AddEnemyToList(enemy);
@@ -258,7 +269,7 @@ namespace Frontier
                 if (player == null) return;
 
                 player.param = param;
-                player.Init();
+                player.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
                 unitObject.SetActive(true);
 
                 _btlMgr.AddPlayerToList(player);
@@ -269,7 +280,7 @@ namespace Frontier
                 if (enemy == null) return;
 
                 enemy.param = param;
-                enemy.Init();
+                enemy.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
                 unitObject.SetActive(true);
 
                 _btlMgr.AddEnemyToList(enemy);

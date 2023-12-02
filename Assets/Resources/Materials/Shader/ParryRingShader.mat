@@ -61,6 +61,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AnimTime: 0
+    - _Brightness: 0.449
+    - _Brigtness: 0.5
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -68,11 +71,29 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _InnerRadius: 0.421
+    - _JudgeRingInnerRadius: 0.4
+    - _JudgeRingOuterRadius: 0.6
+    - _JustJudgeRingInnerRadius: 0.45
+    - _JustJudgeRingOuterRadius: 0.46
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OutlineWidth: 0.005
+    - _OuterRadius: 0.427
+    - _OutlineWidth: 0.035
     - _Parallax: 0.02
+    - _RangeInnerRadius: 0.4
+    - _RangeOuterRadius: 0.5
+    - _RangeOutlineWidth: 0
+    - _RangeRingWidth: 0.3
+    - _ShrinkAnimTime: 0
+    - _ShrinkInitRadius: 1
+    - _ShrinkInnerRadius: 0.9120127
+    - _ShrinkIsRing: 1
+    - _ShrinkOuterRadius: 0
+    - _ShrinkOutlineWidth: 0.1
+    - _ShrinkRingSizeRate: 0.52000046
+    - _ShrinkRingWidth: 0.006
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -81,5 +102,8 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _JustRangeOutlineColor: {r: 1, g: 1, b: 0, a: 1}
+    - _OutlineColor: {r: 1, g: 0.25795352, b: 0.2028302, a: 1}
+    - _RangeOutlineColor: {r: 0.5660378, g: 0.5660378, b: 0.5660378, a: 0.5019608}
+    - _ShrinkOutlineColor: {r: 0.9811321, g: 0.9811321, b: 0.9811321, a: 1}
   m_BuildTextureStacks: []

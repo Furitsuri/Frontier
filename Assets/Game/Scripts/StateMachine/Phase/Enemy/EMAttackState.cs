@@ -48,6 +48,10 @@ namespace Frontier
             _targetCharacter = _attackCharacter.EmAI.GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
+            // 攻撃者の向きを設定
+            GridInfo info = _stageCtrl.GetGridInfo( _targetCharacter.tmpParam.gridIndex );
+            _attackCharacter.RotateToPosition(info.charaStandPos);
+
             _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
         }
 
@@ -113,7 +117,7 @@ namespace Frontier
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、両方判定)
+            //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
             {

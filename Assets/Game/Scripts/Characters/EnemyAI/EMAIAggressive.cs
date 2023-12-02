@@ -8,7 +8,7 @@ namespace Frontier
 {
     public class EMAIAggressive : EMAIBase
     {
-        override protected float TARGET_ATTACK_BASE_VALUE { get; } = 50;
+        override protected float ATTACKABLE_TARGET_VALUE { get; } = 50;
         override protected float WITHIN_RANGE_VALUE { get; } = 50;
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Frontier
                     }
                 }
                 candidateRouteIndexs.Add(selfTmpParam.gridIndex);   // 現在地点も挿入
-                _proposedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
+                _suggestedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
             }
             // 攻撃範囲内に敵対キャラクターが存在しない場合は、評価値を計算して最も高いグリッド位置へ向かうように
             else
@@ -102,9 +102,9 @@ namespace Frontier
                 // 最も高い評価値のルートのうち、最大限の移動レンジで進んだグリッドへ向かうように設定
                 int range = selfParam.moveRange;
                 int prevCost = 0;   // routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
-                _proposedMoveRoute = maxEvaluateRoute.route;
+                _suggestedMoveRoute = maxEvaluateRoute.route;
 
-                foreach ((int routeIndex, int routeCost) r in _proposedMoveRoute)
+                foreach ((int routeIndex, int routeCost) r in _suggestedMoveRoute)
                 {
                     range -= (r.routeCost - prevCost);
                     prevCost = r.routeCost;
@@ -116,9 +116,9 @@ namespace Frontier
                 }
             }
 
-            int removeBaseIndex = _proposedMoveRoute.FindIndex(item => item.routeIndex == _destinationGridIndex) + 1;
-            int removeCount = _proposedMoveRoute.Count - removeBaseIndex;
-            _proposedMoveRoute.RemoveRange(removeBaseIndex, removeCount);
+            int removeBaseIndex = _suggestedMoveRoute.FindIndex(item => item.routeIndex == _destinationGridIndex) + 1;
+            int removeCount = _suggestedMoveRoute.Count - removeBaseIndex;
+            _suggestedMoveRoute.RemoveRange(removeBaseIndex, removeCount);
 
             return (IsValidDestination(), IsValidTarget());
         }
@@ -129,13 +129,13 @@ namespace Frontier
 
             // 自身の移動範囲をステージ上に登録する
             bool isAttackable = !selfTmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
-            _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterTag, isAttackable);
+            _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterIndex, selfParam.characterTag, isAttackable);
 
             for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
             {
                 var info = _stageCtrl.GetGridInfo(i);
-                // 攻撃可能地点かつキャラクターが存在していないグリッドを取得
-                if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.TARGET_ATTACK_BASE) && info.charaIndex < 0)
+                // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得
+                if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.ATTACKABLE_TARGET) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
                 {
                     // グリッドの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterHashtable.Key> opponentKeys;

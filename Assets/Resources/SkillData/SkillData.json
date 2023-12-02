@@ -8,9 +8,9 @@
             "AddAtkMag": 0,
             "AddDefMag": 0,
             "AddAtkNum": 0,
-            "Param1": 0.1,
-            "Param2": null,
-            "Param3": null,
+            "Param1": 0,
+            "Param2": 2,
+            "Param3": 1.5,
             "Param4": null
         },
         {

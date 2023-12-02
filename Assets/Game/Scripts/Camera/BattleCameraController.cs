@@ -7,6 +7,8 @@ using UnityEngine.UI;
 using static UnityEditor.PlayerSettings;
 using static UnityEngine.GraphicsBuffer;
 
+#pragma warning disable 0414
+
 namespace Frontier
 {
     public class BattleCameraController : Singleton<BattleCameraController>
@@ -68,7 +70,7 @@ namespace Frontier
         private List<CameraParamData[]> _closeAtkCameraParamDatas;
         private List<CameraParamData[]> _rangedAtkCameraParamDatas;
         private CameraParamData[] _currentCameraParamDatas;
-        private CameraMosaicEffect _mosaicEffect;
+        private CameraMosaicEffect _mosaicEffectScript;
         private Transform _baseTransform;
         private Transform _lookAtTransform;
         private Vector3 _baseDir;
@@ -89,7 +91,7 @@ namespace Frontier
         override protected void OnStart()
         {
             _mainCamera = Camera.main;
-            _mosaicEffect = GetComponent<CameraMosaicEffect>();
+            _mosaicEffectScript = GetComponent<CameraMosaicEffect>();
             _baseTransform = null;
             _lookAtTransform = null;
             _mode = CameraMode.FOLLOWING;
@@ -154,17 +156,17 @@ namespace Frontier
                         // 指定レートを上回った際はモザイク処理を施す
                         if (_mosaicStartFadeRate <= fadeRate)
                         {
-                            _mosaicEffect.ToggleEnable(true);
+                            _mosaicEffectScript.ToggleEnable(true);
 
                             // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
                             var blockSizeRate = 1.0f - Mathf.Clamp01(_mosaicBlockSizeMaxRate) * (fadeRate - _mosaicStartFadeRate) / (1f - _mosaicStartFadeRate);
-                            _mosaicEffect.UpdateBlockSizeByRate(blockSizeRate);
+                            _mosaicEffectScript.UpdateBlockSizeByRate(blockSizeRate);
                         }
 
                         if (_fadeDuration <= _fadeElapsedTime)
                         {
-                            _mosaicEffect.ToggleEnable(false);
-                            _mosaicEffect.ResetBlockSize();
+                            _mosaicEffectScript.ToggleEnable(false);
+                            _mosaicEffectScript.ResetBlockSize();
                             // パラメータを表示
                             BattleUISystem.Instance.TogglePlayerParameter(true);
                             BattleUISystem.Instance.ToggleEnemyParameter(true);
@@ -193,17 +195,17 @@ namespace Frontier
                         // STARTの反対
                         if (fadeRate < 1f - _mosaicStartFadeRate)
                         {
-                            _mosaicEffect.ToggleEnable(true);
+                            _mosaicEffectScript.ToggleEnable(true);
 
                             // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
                             var blockSizeRate = 1.0f - Mathf.Clamp01(_mosaicBlockSizeMaxRate) * (1f - (fadeRate / (1f - _mosaicStartFadeRate)));
-                            _mosaicEffect.UpdateBlockSizeByRate(blockSizeRate);
+                            _mosaicEffectScript.UpdateBlockSizeByRate(blockSizeRate);
                         }
 
                         if (_fadeDuration <= _fadeElapsedTime)
                         {
-                            _mosaicEffect.ToggleEnable(false);
-                            _mosaicEffect.ResetBlockSize();
+                            _mosaicEffectScript.ToggleEnable(false);
+                            _mosaicEffectScript.ResetBlockSize();
                             BattleUISystem.Instance.TogglePlayerParameter(true);
                             BattleUISystem.Instance.ToggleEnemyParameter(true);
 
@@ -238,7 +240,7 @@ namespace Frontier
         /// <summary>
         /// 選択カーソルに従うカメラ情報を設定します
         /// </summary>
-        /// <param name="pos"></param>
+        /// <param name="pos">カメラ対象座標</param>
         public void SetLookAtBasedOnSelectCursor(in Vector3 pos)
         {
             if (_mode == CameraMode.ATTACK_SEQUENCE) return;
@@ -262,8 +264,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// バトル時のカメラデータを設定します
         /// </summary>
+        /// <param name="closeDatas">近距離攻撃カメラデータ</param>
+        /// <param name="rangedDatas">遠距離攻撃カメラデータ</param>
         public void SetCameraParamDatas(in List<CameraParamData[]> closeDatas, in List<CameraParamData[]> rangedDatas)
         {
             _closeAtkCameraParamDatas = closeDatas;
@@ -273,8 +277,8 @@ namespace Frontier
         /// <summary>
         /// 攻撃遷移開始時のカメラ設定を行います
         /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="target"></param>
+        /// <param name="attacker">攻撃するキャラクター</param>
+        /// <param name="target">攻撃対象キャラクター</param>
         public void StartAttackSequenceMode(Character attacker, Character target)
         {
             if (attacker == null || target == null) return;
@@ -306,8 +310,8 @@ namespace Frontier
         /// <summary>
         /// 戦闘フィールドの設定にカメラの位置と視点を適合させます
         /// </summary>
-        /// <param name="attacker">攻撃キャラクター</param>
-        /// <param name="target">被攻撃キャラクター</param>
+        /// <param name="attacker">攻撃するキャラクター</param>
+        /// <param name="target">攻撃対象キャラクター</param>
         public void AdaptBattleFieldSetting(Character attacker, Character target)
         {
             _baseTransform = Methods.CompareAllyCharacter(attacker, target).transform;
@@ -322,7 +326,7 @@ namespace Frontier
         /// <summary>
         /// 攻撃遷移終了時のカメラ設定を行います
         /// </summary>
-        /// <param name="attacker">攻撃キャラクター</param>
+        /// <param name="attacker">攻撃するキャラクター</param>
         public void EndAttackSequenceMode(Character attacker)
         {
             _atkCameraPhase     = AttackSequenceCameraPhase.END;

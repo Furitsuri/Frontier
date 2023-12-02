@@ -7,6 +7,10 @@ namespace Frontier
 {
     public class CharacterParameterPresenter : MonoBehaviour
     {
+        [Header("バトルマネージャ")]
+        [SerializeField]
+        private BattleManager _btlMgr;
+
         [Header("LeftWindowParam")]
         public CharacterParameterUI PlayerParameter;        // 左側表示のパラメータUIウィンドウ
 
@@ -16,13 +20,13 @@ namespace Frontier
         [Header("ParameterAttackDirection")]
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
-        private BattleManager _btlMgr = null;
         private StageController _stageCtrl = null;
         private Character _prevCharacter = null;
 
         void Start()
         {
-            _btlMgr     = ManagerProvider.Instance.GetService<BattleManager>();
+            Debug.Assert(_btlMgr != null);
+
             _stageCtrl  = ManagerProvider.Instance.GetService<StageController>();
 
             // カメラアングルの設定
@@ -47,6 +51,7 @@ namespace Frontier
                 case Stage.GridCursor.State.ATTACK:
                     Debug.Assert(bindCharacter != null);
 
+                    BattleUISystem.Instance.TogglePlayerParameter(true);
                     BattleUISystem.Instance.ToggleEnemyParameter(true);
 
                     // 画面構成は以下の通り

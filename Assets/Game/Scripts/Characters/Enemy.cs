@@ -20,15 +20,8 @@ namespace Frontier
         private ThinkingType _thikType;
         public EMAIBase EmAI { get; private set; }
 
-        /// <summary>
-        /// 初期化します
-        /// 思考タイプ設定のために、親クラスのInit関数はoverrideしていません
-        /// </summary>
-        /// <param name="type">思考タイプ</param>
-        public void Init(ThinkingType type)
+        public void SetThinkType(ThinkingType type)
         {
-            base.Init();
-
             _thikType = type;
 
             // 思考タイプによってemAIに代入する派生クラスを変更する
@@ -48,14 +41,14 @@ namespace Frontier
             EmAI.Init(this, _btlMgr, _stageCtrl);
         }
 
-        override public void setAnimator(ANIME_TAG animTag)
+        override public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag)
         {
-            _animator.SetTrigger(_animNames[(int)animTag]);
+            _animator.SetTrigger(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]);
         }
 
-        override public void setAnimator(ANIME_TAG animTag, bool b)
+        override public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b)
         {
-            _animator.SetBool(_animNames[(int)animTag], b);
+            _animator.SetBool(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag], b);
         }
 
         /// <summary>
