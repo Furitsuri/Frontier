@@ -32,9 +32,9 @@ namespace Frontier
         // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
         protected List<TargetCandidateInfo> _targetChandidateInfos = null;
         // 進行経路
-        protected List<(int routeIndex, int routeCost)> _proposedMoveRoute;
+        protected List<(int routeIndex, int routeCost)> _suggestedMoveRoute;
 
-        virtual protected float TARGET_ATTACK_BASE_VALUE { get; } = 0;
+        virtual protected float ATTACKABLE_TARGET_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
 
@@ -73,7 +73,7 @@ namespace Frontier
         /// <returns>進行予定の移動ルート情報</returns>
         public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
         {
-            return _proposedMoveRoute;
+            return _suggestedMoveRoute;
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Frontier
         {
             float evaluateValue = 0f;
 
-            // 与ダメージをそのまま評価値をして使用
+            // 与ダメージをそのまま評価値にして使用
             evaluateValue = Mathf.Max(0, selfParam.Atk - targetParam.Def);
 
             // 倒すことが出来る場合はボーナスを加算
@@ -182,7 +182,7 @@ namespace Frontier
         /// </summary>
         /// <param name="info">指定グリッド情報</param>
         /// <returns>評価値</returns>
-        virtual protected float GetEvaluateEnableTargetAttackBase(in Stage.GridInfo info) { return TARGET_ATTACK_BASE_VALUE; }
+        virtual protected float GetEvaluateEnableTargetAttackBase(in Stage.GridInfo info) { return ATTACKABLE_TARGET_VALUE; }
 
         virtual protected float GetEvaluateEnableDefeat(in Stage.GridInfo info) { return ENABLE_DEFEAT_VALUE; }
     }

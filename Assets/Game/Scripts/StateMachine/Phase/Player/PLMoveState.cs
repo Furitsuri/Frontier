@@ -47,7 +47,7 @@ namespace Frontier
 
             // 移動可能情報を登録及び表示
             bool isAttackable = !_selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
-            _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterTag, isAttackable);
+            _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
         }
 
@@ -107,7 +107,7 @@ namespace Frontier
                             // 選択グリッドを一時非表示
                             _stageCtrl.SetGridCursorActive(false);
                             // 移動アニメーション開始
-                            _selectPlayer.setAnimator(Character.ANIME_TAG.MOVE, true);
+                            _selectPlayer.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
                             // グリッド情報更新
                             _selectPlayer.tmpParam.gridIndex = destIndex;
 
@@ -127,7 +127,7 @@ namespace Frontier
 
                         if (_moveGridPos.Count <= _movingIndex)
                         {
-                            _selectPlayer.setAnimator(Character.ANIME_TAG.MOVE, false);
+                            _selectPlayer.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
                             _Phase = PLMovePhase.PL_MOVE_END;
                         }
                     }

@@ -24,8 +24,17 @@ namespace Frontier
             NUM
         }
 
+        [Header("スキルコントローラ")]
+        [SerializeField]
+        private SkillController _skillCtrl;
+
+        [Header("ファイル読込マネージャ")]
+        [SerializeField]
+        private FileReadManager _fileReadMgr;
+
         private BattlePhase _phase;
         private BattleCameraController _battleCameraCtrl;
+        private BattleTimeScaleController _battleTimeScaleCtrl = new();
         private StageController _stageCtrl;
         private PhaseManagerBase _currentPhaseManager;
         private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
@@ -41,6 +50,8 @@ namespace Frontier
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
         public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+        public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
+        public SkillController SkillCtrl => _skillCtrl;
 
         void Awake()
         {
@@ -61,21 +72,24 @@ namespace Frontier
             _escortTargetCharacterKey = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
 
             // スキルデータの読込
-            FileReadManager.Instance.SkillDataLord();
+            _fileReadMgr.SkillDataLord();
         }
 
         void Start()
         {
+            Debug.Assert(_skillCtrl != null);
+
             _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
-            _stageCtrl.Setting(this);
+            _stageCtrl.Init(this);
+            _skillCtrl.Init(this);
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             if (!Methods.IsDebugScene())
 #endif
             {
-                FileReadManager.Instance.PlayerLoad(_currentStageIndex, _stageCtrl.GetGridSize());
-                FileReadManager.Instance.EnemyLord(_currentStageIndex, _stageCtrl.GetGridSize());
+                _fileReadMgr.PlayerLoad(_currentStageIndex, _stageCtrl.GetGridSize());
+                _fileReadMgr.EnemyLord(_currentStageIndex, _stageCtrl.GetGridSize());
             }
 
             for (int i = 0; i < _phaseManagers.Length; ++i) _phaseManagers[i].Regist(this, _stageCtrl);

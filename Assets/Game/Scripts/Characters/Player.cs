@@ -65,17 +65,26 @@ namespace Frontier
                 _isPrevMoving = true;
             }
 
-            if (toggleAnimation) setAnimator(Character.ANIME_TAG.MOVE, _isPrevMoving);
+            if (toggleAnimation) setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, _isPrevMoving);
         }
 
-        override public void setAnimator(ANIME_TAG animTag)
+        /// <summary>
+        /// Trigger設定のアニメーション再生を行います
+        /// </summary>
+        /// <param name="animTag">アニメーター側で設定している遷移コンディションタグ</param>
+        override public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag)
         {
-            _animator.SetTrigger(_animNames[(int)animTag]);
+            _animator.SetTrigger(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]);
         }
 
-        override public void setAnimator(ANIME_TAG animTag, bool b)
+        /// <summary>
+        /// bool設定のアニメーション再生を行います
+        /// </summary>
+        /// <param name="animTag">アニメーター側で設定している遷移コンディションタグ</param>
+        /// <param name="b">bool値</param>
+        override public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b)
         {
-            _animator.SetBool(_animNames[(int)animTag], b);
+            _animator.SetBool(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag], b);
         }
 
         /// <summary>
@@ -89,6 +98,10 @@ namespace Frontier
             _btlMgr.RemovePlayerFromList(this);
         }
 
+        /// <summary>
+        /// 使用スキルを選択します
+        /// </summary>
+        /// <param name="type">攻撃、防御、常駐などのスキルタイプ</param>
         override public void SelectUseSkills(SituationType type)
         {
             KeyCode[] keyCodes = new KeyCode[Constants.EQUIPABLE_SKILL_MAX_NUM] { KeyCode.H, KeyCode.J, KeyCode.K, KeyCode.L };

@@ -1,11 +1,13 @@
 using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using TMPro.Examples;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static Frontier.Character;
 using static UnityEngine.GraphicsBuffer;
 
 namespace Frontier
@@ -17,7 +19,8 @@ namespace Frontier
             START,
             WAIT_ATTACK,
             ATTACK,
-            PARRY,
+            WAIT_PARRY,
+            EXEC_PARRY,
             COUNTER,
             DIE,
             WAIT_END,
@@ -106,11 +109,9 @@ namespace Frontier
                         StartAttack(_attackCharacter, _targetCharacter);
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.PARRY;
-                        else
-                        {
-                            _phase = Phase.ATTACK;
-                        }
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY;
+                        // それ以外は通常通り攻撃へ
+                        else _phase = Phase.ATTACK;
                     }
                     break;
                 case Phase.ATTACK:
@@ -119,7 +120,7 @@ namespace Frontier
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
                         // ガードスキルを使用時はガードモーションを戻す
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.setAnimator(Character.ANIME_TAG.GUARD, false);
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, false);
                         // 対象が死亡している場合は死亡処理へ
                         if (_targetCharacter.IsDead())
                         {
@@ -137,7 +138,24 @@ namespace Frontier
                         else _phase = Phase.WAIT_END;
                     }
                     break;
-                case Phase.PARRY:
+                case Phase.WAIT_PARRY:
+                     bool  isUpdateAttackEnd = _updateAttackerAttack(_departure, _destination);
+
+                    var parryCtrl = _btlMgr.SkillCtrl.ParryController;
+                    if (parryCtrl != null)
+                    {
+                        if( parryCtrl.IsEndParryEvent )
+                        {
+                            // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
+                            if (parryCtrl.Result == SkillParryController.JudgeResult.FAILED)
+                            {
+                                _phase = Phase.ATTACK;
+                            }
+                        }
+                    }
+                    break;
+                case Phase.EXEC_PARRY:
+
                     break;
                 case Phase.COUNTER:
                     if (_updateTargetAttack(_departure, _destination))
@@ -154,7 +172,7 @@ namespace Frontier
                     }
                     break;
                 case Phase.DIE:
-                    if (_targetCharacter.IsEndAnimation(Character.ANIME_TAG.DIE))
+                    if (_targetCharacter.IsEndAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG.DIE))
                     {
                         _phase = Phase.WAIT_END;
                     }
@@ -178,8 +196,8 @@ namespace Frontier
                     if (_btlCamCtrl.IsFadeEnd())
                     {
                         // 対戦相手設定をリセット
-                        _attackCharacter.ResetOpponentCharacter();
-                        _targetCharacter.ResetOpponentCharacter();
+                        _attackCharacter.ResetOnEndOfAttackSequence();
+                        _targetCharacter.ResetOnEndOfAttackSequence();
 
                         return true;
                     }
@@ -212,7 +230,7 @@ namespace Frontier
             }
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.setAnimator(Character.ANIME_TAG.GUARD, true);
+            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, true);
         }
 
         /// <summary>
