@@ -19,7 +19,8 @@ namespace Frontier
             START,
             WAIT_ATTACK,
             ATTACK,
-            WAIT_PARRY,
+            WAIT_PARRY_START,
+            WAIT_PARRY_END,
             EXEC_PARRY,
             COUNTER,
             DIE,
@@ -31,7 +32,9 @@ namespace Frontier
 
         private Phase _phase;
         private float _elapsedTime = 0f;
-        private bool _CounterConditions = false;
+        private bool _counterConditions = false;
+        private bool _parryConditions = false;
+        private bool _isJustParry = false;
         private BattleManager _btlMgr = null;
         private BattleCameraController _btlCamCtrl = null;
         private StageController _stageCtrl = null;
@@ -48,6 +51,13 @@ namespace Frontier
         private UpdateAttack _updateAttackerAttack = null;
         private UpdateAttack _updateTargetAttack = null;
 
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        /// <param name="btlMgr">バトルマネージャ</param>
+        /// <param name="stgCtrl">ステージコントローラ</param>
+        /// <param name="attackChara">攻撃キャラクター</param>
+        /// <param name="targetChara">被攻撃キャラクター</param>
         public void Init(BattleManager btlMgr, StageController stgCtrl, Character attackChara, Character targetChara)
         {
             _btlMgr = btlMgr;
@@ -66,12 +76,14 @@ namespace Frontier
             _attackCharacter.SetOpponentCharacter(_targetCharacter);
             _targetCharacter.SetOpponentCharacter(_attackCharacter);
             // カウンター条件の設定
-            _CounterConditions = (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER));
+            _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER);
+            // パリィ条件の設定
+            _parryConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY);
             // 攻撃更新処理の条件別設定
-            if (_CounterConditions && _attackCharacter.GetBullet() != null) _CounterConditions = _targetCharacter.GetBullet() != null;
+            if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
             if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.UpdateClosedAttack;
             else _updateAttackerAttack = _attackCharacter.UpdateRangedAttack;
-            if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.UpdateClosedAttack;
+            if (_targetCharacter.GetBullet() == null) _updateTargetAttack =  _targetCharacter.UpdateClosedAttack;
             else _updateTargetAttack = _targetCharacter.UpdateRangedAttack;
 
             _btlCamCtrl.StartAttackSequenceMode(attackChara, targetChara);
@@ -80,6 +92,8 @@ namespace Frontier
         // Update is called once per frame
         public bool Update()
         {
+            var parryCtrl = _btlMgr.SkillCtrl.ParryController;
+
             switch (_phase)
             {
                 case Phase.START:
@@ -88,8 +102,8 @@ namespace Frontier
                     float t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_ROTATIION_TIME);
                     t = Mathf.SmoothStep(0f, 1f, t);
 
-                    Quaternion destAttackerRot = Quaternion.LookRotation(_tgtCharaTransform.position - _atkCharaTransform.position);
-                    Quaternion destTargetRot = Quaternion.LookRotation(_atkCharaTransform.position - _tgtCharaTransform.position);
+                    Quaternion destAttackerRot  = Quaternion.LookRotation(_tgtCharaTransform.position - _atkCharaTransform.position);
+                    Quaternion destTargetRot    = Quaternion.LookRotation(_atkCharaTransform.position - _tgtCharaTransform.position);
                     _atkCharaTransform.rotation = Quaternion.Lerp(_atkCharaInitialRot, destAttackerRot, t);
                     _tgtCharaTransform.rotation = Quaternion.Lerp(_tgtCharaInitialRot, destTargetRot, t);
 
@@ -109,7 +123,7 @@ namespace Frontier
                         StartAttack(_attackCharacter, _targetCharacter);
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY;
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY_START;
                         // それ以外は通常通り攻撃へ
                         else _phase = Phase.ATTACK;
                     }
@@ -120,7 +134,7 @@ namespace Frontier
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
                         // ガードスキルを使用時はガードモーションを戻す
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, false);
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, false);
                         // 対象が死亡している場合は死亡処理へ
                         if (_targetCharacter.IsDead())
                         {
@@ -128,34 +142,68 @@ namespace Frontier
                             _phase = Phase.DIE;
                         }
                         // カウンタースキルが登録されている場合はカウンター処理へ
-                        else if (_CounterConditions)
+                        else if (_counterConditions)
                         {
-                            _btlMgr.ApplyDamageExpect(_targetCharacter, _attackCharacter);
-                            StartAttack(_targetCharacter, _attackCharacter);
+                            StartCounter(_attackCharacter, _targetCharacter);
 
                             _phase = Phase.COUNTER;
                         }
                         else _phase = Phase.WAIT_END;
                     }
                     break;
-                case Phase.WAIT_PARRY:
-                     bool  isUpdateAttackEnd = _updateAttackerAttack(_departure, _destination);
-
-                    var parryCtrl = _btlMgr.SkillCtrl.ParryController;
-                    if (parryCtrl != null)
+                case Phase.WAIT_PARRY_START:
+                    // パリィイベント開始まで更新
+                    // 攻撃側キャラクターの攻撃モーションからパリィ開始メソッドが呼ばれるため、
+                    // 開始されない(parryCtrl.IsActiveがfalse)まま、攻撃更新が行われることは想定外
+                    if ( _updateAttackerAttack(_departure, _destination) )
                     {
-                        if( parryCtrl.IsEndParryEvent )
+                        Debug.Assert(false);
+                        _phase = Phase.ATTACK;
+                    }
+
+                    if ( parryCtrl.IsActive )
+                    {
+                        _phase = Phase.WAIT_PARRY_END;
+                    }
+                    break;
+                case Phase.WAIT_PARRY_END:
+                    if (_updateAttackerAttack(_departure, _destination))
+                    {
+                        Debug.Assert(false);
+                        _phase = Phase.ATTACK;
+                    }
+
+                    if ( parryCtrl.IsEndParryEvent )
+                    {
+                        // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
+                        if (parryCtrl.Result == SkillParryController.JudgeResult.FAILED)
                         {
-                            // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                            if (parryCtrl.Result == SkillParryController.JudgeResult.FAILED)
-                            {
-                                _phase = Phase.ATTACK;
-                            }
+                            _phase = Phase.ATTACK;
+                        }
+                        else
+                        {
+                            _isJustParry = (parryCtrl.Result == SkillParryController.JudgeResult.JUST);
+
+                            // パリィ用更新に切り替えます
+                            ToggleParryUpdate(_attackCharacter, _targetCharacter);
+
+                            _phase = Phase.EXEC_PARRY;
                         }
                     }
                     break;
                 case Phase.EXEC_PARRY:
+                    if (_updateTargetAttack(_departure, _destination))
+                    {
+                        // カメラ対象とカメラパラメータを変更
+                        _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
+                        if (_attackCharacter.IsDead())
+                        {
+                            _diedCharacter = _attackCharacter;
+                            _phase = Phase.DIE;
+                        }
+                        else _phase = Phase.WAIT_END;
+                    }
                     break;
                 case Phase.COUNTER:
                     if (_updateTargetAttack(_departure, _destination))
@@ -221,16 +269,42 @@ namespace Frontier
         /// <param name="target">被攻撃キャラクター</param>
         private void StartAttack(Character attacker, Character target)
         {
-            if (attacker.GetBullet() != null) attacker.StartRangedAttack();
+            if (attacker.GetBullet() != null) attacker.StartRangedAttackSequence();
             else
             {
                 _departure = attacker.transform.position;
-                _destination = target.transform.position + target.transform.forward;
-                attacker.StartClosedAttack();
+                _destination = target.transform.position + target.transform.forward;    // 対象の前方1mを目標地点にする
+                attacker.StartClosedAttackSequence();
             }
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, true);
+            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, true);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="target"></param>
+        private void StartCounter(Character attacker, Character target)
+        {
+            // ダメージ予測をセット
+            _btlMgr.ApplyDamageExpect(target, attacker);
+
+            // 攻撃キャラと被攻撃キャラを入れ替えて開始
+            StartAttack(target, attacker);
+        }
+
+        /// <summary>
+        /// 攻撃キャラと被攻撃キャラ間の更新処理をパリィ用のものに切り替えます
+        /// </summary>
+        /// <param name="attacker">攻撃キャラクター</param>
+        /// <param name="target">被攻撃キャラクター</param>
+        private void ToggleParryUpdate(Character attacker, Character target)
+        {
+            // 更新用関数を切り替え
+            _updateAttackerAttack = _attackCharacter.UpdateParryOnAttacker;
+            _updateTargetAttack = _targetCharacter.UpdateParryOnTargeter;
         }
 
         /// <summary>

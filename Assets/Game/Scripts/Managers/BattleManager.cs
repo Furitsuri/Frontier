@@ -479,8 +479,8 @@ namespace Frontier
                 return;
             }
 
-            int targetDef = (int)((target.param.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
-            int attackerAtk = (int)((attacker.param.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
+            int targetDef = (int)Mathf.Floor((target.param.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.param.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
             int changeHP = (targetDef - attackerAtk);
 
             target.tmpParam.expectedChangeHP = Mathf.Min(changeHP, 0);

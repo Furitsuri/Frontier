@@ -9,6 +9,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static Frontier.Character;
 using static Frontier.SkillsData;
 
 namespace Frontier
@@ -75,6 +76,9 @@ namespace Frontier
             NUM,
         }
 
+        /// <summary>
+        /// 移動タイプ
+        /// </summary>
         public enum MOVE_TYPE
         {
             NORMAL = 0,
@@ -85,6 +89,9 @@ namespace Frontier
             NUM,
         }
 
+        /// <summary>
+        /// 近接攻撃更新用フェイズ
+        /// </summary>
         public enum CLOSED_ATTACK_PHASE
         {
             NONE = -1,
@@ -92,6 +99,19 @@ namespace Frontier
             CLOSINGE,
             ATTACK,
             DISTANCING,
+
+            NUM,
+        }
+
+        /// <summary>
+        /// パリィ更新用フェイズ
+        /// </summary>
+        public enum PARRY_PHASE
+        {
+            NONE = -1,
+
+            EXEC_PARRY,
+            AFTER_ATTACK,
 
             NUM,
         }
@@ -258,8 +278,6 @@ namespace Frontier
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands = new List<Command.COMMAND_TAG>();
         private readonly TimeScale _timeScale = new();
-        // 攻撃モーションの終了フラグ
-        protected bool _isEndAttackMotion = false;
         // 攻撃シーケンスにおける残り攻撃回数
         protected int _atkRemainingNum = 0;
         protected BattleManager _btlMgr = null;
@@ -268,6 +286,7 @@ namespace Frontier
         protected Bullet _bullet;
         protected Animator _animator;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
+        protected PARRY_PHASE _parryPhase;
         public Parameter param;
         public TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -434,26 +453,13 @@ namespace Frontier
         }
 
         /// <summary>
-        /// アニメーションを再生します
-        /// </summary>
-        /// <param name="animTag">アニメーションタグ</param>
-        virtual public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag) { }
-
-        /// <summary>
-        /// アニメーションを再生します
-        /// </summary>
-        /// <param name="animTag">アニメーションタグ</param>
-        /// <param name="b">トリガーアニメーションに対して使用</param>
-        virtual public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b) { }
-
-        /// <summary>
         /// 死亡処理を行います
         /// </summary>
         virtual public void Die() { }
 
         /// <summary>
         /// 対戦相手にダメージを与えるイベントを発生させます
-        /// ※攻撃アニメーションから呼び出し
+        /// ※攻撃アニメーションから呼び出されます
         /// </summary>
         virtual public void AttackOpponentEvent()
         {
@@ -470,18 +476,46 @@ namespace Frontier
                 if (_opponent.param.CurHP <= 0)
                 {
                     _opponent.param.CurHP = 0;
-                    _opponent.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DIE);
+                    _opponent.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
                 else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
                 {
-                    _opponent.setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DAMAGED);
+                    _opponent.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GET_HIT);
                 }
             }
 
             // ダメージUIを表示
             BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
             BattleUISystem.Instance.ToggleDamageUI(true);
+        }
+
+        /// <summary>
+        /// 対戦相手の攻撃をパリィ(弾く)するイベントを発生させます　※攻撃アニメーションから呼び出されます
+        /// </summary>
+        virtual public void ParryOpponentEvent()
+        {
+            if (_opponent == null)
+            {
+                Debug.Assert(false);
+            }
+
+            if (_btlMgr.SkillCtrl.ParryController.Result == SkillParryController.JudgeResult.FAILED)
+            {
+                return;
+            }
+
+            // 成功時のみパリィ挙動
+            _opponent.ParryRecieveEvent();
+        }
+
+        /// <summary>
+        /// パリィを受けた際のイベントを発生させます
+        /// </summary>
+        virtual public void ParryRecieveEvent()
+        {
+            _timeScale.Reset();
+            SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GET_HIT);
         }
 
         /// <summary>
@@ -514,7 +548,7 @@ namespace Frontier
             {
                 --_atkRemainingNum;
                 AnimDatas.ANIME_CONDITIONS_TAG[] attackAnimTags = new AnimDatas.ANIME_CONDITIONS_TAG[] { AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.DOUBLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.TRIPLE_ATTACK };
-                setAnimator(attackAnimTags[_atkRemainingNum]);
+                SetAnimator(attackAnimTags[_atkRemainingNum]);
             }
         }
 
@@ -528,6 +562,25 @@ namespace Frontier
         #endregion // VIRTUAL_PUBLIC_METHOD
 
         #region PUBLIC_METHOD
+
+        /// <summary>
+        /// アニメーションを再生します
+        /// </summary>
+        /// <param name="animTag">アニメーションタグ</param>
+        public void SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag)
+        {
+            _animator.SetTrigger(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]);
+        }
+
+        /// <summary>
+        /// アニメーションを再生します
+        /// </summary>
+        /// <param name="animTag">アニメーションタグ</param>
+        /// <param name="b">トリガーアニメーションに対して使用</param>
+        public void SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b)
+        {
+            _animator.SetBool(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag], b);
+        }
 
         /// <summary>
         /// キャラクターの位置を設定します
@@ -590,56 +643,52 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 近接攻撃を開始します
+        /// 近接攻撃シーケンスを開始します
         /// </summary>
-        public void StartClosedAttack()
+        public void StartClosedAttackSequence()
         {
-            _isEndAttackMotion = false;
-
             _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
             _elapsedTime = 0f;
 
-            setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
+            SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
         }
 
         /// <summary>
-        /// 遠隔攻撃を開始します
+        /// 遠隔攻撃シーケンスを開始します
         /// </summary>
-        public void StartRangedAttack()
+        public void StartRangedAttackSequence()
         {
             AnimDatas.ANIME_CONDITIONS_TAG[] attackAnimTags = new AnimDatas.ANIME_CONDITIONS_TAG[] { AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.DOUBLE_ATTACK, AnimDatas.ANIME_CONDITIONS_TAG.TRIPLE_ATTACK };
             _atkRemainingNum = skillModifiedParam.AtkNum - 1;   // 攻撃回数を1消費
             var attackAnimtag = attackAnimTags[_atkRemainingNum];
 
-            _isEndAttackMotion = false;
+            SetAnimator(attackAnimtag);
+        }
 
-            setAnimator(attackAnimtag);
+        /// <summary>
+        /// パリィシーケンスを開始します
+        /// </summary>
+        public void StartParrySequence()
+        {
+            _parryPhase = PARRY_PHASE.EXEC_PARRY;
+            _elapsedTime = 0f;
+
+            SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.PARRY);
+            // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
+            _timeScale.SetTimeScale(0.1f);
         }
 
         /// <summary>
         /// パリィ判定処理を開始します
         /// MEMO : モーションのイベントフラグから呼び出します
         /// </summary>
-        public void StartParryEvent()
+        public void StartParryJudgeEvent()
         {
             if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
             
             SkillParryController parryCtrl = _btlMgr.SkillCtrl.ParryController;
             SubscribeParryEvent(parryCtrl);
             parryCtrl.StartParryEvent(_opponent, this);
-        }
-
-        /// <summary>
-        /// パリィイベント中に現在のフレームレートを停止させます MEMO : モーションのイベントフラグから呼び出します
-        /// (パリィ判定終了前に攻撃判定フレームに到達するのを防ぐための処置です)
-        /// </summary>
-        public void StopFramrateOnParryEvent()
-        {
-            if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
-
-            SkillParryController parryCtrl = _btlMgr.SkillCtrl.ParryController;
-            SubscribeParryEvent(parryCtrl);
-            parryCtrl.DelayBattleTimeScale(0f);
         }
 
         /// <summary>
@@ -683,7 +732,8 @@ namespace Frontier
                     if (1.0f <= t)
                     {
                         _elapsedTime = 0f;
-                        setAnimator(attackAnimtag);
+                        SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
+                        SetAnimator(attackAnimtag);
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
                     }
@@ -692,7 +742,7 @@ namespace Frontier
                 case CLOSED_ATTACK_PHASE.ATTACK:
                     if (IsEndAttackAnimSequence())
                     {
-                        setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
+                        SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.DISTANCING;
                     }
@@ -720,8 +770,8 @@ namespace Frontier
         /// <summary>
         /// 遠隔攻撃時の流れを更新します
         /// </summary>
-        /// <param name="departure">近接攻撃の開始地点</param>
-        /// <param name="destination">近接攻撃の終了地点</param>
+        /// <param name="departure">遠隔攻撃の開始地点</param>
+        /// <param name="destination">遠隔攻撃の終了地点</param>
         /// <returns>終了判定</returns>
         public bool UpdateRangedAttack(in Vector3 departure, in Vector3 destination)
         {
@@ -735,12 +785,70 @@ namespace Frontier
             // 攻撃終了した場合はWaitに切り替えて終了通知
             if (IsEndAttackAnimSequence())
             {
-                setAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+                SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
 
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 戦闘において、攻撃した側がパリィを受けた際の行動を更新します
+        /// MEMO : パリィを受けた側は基本的に行動しないためfalseを返すのみ
+        /// </summary>
+        /// <param name="departure">攻撃開始座標</param>
+        /// <param name="destination">攻撃目標座標</param>
+        /// <returns>終了判定</returns>
+        public bool UpdateParryOnAttacker(in Vector3 departure, in Vector3 destination)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 戦闘において、攻撃された側がパリィを行った際の行動を更新します
+        /// </summary>
+        /// <param name="departure">攻撃開始座標</param>
+        /// <param name="destination">攻撃目標座標</param>
+        /// <returns>終了判定</returns>
+        public bool UpdateParryOnTargeter(in Vector3 departure, in Vector3 destination)
+        {
+            bool isJustParry = false;
+
+            switch( _parryPhase )
+            {
+                case PARRY_PHASE.EXEC_PARRY:
+                    if (isJustParry)
+                    {
+                        SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK);
+
+                        _parryPhase = PARRY_PHASE.AFTER_ATTACK;
+                    }
+                    else {
+                        if (IsEndAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG.PARRY))
+                        {
+                            SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+
+                            return true;
+                        }
+                    }
+                    break;
+                case PARRY_PHASE.AFTER_ATTACK:
+                    break;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// パリィ処理の都合上でアニメーションを停止させます ※モーションから呼び出されます
+        /// </summary>
+        public void StopAnimationOnParry()
+        {
+            if(!_btlMgr.SkillCtrl.ParryController.IsJudgeEnd())
+            {
+                _timeScale.Stop();
+            }
         }
 
         /// <summary>

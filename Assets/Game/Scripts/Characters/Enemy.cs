@@ -41,16 +41,6 @@ namespace Frontier
             EmAI.Init(this, _btlMgr, _stageCtrl);
         }
 
-        override public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag)
-        {
-            _animator.SetTrigger(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]);
-        }
-
-        override public void setAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b)
-        {
-            _animator.SetBool(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag], b);
-        }
-
         /// <summary>
         /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
         /// MEMO : モーションのイベントフラグから呼び出します

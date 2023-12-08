@@ -12,7 +12,7 @@ public class BattleTimeScaleController
 
     /// <summary>
     /// _timeScaleの値が変更された際に自動で呼び出されるメソッドです
-    /// 購読対象になっている全てのインスタンスのタイムスケールを指定された_timeScale値に変更します
+    /// 登録されている全てのインスタンスのタイムスケールを指定された_timeScale値に変更します
     /// </summary>
     void Notify()
     {
