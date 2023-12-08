@@ -49,6 +49,8 @@ namespace Frontier
             _shrinkRingSizeID = Shader.PropertyToID("_ShrinkRingSizeRate");
             _shrinkWidthID = Shader.PropertyToID("_ShrinkRingWidth");
 
+            _ringMaterial.SetFloat(_shrinkRingSizeID, 1f);
+
             _enabled = false;
             _isStopShrink = false;
             _initTime = _curtime = shrinkTime;

@@ -33,43 +33,59 @@ namespace Frontier
         [SerializeField]
         private float _delayTimeScale = 0.1f;
 
+        [Header("失敗判定に自動遷移するサイズ倍率")]
+        [SerializeField]
+        private float _radiusRateAutoTransitionToFail = 0.75f;
+
         private ParryRingEffect _effect;
         private BattleManager _btlMgr = null;
         private Character _useParryCharacter = null;
         private Character _attackCharacter = null;
-        private JudgeResult _judgeResult = JudgeResult.FAILED;
+        private JudgeResult _judgeResult = JudgeResult.NONE;
         private (float inner, float outer) _judgeRingSuccessRange;
         private (float inner, float outer) _judgeRingJustRange;
+        private float _radiusThresholdOnFail;
         private float _showUITime = 1.5f;
         // パリィイベント終了時のデリゲート
         public event EventHandler<EventArgs> ProcessCompleted;
         // 結果の取得
         public JudgeResult Result => _judgeResult;
-
         public bool IsEndParryEvent => (_judgeResult != JudgeResult.NONE);
+        public bool IsActive => gameObject.activeSelf;
 
         // Update is called once per frame
         void Update()
         {
+            float shrinkRadius = _effect.GetCurShrinkRingRadius();
+            bool isUpdateEnd = false;
+
             // キーが押されたタイミングで判定
             if (Input.GetKeyUp(KeyCode.Space))
             {
-                float shrinkRadius = _effect.GetCurShrinkRingRadius();
-                Debug.Log( shrinkRadius );
+                isUpdateEnd = true;
 
-                // 判定とUIへの表示
-                _ui.gameObject.SetActive(true);
+                // 判定
                 _judgeResult = JudgeResult.FAILED;
-                if(_judgeRingJustRange.inner <= shrinkRadius && shrinkRadius <= _judgeRingJustRange.outer)
+                if (_judgeRingJustRange.inner <= shrinkRadius && shrinkRadius <= _judgeRingJustRange.outer)
                 {
                     _judgeResult = JudgeResult.JUST;
                 }
-                else if( _judgeRingSuccessRange.inner <= shrinkRadius && shrinkRadius <= _judgeRingSuccessRange.outer )
+                else if (_judgeRingSuccessRange.inner <= shrinkRadius && shrinkRadius <= _judgeRingSuccessRange.outer)
                 {
                     _judgeResult = JudgeResult.SUCCESS;
                 }
-                _ui.ShowResult(_judgeResult);
+            }
+            else if(shrinkRadius < _radiusThresholdOnFail)
+            {
+                isUpdateEnd = true;
 
+                _judgeResult = JudgeResult.FAILED;
+            }
+
+            if(isUpdateEnd)
+            {
+                _ui.gameObject.SetActive(true);
+                _ui.ShowResult(_judgeResult);
                 // エフェクト停止
                 _effect.StopShrink();
                 // UI以外の表示物の更新時間スケールを停止
@@ -91,7 +107,8 @@ namespace Frontier
         void FixedUpdate()
         {
             // フレームレートによるズレを防ぐためFixedで更新
-            _effect.FixedUpdateEffect();    
+            _effect.FixedUpdateEffect();
+
         }
 
         void OnDestroy()
@@ -120,6 +137,9 @@ namespace Frontier
 
             // シェーダーに適応
             _effect.SetJudgeRingRange(_judgeRingSuccessRange);
+            // 失敗判定に自動遷移する半径の閾値を決定
+            // MEMO : 成功範囲の中央値と指定倍率との積とする
+            _radiusThresholdOnFail = ((_judgeRingSuccessRange.inner + _judgeRingSuccessRange.outer) * 0.5f) * _radiusRateAutoTransitionToFail;
         }
 
         /// <summary>
@@ -148,8 +168,8 @@ namespace Frontier
                     useParryChara.skillModifiedParam.DefMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param2;
                     break;
                 case SkillParryController.JudgeResult.JUST:
-                    useParryChara.skillModifiedParam.AtkMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param3;
-                    attackChara.skillModifiedParam.AtkMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
+                    attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
+                    useParryChara.skillModifiedParam.AtkMagnification   *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param3;
                     break;
                 default:
                     Debug.Assert(false);
@@ -190,9 +210,11 @@ namespace Frontier
             Camera.main.gameObject.AddComponent<ParryRingEffect>();
             _effect = Camera.main.gameObject.GetComponent<ParryRingEffect>();
             Debug.Assert(_effect != null);
-            // MEMO : _effectはアタッチのタイミングの都合上Initではなくここで初期化
+            // MEMO : _effect, 及び_uiはアタッチのタイミングの都合上Initではなくここで初期化
             _effect.Init(_shrinkTime);
             _effect.SetEnable(true);
+            _ui.Init(_showUITime);
+            _ui.gameObject.SetActive(false);
 
             // 防御側の防御力と攻撃側の攻撃力からパリィ判定範囲を算出して設定
             int selfDef = (int)Mathf.Floor( (_useParryCharacter.param.Def + _useParryCharacter.modifiedParam.Def) * _useParryCharacter.skillModifiedParam.DefMagnification );
@@ -201,6 +223,8 @@ namespace Frontier
 
             // パリィ中のスローモーション速度を設定
             DelayBattleTimeScale(_delayTimeScale);
+            // パリィモーションの開始
+            _useParryCharacter.StartParrySequence();
             // 結果をNONEに初期化
             _judgeResult = JudgeResult.NONE;
         }
@@ -222,11 +246,21 @@ namespace Frontier
         /// </summary>
         public void EndParryEvent()
         {
+            // タイムスケールを元に戻す
             ResetBattleTimeScale();
 
             _effect.Destroy();
 
-            gameObject.SetActive(false);
+             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool IsJudgeEnd()
+        {
+            return _judgeResult != JudgeResult.NONE;
         }
     }
 }

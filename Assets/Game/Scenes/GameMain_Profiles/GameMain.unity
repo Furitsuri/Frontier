@@ -1083,7 +1083,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _ui: {fileID: 3704560549466589421}
   _shrinkTime: 3
-  _delayTimeScale: 0.1
+  _delayTimeScale: 0
 --- !u!1 &4751217071345743920
 GameObject:
   m_ObjectHideFlags: 0

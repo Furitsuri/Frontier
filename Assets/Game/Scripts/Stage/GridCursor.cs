@@ -1,5 +1,7 @@
 using UnityEngine;
 
+#pragma warning disable 0618
+
 namespace Frontier.Stage
 {
     public class GridCursor : MonoBehaviour

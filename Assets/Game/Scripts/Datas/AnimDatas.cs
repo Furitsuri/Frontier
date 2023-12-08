@@ -18,7 +18,8 @@ namespace Frontier
             DOUBLE_ATTACK,
             TRIPLE_ATTACK,
             GUARD,
-            DAMAGED,
+            PARRY,
+            GET_HIT,
             DIE,
 
             NUM,
@@ -35,6 +36,7 @@ namespace Frontier
             "DoubleAttack",
             "TripleAttack",
             "Guard",
+            "Parry",
             "GetHit",
             "Die"
         };
