@@ -253,18 +253,21 @@ namespace Frontier
         [System.Serializable]
         public struct CameraParameter
         {
-            // UI表示用カメラ長さ(Y方向)
+            [Header("攻撃シーケンス時カメラオフセット")]
+            public Vector3 OffsetOnAtkSequence;
+            [Header("パラメータ表示UI用カメラオフセット(Y座標)")]
             public float UICameraLengthY;
-            // UI表示用カメラ長さ(Z方向)
+            [Header("パラメータ表示UI用カメラオフセット(Z座標)")]
             public float UICameraLengthZ;
             // UI表示用カメラターゲット(Y方向)
             public float UICameraLookAtCorrectY;
 
-            public CameraParameter(float lengthY, float lengthZ, float lookAtCorrectY)
+            public CameraParameter(in Vector3  offset, float lengthY, float lengthZ, float lookAtCorrectY)
             {
-                UICameraLengthY = lengthY;
-                UICameraLengthZ = lengthZ;
-                UICameraLookAtCorrectY = lookAtCorrectY;
+                OffsetOnAtkSequence     = offset;
+                UICameraLengthY         = lengthY;
+                UICameraLengthZ         = lengthZ;
+                UICameraLookAtCorrectY  = lookAtCorrectY;
             }
         }
 

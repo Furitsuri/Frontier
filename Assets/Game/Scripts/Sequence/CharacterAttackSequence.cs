@@ -282,10 +282,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// 被攻撃キャラからのカウンター処理を開始します
         /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="target"></param>
+        /// <param name="attacker">攻撃キャラクター</param>
+        /// <param name="target">被攻撃キャラクター</param>
         private void StartCounter(Character attacker, Character target)
         {
             // ダメージ予測をセット
@@ -303,8 +303,8 @@ namespace Frontier
         private void ToggleParryUpdate(Character attacker, Character target)
         {
             // 更新用関数を切り替え
-            _updateAttackerAttack = _attackCharacter.UpdateParryOnAttacker;
-            _updateTargetAttack = _targetCharacter.UpdateParryOnTargeter;
+            _updateAttackerAttack   = _attackCharacter.UpdateParryOnAttacker;
+            _updateTargetAttack     = _targetCharacter.UpdateParryOnTargeter;
         }
 
         /// <summary>
@@ -362,14 +362,14 @@ namespace Frontier
             }
 
             // 味方は奥行手前側、敵は奥行奥側の立ち位置とする
-            Transform allyTransform = ally.transform;
+            Transform allyTransform     = ally.transform;
             Transform opponentTransform = opponent.transform;
-            allyTransform.position = centralPos + new Vector3(0f, 0f, -_stageCtrl.BattlePosLengthFromCentral);
-            opponentTransform.position = centralPos + new Vector3(0f, 0f, _stageCtrl.BattlePosLengthFromCentral);
-            allyTransform.rotation = Quaternion.LookRotation(centralPos - allyTransform.position);
-            opponentTransform.rotation = Quaternion.LookRotation(centralPos - opponentTransform.position);
-            // 戦闘フィールドのカメラ設定に適合させる
-            _btlCamCtrl.AdaptBattleFieldSetting(attacker, target);
+            allyTransform.position      = centralPos + new Vector3(0f, 0f, -_stageCtrl.BattlePosLengthFromCentral);
+            opponentTransform.position  = centralPos + new Vector3(0f, 0f, _stageCtrl.BattlePosLengthFromCentral);
+            allyTransform.rotation      = Quaternion.LookRotation(centralPos - allyTransform.position);
+            opponentTransform.rotation  = Quaternion.LookRotation(centralPos - opponentTransform.position);
+            // カメラパラメータを戦闘フィールド用に設定
+            _btlCamCtrl.AdaptBattleFieldSetting();
         }
 
         /// <summary>
