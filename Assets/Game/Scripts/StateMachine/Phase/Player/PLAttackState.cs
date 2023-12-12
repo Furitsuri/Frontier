@@ -21,6 +21,11 @@ namespace Frontier
         private Character _targetCharacter = null;
         private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
 
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        /// <param name="btlMgr">バトルマネージャ</param>
+        /// <param name="stgCtrl">ステージコントローラ</param>
         override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
             var btlUIInstance = BattleUISystem.Instance;

@@ -221,7 +221,7 @@ namespace Frontier
             int oppoAtk = (int)Mathf.Floor( (_attackCharacter.param.Atk + _attackCharacter.modifiedParam.Atk) * _attackCharacter.skillModifiedParam.AtkMagnification );
             CalcurateParryRingParam(selfDef, oppoAtk);
 
-            // パリィ中のスローモーション速度を設定
+            // パリィ中のキャラクタースローモーション速度を設定
             DelayBattleTimeScale(_delayTimeScale);
             // パリィモーションの開始
             _useParryCharacter.StartParrySequence();
