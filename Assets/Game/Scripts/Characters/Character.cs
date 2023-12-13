@@ -479,7 +479,7 @@ namespace Frontier
                 if (_opponent.param.CurHP <= 0)
                 {
                     _opponent.param.CurHP = 0;
-                    _opponent.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DIE);
+                    _opponent.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DIE, true);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
                 else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
