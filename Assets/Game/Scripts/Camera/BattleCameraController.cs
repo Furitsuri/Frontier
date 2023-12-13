@@ -13,30 +13,26 @@ namespace Frontier
 {
     public class BattleCameraController : Singleton<BattleCameraController>
     {
+        /// <summary>
+        /// カメラのモード
+        /// </summary>
         public enum CameraMode
         {
-            FOLLOWING = 0,
-            CHARACTER_MOVE,
-            ATTACK_SEQUENCE,
+            FOLLOWING = 0,      // 選択グリッド追跡状態
+            CHARACTER_MOVE,     // キャラクター移動状態
+            ATTACK_SEQUENCE,    // 戦闘状態
 
             NUM
         }
 
+        /// <summary>
+        /// 攻撃シーケンスにおけるカメラ処理フェイズ
+        /// </summary>
         enum AttackSequenceCameraPhase
         {
-            START = 0,
-            FADE_ATTACK,
-            END,
-
-            NUM
-        }
-
-        enum AttackType
-        {
-            ALLY_CLOSE_ATTACK,
-            ALLY_RANGED_ATTACK,
-            OPPONENT_CLOSE_ATTACK,
-            OPPONENT_RANGED_ATTACK,
+            START = 0,      // 戦闘状態に移行開始～戦闘開始まで
+            BATTLE_FIELD,   // 戦闘中～戦闘終了まで
+            END,            // 戦闘終了後～ステージ状態に遷移まで
 
             NUM
         }
@@ -179,24 +175,26 @@ namespace Frontier
                             BattleUISystem.Instance.TogglePlayerParameter(true);
                             BattleUISystem.Instance.ToggleEnemyParameter(true);
                             // 戦闘フィールドに移行
-                            _atkCameraPhase = AttackSequenceCameraPhase.FADE_ATTACK;
+                            _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
                         }
                     }
                     break;
 
-                case AttackSequenceCameraPhase.FADE_ATTACK:
-                    if (_cameraBaseTransform == null || _lookAtTransform == null)
+                case AttackSequenceCameraPhase.BATTLE_FIELD:
                     {
-                        return;
+                        if (_cameraBaseTransform == null || _lookAtTransform == null)
+                        {
+                            Debug.Assert(false);
+                            return;
+                        }
+
+                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + Time.deltaTime, 0f, _atkCameraLerpDuration);
+                        var lerpRate = _fadeElapsedTime / _atkCameraLerpDuration;
+                        var nextCameraPosition = _cameraBaseTransform.position + _cameraOffset;
+                        _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, nextCameraPosition, lerpRate);
+                        _lookAtPosition = Vector3.Lerp(_prevLookAtPosition, _lookAtTransform.position, lerpRate);
+                        _mainCamera.transform.LookAt(_lookAtPosition);
                     }
-
-                    _fadeElapsedTime                = Mathf.Clamp(_fadeElapsedTime + Time.deltaTime, 0f, _atkCameraLerpDuration);
-                    var lerpRate                    = _fadeElapsedTime / _atkCameraLerpDuration;
-                    var nextCameraPosition          = _cameraBaseTransform.position + _cameraOffset;
-                    _mainCamera.transform.position  = Vector3.Lerp(_prevCameraPosition, nextCameraPosition, lerpRate);
-                    _lookAtPosition                 = Vector3.Lerp(_prevLookAtPosition, _lookAtTransform.position, lerpRate);
-                    _mainCamera.transform.LookAt(_lookAtPosition);
-
                     break;
 
                 case AttackSequenceCameraPhase.END:
@@ -205,7 +203,7 @@ namespace Frontier
                         var fadeRate = _fadeElapsedTime / _fadeDuration;
                         _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, fadeRate);
                         _mainCamera.transform.LookAt(_lookAtPosition);
-                        // STARTの反対
+                        // STARTの反対の処理
                         if (fadeRate < 1f - _mosaicStartFadeRate)
                         {
                             _mosaicEffectScript.ToggleEnable(true);
@@ -245,18 +243,6 @@ namespace Frontier
 
             _prevCameraPosition = transform.position;
             _lookAtPosition = pos;
-            _followingPosition = _lookAtPosition + _offset;
-            _followElapsedTime = 0.0f;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="length"></param>
-        public void SetOffsetLength(float length)
-        {
-            _offsetLength = length;
-            _offset = _offset.normalized * _offsetLength;
             _followingPosition = _lookAtPosition + _offset;
             _followElapsedTime = 0.0f;
         }
@@ -375,7 +361,7 @@ namespace Frontier
         /// <returns>遷移したか否か</returns>
         public bool IsFadeAttack()
         {
-            return _mode == CameraMode.ATTACK_SEQUENCE && _atkCameraPhase == AttackSequenceCameraPhase.FADE_ATTACK;
+            return _mode == CameraMode.ATTACK_SEQUENCE && _atkCameraPhase == AttackSequenceCameraPhase.BATTLE_FIELD;
         }
 
         /// <summary>
