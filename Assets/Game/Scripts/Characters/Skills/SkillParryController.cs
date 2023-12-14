@@ -182,8 +182,7 @@ namespace Frontier
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="self">パリィ発動キャラクター</param>
-        /// <param name="opponent">対戦相手</param>
+        /// <param name="btlMgr">バトルマネージャ</param>
         public void Init(BattleManager btlMgr)
         {
             _btlMgr = btlMgr;
@@ -198,7 +197,7 @@ namespace Frontier
         /// <summary>
         /// パリィ判定処理を開始します
         /// </summary>
-        /// <param name="self">パリィを行うキャラクター</param>
+        /// <param name="useCharacter">パリィを行うキャラクター</param>
         /// <param name="opponent">対戦相手</param>
         public void StartParryEvent(Character useCharacter, Character opponent)
         {
