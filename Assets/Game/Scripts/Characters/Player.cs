@@ -65,7 +65,7 @@ namespace Frontier
                 _isPrevMoving = true;
             }
 
-            if (toggleAnimation) SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, _isPrevMoving);
+            if (toggleAnimation) AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, _isPrevMoving);
         }
 
         /// <summary>

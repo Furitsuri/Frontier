@@ -50,7 +50,7 @@ namespace Frontier
             // 処理軽減のためtranformをキャッシュ
             _EMTransform = _enemy.transform;
             // 移動アニメーション開始
-            _enemy.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
+            _enemy.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
             // グリッド情報更新
             _enemy.tmpParam.gridIndex = _enemy.EmAI.GetDestinationGridIndex();
             // 選択グリッドを表示
@@ -87,7 +87,7 @@ namespace Frontier
 
                         if (_moveGridPos.Count <= _movingIndex)
                         {
-                            _enemy.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
+                            _enemy.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
                             _Phase = EMMovePhase.EM_MOVE_END;
                         }
                     }
