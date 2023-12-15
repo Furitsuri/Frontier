@@ -92,7 +92,7 @@ Material:
     - _ShrinkIsRing: 1
     - _ShrinkOuterRadius: 0
     - _ShrinkOutlineWidth: 0.1
-    - _ShrinkRingSizeRate: 0.5266671
+    - _ShrinkRingSizeRate: 0.5333338
     - _ShrinkRingWidth: 0.006
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

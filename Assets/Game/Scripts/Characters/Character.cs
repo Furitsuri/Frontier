@@ -274,22 +274,23 @@ namespace Frontier
         [SerializeField]
         private GameObject _bulletObject;
 
-        private bool _isTransitNextPhaseCamera = false;
-        private bool _isOrderedRotation = false;
-        private bool _isAttacked = false;
-        private float _elapsedTime = 0f;
-        private Quaternion _orderdRotation;
-        private List<(Material material, Color originalColor)> _textureMaterialsAndColors = new List<(Material, Color)>();
-        private List<Command.COMMAND_TAG> _executableCommands = new List<Command.COMMAND_TAG>();
-        private readonly TimeScale _timeScale = new();
+        private bool _isTransitNextPhaseCamera  = false;
+        private bool _isOrderedRotation         = false;
+        private bool _isAttacked                = false;
+        private float _elapsedTime              = 0f;
+        private readonly TimeScale _timeScale   = new TimeScale();
+        private Quaternion _orderdRotation      = Quaternion.identity;
+        private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
+        private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         // 攻撃シーケンスにおける残り攻撃回数
-        protected int _atkRemainingNum = 0;
-        protected BattleManager _btlMgr = null;
-        protected StageController _stageCtrl = null;
-        protected Character _opponent;
-        protected Bullet _bullet;
+        protected int _atkRemainingNum          = 0;
+        protected BattleManager _btlMgr         = null;
+        protected StageController _stageCtrl    = null;
+        protected Character _opponent           = null;
+        protected Bullet _bullet                = null;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase;
+        protected SkillParryController.JudgeResult _parryResult;
         public Parameter param;
         public TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -430,8 +431,10 @@ namespace Frontier
         /// </summary>
         /// <param name="sender">呼び出しを行うパリィイベントコントローラ</param>
         /// <param name="e">イベントハンドラ用オブジェクト(この関数ではempty)</param>
-        void ParryEventProcessCompleted( object sender, EventArgs e )
+        void ParryEventProcessCompleted( object sender, SkillParryCtrlEventArgs e )
         {
+            _parryResult = e.Result;
+
             SkillParryController parryCtrl = sender as SkillParryController;
             parryCtrl.EndParryEvent();
 
@@ -501,12 +504,15 @@ namespace Frontier
         /// </summary>
         virtual public void ParryOpponentEvent()
         {
+            // NONE以外の結果が通知されているはず
+            Debug.Assert(_parryResult != SkillParryController.JudgeResult.NONE);
+
             if (_opponent == null)
             {
                 Debug.Assert(false);
             }
 
-            if (_btlMgr.SkillCtrl.ParryController.Result == SkillParryController.JudgeResult.FAILED)
+            if (_parryResult == SkillParryController.JudgeResult.FAILED)
             {
                 return;
             }

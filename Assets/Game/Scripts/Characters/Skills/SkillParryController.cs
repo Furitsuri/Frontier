@@ -6,6 +6,9 @@ using UnityEngine.Playables;
 
 namespace Frontier
 {
+    /// <summary>
+    /// パリィスキルの処理を行います
+    /// </summary>
     public class SkillParryController : MonoBehaviour
     {
         /// <summary>
@@ -37,17 +40,20 @@ namespace Frontier
         [SerializeField]
         private float _radiusRateAutoTransitionToFail = 0.75f;
 
-        private ParryRingEffect _effect;
-        private BattleManager _btlMgr = null;
-        private Character _useParryCharacter = null;
-        private Character _attackCharacter = null;
-        private JudgeResult _judgeResult = JudgeResult.NONE;
+        [Header("結果を表示する秒数")]
+        [SerializeField]
+        private float _showUITime = 1.5f;
+
+        private float _radiusThresholdOnFail    = 0f;
+        private ParryRingEffect _effect         = null;
+        private BattleManager _btlMgr           = null;
+        private Character _useParryCharacter    = null;
+        private Character _attackCharacter      = null;
+        private JudgeResult _judgeResult        = JudgeResult.NONE;
         private (float inner, float outer) _judgeRingSuccessRange;
         private (float inner, float outer) _judgeRingJustRange;
-        private float _radiusThresholdOnFail;
-        private float _showUITime = 1.5f;
         // パリィイベント終了時のデリゲート
-        public event EventHandler<EventArgs> ProcessCompleted;
+        public event EventHandler<SkillParryCtrlEventArgs> ProcessCompleted;
         // 結果の取得
         public JudgeResult Result => _judgeResult;
         public bool IsEndParryEvent => (_judgeResult != JudgeResult.NONE);
@@ -56,14 +62,27 @@ namespace Frontier
         // Update is called once per frame
         void Update()
         {
+            // UI表示終了
+            if (_ui.IsShowEnd())
+            {
+                SkillParryCtrlEventArgs args = new SkillParryCtrlEventArgs();
+                args.Result = _judgeResult;
+
+                // 結果と共にイベント終了を呼び出し元に通知
+                OnProcessCompleted(args);
+
+                // MonoBehaviorを無効に
+                gameObject.SetActive(false);
+            }
+
+            // 結果が既に出ている場合はここで終了
+            if ( IsJudgeEnd() ) return;
+
             float shrinkRadius = _effect.GetCurShrinkRingRadius();
-            bool isUpdateEnd = false;
 
             // キーが押されたタイミングで判定
             if (Input.GetKeyUp(KeyCode.Space))
             {
-                isUpdateEnd = true;
-
                 // 判定
                 _judgeResult = JudgeResult.FAILED;
                 if (_judgeRingJustRange.inner <= shrinkRadius && shrinkRadius <= _judgeRingJustRange.outer)
@@ -77,30 +96,22 @@ namespace Frontier
             }
             else if(shrinkRadius < _radiusThresholdOnFail)
             {
-                isUpdateEnd = true;
-
-                _judgeResult = JudgeResult.FAILED;
+                _judgeResult    = JudgeResult.FAILED;
             }
 
-            if(isUpdateEnd)
+            if( IsJudgeEnd() )
             {
                 _ui.gameObject.SetActive(true);
                 _ui.ShowResult(_judgeResult);
+
                 // エフェクト停止
                 _effect.StopShrink();
+
                 // UI以外の表示物の更新時間スケールを停止
                 DelayBattleTimeScale(0f);
+
                 // パリィ結果によるパラメータ変動を各キャラクターに適応
                 ApplyModifiedParamFromResult(_useParryCharacter, _attackCharacter, _judgeResult);
-                // 結果と共にイベント終了を呼び出し元に通知
-                OnProcessCompleted(EventArgs.Empty);
-            }
-
-            // UI表示終了
-            if (_ui.IsShowEnd())
-            {
-                enabled = false;
-                OnDestroy();
             }
         }
 
@@ -108,12 +119,6 @@ namespace Frontier
         {
             // フレームレートによるズレを防ぐためFixedで更新
             _effect.FixedUpdateEffect();
-
-        }
-
-        void OnDestroy()
-        {
-            ResetBattleTimeScale();
         }
 
         /// <summary>
@@ -146,7 +151,7 @@ namespace Frontier
         /// パリィ判定終了時に呼び出すイベントハンドラ
         /// </summary>
         /// <param name="e">イベントオブジェクト</param>
-        void OnProcessCompleted(EventArgs e )
+        void OnProcessCompleted( SkillParryCtrlEventArgs e )
         {
             ProcessCompleted ?.Invoke( this, e );
         }
@@ -201,14 +206,15 @@ namespace Frontier
         /// <param name="opponent">対戦相手</param>
         public void StartParryEvent(Character useCharacter, Character opponent)
         {
-            _useParryCharacter = useCharacter;
-            _attackCharacter = opponent;
-
             gameObject.SetActive(true);
+            _useParryCharacter  = useCharacter;
+            _attackCharacter    = opponent;
+
             // パリィエフェクトのシェーダー情報をカメラに描画するため、メインカメラにアタッチ
             Camera.main.gameObject.AddComponent<ParryRingEffect>();
             _effect = Camera.main.gameObject.GetComponent<ParryRingEffect>();
             Debug.Assert(_effect != null);
+
             // MEMO : _effect, 及び_uiはアタッチのタイミングの都合上Initではなくここで初期化
             _effect.Init(_shrinkTime);
             _effect.SetEnable(true);
@@ -222,8 +228,10 @@ namespace Frontier
 
             // パリィ中のキャラクタースローモーション速度を設定
             DelayBattleTimeScale(_delayTimeScale);
+
             // パリィモーションの開始
             _useParryCharacter.StartParrySequence();
+
             // 結果をNONEに初期化
             _judgeResult = JudgeResult.NONE;
         }
@@ -249,17 +257,23 @@ namespace Frontier
             ResetBattleTimeScale();
 
             _effect.Destroy();
-
-             gameObject.SetActive(false);
         }
 
         /// <summary>
-        /// 
+        /// 判定が終了したかを返します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>判定が終了したか</returns>
         public bool IsJudgeEnd()
         {
             return _judgeResult != JudgeResult.NONE;
         }
+    }
+
+    /// <summary>
+    /// Skill`ParryControllerの結果通知に使用します
+    /// </summary>
+    public class SkillParryCtrlEventArgs : EventArgs
+    {
+        public SkillParryController.JudgeResult Result { get; set; }
     }
 }
