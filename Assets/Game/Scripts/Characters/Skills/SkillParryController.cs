@@ -54,9 +54,6 @@ namespace Frontier
         private (float inner, float outer) _judgeRingJustRange;
         // パリィイベント終了時のデリゲート
         public event EventHandler<SkillParryCtrlEventArgs> ProcessCompleted;
-        // 結果の取得
-        public JudgeResult Result => _judgeResult;
-        public bool IsEndParryEvent => (_judgeResult != JudgeResult.NONE);
         public bool IsActive => gameObject.activeSelf;
 
         // Update is called once per frame

@@ -290,7 +290,6 @@ namespace Frontier
         protected Bullet _bullet                = null;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase;
-        protected SkillParryController.JudgeResult _parryResult;
         public Parameter param;
         public TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -298,6 +297,8 @@ namespace Frontier
         public CameraParameter camParam;
         // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public bool IsDeclaredDead { get; set; } = false;
+        // パリィ結果
+        public SkillParryController.JudgeResult ParryResult { get; set; } = SkillParryController.JudgeResult.NONE;
         public AnimationController AnimCtrl { get; } = new AnimationController();
 
         // 攻撃用アニメーションタグ
@@ -433,7 +434,7 @@ namespace Frontier
         /// <param name="e">イベントハンドラ用オブジェクト(この関数ではempty)</param>
         void ParryEventProcessCompleted( object sender, SkillParryCtrlEventArgs e )
         {
-            _parryResult = e.Result;
+            ParryResult = e.Result;
 
             SkillParryController parryCtrl = sender as SkillParryController;
             parryCtrl.EndParryEvent();
@@ -505,14 +506,14 @@ namespace Frontier
         virtual public void ParryOpponentEvent()
         {
             // NONE以外の結果が通知されているはず
-            Debug.Assert(_parryResult != SkillParryController.JudgeResult.NONE);
+            Debug.Assert(ParryResult != SkillParryController.JudgeResult.NONE);
 
             if (_opponent == null)
             {
                 Debug.Assert(false);
             }
 
-            if (_parryResult == SkillParryController.JudgeResult.FAILED)
+            if (ParryResult == SkillParryController.JudgeResult.FAILED)
             {
                 return;
             }
@@ -680,7 +681,7 @@ namespace Frontier
             if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
             
             SkillParryController parryCtrl = _btlMgr.SkillCtrl.ParryController;
-            SubscribeParryEvent(parryCtrl);
+            _opponent.SubscribeParryEvent(parryCtrl);
             parryCtrl.StartParryEvent(_opponent, this);
         }
 
@@ -849,6 +850,14 @@ namespace Frontier
         public void SetOpponentCharacter(Character opponent)
         {
             _opponent = opponent;
+        }
+
+        /// <summary>
+        /// 攻撃を受ける際の設定を行います
+        /// </summary>
+        public void SetReceiveAttackSetting()
+        {
+            ParryResult = SkillParryController.JudgeResult.NONE;
         }
 
         /// <summary>
