@@ -173,16 +173,16 @@ namespace Frontier
                         _phase = Phase.ATTACK;
                     }
 
-                    if ( parryCtrl.IsEndParryEvent )
+                    if (_targetCharacter.ParryResult != SkillParryController.JudgeResult.NONE)
                     {
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                        if (parryCtrl.Result == SkillParryController.JudgeResult.FAILED)
+                        if (_targetCharacter.ParryResult == SkillParryController.JudgeResult.FAILED)
                         {
                             _phase = Phase.ATTACK;
                         }
                         else
                         {
-                            _isJustParry = (parryCtrl.Result == SkillParryController.JudgeResult.JUST);
+                            _isJustParry = (_targetCharacter.ParryResult == SkillParryController.JudgeResult.JUST);
 
                             // パリィ用更新に切り替えます
                             ToggleParryUpdate(_attackCharacter, _targetCharacter);
@@ -276,6 +276,9 @@ namespace Frontier
                 _destination = target.transform.position + target.transform.forward;    // 対象の前方1mを目標地点にする
                 attacker.StartClosedAttackSequence();
             }
+
+            // 攻撃受け手用の設定をセット
+            target.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
             if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, true);
