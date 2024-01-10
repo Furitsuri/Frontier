@@ -515,7 +515,7 @@ namespace Frontier
                 return;
             }
 
-            // 成功時のみパリィ挙動
+            // 成功時(ジャスト含む)にはパリィ挙動
             _opponent.ParryRecieveEvent();
         }
 
