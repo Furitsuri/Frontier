@@ -30,11 +30,9 @@ namespace Frontier
         delegate bool UpdateAttack(in Vector3 arg1, in Vector3 arg2);
 
         private Phase _phase;
-        private float _elapsedTime = 0f;
+        private float _elapsedTime      = 0f;
         private bool _counterConditions = false;
-        private bool _parryConditions = false;
-        private bool _isJustParry = false;
-        private BattleManager _btlMgr = null;
+        private BattleManager _btlMgr   = null;
         private BattleCameraController _btlCamCtrl = null;
         private StageController _stageCtrl = null;
         private Character _attackCharacter = null;
@@ -85,9 +83,6 @@ namespace Frontier
 
             // カウンター条件の設定
             _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER);
-
-            // パリィ条件の設定
-            _parryConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY);
 
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
@@ -186,8 +181,6 @@ namespace Frontier
                         }
                         else
                         {
-                            _isJustParry = (_targetCharacter.ParryResult == SkillParryController.JudgeResult.JUST);
-
                             // パリィ用更新に切り替えます
                             ToggleParryUpdate(_attackCharacter, _targetCharacter);
 

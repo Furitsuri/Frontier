@@ -35,6 +35,7 @@ namespace Frontier
 
         // BattleUIのRectTransform
         private RectTransform _rectTransform;
+
         // UI表示用のカメラ
         private Camera _uiCamera;
 
@@ -44,6 +45,8 @@ namespace Frontier
             _rectTransform      = GetComponent<RectTransform>();
             var cameraObject    = GameObject.Find("UI_Camera");
             _uiCamera           = cameraObject.GetComponent<Camera>();
+
+            DamageValue.Init(_rectTransform, _uiCamera);
 
             Debug.Assert(cameraObject != null);
         }
@@ -96,26 +99,31 @@ namespace Frontier
 
         public void SetDamageUIPosByCharaPos(Character character, int damageValue)
         {
-            // キャラクターの座標からUIカメラ(スクリーン)座標に変換
-            var pos         = Vector2.zero;
-            var worldCamera = Camera.main;
-            var screenPos   = RectTransformUtility.WorldToScreenPoint( worldCamera, character.transform.position );
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, screenPos, _uiCamera, out pos);
-            DamageValue.GetComponent<RectTransform>().localPosition = pos;
+            DamageValue.CharacterTransform  = character.transform;
 
-            int absDamage               = Mathf.Abs(damageValue);
-            DamageValue.damageText.text = absDamage.ToString();
-            if (damageValue < 0)
+            // パリィ成功時には専用の表記
+            if (character.ParryResult == SkillParryController.JudgeResult.SUCCESS ||
+                character.ParryResult == SkillParryController.JudgeResult.JUST)
             {
-                DamageValue.damageText.color = Color.red;
-            }
-            else if (0 < damageValue)
-            {
-                DamageValue.damageText.color = Color.green;
+                DamageValue.damageText.color    = Color.yellow;
+                DamageValue.damageText.text     = "DEFLECT";
             }
             else
             {
-                DamageValue.damageText.color = Color.white;
+                int absDamage = Mathf.Abs(damageValue);
+                DamageValue.damageText.text = absDamage.ToString();
+                if (damageValue < 0)
+                {
+                    DamageValue.damageText.color = Color.red;
+                }
+                else if (0 < damageValue)
+                {
+                    DamageValue.damageText.color = Color.green;
+                }
+                else
+                {
+                    DamageValue.damageText.color = Color.white;
+                }
             }
         }
 
