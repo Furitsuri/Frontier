@@ -17,7 +17,7 @@ namespace Frontier
         }
 
         public static GameManager instance = null;
-        private GameObject _StageImage;
+        private GameObject _stageImage;
         private GamePhase _Phase;
         public GameObject _managerProvider;
         public float stageStartDelay = 2f;              // ステージ開始時に表示する時間(秒)
@@ -51,9 +51,14 @@ namespace Frontier
 
         void InitGame()
         {
-            _StageImage = GameObject.Find("StageImage");
+            // アニメーションデータの初期化
+            AnimDatas.Init();
 
-            Invoke("StageLevelImage", stageStartDelay);
+            _stageImage = GameObject.Find("StageLevelImage");
+            if (_stageImage != null)
+            {
+                Invoke("StageLevelImage", stageStartDelay);
+            }
 
             _Phase = GamePhase.GAME_START;
         }
@@ -64,7 +69,7 @@ namespace Frontier
         /// </summary>
         void StageLevelImage()
         {
-            _StageImage.SetActive(false);
+            _stageImage.SetActive(false);
         }
 
         IEnumerator GameFlow()

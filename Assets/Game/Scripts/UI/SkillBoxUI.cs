@@ -26,17 +26,17 @@ namespace Frontier
 
         private void Start()
         {
-            _actGaugeElems = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
-            _uiImage = GetComponent<UnityEngine.UI.Image>();
-            _imageFlicker = new ColorFlicker<ImageColorAdapter>(new ImageColorAdapter(_uiImage));
-            _initialColor = _uiImage.color;
+            _actGaugeElems  = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
+            _uiImage        = GetComponent<UnityEngine.UI.Image>();
+            _imageFlicker   = new ColorFlicker<ImageColorAdapter>(new ImageColorAdapter(_uiImage));
+            _initialColor   = _uiImage.color;
 
             for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
             {
                 var elem = Instantiate(ActGaugeElemImage);
                 _actGaugeElems.Add(elem);
                 elem.gameObject.SetActive(false);
-                elem.transform.SetParent(PanelTransform, true);
+                elem.transform.SetParent(PanelTransform, false);
             }
         }
 

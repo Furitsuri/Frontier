@@ -8,6 +8,10 @@ namespace Frontier
     {
         public static BattleUISystem Instance { get; private set; }
 
+        [Header("表示キャンバス")]
+        [SerializeField]
+        private Canvas _canvas;
+
         [Header("CharacterParameter")]
         public CharacterParameterPresenter ParameterView;    // キャラクターパラメータ表示
 
@@ -18,7 +22,7 @@ namespace Frontier
         public ConfirmTurnEndUI ConfirmTurnEnd;         // ターン終了確認UI
 
         [Header("DamageUI")]
-        public DamageUI Damage;                         // ダメージ表記
+        public DamageUI DamageValue;                    // ダメージ表記
 
         [Header("PhaseUI")]
         public PhaseUI Phase;                           // フェーズ表記UI
@@ -29,9 +33,19 @@ namespace Frontier
         [Header("GameOver")]
         public GameOverUI GameOver;                     // ゲームオーバー画面
 
+        // BattleUIのRectTransform
+        private RectTransform _rectTransform;
+        // UI表示用のカメラ
+        private Camera _uiCamera;
+
         void Awake()
         {
-            Instance = this;
+            Instance            = this;
+            _rectTransform      = GetComponent<RectTransform>();
+            var cameraObject    = GameObject.Find("UI_Camera");
+            _uiCamera           = cameraObject.GetComponent<Camera>();
+
+            Debug.Assert(cameraObject != null);
         }
 
         public void TogglePlayerParameter(bool isActive)
@@ -67,7 +81,7 @@ namespace Frontier
 
         public void ToggleDamageUI(bool isActive)
         {
-            Damage.gameObject.SetActive(isActive);
+            DamageValue.gameObject.SetActive(isActive);
         }
 
         public SkillBoxUI GetPlayerParamSkillBox( int index )
@@ -82,24 +96,26 @@ namespace Frontier
 
         public void SetDamageUIPosByCharaPos(Character character, int damageValue)
         {
-            // キャラクターの座標からカメラ(スクリーン)座標に変換
-            var characterWorldPos = character.transform.position;
-            var characterScreenPos = Camera.main.WorldToScreenPoint(characterWorldPos);
+            // キャラクターの座標からUIカメラ(スクリーン)座標に変換
+            var pos         = Vector2.zero;
+            var worldCamera = Camera.main;
+            var screenPos   = RectTransformUtility.WorldToScreenPoint( worldCamera, character.transform.position );
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, screenPos, _uiCamera, out pos);
+            DamageValue.GetComponent<RectTransform>().localPosition = pos;
 
-            Damage.transform.position = characterScreenPos;
-            int absDamage = Mathf.Abs(damageValue);
-            Damage.damageText.text = absDamage.ToString();
+            int absDamage               = Mathf.Abs(damageValue);
+            DamageValue.damageText.text = absDamage.ToString();
             if (damageValue < 0)
             {
-                Damage.damageText.color = Color.red;
+                DamageValue.damageText.color = Color.red;
             }
             else if (0 < damageValue)
             {
-                Damage.damageText.color = Color.green;
+                DamageValue.damageText.color = Color.green;
             }
             else
             {
-                Damage.damageText.color = Color.white;
+                DamageValue.damageText.color = Color.white;
             }
         }
 

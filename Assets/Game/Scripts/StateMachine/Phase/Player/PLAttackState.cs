@@ -32,8 +32,8 @@ namespace Frontier
 
             base.Init(btlMgr, stgCtrl);
 
-            _phase = PLAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
+            _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+            _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
@@ -51,13 +51,18 @@ namespace Frontier
             {
                 // アタッカーキャラクターの設定
                 _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
+
                 // アタックカーソルUI表示
                 btlUIInstance.ToggleAttackCursorP2E(true);
+
                 // 攻撃者の向きを更新
                 GridInfo info;
                 _stageCtrl.FetchCurrentGridInfo(out info);
                 _attackCharacter.RotateToPosition(info.charaStandPos);
             }
+
+            // 攻撃シーケンスを初期化
+            _attackSequence.Init(_btlMgr, _stageCtrl);
         }
 
         public override bool Update()
@@ -80,20 +85,25 @@ namespace Frontier
                 case PLAttackPhase.PL_ATTACK_SELECT_GRID:
                     // グリッドの操作
                     _stageCtrl.OperateGridCursor();
+
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
                     _targetCharacter = _btlMgr.GetSelectCharacter();
+
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
                         var info = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
                         _attackCharacter.RotateToPosition( info.charaStandPos );
                     }
+
                     // ダメージ予測表示UIを表示
                     btlUIInstance.ToggleBattleExpect(true);
+
                     // 使用スキルを選択する
                     _attackCharacter.SelectUseSkills(SituationType.ATTACK);
                     _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+
                     // 予測ダメージを適応する
                     _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
@@ -105,16 +115,21 @@ namespace Frontier
                             // キャラクターのアクションゲージを消費
                             _attackCharacter.ConsumeActionGauge();
                             _targetCharacter.ConsumeActionGauge();
+
                             // 選択グリッドを一時非表示
                             _stageCtrl.SetGridCursorActive(false);
-                            // 攻撃シーケンスを初期化
-                            _attackSequence.Init(_btlMgr, _stageCtrl, _attackCharacter, _targetCharacter);
+                            
                             // アタックカーソルUI非表示
                             btlUIInstance.ToggleAttackCursorP2E(false);
+
                             // ダメージ予測表示UIを非表示
                             btlUIInstance.ToggleBattleExpect(false);
+
                             // グリッド状態の描画をクリア
                             _stageCtrl.ClearGridMeshDraw();
+
+                            // 攻撃シーケンスの開始
+                            _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
 
                             _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
                         }
@@ -155,12 +170,16 @@ namespace Frontier
 
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
+
             // 予測ダメージをリセット
             _btlMgr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+
             // アタックカーソルUI非表示
             btlUIInstance.ToggleAttackCursorP2E(false);
+
             // ダメージ予測表示UIを非表示
             btlUIInstance.ToggleBattleExpect(false);
+
             // 使用スキルの点滅を非表示
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
@@ -169,14 +188,17 @@ namespace Frontier
                 btlUIInstance.GetEnemyParamSkillBox(i).SetFlickEnabled(false);
                 btlUIInstance.GetEnemyParamSkillBox(i).SetUseable(true);
             }
+
             // 使用スキルコスト見積もりをリセット
             _attackCharacter.param.ResetConsumptionActionGauge();
             _attackCharacter.skillModifiedParam.Reset();
             _targetCharacter.param.ResetConsumptionActionGauge();
             _targetCharacter.skillModifiedParam.Reset();
+
             // グリッド状態の描画をクリア
             _stageCtrl.UpdateGridInfo();
             _stageCtrl.ClearGridMeshDraw();
+
             // 選択グリッドを表示
             _stageCtrl.SetGridCursorActive(true);
 

@@ -16,9 +16,9 @@ namespace Frontier
         }
 
         private EMAttackPhase _phase;
-        private int _curentGridIndex = -1;
-        private Enemy _attackCharacter = null;
-        private Character _targetCharacter = null;
+        private int _curentGridIndex                    = -1;
+        private Enemy _attackCharacter                  = null;
+        private Character _targetCharacter              = null;
         private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
 
         public override void Init(BattleManager btlMgr, StageController stgCtrl)
@@ -52,6 +52,9 @@ namespace Frontier
             GridInfo info = _stageCtrl.GetGridInfo( _targetCharacter.tmpParam.gridIndex );
             _attackCharacter.RotateToPosition(info.charaStandPos);
 
+            // 攻撃シーケンスを初期化
+            _attackSequence.Init(_btlMgr, _stageCtrl);
+
             _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
         }
 
@@ -71,8 +74,10 @@ namespace Frontier
                     // 使用スキルを選択する
                     _attackCharacter.SelectUseSkills(SituationType.ATTACK);
                     _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+
                     // 予測ダメージを適応する
                     _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+
                     // ダメージ予測表示UIを表示
                     btlUIInstance.ToggleBattleExpect(true);
 
@@ -81,16 +86,21 @@ namespace Frontier
                         // キャラクターのアクションゲージを消費
                         _attackCharacter.ConsumeActionGauge();
                         _targetCharacter.ConsumeActionGauge();
+
                         // 選択グリッドを一時非表示
                         _stageCtrl.SetGridCursorActive(false);
-                        // 攻撃シーケンスを初期化
-                        _attackSequence.Init(_btlMgr, _stageCtrl, _attackCharacter, _targetCharacter);
+
                         // アタックカーソルUI非表示
                         btlUIInstance.ToggleAttackCursorE2P(false);
+
                         // ダメージ予測表示UIを非表示
                         btlUIInstance.ToggleBattleExpect(false);
+
                         // グリッド状態の描画をクリア
                         _stageCtrl.ClearGridMeshDraw();
+
+                        // 攻撃シーケンスの開始
+                        _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
 
                         _phase = EMAttackPhase.EM_ATTACK_EXECUTE;
                     }

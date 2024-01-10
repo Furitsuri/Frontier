@@ -19,8 +19,7 @@ namespace Frontier
             START,
             WAIT_ATTACK,
             ATTACK,
-            WAIT_PARRY_START,
-            WAIT_PARRY_END,
+            WAIT_PARRY_RESULT,
             EXEC_PARRY,
             COUNTER,
             DIE,
@@ -56,40 +55,55 @@ namespace Frontier
         /// </summary>
         /// <param name="btlMgr">バトルマネージャ</param>
         /// <param name="stgCtrl">ステージコントローラ</param>
+        public void Init(BattleManager btlMgr, StageController stgCtrl)
+        {
+            _btlMgr             = btlMgr;
+            _btlCamCtrl         = _btlMgr.GetCameraController();
+            _stageCtrl          = stgCtrl;
+            _diedCharacter      = null;
+            _elapsedTime        = 0f;
+            _phase              = Phase.START;
+        }
+
+        /// <summary>
+        /// シーケンスを開始します
+        /// </summary>
         /// <param name="attackChara">攻撃キャラクター</param>
         /// <param name="targetChara">被攻撃キャラクター</param>
-        public void Init(BattleManager btlMgr, StageController stgCtrl, Character attackChara, Character targetChara)
+        public void StartSequence(Character attackChara, Character targetChara)
         {
-            _btlMgr = btlMgr;
-            _btlCamCtrl = _btlMgr.GetCameraController();
-            _stageCtrl = stgCtrl;
-            _attackCharacter = attackChara;
-            _targetCharacter = targetChara;
-            _diedCharacter = null;
-            _atkCharaTransform = _attackCharacter.transform;
-            _tgtCharaTransform = _targetCharacter.transform;
+            _attackCharacter    = attackChara;
+            _targetCharacter    = targetChara;
+            _atkCharaTransform  = _attackCharacter.transform;
+            _tgtCharaTransform  = _targetCharacter.transform;
             _atkCharaInitialRot = _atkCharaTransform.rotation;
             _tgtCharaInitialRot = _tgtCharaTransform.rotation;
-            _elapsedTime = 0f;
-            _phase = Phase.START;
+
             // 対戦相手として設定
             _attackCharacter.SetOpponentCharacter(_targetCharacter);
             _targetCharacter.SetOpponentCharacter(_attackCharacter);
+
             // カウンター条件の設定
             _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER);
+
             // パリィ条件の設定
             _parryConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY);
+
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
             if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.UpdateClosedAttack;
             else _updateAttackerAttack = _attackCharacter.UpdateRangedAttack;
-            if (_targetCharacter.GetBullet() == null) _updateTargetAttack =  _targetCharacter.UpdateClosedAttack;
+            if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.UpdateClosedAttack;
             else _updateTargetAttack = _targetCharacter.UpdateRangedAttack;
 
-            _btlCamCtrl.StartAttackSequenceMode(attackChara, targetChara);
+            // 攻撃シーケンスの開始
+            _btlCamCtrl.StartAttackSequenceMode(_attackCharacter, _targetCharacter);
         }
 
-        // Update is called once per frame
+        /// <summary>
+        /// 処理を更新します
+        /// </summary>
+        /// <returns>処理の終了</returns>
         public bool Update()
         {
             var parryCtrl = _btlMgr.SkillCtrl.ParryController;
@@ -123,7 +137,7 @@ namespace Frontier
                         StartAttack(_attackCharacter, _targetCharacter);
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY_START;
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY_RESULT;
                         // それ以外は通常通り攻撃へ
                         else _phase = Phase.ATTACK;
                     }
@@ -133,8 +147,10 @@ namespace Frontier
                     {
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
+
                         // ガードスキルを使用時はガードモーションを戻す
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, false);
+
                         // 対象が死亡している場合は死亡処理へ
                         if (_targetCharacter.IsDead())
                         {
@@ -151,22 +167,10 @@ namespace Frontier
                         else _phase = Phase.WAIT_END;
                     }
                     break;
-                case Phase.WAIT_PARRY_START:
+                case Phase.WAIT_PARRY_RESULT:
                     // パリィイベント開始まで更新
                     // 攻撃側キャラクターの攻撃モーションからパリィ開始メソッドが呼ばれるため、
                     // 開始されない(parryCtrl.IsActiveがfalse)まま、攻撃更新が行われることは想定外
-                    if ( _updateAttackerAttack(_departure, _destination) )
-                    {
-                        Debug.Assert(false);
-                        _phase = Phase.ATTACK;
-                    }
-
-                    if ( parryCtrl.IsActive )
-                    {
-                        _phase = Phase.WAIT_PARRY_END;
-                    }
-                    break;
-                case Phase.WAIT_PARRY_END:
                     if (_updateAttackerAttack(_departure, _destination))
                     {
                         Debug.Assert(false);
@@ -229,10 +233,13 @@ namespace Frontier
                     if (Constants.ATTACK_SEQUENCE_WAIT_END_TIME < (_elapsedTime += Time.deltaTime))
                     {
                         _elapsedTime = 0f;
+
                         // ダメージUIを非表示
                         BattleUISystem.Instance.ToggleDamageUI(false);
+
                         // バトルフィールドからステージフィールドに遷移
                         TransitStageField(_attackCharacter, _targetCharacter);
+
                         // 攻撃シーケンス用カメラを終了
                         var info = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
                         _btlCamCtrl.EndAttackSequenceMode(_attackCharacter);

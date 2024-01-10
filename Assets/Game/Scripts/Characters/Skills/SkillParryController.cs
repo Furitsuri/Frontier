@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -24,44 +25,60 @@ namespace Frontier
             MAX,
         }
 
-        [Header("UIスクリプト")]
         [SerializeField]
+        [Header("UIスクリプト")]
         private SkillParryUI _ui;
 
-        [Header("パリィ判定リング縮小時間")]
         [SerializeField]
+        [Header("成功時エフェクト")]
+        private ParticleSystem _successParticle = null;
+
+        [SerializeField]
+        [Header("失敗時エフェクト")]
+        private ParticleSystem _failureParticle = null;
+
+        [SerializeField]
+        [Header("ジャスト成功時エフェクト")]
+        private ParticleSystem _justParticle = null;
+
+        [SerializeField]
+        [Header("パリィ判定リング縮小時間")]
         private float _shrinkTime = 3f;
 
-        [Header("キャラクターのスローモーションレート")]
         [SerializeField]
+        [Header("キャラクターのスローモーションレート")]
         private float _delayTimeScale = 0.1f;
 
-        [Header("失敗判定に自動遷移するサイズ倍率")]
         [SerializeField]
+        [Header("失敗判定に自動遷移するサイズ倍率")]
         private float _radiusRateAutoTransitionToFail = 0.75f;
 
-        [Header("結果を表示する秒数")]
         [SerializeField]
+        [Header("結果を表示する秒数")]
         private float _showUITime = 1.5f;
 
         private float _radiusThresholdOnFail    = 0f;
-        private ParryRingEffect _effect         = null;
+        private ParryRingEffect _ringEffect     = null;
+        private ParryResultEffect _resultEffect = null;
         private BattleManager _btlMgr           = null;
         private Character _useParryCharacter    = null;
         private Character _attackCharacter      = null;
         private JudgeResult _judgeResult        = JudgeResult.NONE;
         private (float inner, float outer) _judgeRingSuccessRange;
         private (float inner, float outer) _judgeRingJustRange;
+
         // パリィイベント終了時のデリゲート
         public event EventHandler<SkillParryCtrlEventArgs> ProcessCompleted;
-        public bool IsActive => gameObject.activeSelf;
 
         // Update is called once per frame
         void Update()
         {
-            // UI表示終了
-            if (_ui.IsShowEnd())
+            // エフェクト終了と同時に無効に切替
+            if ( _resultEffect.IsEndPlaying() )
             {
+                _ui.terminate();
+                _resultEffect.terminate();
+
                 SkillParryCtrlEventArgs args = new SkillParryCtrlEventArgs();
                 args.Result = _judgeResult;
 
@@ -75,7 +92,7 @@ namespace Frontier
             // 結果が既に出ている場合はここで終了
             if ( IsJudgeEnd() ) return;
 
-            float shrinkRadius = _effect.GetCurShrinkRingRadius();
+            float shrinkRadius = _ringEffect.GetCurShrinkRingRadius();
 
             // キーが押されたタイミングで判定
             if (Input.GetKeyUp(KeyCode.Space))
@@ -100,9 +117,10 @@ namespace Frontier
             {
                 _ui.gameObject.SetActive(true);
                 _ui.ShowResult(_judgeResult);
+                _resultEffect.PlayEffect(_judgeResult);
 
-                // エフェクト停止
-                _effect.StopShrink();
+                // 縮小エフェクト停止
+                _ringEffect.StopShrink();
 
                 // UI以外の表示物の更新時間スケールを停止
                 DelayBattleTimeScale(0f);
@@ -115,7 +133,7 @@ namespace Frontier
         void FixedUpdate()
         {
             // フレームレートによるズレを防ぐためFixedで更新
-            _effect.FixedUpdateEffect();
+            _ringEffect.FixedUpdateEffect();
         }
 
         /// <summary>
@@ -138,7 +156,8 @@ namespace Frontier
             _judgeRingSuccessRange = (0.4f, 0.6f);
 
             // シェーダーに適応
-            _effect.SetJudgeRingRange(_judgeRingSuccessRange);
+            _ringEffect.SetJudgeRingRange(_judgeRingSuccessRange);
+
             // 失敗判定に自動遷移する半径の閾値を決定
             // MEMO : 成功範囲の中央値と指定倍率との積とする
             _radiusThresholdOnFail = ((_judgeRingSuccessRange.inner + _judgeRingSuccessRange.outer) * 0.5f) * _radiusRateAutoTransitionToFail;
@@ -164,10 +183,10 @@ namespace Frontier
             switch (result)
             {
                 case SkillParryController.JudgeResult.SUCCESS:
-                    attackChara.skillModifiedParam.AtkMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
+                    attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
                     break;
                 case SkillParryController.JudgeResult.FAILED:
-                    useParryChara.skillModifiedParam.DefMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param2;
+                    useParryChara.skillModifiedParam.DefMagnification   *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param2;
                     break;
                 case SkillParryController.JudgeResult.JUST:
                     attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
@@ -192,6 +211,15 @@ namespace Frontier
             _ui.Init(_showUITime);
             _ui.gameObject.SetActive(false);
 
+            _resultEffect = new ParryResultEffect();
+            ParticleSystem[] particles = new ParticleSystem[]
+            {
+                _successParticle,
+                _failureParticle,
+                _justParticle
+            };
+            _resultEffect.Init(particles);
+
             // 実行されるまでは無効に
             gameObject.SetActive(false);
         }
@@ -209,12 +237,12 @@ namespace Frontier
 
             // パリィエフェクトのシェーダー情報をカメラに描画するため、メインカメラにアタッチ
             Camera.main.gameObject.AddComponent<ParryRingEffect>();
-            _effect = Camera.main.gameObject.GetComponent<ParryRingEffect>();
-            Debug.Assert(_effect != null);
+            _ringEffect = Camera.main.gameObject.GetComponent<ParryRingEffect>();
+            Debug.Assert(_ringEffect != null);
 
-            // MEMO : _effect, 及び_uiはアタッチのタイミングの都合上Initではなくここで初期化
-            _effect.Init(_shrinkTime);
-            _effect.SetEnable(true);
+            // MEMO : _ringEffect, 及び_uiはアタッチのタイミングの都合上Initではなくここで初期化
+            _ringEffect.Init(_shrinkTime);
+            _ringEffect.SetEnable(true);
             _ui.Init(_showUITime);
             _ui.gameObject.SetActive(false);
 
@@ -253,7 +281,7 @@ namespace Frontier
             // タイムスケールを元に戻す
             ResetBattleTimeScale();
 
-            _effect.Destroy();
+            _ringEffect.Destroy();
         }
 
         /// <summary>

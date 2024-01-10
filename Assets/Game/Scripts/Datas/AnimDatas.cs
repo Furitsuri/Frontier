@@ -41,6 +41,27 @@ namespace Frontier
             "Die"
         };
 
-        public const string END_ATTACK_ANIME_STATE_NAME = "SingleAttack";
+        // アニメーション名ハッシュリスト
+        public static List<int> AnimNameHashList;
+        // 攻撃遷移終了判定に用いる名称
+        public static string AtkEndStateName;
+
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        public static void Init()
+        {
+            // タグとアニメーションの数は一致していること
+            Debug.Assert(ANIME_CONDITIONS_NAMES.Length == (int)ANIME_CONDITIONS_TAG.NUM);
+
+            AtkEndStateName = ANIME_CONDITIONS_NAMES[(int)ANIME_CONDITIONS_TAG.SINGLE_ATTACK];
+
+            // ハッシュリストを初期化
+            AnimNameHashList = new List<int>();
+            foreach( var elem in ANIME_CONDITIONS_NAMES )
+            {
+                AnimNameHashList.Add( Animator.StringToHash(elem) );
+            }
+        }
     }
 }

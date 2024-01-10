@@ -33,7 +33,7 @@ namespace Frontier
         /// <param name="animTag">アニメーションタグ</param>
         public void SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag)
         {
-            _animator.SetTrigger(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]);
+            _animator.SetTrigger(AnimDatas.AnimNameHashList[(int)animTag]);
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Frontier
         /// <param name="b">トリガーアニメーションに対して使用</param>
         public void SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b)
         {
-            _animator.SetBool(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag], b);
+            _animator.SetBool(AnimDatas.AnimNameHashList[(int)animTag], b);
         }
 
         /// <summary>
