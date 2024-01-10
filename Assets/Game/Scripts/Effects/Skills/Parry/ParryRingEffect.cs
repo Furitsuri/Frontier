@@ -46,14 +46,14 @@ namespace Frontier
         {
             _judgeRingInnerRadiusID = Shader.PropertyToID("_JudgeRingInnerRadius");
             _judgeRingOuterRadiusID = Shader.PropertyToID("_JudgeRingOuterRadius");
-            _shrinkRingSizeID = Shader.PropertyToID("_ShrinkRingSizeRate");
-            _shrinkWidthID = Shader.PropertyToID("_ShrinkRingWidth");
+            _shrinkRingSizeID       = Shader.PropertyToID("_ShrinkRingSizeRate");
+            _shrinkWidthID          = Shader.PropertyToID("_ShrinkRingWidth");
 
             _ringMaterial.SetFloat(_shrinkRingSizeID, 1f);
 
-            _enabled = false;
-            _isStopShrink = false;
-            _initTime = _curtime = shrinkTime;
+            _enabled        = false;
+            _isStopShrink   = false;
+            _initTime       = _curtime = shrinkTime;
         }
 
         /// <summary>

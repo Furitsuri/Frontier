@@ -71,7 +71,7 @@ namespace Frontier
                 var elem = Instantiate(ActGaugeElemImage);
                 _actGaugeElems.Add(elem);
                 elem.gameObject.SetActive(false);
-                elem.transform.SetParent(PanelTransform, true);
+                elem.transform.SetParent(PanelTransform, false);
             }
         }
 

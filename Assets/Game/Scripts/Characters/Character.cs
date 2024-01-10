@@ -320,9 +320,6 @@ namespace Frontier
         #region PRIVATE_METHOD
         void Awake()
         {
-            // タグとアニメーションの数は一致していること
-            Debug.Assert(AnimDatas.ANIME_CONDITIONS_NAMES.Length == (int)AnimDatas.ANIME_CONDITIONS_TAG.NUM);
-
             _timeScale.OnValueChange    = AnimCtrl.UpdateTimeScale;
             IsDeclaredDead              = false;
             param.equipSkills           = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
@@ -926,7 +923,7 @@ namespace Frontier
         /// <returns>攻撃アニメーションが終了しているか</returns>
         public bool IsEndAttackAnimSequence()
         {
-            return AnimCtrl.IsEndAnimationOnStateName(AnimDatas.END_ATTACK_ANIME_STATE_NAME) ||  // 最後の攻撃のState名は必ずEND_ATTACK_ANIME_STATE_NAMEで一致させる
+            return AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||  // 最後の攻撃のState名は必ずAtkEndStateNameで一致させる
                 (_opponent.IsDeclaredDead && AnimCtrl.IsEndCurrentAnimation());                  // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
         }
 

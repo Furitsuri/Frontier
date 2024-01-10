@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Frontier
 {
@@ -12,12 +13,14 @@ namespace Frontier
 
         private List<TextMeshProUGUI> _commandTexts = new List<TextMeshProUGUI>();
         private RectTransform _commandUIBaseRectTransform;
+        private VerticalLayoutGroup _cmdTextVerticalLayout;
         private PLSelectCommandState _PLSelectScript;
         private string[] _commandStrings;
 
         void Awake()
         {
             _commandUIBaseRectTransform     = gameObject.GetComponent<RectTransform>();
+            _cmdTextVerticalLayout          = gameObject.GetComponent<VerticalLayoutGroup>();
             TextMeshProUGUI[] commandNames  = gameObject.GetComponentsInChildren<TextMeshProUGUI>();
 
             // コマンド文字列を初期化
@@ -70,8 +73,8 @@ namespace Frontier
         /// <param name="PLCommands">プレイヤーのコマンド構造体配列</param>
         void ResizeUIBaseRectTransform( float fontSize, int executableCmdNum )
         {
-            const float marginSize      = 20f;  // 上下のマージンサイズがそれぞれ10fであるため2倍の値
-            const float intervalSize    = 10f;
+            float marginSize      = _cmdTextVerticalLayout.padding.top * 2f;  // 上下のマージンサイズが存在するため2倍の値
+            float intervalSize    = _cmdTextVerticalLayout.spacing;
 
             _commandUIBaseRectTransform.sizeDelta = new Vector2(_commandUIBaseRectTransform.sizeDelta.x, marginSize + (fontSize + intervalSize ) * executableCmdNum - intervalSize);
         }
@@ -86,13 +89,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// 実行可能なコマンドをコマンドリストUIに設定します
         /// </summary>
-        /// <param name="executables"></param>
+        /// <param name="executableCommands">実行可能なコマンドリスト</param>
         public void SetExecutableCommandList( in List<Character.Command.COMMAND_TAG> executableCommands )
         {
             float fontSize = 0;
-            const float marjin = 10f;
 
             foreach ( var cmdText in _commandTexts )
             {
@@ -106,9 +108,8 @@ namespace Frontier
                 GameObject stringObject = Instantiate(_TMPCommandStringSample);
                 if (stringObject == null) continue;
                 TextMeshProUGUI commandString = stringObject.GetComponent<TextMeshProUGUI>();
-                commandString.transform.SetParent(this.gameObject.transform);
+                commandString.transform.SetParent(this.gameObject.transform, false);
                 commandString.SetText(_commandStrings[(int)executableCommands[i]]);
-                commandString.rectTransform.anchoredPosition = new Vector2(0f, -marjin - 30f * i);
                 commandString.gameObject.SetActive( true );
                 _commandTexts.Add(commandString);
                 fontSize = commandString.fontSize;

@@ -42,3 +42,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: TransparentFX
+    uniqueID: 546184653
+    locked: 0
+  - name: Water
+    uniqueID: 3528971299
+    locked: 0
+  - name: Particle
+    uniqueID: 4111144761
+    locked: 0
+  - name: UI
+    uniqueID: 2553122183
+    locked: 0

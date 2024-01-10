@@ -37,13 +37,22 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// èâä˙âªÇµÇ‹Ç∑
         /// </summary>
-        /// <param name="showTime"></param>
+        /// <param name="showTime">ï\é¶éûä‘</param>
         public void Init( float showTime )
         {
             _isUpdate = false;
             _showTime = showTime;
+        }
+
+        /// <summary>
+        /// èIóπÇ≥ÇπÇ‹Ç∑
+        /// </summary>
+        public void terminate()
+        {
+            gameObject.SetActive(false);
+            _isUpdate = false;
         }
 
         /// <summary>

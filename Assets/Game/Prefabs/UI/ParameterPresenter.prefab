@@ -214,7 +214,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8892133275774598647}
   - component: {fileID: -3846870359337251125}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ParameterPresenter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -237,7 +237,7 @@ RectTransform:
   - {fileID: 4716860616471840721}
   - {fileID: 4880442394227684427}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -256,6 +256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef31632b015e67245954ff978799a996, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _btlMgr: {fileID: 0}
   PlayerParameter: {fileID: 4895680111114918984}
   EnemyParameter: {fileID: 1691445078551005569}
   AttackDirection: {fileID: 4317854743738221722}
