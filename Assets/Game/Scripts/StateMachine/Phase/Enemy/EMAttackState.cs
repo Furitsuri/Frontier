@@ -49,8 +49,10 @@ namespace Frontier
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
             // 攻撃者の向きを設定
-            GridInfo info = _stageCtrl.GetGridInfo( _targetCharacter.tmpParam.gridIndex );
-            _attackCharacter.RotateToPosition(info.charaStandPos);
+            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
+            _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
+            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
+            _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
 
             // 攻撃シーケンスを初期化
             _attackSequence.Init(_btlMgr, _stageCtrl);
