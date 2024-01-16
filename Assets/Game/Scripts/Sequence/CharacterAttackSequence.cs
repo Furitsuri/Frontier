@@ -159,7 +159,13 @@ namespace Frontier
 
                             _phase = Phase.COUNTER;
                         }
-                        else _phase = Phase.WAIT_END;
+                        else
+                        {
+                            // ダメージUIを非表示
+                            BattleUISystem.Instance.ToggleDamageUI(false);
+
+                            _phase = Phase.WAIT_END;
+                        }
                     }
                     break;
                 case Phase.WAIT_PARRY_RESULT:
@@ -199,7 +205,13 @@ namespace Frontier
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
                         }
-                        else _phase = Phase.WAIT_END;
+                        else
+                        {
+                            // ダメージUIを非表示
+                            BattleUISystem.Instance.ToggleDamageUI(false);
+
+                            _phase = Phase.WAIT_END;
+                        }
                     }
                     break;
                 case Phase.COUNTER:
@@ -213,7 +225,13 @@ namespace Frontier
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
                         }
-                        else _phase = Phase.WAIT_END;
+                        else
+                        {
+                            // ダメージUIを非表示
+                            BattleUISystem.Instance.ToggleDamageUI(false);
+
+                            _phase = Phase.WAIT_END;
+                        }
                     }
                     break;
                 case Phase.DIE:
@@ -226,9 +244,6 @@ namespace Frontier
                     if (Constants.ATTACK_SEQUENCE_WAIT_END_TIME < (_elapsedTime += Time.deltaTime))
                     {
                         _elapsedTime = 0f;
-
-                        // ダメージUIを非表示
-                        BattleUISystem.Instance.ToggleDamageUI(false);
 
                         // バトルフィールドからステージフィールドに遷移
                         TransitStageField(_attackCharacter, _targetCharacter);

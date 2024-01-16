@@ -34,6 +34,7 @@ namespace Frontier
 
             _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
+            _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
@@ -54,11 +55,6 @@ namespace Frontier
 
                 // アタックカーソルUI表示
                 btlUIInstance.ToggleAttackCursorP2E(true);
-
-                // 攻撃者の向きを更新
-                GridInfo info;
-                _stageCtrl.FetchCurrentGridInfo(out info);
-                _attackCharacter.RotateToPosition(info.charaStandPos);
             }
 
             // 攻撃シーケンスを初期化
@@ -93,8 +89,10 @@ namespace Frontier
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
-                        var info = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
-                        _attackCharacter.RotateToPosition( info.charaStandPos );
+                        var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
+                        _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos );
+                        var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
+                        _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
                     }
 
                     // ダメージ予測表示UIを表示
