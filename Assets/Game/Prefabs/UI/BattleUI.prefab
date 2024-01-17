@@ -11717,7 +11717,7 @@ GameObject:
   - component: {fileID: 3500877524859510879}
   - component: {fileID: 8205487708790290558}
   m_Layer: 5
-  m_Name: _FailedParryParticle
+  m_Name: SpareFailedParryParticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18114,8 +18114,8 @@ ParticleSystem:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 0.5019608}
         key1: {r: 0.85884655, g: 0.91374075, b: 0.9433962, a: 1}
-        key2: {r: 1, g: 1, b: 1, a: 0.5019608}
-        key3: {r: 1, g: 1, b: 1, a: 1}
+        key2: {r: 1, g: 1, b: 1, a: 1}
+        key3: {r: 1, g: 1, b: 1, a: 0.5019608}
         key4: {r: 0, g: 0, b: 0, a: 1}
         key5: {r: 0, g: 0, b: 0, a: 1}
         key6: {r: 0, g: 0, b: 0, a: 1}
@@ -18130,7 +18130,7 @@ ParticleSystem:
         ctime7: 0
         atime0: 0
         atime1: 32768
-        atime2: 65535
+        atime2: 62258
         atime3: 65535
         atime4: 65535
         atime5: 65535
@@ -18139,7 +18139,7 @@ ParticleSystem:
         m_Mode: 0
         m_ColorSpace: 0
         m_NumColorKeys: 3
-        m_NumAlphaKeys: 3
+        m_NumAlphaKeys: 4
       minGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
