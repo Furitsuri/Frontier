@@ -142,6 +142,8 @@ namespace Frontier
                     {
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
+                        // ダメージUIを非表示
+                        BattleUISystem.Instance.ToggleDamageUI(false);
 
                         // ガードスキルを使用時はガードモーションを戻す
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, false);
@@ -161,9 +163,6 @@ namespace Frontier
                         }
                         else
                         {
-                            // ダメージUIを非表示
-                            BattleUISystem.Instance.ToggleDamageUI(false);
-
                             _phase = Phase.WAIT_END;
                         }
                     }
