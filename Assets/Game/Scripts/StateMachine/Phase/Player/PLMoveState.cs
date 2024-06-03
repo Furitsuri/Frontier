@@ -107,7 +107,7 @@ namespace Frontier
                             // 選択グリッドを一時非表示
                             _stageCtrl.SetGridCursorActive(false);
                             // 移動アニメーション開始
-                            _selectPlayer.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
+                            _selectPlayer.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
                             // グリッド情報更新
                             _selectPlayer.tmpParam.gridIndex = destIndex;
 
@@ -127,7 +127,7 @@ namespace Frontier
 
                         if (_moveGridPos.Count <= _movingIndex)
                         {
-                            _selectPlayer.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
+                            _selectPlayer.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
                             _Phase = PLMovePhase.PL_MOVE_END;
                         }
                     }

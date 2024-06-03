@@ -10,7 +10,7 @@ namespace Frontier
         /// <summary>
         /// アニメーションの各遷移条件タグ
         /// </summary>
-        public enum ANIME_CONDITIONS_TAG
+        public enum AnimeConditionsTag
         {
             WAIT = 0,
             MOVE,
@@ -52,9 +52,9 @@ namespace Frontier
         public static void Init()
         {
             // タグとアニメーションの数は一致していること
-            Debug.Assert(ANIME_CONDITIONS_NAMES.Length == (int)ANIME_CONDITIONS_TAG.NUM);
+            Debug.Assert(ANIME_CONDITIONS_NAMES.Length == (int)AnimeConditionsTag.NUM);
 
-            AtkEndStateName = ANIME_CONDITIONS_NAMES[(int)ANIME_CONDITIONS_TAG.SINGLE_ATTACK];
+            AtkEndStateName = ANIME_CONDITIONS_NAMES[(int)AnimeConditionsTag.SINGLE_ATTACK];
 
             // ハッシュリストを初期化
             AnimNameHashList = new List<int>();

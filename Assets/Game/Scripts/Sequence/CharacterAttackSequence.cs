@@ -146,7 +146,7 @@ namespace Frontier
                         BattleUISystem.Instance.ToggleDamageUI(false);
 
                         // ガードスキルを使用時はガードモーションを戻す
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, false);
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
 
                         // 対象が死亡している場合は死亡処理へ
                         if (_targetCharacter.IsDead())
@@ -234,7 +234,7 @@ namespace Frontier
                     }
                     break;
                 case Phase.DIE:
-                    if (_targetCharacter.AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG.DIE))
+                    if (_targetCharacter.AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.DIE))
                     {
                         _phase = Phase.WAIT_END;
                     }
@@ -295,7 +295,7 @@ namespace Frontier
             target.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GUARD, true);
+            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, true);
         }
 
         /// <summary>

@@ -302,11 +302,11 @@ namespace Frontier
         public AnimationController AnimCtrl { get; } = new AnimationController();
 
         // 攻撃用アニメーションタグ
-        private static AnimDatas.ANIME_CONDITIONS_TAG[] AttackAnimTags = new AnimDatas.ANIME_CONDITIONS_TAG[]
+        private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
         {
-            AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK,
-            AnimDatas.ANIME_CONDITIONS_TAG.DOUBLE_ATTACK,
-            AnimDatas.ANIME_CONDITIONS_TAG.TRIPLE_ATTACK
+            AnimDatas.AnimeConditionsTag.SINGLE_ATTACK,
+            AnimDatas.AnimeConditionsTag.DOUBLE_ATTACK,
+            AnimDatas.AnimeConditionsTag.TRIPLE_ATTACK
         };
 
         private delegate bool IsExecutableCommand(Character character, StageController stageCtrl);
@@ -483,12 +483,12 @@ namespace Frontier
                 if (_opponent.param.CurHP <= 0)
                 {
                     _opponent.param.CurHP = 0;
-                    _opponent.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.DIE);
+                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
                 else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
                 {
-                    _opponent.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GET_HIT);
+                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
                 }
             }
 
@@ -525,7 +525,7 @@ namespace Frontier
         virtual public void ParryRecieveEvent()
         {
             _timeScale.Reset();
-            AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.GET_HIT);
+            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
         }
 
         /// <summary>
@@ -641,7 +641,7 @@ namespace Frontier
             _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
             _elapsedTime        = 0f;
 
-            AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
+            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
         }
 
         /// <summary>
@@ -664,7 +664,7 @@ namespace Frontier
             _parryPhase = PARRY_PHASE.EXEC_PARRY;
             _elapsedTime = 0f;
 
-            AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.PARRY);
+            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
             // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
             _timeScale.SetTimeScale(0.1f);
         }
@@ -722,7 +722,7 @@ namespace Frontier
                     if (1.0f <= t)
                     {
                         _elapsedTime = 0f;
-                        AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
+                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
                         AnimCtrl.SetAnimator(attackAnimtag);
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
@@ -732,7 +732,7 @@ namespace Frontier
                 case CLOSED_ATTACK_PHASE.ATTACK:
                     if (IsEndAttackAnimSequence())
                     {
-                        AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.DISTANCING;
                     }
@@ -775,11 +775,11 @@ namespace Frontier
             // 攻撃終了した場合はWaitに切り替え
             if (IsEndAttackAnimSequence())
             {
-                AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+                AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
             }
 
             // 対戦相手が攻撃を被弾済み、かつ、Wait状態に切り替え済みの場合に終了
-            return _isAttacked && AnimCtrl.IsPlayingAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+            return _isAttacked && AnimCtrl.IsPlayingAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.WAIT);
         }
 
         /// <summary>
@@ -809,14 +809,14 @@ namespace Frontier
                 case PARRY_PHASE.EXEC_PARRY:
                     if (isJustParry)
                     {
-                        AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.SINGLE_ATTACK);
+                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.SINGLE_ATTACK);
 
                         _parryPhase = PARRY_PHASE.AFTER_ATTACK;
                     }
                     else {
-                        if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG.PARRY))
+                        if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.PARRY))
                         {
-                            AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.WAIT);
+                            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
 
                             return true;
                         }
