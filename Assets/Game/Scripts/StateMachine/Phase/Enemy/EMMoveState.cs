@@ -37,26 +37,36 @@ namespace Frontier
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
             _movePathList = _enemy.EmAI.GetProposedMoveRoute();
-            // Enemyを_movePathListの順に移動させる
-            _moveGridPos = new List<Vector3>(_movePathList.Count);
-            for (int i = 0; i < _movePathList.Count; ++i)
+
+            // 移動目標地点が、現在地点であった場合は即時終了
+            if (_movePathList.Count <= 0)
             {
-                // パスのインデックスからグリッド座標を得る
-                _moveGridPos.Add(_stageCtrl.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
+                _Phase = EMMovePhase.EM_MOVE_END;
             }
-            _movingIndex = 0;
-            _moveWaitTimer = 0f;
+            // 移動前処理
+            else
+            {
+                // Enemyを_movePathListの順に移動させる
+                _moveGridPos = new List<Vector3>(_movePathList.Count);
+                for (int i = 0; i < _movePathList.Count; ++i)
+                {
+                    // パスのインデックスからグリッド座標を得る
+                    _moveGridPos.Add(_stageCtrl.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
+                }
+                _movingIndex = 0;
+                _moveWaitTimer = 0f;
 
-            // 処理軽減のためtranformをキャッシュ
-            _EMTransform = _enemy.transform;
-            // 移動アニメーション開始
-            _enemy.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, true);
-            // グリッド情報更新
-            _enemy.tmpParam.gridIndex = _enemy.EmAI.GetDestinationGridIndex();
-            // 選択グリッドを表示
-            _stageCtrl.SetGridCursorActive(true);
+                // 処理軽減のためtranformをキャッシュ
+                _EMTransform = _enemy.transform;
+                // 移動アニメーション開始
+                _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
+                // グリッド情報更新
+                _enemy.tmpParam.gridIndex = _enemy.EmAI.GetDestinationGridIndex();
+                // 選択グリッドを表示
+                _stageCtrl.SetGridCursorActive(true);
 
-            _Phase = EMMovePhase.EM_MOVE_WAIT;
+                _Phase = EMMovePhase.EM_MOVE_WAIT;
+            }
         }
 
         public override bool Update()
@@ -87,7 +97,7 @@ namespace Frontier
 
                         if (_moveGridPos.Count <= _movingIndex)
                         {
-                            _enemy.AnimCtrl.SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG.MOVE, false);
+                            _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
                             _Phase = EMMovePhase.EM_MOVE_END;
                         }
                     }

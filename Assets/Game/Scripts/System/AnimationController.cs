@@ -31,7 +31,7 @@ namespace Frontier
         /// アニメーションを再生します
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
-        public void SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag)
+        public void SetAnimator(AnimDatas.AnimeConditionsTag animTag)
         {
             _animator.SetTrigger(AnimDatas.AnimNameHashList[(int)animTag]);
         }
@@ -41,7 +41,7 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <param name="b">トリガーアニメーションに対して使用</param>
-        public void SetAnimator(AnimDatas.ANIME_CONDITIONS_TAG animTag, bool b)
+        public void SetAnimator(AnimDatas.AnimeConditionsTag animTag, bool b)
         {
             _animator.SetBool(AnimDatas.AnimNameHashList[(int)animTag], b);
         }
@@ -51,7 +51,7 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 再生中, false : 再生していない</returns>
-        public bool IsPlayingAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG animTag)
+        public bool IsPlayingAnimationOnConditionTag(AnimDatas.AnimeConditionsTag animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
@@ -82,7 +82,7 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 終了, false : 未終了</returns>
-        public bool IsEndAnimationOnConditionTag(AnimDatas.ANIME_CONDITIONS_TAG animTag)
+        public bool IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
