@@ -51,5 +51,12 @@ static public class Constants
     public const string LAYER_NAME_LEFT_PARAM_WINDOW    = "ParamRenderLeft";
     public const string LAYER_NAME_RIGHT_PARAM_WINDOW   = "ParamRenderRight";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH = "CharacterSkinMesh";
-
+    public const string GUIDE_SPRITE_FOLDER_PASS        = "Sprites/Originals/UI/KeyGuide/";
+#if UNITY_EDITOR
+    public const string GUIDE_SPRITE_FILE_NAME          = "Preview Keyboard & Mouse";
+#elif UNITY_STANDALONE_WIN
+    public const string GUIDE_SPRITE_FILE_NAME          = "Preview Steam Deck";
+#else
+    public const string GUIDE_SPRITE_FILE_NAME          = "Preview Steam Deck";
+#endif
 }
