@@ -38,19 +38,22 @@ namespace Frontier
 
         [SerializeField]
         [Header("UIスクリプト")]
-        private KeyGuideUI _ui = null;
+        private KeyGuideUI _keyGuideUI = null;
+
+        // ガイド上に表示可能なスプライト群
+        private Sprite[] sprites;
 
         // 各スプライトファイル名の末尾の番号
-        string[] spriteTailString =
+        string[] spriteTailNoString =
         // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
         {
 #if UNITY_EDITOR
-            "_256",  // UP
-            "_257",  // DOWN
-            "_258",  // LEFT
-            "_259",  // RIGHT
-            "_120",  // DECISION
-            "_179",  // CANCEL
+            "_alpha_250",  // UP
+            "_alpha_251",  // DOWN
+            "_alpha_252",  // LEFT
+            "_alpha_253",  // RIGHT
+            "_alpha_120",  // DECISION
+            "_alpha_179",  // CANCEL
 #elif UNITY_STANDALONE_WIN
             "_10",  // UP
             "_11",  // DOWN
@@ -62,34 +65,48 @@ namespace Frontier
 #endif
         };
 
-        // 現在の状況において、有効となるキーとそれを押下した際の説明
+        // ゲーム内の現在の状況における、操作が有効となるキーとそれを押下した際の説明のリスト
         List<KeyGuide> _keyGuides;
-        // キーガイドを表示するクラス
-        KeyGuideUI _keyGuideUI;
 
         // Start is called before the first frame update
         void Start()
         {
-            // ガイドスプライトの読み込みを行い、アサインする
-            Sprite guideSprite = Resources.Load<Sprite>(Constants.GUIDE_SPRITE_FOLDER_PASS + Constants.GUIDE_SPRITE_FILE_NAME);
-            if( guideSprite != null )
-            {
-                // キーガイドとスプライトの紐づけを行う
-                for (int i = 0; i < (int)KeyIcon.NUM; ++i)
-                {
-
-                }
-            }
-            else
-            {
-                Debug.Log("Failed load guide sprites!");
-            }
+            LoadSprites();
         }
 
         // Update is called once per frame
         void Update()
         {
-            // _keyGuideUI.UpdateUI();
+            _keyGuideUI.UpdateUI();
+        }
+
+        /// <summary>
+        /// スプライトのロード処理を行います
+        /// </summary>
+        void LoadSprites()
+        {
+            sprites = new Sprite[(int)KeyIcon.NUM];
+
+            // ガイドスプライトの読み込みを行い、アサインする
+            Sprite[] guideSprites = Resources.LoadAll<Sprite>(Constants.GUIDE_SPRITE_FOLDER_PASS + Constants.GUIDE_SPRITE_FILE_NAME);
+            for (int i = 0; i < (int)KeyIcon.NUM; ++i)
+            {
+                string fileName = Constants.GUIDE_SPRITE_FILE_NAME + spriteTailNoString[i];
+
+                foreach (Sprite sprite in guideSprites)
+                {
+                    if (sprite.name == fileName)
+                    {
+                        sprites[i] = sprite;
+                        break;
+                    }
+                }
+
+                if ( sprites[i] == null )
+                {
+                    Debug.LogError("File Not Found : " + fileName);
+                }
+            }
         }
 
         /// <summary>

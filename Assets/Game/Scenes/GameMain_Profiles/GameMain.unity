@@ -1584,22 +1584,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2784761546218297147, guid: c642a9e678cebde42b4404d654fb8800, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -1463595997, guid: 3ee0ee336830f8147871b79a3ec70c1a, type: 3}
-    - target: {fileID: 2784761546218297147, guid: c642a9e678cebde42b4404d654fb8800, type: 3}
-      propertyPath: m_DrawMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5333032149171541842, guid: c642a9e678cebde42b4404d654fb8800, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 32
-      objectReference: {fileID: 0}
-    - target: {fileID: 5333032149171541842, guid: c642a9e678cebde42b4404d654fb8800, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 32
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1695,7 +1679,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e388986ed2809324183bfef37d6e380b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _ui: {fileID: 596534828}
+  _keyGuideUI: {fileID: 596534828}
 --- !u!114 &8759991798010898649
 MonoBehaviour:
   m_ObjectHideFlags: 0
