@@ -879,7 +879,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1837317425425208}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 56dd4edec19a3b04195448769c085dfc, type: 3}
+  m_Avatar: {fileID: 9000000, guid: 599b2dc9e6c44a8ebc02ddea1f18d215, type: 3}
   m_Controller: {fileID: 9100000, guid: 1b58d63f942126347865fbdde70e67c5, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
@@ -921,7 +921,7 @@ MonoBehaviour:
     initDir: 0
     equipSkills: 
   camParam:
-    OffsetYOnAtkSequence: 1.5
+    OffsetOnAtkSequence: {x: 0, y: 0, z: 0}
     UICameraLengthY: 0.8
     UICameraLengthZ: 1.4
     UICameraLookAtCorrectY: 0.45
@@ -1008,7 +1008,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 507d4aa237c275a48b72e5772879be66, type: 2}
+  - {fileID: 2100000, guid: d9c0226bd4324f01bc178cf4a515ef84, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1033,7 +1033,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 4300000, guid: 56dd4edec19a3b04195448769c085dfc, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 599b2dc9e6c44a8ebc02ddea1f18d215, type: 3}
   m_Bones:
   - {fileID: 4958735577281076}
   - {fileID: 4003627468750388}
