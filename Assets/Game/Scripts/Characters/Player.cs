@@ -1,7 +1,5 @@
 using Frontier.Stage;
 using UnityEngine;
-using static Frontier.SkillsData;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Frontier
 {
@@ -83,14 +81,23 @@ namespace Frontier
         /// 使用スキルを選択します
         /// </summary>
         /// <param name="type">攻撃、防御、常駐などのスキルタイプ</param>
-        override public void SelectUseSkills(SituationType type)
+        override public void SelectUseSkills(SkillsData.SituationType type)
         {
-            KeyCode[] keyCodes = new KeyCode[Constants.EQUIPABLE_SKILL_MAX_NUM] { KeyCode.H, KeyCode.J, KeyCode.K, KeyCode.L };
+            KeyCode[] keyCodes = new KeyCode[Constants.EQUIPABLE_SKILL_MAX_NUM] 
+            {
+#if UNITY_EDITOR
+                KeyCode.H, KeyCode.J, KeyCode.K, KeyCode.L
+#elif UNITY_STANDALONE_WIN
+
+#else
+#endif
+            };
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
                 if (!param.IsValidSkill(i)) continue;
 
+                // 指定されたタイプ以外のスキルは無視する
                 var skillType = SkillsData.data[(int)param.equipSkills[i]].Type;
                 BattleUISystem.Instance.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
                 if (skillType != type)
@@ -98,6 +105,7 @@ namespace Frontier
                     continue;
                 }
 
+                // キーが押下されたら、キーに対応するスキルの使用状態を切り替える
                 if (Input.GetKeyUp(keyCodes[i]))
                 {
                     tmpParam.isUseSkills[i] = !tmpParam.isUseSkills[i];

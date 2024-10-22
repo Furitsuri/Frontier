@@ -5,7 +5,6 @@ using TMPro.SpriteAssetUtilities;
 using Palmmedia.ReportGenerator.Core.Common;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using static Frontier.SkillsData;
 using Frontier.Stage;
 
 namespace Frontier
@@ -186,7 +185,7 @@ namespace Frontier
             string json = File.ReadAllText(SkillDataFilePath);
             var dataContainer = JsonUtility.FromJson<SkillDataContainer>(json);
             if (dataContainer == null) return;
-            for (int i = 0; i < (int)ID.SKILL_NUM; ++i)
+            for (int i = 0; i < (int)SkillsData.ID.SKILL_NUM; ++i)
             {
                 ApplySkillsData(ref SkillsData.data[i], dataContainer.SkillsData[i]);
             }

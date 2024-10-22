@@ -7,8 +7,6 @@ using TMPro.Examples;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using static Frontier.Character;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Frontier
 {

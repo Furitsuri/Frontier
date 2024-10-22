@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Frontier.Character;
 
 namespace Frontier
 {
@@ -56,7 +55,7 @@ namespace Frontier
         /// </summary>
         /// <param name="modifiedParam">スキル使用キャラのバフ・デバフ用パラメータ</param>
         /// <param name="param">スキル使用キャラのパラメータ</param>
-        public static void ExecGuard(ref ModifiedParameter modifiedParam, ref Parameter param)
+        public static void ExecGuard(ref Character.ModifiedParameter modifiedParam, ref Character.Parameter param)
         {
             modifiedParam.Def = (int)Mathf.Floor(param.Def * 0.5f);
             param.consumptionActionGauge += 1;

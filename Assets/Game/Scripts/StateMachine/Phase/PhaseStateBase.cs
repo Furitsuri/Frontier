@@ -1,4 +1,5 @@
 using Frontier.Stage;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier
@@ -32,6 +33,14 @@ namespace Frontier
             return false;
         }
 
+        /// <summary>
+        /// キーガイドを更新します
+        /// </summary>
+        virtual public void UpdateKeyGuide()
+        {
+
+        }
+
         // 退避
         virtual public void Exit()
         {
@@ -51,9 +60,45 @@ namespace Frontier
             _isBack = true;
         }
 
+        /// <summary>
+        /// 死亡したキャラクターの存在を通知します
+        /// </summary>
+        /// <param name="characterKey">死亡したキャラクターのハッシュキー</param>
         protected void NoticeCharacterDied(CharacterHashtable.Key characterKey)
         {
             _btlMgr.SetDiedCharacterKey(characterKey);
+        }
+
+        /// <summary>
+        /// ガイドを新たに追加します
+        /// </summary>
+        /// <param name="addGuide"></param>
+        protected void AddKeyGuide(KeyGuideUI.KeyGuide addGuide )
+        {
+
+        }
+
+        /// <summary>
+        /// ステートの遷移に併せてキーガイドを変更します
+        /// </summary>
+        /// <param name="keyGuideList">遷移先のキーガイドリスト</param>
+        protected void TransitKeyGuides( List<KeyGuideUI.KeyGuide> keyGuideList )
+        {
+            GeneralUISystem.Instance.TransitKeyGuide( keyGuideList );
+        }
+
+        /// <summary>
+        /// ステートの遷移に併せてキーガイドを変更します
+        /// </summary>
+        /// <param name="args">遷移先で表示するキーガイド群</param>
+        protected void TransitKeyGuides(params (Constants.KeyIcon, string)[] args)
+        {
+            List<KeyGuideUI.KeyGuide> keyGuideList = new List<KeyGuideUI.KeyGuide>();
+            foreach(var arg in args ){
+                keyGuideList.Add(new KeyGuideUI.KeyGuide(arg));
+            }
+
+            GeneralUISystem.Instance.TransitKeyGuide(keyGuideList);
         }
     }
 }

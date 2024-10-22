@@ -66,6 +66,10 @@ namespace Frontier
             switch (_Phase)
             {
                 case PLMovePhase.PL_MOVE_SELECT_GRID:
+                    List<KeyGuideUI.KeyGuide> keyGuideList = new List<KeyGuideUI.KeyGuide>();
+                    keyGuideList.Add(new KeyGuideUI.KeyGuide( Constants.KeyIcon.UP, "Move" ));
+                    TransitKeyGuides(keyGuideList);
+
                     // ƒOƒŠƒbƒh‚Ì‘€ì
                     stageGrid.OperateGridCursor();
 
