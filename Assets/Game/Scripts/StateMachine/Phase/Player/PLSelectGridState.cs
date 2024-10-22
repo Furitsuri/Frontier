@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class PLSelectGrid : PhaseStateBase
+    public class PLSelectGridState : PhaseStateBase
     {
         override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
@@ -13,6 +13,11 @@ namespace Frontier
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);
+
+            // キーガイドを登録
+            TransitKeyGuides(
+                (Constants.KeyIcon.ALL_CURSOR,  "Move"),
+                (Constants.KeyIcon.ESCAPE,      "TURN END"));
         }
 
         override public bool Update()
@@ -35,6 +40,13 @@ namespace Frontier
                 return true;
             }
 
+            /*
+            // キーガイドを登録
+            TransitKeyGuides(
+                (Constants.KeyIcon.ALL_CURSOR, "Move"),
+                (Constants.KeyIcon.ESCAPE, "TURN END"));
+            */
+
             // グリッドの操作
             _stageCtrl.OperateGridCursor();
             Stage.GridInfo info;
@@ -48,6 +60,14 @@ namespace Frontier
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
             {
+                /*
+                // キーガイドを登録
+                TransitKeyGuides(
+                    (Constants.KeyIcon.ALL_CURSOR,  "Move"),
+                    (Constants.KeyIcon.DECISION,    "DECISION"),
+                    (Constants.KeyIcon.ESCAPE,      "TURN END"));
+                */
+
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
                     TransitIndex = 0;   // 遷移

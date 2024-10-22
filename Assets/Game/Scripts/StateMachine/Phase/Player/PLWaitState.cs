@@ -2,7 +2,6 @@ using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Frontier.Character;
 
 namespace Frontier
 {
@@ -23,9 +22,9 @@ namespace Frontier
 
             // 全てのコマンドを終了に
             var endCommand = selectPlayer.tmpParam.isEndCommand;
-            endCommand[(int)Command.COMMAND_TAG.MOVE] = true;
-            endCommand[(int)Command.COMMAND_TAG.ATTACK] = true;
-            endCommand[(int)Command.COMMAND_TAG.WAIT] = true;
+            endCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
+            endCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
+            endCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
 
             // 更新せずに終了
             Back();

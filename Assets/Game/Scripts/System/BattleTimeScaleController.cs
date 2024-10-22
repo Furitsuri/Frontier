@@ -35,9 +35,9 @@ public class BattleTimeScaleController
     }
 
     /// <summary>
-    /// 
+    /// タイムスケール値を設定します
     /// </summary>
-    /// <param name="timeScale"></param>
+    /// <param name="timeScale">設定するタイムスケール値</param>
     public void SetTimeScale( float timeScale )
     {
         _timeScale = timeScale;

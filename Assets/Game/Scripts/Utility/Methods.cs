@@ -4,7 +4,6 @@ using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
-using static UnityEditor.PlayerSettings;
 
 public static class Methods
 {

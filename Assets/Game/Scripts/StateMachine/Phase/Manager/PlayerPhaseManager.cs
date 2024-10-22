@@ -55,7 +55,7 @@ namespace Frontier
             // 遷移木の作成
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
-            RootNode = new PLSelectGrid();
+            RootNode = new PLSelectGridState();
             RootNode.AddChild(new PLSelectCommandState());
             RootNode.AddChild(new PLConfirmTurnEnd());
             RootNode.Children[0].AddChild(new PLMoveState());

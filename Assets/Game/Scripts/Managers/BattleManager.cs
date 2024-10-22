@@ -2,12 +2,14 @@ using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Frontier.Character;
 
 namespace Frontier
 {
     public class BattleManager : MonoBehaviour
     {
+        /// <summary>
+        /// バトル状態の遷移
+        /// </summary>
         enum BattlePhase
         {
             BATTLE_START = 0,
@@ -16,6 +18,9 @@ namespace Frontier
             BATTLE_END,
         }
 
+        /// <summary>
+        /// 戦闘におけるターンの種類
+        /// </summary>
         public enum TurnType
         {
             PLAYER_TURN = 0,
@@ -49,7 +54,7 @@ namespace Frontier
         private int _phaseManagerIndex = 0;
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
-        public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+        public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public SkillController SkillCtrl => _skillCtrl;
 
@@ -65,11 +70,11 @@ namespace Frontier
             _currentPhaseManager = _phaseManagers[(int)TurnType.PLAYER_TURN];
 
             _phase = BattlePhase.BATTLE_START;
-            _diedCharacterKey = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+            _diedCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
 
             // TODO : ステージのファイルから読み込んで設定するように
-            _battleBossCharacterKey = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
-            _escortTargetCharacterKey = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+            _battleBossCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
+            _escortTargetCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
 
             // スキルデータの読込
             _fileReadMgr.SkillDataLord();
@@ -196,19 +201,19 @@ namespace Frontier
 
             switch (characterTag)
             {
-                case CHARACTER_TAG.PLAYER:
+                case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
                         if (!player.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
-                case CHARACTER_TAG.ENEMY:
+                case Character.CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
                         if (!enemy.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
-                case CHARACTER_TAG.OTHER:
+                case Character.CHARACTER_TAG.OTHER:
                     // TODO : 必要になれば実装
                     isAnnihilated = false;
                     break;
@@ -224,10 +229,10 @@ namespace Frontier
         /// <returns>勝利、敗戦処理に遷移するか否か</returns>
         bool CheckVictoryOrDefeat(CharacterHashtable.Key diedCharacterKey)
         {
-            if (diedCharacterKey.characterTag != CHARACTER_TAG.NONE)
+            if (diedCharacterKey.characterTag != Character.CHARACTER_TAG.NONE)
             {
                 // ステージにボスが設定されているかのチェック
-                if (_battleBossCharacterKey.characterTag != CHARACTER_TAG.NONE)
+                if (_battleBossCharacterKey.characterTag != Character.CHARACTER_TAG.NONE)
                 {
                     if (diedCharacterKey == _battleBossCharacterKey)
                     {
@@ -238,7 +243,7 @@ namespace Frontier
                     }
                 }
 
-                if (_escortTargetCharacterKey.characterTag != CHARACTER_TAG.NONE)
+                if (_escortTargetCharacterKey.characterTag != Character.CHARACTER_TAG.NONE)
                 {
                     if (diedCharacterKey == _escortTargetCharacterKey)
                     {
@@ -251,12 +256,12 @@ namespace Frontier
 
                 if (CheckCharacterAnnihilated(diedCharacterKey.characterTag))
                 {
-                    if (diedCharacterKey.characterTag == CHARACTER_TAG.ENEMY)
+                    if (diedCharacterKey.characterTag == Character.CHARACTER_TAG.ENEMY)
                     {
                         // ステージクリアに遷移
                         StartStageClearAnim();
                     }
-                    else if (diedCharacterKey.characterTag == CHARACTER_TAG.PLAYER)
+                    else if (diedCharacterKey.characterTag == Character.CHARACTER_TAG.PLAYER)
                     {
                         // ゲームオーバーに遷移
                         StartGameOverAnim();
@@ -344,7 +349,7 @@ namespace Frontier
         /// </summary>
         public void ResetDiedCharacter()
         {
-            _diedCharacterKey.characterTag = CHARACTER_TAG.NONE;
+            _diedCharacterKey.characterTag = Character.CHARACTER_TAG.NONE;
             _diedCharacterKey.characterIndex = -1;
         }
 
@@ -363,9 +368,9 @@ namespace Frontier
         /// <param name="tag">キャラクタータグ</param>
         /// <param name="index">キャラクターインデックス</param>
         /// <returns>指定のキーに対応するキャラクター</returns>
-        public Character GetCharacterFromHashtable(CHARACTER_TAG tag, int index)
+        public Character GetCharacterFromHashtable(Character.CHARACTER_TAG tag, int index)
         {
-            if (tag == CHARACTER_TAG.NONE || index < 0) return null;
+            if (tag == Character.CHARACTER_TAG.NONE || index < 0) return null;
             CharacterHashtable.Key hashKey = new CharacterHashtable.Key(tag, index);
 
             return _characterHash.Get(hashKey) as Character;
@@ -378,7 +383,7 @@ namespace Frontier
         /// <returns>指定のキーに対応するキャラクター</returns>
         public Character GetCharacterFromHashtable(CharacterHashtable.Key key)
         {
-            if (key.characterTag == CHARACTER_TAG.NONE || key.characterIndex < 0) return null;
+            if (key.characterTag == Character.CHARACTER_TAG.NONE || key.characterIndex < 0) return null;
 
             return _characterHash.Get(key) as Character;
         }
@@ -445,12 +450,12 @@ namespace Frontier
         /// </summary>
         /// <param name="tag">指定するキャラクターのタグ</param>
         /// <returns>指定タグの総ユニット数</returns>
-        public int GetCharacterCount(CHARACTER_TAG tag)
+        public int GetCharacterCount(Character.CHARACTER_TAG tag)
         {
             switch (tag)
             {
-                case CHARACTER_TAG.PLAYER: return _players.Count;
-                case CHARACTER_TAG.ENEMY: return _enemies.Count;
+                case Character.CHARACTER_TAG.PLAYER: return _players.Count;
+                case Character.CHARACTER_TAG.ENEMY: return _enemies.Count;
                 default: return _others.Count;
             }
         }
@@ -521,23 +526,23 @@ namespace Frontier
         /// 指定のキャラクター群のアクションゲージを回復させます
         /// </summary>
         /// <param name="tag">キャラクター群のタグ</param>
-        public void RecoveryActionGaugeForGroup(CHARACTER_TAG tag)
+        public void RecoveryActionGaugeForGroup(Character.CHARACTER_TAG tag)
         {
             switch (tag)
             {
-                case CHARACTER_TAG.PLAYER:
+                case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
                         player.RecoveryActionGauge();
                     }
                     break;
-                case CHARACTER_TAG.ENEMY:
+                case Character.CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
                         enemy.RecoveryActionGauge();
                     }
                     break;
-                case CHARACTER_TAG.OTHER:
+                case Character.CHARACTER_TAG.OTHER:
                     // TODO : OTHERを作成次第追加
                     break;
             }

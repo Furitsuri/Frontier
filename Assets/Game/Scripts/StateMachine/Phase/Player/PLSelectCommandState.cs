@@ -6,7 +6,6 @@ using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
-using static Frontier.Character;
 
 namespace Frontier
 {
@@ -31,7 +30,7 @@ namespace Frontier
             }
 
             var endCommand = _selectPlayer.tmpParam.isEndCommand;
-            if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
+            if (endCommand[(int)Character.Command.COMMAND_TAG.MOVE] && endCommand[(int)Character.Command.COMMAND_TAG.ATTACK])
             {
                 return;
             }
@@ -58,7 +57,7 @@ namespace Frontier
 
         override public bool Update()
         {
-            bool isImpossibleCmd = _selectPlayer.tmpParam.isEndCommand[(int)Command.COMMAND_TAG.WAIT];
+            bool isImpossibleCmd = _selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT];
             if( isImpossibleCmd )
             {
                 Back();
@@ -70,11 +69,11 @@ namespace Frontier
             if (base.Update())
             {
                 // à⁄ìÆÇÃÇ›èIóπÇµÇƒÇ¢ÇÈèÍçáÇÕà⁄ìÆëOÇ…ñﬂÇÍÇÈÇÊÇ§Ç…          
-                if (endCommand[(int)Command.COMMAND_TAG.MOVE] && !endCommand[(int)Command.COMMAND_TAG.ATTACK])
+                if (endCommand[(int)Character.Command.COMMAND_TAG.MOVE] && !endCommand[(int)Character.Command.COMMAND_TAG.ATTACK])
                 {
                     _stageCtrl.FollowFootprint(_selectPlayer);
                     _stageCtrl.UpdateGridInfo();
-                    endCommand[(int)Command.COMMAND_TAG.MOVE] = false;
+                    endCommand[(int)Character.Command.COMMAND_TAG.MOVE] = false;
                 }
 
                 return true;

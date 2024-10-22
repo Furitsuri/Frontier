@@ -9,8 +9,6 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using static Frontier.Character;
-using static Frontier.SkillsData;
 
 namespace Frontier
 {
@@ -564,7 +562,7 @@ namespace Frontier
         /// <summary>
         /// 戦闘に使用するスキルを選択します
         /// </summary>
-        virtual public void SelectUseSkills(SituationType type)
+        virtual public void SelectUseSkills(SkillsData.SituationType type)
         {
         }
 

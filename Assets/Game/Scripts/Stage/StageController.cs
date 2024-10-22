@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Xml.Xsl;
 using UnityEditor;
 using UnityEngine;
-using static Frontier.Character;
 
 namespace Frontier.Stage
 {
@@ -200,7 +199,7 @@ namespace Frontier.Stage
         /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
         /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
         /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-        void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
+        void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  Character.CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
         {
             // 範囲外のグリッドは考慮しない
             if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
@@ -209,7 +208,7 @@ namespace Frontier.Stage
             // 既に計算済みのグリッドであれば終了
             if (moveRange <= _gridInfo[gridIndex].estimatedMoveRange) return;
             // 自身に対する敵対勢力キャラクターが存在すれば終了
-            StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)CHARACTER_TAG.NUM]
+            StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)Character.CHARACTER_TAG.NUM]
             {
                 BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERにおける敵対勢力
                 BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
@@ -224,7 +223,7 @@ namespace Frontier.Stage
             // 負の値であれば終了
             if (currentMoveRange < 0) return;
             // 攻撃範囲についても登録する
-            if (isAttackable && ( _gridInfo[gridIndex].characterTag == CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
+            if (isAttackable && ( _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
             // 左端を除外
             if (gridIndex % _stageModel.GetGridRowNum() != 0)
@@ -274,7 +273,7 @@ namespace Frontier.Stage
             {
                 var gridIndex = player.tmpParam.gridIndex;
                 ref var info = ref _gridInfo[gridIndex];
-                info.characterTag = CHARACTER_TAG.PLAYER;
+                info.characterTag = Character.CHARACTER_TAG.PLAYER;
                 info.charaIndex = player.param.characterIndex;
                 Methods.SetBitFlag(ref info.flag, BitFlag.PLAYER_EXIST);
             }
@@ -282,7 +281,7 @@ namespace Frontier.Stage
             {
                 var gridIndex = enemy.tmpParam.gridIndex;
                 ref var info = ref _gridInfo[gridIndex];
-                info.characterTag = CHARACTER_TAG.ENEMY;
+                info.characterTag = Character.CHARACTER_TAG.ENEMY;
                 info.charaIndex = enemy.param.characterIndex;
                 Methods.SetBitFlag(ref info.flag, BitFlag.ENEMY_EXIST);
             }
@@ -411,7 +410,7 @@ namespace Frontier.Stage
         /// <param name="attackRange">攻撃可能範囲値</param>
         /// <param name="selfTag">自身のキャラクタータグ</param>
         /// <param name="departIndex">出発グリッドインデックス</param>
-        void RegistAttackableEachGrid(int gridIndex, int attackRange, CHARACTER_TAG selfTag, int departIndex)
+        void RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, int departIndex)
         {
             // 範囲外のグリッドは考慮しない
             if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
@@ -424,23 +423,23 @@ namespace Frontier.Stage
 
                 switch (selfTag)
                 {
-                    case CHARACTER_TAG.PLAYER:
-                        if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.ENEMY ||
-                            _gridInfo[gridIndex].characterTag == CHARACTER_TAG.OTHER)
+                    case Character.CHARACTER_TAG.PLAYER:
+                        if (_gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.ENEMY ||
+                            _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.OTHER)
                         {
                             Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
-                    case CHARACTER_TAG.ENEMY:
-                        if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.PLAYER ||
-                            _gridInfo[gridIndex].characterTag == CHARACTER_TAG.OTHER)
+                    case Character.CHARACTER_TAG.ENEMY:
+                        if (_gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.PLAYER ||
+                            _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.OTHER)
                         {
                             Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
-                    case CHARACTER_TAG.OTHER:
-                        if (_gridInfo[gridIndex].characterTag == CHARACTER_TAG.PLAYER ||
-                            _gridInfo[gridIndex].characterTag == CHARACTER_TAG.ENEMY)
+                    case Character.CHARACTER_TAG.OTHER:
+                        if (_gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.PLAYER ||
+                            _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.ENEMY)
                         {
                             Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }

@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Frontier.Character;
-using static Frontier.Stage.StageController;
 
 namespace Frontier.Stage
 {
@@ -18,11 +16,11 @@ namespace Frontier.Stage
         // 移動値の見積もり値
         public int estimatedMoveRange;
         // グリッド上に存在するキャラクターのタイプ
-        public CHARACTER_TAG characterTag;
+        public Character.CHARACTER_TAG characterTag;
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // フラグ情報
-        public BitFlag flag;
+        public Stage.StageController.BitFlag flag;
         // ※ 一度設定された後は変更することがない変数
 
         /// <summary>
@@ -35,9 +33,9 @@ namespace Frontier.Stage
             charaStandPos       = Vector3.zero;
             moveResist          = -1;
             estimatedMoveRange  = -1;
-            characterTag        = CHARACTER_TAG.NONE;
+            characterTag        = Character.CHARACTER_TAG.NONE;
             charaIndex          = -1;
-            flag                = BitFlag.NONE;
+            flag                = Stage.StageController.BitFlag.NONE;
         }
 
         /// <summary>

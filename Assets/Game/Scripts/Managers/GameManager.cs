@@ -49,6 +49,9 @@ namespace Frontier
             StartCoroutine(GameFlow());
         }
 
+        /// <summary>
+        /// ゲームを初期化します
+        /// </summary>
         void InitGame()
         {
             // アニメーションデータの初期化

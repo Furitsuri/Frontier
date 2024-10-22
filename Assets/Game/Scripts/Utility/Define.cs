@@ -1,5 +1,8 @@
 static public class Constants
 {
+    /// <summary>
+    /// ステージ上の進行方向
+    /// </summary>
     public enum Direction
     {
         NONE = -1,
@@ -8,6 +11,23 @@ static public class Constants
         RIGHT,      // X軸正方向
         BACK,       // Z軸負方向
         LEFT,       // X軸負方向
+
+        NUM_MAX
+    }
+
+    /// <summary>
+    /// 各操作キーの定義
+    /// </summary>
+    public enum KeyIcon : int
+    {
+        ALL_CURSOR = 0, // 全方向
+        UP,             // 上
+        DOWN,           // 下
+        LEFT,           // 左
+        RIGHT,          // 右
+        DECISION,       // 決定
+        CANCEL,         // 戻る
+        ESCAPE,         // 終了
 
         NUM_MAX
     }
@@ -46,6 +66,8 @@ static public class Constants
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
+    // キーガイドにおけるスプライトテキスト間の幅
+    public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
     public const string LAYER_NAME_CHARACTER            = "Character";
     public const string LAYER_NAME_LEFT_PARAM_WINDOW    = "ParamRenderLeft";

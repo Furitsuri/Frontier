@@ -64,8 +64,8 @@ namespace Frontier
         private Character _useParryCharacter    = null;
         private Character _attackCharacter      = null;
         private JudgeResult _judgeResult        = JudgeResult.NONE;
-        private (float inner, float outer) _judgeRingSuccessRange;
-        private (float inner, float outer) _judgeRingJustRange;
+        private (float inner, float outer) _judgeRingSuccessRange   = (0f, 0f);
+        private (float inner, float outer) _judgeRingJustRange      = (0f, 0f);
 
         // パリィイベント終了時のデリゲート
         public event EventHandler<SkillParryCtrlEventArgs> ProcessCompleted;

@@ -4,8 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Frontier.Character;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Frontier
 {
@@ -76,7 +74,7 @@ namespace Frontier
             // à⁄ìÆçsìÆÇ…ëJà⁄Ç∑ÇÈÇ©
             if (IsTransitMove(tmpParam))
             {
-                TransitIndex = (int)Command.COMMAND_TAG.MOVE;
+                TransitIndex = (int)Character.Command.COMMAND_TAG.MOVE;
 
                 return true;
             }
@@ -84,7 +82,7 @@ namespace Frontier
             // çUåÇçsìÆÇ…ëJà⁄Ç∑ÇÈÇ©
             if (IsTransitAttack(tmpParam))
             {
-                TransitIndex = (int)Command.COMMAND_TAG.ATTACK;
+                TransitIndex = (int)Character.Command.COMMAND_TAG.ATTACK;
 
                 return true;
             }
@@ -113,7 +111,7 @@ namespace Frontier
 
         private bool IsTransitNextCharacter(Character.TmpParameter tmpParam)
         {
-            if (!tmpParam.IsExecutableCommand(Command.COMMAND_TAG.MOVE) && (!tmpParam.IsExecutableCommand(Command.COMMAND_TAG.ATTACK)))
+            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.MOVE) && (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.ATTACK)))
             {
                 tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
                 return true;

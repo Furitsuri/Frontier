@@ -2,7 +2,6 @@ using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Frontier.SkillsData;
 
 namespace Frontier
 {
@@ -74,8 +73,8 @@ namespace Frontier
             {
                 case EMAttackPhase.EM_ATTACK_CONFIRM:
                     // 使用スキルを選択する
-                    _attackCharacter.SelectUseSkills(SituationType.ATTACK);
-                    _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+                    _attackCharacter.SelectUseSkills(SkillsData.SituationType.ATTACK);
+                    _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
                     _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
