@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
+using Zenject;
 
 namespace Frontier
 {
     /// <summary>
-    /// キーガイド関連の表示制御を行います
+    /// 入力ガイド関連の表示制御を行います
     /// </summary>
-    public class KeyGuidePresenter : MonoBehaviour
+    public class InputGuidePresenter : MonoBehaviour
     {
         /// <summary>
         /// フェード中の各モード
@@ -27,6 +28,10 @@ namespace Frontier
         [Header("背景リサイズ開始から終了までの時間")]
         [SerializeField]
         public float ResizeTime = 0.33f;
+
+        // オブジェクト・コンポーネント作成クラス
+        [Inject]
+        private HierarchyBuilder _hierarchyBld = null;
 
         // キーガイドバーの入出状態
         private FadeMode _fadeMode = FadeMode.NEUTRAL;
@@ -47,9 +52,9 @@ namespace Frontier
         // ガイドの位置調整に用いるレイアウトグループ
         private HorizontalLayoutGroup _layoutGrp;
         // ゲーム内の現在の状況における各キーガイドのリスト
-        List<KeyGuideUI.KeyGuide> _keyGuideList;
+        List<InputGuideUI.InputGuide> _inputGuideList;
         // ゲーム内の現在の状況における、操作が有効となるキーとそれを押下した際の説明のUIリスト
-        List<KeyGuideUI> _keyGuideUIList;
+        List<InputGuideUI> _keyGuideUIList;
         // 各スプライトファイル名の末尾の番号
         private static readonly string[] spriteTailNoString =
         // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
@@ -79,7 +84,9 @@ namespace Frontier
         // Start is called before the first frame update
         void Awake()
         {
-            _keyGuideUIList         = new List<KeyGuideUI>();
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
+
+            _keyGuideUIList         = new List<InputGuideUI>();
             _rectTransform          = GetComponent<RectTransform>();
             _layoutGrp              = GetComponent<HorizontalLayoutGroup>();
             _prevGuideUIListCount   = 0;
@@ -99,6 +106,20 @@ namespace Frontier
                 _fadeMode = FadeMode.NEUTRAL;
                 _fadeTime = 0f;
             }
+
+            /*
+            // コールバック関数が設定されている場合は動作させる
+            foreach( var guide in _inputGuideList)
+            {
+                if( guide._callback != null )
+                {
+                    // if ( Input.GetKeyUp() ) // guide.typeに応じたキーが押下されたことを取得する 
+                    {
+                        guide._callback();
+                    }
+                }
+            }
+            */
         }
 
         /// <summary>
@@ -145,7 +166,7 @@ namespace Frontier
             foreach ( var keyGuideUI in _keyGuideUIList )
             {
                 var keyGuideUIRectTransform = keyGuideUI.gameObject.GetComponent<RectTransform>();
-                Debug.Assert(keyGuideUIRectTransform != null, "GetComponent of \"RectTransform of KeyGuideUI\" failed.");
+                Debug.Assert(keyGuideUIRectTransform != null, "GetComponent of \"RectTransform of InputGuideUI\" failed.");
 
                 taregtWidth += keyGuideUIRectTransform.sizeDelta.x;
             }
@@ -200,34 +221,27 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 遷移先のキーガイドを設定します
+        /// 現在の状態遷移におけるキーガイドを設定します
         /// </summary>
         /// <param name="guides">表示するキーガイドのリスト</param>
-        public void Transit( List<KeyGuideUI.KeyGuide> keyGuideList )
+        public void SetGuides( List<InputGuideUI.InputGuide> keyGuideList )
         {
             // 前回の表示ガイドUI数を保存
             _prevGuideUIListCount = _keyGuideUIList.Count;
 
             _keyGuideUIList.Clear();
-            _keyGuideList = keyGuideList;
+            _inputGuideList = keyGuideList;
 
             // オブジェクトをインスタンス化して登録
             Transform parentTransform = this.transform;
-            foreach (KeyGuideUI.KeyGuide guide in _keyGuideList)
+            foreach (InputGuideUI.InputGuide guide in _inputGuideList)
             {
-                GameObject keyGuideObject = Instantiate(GuideUIPrefab);
-                if( keyGuideObject != null )
-                {
-                    // このインスタンスの子インスタンスとして生成
-                    keyGuideObject.transform.SetParent(parentTransform);
+                InputGuideUI keyGuideUI = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>(GuideUIPrefab, gameObject, true);
+                if (keyGuideUI == null) continue;
 
-                    KeyGuideUI keyGuideUI = keyGuideObject.GetComponent<KeyGuideUI>();
-                    if (keyGuideUI == null) continue;
+                keyGuideUI.Regist(_sprites, guide);
 
-                    keyGuideUI.Regist( _sprites, guide );
-
-                    _keyGuideUIList.Add(keyGuideUI);
-                }
+                _keyGuideUIList.Add(keyGuideUI);
             }
 
             // フェード状態の遷移

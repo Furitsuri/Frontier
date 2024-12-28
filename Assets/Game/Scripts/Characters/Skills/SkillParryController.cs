@@ -10,7 +10,7 @@ namespace Frontier
     /// <summary>
     /// パリィスキルの処理を行います
     /// </summary>
-    public class SkillParryController : MonoBehaviour
+    public class SkillParryController : Controller
     {
         /// <summary>
         /// パリィ判定の種類

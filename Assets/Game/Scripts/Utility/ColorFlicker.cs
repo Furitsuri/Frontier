@@ -5,13 +5,16 @@ public class ColorFlicker<T> where T : IColorEditable
 {
     [SerializeField]
     T colorFlickObject;
+
     [Header("1ループの長さ(秒単位)")]
     [SerializeField]
     [Range(0.1f, 10.0f)]
     float duration = 1.0f;
+
     [Header("ループ開始時の色")]
     [SerializeField]
     Color32 startColor = new Color32(255, 255, 255, 255);
+
     //ループ終了(折り返し)時の色を0～255までの整数で指定。
     [Header("ループ終了時の色")]
     [SerializeField]

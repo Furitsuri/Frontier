@@ -12,6 +12,7 @@ public class Bullet : MonoBehaviour
     protected float _gridLength;
     protected bool _isHit;
 
+    // ’e‚ª1ƒOƒŠƒbƒh‚ ‚½‚è‚ðˆÚ“®‚·‚éŽžŠÔ
     [SerializeField]
     protected float _flightTimePerGrid;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 namespace Frontier
 {
@@ -10,6 +11,9 @@ namespace Frontier
     {
         [SerializeField]
         private GameObject _TMPCommandStringSample;
+
+        [Inject]
+        private HierarchyBuilder _hierarchyBld = null;
 
         private List<TextMeshProUGUI> _commandTexts = new List<TextMeshProUGUI>();
         private RectTransform _commandUIBaseRectTransform;
@@ -19,6 +23,8 @@ namespace Frontier
 
         void Awake()
         {
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
+
             _commandUIBaseRectTransform     = gameObject.GetComponent<RectTransform>();
             _cmdTextVerticalLayout          = gameObject.GetComponent<VerticalLayoutGroup>();
             TextMeshProUGUI[] commandNames  = gameObject.GetComponentsInChildren<TextMeshProUGUI>();
@@ -105,12 +111,9 @@ namespace Frontier
             // 実行可能なコマンドの文字列をリストに追加し、そのゲームオブジェクトを子として登録
             for (int i = 0; i < executableCommands.Count; ++i)
             {
-                GameObject stringObject = Instantiate(_TMPCommandStringSample);
-                if (stringObject == null) continue;
-                TextMeshProUGUI commandString = stringObject.GetComponent<TextMeshProUGUI>();
+                TextMeshProUGUI commandString = _hierarchyBld.CreateComponentAndOrganize<TextMeshProUGUI>(true);
                 commandString.transform.SetParent(this.gameObject.transform, false);
                 commandString.SetText(_commandStrings[(int)executableCommands[i]]);
-                commandString.gameObject.SetActive( true );
                 _commandTexts.Add(commandString);
                 fontSize = commandString.fontSize;
             }

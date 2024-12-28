@@ -44,6 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cbcfcf3710ae724d9b680d23cc1799e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stageGridObject: {fileID: 3810255508824440438, guid: a459440f3bb1be44ca982570a074f9f1, type: 3}
-  playerPrefab: {fileID: 8422892626600285392, guid: b8ef35a9f0d11004f88ce3e1b7017b26, type: 3}
-  enemyPrefab: {fileID: 0}
+  _stageControllerObject: {fileID: 3810255508824440438, guid: a459440f3bb1be44ca982570a074f9f1, type: 3}
+  _skillCtrlObject: {fileID: 8067296009142342895, guid: c405c75e536f87e4d8a15b35fb078817, type: 3}
+  _fileReadMgr: {fileID: 4337530374610159260, guid: 50ecdac321897ff428051ad4b4815b18, type: 3}

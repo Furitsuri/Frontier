@@ -47,14 +47,19 @@ namespace Frontier
 
         [SerializeField]
         private float _offsetLength;
+
         [SerializeField]
         private float _followDuration = 1f;
+
         [SerializeField]
         private float _fadeDuration = 0.4f;
+
         [SerializeField]
         private float _atkCameraLerpDuration = 0.2f;
+
         [SerializeField]
         private float _mosaicStartFadeRate = 0.0f;
+
         [SerializeField]
         private float _mosaicBlockSizeMaxRate = 0.5f;
 
@@ -106,9 +111,6 @@ namespace Frontier
             _followingPosition      = _mainCamera.transform.position;
             _offset                 = _followingPosition - _mainCamera.transform.forward;
             _offsetLength           = _offset.magnitude;
-
-            // カメラパラメータファイルをロード
-            FileReadManager.Instance.CameraParamLord(this);
         }
 
         // Update is called once per frame
@@ -135,13 +137,16 @@ namespace Frontier
             }
         }
 
+        /// <summary>
+        /// ユニットが移動する際のカメラ更新を行います
+        /// </summary>
         private void UpdateCharacterMoveCamera()
         {
 
         }
 
         /// <summary>
-        /// ユニット同士の対戦シーケンスにおけるカメラ更新
+        /// ユニット同士の対戦シーケンスにおけるカメラ更新を行います
         /// </summary>
         private void UpdateAttackSequenceCamera()
         {

@@ -9,44 +9,61 @@ using UnityEngine.UI;
 
 namespace Frontier
 {
-    public class KeyGuideUI : MonoBehaviour
+    public class InputGuideUI : MonoBehaviour
     {
         /// <summary>
         /// キーのアイコンとその説明文の構造体
         /// </summary>
-        public struct KeyGuide
+        public struct InputGuide
         {
+            public delegate bool InputCallBack();
+
             // キーアイコン
             public Constants.KeyIcon _type;
             // アイコンに対する説明文
             public string _explanation;
+            // キーが押下された際に動作させるコールバック
+            public InputCallBack _callback;
 
             /// <summary>
-            /// コンストラクタ(引数に単一を指定)
+            /// コンストラクタ
             /// </summary>
             /// <param name="type">ガイドスプライトのアイコンタイプ</param>
             /// <param name="explanation">キーに対する説明文</param>
-            public KeyGuide(Constants.KeyIcon type, string explanation)
+            public InputGuide(Constants.KeyIcon type, string explanation)
             {
                 _type = type;
                 _explanation = explanation;
+                _callback = null;
             }
 
             /// <summary>
-            /// コンストラクタ(引数に複数を指定)
+            /// コンストラクタ(引数にタプルを指定)
             /// </summary>
             /// <param name="type">ガイドスプライトのアイコンタイプ</param>
             /// <param name="explanation">キーに対する説明文</param>
-            public KeyGuide((Constants.KeyIcon type, string explanation) arg)
+            public InputGuide((Constants.KeyIcon type, string explanation) arg)
             {
                 _type = arg.type;
                 _explanation = arg.explanation;
+                _callback = null;
+            }
+
+            /// <summary>
+            /// コンストラクタ(コールバックを内包したタプルを引数に指定)
+            /// </summary>
+            /// <param name="arg">タプル引数</param>
+            public InputGuide((Constants.KeyIcon type, string explanation, InputCallBack callback) arg)
+            {
+                _type = arg.type;
+                _explanation = arg.explanation;
+                _callback = arg.callback;
             }
         }
 
         /// <summary>
-        /// このオブジェクトの子オブジェクトの、
-        /// 各インデックスに対応するオブジェクトの種類です
+        /// このクラスをアタッチしたUnityオブジェクトにおいて、
+        /// その子に該当するオブジェクト達のインデックスが、何のオブジェクトを示すかの種類を表します
         /// UnityEditor側で編集した場合は、必ずこちらも変更する必要があります
         /// </summary>
         private enum ChildIndex
@@ -65,6 +82,7 @@ namespace Frontier
         [Header("説明テキスト")]
         private TextMeshProUGUI GuideExplanation;
 
+        // 入力ガイドの枠UI
         private RectTransform _rectTransform;
         // 子のオブジェクト
         private GameObject[] _objectChildren;
@@ -93,7 +111,7 @@ namespace Frontier
 
         void Update()
         {
-            
+
         }
 
         /// <summary>
@@ -119,7 +137,7 @@ namespace Frontier
         /// <param name="sprites">参照するスプライト配列</param>
         /// <param name="guide">このUIに設定するガイド情報</param>
         /// </summary>
-        public void Regist( Sprite[] sprites, KeyGuide guide )
+        public void Regist( Sprite[] sprites, InputGuide guide )
         {
             GuideSprite.sprite          = sprites[(int)guide._type];
             var position                = transform.localPosition;

@@ -36,7 +36,7 @@ namespace Frontier
         /// <summary>
         /// キーガイドを更新します
         /// </summary>
-        virtual public void UpdateKeyGuide()
+        virtual public void UpdateInputGuide()
         {
 
         }
@@ -73,7 +73,7 @@ namespace Frontier
         /// ガイドを新たに追加します
         /// </summary>
         /// <param name="addGuide"></param>
-        protected void AddKeyGuide(KeyGuideUI.KeyGuide addGuide )
+        protected void AddInputGuide(InputGuideUI.InputGuide addGuide )
         {
 
         }
@@ -82,23 +82,38 @@ namespace Frontier
         /// ステートの遷移に併せてキーガイドを変更します
         /// </summary>
         /// <param name="keyGuideList">遷移先のキーガイドリスト</param>
-        protected void TransitKeyGuides( List<KeyGuideUI.KeyGuide> keyGuideList )
+        protected void SetInputGuides( List<InputGuideUI.InputGuide> keyGuideList )
         {
-            GeneralUISystem.Instance.TransitKeyGuide( keyGuideList );
+           //  GeneralUISystem.Instance.SetInputGuideList( keyGuideList );
         }
 
         /// <summary>
         /// ステートの遷移に併せてキーガイドを変更します
         /// </summary>
         /// <param name="args">遷移先で表示するキーガイド群</param>
-        protected void TransitKeyGuides(params (Constants.KeyIcon, string)[] args)
+        protected void SetInputGuides(params (Constants.KeyIcon, string)[] args)
         {
-            List<KeyGuideUI.KeyGuide> keyGuideList = new List<KeyGuideUI.KeyGuide>();
+            List<InputGuideUI.InputGuide> keyGuideList = new List<InputGuideUI.InputGuide>();
             foreach(var arg in args ){
-                keyGuideList.Add(new KeyGuideUI.KeyGuide(arg));
+                keyGuideList.Add(new InputGuideUI.InputGuide(arg));
             }
 
-            GeneralUISystem.Instance.TransitKeyGuide(keyGuideList);
+            // GeneralUISystem.Instance.SetInputGuideList(keyGuideList);
+        }
+
+        /// <summary>
+        /// TODO : 全てコールバックを登録する形でキーの受付が出来ないかの試験用
+        /// </summary>
+        /// <param name="args"></param>
+        protected void SetInputGuides(params (Constants.KeyIcon, string, InputGuideUI.InputGuide.InputCallBack)[] args)
+        {
+            List<InputGuideUI.InputGuide> keyGuideList = new List<InputGuideUI.InputGuide>();
+            foreach (var arg in args)
+            {
+                keyGuideList.Add(new InputGuideUI.InputGuide(arg));
+            }
+
+            // GeneralUISystem.Instance.SetInputGuideList(keyGuideList);
         }
     }
 }

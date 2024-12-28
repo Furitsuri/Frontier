@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class SkillController : MonoBehaviour
+    public class SkillController : Controller
     {
         private SkillParryController _parryCtrl = null;
         public SkillParryController ParryController => _parryCtrl;

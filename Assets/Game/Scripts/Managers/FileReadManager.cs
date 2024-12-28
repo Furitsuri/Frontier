@@ -6,15 +6,12 @@ using Palmmedia.ReportGenerator.Core.Common;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Frontier.Stage;
+using Zenject;
 
 namespace Frontier
 {
-    public class FileReadManager : Singleton<FileReadManager>
+    public class FileReadManager : MonoBehaviour
     {
-        [Header("バトルマネージャ")]
-        [SerializeField]
-        private BattleManager _btlMgr;
-
         [Header("各味方キャラクターのプレハブ")]
         [SerializeField]
         public GameObject[] PlayersPrefab;
@@ -42,6 +39,11 @@ namespace Frontier
         [Header("遠隔攻撃時のカメラパラメータの参照先")]
         [SerializeField]
         public string RangedAtkCameraParamFilePath;
+
+        private HierarchyBuilder _hierarchyBld = null;
+
+        // バトルマネージャ
+        private BattleManager _btlMgr;
 
         [System.Serializable]
         public struct CharacterParamData
@@ -108,11 +110,21 @@ namespace Frontier
             public List<BattleCameraController.CameraParamData[]> CameraParams;
         }
 
-        protected override void OnStart()
+        /// <summary>
+        /// Diコンテナから引数を注入します
+        /// </summary>
+        /// <param name="btlMgr"></param>
+        /// <param name="hierarchyBld"></param>
+        [Inject]
+        void Construct(BattleManager btlMgr, HierarchyBuilder hierarchyBld)
         {
-            Debug.Assert(_btlMgr != null);
+            _btlMgr         = btlMgr;
+            _hierarchyBld   = hierarchyBld;
+        }
 
-            base.OnStart();
+        void Awake()
+        {
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
         }
 
         /// <summary>
@@ -132,16 +144,18 @@ namespace Frontier
             for (int i = 0; i < Params.Length; ++i)
             {
                 int prefabIndex = Params[i].Prefab;
-                GameObject playerObject = Instantiate(PlayersPrefab[prefabIndex]);
-                if (playerObject == null) continue;
+                Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false);
 
-                Player player = playerObject.GetComponent<Player>();
-                if (player == null) continue;
+                // 弾オブジェクトが設定されていれば生成
+                // 使用時まで非アクティブにする
+                if ( player.BulletObject != null )
+                {
+                    _hierarchyBld.CreateComponentWithNestedNewDirectoryWithDiContainer<Bullet>(player.BulletObject, player.gameObject, "Bullet", false, false);
+                }
 
                 // ファイルから読み込んだパラメータを設定
                 ApplyCharacterParams(ref player.param, Params[i]);
-                player.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
-                playerObject.SetActive(true);
+                player.Init();
 
                 _btlMgr.AddPlayerToList(player);
             }
@@ -161,17 +175,13 @@ namespace Frontier
             for (int i = 0; i < Params.Length; ++i)
             {
                 int prefabIndex = Params[i].Param.Prefab;
-                GameObject enemyObject = Instantiate(EnemiesPrefab[prefabIndex]);
-                if (enemyObject == null) continue;
 
-                Enemy enemy = enemyObject.GetComponent<Enemy>();
-                if (enemy == null) continue;
+                Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(EnemiesPrefab[prefabIndex], true, false);
 
                 // ファイルから読み込んだパラメータを設定
                 ApplyCharacterParams(ref enemy.param, Params[i].Param);
-                enemy.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
+                enemy.Init();
                 enemy.SetThinkType((Enemy.ThinkingType)Params[i].ThinkType);
-                enemyObject.SetActive(true);
 
                 _btlMgr.AddEnemyToList(enemy);
             }
@@ -259,28 +269,23 @@ namespace Frontier
         /// </summary>
         public void DebugBattleLoadUnit(int prefabIndex, ref Character.Parameter param)
         {
-            GameObject unitObject = Instantiate(PlayersPrefab[prefabIndex]);
-            if (unitObject == null) return;
-
             if (param.characterTag == Character.CHARACTER_TAG.PLAYER)
             {
-                Player player = unitObject.GetComponent<Player>();
+                Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false);
                 if (player == null) return;
 
                 player.param = param;
-                player.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
-                unitObject.SetActive(true);
+                player.Init();
 
                 _btlMgr.AddPlayerToList(player);
             }
             else
             {
-                Enemy enemy = unitObject.GetComponent<Enemy>();
+                Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(PlayersPrefab[prefabIndex], true, false);
                 if (enemy == null) return;
 
                 enemy.param = param;
-                enemy.Init(_btlMgr, ManagerProvider.Instance.GetService<StageController>());
-                unitObject.SetActive(true);
+                enemy.Init();
 
                 _btlMgr.AddEnemyToList(enemy);
             }
