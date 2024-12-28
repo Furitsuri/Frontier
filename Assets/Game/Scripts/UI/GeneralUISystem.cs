@@ -9,8 +9,8 @@ namespace Frontier
     {
         public static GeneralUISystem Instance { get; private set; }
 
-        [Header("KeyGuidePresenter")]
-        public KeyGuidePresenter KeyGuideView;  // キーガイド表示
+        [Header("InputGuidePresenter")]
+        public InputGuidePresenter InputGuideView;  // キーガイド表示
 
         void Awake()
         {
@@ -18,12 +18,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// キーガイド表示の遷移処理を行います
+        /// キーガイド表示用のリストを設定します
         /// </summary>
         /// <param name="keyGuideList">表示するキーガイドリスト</param>
-        public void TransitKeyGuide(List<KeyGuideUI.KeyGuide> keyGuideList)
+        public void SetInputGuideList(List<InputGuideUI.InputGuide> keyGuideList)
         {
-            KeyGuideView.Transit(keyGuideList);
+            InputGuideView.SetGuides(keyGuideList);
         }
     }
 }

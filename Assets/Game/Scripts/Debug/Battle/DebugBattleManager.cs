@@ -8,6 +8,7 @@ namespace Frontier
     {
         [SerializeField]
         private Character.Parameter GenerateUnitParamSetting;
+
         [SerializeField]
         private BattleManager _btlMgr;
 

@@ -12,10 +12,13 @@ namespace Frontier
     {
         [SerializeField]
         private TextMeshProUGUI TMPSkillName;
+
         [SerializeField]
         private RectTransform PanelTransform;
+
         [SerializeField]
         private RawImage ActGaugeElemImage;
+
         [SerializeField]
         private UnityEngine.UI.Image CurtainImage;
 

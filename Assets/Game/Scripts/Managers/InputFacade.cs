@@ -6,8 +6,7 @@ using static Constants;
 
 namespace Frontier
 {
-
-    public class KeyManager : MonoBehaviour
+    public class InputFacade : MonoBehaviour
     {
         /// <summary>
         /// 指定のKeyCodeがtrueであれば有効,
@@ -41,44 +40,45 @@ namespace Frontier
             }
         }
 
-        public static KeyManager instance = null;
+        // 入力ガイドの表示
+        [SerializeField]
+        [Header("InputGuidePresenter")]
+        private InputGuidePresenter _inputGuidePresenter;
 
         private ToggleKeyCode[] _switchCodes;
+        // 最後にキー操作をした時間の保持
+        private float _operateKeyLastTime = 0.0f;
 
         void Awake()
         {
-            if (instance == null)
-            {
-                instance = this;
-            }
-            else if (instance != this)
-            {
-                Destroy(gameObject);
-            }
-
-            DontDestroyOnLoad(gameObject);
         }
 
         void Start()
         {
-            InitKeyCodes();
+            InitInputCodes();
         }
 
         /// <summary>
-        /// 判定対象となるキーコードを初期化します
+        /// 初期化します
         /// </summary>
-        private void InitKeyCodes()
+        public void Init()
+        {
+
+        }
+
+        /// <summary>
+        /// 判定対象となる入力コードを初期化します
+        /// </summary>
+        private void InitInputCodes()
         {
             _switchCodes = new ToggleKeyCode[(int)Constants.KeyIcon.NUM_MAX]
             {
                 ( KeyCode.UpArrow,     false, Constants.KeyIcon.ALL_CURSOR ),
-                ( KeyCode.DownArrow,   false, Constants.KeyIcon.ALL_CURSOR ),
-                ( KeyCode.RightArrow,  false, Constants.KeyIcon.ALL_CURSOR ),
-                ( KeyCode.LeftArrow,   false, Constants.KeyIcon.ALL_CURSOR ),
+                ( KeyCode.LeftArrow,   false, Constants.KeyIcon.VERTICAL_CURSOR ),
+                ( KeyCode.UpArrow,     false, Constants.KeyIcon.HORIZONTAL_CURSOR ),
                 ( KeyCode.Space,       false, Constants.KeyIcon.DECISION),
                 ( KeyCode.Backspace,   false, Constants.KeyIcon.CANCEL ),
-                ( KeyCode.Escape,      false, Constants.KeyIcon.ESCAPE ),
-                ( KeyCode.UpArrow,     false, Constants.KeyIcon.UP )
+                ( KeyCode.Escape,      false, Constants.KeyIcon.ESCAPE )
             };
         }
 
@@ -94,7 +94,7 @@ namespace Frontier
         {
             _switchCodes[(int)keyIcon].Enable = true;
 
-            new KeyGuideUI.KeyGuide(keyIcon, keyExplanation);
+            new InputGuideUI.InputGuide(keyIcon, keyExplanation);
 
 
         }
@@ -109,12 +109,61 @@ namespace Frontier
             _switchCodes[(int)keyIcon].Enable = isKeyActive;
         }
 
+        /// <summary>
+        /// 引数に指定されたアイコンに対応されているキーが押下されたかを調べます
+        /// </summary>
+        /// <param name="icon">指定アイコン</param>
+        /// <returns></returns>
+        public bool IsInputKey( Constants.KeyIcon icon )
+        {
+            switch( icon )
+            {
+                case Constants.KeyIcon.ALL_CURSOR:
+                    return true;
+                case Constants.KeyIcon.VERTICAL_CURSOR:
+                    return true;
+                case Constants.KeyIcon.HORIZONTAL_CURSOR:
+                    return true;
+                case Constants.KeyIcon.DECISION:
+                    return true;
+                case Constants.KeyIcon.CANCEL:
+                    return true;
+                case Constants.KeyIcon.ESCAPE:
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keyIcon"></param>
+        /// <param name="keyExplanation"></param>
+        /// <param name="isKeyActive"></param>
         public void ChangeKeyCodeIconAndExplanation(Constants.KeyIcon keyIcon, string keyExplanation, bool isKeyActive)
         {
             _switchCodes[(int)keyIcon].Icon         = keyIcon;
             _switchCodes[(int)keyIcon].Explanation  = keyExplanation;
 
             SetKeyCodeActive(keyIcon, isKeyActive);
+        }
+
+        /// <summary>
+        /// ユーザーがキー操作を行った際に、
+        /// 短い時間で何度も同じキーが押下されたと判定されないためにインターバル時間を設けます
+        /// </summary>
+        /// <returns>キー操作が有効か無効か</returns>
+        private bool OperateKeyControl()
+        {
+            if ( Constants.OPERATE_KET_INTERVAL <= Time.time - _operateKeyLastTime )
+            {
+                _operateKeyLastTime = Time.time;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

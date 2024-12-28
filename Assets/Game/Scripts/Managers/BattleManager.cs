@@ -2,10 +2,11 @@ using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
-    public class BattleManager : MonoBehaviour
+    public class BattleManager : Manager
     {
         /// <summary>
         /// バトル状態の遷移
@@ -29,18 +30,30 @@ namespace Frontier
             NUM
         }
 
-        [Header("スキルコントローラ")]
+        [Header("ステージコントローラオブジェクト")]
         [SerializeField]
-        private SkillController _skillCtrl;
+        private GameObject _stageControllerObject;
+
+        [Header("スキルコントローラオブジェクト")]
+        [SerializeField]
+        private GameObject _skillCtrlObject;
 
         [Header("ファイル読込マネージャ")]
         [SerializeField]
         private FileReadManager _fileReadMgr;
 
+        private DiContainer _container = null;
+        private DiInstaller _installer = null;
+        private HierarchyBuilder _hierarchyBld = null;
+        private UISystem _uiSystem = null;
+
         private BattlePhase _phase;
         private BattleCameraController _battleCameraCtrl;
         private BattleTimeScaleController _battleTimeScaleCtrl = new();
-        private StageController _stageCtrl;
+        private BattleUISystem _battleUi = null;
+        private InputFacade _inputFacade;
+        private StageController _stageCtrl = null;
+        private SkillController _skillCtrl = null;
         private PhaseManagerBase _currentPhaseManager;
         private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
         private List<Player> _players = new List<Player>(Constants.CHARACTER_MAX_NUM);
@@ -58,6 +71,22 @@ namespace Frontier
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public SkillController SkillCtrl => _skillCtrl;
 
+        /// <summary>
+        /// Diコンテナから引数を注入します
+        /// </summary>
+        /// <param name="container">DIコンテナ</param>
+        /// <param name="installer">DIインストーラ</param>
+        /// <param name="hierarchyBld">オブジェクト・コンポーネント作成</param>
+        /// <param name="uiSystem">UIシステム</param>
+        [Inject]
+        void Construct(DiContainer container, DiInstaller installer, HierarchyBuilder hierarchyBld, UISystem uiSystem)
+        {
+            _container      = container;
+            _installer      = installer;
+            _hierarchyBld   = hierarchyBld;
+            _uiSystem       = uiSystem;
+        }
+
         void Awake()
         {
             var btlCameraObj = GameObject.FindWithTag("MainCamera");
@@ -65,28 +94,38 @@ namespace Frontier
             {
                 _battleCameraCtrl = btlCameraObj.GetComponent<BattleCameraController>();
             }
-            _phaseManagers[(int)TurnType.PLAYER_TURN] = new PlayerPhaseManager();
-            _phaseManagers[(int)TurnType.ENEMY_TURN] = new EnemyPhaseManager();
+
+            _phaseManagers[(int)TurnType.PLAYER_TURN]   = new PlayerPhaseManager();
+            _phaseManagers[(int)TurnType.ENEMY_TURN]    = new EnemyPhaseManager();
             _currentPhaseManager = _phaseManagers[(int)TurnType.PLAYER_TURN];
 
-            _phase = BattlePhase.BATTLE_START;
-            _diedCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
-
             // TODO : ステージのファイルから読み込んで設定するように
-            _battleBossCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
-            _escortTargetCharacterKey = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
-
-            // スキルデータの読込
-            _fileReadMgr.SkillDataLord();
+            _diedCharacterKey           = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
+            _battleBossCharacterKey     = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
+            _escortTargetCharacterKey   = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
         }
 
         void Start()
         {
-            Debug.Assert(_skillCtrl != null);
+            Debug.Assert(_uiSystem != null, "UISystemのインスタンスが生成されていません。Injectの設定を確認してください。");
 
-            _stageCtrl = ManagerProvider.Instance.GetService<StageController>();
-            _stageCtrl.Init(this);
-            _skillCtrl.Init(this);
+            if (_stageCtrl == null)
+            {
+                _stageCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageController>(_stageControllerObject, true, true);
+            }
+
+            if (_skillCtrl == null)
+            {
+                _skillCtrl = _hierarchyBld.CreateComponentAndOrganize<SkillController>(_skillCtrlObject, true);
+            }
+
+            _container.InjectGameObject(_fileReadMgr.gameObject);
+
+            _battleUi = _uiSystem.BattleUI;
+            _battleUi.gameObject.SetActive(true);
+            _container.InjectGameObject(_battleUi.gameObject);
+
+            Init();
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -145,7 +184,7 @@ namespace Frontier
             if (!Methods.IsDebugScene())
 #endif
             {
-                if (GameManager.instance.IsInvoking())
+                if (GameMain.instance.IsInvoking())
                 {
                     return;
                 }
@@ -190,6 +229,33 @@ namespace Frontier
                 _currentPhaseManager = _phaseManagers[_phaseManagerIndex];
                 _currentPhaseManager.Init();
             }
+        }
+
+        /// <summary>
+        /// 各種パラメータを初期化させます
+        /// </summary>
+        public void Init()
+        {
+            _stageCtrl.Init(this);
+            _skillCtrl.Init(this);
+
+            // 初期フェイズを設定
+            _phase = BattlePhase.BATTLE_START;
+            // ファイル読込マネージャにカメラパラメータをロードさせる
+            _fileReadMgr.CameraParamLord(_battleCameraCtrl);
+            // スキルデータの読込
+            _fileReadMgr.SkillDataLord();
+        }
+
+        /// <summary>
+        /// DI用の関数です
+        /// オブジェクトなどを注入します
+        /// </summary>
+        /// <param name="generator">Unityのインスタンス生成クラス</param>
+        /// <param name="inputFacade">入力窓口</param>
+        public void Inject(HierarchyBuilder hierarchyBld, InputFacade inputFacade)
+        {
+            _inputFacade = inputFacade;
         }
 
         /// <summary>

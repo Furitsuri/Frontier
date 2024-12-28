@@ -20,14 +20,12 @@ static public class Constants
     /// </summary>
     public enum KeyIcon : int
     {
-        ALL_CURSOR = 0, // 全方向
-        UP,             // 上
-        DOWN,           // 下
-        LEFT,           // 左
-        RIGHT,          // 右
-        DECISION,       // 決定
-        CANCEL,         // 戻る
-        ESCAPE,         // 終了
+        ALL_CURSOR = 0,     // 全方向
+        VERTICAL_CURSOR,    // 縦方向
+        HORIZONTAL_CURSOR,  // 横方向
+        DECISION,           // 決定
+        CANCEL,             // 戻る
+        ESCAPE,             // 終了
 
         NUM_MAX
     }
@@ -66,6 +64,8 @@ static public class Constants
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
+    // 最後にキー操作を行ってから、次のキー操作が有効になるまでのインターバル
+    public const float OPERATE_KET_INTERVAL = 0.17f;
     // キーガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 

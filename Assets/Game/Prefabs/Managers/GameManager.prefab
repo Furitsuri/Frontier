@@ -44,6 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 587ab899109067847b34853f55e462ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _inputFacade: {fileID: 7689401278552099732, guid: 9f9d8d8fe25296041afce27c0b8fd527, type: 3}
+  _UISystem: {fileID: 0}
+  _UICameraObject: {fileID: 7264107939728928076, guid: 6458469f0db6ac54296d9bfcc355c01f, type: 3}
   _managerProvider: {fileID: 8922468461745508450, guid: 815abdb4467fd75488976f0b0199271e, type: 3}
-  _btlMgr: {fileID: -678750931991529391, guid: f025655eb33b9c6498ee7ff87454f73c, type: 3}
+  _btlMgrObj: {fileID: 2342243875359944016, guid: f025655eb33b9c6498ee7ff87454f73c, type: 3}
   stageStartDelay: 2

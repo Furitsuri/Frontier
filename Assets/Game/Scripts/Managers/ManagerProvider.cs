@@ -7,28 +7,25 @@ namespace Frontier
 {
     public class ManagerProvider : Singleton<ManagerProvider>, IServiceProvider
     {
-        // [SerializeField]
-        // private GameObject _battleManagerObject;
-        // [SerializeField]
-        // private GameObject _soundManagerObject;
         [SerializeField]
-        private GameObject _stageControllerObject;
-        private StageController _stageController;
+        private GameObject _inputFacadeObject;
+
+        private InputFacade _inputFacade;
 
         override protected void Init()
         {
-            GameObject stgCtrl = Instantiate(_stageControllerObject);
-            if (stgCtrl != null)
+            GameObject inputFcd = Instantiate(_inputFacadeObject);
+            if (inputFcd != null)
             {
-                _stageController = stgCtrl.GetComponent<StageController>();
+                _inputFacade = inputFcd.GetComponent<InputFacade>();
             }
         }
 
         public T GetService<T>()
         {
-            if (typeof(T) == typeof(StageController))
+            if (typeof(T) == typeof(InputFacade))
             {
-                return (T)(object)_stageController;
+                return (T)(object)_inputFacade;
             }
 
             return default(T);

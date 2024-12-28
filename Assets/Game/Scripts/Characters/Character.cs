@@ -9,6 +9,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
@@ -270,7 +271,9 @@ namespace Frontier
         }
 
         [SerializeField]
+        [Header("弾オブジェクト")]
         private GameObject _bulletObject;
+        public GameObject BulletObject => _bulletObject;
 
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
@@ -316,6 +319,14 @@ namespace Frontier
         };
 
         #region PRIVATE_METHOD
+
+        [Inject]
+        void Construct( BattleManager battleMgr, StageController stageCtrl )
+        {
+            _btlMgr     = battleMgr;
+            _stageCtrl  = stageCtrl;
+        }
+
         void Awake()
         {
             _timeScale.OnValueChange    = AnimCtrl.UpdateTimeScale;
@@ -331,18 +342,6 @@ namespace Frontier
             // キャラクターモデルのマテリアルが設定されているObjectを取得し、
             // Materialと初期のColor設定を保存
             RegistMaterialsRecursively(this.transform, Constants.OBJECT_TAG_NAME_CHARA_SKIN_MESH);
-
-            // 弾オブジェクトが設定されていれば生成
-            // 使用時まで非アクティブにする
-            if (_bulletObject != null)
-            {
-                GameObject bulletObject = Instantiate(_bulletObject);
-                if (bulletObject != null)
-                {
-                    _bullet = bulletObject.GetComponent<Bullet>();
-                    bulletObject.SetActive(false);
-                }
-            }
         }
 
         void Update()
@@ -444,10 +443,8 @@ namespace Frontier
         /// <summary>
         /// 初期化処理を行います
         /// </summary>
-        virtual public void Init( BattleManager btlMgr, StageController stgCtrl )
+        virtual public void Init()
         {
-            _btlMgr             = btlMgr;
-            _stageCtrl          = stgCtrl;
             tmpParam.gridIndex  = param.initGridIndex;
             _elapsedTime        = 0f;
 

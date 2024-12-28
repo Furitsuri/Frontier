@@ -5,6 +5,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 namespace Frontier
 {
@@ -13,41 +14,58 @@ namespace Frontier
         public enum SIDE
         {
             LEFT = 0,
-            RIGHT,
-            NUM,
+            RIGHT
         }
 
         [SerializeField]
+        private SIDE _side;
+
+        [SerializeField]
+        private float _camareAngleY;
+
+        [SerializeField]
         private TextMeshProUGUI TMPMaxHPValue;
+
         [SerializeField]
         private TextMeshProUGUI TMPCurHPValue;
+
         [SerializeField]
         private TextMeshProUGUI TMPAtkValue;
+
         [SerializeField]
         private TextMeshProUGUI TMPDefValue;
+
         [SerializeField]
         private TextMeshProUGUI TMPAtkNumValue;
+
         [SerializeField]
         private TextMeshProUGUI TMPDiffHPValue;
+
         [SerializeField]
         private TextMeshProUGUI TMPActRecoveryValue;
+
         [SerializeField]
         private RawImage TargetImage;
+
         [SerializeField]
         private RectTransform PanelTransform;
+
         [SerializeField]
         private RawImage ActGaugeElemImage;
+
         [SerializeField]
         private SkillBoxUI[] SkillBoxes;
+
         [SerializeField]
         private float BlinkingDuration;
+
+        [Inject]
+        private HierarchyBuilder _hierarchyBld = null;
 
         private Character _character;
         private Camera _camera;
         private RenderTexture _targetTexture;
         private List<RawImage> _actGaugeElems;
-        private SIDE _side;
-        private float _camareAngleY;
         private float _alpha;
         private float _blinkingElapsedTime;
         // 左右のパラメータウィンドウでカメラのレイヤー名を分ける
@@ -56,19 +74,24 @@ namespace Frontier
 
         void Start()
         {
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
+
             _targetTexture = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
             TargetImage.texture = _targetTexture;
-            GameObject gameObject = new GameObject();
-            _camera = gameObject.AddComponent<Camera>();
+            _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>(true);
             _camera.enabled = false;
             _camera.clearFlags = CameraClearFlags.SolidColor;
             _camera.backgroundColor = new Color(0, 0, 0, 0);
             _camera.targetTexture = _targetTexture;
+            _camera.cullingMask = 1 << LayerMask.NameToLayer(_layerNames[(int)_side]);
+            _camera.gameObject.name = "CharaParamCamera_" + (_side == SIDE.LEFT ? "PL" : "EM");
+
             _actGaugeElems = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
 
             for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
             {
-                var elem = Instantiate(ActGaugeElemImage);
+                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>(ActGaugeElemImage.gameObject, true);
+                // var elem = Instantiate(ActGaugeElemImage);
                 _actGaugeElems.Add(elem);
                 elem.gameObject.SetActive(false);
                 elem.transform.SetParent(PanelTransform, false);
@@ -189,7 +212,6 @@ namespace Frontier
             }
         }
 
-
         /// <summary>
         /// パラメータUIに表示するキャラクターのカメラ描画を更新します
         /// </summary>
@@ -207,13 +229,15 @@ namespace Frontier
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="angleY">初期化時のY軸カメラアングル</param>
-        public void Init(float angleY, SIDE side)
+        public void Init()
         {
-            _camareAngleY = angleY;
-            _side = side;
-            // _sideが決定したのでそれに合わせたレイヤーマスクを個々で設定
-            _camera.cullingMask = 1 << LayerMask.NameToLayer(_layerNames[(int)_side]);
+            for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
+            {
+                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>(ActGaugeElemImage.gameObject, true);
+                _actGaugeElems.Add(elem);
+                elem.gameObject.SetActive(false);
+                elem.transform.SetParent(PanelTransform, false);
+            }
         }
 
         /// <summary>

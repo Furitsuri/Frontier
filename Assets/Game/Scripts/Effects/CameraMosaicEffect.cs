@@ -11,6 +11,7 @@ public class CameraMosaicEffect : MonoBehaviour
 {
     [SerializeField]
     private Material _mosaicMaterial;
+
     [SerializeField]
     private bool _enabled = false;
 

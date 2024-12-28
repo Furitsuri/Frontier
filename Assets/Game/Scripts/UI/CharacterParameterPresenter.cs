@@ -2,15 +2,12 @@ using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
     public class CharacterParameterPresenter : MonoBehaviour
     {
-        [Header("バトルマネージャ")]
-        [SerializeField]
-        private BattleManager _btlMgr;
-
         [Header("LeftWindowParam")]
         public CharacterParameterUI PlayerParameter;        // 左側表示のパラメータUIウィンドウ
 
@@ -20,23 +17,27 @@ namespace Frontier
         [Header("ParameterAttackDirection")]
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
+        private BattleManager _btlMgr = null;
         private StageController _stageCtrl = null;
         private Character _prevCharacter = null;
 
+        /// <summary>
+        /// Diコンテナから引数を注入します
+        /// </summary>
+        /// <param name="btlMgr">バトルマネージャ</param>
+        /// <param name="stageCtrl">ステージコントローラ</param>
+        [Inject]
+        void Construct( BattleManager btlMgr, StageController stageCtrl )
+        {
+            _btlMgr     = btlMgr;
+            _stageCtrl  = stageCtrl;
+        }
+
         void Start()
         {
-            Debug.Assert(_btlMgr != null);
-
-            _stageCtrl  = ManagerProvider.Instance.GetService<StageController>();
-
-            // カメラアングルの設定
-            PlayerParameter.Init(45f, CharacterParameterUI.SIDE.LEFT);
-            EnemyParameter.Init(-45f, CharacterParameterUI.SIDE.RIGHT);
-
             PlayerParameter.gameObject.SetActive(false);
             EnemyParameter.gameObject.SetActive(false);
         }
-
 
         // Update is called once per frame
         void Update()
@@ -115,6 +116,18 @@ namespace Frontier
             _prevCharacter = selectCharacter;
         }
 
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        public void Init()
+        {
+            PlayerParameter.Init();
+            EnemyParameter.Init();
+        }
+
+        /// <summary>
+        /// 攻撃の元から対象を示すUIを表示します
+        /// </summary>
         public void ShowDirection()
         {
             AttackDirection.gameObject.SetActive(true);

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Frontier.Stage
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-    public sealed class StageController : MonoBehaviour
+    public sealed class StageController : Controller
     {
         /// <summary>
         /// グリッドに対するフラグ情報
@@ -69,6 +69,12 @@ namespace Frontier.Stage
         {
             _gridMeshs = new List<GridMesh>();
             _attackableGridIndexs = new List<int>();
+
+            // 生成したグリッドメッシュを登録
+            foreach (GridMesh grid in _gridMeshs)
+            {
+                AddGridMeshToList(grid);
+            }
             GameObject gridCursorObject = Instantiate(_gridCursorObject);
             if (gridCursorObject != null)
             {
@@ -288,6 +294,31 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 受信した方向情報から、現在のグリッドを操作します
+        /// </summary>
+        /// <param name="direction">指定された進行方向</param>
+        public void OperateGridCursor( Constants.Direction direction )
+        {
+            switch( direction )
+            {
+                case Constants.Direction.FORWARD:
+                    _gridCursor.Up();
+                    break;
+                case Constants.Direction.BACK:
+                    _gridCursor.Down();
+                    break;
+                case Constants.Direction.LEFT:
+                    _gridCursor.Left();
+                    break;
+                case Constants.Direction.RIGHT:
+                    _gridCursor.Right();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
         /// 現在のグリッドをキー入力で操作します
         /// </summary>
         public void OperateGridCursor()
@@ -300,13 +331,18 @@ namespace Frontier.Stage
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.UpArrow) && OperateKeyControl())      { _gridCursor.Up(); }
-                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) && OperateKeyControl())    { _gridCursor.Down(); }
-                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())    { _gridCursor.Left(); }
-                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())   { _gridCursor.Right(); }
+                if (Input.GetKey(KeyCode.UpArrow) && OperateKeyControl())          { _gridCursor.Up(); }
+                if (Input.GetKey(KeyCode.DownArrow) && OperateKeyControl())      { _gridCursor.Down(); }
+                if (Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())      { _gridCursor.Left(); }
+                if (Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())    { _gridCursor.Right(); }
             }
         }
 
+        /// <summary>
+        /// キー操作をした際に、
+        /// 短い時間で何度も同じキーが押下されたと判定されないようにインターバルを設けます
+        /// </summary>
+        /// <returns>キー操作が有効か無効か</returns>
         private bool OperateKeyControl()
         {
             if( _operateKeyInterval <= Time.time - _operateKeyLastTime)
@@ -778,6 +814,10 @@ namespace Frontier.Stage
             return ref _gridInfo[index];
         }
 
+        /// <summary>
+        /// グリッドのメッシュの描画の切替を行います
+        /// </summary>
+        /// <param name="isDisplay">描画するか否か</param>
         public void ToggleMeshDisplay(bool isDisplay)
         {
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();

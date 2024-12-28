@@ -7,6 +7,15 @@ namespace Frontier
 {
     public class PLSelectGridState : PhaseStateBase
     {
+        /// <summary>
+        /// 遷移先を示すタグ
+        /// </summary>
+        enum TransitTag
+        {
+            CharacterCommand = 0,
+            TurnEnd,
+        }
+
         override public void Init(BattleManager btlMgr, StageController stgCtrl)
         {
             base.Init(btlMgr, stgCtrl);
@@ -15,9 +24,9 @@ namespace Frontier
             _stageCtrl.SetGridCursorActive(true);
 
             // キーガイドを登録
-            TransitKeyGuides(
-                (Constants.KeyIcon.ALL_CURSOR,  "Move"),
-                (Constants.KeyIcon.ESCAPE,      "TURN END"));
+            SetInputGuides(
+                (Constants.KeyIcon.ALL_CURSOR,  "Move",     null),
+                (Constants.KeyIcon.ESCAPE,      "TURN END", TransitConfirmTurnEndCallBack));
         }
 
         override public bool Update()
@@ -33,18 +42,14 @@ namespace Frontier
                 return true;
             }
 
+            // TODO : キーマネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
+            /*
             // ターン終了確認へ遷移
             if (Input.GetKeyUp(KeyCode.Escape))
             {
-                TransitIndex = 1;
+                TransitIndex = (int)TransitTag.TurnEnd;
                 return true;
             }
-
-            /*
-            // キーガイドを登録
-            TransitKeyGuides(
-                (Constants.KeyIcon.ALL_CURSOR, "Move"),
-                (Constants.KeyIcon.ESCAPE, "TURN END"));
             */
 
             // グリッドの操作
@@ -55,28 +60,23 @@ namespace Frontier
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
             int selectCharaIndex = info.charaIndex;
 
+            // TODO : キーマネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
+            /*
             Character character = _btlMgr.GetSelectCharacter();
             if (character != null &&
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
             {
-                /*
-                // キーガイドを登録
-                TransitKeyGuides(
-                    (Constants.KeyIcon.ALL_CURSOR,  "Move"),
-                    (Constants.KeyIcon.DECISION,    "DECISION"),
-                    (Constants.KeyIcon.ESCAPE,      "TURN END"));
-                */
-
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
-                    TransitIndex = 0;   // 遷移
+                    TransitIndex = (int)TransitTag.CharacterCommand;
 
                     return true;
                 }
             }
+            */
 
-            return false;
+            return ( 0 <= TransitIndex );
         }
 
         override public void Exit()
@@ -85,6 +85,52 @@ namespace Frontier
             // _stageCtrl.SetGridCursorActive( false );
 
             base.Exit();
+        }
+
+        public void OperateGridCursorCallBack()
+        {
+
+            _stageCtrl.OperateGridCursor(Constants.Direction.LEFT);
+        }
+
+        /// <summary>
+        /// キャラクターコマンド遷移へ移る際のコールバック関数
+        /// </summary>
+        /// <returns></returns>
+        public bool TransitCharacterCommandCallBack()
+        {
+            if ( 0 <= TransitIndex )
+            {
+                return false;
+            }
+
+            Character character = _btlMgr.GetSelectCharacter();
+            if (character != null &&
+                 character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
+                 !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
+            {
+                TransitIndex = (int)TransitTag.CharacterCommand;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// ターン終了遷移へ移る際のコールバック関数
+        /// </summary>
+        /// <returns></returns>
+        public bool TransitConfirmTurnEndCallBack()
+        {
+            if( 0 <= TransitIndex )
+            {
+                return false;
+            }
+
+            TransitIndex = (int)TransitTag.TurnEnd;
+
+            return true;
         }
     }
 }
