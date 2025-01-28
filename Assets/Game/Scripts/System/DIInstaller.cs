@@ -1,3 +1,4 @@
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,20 +11,23 @@ namespace Frontier
     public class DiInstaller : MonoInstaller
     {
         /// <summary>
-        /// DIƒRƒ“ƒeƒi‚ÌƒoƒCƒ“ƒh‘ÎÛ‚ğİ’è‚µ‚Ü‚·
+        /// DIã‚³ãƒ³ãƒ†ãƒŠã®ãƒã‚¤ãƒ³ãƒ‰å¯¾è±¡ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
         public override void InstallBindings()
         {
-            Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
-            Container.Bind<UISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<DiInstaller>().FromInstance(this);
+            Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
+            Container.Bind<InputFacade>().FromComponentInHierarchy().AsCached();
+            Container.Bind<BattleManager>().FromComponentInHierarchy().AsCached();
+            Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
+            Container.Bind<UISystem>().FromComponentInHierarchy().AsCached();
         }
 
         /// <summary>
-        /// ŠO•”ƒNƒ‰ƒX‚©‚çDIƒRƒ“ƒeƒi‚É‘ÎÛ‚ğƒoƒCƒ“ƒhİ’è‚µ‚Ü‚·
+        /// å¤–éƒ¨ã‚¯ãƒ©ã‚¹ã‹ã‚‰DIã‚³ãƒ³ãƒ†ãƒŠã«å¯¾è±¡ã‚’ãƒã‚¤ãƒ³ãƒ‰è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ƒoƒCƒ“ƒh‘ÎÛ‚ÌŒ^</typeparam>
-        /// <param name="instance">ƒoƒCƒ“ƒh‘ÎÛ</param>
+        /// <typeparam name="T">ãƒã‚¤ãƒ³ãƒ‰å¯¾è±¡ã®å‹</typeparam>
+        /// <param name="instance">ãƒã‚¤ãƒ³ãƒ‰å¯¾è±¡</param>
         public void InstallBindings<T>( T instance )
         {
             Container.Bind<T>().FromInstance( instance ).AsCached();

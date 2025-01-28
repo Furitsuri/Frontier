@@ -1,6 +1,7 @@
 using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
@@ -8,14 +9,21 @@ namespace Frontier
     {
         private bool _isBack = false;
         public int TransitIndex { get; protected set; } = -1;
-        protected BattleManager _btlMgr = null;
-        protected StageController _stageCtrl = null;
+        protected HierarchyBuilder _hierarchyBld    = null;
+        protected BattleManager _btlMgr             = null;
+        protected StageController _stageCtrl        = null;
 
-        // 初期化
-        virtual public void Init(BattleManager btlMgr, StageController stgCtrl)
+        [Inject]
+        public void Construct( HierarchyBuilder hierarchyBld, BattleManager btlMgr, StageController stgCtrl)
         {
+            _hierarchyBld   = hierarchyBld;
             _btlMgr         = btlMgr;
             _stageCtrl      = stgCtrl;
+        }
+
+        // 初期化
+        virtual public void Init()
+        {
             TransitIndex    = -1;
             _isBack         = false;
         }
@@ -66,7 +74,7 @@ namespace Frontier
         /// <param name="characterKey">死亡したキャラクターのハッシュキー</param>
         protected void NoticeCharacterDied(CharacterHashtable.Key characterKey)
         {
-            _btlMgr.SetDiedCharacterKey(characterKey);
+            _btlMgr.BtlCharaCdr.SetDiedCharacterKey(characterKey);
         }
 
         /// <summary>

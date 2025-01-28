@@ -64,7 +64,7 @@ public class Generator : MonoBehaviour
     /// <param name="gameObject">作成するオブジェクト</param>
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <returns>作成したコンポーネント</returns>
-    public T InstantiateComponentWithDIContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
+    public T InstantiateComponentWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
     {
         T original = _container.InstantiatePrefabForComponent<T>(gameObject);
         Debug.Assert(original != null);
@@ -78,5 +78,15 @@ public class Generator : MonoBehaviour
         }
 
         return original;
+    }
+
+    /// <summary>
+    /// Diコンテナを用いてインスタンスを作成します
+    /// </summary>
+    /// <typeparam name="T">作成するインスタンスの型</typeparam>
+    /// <returns>作成したインスタンス</returns>
+    public T InstantiateWithDiContainer<T>()
+    {
+        return _container.Instantiate<T>();
     }
 }

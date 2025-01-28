@@ -74,7 +74,7 @@ namespace Frontier
         {
             base.Die();
 
-            _btlMgr.RemovePlayerFromList(this);
+            _btlMgr.BtlCharaCdr.RemoveCharacterFromList(this);
         }
 
         /// <summary>

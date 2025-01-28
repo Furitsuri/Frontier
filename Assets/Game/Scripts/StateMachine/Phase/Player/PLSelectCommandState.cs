@@ -16,12 +16,12 @@ namespace Frontier
         private Player _selectPlayer;
         private CommandList _commandList = new CommandList();
 
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             // 選択中のプレイヤーを取得
-            _selectPlayer = (Player)_btlMgr.GetSelectCharacter();
+            _selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
             if (_selectPlayer == null)
             {
                 Debug.Assert(false);

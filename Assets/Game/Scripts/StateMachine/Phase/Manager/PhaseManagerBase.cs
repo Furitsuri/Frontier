@@ -1,17 +1,23 @@
 using Frontier.Stage;
+using Zenject;
 
 namespace Frontier
 {
     public class PhaseManagerBase : Tree<PhaseStateBase>
     {
-        protected bool _isFirstUpdate = false;
-        protected BattleManager _btlMgr = null;
-        protected StageController _stageCtrl = null;
-
-        virtual public void Regist(BattleManager btlMgr, StageController stgCtrl)
+        protected bool _isFirstUpdate               = false;
+        protected HierarchyBuilder _hierarchyBld    = null;
+        protected BattleManager _btlMgr             = null;
+        protected StageController _stgCtrl          = null;
+        protected BattleUISystem _btlUi             = null;
+        
+        [Inject]
+        public void Construct( HierarchyBuilder hierarchyBld, BattleManager btlMgr, BattleUISystem btlUi, StageController stgCtrl)
         {
-            _btlMgr = btlMgr;
-            _stageCtrl = stgCtrl;
+            _hierarchyBld   = hierarchyBld;
+            _btlMgr         = btlMgr;
+            _btlUi          = btlUi;
+            _stgCtrl        = stgCtrl;
         }
 
         virtual public void Init()
@@ -19,7 +25,7 @@ namespace Frontier
             // �J�ږ؂̍쐬
             CreateTree();
 
-            CurrentNode.Init(_btlMgr,_stageCtrl);
+            CurrentNode.Init();
 
             _isFirstUpdate = true;
         }
@@ -46,13 +52,13 @@ namespace Frontier
             {
                 CurrentNode.Exit();
                 CurrentNode = CurrentNode.Children[transitIndex];
-                CurrentNode.Init(_btlMgr,_stageCtrl);
+                CurrentNode.Init();
             }
             else if (CurrentNode.IsBack())
             {
                 CurrentNode.Exit();
-                 CurrentNode = CurrentNode.Parent;
-                CurrentNode.Init(_btlMgr, _stageCtrl);
+                CurrentNode = CurrentNode.Parent;
+                CurrentNode.Init();
             }
         }
 

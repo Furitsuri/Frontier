@@ -13,6 +13,7 @@
             "InitGridIndex": 14,
             "InitDir": 0,
             "Prefab": 0,
+            "ThinkType": -1,
             "Skills": [
                 0,
                 -1,
@@ -33,6 +34,7 @@
             "InitGridIndex": 3,
             "InitDir": 0,
             "Prefab": 1,
+            "ThinkType": -1,
             "Skills": [
                 3,
                 -1,
@@ -53,6 +55,7 @@
             "InitGridIndex": 5,
             "InitDir": 0,
             "Prefab": 0,
+            "ThinkType": -1,
             "Skills": [
                 1,
                 2,

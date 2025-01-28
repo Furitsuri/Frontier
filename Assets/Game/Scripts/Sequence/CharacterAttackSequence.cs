@@ -7,6 +7,7 @@ using TMPro.Examples;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
@@ -46,16 +47,19 @@ namespace Frontier
         private UpdateAttack _updateAttackerAttack = null;
         private UpdateAttack _updateTargetAttack = null;
 
+        [Inject]
+        public void Construct(BattleManager btlMgr, StageController stgCtrl)
+        {
+            _btlMgr     = btlMgr;
+            _stageCtrl  = stgCtrl;
+        }
+
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="btlMgr">バトルマネージャ</param>
-        /// <param name="stgCtrl">ステージコントローラ</param>
-        public void Init(BattleManager btlMgr, StageController stgCtrl)
+        public void Init()
         {
-            _btlMgr             = btlMgr;
             _btlCamCtrl         = _btlMgr.GetCameraController();
-            _stageCtrl          = stgCtrl;
             _diedCharacter      = null;
             _elapsedTime        = 0f;
             _phase              = Phase.START;
@@ -304,7 +308,7 @@ namespace Frontier
         private void StartCounter(Character attacker, Character target)
         {
             // ダメージ予測をセット
-            _btlMgr.ApplyDamageExpect(target, attacker);
+            _btlMgr.BtlCharaCdr.ApplyDamageExpect(target, attacker);
 
             // 攻撃キャラと被攻撃キャラを入れ替えて開始
             StartAttack(target, attacker);
@@ -331,14 +335,16 @@ namespace Frontier
         {
             // メッシュ及びattakerとtarget以外のキャラクターを非表示に
             _stageCtrl.ToggleMeshDisplay(false);
-            foreach (var player in _btlMgr.GetPlayerEnumerable())
+
+            foreach (var player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
             {
                 if (player != attacker && player != target)
                 {
                     player.gameObject.SetActive(false);
                 }
             }
-            foreach (var enemy in _btlMgr.GetEnemyEnumerable())
+
+            foreach (var enemy in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
             {
                 if (enemy != attacker && enemy != target)
                 {
@@ -396,11 +402,13 @@ namespace Frontier
         {
             // 非表示にしていたものを表示
             _stageCtrl.ToggleMeshDisplay(true);
-            foreach (var player in _btlMgr.GetPlayerEnumerable())
+
+            foreach (var player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
             {
                 player.gameObject.SetActive(true);
             }
-            foreach (var enemy in _btlMgr.GetEnemyEnumerable())
+
+            foreach (var enemy in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
             {
                 enemy.gameObject.SetActive(true);
             }

@@ -46,4 +46,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _stageControllerObject: {fileID: 3810255508824440438, guid: a459440f3bb1be44ca982570a074f9f1, type: 3}
   _skillCtrlObject: {fileID: 8067296009142342895, guid: c405c75e536f87e4d8a15b35fb078817, type: 3}
-  _fileReadMgr: {fileID: 4337530374610159260, guid: 50ecdac321897ff428051ad4b4815b18, type: 3}
+  _btlFileLoader: {fileID: 4337530374610159260, guid: 50ecdac321897ff428051ad4b4815b18, type: 3}

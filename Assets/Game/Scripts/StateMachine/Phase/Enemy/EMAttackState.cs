@@ -18,16 +18,17 @@ namespace Frontier
         private int _curentGridIndex                    = -1;
         private Enemy _attackCharacter                  = null;
         private Character _targetCharacter              = null;
-        private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
+        private CharacterAttackSequence _attackSequence = null;
 
-        public override void Init(BattleManager btlMgr, StageController stgCtrl)
+        public override void Init()
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
+            _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _attackCharacter = _btlMgr.GetSelectCharacter() as Enemy;
+            _attackCharacter = _btlMgr.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_attackCharacter != null);
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
@@ -36,7 +37,7 @@ namespace Frontier
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.PLAYER, _attackCharacter.EmAI.GetTargetCharacter()))
+            if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter()))
             {
                 // アタッカーキャラクターの設定
                 _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
@@ -44,7 +45,7 @@ namespace Frontier
                 btlUIInstance.ToggleAttackCursorE2P(true);
             }
 
-            _targetCharacter = _attackCharacter.EmAI.GetTargetCharacter();
+            _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
             // 攻撃者の向きを設定
@@ -54,7 +55,7 @@ namespace Frontier
             _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
 
             // 攻撃シーケンスを初期化
-            _attackSequence.Init(_btlMgr, _stageCtrl);
+            _attackSequence.Init();
 
             _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
         }
@@ -77,7 +78,7 @@ namespace Frontier
                     _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
-                    _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                    _btlMgr.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                     // ダメージ予測表示UIを表示
                     btlUIInstance.ToggleBattleExpect(true);
@@ -141,7 +142,8 @@ namespace Frontier
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
-            _btlMgr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+            _btlMgr.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+
             // アタックカーソルUI非表示
             btlUIInstance.ToggleAttackCursorP2E(false);
             // ダメージ予測表示UIを非表示

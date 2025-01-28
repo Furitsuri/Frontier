@@ -23,10 +23,6 @@ namespace Frontier
         private HierarchyBuilder _hierarchyBld;
 
         [SerializeField]
-        [Header("入力関連窓口")]
-        private InputFacade _inputFacade;
-
-        [SerializeField]
         [Header("UI")]
         private UISystem _UISystem;
 
@@ -39,18 +35,22 @@ namespace Frontier
         private GameObject _managerProvider;
 
         [SerializeField]
-        [Header("バトルマネージャオブジェクト")]
-        private GameObject _btlMgrObj;
-
-        [SerializeField]
         [Header("ステージ開始時に表示する時間(秒)")]
         private float stageStartDelay = 2f;
 
-        private BattleManager _btlMgr;
         private GameObject _stageImage;
+        private InputFacade _inputFcd;
+        private BattleManager _btlMgr;
         private GamePhase _Phase;
 
         public static GameMain instance = null;
+
+        [Inject]
+        public void Construct( InputFacade inputFcd, BattleManager btlMgr )
+        {
+            _inputFcd   = inputFcd;
+            _btlMgr     = btlMgr;
+        }
 
         void Awake()
         {
@@ -64,7 +64,7 @@ namespace Frontier
             }
 
             Debug.Assert(_hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。");
-            Debug.Assert(_inputFacade != null, "Error : 入力窓口のオブジェクトが設定されていません。");
+            Debug.Assert(_inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。");
 
             DontDestroyOnLoad(gameObject);
 
@@ -72,28 +72,14 @@ namespace Frontier
             {
                 _hierarchyBld.CreateComponentAndOrganize<ManagerProvider>(_managerProvider, true);
             }
-            if( _btlMgr == null )
-            {
-                _btlMgr = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleManager>(_btlMgrObj, true, true);
-            }
         }
 
         // Start is called before the first frame update
         void Start()
         {
-            Inject();
-
             InitGame();
 
             StartCoroutine(GameFlow());
-        }
-
-        /// <summary>
-        /// 各インスタンスへのインジェクションを行います
-        /// </summary>
-        private void Inject()
-        {
-            _btlMgr.Inject(_hierarchyBld, _inputFacade);
         }
 
         /// <summary>
@@ -104,7 +90,7 @@ namespace Frontier
             // アニメーションデータの初期化
             AnimDatas.Init();
             // 入力関連の初期化
-            _inputFacade.Init();
+            _inputFcd.Init();
             // 戦闘マネージャの初期化
             // _btlMgr.Init();
 
