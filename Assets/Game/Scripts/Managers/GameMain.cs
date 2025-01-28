@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -19,7 +19,7 @@ namespace Frontier
         }
 
         [SerializeField]
-        [Header("ŠK‘wŠÇ—EƒIƒuƒWƒFƒNƒg¶¬ƒNƒ‰ƒX")]
+        [Header("éšå±¤ç®¡ç†ãƒ»ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆç”Ÿæˆã‚¯ãƒ©ã‚¹")]
         private HierarchyBuilder _hierarchyBld;
 
         [SerializeField]
@@ -27,15 +27,15 @@ namespace Frontier
         private UISystem _UISystem;
 
         [SerializeField]
-        [Header("UIƒJƒƒ‰‚ÌƒIƒuƒWƒFƒNƒg")]
+        [Header("UIã‚«ãƒ¡ãƒ©ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private GameObject _UICameraObject;
 
         [SerializeField]
-        [Header("Šeíƒ}ƒl[ƒWƒƒ‚ÌƒvƒƒoƒCƒ_ƒIƒuƒWƒFƒNƒg")]
+        [Header("å„ç¨®ãƒãƒãƒ¼ã‚¸ãƒ£ã®ãƒ—ãƒ­ãƒã‚¤ãƒ€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private GameObject _managerProvider;
 
         [SerializeField]
-        [Header("ƒXƒe[ƒWŠJn‚É•\¦‚·‚éŠÔ(•b)")]
+        [Header("ã‚¹ãƒ†ãƒ¼ã‚¸é–‹å§‹æ™‚ã«è¡¨ç¤ºã™ã‚‹æ™‚é–“(ç§’)")]
         private float stageStartDelay = 2f;
 
         private GameObject _stageImage;
@@ -63,8 +63,8 @@ namespace Frontier
                 Destroy(gameObject);
             }
 
-            Debug.Assert(_hierarchyBld != null, "Error : ƒCƒ“ƒXƒ^ƒ“ƒX‚Ì¶¬ŠÇ—‚ğs‚¤ƒIƒuƒWƒFƒNƒg‚ªİ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB");
-            Debug.Assert(_inputFcd != null, "Error : “ü—Í‘‹Œû‚ÌƒIƒuƒWƒFƒNƒg‚ªİ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB");
+            Debug.Assert(_hierarchyBld != null, "Error : ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã®ç”Ÿæˆç®¡ç†ã‚’è¡Œã†ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒè¨­å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚");
+            Debug.Assert(_inputFcd != null, "Error : å…¥åŠ›çª“å£ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒè¨­å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚");
 
             DontDestroyOnLoad(gameObject);
 
@@ -83,15 +83,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒQ[ƒ€‚ğ‰Šú‰»‚µ‚Ü‚·
+        /// ã‚²ãƒ¼ãƒ ã‚’åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         private void InitGame()
         {
-            // ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^‚Ì‰Šú‰»
+            // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ã®åˆæœŸåŒ–
             AnimDatas.Init();
-            // “ü—ÍŠÖ˜A‚Ì‰Šú‰»
+            // å…¥åŠ›é–¢é€£ã®åˆæœŸåŒ–
             _inputFcd.Init();
-            // í“¬ƒ}ƒl[ƒWƒƒ‚Ì‰Šú‰»
+            // æˆ¦é—˜ãƒãƒãƒ¼ã‚¸ãƒ£ã®åˆæœŸåŒ–
             // _btlMgr.Init();
 
             _stageImage = GameObject.Find("StageLevelImage");
@@ -104,8 +104,8 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒXƒe[ƒWƒŒƒxƒ‹‚Ì‰æ‘œ•\¦‚ğæ‚è‚â‚ß‚Ü‚·
-        /// InvokeŠÖ”‚ÅQÆ‚³‚ê‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ¬ãƒ™ãƒ«ã®ç”»åƒè¡¨ç¤ºã‚’å–ã‚Šã‚„ã‚ã¾ã™
+        /// Invokeé–¢æ•°ã§å‚ç…§ã•ã‚Œã¾ã™
         /// </summary>
         private void StageLevelImage()
         {
@@ -129,7 +129,7 @@ namespace Frontier
                         break;
                     case GamePhase.GAME_BATTLE:
                         // StartCoroutine(_btlMgr.Battle());
-                        // Battle‚ÌI—¹‚ğ‘Ò‚Â
+                        // Battleã®çµ‚äº†ã‚’å¾…ã¤
                         // yield return new WaitUntil(() => _btlMgr.isEnd());
 
                         _Phase = GamePhase.GAME_END_SCENE;
