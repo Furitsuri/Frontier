@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,18 +9,18 @@ namespace Frontier
     public class InputFacade : MonoBehaviour
     {
         /// <summary>
-        /// w’è‚ÌKeyCode‚ªtrue‚Å‚ ‚ê‚Î—LŒø,
-        /// false‚Å‚ ‚ê‚Î–³Œø‚ğ•\‚µ‚Ü‚·
+        /// æŒ‡å®šã®KeyCodeãŒtrueã§ã‚ã‚Œã°æœ‰åŠ¹,
+        /// falseã§ã‚ã‚Œã°ç„¡åŠ¹ã‚’è¡¨ã—ã¾ã™
         /// </summary>
         private struct ToggleKeyCode
         {
-            // ƒL[ƒR[ƒh
+            // ã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰
             public KeyCode Code;
-            // —LŒøE–³Œø
+            // æœ‰åŠ¹ãƒ»ç„¡åŠ¹
             public bool Enable;
-            // ƒL[ƒAƒCƒRƒ“
+            // ã‚­ãƒ¼ã‚¢ã‚¤ã‚³ãƒ³
             public Constants.KeyIcon Icon;
-            // ƒAƒCƒRƒ“‚É‘Î‚·‚éà–¾•¶
+            // ã‚¢ã‚¤ã‚³ãƒ³ã«å¯¾ã™ã‚‹èª¬æ˜æ–‡
             public string Explanation;
             // 
             public Action CallbackFunc;
@@ -40,13 +40,13 @@ namespace Frontier
             }
         }
 
-        // “ü—ÍƒKƒCƒh‚Ì•\¦
+        // å…¥åŠ›ã‚¬ã‚¤ãƒ‰ã®è¡¨ç¤º
         [SerializeField]
         [Header("InputGuidePresenter")]
         private InputGuidePresenter _inputGuidePresenter;
 
         private ToggleKeyCode[] _switchCodes;
-        // ÅŒã‚ÉƒL[‘€ì‚ğ‚µ‚½ŠÔ‚Ì•Û
+        // æœ€å¾Œã«ã‚­ãƒ¼æ“ä½œã‚’ã—ãŸæ™‚é–“ã®ä¿æŒ
         private float _operateKeyLastTime = 0.0f;
 
         void Awake()
@@ -59,7 +59,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public void Init()
         {
@@ -67,7 +67,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ”»’è‘ÎÛ‚Æ‚È‚é“ü—ÍƒR[ƒh‚ğ‰Šú‰»‚µ‚Ü‚·
+        /// åˆ¤å®šå¯¾è±¡ã¨ãªã‚‹å…¥åŠ›ã‚³ãƒ¼ãƒ‰ã‚’åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         private void InitInputCodes()
         {
@@ -83,13 +83,13 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Œ»İ‚ÌƒQ[ƒ€‘JˆÚ‚É‚¨‚¢‚Ä—LŒø‚Æ‚·‚é‘€ìƒL[‚ğA
-        /// ‰æ–Êã‚É•\¦‚·‚éƒKƒCƒhUI‚Æ•¹‚¹‚Ä“o˜^‚µ‚Ü‚·B
-        /// ‚Ü‚½A‚»‚ÌƒL[‚ğ‰Ÿ‰º‚µ‚½Û‚Ìˆ—‚ğƒR[ƒ‹ƒoƒbƒN‚Æ‚µ‚Äfunc‚É“o˜^‚µ‚Ü‚·
+        /// ç¾åœ¨ã®ã‚²ãƒ¼ãƒ é·ç§»ã«ãŠã„ã¦æœ‰åŠ¹ã¨ã™ã‚‹æ“ä½œã‚­ãƒ¼ã‚’ã€
+        /// ç”»é¢ä¸Šã«è¡¨ç¤ºã™ã‚‹ã‚¬ã‚¤ãƒ‰UIã¨ä½µã›ã¦ç™»éŒ²ã—ã¾ã™ã€‚
+        /// ã¾ãŸã€ãã®ã‚­ãƒ¼ã‚’æŠ¼ä¸‹ã—ãŸéš›ã®å‡¦ç†ã‚’ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã¨ã—ã¦funcã«ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="code">“o˜^‚·‚éƒL[ƒR[ƒh</param>
+        /// <param name="code">ç™»éŒ²ã™ã‚‹ã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰</param>
         /// <param name="hash"></param>
-        /// <param name="keyExplanation">ƒL[‚Ìà–¾•¶</param>
+        /// <param name="keyExplanation">ã‚­ãƒ¼ã®èª¬æ˜æ–‡</param>
         public void RegisterKeyCode(Constants.KeyIcon keyIcon, int/*StateHash*/ hash, string keyExplanation, Action func)
         {
             _switchCodes[(int)keyIcon].Enable = true;
@@ -100,19 +100,19 @@ namespace Frontier
         }
 
         /// <summary>
-        /// w’è‚ÌƒL[‚Ì—LŒøE–³Œø‚ğİ’è‚µ‚Ü‚·
+        /// æŒ‡å®šã®ã‚­ãƒ¼ã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="keyIcon">İ’è‘ÎÛ‚ÌƒL[</param>
-        /// <param name="isKeyActive">—LŒøE–³Œø</param>
+        /// <param name="keyIcon">è¨­å®šå¯¾è±¡ã®ã‚­ãƒ¼</param>
+        /// <param name="isKeyActive">æœ‰åŠ¹ãƒ»ç„¡åŠ¹</param>
         public void SetKeyCodeActive(Constants.KeyIcon keyIcon, bool isKeyActive)
         {
             _switchCodes[(int)keyIcon].Enable = isKeyActive;
         }
 
         /// <summary>
-        /// ˆø”‚Éw’è‚³‚ê‚½ƒAƒCƒRƒ“‚É‘Î‰‚³‚ê‚Ä‚¢‚éƒL[‚ª‰Ÿ‰º‚³‚ê‚½‚©‚ğ’²‚×‚Ü‚·
+        /// å¼•æ•°ã«æŒ‡å®šã•ã‚ŒãŸã‚¢ã‚¤ã‚³ãƒ³ã«å¯¾å¿œã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ãŒæŠ¼ä¸‹ã•ã‚ŒãŸã‹ã‚’èª¿ã¹ã¾ã™
         /// </summary>
-        /// <param name="icon">w’èƒAƒCƒRƒ“</param>
+        /// <param name="icon">æŒ‡å®šã‚¢ã‚¤ã‚³ãƒ³</param>
         /// <returns></returns>
         public bool IsInputKey( Constants.KeyIcon icon )
         {
@@ -150,10 +150,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒ†[ƒU[‚ªƒL[‘€ì‚ğs‚Á‚½Û‚ÉA
-        /// ’Z‚¢ŠÔ‚Å‰½“x‚à“¯‚¶ƒL[‚ª‰Ÿ‰º‚³‚ê‚½‚Æ”»’è‚³‚ê‚È‚¢‚½‚ß‚ÉƒCƒ“ƒ^[ƒoƒ‹ŠÔ‚ğİ‚¯‚Ü‚·
+        /// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒã‚­ãƒ¼æ“ä½œã‚’è¡Œã£ãŸéš›ã«ã€
+        /// çŸ­ã„æ™‚é–“ã§ä½•åº¦ã‚‚åŒã˜ã‚­ãƒ¼ãŒæŠ¼ä¸‹ã•ã‚ŒãŸã¨åˆ¤å®šã•ã‚Œãªã„ãŸã‚ã«ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«æ™‚é–“ã‚’è¨­ã‘ã¾ã™
         /// </summary>
-        /// <returns>ƒL[‘€ì‚ª—LŒø‚©–³Œø‚©</returns>
+        /// <returns>ã‚­ãƒ¼æ“ä½œãŒæœ‰åŠ¹ã‹ç„¡åŠ¹ã‹</returns>
         private bool OperateKeyControl()
         {
             if ( Constants.OPERATE_KET_INTERVAL <= Time.time - _operateKeyLastTime )

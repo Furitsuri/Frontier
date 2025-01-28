@@ -1,4 +1,4 @@
-using Frontier;
+ï»¿using Frontier;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         /// <param name="btlMgr"></param>
         public void Init( BattleManager btlMgr )

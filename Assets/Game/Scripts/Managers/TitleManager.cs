@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,14 +29,14 @@ public class TitleManager : MonoBehaviour
 
             switch (_phase)
             {
-                // ŠO•”‚©‚çŒÄ‚Ño‚µ‚ğ‘Ò‚Â
+                // å¤–éƒ¨ã‹ã‚‰å‘¼ã³å‡ºã—ã‚’å¾…ã¤
                 case TitlePhase.TITLE_START:
                     break;
                 case TitlePhase.TITLE_GAME_START:
                     _phase = TitlePhase.TITLE_END;
                     break;
                 case TitlePhase.TITLE_EXIT:
-                    // I—¹
+                    // çµ‚äº†
                     break;
                 case TitlePhase.TITLE_END:
                     break;
@@ -45,8 +45,8 @@ public class TitleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒ^ƒCƒgƒ‹‚©‚çƒQ[ƒ€‚É‘JˆÚ‚µ‚Ü‚·
-    /// ƒ^ƒCƒgƒ‹‰æ–Ê‚ÌButton‚©‚çŒÄ‚Ño‚³‚ê‚Ü‚·
+    /// ã‚¿ã‚¤ãƒˆãƒ«ã‹ã‚‰ã‚²ãƒ¼ãƒ ã«é·ç§»ã—ã¾ã™
+    /// ã‚¿ã‚¤ãƒˆãƒ«ç”»é¢ã®Buttonã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã¾ã™
     /// </summary>
     public void PressStart()
     {

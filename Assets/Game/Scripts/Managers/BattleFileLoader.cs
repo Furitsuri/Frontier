@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System;
 using System.IO;
 using TMPro.SpriteAssetUtilities;
@@ -13,45 +13,45 @@ namespace Frontier
 {
     public class BattleFileLoader : MonoBehaviour
     {
-        [Header("Še–¡•ûƒLƒƒƒ‰ƒNƒ^[‚ÌƒvƒŒƒnƒu")]
+        [Header("å„å‘³æ–¹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ—ãƒ¬ãƒãƒ–")]
         [SerializeField]
         public GameObject[] PlayersPrefab;
 
-        [Header("Še“GƒLƒƒƒ‰ƒNƒ^[‚ÌƒvƒŒƒnƒu")]
+        [Header("å„æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ—ãƒ¬ãƒãƒ–")]
         [SerializeField]
         public GameObject[] EnemiesPrefab;
 
-        [Header("Še‘æO¨—ÍƒLƒƒƒ‰ƒNƒ^[‚ÌƒvƒŒƒnƒu")]
+        [Header("å„ç¬¬ä¸‰å‹¢åŠ›ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ—ãƒ¬ãƒãƒ–")]
         [SerializeField]
         public GameObject[] OthersPrefab;
 
-        [Header("Še–¡•ûƒLƒƒƒ‰ƒNƒ^[‚Ìƒpƒ‰ƒ[ƒ^QÆæ")]
+        [Header("å„å‘³æ–¹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å‚ç…§å…ˆ")]
         [SerializeField]
         public string[] PlayerParamFilePath;
 
-        [Header("Še“GƒLƒƒƒ‰ƒNƒ^[‚Ìƒpƒ‰ƒ[ƒ^QÆæ")]
+        [Header("å„æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å‚ç…§å…ˆ")]
         [SerializeField]
         public string[] EnemyParamFilePath;
 
-        [Header("Še‘æOŒR¨ƒLƒƒƒ‰ƒNƒ^[‚Ìƒpƒ‰ƒ[ƒ^QÆæ")]
+        [Header("å„ç¬¬ä¸‰è»å‹¢ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å‚ç…§å…ˆ")]
         [SerializeField]
         public string[] OtherParamFilePath;
 
-        [Header("ŠeƒXƒLƒ‹ƒf[ƒ^‚Ìƒpƒ‰ƒ[ƒ^QÆæ")]
+        [Header("å„ã‚¹ã‚­ãƒ«ãƒ‡ãƒ¼ã‚¿ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å‚ç…§å…ˆ")]
         [SerializeField]
         public string SkillDataFilePath;
 
-        [Header("‹ßÚUŒ‚‚ÌƒJƒƒ‰ƒpƒ‰ƒ[ƒ^‚ÌQÆæ")]
+        [Header("è¿‘æ¥æ”»æ’ƒæ™‚ã®ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å‚ç…§å…ˆ")]
         [SerializeField]
         public string CloseAtkCameraParamFilePath;
 
-        [Header("‰“ŠuUŒ‚‚ÌƒJƒƒ‰ƒpƒ‰ƒ[ƒ^‚ÌQÆæ")]
+        [Header("é éš”æ”»æ’ƒæ™‚ã®ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å‚ç…§å…ˆ")]
         [SerializeField]
         public string RangedAtkCameraParamFilePath;
 
         private HierarchyBuilder _hierarchyBld = null;
 
-        // ƒoƒgƒ‹ƒ}ƒl[ƒWƒƒ
+        // ãƒãƒˆãƒ«ãƒãƒãƒ¼ã‚¸ãƒ£
         private BattleManager _btlMgr;
 
         [System.Serializable]
@@ -114,7 +114,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// DiƒRƒ“ƒeƒi‚©‚çˆø”‚ğ’“ü‚µ‚Ü‚·
+        /// Diã‚³ãƒ³ãƒ†ãƒŠã‹ã‚‰å¼•æ•°ã‚’æ³¨å…¥ã—ã¾ã™
         /// </summary>
         /// <param name="btlMgr"></param>
         /// <param name="hierarchyBld"></param>
@@ -126,9 +126,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ŠY“–ƒXƒe[ƒW‚Ì‘SƒLƒƒƒ‰ƒNƒ^[î•ñ‚ğƒ[ƒh‚µAƒoƒgƒ‹ƒ}ƒl[ƒWƒƒã‚Éİ’u‚µ‚Ü‚·
+        /// è©²å½“ã‚¹ãƒ†ãƒ¼ã‚¸ã®å…¨ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼æƒ…å ±ã‚’ãƒ­ãƒ¼ãƒ‰ã—ã€ãƒãƒˆãƒ«ãƒãƒãƒ¼ã‚¸ãƒ£ä¸Šã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <param name="stageIndex">ƒXƒe[ƒWƒiƒ“ƒo[</param>
+        /// <param name="stageIndex">ã‚¹ãƒ†ãƒ¼ã‚¸ãƒŠãƒ³ãƒãƒ¼</param>
         public void CharacterLoad(int stageIndex)
         {
             List<string>[] ParamFilePaths = new List<string>[]
@@ -149,26 +149,26 @@ namespace Frontier
             {
                 if ( ParamFilePaths[i].Count <= 0 ) continue;
 
-                // JSONƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ
+                // JSONãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
                 string json = File.ReadAllText(ParamFilePaths[i][stageIndex]);
-                // JSONƒf[ƒ^‚ÌƒfƒVƒŠƒAƒ‰ƒCƒY
+                // JSONãƒ‡ãƒ¼ã‚¿ã®ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
                 var dataContainer = JsonUtility.FromJson<CharacterParamContainer>(json);
                 if (dataContainer == null) return;
                 
-                // ƒfƒVƒŠƒAƒ‰ƒCƒY‚³‚ê‚½ƒf[ƒ^‚ğ”z—ñ‚ÉŠi”[
+                // ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚ºã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã‚’é…åˆ—ã«æ ¼ç´
                 foreach ( var param in dataContainer.CharacterParams )
                 {
                     int prefabIndex = param.Prefab;
                     Character chara = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Character>(CharacterPrefabs[i][prefabIndex], true, false);
 
-                    // ’eƒIƒuƒWƒFƒNƒg‚ªİ’è‚³‚ê‚Ä‚¢‚ê‚Î¶¬
-                    // g—p‚Ü‚Å”ñƒAƒNƒeƒBƒu‚É‚·‚é
+                    // å¼¾ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒè¨­å®šã•ã‚Œã¦ã„ã‚Œã°ç”Ÿæˆ
+                    // ä½¿ç”¨æ™‚ã¾ã§éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã«ã™ã‚‹
                     if (chara.BulletObject != null)
                     {
                         _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>(chara.BulletObject, chara.gameObject, "Bullet", false, false);
                     }
 
-                    // ƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚ñ‚¾ƒpƒ‰ƒ[ƒ^‚ğİ’è
+                    // ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã‚“ã ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’è¨­å®š
                     ApplyCharacterParams(ref chara.param, param);
                     chara.Init();
                     chara.SetThinkType((Character.ThinkingType)param.ThinkType);
@@ -180,7 +180,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ŠeƒXƒLƒ‹‚Ìƒf[ƒ^‚ğƒ[ƒh‚µ‚Ü‚·
+        /// å„ã‚¹ã‚­ãƒ«ã®ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ­ãƒ¼ãƒ‰ã—ã¾ã™
         /// </summary>
         public void SkillDataLord()
         {
@@ -194,7 +194,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒJƒƒ‰‚Ìƒpƒ‰ƒ[ƒ^‚ğ“Ç‚İ‚İ‚Ü‚·
+        /// ã‚«ãƒ¡ãƒ©ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã¿ã¾ã™
         /// </summary>
         public void CameraParamLord( BattleCameraController cameraController )
         {
@@ -212,10 +212,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒNƒ^[ƒpƒ‰ƒ[ƒ^‚ğ“K‰‚³‚¹‚Ü‚·
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’é©å¿œã•ã›ã¾ã™
         /// </summary>
-        /// <param name="param">“K‰æ‚ÌƒLƒƒƒ‰ƒNƒ^[ƒpƒ‰ƒ[ƒ^</param>
-        /// <param name="fdata">“K‰Œ³‚ÌƒLƒƒƒ‰ƒNƒ^[ƒpƒ‰ƒ[ƒ^</param>
+        /// <param name="param">é©å¿œå…ˆã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
+        /// <param name="fdata">é©å¿œå…ƒã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
         private void ApplyCharacterParams(ref Character.Parameter param, in CharacterParamData fdata)
         {
             param.characterTag = (Character.CHARACTER_TAG)fdata.CharacterTag;
@@ -236,10 +236,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒXƒLƒ‹ƒf[ƒ^‚ğ“K‰‚³‚¹‚Ü‚·
+        /// ã‚¹ã‚­ãƒ«ãƒ‡ãƒ¼ã‚¿ã‚’é©å¿œã•ã›ã¾ã™
         /// </summary>
-        /// <param name="data">“K‰æ‚ÌƒXƒLƒ‹ƒf[ƒ^</param>
-        /// <param name="fdata">“K‰Œ³‚Ìƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İæ‚Á‚½ƒXƒLƒ‹ƒf[ƒ^</param>
+        /// <param name="data">é©å¿œå…ˆã®ã‚¹ã‚­ãƒ«ãƒ‡ãƒ¼ã‚¿</param>
+        /// <param name="fdata">é©å¿œå…ƒã®ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿å–ã£ãŸã‚¹ã‚­ãƒ«ãƒ‡ãƒ¼ã‚¿</param>
         private void ApplySkillsData(ref SkillsData.Data data, in FileSkillData fdata)
         {
             data.Name = fdata.Name;
@@ -257,7 +257,7 @@ namespace Frontier
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
         /// <summary>
-        /// ƒfƒoƒbƒO—p‚Éƒ†ƒjƒbƒg‚ğ¶¬‚µ‚Ü‚·
+        /// ãƒ‡ãƒãƒƒã‚°ç”¨ã«ãƒ¦ãƒ‹ãƒƒãƒˆã‚’ç”Ÿæˆã—ã¾ã™
         /// </summary>
         public void DebugBattleLoadUnit(int prefabIndex, ref Character.Parameter param)
         {
