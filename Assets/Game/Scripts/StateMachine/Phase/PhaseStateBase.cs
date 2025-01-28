@@ -80,7 +80,7 @@ namespace Frontier
         /// <summary>
         /// ガイドを新たに追加します
         /// </summary>
-        /// <param name="addGuide"></param>
+        /// <param name="addGuide">追加するガイド</param>
         protected void AddInputGuide(InputGuideUI.InputGuide addGuide )
         {
 

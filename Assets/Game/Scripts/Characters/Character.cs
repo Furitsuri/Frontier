@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,12 +17,12 @@ namespace Frontier
     public class Character : MonoBehaviour
     {
         /// <summary>
-        /// vlƒ^ƒCƒv
+        /// æ€è€ƒã‚¿ã‚¤ãƒ—
         /// </summary>
         public enum ThinkingType
         {
-            AGGERESSIVE = 0,    // Ï‹É“I‚ÉˆÚ“®‚µAUŒ‚Œã‚ÌŒ‹‰Ê‚Ì•]‰¿’l‚ª‚‚¢‘ÎÛ‚ğ‘_‚¤
-            WAITING,            // ©g‚Ìs“®”ÍˆÍ‚É‘ÎÛ‚ª“ü‚Á‚Ä‚±‚È‚¢ŒÀ‚è“®‚©‚È‚¢B“®‚«n‚ß‚½Œã‚ÍAGGRESSIVE‚Æ“¯‚¶“®ì
+            AGGERESSIVE = 0,    // ç©æ¥µçš„ã«ç§»å‹•ã—ã€æ”»æ’ƒå¾Œã®çµæœã®è©•ä¾¡å€¤ãŒé«˜ã„å¯¾è±¡ã‚’ç‹™ã†
+            WAITING,            // è‡ªèº«ã®è¡Œå‹•ç¯„å›²ã«å¯¾è±¡ãŒå…¥ã£ã¦ã“ãªã„é™ã‚Šå‹•ã‹ãªã„ã€‚å‹•ãå§‹ã‚ãŸå¾Œã¯AGGRESSIVEã¨åŒã˜å‹•ä½œ
 
             NUM
         }
@@ -58,10 +58,10 @@ namespace Frontier
 
                 if( character.tmpParam.isEndCommand[(int)COMMAND_TAG.ATTACK] ) return false;
 
-                // Œ»İƒOƒŠƒbƒh‚©‚çUŒ‚‰Â”\‚È‘ÎÛ‚Ì‹‚éƒOƒŠƒbƒh‚ª‘¶İ‚·‚ê‚ÎAÀs‰Â”\
+                // ç¾åœ¨ã‚°ãƒªãƒƒãƒ‰ã‹ã‚‰æ”»æ’ƒå¯èƒ½ãªå¯¾è±¡ã®å±…ã‚‹ã‚°ãƒªãƒƒãƒ‰ãŒå­˜åœ¨ã™ã‚Œã°ã€å®Ÿè¡Œå¯èƒ½
                 bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.tmpParam.gridIndex, character.param.attackRange, character.param.characterTag);
            
-                // Às•s‰Â‚Å‚ ‚éê‡‚Í“o˜^‚µ‚½UŒ‚î•ñ‚ğ‘S‚ÄƒNƒŠƒA
+                // å®Ÿè¡Œä¸å¯ã§ã‚ã‚‹å ´åˆã¯ç™»éŒ²ã—ãŸæ”»æ’ƒæƒ…å ±ã‚’å…¨ã¦ã‚¯ãƒªã‚¢
                 if( !isExecutable )
                 {
                     stageCtrl.ClearAttackableInfo();
@@ -87,7 +87,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆÚ“®ƒ^ƒCƒv
+        /// ç§»å‹•ã‚¿ã‚¤ãƒ—
         /// </summary>
         public enum MOVE_TYPE
         {
@@ -100,7 +100,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‹ßÚUŒ‚XV—pƒtƒFƒCƒY
+        /// è¿‘æ¥æ”»æ’ƒæ›´æ–°ç”¨ãƒ•ã‚§ã‚¤ã‚º
         /// </summary>
         public enum CLOSED_ATTACK_PHASE
         {
@@ -114,7 +114,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒpƒŠƒBXV—pƒtƒFƒCƒY
+        /// ãƒ‘ãƒªã‚£æ›´æ–°ç”¨ãƒ•ã‚§ã‚¤ã‚º
         /// </summary>
         public enum PARRY_PHASE
         {
@@ -126,53 +126,53 @@ namespace Frontier
             NUM,
         }
 
-        // ƒLƒƒƒ‰ƒNƒ^[‚Ì‚Âƒpƒ‰ƒ[ƒ^
+        // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®æŒã¤ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
         [System.Serializable]
         public struct Parameter
         {
-            // ƒLƒƒƒ‰ƒNƒ^[ƒ^ƒCƒv
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¿ã‚¤ãƒ—
             public CHARACTER_TAG characterTag;
-            // ƒLƒƒƒ‰ƒNƒ^[”Ô†
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ç•ªå·
             public int characterIndex;
-            // Å‘åHP
+            // æœ€å¤§HP
             public int MaxHP;
-            // Œ»İHP
+            // ç¾åœ¨HP
             public int CurHP;
-            // UŒ‚—Í
+            // æ”»æ’ƒåŠ›
             public int Atk;
-            // –hŒä—Í
+            // é˜²å¾¡åŠ›
             public int Def;
-            // ˆÚ“®ƒŒƒ“ƒW
+            // ç§»å‹•ãƒ¬ãƒ³ã‚¸
             public int moveRange;
-            // UŒ‚ƒŒƒ“ƒW
+            // æ”»æ’ƒãƒ¬ãƒ³ã‚¸
             public int attackRange;
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒWÅ‘å’l
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸æœ€å¤§å€¤
             public int maxActionGauge;
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒWŒ»İ’l
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ç¾åœ¨å€¤
             public int curActionGauge;
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‰ñ•œ’l
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸å›å¾©å€¤
             public int recoveryActionGauge;
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒWÁ”ï’l
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸æ¶ˆè²»å€¤
             public int consumptionActionGauge;
-            // ƒXƒe[ƒWŠJnƒOƒŠƒbƒhÀ•W(ƒCƒ“ƒfƒbƒNƒX)
+            // ã‚¹ãƒ†ãƒ¼ã‚¸é–‹å§‹æ™‚ã‚°ãƒªãƒƒãƒ‰åº§æ¨™(ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹)
             public int initGridIndex;
-            // ƒXƒe[ƒWŠJnŒü‚«
+            // ã‚¹ãƒ†ãƒ¼ã‚¸é–‹å§‹æ™‚å‘ã
             public Constants.Direction initDir;
-            // ‘•”õ‚µ‚Ä‚¢‚éƒXƒLƒ‹
+            // è£…å‚™ã—ã¦ã„ã‚‹ã‚¹ã‚­ãƒ«
             public SkillsData.ID[] equipSkills;
 
             /// <summary>
-            /// w’è‚ÌƒXƒLƒ‹‚ª—LŒø‚©”Û‚©‚ğ•Ô‚µ‚Ü‚·
+            /// æŒ‡å®šã®ã‚¹ã‚­ãƒ«ãŒæœ‰åŠ¹ã‹å¦ã‹ã‚’è¿”ã—ã¾ã™
             /// </summary>
-            /// <param name="index">w’èƒCƒ“ƒfƒbƒNƒX</param>
-            /// <returns>—LŒø‚©”Û‚©</returns>
+            /// <param name="index">æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+            /// <returns>æœ‰åŠ¹ã‹å¦ã‹</returns>
             public bool IsValidSkill(int index)
             {
                 return SkillsData.ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < SkillsData.ID.SKILL_NUM;
             }
 
             /// <summary>
-            /// ƒAƒNƒVƒ‡ƒ“ƒQ[ƒWÁ”ï—Ê‚ğƒŠƒZƒbƒg‚µ‚Ü‚·
+            /// ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸æ¶ˆè²»é‡ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™
             /// </summary>
             public void ResetConsumptionActionGauge()
             {
@@ -180,16 +180,16 @@ namespace Frontier
             }
         }
 
-        // ƒoƒtEƒfƒoƒt‚È‚Ç‚Åãæ‚¹‚³‚ê‚éƒpƒ‰ƒ[ƒ^
+        // ãƒãƒ•ãƒ»ãƒ‡ãƒãƒ•ãªã©ã§ä¸Šä¹—ã›ã•ã‚Œã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
         public struct ModifiedParameter
         {
-            // UŒ‚—Í
+            // æ”»æ’ƒåŠ›
             public int Atk;
-            // –hŒä—Í
+            // é˜²å¾¡åŠ›
             public int Def;
-            // ˆÚ“®ƒŒƒ“ƒW
+            // ç§»å‹•ãƒ¬ãƒ³ã‚¸
             public int moveRange;
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‰ñ•œ’l
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸å›å¾©å€¤
             public int recoveryActionGauge;
 
             public void Reset()
@@ -198,7 +198,7 @@ namespace Frontier
             }
         }
 
-        // ƒXƒLƒ‹‚É‚æ‚Á‚Äãæ‚¹‚³‚ê‚éƒpƒ‰ƒ[ƒ^
+        // ã‚¹ã‚­ãƒ«ã«ã‚ˆã£ã¦ä¸Šä¹—ã›ã•ã‚Œã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
         public struct SkillModifiedParameter
         {
             public int AtkNum;
@@ -211,32 +211,32 @@ namespace Frontier
             }
         }
 
-        // í“¬’†‚Ì‚İg—p‚·‚éƒpƒ‰ƒ[ƒ^
+        // æˆ¦é—˜ä¸­ã®ã¿ä½¿ç”¨ã™ã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
         public struct TmpParameter
         {
-            // ŠY“–ƒRƒ}ƒ“ƒh‚ÌI—¹ƒtƒ‰ƒO
+            // è©²å½“ã‚³ãƒãƒ³ãƒ‰ã®çµ‚äº†ãƒ•ãƒ©ã‚°
             public bool[] isEndCommand;
-            // ŠY“–ƒXƒLƒ‹‚Ìg—pƒtƒ‰ƒO
+            // è©²å½“ã‚¹ã‚­ãƒ«ã®ä½¿ç”¨ãƒ•ãƒ©ã‚°
             public bool[] isUseSkills;
-            // Œ»İˆÊ’u‚ğ¦‚·ƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX
+            // ç¾åœ¨ä½ç½®ã‚’ç¤ºã™ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
             public int gridIndex;
-            // 1‰ñ‚ÌUŒ‚‚É‚¨‚¯‚éHP‚Ì—\‘ª•Ï“®—Ê(•¡”‰ñUŒ‚‚É‚¨‚¯‚éƒ_ƒ[ƒW‘—Ê‚ğl—¶‚µ‚È‚¢)
+            // 1å›ã®æ”»æ’ƒã«ãŠã‘ã‚‹HPã®äºˆæ¸¬å¤‰å‹•é‡(è¤‡æ•°å›æ”»æ’ƒã«ãŠã‘ã‚‹ãƒ€ãƒ¡ãƒ¼ã‚¸ç·é‡ã‚’è€ƒæ…®ã—ãªã„)
             public int expectedChangeHP;
-            // ‘S‚Ä‚ÌUŒ‚‚É‚¨‚¯‚éHP‚Ì—\‘ª•Ï“®—Ê(•¡”‰ñUŒ‚‚É‚¨‚¯‚éƒ_ƒ[ƒW‘—Ê‚ğl—¶‚·‚é)
+            // å…¨ã¦ã®æ”»æ’ƒã«ãŠã‘ã‚‹HPã®äºˆæ¸¬å¤‰å‹•é‡(è¤‡æ•°å›æ”»æ’ƒã«ãŠã‘ã‚‹ãƒ€ãƒ¡ãƒ¼ã‚¸ç·é‡ã‚’è€ƒæ…®ã™ã‚‹)
             public int totalExpectedChangeHP;
 
             /// <summary>
-            /// w’èƒRƒ}ƒ“ƒh‚ªÀs‰Â”\‚©”Û‚©‚ğ”»’è‚µ‚Ü‚·
+            /// æŒ‡å®šã‚³ãƒãƒ³ãƒ‰ãŒå®Ÿè¡Œå¯èƒ½ã‹å¦ã‹ã‚’åˆ¤å®šã—ã¾ã™
             /// </summary>
-            /// <param name="cmdTag">w’èƒRƒ}ƒ“ƒh‚Ìƒ^ƒO</param>
-            /// <returns>Às‰Â”Û</returns>
+            /// <param name="cmdTag">æŒ‡å®šã‚³ãƒãƒ³ãƒ‰ã®ã‚¿ã‚°</param>
+            /// <returns>å®Ÿè¡Œå¯å¦</returns>
             public bool IsExecutableCommand(Command.COMMAND_TAG cmdTag)
             {
                 return !isEndCommand[(int)cmdTag];
             }
 
             /// <summary>
-            /// ƒXƒLƒ‹‚Ìg—pƒtƒ‰ƒO‚ğƒŠƒZƒbƒg‚µ‚Ü‚·
+            /// ã‚¹ã‚­ãƒ«ã®ä½¿ç”¨ãƒ•ãƒ©ã‚°ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™
             /// </summary>
             public void ResetUseSkill()
             {
@@ -247,7 +247,7 @@ namespace Frontier
             }
 
             /// <summary>
-            /// ‘S‚Ä‚Ìƒpƒ‰ƒ[ƒ^‚ğƒŠƒZƒbƒg‚µ‚Ü‚·
+            /// å…¨ã¦ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™
             /// </summary>
             public void Reset()
             {
@@ -263,13 +263,13 @@ namespace Frontier
         [System.Serializable]
         public struct CameraParameter
         {
-            [Header("UŒ‚ƒV[ƒPƒ“ƒXƒJƒƒ‰ƒIƒtƒZƒbƒg")]
+            [Header("æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹æ™‚ã‚«ãƒ¡ãƒ©ã‚ªãƒ•ã‚»ãƒƒãƒˆ")]
             public Vector3 OffsetOnAtkSequence;
-            [Header("ƒpƒ‰ƒ[ƒ^•\¦UI—pƒJƒƒ‰ƒIƒtƒZƒbƒg(YÀ•W)")]
+            [Header("ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¡¨ç¤ºUIç”¨ã‚«ãƒ¡ãƒ©ã‚ªãƒ•ã‚»ãƒƒãƒˆ(Yåº§æ¨™)")]
             public float UICameraLengthY;
-            [Header("ƒpƒ‰ƒ[ƒ^•\¦UI—pƒJƒƒ‰ƒIƒtƒZƒbƒg(ZÀ•W)")]
+            [Header("ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¡¨ç¤ºUIç”¨ã‚«ãƒ¡ãƒ©ã‚ªãƒ•ã‚»ãƒƒãƒˆ(Zåº§æ¨™)")]
             public float UICameraLengthZ;
-            // UI•\¦—pƒJƒƒ‰ƒ^[ƒQƒbƒg(Y•ûŒü)
+            // UIè¡¨ç¤ºç”¨ã‚«ãƒ¡ãƒ©ã‚¿ãƒ¼ã‚²ãƒƒãƒˆ(Yæ–¹å‘)
             public float UICameraLookAtCorrectY;
 
             public CameraParameter(in Vector3  offset, float lengthY, float lengthZ, float lookAtCorrectY)
@@ -282,7 +282,7 @@ namespace Frontier
         }
 
         [SerializeField]
-        [Header("’eƒIƒuƒWƒFƒNƒg")]
+        [Header("å¼¾ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private GameObject _bulletObject;
         public GameObject BulletObject => _bulletObject;
 
@@ -294,7 +294,7 @@ namespace Frontier
         private Quaternion _orderdRotation      = Quaternion.identity;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
-        // UŒ‚ƒV[ƒPƒ“ƒX‚É‚¨‚¯‚éc‚èUŒ‚‰ñ”
+        // æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã«ãŠã‘ã‚‹æ®‹ã‚Šæ”»æ’ƒå›æ•°
         protected int _atkRemainingNum              = 0;
         protected HierarchyBuilder _hierarchyBld    = null;
         protected BattleManager _btlMgr             = null;
@@ -310,13 +310,13 @@ namespace Frontier
         public ModifiedParameter modifiedParam;
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
-        // €–SŠm’èƒtƒ‰ƒO(UŒ‚ƒV[ƒPƒ“ƒX‚É‚¨‚¢‚Äg—p)
+        // æ­»äº¡ç¢ºå®šãƒ•ãƒ©ã‚°(æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã«ãŠã„ã¦ä½¿ç”¨)
         public bool IsDeclaredDead { get; set; } = false;
-        // ƒpƒŠƒBŒ‹‰Ê
+        // ãƒ‘ãƒªã‚£çµæœ
         public SkillParryController.JudgeResult ParryResult { get; set; } = SkillParryController.JudgeResult.NONE;
         public AnimationController AnimCtrl { get; } = new AnimationController();
 
-        // UŒ‚—pƒAƒjƒ[ƒVƒ‡ƒ“ƒ^ƒO
+        // æ”»æ’ƒç”¨ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚°
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
         {
             AnimDatas.AnimeConditionsTag.SINGLE_ATTACK,
@@ -354,14 +354,14 @@ namespace Frontier
             skillModifiedParam.Reset();
             AnimCtrl.Init(GetComponent<Animator>());
 
-            // ƒLƒƒƒ‰ƒNƒ^[ƒ‚ƒfƒ‹‚Ìƒ}ƒeƒŠƒAƒ‹‚ªİ’è‚³‚ê‚Ä‚¢‚éObject‚ğæ“¾‚µA
-            // Material‚Æ‰Šú‚ÌColorİ’è‚ğ•Û‘¶
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ¢ãƒ‡ãƒ«ã®ãƒãƒ†ãƒªã‚¢ãƒ«ãŒè¨­å®šã•ã‚Œã¦ã„ã‚‹Objectã‚’å–å¾—ã—ã€
+            // Materialã¨åˆæœŸã®Colorè¨­å®šã‚’ä¿å­˜
             RegistMaterialsRecursively(this.transform, Constants.OBJECT_TAG_NAME_CHARA_SKIN_MESH);
         }
 
         void Update()
         {
-            // Œü‚«‰ñ“]–½—ß
+            // å‘ãå›è»¢å‘½ä»¤
             if (_isOrderedRotation)
             {
                 transform.rotation = Quaternion.Slerp(transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * Time.deltaTime);
@@ -373,7 +373,7 @@ namespace Frontier
                 }
             }
 
-            // ˆÚ“®‚ÆUŒ‚‚ªI—¹‚µ‚Ä‚¢‚ê‚ÎAs“®•s‰Â‚É‘JˆÚ
+            // ç§»å‹•ã¨æ”»æ’ƒãŒçµ‚äº†ã—ã¦ã„ã‚Œã°ã€è¡Œå‹•ä¸å¯ã«é·ç§»
             var endCommand = tmpParam.isEndCommand;
             if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
             {
@@ -383,16 +383,16 @@ namespace Frontier
 
         void OnDestroy()
         {
-            // í“¬ŠÔŠÇ—ƒNƒ‰ƒX‚Ì“o˜^‚ğ‰ğœ
+            // æˆ¦é—˜æ™‚é–“ç®¡ç†ã‚¯ãƒ©ã‚¹ã®ç™»éŒ²ã‚’è§£é™¤
             _btlMgr.TimeScaleCtrl.Unregist(_timeScale);
         }
 
         /// <summary>
-        /// Ä‹A‚ğ—p‚¢‚ÄAw’è‚Ìƒ^ƒO‚Å“o˜^‚³‚ê‚Ä‚¢‚éƒIƒuƒWƒFƒNƒg‚Ìƒ}ƒeƒŠƒAƒ‹‚ğ“o˜^‚µ‚Ü‚·
-        /// ¦ F•ÏX‚ÌÛ‚É—p‚¢‚é
+        /// å†å¸°ã‚’ç”¨ã„ã¦ã€æŒ‡å®šã®ã‚¿ã‚°ã§ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ç™»éŒ²ã—ã¾ã™
+        /// â€» è‰²å¤‰æ›´ã®éš›ã«ç”¨ã„ã‚‹
         /// </summary>
-        /// <param name="parent">ƒIƒuƒWƒFƒNƒg‚Ìe</param>
-        /// <param name="tagName">ŒŸõ‚·‚éƒ^ƒO–¼</param>
+        /// <param name="parent">ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®è¦ª</param>
+        /// <param name="tagName">æ¤œç´¢ã™ã‚‹ã‚¿ã‚°å</param>
         void RegistMaterialsRecursively( Transform parent, string tagName )
         {
             Transform children = parent.GetComponentInChildren<Transform>();
@@ -400,8 +400,8 @@ namespace Frontier
             {
                 if (child.CompareTag(tagName))
                 {
-                    // ƒ‚ƒfƒ‹‚É‚æ‚Á‚ÄAƒ}ƒeƒŠƒAƒ‹‚ªMesh‚ÆSkinMesh‚Ì—¼•û‚Ìƒpƒ^[ƒ“‚É“o˜^‚³‚ê‚Ä‚¢‚éƒP[ƒX‚ª‚ ‚é‚½‚ßA
-                    // ‚Ç‚¿‚ç‚àŒŸõ‚·‚é
+                    // ãƒ¢ãƒ‡ãƒ«ã«ã‚ˆã£ã¦ã€ãƒãƒ†ãƒªã‚¢ãƒ«ãŒMeshã¨SkinMeshã®ä¸¡æ–¹ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‚±ãƒ¼ã‚¹ãŒã‚ã‚‹ãŸã‚ã€
+                    // ã©ã¡ã‚‰ã‚‚æ¤œç´¢ã™ã‚‹
                     var skinMeshRenderer = child.GetComponent<SkinnedMeshRenderer>();
                     if (skinMeshRenderer != null)
                     {
@@ -419,28 +419,28 @@ namespace Frontier
         }
 
         /// <summary>
-        /// w’è‚ÌƒpƒŠƒB‘€ìƒNƒ‰ƒX‚ªƒCƒxƒ“ƒgI—¹‚µ‚½Û‚ÉŒÄ‚Ño‚·ƒfƒŠƒQ[ƒg‚ğİ’è‚µ‚Ü‚·
+        /// æŒ‡å®šã®ãƒ‘ãƒªã‚£æ“ä½œã‚¯ãƒ©ã‚¹ãŒã‚¤ãƒ™ãƒ³ãƒˆçµ‚äº†ã—ãŸéš›ã«å‘¼ã³å‡ºã™ãƒ‡ãƒªã‚²ãƒ¼ãƒˆã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="parryCtrl">ƒpƒŠƒB‘€ìƒNƒ‰ƒX</param>
+        /// <param name="parryCtrl">ãƒ‘ãƒªã‚£æ“ä½œã‚¯ãƒ©ã‚¹</param>
         void SubscribeParryEvent( SkillParryController parryCtrl )
         {
             parryCtrl.ProcessCompleted += ParryEventProcessCompleted;
         }
 
         /// <summary>
-        /// w’è‚ÌƒpƒŠƒB‘€ìƒNƒ‰ƒX‚ªƒCƒxƒ“ƒgI—¹‚µ‚½Û‚ÉŒÄ‚Ño‚·ƒfƒŠƒQ[ƒgİ’è‚ğ‰ğœ‚µ‚Ü‚·
+        /// æŒ‡å®šã®ãƒ‘ãƒªã‚£æ“ä½œã‚¯ãƒ©ã‚¹ãŒã‚¤ãƒ™ãƒ³ãƒˆçµ‚äº†ã—ãŸéš›ã«å‘¼ã³å‡ºã™ãƒ‡ãƒªã‚²ãƒ¼ãƒˆè¨­å®šã‚’è§£é™¤ã—ã¾ã™
         /// </summary>
-        /// <param name="parryCtrl">ƒpƒŠƒB‘€ìƒNƒ‰ƒX</param>
+        /// <param name="parryCtrl">ãƒ‘ãƒªã‚£æ“ä½œã‚¯ãƒ©ã‚¹</param>
         void UnsubscribeParryEvent(SkillParryController parryCtrl)
         {
             parryCtrl.ProcessCompleted -= ParryEventProcessCompleted;
         }
 
         /// <summary>
-        /// ƒpƒŠƒBƒCƒxƒ“ƒgI—¹‚ÉŒÄ‚Ño‚³‚ê‚éƒfƒŠƒQ[ƒg
+        /// ãƒ‘ãƒªã‚£ã‚¤ãƒ™ãƒ³ãƒˆçµ‚äº†æ™‚ã«å‘¼ã³å‡ºã•ã‚Œã‚‹ãƒ‡ãƒªã‚²ãƒ¼ãƒˆ
         /// </summary>
-        /// <param name="sender">ŒÄ‚Ño‚µ‚ğs‚¤ƒpƒŠƒBƒCƒxƒ“ƒgƒRƒ“ƒgƒ[ƒ‰</param>
-        /// <param name="e">ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰—pƒIƒuƒWƒFƒNƒg(‚±‚ÌŠÖ”‚Å‚Íempty)</param>
+        /// <param name="sender">å‘¼ã³å‡ºã—ã‚’è¡Œã†ãƒ‘ãƒªã‚£ã‚¤ãƒ™ãƒ³ãƒˆã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©</param>
+        /// <param name="e">ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ã“ã®é–¢æ•°ã§ã¯empty)</param>
         void ParryEventProcessCompleted( object sender, SkillParryCtrlEventArgs e )
         {
             ParryResult = e.Result;
@@ -456,28 +456,28 @@ namespace Frontier
         #region VIRTUAL_PUBLIC_METHOD
 
         /// <summary>
-        /// ‰Šú‰»ˆ—‚ğs‚¢‚Ü‚·
+        /// åˆæœŸåŒ–å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
         virtual public void Init()
         {
             tmpParam.gridIndex  = param.initGridIndex;
             _elapsedTime        = 0f;
 
-            // í“¬ŠÔŠÇ—ƒNƒ‰ƒX‚É©g‚ÌŠÔŠÇ—ƒNƒ‰ƒX‚ğ“o˜^
+            // æˆ¦é—˜æ™‚é–“ç®¡ç†ã‚¯ãƒ©ã‚¹ã«è‡ªèº«ã®æ™‚é–“ç®¡ç†ã‚¯ãƒ©ã‚¹ã‚’ç™»éŒ²
             _btlMgr.TimeScaleCtrl.Regist( _timeScale );
         }
 
         /// <summary>
-        /// €–Sˆ—‚ğs‚¢‚Ü‚·
+        /// æ­»äº¡å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
         virtual public void Die() { }
 
         virtual public void SetThinkType(Enemy.ThinkingType type) { }
 
         /// <summary>
-        /// ‘Îí‘Šè‚Éƒ_ƒ[ƒW‚ğ—^‚¦‚éƒCƒxƒ“ƒg‚ğ”­¶‚³‚¹‚Ü‚·
-        /// ¦ ’e‚Ì’…’eˆÈŠO‚Å‚Í‹ßÚUŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚©‚ç‚àŒÄ‚Ño‚³‚ê‚éİŒv‚Å‚·
-        ///    ‹ßÚUŒ‚ƒLƒƒƒ‰ƒNƒ^[‚ÌUŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì“K“–‚ÈƒtƒŒ[ƒ€‚Å‚±‚Ìƒƒ\ƒbƒhƒCƒxƒ“ƒg‚ğ‘}“ü‚µ‚Ä‚­‚¾‚³‚¢
+        /// å¯¾æˆ¦ç›¸æ‰‹ã«ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã‚‹ã‚¤ãƒ™ãƒ³ãƒˆã‚’ç™ºç”Ÿã•ã›ã¾ã™
+        /// â€» å¼¾ã®ç€å¼¾ä»¥å¤–ã§ã¯è¿‘æ¥æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰ã‚‚å‘¼ã³å‡ºã•ã‚Œã‚‹è¨­è¨ˆã§ã™
+        ///    è¿‘æ¥æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é©å½“ãªãƒ•ãƒ¬ãƒ¼ãƒ ã§ã“ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆã‚’æŒ¿å…¥ã—ã¦ãã ã•ã„
         /// </summary>
         virtual public void AttackOpponentEvent()
         {
@@ -489,7 +489,7 @@ namespace Frontier
             _isAttacked = true;
             _opponent.param.CurHP += _opponent.tmpParam.expectedChangeHP;
 
-            //@ƒ_ƒ[ƒW‚ª0‚Ìê‡‚Íƒ‚[ƒVƒ‡ƒ“‚ğæ‚ç‚È‚¢
+            //ã€€ãƒ€ãƒ¡ãƒ¼ã‚¸ãŒ0ã®å ´åˆã¯ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å–ã‚‰ãªã„
             if (_opponent.tmpParam.expectedChangeHP != 0)
             {
                 if (_opponent.param.CurHP <= 0)
@@ -497,24 +497,24 @@ namespace Frontier
                     _opponent.param.CurHP = 0;
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
-                // ƒK[ƒhƒXƒLƒ‹g—p‚Í€–SˆÈŠO‚Íƒ_ƒ[ƒWƒ‚[ƒVƒ‡ƒ“‚ğÄ¶‚µ‚È‚¢
+                // ã‚¬ãƒ¼ãƒ‰ã‚¹ã‚­ãƒ«ä½¿ç”¨æ™‚ã¯æ­»äº¡æ™‚ä»¥å¤–ã¯ãƒ€ãƒ¡ãƒ¼ã‚¸ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿã—ãªã„
                 else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
                 {
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
                 }
             }
 
-            // ƒ_ƒ[ƒWUI‚ğ•\¦
+            // ãƒ€ãƒ¡ãƒ¼ã‚¸UIã‚’è¡¨ç¤º
             BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
             BattleUISystem.Instance.ToggleDamageUI(true);
         }
 
         /// <summary>
-        /// ‘Îí‘Šè‚ÌUŒ‚‚ğƒpƒŠƒB(’e‚­)‚·‚éƒCƒxƒ“ƒg‚ğ”­¶‚³‚¹‚Ü‚·@¦UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚©‚çŒÄ‚Ño‚³‚ê‚Ü‚·
+        /// å¯¾æˆ¦ç›¸æ‰‹ã®æ”»æ’ƒã‚’ãƒ‘ãƒªã‚£(å¼¾ã)ã™ã‚‹ã‚¤ãƒ™ãƒ³ãƒˆã‚’ç™ºç”Ÿã•ã›ã¾ã™ã€€â€»æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã¾ã™
         /// </summary>
         virtual public void ParryOpponentEvent()
         {
-            // NONEˆÈŠO‚ÌŒ‹‰Ê‚ª’Ê’m‚³‚ê‚Ä‚¢‚é‚Í‚¸
+            // NONEä»¥å¤–ã®çµæœãŒé€šçŸ¥ã•ã‚Œã¦ã„ã‚‹ã¯ãš
             Debug.Assert(ParryResult != SkillParryController.JudgeResult.NONE);
 
             if (_opponent == null)
@@ -527,12 +527,12 @@ namespace Frontier
                 return;
             }
 
-            // ¬Œ÷(ƒWƒƒƒXƒgŠÜ‚Ş)‚É‚ÍƒpƒŠƒB‹““®
+            // æˆåŠŸæ™‚(ã‚¸ãƒ£ã‚¹ãƒˆå«ã‚€)ã«ã¯ãƒ‘ãƒªã‚£æŒ™å‹•
             _opponent.ParryRecieveEvent();
         }
 
         /// <summary>
-        /// ƒpƒŠƒB‚ğó‚¯‚½Û‚ÌƒCƒxƒ“ƒg‚ğ”­¶‚³‚¹‚Ü‚·
+        /// ãƒ‘ãƒªã‚£ã‚’å—ã‘ãŸéš›ã®ã‚¤ãƒ™ãƒ³ãƒˆã‚’ç™ºç”Ÿã•ã›ã¾ã™
         /// </summary>
         virtual public void ParryRecieveEvent()
         {
@@ -541,8 +541,8 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ’e‚ğ”­Ë‚µ‚Ü‚·
-        /// MEMO : ƒ‚[ƒVƒ‡ƒ“‚©‚çƒCƒxƒ“ƒgƒtƒ‰ƒOˆ—‚Æ‚µ‚ÄŒÄ‚Î‚ê‚Ü‚·
+        /// å¼¾ã‚’ç™ºå°„ã—ã¾ã™
+        /// MEMO : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°å‡¦ç†ã¨ã—ã¦å‘¼ã°ã‚Œã¾ã™
         /// </summary>
         virtual public void FireBullet()
         {
@@ -550,7 +550,7 @@ namespace Frontier
 
             _bullet.gameObject.SetActive(true);
 
-            // Ëo’n“_A–Ú•W’n“_‚È‚Ç‚ğİ’è‚µ‚Ä’e‚ğ”­Ë
+            // å°„å‡ºåœ°ç‚¹ã€ç›®æ¨™åœ°ç‚¹ãªã©ã‚’è¨­å®šã—ã¦å¼¾ã‚’ç™ºå°„
             var firingPoint = transform.position;
             firingPoint.y += camParam.UICameraLookAtCorrectY;
             _bullet.SetFiringPoint(firingPoint);
@@ -561,10 +561,10 @@ namespace Frontier
             _bullet.SetFlightTimeFromGridLength(gridLength);
             _bullet.StartUpdateCoroutine(AttackOpponentEvent);
 
-            // ”­Ë‚Æ“¯‚ÉŸ‚ÌƒJƒƒ‰‚É‘JˆÚ‚³‚¹‚é
+            // ç™ºå°„ã¨åŒæ™‚ã«æ¬¡ã®ã‚«ãƒ¡ãƒ©ã«é·ç§»ã•ã›ã‚‹
             _isTransitNextPhaseCamera = true;
 
-            // ‚±‚ÌUŒ‚‚É‚æ‚Á‚Ä‘Šè‚ª“|‚³‚ê‚é‚©‚Ç‚¤‚©‚ğ”»’è
+            // ã“ã®æ”»æ’ƒã«ã‚ˆã£ã¦ç›¸æ‰‹ãŒå€’ã•ã‚Œã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®š
             _opponent.IsDeclaredDead = ( _opponent.param.CurHP + _opponent.tmpParam.expectedChangeHP ) <= 0;
             if( !_opponent.IsDeclaredDead && 0 < _atkRemainingNum )
             {
@@ -574,7 +574,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// í“¬‚Ég—p‚·‚éƒXƒLƒ‹‚ğ‘I‘ğ‚µ‚Ü‚·
+        /// æˆ¦é—˜ã«ä½¿ç”¨ã™ã‚‹ã‚¹ã‚­ãƒ«ã‚’é¸æŠã—ã¾ã™
         /// </summary>
         virtual public void SelectUseSkills(SkillsData.SituationType type)
         {
@@ -585,10 +585,10 @@ namespace Frontier
         #region PUBLIC_METHOD
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒNƒ^[‚ÌˆÊ’u‚ğİ’è‚µ‚Ü‚·
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ä½ç½®ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="gridIndex">ƒ}ƒbƒvƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX</param>
-        /// <param name="dir">ƒLƒƒƒ‰ƒNƒ^[Šp“x</param>
+        /// <param name="gridIndex">ãƒãƒƒãƒ—ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+        /// <param name="dir">ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼è§’åº¦</param>
         public void SetPosition(int gridIndex, in Vector3 pos, in Quaternion dir)
         {
             tmpParam.gridIndex = gridIndex;
@@ -598,9 +598,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// w’èƒCƒ“ƒfƒbƒNƒX‚ÌƒOƒŠƒbƒh‚ÉƒLƒƒƒ‰ƒNƒ^[‚ÌŒü‚«‚ğ‡‚í‚¹‚é‚æ‚¤‚É–½—ß‚ğ”­s‚µ‚Ü‚·
+        /// æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®ã‚°ãƒªãƒƒãƒ‰ã«ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®å‘ãã‚’åˆã‚ã›ã‚‹ã‚ˆã†ã«å‘½ä»¤ã‚’ç™ºè¡Œã—ã¾ã™
         /// </summary>
-        /// <param name="targetPos">Œü‚«‚ğ‡‚í‚¹‚éˆÊ’u</param>
+        /// <param name="targetPos">å‘ãã‚’åˆã‚ã›ã‚‹ä½ç½®</param>
         public void RotateToPosition( in Vector3 targetPos )
         {
             var selfPos     = _stageCtrl.GetGridCharaStandPos( tmpParam.gridIndex );
@@ -612,8 +612,8 @@ namespace Frontier
         }
 
         /// <summary>
-        /// s“®I—¹‚È‚ÇAs“®•s‰Â‚Ìó‘Ô‚É‚µ‚Ü‚·
-        /// ƒLƒƒƒ‰ƒNƒ^[ƒ‚ƒfƒ‹‚ÌF‚ğ•ÏX‚µAs“®•s‰Â‚Å‚ ‚é‚±‚Æ‚ğ¦‚·ˆ—‚àŠÜ‚ß‚Ü‚·
+        /// è¡Œå‹•çµ‚äº†æ™‚ãªã©ã€è¡Œå‹•ä¸å¯ã®çŠ¶æ…‹ã«ã—ã¾ã™
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ¢ãƒ‡ãƒ«ã®è‰²ã‚’å¤‰æ›´ã—ã€è¡Œå‹•ä¸å¯ã§ã‚ã‚‹ã“ã¨ã‚’ç¤ºã™å‡¦ç†ã‚‚å«ã‚ã¾ã™
         /// </summary>
         public void BeImpossibleAction()
         {
@@ -622,7 +622,7 @@ namespace Frontier
                 tmpParam.isEndCommand[i] = true;
             }
 
-            // s“®I—¹‚ğ¦‚·‚½‚ß‚Éƒ}ƒeƒŠƒAƒ‹‚ÌF–¡‚ğƒOƒŒ[‚É•ÏX
+            // è¡Œå‹•çµ‚äº†ã‚’ç¤ºã™ãŸã‚ã«ãƒãƒ†ãƒªã‚¢ãƒ«ã®è‰²å‘³ã‚’ã‚°ãƒ¬ãƒ¼ã«å¤‰æ›´
             for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
             {
                 _textureMaterialsAndColors[i].material.color = Color.gray;
@@ -630,14 +630,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// s“®ÄŠJ‚És“®‰Â”\ó‘Ô‚É‚µ‚Ü‚·
-        /// ƒLƒƒƒ‰ƒNƒ^[‚Ìƒ‚ƒfƒ‹‚ÌF‚ğŒ³‚É–ß‚·ˆ—‚àŠÜ‚ß‚Ü‚·
+        /// è¡Œå‹•å†é–‹æ™‚ã«è¡Œå‹•å¯èƒ½çŠ¶æ…‹ã«ã—ã¾ã™
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ¢ãƒ‡ãƒ«ã®è‰²ã‚’å…ƒã«æˆ»ã™å‡¦ç†ã‚‚å«ã‚ã¾ã™
         /// </summary>
         public void BePossibleAction()
         {
             tmpParam.Reset();
 
-            // ƒ}ƒeƒŠƒAƒ‹‚ÌF–¡‚ğ’Êí‚ÌF–¡‚É–ß‚·
+            // ãƒãƒ†ãƒªã‚¢ãƒ«ã®è‰²å‘³ã‚’é€šå¸¸ã®è‰²å‘³ã«æˆ»ã™
             for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
             {
                 _textureMaterialsAndColors[i].material.color = _textureMaterialsAndColors[i].originalColor;
@@ -645,7 +645,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‹ßÚUŒ‚ƒV[ƒPƒ“ƒX‚ğŠJn‚µ‚Ü‚·
+        /// è¿‘æ¥æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
         public void StartClosedAttackSequence()
         {
@@ -657,19 +657,19 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰“ŠuUŒ‚ƒV[ƒPƒ“ƒX‚ğŠJn‚µ‚Ü‚·
+        /// é éš”æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
         public void StartRangedAttackSequence()
         {
             _isAttacked         = false;
-            _atkRemainingNum    = skillModifiedParam.AtkNum - 1;   // UŒ‚‰ñ”‚ğ1Á”ï
+            _atkRemainingNum    = skillModifiedParam.AtkNum - 1;   // æ”»æ’ƒå›æ•°ã‚’1æ¶ˆè²»
             var attackAnimtag   = AttackAnimTags[_atkRemainingNum];
 
             AnimCtrl.SetAnimator(attackAnimtag);
         }
 
         /// <summary>
-        /// ƒpƒŠƒBƒV[ƒPƒ“ƒX‚ğŠJn‚µ‚Ü‚·
+        /// ãƒ‘ãƒªã‚£ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
         public void StartParrySequence()
         {
@@ -677,13 +677,13 @@ namespace Frontier
             _elapsedTime = 0f;
 
             AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
-            // ƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğ’x‚­‚µAƒpƒŠƒB‹““®‚ğƒXƒ[ƒ‚[ƒVƒ‡ƒ“‚ÅŒ©‚¹‚é
+            // ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’é…ãã—ã€ãƒ‘ãƒªã‚£æŒ™å‹•ã‚’ã‚¹ãƒ­ãƒ¼ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã§è¦‹ã›ã‚‹
             _timeScale.SetTimeScale(0.1f);
         }
 
         /// <summary>
-        /// ƒpƒŠƒB”»’èˆ—‚ğŠJn‚µ‚Ü‚·
-        /// MEMO : ƒ‚[ƒVƒ‡ƒ“‚ÌƒCƒxƒ“ƒgƒtƒ‰ƒO‚©‚çŒÄ‚Ño‚µ‚Ü‚·
+        /// ãƒ‘ãƒªã‚£åˆ¤å®šå‡¦ç†ã‚’é–‹å§‹ã—ã¾ã™
+        /// MEMO : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ã‹ã‚‰å‘¼ã³å‡ºã—ã¾ã™
         /// </summary>
         public void StartParryJudgeEvent()
         {
@@ -695,7 +695,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Às‰Â”\‚ÈƒRƒ}ƒ“ƒh‚ğXV‚µ‚Ü‚·
+        /// å®Ÿè¡Œå¯èƒ½ãªã‚³ãƒãƒ³ãƒ‰ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
         public void UpdateExecutableCommand(in StageController stageCtrl)
         {
@@ -710,11 +710,11 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‹ßÚUŒ‚‚Ì—¬‚ê‚ğXV‚µ‚Ü‚·
+        /// è¿‘æ¥æ”»æ’ƒæ™‚ã®æµã‚Œã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="departure">‹ßÚUŒ‚‚ÌŠJn’n“_</param>
-        /// <param name="destination">‹ßÚUŒ‚‚ÌI—¹’n“_</param>
-        /// <returns>I—¹”»’è</returns>
+        /// <param name="departure">è¿‘æ¥æ”»æ’ƒã®é–‹å§‹åœ°ç‚¹</param>
+        /// <param name="destination">è¿‘æ¥æ”»æ’ƒã®çµ‚äº†åœ°ç‚¹</param>
+        /// <returns>çµ‚äº†åˆ¤å®š</returns>
         public bool UpdateClosedAttack(in Vector3 departure, in Vector3 destination)
         {
             var attackAnimtag = AttackAnimTags[skillModifiedParam.AtkNum - 1];
@@ -750,7 +750,7 @@ namespace Frontier
                     }
                     break;
                 case CLOSED_ATTACK_PHASE.DISTANCING:
-                    // UŒ‚‘O‚ÌêŠ‚É–ß‚é
+                    // æ”»æ’ƒå‰ã®å ´æ‰€ã«æˆ»ã‚‹
                     _elapsedTime += Time.deltaTime;
                     t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_DISTANCING_TIME);
                     t = Mathf.SmoothStep(0f, 1f, t);
@@ -770,48 +770,48 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰“ŠuUŒ‚‚Ì—¬‚ê‚ğXV‚µ‚Ü‚·
+        /// é éš”æ”»æ’ƒæ™‚ã®æµã‚Œã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="departure">‰“ŠuUŒ‚‚ÌŠJn’n“_</param>
-        /// <param name="destination">‰“ŠuUŒ‚‚ÌI—¹’n“_</param>
-        /// <returns>I—¹”»’è</returns>
+        /// <param name="departure">é éš”æ”»æ’ƒã®é–‹å§‹åœ°ç‚¹</param>
+        /// <param name="destination">é éš”æ”»æ’ƒã®çµ‚äº†åœ°ç‚¹</param>
+        /// <returns>çµ‚äº†åˆ¤å®š</returns>
         public bool UpdateRangedAttack(in Vector3 departure, in Vector3 destination)
         {
             if (GetBullet() == null) return false;
 
-            // ‰“ŠuUŒ‚‚Í“Á’è‚ÌƒtƒŒ[ƒ€‚ÅƒJƒƒ‰‘ÎÛ‚Æƒpƒ‰ƒ[ƒ^‚ğ•ÏX‚·‚é
+            // é éš”æ”»æ’ƒã¯ç‰¹å®šã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§ã‚«ãƒ¡ãƒ©å¯¾è±¡ã¨ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å¤‰æ›´ã™ã‚‹
             if (IsTransitNextPhaseCamera())
             {
                 _btlMgr.GetCameraController().TransitNextPhaseCameraParam(null, GetBullet().transform);
             }
-            // UŒ‚I—¹‚µ‚½ê‡‚ÍWait‚ÉØ‚è‘Ö‚¦
+            // æ”»æ’ƒçµ‚äº†ã—ãŸå ´åˆã¯Waitã«åˆ‡ã‚Šæ›¿ãˆ
             if (IsEndAttackAnimSequence())
             {
                 AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
             }
 
-            // ‘Îí‘Šè‚ªUŒ‚‚ğ”í’eÏ‚İA‚©‚ÂAWaitó‘Ô‚ÉØ‚è‘Ö‚¦Ï‚İ‚Ìê‡‚ÉI—¹
+            // å¯¾æˆ¦ç›¸æ‰‹ãŒæ”»æ’ƒã‚’è¢«å¼¾æ¸ˆã¿ã€ã‹ã¤ã€WaitçŠ¶æ…‹ã«åˆ‡ã‚Šæ›¿ãˆæ¸ˆã¿ã®å ´åˆã«çµ‚äº†
             return _isAttacked && AnimCtrl.IsPlayingAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.WAIT);
         }
 
         /// <summary>
-        /// í“¬‚É‚¨‚¢‚ÄAUŒ‚‚µ‚½‘¤‚ªƒpƒŠƒB‚ğó‚¯‚½Û‚Ìs“®‚ğXV‚µ‚Ü‚·
-        /// MEMO : ƒpƒŠƒB‚ğó‚¯‚½‘¤‚ÍŠî–{“I‚És“®‚µ‚È‚¢‚½‚ßfalse‚ğ•Ô‚·‚Ì‚İ
+        /// æˆ¦é—˜ã«ãŠã„ã¦ã€æ”»æ’ƒã—ãŸå´ãŒãƒ‘ãƒªã‚£ã‚’å—ã‘ãŸéš›ã®è¡Œå‹•ã‚’æ›´æ–°ã—ã¾ã™
+        /// MEMO : ãƒ‘ãƒªã‚£ã‚’å—ã‘ãŸå´ã¯åŸºæœ¬çš„ã«è¡Œå‹•ã—ãªã„ãŸã‚falseã‚’è¿”ã™ã®ã¿
         /// </summary>
-        /// <param name="departure">UŒ‚ŠJnÀ•W</param>
-        /// <param name="destination">UŒ‚–Ú•WÀ•W</param>
-        /// <returns>I—¹”»’è</returns>
+        /// <param name="departure">æ”»æ’ƒé–‹å§‹åº§æ¨™</param>
+        /// <param name="destination">æ”»æ’ƒç›®æ¨™åº§æ¨™</param>
+        /// <returns>çµ‚äº†åˆ¤å®š</returns>
         public bool UpdateParryOnAttacker(in Vector3 departure, in Vector3 destination)
         {
             return false;
         }
 
         /// <summary>
-        /// í“¬‚É‚¨‚¢‚ÄAUŒ‚‚³‚ê‚½‘¤‚ªƒpƒŠƒB‚ğs‚Á‚½Û‚Ìs“®‚ğXV‚µ‚Ü‚·
+        /// æˆ¦é—˜ã«ãŠã„ã¦ã€æ”»æ’ƒã•ã‚ŒãŸå´ãŒãƒ‘ãƒªã‚£ã‚’è¡Œã£ãŸéš›ã®è¡Œå‹•ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="departure">UŒ‚ŠJnÀ•W</param>
-        /// <param name="destination">UŒ‚–Ú•WÀ•W</param>
-        /// <returns>I—¹”»’è</returns>
+        /// <param name="departure">æ”»æ’ƒé–‹å§‹åº§æ¨™</param>
+        /// <param name="destination">æ”»æ’ƒç›®æ¨™åº§æ¨™</param>
+        /// <returns>çµ‚äº†åˆ¤å®š</returns>
         public bool UpdateParryOnTargeter(in Vector3 departure, in Vector3 destination)
         {
             bool isJustParry = false;
@@ -842,7 +842,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒpƒŠƒBˆ—‚Ì“s‡ã‚ÅƒAƒjƒ[ƒVƒ‡ƒ“‚ğ’â~‚³‚¹‚Ü‚· ¦ƒ‚[ƒVƒ‡ƒ“‚©‚çŒÄ‚Ño‚³‚ê‚Ü‚·
+        /// ãƒ‘ãƒªã‚£å‡¦ç†ã®éƒ½åˆä¸Šã§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’åœæ­¢ã•ã›ã¾ã™ â€»ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã¾ã™
         /// </summary>
         public void StopAnimationOnParry()
         {
@@ -853,16 +853,16 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‘Îí‘Šè‚ğİ’è‚µ‚Ü‚·
+        /// å¯¾æˆ¦ç›¸æ‰‹ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="opponent">‘Îí‘Šè</param>
+        /// <param name="opponent">å¯¾æˆ¦ç›¸æ‰‹</param>
         public void SetOpponentCharacter(Character opponent)
         {
             _opponent = opponent;
         }
 
         /// <summary>
-        /// UŒ‚‚ğó‚¯‚éÛ‚Ìİ’è‚ğs‚¢‚Ü‚·
+        /// æ”»æ’ƒã‚’å—ã‘ã‚‹éš›ã®è¨­å®šã‚’è¡Œã„ã¾ã™
         /// </summary>
         public void SetReceiveAttackSetting()
         {
@@ -870,18 +870,18 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‘Îí‘Šè‚Ìİ’è‚ğƒŠƒZƒbƒg‚µ‚Ü‚·
+        /// å¯¾æˆ¦ç›¸æ‰‹ã®è¨­å®šã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™
         /// </summary>
         public void ResetOnEndOfAttackSequence()
         {
-            // ‘Îí‘Šèî•ñ‚ğƒŠƒZƒbƒg
+            // å¯¾æˆ¦ç›¸æ‰‹æƒ…å ±ã‚’ãƒªã‚»ãƒƒãƒˆ
             _opponent = null;
-            // g—pƒXƒLƒ‹î•ñ‚ğƒŠƒZƒbƒg
+            // ä½¿ç”¨ã‚¹ã‚­ãƒ«æƒ…å ±ã‚’ãƒªã‚»ãƒƒãƒˆ
             tmpParam.ResetUseSkill();
         }
 
         /// <summary>
-        /// ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚ğíœ‚µ‚Ü‚·
+        /// ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å‰Šé™¤ã—ã¾ã™
         /// </summary>
         public void Remove()
         {
@@ -890,7 +890,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚ğÁ”ï‚µ‚Ü‚·
+        /// ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã‚’æ¶ˆè²»ã—ã¾ã™
         /// </summary>
         public void ConsumeActionGauge()
         {
@@ -904,8 +904,8 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚ğrecoveryActionGauge‚Ì•ª‚¾‚¯‰ñ•œ‚µ‚Ü‚·
-        /// Šî–{“I‚É©ƒ^[ƒ“ŠJn‚ÉŒÄ‚Ñ‚Ü‚·
+        /// ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã‚’recoveryActionGaugeã®åˆ†ã ã‘å›å¾©ã—ã¾ã™
+        /// åŸºæœ¬çš„ã«è‡ªã‚¿ãƒ¼ãƒ³é–‹å§‹æ™‚ã«å‘¼ã³ã¾ã™
         /// </summary>
         public void RecoveryActionGauge()
         {
@@ -913,9 +913,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Às‰Â”\‚ÈƒRƒ}ƒ“ƒh‚ğ’Šo‚µ‚Ü‚·
+        /// å®Ÿè¡Œå¯èƒ½ãªã‚³ãƒãƒ³ãƒ‰ã‚’æŠ½å‡ºã—ã¾ã™
         /// </summary>
-        /// <param name="executableCommands">’Šoæ‚Ìˆø‚«”</param>
+        /// <param name="executableCommands">æŠ½å‡ºå…ˆã®å¼•ãæ•°</param>
         public void FetchExecutableCommand(out List<Command.COMMAND_TAG> executableCommands, in StageController stageCtrl)
         {
             UpdateExecutableCommand(stageCtrl);
@@ -930,13 +930,13 @@ namespace Frontier
         public bool IsOther() { return param.characterTag == CHARACTER_TAG.OTHER; }
 
         /// <summary>
-        /// UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌI—¹”»’è‚ğ•Ô‚µ‚Ü‚·
+        /// æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®çµ‚äº†åˆ¤å®šã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚Ä‚¢‚é‚©</returns>
+        /// <returns>æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ã¦ã„ã‚‹ã‹</returns>
         public bool IsEndAttackAnimSequence()
         {
-            return AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||  // ÅŒã‚ÌUŒ‚‚ÌState–¼‚Í•K‚¸AtkEndStateName‚Åˆê’v‚³‚¹‚é
-                (_opponent.IsDeclaredDead && AnimCtrl.IsEndCurrentAnimation());                  // •¡”‰ñUŒ‚‚Å‚àA“r’†‚Å‘Šè‚ª€–S‚·‚é‚±‚Æ‚ªŠm–ñ‚³‚ê‚éê‡‚ÍUŒ‚‚ğI—¹‚·‚é
+            return AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||  // æœ€å¾Œã®æ”»æ’ƒã®Stateåã¯å¿…ãšAtkEndStateNameã§ä¸€è‡´ã•ã›ã‚‹
+                (_opponent.IsDeclaredDead && AnimCtrl.IsEndCurrentAnimation());                  // è¤‡æ•°å›æ”»æ’ƒæ™‚ã§ã‚‚ã€é€”ä¸­ã§ç›¸æ‰‹ãŒæ­»äº¡ã™ã‚‹ã“ã¨ãŒç¢ºç´„ã•ã‚Œã‚‹å ´åˆã¯æ”»æ’ƒã‚’çµ‚äº†ã™ã‚‹
         }
 
         /// <summary>
@@ -947,7 +947,7 @@ namespace Frontier
         {
             if(_isTransitNextPhaseCamera)
             {
-                // true‚Ìê‡‚ÍŸ‰ñˆÈŒã‚Ì”»’è‚Ì‚½‚ß‚Éfalse‚É–ß‚·
+                // trueã®å ´åˆã¯æ¬¡å›ä»¥å¾Œã®åˆ¤å®šã®ãŸã‚ã«falseã«æˆ»ã™
                 _isTransitNextPhaseCamera = false;
                 return true;
             }
@@ -956,19 +956,19 @@ namespace Frontier
         }
 
         /// <summary>
-        /// €–S”»’è‚ğ•Ô‚µ‚Ü‚·
+        /// æ­»äº¡åˆ¤å®šã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>€–S‚µ‚Ä‚¢‚é‚©”Û‚©</returns>
+        /// <returns>æ­»äº¡ã—ã¦ã„ã‚‹ã‹å¦ã‹</returns>
         public bool IsDead()
         {
             return param.CurHP <= 0;
         }
 
         /// <summary>
-        /// w’è‚ÌƒXƒLƒ‹‚ªg—p“o˜^‚³‚ê‚Ä‚¢‚é‚©‚ğ”»’è‚µ‚Ü‚·
+        /// æŒ‡å®šã®ã‚¹ã‚­ãƒ«ãŒä½¿ç”¨ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <param name="skillID">w’èƒXƒLƒ‹ID</param>
-        /// <returns>g—p“o˜^‚³‚ê‚Ä‚¢‚é‚©”Û‚©</returns>
+        /// <param name="skillID">æŒ‡å®šã‚¹ã‚­ãƒ«ID</param>
+        /// <returns>ä½¿ç”¨ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‹å¦ã‹</returns>
         public bool IsSkillInUse(SkillsData.ID skillID)
         {
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
@@ -982,15 +982,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// İ’è‚³‚ê‚Ä‚¢‚é’e‚ğæ“¾‚µ‚Ü‚·
+        /// è¨­å®šã•ã‚Œã¦ã„ã‚‹å¼¾ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>Prefab‚Éİ’è‚³‚ê‚Ä‚¢‚é’e</returns>
+        /// <returns>Prefabã«è¨­å®šã•ã‚Œã¦ã„ã‚‹å¼¾</returns>
         public Bullet GetBullet() { return _bullet; }
 
         /// <summary>
-        /// İ’è‚³‚ê‚Ä‚¢‚éAI‚ğæ“¾‚µ‚Ü‚·
+        /// è¨­å®šã•ã‚Œã¦ã„ã‚‹AIã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>İ’è‚³‚ê‚Ä‚¢‚éAI</returns>
+        /// <returns>è¨­å®šã•ã‚Œã¦ã„ã‚‹AI</returns>
         public BaseAI GetAi() { return _baseAI; }
 
         #endregion // PUBLIC_METHOD

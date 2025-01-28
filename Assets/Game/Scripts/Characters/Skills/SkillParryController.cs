@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,53 +8,53 @@ using UnityEngine.Playables;
 namespace Frontier
 {
     /// <summary>
-    /// ƒpƒŠƒBƒXƒLƒ‹‚Ìˆ—‚ğs‚¢‚Ü‚·
+    /// ãƒ‘ãƒªã‚£ã‚¹ã‚­ãƒ«ã®å‡¦ç†ã‚’è¡Œã„ã¾ã™
     /// </summary>
     public class SkillParryController : Controller
     {
         /// <summary>
-        /// ƒpƒŠƒB”»’è‚Ìí—Ş
+        /// ãƒ‘ãƒªã‚£åˆ¤å®šã®ç¨®é¡
         /// </summary>
         public enum JudgeResult
         {
             NONE = -1,
-            SUCCESS,    // ¬Œ÷
-            FAILED,     // ¸”s
-            JUST,       // ƒWƒƒƒXƒg¬Œ÷
+            SUCCESS,    // æˆåŠŸ
+            FAILED,     // å¤±æ•—
+            JUST,       // ã‚¸ãƒ£ã‚¹ãƒˆæˆåŠŸ
 
             MAX,
         }
 
         [SerializeField]
-        [Header("UIƒXƒNƒŠƒvƒg")]
+        [Header("UIã‚¹ã‚¯ãƒªãƒ—ãƒˆ")]
         private SkillParryUI _ui;
 
         [SerializeField]
-        [Header("¬Œ÷ƒGƒtƒFƒNƒg")]
+        [Header("æˆåŠŸæ™‚ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ")]
         private ParticleSystem _successParticle = null;
 
         [SerializeField]
-        [Header("¸”sƒGƒtƒFƒNƒg")]
+        [Header("å¤±æ•—æ™‚ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ")]
         private ParticleSystem _failureParticle = null;
 
         [SerializeField]
-        [Header("ƒWƒƒƒXƒg¬Œ÷ƒGƒtƒFƒNƒg")]
+        [Header("ã‚¸ãƒ£ã‚¹ãƒˆæˆåŠŸæ™‚ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ")]
         private ParticleSystem _justParticle = null;
 
         [SerializeField]
-        [Header("ƒpƒŠƒB”»’èƒŠƒ“ƒOk¬ŠÔ")]
+        [Header("ãƒ‘ãƒªã‚£åˆ¤å®šãƒªãƒ³ã‚°ç¸®å°æ™‚é–“")]
         private float _shrinkTime = 3f;
 
         [SerializeField]
-        [Header("ƒLƒƒƒ‰ƒNƒ^[‚ÌƒXƒ[ƒ‚[ƒVƒ‡ƒ“ƒŒ[ƒg")]
+        [Header("ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚¹ãƒ­ãƒ¼ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¬ãƒ¼ãƒˆ")]
         private float _delayTimeScale = 0.1f;
 
         [SerializeField]
-        [Header("¸”s”»’è‚É©“®‘JˆÚ‚·‚éƒTƒCƒY”{—¦")]
+        [Header("å¤±æ•—åˆ¤å®šã«è‡ªå‹•é·ç§»ã™ã‚‹ã‚µã‚¤ã‚ºå€ç‡")]
         private float _radiusRateAutoTransitionToFail = 0.75f;
 
         [SerializeField]
-        [Header("Œ‹‰Ê‚ğ•\¦‚·‚é•b”")]
+        [Header("çµæœã‚’è¡¨ç¤ºã™ã‚‹ç§’æ•°")]
         private float _showUITime = 1.5f;
 
         private float _radiusThresholdOnFail    = 0f;
@@ -67,13 +67,13 @@ namespace Frontier
         private (float inner, float outer) _judgeRingSuccessRange   = (0f, 0f);
         private (float inner, float outer) _judgeRingJustRange      = (0f, 0f);
 
-        // ƒpƒŠƒBƒCƒxƒ“ƒgI—¹‚ÌƒfƒŠƒQ[ƒg
+        // ãƒ‘ãƒªã‚£ã‚¤ãƒ™ãƒ³ãƒˆçµ‚äº†æ™‚ã®ãƒ‡ãƒªã‚²ãƒ¼ãƒˆ
         public event EventHandler<SkillParryCtrlEventArgs> ProcessCompleted;
 
         // Update is called once per frame
         void Update()
         {
-            // ƒGƒtƒFƒNƒgI—¹‚Æ“¯‚É–³Œø‚ÉØ‘Ö
+            // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆçµ‚äº†ã¨åŒæ™‚ã«ç„¡åŠ¹ã«åˆ‡æ›¿
             if ( _resultEffect.IsEndPlaying() )
             {
                 _ui.terminate();
@@ -82,22 +82,22 @@ namespace Frontier
                 SkillParryCtrlEventArgs args = new SkillParryCtrlEventArgs();
                 args.Result = _judgeResult;
 
-                // Œ‹‰Ê‚Æ‹¤‚ÉƒCƒxƒ“ƒgI—¹‚ğŒÄ‚Ño‚µŒ³‚É’Ê’m
+                // çµæœã¨å…±ã«ã‚¤ãƒ™ãƒ³ãƒˆçµ‚äº†ã‚’å‘¼ã³å‡ºã—å…ƒã«é€šçŸ¥
                 OnProcessCompleted(args);
 
-                // MonoBehavior‚ğ–³Œø‚É
+                // MonoBehaviorã‚’ç„¡åŠ¹ã«
                 gameObject.SetActive(false);
             }
 
-            // Œ‹‰Ê‚ªŠù‚Éo‚Ä‚¢‚éê‡‚Í‚±‚±‚ÅI—¹
+            // çµæœãŒæ—¢ã«å‡ºã¦ã„ã‚‹å ´åˆã¯ã“ã“ã§çµ‚äº†
             if ( IsJudgeEnd() ) return;
 
             float shrinkRadius = _ringEffect.GetCurShrinkRingRadius();
 
-            // ƒL[‚ª‰Ÿ‚³‚ê‚½ƒ^ƒCƒ~ƒ“ƒO‚Å”»’è
+            // ã‚­ãƒ¼ãŒæŠ¼ã•ã‚ŒãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§åˆ¤å®š
             if (Input.GetKeyUp(KeyCode.Space))
             {
-                // ”»’è
+                // åˆ¤å®š
                 _judgeResult = JudgeResult.FAILED;
                 if (_judgeRingJustRange.inner <= shrinkRadius && shrinkRadius <= _judgeRingJustRange.outer)
                 {
@@ -119,25 +119,25 @@ namespace Frontier
                 _ui.ShowResult(_judgeResult);
                 _resultEffect.PlayEffect(_judgeResult);
 
-                // k¬ƒGƒtƒFƒNƒg’â~
+                // ç¸®å°ã‚¨ãƒ•ã‚§ã‚¯ãƒˆåœæ­¢
                 _ringEffect.StopShrink();
 
-                // UIˆÈŠO‚Ì•\¦•¨‚ÌXVŠÔƒXƒP[ƒ‹‚ğ’â~
+                // UIä»¥å¤–ã®è¡¨ç¤ºç‰©ã®æ›´æ–°æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’åœæ­¢
                 DelayBattleTimeScale(0f);
 
-                // ƒpƒŠƒBŒ‹‰Ê‚É‚æ‚éƒpƒ‰ƒ[ƒ^•Ï“®‚ğŠeƒLƒƒƒ‰ƒNƒ^[‚É“K‰
+                // ãƒ‘ãƒªã‚£çµæœã«ã‚ˆã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰å‹•ã‚’å„ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã«é©å¿œ
                 ApplyModifiedParamFromResult(_useParryCharacter, _attackCharacter, _judgeResult);
             }
         }
 
         void FixedUpdate()
         {
-            // ƒtƒŒ[ƒ€ƒŒ[ƒg‚É‚æ‚éƒYƒŒ‚ğ–h‚®‚½‚ßFixed‚ÅXV
+            // ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆã«ã‚ˆã‚‹ã‚ºãƒ¬ã‚’é˜²ããŸã‚Fixedã§æ›´æ–°
             _ringEffect.FixedUpdateEffect();
         }
 
         /// <summary>
-        /// UI‚âƒVƒF[ƒ_ˆÈŠO‚ÌŠÔƒXƒP[ƒ‹‚ğŒ³‚É–ß‚µ‚Ü‚·
+        /// UIã‚„ã‚·ã‚§ãƒ¼ãƒ€ä»¥å¤–ã®æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å…ƒã«æˆ»ã—ã¾ã™
         /// </summary>
         void ResetBattleTimeScale()
         {
@@ -145,39 +145,39 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ©g‚Ì–hŒä’l‚Æ‘Šè‚ÌUŒ‚’l‚ÅƒpƒŠƒB”»’è‚ÌƒŠƒ“ƒOƒŒƒ“ƒW‚ğ‹‚ß‚Ü‚·
+        /// è‡ªèº«ã®é˜²å¾¡å€¤ã¨ç›¸æ‰‹ã®æ”»æ’ƒå€¤ã§ãƒ‘ãƒªã‚£åˆ¤å®šã®ãƒªãƒ³ã‚°ãƒ¬ãƒ³ã‚¸ã‚’æ±‚ã‚ã¾ã™
         /// </summary>
-        /// <param name="selfCharaDef">ƒpƒŠƒB”­“®ƒLƒƒƒ‰ƒNƒ^[‚Ì–hŒä’l</param>
-        /// <param name="opponentCharaAtk">‘Îí‘Šè‚ÌUŒ‚’l</param>
+        /// <param name="selfCharaDef">ãƒ‘ãƒªã‚£ç™ºå‹•ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®é˜²å¾¡å€¤</param>
+        /// <param name="opponentCharaAtk">å¯¾æˆ¦ç›¸æ‰‹ã®æ”»æ’ƒå€¤</param>
         void CalcurateParryRingParam(int selfCharaDef, int opponentCharaAtk)
         {
-            // TODO : ‚¢‚¢Š´‚¶‚ÌŒvZ®‚ÅƒŠƒ“ƒO”ÍˆÍ‚ğŒvZ‚µ‚Äİ’è‚·‚éB
-            //        k¬‘¬“x‚Í•ÏX‚·‚é‚©‚Í’²®Ÿ‘æ‚Ì‚½‚ßAˆê’UŒÅ’è’l
+            // TODO : ã„ã„æ„Ÿã˜ã®è¨ˆç®—å¼ã§ãƒªãƒ³ã‚°ç¯„å›²ã‚’è¨ˆç®—ã—ã¦è¨­å®šã™ã‚‹ã€‚
+            //        ç¸®å°é€Ÿåº¦ã¯å¤‰æ›´ã™ã‚‹ã‹ã¯èª¿æ•´æ¬¡ç¬¬ã®ãŸã‚ã€ä¸€æ—¦å›ºå®šå€¤
             _judgeRingSuccessRange = (0.4f, 0.6f);
 
-            // ƒVƒF[ƒ_[‚É“K‰
+            // ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã«é©å¿œ
             _ringEffect.SetJudgeRingRange(_judgeRingSuccessRange);
 
-            // ¸”s”»’è‚É©“®‘JˆÚ‚·‚é”¼Œa‚Ìè‡’l‚ğŒˆ’è
-            // MEMO : ¬Œ÷”ÍˆÍ‚Ì’†‰›’l‚Æw’è”{—¦‚Æ‚ÌÏ‚Æ‚·‚é
+            // å¤±æ•—åˆ¤å®šã«è‡ªå‹•é·ç§»ã™ã‚‹åŠå¾„ã®é–¾å€¤ã‚’æ±ºå®š
+            // MEMO : æˆåŠŸç¯„å›²ã®ä¸­å¤®å€¤ã¨æŒ‡å®šå€ç‡ã¨ã®ç©ã¨ã™ã‚‹
             _radiusThresholdOnFail = ((_judgeRingSuccessRange.inner + _judgeRingSuccessRange.outer) * 0.5f) * _radiusRateAutoTransitionToFail;
         }
 
         /// <summary>
-        /// ƒpƒŠƒB”»’èI—¹‚ÉŒÄ‚Ño‚·ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
+        /// ãƒ‘ãƒªã‚£åˆ¤å®šçµ‚äº†æ™‚ã«å‘¼ã³å‡ºã™ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©
         /// </summary>
-        /// <param name="e">ƒCƒxƒ“ƒgƒIƒuƒWƒFƒNƒg</param>
+        /// <param name="e">ã‚¤ãƒ™ãƒ³ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
         void OnProcessCompleted( SkillParryCtrlEventArgs e )
         {
             ProcessCompleted ?.Invoke( this, e );
         }
 
         /// <summary>
-        /// ƒpƒŠƒBŒ‹‰Ê‚©‚çUŒ‚‚Æ–hŒä‚ÌŒW”‚ğŠeƒLƒƒƒ‰ƒNƒ^[‚É“K‰‚³‚¹‚Ü‚·
+        /// ãƒ‘ãƒªã‚£çµæœã‹ã‚‰æ”»æ’ƒã¨é˜²å¾¡ã®ä¿‚æ•°ã‚’å„ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã«é©å¿œã•ã›ã¾ã™
         /// </summary>
-        /// <param name="useParryChara">ƒpƒŠƒBg—pƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="attackChara">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="result">ƒpƒŠƒBŒ‹‰Ê</param>
+        /// <param name="useParryChara">ãƒ‘ãƒªã‚£ä½¿ç”¨ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="attackChara">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="result">ãƒ‘ãƒªã‚£çµæœ</param>
         void ApplyModifiedParamFromResult(Character useParryChara, Character attackChara, JudgeResult result)
         {
             switch (result)
@@ -201,9 +201,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
-        /// <param name="btlMgr">ƒoƒgƒ‹ƒ}ƒl[ƒWƒƒ</param>
+        /// <param name="btlMgr">ãƒãƒˆãƒ«ãƒãƒãƒ¼ã‚¸ãƒ£</param>
         public void Init(BattleManager btlMgr)
         {
             _btlMgr = btlMgr;
@@ -220,74 +220,74 @@ namespace Frontier
             };
             _resultEffect.Init(particles);
 
-            // Às‚³‚ê‚é‚Ü‚Å‚Í–³Œø‚É
+            // å®Ÿè¡Œã•ã‚Œã‚‹ã¾ã§ã¯ç„¡åŠ¹ã«
             gameObject.SetActive(false);
         }
 
         /// <summary>
-        /// ƒpƒŠƒB”»’èˆ—‚ğŠJn‚µ‚Ü‚·
+        /// ãƒ‘ãƒªã‚£åˆ¤å®šå‡¦ç†ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
-        /// <param name="useCharacter">ƒpƒŠƒB‚ğs‚¤ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="opponent">‘Îí‘Šè</param>
+        /// <param name="useCharacter">ãƒ‘ãƒªã‚£ã‚’è¡Œã†ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="opponent">å¯¾æˆ¦ç›¸æ‰‹</param>
         public void StartParryEvent(Character useCharacter, Character opponent)
         {
             gameObject.SetActive(true);
             _useParryCharacter  = useCharacter;
             _attackCharacter    = opponent;
 
-            // ƒpƒŠƒBƒGƒtƒFƒNƒg‚ÌƒVƒF[ƒ_[î•ñ‚ğƒJƒƒ‰‚É•`‰æ‚·‚é‚½‚ßAƒƒCƒ“ƒJƒƒ‰‚ÉƒAƒ^ƒbƒ`
+            // ãƒ‘ãƒªã‚£ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼æƒ…å ±ã‚’ã‚«ãƒ¡ãƒ©ã«æç”»ã™ã‚‹ãŸã‚ã€ãƒ¡ã‚¤ãƒ³ã‚«ãƒ¡ãƒ©ã«ã‚¢ã‚¿ãƒƒãƒ
             Camera.main.gameObject.AddComponent<ParryRingEffect>();
             _ringEffect = Camera.main.gameObject.GetComponent<ParryRingEffect>();
             Debug.Assert(_ringEffect != null);
 
-            // MEMO : _ringEffect, ‹y‚Ñ_ui‚ÍƒAƒ^ƒbƒ`‚Ìƒ^ƒCƒ~ƒ“ƒO‚Ì“s‡ãInit‚Å‚Í‚È‚­‚±‚±‚Å‰Šú‰»
+            // MEMO : _ringEffect, åŠã³_uiã¯ã‚¢ã‚¿ãƒƒãƒã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã®éƒ½åˆä¸ŠInitã§ã¯ãªãã“ã“ã§åˆæœŸåŒ–
             _ringEffect.Init(_shrinkTime);
             _ringEffect.SetEnable(true);
             _ui.Init(_showUITime);
             _ui.gameObject.SetActive(false);
 
-            // –hŒä‘¤‚Ì–hŒä—Í‚ÆUŒ‚‘¤‚ÌUŒ‚—Í‚©‚çƒpƒŠƒB”»’è”ÍˆÍ‚ğZo‚µ‚Äİ’è
+            // é˜²å¾¡å´ã®é˜²å¾¡åŠ›ã¨æ”»æ’ƒå´ã®æ”»æ’ƒåŠ›ã‹ã‚‰ãƒ‘ãƒªã‚£åˆ¤å®šç¯„å›²ã‚’ç®—å‡ºã—ã¦è¨­å®š
             int selfDef = (int)Mathf.Floor( (_useParryCharacter.param.Def + _useParryCharacter.modifiedParam.Def) * _useParryCharacter.skillModifiedParam.DefMagnification );
             int oppoAtk = (int)Mathf.Floor( (_attackCharacter.param.Atk + _attackCharacter.modifiedParam.Atk) * _attackCharacter.skillModifiedParam.AtkMagnification );
             CalcurateParryRingParam(selfDef, oppoAtk);
 
-            // ƒpƒŠƒB’†‚ÌƒLƒƒƒ‰ƒNƒ^[ƒXƒ[ƒ‚[ƒVƒ‡ƒ“‘¬“x‚ğİ’è
+            // ãƒ‘ãƒªã‚£ä¸­ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¹ãƒ­ãƒ¼ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦ã‚’è¨­å®š
             DelayBattleTimeScale(_delayTimeScale);
 
-            // ƒpƒŠƒBƒ‚[ƒVƒ‡ƒ“‚ÌŠJn
+            // ãƒ‘ãƒªã‚£ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®é–‹å§‹
             _useParryCharacter.StartParrySequence();
 
-            // Œ‹‰Ê‚ğNONE‚É‰Šú‰»
+            // çµæœã‚’NONEã«åˆæœŸåŒ–
             _judgeResult = JudgeResult.NONE;
         }
 
         /// <summary>
-        /// UI‚âƒVƒF[ƒ_ˆÈŠO‚ÌŠÔƒXƒP[ƒ‹‚ğw’è’l‚É•ÏX‚µ‚Ü‚·
+        /// UIã‚„ã‚·ã‚§ãƒ¼ãƒ€ä»¥å¤–ã®æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’æŒ‡å®šå€¤ã«å¤‰æ›´ã—ã¾ã™
         /// </summary>
-        /// <param name="timeScale">’x‚ç‚¹‚éƒXƒP[ƒ‹’l</param>
+        /// <param name="timeScale">é…ã‚‰ã›ã‚‹ã‚¹ã‚±ãƒ¼ãƒ«å€¤</param>
         public void DelayBattleTimeScale(float timeScale)
         {
             if (1f < timeScale) timeScale = 1f;
 
-            // ƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğ•ÏX‚·‚é‚ÆAUI‚È‚Ç‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x‚É‚à‰e‹¿‚ğ—^‚¦‚Ä‚µ‚Ü‚¤‚½‚ß•Û—¯(ƒVƒF[ƒ_[ƒGƒtƒFƒNƒg‚Í•Ê)
+            // ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å¤‰æ›´ã™ã‚‹ã¨ã€UIãªã©ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦ã«ã‚‚å½±éŸ¿ã‚’ä¸ãˆã¦ã—ã¾ã†ãŸã‚ä¿ç•™(ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã¯åˆ¥)
             _btlMgr.TimeScaleCtrl.SetTimeScale(timeScale);
         }
 
         /// <summary>
-        /// ƒpƒŠƒB”»’èˆ—‚ğI—¹‚µ‚Ü‚·
+        /// ãƒ‘ãƒªã‚£åˆ¤å®šå‡¦ç†ã‚’çµ‚äº†ã—ã¾ã™
         /// </summary>
         public void EndParryEvent()
         {
-            // ƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğŒ³‚É–ß‚·
+            // ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å…ƒã«æˆ»ã™
             ResetBattleTimeScale();
 
             _ringEffect.Destroy();
         }
 
         /// <summary>
-        /// ”»’è‚ªI—¹‚µ‚½‚©‚ğ•Ô‚µ‚Ü‚·
+        /// åˆ¤å®šãŒçµ‚äº†ã—ãŸã‹ã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>”»’è‚ªI—¹‚µ‚½‚©</returns>
+        /// <returns>åˆ¤å®šãŒçµ‚äº†ã—ãŸã‹</returns>
         public bool IsJudgeEnd()
         {
             return _judgeResult != JudgeResult.NONE;
@@ -295,7 +295,7 @@ namespace Frontier
     }
 
     /// <summary>
-    /// Skill`ParryController‚ÌŒ‹‰Ê’Ê’m‚Ég—p‚µ‚Ü‚·
+    /// Skill`ParryControllerã®çµæœé€šçŸ¥ã«ä½¿ç”¨ã—ã¾ã™
     /// </summary>
     public class SkillParryCtrlEventArgs : EventArgs
     {

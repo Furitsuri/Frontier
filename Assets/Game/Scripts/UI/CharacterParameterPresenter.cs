@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,13 +9,13 @@ namespace Frontier
     public class CharacterParameterPresenter : MonoBehaviour
     {
         [Header("LeftWindowParam")]
-        public CharacterParameterUI PlayerParameter;        // ¶‘¤•\¦‚Ìƒpƒ‰ƒ[ƒ^UIƒEƒBƒ“ƒhƒE
+        public CharacterParameterUI PlayerParameter;        // å·¦å´è¡¨ç¤ºã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿UIã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
 
         [Header("RightWindowParam")]
-        public CharacterParameterUI EnemyParameter;         // ‰E‘¤•\¦‚Ìƒpƒ‰ƒ[ƒ^UIƒEƒBƒ“ƒhƒE
+        public CharacterParameterUI EnemyParameter;         // å³å´è¡¨ç¤ºã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿UIã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
 
         [Header("ParameterAttackDirection")]
-        public ParameterAttackDirectionUI AttackDirection;  // ƒpƒ‰ƒ[ƒ^UIŠÔã‚ÌUŒ‚(‰ñ•œ)Œ³‚©‚ç‘ÎÛ‚Ö‚Ì•\¦
+        public ParameterAttackDirectionUI AttackDirection;  // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿UIé–“ä¸Šã®æ”»æ’ƒ(å›å¾©)å…ƒã‹ã‚‰å¯¾è±¡ã¸ã®è¡¨ç¤º
 
         private BattleManager _btlMgr = null;
         private StageController _stgCtrl = null;
@@ -43,17 +43,17 @@ namespace Frontier
 
             switch (_stgCtrl.GetGridCursorState())
             {
-                case Stage.GridCursor.State.ATTACK: // UŒ‚‘ÎÛ‘I‘ğ
+                case Stage.GridCursor.State.ATTACK: // æ”»æ’ƒå¯¾è±¡é¸æŠæ™‚
                     Debug.Assert(bindCharacter != null);
 
                     BattleUISystem.Instance.TogglePlayerParameter(true);
                     BattleUISystem.Instance.ToggleEnemyParameter(true);
 
-                    // ‰æ–Ê\¬‚ÍˆÈ‰º‚Ì’Ê‚è
-                    //   ¶        ‰E
-                    // PLAYER ‘Î ENEMY
-                    // OTHER  ‘Î ENEMY
-                    // PLAYER ‘Î OTHER
+                    // ç”»é¢æ§‹æˆã¯ä»¥ä¸‹ã®é€šã‚Š
+                    //   å·¦        å³
+                    // PLAYER å¯¾ ENEMY
+                    // OTHER  å¯¾ ENEMY
+                    // PLAYER å¯¾ OTHER
                     if (bindCharacter.param.characterTag != Character.CHARACTER_TAG.ENEMY)
                     {
                         PlayerParameter.SetDisplayCharacter(bindCharacter);
@@ -66,7 +66,7 @@ namespace Frontier
                     }
                     break;
                 
-                case Stage.GridCursor.State.MOVE:   // ˆÚ“®Œó•â‘I‘ğ
+                case Stage.GridCursor.State.MOVE:   // ç§»å‹•å€™è£œé¸æŠæ™‚
                     Debug.Assert(bindCharacter != null);
 
                     PlayerParameter.SetDisplayCharacter(bindCharacter);
@@ -76,11 +76,11 @@ namespace Frontier
                     break;
 
                 default:
-                    // ¦1ƒtƒŒ[ƒ€’†‚ÉgameObject‚ÌƒAƒNƒeƒBƒuØ‚è‘Ö‚¦‚ğ•¡”‰ñs‚¤‚Æ³‚µ‚­”½‰f‚³‚ê‚È‚¢‚½‚ßA–³‘Ê‚ª‚ ‚Á‚Ä‹C‚¿ˆ«‚¢‚ªˆÈ‰º‚Ì”»’è•¶‚ğ—p‚¢‚é
+                    // â€»1ãƒ•ãƒ¬ãƒ¼ãƒ ä¸­ã«gameObjectã®ã‚¢ã‚¯ãƒ†ã‚£ãƒ–åˆ‡ã‚Šæ›¿ãˆã‚’è¤‡æ•°å›è¡Œã†ã¨æ­£ã—ãåæ˜ ã•ã‚Œãªã„ãŸã‚ã€ç„¡é§„ãŒã‚ã£ã¦æ°—æŒã¡æ‚ªã„ãŒä»¥ä¸‹ã®åˆ¤å®šæ–‡ã‚’ç”¨ã„ã‚‹
                     BattleUISystem.Instance.TogglePlayerParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.PLAYER);
                     BattleUISystem.Instance.ToggleEnemyParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY);
 
-                    // ƒpƒ‰ƒ[ƒ^•\¦‚ğXV
+                    // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¡¨ç¤ºã‚’æ›´æ–°
                     if (selectCharacter != null)
                     {
                         if (selectCharacter.param.characterTag == Character.CHARACTER_TAG.PLAYER)
@@ -96,13 +96,13 @@ namespace Frontier
                     break;
             }
 
-            // ‘OƒtƒŒ[ƒ€‚Å‘I‘ğ‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚ÆŒ»İ‘I‘ğ‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ªˆÙ‚È‚éê‡‚ÍƒJƒƒ‰ƒŒƒCƒ„[‚ğŒ³‚É–ß‚·
+            // å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã§é¸æŠã—ãŸã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã¨ç¾åœ¨é¸æŠã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒç•°ãªã‚‹å ´åˆã¯ã‚«ãƒ¡ãƒ©ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å…ƒã«æˆ»ã™
             if (_prevCharacter != null && _prevCharacter != selectCharacter)
             {
                 _prevCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_CHARACTER));
             }
 
-            // ‘I‘ğ‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ÌƒŒƒCƒ„[‚ğƒpƒ‰ƒ[ƒ^UI•\¦‚Ì‚½‚ß‚Éˆê“I‚É•ÏX
+            // é¸æŠã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿UIè¡¨ç¤ºã®ãŸã‚ã«ä¸€æ™‚çš„ã«å¤‰æ›´
             if (selectCharacter != null && _prevCharacter != selectCharacter)
             {
                 selectCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_LEFT_PARAM_WINDOW));
@@ -112,7 +112,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public void Init()
         {
@@ -121,7 +121,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// UŒ‚‚ÌŒ³‚©‚ç‘ÎÛ‚ğ¦‚·UI‚ğ•\¦‚µ‚Ü‚·
+        /// æ”»æ’ƒã®å…ƒã‹ã‚‰å¯¾è±¡ã‚’ç¤ºã™UIã‚’è¡¨ç¤ºã—ã¾ã™
         /// </summary>
         public void ShowDirection()
         {
