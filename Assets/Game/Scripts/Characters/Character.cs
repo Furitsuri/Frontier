@@ -16,6 +16,17 @@ namespace Frontier
     [SerializeField]
     public class Character : MonoBehaviour
     {
+        /// <summary>
+        /// 思考タイプ
+        /// </summary>
+        public enum ThinkingType
+        {
+            AGGERESSIVE = 0,    // 積極的に移動し、攻撃後の結果の評価値が高い対象を狙う
+            WAITING,            // 自身の行動範囲に対象が入ってこない限り動かない。動き始めた後はAGGRESSIVEと同じ動作
+
+            NUM
+        }
+
         public class Command
         {
             public enum COMMAND_TAG
@@ -284,13 +295,16 @@ namespace Frontier
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         // 攻撃シーケンスにおける残り攻撃回数
-        protected int _atkRemainingNum          = 0;
-        protected BattleManager _btlMgr         = null;
-        protected StageController _stageCtrl    = null;
-        protected Character _opponent           = null;
-        protected Bullet _bullet                = null;
+        protected int _atkRemainingNum              = 0;
+        protected HierarchyBuilder _hierarchyBld    = null;
+        protected BattleManager _btlMgr             = null;
+        protected StageController _stageCtrl        = null;
+        protected Character _opponent               = null;
+        protected Bullet _bullet                    = null;
+        protected BaseAI _baseAI { get; set; }      = null;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase;
+        protected ThinkingType _thikType;
         public Parameter param;
         public TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -321,10 +335,11 @@ namespace Frontier
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( BattleManager battleMgr, StageController stageCtrl )
+        void Construct( HierarchyBuilder hierarchyBld,  BattleManager battleMgr, StageController stageCtrl )
         {
-            _btlMgr     = battleMgr;
-            _stageCtrl  = stageCtrl;
+            _hierarchyBld   = hierarchyBld;
+            _btlMgr         = battleMgr;
+            _stageCtrl      = stageCtrl;
         }
 
         void Awake()
@@ -456,6 +471,8 @@ namespace Frontier
         /// 死亡処理を行います
         /// </summary>
         virtual public void Die() { }
+
+        virtual public void SetThinkType(Enemy.ThinkingType type) { }
 
         /// <summary>
         /// 対戦相手にダメージを与えるイベントを発生させます
@@ -969,6 +986,12 @@ namespace Frontier
         /// </summary>
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
+
+        /// <summary>
+        /// 設定されているAIを取得します
+        /// </summary>
+        /// <returns>設定されているAI</returns>
+        public BaseAI GetAi() { return _baseAI; }
 
         #endregion // PUBLIC_METHOD
     }

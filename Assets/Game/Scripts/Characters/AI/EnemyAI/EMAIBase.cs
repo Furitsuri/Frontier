@@ -1,14 +1,12 @@
 using Frontier.Stage;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
-    public class EMAIBase
+    public class EMAIBase : BaseAI
     {
         /// <summary>
         /// 自身の攻撃(移動)可能範囲内に存在する攻撃対象キャラクターの情報です
@@ -38,22 +36,27 @@ namespace Frontier
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
 
+        [Inject]
+        public void Construct( BattleManager btlMgr, StageController stgCtrl )
+        {
+            _btlMgr     = btlMgr;
+            _stageCtrl  = stgCtrl;
+        }
+
         /// <summary>
         /// 初期化します
         /// </summary>
-        virtual public void Init(Enemy mySelf, BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
-            _btlMgr = btlMgr;
-            _stageCtrl = stgCtrl;
-            _gridEvaluationValues = new float[_stageCtrl.GridTotalNum];
-            _targetChandidateInfos = new List<TargetCandidateInfo>(64);
+            _gridEvaluationValues   = new float[_stageCtrl.GridTotalNum];
+            _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
         }
 
         /// <summary>
         /// 目的地のグリッドインデックスを取得します
         /// </summary>
         /// <returns>目的地のグリッドインデックス</returns>
-        public int GetDestinationGridIndex()
+        override public int GetDestinationGridIndex()
         {
             return _destinationGridIndex;
         }
@@ -62,7 +65,7 @@ namespace Frontier
         /// 攻撃対象のキャラクターを取得します
         /// </summary>
         /// <returns>攻撃対象のキャラクター</returns>
-        public Character GetTargetCharacter()
+        override public Character GetTargetCharacter()
         {
             return _targetCharacter;
         }
@@ -71,7 +74,7 @@ namespace Frontier
         /// 進行予定の移動ルートを取得します
         /// </summary>
         /// <returns>進行予定の移動ルート情報</returns>
-        public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
+        override public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
         {
             return _suggestedMoveRoute;
         }
@@ -80,7 +83,7 @@ namespace Frontier
         /// 移動目標と攻撃対象キャラクターをリセットします
         /// TODO : 再行動スキルなどを実装する場合は、対象に再行動を適応した際にこの関数を呼び出してください
         /// </summary>
-        public void ResetDestinationAndTarget()
+        override public void ResetDestinationAndTarget()
         {
             _isDetermined = false;
             _destinationGridIndex = -1;
@@ -91,7 +94,7 @@ namespace Frontier
         /// 既に移動対象や攻撃対象を決定しているかどうかの情報を取得します
         /// </summary>
         /// <returns>決定の有無</returns>
-        public bool IsDetermined() { return _isDetermined; }
+        override public bool IsDetermined() { return _isDetermined; }
 
         /// <summary>
         /// 移動目標が有効かを判定します
@@ -170,11 +173,6 @@ namespace Frontier
                     }
                 }
             }
-        }
-
-        virtual public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in Character.TmpParameter selfTmpParam)
-        {
-            return (false, false);
         }
 
         /// <summary>

@@ -13,8 +13,9 @@ namespace Frontier
         /// <summary>
         /// 各グリッドの評価値を計算します
         /// </summary>
-        /// <param name="param">自身のパラメータ</param>
-        /// <param name="tmpParam">自身の一時保持パラメータ</param>
+        /// <param name="selfParam">自身のパラメータ</param>
+        /// <param name="selfTmpParam">自身の一時パラメータ</param>
+        /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
         override public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in Character.TmpParameter selfTmpParam)
         {
             _isDetermined = true;
@@ -33,7 +34,8 @@ namespace Frontier
                 {
                     foreach (var opponent in candidate.opponents)
                     {
-                        var character = _btlMgr.GetCharacterFromHashtable(opponent);
+                        var character = _btlMgr.BtlCharaCdr.GetCharacterFromHashtable(opponent);
+
                         if (character == null) continue;
                         var eValue = CalcurateEvaluateAttack(selfParam, character.param);
                         if (maxEvaluate.eValue < eValue)
@@ -75,7 +77,7 @@ namespace Frontier
                 }
 
                 // 各プレイヤーが存在するグリッドの評価値を計算する
-                foreach (Player player in _btlMgr.GetPlayerEnumerable())
+                foreach (Player player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
                 {
                     int destGridIndex = player.tmpParam.gridIndex;
                     ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];

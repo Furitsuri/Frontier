@@ -24,16 +24,16 @@ namespace Frontier
         private List<Vector3> _moveGridPos;
         private Transform _PLTransform;
 
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             _movingIndex = 0;
             _Phase = PLMovePhase.PL_MOVE;
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
-            _selectPlayer = (Player)_btlMgr.GetSelectCharacter();
+            _selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
             Debug.Assert(_selectPlayer != null);
 
             var param = _selectPlayer.param;

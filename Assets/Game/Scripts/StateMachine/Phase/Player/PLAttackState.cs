@@ -18,25 +18,25 @@ namespace Frontier
         private int _curentGridIndex = -1;
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
-        private CharacterAttackSequence _attackSequence = new CharacterAttackSequence();
+        private CharacterAttackSequence _attackSequence = null;
 
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="btlMgr">バトルマネージャ</param>
-        /// <param name="stgCtrl">ステージコントローラ</param>
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
+            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
+            _attackCharacter = _btlMgr.BtlCharaCdr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
+
             if (_attackCharacter == null)
             {
                 Debug.Assert(false, "SelectPlayer Irregular.");
@@ -57,7 +57,7 @@ namespace Frontier
             }
 
             // 攻撃シーケンスを初期化
-            _attackSequence.Init(_btlMgr, _stageCtrl);
+            _attackSequence.Init();
         }
 
         public override bool Update()
@@ -83,7 +83,7 @@ namespace Frontier
 
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
-                    _targetCharacter = _btlMgr.GetSelectCharacter();
+                    _targetCharacter = _btlMgr.BtlCharaCdr.GetSelectCharacter();
 
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
@@ -102,7 +102,7 @@ namespace Frontier
                     _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
-                    _btlMgr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                    _btlMgr.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                     if (Input.GetKeyUp(KeyCode.Space))
                     {
@@ -169,7 +169,7 @@ namespace Frontier
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _btlMgr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+            _btlMgr.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
 
             // アタックカーソルUI非表示
             btlUIInstance.ToggleAttackCursorP2E(false);

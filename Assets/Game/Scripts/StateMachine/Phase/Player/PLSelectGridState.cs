@@ -16,9 +16,9 @@ namespace Frontier
             TurnEnd,
         }
 
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);
@@ -35,7 +35,7 @@ namespace Frontier
             // if( base.Update() ) { return true; }
 
             // 全てのキャラクターが待機済みになっていれば終了
-            if (_btlMgr.IsEndAllCharacterWaitCommand())
+            if( _btlMgr.BtlCharaCdr.IsEndAllArmyrWaitCommand(Character.CHARACTER_TAG.PLAYER))
             {
                 Back();
 
@@ -81,7 +81,7 @@ namespace Frontier
 
         override public void Exit()
         {
-            // グリッド選択を無効化 → 無効化しないほうが見た目がよかったため、コメントアウト
+            // グリッド選択を無効化 → TODO : 無効化しないほうがゲーム実行時における見た目がよかったため、一旦コメントアウトで保留
             // _stageCtrl.SetGridCursorActive( false );
 
             base.Exit();
@@ -104,7 +104,7 @@ namespace Frontier
                 return false;
             }
 
-            Character character = _btlMgr.GetSelectCharacter();
+            Character character = _btlMgr.BtlCharaCdr.GetSelectCharacter();
             if (character != null &&
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])

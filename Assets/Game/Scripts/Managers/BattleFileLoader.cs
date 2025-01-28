@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Frontier.Stage;
 using Zenject;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Frontier
 {
-    public class FileReadManager : MonoBehaviour
+    public class BattleFileLoader : MonoBehaviour
     {
         [Header("各味方キャラクターのプレハブ")]
         [SerializeField]
@@ -20,6 +21,10 @@ namespace Frontier
         [SerializeField]
         public GameObject[] EnemiesPrefab;
 
+        [Header("各第三勢力キャラクターのプレハブ")]
+        [SerializeField]
+        public GameObject[] OthersPrefab;
+
         [Header("各味方キャラクターのパラメータ参照先")]
         [SerializeField]
         public string[] PlayerParamFilePath;
@@ -27,6 +32,10 @@ namespace Frontier
         [Header("各敵キャラクターのパラメータ参照先")]
         [SerializeField]
         public string[] EnemyParamFilePath;
+
+        [Header("各第三軍勢キャラクターのパラメータ参照先")]
+        [SerializeField]
+        public string[] OtherParamFilePath;
 
         [Header("各スキルデータのパラメータ参照先")]
         [SerializeField]
@@ -60,6 +69,7 @@ namespace Frontier
             public int InitGridIndex;
             public int InitDir;
             public int Prefab;
+            public int ThinkType;
             public int[] Skills;
         }
 
@@ -80,22 +90,15 @@ namespace Frontier
         }
 
         [System.Serializable]
-        public struct NpcParamData
-        {
-            public CharacterParamData Param;
-            public int ThinkType;
-        }
-
-        [System.Serializable]
         public class PlayerParamContainer
         {
             public CharacterParamData[] CharacterParams;
         }
 
         [System.Serializable]
-        public class NpcParamContainer
+        public class CharacterParamContainer
         {
-            public NpcParamData[] CharacterParams;
+            public CharacterParamData[] CharacterParams;
         }
 
         [System.Serializable]
@@ -122,68 +125,57 @@ namespace Frontier
             _hierarchyBld   = hierarchyBld;
         }
 
-        void Awake()
-        {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
-        }
-
         /// <summary>
-        /// プレイヤー情報をロードし、バトルマネージャ上に設置します
+        /// 該当ステージの全キャラクター情報をロードし、バトルマネージャ上に設置します
         /// </summary>
         /// <param name="stageIndex">ステージナンバー</param>
-        public void PlayerLoad(int stageIndex, float gridLength)
+        public void CharacterLoad(int stageIndex)
         {
-            // JSONファイルの読み込み
-            string json = File.ReadAllText(PlayerParamFilePath[stageIndex]);
-            // JSONデータのデシリアライズ
-            var dataContainer = JsonUtility.FromJson<PlayerParamContainer>(json);
-            if (dataContainer == null) return;
-            // デシリアライズされたデータを配列に格納
-            CharacterParamData[] Params = dataContainer.CharacterParams;
-
-            for (int i = 0; i < Params.Length; ++i)
+            List<string>[] ParamFilePaths = new List<string>[]
             {
-                int prefabIndex = Params[i].Prefab;
-                Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false);
+                new List<string>(PlayerParamFilePath),
+                new List<string>(EnemyParamFilePath),
+                new List<string>(OtherParamFilePath),
+            };
 
-                // 弾オブジェクトが設定されていれば生成
-                // 使用時まで非アクティブにする
-                if ( player.BulletObject != null )
+            List<GameObject>[] CharacterPrefabs = new List<GameObject>[]
+            {
+                new List<GameObject>(PlayersPrefab),
+                new List<GameObject>(EnemiesPrefab),
+                new List<GameObject>(OthersPrefab),
+            };
+
+            for (int i = 0; i < (int)Character.CHARACTER_TAG.NUM; ++i)
+            {
+                if ( ParamFilePaths[i].Count <= 0 ) continue;
+
+                // JSONファイルの読み込み
+                string json = File.ReadAllText(ParamFilePaths[i][stageIndex]);
+                // JSONデータのデシリアライズ
+                var dataContainer = JsonUtility.FromJson<CharacterParamContainer>(json);
+                if (dataContainer == null) return;
+                
+                // デシリアライズされたデータを配列に格納
+                foreach ( var param in dataContainer.CharacterParams )
                 {
-                    _hierarchyBld.CreateComponentWithNestedNewDirectoryWithDiContainer<Bullet>(player.BulletObject, player.gameObject, "Bullet", false, false);
+                    int prefabIndex = param.Prefab;
+                    Character chara = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Character>(CharacterPrefabs[i][prefabIndex], true, false);
+
+                    // 弾オブジェクトが設定されていれば生成
+                    // 使用時まで非アクティブにする
+                    if (chara.BulletObject != null)
+                    {
+                        _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>(chara.BulletObject, chara.gameObject, "Bullet", false, false);
+                    }
+
+                    // ファイルから読み込んだパラメータを設定
+                    ApplyCharacterParams(ref chara.param, param);
+                    chara.Init();
+                    chara.SetThinkType((Character.ThinkingType)param.ThinkType);
+
+                    _btlMgr.BtlCharaCdr.AddCharacterToList(chara);
+
                 }
-
-                // ファイルから読み込んだパラメータを設定
-                ApplyCharacterParams(ref player.param, Params[i]);
-                player.Init();
-
-                _btlMgr.AddPlayerToList(player);
-            }
-        }
-
-        /// <summary>
-        /// 敵情報をロードし、バトルマネージャ上に設置します
-        /// </summary>
-        /// <param name="stageIndex">ステージナンバー</param>
-        public void EnemyLord(int stageIndex, float gridLength)
-        {
-            string json = File.ReadAllText(EnemyParamFilePath[stageIndex]);
-            var dataContainer = JsonUtility.FromJson<NpcParamContainer>(json);
-            if (dataContainer == null) return;
-            NpcParamData[] Params = dataContainer.CharacterParams;
-
-            for (int i = 0; i < Params.Length; ++i)
-            {
-                int prefabIndex = Params[i].Param.Prefab;
-
-                Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(EnemiesPrefab[prefabIndex], true, false);
-
-                // ファイルから読み込んだパラメータを設定
-                ApplyCharacterParams(ref enemy.param, Params[i].Param);
-                enemy.Init();
-                enemy.SetThinkType((Enemy.ThinkingType)Params[i].ThinkType);
-
-                _btlMgr.AddEnemyToList(enemy);
             }
         }
 
@@ -277,7 +269,7 @@ namespace Frontier
                 player.param = param;
                 player.Init();
 
-                _btlMgr.AddPlayerToList(player);
+                _btlMgr.BtlCharaCdr.AddCharacterToList(player);
             }
             else
             {
@@ -287,9 +279,9 @@ namespace Frontier
                 enemy.param = param;
                 enemy.Init();
 
-                _btlMgr.AddEnemyToList(enemy);
+                _btlMgr.BtlCharaCdr.AddCharacterToList(enemy);
             }
         }
 #endif  // DEVELOPMENT_BUILD || UNITY_EDITOR
-    }
+            }
 }

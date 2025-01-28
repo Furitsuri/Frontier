@@ -7,9 +7,9 @@ namespace Frontier
 {
     public class EMWaitState : PhaseStateBase
     {
-        public override void Init(BattleManager btlMgr, StageController stgCtrl)
+        public override void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
         }
     }
 }

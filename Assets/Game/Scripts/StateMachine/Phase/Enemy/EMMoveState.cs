@@ -25,18 +25,18 @@ namespace Frontier
         private List<Vector3> _moveGridPos;
         private Transform _EMTransform;
 
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
-            _enemy = _btlMgr.GetSelectCharacter() as Enemy;
+            _enemy = _btlMgr.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_enemy != null);
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
             var param = _enemy.param;
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
-            _movePathList = _enemy.EmAI.GetProposedMoveRoute();
+            _movePathList = _enemy.GetAi().GetProposedMoveRoute();
 
             // 移動目標地点が、現在地点であった場合は即時終了
             if (_movePathList.Count <= 0)
@@ -61,7 +61,7 @@ namespace Frontier
                 // 移動アニメーション開始
                 _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
                 // グリッド情報更新
-                _enemy.tmpParam.gridIndex = _enemy.EmAI.GetDestinationGridIndex();
+                _enemy.tmpParam.gridIndex = _enemy.GetAi().GetDestinationGridIndex();
                 // 選択グリッドを表示
                 _stageCtrl.SetGridCursorActive(true);
 

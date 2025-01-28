@@ -7,12 +7,12 @@ namespace Frontier
 {
     public class PLWaitState : PhaseStateBase
     {
-        public override void Init(BattleManager btlMgr, StageController stgCtrl)
+        public override void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             // 選択中のプレイヤーを取得
-            var selectPlayer = (Player)_btlMgr.GetSelectCharacter();
+            var selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
             if (selectPlayer == null)
             {
                 Debug.Assert(false);

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -9,42 +9,42 @@ namespace Frontier
     public class CharacterGroup
     {
         [SerializeField]
-        [Header("ƒvƒŒƒCƒ„[")]
+        [Header("ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼")]
         public GameObject _playerObj;
 
         [SerializeField]
-        [Header("ƒGƒlƒ~[")]
+        [Header("ã‚¨ãƒãƒŸãƒ¼")]
         public GameObject _enemyObj;
     }
 
     /// <summary>
-    /// ƒIƒuƒWƒFƒNƒgEƒRƒ“ƒ|[ƒlƒ“ƒgì¬ƒNƒ‰ƒX
+    /// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒ»ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆä½œæˆã‚¯ãƒ©ã‚¹
     /// </summary>
     public class HierarchyBuilder : MonoBehaviour
     {
         [SerializeField]
-        [Header("ƒJƒƒ‰ƒIƒuƒWƒFƒNƒg")]
+        [Header("ã‚«ãƒ¡ãƒ©ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private GameObject _cameraObj;
 
         [SerializeField]
-        [Header("ƒLƒƒƒ‰ƒNƒ^[ƒIƒuƒWƒFƒNƒg")]
+        [Header("ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private CharacterGroup _characterObjGrp;
 
         [SerializeField]
-        [Header("ƒRƒ“ƒgƒ[ƒ‰ƒIƒuƒWƒFƒNƒg")]
+        [Header("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private GameObject _controllerObj;
 
         [SerializeField]
-        [Header("ƒ}ƒl[ƒWƒƒ[ƒIƒuƒWƒFƒNƒg")]
+        [Header("ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ")]
         private GameObject _managerObj;
 
-        // ƒIƒuƒWƒFƒNƒg¶¬ƒNƒ‰ƒX
+        // ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆç”Ÿæˆã‚¯ãƒ©ã‚¹
         Generator _generator = null;
 
         /// <summary>
-        /// DiInstaller‚©‚çŒÄ‚Ño‚µAƒRƒ“ƒeƒi‚ğ“o˜^‚µ‚Ü‚·
+        /// DiInstallerã‹ã‚‰å‘¼ã³å‡ºã—ã€ã‚³ãƒ³ãƒ†ãƒŠã‚’ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="container">DIƒRƒ“ƒeƒi</param>
+        /// <param name="container">DIã‚³ãƒ³ãƒ†ãƒŠ</param>
         [Inject]
         void Construct(DiContainer container, DiInstaller installer)
         {
@@ -73,10 +73,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆø”‚Éw’è‚µ‚½ƒrƒwƒCƒrƒA‚Ì•R‚Ã‚¯æ‚ÌƒIƒuƒWƒFƒNƒg‚ğŒˆ’è‚µ‚Ü‚·
+        /// å¼•æ•°ã«æŒ‡å®šã—ãŸãƒ“ãƒ˜ã‚¤ãƒ“ã‚¢ã®ç´ã¥ã‘å…ˆã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ±ºå®šã—ã¾ã™
         /// </summary>
-        /// <param name="original">•R‚Ã‚¯‚ğs‚¤‘ÎÛƒIƒuƒWƒFƒNƒg</param>
-        /// <returns>•R‚Ã‚¯æ‚ÌƒIƒuƒWƒFƒNƒg</returns>
+        /// <param name="original">ç´ã¥ã‘ã‚’è¡Œã†å¯¾è±¡ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <returns>ç´ã¥ã‘å…ˆã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</returns>
         private GameObject MapObjectToType<T>( T original )
         {
             if (original == null)
@@ -103,7 +103,7 @@ namespace Frontier
         /// <returns></returns>
         private object HandlePlayer()
         {
-            // PlayerŒ^‚É‘Î‚·‚éˆ—
+            // Playerå‹ã«å¯¾ã™ã‚‹å‡¦ç†
             Debug.Log("Handling Player type");
             return "Player-specific value";
         }
@@ -115,7 +115,7 @@ namespace Frontier
         /// <returns></returns>
         private object HandleEnemy(Enemy enemy)
         {
-            // EnemyŒ^‚É‘Î‚·‚éˆ—
+            // Enemyå‹ã«å¯¾ã™ã‚‹å‡¦ç†
             Debug.Log("Handling Enemy type");
             return "Enemy-specific value";
         }
@@ -126,15 +126,15 @@ namespace Frontier
         /// <returns></returns>
         private object HandleDefault()
         {
-            // ‚»‚Ì‘¼‚ÌGameObjectŒ^‚É‘Î‚·‚éˆ—
+            // ãã®ä»–ã®GameObjectå‹ã«å¯¾ã™ã‚‹å‡¦ç†
             Debug.Log("Handling default GameObject type");
             return "Default value";
         }
 
         /// <summary>
-        /// ¶¬‚³‚ê‚½ƒIƒuƒWƒFƒNƒg‚ğw’è‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰»‚É”z’u‚µ‚Ü‚·
+        /// ç”Ÿæˆã•ã‚ŒãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŒ‡å®šã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤åŒ–ã«é…ç½®ã—ã¾ã™
         /// </summary>
-        /// <param name="bhv">¶¬‚³‚ê‚½ƒIƒuƒWƒFƒNƒg</param>
+        /// <param name="bhv">ç”Ÿæˆã•ã‚ŒãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
         private void Organize(Behaviour bhv)
         {
             GameObject parentObj = MapObjectToType(bhv);
@@ -146,11 +146,11 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒIƒuƒWƒFƒNƒg‹y‚ÑƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µAƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŠã³ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã€ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="initActive">ì¬‚µ‚½ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="initActive">ä½œæˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
         public T CreateComponentAndOrganize<T>( bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateObjectAndAddComponent<T>(initActive);
@@ -162,12 +162,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆø”‚É“n‚µ‚½ƒIƒuƒWƒFƒNƒg‚©‚çƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µAƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// å¼•æ•°ã«æ¸¡ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã€ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="gameObject">ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ³‚Æ‚È‚éƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="gameObject">ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å…ƒã¨ãªã‚‹ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
         public T CreateComponentAndOrganize<T>(GameObject gameObject, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
@@ -179,14 +179,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆø”‚É“n‚µ‚½ƒIƒuƒWƒFƒNƒg‚©‚çƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µ‚Ü‚·
-        /// ‚Ü‚½Aì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğe‚Æ‚·‚éƒIƒuƒWƒFƒNƒg‚Ìq‚Æ‚µ‚Äİ’è‚µAƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// å¼•æ•°ã«æ¸¡ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã¾ã™
+        /// ã¾ãŸã€ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¦ªã¨ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å­ã¨ã—ã¦è¨­å®šã—ã€ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="gameObject">ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ³‚Æ‚È‚éƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="parentObject">ƒqƒGƒ‰ƒ‹ƒL[ã‚Åì¬‚µ‚½ƒIƒuƒWƒFƒNƒg‚Ìe‚Æ‚È‚éƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="gameObject">ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å…ƒã¨ãªã‚‹ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="parentObject">ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã§ä½œæˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®è¦ªã¨ãªã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
         public T CreateComponentWithNestedParent<T>(GameObject gameObject, GameObject parentObject, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
@@ -198,16 +198,16 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆø”‚É“n‚µ‚½ƒIƒuƒWƒFƒNƒg‚©‚çƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µ‚Ü‚·
-        /// ‚Ü‚½Aì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğe‚Æ‚·‚éƒIƒuƒWƒFƒNƒg‚Ìq‚Æ‚µ‚Äİ’è‚µAX‚Éw’è‚Ì–¼‘O‚Åì¬‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚Ìq‚Æ‚µ‚Ä‚»‚Ìe‚ğİ’è‚ÌãA
-        /// ƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// å¼•æ•°ã«æ¸¡ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã¾ã™
+        /// ã¾ãŸã€ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¦ªã¨ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å­ã¨ã—ã¦è¨­å®šã—ã€æ›´ã«æŒ‡å®šã®åå‰ã§ä½œæˆã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å­ã¨ã—ã¦ãã®è¦ªã‚’è¨­å®šã®ä¸Šã€
+        /// ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="gameObject">ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ³‚Æ‚È‚éƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="parentObject">ƒqƒGƒ‰ƒ‹ƒL[ã‚Åì¬‚µ‚½ƒIƒuƒWƒFƒNƒg‚Ìe‚Æ‚È‚éƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="newDirectoryObjectName">ì¬‚·‚éƒqƒGƒ‰ƒ‹ƒL[ã‚ÌƒIƒuƒWƒFƒNƒg(ƒfƒBƒŒƒNƒgƒŠ‚Ì‘ã‘Ö‚Æ‚È‚é‹óƒIƒuƒWƒFƒNƒg)‚Ì–¼‘O</param>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="gameObject">ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å…ƒã¨ãªã‚‹ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="parentObject">ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã§ä½œæˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®è¦ªã¨ãªã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="newDirectoryObjectName">ä½œæˆã™ã‚‹ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ä»£æ›¿ã¨ãªã‚‹ç©ºã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ)ã®åå‰</param>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
         public T CreateComponentWithNestedNewDirectory<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
@@ -221,45 +221,52 @@ namespace Frontier
         }
 
         /// <summary>
-        /// DIƒRƒ“ƒeƒi‚ğ—p‚¢‚ÄƒIƒuƒWƒFƒNƒg‹y‚ÑƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µAƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// DIã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŠã³ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã€ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
         public T CreateComponentAndOrganizeWithDiContainer<T>( bool initActive, bool isBind ) where T : Behaviour
         {
             GameObject gameObj = new GameObject();
-            T generateCpt = _generator.InstantiateComponentWithDIContainer<T>(gameObject, initActive, isBind);
+            T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
+            Debug.Assert(generateCpt != null);
+
+            Organize(generateCpt);
 
             return generateCpt;
         }
 
         /// <summary>
-        /// ˆø”‚É“n‚µ‚½ƒIƒuƒWƒFƒNƒg‚©‚çDIƒRƒ“ƒeƒi‚ğ—p‚¢‚ÄƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µAƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// å¼•æ•°ã«æ¸¡ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰DIã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã€ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="gameObject">ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ³‚Æ‚È‚éƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="gameObject">ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å…ƒã¨ãªã‚‹ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
         public T CreateComponentAndOrganizeWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
         {
-            T generateCpt = _generator.InstantiateComponentWithDIContainer<T>(gameObject, initActive, isBind);
+            T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
+            Debug.Assert(generateCpt != null);
+
+            Organize(generateCpt);
 
             return generateCpt;
         }
 
         /// <summary>
-        /// ˆø”‚É“n‚µ‚½ƒIƒuƒWƒFƒNƒg‚©‚çDIƒRƒ“ƒeƒi‚ğ—p‚¢‚ÄƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µ‚Ü‚·
-        /// ‚Ü‚½Aì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğe‚Æ‚·‚éƒIƒuƒWƒFƒNƒg‚Ìq‚Æ‚µ‚Äİ’è‚µAƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// å¼•æ•°ã«æ¸¡ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰DIã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã¾ã™
+        /// ã¾ãŸã€ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¦ªã¨ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å­ã¨ã—ã¦è¨­å®šã—ã€ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="gameObject">ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ³‚Æ‚È‚éƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="parentObject">ƒqƒGƒ‰ƒ‹ƒL[ã‚Åì¬‚µ‚½ƒIƒuƒWƒFƒNƒg‚Ìe‚Æ‚È‚éƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
-        public T CreateComponentWithNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind) where T : Behaviour
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="gameObject">ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å…ƒã¨ãªã‚‹ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="parentObject">ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã§ä½œæˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®è¦ªã¨ãªã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
+        public T CreateComponentNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind) where T : Behaviour
         {
-            T generateCpt = _generator.InstantiateComponentWithDIContainer<T>(gameObject, initActive, isBind);
+            T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
+            Debug.Assert(generateCpt != null);
 
             generateCpt.transform.parent = parentObject.transform;
 
@@ -267,25 +274,37 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆø”‚É“n‚µ‚½ƒIƒuƒWƒFƒNƒg‚©‚çDIƒRƒ“ƒeƒi‚ğ—p‚¢‚ÄƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µ‚Ü‚·
-        /// ‚Ü‚½Aì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğe‚Æ‚·‚éƒIƒuƒWƒFƒNƒg‚Ìq‚Æ‚µ‚Äİ’è‚µAX‚Éw’è‚Ì–¼‘O‚Åì¬‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚Ìq‚Æ‚µ‚Ä‚»‚Ìe‚ğİ’è‚ÌãA
-        /// ƒqƒGƒ‰ƒ‹ƒL[ã‚Ì”CˆÓ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‰º‚Éİ’u‚µ‚Ü‚·
+        /// å¼•æ•°ã«æ¸¡ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰DIã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã¾ã™
+        /// ã¾ãŸã€ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¦ªã¨ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å­ã¨ã—ã¦è¨­å®šã—ã€æ›´ã«æŒ‡å®šã®åå‰ã§ä½œæˆã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å­ã¨ã—ã¦ãã®è¦ªã‚’è¨­å®šã®ä¸Šã€
+        /// ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ä»»æ„ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ä¸‹ã«è¨­ç½®ã—ã¾ã™
         /// </summary>
-        /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-        /// <param name="gameObject">ƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ³‚Æ‚È‚éƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="parentObject">ƒqƒGƒ‰ƒ‹ƒL[ã‚Åì¬‚µ‚½ƒIƒuƒWƒFƒNƒg‚Ìe‚Æ‚È‚éƒIƒuƒWƒFƒNƒg</param>
-        /// <param name="newDirectoryObjectName">ì¬‚·‚éƒqƒGƒ‰ƒ‹ƒL[ã‚ÌƒIƒuƒWƒFƒNƒg(ƒfƒBƒŒƒNƒgƒŠ‚Ì‘ã‘Ö‚Æ‚È‚é‹óƒIƒuƒWƒFƒNƒg)‚Ì–¼‘O</param>
-        /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-        /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
-        public T CreateComponentWithNestedNewDirectoryWithDiContainer<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive, bool isBind) where T : Behaviour
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+        /// <param name="gameObject">ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å…ƒã¨ãªã‚‹ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="parentObject">ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã§ä½œæˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®è¦ªã¨ãªã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+        /// <param name="newDirectoryObjectName">ä½œæˆã™ã‚‹ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ä»£æ›¿ã¨ãªã‚‹ç©ºã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ)ã®åå‰</param>
+        /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+        /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
+        public T CreateComponentNestedNewDirectoryWithDiContainer<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive, bool isBind) where T : Behaviour
         {
-            T generateCpt = _generator.InstantiateComponentWithDIContainer<T>(gameObject, initActive, isBind);
+            T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
+            Debug.Assert(generateCpt != null);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
             folderObject.transform.parent = parentObject.transform;
             generateCpt.transform.parent = folderObject.transform;
 
             return generateCpt;
+        }
+
+        /// <summary>
+        /// Diã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ä½œæˆã—ã¾ã™
+        /// ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ä¸Šã«ã¯è¨­ç½®ã—ã¾ã›ã‚“
+        /// </summary>
+        /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã®å‹</typeparam>
+        /// <returns>ä½œæˆã—ãŸã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹</returns>
+        public T InstantiateWithDiContainer<T>()
+        {
+            return _generator.InstantiateWithDiContainer<T>();
         }
     }
 }

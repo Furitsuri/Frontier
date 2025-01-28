@@ -17,9 +17,9 @@ namespace Frontier
 
         private CommandList _commandList = new CommandList();
 
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             List<int> commandIndexs = new List<int>((int)ConfirmTag.NUM);
             for (int i = 0; i < (int)ConfirmTag.NUM; ++i)
@@ -46,7 +46,7 @@ namespace Frontier
                 if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
                 {
                     // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
-                    _btlMgr.ApplyAllPlayerWaitEnd();
+                    _btlMgr.BtlCharaCdr.ApplyAllArmyWaitEnd(Character.CHARACTER_TAG.PLAYER);
                 }
 
                 Back();

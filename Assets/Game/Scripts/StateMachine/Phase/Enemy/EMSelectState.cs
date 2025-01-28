@@ -10,26 +10,27 @@ namespace Frontier
     public class EMSelectState : PhaseStateBase
     {
         Enemy _currentEnemy = null;
-        IEnumerator<Enemy> _enemyEnumerator;
+        IEnumerator<Character> _enemyEnumerator;
         bool _isValidDestination = false;
         bool _isValidTarget = false;
 
-        override public void Init(BattleManager btlMgr, StageController stgCtrl)
+        override public void Init()
         {
             bool isExist = false;
 
-            base.Init(btlMgr, stgCtrl);
+            base.Init();
 
             // ステージグリッド上のキャラ情報を更新
             _stageCtrl.UpdateGridInfo();
 
-            _enemyEnumerator = _btlMgr.GetEnemyEnumerable().GetEnumerator();
+            _enemyEnumerator = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).GetEnumerator();
             _currentEnemy = null;
 
             // 行動済みでないキャラクターを選択する
             while (_enemyEnumerator.MoveNext())
             {
-                _currentEnemy = _enemyEnumerator.Current;
+                _currentEnemy = _enemyEnumerator.Current as Enemy;
+
                 var tmpParam = _currentEnemy.tmpParam;
 
                 if (IsTransitNextCharacter(tmpParam))
@@ -38,10 +39,11 @@ namespace Frontier
                 }
 
                 isExist = true;
+
                 // 選択グリッドを合わせる
                 _stageCtrl.ApplyCurrentGrid2CharacterGrid(_currentEnemy);
 
-                if (!_currentEnemy.EmAI.IsDetermined())
+                if(!_currentEnemy.GetAi().IsDetermined())
                 {
                     (_isValidDestination, _isValidTarget) = _currentEnemy.DetermineDestinationAndTargetWithAI();
                 }

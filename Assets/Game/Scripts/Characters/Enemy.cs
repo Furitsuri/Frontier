@@ -7,20 +7,29 @@ namespace Frontier
     public class Enemy : Character
     {
         /// <summary>
-        /// 思考タイプ
+        /// 初期化します
         /// </summary>
-        public enum ThinkingType
+        public override void Init()
         {
-            AGGERESSIVE = 0,    // 積極的に移動し、攻撃後の結果の評価値が高い対象を狙う
-            WAITING,            // 自身の行動範囲に対象が入ってこない限り動かない。動き始めた後はAGGRESSIVEと同じ動作
-
-            NUM
+            base.Init();
         }
 
-        private ThinkingType _thikType;
-        public EMAIBase EmAI { get; private set; }
+        /// <summary>
+        /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
+        /// MEMO : モーションのイベントフラグから呼び出します
+        /// </summary>
+        override public void Die()
+        {
+            base.Die();
 
-        public void SetThinkType(ThinkingType type)
+            _btlMgr.BtlCharaCdr.RemoveCharacterFromList(this);
+        }
+
+        /// <summary>
+        /// 思考タイプを設定します
+        /// </summary>
+        /// <param name="type">設定する思考タイプ</param>
+        override public void SetThinkType(ThinkingType type)
         {
             _thikType = type;
 
@@ -28,28 +37,17 @@ namespace Frontier
             switch (_thikType)
             {
                 case ThinkingType.AGGERESSIVE:
-                    EmAI = new EMAIAggressive();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EMAIAggressive>();
                     break;
                 case ThinkingType.WAITING:
-                    // TODO : Waitタイプを作成次第追加
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiWaitting>();
                     break;
                 default:
-                    EmAI = new EMAIBase();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EMAIBase>();
                     break;
             }
 
-            EmAI.Init(this, _btlMgr, _stageCtrl);
-        }
-
-        /// <summary>
-        /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
-        /// MEMO : モーションのイベントフラグから呼び出します
-        /// </summary>
-        public override void Die()
-        {
-            base.Die();
-
-            _btlMgr.RemoveEnemyFromList(this);
+            _baseAI.Init();
         }
 
         /// <summary>
@@ -57,7 +55,7 @@ namespace Frontier
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
-            return EmAI.DetermineDestinationAndTarget(param, tmpParam);
+            return _baseAI.DetermineDestinationAndTarget(param, tmpParam);
         }
 
         /// <summary>
@@ -65,8 +63,8 @@ namespace Frontier
         /// </summary>
         public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
         {
-            destinationIndex = EmAI.GetDestinationGridIndex();
-            targetCharacter = EmAI.GetTargetCharacter();
+            destinationIndex    = _baseAI.GetDestinationGridIndex();
+            targetCharacter     = _baseAI.GetTargetCharacter();
         }
     }
 }

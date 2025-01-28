@@ -18,19 +18,14 @@ namespace Frontier
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
         private BattleManager _btlMgr = null;
-        private StageController _stageCtrl = null;
+        private StageController _stgCtrl = null;
         private Character _prevCharacter = null;
 
-        /// <summary>
-        /// Diコンテナから引数を注入します
-        /// </summary>
-        /// <param name="btlMgr">バトルマネージャ</param>
-        /// <param name="stageCtrl">ステージコントローラ</param>
         [Inject]
-        void Construct( BattleManager btlMgr, StageController stageCtrl )
+        public void Construct( BattleManager btlMgr, StageController stgCtrl )
         {
             _btlMgr     = btlMgr;
-            _stageCtrl  = stageCtrl;
+            _stgCtrl    = stgCtrl;
         }
 
         void Start()
@@ -42,14 +37,13 @@ namespace Frontier
         // Update is called once per frame
         void Update()
         {
-            Character selectCharacter = _btlMgr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
+            Character selectCharacter = _btlMgr.BtlCharaCdr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
 
-            var bindCharacter = _stageCtrl.GetGridCursorBindCharacter();
+            var bindCharacter = _stgCtrl.GetGridCursorBindCharacter();
 
-            // 攻撃対象選択時
-            switch (_stageCtrl.GetGridCursorState())
+            switch (_stgCtrl.GetGridCursorState())
             {
-                case Stage.GridCursor.State.ATTACK:
+                case Stage.GridCursor.State.ATTACK: // 攻撃対象選択時
                     Debug.Assert(bindCharacter != null);
 
                     BattleUISystem.Instance.TogglePlayerParameter(true);
@@ -71,11 +65,12 @@ namespace Frontier
                         EnemyParameter.SetDisplayCharacter(bindCharacter);
                     }
                     break;
-                case Stage.GridCursor.State.MOVE:
+                
+                case Stage.GridCursor.State.MOVE:   // 移動候補選択時
                     Debug.Assert(bindCharacter != null);
 
                     PlayerParameter.SetDisplayCharacter(bindCharacter);
-                    if( selectCharacter != null && selectCharacter != bindCharacter ) EnemyParameter.SetDisplayCharacter(selectCharacter);
+                    if (selectCharacter != null && selectCharacter != bindCharacter) EnemyParameter.SetDisplayCharacter(selectCharacter);
                     BattleUISystem.Instance.ToggleEnemyParameter(selectCharacter != null && selectCharacter != bindCharacter);
 
                     break;

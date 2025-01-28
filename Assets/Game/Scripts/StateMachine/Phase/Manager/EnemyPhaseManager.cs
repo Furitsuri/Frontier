@@ -13,20 +13,20 @@ namespace Frontier
         override public void Init()
         {
             // 目標座標や攻撃対象をリセット
-            foreach (Enemy enemy in _btlMgr.GetEnemyEnumerable())
+            foreach (Enemy enemy in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
             {
-                enemy.EmAI.ResetDestinationAndTarget();
+                enemy.GetAi().ResetDestinationAndTarget();
             }
             // MEMO : 上記リセット後に初期化する必要があるためにこの位置であることに注意
             base.Init();
             // 選択グリッドを(1番目の)敵のグリッド位置に合わせる
-            if (0 < _btlMgr.GetCharacterCount(Character.CHARACTER_TAG.ENEMY) && _btlMgr.GetEnemyEnumerable() != null)
+            if (0 < _btlMgr.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.ENEMY) && _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY) != null)
             {
-                Enemy enemy = _btlMgr.GetEnemyEnumerable().First();
-                _stageCtrl.ApplyCurrentGrid2CharacterGrid(enemy);
+                Character enemy = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).First();
+                _stgCtrl.ApplyCurrentGrid2CharacterGrid(enemy);
             }
             // アクションゲージの回復
-            _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.ENEMY);
+            _btlMgr.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Frontier
             }
 
             // フェーズアニメーション中は操作無効
-            if (BattleUISystem.Instance.IsPlayingPhaseUI())
+            if (_btlUi.IsPlayingPhaseUI())
             {
                 return false;
             }
@@ -56,10 +56,10 @@ namespace Frontier
         override protected void CreateTree()
         {
             // 遷移木の作成
-            RootNode = new EMSelectState();
-            RootNode.AddChild(new EMMoveState());
-            RootNode.AddChild(new EMAttackState());
-            RootNode.AddChild(new EMWaitState());
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<EMSelectState>();
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EMMoveState>());
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EMAttackState>());
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EMWaitState>());
 
             CurrentNode = RootNode;
         }
@@ -69,8 +69,8 @@ namespace Frontier
         /// </summary>
         override protected void StartPhaseAnim()
         {
-            BattleUISystem.Instance.TogglePhaseUI(true, BattleManager.TurnType.ENEMY_TURN);
-            BattleUISystem.Instance.StartAnimPhaseUI();
+            _btlUi.TogglePhaseUI(true, BattleManager.TurnType.ENEMY_TURN);
+            _btlUi.StartAnimPhaseUI();
         }
     }
 }

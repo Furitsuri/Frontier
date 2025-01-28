@@ -197,7 +197,7 @@ namespace Frontier
                     break;
             }
 
-            _btlMgr.ApplyDamageExpect(attackChara, useParryChara);
+            _btlMgr.BtlCharaCdr.ApplyDamageExpect(attackChara, useParryChara);
         }
 
         /// <summary>

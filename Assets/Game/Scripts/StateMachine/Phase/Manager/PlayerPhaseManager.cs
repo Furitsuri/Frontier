@@ -1,7 +1,9 @@
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
@@ -14,13 +16,13 @@ namespace Frontier
         {
             base.Init();
 
-            if (0 < _btlMgr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
+            if (0 < _btlMgr.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
             {
                 // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
-                Player player = _btlMgr.GetPlayerEnumerable().First();
-                _stageCtrl.ApplyCurrentGrid2CharacterGrid(player);
+                Character player = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER).First();
+                _stgCtrl.ApplyCurrentGrid2CharacterGrid(player);
                 // アクションゲージの回復
-                _btlMgr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
+                _btlMgr.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
             }
         }
 
@@ -39,7 +41,7 @@ namespace Frontier
                 return false;
             }
             // フェーズアニメーション中は操作無効
-            if (BattleUISystem.Instance.IsPlayingPhaseUI())
+            if (_btlUi.IsPlayingPhaseUI())
             {
                 return false;
             }
@@ -55,12 +57,12 @@ namespace Frontier
             // 遷移木の作成
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
-            RootNode = new PLSelectGridState();
-            RootNode.AddChild(new PLSelectCommandState());
-            RootNode.AddChild(new PLConfirmTurnEnd());
-            RootNode.Children[0].AddChild(new PLMoveState());
-            RootNode.Children[0].AddChild(new PLAttackState());
-            RootNode.Children[0].AddChild(new PLWaitState());
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<PLSelectGridState>();
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PLSelectCommandState>());
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PLConfirmTurnEnd>());
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PLMoveState>());
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PLAttackState>());
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PLWaitState>());
 
             CurrentNode = RootNode;
         }
@@ -70,8 +72,8 @@ namespace Frontier
         /// </summary>
         override protected void StartPhaseAnim()
         {
-            BattleUISystem.Instance.TogglePhaseUI(true, BattleManager.TurnType.PLAYER_TURN);
-            BattleUISystem.Instance.StartAnimPhaseUI();
+            _btlUi.TogglePhaseUI(true, BattleManager.TurnType.PLAYER_TURN);
+            _btlUi.StartAnimPhaseUI();
         }
     }
 }
