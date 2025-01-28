@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier
 {
-    // ‘æO¨—Í‚ÍŒ`®ã‚Ì‚à‚Ì‚Æ‚µ‚ÄA’†g‚Í“G‚Æ“¯ˆê‚É‚·‚é
-    // d—l•ÏX‚ª‚ ‚ê‚Îˆ—‚ğ’Ç‰Á‚·‚é
+    // ç¬¬ä¸‰å‹¢åŠ›ã¯å½¢å¼ä¸Šã®ã‚‚ã®ã¨ã—ã¦ã€ä¸­èº«ã¯æ•µã¨åŒä¸€ã«ã™ã‚‹
+    // ä»•æ§˜å¤‰æ›´ãŒã‚ã‚Œã°å‡¦ç†ã‚’è¿½åŠ ã™ã‚‹
     public class Other : Enemy
     {
     }

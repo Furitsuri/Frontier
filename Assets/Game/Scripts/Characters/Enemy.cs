@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ namespace Frontier
     public class Enemy : Character
     {
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public override void Init()
         {
@@ -15,8 +15,8 @@ namespace Frontier
         }
 
         /// <summary>
-        /// €–Sˆ—BŠÇ—ƒŠƒXƒg‚©‚çíœ‚µAƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚ğ”jŠü‚µ‚Ü‚·
-        /// MEMO : ƒ‚[ƒVƒ‡ƒ“‚ÌƒCƒxƒ“ƒgƒtƒ‰ƒO‚©‚çŒÄ‚Ño‚µ‚Ü‚·
+        /// æ­»äº¡å‡¦ç†ã€‚ç®¡ç†ãƒªã‚¹ãƒˆã‹ã‚‰å‰Šé™¤ã—ã€ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç ´æ£„ã—ã¾ã™
+        /// MEMO : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ã‹ã‚‰å‘¼ã³å‡ºã—ã¾ã™
         /// </summary>
         override public void Die()
         {
@@ -26,14 +26,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// vlƒ^ƒCƒv‚ğİ’è‚µ‚Ü‚·
+        /// æ€è€ƒã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="type">İ’è‚·‚évlƒ^ƒCƒv</param>
+        /// <param name="type">è¨­å®šã™ã‚‹æ€è€ƒã‚¿ã‚¤ãƒ—</param>
         override public void SetThinkType(ThinkingType type)
         {
             _thikType = type;
 
-            // vlƒ^ƒCƒv‚É‚æ‚Á‚ÄemAI‚É‘ã“ü‚·‚é”h¶ƒNƒ‰ƒX‚ğ•ÏX‚·‚é
+            // æ€è€ƒã‚¿ã‚¤ãƒ—ã«ã‚ˆã£ã¦emAIã«ä»£å…¥ã™ã‚‹æ´¾ç”Ÿã‚¯ãƒ©ã‚¹ã‚’å¤‰æ›´ã™ã‚‹
             switch (_thikType)
             {
                 case ThinkingType.AGGERESSIVE:
@@ -51,7 +51,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// –Ú“IÀ•W‚Æ•W“IƒLƒƒƒ‰ƒNƒ^[‚ğŒˆ’è‚·‚é
+        /// ç›®çš„åº§æ¨™ã¨æ¨™çš„ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’æ±ºå®šã™ã‚‹
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
@@ -59,7 +59,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// –Ú•WÀ•W‚Æ•W“IƒLƒƒƒ‰ƒNƒ^[‚ğæ“¾‚µ‚Ü‚·
+        /// ç›®æ¨™åº§æ¨™ã¨æ¨™çš„ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
         public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
         {

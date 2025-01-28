@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using UnityEngine;
 
 namespace Frontier
@@ -9,9 +9,9 @@ namespace Frontier
         private Vector3 _movementDestination = Vector3.zero;
 
         /// <summary>
-        /// ˆÚ“®“ü—Íó•t‚Ì‰Â”Û”»’è‚ğs‚¢‚Ü‚·
+        /// ç§»å‹•å…¥åŠ›å—ä»˜ã®å¯å¦åˆ¤å®šã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <returns>ˆÚ“®“ü—Í‚Ìó•t‰Â”Û</returns>
+        /// <returns>ç§»å‹•å…¥åŠ›ã®å—ä»˜å¯å¦</returns>
         public bool IsAcceptableMovementOperation( float gridSize )
         {
             if( _isPrevMoving )
@@ -27,15 +27,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒvƒŒƒCƒ„[ƒLƒƒƒ‰ƒNƒ^[‚ÌˆÚ“®‚ÌXVˆ—‚ğs‚¢‚Ü‚·
+        /// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç§»å‹•æ™‚ã®æ›´æ–°å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="gridIndex">ƒLƒƒƒ‰ƒNƒ^[‚ÌŒ»İ’n‚Æ‚È‚éƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <param name="gridInfo">w’èƒOƒŠƒbƒh‚Ìî•ñ</param>
+        /// <param name="gridIndex">ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç¾åœ¨åœ°ã¨ãªã‚‹ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <param name="gridInfo">æŒ‡å®šã‚°ãƒªãƒƒãƒ‰ã®æƒ…å ±</param>
         public void UpdateMove(int gridIndex, in GridInfo gridInfo)
         {
             bool toggleAnimation = false;
 
-            // ˆÚ“®‰Â‚ÌƒOƒŠƒbƒh‚É‘Î‚µ‚Ä‚Ì‚İ–Ú“I’n‚ğXV
+            // ç§»å‹•å¯ã®ã‚°ãƒªãƒƒãƒ‰ã«å¯¾ã—ã¦ã®ã¿ç›®çš„åœ°ã‚’æ›´æ–°
             if (0 <= gridInfo.estimatedMoveRange)
             {
                 _movementDestination = gridInfo.charaStandPos;
@@ -67,8 +67,8 @@ namespace Frontier
         }
 
         /// <summary>
-        /// €–Sˆ—BŠÇ—ƒŠƒXƒg‚©‚çíœ‚µAƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚ğ”jŠü‚µ‚Ü‚·
-        /// ƒ‚[ƒVƒ‡ƒ“‚ÌƒCƒxƒ“ƒgƒtƒ‰ƒO‚©‚çŒÄ‚Ño‚µ‚Ü‚·
+        /// æ­»äº¡å‡¦ç†ã€‚ç®¡ç†ãƒªã‚¹ãƒˆã‹ã‚‰å‰Šé™¤ã—ã€ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç ´æ£„ã—ã¾ã™
+        /// ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ã‹ã‚‰å‘¼ã³å‡ºã—ã¾ã™
         /// </summary>
         override public void Die()
         {
@@ -78,9 +78,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// g—pƒXƒLƒ‹‚ğ‘I‘ğ‚µ‚Ü‚·
+        /// ä½¿ç”¨ã‚¹ã‚­ãƒ«ã‚’é¸æŠã—ã¾ã™
         /// </summary>
-        /// <param name="type">UŒ‚A–hŒäAí’“‚È‚Ç‚ÌƒXƒLƒ‹ƒ^ƒCƒv</param>
+        /// <param name="type">æ”»æ’ƒã€é˜²å¾¡ã€å¸¸é§ãªã©ã®ã‚¹ã‚­ãƒ«ã‚¿ã‚¤ãƒ—</param>
         override public void SelectUseSkills(SkillsData.SituationType type)
         {
             KeyCode[] keyCodes = new KeyCode[Constants.EQUIPABLE_SKILL_MAX_NUM] 
@@ -97,7 +97,7 @@ namespace Frontier
             {
                 if (!param.IsValidSkill(i)) continue;
 
-                // w’è‚³‚ê‚½ƒ^ƒCƒvˆÈŠO‚ÌƒXƒLƒ‹‚Í–³‹‚·‚é
+                // æŒ‡å®šã•ã‚ŒãŸã‚¿ã‚¤ãƒ—ä»¥å¤–ã®ã‚¹ã‚­ãƒ«ã¯ç„¡è¦–ã™ã‚‹
                 var skillType = SkillsData.data[(int)param.equipSkills[i]].Type;
                 BattleUISystem.Instance.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
                 if (skillType != type)
@@ -105,7 +105,7 @@ namespace Frontier
                     continue;
                 }
 
-                // ƒL[‚ª‰Ÿ‰º‚³‚ê‚½‚çAƒL[‚É‘Î‰‚·‚éƒXƒLƒ‹‚Ìg—pó‘Ô‚ğØ‚è‘Ö‚¦‚é
+                // ã‚­ãƒ¼ãŒæŠ¼ä¸‹ã•ã‚ŒãŸã‚‰ã€ã‚­ãƒ¼ã«å¯¾å¿œã™ã‚‹ã‚¹ã‚­ãƒ«ã®ä½¿ç”¨çŠ¶æ…‹ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
                 if (Input.GetKeyUp(keyCodes[i]))
                 {
                     tmpParam.isUseSkills[i] = !tmpParam.isUseSkills[i];
@@ -115,7 +115,7 @@ namespace Frontier
 
                     if (tmpParam.isUseSkills[i])
                     {
-                        // ƒRƒXƒg‚ªŒ»İ‚ÌƒAƒNƒVƒ‡ƒ“ƒQ[ƒW’l‚ğ‰z‚¦‚Ä‚¢‚éê‡‚Í–³‹
+                        // ã‚³ã‚¹ãƒˆãŒç¾åœ¨ã®ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸å€¤ã‚’è¶Šãˆã¦ã„ã‚‹å ´åˆã¯ç„¡è¦–
                         if (param.curActionGauge < param.consumptionActionGauge + skillData.Cost)
                         {
                             tmpParam.isUseSkills[i] = false;

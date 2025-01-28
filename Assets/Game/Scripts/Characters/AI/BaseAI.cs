@@ -16,9 +16,9 @@ namespace Frontier
         virtual public int GetDestinationGridIndex() { return -1; }
 
         /// <summary>
-        /// 
+        /// 攻撃対象にしているキャラクターを取得します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>攻撃対象にしているキャラクター</returns>
         virtual public Character GetTargetCharacter() { return null; }
 
         /// <summary>
