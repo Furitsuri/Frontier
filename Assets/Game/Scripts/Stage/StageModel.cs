@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier.Stage
 {
     /// <summary>
-    /// ƒXƒe[ƒWã‚ÌƒOƒŠƒbƒh”‚È‚Ç‚Ìƒf[ƒ^
+    /// ã‚¹ãƒ†ãƒ¼ã‚¸ä¸Šã®ã‚°ãƒªãƒƒãƒ‰æ•°ãªã©ã®ãƒ‡ãƒ¼ã‚¿
     /// </summary>
     public class StageModel : MonoBehaviour
     {

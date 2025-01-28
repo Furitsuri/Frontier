@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class CommandList
 {
-    // ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Ì•ûŒü
+    // ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã®æ–¹å‘
     public enum CommandDirection
     {
         VERTICAL = 0,
@@ -19,7 +19,7 @@ public class CommandList
     private KeyCode _transitPrevKey;
     private KeyCode _transitNextKey;
 
-    // g—p‚·‚éƒRƒ}ƒ“ƒh‚ÌƒCƒ“ƒfƒbƒNƒX”z—ñ‚ğ“n‚µ‚Ä‰Šú‰»
+    // ä½¿ç”¨ã™ã‚‹ã‚³ãƒãƒ³ãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹é…åˆ—ã‚’æ¸¡ã—ã¦åˆæœŸåŒ–
     public void Init(ref List<int> setCommandIndexs, CommandDirection direction )
     {
         if (setCommandIndexs.Count <= 0)
@@ -84,13 +84,13 @@ public class CommandList
 
         while ( current != null )
         {
-            // “¯‚¶’l‚ª‘¶İ‚·‚éê‡‚Íd—lˆá”½
+            // åŒã˜å€¤ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯ä»•æ§˜é•å
             if( current.Value == index )
             {
                 Debug.Assert(false);
                 return;
             }
-            // index‚Ì’l‚æ‚è‘å‚«‚¢’l‚Ì’¼‘O‚É‘}“ü
+            // indexã®å€¤ã‚ˆã‚Šå¤§ãã„å€¤ã®ç›´å‰ã«æŒ¿å…¥
             if( index < current.Value )
             {
                 _list.AddBefore(current, index);
@@ -100,7 +100,7 @@ public class CommandList
             current = current.Next;
         }
 
-        // ‘¶İ‚µ‚È‚©‚Á‚½ê‡‚Í––”ö‚É’Ç‰Á
+        // å­˜åœ¨ã—ãªã‹ã£ãŸå ´åˆã¯æœ«å°¾ã«è¿½åŠ 
         _list.AddLast(index);
     }
     public void DeleteCommand(int index)

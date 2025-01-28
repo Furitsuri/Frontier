@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 #pragma warning disable 0618
 
@@ -7,7 +7,7 @@ namespace Frontier.Stage
     public class GridCursor : MonoBehaviour
     {
         /// <summary>
-        /// ƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚Ìó‘Ô
+        /// ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ã®çŠ¶æ…‹
         /// </summary>
         public enum State
         {
@@ -32,11 +32,11 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
-        /// <param name="initIndex">‰ŠúƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <param name="rowNum">”Õ–Ê‚É‚¨‚¯‚és‚ÉŠY“–‚·‚éƒOƒŠƒbƒh”</param>
-        /// <param name="columnNum">”Õ–Ê‚É‚¨‚¯‚é—ñ‚ÉŠY“–‚·‚éƒOƒŠƒbƒh”</param>
+        /// <param name="initIndex">åˆæœŸã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <param name="rowNum">ç›¤é¢ã«ãŠã‘ã‚‹è¡Œã«è©²å½“ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰æ•°</param>
+        /// <param name="columnNum">ç›¤é¢ã«ãŠã‘ã‚‹åˆ—ã«è©²å½“ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰æ•°</param>
         public void Init(int initIndex, StageModel stageModel, StageController stgCtrl)
         {
             Index           = initIndex;
@@ -54,7 +54,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‘I‘ğ‚µ‚Ä‚¢‚éƒJ[ƒ\ƒ‹ˆÊ’u‚ğXV‚µ‚Ü‚·
+        /// é¸æŠã—ã¦ã„ã‚‹ã‚«ãƒ¼ã‚½ãƒ«ä½ç½®ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
         void UpdateUI()
         {
@@ -67,10 +67,10 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// w’è‚µ‚½ˆÊ’u(centralPos)‚ÉlŠpŒ`ƒ‰ƒCƒ“‚ğ•`‰æ‚µ‚Ü‚·
+        /// æŒ‡å®šã—ãŸä½ç½®(centralPos)ã«å››è§’å½¢ãƒ©ã‚¤ãƒ³ã‚’æç”»ã—ã¾ã™
         /// </summary>
-        /// <param name="gridSize">1ƒOƒŠƒbƒh‚ÌƒTƒCƒY</param>
-        /// <param name="centralPos">w’èƒOƒŠƒbƒh‚Ì’†SˆÊ’u</param>
+        /// <param name="gridSize">1ã‚°ãƒªãƒƒãƒ‰ã®ã‚µã‚¤ã‚º</param>
+        /// <param name="centralPos">æŒ‡å®šã‚°ãƒªãƒƒãƒ‰ã®ä¸­å¿ƒä½ç½®</param>
         void DrawSquareLine(float gridSize, ref Vector3 centralPos)
         {
             float halfSize = 0.5f * gridSize;
@@ -84,13 +84,13 @@ namespace Frontier.Stage
 
             };
 
-            // SetVertexCount‚Í”p~‚³‚ê‚Ä‚¢‚é‚Í‚¸‚¾‚ªAg—p‚µ‚È‚¢‚Æ³í‚É•`‰æ‚³‚ê‚È‚©‚Á‚½‚½‚ßg—p(2023/5/26)
+            // SetVertexCountã¯å»ƒæ­¢ã•ã‚Œã¦ã„ã‚‹ã¯ãšã ãŒã€ä½¿ç”¨ã—ãªã„ã¨æ­£å¸¸ã«æç”»ã•ã‚Œãªã‹ã£ãŸãŸã‚ä½¿ç”¨(2023/5/26)
             _lineRenderer.SetVertexCount(linePoints.Length);
             _lineRenderer.SetPositions(linePoints);
         }
 
         /// <summary>
-        /// ƒCƒ“ƒfƒbƒNƒX’l‚ğŒ»İƒOƒŠƒbƒh‚Ìã‚ÉŠY“–‚·‚é’l‚Éİ’è‚µ‚Ü‚·
+        /// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’ç¾åœ¨ã‚°ãƒªãƒƒãƒ‰ã®ä¸Šã«è©²å½“ã™ã‚‹å€¤ã«è¨­å®šã—ã¾ã™
         /// </summary>
         public void Up()
         {
@@ -102,7 +102,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒCƒ“ƒfƒbƒNƒX’l‚ğŒ»İƒOƒŠƒbƒh‚Ì‰º‚ÉŠY“–‚·‚é’l‚Éİ’è‚µ‚Ü‚·
+        /// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’ç¾åœ¨ã‚°ãƒªãƒƒãƒ‰ã®ä¸‹ã«è©²å½“ã™ã‚‹å€¤ã«è¨­å®šã—ã¾ã™
         /// </summary>
         public void Down()
         {
@@ -114,7 +114,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒCƒ“ƒfƒbƒNƒX’l‚ğŒ»İƒOƒŠƒbƒh‚Ì‰E‚ÉŠY“–‚·‚é’l‚Éİ’è‚µ‚Ü‚·
+        /// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’ç¾åœ¨ã‚°ãƒªãƒƒãƒ‰ã®å³ã«è©²å½“ã™ã‚‹å€¤ã«è¨­å®šã—ã¾ã™
         /// </summary>
         public void Right()
         {
@@ -126,7 +126,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒCƒ“ƒfƒbƒNƒX’l‚ğŒ»İƒOƒŠƒbƒh‚Ì¶‚ÉŠY“–‚·‚é’l‚Éİ’è‚µ‚Ü‚·
+        /// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’ç¾åœ¨ã‚°ãƒªãƒƒãƒ‰ã®å·¦ã«è©²å½“ã™ã‚‹å€¤ã«è¨­å®šã—ã¾ã™
         /// </summary>
         public void Left()
         {
@@ -138,9 +138,9 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛƒCƒ“ƒfƒbƒNƒX’l‚ğæ“¾‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>UŒ‚‘ÎÛƒCƒ“ƒfƒbƒNƒX’l</returns>
+        /// <returns>æ”»æ’ƒå¯¾è±¡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</returns>
         public int GetAtkTargetIndex()
         {
             return _atkTargetIndex;
@@ -156,25 +156,25 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛƒCƒ“ƒfƒbƒNƒX’l‚ğİ’è‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="index">UŒ‚‘ÎÛƒCƒ“ƒfƒbƒNƒX’l</param>
+        /// <param name="index">æ”»æ’ƒå¯¾è±¡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
         public void SetAtkTargetIndex(int index)
         {
             _atkTargetIndex = index;
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛƒCƒ“ƒfƒbƒNƒX‚Ì‘”‚ğİ’è‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®ç·æ•°ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="num">UŒ‚‘ÎÛƒCƒ“ƒfƒbƒNƒX‚Ì‘”</param>
+        /// <param name="num">æ”»æ’ƒå¯¾è±¡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®ç·æ•°</param>
         public void SetAtkTargetNum(int num)
         {
             _atkTargetNum = num;
         }
 
         /// <summary>
-        /// Ÿ‚Ìƒ^[ƒQƒbƒgƒCƒ“ƒfƒbƒNƒX’l‚É‘JˆÚ‚µ‚Ü‚·
+        /// æ¬¡ã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã«é·ç§»ã—ã¾ã™
         /// </summary>
         public void TransitNextTarget()
         {
@@ -182,7 +182,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‘O‚Ìƒ^[ƒQƒbƒgƒCƒ“ƒfƒbƒNƒX’l‚É‘JˆÚ‚µ‚Ü‚·
+        /// å‰ã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã«é·ç§»ã—ã¾ã™
         /// </summary>
         public void TransitPrevTarget()
         {
@@ -190,7 +190,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛî•ñ‚ğƒNƒŠƒA‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡æƒ…å ±ã‚’ã‚¯ãƒªã‚¢ã—ã¾ã™
         /// </summary>
         public void ClearAtkTargetInfo()
         {

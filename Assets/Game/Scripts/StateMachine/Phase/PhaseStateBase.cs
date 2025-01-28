@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -21,14 +21,14 @@ namespace Frontier
             _stageCtrl      = stgCtrl;
         }
 
-        // ‰Šú‰»
+        // åˆæœŸåŒ–
         virtual public void Init()
         {
             TransitIndex    = -1;
             _isBack         = false;
         }
 
-        // XV
+        // æ›´æ–°
         virtual public bool Update()
         {
             if (Input.GetKeyUp(KeyCode.Backspace))
@@ -42,26 +42,26 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒL[ƒKƒCƒh‚ğXV‚µ‚Ü‚·
+        /// ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
         virtual public void UpdateInputGuide()
         {
 
         }
 
-        // ‘Ş”ğ
+        // é€€é¿
         virtual public void Exit()
         {
         }
 
-        // –ß‚é
+        // æˆ»ã‚‹
         virtual public bool IsBack()
         {
             return _isBack;
         }
 
         /// <summary>
-        /// e‚Ì‘JˆÚ‚É–ß‚è‚Ü‚·
+        /// è¦ªã®é·ç§»ã«æˆ»ã‚Šã¾ã™
         /// </summary>
         protected void Back()
         {
@@ -69,36 +69,36 @@ namespace Frontier
         }
 
         /// <summary>
-        /// €–S‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚Ì‘¶İ‚ğ’Ê’m‚µ‚Ü‚·
+        /// æ­»äº¡ã—ãŸã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®å­˜åœ¨ã‚’é€šçŸ¥ã—ã¾ã™
         /// </summary>
-        /// <param name="characterKey">€–S‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚ÌƒnƒbƒVƒ…ƒL[</param>
+        /// <param name="characterKey">æ­»äº¡ã—ãŸã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒãƒƒã‚·ãƒ¥ã‚­ãƒ¼</param>
         protected void NoticeCharacterDied(CharacterHashtable.Key characterKey)
         {
             _btlMgr.BtlCharaCdr.SetDiedCharacterKey(characterKey);
         }
 
         /// <summary>
-        /// ƒKƒCƒh‚ğV‚½‚É’Ç‰Á‚µ‚Ü‚·
+        /// ã‚¬ã‚¤ãƒ‰ã‚’æ–°ãŸã«è¿½åŠ ã—ã¾ã™
         /// </summary>
-        /// <param name="addGuide">’Ç‰Á‚·‚éƒKƒCƒh</param>
+        /// <param name="addGuide">è¿½åŠ ã™ã‚‹ã‚¬ã‚¤ãƒ‰</param>
         protected void AddInputGuide(InputGuideUI.InputGuide addGuide )
         {
 
         }
 
         /// <summary>
-        /// ƒXƒe[ƒg‚Ì‘JˆÚ‚É•¹‚¹‚ÄƒL[ƒKƒCƒh‚ğ•ÏX‚µ‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ãƒˆã®é·ç§»ã«ä½µã›ã¦ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã‚’å¤‰æ›´ã—ã¾ã™
         /// </summary>
-        /// <param name="keyGuideList">‘JˆÚæ‚ÌƒL[ƒKƒCƒhƒŠƒXƒg</param>
+        /// <param name="keyGuideList">é·ç§»å…ˆã®ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ãƒªã‚¹ãƒˆ</param>
         protected void SetInputGuides( List<InputGuideUI.InputGuide> keyGuideList )
         {
            //  GeneralUISystem.Instance.SetInputGuideList( keyGuideList );
         }
 
         /// <summary>
-        /// ƒXƒe[ƒg‚Ì‘JˆÚ‚É•¹‚¹‚ÄƒL[ƒKƒCƒh‚ğ•ÏX‚µ‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ãƒˆã®é·ç§»ã«ä½µã›ã¦ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã‚’å¤‰æ›´ã—ã¾ã™
         /// </summary>
-        /// <param name="args">‘JˆÚæ‚Å•\¦‚·‚éƒL[ƒKƒCƒhŒQ</param>
+        /// <param name="args">é·ç§»å…ˆã§è¡¨ç¤ºã™ã‚‹ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ç¾¤</param>
         protected void SetInputGuides(params (Constants.KeyIcon, string)[] args)
         {
             List<InputGuideUI.InputGuide> keyGuideList = new List<InputGuideUI.InputGuide>();
@@ -110,7 +110,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// TODO : ‘S‚ÄƒR[ƒ‹ƒoƒbƒN‚ğ“o˜^‚·‚éŒ`‚ÅƒL[‚Ìó•t‚ªo—ˆ‚È‚¢‚©‚ÌŒ±—p
+        /// TODO : å…¨ã¦ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã‚’ç™»éŒ²ã™ã‚‹å½¢ã§ã‚­ãƒ¼ã®å—ä»˜ãŒå‡ºæ¥ãªã„ã‹ã®è©¦é¨“ç”¨
         /// </summary>
         /// <param name="args"></param>
         protected void SetInputGuides(params (Constants.KeyIcon, string, InputGuideUI.InputGuide.InputCallBack)[] args)

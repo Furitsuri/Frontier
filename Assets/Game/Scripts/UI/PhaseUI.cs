@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -14,7 +14,7 @@ public class PhaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ‰¡Ø‚èƒAƒjƒ[ƒVƒ‡ƒ“‚ğŠJn‚µ‚Ü‚·
+    /// æ¨ªåˆ‡ã‚Šã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’é–‹å§‹ã—ã¾ã™
     /// </summary>
     public void StartAnim()
     {
@@ -22,9 +22,9 @@ public class PhaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒAƒjƒ[ƒVƒ‡ƒ“‚ªÄ¶‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğ”»’è‚µ‚Ü‚·
+    /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒå†ç”Ÿã•ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã—ã¾ã™
     /// </summary>
-    /// <returns>Ä¶‚³‚ê‚Ä‚¢‚é‚©”Û‚©</returns>
+    /// <returns>å†ç”Ÿã•ã‚Œã¦ã„ã‚‹ã‹å¦ã‹</returns>
     public bool IsPlayingAnim()
     {
         var info = _animator.GetCurrentAnimatorStateInfo(0);
@@ -37,8 +37,8 @@ public class PhaseUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‹y‚Ñ‰º‚ÌƒŒƒCƒ„[‚ğ”ñ—LŒø‰»‚É‚µ‚Ü‚·
-    /// QÆ”‚Í0‚Å‚·‚ªAƒAƒjƒ[ƒVƒ‡ƒ“‚ÌƒCƒxƒ“ƒgƒtƒ‰ƒO‚©‚çŒÄ‚Ño‚³‚ê‚Ä‚¢‚Ü‚·
+    /// ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŠã³ä¸‹ã®ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’éæœ‰åŠ¹åŒ–ã«ã—ã¾ã™
+    /// å‚ç…§æ•°ã¯0ã§ã™ãŒã€ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒ•ãƒ©ã‚°ã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã¦ã„ã¾ã™
     /// </summary>
     public void Toggle()
     {

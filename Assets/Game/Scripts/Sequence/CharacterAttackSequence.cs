@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,7 +37,7 @@ namespace Frontier
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
         private Character _diedCharacter = null;
-        // Transform‚Í’x‚¢‚½‚ßƒLƒƒƒbƒVƒ…
+        // Transformã¯é…ã„ãŸã‚ã‚­ãƒ£ãƒƒã‚·ãƒ¥
         private Transform _atkCharaTransform = null;
         private Transform _tgtCharaTransform = null;
         private Vector3 _departure = Vector3.zero;
@@ -55,7 +55,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public void Init()
         {
@@ -66,10 +66,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒV[ƒPƒ“ƒX‚ğŠJn‚µ‚Ü‚·
+        /// ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
-        /// <param name="attackChara">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="targetChara">”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attackChara">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="targetChara">è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void StartSequence(Character attackChara, Character targetChara)
         {
             _attackCharacter    = attackChara;
@@ -79,28 +79,28 @@ namespace Frontier
             _atkCharaInitialRot = _atkCharaTransform.rotation;
             _tgtCharaInitialRot = _tgtCharaTransform.rotation;
 
-            // ‘Îí‘Šè‚Æ‚µ‚Äİ’è
+            // å¯¾æˆ¦ç›¸æ‰‹ã¨ã—ã¦è¨­å®š
             _attackCharacter.SetOpponentCharacter(_targetCharacter);
             _targetCharacter.SetOpponentCharacter(_attackCharacter);
 
-            // ƒJƒEƒ“ƒ^[ğŒ‚Ìİ’è
+            // ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼æ¡ä»¶ã®è¨­å®š
             _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER);
 
-            // UŒ‚XVˆ—‚ÌğŒ•Êİ’è
+            // æ”»æ’ƒæ›´æ–°å‡¦ç†ã®æ¡ä»¶åˆ¥è¨­å®š
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
             if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.UpdateClosedAttack;
             else _updateAttackerAttack = _attackCharacter.UpdateRangedAttack;
             if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.UpdateClosedAttack;
             else _updateTargetAttack = _targetCharacter.UpdateRangedAttack;
 
-            // UŒ‚ƒV[ƒPƒ“ƒX‚ÌŠJn
+            // æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã®é–‹å§‹
             _btlCamCtrl.StartAttackSequenceMode(_attackCharacter, _targetCharacter);
         }
 
         /// <summary>
-        /// ˆ—‚ğXV‚µ‚Ü‚·
+        /// å‡¦ç†ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <returns>ˆ—‚ÌI—¹</returns>
+        /// <returns>å‡¦ç†ã®çµ‚äº†</returns>
         public bool Update()
         {
             var parryCtrl = _btlMgr.SkillCtrl.ParryController;
@@ -108,7 +108,7 @@ namespace Frontier
             switch (_phase)
             {
                 case Phase.START:
-                    // START_ROTATION_TIME‚ªŒo‰ß‚·‚é‚Ü‚ÅŒü‚«‚ğ•ÏX‚µ‚Ü‚·
+                    // START_ROTATION_TIMEãŒçµŒéã™ã‚‹ã¾ã§å‘ãã‚’å¤‰æ›´ã—ã¾ã™
                     _elapsedTime += Time.deltaTime;
                     float t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_ROTATIION_TIME);
                     t = Mathf.SmoothStep(0f, 1f, t);
@@ -133,30 +133,30 @@ namespace Frontier
                         _elapsedTime = 0f;
                         StartAttack(_attackCharacter, _targetCharacter);
 
-                        // ƒpƒŠƒBƒXƒLƒ‹g—p‚ÍƒpƒŠƒB”»’èê—pˆ—‚Ö‘JˆÚ
+                        // ãƒ‘ãƒªã‚£ã‚¹ã‚­ãƒ«ä½¿ç”¨æ™‚ã¯ãƒ‘ãƒªã‚£åˆ¤å®šå°‚ç”¨å‡¦ç†ã¸é·ç§»
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY_RESULT;
-                        // ‚»‚êˆÈŠO‚Í’Êí’Ê‚èUŒ‚‚Ö
+                        // ãã‚Œä»¥å¤–ã¯é€šå¸¸é€šã‚Šæ”»æ’ƒã¸
                         else _phase = Phase.ATTACK;
                     }
                     break;
                 case Phase.ATTACK:
                     if (_updateAttackerAttack(_departure, _destination))
                     {
-                        // ƒJƒƒ‰‘ÎÛ‚ÆƒJƒƒ‰ƒpƒ‰ƒ[ƒ^‚ğ•ÏX
+                        // ã‚«ãƒ¡ãƒ©å¯¾è±¡ã¨ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å¤‰æ›´
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
-                        // ƒ_ƒ[ƒWUI‚ğ”ñ•\¦
+                        // ãƒ€ãƒ¡ãƒ¼ã‚¸UIã‚’éè¡¨ç¤º
                         BattleUISystem.Instance.ToggleDamageUI(false);
 
-                        // ƒK[ƒhƒXƒLƒ‹‚ğg—p‚ÍƒK[ƒhƒ‚[ƒVƒ‡ƒ“‚ğ–ß‚·
+                        // ã‚¬ãƒ¼ãƒ‰ã‚¹ã‚­ãƒ«ã‚’ä½¿ç”¨æ™‚ã¯ã‚¬ãƒ¼ãƒ‰ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’æˆ»ã™
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
 
-                        // ‘ÎÛ‚ª€–S‚µ‚Ä‚¢‚éê‡‚Í€–Sˆ—‚Ö
+                        // å¯¾è±¡ãŒæ­»äº¡ã—ã¦ã„ã‚‹å ´åˆã¯æ­»äº¡å‡¦ç†ã¸
                         if (_targetCharacter.IsDead())
                         {
                             _diedCharacter = _targetCharacter;
                             _phase = Phase.DIE;
                         }
-                        // ƒJƒEƒ“ƒ^[ƒXƒLƒ‹‚ª“o˜^‚³‚ê‚Ä‚¢‚éê‡‚ÍƒJƒEƒ“ƒ^[ˆ—‚Ö
+                        // ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ã‚¹ã‚­ãƒ«ãŒç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼å‡¦ç†ã¸
                         else if (_counterConditions)
                         {
                             StartCounter(_attackCharacter, _targetCharacter);
@@ -170,9 +170,9 @@ namespace Frontier
                     }
                     break;
                 case Phase.WAIT_PARRY_RESULT:
-                    // ƒpƒŠƒBƒCƒxƒ“ƒgŠJn‚Ü‚ÅXV
-                    // UŒ‚‘¤ƒLƒƒƒ‰ƒNƒ^[‚ÌUŒ‚ƒ‚[ƒVƒ‡ƒ“‚©‚çƒpƒŠƒBŠJnƒƒ\ƒbƒh‚ªŒÄ‚Î‚ê‚é‚½‚ßA
-                    // ŠJn‚³‚ê‚È‚¢(parryCtrl.IsActive‚ªfalse)‚Ü‚ÜAUŒ‚XV‚ªs‚í‚ê‚é‚±‚Æ‚Í‘z’èŠO
+                    // ãƒ‘ãƒªã‚£ã‚¤ãƒ™ãƒ³ãƒˆé–‹å§‹ã¾ã§æ›´æ–°
+                    // æ”»æ’ƒå´ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®æ”»æ’ƒãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰ãƒ‘ãƒªã‚£é–‹å§‹ãƒ¡ã‚½ãƒƒãƒ‰ãŒå‘¼ã°ã‚Œã‚‹ãŸã‚ã€
+                    // é–‹å§‹ã•ã‚Œãªã„(parryCtrl.IsActiveãŒfalse)ã¾ã¾ã€æ”»æ’ƒæ›´æ–°ãŒè¡Œã‚ã‚Œã‚‹ã“ã¨ã¯æƒ³å®šå¤–
                     if (_updateAttackerAttack(_departure, _destination))
                     {
                         Debug.Assert(false);
@@ -181,14 +181,14 @@ namespace Frontier
 
                     if (_targetCharacter.ParryResult != SkillParryController.JudgeResult.NONE)
                     {
-                        // ƒpƒŠƒB¸”s‚Ìê‡‚Í’Êí‚ÌUŒ‚ƒtƒF[ƒY‚ÖˆÚs(¸”s‚Ì”íƒ_ƒ[ƒW”{—¦‚ÍParryControler‘¤‚ªƒpƒŠƒB”»’è‚Éˆ—)
+                        // ãƒ‘ãƒªã‚£å¤±æ•—ã®å ´åˆã¯é€šå¸¸ã®æ”»æ’ƒãƒ•ã‚§ãƒ¼ã‚ºã¸ç§»è¡Œ(å¤±æ•—æ™‚ã®è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸å€ç‡ã¯ParryControlerå´ãŒãƒ‘ãƒªã‚£åˆ¤å®šæ™‚ã«å‡¦ç†)
                         if (_targetCharacter.ParryResult == SkillParryController.JudgeResult.FAILED)
                         {
                             _phase = Phase.ATTACK;
                         }
                         else
                         {
-                            // ƒpƒŠƒB—pXV‚ÉØ‚è‘Ö‚¦‚Ü‚·
+                            // ãƒ‘ãƒªã‚£ç”¨æ›´æ–°ã«åˆ‡ã‚Šæ›¿ãˆã¾ã™
                             ToggleParryUpdate(_attackCharacter, _targetCharacter);
 
                             _phase = Phase.EXEC_PARRY;
@@ -198,7 +198,7 @@ namespace Frontier
                 case Phase.EXEC_PARRY:
                     if (_updateTargetAttack(_departure, _destination))
                     {
-                        // ƒJƒƒ‰‘ÎÛ‚ÆƒJƒƒ‰ƒpƒ‰ƒ[ƒ^‚ğ•ÏX
+                        // ã‚«ãƒ¡ãƒ©å¯¾è±¡ã¨ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å¤‰æ›´
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
                         if (_attackCharacter.IsDead())
@@ -208,7 +208,7 @@ namespace Frontier
                         }
                         else
                         {
-                            // ƒ_ƒ[ƒWUI‚ğ”ñ•\¦
+                            // ãƒ€ãƒ¡ãƒ¼ã‚¸UIã‚’éè¡¨ç¤º
                             BattleUISystem.Instance.ToggleDamageUI(false);
 
                             _phase = Phase.WAIT_END;
@@ -218,7 +218,7 @@ namespace Frontier
                 case Phase.COUNTER:
                     if (_updateTargetAttack(_departure, _destination))
                     {
-                        // ƒJƒƒ‰‘ÎÛ‚ÆƒJƒƒ‰ƒpƒ‰ƒ[ƒ^‚ğ•ÏX
+                        // ã‚«ãƒ¡ãƒ©å¯¾è±¡ã¨ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å¤‰æ›´
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
                         if (_attackCharacter.IsDead())
@@ -228,7 +228,7 @@ namespace Frontier
                         }
                         else
                         {
-                            // ƒ_ƒ[ƒWUI‚ğ”ñ•\¦
+                            // ãƒ€ãƒ¡ãƒ¼ã‚¸UIã‚’éè¡¨ç¤º
                             BattleUISystem.Instance.ToggleDamageUI(false);
 
                             _phase = Phase.WAIT_END;
@@ -246,10 +246,10 @@ namespace Frontier
                     {
                         _elapsedTime = 0f;
 
-                        // ƒoƒgƒ‹ƒtƒB[ƒ‹ƒh‚©‚çƒXƒe[ƒWƒtƒB[ƒ‹ƒh‚É‘JˆÚ
+                        // ãƒãƒˆãƒ«ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‹ã‚‰ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«é·ç§»
                         TransitStageField(_attackCharacter, _targetCharacter);
 
-                        // UŒ‚ƒV[ƒPƒ“ƒX—pƒJƒƒ‰‚ğI—¹
+                        // æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ç”¨ã‚«ãƒ¡ãƒ©ã‚’çµ‚äº†
                         var info = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
                         _btlCamCtrl.EndAttackSequenceMode(_attackCharacter);
 
@@ -259,7 +259,7 @@ namespace Frontier
                 case Phase.END:
                     if (_btlCamCtrl.IsFadeEnd())
                     {
-                        // ‘Îí‘Šèİ’è‚ğƒŠƒZƒbƒg
+                        // å¯¾æˆ¦ç›¸æ‰‹è¨­å®šã‚’ãƒªã‚»ãƒƒãƒˆ
                         _attackCharacter.ResetOnEndOfAttackSequence();
                         _targetCharacter.ResetOnEndOfAttackSequence();
 
@@ -272,68 +272,68 @@ namespace Frontier
         }
 
         /// <summary>
-        /// €–SƒLƒƒƒ‰ƒNƒ^[‚ğ•Ô‚µ‚Ü‚·
+        /// æ­»äº¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>€–SƒLƒƒƒ‰ƒNƒ^[</returns>
+        /// <returns>æ­»äº¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</returns>
         public Character GetDiedCharacter() { return _diedCharacter; }
 
 
         /// <summary>
-        /// UŒ‚ƒLƒƒƒ‰‚Æ”íUŒ‚ƒLƒƒƒ‰ŠÔ‚Æ‚ÌUŒ‚ˆ—‚ğÀs‚µ‚Ü‚·
+        /// æ”»æ’ƒã‚­ãƒ£ãƒ©ã¨è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©é–“ã¨ã®æ”»æ’ƒå‡¦ç†ã‚’å®Ÿè¡Œã—ã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="target">”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="target">è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         private void StartAttack(Character attacker, Character target)
         {
             if (attacker.GetBullet() != null) attacker.StartRangedAttackSequence();
             else
             {
                 _departure = attacker.transform.position;
-                _destination = target.transform.position + target.transform.forward;    // ‘ÎÛ‚Ì‘O•û1m‚ğ–Ú•W’n“_‚É‚·‚é
+                _destination = target.transform.position + target.transform.forward;    // å¯¾è±¡ã®å‰æ–¹1mã‚’ç›®æ¨™åœ°ç‚¹ã«ã™ã‚‹
                 attacker.StartClosedAttackSequence();
             }
 
-            // UŒ‚ó‚¯è—p‚Ìİ’è‚ğƒZƒbƒg
+            // æ”»æ’ƒå—ã‘æ‰‹ç”¨ã®è¨­å®šã‚’ã‚»ãƒƒãƒˆ
             target.SetReceiveAttackSetting();
 
-            // ƒ^[ƒQƒbƒg‚ªƒK[ƒhƒXƒLƒ‹g—p‚ÍƒK[ƒhƒ‚[ƒVƒ‡ƒ“‚ğÄ¶
+            // ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã‚¬ãƒ¼ãƒ‰ã‚¹ã‚­ãƒ«ä½¿ç”¨æ™‚ã¯ã‚¬ãƒ¼ãƒ‰ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿ
             if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, true);
         }
 
         /// <summary>
-        /// ”íUŒ‚ƒLƒƒƒ‰‚©‚ç‚ÌƒJƒEƒ“ƒ^[ˆ—‚ğŠJn‚µ‚Ü‚·
+        /// è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‹ã‚‰ã®ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼å‡¦ç†ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="target">”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="target">è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         private void StartCounter(Character attacker, Character target)
         {
-            // ƒ_ƒ[ƒW—\‘ª‚ğƒZƒbƒg
+            // ãƒ€ãƒ¡ãƒ¼ã‚¸äºˆæ¸¬ã‚’ã‚»ãƒƒãƒˆ
             _btlMgr.BtlCharaCdr.ApplyDamageExpect(target, attacker);
 
-            // UŒ‚ƒLƒƒƒ‰‚Æ”íUŒ‚ƒLƒƒƒ‰‚ğ“ü‚ê‘Ö‚¦‚ÄŠJn
+            // æ”»æ’ƒã‚­ãƒ£ãƒ©ã¨è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚’å…¥ã‚Œæ›¿ãˆã¦é–‹å§‹
             StartAttack(target, attacker);
         }
 
         /// <summary>
-        /// UŒ‚ƒLƒƒƒ‰‚Æ”íUŒ‚ƒLƒƒƒ‰ŠÔ‚ÌXVˆ—‚ğƒpƒŠƒB—p‚Ì‚à‚Ì‚ÉØ‚è‘Ö‚¦‚Ü‚·
+        /// æ”»æ’ƒã‚­ãƒ£ãƒ©ã¨è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©é–“ã®æ›´æ–°å‡¦ç†ã‚’ãƒ‘ãƒªã‚£ç”¨ã®ã‚‚ã®ã«åˆ‡ã‚Šæ›¿ãˆã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="target">”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="target">è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         private void ToggleParryUpdate(Character attacker, Character target)
         {
-            // XV—pŠÖ”‚ğØ‚è‘Ö‚¦
+            // æ›´æ–°ç”¨é–¢æ•°ã‚’åˆ‡ã‚Šæ›¿ãˆ
             _updateAttackerAttack   = _attackCharacter.UpdateParryOnAttacker;
             _updateTargetAttack     = _targetCharacter.UpdateParryOnTargeter;
         }
 
         /// <summary>
-        /// í“¬ƒtƒB[ƒ‹ƒh‚É‘JˆÚ‚µ‚Ü‚·
+        /// æˆ¦é—˜ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«é·ç§»ã—ã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="target">”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="target">è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         private void TransitBattleField(Character attacker, Character target)
         {
-            // ƒƒbƒVƒ…‹y‚Ñattaker‚ÆtargetˆÈŠO‚ÌƒLƒƒƒ‰ƒNƒ^[‚ğ”ñ•\¦‚É
+            // ãƒ¡ãƒƒã‚·ãƒ¥åŠã³attakerã¨targetä»¥å¤–ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’éè¡¨ç¤ºã«
             _stageCtrl.ToggleMeshDisplay(false);
 
             foreach (var player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
@@ -352,10 +352,10 @@ namespace Frontier
                 }
             }
 
-            // ƒLƒƒƒ‰ƒNƒ^[‚ğƒXƒe[ƒW‚Ì’†SˆÊ’u‚©‚ç‚»‚ê‚¼‚ê—£‚ê‚½êŠ‚É—§‚½‚¹‚é
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’ã‚¹ãƒ†ãƒ¼ã‚¸ã®ä¸­å¿ƒä½ç½®ã‹ã‚‰ãã‚Œãã‚Œé›¢ã‚ŒãŸå ´æ‰€ã«ç«‹ãŸã›ã‚‹
             var centralPos = _stageCtrl.transform.position;
 
-            // –¡•û‚Æ“G‘Î‘¤‚Å•ª•Ê
+            // å‘³æ–¹ã¨æ•µå¯¾å´ã§åˆ†åˆ¥
             Character ally = null;
             Character opponent = null;
             if (attacker.IsPlayer())
@@ -382,25 +382,25 @@ namespace Frontier
                 }
             }
 
-            // –¡•û‚Í‰œsè‘O‘¤A“G‚Í‰œs‰œ‘¤‚Ì—§‚¿ˆÊ’u‚Æ‚·‚é
+            // å‘³æ–¹ã¯å¥¥è¡Œæ‰‹å‰å´ã€æ•µã¯å¥¥è¡Œå¥¥å´ã®ç«‹ã¡ä½ç½®ã¨ã™ã‚‹
             Transform allyTransform     = ally.transform;
             Transform opponentTransform = opponent.transform;
             allyTransform.position      = centralPos + new Vector3(0f, 0f, -_stageCtrl.BattlePosLengthFromCentral);
             opponentTransform.position  = centralPos + new Vector3(0f, 0f, _stageCtrl.BattlePosLengthFromCentral);
             allyTransform.rotation      = Quaternion.LookRotation(centralPos - allyTransform.position);
             opponentTransform.rotation  = Quaternion.LookRotation(centralPos - opponentTransform.position);
-            // ƒJƒƒ‰ƒpƒ‰ƒ[ƒ^‚ğí“¬ƒtƒB[ƒ‹ƒh—p‚Éİ’è
+            // ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æˆ¦é—˜ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ç”¨ã«è¨­å®š
             _btlCamCtrl.AdaptBattleFieldSetting();
         }
 
         /// <summary>
-        /// ƒXƒe[ƒWƒtƒB[ƒ‹ƒh‚É‘JˆÚ‚µ‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«é·ç§»ã—ã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="target">”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="target">è¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         private void TransitStageField(Character attacker, Character target)
         {
-            // ”ñ•\¦‚É‚µ‚Ä‚¢‚½‚à‚Ì‚ğ•\¦
+            // éè¡¨ç¤ºã«ã—ã¦ã„ãŸã‚‚ã®ã‚’è¡¨ç¤º
             _stageCtrl.ToggleMeshDisplay(true);
 
             foreach (var player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
@@ -413,7 +413,7 @@ namespace Frontier
                 enemy.gameObject.SetActive(true);
             }
 
-            // ƒLƒƒƒ‰ƒNƒ^[‚ğƒXƒe[ƒW‚Ì’†SˆÊ’u‚©‚ç‚»‚ê‚¼‚ê—£‚ê‚½êŠ‚É—§‚½‚¹‚é
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’ã‚¹ãƒ†ãƒ¼ã‚¸ã®ä¸­å¿ƒä½ç½®ã‹ã‚‰ãã‚Œãã‚Œé›¢ã‚ŒãŸå ´æ‰€ã«ç«‹ãŸã›ã‚‹
             var info = _stageCtrl.GetGridInfo(attacker.tmpParam.gridIndex);
             _attackCharacter.transform.position = info.charaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;

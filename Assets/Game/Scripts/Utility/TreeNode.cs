@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,9 +14,9 @@ public class TreeNode<T> where T : TreeNode<T>
     }
 
     /// <summary>
-    /// �q��ݒ肵�܂�
+    /// 子を設定します
     /// </summary>
-    /// <param name="child">�ݒ肷��q</param>
+    /// <param name="child">設定する子</param>
     public void AddChild(T child)
     {
         Children.Add(child);

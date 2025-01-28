@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -23,22 +23,22 @@ namespace Frontier
 
         void Awake()
         {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilder‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ª¶¬‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBInject‚Ìİ’è‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B");
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãŒç”Ÿæˆã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚Injectã®è¨­å®šã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚");
 
             _commandUIBaseRectTransform     = gameObject.GetComponent<RectTransform>();
             _cmdTextVerticalLayout          = gameObject.GetComponent<VerticalLayoutGroup>();
             TextMeshProUGUI[] commandNames  = gameObject.GetComponentsInChildren<TextMeshProUGUI>();
 
-            // ƒRƒ}ƒ“ƒh•¶š—ñ‚ğ‰Šú‰»
+            // ã‚³ãƒãƒ³ãƒ‰æ–‡å­—åˆ—ã‚’åˆæœŸåŒ–
             InitCommandStrings();
 
-            // ‹N“®’¼Œã‚ÉActive‚ğOff‚É
+            // èµ·å‹•ç›´å¾Œã«Activeã‚’Offã«
             this.gameObject.SetActive(false);
         }
 
         /// <summary>
-        /// ƒRƒ}ƒ“ƒh‚Ì•¶š—ñ‚ğ‰Šú‰»‚µ‚Ü‚·
-        /// MEMO : ƒRƒ}ƒ“ƒh‚ªV‚µ‚­‘‚¦‚é“x‚É•¶š—ñ‚ğ’Ç‰Á‚µ‚Ä‚­‚¾‚³‚¢
+        /// ã‚³ãƒãƒ³ãƒ‰ã®æ–‡å­—åˆ—ã‚’åˆæœŸåŒ–ã—ã¾ã™
+        /// MEMO : ã‚³ãƒãƒ³ãƒ‰ãŒæ–°ã—ãå¢—ãˆã‚‹åº¦ã«æ–‡å­—åˆ—ã‚’è¿½åŠ ã—ã¦ãã ã•ã„
         /// </summary>
         void InitCommandStrings()
         {
@@ -59,45 +59,45 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒvƒŒƒCƒ„[ƒRƒ}ƒ“ƒh‚ÌXVˆ—‚ğs‚¢‚Ü‚·
+        /// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚³ãƒãƒ³ãƒ‰ã®æ›´æ–°å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
         void UpdateSelectCommand()
         {
-            // ˆê“x‘S‚Ä‚ğ”’F‚Éİ’è
+            // ä¸€åº¦å…¨ã¦ã‚’ç™½è‰²ã«è¨­å®š
             foreach (var text in _commandTexts)
             {
                 text.color = Color.white;
             }
 
-            // ‘I‘ğ€–Ú‚ğÔF‚Éİ’è
+            // é¸æŠé …ç›®ã‚’èµ¤è‰²ã«è¨­å®š
             _commandTexts[_PLSelectScript.SelectCommandIndex].color = Color.red;
         }
 
         /// <summary>
-        /// ƒvƒŒƒCƒ„[ƒRƒ}ƒ“ƒh‚Ì‘I‘ğUI‚Ì‰º’n‚Æ‚È‚éRectTransform‚Ì‘å‚«‚³‚ğXV‚µ‚Ü‚·
+        /// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚³ãƒãƒ³ãƒ‰ã®é¸æŠUIã®ä¸‹åœ°ã¨ãªã‚‹RectTransformã®å¤§ãã•ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="PLCommands">ƒvƒŒƒCƒ„[‚ÌƒRƒ}ƒ“ƒh\‘¢‘Ì”z—ñ</param>
+        /// <param name="PLCommands">ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚³ãƒãƒ³ãƒ‰æ§‹é€ ä½“é…åˆ—</param>
         void ResizeUIBaseRectTransform( float fontSize, int executableCmdNum )
         {
-            float marginSize      = _cmdTextVerticalLayout.padding.top * 2f;  // ã‰º‚Ìƒ}[ƒWƒ“ƒTƒCƒY‚ª‘¶İ‚·‚é‚½‚ß2”{‚Ì’l
+            float marginSize      = _cmdTextVerticalLayout.padding.top * 2f;  // ä¸Šä¸‹ã®ãƒãƒ¼ã‚¸ãƒ³ã‚µã‚¤ã‚ºãŒå­˜åœ¨ã™ã‚‹ãŸã‚2å€ã®å€¤
             float intervalSize    = _cmdTextVerticalLayout.spacing;
 
             _commandUIBaseRectTransform.sizeDelta = new Vector2(_commandUIBaseRectTransform.sizeDelta.x, marginSize + (fontSize + intervalSize ) * executableCmdNum - intervalSize);
         }
 
         /// <summary>
-        /// ƒvƒŒƒCƒ„[ƒRƒ}ƒ“ƒh‚ÌƒXƒNƒŠƒvƒg‚ğ“o˜^‚µ‚Ü‚·
+        /// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚³ãƒãƒ³ãƒ‰ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="script">ƒvƒŒƒCƒ„[ƒRƒ}ƒ“ƒh‚ÌƒXƒNƒŠƒvƒg</param>
+        /// <param name="script">ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚³ãƒãƒ³ãƒ‰ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆ</param>
         public void RegistPLCommandScript(Frontier.PLSelectCommandState script)
         {
             _PLSelectScript = script;
         }
 
         /// <summary>
-        /// Às‰Â”\‚ÈƒRƒ}ƒ“ƒh‚ğƒRƒ}ƒ“ƒhƒŠƒXƒgUI‚Éİ’è‚µ‚Ü‚·
+        /// å®Ÿè¡Œå¯èƒ½ãªã‚³ãƒãƒ³ãƒ‰ã‚’ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆUIã«è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="executableCommands">Às‰Â”\‚ÈƒRƒ}ƒ“ƒhƒŠƒXƒg</param>
+        /// <param name="executableCommands">å®Ÿè¡Œå¯èƒ½ãªã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆ</param>
         public void SetExecutableCommandList( in List<Character.Command.COMMAND_TAG> executableCommands )
         {
             float fontSize = 0;
@@ -108,7 +108,7 @@ namespace Frontier
             }
             _commandTexts.Clear();
 
-            // Às‰Â”\‚ÈƒRƒ}ƒ“ƒh‚Ì•¶š—ñ‚ğƒŠƒXƒg‚É’Ç‰Á‚µA‚»‚ÌƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚ğq‚Æ‚µ‚Ä“o˜^
+            // å®Ÿè¡Œå¯èƒ½ãªã‚³ãƒãƒ³ãƒ‰ã®æ–‡å­—åˆ—ã‚’ãƒªã‚¹ãƒˆã«è¿½åŠ ã—ã€ãã®ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å­ã¨ã—ã¦ç™»éŒ²
             for (int i = 0; i < executableCommands.Count; ++i)
             {
                 TextMeshProUGUI commandString = _hierarchyBld.CreateComponentAndOrganize<TextMeshProUGUI>(true);
@@ -118,7 +118,7 @@ namespace Frontier
                 fontSize = commandString.fontSize;
             }
 
-            // ‘I‘ğ‰Â”\‚ÈƒRƒ}ƒ“ƒh”‚ğ—p‚¢‚ÄUI‚Ì‰º’n‚Ì‘å‚«‚³‚ğ•ÏX
+            // é¸æŠå¯èƒ½ãªã‚³ãƒãƒ³ãƒ‰æ•°ã‚’ç”¨ã„ã¦UIã®ä¸‹åœ°ã®å¤§ãã•ã‚’å¤‰æ›´
             ResizeUIBaseRectTransform(fontSize, executableCommands.Count);
         }
     }

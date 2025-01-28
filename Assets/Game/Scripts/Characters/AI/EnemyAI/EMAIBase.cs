@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +9,7 @@ namespace Frontier
     public class EMAIBase : BaseAI
     {
         /// <summary>
-        /// ©g‚ÌUŒ‚(ˆÚ“®)‰Â”\”ÍˆÍ“à‚É‘¶İ‚·‚éUŒ‚‘ÎÛƒLƒƒƒ‰ƒNƒ^[‚Ìî•ñ‚Å‚·
+        /// è‡ªèº«ã®æ”»æ’ƒ(ç§»å‹•)å¯èƒ½ç¯„å›²å†…ã«å­˜åœ¨ã™ã‚‹æ”»æ’ƒå¯¾è±¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®æƒ…å ±ã§ã™
         /// </summary>
         public struct TargetCandidateInfo
         {
@@ -19,17 +19,17 @@ namespace Frontier
 
         protected BattleManager _btlMgr;
         protected StageController _stageCtrl;
-        // Šù‚ÉˆÚ“®‘ÎÛ‚âUŒ‚‘ÎÛ‚ğŒˆ’è‚µ‚Ä‚¢‚é‚©
+        // æ—¢ã«ç§»å‹•å¯¾è±¡ã‚„æ”»æ’ƒå¯¾è±¡ã‚’æ±ºå®šã—ã¦ã„ã‚‹ã‹
         protected bool _isDetermined = false;
-        // ˆÚ“®–Ú•WƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l
+        // ç§»å‹•ç›®æ¨™ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤
         protected int _destinationGridIndex = -1;
-        // UŒ‚‘ÎÛ‚ÌƒLƒƒƒ‰ƒNƒ^[‚ÌƒCƒ“ƒfƒbƒNƒX’l
+        // æ”»æ’ƒå¯¾è±¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤
         protected Character _targetCharacter = null;
-        // ŠeƒOƒŠƒbƒh‚Ì•]‰¿’l
+        // å„ã‚°ãƒªãƒƒãƒ‰ã®è©•ä¾¡å€¤
         protected float[] _gridEvaluationValues = null;
-        // UŒ‚(ˆÚ“®)‰Â”\”ÍˆÍ“à‚É‘¶İ‚·‚éUŒ‚‘ÎÛƒLƒƒƒ‰ƒNƒ^[
+        // æ”»æ’ƒ(ç§»å‹•)å¯èƒ½ç¯„å›²å†…ã«å­˜åœ¨ã™ã‚‹æ”»æ’ƒå¯¾è±¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼
         protected List<TargetCandidateInfo> _targetChandidateInfos = null;
-        // isŒo˜H
+        // é€²è¡ŒçµŒè·¯
         protected List<(int routeIndex, int routeCost)> _suggestedMoveRoute;
 
         virtual protected float ATTACKABLE_TARGET_VALUE { get; } = 0;
@@ -44,7 +44,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         override public void Init()
         {
@@ -53,35 +53,35 @@ namespace Frontier
         }
 
         /// <summary>
-        /// –Ú“I’n‚ÌƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚µ‚Ü‚·
+        /// ç›®çš„åœ°ã®ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>–Ú“I’n‚ÌƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX</returns>
+        /// <returns>ç›®çš„åœ°ã®ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</returns>
         override public int GetDestinationGridIndex()
         {
             return _destinationGridIndex;
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛ‚ÌƒLƒƒƒ‰ƒNƒ^[‚ğæ“¾‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>UŒ‚‘ÎÛ‚ÌƒLƒƒƒ‰ƒNƒ^[</returns>
+        /// <returns>æ”»æ’ƒå¯¾è±¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</returns>
         override public Character GetTargetCharacter()
         {
             return _targetCharacter;
         }
 
         /// <summary>
-        /// is—\’è‚ÌˆÚ“®ƒ‹[ƒg‚ğæ“¾‚µ‚Ü‚·
+        /// é€²è¡Œäºˆå®šã®ç§»å‹•ãƒ«ãƒ¼ãƒˆã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>is—\’è‚ÌˆÚ“®ƒ‹[ƒgî•ñ</returns>
+        /// <returns>é€²è¡Œäºˆå®šã®ç§»å‹•ãƒ«ãƒ¼ãƒˆæƒ…å ±</returns>
         override public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
         {
             return _suggestedMoveRoute;
         }
 
         /// <summary>
-        /// ˆÚ“®–Ú•W‚ÆUŒ‚‘ÎÛƒLƒƒƒ‰ƒNƒ^[‚ğƒŠƒZƒbƒg‚µ‚Ü‚·
-        /// TODO : Äs“®ƒXƒLƒ‹‚È‚Ç‚ğÀ‘•‚·‚éê‡‚ÍA‘ÎÛ‚ÉÄs“®‚ğ“K‰‚µ‚½Û‚É‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢
+        /// ç§»å‹•ç›®æ¨™ã¨æ”»æ’ƒå¯¾è±¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™
+        /// TODO : å†è¡Œå‹•ã‚¹ã‚­ãƒ«ãªã©ã‚’å®Ÿè£…ã™ã‚‹å ´åˆã¯ã€å¯¾è±¡ã«å†è¡Œå‹•ã‚’é©å¿œã—ãŸéš›ã«ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ã¦ãã ã•ã„
         /// </summary>
         override public void ResetDestinationAndTarget()
         {
@@ -91,69 +91,69 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Šù‚ÉˆÚ“®‘ÎÛ‚âUŒ‚‘ÎÛ‚ğŒˆ’è‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚Ìî•ñ‚ğæ“¾‚µ‚Ü‚·
+        /// æ—¢ã«ç§»å‹•å¯¾è±¡ã‚„æ”»æ’ƒå¯¾è±¡ã‚’æ±ºå®šã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã®æƒ…å ±ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>Œˆ’è‚Ì—L–³</returns>
+        /// <returns>æ±ºå®šã®æœ‰ç„¡</returns>
         override public bool IsDetermined() { return _isDetermined; }
 
         /// <summary>
-        /// ˆÚ“®–Ú•W‚ª—LŒø‚©‚ğ”»’è‚µ‚Ü‚·
+        /// ç§»å‹•ç›®æ¨™ãŒæœ‰åŠ¹ã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <returns>—LŒø‚©”Û‚©</returns>
+        /// <returns>æœ‰åŠ¹ã‹å¦ã‹</returns>
         public bool IsValidDestination()
         {
             return 0 <= _destinationGridIndex;
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛ‚ª—LŒø‚©‚ğ”»’è‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡ãŒæœ‰åŠ¹ã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <returns>—LŒø‚©”Û‚©</returns>
+        /// <returns>æœ‰åŠ¹ã‹å¦ã‹</returns>
         public bool IsValidTarget()
         {
             return _targetCharacter != null;
         }
 
         /// <summary>
-        /// UŒ‚‘ÎÛƒLƒƒƒ‰ƒNƒ^[ƒCƒ“ƒfƒbƒNƒX’l‚ª—LŒø‚©‚ğ”»’è‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯¾è±¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ãŒæœ‰åŠ¹ã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <returns>—LŒø‚©”Û‚©</returns>
+        /// <returns>æœ‰åŠ¹ã‹å¦ã‹</returns>
         public bool IsValidTargetCharacterIndex()
         {
             return (_targetCharacter != null && _targetCharacter.param.characterTag != Character.CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>
-        /// ‘ÎÛ‚ÌƒLƒƒƒ‰ƒNƒ^[‚ğUŒ‚‚µ‚½Û‚Ì•]‰¿’l‚ğŒvZ‚µ‚Ü‚·
+        /// å¯¾è±¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’æ”»æ’ƒã—ãŸéš›ã®è©•ä¾¡å€¤ã‚’è¨ˆç®—ã—ã¾ã™
         /// </summary>
-        /// <param name="mySelf">©g</param>
-        /// <param name="TargetCharacter">‘ÎÛ‚ÌƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <returns>•]‰¿’l</returns>
+        /// <param name="mySelf">è‡ªèº«</param>
+        /// <param name="TargetCharacter">å¯¾è±¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <returns>è©•ä¾¡å€¤</returns>
         protected float CalcurateEvaluateAttack(in Character.Parameter selfParam, in Character.Parameter targetParam)
         {
             float evaluateValue = 0f;
 
-            // —^ƒ_ƒ[ƒW‚ğ‚»‚Ì‚Ü‚Ü•]‰¿’l‚É‚µ‚Äg—p
+            // ä¸ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ãã®ã¾ã¾è©•ä¾¡å€¤ã«ã—ã¦ä½¿ç”¨
             evaluateValue = Mathf.Max(0, selfParam.Atk - targetParam.Def);
 
-            // “|‚·‚±‚Æ‚ªo—ˆ‚éê‡‚Íƒ{[ƒiƒX‚ğ‰ÁZ
+            // å€’ã™ã“ã¨ãŒå‡ºæ¥ã‚‹å ´åˆã¯ãƒœãƒ¼ãƒŠã‚¹ã‚’åŠ ç®—
             if (targetParam.CurHP <= evaluateValue) evaluateValue += ENABLE_DEFEAT_VALUE;
 
             return evaluateValue;
         }
 
         /// <summary>
-        /// w’èƒCƒ“ƒfƒbƒNƒX‚Ì\š•ûŒü‚É‚¢‚é“G‘ÎƒLƒƒƒ‰ƒNƒ^[‚ÌƒLƒƒƒ‰ƒNƒ^[ƒCƒ“ƒfƒbƒNƒX‚ğ’Šo‚µ‚Ü‚·
+        /// æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®åå­—æ–¹å‘ã«ã„ã‚‹æ•µå¯¾ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’æŠ½å‡ºã—ã¾ã™
         /// </summary>
-        /// <param name="baseIndex">w’èƒCƒ“ƒfƒbƒNƒX(\š•ûŒü‚Ì’†SƒCƒ“ƒfƒbƒNƒX)</param>
-        /// <param name="opponentCharaIndexs">”²‚«o‚µ‚Ég—p‚·‚éƒŠƒXƒg</param>
+        /// <param name="baseIndex">æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹(åå­—æ–¹å‘ã®ä¸­å¿ƒã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹)</param>
+        /// <param name="opponentCharaIndexs">æŠœãå‡ºã—ã«ä½¿ç”¨ã™ã‚‹ãƒªã‚¹ãƒˆ</param>
         protected void ExtractAttackabkeOpponentIndexs(int baseIndex, out List<CharacterHashtable.Key> opponentCharaIndexs)
         {
             opponentCharaIndexs = new List<CharacterHashtable.Key>(4);
 ;
             (int GridRowNum, int GridColumnNum) = _stageCtrl.GetGridNumsXZ();
 
-            // \š•ûŒü‚Ì”»’èŠÖ”‚ÆƒCƒ“ƒfƒbƒNƒX‚ğƒ^ƒvƒ‹‚É‹l‚ß‚Ş
+            // åå­—æ–¹å‘ã®åˆ¤å®šé–¢æ•°ã¨ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ã‚¿ãƒ—ãƒ«ã«è©°ã‚è¾¼ã‚€
             (Func<bool> lambda, int index)[] tuples = new (Func<bool>, int)[]
             {
             (() => baseIndex % GridRowNum != 0,                       baseIndex - 1),
@@ -176,10 +176,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‚¢‚¸‚ê‚©‚Ìƒ^[ƒQƒbƒg‚ÉUŒ‚‰Â”\‚ÈƒOƒŠƒbƒh‚Ì•]‰¿’l‚ğ•Ô‚µ‚Ü‚·
+        /// ã„ãšã‚Œã‹ã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã«æ”»æ’ƒå¯èƒ½ãªã‚°ãƒªãƒƒãƒ‰ã®è©•ä¾¡å€¤ã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <param name="info">w’èƒOƒŠƒbƒhî•ñ</param>
-        /// <returns>•]‰¿’l</returns>
+        /// <param name="info">æŒ‡å®šã‚°ãƒªãƒƒãƒ‰æƒ…å ±</param>
+        /// <returns>è©•ä¾¡å€¤</returns>
         virtual protected float GetEvaluateEnableTargetAttackBase(in Stage.GridInfo info) { return ATTACKABLE_TARGET_VALUE; }
 
         virtual protected float GetEvaluateEnableDefeat(in Stage.GridInfo info) { return ENABLE_DEFEAT_VALUE; }

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,7 +12,7 @@ public class DamageUI : MonoBehaviour
 
     void Update()
     {
-        // ƒLƒƒƒ‰ƒNƒ^[‚ÌÀ•W‚©‚çUIƒJƒƒ‰(ƒXƒNƒŠ[ƒ“)À•W‚É•ÏŠ·
+        // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®åº§æ¨™ã‹ã‚‰UIã‚«ãƒ¡ãƒ©(ã‚¹ã‚¯ãƒªãƒ¼ãƒ³)åº§æ¨™ã«å¤‰æ›
         var pos         = Vector2.zero;
         var worldCamera = Camera.main;
         var screenPos   = RectTransformUtility.WorldToScreenPoint(worldCamera, CharacterTransform.position);
@@ -21,10 +21,10 @@ public class DamageUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ‰Šú‰»‚µ‚Ü‚·
+    /// åˆæœŸåŒ–ã—ã¾ã™
     /// </summary>
-    /// <param name="rect">BattleUISystem‚ÌRectTransform</param>
-    /// <param name="uiCamera">BattleUISystem‚É—p‚¢‚éUI—pƒJƒƒ‰</param>
+    /// <param name="rect">BattleUISystemã®RectTransform</param>
+    /// <param name="uiCamera">BattleUISystemã«ç”¨ã„ã‚‹UIç”¨ã‚«ãƒ¡ãƒ©</param>
     public void Init( RectTransform rect, Camera uiCamera )
     {
         _btlUiRectTransform = rect;

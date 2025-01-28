@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +6,7 @@ namespace Frontier
 {
 
     /// <summary>
-    /// ŠeƒXƒLƒ‹‚ÌÀs“à—e‚ÌŠÖ”W‡‚Å‚·
+    /// å„ã‚¹ã‚­ãƒ«ã®å®Ÿè¡Œå†…å®¹ã®é–¢æ•°é›†åˆã§ã™
     /// </summary>
     public static class SkillsData
     {
@@ -51,10 +51,10 @@ namespace Frontier
         public static Data[] data = new Data[(int)ID.SKILL_NUM];
 
         /// <summary>
-        /// ƒK[ƒhƒXƒLƒ‹‚ÌÀs“à—e‚Å‚·
+        /// ã‚¬ãƒ¼ãƒ‰ã‚¹ã‚­ãƒ«ã®å®Ÿè¡Œå†…å®¹ã§ã™
         /// </summary>
-        /// <param name="modifiedParam">ƒXƒLƒ‹g—pƒLƒƒƒ‰‚ÌƒoƒtEƒfƒoƒt—pƒpƒ‰ƒ[ƒ^</param>
-        /// <param name="param">ƒXƒLƒ‹g—pƒLƒƒƒ‰‚Ìƒpƒ‰ƒ[ƒ^</param>
+        /// <param name="modifiedParam">ã‚¹ã‚­ãƒ«ä½¿ç”¨ã‚­ãƒ£ãƒ©ã®ãƒãƒ•ãƒ»ãƒ‡ãƒãƒ•ç”¨ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
+        /// <param name="param">ã‚¹ã‚­ãƒ«ä½¿ç”¨ã‚­ãƒ£ãƒ©ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
         public static void ExecGuard(ref Character.ModifiedParameter modifiedParam, ref Character.Parameter param)
         {
             modifiedParam.Def = (int)Mathf.Floor(param.Def * 0.5f);

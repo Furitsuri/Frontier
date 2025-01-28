@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Xsl;
@@ -29,7 +29,7 @@ namespace Frontier
         {
             base.Init();
 
-            // Œ»İ‘I‘ğ’†‚ÌƒLƒƒƒ‰ƒNƒ^[î•ñ‚ğæ“¾‚µ‚ÄˆÚ“®”ÍˆÍ‚ğ•\¦
+            // ç¾åœ¨é¸æŠä¸­ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼æƒ…å ±ã‚’å–å¾—ã—ã¦ç§»å‹•ç¯„å›²ã‚’è¡¨ç¤º
             _enemy = _btlMgr.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_enemy != null);
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
@@ -38,31 +38,31 @@ namespace Frontier
 
             _movePathList = _enemy.GetAi().GetProposedMoveRoute();
 
-            // ˆÚ“®–Ú•W’n“_‚ªAŒ»İ’n“_‚Å‚ ‚Á‚½ê‡‚Í‘¦I—¹
+            // ç§»å‹•ç›®æ¨™åœ°ç‚¹ãŒã€ç¾åœ¨åœ°ç‚¹ã§ã‚ã£ãŸå ´åˆã¯å³æ™‚çµ‚äº†
             if (_movePathList.Count <= 0)
             {
                 _Phase = EMMovePhase.EM_MOVE_END;
             }
-            // ˆÚ“®‘Oˆ—
+            // ç§»å‹•å‰å‡¦ç†
             else
             {
-                // Enemy‚ğ_movePathList‚Ì‡‚ÉˆÚ“®‚³‚¹‚é
+                // Enemyã‚’_movePathListã®é †ã«ç§»å‹•ã•ã›ã‚‹
                 _moveGridPos = new List<Vector3>(_movePathList.Count);
                 for (int i = 0; i < _movePathList.Count; ++i)
                 {
-                    // ƒpƒX‚ÌƒCƒ“ƒfƒbƒNƒX‚©‚çƒOƒŠƒbƒhÀ•W‚ğ“¾‚é
+                    // ãƒ‘ã‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‹ã‚‰ã‚°ãƒªãƒƒãƒ‰åº§æ¨™ã‚’å¾—ã‚‹
                     _moveGridPos.Add(_stageCtrl.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
                 }
                 _movingIndex = 0;
                 _moveWaitTimer = 0f;
 
-                // ˆ—ŒyŒ¸‚Ì‚½‚ßtranform‚ğƒLƒƒƒbƒVƒ…
+                // å‡¦ç†è»½æ¸›ã®ãŸã‚tranformã‚’ã‚­ãƒ£ãƒƒã‚·ãƒ¥
                 _EMTransform = _enemy.transform;
-                // ˆÚ“®ƒAƒjƒ[ƒVƒ‡ƒ“ŠJn
+                // ç§»å‹•ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
                 _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
-                // ƒOƒŠƒbƒhî•ñXV
+                // ã‚°ãƒªãƒƒãƒ‰æƒ…å ±æ›´æ–°
                 _enemy.tmpParam.gridIndex = _enemy.GetAi().GetDestinationGridIndex();
-                // ‘I‘ğƒOƒŠƒbƒh‚ğ•\¦
+                // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’è¡¨ç¤º
                 _stageCtrl.SetGridCursorActive(true);
 
                 _Phase = EMMovePhase.EM_MOVE_WAIT;
@@ -77,7 +77,7 @@ namespace Frontier
                     _moveWaitTimer += Time.deltaTime;
                     if (Constants.ENEMY_SHOW_MOVE_RANGE_TIME <= _moveWaitTimer)
                     {
-                        // ‘I‘ğƒOƒŠƒbƒh‚ğˆê”ñ•\¦
+                        // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’ä¸€æ™‚éè¡¨ç¤º
                         _stageCtrl.SetGridCursorActive(false);
 
                         _Phase = EMMovePhase.EM_MOVE_EXECUTE;
@@ -103,10 +103,10 @@ namespace Frontier
                     }
                     break;
                 case EMMovePhase.EM_MOVE_END:
-                    // ˆÚ“®‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚ÌˆÚ“®ƒRƒ}ƒ“ƒh‚ğ‘I‘ğ•s‰Â‚É‚·‚é
+                    // ç§»å‹•ã—ãŸã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç§»å‹•ã‚³ãƒãƒ³ãƒ‰ã‚’é¸æŠä¸å¯ã«ã™ã‚‹
                     _enemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
 
-                    // ƒRƒ}ƒ“ƒh‘I‘ğ‚É–ß‚é
+                    // ã‚³ãƒãƒ³ãƒ‰é¸æŠã«æˆ»ã‚‹
                     Back();
 
                     return true;
@@ -118,16 +118,16 @@ namespace Frontier
 
         public override void Exit()
         {
-            // “G‚ÌˆÊ’u‚É‘I‘ğƒOƒŠƒbƒh‚ğ‡‚í‚¹‚é
+            // æ•µã®ä½ç½®ã«é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’åˆã‚ã›ã‚‹
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_enemy);
 
-            // ‘I‘ğƒOƒŠƒbƒh‚ğ•\¦
+            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’è¡¨ç¤º
             _stageCtrl.SetGridCursorActive(true);
 
-            // ƒXƒe[ƒWƒOƒŠƒbƒhã‚ÌƒLƒƒƒ‰î•ñ‚ğXV
+            // ã‚¹ãƒ†ãƒ¼ã‚¸ã‚°ãƒªãƒƒãƒ‰ä¸Šã®ã‚­ãƒ£ãƒ©æƒ…å ±ã‚’æ›´æ–°
             _stageCtrl.UpdateGridInfo();
 
-            // ƒOƒŠƒbƒhó‘Ô‚Ì•`‰æ‚ğƒNƒŠƒA
+            // ã‚°ãƒªãƒƒãƒ‰çŠ¶æ…‹ã®æç”»ã‚’ã‚¯ãƒªã‚¢
             _stageCtrl.ClearGridMeshDraw();
 
             base.Exit();

@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 
 /// <summary>
-/// ���̃N���X���C���X�^���X�Ɏ��I�u�W�F�N�g�̃^�C���X�P�[�����Ǘ����܂�
+/// このクラスをインスタンスに持つオブジェクトのタイムスケールを管理します
 /// </summary>
 public class TimeScale
 {

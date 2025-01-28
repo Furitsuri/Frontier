@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,7 +12,7 @@ public class Bullet : MonoBehaviour
     protected float _gridLength;
     protected bool _isHit;
 
-    // ’e‚ª1ƒOƒŠƒbƒh‚ ‚½‚è‚ğˆÚ“®‚·‚éŠÔ
+    // å¼¾ãŒ1ã‚°ãƒªãƒƒãƒ‰ã‚ãŸã‚Šã‚’ç§»å‹•ã™ã‚‹æ™‚é–“
     [SerializeField]
     protected float _flightTimePerGrid;
 
@@ -28,8 +28,8 @@ public class Bullet : MonoBehaviour
     }
 
     /// <summary>
-    /// Awake‚ÌÛ‚ÉŒÄ‚Î‚ê‚éŠÖ”‚Å‚·
-    /// Œp³æ‚Åˆ—‚ğ‰Á‚¦‚Ü‚·
+    /// Awakeã®éš›ã«å‘¼ã°ã‚Œã‚‹é–¢æ•°ã§ã™
+    /// ç¶™æ‰¿å…ˆã§å‡¦ç†ã‚’åŠ ãˆã¾ã™
     /// </summary>
     virtual protected void OnAwake()
     {
@@ -41,16 +41,16 @@ public class Bullet : MonoBehaviour
     }
 
     /// <summary>
-    /// Start‚ÌÛ‚ÉŒÄ‚Î‚ê‚éŠÖ”‚Å‚·
-    /// Œp³æ‚Åˆ—‚ğ‰Á‚¦‚Ü‚·
+    /// Startã®éš›ã«å‘¼ã°ã‚Œã‚‹é–¢æ•°ã§ã™
+    /// ç¶™æ‰¿å…ˆã§å‡¦ç†ã‚’åŠ ãˆã¾ã™
     /// </summary>
     virtual protected void OnStart()
     {
     }
 
     /// <summary>
-    /// ˆÊ’uXV—p‚ÌƒRƒ‹[ƒ`ƒ“‚Å‚·
-    /// Bullet‚ğActive‚É‚µ‚½Œã‚ÉŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢
+    /// ä½ç½®æ›´æ–°ç”¨ã®ã‚³ãƒ«ãƒ¼ãƒãƒ³ã§ã™
+    /// Bulletã‚’Activeã«ã—ãŸå¾Œã«å‘¼ã³å‡ºã—ã¦ãã ã•ã„
     /// </summary>
     /// <returns></returns>
     virtual public IEnumerator UpdateTransformCoroutine( UnityAction callback )
@@ -64,9 +64,9 @@ public class Bullet : MonoBehaviour
     }
 
     /// <summary>
-    /// ”­ËÀ•W‚ğİ’è‚µ‚Ü‚·
+    /// ç™ºå°„åº§æ¨™ã‚’è¨­å®šã—ã¾ã™
     /// </summary>
-    /// <param name="point">”­ËÀ•W</param>
+    /// <param name="point">ç™ºå°„åº§æ¨™</param>
     public void SetFiringPoint(in Vector3 point)
     {
         _firingPoint = point;
@@ -74,26 +74,26 @@ public class Bullet : MonoBehaviour
     }
 
     /// <summary>
-    /// ËŒ‚–Ú•WÀ•W‚ğŒˆ’è‚µ‚Ü‚·
+    /// å°„æ’ƒç›®æ¨™åº§æ¨™ã‚’æ±ºå®šã—ã¾ã™
     /// </summary>
-    /// <param name="coordinate">–Ú•WÀ•W</param>
+    /// <param name="coordinate">ç›®æ¨™åº§æ¨™</param>
     public void SetTargetCoordinate( in Vector3 coordinate )
     {
         _targetCoordinate = coordinate;
     }
 
     /// <summary>
-    /// ËŒ‚’n“_‚©‚ç–Ú•W’n“_‚Ü‚Å‚ÌƒOƒŠƒbƒh’·‚©‚ç’e‚Ì•‚—VŠÔ‚ğİ’è‚µ‚Ü‚·
+    /// å°„æ’ƒåœ°ç‚¹ã‹ã‚‰ç›®æ¨™åœ°ç‚¹ã¾ã§ã®ã‚°ãƒªãƒƒãƒ‰é•·ã‹ã‚‰å¼¾ã®æµ®éŠæ™‚é–“ã‚’è¨­å®šã—ã¾ã™
     /// </summary>
-    /// <param name="GridLength">ƒOƒŠƒbƒh’·</param>
+    /// <param name="GridLength">ã‚°ãƒªãƒƒãƒ‰é•·</param>
     public void SetFlightTimeFromGridLength( float GridLength )
     {
         _flightTime = _flightTimePerGrid * GridLength;
     }
 
     /// <summary>
-    /// ’e‚ª–Ú•W’n“_‚É’B‚µ‚½‚©‚ğæ“¾‚µ‚Ü‚·
+    /// å¼¾ãŒç›®æ¨™åœ°ç‚¹ã«é”ã—ãŸã‹ã‚’å–å¾—ã—ã¾ã™
     /// </summary>
-    /// <returns>–Ú•W’n“_‚É’B‚µ‚½‚©”Û‚©</returns>
+    /// <returns>ç›®æ¨™åœ°ç‚¹ã«é”ã—ãŸã‹å¦ã‹</returns>
     public bool IsHit() { return _isHit; }
 }

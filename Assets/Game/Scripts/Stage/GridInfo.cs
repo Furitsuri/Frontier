@@ -1,32 +1,32 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier.Stage
 {
     /// <summary>
-    /// �O���b�h�P�ʂɂ�������
+    /// グリッド単位における情報
     /// </summary>
     public class GridInfo
     {
-        // �L�����N�^�[�̗����ʒu���W(��)
+        // キャラクターの立ち位置座標(※)
         public Vector3 charaStandPos;
-        // �ړ��j�Q�l(��)
+        // 移動阻害値(※)
         public int moveResist;
-        // �ړ��l�̌��ς���l
+        // 移動値の見積もり値
         public int estimatedMoveRange;
-        // �O���b�h��ɑ��݂���L�����N�^�[�̃^�C�v
+        // グリッド上に存在するキャラクターのタイプ
         public Character.CHARACTER_TAG characterTag;
-        // �O���b�h��ɑ��݂���L�����N�^�[�̃C���f�b�N�X
+        // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
-        // �t���O���
+        // フラグ情報
         public Stage.StageController.BitFlag flag;
-        // �� ��x�ݒ肳�ꂽ��͕ύX���邱�Ƃ��Ȃ��ϐ�
+        // ※ 一度設定された後は変更することがない変数
 
         /// <summary>
-        /// ���������܂�
-        /// TODO�F�X�e�[�W�̃t�@�C���Ǎ��ɂ����moveRange���͂��߂Ƃ����l��ݒ�o����悤�ɂ�����
-        ///       �܂��AC# 10.0 ����͈����Ȃ��R���X�g���N�^�Œ�`�\(2023.5���_�̍ŐVUnity�o�[�W�����ł͎g�p�ł��Ȃ�)
+        /// 初期化します
+        /// TODO：ステージのファイル読込によってmoveRangeをはじめとした値を設定出来るようにしたい
+        ///       また、C# 10.0 からは引数なしコンストラクタで定義可能(2023.5時点の最新Unityバージョンでは使用できない)
         /// </summary>
         public void Init()
         {
@@ -39,18 +39,18 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// �O���b�h��ɃL�����N�^�[�����݂��邩�ۂ���Ԃ��܂�
+        /// グリッド上にキャラクターが存在するか否かを返します
         /// </summary>
-        /// <returns>�O���b�h��ɃL�����N�^�[�̑��݂��Ă��邩</returns>
+        /// <returns>グリッド上にキャラクターの存在しているか</returns>
         public bool IsExistCharacter()
         {
             return 0 <= charaIndex;
         }
 
         /// <summary>
-        /// ���݂̒l���R�s�[���đΏۂɓn���܂�
+        /// 現在の値をコピーして対象に渡します
         /// </summary>
-        /// <returns>�l���R�s�[�����I�u�W�F�N�g</returns>
+        /// <returns>値をコピーしたオブジェクト</returns>
         public GridInfo Copy()
         {
             GridInfo info           = new GridInfo();

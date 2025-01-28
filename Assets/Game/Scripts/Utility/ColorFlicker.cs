@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 
 public class ColorFlicker<T> where T : IColorEditable 
@@ -6,17 +6,17 @@ public class ColorFlicker<T> where T : IColorEditable
     [SerializeField]
     T colorFlickObject;
 
-    [Header("1ƒ‹[ƒv‚Ì’·‚³(•b’PˆÊ)")]
+    [Header("1ãƒ«ãƒ¼ãƒ—ã®é•·ã•(ç§’å˜ä½)")]
     [SerializeField]
     [Range(0.1f, 10.0f)]
     float duration = 1.0f;
 
-    [Header("ƒ‹[ƒvŠJn‚ÌF")]
+    [Header("ãƒ«ãƒ¼ãƒ—é–‹å§‹æ™‚ã®è‰²")]
     [SerializeField]
     Color32 startColor = new Color32(255, 255, 255, 255);
 
-    //ƒ‹[ƒvI—¹(Ü‚è•Ô‚µ)‚ÌF‚ğ0`255‚Ü‚Å‚Ì®”‚Åw’èB
-    [Header("ƒ‹[ƒvI—¹‚ÌF")]
+    //ãƒ«ãƒ¼ãƒ—çµ‚äº†(æŠ˜ã‚Šè¿”ã—)æ™‚ã®è‰²ã‚’0ï½255ã¾ã§ã®æ•´æ•°ã§æŒ‡å®šã€‚
+    [Header("ãƒ«ãƒ¼ãƒ—çµ‚äº†æ™‚ã®è‰²")]
     [SerializeField]
     Color32 endColor = new Color32(255, 255, 255, 64);
 
@@ -34,7 +34,7 @@ public class ColorFlicker<T> where T : IColorEditable
     }
 
     /// <summary>
-    /// ƒJƒ‰[ƒtƒŠƒbƒN‚ÌXV‚ğ‚µ‚Ü‚·
+    /// ã‚«ãƒ©ãƒ¼ãƒ•ãƒªãƒƒã‚¯ã®æ›´æ–°ã‚’ã—ã¾ã™
     /// </summary>
     public void UpdateFlick()
     {
@@ -45,7 +45,7 @@ public class ColorFlicker<T> where T : IColorEditable
     }
 
     /// <summary>
-    /// Start‚ÌF‚ÅƒtƒŠƒbƒN‚ğ’â~‚µ‚Ü‚·
+    /// Startã®è‰²ã§ãƒ•ãƒªãƒƒã‚¯ã‚’åœæ­¢ã—ã¾ã™
     /// </summary>
     public void StopFlickOnStart()
     {
@@ -56,7 +56,7 @@ public class ColorFlicker<T> where T : IColorEditable
     }
 
     /// <summary>
-    /// End‚ÌF‚ÅƒtƒŠƒbƒN‚ğ’â~‚µ‚Ü‚·
+    /// Endã®è‰²ã§ãƒ•ãƒªãƒƒã‚¯ã‚’åœæ­¢ã—ã¾ã™
     /// </summary>
     public void StopFlickOnEnd()
     {
@@ -67,9 +67,9 @@ public class ColorFlicker<T> where T : IColorEditable
     }
 
     /// <summary>
-    /// —LŒøE”ñ—LŒøİ’è‚ğs‚¢‚Ü‚·
+    /// æœ‰åŠ¹ãƒ»éæœ‰åŠ¹è¨­å®šã‚’è¡Œã„ã¾ã™
     /// </summary>
-    /// <param name="enabled">—LŒøE”ñ—LŒø</param>
+    /// <param name="enabled">æœ‰åŠ¹ãƒ»éæœ‰åŠ¹</param>
     public void setEnabled(bool enabled)
     {
         _enabled = enabled;

@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+ï»¿using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Xml.Xsl;
@@ -12,21 +12,21 @@ namespace Frontier.Stage
     public sealed class StageController : Controller
     {
         /// <summary>
-        /// ƒOƒŠƒbƒh‚É‘Î‚·‚éƒtƒ‰ƒOî•ñ
+        /// ã‚°ãƒªãƒƒãƒ‰ã«å¯¾ã™ã‚‹ãƒ•ãƒ©ã‚°æƒ…å ±
         /// </summary>
         public enum BitFlag
         {
             NONE                  = 0,
-            CANNOT_MOVE           = 1 << 0,   // ˆÚ“®•s‰ÂƒOƒŠƒbƒh
-            ATTACKABLE            = 1 << 1,   // UŒ‚‰Â”\‚ÈƒOƒŠƒbƒh
-            ATTACKABLE_TARGET     = 1 << 2,   // UŒ‚‘ÎÛ‚ğUŒ‚‰Â”\‚ÈƒOƒŠƒbƒh(ATTACKABLE‚Ì“à—e‚ğÀ¿ŠÜ‚ñ‚Å‚¢‚é)
-            PLAYER_EXIST          = 1 << 3,   // ƒvƒŒƒCƒ„[ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ
-            ENEMY_EXIST           = 1 << 4,   // “GƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ
-            OTHER_EXIST           = 1 << 5,   // ‘æO¨—Í‚ª‘¶İ
+            CANNOT_MOVE           = 1 << 0,   // ç§»å‹•ä¸å¯ã‚°ãƒªãƒƒãƒ‰
+            ATTACKABLE            = 1 << 1,   // æ”»æ’ƒå¯èƒ½ãªã‚°ãƒªãƒƒãƒ‰
+            ATTACKABLE_TARGET     = 1 << 2,   // æ”»æ’ƒå¯¾è±¡ã‚’æ”»æ’ƒå¯èƒ½ãªã‚°ãƒªãƒƒãƒ‰(ATTACKABLEã®å†…å®¹ã‚’å®Ÿè³ªå«ã‚“ã§ã„ã‚‹)
+            PLAYER_EXIST          = 1 << 3,   // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨
+            ENEMY_EXIST           = 1 << 4,   // æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨
+            OTHER_EXIST           = 1 << 5,   // ç¬¬ä¸‰å‹¢åŠ›ãŒå­˜åœ¨
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒNƒ^[‚ÌˆÊ’u‚ğŒ³‚É–ß‚·Û‚Ég—p‚µ‚Ü‚·
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ä½ç½®ã‚’å…ƒã«æˆ»ã™éš›ã«ä½¿ç”¨ã—ã¾ã™
         /// </summary>
         public struct Footprint
         {
@@ -71,7 +71,7 @@ namespace Frontier.Stage
             _gridMeshs = new List<GridMesh>();
             _attackableGridIndexs = new List<int>();
 
-            // ¶¬‚µ‚½ƒOƒŠƒbƒhƒƒbƒVƒ…‚ğ“o˜^
+            // ç”Ÿæˆã—ãŸã‚°ãƒªãƒƒãƒ‰ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ç™»éŒ²
             foreach (GridMesh grid in _gridMeshs)
             {
                 AddGridMeshToList(grid);
@@ -82,27 +82,27 @@ namespace Frontier.Stage
                 _gridCursor = gridCursorObject.GetComponent<GridCursor>();
             }
 
-            // ƒXƒe[ƒWî•ñ‚©‚çŠeƒTƒCƒY‚ğQÆ‚·‚é
+            // ã‚¹ãƒ†ãƒ¼ã‚¸æƒ…å ±ã‹ã‚‰å„ã‚µã‚¤ã‚ºã‚’å‚ç…§ã™ã‚‹
             if (isAdjustStageScale)
             {
                 _stageModel.SetGridRowNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.x) / GetGridSize()) );
                 _stageModel.SetGridColumnNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.z) / GetGridSize()) );
             }
 
-            // ƒƒbƒVƒ…‚ğ•`‰æ
+            // ãƒ¡ãƒƒã‚·ãƒ¥ã‚’æç”»
             GetComponent<MeshFilter>().mesh = _mesh = new Mesh();
             _mesh = ReGrid(_mesh);
 
-            // ƒOƒŠƒbƒhî•ñ‚Ì‰Šú‰»
+            // ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã®åˆæœŸåŒ–
             InitGridInfo();
             _gridCursor.Init(0, _stageModel, this);
         }
 
         /// <summary>
-        /// ƒXƒe[ƒWã‚ÌƒOƒŠƒbƒhü‚ğ•`‰æ‚µ‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ã‚¸ä¸Šã®ã‚°ãƒªãƒƒãƒ‰ç·šã‚’æç”»ã—ã¾ã™
         /// </summary>
-        /// <param name="_mesh">•`‰æ‚É—p‚¢‚éƒƒbƒVƒ…</param>
-        /// <returns>ƒOƒŠƒbƒh•`‰æî•ñ‚ğ‚ÂƒƒbƒVƒ…</returns>
+        /// <param name="_mesh">æç”»ã«ç”¨ã„ã‚‹ãƒ¡ãƒƒã‚·ãƒ¥</param>
+        /// <returns>ã‚°ãƒªãƒƒãƒ‰æç”»æƒ…å ±ã‚’æŒã¤ãƒ¡ãƒƒã‚·ãƒ¥</returns>
         Mesh ReGrid(Mesh _mesh)
         {
             if (back)
@@ -133,13 +133,13 @@ namespace Frontier.Stage
             lines = new int[resolution];
             colors = new UnityEngine.Color[resolution];
 
-            // X•ûŒü‚Ì’¸“_
+            // Xæ–¹å‘ã®é ‚ç‚¹
             for (int i = 0; count < 2 * (_stageModel.GetGridRowNum() + 1); ++i, count = 2 * i)
             {
                 vertices[count] = new Vector3(startPosition.x + ((float)i * GetGridSize()), startPosition.y, 0);
                 vertices[count + 1] = new Vector3(startPosition.x + ((float)i * GetGridSize()), endPosition.y, 0);
             }
-            // Y(Z)•ûŒü‚Ì’¸“_
+            // Y(Z)æ–¹å‘ã®é ‚ç‚¹
             for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_stageModel.GetGridRowNum() + 1))
             {
                 vertices[count] = new Vector3(startPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
@@ -153,7 +153,7 @@ namespace Frontier.Stage
                 colors[i] = UnityEngine.Color.black;
             }
 
-            // Y²³•ûŒü‚ğŠî²‚Æ‚µ‚Ä‰ñ“]‚³‚¹‚é
+            // Yè»¸æ­£æ–¹å‘ã‚’åŸºè»¸ã¨ã—ã¦å›è»¢ã•ã›ã‚‹
             Vector3 rotDirection = Vector3.up;
             _mesh.vertices = RotationVertices(vertices, rotDirection);
             _mesh.uv = uvs;
@@ -164,7 +164,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhî•ñ‚ğ‰Šú‰»‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã‚’åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         void InitGridInfo()
         {
@@ -174,25 +174,25 @@ namespace Frontier.Stage
 
             for (int i = 0; i < GridTotalNum; ++i)
             {
-                // ‰Šú‰»
+                // åˆæœŸåŒ–
                 _gridInfo[i] = new GridInfo();
                 _gridInfoBase[i] = new GridInfo();
                 _gridInfo[i].Init();
                 _gridInfoBase[i].Init();
-                // ƒOƒŠƒbƒhˆÊ’u‚©‚çƒLƒƒƒ‰‚Ì—§‚¿ˆÊ’u‚Ö‚Ì•â³’l
+                // ã‚°ãƒªãƒƒãƒ‰ä½ç½®ã‹ã‚‰ã‚­ãƒ£ãƒ©ã®ç«‹ã¡ä½ç½®ã¸ã®è£œæ­£å€¤
                 float charaPosCorrext = 0.5f * GetGridSize();
-                // 1ŸŒ³”z—ñ‚Åƒf[ƒ^‚ğˆµ‚¤‚½‚ß, ‰¡(X²)•ûŒü‚Íè—]‚Ål—¶‚·‚é
+                // 1æ¬¡å…ƒé…åˆ—ã§ãƒ‡ãƒ¼ã‚¿ã‚’æ‰±ã†ãŸã‚, æ¨ª(Xè»¸)æ–¹å‘ã¯å‰°ä½™ã§è€ƒæ…®ã™ã‚‹
                 float posX = -_stageModel.WidthX + i % _stageModel.GetGridRowNum() * GetGridSize() + charaPosCorrext;
-                // 1ŸŒ³”z—ñ‚Åƒf[ƒ^‚ğˆµ‚¤‚½‚ß, c(Z²)•ûŒü‚Í¤‚Ål—¶‚·‚é
+                // 1æ¬¡å…ƒé…åˆ—ã§ãƒ‡ãƒ¼ã‚¿ã‚’æ‰±ã†ãŸã‚, ç¸¦(Zè»¸)æ–¹å‘ã¯å•†ã§è€ƒæ…®ã™ã‚‹
                 float posZ = -_stageModel.WidthZ + i / _stageModel.GetGridRowNum() * GetGridSize() + charaPosCorrext;
-                // ã‹L’l‚©‚çŠeƒOƒŠƒbƒh‚ÌƒLƒƒƒ‰‚Ì—§‚¿ˆÊ’u‚ğŒˆ’è
+                // ä¸Šè¨˜å€¤ã‹ã‚‰å„ã‚°ãƒªãƒƒãƒ‰ã®ã‚­ãƒ£ãƒ©ã®ç«‹ã¡ä½ç½®ã‚’æ±ºå®š
                 _gridInfoBase[i].charaStandPos = _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
-                // TODO : ƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚©‚ç’Ês•s”\‚È‰ÓŠ‚È‚Ç‚ÌBitFlagî•ñ‚ğİ’èo—ˆ‚é‚æ‚¤‚É‚·‚é
+                // TODO : ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ã‹ã‚‰é€šè¡Œä¸èƒ½ãªç®‡æ‰€ãªã©ã®BitFlagæƒ…å ±ã‚’è¨­å®šå‡ºæ¥ã‚‹ã‚ˆã†ã«ã™ã‚‹
             }
         }
 
         /// <summary>
-        /// _gridInfo‚Ìó‘Ô‚ğŠî‚Ìó‘Ô‚É–ß‚µ‚Ü‚·
+        /// _gridInfoã®çŠ¶æ…‹ã‚’åŸºã®çŠ¶æ…‹ã«æˆ»ã—ã¾ã™
         /// </summary>
         void ResetGridInfo()
         {
@@ -203,57 +203,57 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ˆÚ“®‰Â”\‚ÈƒOƒŠƒbƒh‚ğ“o˜^‚µ‚Ü‚·
+        /// ç§»å‹•å¯èƒ½ãªã‚°ãƒªãƒƒãƒ‰ã‚’ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="gridIndex">“o˜^‘ÎÛ‚ÌƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX</param>
-        /// <param name="moveRange">ˆÚ“®‰Â”\”ÍˆÍ’l</param>
-        /// <param name="attackRange">UŒ‚‰Â”\”ÍˆÍ’l</param>
-        /// <param name="selfTag">ŒÄ‚Ño‚µŒ³ƒLƒƒƒ‰ƒNƒ^[‚ÌƒLƒƒƒ‰ƒNƒ^[ƒ^ƒO</param>
-        /// <param name="isAttackable">ŒÄ‚Ño‚µŒ³‚ÌƒLƒƒƒ‰ƒNƒ^[‚ªUŒ‚‰Â”\‚©”Û‚©</param>
-        /// <param name="isDeparture">o”­ƒOƒŠƒbƒh‚©‚çŒÄ‚Ño‚³‚ê‚½‚©”Û‚©</param>
+        /// <param name="gridIndex">ç™»éŒ²å¯¾è±¡ã®ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+        /// <param name="moveRange">ç§»å‹•å¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="attackRange">æ”»æ’ƒå¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="selfTag">å‘¼ã³å‡ºã—å…ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¿ã‚°</param>
+        /// <param name="isAttackable">å‘¼ã³å‡ºã—å…ƒã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒæ”»æ’ƒå¯èƒ½ã‹å¦ã‹</param>
+        /// <param name="isDeparture">å‡ºç™ºã‚°ãƒªãƒƒãƒ‰ã‹ã‚‰å‘¼ã³å‡ºã•ã‚ŒãŸã‹å¦ã‹</param>
         void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  Character.CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
         {
-            // ”ÍˆÍŠO‚ÌƒOƒŠƒbƒh‚Íl—¶‚µ‚È‚¢
+            // ç¯„å›²å¤–ã®ã‚°ãƒªãƒƒãƒ‰ã¯è€ƒæ…®ã—ãªã„
             if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
-            // ˆÚ“®•s‰Â‚ÌƒOƒŠƒbƒh‚É’H‚è’…‚¢‚½ê‡‚ÍI—¹
+            // ç§»å‹•ä¸å¯ã®ã‚°ãƒªãƒƒãƒ‰ã«è¾¿ã‚Šç€ã„ãŸå ´åˆã¯çµ‚äº†
             if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return;
-            // Šù‚ÉŒvZÏ‚İ‚ÌƒOƒŠƒbƒh‚Å‚ ‚ê‚ÎI—¹
+            // æ—¢ã«è¨ˆç®—æ¸ˆã¿ã®ã‚°ãƒªãƒƒãƒ‰ã§ã‚ã‚Œã°çµ‚äº†
             if (moveRange <= _gridInfo[gridIndex].estimatedMoveRange) return;
-            // ©g‚É‘Î‚·‚é“G‘Î¨—ÍƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚ê‚ÎI—¹
+            // è‡ªèº«ã«å¯¾ã™ã‚‹æ•µå¯¾å‹¢åŠ›ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚Œã°çµ‚äº†
             StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)Character.CHARACTER_TAG.NUM]
             {
-                BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYER‚É‚¨‚¯‚é“G‘Î¨—Í
-                BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMY‚É‚¨‚¯‚é“G‘Î¨—Í
-                BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHER‚É‚¨‚¯‚é“G‘Î¨—Í
+                BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERã«ãŠã‘ã‚‹æ•µå¯¾å‹¢åŠ›
+                BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYã«ãŠã‘ã‚‹æ•µå¯¾å‹¢åŠ›
+                BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHERã«ãŠã‘ã‚‹æ•µå¯¾å‹¢åŠ›
             };
             if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, opponentTag[(int)selfTag])) return;
 
-            // Œ»İƒOƒŠƒbƒh‚ÌˆÚ“®’ïR’l‚ğXV( o”­ƒOƒŠƒbƒh‚Å‚ÍmoveRange‚Ì’l‚ğ‚»‚Ì‚Ü‚Ü“K‰‚·‚é )
+            // ç¾åœ¨ã‚°ãƒªãƒƒãƒ‰ã®ç§»å‹•æŠµæŠ—å€¤ã‚’æ›´æ–°( å‡ºç™ºã‚°ãƒªãƒƒãƒ‰ã§ã¯moveRangeã®å€¤ã‚’ãã®ã¾ã¾é©å¿œã™ã‚‹ )
             int currentMoveRange = (isDeparture) ? moveRange : _gridInfo[gridIndex].moveResist + moveRange;
             _gridInfo[gridIndex].estimatedMoveRange = currentMoveRange;
 
-            // •‰‚Ì’l‚Å‚ ‚ê‚ÎI—¹
+            // è² ã®å€¤ã§ã‚ã‚Œã°çµ‚äº†
             if (currentMoveRange < 0) return;
-            // UŒ‚”ÍˆÍ‚É‚Â‚¢‚Ä‚à“o˜^‚·‚é
+            // æ”»æ’ƒç¯„å›²ã«ã¤ã„ã¦ã‚‚ç™»éŒ²ã™ã‚‹
             if (isAttackable && ( _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
-            // ¶’[‚ğœŠO
+            // å·¦ç«¯ã‚’é™¤å¤–
             if (gridIndex % _stageModel.GetGridRowNum() != 0)
-                RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndex‚©‚çX²•ûŒü‚Ö-1
-            // ‰E’[‚ğœŠO
+                RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexã‹ã‚‰Xè»¸æ–¹å‘ã¸-1
+            // å³ç«¯ã‚’é™¤å¤–
             if ((gridIndex + 1) % _stageModel.GetGridRowNum() != 0)
-                RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndex‚©‚çX²•ûŒü‚Ö+1
-            // Z²•ûŒü‚Ö‚Ì‰ÁZ‚ÆŒ¸Z‚Í‚»‚Ì‚Ü‚Ü
-            RegistMoveableEachGrid(gridIndex - _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndex‚©‚çZ²•ûŒü‚Ö-1
-            RegistMoveableEachGrid(gridIndex + _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndex‚©‚çZ²•ûŒü‚Ö+1
+                RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexã‹ã‚‰Xè»¸æ–¹å‘ã¸+1
+            // Zè»¸æ–¹å‘ã¸ã®åŠ ç®—ã¨æ¸›ç®—ã¯ãã®ã¾ã¾
+            RegistMoveableEachGrid(gridIndex - _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexã‹ã‚‰Zè»¸æ–¹å‘ã¸-1
+            RegistMoveableEachGrid(gridIndex + _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexã‹ã‚‰Zè»¸æ–¹å‘ã¸+1
         }
 
         /// <summary>
-        /// ’¸“_”z—ñƒf[ƒ^‚ğ‚·‚×‚Äw’è‚Ì•ûŒü‚Ö‰ñ“]ˆÚ“®‚³‚¹‚Ü‚·
+        /// é ‚ç‚¹é…åˆ—ãƒ‡ãƒ¼ã‚¿ã‚’ã™ã¹ã¦æŒ‡å®šã®æ–¹å‘ã¸å›è»¢ç§»å‹•ã•ã›ã¾ã™
         /// </summary>
-        /// <param name="vertices">‰ñ“]‚³‚¹‚é’¸“_”z—ñƒf[ƒ^</param>
-        /// <param name="rotDirection">‰ñ“]•ûŒü</param>
-        /// <returns>‰ñ“]‚³‚¹‚½’¸“_”z—ñƒf[ƒ^</returns>
+        /// <param name="vertices">å›è»¢ã•ã›ã‚‹é ‚ç‚¹é…åˆ—ãƒ‡ãƒ¼ã‚¿</param>
+        /// <param name="rotDirection">å›è»¢æ–¹å‘</param>
+        /// <returns>å›è»¢ã•ã›ãŸé ‚ç‚¹é…åˆ—ãƒ‡ãƒ¼ã‚¿</returns>
         Vector3[] RotationVertices(Vector3[] vertices, Vector3 rotDirection)
         {
             Vector3[] ret = new Vector3[vertices.Length];
@@ -265,22 +265,22 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‰Šú‰»‚ğs‚¢‚Ü‚·
+        /// åˆæœŸåŒ–ã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="btlMgr">ƒoƒgƒ‹ƒ}ƒl[ƒWƒƒ</param>
+        /// <param name="btlMgr">ãƒãƒˆãƒ«ãƒãƒãƒ¼ã‚¸ãƒ£</param>
         public void Init(BattleManager btlMgr)
         {
             _btlMgr = btlMgr;
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhî•ñ‚ğXV‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
         public void UpdateGridInfo()
         {
-            // ˆê“x‘S‚Ä‚ÌƒOƒŠƒbƒhî•ñ‚ğŒ³‚É–ß‚·
+            // ä¸€åº¦å…¨ã¦ã®ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã‚’å…ƒã«æˆ»ã™
             ResetGridInfo();
-            // ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚Ìî•ñ‚ğXV
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®æƒ…å ±ã‚’æ›´æ–°
             BitFlag[] flags =
             {
                 BitFlag.PLAYER_EXIST,
@@ -302,9 +302,9 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// óM‚µ‚½•ûŒüî•ñ‚©‚çAŒ»İ‚ÌƒOƒŠƒbƒh‚ğ‘€ì‚µ‚Ü‚·
+        /// å—ä¿¡ã—ãŸæ–¹å‘æƒ…å ±ã‹ã‚‰ã€ç¾åœ¨ã®ã‚°ãƒªãƒƒãƒ‰ã‚’æ“ä½œã—ã¾ã™
         /// </summary>
-        /// <param name="direction">w’è‚³‚ê‚½is•ûŒü</param>
+        /// <param name="direction">æŒ‡å®šã•ã‚ŒãŸé€²è¡Œæ–¹å‘</param>
         public void OperateGridCursor( Constants.Direction direction )
         {
             switch( direction )
@@ -327,11 +327,11 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// Œ»İ‚ÌƒOƒŠƒbƒh‚ğƒL[“ü—Í‚Å‘€ì‚µ‚Ü‚·
+        /// ç¾åœ¨ã®ã‚°ãƒªãƒƒãƒ‰ã‚’ã‚­ãƒ¼å…¥åŠ›ã§æ“ä½œã—ã¾ã™
         /// </summary>
         public void OperateGridCursor()
         {
-            // UŒ‚ƒtƒF[ƒYó‘Ô‚Å‚ÍUŒ‚‰Â”\‚ÈƒLƒƒƒ‰ƒNƒ^[‚ğ¶‰E‚Å‘I‘ğ‚·‚é
+            // æ”»æ’ƒãƒ•ã‚§ãƒ¼ã‚ºçŠ¶æ…‹ã§ã¯æ”»æ’ƒå¯èƒ½ãªã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’å·¦å³ã§é¸æŠã™ã‚‹
             if (_gridCursor.GridState == GridCursor.State.ATTACK)
             {
                 if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.LeftArrow))       { _gridCursor.TransitPrevTarget(); }
@@ -347,10 +347,10 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒL[‘€ì‚ğ‚µ‚½Û‚ÉA
-        /// ’Z‚¢ŠÔ‚Å‰½“x‚à“¯‚¶ƒL[‚ª‰Ÿ‰º‚³‚ê‚½‚Æ”»’è‚³‚ê‚È‚¢‚æ‚¤‚ÉƒCƒ“ƒ^[ƒoƒ‹‚ğİ‚¯‚Ü‚·
+        /// ã‚­ãƒ¼æ“ä½œã‚’ã—ãŸéš›ã«ã€
+        /// çŸ­ã„æ™‚é–“ã§ä½•åº¦ã‚‚åŒã˜ã‚­ãƒ¼ãŒæŠ¼ä¸‹ã•ã‚ŒãŸã¨åˆ¤å®šã•ã‚Œãªã„ã‚ˆã†ã«ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ã‚’è¨­ã‘ã¾ã™
         /// </summary>
-        /// <returns>ƒL[‘€ì‚ª—LŒø‚©–³Œø‚©</returns>
+        /// <returns>ã‚­ãƒ¼æ“ä½œãŒæœ‰åŠ¹ã‹ç„¡åŠ¹ã‹</returns>
         private bool OperateKeyControl()
         {
             if( _operateKeyInterval <= Time.time - _operateKeyLastTime)
@@ -364,20 +364,20 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‘I‘ğƒOƒŠƒbƒh‚ğw’è‚ÌƒLƒƒƒ‰ƒNƒ^[‚ÌƒOƒŠƒbƒh‚É‡‚í‚¹‚Ü‚·
+        /// é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’æŒ‡å®šã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚°ãƒªãƒƒãƒ‰ã«åˆã‚ã›ã¾ã™
         /// </summary>
-        /// <param name="character">w’èƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="character">æŒ‡å®šã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void ApplyCurrentGrid2CharacterGrid(Character character)
         {
             _gridCursor.Index = character.tmpParam.gridIndex;
         }
 
         /// <summary>
-        /// 2‚Â‚Ìw’è‚ÌƒCƒ“ƒfƒbƒNƒX‚ª—×‚è‡‚¤À•W‚É‘¶İ‚µ‚Ä‚¢‚é‚©‚ğ”»’è‚µ‚Ü‚·
+        /// 2ã¤ã®æŒ‡å®šã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãŒéš£ã‚Šåˆã†åº§æ¨™ã«å­˜åœ¨ã—ã¦ã„ã‚‹ã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <param name="fstIndex">w’èƒCƒ“ƒfƒbƒNƒX‚»‚Ì1</param>
-        /// <param name="scdIndex">w’èƒCƒ“ƒfƒbƒNƒX‚»‚Ì2</param>
-        /// <returns>—×‚è‡‚¤‚©”Û‚©</returns>
+        /// <param name="fstIndex">æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãã®1</param>
+        /// <param name="scdIndex">æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãã®2</param>
+        /// <returns>éš£ã‚Šåˆã†ã‹å¦ã‹</returns>
         public bool IsGridNextToEacheOther(int fstIndex, int scdIndex)
         {
             bool updown = (Math.Abs(fstIndex - scdIndex) == _stageModel.GetGridRowNum());
@@ -392,27 +392,27 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒh‚ÉˆÚ“®‰Â”\î•ñ‚ğ“o˜^‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã«ç§»å‹•å¯èƒ½æƒ…å ±ã‚’ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="departIndex">ˆÚ“®ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <param name="moveRange">ˆÚ“®‰Â”\”ÍˆÍ’l</param>
-        /// <param name="attackRange">UŒ‚‰Â”\”ÍˆÍ’l</param>
-        /// <param name="selfTag">ƒLƒƒƒ‰ƒNƒ^[ƒ^ƒO</param>
-        /// <param name="isAttackable">UŒ‚‰Â”\‚©”Û‚©</param>
+        /// <param name="departIndex">ç§»å‹•ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <param name="moveRange">ç§»å‹•å¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="attackRange">æ”»æ’ƒå¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="selfTag">ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¿ã‚°</param>
+        /// <param name="isAttackable">æ”»æ’ƒå¯èƒ½ã‹å¦ã‹</param>
         public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, int selfCharaIndex, Character.CHARACTER_TAG selfTag, bool isAttackable)
         {
             Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
 
-            // ˆÚ“®‰Â”Ûî•ñ‚ğŠeƒOƒŠƒbƒh‚É“o˜^
+            // ç§»å‹•å¯å¦æƒ…å ±ã‚’å„ã‚°ãƒªãƒƒãƒ‰ã«ç™»éŒ²
             RegistMoveableEachGrid(departIndex, moveRange, attackRange, selfCharaIndex, selfTag, isAttackable, true);
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒh‚ÉUŒ‚‰Â”\î•ñ‚ğ“o˜^‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã«æ”»æ’ƒå¯èƒ½æƒ…å ±ã‚’ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="departIndex">UŒ‚ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <param name="attackRange">UŒ‚‰Â”\”ÍˆÍ’l</param>
-        /// <param name="selfTag">UŒ‚‚ğs‚¤ƒLƒƒƒ‰ƒNƒ^[©g‚ÌƒLƒƒƒ‰ƒNƒ^[ƒ^ƒO</param>
+        /// <param name="departIndex">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <param name="attackRange">æ”»æ’ƒå¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="selfTag">æ”»æ’ƒã‚’è¡Œã†ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼è‡ªèº«ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¿ã‚°</param>
         public bool RegistAttackAbleInfo(int departIndex, int attackRange, Character.CHARACTER_TAG selfTag)
         {
             Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
@@ -420,17 +420,17 @@ namespace Frontier.Stage
             _attackableGridIndexs.Clear();
             Character attackCandidate = null;
 
-            // ‘S‚Ä‚ÌƒOƒŠƒbƒh‚ÌUŒ‚‰Â”Ûî•ñ‚ğ‰Šú‰»
+            // å…¨ã¦ã®ã‚°ãƒªãƒƒãƒ‰ã®æ”»æ’ƒå¯å¦æƒ…å ±ã‚’åˆæœŸåŒ–
             for (int i = 0; i < GridTotalNum; ++i)
             {
                 Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE);
                 Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE_TARGET);
             }
 
-            // UŒ‚‰Â”Ûî•ñ‚ğŠeƒOƒŠƒbƒh‚É“o˜^
+            // æ”»æ’ƒå¯å¦æƒ…å ±ã‚’å„ã‚°ãƒªãƒƒãƒ‰ã«ç™»éŒ²
             RegistAttackableEachGrid(departIndex, attackRange, selfTag, departIndex);
 
-            // UŒ‚‰Â”\A‚©‚ÂUŒ‚‘ÎÛ‚Æ‚È‚éƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ğƒŠƒXƒg‚É“o˜^
+            // æ”»æ’ƒå¯èƒ½ã€ã‹ã¤æ”»æ’ƒå¯¾è±¡ã¨ãªã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã‚’ãƒªã‚¹ãƒˆã«ç™»éŒ²
             for (int i = 0; i < _gridInfo.Length; ++i)
             {
                 var info = _gridInfo[i];
@@ -449,19 +449,19 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‰Â”\‚ÈƒOƒŠƒbƒh‚ğ“o˜^‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯èƒ½ãªã‚°ãƒªãƒƒãƒ‰ã‚’ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="gridIndex">‘ÎÛ‚ÌƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX</param>
-        /// <param name="attackRange">UŒ‚‰Â”\”ÍˆÍ’l</param>
-        /// <param name="selfTag">©g‚ÌƒLƒƒƒ‰ƒNƒ^[ƒ^ƒO</param>
-        /// <param name="departIndex">o”­ƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX</param>
+        /// <param name="gridIndex">å¯¾è±¡ã®ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+        /// <param name="attackRange">æ”»æ’ƒå¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="selfTag">è‡ªèº«ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¿ã‚°</param>
+        /// <param name="departIndex">å‡ºç™ºã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
         void RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, int departIndex)
         {
-            // ”ÍˆÍŠO‚ÌƒOƒŠƒbƒh‚Íl—¶‚µ‚È‚¢
+            // ç¯„å›²å¤–ã®ã‚°ãƒªãƒƒãƒ‰ã¯è€ƒæ…®ã—ãªã„
             if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
-            // ˆÚ“®•s‰Â‚ÌƒOƒŠƒbƒh‚É‚ÍUŒ‚‚Å‚«‚È‚¢
+            // ç§»å‹•ä¸å¯ã®ã‚°ãƒªãƒƒãƒ‰ã«ã¯æ”»æ’ƒã§ããªã„
             if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return;
-            // o”­’n“_‚Å‚È‚¯‚ê‚Î“o˜^
+            // å‡ºç™ºåœ°ç‚¹ã§ãªã‘ã‚Œã°ç™»éŒ²
             if (gridIndex != departIndex)
             {
                 Methods.SetBitFlag(ref _gridInfo[gridIndex].flag, BitFlag.ATTACKABLE);
@@ -494,32 +494,32 @@ namespace Frontier.Stage
                 }
             }
 
-            // •‰‚Ì’l‚Å‚ ‚ê‚ÎI—¹
+            // è² ã®å€¤ã§ã‚ã‚Œã°çµ‚äº†
             if (--attackRange < 0) return;
 
-            // ¶’[‚ğœŠO
+            // å·¦ç«¯ã‚’é™¤å¤–
             if (gridIndex % _stageModel.GetGridRowNum() != 0)
-                RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag, departIndex);       // gridIndex‚©‚çX²•ûŒü‚Ö-1
-                                                                                                  // ‰E’[‚ğœŠO
+                RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag, departIndex);       // gridIndexã‹ã‚‰Xè»¸æ–¹å‘ã¸-1
+                                                                                                  // å³ç«¯ã‚’é™¤å¤–
             if ((gridIndex + 1) % _stageModel.GetGridRowNum() != 0)
-                RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag, departIndex);       // gridIndex‚©‚çX²•ûŒü‚Ö+1
-                                                                                                  // Z²•ûŒü‚Ö‚Ì‰ÁZ‚ÆŒ¸Z‚Í‚»‚Ì‚Ü‚Ü
-            RegistAttackableEachGrid(gridIndex - _stageModel.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridIndex‚©‚çZ²•ûŒü‚Ö-1
-            RegistAttackableEachGrid(gridIndex + _stageModel.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridindex‚©‚çZ²•ûŒü‚Ö+1
+                RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag, departIndex);       // gridIndexã‹ã‚‰Xè»¸æ–¹å‘ã¸+1
+                                                                                                  // Zè»¸æ–¹å‘ã¸ã®åŠ ç®—ã¨æ¸›ç®—ã¯ãã®ã¾ã¾
+            RegistAttackableEachGrid(gridIndex - _stageModel.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridIndexã‹ã‚‰Zè»¸æ–¹å‘ã¸-1
+            RegistAttackableEachGrid(gridIndex + _stageModel.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridindexã‹ã‚‰Zè»¸æ–¹å‘ã¸+1
         }
 
         /// <summary>
-        /// UŒ‚‰Â”\‚ÈƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ÉƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚ÌˆÊ’u‚ğİ’è‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯èƒ½ãªã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã«ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ã®ä½ç½®ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="target">—\‚ßUŒ‚‘ÎÛ‚ªŒˆ‚Ü‚Á‚Ä‚¢‚éÛ‚Éw’è</param>
+        /// <param name="target">äºˆã‚æ”»æ’ƒå¯¾è±¡ãŒæ±ºã¾ã£ã¦ã„ã‚‹éš›ã«æŒ‡å®š</param>
         public void SetupGridCursorToAttackCandidate(Character target = null)
         {
-            // ‘I‘ğƒOƒŠƒbƒh‚ğ©“®“I‚ÉUŒ‚‰Â”\ƒLƒƒƒ‰ƒNƒ^[‚Ì‘¶İ‚·‚éƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX‚Éİ’è
+            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’è‡ªå‹•çš„ã«æ”»æ’ƒå¯èƒ½ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®å­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«è¨­å®š
             if (0 < _attackableGridIndexs.Count)
             {
                 _gridCursor.SetAtkTargetNum(_attackableGridIndexs.Count);
 
-                // UŒ‚‘ÎÛ‚ªŠù‚ÉŒˆ‚Ü‚Á‚Ä‚¢‚éê‡‚Í‘ÎÛ‚ğ’T‚·
+                // æ”»æ’ƒå¯¾è±¡ãŒæ—¢ã«æ±ºã¾ã£ã¦ã„ã‚‹å ´åˆã¯å¯¾è±¡ã‚’æ¢ã™
                 if (target != null && 1 < _attackableGridIndexs.Count)
                 {
                     for (int i = 0; i < _attackableGridIndexs.Count; ++i)
@@ -543,11 +543,11 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‰Â”\ƒOƒŠƒbƒh‚Ì‚¤‚¿AUŒ‚‰Â”\ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ğƒŠƒXƒg‚É“o˜^‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯èƒ½ã‚°ãƒªãƒƒãƒ‰ã®ã†ã¡ã€æ”»æ’ƒå¯èƒ½ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã‚’ãƒªã‚¹ãƒˆã«ç™»éŒ²ã—ã¾ã™
         /// </summary>
-        /// <param name="targetTag">UŒ‚‘ÎÛ‚Ìƒ^ƒO</param>
-        /// <param name="target">—\‚ßUŒ‚‘ÎÛ‚ªŒˆ‚Ü‚Á‚Ä‚¢‚éÛ‚Éw’è</param>
-        /// <returns>UŒ‚‰Â”\ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚µ‚Ä‚¢‚é</returns>
+        /// <param name="targetTag">æ”»æ’ƒå¯¾è±¡ã®ã‚¿ã‚°</param>
+        /// <param name="target">äºˆã‚æ”»æ’ƒå¯¾è±¡ãŒæ±ºã¾ã£ã¦ã„ã‚‹éš›ã«æŒ‡å®š</param>
+        /// <returns>æ”»æ’ƒå¯èƒ½ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã—ã¦ã„ã‚‹</returns>
         public bool RegistAttackTargetGridIndexs(Character.CHARACTER_TAG targetTag, Character target = null)
         {
             Character character = null;
@@ -555,7 +555,7 @@ namespace Frontier.Stage
             _gridCursor.ClearAtkTargetInfo();
             _attackableGridIndexs.Clear();
 
-            // UŒ‚‰Â”\A‚©‚ÂUŒ‚‘ÎÛ‚Æ‚È‚éƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ğƒŠƒXƒg‚É“o˜^
+            // æ”»æ’ƒå¯èƒ½ã€ã‹ã¤æ”»æ’ƒå¯¾è±¡ã¨ãªã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã‚’ãƒªã‚¹ãƒˆã«ç™»éŒ²
             for (int i = 0; i < _gridInfo.Length; ++i)
             {
                 var info = _gridInfo[i];
@@ -570,12 +570,12 @@ namespace Frontier.Stage
                 }
             }
 
-            // ‘I‘ğƒOƒŠƒbƒh‚ğ©“®“I‚ÉUŒ‚‰Â”\ƒLƒƒƒ‰ƒNƒ^[‚Ì‘¶İ‚·‚éƒOƒŠƒbƒhƒCƒ“ƒfƒbƒNƒX‚Éİ’è
+            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’è‡ªå‹•çš„ã«æ”»æ’ƒå¯èƒ½ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®å­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«è¨­å®š
             if (0 < _attackableGridIndexs.Count)
             {
                 _gridCursor.SetAtkTargetNum(_attackableGridIndexs.Count);
 
-                // UŒ‚‘ÎÛ‚ªŠù‚ÉŒˆ‚Ü‚Á‚Ä‚¢‚éê‡‚Í‘ÎÛ‚ğ’T‚·
+                // æ”»æ’ƒå¯¾è±¡ãŒæ—¢ã«æ±ºã¾ã£ã¦ã„ã‚‹å ´åˆã¯å¯¾è±¡ã‚’æ¢ã™
                 if (target != null && 1 < _attackableGridIndexs.Count)
                 {
                     for (int i = 0; i < _attackableGridIndexs.Count; ++i)
@@ -601,22 +601,22 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ˆÚ“®‰Â”\ƒOƒŠƒbƒh‚ğ•`‰æ‚µ‚Ü‚·
+        /// ç§»å‹•å¯èƒ½ã‚°ãƒªãƒƒãƒ‰ã‚’æç”»ã—ã¾ã™
         /// </summary>
-        /// <param name="departIndex">ˆÚ“®ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <param name="moveableRange">ˆÚ“®‰Â”\”ÍˆÍ’l</param>
-        /// <param name="attackableRange">UŒ‚‰Â”\”ÍˆÍ’l</param>
+        /// <param name="departIndex">ç§»å‹•ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <param name="moveableRange">ç§»å‹•å¯èƒ½ç¯„å›²å€¤</param>
+        /// <param name="attackableRange">æ”»æ’ƒå¯èƒ½ç¯„å›²å€¤</param>
         public void DrawMoveableGrids(int departIndex, int moveableRange, int attackableRange)
         {
             Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
 
             int count = 0;
-            // ƒOƒŠƒbƒh‚Ìó‘Ô‚ğƒƒbƒVƒ…‚Å•`‰æ
+            // ã‚°ãƒªãƒƒãƒ‰ã®çŠ¶æ…‹ã‚’ãƒ¡ãƒƒã‚·ãƒ¥ã§æç”»
             for (int i = 0; i < GridTotalNum; ++i)
             {
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE_TARGET))
                 {
-                    Instantiate(_gridMeshObject);  // TODO : ‰¼
+                    Instantiate(_gridMeshObject);  // TODO : ä»®
                     _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACKABLE_TARGET);
 
                     continue;
@@ -624,7 +624,7 @@ namespace Frontier.Stage
 
                 if (0 <= _gridInfo[i].estimatedMoveRange)
                 {
-                    Instantiate(_gridMeshObject);  // TODO : ‰¼
+                    Instantiate(_gridMeshObject);  // TODO : ä»®
                     _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.MOVE);
 
                     Debug.Log("Moveable Grid Index : " + i);
@@ -633,7 +633,7 @@ namespace Frontier.Stage
 
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
                 {
-                    Instantiate(_gridMeshObject);  // TODO : ‰¼
+                    Instantiate(_gridMeshObject);  // TODO : ä»®
                     _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
 
                     Debug.Log("Attackable Grid Index : " + i);
@@ -643,20 +643,20 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‰Â”\ƒOƒŠƒbƒh‚ğ•`‰æ‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯èƒ½ã‚°ãƒªãƒƒãƒ‰ã‚’æç”»ã—ã¾ã™
         /// </summary>
-        /// <param name="departIndex">UŒ‚ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
+        /// <param name="departIndex">æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
         public void DrawAttackableGrids(int departIndex)
         {
             Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
 
             int count = 0;
-            // ƒOƒŠƒbƒh‚Ìó‘Ô‚ğƒƒbƒVƒ…‚Å•`‰æ
+            // ã‚°ãƒªãƒƒãƒ‰ã®çŠ¶æ…‹ã‚’ãƒ¡ãƒƒã‚·ãƒ¥ã§æç”»
             for (int i = 0; i < GridTotalNum; ++i)
             {
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
                 {
-                    Instantiate(_gridMeshObject);  // TODO : ‰¼
+                    Instantiate(_gridMeshObject);  // TODO : ä»®
                     _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
 
                     Debug.Log("Attackable Grid Index : " + i);
@@ -665,11 +665,11 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‘S‚Ä‚ÌƒOƒŠƒbƒh‚É‚¨‚¯‚éw’è‚Ìƒrƒbƒgƒtƒ‰ƒO‚Ìİ’è‚ğ‰ğœ‚µ‚Ü‚·
+        /// å…¨ã¦ã®ã‚°ãƒªãƒƒãƒ‰ã«ãŠã‘ã‚‹æŒ‡å®šã®ãƒ“ãƒƒãƒˆãƒ•ãƒ©ã‚°ã®è¨­å®šã‚’è§£é™¤ã—ã¾ã™
         /// </summary>
         public void UnsetGridsBitFlag(BitFlag value)
         {
-            // ‘S‚Ä‚ÌƒOƒŠƒbƒh‚ÌˆÚ“®EUŒ‚‰Â”Ûî•ñ‚ğ‰Šú‰»
+            // å…¨ã¦ã®ã‚°ãƒªãƒƒãƒ‰ã®ç§»å‹•ãƒ»æ”»æ’ƒå¯å¦æƒ…å ±ã‚’åˆæœŸåŒ–
             for (int i = 0; i < GridTotalNum; ++i)
             {
                 Methods.UnsetBitFlag(ref _gridInfo[i].flag, value);
@@ -677,7 +677,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‘S‚Ä‚ÌƒOƒŠƒbƒhƒƒbƒVƒ…‚Ì•`‰æ‚ğÁ‹‚µ‚Ü‚·
+        /// å…¨ã¦ã®ã‚°ãƒªãƒƒãƒ‰ãƒ¡ãƒƒã‚·ãƒ¥ã®æç”»ã‚’æ¶ˆå»ã—ã¾ã™
         /// </summary>
         public void ClearGridMeshDraw()
         {
@@ -690,7 +690,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// UŒ‚‰Â”\î•ñ‚ğÁ‹‚µ‚Ü‚·
+        /// æ”»æ’ƒå¯èƒ½æƒ…å ±ã‚’æ¶ˆå»ã—ã¾ã™
         /// </summary>
         public void ClearAttackableInfo()
         {
@@ -699,75 +699,75 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhƒƒbƒVƒ…‚É‚±‚ÌƒNƒ‰ƒX‚ğ“o˜^‚µ‚Ü‚·
-        /// ƒOƒŠƒbƒhƒƒbƒVƒ…ƒNƒ‰ƒX‚ª¶¬‚³‚ê‚½ƒ^ƒCƒ~ƒ“ƒO‚ÅƒOƒŠƒbƒhƒƒbƒVƒ…‘¤‚©‚çŒÄ‚Ño‚³‚ê‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ãƒ¡ãƒƒã‚·ãƒ¥ã«ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ç™»éŒ²ã—ã¾ã™
+        /// ã‚°ãƒªãƒƒãƒ‰ãƒ¡ãƒƒã‚·ãƒ¥ã‚¯ãƒ©ã‚¹ãŒç”Ÿæˆã•ã‚ŒãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§ã‚°ãƒªãƒƒãƒ‰ãƒ¡ãƒƒã‚·ãƒ¥å´ã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã¾ã™
         /// </summary>
-        /// <param name="script">ƒOƒŠƒbƒhƒƒbƒVƒ…ƒNƒ‰ƒX‚ÌƒXƒNƒŠƒvƒg</param>
+        /// <param name="script">ã‚°ãƒªãƒƒãƒ‰ãƒ¡ãƒƒã‚·ãƒ¥ã‚¯ãƒ©ã‚¹ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆ</param>
         public void AddGridMeshToList(GridMesh script)
         {
             _gridMeshs.Add(script);
         }
 
         /// <summary>
-        /// c²‚Æ‰¡²‚ÌƒOƒŠƒbƒh”‚ğæ“¾‚µ‚Ü‚·
+        /// ç¸¦è»¸ã¨æ¨ªè»¸ã®ã‚°ãƒªãƒƒãƒ‰æ•°ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>c²‚Æ‰¡²‚ÌƒOƒŠƒbƒh”</returns>
+        /// <returns>ç¸¦è»¸ã¨æ¨ªè»¸ã®ã‚°ãƒªãƒƒãƒ‰æ•°</returns>
         public (int, int) GetGridNumsXZ()
         {
             return (_stageModel.GetGridRowNum(), _stageModel.GetGridColumnNum());
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒh‚Ì1•Ó‚Ì‘å‚«‚³(’·‚³)‚ğæ“¾‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã®1è¾ºã®å¤§ãã•(é•·ã•)ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>ƒOƒŠƒbƒh‚Ì1•Ó‚Ì‘å‚«‚³(’·‚³)</returns>
+        /// <returns>ã‚°ãƒªãƒƒãƒ‰ã®1è¾ºã®å¤§ãã•(é•·ã•)</returns>
         public float GetGridSize()
         {
             return _stageModel.GetGridSize();
         }
 
         /// <summary>
-        /// w’èƒOƒŠƒbƒh‚É‚¨‚¯‚éƒLƒƒƒ‰ƒNƒ^[‚Ìƒ[ƒ‹ƒhÀ•W‚ğæ“¾‚µ‚Ü‚·
+        /// æŒ‡å®šã‚°ãƒªãƒƒãƒ‰ã«ãŠã‘ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <param name="index">w’èƒOƒŠƒbƒh</param>
-        /// <returns>ƒOƒŠƒbƒh‚É‚¨‚¯‚é’†Sƒ[ƒ‹ƒhÀ•W</returns>
+        /// <param name="index">æŒ‡å®šã‚°ãƒªãƒƒãƒ‰</param>
+        /// <returns>ã‚°ãƒªãƒƒãƒ‰ã«ãŠã‘ã‚‹ä¸­å¿ƒãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™</returns>
         public Vector3 GetGridCharaStandPos(int index)
         {
             return _gridInfo[index].charaStandPos;
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚ÌƒCƒ“ƒfƒbƒNƒX’l‚ğæ“¾‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>Œ»İ‚Ì‘I‘ğƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX’l</returns>
+        /// <returns>ç¾åœ¨ã®é¸æŠã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</returns>
         public int GetCurrentGridIndex()
         {
             return _gridCursor.Index;
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚Ìó‘Ô‚ğæ“¾‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ã®çŠ¶æ…‹ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>Œ»İ‚Ì‘I‘ğƒOƒŠƒbƒh‚Ìó‘Ô</returns>
+        /// <returns>ç¾åœ¨ã®é¸æŠã‚°ãƒªãƒƒãƒ‰ã®çŠ¶æ…‹</returns>
         public GridCursor.State GetGridCursorState()
         {
             return _gridCursor.GridState;
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚ªƒoƒCƒ“ƒh‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ğæ“¾‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ãŒãƒã‚¤ãƒ³ãƒ‰ã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>ƒoƒCƒ“ƒh‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[(‘¶İ‚µ‚È‚¢ê‡‚Ínull)</returns>
+        /// <returns>ãƒã‚¤ãƒ³ãƒ‰ã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼(å­˜åœ¨ã—ãªã„å ´åˆã¯null)</returns>
         public Character GetGridCursorBindCharacter()
         {
             return _gridCursor.BindCharacter;
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚ÉƒLƒƒƒ‰ƒNƒ^[‚ğƒoƒCƒ“ƒh‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ã«ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’ãƒã‚¤ãƒ³ãƒ‰ã—ã¾ã™
         /// </summary>
-        /// <param name="state">ƒoƒCƒ“ƒhƒ^ƒCƒv</param>
-        /// <param name="bindCharacter">ƒoƒCƒ“ƒh‘ÎÛ‚ÌƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="state">ãƒã‚¤ãƒ³ãƒ‰ã‚¿ã‚¤ãƒ—</param>
+        /// <param name="bindCharacter">ãƒã‚¤ãƒ³ãƒ‰å¯¾è±¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void BindGridCursorState( GridCursor.State state, Character bindCharacter )
         {
             _gridCursor.GridState       = state;
@@ -775,16 +775,16 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ‘I‘ğƒOƒŠƒbƒh‚ÌƒAƒNƒeƒBƒuó‘Ô‚ğİ’è‚µ‚Ü‚·
+        /// é¸æŠã‚°ãƒªãƒƒãƒ‰ã®ã‚¢ã‚¯ãƒ†ã‚£ãƒ–çŠ¶æ…‹ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="isActive">İ’è‚·‚éƒAƒNƒeƒBƒuó‘Ô</param>
+        /// <param name="isActive">è¨­å®šã™ã‚‹ã‚¢ã‚¯ãƒ†ã‚£ãƒ–çŠ¶æ…‹</param>
         public void SetGridCursorActive( bool isActive )
         {
             _gridCursor.SetActive( isActive );
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒhƒJ[ƒ\ƒ‹‚ÌƒLƒƒƒ‰ƒNƒ^[ƒoƒCƒ“ƒh‚ğ‰ğœ‚µ‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã‚«ãƒ¼ã‚½ãƒ«ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒã‚¤ãƒ³ãƒ‰ã‚’è§£é™¤ã—ã¾ã™
         /// </summary>
         public void ClearGridCursroBind()
         {
@@ -798,10 +798,10 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// Œ»İ‘I‘ğ‚µ‚Ä‚¢‚éƒOƒŠƒbƒh‚Ìî•ñ‚ğæ“¾‚µ‚Ü‚·
-        /// UŒ‚‘ÎÛ‘I‘ğó‘Ô‚Å‚Í‘I‘ğ‚µ‚Ä‚¢‚éUŒ‚‘ÎÛ‚ª‘¶İ‚·‚éƒOƒŠƒbƒhî•ñ‚ğæ“¾‚µ‚Ü‚·
+        /// ç¾åœ¨é¸æŠã—ã¦ã„ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®æƒ…å ±ã‚’å–å¾—ã—ã¾ã™
+        /// æ”»æ’ƒå¯¾è±¡é¸æŠçŠ¶æ…‹ã§ã¯é¸æŠã—ã¦ã„ã‚‹æ”»æ’ƒå¯¾è±¡ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <param name="gridInfo">ŠY“–‚·‚éƒOƒŠƒbƒh‚Ìî•ñ</param>
+        /// <param name="gridInfo">è©²å½“ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®æƒ…å ±</param>
         public void FetchCurrentGridInfo(out GridInfo gridInfo)
         {
             int index = 0;
@@ -819,19 +819,19 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// w’èƒCƒ“ƒfƒbƒNƒX‚ÌƒOƒŠƒbƒhî•ñ‚ğæ“¾‚µ‚Ü‚·
+        /// æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <param name="index">w’è‚·‚éƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <returns>w’èƒCƒ“ƒfƒbƒNƒX‚ÌƒOƒŠƒbƒhî•ñ</returns>
+        /// <param name="index">æŒ‡å®šã™ã‚‹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <returns>æŒ‡å®šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®ã‚°ãƒªãƒƒãƒ‰æƒ…å ±</returns>
         public ref GridInfo GetGridInfo(int index)
         {
             return ref _gridInfo[index];
         }
 
         /// <summary>
-        /// ƒOƒŠƒbƒh‚ÌƒƒbƒVƒ…‚Ì•`‰æ‚ÌØ‘Ö‚ğs‚¢‚Ü‚·
+        /// ã‚°ãƒªãƒƒãƒ‰ã®ãƒ¡ãƒƒã‚·ãƒ¥ã®æç”»ã®åˆ‡æ›¿ã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="isDisplay">•`‰æ‚·‚é‚©”Û‚©</param>
+        /// <param name="isDisplay">æç”»ã™ã‚‹ã‹å¦ã‹</param>
         public void ToggleMeshDisplay(bool isDisplay)
         {
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
@@ -842,48 +842,48 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// o”­’n“_‚Æ–Ú“I’n‚©‚çˆÚ“®Œo˜H‚Æ‚È‚éƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒXƒŠƒXƒg‚ğæ“¾‚µ‚Ü‚·
+        /// å‡ºç™ºåœ°ç‚¹ã¨ç›®çš„åœ°ã‹ã‚‰ç§»å‹•çµŒè·¯ã¨ãªã‚‹ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒªã‚¹ãƒˆã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <param name="departGridIndex">o”­’nƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX</param>
-        /// <param name="destGridIndex">–Ú“I’nƒOƒŠƒbƒh‚ÌƒCƒ“ƒfƒbƒNƒX</param>
+        /// <param name="departGridIndex">å‡ºç™ºåœ°ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+        /// <param name="destGridIndex">ç›®çš„åœ°ã‚°ãƒªãƒƒãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
         public List<(int routeIndexs, int routeCost)> ExtractShortestRouteIndexs(int departGridIndex, int destGridIndex, in List<int> candidateRouteIndexs)
         {
             Dijkstra dijkstra = new Dijkstra(candidateRouteIndexs.Count);
 
-            // o”­ƒOƒŠƒbƒh‚©‚ç‚ÌƒCƒ“ƒfƒbƒNƒX‚Ì·‚ğæ“¾
+            // å‡ºç™ºã‚°ãƒªãƒƒãƒ‰ã‹ã‚‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®å·®ã‚’å–å¾—
             for (int i = 0; i + 1 < candidateRouteIndexs.Count; ++i)
             {
                 for (int j = i + 1; j < candidateRouteIndexs.Count; ++j)
                 {
                     int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
-                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != 0)) ||                                 // ¶‚É‘¶İ(¶’[‚ğœ‚­)
-                        (diff == 1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != _stageModel.GetGridRowNum() - 1)) ||    // ‰E‚É‘¶İ(‰E’[‚ğœ‚­)
-                         Math.Abs(diff) == _stageModel.GetGridRowNum())                                                                 // ã‚Ü‚½‚Í‰º‚É‘¶İ
+                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != 0)) ||                                 // å·¦ã«å­˜åœ¨(å·¦ç«¯ã‚’é™¤ã)
+                        (diff == 1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != _stageModel.GetGridRowNum() - 1)) ||    // å³ã«å­˜åœ¨(å³ç«¯ã‚’é™¤ã)
+                         Math.Abs(diff) == _stageModel.GetGridRowNum())                                                                 // ä¸Šã¾ãŸã¯ä¸‹ã«å­˜åœ¨
                     {
-                        // ˆÚ“®‰Â”\‚È—×ÚƒOƒŠƒbƒhî•ñ‚ğƒ_ƒCƒNƒXƒgƒ‰‚É“ü‚ê‚é
+                        // ç§»å‹•å¯èƒ½ãªéš£æ¥ã‚°ãƒªãƒƒãƒ‰æƒ…å ±ã‚’ãƒ€ã‚¤ã‚¯ã‚¹ãƒˆãƒ©ã«å…¥ã‚Œã‚‹
                         dijkstra.Add(i, j);
                         dijkstra.Add(j, i);
                     }
                 }
             }
 
-            // ƒ_ƒCƒNƒXƒgƒ‰‚©‚ço”­ƒOƒŠƒbƒh‚©‚ç–Ú“IƒOƒŠƒbƒh‚Ü‚Å‚ÌÅ’ZŒo˜H‚ğ“¾‚é
+            // ãƒ€ã‚¤ã‚¯ã‚¹ãƒˆãƒ©ã‹ã‚‰å‡ºç™ºã‚°ãƒªãƒƒãƒ‰ã‹ã‚‰ç›®çš„ã‚°ãƒªãƒƒãƒ‰ã¾ã§ã®æœ€çŸ­çµŒè·¯ã‚’å¾—ã‚‹
             return dijkstra.GetMinRoute(candidateRouteIndexs.IndexOf(departGridIndex), candidateRouteIndexs.IndexOf(destGridIndex), candidateRouteIndexs);
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒNƒ^[‚ÌˆÊ’u‹y‚ÑŒü‚«‚ğ•Û‚µ‚Ü‚·
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ä½ç½®åŠã³å‘ãã‚’ä¿æŒã—ã¾ã™
         /// </summary>
-        /// <param name="footprint">•Û‚·‚é’l</param>
+        /// <param name="footprint">ä¿æŒã™ã‚‹å€¤</param>
         public void LeaveFootprint(Footprint footprint)
         {
             _footprint = footprint;
         }
 
         /// <summary>
-        /// •Û‚µ‚Ä‚¢‚½ˆÊ’u‹y‚ÑŒü‚«‚ğw’è‚ÌƒLƒƒƒ‰ƒNƒ^[‚Éİ’è‚µ‚Ü‚·
+        /// ä¿æŒã—ã¦ã„ãŸä½ç½®åŠã³å‘ãã‚’æŒ‡å®šã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã«è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="character">w’è‚·‚éƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="character">æŒ‡å®šã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void FollowFootprint(Character character)
         {
             _gridCursor.Index = _footprint.gridIndex;
@@ -895,11 +895,11 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// w’è‚³‚ê‚½ƒCƒ“ƒfƒbƒNƒXŠÔ‚ÌƒOƒŠƒbƒh’·‚ğ•Ô‚µ‚Ü‚·
+        /// æŒ‡å®šã•ã‚ŒãŸã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹é–“ã®ã‚°ãƒªãƒƒãƒ‰é•·ã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <param name="fromIndex">n“_ƒCƒ“ƒfƒbƒNƒX</param>
-        /// <param name="toIndex">I“_ƒCƒ“ƒfƒbƒNƒX</param>
-        /// <returns>ƒOƒŠƒbƒh’·</returns>
+        /// <param name="fromIndex">å§‹ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+        /// <param name="toIndex">çµ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹</param>
+        /// <returns>ã‚°ãƒªãƒƒãƒ‰é•·</returns>
         public float CalcurateGridLength(int fromIndex, int toIndex)
         {
             var from = _gridInfo[fromIndex].charaStandPos;
@@ -918,10 +918,10 @@ namespace Frontier.Stage
             {
                 StageController script = target as StageController;
 
-                // ƒXƒe[ƒWî•ñ‚©‚çƒTƒCƒY‚ğŒˆ‚ß‚éÛ‚ÍƒTƒCƒY•ÒW‚ğ•s‰Â‚É‚·‚é
+                // ã‚¹ãƒ†ãƒ¼ã‚¸æƒ…å ±ã‹ã‚‰ã‚µã‚¤ã‚ºã‚’æ±ºã‚ã‚‹éš›ã¯ã‚µã‚¤ã‚ºç·¨é›†ã‚’ä¸å¯ã«ã™ã‚‹
                 EditorGUI.BeginDisabledGroup(script.isAdjustStageScale);
-                script._stageModel.SetGridRowNum( EditorGUILayout.IntField("X•ûŒüƒOƒŠƒbƒh”", script._stageModel.GetGridRowNum()) );
-                script._stageModel.SetGridColumnNum( EditorGUILayout.IntField("Z•ûŒüƒOƒŠƒbƒh”", script._stageModel.GetGridColumnNum()) );
+                script._stageModel.SetGridRowNum( EditorGUILayout.IntField("Xæ–¹å‘ã‚°ãƒªãƒƒãƒ‰æ•°", script._stageModel.GetGridRowNum()) );
+                script._stageModel.SetGridColumnNum( EditorGUILayout.IntField("Zæ–¹å‘ã‚°ãƒªãƒƒãƒ‰æ•°", script._stageModel.GetGridColumnNum()) );
                 EditorGUI.EndDisabledGroup();
 
                 base.OnInspectorGUI();

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +12,7 @@ namespace Frontier
         public BattleUISystem BattleUI => _battleUI;
 
         /// <summary>
-        /// UI‚ÌƒJƒeƒSƒŠ‚ðŽ¦‚·ƒCƒ“ƒfƒbƒNƒX’l‚Å‚·
+        /// UIã®ã‚«ãƒ†ã‚´ãƒªã‚’ç¤ºã™ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ã§ã™
         /// </summary>
         enum ChildIndex
         {

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -31,15 +31,15 @@ namespace Frontier
 
             if (_showTime < 0f)
             {
-                // UI•\¦‚ğ–³Œø‚É
+                // UIè¡¨ç¤ºã‚’ç„¡åŠ¹ã«
                 gameObject.SetActive(false);
             }
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
-        /// <param name="showTime">•\¦ŠÔ</param>
+        /// <param name="showTime">è¡¨ç¤ºæ™‚é–“</param>
         public void Init( float showTime )
         {
             _isUpdate = false;
@@ -47,7 +47,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// I—¹‚³‚¹‚Ü‚·
+        /// çµ‚äº†ã•ã›ã¾ã™
         /// </summary>
         public void terminate()
         {
@@ -67,7 +67,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// •\¦‚ğI—¹‚µ‚Ä‚¢‚é‚©‚ğ•Ô‚µ‚Ü‚·
+        /// è¡¨ç¤ºã‚’çµ‚äº†ã—ã¦ã„ã‚‹ã‹ã‚’è¿”ã—ã¾ã™
         /// </summary>
         public bool IsShowEnd()
         {

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +12,7 @@ public class GameOverUI : MonoBehaviour
     }
 
     /// <summary>
-    /// —‰ºƒAƒjƒ[ƒVƒ‡ƒ“‚ğŠJn‚µ‚Ü‚·
+    /// è½ä¸‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’é–‹å§‹ã—ã¾ã™
     /// </summary>
     public void StartAnim()
     {

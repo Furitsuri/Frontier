@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -12,24 +12,24 @@ namespace Frontier
     public class InputGuideUI : MonoBehaviour
     {
         /// <summary>
-        /// ƒL[‚ÌƒAƒCƒRƒ“‚Æ‚»‚Ìà–¾•¶‚Ì\‘¢‘Ì
+        /// ã‚­ãƒ¼ã®ã‚¢ã‚¤ã‚³ãƒ³ã¨ãã®èª¬æ˜æ–‡ã®æ§‹é€ ä½“
         /// </summary>
         public struct InputGuide
         {
             public delegate bool InputCallBack();
 
-            // ƒL[ƒAƒCƒRƒ“
+            // ã‚­ãƒ¼ã‚¢ã‚¤ã‚³ãƒ³
             public Constants.KeyIcon _type;
-            // ƒAƒCƒRƒ“‚É‘Î‚·‚éà–¾•¶
+            // ã‚¢ã‚¤ã‚³ãƒ³ã«å¯¾ã™ã‚‹èª¬æ˜æ–‡
             public string _explanation;
-            // ƒL[‚ª‰Ÿ‰º‚³‚ê‚½Û‚É“®ì‚³‚¹‚éƒR[ƒ‹ƒoƒbƒN
+            // ã‚­ãƒ¼ãŒæŠ¼ä¸‹ã•ã‚ŒãŸéš›ã«å‹•ä½œã•ã›ã‚‹ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
             public InputCallBack _callback;
 
             /// <summary>
-            /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+            /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
             /// </summary>
-            /// <param name="type">ƒKƒCƒhƒXƒvƒ‰ƒCƒg‚ÌƒAƒCƒRƒ“ƒ^ƒCƒv</param>
-            /// <param name="explanation">ƒL[‚É‘Î‚·‚éà–¾•¶</param>
+            /// <param name="type">ã‚¬ã‚¤ãƒ‰ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ã‚¢ã‚¤ã‚³ãƒ³ã‚¿ã‚¤ãƒ—</param>
+            /// <param name="explanation">ã‚­ãƒ¼ã«å¯¾ã™ã‚‹èª¬æ˜æ–‡</param>
             public InputGuide(Constants.KeyIcon type, string explanation)
             {
                 _type = type;
@@ -38,10 +38,10 @@ namespace Frontier
             }
 
             /// <summary>
-            /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^(ˆø”‚Éƒ^ƒvƒ‹‚ğw’è)
+            /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(å¼•æ•°ã«ã‚¿ãƒ—ãƒ«ã‚’æŒ‡å®š)
             /// </summary>
-            /// <param name="type">ƒKƒCƒhƒXƒvƒ‰ƒCƒg‚ÌƒAƒCƒRƒ“ƒ^ƒCƒv</param>
-            /// <param name="explanation">ƒL[‚É‘Î‚·‚éà–¾•¶</param>
+            /// <param name="type">ã‚¬ã‚¤ãƒ‰ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ã‚¢ã‚¤ã‚³ãƒ³ã‚¿ã‚¤ãƒ—</param>
+            /// <param name="explanation">ã‚­ãƒ¼ã«å¯¾ã™ã‚‹èª¬æ˜æ–‡</param>
             public InputGuide((Constants.KeyIcon type, string explanation) arg)
             {
                 _type = arg.type;
@@ -50,9 +50,9 @@ namespace Frontier
             }
 
             /// <summary>
-            /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^(ƒR[ƒ‹ƒoƒbƒN‚ğ“à•ï‚µ‚½ƒ^ƒvƒ‹‚ğˆø”‚Éw’è)
+            /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã‚’å†…åŒ…ã—ãŸã‚¿ãƒ—ãƒ«ã‚’å¼•æ•°ã«æŒ‡å®š)
             /// </summary>
-            /// <param name="arg">ƒ^ƒvƒ‹ˆø”</param>
+            /// <param name="arg">ã‚¿ãƒ—ãƒ«å¼•æ•°</param>
             public InputGuide((Constants.KeyIcon type, string explanation, InputCallBack callback) arg)
             {
                 _type = arg.type;
@@ -62,36 +62,36 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‚±‚ÌƒNƒ‰ƒX‚ğƒAƒ^ƒbƒ`‚µ‚½UnityƒIƒuƒWƒFƒNƒg‚É‚¨‚¢‚ÄA
-        /// ‚»‚Ìq‚ÉŠY“–‚·‚éƒIƒuƒWƒFƒNƒg’B‚ÌƒCƒ“ƒfƒbƒNƒX‚ªA‰½‚ÌƒIƒuƒWƒFƒNƒg‚ğ¦‚·‚©‚Ìí—Ş‚ğ•\‚µ‚Ü‚·
-        /// UnityEditor‘¤‚Å•ÒW‚µ‚½ê‡‚ÍA•K‚¸‚±‚¿‚ç‚à•ÏX‚·‚é•K—v‚ª‚ ‚è‚Ü‚·
+        /// ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ã‚¢ã‚¿ãƒƒãƒã—ãŸUnityã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ãŠã„ã¦ã€
+        /// ãã®å­ã«è©²å½“ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆé”ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãŒã€ä½•ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç¤ºã™ã‹ã®ç¨®é¡ã‚’è¡¨ã—ã¾ã™
+        /// UnityEditorå´ã§ç·¨é›†ã—ãŸå ´åˆã¯ã€å¿…ãšã“ã¡ã‚‰ã‚‚å¤‰æ›´ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™
         /// </summary>
         private enum ChildIndex
         {
-            SPRITE = 0, // ƒXƒvƒ‰ƒCƒgƒIƒuƒWƒFƒNƒg
-            TEXT,       // ƒeƒLƒXƒg(ƒKƒCƒh‚Ìà–¾•¶)ƒIƒuƒWƒFƒNƒg
+            SPRITE = 0, // ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+            TEXT,       // ãƒ†ã‚­ã‚¹ãƒˆ(ã‚¬ã‚¤ãƒ‰ã®èª¬æ˜æ–‡)ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 
             NUM,
         }
 
         [SerializeField]
-        [Header("ƒKƒCƒhUIƒXƒvƒ‰ƒCƒg")]
+        [Header("ã‚¬ã‚¤ãƒ‰UIã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ")]
         private SpriteRenderer GuideSprite;
 
         [SerializeField]
-        [Header("à–¾ƒeƒLƒXƒg")]
+        [Header("èª¬æ˜ãƒ†ã‚­ã‚¹ãƒˆ")]
         private TextMeshProUGUI GuideExplanation;
 
-        // “ü—ÍƒKƒCƒh‚Ì˜gUI
+        // å…¥åŠ›ã‚¬ã‚¤ãƒ‰ã®æ UI
         private RectTransform _rectTransform;
-        // q‚ÌƒIƒuƒWƒFƒNƒg
+        // å­ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
         private GameObject[] _objectChildren;
-        // ƒKƒCƒh•
+        // ã‚¬ã‚¤ãƒ‰å¹…
         private float _width = 0f;
 
         void Awake()
         {
-            // q‚ÌƒIƒuƒWƒFƒNƒg‚ğæ“¾
+            // å­ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å–å¾—
             _objectChildren = new GameObject[(int)ChildIndex.NUM];
             for (int i = 0; i < (int)ChildIndex.NUM; ++i)
             {
@@ -115,7 +115,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// •\¦‚·‚é•¶š—ñ‚âƒXƒvƒ‰ƒCƒg‚É‰‚¶‚ÄAƒKƒCƒh•‚Ì’·‚³‚ğ’²®‚µ‚Ü‚·
+        /// è¡¨ç¤ºã™ã‚‹æ–‡å­—åˆ—ã‚„ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã«å¿œã˜ã¦ã€ã‚¬ã‚¤ãƒ‰å¹…ã®é•·ã•ã‚’èª¿æ•´ã—ã¾ã™
         /// </summary>
         private void AdjustWidth()
         {
@@ -133,9 +133,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒL[ƒKƒCƒh‚ğİ’è‚µ‚Ü‚·
-        /// <param name="sprites">QÆ‚·‚éƒXƒvƒ‰ƒCƒg”z—ñ</param>
-        /// <param name="guide">‚±‚ÌUI‚Éİ’è‚·‚éƒKƒCƒhî•ñ</param>
+        /// ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã‚’è¨­å®šã—ã¾ã™
+        /// <param name="sprites">å‚ç…§ã™ã‚‹ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆé…åˆ—</param>
+        /// <param name="guide">ã“ã®UIã«è¨­å®šã™ã‚‹ã‚¬ã‚¤ãƒ‰æƒ…å ±</param>
         /// </summary>
         public void Regist( Sprite[] sprites, InputGuide guide )
         {
@@ -146,7 +146,7 @@ namespace Frontier
             _rectTransform.localScale   = Vector3.one;
             GuideExplanation.text       = guide._explanation;
 
-            // ƒKƒCƒh•‚ğ’²®
+            // ã‚¬ã‚¤ãƒ‰å¹…ã‚’èª¿æ•´
             AdjustWidth();
         }
     }

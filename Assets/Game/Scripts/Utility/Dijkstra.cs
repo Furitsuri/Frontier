@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
@@ -6,13 +6,13 @@ using Unity.VisualScripting;
 
 public class Dijkstra
 {
-    public int N { get; }               // ’¸“_‚Ì”
-    private List<Edge>[] _graph;        // ƒOƒ‰ƒt‚Ì•Ó‚Ìƒf[ƒ^
+    public int N { get; }               // é ‚ç‚¹ã®æ•°
+    private List<Edge>[] _graph;        // ã‚°ãƒ©ãƒ•ã®è¾ºã®ãƒ‡ãƒ¼ã‚¿
 
     /// <summary>
-    /// ‰Šú‰»
+    /// åˆæœŸåŒ–
     /// </summary>
-    /// <param name="n">’¸“_”</param>
+    /// <param name="n">é ‚ç‚¹æ•°</param>
     public Dijkstra(int n)
     {
         N = n;
@@ -21,11 +21,11 @@ public class Dijkstra
     }
 
     /// <summary>
-    /// •Ó‚ğ’Ç‰Á
+    /// è¾ºã‚’è¿½åŠ 
     /// </summary>
-    /// <param name="a">Ú‘±Œ³‚Ì’¸“_</param>
-    /// <param name="b">Ú‘±æ‚Ì’¸“_</param>
-    /// <param name="cost">ƒRƒXƒg</param>
+    /// <param name="a">æ¥ç¶šå…ƒã®é ‚ç‚¹</param>
+    /// <param name="b">æ¥ç¶šå…ˆã®é ‚ç‚¹</param>
+    /// <param name="cost">ã‚³ã‚¹ãƒˆ</param>
     public void Add(int a, int b, int cost = 1)
             => _graph[a].Add(new Edge(a, b, cost));
 
@@ -33,12 +33,12 @@ public class Dijkstra
     {
         var List = new List<(int routeIndex, int routeCost)>(Constants.DIJKSTRA_ROUTE_INDEXS_MAX_NUM);
 
-        // ƒRƒXƒg‚ğƒXƒ^[ƒg’¸“_ˆÈŠO‚ğ–³ŒÀ‘å‚É
-        var costInfo = new (int cost, int fromIndex)[N];   // item1 : ˆÚ“®ƒRƒXƒg item2 : item1‚É‚¨‚¯‚éfromƒm[ƒhƒCƒ“ƒfƒbƒNƒX
+        // ã‚³ã‚¹ãƒˆã‚’ã‚¹ã‚¿ãƒ¼ãƒˆé ‚ç‚¹ä»¥å¤–ã‚’ç„¡é™å¤§ã«
+        var costInfo = new (int cost, int fromIndex)[N];   // item1 : ç§»å‹•ã‚³ã‚¹ãƒˆ item2 : item1ã«ãŠã‘ã‚‹fromãƒãƒ¼ãƒ‰ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
         for (int i = 0; i < N; i++) costInfo[i] = (int.MaxValue, -1);
         costInfo[startIndex].cost = 0;
 
-        // –¢Šm’è‚Ì’¸“_‚ğŠi”[‚·‚éƒLƒ…[
+        // æœªç¢ºå®šã®é ‚ç‚¹ã‚’æ ¼ç´ã™ã‚‹ã‚­ãƒ¥ãƒ¼
         var q = new Queue<Vertex>(256);
         q.Enqueue(new Vertex(startIndex, 0));
 
@@ -46,15 +46,15 @@ public class Dijkstra
         {
             var v = q.Dequeue();
 
-            // ‹L˜^‚³‚ê‚Ä‚¢‚éƒRƒXƒg‚ÆˆÙ‚È‚é(ƒRƒXƒg‚ª‚æ‚è‘å‚«‚¢)ê‡‚Í–³‹
+            // è¨˜éŒ²ã•ã‚Œã¦ã„ã‚‹ã‚³ã‚¹ãƒˆã¨ç•°ãªã‚‹(ã‚³ã‚¹ãƒˆãŒã‚ˆã‚Šå¤§ãã„)å ´åˆã¯ç„¡è¦–
             if (v.cost > costInfo[v.index].cost) continue;
 
-            // ¡‰ñŠm’è‚µ‚½’¸“_‚©‚ç‚Â‚È‚ª‚é’¸“_‚É‘Î‚µ‚ÄXV‚ğs‚¤
+            // ä»Šå›ç¢ºå®šã—ãŸé ‚ç‚¹ã‹ã‚‰ã¤ãªãŒã‚‹é ‚ç‚¹ã«å¯¾ã—ã¦æ›´æ–°ã‚’è¡Œã†
             foreach (var e in _graph[v.index])
             {
                 if (costInfo[e.to].cost > v.cost + e.cost)
                 {
-                    // Šù‚É‹L˜^‚³‚ê‚Ä‚¢‚éƒRƒXƒg‚æ‚è¬‚³‚¯‚ê‚ÎƒRƒXƒg‚ğXV
+                    // æ—¢ã«è¨˜éŒ²ã•ã‚Œã¦ã„ã‚‹ã‚³ã‚¹ãƒˆã‚ˆã‚Šå°ã•ã‘ã‚Œã°ã‚³ã‚¹ãƒˆã‚’æ›´æ–°
                     costInfo[e.to] = (v.cost + e.cost, e.from);
                     q.Enqueue(new Vertex(e.to, costInfo[e.to].cost));
                 }
@@ -73,9 +73,9 @@ public class Dijkstra
 
     public struct Edge
     {
-        public int from;                   // Ú‘±Œ³‚Ì’¸“_
-        public int to;                     // Ú‘±æ‚Ì’¸“_
-        public int cost;                   // •Ó‚ÌƒRƒXƒg
+        public int from;                   // æ¥ç¶šå…ƒã®é ‚ç‚¹
+        public int to;                     // æ¥ç¶šå…ˆã®é ‚ç‚¹
+        public int cost;                   // è¾ºã®ã‚³ã‚¹ãƒˆ
 
         public Edge(int from, int to, int cost)
         {
@@ -87,8 +87,8 @@ public class Dijkstra
 
     public struct Vertex : IComparable<Vertex>
     {
-        public int index;                  // ’¸“_‚Ì”Ô†
-        public int cost;                   // ‹L˜^‚µ‚½ƒRƒXƒg
+        public int index;                  // é ‚ç‚¹ã®ç•ªå·
+        public int cost;                   // è¨˜éŒ²ã—ãŸã‚³ã‚¹ãƒˆ
 
         public Vertex(int index, int cost)
         {

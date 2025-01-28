@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,9 +10,9 @@ namespace Frontier
         public TextMeshProUGUI[] _confirmTMPTexts;
 
         /// <summary>
-        /// ‘I‘ğ‚µ‚Ä‚¢‚éƒCƒ“ƒfƒbƒNƒX‚ÉŠY“–‚·‚é•¶šF‚ğ•ÏX‚µ‚Ü‚·
+        /// é¸æŠã—ã¦ã„ã‚‹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«è©²å½“ã™ã‚‹æ–‡å­—è‰²ã‚’å¤‰æ›´ã—ã¾ã™
         /// </summary>
-        /// <param name="selectIndex">‘I‘ğ’†‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
+        /// <param name="selectIndex">é¸æŠä¸­ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
         public void ApplyTextColor(int selectIndex)
         {
             for (int i = 0; i < _confirmTMPTexts.Length; ++i)

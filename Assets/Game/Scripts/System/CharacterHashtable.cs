@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace Frontier
@@ -59,7 +59,7 @@ namespace Frontier
 
         private string ConvertHashKey(Character.CHARACTER_TAG tag, int characterIndex)
         {
-            // 3���ȏ�̐ݒ�͑z�肵�Ȃ�
+            // 3桁以上の設定は想定しない
             Debug.Assert(characterIndex.ToString().Length <= 2);
 
             string indexString = characterIndex.ToString();

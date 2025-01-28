@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,35 +11,35 @@ namespace Frontier
     {
         public static BattleUISystem Instance { get; private set; }
 
-        [Header("•\¦ƒLƒƒƒ“ƒoƒX")]
+        [Header("è¡¨ç¤ºã‚­ãƒ£ãƒ³ãƒã‚¹")]
         [SerializeField]
         private Canvas _canvas;
 
         [Header("CharacterParameter")]
-        public CharacterParameterPresenter ParameterView;    // ƒLƒƒƒ‰ƒNƒ^[ƒpƒ‰ƒ[ƒ^•\¦
+        public CharacterParameterPresenter ParameterView;    // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¡¨ç¤º
 
         [Header("PlayerCommand")]
-        public PlayerCommandUI PLCommandWindow;         // ƒvƒŒƒCƒ„[‚Ì‘I‘ğƒRƒ}ƒ“ƒhUI
+        public PlayerCommandUI PLCommandWindow;         // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®é¸æŠã‚³ãƒãƒ³ãƒ‰UI
 
         [Header("ConfirmTurnEnd")]
-        public ConfirmTurnEndUI ConfirmTurnEnd;         // ƒ^[ƒ“I—¹Šm”FUI
+        public ConfirmTurnEndUI ConfirmTurnEnd;         // ã‚¿ãƒ¼ãƒ³çµ‚äº†ç¢ºèªUI
 
         [Header("DamageUI")]
-        public DamageUI DamageValue;                    // ƒ_ƒ[ƒW•\‹L
+        public DamageUI DamageValue;                    // ãƒ€ãƒ¡ãƒ¼ã‚¸è¡¨è¨˜
 
         [Header("PhaseUI")]
-        public PhaseUI Phase;                           // ƒtƒF[ƒY•\‹LUI
+        public PhaseUI Phase;                           // ãƒ•ã‚§ãƒ¼ã‚ºè¡¨è¨˜UI
 
         [Header("StageClearUI")]
-        public StageClearUI StageClear;                 // ƒXƒe[ƒWƒNƒŠƒAUI
+        public StageClearUI StageClear;                 // ã‚¹ãƒ†ãƒ¼ã‚¸ã‚¯ãƒªã‚¢UI
 
         [Header("GameOver")]
-        public GameOverUI GameOver;                     // ƒQ[ƒ€ƒI[ƒo[‰æ–Ê
+        public GameOverUI GameOver;                     // ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ç”»é¢
 
-        // BattleUI‚ÌRectTransform
+        // BattleUIã®RectTransform
         private RectTransform _rectTransform;
 
-        // UI•\¦—p‚ÌƒJƒƒ‰
+        // UIè¡¨ç¤ºç”¨ã®ã‚«ãƒ¡ãƒ©
         private Camera _uiCamera;
 
         void Awake()
@@ -104,7 +104,7 @@ namespace Frontier
         {
             DamageValue.CharacterTransform  = character.transform;
 
-            // ƒpƒŠƒB¬Œ÷‚É‚Íê—p‚Ì•\‹L
+            // ãƒ‘ãƒªã‚£æˆåŠŸæ™‚ã«ã¯å°‚ç”¨ã®è¡¨è¨˜
             if (character.ParryResult == SkillParryController.JudgeResult.SUCCESS ||
                 character.ParryResult == SkillParryController.JudgeResult.JUST)
             {

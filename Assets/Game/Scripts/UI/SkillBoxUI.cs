@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -49,9 +49,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒXƒLƒ‹–¼ƒeƒLƒXƒg‚ğİ’è‚µ‚Ü‚·
+        /// ã‚¹ã‚­ãƒ«åãƒ†ã‚­ã‚¹ãƒˆã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="name">İ’è‚·‚éƒXƒLƒ‹–¼</param>
+        /// <param name="name">è¨­å®šã™ã‚‹ã‚¹ã‚­ãƒ«å</param>
         public void SetSkillName(string name, SkillsData.SituationType type)
         {
             Color[] typeColor = new Color[(int)SkillsData.SituationType.TYPE_NUM] { Color.red, new Color(0.1f, 0.6f, 1.0f), Color.yellow };
@@ -61,14 +61,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ”qŒ[ƒCƒ[ƒW‚ÌƒJƒ‰[‚ğƒtƒŠƒbƒN‚·‚é‚©”Û‚©‚ğİ’è‚µ‚Ü‚·
+        /// æ‹å•“ã‚¤ãƒ¡ãƒ¼ã‚¸ã®ã‚«ãƒ©ãƒ¼ã‚’ãƒ•ãƒªãƒƒã‚¯ã™ã‚‹ã‹å¦ã‹ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="enabled">ƒtƒŠƒbƒN‚ÌONEOFF</param>
+        /// <param name="enabled">ãƒ•ãƒªãƒƒã‚¯ã®ONãƒ»OFF</param>
         public void SetFlickEnabled(bool enabled)
         {
             _imageFlicker.setEnabled(enabled);
 
-            // ‘I‘ğ‚©‚çŠO‚³‚ê‚½ê‡‚ÍF‚ğŒ³‚É–ß‚·
+            // é¸æŠã‹ã‚‰å¤–ã•ã‚ŒãŸå ´åˆã¯è‰²ã‚’å…ƒã«æˆ»ã™
             if (!enabled)
             {
                 _uiImage.color = _initialColor;
@@ -76,9 +76,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒXƒLƒ‹g—p‚Ì‰Â”Û‚ğ¦‚µ‚Ü‚·
+        /// ã‚¹ã‚­ãƒ«ä½¿ç”¨ã®å¯å¦ã‚’ç¤ºã—ã¾ã™
         /// </summary>
-        /// <param name="useable">g—p‚Ì‰Â”Û</param>
+        /// <param name="useable">ä½¿ç”¨ã®å¯å¦</param>
         public void SetUseable(bool useable)
         {
             if (useable)
@@ -92,7 +92,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒtƒŠƒbƒN•`‰æ‚ğ’â~‚µ‚Ü‚·
+        /// ãƒ•ãƒªãƒƒã‚¯æç”»ã‚’åœæ­¢ã—ã¾ã™
         /// </summary>
         public void StopFlick()
         {
@@ -100,12 +100,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒXƒLƒ‹‚ÌƒRƒXƒg‚ğUI‚Å•\¦‚µ‚Ü‚·
+        /// ã‚¹ã‚­ãƒ«ã®ã‚³ã‚¹ãƒˆã‚’UIã§è¡¨ç¤ºã—ã¾ã™
         /// </summary>
-        /// <param name="cost">ƒXƒLƒ‹ƒRƒXƒg</param>
+        /// <param name="cost">ã‚¹ã‚­ãƒ«ã‚³ã‚¹ãƒˆ</param>
         public void ShowSkillCostImage(int cost)
         {
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚Ì•\¦
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã®è¡¨ç¤º
             for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
             {
                 var elem = _actGaugeElems[i];

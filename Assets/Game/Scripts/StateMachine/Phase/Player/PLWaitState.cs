@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +11,7 @@ namespace Frontier
         {
             base.Init();
 
-            // ‘I‘ğ’†‚ÌƒvƒŒƒCƒ„[‚ğæ“¾
+            // é¸æŠä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—
             var selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
             if (selectPlayer == null)
             {
@@ -20,13 +20,13 @@ namespace Frontier
                 return;
             }
 
-            // ‘S‚Ä‚ÌƒRƒ}ƒ“ƒh‚ğI—¹‚É
+            // å…¨ã¦ã®ã‚³ãƒãƒ³ãƒ‰ã‚’çµ‚äº†ã«
             var endCommand = selectPlayer.tmpParam.isEndCommand;
             endCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
             endCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
             endCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
 
-            // XV‚¹‚¸‚ÉI—¹
+            // æ›´æ–°ã›ãšã«çµ‚äº†
             Back();
         }
 

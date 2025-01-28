@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace Frontier
     static public class AnimDatas
     {
         /// <summary>
-        /// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌŠe‘JˆÚğŒƒ^ƒO
+        /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®å„é·ç§»æ¡ä»¶ã‚¿ã‚°
         /// </summary>
         public enum AnimeConditionsTag
         {
@@ -26,7 +26,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌŠe‘JˆÚğŒ–¼
+        /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®å„é·ç§»æ¡ä»¶å
         /// </summary>
         public static readonly string[] ANIME_CONDITIONS_NAMES =
         {
@@ -41,22 +41,22 @@ namespace Frontier
             "Die"
         };
 
-        // ƒAƒjƒ[ƒVƒ‡ƒ“–¼ƒnƒbƒVƒ…ƒŠƒXƒg
+        // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åãƒãƒƒã‚·ãƒ¥ãƒªã‚¹ãƒˆ
         public static List<int> AnimNameHashList;
-        // UŒ‚‘JˆÚI—¹”»’è‚É—p‚¢‚é–¼Ì
+        // æ”»æ’ƒé·ç§»çµ‚äº†åˆ¤å®šã«ç”¨ã„ã‚‹åç§°
         public static string AtkEndStateName;
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public static void Init()
         {
-            // ƒ^ƒO‚ÆƒAƒjƒ[ƒVƒ‡ƒ“‚Ì”‚Íˆê’v‚µ‚Ä‚¢‚é‚±‚Æ
+            // ã‚¿ã‚°ã¨ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®æ•°ã¯ä¸€è‡´ã—ã¦ã„ã‚‹ã“ã¨
             Debug.Assert(ANIME_CONDITIONS_NAMES.Length == (int)AnimeConditionsTag.NUM);
 
             AtkEndStateName = ANIME_CONDITIONS_NAMES[(int)AnimeConditionsTag.SINGLE_ATTACK];
 
-            // ƒnƒbƒVƒ…ƒŠƒXƒg‚ğ‰Šú‰»
+            // ãƒãƒƒã‚·ãƒ¥ãƒªã‚¹ãƒˆã‚’åˆæœŸåŒ–
             AnimNameHashList = new List<int>();
             foreach( var elem in ANIME_CONDITIONS_NAMES )
             {

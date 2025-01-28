@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,12 +26,12 @@ namespace Frontier.Stage
             meshRenderer = GetComponent<MeshRenderer>();
         }
 
-        // ƒOƒŠƒbƒh‚ÌƒƒbƒVƒ…‚ğ•`‰æ
+        // ã‚°ãƒªãƒƒãƒ‰ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’æç”»
         public void DrawGridMesh(in Vector3 position, float gridSize, MeshType meshType)
         {
             var mesh = new Mesh();
             float halfSize = 0.5f * gridSize;
-            // ’¸“_À•W”z—ñ‚ğƒƒbƒVƒ…‚ÉƒZƒbƒg  
+            // é ‚ç‚¹åº§æ¨™é…åˆ—ã‚’ãƒ¡ãƒƒã‚·ãƒ¥ã«ã‚»ãƒƒãƒˆ  
             mesh.SetVertices(new Vector3[] {
             new Vector3 (position.x - halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z - halfSize),
             new Vector3 (position.x - halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z + halfSize),
@@ -39,7 +39,7 @@ namespace Frontier.Stage
             new Vector3 (position.x + halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z - halfSize),
         });
 
-            // ƒCƒ“ƒfƒbƒNƒX”z—ñ‚ğƒƒbƒVƒ…‚ÉƒZƒbƒg  
+            // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹é…åˆ—ã‚’ãƒ¡ãƒƒã‚·ãƒ¥ã«ã‚»ãƒƒãƒˆ  
             mesh.SetTriangles(new int[]
             { 0, 1, 2, 0, 2, 3}, 0
             );
@@ -52,10 +52,10 @@ namespace Frontier.Stage
             };
             Debug.Assert(colors.Length == (int)MeshType.NUM_MAX, "Mesh type num is incorrect.");
 
-            // ƒ^ƒCƒv‚É‚æ‚Á‚ÄF‚ğ•ÏX
+            // ã‚¿ã‚¤ãƒ—ã«ã‚ˆã£ã¦è‰²ã‚’å¤‰æ›´
             meshRenderer.material.color = colors[(int)meshType];
 
-            // MeshFilter‚ğ’Ê‚µ‚ÄƒƒbƒVƒ…‚ğMeshRenderer‚ÉƒZƒbƒg  
+            // MeshFilterã‚’é€šã—ã¦ãƒ¡ãƒƒã‚·ãƒ¥ã‚’MeshRendererã«ã‚»ãƒƒãƒˆ  
             meshFilter.sharedMesh = mesh;
         }
 
@@ -65,7 +65,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚ğíœ‚µ‚Ü‚·
+        /// ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å‰Šé™¤ã—ã¾ã™
         /// </summary>
         public void Remove()
         {

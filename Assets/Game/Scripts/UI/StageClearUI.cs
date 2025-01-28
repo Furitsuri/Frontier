@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +12,7 @@ public class StageClearUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Šg‘åƒAƒjƒ[ƒVƒ‡ƒ“‚ğŠJn‚µ‚Ü‚·
+    /// æ‹¡å¤§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’é–‹å§‹ã—ã¾ã™
     /// </summary>
     public void StartAnim()
     {

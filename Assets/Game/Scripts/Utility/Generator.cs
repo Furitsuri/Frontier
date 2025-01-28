@@ -1,4 +1,4 @@
-using Frontier;
+ï»¿using Frontier;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro.EditorUtilities;
@@ -11,9 +11,9 @@ public class Generator : MonoBehaviour
     private DiInstaller _installer;
 
     /// <summary>
-    /// DIƒRƒ“ƒeƒi‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚É’“ü‚µ‚Ü‚·
+    /// DIã‚³ãƒ³ãƒ†ãƒŠã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã«æ³¨å…¥ã—ã¾ã™
     /// </summary>
-    /// <param name="container">DIƒRƒ“ƒeƒi</param>
+    /// <param name="container">DIã‚³ãƒ³ãƒ†ãƒŠ</param>
     public void Inject( DiContainer container, DiInstaller installer )
     {
         _container = container;
@@ -21,11 +21,11 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒIƒuƒWƒFƒNƒg‚ğ¶¬‚µA‚»‚ÌƒIƒuƒWƒFƒNƒg‚ÉƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ’Ç‰Á‚µ‚Ü‚·
+    /// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç”Ÿæˆã—ã€ãã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¿½åŠ ã—ã¾ã™
     /// </summary>
-    /// <typeparam name="T">ƒIƒuƒWƒFƒNƒg‚É’Ç‰Á‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg</typeparam>
-    /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-    /// <returns>¶¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+    /// <typeparam name="T">ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«è¿½åŠ ã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</typeparam>
+    /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+    /// <returns>ç”Ÿæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
     public T GenerateObjectAndAddComponent<T>(bool initActive) where T : Behaviour
     {
         GameObject gameObj = new GameObject();
@@ -38,12 +38,12 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
-    /// “n‚³‚ê‚½ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚©‚çƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ¶¬‚µ‚Ü‚·
+    /// æ¸¡ã•ã‚ŒãŸã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ç”Ÿæˆã—ã¾ã™
     /// </summary>
-    /// <typeparam name="T">¶¬‚·‚éBehavior‚ªŒp³‚³‚ê‚½”CˆÓ‚ÌŒ^</typeparam>
-    /// <param name="gameObject">“n‚·ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg</param>
-    /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-    /// <returns>¶¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+    /// <typeparam name="T">ç”Ÿæˆã™ã‚‹BehaviorãŒç¶™æ‰¿ã•ã‚ŒãŸä»»æ„ã®å‹</typeparam>
+    /// <param name="gameObject">æ¸¡ã™ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+    /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+    /// <returns>ç”Ÿæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
     public T GenerateComponentFromObject<T> ( GameObject gameObject, bool initActive ) where T : Behaviour
     {
         GameObject gameObj = Instantiate( gameObject );
@@ -58,12 +58,12 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
-    /// DIƒRƒ“ƒeƒi‚ğ—p‚¢‚Äw’è‚ÌƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚ÆƒRƒ“ƒ|[ƒlƒ“ƒg‚ğì¬‚µ‚Ü‚·
+    /// DIã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦æŒ‡å®šã®ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¨ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä½œæˆã—ã¾ã™
     /// </summary>
-    /// <typeparam name="T">ì¬‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg‚ÌŒ^</typeparam>
-    /// <param name="gameObject">ì¬‚·‚éƒIƒuƒWƒFƒNƒg</param>
-    /// <param name="initActive">ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg‚Ì‰Šú‚Ì—LŒøE–³Œøó‘Ô</param>
-    /// <returns>ì¬‚µ‚½ƒRƒ“ƒ|[ƒlƒ“ƒg</returns>
+    /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å‹</typeparam>
+    /// <param name="gameObject">ä½œæˆã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+    /// <param name="initActive">ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åˆæœŸã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹</param>
+    /// <returns>ä½œæˆã—ãŸã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ</returns>
     public T InstantiateComponentWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
     {
         T original = _container.InstantiatePrefabForComponent<T>(gameObject);
@@ -71,7 +71,7 @@ public class Generator : MonoBehaviour
 
         original.gameObject.SetActive(initActive);
 
-        // DiƒRƒ“ƒeƒi‚ÉƒoƒCƒ“ƒh‚·‚éê‡‚Í‚±‚±‚ÅƒoƒCƒ“ƒh
+        // Diã‚³ãƒ³ãƒ†ãƒŠã«ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹å ´åˆã¯ã“ã“ã§ãƒã‚¤ãƒ³ãƒ‰
         if (isBind)
         {
             _installer.InstallBindings(original);
@@ -81,10 +81,10 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
-    /// DiƒRƒ“ƒeƒi‚ğ—p‚¢‚ÄƒCƒ“ƒXƒ^ƒ“ƒX‚ğì¬‚µ‚Ü‚·
+    /// Diã‚³ãƒ³ãƒ†ãƒŠã‚’ç”¨ã„ã¦ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ä½œæˆã—ã¾ã™
     /// </summary>
-    /// <typeparam name="T">ì¬‚·‚éƒCƒ“ƒXƒ^ƒ“ƒX‚ÌŒ^</typeparam>
-    /// <returns>ì¬‚µ‚½ƒCƒ“ƒXƒ^ƒ“ƒX</returns>
+    /// <typeparam name="T">ä½œæˆã™ã‚‹ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã®å‹</typeparam>
+    /// <returns>ä½œæˆã—ãŸã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹</returns>
     public T InstantiateWithDiContainer<T>()
     {
         return _container.Instantiate<T>();

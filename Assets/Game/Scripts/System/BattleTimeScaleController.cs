@@ -1,9 +1,9 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ���̃N���X��TimeScale�N���X��o�^�����C���X�^���X�̃^�C���X�P�[���Ǘ����s���܂�
+/// このクラスにTimeScaleクラスを登録したインスタンスのタイムスケール管理を行います
 /// </summary>
 public class BattleTimeScaleController
 {
@@ -11,8 +11,8 @@ public class BattleTimeScaleController
     private readonly List<TimeScale> _timeScaleList = new();
 
     /// <summary>
-    /// _timeScale�̒l���ύX���ꂽ�ۂɎ����ŌĂяo����郁�\�b�h�ł�
-    /// �o�^����Ă���S�ẴC���X�^���X�̃^�C���X�P�[�����w�肳�ꂽ_timeScale�l�ɕύX���܂�
+    /// _timeScaleの値が変更された際に自動で呼び出されるメソッドです
+    /// 登録されている全てのインスタンスのタイムスケールを指定された_timeScale値に変更します
     /// </summary>
     void Notify()
     {
@@ -22,22 +22,22 @@ public class BattleTimeScaleController
         }
     }
 
-    // �o�^
+    // 登録
     public void Regist(TimeScale scale)
     {
         _timeScaleList.Add(scale);
     }
 
-    // �o�^����
+    // 登録解除
     public void Unregist(TimeScale scale)
     {
         _timeScaleList.Remove(scale);
     }
 
     /// <summary>
-    /// �^�C���X�P�[���l��ݒ肵�܂�
+    /// タイムスケール値を設定します
     /// </summary>
-    /// <param name="timeScale">�ݒ肷��^�C���X�P�[���l</param>
+    /// <param name="timeScale">設定するタイムスケール値</param>
     public void SetTimeScale( float timeScale )
     {
         _timeScale = timeScale;
