@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Frontier
         {
             base.Init();
 
-            // ‘I‘ğ’†‚ÌƒvƒŒƒCƒ„[‚ğæ“¾
+            // é¸æŠä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—
             _selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
             if (_selectPlayer == null)
             {
@@ -35,12 +35,12 @@ namespace Frontier
                 return;
             }
 
-            // UI‘¤‚Ö‚±‚ÌƒXƒNƒŠƒvƒg‚ğ“o˜^‚µAUI‚ğ•\¦
+            // UIå´ã¸ã“ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’ç™»éŒ²ã—ã€UIã‚’è¡¨ç¤º
             var instance = BattleUISystem.Instance;
             List<Character.Command.COMMAND_TAG> executableCommands;
             _selectPlayer.FetchExecutableCommand(out executableCommands, _stageCtrl);
 
-            // “ü—Íƒx[ƒXî•ñ‚Ìİ’è
+            // å…¥åŠ›ãƒ™ãƒ¼ã‚¹æƒ…å ±ã®è¨­å®š
             List<int> commandIndexs = new List<int>();
             foreach ( var executableCmd in executableCommands )
             {
@@ -68,7 +68,7 @@ namespace Frontier
 
             if (base.Update())
             {
-                // ˆÚ“®‚Ì‚İI—¹‚µ‚Ä‚¢‚éê‡‚ÍˆÚ“®‘O‚É–ß‚ê‚é‚æ‚¤‚É          
+                // ç§»å‹•ã®ã¿çµ‚äº†ã—ã¦ã„ã‚‹å ´åˆã¯ç§»å‹•å‰ã«æˆ»ã‚Œã‚‹ã‚ˆã†ã«          
                 if (endCommand[(int)Character.Command.COMMAND_TAG.MOVE] && !endCommand[(int)Character.Command.COMMAND_TAG.ATTACK])
                 {
                     _stageCtrl.FollowFootprint(_selectPlayer);
@@ -97,7 +97,7 @@ namespace Frontier
 
         override public void Exit()
         {
-            // UI‚ğ”ñ•\¦
+            // UIã‚’éè¡¨ç¤º
             BattleUISystem.Instance.TogglePLCommand(false);
 
             base.Exit();

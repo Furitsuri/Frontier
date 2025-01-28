@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,7 +12,7 @@ public class Arrow : Bullet
         var diff    = _targetCoordinate - _firingPoint;
         var diff_XZ = new Vector3(diff.x, 0f, diff.z);
 
-        // ‰‘¬‚ğŒˆ’è
+        // åˆé€Ÿã‚’æ±ºå®š
         Vector3 velocity = Vector3.zero;
         velocity.z  = diff_XZ.magnitude / _flightTime;
         velocity.y  = diff.y / _flightTime - 0.5f * Physics.gravity.y * _flightTime;
@@ -22,11 +22,11 @@ public class Arrow : Bullet
             Vector3 nextPos = Vector3.Lerp(_firingPoint, _targetCoordinate, time / _flightTime);
             nextPos.y = _firingPoint.y + velocity.y * time + 0.5f * Physics.gravity.y * time * time;
 
-            // –î‚ÌŒü‚«‚ğŒ»İ‚Ì‘¬“x‚©‚ç‹‚ß‚é
+            // çŸ¢ã®å‘ãã‚’ç¾åœ¨ã®é€Ÿåº¦ã‹ã‚‰æ±‚ã‚ã‚‹
             var currentVelocity = diff_XZ / _flightTime;
             currentVelocity.y   = velocity.y + Physics.gravity.y * time;
             currentVelocity.Normalize();
-            // –îƒ‚ƒfƒ‹‚ÌƒfƒtƒHƒ‹ƒg‚ÌŒü‚«‚ªAèV‚ğY²‰ºŒü‚«‚É‚È‚Á‚Ä‚¢‚é‚Ì‚Åˆê“xZ²³–Ê‚ÖŒü‚©‚¹‚é
+            // çŸ¢ãƒ¢ãƒ‡ãƒ«ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®å‘ããŒã€éƒã‚’Yè»¸ä¸‹å‘ãã«ãªã£ã¦ã„ã‚‹ã®ã§ä¸€åº¦Zè»¸æ­£é¢ã¸å‘ã‹ã›ã‚‹
             var nextRot         = Quaternion.AngleAxis(-90, Vector3.right);
             nextRot             = Quaternion.LookRotation(currentVelocity) * nextRot;
 

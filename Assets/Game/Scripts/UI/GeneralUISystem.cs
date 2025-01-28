@@ -1,4 +1,4 @@
-using Frontier;
+ï»¿using Frontier;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +10,7 @@ namespace Frontier
         public static GeneralUISystem Instance { get; private set; }
 
         [Header("InputGuidePresenter")]
-        public InputGuidePresenter InputGuideView;  // ƒL[ƒKƒCƒh•\¦
+        public InputGuidePresenter InputGuideView;  // ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰è¡¨ç¤º
 
         void Awake()
         {
@@ -18,9 +18,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒL[ƒKƒCƒh•\¦—p‚ÌƒŠƒXƒg‚ğİ’è‚µ‚Ü‚·
+        /// ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰è¡¨ç¤ºç”¨ã®ãƒªã‚¹ãƒˆã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="keyGuideList">•\¦‚·‚éƒL[ƒKƒCƒhƒŠƒXƒg</param>
+        /// <param name="keyGuideList">è¡¨ç¤ºã™ã‚‹ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ãƒªã‚¹ãƒˆ</param>
         public void SetInputGuideList(List<InputGuideUI.InputGuide> keyGuideList)
         {
             InputGuideView.SetGuides(keyGuideList);

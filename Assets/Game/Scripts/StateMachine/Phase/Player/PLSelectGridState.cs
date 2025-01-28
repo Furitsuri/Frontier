@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +8,7 @@ namespace Frontier
     public class PLSelectGridState : PhaseStateBase
     {
         /// <summary>
-        /// ‘JˆÚæ‚ğ¦‚·ƒ^ƒO
+        /// é·ç§»å…ˆã‚’ç¤ºã™ã‚¿ã‚°
         /// </summary>
         enum TransitTag
         {
@@ -20,10 +20,10 @@ namespace Frontier
         {
             base.Init();
 
-            // ƒOƒŠƒbƒh‘I‘ğ‚ğ—LŒø‰»
+            // ã‚°ãƒªãƒƒãƒ‰é¸æŠã‚’æœ‰åŠ¹åŒ–
             _stageCtrl.SetGridCursorActive(true);
 
-            // ƒL[ƒKƒCƒh‚ğ“o˜^
+            // ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã‚’ç™»éŒ²
             SetInputGuides(
                 (Constants.KeyIcon.ALL_CURSOR,  "Move",     null),
                 (Constants.KeyIcon.ESCAPE,      "TURN END", TransitConfirmTurnEndCallBack));
@@ -31,10 +31,10 @@ namespace Frontier
 
         override public bool Update()
         {
-            // ƒOƒŠƒbƒh‘I‘ğ‚æ‚è‘JˆÚ‚ª–ß‚é‚±‚Æ‚Í‚È‚¢‚½‚ßŠî’ê‚ÌXV‚Ís‚í‚È‚¢
+            // ã‚°ãƒªãƒƒãƒ‰é¸æŠã‚ˆã‚Šé·ç§»ãŒæˆ»ã‚‹ã“ã¨ã¯ãªã„ãŸã‚åŸºåº•ã®æ›´æ–°ã¯è¡Œã‚ãªã„
             // if( base.Update() ) { return true; }
 
-            // ‘S‚Ä‚ÌƒLƒƒƒ‰ƒNƒ^[‚ª‘Ò‹@Ï‚İ‚É‚È‚Á‚Ä‚¢‚ê‚ÎI—¹
+            // å…¨ã¦ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå¾…æ©Ÿæ¸ˆã¿ã«ãªã£ã¦ã„ã‚Œã°çµ‚äº†
             if( _btlMgr.BtlCharaCdr.IsEndAllArmyrWaitCommand(Character.CHARACTER_TAG.PLAYER))
             {
                 Back();
@@ -42,9 +42,9 @@ namespace Frontier
                 return true;
             }
 
-            // TODO : ƒL[ƒ}ƒl[ƒWƒƒ‘¤‚É‘€ìˆ—‚ğŠ®‘S‚ÉˆÚ‚·Œ±‚Ì‚½‚ßAˆê’UƒRƒƒ“ƒgƒAƒEƒg
+            // TODO : ã‚­ãƒ¼ãƒãƒãƒ¼ã‚¸ãƒ£å´ã«æ“ä½œå‡¦ç†ã‚’å®Œå…¨ã«ç§»ã™è©¦é¨“ã®ãŸã‚ã€ä¸€æ—¦ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
             /*
-            // ƒ^[ƒ“I—¹Šm”F‚Ö‘JˆÚ
+            // ã‚¿ãƒ¼ãƒ³çµ‚äº†ç¢ºèªã¸é·ç§»
             if (Input.GetKeyUp(KeyCode.Escape))
             {
                 TransitIndex = (int)TransitTag.TurnEnd;
@@ -52,15 +52,15 @@ namespace Frontier
             }
             */
 
-            // ƒOƒŠƒbƒh‚Ì‘€ì
+            // ã‚°ãƒªãƒƒãƒ‰ã®æ“ä½œ
             _stageCtrl.OperateGridCursor();
             Stage.GridInfo info;
             _stageCtrl.FetchCurrentGridInfo(out info);
 
-            // Œ»İ‚Ì‘I‘ğƒOƒŠƒbƒhã‚É–¢s“®‚ÌƒvƒŒƒCƒ„[‚ª‘¶İ‚·‚éê‡‚Ís“®‘I‘ğ‚Ö
+            // ç¾åœ¨ã®é¸æŠã‚°ãƒªãƒƒãƒ‰ä¸Šã«æœªè¡Œå‹•ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯è¡Œå‹•é¸æŠã¸
             int selectCharaIndex = info.charaIndex;
 
-            // TODO : ƒL[ƒ}ƒl[ƒWƒƒ‘¤‚É‘€ìˆ—‚ğŠ®‘S‚ÉˆÚ‚·Œ±‚Ì‚½‚ßAˆê’UƒRƒƒ“ƒgƒAƒEƒg
+            // TODO : ã‚­ãƒ¼ãƒãƒãƒ¼ã‚¸ãƒ£å´ã«æ“ä½œå‡¦ç†ã‚’å®Œå…¨ã«ç§»ã™è©¦é¨“ã®ãŸã‚ã€ä¸€æ—¦ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
             /*
             Character character = _btlMgr.GetSelectCharacter();
             if (character != null &&
@@ -81,7 +81,7 @@ namespace Frontier
 
         override public void Exit()
         {
-            // ƒOƒŠƒbƒh‘I‘ğ‚ğ–³Œø‰» ¨ TODO : –³Œø‰»‚µ‚È‚¢‚Ù‚¤‚ªƒQ[ƒ€Às‚É‚¨‚¯‚éŒ©‚½–Ú‚ª‚æ‚©‚Á‚½‚½‚ßAˆê’UƒRƒƒ“ƒgƒAƒEƒg‚Å•Û—¯
+            // ã‚°ãƒªãƒƒãƒ‰é¸æŠã‚’ç„¡åŠ¹åŒ– â†’ TODO : ç„¡åŠ¹åŒ–ã—ãªã„ã»ã†ãŒã‚²ãƒ¼ãƒ å®Ÿè¡Œæ™‚ã«ãŠã‘ã‚‹è¦‹ãŸç›®ãŒã‚ˆã‹ã£ãŸãŸã‚ã€ä¸€æ—¦ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã§ä¿ç•™
             // _stageCtrl.SetGridCursorActive( false );
 
             base.Exit();
@@ -94,7 +94,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒNƒ^[ƒRƒ}ƒ“ƒh‘JˆÚ‚ÖˆÚ‚éÛ‚ÌƒR[ƒ‹ƒoƒbƒNŠÖ”
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚³ãƒãƒ³ãƒ‰é·ç§»ã¸ç§»ã‚‹éš›ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯é–¢æ•°
         /// </summary>
         /// <returns></returns>
         public bool TransitCharacterCommandCallBack()
@@ -118,7 +118,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒ^[ƒ“I—¹‘JˆÚ‚ÖˆÚ‚éÛ‚ÌƒR[ƒ‹ƒoƒbƒNŠÖ”
+        /// ã‚¿ãƒ¼ãƒ³çµ‚äº†é·ç§»ã¸ç§»ã‚‹éš›ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯é–¢æ•°
         /// </summary>
         /// <returns></returns>
         public bool TransitConfirmTurnEndCallBack()

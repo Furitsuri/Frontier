@@ -1,72 +1,72 @@
-static public class Constants
+﻿static public class Constants
 {
     /// <summary>
-    /// �X�e�[�W��̐i�s����
+    /// ステージ上の進行方向
     /// </summary>
     public enum Direction
     {
         NONE = -1,
 
-        FORWARD,    // Z��������
-        RIGHT,      // X��������
-        BACK,       // Z��������
-        LEFT,       // X��������
+        FORWARD,    // Z軸正方向
+        RIGHT,      // X軸正方向
+        BACK,       // Z軸負方向
+        LEFT,       // X軸負方向
 
         NUM_MAX
     }
 
     /// <summary>
-    /// �e����L�[�̒�`
+    /// 各操作キーの定義
     /// </summary>
     public enum KeyIcon : int
     {
-        ALL_CURSOR = 0,     // �S����
-        VERTICAL_CURSOR,    // �c����
-        HORIZONTAL_CURSOR,  // ������
-        DECISION,           // ����
-        CANCEL,             // �߂�
-        ESCAPE,             // �I��
+        ALL_CURSOR = 0,     // 全方向
+        VERTICAL_CURSOR,    // 縦方向
+        HORIZONTAL_CURSOR,  // 横方向
+        DECISION,           // 決定
+        CANCEL,             // 戻る
+        ESCAPE,             // 終了
 
         NUM_MAX
     }
 
-    // �v���C���[�A�G���ꂼ��̃L�����N�^�[�ő吔
+    // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;
-    // �L�����N�^�[�������o����X�L���̍ő吔
+    // キャラクターが装備出来るスキルの最大数
     public const int EQUIPABLE_SKILL_MAX_NUM = 4;
-    // �L�����N�^�[�̃A�N�V�����Q�[�W�̍ő吔
+    // キャラクターのアクションゲージの最大数
     public const int ACTION_GAUGE_MAX = 10;
-    // 1�O���b�h�ɗאڂ���O���b�h�̍ő吔
+    // 1グリッドに隣接するグリッドの最大数
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
-    // �o�H�T���ɂ����郋�[�g�C���f�b�N�X�ő�ێ���
+    // 経路探索におけるルートインデックス最大保持数
     public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 256;
-    // �O���b�h��Y���W�ɉ��Z����␳�l
+    // グリッドのY座標に加算する補正値
     public const float ADD_GRID_POS_Y = 0.02f;
-    // �L�����N�^�[�̈ړ����x
+    // キャラクターの移動速度
     public const float CHARACTER_MOVE_SPEED = 7.5f;
-    // �L�����N�^�[�̉�]���x
+    // キャラクターの回転速度
     public const float CHARACTER_ROT_SPEED = 10f;
-    // �L�����N�^�[�̉�]�I��臒l
+    // キャラクターの回転終了閾値
     public const float CHARACTER_ROT_THRESHOLD = 3f;
-    // �v���C���[�̈ړ����쎞�A�ڕW���W�ɑ΂����͂��󂯕t������O���b�h�T�C�Y�̊���
+    // プレイヤーの移動操作時、目標座標に対し入力を受け付けられるグリッドサイズの割合
     public const float ACCEPTABLE_INPUT_GRID_SIZE_RATIO = 0.33f;
-    // �G���ړ��͈͂�\��������A���ۂɈړ�����܂ł̑҂�����
+    // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
-    // �U�����Ɍ������߂�ۂ̑҂�����
+    // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
-    // �U�����ɑ���ɋߐڂ���܂ł̎���
+    // 攻撃時に相手に近接するまでの時間
     public const float ATTACK_CLOSING_TIME = 0.55f;
-    // �U����ɑ��肩�狗�������܂ł̎���
+    // 攻撃後に相手から距離を取るまでの時間
     public const float ATTACK_DISTANCING_TIME = 0.23f;
-    // �U���V�[�P���X�ɂ�����҂�����
+    // 攻撃シーケンスにおける待ち時間
     public const float ATTACK_SEQUENCE_WAIT_TIME = 0.75f;
-    // �U���V�[�P���X�ɂ�����U���J�n�܂ł̑҂�����
+    // 攻撃シーケンスにおける攻撃開始までの待ち時間
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
-    // �U���V�[�P���X�ɂ�����I���҂�����
+    // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
-    // �Ō�ɃL�[������s���Ă���A���̃L�[���삪�L���ɂȂ�܂ł̃C���^�[�o��
+    // 最後にキー操作を行ってから、次のキー操作が有効になるまでのインターバル
     public const float OPERATE_KET_INTERVAL = 0.17f;
-    // �L�[�K�C�h�ɂ�����X�v���C�g�e�L�X�g�Ԃ̕�
+    // キーガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
     public const string LAYER_NAME_CHARACTER            = "Character";

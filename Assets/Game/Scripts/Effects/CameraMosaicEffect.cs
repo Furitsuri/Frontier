@@ -1,10 +1,10 @@
-using System.Drawing;
+ï»¿using System.Drawing;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// ƒJƒƒ‰‚Éƒ‚ƒUƒCƒNŒø‰Ê‚ğ‚©‚¯‚éƒNƒ‰ƒX‚Å‚·
-/// ExecuteAlways‚ğİ’è‚µ‚½‚¢‚Ì‚ÅABattleCameraController‚Æ‚Í•Ê‚É‚µ‚Ä‚¢‚Ü‚·
+/// ã‚«ãƒ¡ãƒ©ã«ãƒ¢ã‚¶ã‚¤ã‚¯åŠ¹æœã‚’ã‹ã‘ã‚‹ã‚¯ãƒ©ã‚¹ã§ã™
+/// ExecuteAlwaysã‚’è¨­å®šã—ãŸã„ã®ã§ã€BattleCameraControllerã¨ã¯åˆ¥ã«ã—ã¦ã„ã¾ã™
 /// </summary>
 [ExecuteAlways]
 public class CameraMosaicEffect : MonoBehaviour
@@ -41,18 +41,18 @@ public class CameraMosaicEffect : MonoBehaviour
     }
 
     /// <summary>
-    /// —LŒøE”ñ—LŒø‚ğİ’è‚µ‚Ü‚·
+    /// æœ‰åŠ¹ãƒ»éæœ‰åŠ¹ã‚’è¨­å®šã—ã¾ã™
     /// </summary>
-    /// <param name="enable">—LŒøE”ñ—LŒøİ’è</param>
+    /// <param name="enable">æœ‰åŠ¹ãƒ»éæœ‰åŠ¹è¨­å®š</param>
     public void ToggleEnable( bool enable )
     {
         _enabled = enable;
     }
 
     /// <summary>
-    /// ƒ‚ƒUƒCƒN‚ÌƒuƒƒbƒNƒTƒCƒY‚ğw’èƒŒ[ƒg‚ÅXV‚µ‚Ü‚·
+    /// ãƒ¢ã‚¶ã‚¤ã‚¯ã®ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚ºã‚’æŒ‡å®šãƒ¬ãƒ¼ãƒˆã§æ›´æ–°ã—ã¾ã™
     /// </summary>
-    /// <param name="sizeRate">w’è‚·‚éƒTƒCƒYƒŒ[ƒg</param>
+    /// <param name="sizeRate">æŒ‡å®šã™ã‚‹ã‚µã‚¤ã‚ºãƒ¬ãƒ¼ãƒˆ</param>
     public void UpdateBlockSizeByRate( float sizeRate )
     {
         var size = sizeRate * _initialBlockSize;

@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using Zenject;
 
 namespace Frontier
@@ -22,7 +22,7 @@ namespace Frontier
 
         virtual public void Init()
         {
-            // ‘JˆÚ–Ø‚Ìì¬
+            // é·ç§»æœ¨ã®ä½œæˆ
             CreateTree();
 
             CurrentNode.Init();
@@ -32,7 +32,7 @@ namespace Frontier
 
         virtual public bool Update()
         {
-            // Œ»İÀs’†‚ÌƒXƒe[ƒg‚ğXV
+            // ç¾åœ¨å®Ÿè¡Œä¸­ã®ã‚¹ãƒ†ãƒ¼ãƒˆã‚’æ›´æ–°
             if (CurrentNode.Update())
             {
                 if (CurrentNode.IsBack() && CurrentNode.Parent == null)
@@ -46,7 +46,7 @@ namespace Frontier
 
         virtual public void LateUpdate()
         {
-            // ƒXƒe[ƒg‚Ì‘JˆÚ‚ğŠÄ‹
+            // ã‚¹ãƒ†ãƒ¼ãƒˆã®é·ç§»ã‚’ç›£è¦–
             int transitIndex = CurrentNode.TransitIndex;
             if (0 <= transitIndex)
             {
@@ -63,7 +63,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“‚ğÄ¶‚µ‚Ü‚·
+        /// ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿã—ã¾ã™
         /// </summary>
         virtual protected void StartPhaseAnim()
         {

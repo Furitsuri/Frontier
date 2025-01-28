@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,7 +45,7 @@ namespace Frontier
             {
                 if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
                 {
-                    // ‘S‚Ä‚ÌƒLƒƒƒ‰ƒNƒ^[‚ğ‘Ò‹@Ï‚İ‚Éİ’è‚µ‚Ä“G‚ÌƒtƒF[ƒY‚ÉˆÚs‚³‚¹‚é
+                    // å…¨ã¦ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’å¾…æ©Ÿæ¸ˆã¿ã«è¨­å®šã—ã¦æ•µã®ãƒ•ã‚§ãƒ¼ã‚ºã«ç§»è¡Œã•ã›ã‚‹
                     _btlMgr.BtlCharaCdr.ApplyAllArmyWaitEnd(Character.CHARACTER_TAG.PLAYER);
                 }
 

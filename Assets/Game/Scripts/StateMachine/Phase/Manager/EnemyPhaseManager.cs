@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,35 +8,35 @@ namespace Frontier
     public class EnemyPhaseManager : PhaseManagerBase
     {
         /// <summary>
-        /// ‰Šú‰»‚ğs‚¢‚Ü‚·
+        /// åˆæœŸåŒ–ã‚’è¡Œã„ã¾ã™
         /// </summary>
         override public void Init()
         {
-            // –Ú•WÀ•W‚âUŒ‚‘ÎÛ‚ğƒŠƒZƒbƒg
+            // ç›®æ¨™åº§æ¨™ã‚„æ”»æ’ƒå¯¾è±¡ã‚’ãƒªã‚»ãƒƒãƒˆ
             foreach (Enemy enemy in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
             {
                 enemy.GetAi().ResetDestinationAndTarget();
             }
-            // MEMO : ã‹LƒŠƒZƒbƒgŒã‚É‰Šú‰»‚·‚é•K—v‚ª‚ ‚é‚½‚ß‚É‚±‚ÌˆÊ’u‚Å‚ ‚é‚±‚Æ‚É’ˆÓ
+            // MEMO : ä¸Šè¨˜ãƒªã‚»ãƒƒãƒˆå¾Œã«åˆæœŸåŒ–ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ãŸã‚ã«ã“ã®ä½ç½®ã§ã‚ã‚‹ã“ã¨ã«æ³¨æ„
             base.Init();
-            // ‘I‘ğƒOƒŠƒbƒh‚ğ(1”Ô–Ú‚Ì)“G‚ÌƒOƒŠƒbƒhˆÊ’u‚É‡‚í‚¹‚é
+            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’(1ç•ªç›®ã®)æ•µã®ã‚°ãƒªãƒƒãƒ‰ä½ç½®ã«åˆã‚ã›ã‚‹
             if (0 < _btlMgr.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.ENEMY) && _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY) != null)
             {
                 Character enemy = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterGrid(enemy);
             }
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚Ì‰ñ•œ
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã®å›å¾©
             _btlMgr.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>
-        /// XV‚ğs‚¢‚Ü‚·
+        /// æ›´æ–°ã‚’è¡Œã„ã¾ã™
         /// </summary>
         override public bool Update()
         {
             if (_isFirstUpdate)
             {
-                // ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“‚ÌŠJn
+                // ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é–‹å§‹
                 StartPhaseAnim();
 
                 _isFirstUpdate = false;
@@ -44,7 +44,7 @@ namespace Frontier
                 return false;
             }
 
-            // ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“’†‚Í‘€ì–³Œø
+            // ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ä¸­ã¯æ“ä½œç„¡åŠ¹
             if (_btlUi.IsPlayingPhaseUI())
             {
                 return false;
@@ -55,7 +55,7 @@ namespace Frontier
 
         override protected void CreateTree()
         {
-            // ‘JˆÚ–Ø‚Ìì¬
+            // é·ç§»æœ¨ã®ä½œæˆ
             RootNode = _hierarchyBld.InstantiateWithDiContainer<EMSelectState>();
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EMMoveState>());
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EMAttackState>());
@@ -65,7 +65,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“‚ğÄ¶‚µ‚Ü‚·
+        /// ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿã—ã¾ã™
         /// </summary>
         override protected void StartPhaseAnim()
         {

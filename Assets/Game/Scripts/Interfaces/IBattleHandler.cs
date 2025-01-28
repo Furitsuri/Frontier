@@ -1,3 +1,3 @@
-public interface IBattleHandler
+﻿public interface IBattleHandler
 {
 }

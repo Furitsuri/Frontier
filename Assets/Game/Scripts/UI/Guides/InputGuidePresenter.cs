@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
@@ -8,12 +8,12 @@ using Zenject;
 namespace Frontier
 {
     /// <summary>
-    /// “ü—ÍƒKƒCƒhŠÖ˜A‚Ì•\¦§Œä‚ğs‚¢‚Ü‚·
+    /// å…¥åŠ›ã‚¬ã‚¤ãƒ‰é–¢é€£ã®è¡¨ç¤ºåˆ¶å¾¡ã‚’è¡Œã„ã¾ã™
     /// </summary>
     public class InputGuidePresenter : MonoBehaviour
     {
         /// <summary>
-        /// ƒtƒF[ƒh’†‚ÌŠeƒ‚[ƒh
+        /// ãƒ•ã‚§ãƒ¼ãƒ‰ä¸­ã®å„ãƒ¢ãƒ¼ãƒ‰
         /// </summary>
         public enum FadeMode
         {
@@ -21,43 +21,43 @@ namespace Frontier
             FADE,
         }
 
-        [Header("ƒKƒCƒhUI‚ÌƒvƒŒƒnƒu")]
+        [Header("ã‚¬ã‚¤ãƒ‰UIã®ãƒ—ãƒ¬ãƒãƒ–")]
         [SerializeField]
         public GameObject GuideUIPrefab;
 
-        [Header("”wŒiƒŠƒTƒCƒYŠJn‚©‚çI—¹‚Ü‚Å‚ÌŠÔ")]
+        [Header("èƒŒæ™¯ãƒªã‚µã‚¤ã‚ºé–‹å§‹ã‹ã‚‰çµ‚äº†ã¾ã§ã®æ™‚é–“")]
         [SerializeField]
         public float ResizeTime = 0.33f;
 
-        // ƒIƒuƒWƒFƒNƒgEƒRƒ“ƒ|[ƒlƒ“ƒgì¬ƒNƒ‰ƒX
+        // ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒ»ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆä½œæˆã‚¯ãƒ©ã‚¹
         [Inject]
         private HierarchyBuilder _hierarchyBld = null;
 
-        // ƒL[ƒKƒCƒhƒo[‚Ì“üoó‘Ô
+        // ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ãƒãƒ¼ã®å…¥å‡ºçŠ¶æ…‹
         private FadeMode _fadeMode = FadeMode.NEUTRAL;
-        // ‘Oó‘Ô‚ÌƒKƒCƒhUIƒŠƒXƒg‚Ì”
+        // å‰çŠ¶æ…‹ã®ã‚¬ã‚¤ãƒ‰UIãƒªã‚¹ãƒˆã®æ•°
         private int _prevGuideUIListCount = 0;
-        // Œ»İ‚Ì”wŒi‚Ì•
+        // ç¾åœ¨ã®èƒŒæ™¯ã®å¹…
         private float _currentBackGroundWidth = 0f;
-        // ƒKƒCƒh‚ª‘JˆÚ‚·‚éˆÈ‘O‚Ì”wŒi‚Ì•
+        // ã‚¬ã‚¤ãƒ‰ãŒé·ç§»ã™ã‚‹ä»¥å‰ã®èƒŒæ™¯ã®å¹…
         private float _prevTransitBackGroundWidth = 0f;
-        // XV‚·‚éÛ‚É–Ú•W‚Æ‚·‚é”wŒi‚Ì•
+        // æ›´æ–°ã™ã‚‹éš›ã«ç›®æ¨™ã¨ã™ã‚‹èƒŒæ™¯ã®å¹…
         private float _targetBackGroundWidth = 0f;
-        // Œ»İ‚ÌŠÔ
+        // ç¾åœ¨ã®æ™‚é–“
         private float _fadeTime = 0f;
-        // ƒKƒCƒhã‚É•\¦‰Â”\‚ÈƒXƒvƒ‰ƒCƒgŒQ
+        // ã‚¬ã‚¤ãƒ‰ä¸Šã«è¡¨ç¤ºå¯èƒ½ãªã‚¹ãƒ—ãƒ©ã‚¤ãƒˆç¾¤
         private Sprite[] _sprites;
-        // ”wŒi‚ÉŠY“–‚·‚éTransform
+        // èƒŒæ™¯ã«è©²å½“ã™ã‚‹Transform
         private RectTransform _rectTransform;
-        // ƒKƒCƒh‚ÌˆÊ’u’²®‚É—p‚¢‚éƒŒƒCƒAƒEƒgƒOƒ‹[ƒv
+        // ã‚¬ã‚¤ãƒ‰ã®ä½ç½®èª¿æ•´ã«ç”¨ã„ã‚‹ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã‚°ãƒ«ãƒ¼ãƒ—
         private HorizontalLayoutGroup _layoutGrp;
-        // ƒQ[ƒ€“à‚ÌŒ»İ‚Ìó‹µ‚É‚¨‚¯‚éŠeƒL[ƒKƒCƒh‚ÌƒŠƒXƒg
+        // ã‚²ãƒ¼ãƒ å†…ã®ç¾åœ¨ã®çŠ¶æ³ã«ãŠã‘ã‚‹å„ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã®ãƒªã‚¹ãƒˆ
         List<InputGuideUI.InputGuide> _inputGuideList;
-        // ƒQ[ƒ€“à‚ÌŒ»İ‚Ìó‹µ‚É‚¨‚¯‚éA‘€ì‚ª—LŒø‚Æ‚È‚éƒL[‚Æ‚»‚ê‚ğ‰Ÿ‰º‚µ‚½Û‚Ìà–¾‚ÌUIƒŠƒXƒg
+        // ã‚²ãƒ¼ãƒ å†…ã®ç¾åœ¨ã®çŠ¶æ³ã«ãŠã‘ã‚‹ã€æ“ä½œãŒæœ‰åŠ¹ã¨ãªã‚‹ã‚­ãƒ¼ã¨ãã‚Œã‚’æŠ¼ä¸‹ã—ãŸéš›ã®èª¬æ˜ã®UIãƒªã‚¹ãƒˆ
         List<InputGuideUI> _keyGuideUIList;
-        // ŠeƒXƒvƒ‰ƒCƒgƒtƒ@ƒCƒ‹–¼‚Ì––”ö‚Ì”Ô†
+        // å„ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ•ã‚¡ã‚¤ãƒ«åã®æœ«å°¾ã®ç•ªå·
         private static readonly string[] spriteTailNoString =
-        // Šeƒvƒ‰ƒbƒgƒtƒH[ƒ€–ˆ‚ÉQÆƒXƒvƒ‰ƒCƒg‚ªˆÙ‚È‚é‚½‚ßA––”öƒCƒ“ƒfƒbƒNƒX‚àˆÙ‚È‚é
+        // å„ãƒ—ãƒ©ãƒƒãƒˆãƒ•ã‚©ãƒ¼ãƒ æ¯ã«å‚ç…§ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãŒç•°ãªã‚‹ãŸã‚ã€æœ«å°¾ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚‚ç•°ãªã‚‹
         {
 #if UNITY_EDITOR
             "_alpha_308",  // ALL_CURSOR
@@ -84,7 +84,7 @@ namespace Frontier
         // Start is called before the first frame update
         void Awake()
         {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilder‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ª¶¬‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBInject‚Ìİ’è‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B");
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãŒç”Ÿæˆã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚Injectã®è¨­å®šã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚");
 
             _keyGuideUIList         = new List<InputGuideUI>();
             _rectTransform          = GetComponent<RectTransform>();
@@ -108,12 +108,12 @@ namespace Frontier
             }
 
             /*
-            // ƒR[ƒ‹ƒoƒbƒNŠÖ”‚ªİ’è‚³‚ê‚Ä‚¢‚éê‡‚Í“®ì‚³‚¹‚é
+            // ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯é–¢æ•°ãŒè¨­å®šã•ã‚Œã¦ã„ã‚‹å ´åˆã¯å‹•ä½œã•ã›ã‚‹
             foreach( var guide in _inputGuideList)
             {
                 if( guide._callback != null )
                 {
-                    // if ( Input.GetKeyUp() ) // guide.type‚É‰‚¶‚½ƒL[‚ª‰Ÿ‰º‚³‚ê‚½‚±‚Æ‚ğæ“¾‚·‚é 
+                    // if ( Input.GetKeyUp() ) // guide.typeã«å¿œã˜ãŸã‚­ãƒ¼ãŒæŠ¼ä¸‹ã•ã‚ŒãŸã“ã¨ã‚’å–å¾—ã™ã‚‹ 
                     {
                         guide._callback();
                     }
@@ -123,9 +123,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒKƒCƒhUI‚ÌƒtƒF[ƒhˆ—‚ğs‚¢‚Ü‚·
+        /// ã‚¬ã‚¤ãƒ‰UIã®ãƒ•ã‚§ãƒ¼ãƒ‰å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <returns>XV‚ªŠ®—¹‚µ‚½‚©</returns>
+        /// <returns>æ›´æ–°ãŒå®Œäº†ã—ãŸã‹</returns>
         private bool UpdateFadeUI()
         {
             var completeUpdate = false;
@@ -147,7 +147,7 @@ namespace Frontier
                     break;
 
                 default:
-                    // NEUTRAL‚Í‰½‚à‚µ‚È‚¢
+                    // NEUTRALæ™‚ã¯ä½•ã‚‚ã—ãªã„
                     break;
             }
 
@@ -155,14 +155,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ”wŒi‚Ì•‚ğXV‚µ‚Ü‚·
+        /// èƒŒæ™¯ã®å¹…ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
         private float CalcurateBackGroundWidth()
         {
-            // ƒŒƒCƒAƒEƒgƒOƒ‹[ƒv‚Ìİ’è‚ğ”½‰f
+            // ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã‚°ãƒ«ãƒ¼ãƒ—ã®è¨­å®šã‚’åæ˜ 
             var taregtWidth = _layoutGrp.padding.left + _layoutGrp.padding.right + _layoutGrp.spacing * (_keyGuideUIList.Count - 1);
 
-            // ƒKƒCƒhUI‚Ì‚»‚ê‚¼‚ê‚Ì•‚ğ‰ÁZ
+            // ã‚¬ã‚¤ãƒ‰UIã®ãã‚Œãã‚Œã®å¹…ã‚’åŠ ç®—
             foreach ( var keyGuideUI in _keyGuideUIList )
             {
                 var keyGuideUIRectTransform = keyGuideUI.gameObject.GetComponent<RectTransform>();
@@ -177,7 +177,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒKƒCƒhƒo[‚ÌƒtƒF[ƒhˆ—‚ğs‚¢‚Ü‚·
+        /// ã‚¬ã‚¤ãƒ‰ãƒãƒ¼ã®ãƒ•ã‚§ãƒ¼ãƒ‰å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
         private void TransitFadeMode()
         {
@@ -186,19 +186,19 @@ namespace Frontier
             if ( 0 < Mathf.Abs(_keyGuideUIList.Count - _prevGuideUIListCount) )
             {
                 _fadeMode = FadeMode.FADE;
-                // ƒKƒCƒh‚Ì“o˜^‚É‡‚í‚¹AƒKƒCƒh‚ğ”[‚ß‚é”wŒi‚Ì•‚ğ‹‚ß‚é
+                // ã‚¬ã‚¤ãƒ‰ã®ç™»éŒ²ã«åˆã‚ã›ã€ã‚¬ã‚¤ãƒ‰ã‚’ç´ã‚ã‚‹èƒŒæ™¯ã®å¹…ã‚’æ±‚ã‚ã‚‹
                 _targetBackGroundWidth = CalcurateBackGroundWidth();
             }
         }
 
         /// <summary>
-        /// ƒXƒvƒ‰ƒCƒg‚Ìƒ[ƒhˆ—‚ğs‚¢‚Ü‚·
+        /// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ãƒ­ãƒ¼ãƒ‰å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
         void LoadSprites()
         {
             _sprites = new Sprite[(int)Constants.KeyIcon.NUM_MAX];
 
-            // ƒKƒCƒhƒXƒvƒ‰ƒCƒg‚Ì“Ç‚İ‚İ‚ğs‚¢AƒAƒTƒCƒ“‚·‚é
+            // ã‚¬ã‚¤ãƒ‰ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®èª­ã¿è¾¼ã¿ã‚’è¡Œã„ã€ã‚¢ã‚µã‚¤ãƒ³ã™ã‚‹
             Sprite[] guideSprites = Resources.LoadAll<Sprite>(Constants.GUIDE_SPRITE_FOLDER_PASS + Constants.GUIDE_SPRITE_FILE_NAME);
             for (int i = 0; i < (int)Constants.KeyIcon.NUM_MAX; ++i)
             {
@@ -221,18 +221,18 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Œ»İ‚Ìó‘Ô‘JˆÚ‚É‚¨‚¯‚éƒL[ƒKƒCƒh‚ğİ’è‚µ‚Ü‚·
+        /// ç¾åœ¨ã®çŠ¶æ…‹é·ç§»ã«ãŠã‘ã‚‹ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="guides">•\¦‚·‚éƒL[ƒKƒCƒh‚ÌƒŠƒXƒg</param>
+        /// <param name="guides">è¡¨ç¤ºã™ã‚‹ã‚­ãƒ¼ã‚¬ã‚¤ãƒ‰ã®ãƒªã‚¹ãƒˆ</param>
         public void SetGuides( List<InputGuideUI.InputGuide> keyGuideList )
         {
-            // ‘O‰ñ‚Ì•\¦ƒKƒCƒhUI”‚ğ•Û‘¶
+            // å‰å›ã®è¡¨ç¤ºã‚¬ã‚¤ãƒ‰UIæ•°ã‚’ä¿å­˜
             _prevGuideUIListCount = _keyGuideUIList.Count;
 
             _keyGuideUIList.Clear();
             _inputGuideList = keyGuideList;
 
-            // ƒIƒuƒWƒFƒNƒg‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»‚µ‚Ä“o˜^
+            // ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹åŒ–ã—ã¦ç™»éŒ²
             Transform parentTransform = this.transform;
             foreach (InputGuideUI.InputGuide guide in _inputGuideList)
             {
@@ -244,7 +244,7 @@ namespace Frontier
                 _keyGuideUIList.Add(keyGuideUI);
             }
 
-            // ƒtƒF[ƒhó‘Ô‚Ì‘JˆÚ
+            // ãƒ•ã‚§ãƒ¼ãƒ‰çŠ¶æ…‹ã®é·ç§»
             TransitFadeMode();
         }
     }

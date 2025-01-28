@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace Frontier
 {
@@ -9,9 +9,9 @@ namespace Frontier
         private ParticleSystem _playingParticle;
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
-        /// <param name="particles">ƒpƒŠƒB¬Œ÷A¸”sAƒWƒƒƒXƒg‚ÉÄ¶‚·‚éŠeƒp[ƒeƒBƒNƒ‹</param>
+        /// <param name="particles">ãƒ‘ãƒªã‚£æˆåŠŸã€å¤±æ•—ã€ã‚¸ãƒ£ã‚¹ãƒˆæ™‚ã«å†ç”Ÿã™ã‚‹å„ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«</param>
         public void Init(in ParticleSystem[] particles)
         {
             _particles  = particles;
@@ -19,7 +19,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ”jŠü‚µ‚Ü‚·
+        /// ç ´æ£„ã—ã¾ã™
         /// </summary>
         public void terminate()
         {
@@ -28,9 +28,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒGƒtƒFƒNƒgÄ¶‚ğŠJn‚µ‚Ü‚·
+        /// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆå†ç”Ÿã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
-        /// <param name="result">ƒpƒŠƒB‚ÌŒ‹‰Ê</param>
+        /// <param name="result">ãƒ‘ãƒªã‚£ã®çµæœ</param>
         public void PlayEffect( SkillParryController.JudgeResult result )
         {
             _playingParticle = _particles[(int)result];
@@ -39,9 +39,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒGƒtƒFƒNƒgI—¹‚Ì”»’è‚ğ•Ô‚µ‚Ü‚·
+        /// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆçµ‚äº†ã®åˆ¤å®šã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>I—¹‚Ì³”Û</returns>
+        /// <returns>çµ‚äº†ã®æ­£å¦</returns>
         public bool IsEndPlaying()
         {
             return _playingParticle != null && !_playingParticle.IsAlive();

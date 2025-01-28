@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,11 +11,11 @@ namespace Frontier
         override protected float WITHIN_RANGE_VALUE { get; } = 50;
 
         /// <summary>
-        /// ŠeƒOƒŠƒbƒh‚Ì•]‰¿’l‚ğŒvZ‚µ‚Ü‚·
+        /// å„ã‚°ãƒªãƒƒãƒ‰ã®è©•ä¾¡å€¤ã‚’è¨ˆç®—ã—ã¾ã™
         /// </summary>
-        /// <param name="selfParam">©g‚Ìƒpƒ‰ƒ[ƒ^</param>
-        /// <param name="selfTmpParam">©g‚Ìˆêƒpƒ‰ƒ[ƒ^</param>
-        /// <returns>—LŒø‚Æ‚È‚é–Ú“I’n‹y‚ÑUŒ‚‘ÎÛ‚ª‚»‚ê‚¼‚êİ’è‚³‚ê‚½‚©”Û‚©</returns>
+        /// <param name="selfParam">è‡ªèº«ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
+        /// <param name="selfTmpParam">è‡ªèº«ã®ä¸€æ™‚ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
+        /// <returns>æœ‰åŠ¹ã¨ãªã‚‹ç›®çš„åœ°åŠã³æ”»æ’ƒå¯¾è±¡ãŒãã‚Œãã‚Œè¨­å®šã•ã‚ŒãŸã‹å¦ã‹</returns>
         override public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in Character.TmpParameter selfTmpParam)
         {
             _isDetermined = true;
@@ -24,12 +24,12 @@ namespace Frontier
 
             List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates;
 
-            // UŒ‚”ÍˆÍ“à‚É“G‘ÎƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚·‚é‚©Šm”F‚µA‘¶İ‚·‚éê‡‚Í‚»‚ÌƒLƒƒƒ‰ƒNƒ^[’B‚ğæ“¾
+            // æ”»æ’ƒç¯„å›²å†…ã«æ•µå¯¾ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã—ã€å­˜åœ¨ã™ã‚‹å ´åˆã¯ãã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼é”ã‚’å–å¾—
             if (CheckExistTargetInRange(selfParam, selfTmpParam, out candidates))
             {
                 (int gridIndex, Character target, float eValue) maxEvaluate = (-1, null, int.MinValue);
 
-                // í“¬Œ‹‰Ê•]‰¿‚ªÅ‚à‚‚¢‘Šè‚ğ‹‚ß‚é
+                // æˆ¦é—˜çµæœè©•ä¾¡ãŒæœ€ã‚‚é«˜ã„ç›¸æ‰‹ã‚’æ±‚ã‚ã‚‹
                 foreach (var candidate in candidates)
                 {
                     foreach (var opponent in candidate.opponents)
@@ -45,11 +45,11 @@ namespace Frontier
                     }
                 }
 
-                // •]‰¿’l‚Ì‚‚¢ˆÊ’u‚Æ‘Šè‚ğ–Ú•WˆÚ“®ˆÊ’uAUŒ‚‘ÎÛ‚Éİ’è
+                // è©•ä¾¡å€¤ã®é«˜ã„ä½ç½®ã¨ç›¸æ‰‹ã‚’ç›®æ¨™ç§»å‹•ä½ç½®ã€æ”»æ’ƒå¯¾è±¡ã«è¨­å®š
                 _destinationGridIndex = maxEvaluate.gridIndex;
                 _targetCharacter = maxEvaluate.target;
 
-                // is‰Â”\ƒOƒŠƒbƒh‚ğƒ‹[ƒgŒó•â‚É‘}“ü
+                // é€²è¡Œå¯èƒ½ã‚°ãƒªãƒƒãƒ‰ã‚’ãƒ«ãƒ¼ãƒˆå€™è£œã«æŒ¿å…¥
                 for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
                 {
                     if (0 <= _stageCtrl.GetGridInfo(i).estimatedMoveRange)
@@ -57,16 +57,16 @@ namespace Frontier
                         candidateRouteIndexs.Add(i);
                     }
                 }
-                candidateRouteIndexs.Add(selfTmpParam.gridIndex);   // Œ»İ’n“_‚à‘}“ü
+                candidateRouteIndexs.Add(selfTmpParam.gridIndex);   // ç¾åœ¨åœ°ç‚¹ã‚‚æŒ¿å…¥
                 _suggestedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
             }
-            // UŒ‚”ÍˆÍ“à‚É“G‘ÎƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚µ‚È‚¢ê‡‚ÍA•]‰¿’l‚ğŒvZ‚µ‚ÄÅ‚à‚‚¢ƒOƒŠƒbƒhˆÊ’u‚ÖŒü‚©‚¤‚æ‚¤‚É
+            // æ”»æ’ƒç¯„å›²å†…ã«æ•µå¯¾ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ã€è©•ä¾¡å€¤ã‚’è¨ˆç®—ã—ã¦æœ€ã‚‚é«˜ã„ã‚°ãƒªãƒƒãƒ‰ä½ç½®ã¸å‘ã‹ã†ã‚ˆã†ã«
             else
             {
-                // Å‘å•]‰¿ƒ‹[ƒg•Û‘¶—p
+                // æœ€å¤§è©•ä¾¡ãƒ«ãƒ¼ãƒˆä¿å­˜ç”¨
                 (List<(int routeIndex, int routeCost)> route, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
 
-                // is‰Â”\‚È‘S‚Ä‚ÌƒOƒŠƒbƒh‚ğ’TõŒó•â‚É‰Á‚¦‚é
+                // é€²è¡Œå¯èƒ½ãªå…¨ã¦ã®ã‚°ãƒªãƒƒãƒ‰ã‚’æ¢ç´¢å€™è£œã«åŠ ãˆã‚‹
                 var flag = Stage.StageController.BitFlag.CANNOT_MOVE | Stage.StageController.BitFlag.PLAYER_EXIST | Stage.StageController.BitFlag.OTHER_EXIST;
                 for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
                 {
@@ -76,33 +76,33 @@ namespace Frontier
                     }
                 }
 
-                // ŠeƒvƒŒƒCƒ„[‚ª‘¶İ‚·‚éƒOƒŠƒbƒh‚Ì•]‰¿’l‚ğŒvZ‚·‚é
+                // å„ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‚°ãƒªãƒƒãƒ‰ã®è©•ä¾¡å€¤ã‚’è¨ˆç®—ã™ã‚‹
                 foreach (Player player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
                 {
                     int destGridIndex = player.tmpParam.gridIndex;
                     ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
-                    // –Ú“IÀ•W‚É‚ÍƒLƒƒƒ‰ƒNƒ^[‚ª‚¢‚é‚½‚ßAŒó•âƒ‹[ƒg‚©‚çŠù‚Éœ‚©‚ê‚Ä‚¢‚é‚Ì‚Å‰Á‚¦‚é
+                    // ç›®çš„åº§æ¨™ã«ã¯ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒã„ã‚‹ãŸã‚ã€å€™è£œãƒ«ãƒ¼ãƒˆã‹ã‚‰æ—¢ã«é™¤ã‹ã‚Œã¦ã„ã‚‹ã®ã§åŠ ãˆã‚‹
                     candidateRouteIndexs.Add(destGridIndex);
 
-                    // UŒ‚‚É‚æ‚é•]‰¿’l‚ğ‰ÁZ
+                    // æ”»æ’ƒã«ã‚ˆã‚‹è©•ä¾¡å€¤ã‚’åŠ ç®—
                     evaluateValue += CalcurateEvaluateAttack(selfParam, player.param);
 
-                    // Œo˜HƒRƒXƒg‚Ì‹t”‚ğæZ(Œo˜HƒRƒXƒg‚ª’á‚¢‚Ù‚Ç•]‰¿’l‚ğ‘å‚«‚­‚·‚é‚½‚ß)
+                    // çµŒè·¯ã‚³ã‚¹ãƒˆã®é€†æ•°ã‚’ä¹—ç®—(çµŒè·¯ã‚³ã‚¹ãƒˆãŒä½ã„ã»ã©è©•ä¾¡å€¤ã‚’å¤§ããã™ã‚‹ãŸã‚)
                     List<(int routeIndexs, int routeCost)> route = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, destGridIndex, candidateRouteIndexs);
-                    int totalCost = route[^1].routeCost;    // ^1‚ÍÅŒã‚Ì—v‘f‚ÌƒCƒ“ƒfƒbƒNƒX(C#8.0ˆÈ~‚©‚çg—p‰Â”\)
+                    int totalCost = route[^1].routeCost;    // ^1ã¯æœ€å¾Œã®è¦ç´ ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹(C#8.0ä»¥é™ã‹ã‚‰ä½¿ç”¨å¯èƒ½)
                     evaluateValue *= 1f / totalCost;
 
-                    // Å‚à•]‰¿‚Ì‚‚¢ƒ‹[ƒg‚ğ•Û‘¶
+                    // æœ€ã‚‚è©•ä¾¡ã®é«˜ã„ãƒ«ãƒ¼ãƒˆã‚’ä¿å­˜
                     if (maxEvaluateRoute.evaluateValue < evaluateValue)
                     {
                         maxEvaluateRoute = (route, evaluateValue);
                     }
                 }
 
-                // Å‚à‚‚¢•]‰¿’l‚Ìƒ‹[ƒg‚Ì‚¤‚¿AÅ‘åŒÀ‚ÌˆÚ“®ƒŒƒ“ƒW‚Åi‚ñ‚¾ƒOƒŠƒbƒh‚ÖŒü‚©‚¤‚æ‚¤‚Éİ’è
+                // æœ€ã‚‚é«˜ã„è©•ä¾¡å€¤ã®ãƒ«ãƒ¼ãƒˆã®ã†ã¡ã€æœ€å¤§é™ã®ç§»å‹•ãƒ¬ãƒ³ã‚¸ã§é€²ã‚“ã ã‚°ãƒªãƒƒãƒ‰ã¸å‘ã‹ã†ã‚ˆã†ã«è¨­å®š
                 int range = selfParam.moveRange;
-                int prevCost = 0;   // routeCost‚ÍŠeƒCƒ“ƒfƒbƒNƒX‚Ü‚Å‚Ì‡Œv’lƒRƒXƒg‚È‚Ì‚ÅA·•ª‚ğ“¾‚é•K—v‚ª‚ ‚é
+                int prevCost = 0;   // routeCostã¯å„ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¾ã§ã®åˆè¨ˆå€¤ã‚³ã‚¹ãƒˆãªã®ã§ã€å·®åˆ†ã‚’å¾—ã‚‹å¿…è¦ãŒã‚ã‚‹
                 _suggestedMoveRoute = maxEvaluateRoute.route;
 
                 foreach ((int routeIndex, int routeCost) r in _suggestedMoveRoute)
@@ -112,7 +112,7 @@ namespace Frontier
 
                     if (range < 0) break;
 
-                    // ƒOƒŠƒbƒhã‚ÉƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚µ‚È‚¢‚±‚Æ‚ğŠm”F
+                    // ã‚°ãƒªãƒƒãƒ‰ä¸Šã«ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã—ãªã„ã“ã¨ã‚’ç¢ºèª
                     if (!_stageCtrl.GetGridInfo(r.routeIndex).IsExistCharacter()) _destinationGridIndex = r.routeIndex;
                 }
             }
@@ -128,17 +128,17 @@ namespace Frontier
         {
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
 
-            // ©g‚ÌˆÚ“®”ÍˆÍ‚ğƒXƒe[ƒWã‚É“o˜^‚·‚é
+            // è‡ªèº«ã®ç§»å‹•ç¯„å›²ã‚’ã‚¹ãƒ†ãƒ¼ã‚¸ä¸Šã«ç™»éŒ²ã™ã‚‹
             bool isAttackable = !selfTmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
             _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterIndex, selfParam.characterTag, isAttackable);
 
             for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
             {
                 var info = _stageCtrl.GetGridInfo(i);
-                // UŒ‚‰Â”\’n“_‚©‚ÂƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚µ‚Ä‚¢‚È‚¢(©•ª©g‚Í—LŒø)ƒOƒŠƒbƒh‚ğæ“¾
+                // æ”»æ’ƒå¯èƒ½åœ°ç‚¹ã‹ã¤ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã—ã¦ã„ãªã„(è‡ªåˆ†è‡ªèº«ã¯æœ‰åŠ¹)ã‚°ãƒªãƒƒãƒ‰ã‚’å–å¾—
                 if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.ATTACKABLE_TARGET) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
                 {
-                    // ƒOƒŠƒbƒh‚Ì\š•ûŒü‚É‘¶İ‚·‚é“G‘ÎƒLƒƒƒ‰ƒNƒ^[‚ğ’Šo
+                    // ã‚°ãƒªãƒƒãƒ‰ã®åå­—æ–¹å‘ã«å­˜åœ¨ã™ã‚‹æ•µå¯¾ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’æŠ½å‡º
                     List<CharacterHashtable.Key> opponentKeys;
                     ExtractAttackabkeOpponentIndexs(i, out opponentKeys);
                     if (0 < opponentKeys.Count)

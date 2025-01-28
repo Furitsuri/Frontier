@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,30 +31,30 @@ namespace Frontier
             _attackCharacter = _btlMgr.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_attackCharacter != null);
 
-            // Œ»İ‘I‘ğ’†‚ÌƒLƒƒƒ‰ƒNƒ^[î•ñ‚ğæ“¾‚µ‚ÄUŒ‚”ÍˆÍ‚ğ•\¦
+            // ç¾åœ¨é¸æŠä¸­ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼æƒ…å ±ã‚’å–å¾—ã—ã¦æ”»æ’ƒç¯„å›²ã‚’è¡¨ç¤º
             var param = _attackCharacter.param;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
-            // UŒ‚‰Â”\‚ÈƒOƒŠƒbƒh“à‚É“G‚ª‚¢‚½ê‡‚É•W“IƒOƒŠƒbƒh‚ğ‡‚í‚¹‚é
+            // æ”»æ’ƒå¯èƒ½ãªã‚°ãƒªãƒƒãƒ‰å†…ã«æ•µãŒã„ãŸå ´åˆã«æ¨™çš„ã‚°ãƒªãƒƒãƒ‰ã‚’åˆã‚ã›ã‚‹
             if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter()))
             {
-                // ƒAƒ^ƒbƒJ[ƒLƒƒƒ‰ƒNƒ^[‚Ìİ’è
+                // ã‚¢ã‚¿ãƒƒã‚«ãƒ¼ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®è¨­å®š
                 _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
-                // ƒAƒ^ƒbƒNƒJ[ƒ\ƒ‹UI•\¦
+                // ã‚¢ã‚¿ãƒƒã‚¯ã‚«ãƒ¼ã‚½ãƒ«UIè¡¨ç¤º
                 btlUIInstance.ToggleAttackCursorE2P(true);
             }
 
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
-            // UŒ‚Ò‚ÌŒü‚«‚ğİ’è
+            // æ”»æ’ƒè€…ã®å‘ãã‚’è¨­å®š
             var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
             _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
             var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
             _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
 
-            // UŒ‚ƒV[ƒPƒ“ƒX‚ğ‰Šú‰»
+            // æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’åˆæœŸåŒ–
             _attackSequence.Init();
 
             _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
@@ -64,7 +64,7 @@ namespace Frontier
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            // UŒ‚‰Â”\ó‘Ô‚Å‚È‚¯‚ê‚Î‰½‚à‚µ‚È‚¢
+            // æ”»æ’ƒå¯èƒ½çŠ¶æ…‹ã§ãªã‘ã‚Œã°ä½•ã‚‚ã—ãªã„
             if (_stageCtrl.GetGridCursorState() != GridCursor.State.ATTACK)
             {
                 return false;
@@ -73,35 +73,35 @@ namespace Frontier
             switch (_phase)
             {
                 case EMAttackPhase.EM_ATTACK_CONFIRM:
-                    // g—pƒXƒLƒ‹‚ğ‘I‘ğ‚·‚é
+                    // ä½¿ç”¨ã‚¹ã‚­ãƒ«ã‚’é¸æŠã™ã‚‹
                     _attackCharacter.SelectUseSkills(SkillsData.SituationType.ATTACK);
                     _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
 
-                    // —\‘ªƒ_ƒ[ƒW‚ğ“K‰‚·‚é
+                    // äºˆæ¸¬ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’é©å¿œã™ã‚‹
                     _btlMgr.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
-                    // ƒ_ƒ[ƒW—\‘ª•\¦UI‚ğ•\¦
+                    // ãƒ€ãƒ¡ãƒ¼ã‚¸äºˆæ¸¬è¡¨ç¤ºUIã‚’è¡¨ç¤º
                     btlUIInstance.ToggleBattleExpect(true);
 
                     if (Input.GetKeyUp(KeyCode.Space))
                     {
-                        // ƒLƒƒƒ‰ƒNƒ^[‚ÌƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚ğÁ”ï
+                        // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã‚’æ¶ˆè²»
                         _attackCharacter.ConsumeActionGauge();
                         _targetCharacter.ConsumeActionGauge();
 
-                        // ‘I‘ğƒOƒŠƒbƒh‚ğˆê”ñ•\¦
+                        // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’ä¸€æ™‚éè¡¨ç¤º
                         _stageCtrl.SetGridCursorActive(false);
 
-                        // ƒAƒ^ƒbƒNƒJ[ƒ\ƒ‹UI”ñ•\¦
+                        // ã‚¢ã‚¿ãƒƒã‚¯ã‚«ãƒ¼ã‚½ãƒ«UIéè¡¨ç¤º
                         btlUIInstance.ToggleAttackCursorE2P(false);
 
-                        // ƒ_ƒ[ƒW—\‘ª•\¦UI‚ğ”ñ•\¦
+                        // ãƒ€ãƒ¡ãƒ¼ã‚¸äºˆæ¸¬è¡¨ç¤ºUIã‚’éè¡¨ç¤º
                         btlUIInstance.ToggleBattleExpect(false);
 
-                        // ƒOƒŠƒbƒhó‘Ô‚Ì•`‰æ‚ğƒNƒŠƒA
+                        // ã‚°ãƒªãƒƒãƒ‰çŠ¶æ…‹ã®æç”»ã‚’ã‚¯ãƒªã‚¢
                         _stageCtrl.ClearGridMeshDraw();
 
-                        // UŒ‚ƒV[ƒPƒ“ƒX‚ÌŠJn
+                        // æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã®é–‹å§‹
                         _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
 
                         _phase = EMAttackPhase.EM_ATTACK_EXECUTE;
@@ -114,9 +114,9 @@ namespace Frontier
                     }
                     break;
                 case EMAttackPhase.EM_ATTACK_END:
-                    // UŒ‚‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚ÌUŒ‚ƒRƒ}ƒ“ƒh‚ğ‘I‘ğ•s‰Â‚É‚·‚é
+                    // æ”»æ’ƒã—ãŸã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®æ”»æ’ƒã‚³ãƒãƒ³ãƒ‰ã‚’é¸æŠä¸å¯ã«ã™ã‚‹
                     _attackCharacter.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
-                    // ƒRƒ}ƒ“ƒh‘I‘ğ‚É–ß‚é
+                    // ã‚³ãƒãƒ³ãƒ‰é¸æŠã«æˆ»ã‚‹
                     Back();
 
                     return true;
@@ -129,26 +129,26 @@ namespace Frontier
         {
             var btlUIInstance = BattleUISystem.Instance;
 
-            //€–S”»’è‚ğ’Ê’m(‘Šè‚ÌƒJƒEƒ“ƒ^[‚É‚æ‚Á‚Ä“|‚³‚ê‚é‰Â”\«‚à‚ ‚é‚½‚ßAUŒ‚Ò‚Æ”íUŒ‚Ò‚Ì—¼•û‚ğ”»’è)
+            //æ­»äº¡åˆ¤å®šã‚’é€šçŸ¥(ç›¸æ‰‹ã®ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ã«ã‚ˆã£ã¦å€’ã•ã‚Œã‚‹å¯èƒ½æ€§ã‚‚ã‚ã‚‹ãŸã‚ã€æ”»æ’ƒè€…ã¨è¢«æ”»æ’ƒè€…ã®ä¸¡æ–¹ã‚’åˆ¤å®š)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
             {
                 var key = new CharacterHashtable.Key(diedCharacter.param.characterTag, diedCharacter.param.characterIndex);
                 NoticeCharacterDied(key);
-                // ”jŠü
+                // ç ´æ£„
                 diedCharacter.Remove();
             }
 
-            // ƒAƒ^ƒbƒJ[ƒLƒƒƒ‰ƒNƒ^[‚Ìİ’è‚ğ‰ğœ
+            // ã‚¢ã‚¿ãƒƒã‚«ãƒ¼ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®è¨­å®šã‚’è§£é™¤
             _stageCtrl.ClearGridCursroBind();
-            // —\‘ªƒ_ƒ[ƒW‚ğƒŠƒZƒbƒg
+            // äºˆæ¸¬ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ãƒªã‚»ãƒƒãƒˆ
             _btlMgr.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
 
-            // ƒAƒ^ƒbƒNƒJ[ƒ\ƒ‹UI”ñ•\¦
+            // ã‚¢ã‚¿ãƒƒã‚¯ã‚«ãƒ¼ã‚½ãƒ«UIéè¡¨ç¤º
             btlUIInstance.ToggleAttackCursorP2E(false);
-            // ƒ_ƒ[ƒW—\‘ª•\¦UI‚ğ”ñ•\¦
+            // ãƒ€ãƒ¡ãƒ¼ã‚¸äºˆæ¸¬è¡¨ç¤ºUIã‚’éè¡¨ç¤º
             btlUIInstance.ToggleBattleExpect(false);
-            // g—pƒXƒLƒ‹‚Ì“_–Å‚ğ”ñ•\¦
+            // ä½¿ç”¨ã‚¹ã‚­ãƒ«ã®ç‚¹æ»…ã‚’éè¡¨ç¤º
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
                 btlUIInstance.GetPlayerParamSkillBox(i).SetFlickEnabled(false);
@@ -156,19 +156,19 @@ namespace Frontier
                 btlUIInstance.GetEnemyParamSkillBox(i).SetFlickEnabled(false);
                 btlUIInstance.GetEnemyParamSkillBox(i).SetUseable(true);
             }
-            // g—pƒXƒLƒ‹ƒRƒXƒgŒ©Ï‚à‚è‚ğƒŠƒZƒbƒg
+            // ä½¿ç”¨ã‚¹ã‚­ãƒ«ã‚³ã‚¹ãƒˆè¦‹ç©ã‚‚ã‚Šã‚’ãƒªã‚»ãƒƒãƒˆ
             _attackCharacter.param.ResetConsumptionActionGauge();
             _attackCharacter.skillModifiedParam.Reset();
             _targetCharacter.param.ResetConsumptionActionGauge();
             _targetCharacter.skillModifiedParam.Reset();
-            // ƒOƒŠƒbƒhó‘Ô‚Ì•`‰æ‚ğƒNƒŠƒA
+            // ã‚°ãƒªãƒƒãƒ‰çŠ¶æ…‹ã®æç”»ã‚’ã‚¯ãƒªã‚¢
             _stageCtrl.UpdateGridInfo();
             _stageCtrl.ClearGridMeshDraw();
-            // ‘I‘ğƒOƒŠƒbƒh‚ğ•\¦
-            // ¦‚±‚ÌUŒ‚‚Ì’¼Œã‚ÉƒvƒŒƒCƒ„[ƒtƒF[ƒY‚ÉˆÚs‚µ‚½ê‡Aˆêu‚ÌŠÔA‘I‘ğƒOƒŠƒbƒh‚ª•\¦‚³‚êA
-            //   ‚»‚ÌŒãƒvƒŒƒCƒ„[‚É‘I‘ğƒOƒŠƒbƒh‚ªˆÚ‚é‚Æ‚¢‚¤ó‹µ‚É‚È‚è‚Ü‚·B
-            //   ‚»‚Ì‹““®‚ª­‚µƒoƒO‚Ì‚æ‚¤‚ÉŒ©‚¦‚Ä‚µ‚Ü‚¤‚Ì‚ÅAÁ‹‚µ‚½‚Ü‚Ü‚É‚·‚é‚±‚Æ‚É‚µA
-            //   Ÿ‚ÌƒLƒƒƒ‰ƒNƒ^[‚ªs“®ŠJn‚·‚éÛ‚É•\¦‚·‚é‚æ‚¤‚É‚µ‚Ü‚·B
+            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’è¡¨ç¤º
+            // â€»ã“ã®æ”»æ’ƒã®ç›´å¾Œã«ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ã‚§ãƒ¼ã‚ºã«ç§»è¡Œã—ãŸå ´åˆã€ä¸€ç¬ã®é–“ã€é¸æŠã‚°ãƒªãƒƒãƒ‰ãŒè¡¨ç¤ºã•ã‚Œã€
+            //   ãã®å¾Œãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«é¸æŠã‚°ãƒªãƒƒãƒ‰ãŒç§»ã‚‹ã¨ã„ã†çŠ¶æ³ã«ãªã‚Šã¾ã™ã€‚
+            //   ãã®æŒ™å‹•ãŒå°‘ã—ãƒã‚°ã®ã‚ˆã†ã«è¦‹ãˆã¦ã—ã¾ã†ã®ã§ã€æ¶ˆå»ã—ãŸã¾ã¾ã«ã™ã‚‹ã“ã¨ã«ã—ã€
+            //   æ¬¡ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒè¡Œå‹•é–‹å§‹ã™ã‚‹éš›ã«è¡¨ç¤ºã™ã‚‹ã‚ˆã†ã«ã—ã¾ã™ã€‚
             // Stage.StageController.Instance.SetGridCursorActive(true);
 
             base.Exit();

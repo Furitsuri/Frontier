@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,7 +40,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public void Init( float shrinkTime )
         {
@@ -57,7 +57,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ”jŠü‚µ‚Ü‚·
+        /// ç ´æ£„ã—ã¾ã™
         /// </summary>
         public void Destroy()
         {
@@ -65,7 +65,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒGƒtƒFƒNƒg‚ğXV‚µ‚Ü‚·
+        /// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
         public void FixedUpdateEffect()
         {
@@ -73,21 +73,21 @@ namespace Frontier
 
             _curtime -= Time.fixedDeltaTime;
             if (_curtime < 0f) { _curtime = _initTime; }
-            // ŠÔ”ä—¦‚ğƒTƒCƒYƒŒ[ƒg‚Æ‚µ‚Äw’è
+            // æ™‚é–“æ¯”ç‡ã‚’ã‚µã‚¤ã‚ºãƒ¬ãƒ¼ãƒˆã¨ã—ã¦æŒ‡å®š
             UpdateShrinkRingSizeByRate( _curtime / _initTime );
         }
 
         /// <summary>
-        /// k¬‚·‚éƒŠƒ“ƒO‚ÌƒTƒCƒYƒŒ[ƒg‚ğXV‚µ‚Ü‚·
+        /// ç¸®å°ã™ã‚‹ãƒªãƒ³ã‚°ã®ã‚µã‚¤ã‚ºãƒ¬ãƒ¼ãƒˆã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="sizeRate">XV‚·‚éƒŠƒ“ƒO‚ÌƒTƒCƒYƒŒ[ƒg</param>
+        /// <param name="sizeRate">æ›´æ–°ã™ã‚‹ãƒªãƒ³ã‚°ã®ã‚µã‚¤ã‚ºãƒ¬ãƒ¼ãƒˆ</param>
         public void UpdateShrinkRingSizeByRate(float sizeRate)
         {
             _ringMaterial.SetFloat(_shrinkRingSizeID, sizeRate);
         }
 
         /// <summary>
-        /// ƒŠƒ“ƒOk¬‚ğ’â~‚µ‚Ü‚·
+        /// ãƒªãƒ³ã‚°ç¸®å°ã‚’åœæ­¢ã—ã¾ã™
         /// </summary>
         public void StopShrink()
         {
@@ -95,28 +95,28 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒŠƒ“ƒO‚Ì”¼Œa‚ğæ“¾‚µ‚Ü‚·
+        /// ãƒªãƒ³ã‚°ã®åŠå¾„ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>ƒŠƒ“ƒO‚Ì”¼Œa</returns>
+        /// <returns>ãƒªãƒ³ã‚°ã®åŠå¾„</returns>
         public float GetCurShrinkRingRadius()
         {
             return _ringMaterial.GetFloat(_shrinkRingSizeID);
         }
 
         /// <summary>
-        /// —LŒøE–³Œøİ’è‚ğs‚¢‚Ü‚·
+        /// æœ‰åŠ¹ãƒ»ç„¡åŠ¹è¨­å®šã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="enable">—LŒøE–³Œø</param>
+        /// <param name="enable">æœ‰åŠ¹ãƒ»ç„¡åŠ¹</param>
         public void SetEnable(bool enable)
         {
             _enabled = enable;
         }
 
         /// <summary>
-        /// ”»’èƒŠƒ“ƒO‚Ì”ÍˆÍ‚ğİ’è‚µ‚Ü‚·
+        /// åˆ¤å®šãƒªãƒ³ã‚°ã®ç¯„å›²ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="outer">”»’èƒŠƒ“ƒOŠOü”¼Œa</param>
-        /// <param name="innner">”»’èƒŠƒ“ƒO“àü”¼Œa</param>
+        /// <param name="outer">åˆ¤å®šãƒªãƒ³ã‚°å¤–å‘¨åŠå¾„</param>
+        /// <param name="innner">åˆ¤å®šãƒªãƒ³ã‚°å†…å‘¨åŠå¾„</param>
         public void SetJudgeRingRange((float inner, float outer) range)
         {
             _ringMaterial.SetFloat(_judgeRingInnerRadiusID, range.inner);

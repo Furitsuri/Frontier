@@ -1,4 +1,4 @@
-using System.Xml.Serialization;
+ï»¿using System.Xml.Serialization;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,24 +20,24 @@ namespace Frontier
         {
             serializedObject.Update();
 
-            // ¶¬‚·‚éƒ†ƒjƒbƒg‚Ìƒpƒ‰ƒ[ƒ^İ’è
+            // ç”Ÿæˆã™ã‚‹ãƒ¦ãƒ‹ãƒƒãƒˆã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š
             EditorGUILayout.PropertyField(_battleMgr);
 
-            // Inspectorã‚ÌdØ‚èü‚ğ•\¦
+            // Inspectorä¸Šã®ä»•åˆ‡ã‚Šç·šã‚’è¡¨ç¤º
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             EditorGUILayout.Space(10);
 
-            // í“¬ƒfƒoƒbƒO—pjsonƒf[ƒ^‚Ì“Çƒ{ƒ^ƒ“
+            // æˆ¦é—˜ãƒ‡ãƒãƒƒã‚°ç”¨jsonãƒ‡ãƒ¼ã‚¿ã®èª­è¾¼ãƒœã‚¿ãƒ³
             if (GUILayout.Button("Load Battle Debug Unit Data"))
             {
                 LoadBattleDebugUnitDatas();
             }
 
-            // ¶¬‚·‚éƒ†ƒjƒbƒg‚Ìƒpƒ‰ƒ[ƒ^İ’è
+            // ç”Ÿæˆã™ã‚‹ãƒ¦ãƒ‹ãƒƒãƒˆã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š
             EditorGUILayout.PropertyField(_propParamUnit);
 
-            // ƒpƒ‰ƒ[ƒ^İ’è‚ğs‚Á‚½ƒ†ƒjƒbƒg‚Ì¶¬ƒ{ƒ^ƒ“
+            // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®šã‚’è¡Œã£ãŸãƒ¦ãƒ‹ãƒƒãƒˆã®ç”Ÿæˆãƒœã‚¿ãƒ³
             if (GUILayout.Button("Generate Unit"))
             {
                 GenerateUnit();
@@ -62,7 +62,7 @@ namespace Frontier
             Player player = playerObject.GetComponent<Player>();
             if (player == null) continue;
 
-            // ƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚ñ‚¾ƒpƒ‰ƒ[ƒ^‚ğİ’è
+            // ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã‚“ã ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’è¨­å®š
             ApplyCharacterParams(ref player.param, Params[i]);
             player.Init();
             playerObject.SetActive(true);

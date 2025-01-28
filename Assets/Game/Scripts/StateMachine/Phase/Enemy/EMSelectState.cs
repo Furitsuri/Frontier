@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,13 +20,13 @@ namespace Frontier
 
             base.Init();
 
-            // ƒXƒe[ƒWƒOƒŠƒbƒhã‚ÌƒLƒƒƒ‰î•ñ‚ğXV
+            // ã‚¹ãƒ†ãƒ¼ã‚¸ã‚°ãƒªãƒƒãƒ‰ä¸Šã®ã‚­ãƒ£ãƒ©æƒ…å ±ã‚’æ›´æ–°
             _stageCtrl.UpdateGridInfo();
 
             _enemyEnumerator = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).GetEnumerator();
             _currentEnemy = null;
 
-            // s“®Ï‚İ‚Å‚È‚¢ƒLƒƒƒ‰ƒNƒ^[‚ğ‘I‘ğ‚·‚é
+            // è¡Œå‹•æ¸ˆã¿ã§ãªã„ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’é¸æŠã™ã‚‹
             while (_enemyEnumerator.MoveNext())
             {
                 _currentEnemy = _enemyEnumerator.Current as Enemy;
@@ -40,7 +40,7 @@ namespace Frontier
 
                 isExist = true;
 
-                // ‘I‘ğƒOƒŠƒbƒh‚ğ‡‚í‚¹‚é
+                // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’åˆã‚ã›ã‚‹
                 _stageCtrl.ApplyCurrentGrid2CharacterGrid(_currentEnemy);
 
                 if(!_currentEnemy.GetAi().IsDetermined())
@@ -48,7 +48,7 @@ namespace Frontier
                     (_isValidDestination, _isValidTarget) = _currentEnemy.DetermineDestinationAndTargetWithAI();
                 }
 
-                // UŒ‚‘ÎÛ‚ª‚¢‚È‚©‚Á‚½ê‡‚ÍUŒ‚Ï‚İó‘Ô‚É‚·‚é
+                // æ”»æ’ƒå¯¾è±¡ãŒã„ãªã‹ã£ãŸå ´åˆã¯æ”»æ’ƒæ¸ˆã¿çŠ¶æ…‹ã«ã™ã‚‹
                 if (!_isValidTarget)
                 {
                     _currentEnemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
@@ -73,7 +73,7 @@ namespace Frontier
             var tmpParam = _currentEnemy.tmpParam;
             _currentEnemy.FetchDestinationAndTarget(out gridIndex, out targetCharacter);
 
-            // ˆÚ“®s“®‚É‘JˆÚ‚·‚é‚©
+            // ç§»å‹•è¡Œå‹•ã«é·ç§»ã™ã‚‹ã‹
             if (IsTransitMove(tmpParam))
             {
                 TransitIndex = (int)Character.Command.COMMAND_TAG.MOVE;
@@ -81,7 +81,7 @@ namespace Frontier
                 return true;
             }
 
-            // UŒ‚s“®‚É‘JˆÚ‚·‚é‚©
+            // æ”»æ’ƒè¡Œå‹•ã«é·ç§»ã™ã‚‹ã‹
             if (IsTransitAttack(tmpParam))
             {
                 TransitIndex = (int)Character.Command.COMMAND_TAG.ATTACK;

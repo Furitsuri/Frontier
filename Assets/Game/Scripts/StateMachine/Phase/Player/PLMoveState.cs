@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -32,20 +32,20 @@ namespace Frontier
             _Phase = PLMovePhase.PL_MOVE;
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
-            // Œ»İ‘I‘ğ’†‚ÌƒLƒƒƒ‰ƒNƒ^[î•ñ‚ğæ“¾‚µ‚ÄˆÚ“®”ÍˆÍ‚ğ•\¦
+            // ç¾åœ¨é¸æŠä¸­ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼æƒ…å ±ã‚’å–å¾—ã—ã¦ç§»å‹•ç¯„å›²ã‚’è¡¨ç¤º
             _selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
             Debug.Assert(_selectPlayer != null);
 
             var param = _selectPlayer.param;
 
-            // ƒLƒƒƒ‰ƒNƒ^[‚ÌŒ»İ‚ÌˆÊ’uî•ñ‚ğ•Û
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç¾åœ¨ã®ä½ç½®æƒ…å ±ã‚’ä¿æŒ
             Stage.StageController.Footprint footprint = new Stage.StageController.Footprint();
             footprint.gridIndex = _selectPlayer.tmpParam.gridIndex;
             footprint.rotation = _selectPlayer.transform.rotation;
             _stageCtrl.LeaveFootprint(footprint);
             _stageCtrl.BindGridCursorState( GridCursor.State.MOVE, _selectPlayer);
 
-            // ˆÚ“®‰Â”\î•ñ‚ğ“o˜^‹y‚Ñ•\¦
+            // ç§»å‹•å¯èƒ½æƒ…å ±ã‚’ç™»éŒ²åŠã³è¡¨ç¤º
             bool isAttackable = !_selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
@@ -57,7 +57,7 @@ namespace Frontier
 
             if (base.Update())
             {
-                // ƒLƒƒƒ‰ƒNƒ^[‚ÌƒOƒŠƒbƒh‚ÌˆÊ’u‚É‘I‘ğƒOƒŠƒbƒh‚ÌˆÊ’u‚ğ–ß‚·
+                // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚°ãƒªãƒƒãƒ‰ã®ä½ç½®ã«é¸æŠã‚°ãƒªãƒƒãƒ‰ã®ä½ç½®ã‚’æˆ»ã™
                 stageGrid.FollowFootprint(_selectPlayer);
 
                 return true;
@@ -70,10 +70,10 @@ namespace Frontier
                     keyGuideList.Add(new InputGuideUI.InputGuide( Constants.KeyIcon.ALL_CURSOR, "Move" ));
                     SetInputGuides(keyGuideList);
 
-                    // ƒOƒŠƒbƒh‚Ì‘€ì
+                    // ã‚°ãƒªãƒƒãƒ‰ã®æ“ä½œ
                     stageGrid.OperateGridCursor();
 
-                    // ‘I‘ğ‚µ‚½ƒOƒŠƒbƒh‚ªˆÚ“®‰Â”\‚Å‚ ‚ê‚Î‘I‘ğƒOƒŠƒbƒh‚Ö‘JˆÚ
+                    // é¸æŠã—ãŸã‚°ãƒªãƒƒãƒ‰ãŒç§»å‹•å¯èƒ½ã§ã‚ã‚Œã°é¸æŠã‚°ãƒªãƒƒãƒ‰ã¸é·ç§»
                     if (Input.GetKeyUp(KeyCode.Space))
                     {
                         Stage.GridInfo info;
@@ -81,38 +81,38 @@ namespace Frontier
 
                         if (0 <= info.estimatedMoveRange)
                         {
-                            // ˆÚ“®Àsˆ—‚Ö‘JˆÚ
+                            // ç§»å‹•å®Ÿè¡Œå‡¦ç†ã¸é·ç§»
                             int destIndex = stageGrid.GetCurrentGridIndex();
                             _Phase = PLMovePhase.PL_MOVE_EXECUTE;
 
-                            // ˆÚ“®Œó•â‚ğ“o˜^‚µAÅ’ZŒo˜H‚ğ‹‚ß‚é
+                            // ç§»å‹•å€™è£œã‚’ç™»éŒ²ã—ã€æœ€çŸ­çµŒè·¯ã‚’æ±‚ã‚ã‚‹
                             List<int> candidateRouteIndexs = new List<int>(64);
                             candidateRouteIndexs.Add(_departGridIndex);
                             for (int i = 0; i < stageGrid.GridTotalNum; ++i)
                             {
                                 if (0 <= stageGrid.GetGridInfo(i).estimatedMoveRange)
                                 {
-                                    candidateRouteIndexs.Add(i);  // ˆÚ“®‰Â”\ƒOƒŠƒbƒh‚Ì‚İ”²‚«o‚·
+                                    candidateRouteIndexs.Add(i);  // ç§»å‹•å¯èƒ½ã‚°ãƒªãƒƒãƒ‰ã®ã¿æŠœãå‡ºã™
                                 }
                             }
                             _movePathList = stageGrid.ExtractShortestRouteIndexs(_departGridIndex, destIndex, candidateRouteIndexs);
 
-                            // Player‚ğ_movePathList‚Ì‡‚ÉˆÚ“®‚³‚¹‚é
+                            // Playerã‚’_movePathListã®é †ã«ç§»å‹•ã•ã›ã‚‹
                             _moveGridPos = new List<Vector3>(_movePathList.Count);
                             for (int i = 0; i < _movePathList.Count; ++i)
                             {
-                                // ƒpƒX‚ÌƒCƒ“ƒfƒbƒNƒX‚©‚çƒOƒŠƒbƒhÀ•W‚ğ“¾‚é
+                                // ãƒ‘ã‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‹ã‚‰ã‚°ãƒªãƒƒãƒ‰åº§æ¨™ã‚’å¾—ã‚‹
                                 _moveGridPos.Add(stageGrid.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
                             }
-                            // ˆ—ŒyŒ¸‚Ì‚½‚ßtranform‚ğƒLƒƒƒbƒVƒ…
+                            // å‡¦ç†è»½æ¸›ã®ãŸã‚tranformã‚’ã‚­ãƒ£ãƒƒã‚·ãƒ¥
                             _PLTransform = _selectPlayer.transform;
 
                             _movingIndex = 0;
-                            // ‘I‘ğƒOƒŠƒbƒh‚ğˆê”ñ•\¦
+                            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’ä¸€æ™‚éè¡¨ç¤º
                             _stageCtrl.SetGridCursorActive(false);
-                            // ˆÚ“®ƒAƒjƒ[ƒVƒ‡ƒ“ŠJn
+                            // ç§»å‹•ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
                             _selectPlayer.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
-                            // ƒOƒŠƒbƒhî•ñXV
+                            // ã‚°ãƒªãƒƒãƒ‰æƒ…å ±æ›´æ–°
                             _selectPlayer.tmpParam.gridIndex = destIndex;
 
                             _Phase = PLMovePhase.PL_MOVE_EXECUTE;
@@ -137,29 +137,29 @@ namespace Frontier
                     }
                     break;
                 case PLMovePhase.PL_MOVE:
-                    // ‘ÎÛƒvƒŒƒCƒ„[‚Ì‘€ì
+                    // å¯¾è±¡ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ“ä½œ
                     if (_selectPlayer.IsAcceptableMovementOperation( stageGrid.GetGridSize() ))
                     {
                         stageGrid.OperateGridCursor();
                     }
 
-                    // ˆÚ“®–Ú“IÀ•W‚ÌXV
+                    // ç§»å‹•ç›®çš„åº§æ¨™ã®æ›´æ–°
                     Stage.GridInfo infor;
                     var curGridIndex = stageGrid.GetCurrentGridIndex();
                     var plGridIndex = _selectPlayer.tmpParam.gridIndex;
                     stageGrid.FetchCurrentGridInfo(out infor);
 
-                    // ˆÚ“®XV
+                    // ç§»å‹•æ›´æ–°
                     _selectPlayer.UpdateMove(curGridIndex, infor);
 
                     if (0 <= infor.estimatedMoveRange)
                     {
-                        // —×‚è‡‚¤ƒOƒŠƒbƒh‚ª‘I‘ğ‚³‚ê‚½ê‡‚ÍƒAƒjƒ[ƒVƒ‡ƒ“‚ğ—p‚¢‚½˜A‘±“I‚ÈˆÚ“®
+                        // éš£ã‚Šåˆã†ã‚°ãƒªãƒƒãƒ‰ãŒé¸æŠã•ã‚ŒãŸå ´åˆã¯ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ç”¨ã„ãŸé€£ç¶šçš„ãªç§»å‹•
                         // if (stageGrid.IsGridNextToEacheOther(curGridIndex, plGridIndex))
                         {
                             
                         }
-                        // —£‚ê‚½ƒOƒŠƒbƒh‚ª‘I‘ğ‚³‚ê‚½ê‡‚Íu‚ÉˆÚ“®
+                        // é›¢ã‚ŒãŸã‚°ãƒªãƒƒãƒ‰ãŒé¸æŠã•ã‚ŒãŸå ´åˆã¯ç¬æ™‚ã«ç§»å‹•
                         // else
                         // {
                         //     _selectPlayer.SetPosition(curGridIndex, _selectPlayer.transform.rotation);
@@ -167,10 +167,10 @@ namespace Frontier
 
                         if (Input.GetKeyUp(KeyCode.Space))
                         {
-                            // o”­’n“_‚Æ“¯ˆêƒOƒŠƒbƒh‚Å‚ ‚ê‚Î–ß‚é
+                            // å‡ºç™ºåœ°ç‚¹ã¨åŒä¸€ã‚°ãƒªãƒƒãƒ‰ã§ã‚ã‚Œã°æˆ»ã‚‹
                             if (curGridIndex == _departGridIndex)
                                 Back();
-                            // ƒLƒƒƒ‰ƒNƒ^[‚ª‘¶İ‚µ‚Ä‚¢‚È‚¢‚±‚Æ‚ğŠm”F
+                            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒå­˜åœ¨ã—ã¦ã„ãªã„ã“ã¨ã‚’ç¢ºèª
                             else if( 0 == ( infor.flag & ( StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)) )
                                 _Phase = PLMovePhase.PL_MOVE_END;
                             break;
@@ -178,9 +178,9 @@ namespace Frontier
                     }
                     break;
                 case PLMovePhase.PL_MOVE_END:
-                    // ˆÚ“®‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚ÌˆÚ“®ƒRƒ}ƒ“ƒh‚ğ‘I‘ğ•s‰Â‚É‚·‚é
+                    // ç§»å‹•ã—ãŸã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç§»å‹•ã‚³ãƒãƒ³ãƒ‰ã‚’é¸æŠä¸å¯ã«ã™ã‚‹
                     _selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
-                    // ƒRƒ}ƒ“ƒh‘I‘ğ‚É–ß‚é
+                    // ã‚³ãƒãƒ³ãƒ‰é¸æŠã«æˆ»ã‚‹
                     Back();
 
                     return true;
@@ -191,16 +191,16 @@ namespace Frontier
 
         public override void Exit()
         {
-            // ‘€ì‘ÎÛƒf[ƒ^‚ğƒŠƒZƒbƒg
+            // æ“ä½œå¯¾è±¡ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆ
             _stageCtrl.ClearGridCursroBind();
 
-            // ‘I‘ğƒOƒŠƒbƒh‚ğ•\¦
+            // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’è¡¨ç¤º
             _stageCtrl.SetGridCursorActive(true);
 
-            // ƒXƒe[ƒWƒOƒŠƒbƒhã‚ÌƒLƒƒƒ‰î•ñ‚ğXV
+            // ã‚¹ãƒ†ãƒ¼ã‚¸ã‚°ãƒªãƒƒãƒ‰ä¸Šã®ã‚­ãƒ£ãƒ©æƒ…å ±ã‚’æ›´æ–°
             _stageCtrl.UpdateGridInfo();
 
-            // ƒOƒŠƒbƒhó‘Ô‚Ì•`‰æ‚ğƒNƒŠƒA
+            // ã‚°ãƒªãƒƒãƒ‰çŠ¶æ…‹ã®æç”»ã‚’ã‚¯ãƒªã‚¢
             _stageCtrl.ClearGridMeshDraw();
 
             base.Exit();

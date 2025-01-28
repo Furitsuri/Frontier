@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
@@ -8,10 +8,10 @@ using UnityEngine.UIElements;
 public static class Methods
 {
     /// <summary>
-    /// ©•ª©g‚ğŠÜ‚Ş‚·‚×‚Ä‚ÌqƒIƒuƒWƒFƒNƒg‚ÌƒŒƒCƒ„[‚ğİ’è‚µ‚Ü‚·
+    /// è‡ªåˆ†è‡ªèº«ã‚’å«ã‚€ã™ã¹ã¦ã®å­ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’è¨­å®šã—ã¾ã™
     /// </summary>
-    /// <param name="self">©g</param>
-    /// <param name="layer">w’èƒŒƒCƒ„[</param>
+    /// <param name="self">è‡ªèº«</param>
+    /// <param name="layer">æŒ‡å®šãƒ¬ã‚¤ãƒ¤ãƒ¼</param>
     public static void SetLayerRecursively(this GameObject self, int layer)
     {
         self.layer = layer;
@@ -23,11 +23,11 @@ public static class Methods
     }
 
     /// <summary>
-    /// ‘ÎÛ‚Éw’è‚Ìƒrƒbƒgƒtƒ‰ƒO‚ğİ’è‚µ‚Ü‚·
+    /// å¯¾è±¡ã«æŒ‡å®šã®ãƒ“ãƒƒãƒˆãƒ•ãƒ©ã‚°ã‚’è¨­å®šã—ã¾ã™
     /// </summary>
     /// <typeparam name="T">Enum</typeparam>
-    /// <param name="flags">‘ÎÛ‚Æ‚·‚éƒtƒ‰ƒO</param>
-    /// <param name="value">w’è‚·‚éƒrƒbƒg’l</param>
+    /// <param name="flags">å¯¾è±¡ã¨ã™ã‚‹ãƒ•ãƒ©ã‚°</param>
+    /// <param name="value">æŒ‡å®šã™ã‚‹ãƒ“ãƒƒãƒˆå€¤</param>
     public static void SetBitFlag<T>(ref T flags, T value) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
@@ -37,11 +37,11 @@ public static class Methods
     }
 
     /// <summary>
-    /// ‘ÎÛ‚Ìw’è‚Ìƒrƒbƒgƒtƒ‰ƒO‚ğ‰ğœ‚µ‚Ü‚·
+    /// å¯¾è±¡ã®æŒ‡å®šã®ãƒ“ãƒƒãƒˆãƒ•ãƒ©ã‚°ã‚’è§£é™¤ã—ã¾ã™
     /// </summary>
     /// <typeparam name="T">Enum</typeparam>
-    /// <param name="flags">‘ÎÛ‚Æ‚·‚éƒtƒ‰ƒO</param>
-    /// <param name="value">w’è‚·‚éƒrƒbƒg’l</param>
+    /// <param name="flags">å¯¾è±¡ã¨ã™ã‚‹ãƒ•ãƒ©ã‚°</param>
+    /// <param name="value">æŒ‡å®šã™ã‚‹ãƒ“ãƒƒãƒˆå€¤</param>
     public static void UnsetBitFlag<T>(ref T flags, T value) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
@@ -51,12 +51,12 @@ public static class Methods
     }
 
     /// <summary>
-    /// ‘ÎÛ‚Éw’è‚Ìƒrƒbƒgƒtƒ‰ƒO‚ªİ’è‚³‚ê‚Ä‚¢‚é‚©‚ğƒ`ƒFƒbƒN‚µ‚Ü‚·
+    /// å¯¾è±¡ã«æŒ‡å®šã®ãƒ“ãƒƒãƒˆãƒ•ãƒ©ã‚°ãŒè¨­å®šã•ã‚Œã¦ã„ã‚‹ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¾ã™
     /// </summary>
     /// <typeparam name="T">Enum</typeparam>
-    /// <param name="flags">‘ÎÛ‚Æ‚·‚éƒtƒ‰ƒO</param>
-    /// <param name="value">w’è‚·‚éƒrƒbƒg’l</param>
-    /// <returns>İ’è‚³‚ê‚Ä‚¢‚é‚©”Û‚©</returns>
+    /// <param name="flags">å¯¾è±¡ã¨ã™ã‚‹ãƒ•ãƒ©ã‚°</param>
+    /// <param name="value">æŒ‡å®šã™ã‚‹ãƒ“ãƒƒãƒˆå€¤</param>
+    /// <returns>è¨­å®šã•ã‚Œã¦ã„ã‚‹ã‹å¦ã‹</returns>
     public static bool CheckBitFlag<T>(in T flags, T value) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
@@ -65,26 +65,26 @@ public static class Methods
     }
 
     /// <summary>
-    /// ‘ÎÛ‚Ìƒrƒbƒgƒtƒ‰ƒO‚Ì‘S‚Ä‚Ìİ’è‚ğ‰ğœ‚µ‚Ü‚·
+    /// å¯¾è±¡ã®ãƒ“ãƒƒãƒˆãƒ•ãƒ©ã‚°ã®å…¨ã¦ã®è¨­å®šã‚’è§£é™¤ã—ã¾ã™
     /// </summary>
     /// <typeparam name="T">Enum</typeparam>
-    /// <param name="flags">‘ÎÛ‚Æ‚·‚éƒtƒ‰ƒO</param>
+    /// <param name="flags">å¯¾è±¡ã¨ã™ã‚‹ãƒ•ãƒ©ã‚°</param>
     public static void ClearBitFlag<T>(ref T flags) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
-        flagsValue &= ~flagsValue; // flagsValue = 0‚Å‚à–â‘è‚È‚¢
+        flagsValue &= ~flagsValue; // flagsValue = 0ã§ã‚‚å•é¡Œãªã„
         flags = (T)Enum.ToObject(typeof(T), flagsValue);
     }
 
     /// <summary>
-    /// w’è‚ÌƒxƒNƒgƒ‹‚ğ‰ñ“]‚³‚¹‚½’l‚ğæ“¾‚µ‚Ü‚·
+    /// æŒ‡å®šã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å›è»¢ã•ã›ãŸå€¤ã‚’å–å¾—ã—ã¾ã™
     /// </summary>
-    /// <param name="baseTransform">Šî²‚Æ‚·‚éTransform. nulk‚Ìê‡‚ÍVector3‚ÌƒfƒtƒHƒ‹ƒg²‚ğg—p</param
-    /// <param name="roll">‰ñ“]‚³‚¹‚éƒ[ƒ‹Šp“x(Degree)</param>
-    /// <param name="pitch">‰ñ“]‚³‚¹‚éƒsƒbƒ`Šp“x(Degree)</param>
-    /// <param name="yaw">‰ñ“]‚³‚¹‚éƒˆ[Šp“x(Degree)</param>
-    /// <param name="vec">‰ñ“]‚·‚éƒxƒNƒgƒ‹</param>
-    /// <returns>‰ñ“]Œ‹‰Ê‚ÌƒxƒNƒgƒ‹</returns>
+    /// <param name="baseTransform">åŸºè»¸ã¨ã™ã‚‹Transform. nulkã®å ´åˆã¯Vector3ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆè»¸ã‚’ä½¿ç”¨</param
+    /// <param name="roll">å›è»¢ã•ã›ã‚‹ãƒ­ãƒ¼ãƒ«è§’åº¦(Degree)</param>
+    /// <param name="pitch">å›è»¢ã•ã›ã‚‹ãƒ”ãƒƒãƒè§’åº¦(Degree)</param>
+    /// <param name="yaw">å›è»¢ã•ã›ã‚‹ãƒ¨ãƒ¼è§’åº¦(Degree)</param>
+    /// <param name="vec">å›è»¢ã™ã‚‹ãƒ™ã‚¯ãƒˆãƒ«</param>
+    /// <returns>å›è»¢çµæœã®ãƒ™ã‚¯ãƒˆãƒ«</returns>
     public static Vector3 RotateVector( in Transform baseTransform, float roll, float pitch, float yaw, in Vector3 vec )
     {
         Vector3 rollAxis, rightAxis, yawAxis;
@@ -102,17 +102,17 @@ public static class Methods
             yawAxis     = baseTransform.up;
         }
 
-        // MEMO : vec‚Ì’l‚É‚æ‚Á‚ÄŒü‚«‚ª•Ï‚í‚é‰Â”\«‚ª‚ ‚é‚½‚ßAEuler‚Å‚Í‚È‚­AngleAxis‚ğ—p‚¢‚é
+        // MEMO : vecã®å€¤ã«ã‚ˆã£ã¦å‘ããŒå¤‰ã‚ã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹ãŸã‚ã€Eulerã§ã¯ãªãAngleAxisã‚’ç”¨ã„ã‚‹
         var rotateQuat = Quaternion.AngleAxis(roll, rollAxis) * Quaternion.AngleAxis(pitch, rightAxis) * Quaternion.AngleAxis(yaw, yawAxis);
         return rotateQuat * vec;
     }
 
     /// <summary>
-    /// ‚æ‚è–¡•û‚É‹ß‚¢ƒLƒƒƒ‰ƒNƒ^[‚ğ”äŠr‚µ‚Ä•Ô‚µ‚Ü‚·
+    /// ã‚ˆã‚Šå‘³æ–¹ã«è¿‘ã„ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’æ¯”è¼ƒã—ã¦è¿”ã—ã¾ã™
     /// </summary>
-    /// <param name="former">‘OÒ</param>
-    /// <param name="latter">ŒãÒ</param>
-    /// <returns>‘OÒ‚ÆŒãÒ‚Ì‚¤‚¿A‚æ‚è–¡•û‚É‹ß‚¢‘¤</returns>
+    /// <param name="former">å‰è€…</param>
+    /// <param name="latter">å¾Œè€…</param>
+    /// <returns>å‰è€…ã¨å¾Œè€…ã®ã†ã¡ã€ã‚ˆã‚Šå‘³æ–¹ã«è¿‘ã„å´</returns>
     public static Frontier.Character CompareAllyCharacter( Frontier.Character former, Frontier.Character latter )
     {
         var formerTag = former.param.characterTag;

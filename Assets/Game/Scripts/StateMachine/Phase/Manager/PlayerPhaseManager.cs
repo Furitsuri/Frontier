@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Frontier
     public class PlayerPhaseManager : PhaseManagerBase
     {
         /// <summary>
-        /// ‰Šú‰»‚ğs‚¢‚Ü‚·
+        /// åˆæœŸåŒ–ã‚’è¡Œã„ã¾ã™
         /// </summary>
         override public void Init()
         {
@@ -18,29 +18,29 @@ namespace Frontier
 
             if (0 < _btlMgr.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
             {
-                // ‘I‘ğƒOƒŠƒbƒh‚ğ(1”Ô–Ú‚Ì)ƒvƒŒƒCƒ„[‚ÌƒOƒŠƒbƒhˆÊ’u‚É‡‚í‚¹‚é
+                // é¸æŠã‚°ãƒªãƒƒãƒ‰ã‚’(1ç•ªç›®ã®)ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚°ãƒªãƒƒãƒ‰ä½ç½®ã«åˆã‚ã›ã‚‹
                 Character player = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterGrid(player);
-                // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚Ì‰ñ•œ
+                // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã®å›å¾©
                 _btlMgr.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
             }
         }
 
         /// <summary>
-        /// XV‚ğs‚¢‚Ü‚·
+        /// æ›´æ–°ã‚’è¡Œã„ã¾ã™
         /// </summary>
         override public bool Update()
         {
             if (_isFirstUpdate)
             {
-                // ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“‚ÌŠJn
+                // ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é–‹å§‹
                 StartPhaseAnim();
 
                 _isFirstUpdate = false;
 
                 return false;
             }
-            // ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“’†‚Í‘€ì–³Œø
+            // ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ä¸­ã¯æ“ä½œç„¡åŠ¹
             if (_btlUi.IsPlayingPhaseUI())
             {
                 return false;
@@ -50,12 +50,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‘JˆÚ‚Ì–Ø\‘¢‚ğì¬‚µ‚Ü‚·
+        /// é·ç§»ã®æœ¨æ§‹é€ ã‚’ä½œæˆã—ã¾ã™
         /// </summary>
         override protected void CreateTree()
         {
-            // ‘JˆÚ–Ø‚Ìì¬
-            // MEMO : •Ê‚Ìƒtƒ@ƒCƒ‹(XML‚È‚Ç)‚©‚ç“Ç‚İ‚ñ‚Åì¬o—ˆ‚é‚æ‚¤‚É‚·‚é‚Ì‚àƒAƒŠ
+            // é·ç§»æœ¨ã®ä½œæˆ
+            // MEMO : åˆ¥ã®ãƒ•ã‚¡ã‚¤ãƒ«(XMLãªã©)ã‹ã‚‰èª­ã¿è¾¼ã‚“ã§ä½œæˆå‡ºæ¥ã‚‹ã‚ˆã†ã«ã™ã‚‹ã®ã‚‚ã‚¢ãƒª
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PLSelectGridState>();
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PLSelectCommandState>());
@@ -68,7 +68,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒtƒF[ƒYƒAƒjƒ[ƒVƒ‡ƒ“‚ğÄ¶‚µ‚Ü‚·
+        /// ãƒ•ã‚§ãƒ¼ã‚ºã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿã—ã¾ã™
         /// </summary>
         override protected void StartPhaseAnim()
         {

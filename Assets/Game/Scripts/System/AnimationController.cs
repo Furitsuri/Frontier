@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier
 {
     /// <summary>
-    /// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ü‚í‚è‚Ì§Œä‚ğs‚¢‚Ü‚·
+    /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã¾ã‚ã‚Šã®åˆ¶å¾¡ã‚’è¡Œã„ã¾ã™
     /// </summary>
     public class AnimationController
     {
@@ -19,43 +19,43 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒNƒ^[‚Ìƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğXV‚µ‚Ü‚·
+        /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="timeScale">ƒXƒP[ƒ‹’l</param>
+        /// <param name="timeScale">ã‚¹ã‚±ãƒ¼ãƒ«å€¤</param>
         public void UpdateTimeScale(float timeScale)
         {
             _animator.speed = timeScale;
         }
 
         /// <summary>
-        /// ƒAƒjƒ[ƒVƒ‡ƒ“‚ğÄ¶‚µ‚Ü‚·
+        /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿã—ã¾ã™
         /// </summary>
-        /// <param name="animTag">ƒAƒjƒ[ƒVƒ‡ƒ“ƒ^ƒO</param>
+        /// <param name="animTag">ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚°</param>
         public void SetAnimator(AnimDatas.AnimeConditionsTag animTag)
         {
             _animator.SetTrigger(AnimDatas.AnimNameHashList[(int)animTag]);
         }
 
         /// <summary>
-        /// ƒAƒjƒ[ƒVƒ‡ƒ“‚ğÄ¶‚µ‚Ü‚·
+        /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿã—ã¾ã™
         /// </summary>
-        /// <param name="animTag">ƒAƒjƒ[ƒVƒ‡ƒ“ƒ^ƒO</param>
-        /// <param name="b">ƒgƒŠƒK[ƒAƒjƒ[ƒVƒ‡ƒ“‚É‘Î‚µ‚Äg—p</param>
+        /// <param name="animTag">ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚°</param>
+        /// <param name="b">ãƒˆãƒªã‚¬ãƒ¼ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã«å¯¾ã—ã¦ä½¿ç”¨</param>
         public void SetAnimator(AnimDatas.AnimeConditionsTag animTag, bool b)
         {
             _animator.SetBool(AnimDatas.AnimNameHashList[(int)animTag], b);
         }
 
         /// <summary>
-        /// w’è‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ğÄ¶’†‚©‚ğ”»’è‚µ‚Ü‚·
+        /// æŒ‡å®šã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å†ç”Ÿä¸­ã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <param name="animTag">ƒAƒjƒ[ƒVƒ‡ƒ“ƒ^ƒO</param>
-        /// <returns>true : Ä¶’†, false : Ä¶‚µ‚Ä‚¢‚È‚¢</returns>
+        /// <param name="animTag">ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚°</param>
+        /// <returns>true : å†ç”Ÿä¸­, false : å†ç”Ÿã—ã¦ã„ãªã„</returns>
         public bool IsPlayingAnimationOnConditionTag(AnimDatas.AnimeConditionsTag animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
-            // MEMO : animator‘¤‚ÅHasExitTime(I—¹ŠÔ‚ ‚è)‚ğON‚É‚µ‚Ä‚¢‚éê‡AI—¹ŠÔ‚ğ1.0‚Éİ’è‚·‚é•K—v‚ª‚ ‚é‚±‚Æ‚É’ˆÓ
+            // MEMO : animatorå´ã§HasExitTime(çµ‚äº†æ™‚é–“ã‚ã‚Š)ã‚’ONã«ã—ã¦ã„ã‚‹å ´åˆã€çµ‚äº†æ™‚é–“ã‚’1.0ã«è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã“ã¨ã«æ³¨æ„
             if (stateInfo.IsName(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]) && stateInfo.normalizedTime < 1f)
             {
                 return true;
@@ -68,7 +68,7 @@ namespace Frontier
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
-            // MEMO : animator‘¤‚ÅHasExitTime(I—¹ŠÔ‚ ‚è)‚ğON‚É‚µ‚Ä‚¢‚éê‡AI—¹ŠÔ‚ğ1.0‚Éİ’è‚·‚é•K—v‚ª‚ ‚é‚±‚Æ‚É’ˆÓ
+            // MEMO : animatorå´ã§HasExitTime(çµ‚äº†æ™‚é–“ã‚ã‚Š)ã‚’ONã«ã—ã¦ã„ã‚‹å ´åˆã€çµ‚äº†æ™‚é–“ã‚’1.0ã«è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã“ã¨ã«æ³¨æ„
             if (1f <= stateInfo.normalizedTime)
             {
                 return true;
@@ -78,15 +78,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// w’è‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½‚©‚ğ”»’è‚µ‚Ü‚·
+        /// æŒ‡å®šã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <param name="animTag">ƒAƒjƒ[ƒVƒ‡ƒ“ƒ^ƒO</param>
-        /// <returns>true : I—¹, false : –¢I—¹</returns>
+        /// <param name="animTag">ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚°</param>
+        /// <returns>true : çµ‚äº†, false : æœªçµ‚äº†</returns>
         public bool IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag animTag)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
-            // MEMO : animator‘¤‚ÅHasExitTime(I—¹ŠÔ‚ ‚è)‚ğON‚É‚µ‚Ä‚¢‚éê‡AI—¹ŠÔ‚ğ1.0‚Éİ’è‚·‚é•K—v‚ª‚ ‚é‚±‚Æ‚É’ˆÓ
+            // MEMO : animatorå´ã§HasExitTime(çµ‚äº†æ™‚é–“ã‚ã‚Š)ã‚’ONã«ã—ã¦ã„ã‚‹å ´åˆã€çµ‚äº†æ™‚é–“ã‚’1.0ã«è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã“ã¨ã«æ³¨æ„
             if (stateInfo.IsName(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]) && 1f <= stateInfo.normalizedTime)
             {
                 return true;
@@ -96,14 +96,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Œ»İ‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½‚©‚ğ”»’è‚µ‚Ü‚·
+        /// ç¾åœ¨ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸã‹ã‚’åˆ¤å®šã—ã¾ã™
         /// </summary>
-        /// <returns>true : I—¹, false : –¢I—¹</returns>
+        /// <returns>true : çµ‚äº†, false : æœªçµ‚äº†</returns>
         public bool IsEndAnimationOnStateName(string stateName)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
-            // MEMO : animator‘¤‚ÅHasExitTime(I—¹ŠÔ‚ ‚è)‚ğON‚É‚µ‚Ä‚¢‚éê‡AI—¹ŠÔ‚ğ1.0‚Éİ’è‚·‚é•K—v‚ª‚ ‚é‚±‚Æ‚É’ˆÓ
+            // MEMO : animatorå´ã§HasExitTime(çµ‚äº†æ™‚é–“ã‚ã‚Š)ã‚’ONã«ã—ã¦ã„ã‚‹å ´åˆã€çµ‚äº†æ™‚é–“ã‚’1.0ã«è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã“ã¨ã«æ³¨æ„
             if (stateInfo.IsName(stateName) && 1f <= stateInfo.normalizedTime)
             {
                 return true;

@@ -1,4 +1,4 @@
-using Frontier.Stage;
+ï»¿using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -68,13 +68,13 @@ namespace Frontier
         private List<RawImage> _actGaugeElems;
         private float _alpha;
         private float _blinkingElapsedTime;
-        // ¶‰E‚Ìƒpƒ‰ƒ[ƒ^ƒEƒBƒ“ƒhƒE‚ÅƒJƒƒ‰‚ÌƒŒƒCƒ„[–¼‚ğ•ª‚¯‚é
-        // “¯‚¶ƒŒƒCƒ„[–¼‚É‚·‚é‚ÆA¶‰E‚ÌƒEƒBƒ“ƒhƒE‚Å•\¦‚·‚éƒLƒƒƒ‰ƒNƒ^[“¯m‚ªÚ‹ß‚µ‚½Û‚ÉAŒİ‚¢‚ÌƒJƒƒ‰‚É‰f‚è‚ñ‚Å‚µ‚Ü‚¤
+        // å·¦å³ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã§ã‚«ãƒ¡ãƒ©ã®ãƒ¬ã‚¤ãƒ¤ãƒ¼åã‚’åˆ†ã‘ã‚‹
+        // åŒã˜ãƒ¬ã‚¤ãƒ¤ãƒ¼åã«ã™ã‚‹ã¨ã€å·¦å³ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã§è¡¨ç¤ºã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼åŒå£«ãŒæ¥è¿‘ã—ãŸéš›ã«ã€äº’ã„ã®ã‚«ãƒ¡ãƒ©ã«æ˜ ã‚Šè¾¼ã‚“ã§ã—ã¾ã†
         private string[] _layerNames = new string[] { Constants.LAYER_NAME_LEFT_PARAM_WINDOW, Constants.LAYER_NAME_RIGHT_PARAM_WINDOW };
 
         void Start()
         {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilder‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ª¶¬‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBInject‚Ìİ’è‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B");
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãŒç”Ÿæˆã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚Injectã®è¨­å®šã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚");
 
             _targetTexture = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
             TargetImage.texture = _targetTexture;
@@ -101,20 +101,20 @@ namespace Frontier
         // Update is called once per frame
         void Update()
         {
-            // ƒLƒƒƒ‰ƒNƒ^[‚ªnull‚Ìó‘Ô‚ÅGameObject‚ªActive‚É‚È‚Á‚Ä‚¢‚é‚±‚Æ‚Í‘z’è‚µ‚È‚¢
+            // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒnullã®çŠ¶æ…‹ã§GameObjectãŒActiveã«ãªã£ã¦ã„ã‚‹ã“ã¨ã¯æƒ³å®šã—ãªã„
             Debug.Assert(_character != null);
 
-            // ƒpƒ‰ƒ[ƒ^•\¦‚ğ”½‰f
+            // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¡¨ç¤ºã‚’åæ˜ 
             UpdateParamRender(_character, _character.param, _character.skillModifiedParam);
-            // ƒJƒƒ‰•`‰æ‚ğ”½‰f
+            // ã‚«ãƒ¡ãƒ©æç”»ã‚’åæ˜ 
             UpdateCamraRender(_character, _character.camParam);
         }
 
         /// <summary>
-        /// ƒpƒ‰ƒ[ƒ^UI‚É•\¦‚·‚éƒLƒƒƒ‰ƒNƒ^[‚Ìƒpƒ‰ƒ[ƒ^‚ğXV‚µ‚Ü‚·
+        /// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿UIã«è¡¨ç¤ºã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="selectCharacter">‘I‘ğ‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="param">‘I‘ğ‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚Ìƒpƒ‰ƒ[ƒ^</param>
+        /// <param name="selectCharacter">é¸æŠã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="param">é¸æŠã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
         void UpdateParamRender(Character selectCharacter, in Character.Parameter param, in Character.SkillModifiedParameter skillParam)
         {
             Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
@@ -139,14 +139,14 @@ namespace Frontier
             }
             else
             {
-                // ƒ_ƒ[ƒW‚ª0‚Ìê‡‚Í•\¦‚µ‚È‚¢
+                // ãƒ€ãƒ¡ãƒ¼ã‚¸ãŒ0ã®å ´åˆã¯è¡¨ç¤ºã—ãªã„
                 TMPDiffHPValue.text = "";
             }
 
-            // ƒeƒLƒXƒg‚ÌF‚ğ”½‰f
+            // ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã‚’åæ˜ 
             ApplyTextColor(changeHP);
 
-            // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒW‚Ì•\¦
+            // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ã®è¡¨ç¤º
             for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
             {
                 var elem = _actGaugeElems[i];
@@ -159,7 +159,7 @@ namespace Frontier
                     {
                         elem.color = Color.green;
 
-                        // ƒAƒNƒVƒ‡ƒ“ƒQ[ƒWg—p‚Í“_–Å‚³‚¹‚é
+                        // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ã‚¸ä½¿ç”¨æ™‚ã¯ç‚¹æ»…ã•ã›ã‚‹
                         if ((param.curActionGauge - param.consumptionActionGauge) <= i)
                         {
                             _blinkingElapsedTime += Time.deltaTime;
@@ -178,7 +178,7 @@ namespace Frontier
                 }
             }
 
-            // ƒXƒLƒ‹ƒ{ƒbƒNƒX‚Ì•\¦
+            // ã‚¹ã‚­ãƒ«ãƒœãƒƒã‚¯ã‚¹ã®è¡¨ç¤º
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
                 if (param.IsValidSkill(i))
@@ -197,9 +197,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒeƒLƒXƒg‚ÌF‚ğ”½‰f‚µ‚Ü‚·
+        /// ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã‚’åæ˜ ã—ã¾ã™
         /// </summary>
-        /// <param name="tmpParam">ŠY“–ƒLƒƒƒ‰ƒNƒ^[‚Ìˆêƒpƒ‰ƒ[ƒ^</param>
+        /// <param name="tmpParam">è©²å½“ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ä¸€æ™‚ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
         void ApplyTextColor(int changeHP)
         {
             if (changeHP < 0)
@@ -213,10 +213,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒpƒ‰ƒ[ƒ^UI‚É•\¦‚·‚éƒLƒƒƒ‰ƒNƒ^[‚ÌƒJƒƒ‰•`‰æ‚ğXV‚µ‚Ü‚·
+        /// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿UIã«è¡¨ç¤ºã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚«ãƒ¡ãƒ©æç”»ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="selectCharacter">‘I‘ğ‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="param">‘I‘ğ‚µ‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚Ìƒpƒ‰ƒ[ƒ^</param>
+        /// <param name="selectCharacter">é¸æŠã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="param">é¸æŠã—ã¦ã„ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿</param>
         void UpdateCamraRender(Character selectCharacter, in Character.CameraParameter camParam)
         {
             Transform playerTransform = selectCharacter.transform;
@@ -227,7 +227,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
         public void Init()
         {
@@ -241,19 +241,19 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ·•ªHP—pƒeƒLƒXƒg‚ğ•Ô‚µ‚Ü‚·
+        /// å·®åˆ†HPç”¨ãƒ†ã‚­ã‚¹ãƒˆã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>·•ªHP—pƒeƒLƒXƒg</returns>
+        /// <returns>å·®åˆ†HPç”¨ãƒ†ã‚­ã‚¹ãƒˆ</returns>
         public TextMeshProUGUI GetDiffHPText()
         {
             return TMPDiffHPValue;
         }
 
         /// <summary>
-        /// w’è‚ÌƒXƒLƒ‹ƒ{ƒbƒNƒXUI‚ğæ“¾‚µ‚Ü‚·
+        /// æŒ‡å®šã®ã‚¹ã‚­ãƒ«ãƒœãƒƒã‚¯ã‚¹UIã‚’å–å¾—ã—ã¾ã™
         /// </summary>
         /// <param name="index"></param>
-        /// <returns>w’è’l</returns>
+        /// <returns>æŒ‡å®šå€¤</returns>
         public SkillBoxUI GetSkillBox(int index)
         {
             Debug.Assert(0 <= index && index < Constants.EQUIPABLE_SKILL_MAX_NUM);
@@ -262,14 +262,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// •\¦‚·‚éƒLƒƒƒ‰ƒNƒ^[‚ğİ’è‚µ‚Ü‚·
+        /// è¡¨ç¤ºã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="character">•\¦ƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="character">è¡¨ç¤ºã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void SetDisplayCharacter(Character character)
         {
             _character = character;
 
-            // ƒpƒ‰ƒ[ƒ^‰æ–Ê•\¦—p‚ÉƒLƒƒƒ‰ƒNƒ^[‚ÌƒŒƒCƒ„[‚ğ•ÏX
+            // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ç”»é¢è¡¨ç¤ºç”¨ã«ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å¤‰æ›´
             _character.gameObject.SetLayerRecursively(LayerMask.NameToLayer(_layerNames[(int)_side]));
         }
 
