@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Frontier.Battle;
+using Frontier.Entities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -60,7 +62,7 @@ namespace Frontier
         private float _radiusThresholdOnFail    = 0f;
         private ParryRingEffect _ringEffect     = null;
         private ParryResultEffect _resultEffect = null;
-        private BattleManager _btlMgr           = null;
+        private BattleRoutineController _btlRtnCtrl           = null;
         private Character _useParryCharacter    = null;
         private Character _attackCharacter      = null;
         private JudgeResult _judgeResult        = JudgeResult.NONE;
@@ -197,16 +199,16 @@ namespace Frontier
                     break;
             }
 
-            _btlMgr.BtlCharaCdr.ApplyDamageExpect(attackChara, useParryChara);
+            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(attackChara, useParryChara);
         }
 
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="btlMgr">バトルマネージャ</param>
-        public void Init(BattleManager btlMgr)
+        /// <param name="btlRtnCtrl">バトルマネージャ</param>
+        public void Init(BattleRoutineController btlRtnCtrl)
         {
-            _btlMgr = btlMgr;
+            _btlRtnCtrl = btlRtnCtrl;
 
             _ui.Init(_showUITime);
             _ui.gameObject.SetActive(false);
@@ -270,7 +272,7 @@ namespace Frontier
             if (1f < timeScale) timeScale = 1f;
 
             // タイムスケールを変更すると、UIなどのアニメーション速度にも影響を与えてしまうため保留(シェーダーエフェクトは別)
-            _btlMgr.TimeScaleCtrl.SetTimeScale(timeScale);
+            _btlRtnCtrl.TimeScaleCtrl.SetTimeScale(timeScale);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-using System.Collections;
+using Frontier.Entities;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;

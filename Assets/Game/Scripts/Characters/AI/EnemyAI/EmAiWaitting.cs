@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class EmAiWaitting : EMAIBase
+    public class EmAiWaitting : EmAiBase
     {
     }
 }

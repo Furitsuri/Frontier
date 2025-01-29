@@ -1,6 +1,5 @@
 ﻿using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
+using Frontier.Entities;
 using UnityEngine;
 
 namespace Frontier
@@ -28,7 +27,7 @@ namespace Frontier
 
             _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _attackCharacter = _btlMgr.BtlCharaCdr.GetSelectCharacter() as Enemy;
+            _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_attackCharacter != null);
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
@@ -78,7 +77,7 @@ namespace Frontier
                     _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
-                    _btlMgr.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                     // ダメージ予測表示UIを表示
                     btlUIInstance.ToggleBattleExpect(true);
@@ -142,7 +141,7 @@ namespace Frontier
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
-            _btlMgr.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+            _btlRtnCtrl.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
 
             // アタックカーソルUI非表示
             btlUIInstance.ToggleAttackCursorP2E(false);

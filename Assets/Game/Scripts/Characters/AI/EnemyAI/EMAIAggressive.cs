@@ -1,11 +1,11 @@
-﻿using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace Frontier
 {
-    public class EMAIAggressive : EMAIBase
+    public class EmAiAggressive : EmAiBase
     {
         override protected float ATTACKABLE_TARGET_VALUE { get; } = 50;
         override protected float WITHIN_RANGE_VALUE { get; } = 50;
@@ -34,7 +34,7 @@ namespace Frontier
                 {
                     foreach (var opponent in candidate.opponents)
                     {
-                        var character = _btlMgr.BtlCharaCdr.GetCharacterFromHashtable(opponent);
+                        var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(opponent);
 
                         if (character == null) continue;
                         var eValue = CalcurateEvaluateAttack(selfParam, character.param);
@@ -77,7 +77,7 @@ namespace Frontier
                 }
 
                 // 各プレイヤーが存在するグリッドの評価値を計算する
-                foreach (Player player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
+                foreach (Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
                 {
                     int destGridIndex = player.tmpParam.gridIndex;
                     ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];

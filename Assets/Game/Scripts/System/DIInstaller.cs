@@ -1,4 +1,5 @@
 ﻿using Frontier.Stage;
+using Frontier.Battle;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ namespace Frontier
             Container.Bind<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromComponentInHierarchy().AsCached();
-            Container.Bind<BattleManager>().FromComponentInHierarchy().AsCached();
+            Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
             Container.Bind<UISystem>().FromComponentInHierarchy().AsCached();
         }

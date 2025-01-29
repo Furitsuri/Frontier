@@ -1,4 +1,5 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Battle;
+using Frontier.Entities;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +17,13 @@ namespace Frontier
         {
             base.Init();
 
-            if (0 < _btlMgr.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
+            if (0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
             {
                 // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
-                Character player = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER).First();
+                Character player = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterGrid(player);
                 // アクションゲージの回復
-                _btlMgr.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
+                _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
             }
         }
 
@@ -72,7 +73,7 @@ namespace Frontier
         /// </summary>
         override protected void StartPhaseAnim()
         {
-            _btlUi.TogglePhaseUI(true, BattleManager.TurnType.PLAYER_TURN);
+            _btlUi.TogglePhaseUI(true, BattleRoutineController.TurnType.PLAYER_TURN);
             _btlUi.StartAnimPhaseUI();
         }
     }

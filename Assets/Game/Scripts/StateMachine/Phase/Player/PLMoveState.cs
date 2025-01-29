@@ -1,5 +1,5 @@
 ﻿using Frontier.Stage;
-using System.Collections;
+using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -33,7 +33,7 @@ namespace Frontier
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
-            _selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
+            _selectPlayer = (Player)_btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             Debug.Assert(_selectPlayer != null);
 
             var param = _selectPlayer.param;

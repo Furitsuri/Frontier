@@ -1,6 +1,4 @@
-﻿using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Entities;
 using UnityEngine;
 
 namespace Frontier
@@ -12,7 +10,7 @@ namespace Frontier
             base.Init();
 
             // 選択中のプレイヤーを取得
-            var selectPlayer = (Player)_btlMgr.BtlCharaCdr.GetSelectCharacter();
+            var selectPlayer = (Player)_btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if (selectPlayer == null)
             {
                 Debug.Assert(false);

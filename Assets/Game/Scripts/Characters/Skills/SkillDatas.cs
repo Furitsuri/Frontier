@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Entities;
 using UnityEngine;
 
 namespace Frontier

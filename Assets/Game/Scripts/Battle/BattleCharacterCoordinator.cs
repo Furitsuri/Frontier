@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Zenject;
-using Zenject.SpaceFighter;
 
 namespace Frontier.Battle
 {
@@ -169,7 +168,20 @@ namespace Frontier.Battle
         /// <returns>キャラクター</returns>
         public IEnumerable<Character> GetCharacterEnumerable( Character.CHARACTER_TAG tag )
         {
-            switch( tag )
+            List<Character>[] charaList = new List<Character>[]
+            {
+                _players.ToList<Character>(),
+                _enemies.ToList<Character>(),
+                _others.ToList<Character>()
+            };
+
+            foreach (var chara in charaList[(int)tag])
+            {
+                yield return chara;
+            }
+
+            /*
+            switch ( tag )
             {
                 case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
@@ -190,6 +202,7 @@ namespace Frontier.Battle
                     }
                     break;
             }
+            */
         }
 
         /// <summary>
@@ -198,94 +211,29 @@ namespace Frontier.Battle
         /// <returns>全ての行動可能キャラクターの行動が終了したか</returns>
         public bool IsEndAllArmyWaitCommand(Character.CHARACTER_TAG tag)
         {
-            switch( tag )
+            List<Character>[] charaList = new List<Character>[]
             {
-                case Character.CHARACTER_TAG.PLAYER:
-                    foreach (Player player in _players)
-                    {
-                        if (!player.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-                        {
-                            return false;
-                        }
-                    }
+                _players.ToList<Character>(),
+                _enemies.ToList<Character>(),
+                _others.ToList<Character>()
+            };
 
-                    return true;
-
-                case Character.CHARACTER_TAG.ENEMY:
-                    foreach (Enemy enemy in _enemies)
-                    {
-                        if (!enemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-
-                case Character.CHARACTER_TAG.OTHER:
-                    foreach (Other other in _others)
-                    {
-                        if (!other.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-
-                default:
-                    Debug.Assert(false, "An invalid tag has been specified.");
-                    return true ;
+            foreach( var chara in charaList[(int)tag])
+            {
+                if (!chara.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
+                {
+                    return false;
+                }
             }
+
+            return true;
         }
 
         /// <summary>
-        /// 全ての行動可能キャラクターの行動が終了したかを判定します
+        /// ステージのボスキャラクターが倒されているかを取得します
         /// </summary>
-        /// <returns>全ての行動可能キャラクターの行動が終了したか</returns>
-        public bool IsEndAllArmyrWaitCommand(Character.CHARACTER_TAG tag)
-        {
-            switch( tag )
-            {
-                case Character.CHARACTER_TAG .PLAYER:
-                    foreach (Player player in _players)
-                    {
-                        if (!player.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
-
-                case Character .CHARACTER_TAG .ENEMY:
-                    foreach (Enemy enemy in _enemies)
-                    {
-                        if (!enemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
-
-                case Character.CHARACTER_TAG.OTHER:
-                    foreach (Other other in _others)
-                    {
-                        if (!other.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
-
-                default : return true;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="diedCharacterKey"></param>
-        /// <returns></returns>
+        /// <param name="diedCharacterKey">倒されたキャラクターのハッシュキー</param>
+        /// <returns>ボスキャラクターが設定されている上で倒されているか</returns>
         public bool IsDiedBossCharacter(CharacterHashtable.Key diedCharacterKey)
         {
             // ステージにボスが設定されているかのチェック
@@ -298,13 +246,13 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 
+        /// ステージの庇護対象キャラクターが倒されているかを取得します
         /// </summary>
-        /// <param name="diedCharacterKey"></param>
-        /// <returns></returns>
+        /// <param name="diedCharacterKey">倒されたキャラクターのハッシュキー</param>
+        /// <returns>庇護対象のキャラクターが設定されている上で倒されているか</returns>
         public bool IsDiedEscortCharacter(CharacterHashtable.Key diedCharacterKey)
         {
-            // ステージにボスが設定されているかのチェック
+            // ステージ上に庇護対象のキャラクターが設定されているかのチェック
             if (_escortTargetCharacterKey.characterTag != Character.CHARACTER_TAG.NONE)
             {
                 return (diedCharacterKey == _escortTargetCharacterKey);

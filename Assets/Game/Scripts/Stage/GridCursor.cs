@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Frontier.Entities;
+using UnityEngine;
 
 #pragma warning disable 0618
 

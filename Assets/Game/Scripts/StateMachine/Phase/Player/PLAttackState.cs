@@ -1,5 +1,5 @@
 ﻿using Frontier.Stage;
-using System.Collections;
+using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,7 +35,7 @@ namespace Frontier
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _btlMgr.BtlCharaCdr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
+            _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(_btlRtnCtrl.SelectCharacterInfo);
 
             if (_attackCharacter == null)
             {
@@ -83,7 +83,7 @@ namespace Frontier
 
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
-                    _targetCharacter = _btlMgr.BtlCharaCdr.GetSelectCharacter();
+                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
 
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
@@ -102,7 +102,7 @@ namespace Frontier
                     _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
-                    _btlMgr.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                     if (Input.GetKeyUp(KeyCode.Space))
                     {
@@ -169,7 +169,7 @@ namespace Frontier
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _btlMgr.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+            _btlRtnCtrl.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
 
             // アタックカーソルUI非表示
             btlUIInstance.ToggleAttackCursorP2E(false);

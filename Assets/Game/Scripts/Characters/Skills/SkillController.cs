@@ -1,6 +1,4 @@
-﻿using Frontier;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Battle;
 using UnityEngine;
 
 namespace Frontier
@@ -19,10 +17,10 @@ namespace Frontier
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="btlMgr"></param>
-        public void Init( BattleManager btlMgr )
+        /// <param name="btlRtnCtrl"></param>
+        public void Init( BattleRoutineController btlRtnCtrl )
         {
-            _parryCtrl.Init( btlMgr );
+            _parryCtrl.Init( btlRtnCtrl );
         }
     }
 }

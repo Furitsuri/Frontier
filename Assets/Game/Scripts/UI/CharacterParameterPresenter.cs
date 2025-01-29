@@ -1,6 +1,6 @@
 ﻿using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
+using Frontier.Battle;
+using Frontier.Entities;
 using UnityEngine;
 using Zenject;
 
@@ -17,14 +17,14 @@ namespace Frontier
         [Header("ParameterAttackDirection")]
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
-        private BattleManager _btlMgr = null;
+        private BattleRoutineController _btlRtnCtrl = null;
         private StageController _stgCtrl = null;
         private Character _prevCharacter = null;
 
         [Inject]
-        public void Construct( BattleManager btlMgr, StageController stgCtrl )
+        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl )
         {
-            _btlMgr     = btlMgr;
+            _btlRtnCtrl     = btlRtnCtrl;
             _stgCtrl    = stgCtrl;
         }
 
@@ -37,7 +37,7 @@ namespace Frontier
         // Update is called once per frame
         void Update()
         {
-            Character selectCharacter = _btlMgr.BtlCharaCdr.GetCharacterFromHashtable(_btlMgr.SelectCharacterInfo);
+            Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(_btlRtnCtrl.SelectCharacterInfo);
 
             var bindCharacter = _stgCtrl.GetGridCursorBindCharacter();
 
