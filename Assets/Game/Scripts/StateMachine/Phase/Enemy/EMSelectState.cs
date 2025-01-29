@@ -1,6 +1,4 @@
-﻿using Frontier.Stage;
-using System;
-using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -23,7 +21,7 @@ namespace Frontier
             // ステージグリッド上のキャラ情報を更新
             _stageCtrl.UpdateGridInfo();
 
-            _enemyEnumerator = _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).GetEnumerator();
+            _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).GetEnumerator();
             _currentEnemy = null;
 
             // 行動済みでないキャラクターを選択する

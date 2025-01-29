@@ -1,5 +1,4 @@
-﻿using Frontier.Stage;
-using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;

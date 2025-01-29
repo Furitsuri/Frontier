@@ -1,11 +1,6 @@
 ﻿using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading;
-using TMPro.Examples;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
+using Frontier.Battle;
+using Frontier.Entities;
 using UnityEngine;
 using Zenject;
 
@@ -31,7 +26,7 @@ namespace Frontier
         private Phase _phase;
         private float _elapsedTime      = 0f;
         private bool _counterConditions = false;
-        private BattleManager _btlMgr   = null;
+        private BattleRoutineController _btlRtnCtrl   = null;
         private BattleCameraController _btlCamCtrl = null;
         private StageController _stageCtrl = null;
         private Character _attackCharacter = null;
@@ -48,9 +43,9 @@ namespace Frontier
         private UpdateAttack _updateTargetAttack = null;
 
         [Inject]
-        public void Construct(BattleManager btlMgr, StageController stgCtrl)
+        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl)
         {
-            _btlMgr     = btlMgr;
+            _btlRtnCtrl     = btlRtnCtrl;
             _stageCtrl  = stgCtrl;
         }
 
@@ -59,7 +54,7 @@ namespace Frontier
         /// </summary>
         public void Init()
         {
-            _btlCamCtrl         = _btlMgr.GetCameraController();
+            _btlCamCtrl         = _btlRtnCtrl.GetCameraController();
             _diedCharacter      = null;
             _elapsedTime        = 0f;
             _phase              = Phase.START;
@@ -103,7 +98,7 @@ namespace Frontier
         /// <returns>処理の終了</returns>
         public bool Update()
         {
-            var parryCtrl = _btlMgr.SkillCtrl.ParryController;
+            var parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
 
             switch (_phase)
             {
@@ -308,7 +303,7 @@ namespace Frontier
         private void StartCounter(Character attacker, Character target)
         {
             // ダメージ予測をセット
-            _btlMgr.BtlCharaCdr.ApplyDamageExpect(target, attacker);
+            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(target, attacker);
 
             // 攻撃キャラと被攻撃キャラを入れ替えて開始
             StartAttack(target, attacker);
@@ -336,7 +331,7 @@ namespace Frontier
             // メッシュ及びattakerとtarget以外のキャラクターを非表示に
             _stageCtrl.ToggleMeshDisplay(false);
 
-            foreach (var player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
+            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
             {
                 if (player != attacker && player != target)
                 {
@@ -344,7 +339,7 @@ namespace Frontier
                 }
             }
 
-            foreach (var enemy in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
+            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
             {
                 if (enemy != attacker && enemy != target)
                 {
@@ -403,12 +398,12 @@ namespace Frontier
             // 非表示にしていたものを表示
             _stageCtrl.ToggleMeshDisplay(true);
 
-            foreach (var player in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
+            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
             {
                 player.gameObject.SetActive(true);
             }
 
-            foreach (var enemy in _btlMgr.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
+            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
             {
                 enemy.gameObject.SetActive(true);
             }

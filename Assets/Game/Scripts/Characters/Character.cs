@@ -1,17 +1,12 @@
 ﻿using Frontier.Stage;
+using Frontier.Battle;
+using Frontier.Entities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Zenject;
 
-namespace Frontier
+namespace Frontier.Entities
 {
     [SerializeField]
     public class Character : MonoBehaviour
@@ -295,13 +290,13 @@ namespace Frontier
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         // 攻撃シーケンスにおける残り攻撃回数
-        protected int _atkRemainingNum              = 0;
-        protected HierarchyBuilder _hierarchyBld    = null;
-        protected BattleManager _btlMgr             = null;
-        protected StageController _stageCtrl        = null;
-        protected Character _opponent               = null;
-        protected Bullet _bullet                    = null;
-        protected BaseAI _baseAI { get; set; }      = null;
+        protected int _atkRemainingNum                  = 0;
+        protected HierarchyBuilder _hierarchyBld        = null;
+        protected BattleRoutineController _btlRtnCtrl   = null;
+        protected StageController _stageCtrl            = null;
+        protected Character _opponent                   = null;
+        protected Bullet _bullet                        = null;
+        protected BaseAi _baseAI { get; set; }          = null;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase;
         protected ThinkingType _thikType;
@@ -335,10 +330,10 @@ namespace Frontier
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( HierarchyBuilder hierarchyBld,  BattleManager battleMgr, StageController stageCtrl )
+        void Construct( HierarchyBuilder hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl )
         {
             _hierarchyBld   = hierarchyBld;
-            _btlMgr         = battleMgr;
+            _btlRtnCtrl     = battleMgr;
             _stageCtrl      = stageCtrl;
         }
 
@@ -384,7 +379,7 @@ namespace Frontier
         void OnDestroy()
         {
             // 戦闘時間管理クラスの登録を解除
-            _btlMgr.TimeScaleCtrl.Unregist(_timeScale);
+            _btlRtnCtrl.TimeScaleCtrl.Unregist(_timeScale);
         }
 
         /// <summary>
@@ -464,7 +459,7 @@ namespace Frontier
             _elapsedTime        = 0f;
 
             // 戦闘時間管理クラスに自身の時間管理クラスを登録
-            _btlMgr.TimeScaleCtrl.Regist( _timeScale );
+            _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );
         }
 
         /// <summary>
@@ -689,7 +684,7 @@ namespace Frontier
         {
             if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
             
-            SkillParryController parryCtrl = _btlMgr.SkillCtrl.ParryController;
+            SkillParryController parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
             _opponent.SubscribeParryEvent(parryCtrl);
             parryCtrl.StartParryEvent(_opponent, this);
         }
@@ -782,7 +777,7 @@ namespace Frontier
             // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
             if (IsTransitNextPhaseCamera())
             {
-                _btlMgr.GetCameraController().TransitNextPhaseCameraParam(null, GetBullet().transform);
+                _btlRtnCtrl.GetCameraController().TransitNextPhaseCameraParam(null, GetBullet().transform);
             }
             // 攻撃終了した場合はWaitに切り替え
             if (IsEndAttackAnimSequence())
@@ -846,7 +841,7 @@ namespace Frontier
         /// </summary>
         public void StopAnimationOnParry()
         {
-            if(!_btlMgr.SkillCtrl.ParryController.IsJudgeEnd())
+            if(!_btlRtnCtrl.SkillCtrl.ParryController.IsJudgeEnd())
             {
                 _timeScale.Stop();
             }
@@ -991,7 +986,7 @@ namespace Frontier
         /// 設定されているAIを取得します
         /// </summary>
         /// <returns>設定されているAI</returns>
-        public BaseAI GetAi() { return _baseAI; }
+        public BaseAi GetAi() { return _baseAI; }
 
         #endregion // PUBLIC_METHOD
     }

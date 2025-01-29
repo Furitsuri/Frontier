@@ -1,18 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Entities;
+using Frontier.Battle;
 using UnityEngine;
 
 namespace Frontier
 {
-    public class DebugBattleManager : MonoBehaviour
+    public class DebugBattleRoutineController : MonoBehaviour
     {
         [SerializeField]
         private Character.Parameter GenerateUnitParamSetting;
 
         [SerializeField]
-        private BattleManager _btlMgr;
+        private BattleRoutineController _btlRtnCtrl;
 
-        public static DebugBattleManager instance = null;
+        public static DebugBattleRoutineController instance = null;
 
         void Awake()
         {
@@ -27,15 +27,15 @@ namespace Frontier
 
             DontDestroyOnLoad(gameObject);
 
-            if (_btlMgr == null)
+            if (_btlRtnCtrl == null)
             {
-                Instantiate(_btlMgr);
+                Instantiate(_btlRtnCtrl);
             }
         }
 
         private void Start()
         {
-            StartCoroutine(_btlMgr.Battle());
+            StartCoroutine(_btlRtnCtrl.Battle());
         }
     }
 }

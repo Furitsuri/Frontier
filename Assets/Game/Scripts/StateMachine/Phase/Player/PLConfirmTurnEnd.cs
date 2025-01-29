@@ -1,5 +1,4 @@
-﻿using Frontier.Stage;
-using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,7 +45,7 @@ namespace Frontier
                 if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
                 {
                     // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
-                    _btlMgr.BtlCharaCdr.ApplyAllArmyWaitEnd(Character.CHARACTER_TAG.PLAYER);
+                    _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyWaitEnd(Character.CHARACTER_TAG.PLAYER);
                 }
 
                 Back();

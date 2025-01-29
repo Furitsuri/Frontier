@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Frontier.Entities;
+using System;
 using System.Diagnostics;
 using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
@@ -113,20 +114,20 @@ public static class Methods
     /// <param name="former">前者</param>
     /// <param name="latter">後者</param>
     /// <returns>前者と後者のうち、より味方に近い側</returns>
-    public static Frontier.Character CompareAllyCharacter( Frontier.Character former, Frontier.Character latter )
+    public static Character CompareAllyCharacter( Character former, Character latter )
     {
         var formerTag = former.param.characterTag;
         var latterTag = latter.param.characterTag;
 
-        if ( formerTag != Frontier.Character.CHARACTER_TAG.PLAYER )
+        if ( formerTag != Character.CHARACTER_TAG.PLAYER )
         {
-            if( latterTag == Frontier.Character.CHARACTER_TAG.PLAYER )
+            if( latterTag == Character.CHARACTER_TAG.PLAYER )
             {
                 return latter;
             }
             else
             {
-                if( formerTag == Frontier.Character.CHARACTER_TAG.OTHER )
+                if( formerTag == Character.CHARACTER_TAG.OTHER )
                 {
                     return former;
                 }

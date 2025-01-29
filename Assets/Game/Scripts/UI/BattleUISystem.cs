@@ -1,7 +1,5 @@
-﻿using Frontier.Stage;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Battle;
+using Frontier.Entities;
 using UnityEngine;
 using Zenject;
 
@@ -130,7 +128,7 @@ namespace Frontier
             }
         }
 
-        public void TogglePhaseUI(bool isActive, BattleManager.TurnType turntype)
+        public void TogglePhaseUI(bool isActive, BattleRoutineController.TurnType turntype)
         {
             Phase.gameObject.SetActive(isActive);
             Phase.PhaseText[(int)turntype].gameObject.SetActive(isActive);

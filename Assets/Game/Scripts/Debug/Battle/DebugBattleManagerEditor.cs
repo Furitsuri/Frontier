@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    [CustomEditor(typeof(DebugBattleManager))]
+    [CustomEditor(typeof(DebugBattleRoutineController))]
     public class DebugBattleLoaderEditor : Editor
     {
         SerializedProperty _battleMgr;
@@ -12,7 +12,7 @@ namespace Frontier
 
         private void OnEnable()
         {
-            _battleMgr = serializedObject.FindProperty("_btlMgr");
+            _battleMgr = serializedObject.FindProperty("_btlRtnCtrl");
             _propParamUnit = serializedObject.FindProperty("GenerateUnitParamSetting");
         }
 
@@ -67,7 +67,7 @@ namespace Frontier
             player.Init();
             playerObject.SetActive(true);
 
-            BattleManager.Instance.AddPlayerToList(player);
+            BattleRoutineController.Instance.AddPlayerToList(player);
 
             Debug.Log("Unit Generated.");
             */

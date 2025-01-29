@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.Entities
 {
     public class Enemy : Character
     {
@@ -22,7 +22,7 @@ namespace Frontier
         {
             base.Die();
 
-            _btlMgr.BtlCharaCdr.RemoveCharacterFromList(this);
+            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList(this);
         }
 
         /// <summary>
@@ -37,13 +37,13 @@ namespace Frontier
             switch (_thikType)
             {
                 case ThinkingType.AGGERESSIVE:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EMAIAggressive>();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiAggressive>();
                     break;
                 case ThinkingType.WAITING:
                     _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiWaitting>();
                     break;
                 default:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EMAIBase>();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiBase>();
                     break;
             }
 

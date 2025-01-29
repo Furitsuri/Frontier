@@ -1,7 +1,7 @@
 ﻿using Frontier.Stage;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.Entities
 {
     public class Player : Character
     {
@@ -74,7 +74,7 @@ namespace Frontier
         {
             base.Die();
 
-            _btlMgr.BtlCharaCdr.RemoveCharacterFromList(this);
+            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList(this);
         }
 
         /// <summary>

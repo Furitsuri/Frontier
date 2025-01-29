@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Frontier.Battle;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -40,16 +41,16 @@ namespace Frontier
 
         private GameObject _stageImage;
         private InputFacade _inputFcd;
-        private BattleManager _btlMgr;
+        private BattleRoutineController _btlRtnCtrl;
         private GamePhase _Phase;
 
         public static GameMain instance = null;
 
         [Inject]
-        public void Construct( InputFacade inputFcd, BattleManager btlMgr )
+        public void Construct( InputFacade inputFcd, BattleRoutineController btlRtnCtrl )
         {
             _inputFcd   = inputFcd;
-            _btlMgr     = btlMgr;
+            _btlRtnCtrl     = btlRtnCtrl;
         }
 
         void Awake()
@@ -92,7 +93,7 @@ namespace Frontier
             // 入力関連の初期化
             _inputFcd.Init();
             // 戦闘マネージャの初期化
-            // _btlMgr.Init();
+            // _btlRtnCtrl.Init();
 
             _stageImage = GameObject.Find("StageLevelImage");
             if (_stageImage != null)
@@ -128,9 +129,9 @@ namespace Frontier
                         _Phase = GamePhase.GAME_BATTLE;
                         break;
                     case GamePhase.GAME_BATTLE:
-                        // StartCoroutine(_btlMgr.Battle());
+                        // StartCoroutine(_btlRtnCtrl.Battle());
                         // Battleの終了を待つ
-                        // yield return new WaitUntil(() => _btlMgr.isEnd());
+                        // yield return new WaitUntil(() => _btlRtnCtrl.isEnd());
 
                         _Phase = GamePhase.GAME_END_SCENE;
                         break;

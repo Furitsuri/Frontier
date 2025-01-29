@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;

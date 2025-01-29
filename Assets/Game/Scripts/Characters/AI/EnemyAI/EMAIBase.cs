@@ -1,4 +1,6 @@
 ﻿using Frontier.Stage;
+using Frontier.Battle;
+using Frontier.Entities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +8,7 @@ using Zenject;
 
 namespace Frontier
 {
-    public class EMAIBase : BaseAI
+    public class EmAiBase : BaseAi
     {
         /// <summary>
         /// 自身の攻撃(移動)可能範囲内に存在する攻撃対象キャラクターの情報です
@@ -17,7 +19,7 @@ namespace Frontier
             public List<int> targetCharaIndexs;
         }
 
-        protected BattleManager _btlMgr;
+        protected BattleRoutineController _btlRtnCtrl;
         protected StageController _stageCtrl;
         // 既に移動対象や攻撃対象を決定しているか
         protected bool _isDetermined = false;
@@ -37,9 +39,9 @@ namespace Frontier
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
 
         [Inject]
-        public void Construct( BattleManager btlMgr, StageController stgCtrl )
+        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl )
         {
-            _btlMgr     = btlMgr;
+            _btlRtnCtrl     = btlRtnCtrl;
             _stageCtrl  = stgCtrl;
         }
 

@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Frontier.Entities;
+using System.Collections.Generic;
 
 namespace Frontier
 {
-    public abstract class BaseAI
+    public abstract class BaseAi
     {
         /// <summary>
         /// 初期化します

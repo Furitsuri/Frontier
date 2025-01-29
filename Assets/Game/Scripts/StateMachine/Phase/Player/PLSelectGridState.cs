@@ -1,7 +1,4 @@
-﻿using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Frontier.Entities;
 
 namespace Frontier
 {
@@ -35,7 +32,7 @@ namespace Frontier
             // if( base.Update() ) { return true; }
 
             // 全てのキャラクターが待機済みになっていれば終了
-            if( _btlMgr.BtlCharaCdr.IsEndAllArmyrWaitCommand(Character.CHARACTER_TAG.PLAYER))
+            if( _btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand(Character.CHARACTER_TAG.PLAYER))
             {
                 Back();
 
@@ -62,7 +59,7 @@ namespace Frontier
 
             // TODO : キーマネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
             /*
-            Character character = _btlMgr.GetSelectCharacter();
+            Character character = _btlRtnCtrl.GetSelectCharacter();
             if (character != null &&
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
@@ -104,7 +101,7 @@ namespace Frontier
                 return false;
             }
 
-            Character character = _btlMgr.BtlCharaCdr.GetSelectCharacter();
+            Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if (character != null &&
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Frontier.Battle;
+using Frontier.Entities;
+using UnityEngine;
 using System;
 using System.IO;
 using TMPro.SpriteAssetUtilities;
@@ -52,7 +54,7 @@ namespace Frontier
         private HierarchyBuilder _hierarchyBld = null;
 
         // バトルマネージャ
-        private BattleManager _btlMgr;
+        private BattleRoutineController _btlRtnCtrl;
 
         [System.Serializable]
         public struct CharacterParamData
@@ -116,12 +118,12 @@ namespace Frontier
         /// <summary>
         /// Diコンテナから引数を注入します
         /// </summary>
-        /// <param name="btlMgr"></param>
+        /// <param name="btlRtnCtrl"></param>
         /// <param name="hierarchyBld"></param>
         [Inject]
-        void Construct(BattleManager btlMgr, HierarchyBuilder hierarchyBld)
+        void Construct(BattleRoutineController btlRtnCtrl, HierarchyBuilder hierarchyBld)
         {
-            _btlMgr         = btlMgr;
+            _btlRtnCtrl         = btlRtnCtrl;
             _hierarchyBld   = hierarchyBld;
         }
 
@@ -173,7 +175,7 @@ namespace Frontier
                     chara.Init();
                     chara.SetThinkType((Character.ThinkingType)param.ThinkType);
 
-                    _btlMgr.BtlCharaCdr.AddCharacterToList(chara);
+                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(chara);
 
                 }
             }
@@ -269,7 +271,7 @@ namespace Frontier
                 player.param = param;
                 player.Init();
 
-                _btlMgr.BtlCharaCdr.AddCharacterToList(player);
+                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(player);
             }
             else
             {
@@ -279,7 +281,7 @@ namespace Frontier
                 enemy.param = param;
                 enemy.Init();
 
-                _btlMgr.BtlCharaCdr.AddCharacterToList(enemy);
+                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(enemy);
             }
         }
 #endif  // DEVELOPMENT_BUILD || UNITY_EDITOR

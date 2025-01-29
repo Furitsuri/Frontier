@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Entities;
 using UnityEngine;
 using Zenject;
 
@@ -15,6 +14,10 @@ namespace Frontier
         [SerializeField]
         [Header("エネミー")]
         public GameObject _enemyObj;
+
+        [SerializeField]
+        [Header("第三勢力")]
+        public GameObject _otherObj;
     }
 
     /// <summary>
@@ -29,6 +32,10 @@ namespace Frontier
         [SerializeField]
         [Header("キャラクターオブジェクト")]
         private CharacterGroup _characterObjGrp;
+
+        [SerializeField]
+        [Header("バトルオブジェクト")]
+        private GameObject _battleObj;
 
         [SerializeField]
         [Header("コントローラオブジェクト")]
@@ -85,16 +92,25 @@ namespace Frontier
 
                 return null;
             }
-            
-            return original switch
+
+            // 名前空間の末尾部分の文字列で判定を行う
+            string[] parts = original.GetType().Namespace.Split('.');
+            return 1 <= parts.Length ? parts[parts.Length - 1] switch
             {
-                Camera => _cameraObj,
-                Player => _characterObjGrp._playerObj,
-                Enemy => _characterObjGrp._enemyObj,
-                Controller => _controllerObj,
-                Manager => _managerObj,
+                "Camera" => _cameraObj,
+                // キャラクター名前空間のクラスは派生クラス毎に分類する
+                "Entities" => original switch
+                {
+                    Other => _characterObjGrp._otherObj,
+                    Player => _characterObjGrp._playerObj,
+                    Enemy => _characterObjGrp._enemyObj,
+                    _ => this.gameObject
+                },
+                "Controller" => _controllerObj,
+                "Manager" => _managerObj,
+                "Battle" => _battleObj,
                 _ => this.gameObject
-            };
+            } : this.gameObject;
         }
 
         /// <summary>

@@ -1,9 +1,6 @@
-﻿using Frontier.Stage;
-using System.Collections;
+﻿using Frontier.Entities;
 using System.Collections.Generic;
-using System.Xml.Xsl;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
 
 namespace Frontier
 {
@@ -30,7 +27,7 @@ namespace Frontier
             base.Init();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
-            _enemy = _btlMgr.BtlCharaCdr.GetSelectCharacter() as Enemy;
+            _enemy = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_enemy != null);
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
             var param = _enemy.param;

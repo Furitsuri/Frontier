@@ -1,4 +1,5 @@
 ﻿using Frontier.Stage;
+using Frontier.Battle;
 using Zenject;
 
 namespace Frontier
@@ -7,15 +8,15 @@ namespace Frontier
     {
         protected bool _isFirstUpdate               = false;
         protected HierarchyBuilder _hierarchyBld    = null;
-        protected BattleManager _btlMgr             = null;
+        protected BattleRoutineController _btlRtnCtrl             = null;
         protected StageController _stgCtrl          = null;
         protected BattleUISystem _btlUi             = null;
         
         [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld, BattleManager btlMgr, BattleUISystem btlUi, StageController stgCtrl)
+        public void Construct( HierarchyBuilder hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl)
         {
             _hierarchyBld   = hierarchyBld;
-            _btlMgr         = btlMgr;
+            _btlRtnCtrl         = btlRtnCtrl;
             _btlUi          = btlUi;
             _stgCtrl        = stgCtrl;
         }
