@@ -1,8 +1,10 @@
 ﻿using Frontier.Entities;
+using UnityEngine;
+using static Constants;
 
 namespace Frontier
 {
-    public class PLSelectGridState : PhaseStateBase
+    public class PlSelectGridState : PhaseStateBase
     {
         /// <summary>
         /// 遷移先を示すタグ
@@ -20,10 +22,14 @@ namespace Frontier
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);
 
+            
             // キーガイドを登録
-            SetInputGuides(
-                (Constants.KeyIcon.ALL_CURSOR,  "Move",     null),
-                (Constants.KeyIcon.ESCAPE,      "TURN END", TransitConfirmTurnEndCallBack));
+            _inputFcd.RegisterInputCodes(
+                ( GuideIcon.ALL_CURSOR,  "Move",        InputFacade.Enable,             _stageCtrl.OperateGridCursor,       0.0f),
+                ( GuideIcon.DECISION,    "Command",     EnableCharacterCommandCallBack, TransitCharacterCommandCallback,    0.0f),
+                ( GuideIcon.ESCAPE,      "TURN END",    InputFacade.Enable,             TransitConfirmTurnEndCallBack,      0.0f)
+             );
+            
         }
 
         override public bool Update()
@@ -39,25 +45,17 @@ namespace Frontier
                 return true;
             }
 
-            // TODO : キーマネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
-            /*
-            // ターン終了確認へ遷移
-            if (Input.GetKeyUp(KeyCode.Escape))
-            {
-                TransitIndex = (int)TransitTag.TurnEnd;
-                return true;
-            }
-            */
-
             // グリッドの操作
+#if !VALID_INPUT_CALLBACK
             _stageCtrl.OperateGridCursor();
+#endif
             Stage.GridInfo info;
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
             int selectCharaIndex = info.charaIndex;
 
-            // TODO : キーマネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
+            // TODO : 入力マネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
             /*
             Character character = _btlRtnCtrl.GetSelectCharacter();
             if (character != null &&
@@ -76,6 +74,9 @@ namespace Frontier
             return ( 0 <= TransitIndex );
         }
 
+        /// <summary>
+        /// 現状のステートから抜け出します
+        /// </summary>
         override public void Exit()
         {
             // グリッド選択を無効化 → TODO : 無効化しないほうがゲーム実行時における見た目がよかったため、一旦コメントアウトで保留
@@ -84,17 +85,11 @@ namespace Frontier
             base.Exit();
         }
 
-        public void OperateGridCursorCallBack()
-        {
-
-            _stageCtrl.OperateGridCursor(Constants.Direction.LEFT);
-        }
-
         /// <summary>
         /// キャラクターコマンド遷移へ移る際のコールバック関数
         /// </summary>
         /// <returns></returns>
-        public bool TransitCharacterCommandCallBack()
+        public bool EnableCharacterCommandCallBack()
         {
             if ( 0 <= TransitIndex )
             {
@@ -106,8 +101,6 @@ namespace Frontier
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
             {
-                TransitIndex = (int)TransitTag.CharacterCommand;
-
                 return true;
             }
 
@@ -115,19 +108,27 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public void TransitCharacterCommandCallback()
+        {
+            if( Input.GetKeyUp(KeyCode.Space) )
+            {
+                TransitIndex = (int)TransitTag.CharacterCommand;
+            }
+        }
+
+        /// <summary>
         /// ターン終了遷移へ移る際のコールバック関数
         /// </summary>
-        /// <returns></returns>
-        public bool TransitConfirmTurnEndCallBack()
+        /// <returns>ターン終了の成否</returns>
+        public void TransitConfirmTurnEndCallBack()
         {
-            if( 0 <= TransitIndex )
+            // ターン終了確認へ遷移
+            if (Input.GetKeyUp(KeyCode.Escape))
             {
-                return false;
+                TransitIndex = (int)TransitTag.TurnEnd;
             }
-
-            TransitIndex = (int)TransitTag.TurnEnd;
-
-            return true;
         }
     }
 }

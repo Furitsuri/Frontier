@@ -27,7 +27,7 @@ namespace Frontier
             }
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL);
 
-            BattleUISystem.Instance.ToggleConfirmTurnEnd(true);
+            _uiSystem.BattleUi.ToggleConfirmTurnEnd(true);
         }
 
         override public bool Update()
@@ -38,7 +38,7 @@ namespace Frontier
             }
 
             _commandList.Update();
-            BattleUISystem.Instance.ApplyTestColor2ConfirmTurnEndUI(_commandList.GetCurrentValue());
+            _uiSystem.BattleUi.ApplyTestColor2ConfirmTurnEndUI(_commandList.GetCurrentValue());
 
             if (Input.GetKeyUp(KeyCode.Space))
             {
@@ -59,7 +59,7 @@ namespace Frontier
 
         override public void Exit()
         {
-            BattleUISystem.Instance.ToggleConfirmTurnEnd(false);
+            _uiSystem.BattleUi.ToggleConfirmTurnEnd(false);
 
             base.Exit();
         }

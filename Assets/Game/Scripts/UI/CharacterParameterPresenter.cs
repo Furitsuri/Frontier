@@ -18,14 +18,16 @@ namespace Frontier
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
         private BattleRoutineController _btlRtnCtrl = null;
-        private StageController _stgCtrl = null;
-        private Character _prevCharacter = null;
+        private StageController _stgCtrl            = null;
+        private UISystem _uiSystem                  = null;
+        private Character _prevCharacter            = null;
 
         [Inject]
-        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl )
+        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem )
         {
-            _btlRtnCtrl     = btlRtnCtrl;
+            _btlRtnCtrl = btlRtnCtrl;
             _stgCtrl    = stgCtrl;
+            _uiSystem   = uiSystem;
         }
 
         void Start()
@@ -46,8 +48,8 @@ namespace Frontier
                 case Stage.GridCursor.State.ATTACK: // 攻撃対象選択時
                     Debug.Assert(bindCharacter != null);
 
-                    BattleUISystem.Instance.TogglePlayerParameter(true);
-                    BattleUISystem.Instance.ToggleEnemyParameter(true);
+                    _uiSystem.BattleUi.TogglePlayerParameter(true);
+                    _uiSystem.BattleUi.ToggleEnemyParameter(true);
 
                     // 画面構成は以下の通り
                     //   左        右
@@ -71,14 +73,14 @@ namespace Frontier
 
                     PlayerParameter.SetDisplayCharacter(bindCharacter);
                     if (selectCharacter != null && selectCharacter != bindCharacter) EnemyParameter.SetDisplayCharacter(selectCharacter);
-                    BattleUISystem.Instance.ToggleEnemyParameter(selectCharacter != null && selectCharacter != bindCharacter);
+                    _uiSystem.BattleUi.ToggleEnemyParameter(selectCharacter != null && selectCharacter != bindCharacter);
 
                     break;
 
                 default:
                     // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
-                    BattleUISystem.Instance.TogglePlayerParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.PLAYER);
-                    BattleUISystem.Instance.ToggleEnemyParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY);
+                    _uiSystem.BattleUi.TogglePlayerParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.PLAYER);
+                    _uiSystem.BattleUi.ToggleEnemyParameter(selectCharacter != null && selectCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY);
 
                     // パラメータ表示を更新
                     if (selectCharacter != null)

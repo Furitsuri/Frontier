@@ -11,15 +11,19 @@ namespace Frontier
         private bool _isBack = false;
         public int TransitIndex { get; protected set; } = -1;
         protected HierarchyBuilder _hierarchyBld        = null;
+        protected InputFacade _inputFcd                 = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
+        protected UISystem _uiSystem                    = null;
 
         [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld, BattleRoutineController btlRtnCtrl, StageController stgCtrl)
+        public void Construct( HierarchyBuilder hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem)
         {
             _hierarchyBld   = hierarchyBld;
-            _btlRtnCtrl         = btlRtnCtrl;
+            _inputFcd       = inputFcd;
+            _btlRtnCtrl     = btlRtnCtrl;
             _stageCtrl      = stgCtrl;
+            _uiSystem       = uiSystem;
         }
 
         // 初期化
@@ -53,6 +57,7 @@ namespace Frontier
         // 退避
         virtual public void Exit()
         {
+            _inputFcd.ResetInputCodes();
         }
 
         // 戻る
@@ -76,53 +81,6 @@ namespace Frontier
         protected void NoticeCharacterDied(CharacterHashtable.Key characterKey)
         {
             _btlRtnCtrl.BtlCharaCdr.SetDiedCharacterKey(characterKey);
-        }
-
-        /// <summary>
-        /// ガイドを新たに追加します
-        /// </summary>
-        /// <param name="addGuide">追加するガイド</param>
-        protected void AddInputGuide(InputGuideUI.InputGuide addGuide )
-        {
-
-        }
-
-        /// <summary>
-        /// ステートの遷移に併せてキーガイドを変更します
-        /// </summary>
-        /// <param name="keyGuideList">遷移先のキーガイドリスト</param>
-        protected void SetInputGuides( List<InputGuideUI.InputGuide> keyGuideList )
-        {
-           //  GeneralUISystem.Instance.SetInputGuideList( keyGuideList );
-        }
-
-        /// <summary>
-        /// ステートの遷移に併せてキーガイドを変更します
-        /// </summary>
-        /// <param name="args">遷移先で表示するキーガイド群</param>
-        protected void SetInputGuides(params (Constants.KeyIcon, string)[] args)
-        {
-            List<InputGuideUI.InputGuide> keyGuideList = new List<InputGuideUI.InputGuide>();
-            foreach(var arg in args ){
-                keyGuideList.Add(new InputGuideUI.InputGuide(arg));
-            }
-
-            // GeneralUISystem.Instance.SetInputGuideList(keyGuideList);
-        }
-
-        /// <summary>
-        /// TODO : 全てコールバックを登録する形でキーの受付が出来ないかの試験用
-        /// </summary>
-        /// <param name="args"></param>
-        protected void SetInputGuides(params (Constants.KeyIcon, string, InputGuideUI.InputGuide.InputCallBack)[] args)
-        {
-            List<InputGuideUI.InputGuide> keyGuideList = new List<InputGuideUI.InputGuide>();
-            foreach (var arg in args)
-            {
-                keyGuideList.Add(new InputGuideUI.InputGuide(arg));
-            }
-
-            // GeneralUISystem.Instance.SetInputGuideList(keyGuideList);
         }
     }
 }

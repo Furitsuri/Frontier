@@ -26,12 +26,13 @@ namespace Frontier
         private Phase _phase;
         private float _elapsedTime      = 0f;
         private bool _counterConditions = false;
-        private BattleRoutineController _btlRtnCtrl   = null;
-        private BattleCameraController _btlCamCtrl = null;
-        private StageController _stageCtrl = null;
-        private Character _attackCharacter = null;
-        private Character _targetCharacter = null;
-        private Character _diedCharacter = null;
+        private BattleRoutineController _btlRtnCtrl = null;
+        private BattleCameraController _btlCamCtrl  = null;
+        private StageController _stageCtrl          = null;
+        private UISystem _uiSystem                  = null;
+        private Character _attackCharacter          = null;
+        private Character _targetCharacter          = null;
+        private Character _diedCharacter            = null;
         // Transformは遅いためキャッシュ
         private Transform _atkCharaTransform = null;
         private Transform _tgtCharaTransform = null;
@@ -43,10 +44,11 @@ namespace Frontier
         private UpdateAttack _updateTargetAttack = null;
 
         [Inject]
-        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl)
+        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem)
         {
-            _btlRtnCtrl     = btlRtnCtrl;
+            _btlRtnCtrl = btlRtnCtrl;
             _stageCtrl  = stgCtrl;
+            _uiSystem   = uiSystem;
         }
 
         /// <summary>
@@ -140,7 +142,7 @@ namespace Frontier
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
                         // ダメージUIを非表示
-                        BattleUISystem.Instance.ToggleDamageUI(false);
+                        _uiSystem.BattleUi.ToggleDamageUI(false);
 
                         // ガードスキルを使用時はガードモーションを戻す
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
@@ -204,7 +206,7 @@ namespace Frontier
                         else
                         {
                             // ダメージUIを非表示
-                            BattleUISystem.Instance.ToggleDamageUI(false);
+                            _uiSystem.BattleUi.ToggleDamageUI(false);
 
                             _phase = Phase.WAIT_END;
                         }
@@ -224,7 +226,7 @@ namespace Frontier
                         else
                         {
                             // ダメージUIを非表示
-                            BattleUISystem.Instance.ToggleDamageUI(false);
+                            _uiSystem.BattleUi.ToggleDamageUI(false);
 
                             _phase = Phase.WAIT_END;
                         }

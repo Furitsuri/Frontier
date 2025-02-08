@@ -340,10 +340,10 @@ namespace Frontier.Stage
             }
             else
             {
-                if (Input.GetKey(KeyCode.UpArrow) && OperateKeyControl())          { _gridCursor.Up(); }
-                if (Input.GetKey(KeyCode.DownArrow) && OperateKeyControl())      { _gridCursor.Down(); }
-                if (Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())      { _gridCursor.Left(); }
-                if (Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())    { _gridCursor.Right(); }
+                if (Input.GetKey(KeyCode.UpArrow) && OperateKeyControl())       { _gridCursor.Up();     }
+                if (Input.GetKey(KeyCode.DownArrow) && OperateKeyControl())     { _gridCursor.Down();   }
+                if (Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())     { _gridCursor.Left();   }
+                if (Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())    { _gridCursor.Right();  }
             }
         }
 

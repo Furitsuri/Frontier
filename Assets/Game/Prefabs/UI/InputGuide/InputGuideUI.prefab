@@ -60,7 +60,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2724f29bed116534ca29abeafe179509, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GuideSprite: {fileID: 2666414285098238941}
+  GuideSpriteRenderer: {fileID: 2666414285098238941}
   GuideExplanation: {fileID: 75873313675913577}
 --- !u!1 &3613467148106847203
 GameObject:

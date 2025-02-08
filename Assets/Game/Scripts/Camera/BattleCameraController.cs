@@ -1,9 +1,7 @@
 using Frontier.Entities;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UI;
+using Zenject;
 
 #pragma warning disable 0414
 
@@ -70,6 +68,7 @@ namespace Frontier
         private List<CameraParamData[]> _rangedAtkCameraParamDatas;
         private CameraParamData[] _currentCameraParamDatas;
         private CameraMosaicEffect _mosaicEffectScript;
+        private UISystem _uiSystem = null;
         // カメラ座標の基点となるトランスフォーム
         private Transform _cameraBaseTransform;
         // カメラの被写体座標の基点となるトランスフォーム
@@ -89,13 +88,19 @@ namespace Frontier
         // 被写体座標とカメラ座標との差となるオフセット
         private Vector3 _offset;
         // カメラ移動遷移に用いるフェイズのインデックス値
-        private int _cameraPhaseIndex = 0;
-        private float _followElapsedTime = 0.0f;
-        private float _fadeElapsedTime = 0.0f;
-        private float _length = 0.0f;
-        private float _roll = 0.0f;
-        private float _pitch = 0.0f;
-        private float _yaw = 0.0f;
+        private int _cameraPhaseIndex       = 0;
+        private float _followElapsedTime    = 0.0f;
+        private float _fadeElapsedTime      = 0.0f;
+        private float _length               = 0.0f;
+        private float _roll                 = 0.0f;
+        private float _pitch                = 0.0f;
+        private float _yaw                  = 0.0f;
+
+        [Inject]
+        public void Construct( UISystem uiSystem )
+        {
+            _uiSystem = uiSystem;
+        }
 
         // Start is called before the first frame update
         override protected void OnStart()
@@ -175,8 +180,8 @@ namespace Frontier
                             _mosaicEffectScript.ToggleEnable(false);
                             _mosaicEffectScript.ResetBlockSize();
                             // パラメータを表示
-                            BattleUISystem.Instance.TogglePlayerParameter(true);
-                            BattleUISystem.Instance.ToggleEnemyParameter(true);
+                            _uiSystem.BattleUi.TogglePlayerParameter(true);
+                            _uiSystem.BattleUi.ToggleEnemyParameter(true);
                             // 戦闘フィールドに移行
                             _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
                         }
@@ -220,8 +225,8 @@ namespace Frontier
                         {
                             _mosaicEffectScript.ToggleEnable(false);
                             _mosaicEffectScript.ResetBlockSize();
-                            BattleUISystem.Instance.TogglePlayerParameter(true);
-                            BattleUISystem.Instance.ToggleEnemyParameter(true);
+                            _uiSystem.BattleUi.TogglePlayerParameter(true);
+                            _uiSystem.BattleUi.ToggleEnemyParameter(true);
 
                             _mainCamera.transform.position = _followingPosition;
                             _mainCamera.transform.LookAt(_lookAtPosition);
@@ -309,8 +314,8 @@ namespace Frontier
             _cameraOffset = Methods.RotateVector(_cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward) * _length + _characterCameraOffset;
 
             // 一度パラメータを非表示
-            BattleUISystem.Instance.TogglePlayerParameter(false);
-            BattleUISystem.Instance.ToggleEnemyParameter(false);
+            _uiSystem.BattleUi.TogglePlayerParameter(false);
+            _uiSystem.BattleUi.ToggleEnemyParameter(false);
         }
 
         /// <summary>

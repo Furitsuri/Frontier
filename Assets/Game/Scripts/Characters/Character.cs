@@ -294,6 +294,7 @@ namespace Frontier.Entities
         protected HierarchyBuilder _hierarchyBld        = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
+        protected UISystem _uiSystem                    = null;
         protected Character _opponent                   = null;
         protected Bullet _bullet                        = null;
         protected BaseAi _baseAI { get; set; }          = null;
@@ -330,11 +331,12 @@ namespace Frontier.Entities
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( HierarchyBuilder hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl )
+        void Construct( HierarchyBuilder hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl, UISystem uiSystem )
         {
             _hierarchyBld   = hierarchyBld;
             _btlRtnCtrl     = battleMgr;
             _stageCtrl      = stageCtrl;
+            _uiSystem       = uiSystem;
         }
 
         void Awake()
@@ -500,8 +502,8 @@ namespace Frontier.Entities
             }
 
             // ダメージUIを表示
-            BattleUISystem.Instance.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
-            BattleUISystem.Instance.ToggleDamageUI(true);
+            _uiSystem.BattleUi.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
+            _uiSystem.BattleUi.ToggleDamageUI(true);
         }
 
         /// <summary>
@@ -894,7 +896,7 @@ namespace Frontier.Entities
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                BattleUISystem.Instance.GetPlayerParamSkillBox(i).StopFlick();
+                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).StopFlick();
             }
         }
 

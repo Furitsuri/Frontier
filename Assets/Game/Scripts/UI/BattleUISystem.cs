@@ -7,8 +7,6 @@ namespace Frontier
 {
     public class BattleUISystem : MonoBehaviour
     {
-        public static BattleUISystem Instance { get; private set; }
-
         [Header("表示キャンバス")]
         [SerializeField]
         private Canvas _canvas;
@@ -42,7 +40,6 @@ namespace Frontier
 
         void Awake()
         {
-            Instance            = this;
             _rectTransform      = GetComponent<RectTransform>();
             var cameraObject    = GameObject.Find("UI_Camera");
             _uiCamera           = cameraObject.GetComponent<Camera>();

@@ -16,9 +16,10 @@ namespace Frontier
         /// </summary>
         public override void InstallBindings()
         {
+            Container.Bind<InputFacade>().AsSingle();
+
             Container.Bind<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
-            Container.Bind<InputFacade>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
             Container.Bind<UISystem>().FromComponentInHierarchy().AsCached();
