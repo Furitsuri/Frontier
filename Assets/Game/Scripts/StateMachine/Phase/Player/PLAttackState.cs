@@ -25,8 +25,6 @@ namespace Frontier
         /// </summary>
         override public void Init()
         {
-            var btlUIInstance = BattleUISystem.Instance;
-
             base.Init();
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
@@ -53,7 +51,7 @@ namespace Frontier
                 _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
 
                 // アタックカーソルUI表示
-                btlUIInstance.ToggleAttackCursorP2E(true);
+                _uiSystem.BattleUi.ToggleAttackCursorP2E(true);
             }
 
             // 攻撃シーケンスを初期化
@@ -62,8 +60,6 @@ namespace Frontier
 
         public override bool Update()
         {
-            var btlUIInstance = BattleUISystem.Instance;
-
             if (base.Update())
             {
                 return true;
@@ -95,7 +91,7 @@ namespace Frontier
                     }
 
                     // ダメージ予測表示UIを表示
-                    btlUIInstance.ToggleBattleExpect(true);
+                    _uiSystem.BattleUi.ToggleBattleExpect(true);
 
                     // 使用スキルを選択する
                     _attackCharacter.SelectUseSkills(SkillsData.SituationType.ATTACK);
@@ -117,10 +113,10 @@ namespace Frontier
                             _stageCtrl.SetGridCursorActive(false);
                             
                             // アタックカーソルUI非表示
-                            btlUIInstance.ToggleAttackCursorP2E(false);
+                            _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
 
                             // ダメージ予測表示UIを非表示
-                            btlUIInstance.ToggleBattleExpect(false);
+                            _uiSystem.BattleUi.ToggleBattleExpect(false);
 
                             // グリッド状態の描画をクリア
                             _stageCtrl.ClearGridMeshDraw();
@@ -153,8 +149,6 @@ namespace Frontier
 
         public override void Exit()
         {
-            var btlUIInstance = BattleUISystem.Instance;
-
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
@@ -172,18 +166,18 @@ namespace Frontier
             _btlRtnCtrl.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
 
             // アタックカーソルUI非表示
-            btlUIInstance.ToggleAttackCursorP2E(false);
+            _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
 
             // ダメージ予測表示UIを非表示
-            btlUIInstance.ToggleBattleExpect(false);
+            _uiSystem.BattleUi.ToggleBattleExpect(false);
 
             // 使用スキルの点滅を非表示
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                btlUIInstance.GetPlayerParamSkillBox(i).SetFlickEnabled(false);
-                btlUIInstance.GetPlayerParamSkillBox(i).SetUseable(true);
-                btlUIInstance.GetEnemyParamSkillBox(i).SetFlickEnabled(false);
-                btlUIInstance.GetEnemyParamSkillBox(i).SetUseable(true);
+                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetFlickEnabled(false);
+                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetUseable(true);
+                _uiSystem.BattleUi.GetEnemyParamSkillBox(i).SetFlickEnabled(false);
+                _uiSystem.BattleUi.GetEnemyParamSkillBox(i).SetUseable(true);
             }
 
             // 使用スキルコスト見積もりをリセット

@@ -45,14 +45,14 @@ namespace Frontier.Battle
         private UISystem _uiSystem              = null;
 
         private BattlePhase _phase;
-        private BattleFileLoader _btlFileLoader             = null;
-        private BattleCameraController _battleCameraCtrl    = null;
-        private BattleUISystem _battleUi                    = null;
-        private SkillController _skillCtrl                  = null;
-        private PhaseManagerBase _currentPhaseManager       = null;
-        private BattleCharacterCoordinator _btlCharaCdr     = null;
-        private BattleTimeScaleController _battleTimeScaleCtrl = new();
-        private PhaseManagerBase[] _phaseManagers = new PhaseManagerBase[((int)TurnType.NUM)];
+        private BattleFileLoader _btlFileLoader                 = null;
+        private BattleCameraController _battleCameraCtrl        = null;
+        private BattleUISystem _battleUi                        = null;
+        private SkillController _skillCtrl                      = null;
+        private PhaseManagerBase _currentPhaseManager           = null;
+        private BattleCharacterCoordinator _btlCharaCdr         = null;
+        private BattleTimeScaleController _battleTimeScaleCtrl  = new();
+        private PhaseManagerBase[] _phaseManagers               = new PhaseManagerBase[((int)TurnType.NUM)];
         
         private bool _transitNextPhase = false;
         private int _phaseManagerIndex = 0;
@@ -66,9 +66,10 @@ namespace Frontier.Battle
         /// <summary>
         /// Diコンテナから引数を注入します
         /// </summary>
-        /// <param name="container">DIコンテナ</param>
         /// <param name="installer">DIインストーラ</param>
         /// <param name="hierarchyBld">オブジェクト・コンポーネント作成</param>
+        /// <param name="inputFcd">入力システムのファサード</param>
+        /// <param name="stgCtrl">ステージのコントローラ</param>
         /// <param name="uiSystem">UIシステム</param>
         [Inject]
         void Construct(DiInstaller installer, HierarchyBuilder hierarchyBld, InputFacade inputFcd, StageController stgCtrl, UISystem uiSystem)
@@ -96,19 +97,22 @@ namespace Frontier.Battle
             if (_skillCtrl == null)
             {
                 _skillCtrl = _hierarchyBld.CreateComponentAndOrganize<SkillController>(_skillCtrlObject, true);
+                DebugUtils.NULL_ASSERT(_skillCtrl);
             }
 
             if( _btlFileLoader == null )
             {
                 _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true,  false);
+                DebugUtils.NULL_ASSERT(_btlFileLoader);
             }
 
             if (_btlCharaCdr == null)
             {
                 _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>();
+                DebugUtils.NULL_ASSERT(_btlCharaCdr);
             }
 
-            _battleUi = _uiSystem.BattleUI;
+            _battleUi = _uiSystem.BattleUi;
             _installer.InstallBindings<BattleUISystem>( _battleUi );
 
             Init();

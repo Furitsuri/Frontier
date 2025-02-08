@@ -50,7 +50,7 @@ namespace Frontier
         public void Construct( InputFacade inputFcd, BattleRoutineController btlRtnCtrl )
         {
             _inputFcd   = inputFcd;
-            _btlRtnCtrl     = btlRtnCtrl;
+            _btlRtnCtrl = btlRtnCtrl;
         }
 
         void Awake()

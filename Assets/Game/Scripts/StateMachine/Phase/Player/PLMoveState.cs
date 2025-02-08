@@ -1,14 +1,15 @@
 ﻿using Frontier.Stage;
 using Frontier.Entities;
+using Frontier;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Frontier
 {
-    public class PLMoveState : PhaseStateBase
+    public class PlMoveState : PhaseStateBase
     {
-        private enum PLMovePhase
+        private enum PlMovePhase
         {
             PL_MOVE_SELECT_GRID = 0,
             PL_MOVE_EXECUTE,
@@ -16,7 +17,7 @@ namespace Frontier
             PL_MOVE_END,
         }
 
-        private PLMovePhase _Phase = PLMovePhase.PL_MOVE_SELECT_GRID;
+        private PlMovePhase _Phase = PlMovePhase.PL_MOVE_SELECT_GRID;
         private int _departGridIndex = -1;
         private int _movingIndex = 0;
         private Player _selectPlayer = null;
@@ -29,7 +30,7 @@ namespace Frontier
             base.Init();
 
             _movingIndex = 0;
-            _Phase = PLMovePhase.PL_MOVE;
+            _Phase = PlMovePhase.PL_MOVE;
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
@@ -65,11 +66,7 @@ namespace Frontier
 
             switch (_Phase)
             {
-                case PLMovePhase.PL_MOVE_SELECT_GRID:
-                    List<InputGuideUI.InputGuide> keyGuideList = new List<InputGuideUI.InputGuide>();
-                    keyGuideList.Add(new InputGuideUI.InputGuide( Constants.KeyIcon.ALL_CURSOR, "Move" ));
-                    SetInputGuides(keyGuideList);
-
+                case PlMovePhase.PL_MOVE_SELECT_GRID:
                     // グリッドの操作
                     stageGrid.OperateGridCursor();
 
@@ -83,7 +80,7 @@ namespace Frontier
                         {
                             // 移動実行処理へ遷移
                             int destIndex = stageGrid.GetCurrentGridIndex();
-                            _Phase = PLMovePhase.PL_MOVE_EXECUTE;
+                            _Phase = PlMovePhase.PL_MOVE_EXECUTE;
 
                             // 移動候補を登録し、最短経路を求める
                             List<int> candidateRouteIndexs = new List<int>(64);
@@ -115,11 +112,11 @@ namespace Frontier
                             // グリッド情報更新
                             _selectPlayer.tmpParam.gridIndex = destIndex;
 
-                            _Phase = PLMovePhase.PL_MOVE_EXECUTE;
+                            _Phase = PlMovePhase.PL_MOVE_EXECUTE;
                         }
                     }
                     break;
-                case PLMovePhase.PL_MOVE_EXECUTE:
+                case PlMovePhase.PL_MOVE_EXECUTE:
                     Vector3 dir = (_moveGridPos[_movingIndex] - _PLTransform.position).normalized;
                     _PLTransform.position += dir * Constants.CHARACTER_MOVE_SPEED * Time.deltaTime;
                     _PLTransform.rotation = Quaternion.LookRotation(dir);
@@ -132,11 +129,11 @@ namespace Frontier
                         if (_moveGridPos.Count <= _movingIndex)
                         {
                             _selectPlayer.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
-                            _Phase = PLMovePhase.PL_MOVE_END;
+                            _Phase = PlMovePhase.PL_MOVE_END;
                         }
                     }
                     break;
-                case PLMovePhase.PL_MOVE:
+                case PlMovePhase.PL_MOVE:
                     // 対象プレイヤーの操作
                     if (_selectPlayer.IsAcceptableMovementOperation( stageGrid.GetGridSize() ))
                     {
@@ -172,12 +169,12 @@ namespace Frontier
                                 Back();
                             // キャラクターが存在していないことを確認
                             else if( 0 == ( infor.flag & ( StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)) )
-                                _Phase = PLMovePhase.PL_MOVE_END;
+                                _Phase = PlMovePhase.PL_MOVE_END;
                             break;
                         }
                     }
                     break;
-                case PLMovePhase.PL_MOVE_END:
+                case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
                     _selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
                     // コマンド選択に戻る

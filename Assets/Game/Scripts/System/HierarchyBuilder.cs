@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using System;
 using UnityEngine;
 using Zenject;
 
@@ -94,7 +95,8 @@ namespace Frontier
             }
 
             // 名前空間の末尾部分の文字列で判定を行う
-            string[] parts = original.GetType().Namespace.Split('.');
+            var ns = original.GetType().Namespace;
+            string[] parts = ns != null ? ns.Split('.') : Array.Empty<string>();
             return 1 <= parts.Length ? parts[parts.Length - 1] switch
             {
                 "Camera" => _cameraObj,
@@ -167,10 +169,10 @@ namespace Frontier
         /// <typeparam name="T">作成するコンポーネントの型</typeparam>
         /// <param name="initActive">作成したオブジェクトの初期の有効・無効状態</param>
         /// <returns>作成したコンポーネント</returns>
-        public T CreateComponentAndOrganize<T>( bool initActive) where T : Behaviour
+        public T CreateComponentAndOrganize<T>( bool initActive ) where T : Behaviour
         {
             T generateCpt = _generator.GenerateObjectAndAddComponent<T>(initActive);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             Organize(generateCpt);
 
@@ -187,7 +189,7 @@ namespace Frontier
         public T CreateComponentAndOrganize<T>(GameObject gameObject, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             Organize(generateCpt);
 
@@ -206,7 +208,7 @@ namespace Frontier
         public T CreateComponentWithNestedParent<T>(GameObject gameObject, GameObject parentObject, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             generateCpt.transform.parent = parentObject.transform;
 
@@ -227,7 +229,7 @@ namespace Frontier
         public T CreateComponentWithNestedNewDirectory<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
             folderObject.transform.parent = parentObject.transform;
@@ -244,9 +246,8 @@ namespace Frontier
         /// <returns>作成したコンポーネント</returns>
         public T CreateComponentAndOrganizeWithDiContainer<T>( bool initActive, bool isBind ) where T : Behaviour
         {
-            GameObject gameObj = new GameObject();
-            T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            Debug.Assert(generateCpt != null);
+            T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(initActive, isBind);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             Organize(generateCpt);
 
@@ -263,7 +264,7 @@ namespace Frontier
         public T CreateComponentAndOrganizeWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             Organize(generateCpt);
 
@@ -282,7 +283,7 @@ namespace Frontier
         public T CreateComponentNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             generateCpt.transform.parent = parentObject.transform;
 
@@ -303,7 +304,7 @@ namespace Frontier
         public T CreateComponentNestedNewDirectoryWithDiContainer<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive, bool isBind) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            Debug.Assert(generateCpt != null);
+            DebugUtils.NULL_ASSERT(generateCpt);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
             folderObject.transform.parent = parentObject.transform;

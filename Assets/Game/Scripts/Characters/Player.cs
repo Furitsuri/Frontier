@@ -99,7 +99,7 @@ namespace Frontier.Entities
 
                 // 指定されたタイプ以外のスキルは無視する
                 var skillType = SkillsData.data[(int)param.equipSkills[i]].Type;
-                BattleUISystem.Instance.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
+                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
                 if (skillType != type)
                 {
                     continue;
@@ -137,7 +137,7 @@ namespace Frontier.Entities
                         skillModifiedParam.DefMagnification -= skillData.AddDefMag;
                     }
 
-                    BattleUISystem.Instance.GetPlayerParamSkillBox(i).SetFlickEnabled(tmpParam.isUseSkills[i]);
+                    _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetFlickEnabled(tmpParam.isUseSkills[i]);
                 }
             }
         }

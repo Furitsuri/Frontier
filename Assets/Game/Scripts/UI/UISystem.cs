@@ -6,10 +6,11 @@ namespace Frontier
 {
     public class UISystem : MonoBehaviour
     {
-        private GeneralUISystem _generarlUI = null;
-        private BattleUISystem _battleUI = null;
+        private GeneralUISystem _generarlUi = null;
+        private BattleUISystem _battleUi    = null;
 
-        public BattleUISystem BattleUI => _battleUI;
+        public GeneralUISystem GeneralUi => _generarlUi;
+        public BattleUISystem BattleUi => _battleUi;
 
         /// <summary>
         /// UIのカテゴリを示すインデックス値です
@@ -26,16 +27,16 @@ namespace Frontier
             Transform childGeneralUI = transform.GetChild( (int)ChildIndex.General );
             if( childGeneralUI != null )
             {
-                _generarlUI = childGeneralUI.GetComponent<GeneralUISystem>();
+                _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
             }
-            Debug.Assert( _generarlUI != null );
+            Debug.Assert( _generarlUi != null );
 
             Transform childBattleUI = transform.GetChild( (int)ChildIndex.Battle );
             if( childBattleUI != null )
             {
-                _battleUI = childBattleUI.GetComponent<BattleUISystem>();
+                _battleUi = childBattleUI.GetComponent<BattleUISystem>();
             }
-            Debug.Assert( _battleUI != null );
+            Debug.Assert( _battleUi != null );
         }
     }
 }

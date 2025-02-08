@@ -33,7 +33,6 @@ namespace Frontier
             }
 
             // UI側へこのスクリプトを登録し、UIを表示
-            var instance = BattleUISystem.Instance;
             List<Character.Command.COMMAND_TAG> executableCommands;
             _selectPlayer.FetchExecutableCommand(out executableCommands, _stageCtrl);
 
@@ -47,9 +46,9 @@ namespace Frontier
             SelectCommandIndex = _commandList.GetCurrentIndex();
             SelectCommandValue = _commandList.GetCurrentValue();
 
-            instance.PLCommandWindow.RegistPLCommandScript(this);
-            instance.PLCommandWindow.SetExecutableCommandList(executableCommands);
-            instance.TogglePLCommand(true);
+            _uiSystem.BattleUi.PLCommandWindow.RegistPLCommandScript(this);
+            _uiSystem.BattleUi.PLCommandWindow.SetExecutableCommandList(executableCommands);
+            _uiSystem.BattleUi.TogglePLCommand(true);
         }
 
         override public bool Update()
@@ -95,7 +94,7 @@ namespace Frontier
         override public void Exit()
         {
             // UIを非表示
-            BattleUISystem.Instance.TogglePLCommand(false);
+            _uiSystem.BattleUi.TogglePLCommand(false);
 
             base.Exit();
         }

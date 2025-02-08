@@ -1,7 +1,4 @@
 ﻿using Frontier;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro.EditorUtilities;
 using UnityEngine;
 using Zenject;
 
@@ -58,11 +55,36 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
-    /// DIコンテナを用いて指定のゲームオブジェクトとコンポーネントを作成します
+    /// DIコンテナを用いて、指定のゲームオブジェクトをコンポーネントを付与する形で作成します
+    /// </summary>
+    /// <typeparam name="T">作成するコンポーネントの型</typeparam>
+    /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
+    /// <param name="isBind">DIコンテナにバインドするか否か</param>
+    /// <returns>作成したコンポーネント</returns>
+    public T InstantiateComponentWithDiContainer<T>(bool initActive, bool isBind) where T : Behaviour
+    {
+        GameObject gameObj = new GameObject();
+        T original = _container.InstantiatePrefabForComponent<T>(gameObj.AddComponent<T>().gameObject);
+        Debug.Assert(original != null);
+
+        original.gameObject.SetActive(initActive);
+
+        // Diコンテナにバインドする場合はここでバインド
+        if (isBind)
+        {
+            _installer.InstallBindings(original);
+        }
+
+        return original;
+    }
+
+    /// <summary>
+    /// DIコンテナを用いて、指定のゲームオブジェクトとコンポーネントを作成します
     /// </summary>
     /// <typeparam name="T">作成するコンポーネントの型</typeparam>
     /// <param name="gameObject">作成するオブジェクト</param>
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
+    /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
     public T InstantiateComponentWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
     {
@@ -81,7 +103,7 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
-    /// Diコンテナを用いてインスタンスを作成します
+    /// Diコンテナを用いて、インスタンスを作成します
     /// </summary>
     /// <typeparam name="T">作成するインスタンスの型</typeparam>
     /// <returns>作成したインスタンス</returns>
