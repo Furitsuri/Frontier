@@ -18,7 +18,7 @@ namespace Frontier
         private List<TextMeshProUGUI> _commandTexts = new List<TextMeshProUGUI>();
         private RectTransform _commandUIBaseRectTransform;
         private VerticalLayoutGroup _cmdTextVerticalLayout;
-        private PLSelectCommandState _PLSelectScript;
+        private PlSelectCommandState _PlSelectScript;
         private string[] _commandStrings;
 
         void Awake()
@@ -70,7 +70,7 @@ namespace Frontier
             }
 
             // 選択項目を赤色に設定
-            _commandTexts[_PLSelectScript.SelectCommandIndex].color = Color.red;
+            _commandTexts[_PlSelectScript.SelectCommandIndex].color = Color.red;
         }
 
         /// <summary>
@@ -89,9 +89,9 @@ namespace Frontier
         /// プレイヤーコマンドのスクリプトを登録します
         /// </summary>
         /// <param name="script">プレイヤーコマンドのスクリプト</param>
-        public void RegistPLCommandScript(Frontier.PLSelectCommandState script)
+        public void RegistPLCommandScript(Frontier.PlSelectCommandState script)
         {
-            _PLSelectScript = script;
+            _PlSelectScript = script;
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Frontier
             // 実行可能なコマンドの文字列をリストに追加し、そのゲームオブジェクトを子として登録
             for (int i = 0; i < executableCommands.Count; ++i)
             {
-                TextMeshProUGUI commandString = _hierarchyBld.CreateComponentAndOrganize<TextMeshProUGUI>(true);
+                TextMeshProUGUI commandString = _hierarchyBld.CreateComponentAndOrganize<TextMeshProUGUI>(_TMPCommandStringSample, true);
                 commandString.transform.SetParent(this.gameObject.transform, false);
                 commandString.SetText(_commandStrings[(int)executableCommands[i]]);
                 _commandTexts.Add(commandString);

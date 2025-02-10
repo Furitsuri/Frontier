@@ -15,7 +15,7 @@ namespace Frontier
         public CharacterParameterPresenter ParameterView;    // キャラクターパラメータ表示
 
         [Header("PlayerCommand")]
-        public PlayerCommandUI PLCommandWindow;         // プレイヤーの選択コマンドUI
+        public PlayerCommandUI PlCommandWindow;         // プレイヤーの選択コマンドUI
 
         [Header("ConfirmTurnEnd")]
         public ConfirmTurnEndUI ConfirmTurnEnd;         // ターン終了確認UI
@@ -71,7 +71,7 @@ namespace Frontier
 
         public void TogglePLCommand(bool isActive)
         {
-            PLCommandWindow.gameObject.SetActive(isActive);
+            PlCommandWindow.gameObject.SetActive(isActive);
         }
 
         public void ToggleBattleExpect(bool isActive)

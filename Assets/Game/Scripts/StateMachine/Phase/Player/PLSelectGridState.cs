@@ -29,7 +29,6 @@ namespace Frontier
                 ( GuideIcon.DECISION,    "Command",     EnableCharacterCommandCallBack, TransitCharacterCommandCallback,    0.0f),
                 ( GuideIcon.ESCAPE,      "TURN END",    InputFacade.Enable,             TransitConfirmTurnEndCallBack,      0.0f)
              );
-            
         }
 
         override public bool Update()
@@ -45,31 +44,11 @@ namespace Frontier
                 return true;
             }
 
-            // グリッドの操作
-#if !VALID_INPUT_CALLBACK
-            _stageCtrl.OperateGridCursor();
-#endif
             Stage.GridInfo info;
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
             int selectCharaIndex = info.charaIndex;
-
-            // TODO : 入力マネージャ側に操作処理を完全に移す試験のため、一旦コメントアウト
-            /*
-            Character character = _btlRtnCtrl.GetSelectCharacter();
-            if (character != null &&
-                 character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
-                 !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
-            {
-                if (Input.GetKeyUp(KeyCode.Space))
-                {
-                    TransitIndex = (int)TransitTag.CharacterCommand;
-
-                    return true;
-                }
-            }
-            */
 
             return ( 0 <= TransitIndex );
         }

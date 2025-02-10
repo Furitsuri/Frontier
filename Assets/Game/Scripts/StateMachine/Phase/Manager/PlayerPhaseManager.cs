@@ -59,7 +59,7 @@ namespace Frontier
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PlSelectGridState>();
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PLSelectCommandState>());
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>());
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PLConfirmTurnEnd>());
             RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlMoveState>());
             RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PLAttackState>());
