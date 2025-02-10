@@ -78,6 +78,35 @@ public class CommandList
         return isUpdated;
     }
 
+    /// <summary>
+    /// 入力情報の更新を行います
+    /// </summary>
+    public void UpdateInput()
+    {
+        if (Input.GetKeyDown(_transitPrevKey))
+        {
+            if (_currentNode == _list.First)
+            {
+                _currentNode = _list.Last;
+            }
+            else
+            {
+                _currentNode = _currentNode.Previous;
+            }
+        }
+        if (Input.GetKeyDown(_transitNextKey))
+        {
+            if (_currentNode == _list.Last)
+            {
+                _currentNode = _list.First;
+            }
+            else
+            {
+                _currentNode = _currentNode.Next;
+            }
+        }
+    }
+
     public void InsertCommand(int index)
     {
         LinkedListNode<int> current = _list.First;

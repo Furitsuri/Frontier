@@ -3661,7 +3661,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canvas: {fileID: 4432964870290022595}
   ParameterView: {fileID: 9086784654231273173}
-  PLCommandWindow: {fileID: 4581502711679434753}
+  PlCommandWindow: {fileID: 4581502711679434753}
   ConfirmTurnEnd: {fileID: 4764275821204993183}
   DamageValue: {fileID: 1401124153645319502}
   Phase: {fileID: 474454664147823673}
