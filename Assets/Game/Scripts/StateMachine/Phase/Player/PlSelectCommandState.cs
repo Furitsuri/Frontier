@@ -9,16 +9,17 @@ namespace Frontier
 {
     public class PlSelectCommandState : PhaseStateBase
     {
-        public int SelectCommandIndex { get; private set; } = 0;
-        public int SelectCommandValue { get; private set; } = 0;
         private Player _selectPlayer;
         private CommandList _commandList = new CommandList();
+        private CommandList.CommandIndexedValue _cmdIdxVal;
 
         /// <summary>
         /// 入力情報を初期化します
         /// </summary>
         private void InitInputInfo()
         {
+            _cmdIdxVal = new CommandList.CommandIndexedValue(0, 0);
+
             // UI側へこのスクリプトを登録し、UIを表示
             List<Character.Command.COMMAND_TAG> executableCommands;
             _selectPlayer.FetchExecutableCommand(out executableCommands, _stageCtrl);
@@ -29,9 +30,7 @@ namespace Frontier
             {
                 commandIndexs.Add((int)executableCmd);
             }
-            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL);
-            SelectCommandIndex = _commandList.GetCurrentIndex();
-            SelectCommandValue = _commandList.GetCurrentValue();
+            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, _cmdIdxVal);
 
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
@@ -92,10 +91,6 @@ namespace Frontier
                 return true;
             }
 
-            // 入力ガイドに_commandList.UpdateInputを登録しているため、IndexやValueは自動で更新される
-            SelectCommandIndex = _commandList.GetCurrentIndex();
-            SelectCommandValue = _commandList.GetCurrentValue();
-
             return (0 <= TransitIndex);
         }
 
@@ -117,8 +112,26 @@ namespace Frontier
         {
             if (Input.GetKeyUp(KeyCode.Space))
             {
-                TransitIndex = SelectCommandValue;
+                TransitIndex = GetCommandValue();
             }
+        }
+
+        /// <summary>
+        /// 現在のコマンドのIndex値を取得します
+        /// </summary>
+        /// <returns>コマンドのIndex値</returns>
+        public int GetCommandIndex()
+        {
+            return _cmdIdxVal.index;
+        }
+
+        /// <summary>
+        /// 現在のコマンドのValue値を取得します
+        /// </summary>
+        /// <returns>コマンドのValue値</returns>
+        public int GetCommandValue()
+        {
+            return _cmdIdxVal.value;
         }
     }
 }

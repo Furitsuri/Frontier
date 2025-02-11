@@ -70,7 +70,7 @@ namespace Frontier
             }
 
             // 選択項目を赤色に設定
-            _commandTexts[_PlSelectScript.SelectCommandIndex].color = Color.red;
+            _commandTexts[_PlSelectScript.GetCommandIndex()].color = Color.red;
         }
 
         /// <summary>
