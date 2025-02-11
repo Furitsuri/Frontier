@@ -87,7 +87,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// キャラクターコマンドの遷移へ移る際のコールバック関数です
         /// </summary>
         public void TransitCharacterCommandCallback()
         {
@@ -98,7 +98,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ターン終了遷移へ移る際のコールバック関数
+        /// ターン終了遷移へ移る際のコールバック関数です
         /// </summary>
         /// <returns>ターン終了の成否</returns>
         public void TransitConfirmTurnEndCallBack()

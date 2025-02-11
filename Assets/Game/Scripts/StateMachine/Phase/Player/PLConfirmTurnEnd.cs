@@ -15,17 +15,20 @@ namespace Frontier
         }
 
         private CommandList _commandList = new CommandList();
+        private CommandList.CommandIndexedValue _cmdIdxVal;
 
         override public void Init()
         {
             base.Init();
+
+            _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
 
             List<int> commandIndexs = new List<int>((int)ConfirmTag.NUM);
             for (int i = 0; i < (int)ConfirmTag.NUM; ++i)
             {
                 commandIndexs.Add(i);
             }
-            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL);
+            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, _cmdIdxVal);
 
             _uiSystem.BattleUi.ToggleConfirmTurnEnd(true);
         }

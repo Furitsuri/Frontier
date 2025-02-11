@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CommandList
@@ -14,13 +14,27 @@ public class CommandList
         NUM,
     }
 
+    /// <summary>
+    /// CommandListを使用するクラスに、このクラスをインスタンスとして持たせて下記Initを用いて参照値を渡すことで、
+    /// CommandList内のUpdateでリストのIndex,Valueを更新させます
+    /// </summary>
+    public class CommandIndexedValue
+    {
+        public int index;
+        public int value;
+
+        public CommandIndexedValue( int i, int v ) { index = i; value = v; }
+    }
+
     private LinkedList<int> _list;
     private LinkedListNode<int> _currentNode;
     private KeyCode _transitPrevKey;
     private KeyCode _transitNextKey;
+    // このクラスを使用するクラス内で、コマンドのIndex値、及びValue値を適応させたい変数を下記2つに設定します
+    private CommandIndexedValue _cmdIdxVal;
 
     // 使用するコマンドのインデックス配列を渡して初期化
-    public void Init(ref List<int> setCommandIndexs, CommandDirection direction )
+    public void Init(ref List<int> setCommandIndexs, CommandDirection direction, CommandIndexedValue cmdIdxVal )
     {
         if (setCommandIndexs.Count <= 0)
         {
@@ -42,6 +56,10 @@ public class CommandList
             _transitPrevKey = KeyCode.LeftArrow;
             _transitNextKey = KeyCode.RightArrow;
         }
+
+        _cmdIdxVal = cmdIdxVal;
+        _cmdIdxVal.index = GetCurrentIndex();
+        _cmdIdxVal.value = GetCurrentValue();
     }
 
     public bool Update()
@@ -83,8 +101,12 @@ public class CommandList
     /// </summary>
     public void UpdateInput()
     {
+        bool isUpdate = false;
+
         if (Input.GetKeyDown(_transitPrevKey))
         {
+            isUpdate = true;
+
             if (_currentNode == _list.First)
             {
                 _currentNode = _list.Last;
@@ -96,6 +118,8 @@ public class CommandList
         }
         if (Input.GetKeyDown(_transitNextKey))
         {
+            isUpdate = true;
+
             if (_currentNode == _list.Last)
             {
                 _currentNode = _list.First;
@@ -104,6 +128,11 @@ public class CommandList
             {
                 _currentNode = _currentNode.Next;
             }
+        }
+
+        if (isUpdate) {
+            _cmdIdxVal.index = GetCurrentIndex();
+            _cmdIdxVal.value = GetCurrentValue();
         }
     }
 
@@ -145,22 +174,15 @@ public class CommandList
         _currentNode = _list.First;
     }
 
-    public int GetCurrentValue()
-    {
-        if (_currentNode == null)
-        {
-            Debug.Assert(false);
-            return 0;
-        }
-
-        return _currentNode.Value;
-    }
-
+    /// <summary>
+    /// 現在のノードのIndex値を取得します
+    /// </summary>
+    /// <returns>現在のノードのIndex値</returns>
     public int GetCurrentIndex()
     {
         if( _currentNode == null )
         {
-            Debug.Assert(false);
+            DebugUtils.NULL_ASSERT(_currentNode);
             return 0;
         }
 
@@ -171,5 +193,20 @@ public class CommandList
         }
 
         return -1;
+    }
+
+    /// <summary>
+    /// 現在のノードのValue値を取得します
+    /// </summary>
+    /// <returns>現在ノードのValue値</returns>
+    public int GetCurrentValue()
+    {
+        if (_currentNode == null)
+        {
+            DebugUtils.NULL_ASSERT(_currentNode);
+            return 0;
+        }
+
+        return _currentNode.Value;
     }
 }
