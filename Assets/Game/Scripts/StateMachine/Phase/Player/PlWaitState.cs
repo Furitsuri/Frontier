@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class PLWaitState : PhaseStateBase
+    public class PlWaitState : PhaseStateBase
     {
         public override void Init()
         {

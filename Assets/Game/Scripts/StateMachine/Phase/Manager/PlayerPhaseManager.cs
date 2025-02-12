@@ -60,10 +60,10 @@ namespace Frontier
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PlSelectGridState>();
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>());
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PLConfirmTurnEnd>());
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>());
             RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlMoveState>());
-            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PLAttackState>());
-            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PLWaitState>());
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlAttackState>());
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlWaitState>());
 
             CurrentNode = RootNode;
         }

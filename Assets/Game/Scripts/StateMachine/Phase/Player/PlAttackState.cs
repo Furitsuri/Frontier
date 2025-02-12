@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class PLAttackState : PhaseStateBase
+    public class PlAttackState : PhaseStateBase
     {
         private enum PLAttackPhase
         {

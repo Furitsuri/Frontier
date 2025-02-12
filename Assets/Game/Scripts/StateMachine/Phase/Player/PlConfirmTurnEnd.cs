@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class PLConfirmTurnEnd : PhaseStateBase
+    public class PlConfirmTurnEnd : PhaseStateBase
     {
         enum ConfirmTag
         {
