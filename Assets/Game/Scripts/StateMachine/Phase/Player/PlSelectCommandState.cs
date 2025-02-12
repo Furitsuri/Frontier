@@ -30,7 +30,7 @@ namespace Frontier
             {
                 commandIndexs.Add((int)executableCmd);
             }
-            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, _cmdIdxVal);
+            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal);
 
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
@@ -108,7 +108,7 @@ namespace Frontier
         /// <summary>
         /// 次のステートに遷移します
         /// </summary>
-        public void TransitNextState()
+        private void TransitNextState()
         {
             if (Input.GetKeyUp(KeyCode.Space))
             {

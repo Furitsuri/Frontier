@@ -33,8 +33,14 @@ public class CommandList
     // このクラスを使用するクラス内で、コマンドのIndex値、及びValue値を適応させたい変数を下記2つに設定します
     private CommandIndexedValue _cmdIdxVal;
 
-    // 使用するコマンドのインデックス配列を渡して初期化
-    public void Init(ref List<int> setCommandIndexs, CommandDirection direction, CommandIndexedValue cmdIdxVal )
+    /// <summary>
+    /// 初期化します
+    /// </summary>
+    /// <param name="setCommandIndexs">操作させたいListの参照</param>
+    /// <param name="direction">リストの方向</param>
+    /// <param name="lastNodeStart">ノードの初期値を末尾にする(falseの場合は先頭)</param>
+    /// <param name="cmdIdxVal">使用側がこのクラスに操作させたいIndexとValue</param>
+    public void Init(ref List<int> setCommandIndexs, CommandDirection direction, bool lastNodeStart, CommandIndexedValue cmdIdxVal )
     {
         if (setCommandIndexs.Count <= 0)
         {
@@ -44,7 +50,7 @@ public class CommandList
 
         _list = new LinkedList<int>(setCommandIndexs);
 
-        _currentNode = _list.First;
+        _currentNode = ( lastNodeStart ) ? _list.Last : _list.First;
 
         if( direction == CommandDirection.VERTICAL )
         {
@@ -60,40 +66,6 @@ public class CommandList
         _cmdIdxVal = cmdIdxVal;
         _cmdIdxVal.index = GetCurrentIndex();
         _cmdIdxVal.value = GetCurrentValue();
-    }
-
-    public bool Update()
-    {
-        bool isUpdated = false;
-
-        if (Input.GetKeyDown(_transitPrevKey))
-        {
-            isUpdated = true;
-
-            if( _currentNode == _list.First )
-            {
-                _currentNode = _list.Last;
-            }
-            else
-            {
-                _currentNode = _currentNode.Previous;
-            }
-        }
-        if (Input.GetKeyDown(_transitNextKey))
-        {
-            isUpdated = true;
-
-            if (_currentNode == _list.Last)
-            {
-                _currentNode = _list.First;
-            }
-            else
-            {
-                _currentNode = _currentNode.Next;
-            }
-        }
-
-        return isUpdated;
     }
 
     /// <summary>
@@ -136,6 +108,10 @@ public class CommandList
         }
     }
 
+    /// <summary>
+    /// 新たにコマンドを挿入します
+    /// </summary>
+    /// <param name="index">挿入目標とするListのIndex</param>
     public void InsertCommand(int index)
     {
         LinkedListNode<int> current = _list.First;
@@ -161,6 +137,11 @@ public class CommandList
         // 存在しなかった場合は末尾に追加
         _list.AddLast(index);
     }
+
+    /// <summary>
+    /// 既存のコマンドを削除します
+    /// </summary>
+    /// <param name="index">削除目標のListのIndex</param>
     public void DeleteCommand(int index)
     {
         foreach (var item in _list)
@@ -186,6 +167,7 @@ public class CommandList
             return 0;
         }
 
+        // LinkedListはFindからindex値を取れないため、順に検索
         int index = 0;
         for( var node = _list.First; node != null; node = node.Next, ++index )
         {
