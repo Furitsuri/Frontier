@@ -52,7 +52,7 @@ namespace Frontier
 
             _uiSystem.BattleUi.ApplyTestColor2ConfirmTurnEndUI(_commandList.GetCurrentValue());
 
-            return (0 <= TransitIndex);
+            return IsBack();
         }
 
         override public void Exit()
@@ -76,9 +76,6 @@ namespace Frontier
                 }
 
                 Back();
-
-                // TransitIndexを0以上の値にすることで次の遷移へ
-                TransitIndex = 0;
             }
         }
     }
