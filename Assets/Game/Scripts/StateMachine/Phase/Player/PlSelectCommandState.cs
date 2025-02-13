@@ -35,7 +35,8 @@ namespace Frontier
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.VERTICAL_CURSOR, "Select",   InputFacade.Enable, _commandList.UpdateInput,   0.0f),
-                (GuideIcon.DECISION,        "Decision", InputFacade.Enable, TransitNextState,           0.0f)
+                (GuideIcon.DECISION,        "Decision", InputFacade.Enable, DetectTransitionInput,      0.0f),
+                (GuideIcon.CANCEL,          "Back",     InputFacade.Enable, DetectRevertInput,          0.0f)
              );
 
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript(this);
@@ -108,7 +109,7 @@ namespace Frontier
         /// <summary>
         /// 次のステートに遷移します
         /// </summary>
-        private void TransitNextState()
+        private void DetectTransitionInput()
         {
             if (Input.GetKeyUp(KeyCode.Space))
             {

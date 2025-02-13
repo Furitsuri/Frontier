@@ -3,6 +3,7 @@ using Frontier.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using static Constants;
 
 namespace Frontier
 {
@@ -26,44 +27,50 @@ namespace Frontier
             _uiSystem       = uiSystem;
         }
 
-        // 初期化
+        /// <summary>
+        /// 初期化します
+        /// </summary>
         virtual public void Init()
         {
             TransitIndex    = -1;
             _isBack         = false;
         }
 
-        // 更新
+        /// <summary>
+        /// 更新します
+        /// </summary>
+        /// <returns>trueである場合は直前のフラグへ遷移</returns>
         virtual public bool Update()
         {
-            if (Input.GetKeyUp(KeyCode.Backspace))
-            {
-                Back();
-
-                return true;
-            }
-
-            return false;
+            return IsBack();
         }
 
         /// <summary>
-        /// キーガイドを更新します
+        /// 現在のステートから退避します
         /// </summary>
-        virtual public void UpdateInputGuide()
-        {
-
-        }
-
-        // 退避
         virtual public void Exit()
         {
             _inputFcd.ResetInputCodes();
         }
 
-        // 戻る
+        /// <summary>
+        /// 以前のステートに戻るフラグを取得します
+        /// </summary>
+        /// <returns>戻るフラグ</returns>
         virtual public bool IsBack()
         {
             return _isBack;
+        }
+
+        /// <summary>
+        /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
+        /// </summary>
+        protected void DetectRevertInput()
+        {
+            if (Input.GetKeyUp(KeyCode.Backspace))
+            {
+                Back();
+            }
         }
 
         /// <summary>

@@ -50,6 +50,15 @@ public class InputFacade
         {
             return new ToggleInputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5 );
         }
+
+        /// <summary>
+        /// 未登録であるかを取得します
+        /// </summary>
+        /// <returns>未登録か否か</returns>
+        public bool IsUnRegistererd()
+        {
+            return ( EnableCb == null );
+        }
     }
 
     private HierarchyBuilder _hierarchyBld      = null;
@@ -125,15 +134,20 @@ public class InputFacade
     }
 
     /// <summary>
+    /// 登録済みの入力コードはそのままに、
     /// 現在のゲーム遷移において有効とする操作入力を画面上に表示するガイドUIと併せて登録します。
-    /// また、そのキーを押下した際の処理をコールバックとして登録します
+    /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
     public void RegisterInputCodes( params ToggleInputCode[] args )
     {
         foreach( var arg in args )
         {
-            _inputCodes[(int)arg.Icon] = arg;
+            // _inputCodesが未登録であれば登録する
+            if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
+            {
+                _inputCodes[(int)arg.Icon] = arg;
+            }
         }
 
         // ガイドアイコンを登録
@@ -143,12 +157,12 @@ public class InputFacade
     /// <summary>
     /// 登録している入力コードを初期化した上で、
     /// 現在のゲーム遷移において有効とする操作入力を画面上に表示するガイドUIと併せて登録します。
-    /// また、そのキーを押下した際の処理をコールバックとして登録します
+    /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
     public void ReRegisterInputCodes( params ToggleInputCode[] args )
     {
-        InitInputCodes();
+        ResetInputCodes();
 
         RegisterInputCodes( args );
     }
