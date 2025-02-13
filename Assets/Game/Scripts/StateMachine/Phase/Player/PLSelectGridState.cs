@@ -25,9 +25,9 @@ namespace Frontier
             
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR,  "Move",        InputFacade.Enable,             _stageCtrl.OperateGridCursor,       0.0f),
-                ( GuideIcon.DECISION,    "Command",     EnableCharacterCommandCallBack, TransitCharacterCommandCallback,    0.0f),
-                ( GuideIcon.ESCAPE,      "TURN END",    InputFacade.Enable,             TransitConfirmTurnEndCallBack,      0.0f)
+                ( GuideIcon.ALL_CURSOR, "Move",     InputFacade.Enable,     _stageCtrl.OperateGridCursor, 0.0f),
+                ( GuideIcon.DECISION,   "Command",  EnableCharacterCommand, DetectTransitCommandInput,    0.0f),
+                ( GuideIcon.ESCAPE,     "TURN END", InputFacade.Enable,     DetectTransitTurnEndInput,    0.0f)
              );
         }
 
@@ -68,7 +68,7 @@ namespace Frontier
         /// キャラクターコマンド遷移へ移る際のコールバック関数
         /// </summary>
         /// <returns></returns>
-        public bool EnableCharacterCommandCallBack()
+        public bool EnableCharacterCommand()
         {
             if ( 0 <= TransitIndex )
             {
@@ -89,7 +89,7 @@ namespace Frontier
         /// <summary>
         /// キャラクターコマンドの遷移へ移る際のコールバック関数です
         /// </summary>
-        public void TransitCharacterCommandCallback()
+        public void DetectTransitCommandInput()
         {
             if( Input.GetKeyUp(KeyCode.Space) )
             {
@@ -101,7 +101,7 @@ namespace Frontier
         /// ターン終了遷移へ移る際のコールバック関数です
         /// </summary>
         /// <returns>ターン終了の成否</returns>
-        public void TransitConfirmTurnEndCallBack()
+        public void DetectTransitTurnEndInput()
         {
             // ターン終了確認へ遷移
             if (Input.GetKeyUp(KeyCode.Escape))
