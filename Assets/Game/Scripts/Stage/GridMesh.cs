@@ -22,11 +22,21 @@ namespace Frontier.Stage
 
         void Awake()
         {
-            meshFilter = GetComponent<MeshFilter>();
-            meshRenderer = GetComponent<MeshRenderer>();
+            meshFilter      = GetComponent<MeshFilter>();
+            meshRenderer    = GetComponent<MeshRenderer>();
+
+            /*
+            // ステージグリッドに自身を登録
+            ManagerProvider.Instance.GetService<StageController>().AddGridMeshToList(this);
+            */
         }
 
-        // グリッドのメッシュを描画
+        /// <summary>
+        /// グリッドのメッシュを描画します
+        /// </summary>
+        /// <param name="position">メッシュを描画する座標の中心点</param>
+        /// <param name="gridSize">グリッドのサイズ</param>
+        /// <param name="meshType">メッシュタイプ</param>
         public void DrawGridMesh(in Vector3 position, float gridSize, MeshType meshType)
         {
             var mesh = new Mesh();
@@ -46,9 +56,9 @@ namespace Frontier.Stage
 
             Color[] colors = new Color[]
             {
-            new Color(0f, 0f, 1f, 0.65f),
-            new Color(1f, 0f, 0f, 0.65f),
-            new Color(1f, 1f, 0f, 0.65f),
+                new Color(0f, 0f, 1f, 0.65f),
+                new Color(1f, 0f, 0f, 0.65f),
+                new Color(1f, 1f, 0f, 0.65f),
             };
             Debug.Assert(colors.Length == (int)MeshType.NUM_MAX, "Mesh type num is incorrect.");
 
@@ -59,6 +69,9 @@ namespace Frontier.Stage
             meshFilter.sharedMesh = mesh;
         }
 
+        /// <summary>
+        /// メッシュの描画を消去します
+        /// </summary>
         public void ClearDraw()
         {
             meshFilter.sharedMesh = null;
