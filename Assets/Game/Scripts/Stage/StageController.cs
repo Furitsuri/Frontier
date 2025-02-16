@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Xml.Xsl;
 using UnityEditor;
 using UnityEngine;
-using Zenject.SpaceFighter;
+using Zenject;
 
 namespace Frontier.Stage
 {
@@ -54,6 +54,7 @@ namespace Frontier.Stage
         public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
 
         public bool back = true;
+        private HierarchyBuilder _hierarchyBld = null;
         private BattleRoutineController _btlRtnCtrl;
         private Mesh _mesh;
         private GridCursor _gridCursor;
@@ -67,16 +68,17 @@ namespace Frontier.Stage
         
         public int GridTotalNum { get; private set; } = 0;
 
+        [Inject]
+        public void Construct( HierarchyBuilder hierarchyBld )
+        {
+            _hierarchyBld = hierarchyBld;
+        }
+
         void Awake()
         {
             _gridMeshs = new List<GridMesh>();
             _attackableGridIndexs = new List<int>();
 
-            // 生成したグリッドメッシュを登録
-            foreach (GridMesh grid in _gridMeshs)
-            {
-                AddGridMeshToList(grid);
-            }
             GameObject gridCursorObject = Instantiate(_gridCursorObject);
             if (gridCursorObject != null)
             {
@@ -609,36 +611,53 @@ namespace Frontier.Stage
         /// <param name="attackableRange">攻撃可能範囲値</param>
         public void DrawMoveableGrids(int departIndex, int moveableRange, int attackableRange)
         {
-            Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
+            Debug.Assert( 0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index." );
 
             int count = 0;
+
+            // 3つの条件毎に異なるメッシュタイプやデバッグ表示があるため、
+            // for文で判定するためにそれぞれを配列化
+            GridMesh.MeshType[] meshTypes =
+            {
+                GridMesh.MeshType.ATTACKABLE_TARGET,
+                GridMesh.MeshType.MOVE,
+                GridMesh.MeshType.ATTACK
+            };
+
+            string[] dbgStrs =
+            {
+                "Attackable Target Grid Index : ",
+                "Moveable Grid Index : ",
+                "Attackable Grid Index : "
+            };
+
             // グリッドの状態をメッシュで描画
             for (int i = 0; i < GridTotalNum; ++i)
             {
-                if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE_TARGET))
+                var info = _gridInfo[i];
+
+                bool[] conditions =
                 {
-                    Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACKABLE_TARGET);
+                    Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE_TARGET),
+                    (0 <= info.estimatedMoveRange),
+                    Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE)
+                };
 
-                    continue;
-                }
-
-                if (0 <= _gridInfo[i].estimatedMoveRange)
+                for( int j = 0; j < meshTypes.Length; ++j )
                 {
-                    Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.MOVE);
+                    if( conditions[j] )
+                    {
+                        var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>(_gridMeshObject, true);
+                        DebugUtils.NULL_ASSERT(gridMesh);
+                        if (gridMesh != null)
+                        {
+                            _gridMeshs.Add(gridMesh);
+                            _gridMeshs[count++].DrawGridMesh(info.charaStandPos, GetGridSize(), meshTypes[j]);
+                        }
+                        Debug.Log(dbgStrs[j] + i);
 
-                    Debug.Log("Moveable Grid Index : " + i);
-                    continue;
-                }
-
-                if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
-                {
-                    Instantiate(_gridMeshObject);  // TODO : 仮
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
-
-                    Debug.Log("Attackable Grid Index : " + i);
-                    continue;
+                        break;
+                    }
                 }
             }
         }

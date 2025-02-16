@@ -4,6 +4,7 @@ using Frontier;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static Constants;
 
 namespace Frontier
 {
@@ -28,6 +29,12 @@ namespace Frontier
         override public void Init()
         {
             base.Init();
+
+            _inputFcd.RegisterInputCodes(
+                (GuideIcon.ALL_CURSOR,  "Move", InputFacade.Enable, null, 0.0f),
+                (GuideIcon.DECISION,    "Decision", InputFacade.Enable, null, 0.0f),
+                (GuideIcon.CANCEL,      "Back", InputFacade.Enable, DetectRevertInput, 0.0f)
+             );
 
             _movingIndex = 0;
             _Phase = PlMovePhase.PL_MOVE;
