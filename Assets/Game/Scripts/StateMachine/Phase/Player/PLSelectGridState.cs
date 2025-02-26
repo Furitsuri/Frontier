@@ -4,7 +4,7 @@ using static Constants;
 
 namespace Frontier
 {
-    public class PlSelectGridState : PhaseStateBase
+    public class PlSelectGridState : PlPhaseStateBase
     {
         /// <summary>
         /// 遷移先を示すタグ
@@ -25,9 +25,9 @@ namespace Frontier
             
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR, "Move",     InputFacade.Enable,     _stageCtrl.OperateGridCursor, 0.0f),
-                ( GuideIcon.DECISION,   "Command",  EnableCharacterCommand, DetectTransitCommandInput,    0.0f),
-                ( GuideIcon.ESCAPE,     "TURN END", InputFacade.Enable,     DetectTransitTurnEndInput,    0.0f)
+                ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,     _stageCtrl.OperateGridCursor, 0.0f),
+                ( GuideIcon.DECISION,   "Command",  CanAcceptInputCommand, DetectTransitCommandInput,    0.0f),
+                ( GuideIcon.ESCAPE,     "TURN END", CanAcceptInputDefault,     DetectTransitTurnEndInput,    0.0f)
              );
         }
 
@@ -67,8 +67,8 @@ namespace Frontier
         /// <summary>
         /// キャラクターコマンド遷移へ移る際のコールバック関数
         /// </summary>
-        /// <returns></returns>
-        public bool EnableCharacterCommand()
+        /// <returns>コマンド選択が可能か</returns>
+        public bool CanAcceptInputCommand()
         {
             if ( 0 <= TransitIndex )
             {
@@ -78,7 +78,7 @@ namespace Frontier
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if (character != null &&
                  character.param.characterTag == Character.CHARACTER_TAG.PLAYER &&
-                 !character.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
+                 !character.IsEndAction())
             {
                 return true;
             }

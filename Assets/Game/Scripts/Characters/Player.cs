@@ -5,26 +5,28 @@ namespace Frontier.Entities
 {
     public class Player : Character
     {
+        /// <summary>
+        /// プレイヤーキャラクターが移動を開始する前の情報です
+        /// 移動後に状態を巻き戻す際に使用します
+        /// </summary>
+        private struct PrevMoveInfo
+        {
+            public TmpParameter tmpParam;
+            public Quaternion rotDir;
+
+            /// <summary>
+            /// 情報をリセットします
+            /// </summary>
+            public void Reset()
+            {
+                tmpParam.Reset();
+                rotDir = Quaternion.identity;
+            }
+        }
+
         private bool _isPrevMoving = false;
         private Vector3 _movementDestination = Vector3.zero;
-
-        /// <summary>
-        /// 移動入力受付の可否判定を行います
-        /// </summary>
-        /// <returns>移動入力の受付可否</returns>
-        public bool IsAcceptableMovementOperation( float gridSize )
-        {
-            if( _isPrevMoving )
-            {
-                var diff = _movementDestination - transform.position;
-                diff.y = 0;
-                if(diff.sqrMagnitude <= Mathf.Pow( gridSize * Constants.ACCEPTABLE_INPUT_GRID_SIZE_RATIO, 2f ) ) return true;
-
-                return false;
-            }
-
-            return true;
-        }
+        private PrevMoveInfo _prevMoveInfo;
 
         /// <summary>
         /// プレイヤーキャラクターの移動時の更新処理を行います
@@ -42,11 +44,11 @@ namespace Frontier.Entities
                 tmpParam.gridIndex = gridIndex;
             }
 
-            Vector3 dir = (_movementDestination - transform.position).normalized;
-            Vector3 afterPos = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * Time.deltaTime;
-            Vector3 afterDir = (_movementDestination - afterPos);
-            afterDir.y = 0f;
-            afterDir = afterDir.normalized;
+            Vector3 dir         = (_movementDestination - transform.position).normalized;
+            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * Time.deltaTime;
+            Vector3 afterDir    = (_movementDestination - afterPos);
+            afterDir.y          = 0f;
+            afterDir            = afterDir.normalized;
             if (Vector3.Dot(dir, afterDir) <= 0)
             {
                 transform.position = _movementDestination;
@@ -64,6 +66,61 @@ namespace Frontier.Entities
             }
 
             if (toggleAnimation) AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving);
+        }
+
+        /// <summary>
+        /// 現在の移動前情報を適応します
+        /// </summary>
+        public void AdaptPrevMoveInfo()
+        {
+            _prevMoveInfo.tmpParam  = tmpParam.Clone();
+            _prevMoveInfo.rotDir    = transform.rotation;
+        }
+
+        /// <summary>
+        /// 移動前情報をリセットします
+        /// </summary>
+        public void ResetPrevMoveInfo()
+        {
+            _prevMoveInfo.Reset();
+        }
+
+        /// <summary>
+        /// コマンドの可否や位置を以前の状態に巻き戻します
+        /// </summary>
+        public void RewindToPreviousState()
+        {
+            tmpParam = _prevMoveInfo.tmpParam;
+            SetPosition( tmpParam.gridIndex, _prevMoveInfo.rotDir );
+            // グリッド情報を更新
+            _stageCtrl.UpdateGridInfo();
+        }
+
+        /// <summary>
+        /// 移動入力受付の可否判定を行います
+        /// </summary>
+        /// <returns>移動入力の受付可否</returns>
+        public bool IsAcceptableMovementOperation(float gridSize)
+        {
+            if (_isPrevMoving)
+            {
+                var diff = _movementDestination - transform.position;
+                diff.y = 0;
+                if (diff.sqrMagnitude <= Mathf.Pow(gridSize * Constants.ACCEPTABLE_INPUT_GRID_SIZE_RATIO, 2f)) return true;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 移動後などに直前のコマンド状態に戻れるかどうかを取得します
+        /// </summary>
+        /// <returns>直前のコマンドに戻れるか否か</returns>
+        public bool IsRewindStatePossible()
+        {
+            return true;
         }
 
         /// <summary>

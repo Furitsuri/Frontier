@@ -31,7 +31,7 @@ namespace Frontier
 
                 var tmpParam = _currentEnemy.tmpParam;
 
-                if (IsTransitNextCharacter(tmpParam))
+                if (ShouldTransitionToNextCharacter(_currentEnemy))
                 {
                     continue;
                 }
@@ -61,18 +61,19 @@ namespace Frontier
             }
         }
 
-        public override bool Update()
+        override public bool Update()
         {
-            int gridIndex;
-            Character targetCharacter;
+            // TODO : FetchDestinationAndTargetのくだりが必要かもしれないけど、一旦コメントアウト
 
-            if (IsBack()) return true;
+            // int gridIndex;
+            // Character targetCharacter = null;
 
-            var tmpParam = _currentEnemy.tmpParam;
-            _currentEnemy.FetchDestinationAndTarget(out gridIndex, out targetCharacter);
+            if ( IsBack() ) return true;
+
+            // _currentEnemy.FetchDestinationAndTarget( out gridIndex, out targetCharacter );
 
             // 移動行動に遷移するか
-            if (IsTransitMove(tmpParam))
+            if ( ShouldTransitionToMove( _currentEnemy ) )
             {
                 TransitIndex = (int)Character.Command.COMMAND_TAG.MOVE;
 
@@ -80,7 +81,7 @@ namespace Frontier
             }
 
             // 攻撃行動に遷移するか
-            if (IsTransitAttack(tmpParam))
+            if ( ShouldTransitionToAttack( _currentEnemy ) )
             {
                 TransitIndex = (int)Character.Command.COMMAND_TAG.ATTACK;
 
@@ -90,34 +91,48 @@ namespace Frontier
             return false;
         }
 
-        private bool IsTransitMove(Character.TmpParameter tmpParam)
+        /// <summary>
+        /// 移動コマンドに遷移するかを取得します
+        /// </summary>
+        /// <param name="em">判定する敵キャラクター</param>
+        /// <returns>遷移するか否か</returns>
+        private bool ShouldTransitionToMove( Enemy em )
         {
             if (!_isValidDestination) return false;
 
-            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.MOVE)) return false;
-
-
-            return true;
-        }
-
-        private bool IsTransitAttack(Character.TmpParameter tmpParam)
-        {
-            if (!_isValidTarget) return false;
-
-            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.ATTACK)) return false;
+            if ( em.IsEndCommand( Character.Command.COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
 
-        private bool IsTransitNextCharacter(Character.TmpParameter tmpParam)
+        /// <summary>
+        /// 攻撃コマンドに遷移するかを取得します
+        /// </summary>
+        /// <param name="em">判定する敵キャラクター</param>
+        /// <returns>遷移するか否か</returns>
+        private bool ShouldTransitionToAttack( Enemy em )
         {
-            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.MOVE) && (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.ATTACK)))
+            if ( !_isValidTarget ) return false;
+
+            if ( em.IsEndCommand( Character.Command.COMMAND_TAG.ATTACK ) ) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 次のキャラクターへ遷移するかを取得します
+        /// </summary>
+        /// <param name="em">判定するキャラクター</param>
+        /// <returns>遷移するか否か</returns>
+        private bool ShouldTransitionToNextCharacter( Enemy em )
+        {
+            if ( em.IsEndCommand( Character.Command.COMMAND_TAG.MOVE ) && em.IsEndCommand( Character.Command.COMMAND_TAG.ATTACK ) )
             {
-                tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
+                em.EndAction();
                 return true;
             }
 
-            if (!tmpParam.IsExecutableCommand(Character.Command.COMMAND_TAG.WAIT)) return true;
+            if ( em.IsEndAction() ) return true;
 
             return false;
         }

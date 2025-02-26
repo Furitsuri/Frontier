@@ -19,7 +19,7 @@ namespace Frontier
         private Character _targetCharacter              = null;
         private CharacterAttackSequence _attackSequence = null;
 
-        public override void Init()
+        override public void Init()
         {
             base.Init();
 
@@ -57,7 +57,7 @@ namespace Frontier
             _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
         }
 
-        public override bool Update()
+        override public bool Update()
         {
             // 攻撃可能状態でなければ何もしない
             if (_stageCtrl.GetGridCursorState() != GridCursor.State.ATTACK)
@@ -120,7 +120,7 @@ namespace Frontier
             return false;
         }
 
-        public override void Exit()
+        override public void Exit()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();

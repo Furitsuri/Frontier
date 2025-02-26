@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class PlWaitState : PhaseStateBase
+    public class PlWaitState : PlPhaseStateBase
     {
-        public override void Init()
+        override public void Init()
         {
             base.Init();
 
@@ -18,17 +18,13 @@ namespace Frontier
                 return;
             }
 
-            // 全てのコマンドを終了に
-            var endCommand = selectPlayer.tmpParam.isEndCommand;
-            endCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
-            endCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
-            endCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
+            selectPlayer.EndAction();
 
             // 更新せずに終了
             Back();
         }
 
-        public override void Exit()
+        override public void Exit()
         {
             base.Exit();
         }

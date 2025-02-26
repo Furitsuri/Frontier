@@ -166,10 +166,4 @@ public class InputFacade
 
         RegisterInputCodes( args );
     }
-
-    /// <summary>
-    /// EnableCallback使用時、必ず有効である場合に使用します
-    /// </summary>
-    /// <returns>有効</returns>
-    static public bool Enable() { return true; }
 }

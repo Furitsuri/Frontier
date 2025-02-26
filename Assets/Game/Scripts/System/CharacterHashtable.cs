@@ -28,7 +28,7 @@ namespace Frontier
                 return a.characterTag != b.characterTag || a.characterIndex != b.characterIndex;
             }
 
-            public override bool Equals(object obj)
+            override public bool Equals(object obj)
             {
                 if (obj is Key)
                 {
@@ -38,7 +38,7 @@ namespace Frontier
                 return false;
             }
 
-            public override int GetHashCode()
+            override public int GetHashCode()
             {
                 return characterTag.GetHashCode() ^ characterIndex.GetHashCode();
             }

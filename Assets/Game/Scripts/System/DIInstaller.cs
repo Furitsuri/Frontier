@@ -14,7 +14,7 @@ namespace Frontier
         /// <summary>
         /// DIコンテナのバインド対象を設定します
         /// </summary>
-        public override void InstallBindings()
+        override public void InstallBindings()
         {
             Container.Bind<InputFacade>().AsSingle();
 

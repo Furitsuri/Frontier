@@ -16,7 +16,7 @@ namespace Frontier
             _propParamUnit = serializedObject.FindProperty("GenerateUnitParamSetting");
         }
 
-        public override void OnInspectorGUI()
+        override public void OnInspectorGUI()
         {
             serializedObject.Update();
 

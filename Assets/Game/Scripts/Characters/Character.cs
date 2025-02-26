@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using static Frontier.CharacterHashtable;
 
 namespace Frontier.Entities
 {
@@ -35,7 +36,7 @@ namespace Frontier.Entities
 
             public static bool IsExecutableCommandBase(Character character)
             {
-                if (!character.tmpParam.IsExecutableCommand(COMMAND_TAG.WAIT)) return false;
+                if ( character.IsEndAction() ) return false;
 
                 return true;
             }
@@ -221,6 +222,22 @@ namespace Frontier.Entities
             public int totalExpectedChangeHP;
 
             /// <summary>
+            /// 現在の値をクローンして返します
+            /// 巻き戻しの際にバックアップを取りますが、C#の仕様上、配列部分が参照で渡されてしまうため、
+            /// Array.Copyで値渡しになるように書き換えています
+            /// </summary>
+            /// <returns>クローンした変数</returns>
+            public TmpParameter Clone()
+            {
+                TmpParameter copy = this;
+
+                copy.isEndCommand   = ( bool[] )isEndCommand.Clone();
+                copy.isUseSkills    = ( bool[] )isUseSkills.Clone();
+
+                return copy;
+            }
+
+            /// <summary>
             /// 指定コマンドが実行可能か否かを判定します
             /// </summary>
             /// <param name="cmdTag">指定コマンドのタグ</param>
@@ -295,7 +312,9 @@ namespace Frontier.Entities
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
         protected UISystem _uiSystem                    = null;
+        // 対戦相手
         protected Character _opponent                   = null;
+        // 弾
         protected Bullet _bullet                        = null;
         protected BaseAi _baseAI { get; set; }          = null;
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
@@ -586,11 +605,11 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="gridIndex">マップグリッドのインデックス</param>
         /// <param name="dir">キャラクター角度</param>
-        public void SetPosition(int gridIndex, in Vector3 pos, in Quaternion dir)
+        public void SetPosition(int gridIndex, in Quaternion dir)
         {
             tmpParam.gridIndex = gridIndex;
-            // var info = Stage.StageController.Instance.GetGridInfo(gridIndex);
-            transform.position = pos;
+            var info = _stageCtrl.GetGridInfo(gridIndex);
+            transform.position = info.charaStandPos;
             transform.rotation = dir;
         }
 
@@ -623,6 +642,17 @@ namespace Frontier.Entities
             for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
             {
                 _textureMaterialsAndColors[i].material.color = Color.gray;
+            }
+        }
+
+        /// <summary>
+        /// 行動を終了させます
+        /// </summary>
+        public void EndAction()
+        {
+            for( int i = 0; i < (int)Character.Command.COMMAND_TAG.NUM; ++i )
+            {
+                tmpParam.isEndCommand[i] = true;
             }
         }
 
@@ -689,21 +719,6 @@ namespace Frontier.Entities
             SkillParryController parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
             _opponent.SubscribeParryEvent(parryCtrl);
             parryCtrl.StartParryEvent(_opponent, this);
-        }
-
-        /// <summary>
-        /// 実行可能なコマンドを更新します
-        /// </summary>
-        public void UpdateExecutableCommand(in StageController stageCtrl)
-        {
-            _executableCommands.Clear();
-
-            for( int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i )
-            {
-                if (!_executableCommandTables[i](this, stageCtrl)) continue;
-
-                _executableCommands.Add( (Command.COMMAND_TAG)i );
-            }
         }
 
         /// <summary>
@@ -839,6 +854,26 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 指定のコマンドが終了しているかを取得します
+        /// </summary>
+        /// <param name="cmdTag">指定するコマンドタグ</param>
+        /// <returns>指定のコマンドが終了しているか否か</returns>
+        public bool IsEndCommand( Command.COMMAND_TAG cmdTag )
+        {
+            return tmpParam.isEndCommand[(int)cmdTag];
+        }
+
+        /// <summary>
+        /// 現在のターンにおける行動が終了しているかを取得します
+        /// MEMO : 仕様上、待機コマンドが終了していれば、行動全てを終了していると判定しています
+        /// </summary>
+        /// <returns>行動が終了しているか</returns>
+        public bool IsEndAction()
+        {
+            return IsEndCommand( Command.COMMAND_TAG.WAIT );
+        }
+
+        /// <summary>
         /// パリィ処理の都合上でアニメーションを停止させます ※モーションから呼び出されます
         /// </summary>
         public void StopAnimationOnParry()
@@ -915,7 +950,14 @@ namespace Frontier.Entities
         /// <param name="executableCommands">抽出先の引き数</param>
         public void FetchExecutableCommand(out List<Command.COMMAND_TAG> executableCommands, in StageController stageCtrl)
         {
-            UpdateExecutableCommand(stageCtrl);
+            _executableCommands.Clear();
+
+            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            {
+                if (!_executableCommandTables[i](this, stageCtrl)) continue;
+
+                _executableCommands.Add((Command.COMMAND_TAG)i);
+            }
 
             executableCommands = _executableCommands;
         }

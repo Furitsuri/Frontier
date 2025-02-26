@@ -220,7 +220,7 @@ namespace Frontier.Battle
 
             foreach( var chara in charaList[(int)tag])
             {
-                if (!chara.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT])
+                if (!chara.IsEndAction())
                 {
                     return false;
                 }
@@ -378,14 +378,14 @@ namespace Frontier.Battle
         /// 主にターンを終了させる際に使用します
         /// </summary>
         /// /// <param name="tag">指定する軍勢のタグ</param>
-        public void ApplyAllArmyWaitEnd(Character.CHARACTER_TAG tag)
+        public void ApplyAllArmyEndAction(Character.CHARACTER_TAG tag)
         {
             switch( tag )
             {
                 case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
-                        player.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
+                        player.EndAction();
                     }
 
                     break;
@@ -393,7 +393,7 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
-                        enemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
+                        enemy.EndAction();
                     }
 
                     break;
@@ -401,7 +401,7 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
-                        other.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT] = true;
+                        other.EndAction();
                     }
 
                     break;

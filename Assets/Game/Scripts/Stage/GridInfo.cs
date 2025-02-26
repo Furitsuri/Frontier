@@ -19,7 +19,7 @@ namespace Frontier.Stage
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // フラグ情報
-        public Stage.StageController.BitFlag flag;
+        public StageController.BitFlag flag;
         // ※ 一度設定された後は変更することがない変数
 
         /// <summary>

@@ -7,9 +7,8 @@ using static Constants;
 
 namespace Frontier
 {
-    public class PlSelectCommandState : PhaseStateBase
+    public class PlSelectCommandState : PlPhaseStateBase
     {
-        private Player _selectPlayer;
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
@@ -34,9 +33,9 @@ namespace Frontier
 
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.VERTICAL_CURSOR, "Select",   InputFacade.Enable, _commandList.UpdateInput,   0.0f),
-                (GuideIcon.DECISION,        "Decision", InputFacade.Enable, DetectTransitionInput,      0.0f),
-                (GuideIcon.CANCEL,          "Back",     InputFacade.Enable, DetectRevertInput,          0.0f)
+                (GuideIcon.VERTICAL_CURSOR, "Select",   CanAcceptInputDefault, _commandList.UpdateInput,   0.0f),
+                (GuideIcon.DECISION,        "Decision", CanAcceptInputDefault, DetectTransitionInput,      0.0f),
+                (GuideIcon.CANCEL,          "Back",     CanAcceptInputDefault, DetectRevertInput,          0.0f)
              );
 
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript(this);
@@ -52,7 +51,7 @@ namespace Frontier
             base.Init();
 
             // 選択中のプレイヤーを取得
-            _selectPlayer = (Player)_btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
             DebugUtils.NULL_ASSERT(_selectPlayer);
 
             var endCommand = _selectPlayer.tmpParam.isEndCommand;
@@ -70,8 +69,7 @@ namespace Frontier
         /// <returns>0以上の値のとき次の状態に遷移します</returns>
         override public bool Update()
         {
-            bool isImpossibleCmd = _selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.WAIT];
-            if( isImpossibleCmd )
+            if( _selectPlayer.IsEndAction() )
             {
                 Back();
                 return true;
@@ -104,6 +102,23 @@ namespace Frontier
             _uiSystem.BattleUi.TogglePLCommand(false);
 
             base.Exit();
+        }
+
+        /// <summary>
+        /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
+        /// </summary>
+        override protected void DetectRevertInput()
+        {
+            if (Input.GetKeyUp(KeyCode.Backspace))
+            {
+                Back();
+
+                // 以前の状態に巻き戻せる場合は状態を巻き戻す
+                if( _selectPlayer.IsRewindStatePossible() )
+                {
+                    Rewind();
+                }
+            }
         }
 
         /// <summary>
