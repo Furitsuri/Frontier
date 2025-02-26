@@ -7,7 +7,7 @@ namespace Frontier
 {
     public class EMWaitState : PhaseStateBase
     {
-        public override void Init()
+        override public void Init()
         {
             base.Init();
         }

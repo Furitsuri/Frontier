@@ -9,7 +9,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 初期化します
         /// </summary>
-        public override void Init()
+        override public void Init()
         {
             base.Init();
         }

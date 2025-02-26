@@ -66,7 +66,7 @@ namespace Frontier
             }
         }
 
-        public override bool Update()
+        override public bool Update()
         {
             switch (_Phase)
             {
@@ -113,7 +113,7 @@ namespace Frontier
 
         }
 
-        public override void Exit()
+        override public void Exit()
         {
             // 敵の位置に選択グリッドを合わせる
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_enemy);
