@@ -14,17 +14,6 @@ namespace Frontier.Entities
     public class Character : MonoBehaviour
     {
         /// <summary>
-        /// 思考タイプ
-        /// </summary>
-        public enum ThinkingType
-        {
-            AGGERESSIVE = 0,    // 積極的に移動し、攻撃後の結果の評価値が高い対象を狙う
-            WAITING,            // 自身の行動範囲に対象が入ってこない限り動かない。動き始めた後はAGGRESSIVEと同じ動作
-
-            NUM
-        }
-
-        /// <summary>
         /// キャラクターの種別を表すタグ
         /// </summary>
         public enum CHARACTER_TAG
@@ -205,7 +194,9 @@ namespace Frontier.Entities
             }
         }
 
-        // スキルによって上乗せされるパラメータ
+        /// <summary>
+        /// 特定のスキル使用時のみに上乗せされるパラメータです
+        /// </summary>
         public struct SkillModifiedParameter
         {
             public int AtkNum;
@@ -299,7 +290,12 @@ namespace Frontier.Entities
         [SerializeField]
         [Header("弾オブジェクト")]
         private GameObject _bulletObject;
-        public GameObject BulletObject => _bulletObject;
+
+        // Injectされるインスタンス
+        protected HierarchyBuilder _hierarchyBld        = null;
+        protected BattleRoutineController _btlRtnCtrl   = null;
+        protected StageController _stageCtrl            = null;
+        protected UISystem _uiSystem                    = null;
 
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
@@ -309,20 +305,16 @@ namespace Frontier.Entities
         private Quaternion _orderdRotation      = Quaternion.identity;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
+        
         // 攻撃シーケンスにおける残り攻撃回数
-        protected int _atkRemainingNum                  = 0;
-        protected HierarchyBuilder _hierarchyBld        = null;
-        protected BattleRoutineController _btlRtnCtrl   = null;
-        protected StageController _stageCtrl            = null;
-        protected UISystem _uiSystem                    = null;
-        // 対戦相手
-        protected Character _opponent                   = null;
-        // 弾
-        protected Bullet _bullet                        = null;
-        protected BaseAi _baseAI { get; set; }          = null;
+        protected int _atkRemainingNum  = 0;
+        // 戦闘時の対戦相手
+        protected Character _opponent   = null;
+        // 矢などの弾
+        protected Bullet _bullet        = null;
+        
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase;
-        protected ThinkingType _thikType;
         public Parameter param;
         protected TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -330,6 +322,8 @@ namespace Frontier.Entities
         public CameraParameter camParam;
         // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public bool IsDeclaredDead { get; set; } = false;
+        // 弾の取得
+        public GameObject BulletObject => _bulletObject;
         // パリィ結果
         public SkillParryController.JudgeResult ParryResult { get; set; } = SkillParryController.JudgeResult.NONE;
         public AnimationController AnimCtrl { get; } = new AnimationController();
@@ -490,12 +484,6 @@ namespace Frontier.Entities
         /// 死亡処理を行います
         /// </summary>
         virtual public void Die() { }
-
-        /// <summary>
-        /// キャラクターの思考タイプを設定します
-        /// </summary>
-        /// <param name="type"></param>
-        virtual public void SetThinkType(Enemy.ThinkingType type) { }
 
         /// <summary>
         /// 対戦相手にダメージを与えるイベントを発生させます
@@ -999,11 +987,15 @@ namespace Frontier.Entities
             executableCommands = _executableCommands;
         }
 
-        public bool IsPlayer() { return param.characterTag == CHARACTER_TAG.PLAYER; }
-
-        public bool IsEnemy() { return param.characterTag == CHARACTER_TAG.ENEMY; }
-
-        public bool IsOther() { return param.characterTag == CHARACTER_TAG.OTHER; }
+        /// <summary>
+        /// 指定したキャラクタータグに合致するかを取得します
+        /// </summary>
+        /// <param name="tag">指定するキャラクタータグ</param>
+        /// <returns>合致しているか否か</returns>
+        public bool IsMatchCharacterTag( CHARACTER_TAG tag )
+        {
+            return param.characterTag == tag;
+        }
 
         /// <summary>
         /// 攻撃アニメーションの終了判定を返します
@@ -1062,12 +1054,6 @@ namespace Frontier.Entities
         /// </summary>
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
-
-        /// <summary>
-        /// 設定されているAIを取得します
-        /// </summary>
-        /// <returns>設定されているAI</returns>
-        public BaseAi GetAi() { return _baseAI; }
 
         /// <summary>
         /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します

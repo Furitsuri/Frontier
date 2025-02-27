@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Frontier.Entities
 {
-    public class Enemy : Character
+    public class Enemy : Npc
     {
         /// <summary>
         /// 初期化します
