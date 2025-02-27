@@ -46,9 +46,9 @@ namespace Frontier
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
             // 攻撃者の向きを設定
-            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.gridIndex);
+            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.GetCurrentGridIndex());
             _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
-            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.gridIndex);
+            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.GetCurrentGridIndex());
             _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
 
             // 攻撃シーケンスを初期化
@@ -110,7 +110,7 @@ namespace Frontier
                     break;
                 case EMAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
+                    _attackCharacter.SetEndCommandStatus( Character.Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -135,7 +135,8 @@ namespace Frontier
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
-            _btlRtnCtrl.BtlCharaCdr.ResetDamageExpect(_attackCharacter, _targetCharacter);
+            _attackCharacter.SetExpectedHpChange(0, 0);
+            _targetCharacter.SetExpectedHpChange(0, 0);
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorP2E(false);

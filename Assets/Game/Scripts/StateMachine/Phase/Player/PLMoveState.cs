@@ -47,7 +47,7 @@ namespace Frontier
 
             // キャラクターの現在の位置情報を保持
             Stage.StageController.Footprint footprint = new StageController.Footprint();
-            footprint.gridIndex = _selectPlayer.tmpParam.gridIndex;
+            footprint.gridIndex = _selectPlayer.GetCurrentGridIndex();
             footprint.rotation  = _selectPlayer.transform.rotation;
             _stageCtrl.LeaveFootprint(footprint);
             _stageCtrl.BindGridCursorState( GridCursor.State.MOVE, _selectPlayer);
@@ -76,7 +76,7 @@ namespace Frontier
                     // 移動目的座標の更新
                     Stage.GridInfo infor;
                     var curGridIndex = stageGrid.GetCurrentGridIndex();
-                    var plGridIndex = _selectPlayer.tmpParam.gridIndex;
+                    var plGridIndex = _selectPlayer.GetCurrentGridIndex();
                     stageGrid.FetchCurrentGridInfo(out infor);
 
                     // 移動更新
@@ -84,7 +84,7 @@ namespace Frontier
                     break;
                 case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _selectPlayer.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
+                    _selectPlayer.SetEndCommandStatus(Character.Command.COMMAND_TAG.MOVE, true);
                     // コマンド選択に戻る
                     Back();
 
@@ -134,7 +134,7 @@ namespace Frontier
             // 移動目的座標の更新
             Stage.GridInfo infor;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex = _selectPlayer.tmpParam.gridIndex;
+            var plGridIndex = _selectPlayer.GetCurrentGridIndex();
             _stageCtrl.FetchCurrentGridInfo(out infor);
 
             // 移動更新
@@ -153,7 +153,7 @@ namespace Frontier
             {
                 GridInfo info;
                 var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-                var plGridIndex = _selectPlayer.tmpParam.gridIndex;
+                var plGridIndex = _selectPlayer.GetCurrentGridIndex();
                 _stageCtrl.FetchCurrentGridInfo(out info);
 
                 // 出発地点と同一グリッドであれば戻る

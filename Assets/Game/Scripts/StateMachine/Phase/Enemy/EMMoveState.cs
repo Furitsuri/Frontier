@@ -58,7 +58,7 @@ namespace Frontier
                 // 移動アニメーション開始
                 _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
                 // グリッド情報更新
-                _enemy.tmpParam.gridIndex = _enemy.GetAi().GetDestinationGridIndex();
+                _enemy.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());
                 // 選択グリッドを表示
                 _stageCtrl.SetGridCursorActive(true);
 
@@ -101,7 +101,7 @@ namespace Frontier
                     break;
                 case EMMovePhase.EM_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _enemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.MOVE] = true;
+                    _enemy.SetEndCommandStatus(Character.Command.COMMAND_TAG.MOVE, true);
 
                     // コマンド選択に戻る
                     Back();

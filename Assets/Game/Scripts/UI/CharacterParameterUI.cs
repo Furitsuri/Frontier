@@ -126,15 +126,17 @@ namespace Frontier
             TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
             TMPAtkNumValue.gameObject.SetActive(1 < skillParam.AtkNum);
 
-            int changeHP = selectCharacter.tmpParam.totalExpectedChangeHP;
-            changeHP = Mathf.Clamp(changeHP, -param.CurHP, param.MaxHP - param.CurHP);
-            if (0 < changeHP)
+            int hpChange, totalHpChange;
+            selectCharacter.AssignExpectedHpChange( out hpChange, out totalHpChange );
+
+            totalHpChange = Mathf.Clamp(totalHpChange, -param.CurHP, param.MaxHP - param.CurHP);
+            if (0 < totalHpChange)
             {
-                TMPDiffHPValue.text = $"+{changeHP}";
+                TMPDiffHPValue.text = $"+{totalHpChange}";
             }
-            else if (changeHP < 0)
+            else if (totalHpChange < 0)
             {
-                TMPDiffHPValue.text = $"{changeHP}";
+                TMPDiffHPValue.text = $"{totalHpChange}";
             }
             else
             {
@@ -143,7 +145,7 @@ namespace Frontier
             }
 
             // テキストの色を反映
-            ApplyTextColor(changeHP);
+            ApplyTextColor(totalHpChange);
 
             // アクションゲージの表示
             for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
