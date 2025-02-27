@@ -173,7 +173,11 @@ namespace Frontier
                     // ファイルから読み込んだパラメータを設定
                     ApplyCharacterParams(ref chara.param, param);
                     chara.Init();
-                    chara.SetThinkType((Character.ThinkingType)param.ThinkType);
+                    if( !chara.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER) )
+                    {
+                        var npc = chara as Npc;
+                        npc.SetThinkType((Npc.ThinkingType)param.ThinkType);
+                    }
 
                     _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(chara);
 

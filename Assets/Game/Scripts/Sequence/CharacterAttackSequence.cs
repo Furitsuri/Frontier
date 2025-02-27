@@ -355,19 +355,19 @@ namespace Frontier
             // 味方と敵対側で分別
             Character ally = null;
             Character opponent = null;
-            if (attacker.IsPlayer())
+            if (attacker.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
             {
                 ally = attacker;
                 opponent = target;
             }
             else
             {
-                if (target.IsPlayer())
+                if (target.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
                 {
                     ally = target;
                     opponent = attacker;
                 }
-                else if (target.IsOther())
+                else if (target.IsMatchCharacterTag(Character.CHARACTER_TAG.OTHER))
                 {
                     ally = target;
                     opponent = attacker;
