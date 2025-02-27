@@ -54,8 +54,8 @@ namespace Frontier
             _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
             DebugUtils.NULL_ASSERT(_selectPlayer);
 
-            var endCommand = _selectPlayer.tmpParam.isEndCommand;
-            if (endCommand[(int)Character.Command.COMMAND_TAG.MOVE] && endCommand[(int)Character.Command.COMMAND_TAG.ATTACK])
+            // 可能な行動が全て終了している場合は終了
+            if (_selectPlayer.IsEndAction())
             {
                 return;
             }
@@ -75,16 +75,14 @@ namespace Frontier
                 return true;
             }
 
-            var endCommand = _selectPlayer.tmpParam.isEndCommand;
-
             if (base.Update())
             {
                 // 移動のみ終了している場合は移動前に戻れるように          
-                if (endCommand[(int)Character.Command.COMMAND_TAG.MOVE] && !endCommand[(int)Character.Command.COMMAND_TAG.ATTACK])
+                if (_selectPlayer.IsEndCommand(Character.Command.COMMAND_TAG.MOVE) && !_selectPlayer.IsEndCommand(Character.Command.COMMAND_TAG.ATTACK))
                 {
                     _stageCtrl.FollowFootprint(_selectPlayer);
                     _stageCtrl.UpdateGridInfo();
-                    endCommand[(int)Character.Command.COMMAND_TAG.MOVE] = false;
+                    _selectPlayer.SetEndCommandStatus(Character.Command.COMMAND_TAG.MOVE, false );
                 }
 
                 return true;

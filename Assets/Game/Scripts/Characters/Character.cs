@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Frontier.CharacterHashtable;
+using System.Security.Cryptography;
 
 namespace Frontier.Entities
 {
@@ -23,55 +24,9 @@ namespace Frontier.Entities
             NUM
         }
 
-        public class Command
-        {
-            public enum COMMAND_TAG
-            {
-                MOVE = 0,
-                ATTACK,
-                WAIT,
-
-                NUM,
-            }
-
-            public static bool IsExecutableCommandBase(Character character)
-            {
-                if ( character.IsEndAction() ) return false;
-
-                return true;
-            }
-
-            public static bool IsExecutableMoveCommand(Character character, StageController stageCtrl)
-            {
-                if (!IsExecutableCommandBase(character)) return false;
-
-                return !character.tmpParam.isEndCommand[(int)COMMAND_TAG.MOVE];
-            }
-
-            public static bool IsExecutableAttackCommand(Character character, StageController stageCtrl)
-            {
-                if (!IsExecutableCommandBase(character)) return false;
-
-                if( character.tmpParam.isEndCommand[(int)COMMAND_TAG.ATTACK] ) return false;
-
-                // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-                bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.tmpParam.gridIndex, character.param.attackRange, character.param.characterTag);
-           
-                // 実行不可である場合は登録した攻撃情報を全てクリア
-                if( !isExecutable )
-                {
-                    stageCtrl.ClearAttackableInfo();
-                }
-
-                return isExecutable;
-            }
-
-            public static bool IsExecutableWaitCommand(Character character, StageController stageCtrl)
-            {
-                return IsExecutableCommandBase(character);
-            }
-        }
-
+        /// <summary>
+        /// キャラクターの種別を表すタグ
+        /// </summary>
         public enum CHARACTER_TAG
         {
             NONE = -1,
@@ -122,7 +77,61 @@ namespace Frontier.Entities
             NUM,
         }
 
-        // キャラクターの持つパラメータ
+        /// <summary>
+        /// キャラクターが使用可能なコマンドの管理クラスです
+        /// </summary>
+        public class Command
+        {
+            public enum COMMAND_TAG
+            {
+                MOVE = 0,
+                ATTACK,
+                WAIT,
+
+                NUM,
+            }
+
+            public static bool IsExecutableCommandBase(Character character)
+            {
+                if (character.IsEndAction()) return false;
+
+                return true;
+            }
+
+            public static bool IsExecutableMoveCommand(Character character, StageController stageCtrl)
+            {
+                if (!IsExecutableCommandBase(character)) return false;
+
+                return !character.tmpParam.isEndCommand[(int)COMMAND_TAG.MOVE];
+            }
+
+            public static bool IsExecutableAttackCommand(Character character, StageController stageCtrl)
+            {
+                if (!IsExecutableCommandBase(character)) return false;
+
+                if (character.tmpParam.isEndCommand[(int)COMMAND_TAG.ATTACK]) return false;
+
+                // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
+                bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.tmpParam.gridIndex, character.param.attackRange, character.param.characterTag);
+
+                // 実行不可である場合は登録した攻撃情報を全てクリア
+                if (!isExecutable)
+                {
+                    stageCtrl.ClearAttackableInfo();
+                }
+
+                return isExecutable;
+            }
+
+            public static bool IsExecutableWaitCommand(Character character, StageController stageCtrl)
+            {
+                return IsExecutableCommandBase(character);
+            }
+        }
+
+        /// <summary>
+        /// キャラクターのパラメータの構造体です
+        /// </summary>
         [System.Serializable]
         public struct Parameter
         {
@@ -176,7 +185,9 @@ namespace Frontier.Entities
             }
         }
 
-        // バフ・デバフなどで上乗せされるパラメータ
+        /// <summary>
+        /// バフ・デバフなどで上乗せされるパラメータです
+        /// </summary>
         public struct ModifiedParameter
         {
             // 攻撃力
@@ -207,7 +218,9 @@ namespace Frontier.Entities
             }
         }
 
-        // 戦闘中のみ使用するパラメータ
+        /// <summary>
+        /// 戦闘中のみ一時的に使用するパラメータです
+        /// </summary>
         public struct TmpParameter
         {
             // 該当コマンドの終了フラグ
@@ -217,9 +230,9 @@ namespace Frontier.Entities
             // 現在位置を示すグリッドインデックス
             public int gridIndex;
             // 1回の攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮しない)
-            public int expectedChangeHP;
-            // 全ての攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮する)
-            public int totalExpectedChangeHP;
+            public int expectedHpChange;
+            // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
+            public int totalExpectedHpChange;
 
             /// <summary>
             /// 現在の値をクローンして返します
@@ -235,16 +248,6 @@ namespace Frontier.Entities
                 copy.isUseSkills    = ( bool[] )isUseSkills.Clone();
 
                 return copy;
-            }
-
-            /// <summary>
-            /// 指定コマンドが実行可能か否かを判定します
-            /// </summary>
-            /// <param name="cmdTag">指定コマンドのタグ</param>
-            /// <returns>実行可否</returns>
-            public bool IsExecutableCommand(Command.COMMAND_TAG cmdTag)
-            {
-                return !isEndCommand[(int)cmdTag];
             }
 
             /// <summary>
@@ -268,7 +271,7 @@ namespace Frontier.Entities
                     isEndCommand[i] = false;
                 }
 
-                totalExpectedChangeHP = expectedChangeHP = 0;
+                totalExpectedHpChange = expectedHpChange = 0;
             }
         }
 
@@ -321,7 +324,7 @@ namespace Frontier.Entities
         protected PARRY_PHASE _parryPhase;
         protected ThinkingType _thikType;
         public Parameter param;
-        public TmpParameter tmpParam;
+        protected TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
@@ -488,6 +491,10 @@ namespace Frontier.Entities
         /// </summary>
         virtual public void Die() { }
 
+        /// <summary>
+        /// キャラクターの思考タイプを設定します
+        /// </summary>
+        /// <param name="type"></param>
         virtual public void SetThinkType(Enemy.ThinkingType type) { }
 
         /// <summary>
@@ -503,10 +510,10 @@ namespace Frontier.Entities
             }
 
             _isAttacked = true;
-            _opponent.param.CurHP += _opponent.tmpParam.expectedChangeHP;
+            _opponent.param.CurHP += _opponent.tmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
-            if (_opponent.tmpParam.expectedChangeHP != 0)
+            if (_opponent.tmpParam.expectedHpChange != 0)
             {
                 if (_opponent.param.CurHP <= 0)
                 {
@@ -521,7 +528,7 @@ namespace Frontier.Entities
             }
 
             // ダメージUIを表示
-            _uiSystem.BattleUi.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedChangeHP);
+            _uiSystem.BattleUi.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedHpChange);
             _uiSystem.BattleUi.ToggleDamageUI(true);
         }
 
@@ -581,7 +588,7 @@ namespace Frontier.Entities
             _isTransitNextPhaseCamera = true;
 
             // この攻撃によって相手が倒されるかどうかを判定
-            _opponent.IsDeclaredDead = ( _opponent.param.CurHP + _opponent.tmpParam.expectedChangeHP ) <= 0;
+            _opponent.IsDeclaredDead = ( _opponent.param.CurHP + _opponent.tmpParam.expectedHpChange ) <= 0;
             if( !_opponent.IsDeclaredDead && 0 < _atkRemainingNum )
             {
                 --_atkRemainingNum;
@@ -635,7 +642,7 @@ namespace Frontier.Entities
         {
             for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
             {
-                tmpParam.isEndCommand[i] = true;
+                SetEndCommandStatus( (Character.Command.COMMAND_TAG)i, true );
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -646,13 +653,43 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を設定します
+        /// </summary>
+        /// <param name="index">設定するインデックス値</param>
+        public void SetCurrentGridIndex(int index)
+        {
+            tmpParam.gridIndex = index;
+        }
+
+        /// <summary>
+        /// 戦闘などにおけるHPの予測変動量を設定します
+        /// </summary>
+        /// <param name="single">単発攻撃における予測変動量</param>
+        /// <param name="total">複数回攻撃における予測総変動量</param>
+        public void SetExpectedHpChange( int single, int total )
+        {
+            tmpParam.expectedHpChange       = single;
+            tmpParam.totalExpectedHpChange  = total;
+        }
+
+        /// <summary>
+        /// 各終了コマンドの状態を設定します
+        /// </summary>
+        /// <param name="isEnd">設定する終了状態のOnまたはOff</param>
+        /// <param name="cmdTag">設定対象のコマンドタグ</param>
+        public void SetEndCommandStatus( Command.COMMAND_TAG cmdTag, bool isEnd )
+        {
+            tmpParam.isEndCommand[(int)cmdTag] = isEnd;
+        }
+
+        /// <summary>
         /// 行動を終了させます
         /// </summary>
         public void EndAction()
         {
             for( int i = 0; i < (int)Character.Command.COMMAND_TAG.NUM; ++i )
             {
-                tmpParam.isEndCommand[i] = true;
+                SetEndCommandStatus( (Character.Command.COMMAND_TAG) i, true );
             }
         }
 
@@ -975,7 +1012,7 @@ namespace Frontier.Entities
         public bool IsEndAttackAnimSequence()
         {
             return AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||  // 最後の攻撃のState名は必ずAtkEndStateNameで一致させる
-                (_opponent.IsDeclaredDead && AnimCtrl.IsEndCurrentAnimation());                  // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
+                (_opponent.IsDeclaredDead && AnimCtrl.IsEndCurrentAnimation());      // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
         }
 
         /// <summary>
@@ -1031,6 +1068,26 @@ namespace Frontier.Entities
         /// </summary>
         /// <returns>設定されているAI</returns>
         public BaseAi GetAi() { return _baseAI; }
+
+        /// <summary>
+        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します
+        /// </summary>
+        /// <returns>現在グリッドのインデックス値</returns>
+        public int GetCurrentGridIndex()
+        {
+            return tmpParam.gridIndex;
+        }
+
+        /// <summary>
+        /// ダメージを受けた際のHPの予測変動量を取得します
+        /// </summary>
+        /// <param name="single">単発攻撃の予測変動量</param>
+        /// <param name="total">複数回攻撃の予測総変動量</param>
+        public void AssignExpectedHpChange( out int single, out int total )
+        {
+            single  = tmpParam.expectedHpChange;
+            total   = tmpParam.totalExpectedHpChange;
+        }
 
         #endregion // PUBLIC_METHOD
     }

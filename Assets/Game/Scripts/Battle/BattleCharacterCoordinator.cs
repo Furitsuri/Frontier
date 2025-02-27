@@ -424,8 +424,7 @@ namespace Frontier.Battle
             int attackerAtk = (int)Mathf.Floor((attacker.param.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
             int changeHP = (targetDef - attackerAtk);
 
-            target.tmpParam.expectedChangeHP = Mathf.Min(changeHP, 0);
-            target.tmpParam.totalExpectedChangeHP = Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0);
+            target.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>
@@ -445,21 +444,6 @@ namespace Frontier.Battle
             {
                 other.BePossibleAction();
             }
-        }
-
-        /// <summary>
-        /// ダメージ予測をリセットします
-        /// </summary>
-        /// <param name="attacker">攻撃キャラクター</param>
-        /// <param name="target">標的キャラクター</param>
-        public void ResetDamageExpect(Character attacker, Character target)
-        {
-            if (target == null)
-            {
-                return;
-            }
-
-            target.tmpParam.expectedChangeHP = 0;
         }
 
         /// <summary>

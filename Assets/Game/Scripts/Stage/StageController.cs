@@ -295,7 +295,7 @@ namespace Frontier.Stage
             {
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((Character.CHARACTER_TAG)i))
                 {
-                    var gridIndex       = chara.tmpParam.gridIndex;
+                    var gridIndex       = chara.GetCurrentGridIndex();
                     ref var info        = ref _gridInfo[gridIndex];
                     info.characterTag   = chara.param.characterTag;
                     info.charaIndex     = chara.param.characterIndex;
@@ -372,7 +372,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterGrid(Character character)
         {
-            _gridCursor.Index = character.tmpParam.gridIndex;
+            _gridCursor.Index = character.GetCurrentGridIndex();
         }
 
         /// <summary>
@@ -907,7 +907,7 @@ namespace Frontier.Stage
         public void FollowFootprint(Character character)
         {
             _gridCursor.Index = _footprint.gridIndex;
-            character.tmpParam.gridIndex = _footprint.gridIndex;
+            character.SetCurrentGridIndex(_footprint.gridIndex);
             GridInfo info;
             FetchCurrentGridInfo(out info);
             character.transform.position = info.charaStandPos;

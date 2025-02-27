@@ -29,8 +29,6 @@ namespace Frontier
             {
                 _currentEnemy = _enemyEnumerator.Current as Enemy;
 
-                var tmpParam = _currentEnemy.tmpParam;
-
                 if (ShouldTransitionToNextCharacter(_currentEnemy))
                 {
                     continue;
@@ -49,7 +47,7 @@ namespace Frontier
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
                 if (!_isValidTarget)
                 {
-                    _currentEnemy.tmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK] = true;
+                    _currentEnemy.SetEndCommandStatus( Character.Command.COMMAND_TAG.ATTACK, true );
                 }
 
                 break;
