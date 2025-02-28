@@ -155,7 +155,7 @@ namespace Frontier.Battle
             _stgCtrl.FetchCurrentGridInfo(out info);
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
 
-            SelectCharacterInfo = new CharacterHashtable.Key(info.characterTag, info.charaIndex);
+            SelectCharacterInfo = new CharacterHashtable.Key(info.charaTag, info.charaIndex);
 
             if (_battleUi.StageClear.isActiveAndEnabled) return;
 
