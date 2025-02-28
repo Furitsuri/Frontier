@@ -238,7 +238,7 @@ namespace Frontier.Stage
             // 負の値であれば終了
             if (currentMoveRange < 0) return;
             // 攻撃範囲についても登録する
-            if (isAttackable && ( _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
+            if (isAttackable && ( _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
             // 左端を除外
             if (gridIndex % _stageModel.GetGridRowNum() != 0)
@@ -297,7 +297,7 @@ namespace Frontier.Stage
                 {
                     var gridIndex       = chara.GetCurrentGridIndex();
                     ref var info        = ref _gridInfo[gridIndex];
-                    info.characterTag   = chara.param.characterTag;
+                    info.charaTag       = chara.param.characterTag;
                     info.charaIndex     = chara.param.characterIndex;
                     Methods.SetBitFlag(ref info.flag, flags[i]);
                 }
@@ -439,7 +439,7 @@ namespace Frontier.Stage
                 var info = _gridInfo[i];
                 if (Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE))
                 {
-                    attackCandidate = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                    attackCandidate = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
                     if (attackCandidate != null && attackCandidate.param.characterTag != selfTag)
                     {
@@ -472,22 +472,22 @@ namespace Frontier.Stage
                 switch (selfTag)
                 {
                     case Character.CHARACTER_TAG.PLAYER:
-                        if (_gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.ENEMY ||
-                            _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.OTHER)
+                        if (_gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.ENEMY ||
+                            _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.OTHER)
                         {
                             Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     case Character.CHARACTER_TAG.ENEMY:
-                        if (_gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.PLAYER ||
-                            _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.OTHER)
+                        if (_gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.PLAYER ||
+                            _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.OTHER)
                         {
                             Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     case Character.CHARACTER_TAG.OTHER:
-                        if (_gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.PLAYER ||
-                            _gridInfo[gridIndex].characterTag == Character.CHARACTER_TAG.ENEMY)
+                        if (_gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.PLAYER ||
+                            _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.ENEMY)
                         {
                             Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
                         }
@@ -529,7 +529,7 @@ namespace Frontier.Stage
                     {
                         var info = GetGridInfo(_attackableGridIndexs[i]);
 
-                        Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                        Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
                         if (target == chara)
                         {
@@ -564,7 +564,7 @@ namespace Frontier.Stage
                 var info = _gridInfo[i];
                 if (Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE))
                 {
-                    character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                    character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
                     if (character != null && character.param.characterTag == targetTag)
                     {
@@ -585,7 +585,7 @@ namespace Frontier.Stage
                     {
                         var info = GetGridInfo(_attackableGridIndexs[i]);
 
-                        Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+                        Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
                         if (target == chara)
                         {

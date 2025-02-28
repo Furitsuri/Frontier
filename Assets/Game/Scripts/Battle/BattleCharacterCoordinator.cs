@@ -66,7 +66,7 @@ namespace Frontier.Battle
                     // 向きを設定
                     chara.transform.rotation = rot[(int)chara.param.initDir];
                     // 対応するグリッドに立っているプレイヤーのインデックスを設定
-                    _stgCtrl.GetGridInfo(gridIndex).charaIndex = chara.param.characterIndex;
+                    _stgCtrl.GetGridInfo(gridIndex).SetExistCharacter(chara);
                 }
             }
         }
@@ -348,7 +348,7 @@ namespace Frontier.Battle
             Stage.GridInfo info;
             _stgCtrl.FetchCurrentGridInfo(out info);
 
-            return GetCharacterFromHashtable(info.characterTag, info.charaIndex);
+            return GetCharacterFromHashtable(info.charaTag, info.charaIndex);
         }
 
         /// <summary>

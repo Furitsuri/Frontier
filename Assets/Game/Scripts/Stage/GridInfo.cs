@@ -15,7 +15,7 @@ namespace Frontier.Stage
         // 移動値の見積もり値
         public int estimatedMoveRange;
         // グリッド上に存在するキャラクターのタイプ
-        public Character.CHARACTER_TAG characterTag;
+        public Character.CHARACTER_TAG charaTag;
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // フラグ情報
@@ -32,18 +32,38 @@ namespace Frontier.Stage
             charaStandPos       = Vector3.zero;
             moveResist          = -1;
             estimatedMoveRange  = -1;
-            characterTag        = Character.CHARACTER_TAG.NONE;
+            charaTag            = Character.CHARACTER_TAG.NONE;
             charaIndex          = -1;
             flag                = Stage.StageController.BitFlag.NONE;
         }
 
         /// <summary>
-        /// グリッド上にキャラクターが存在するか否かを返します
+        /// グリッド上に存在しているキャラクターの情報を設定します
+        /// </summary>
+        /// <param name="chara">設定するキャラクター</param>
+        public void SetExistCharacter( Character chara )
+        {
+            charaTag    = chara.param.characterTag;
+            charaIndex  = chara.param.characterIndex;
+        }
+
+        /// <summary>
+        /// グリッド上にキャラクターが存在するか否かを取得します
         /// </summary>
         /// <returns>グリッド上にキャラクターの存在しているか</returns>
         public bool IsExistCharacter()
         {
             return 0 <= charaIndex;
+        }
+
+        /// <summary>
+        /// グリッド上に存在するキャラクターが指定のキャラクターと合致しているかを取得します
+        /// </summary>
+        /// <param name="chara">指定するキャラクター</param>
+        /// <returns>合致しているか否か</returns>
+        public bool IsMatchExistCharacter( Character chara )
+        {
+            return ( charaTag == chara.param.characterTag && charaIndex == chara.param.characterIndex );
         }
 
         /// <summary>
@@ -56,7 +76,7 @@ namespace Frontier.Stage
             info.charaStandPos      = charaStandPos;
             info.moveResist         = moveResist;
             info.estimatedMoveRange = estimatedMoveRange;
-            info.characterTag       = characterTag;
+            info.charaTag       = charaTag;
             info.charaIndex         = charaIndex;
             info.flag               = flag;
 

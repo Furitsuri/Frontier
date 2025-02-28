@@ -37,11 +37,11 @@ namespace Frontier.Entities
         {
             bool toggleAnimation = false;
 
-            // 移動可のグリッドに対してのみ目的地を更新
-            if (0 <= gridInfo.estimatedMoveRange)
+            // 移動可のグリッドに対してのみ目的地を更新(自身を除くキャラクターが存在するグリッドには移動させない)
+            if ( 0 <= gridInfo.estimatedMoveRange && ( !gridInfo.IsExistCharacter() || gridInfo.IsMatchExistCharacter(this) ) )
             {
-                _movementDestination = gridInfo.charaStandPos;
-                tmpParam.gridIndex = gridIndex;
+                _movementDestination    = gridInfo.charaStandPos;
+                tmpParam.gridIndex      = gridIndex;
             }
 
             Vector3 dir         = (_movementDestination - transform.position).normalized;
@@ -49,7 +49,7 @@ namespace Frontier.Entities
             Vector3 afterDir    = (_movementDestination - afterPos);
             afterDir.y          = 0f;
             afterDir            = afterDir.normalized;
-            if (Vector3.Dot(dir, afterDir) <= 0)
+            if ( Vector3.Dot(dir, afterDir) <= 0 )
             {
                 transform.position = _movementDestination;
 

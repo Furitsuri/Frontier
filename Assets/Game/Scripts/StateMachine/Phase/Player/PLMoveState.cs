@@ -3,7 +3,6 @@ using Frontier.Entities;
 using Frontier;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using static Constants;
 using Unity.VisualScripting;
 using static Frontier.Stage.StageController;
@@ -46,7 +45,7 @@ namespace Frontier
             var param = _selectPlayer.param;
 
             // キャラクターの現在の位置情報を保持
-            Stage.StageController.Footprint footprint = new StageController.Footprint();
+            StageController.Footprint footprint = new StageController.Footprint();
             footprint.gridIndex = _selectPlayer.GetCurrentGridIndex();
             footprint.rotation  = _selectPlayer.transform.rotation;
             _stageCtrl.LeaveFootprint(footprint);
@@ -74,13 +73,13 @@ namespace Frontier
             {
                 case PlMovePhase.PL_MOVE:
                     // 移動目的座標の更新
-                    Stage.GridInfo infor;
-                    var curGridIndex = stageGrid.GetCurrentGridIndex();
-                    var plGridIndex = _selectPlayer.GetCurrentGridIndex();
-                    stageGrid.FetchCurrentGridInfo(out infor);
+                    GridInfo info;
+                    var curGridIndex    = stageGrid.GetCurrentGridIndex();
+                    var plGridIndex     = _selectPlayer.GetCurrentGridIndex();
+                    stageGrid.FetchCurrentGridInfo(out info);
 
                     // 移動更新
-                    _selectPlayer.UpdateMove(curGridIndex, infor);
+                    _selectPlayer.UpdateMove(curGridIndex, info);
                     break;
                 case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
@@ -130,15 +129,6 @@ namespace Frontier
             if ( !_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize()) ) return;
 
             _stageCtrl.OperateGridCursor();
-
-            // 移動目的座標の更新
-            Stage.GridInfo infor;
-            var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex = _selectPlayer.GetCurrentGridIndex();
-            _stageCtrl.FetchCurrentGridInfo(out infor);
-
-            // 移動更新
-            _selectPlayer.UpdateMove(curGridIndex, infor);
         }
 
         /// <summary>

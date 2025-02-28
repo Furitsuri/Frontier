@@ -169,9 +169,9 @@ namespace Frontier
                 if (tuple.lambda())
                 {
                     var gridInfo = _stageCtrl.GetGridInfo(tuple.index);
-                    if (gridInfo.characterTag == Character.CHARACTER_TAG.PLAYER || gridInfo.characterTag == Character.CHARACTER_TAG.OTHER)
+                    if (gridInfo.charaTag == Character.CHARACTER_TAG.PLAYER || gridInfo.charaTag == Character.CHARACTER_TAG.OTHER)
                     {
-                        opponentCharaIndexs.Add(new CharacterHashtable.Key(gridInfo.characterTag, gridInfo.charaIndex));
+                        opponentCharaIndexs.Add(new CharacterHashtable.Key(gridInfo.charaTag, gridInfo.charaIndex));
                     }
                 }
             }
