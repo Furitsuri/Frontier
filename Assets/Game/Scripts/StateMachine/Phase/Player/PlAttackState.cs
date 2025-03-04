@@ -100,7 +100,7 @@ namespace Frontier
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
-                    if (Input.GetKeyUp(KeyCode.Space))
+                    if (_inputFcd.GetInputConfirm())
                     {
                         // 選択したキャラクターが敵である場合は攻撃開始
                         if (_targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY)

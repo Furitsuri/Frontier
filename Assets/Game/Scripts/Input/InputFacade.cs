@@ -1,10 +1,5 @@
 ﻿using Frontier;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Zenject;
-using Zenject.ReflectionBaking.Mono.Cecil.Cil;
 using static Constants;
 
 public class InputFacade
@@ -87,7 +82,7 @@ public class InputFacade
             ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f ),
             ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f ),
             ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
-            ( Constants.GuideIcon.DECISION,            "", null, null, 0.0f ),
+            ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
             ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
             ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f )
         };
@@ -166,4 +161,22 @@ public class InputFacade
 
         RegisterInputCodes( args );
     }
+
+    /// <summary>
+    /// 決定ボタンが押下されたかを取得します
+    /// </summary>
+    /// <returns>ボタンの押下</returns>
+    public bool GetInputConfirm() { return _inputHdr.IsConfirmPressed(); }
+
+    /// <summary>
+    /// 取消ボタンが押下されたかを取得します
+    /// </summary>
+    /// <returns>ボタンの押下</returns>
+    public bool GetInputCancel() { return _inputHdr.IsCancelPressed(); }
+
+    /// <summary>
+    /// オプションボタンが押下されたかを取得します
+    /// </summary>
+    /// <returns>ボタンの押下</returns>
+    public bool GetInputOptions() { return _inputHdr.IsOptionsPressed(); }
 }

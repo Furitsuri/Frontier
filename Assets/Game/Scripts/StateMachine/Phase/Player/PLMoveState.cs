@@ -29,7 +29,7 @@ namespace Frontier
             
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDefault, DetectMoveInput,       0.0f),
-                (GuideIcon.DECISION,    "Decision", CanAcceptInputDefault, DetectDecisionInput,   0.0f),
+                (GuideIcon.CONFIRM,     "Decision", CanAcceptInputDefault, DetectDecisionInput,   0.0f),
                 (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault, DetectRevertInput,     0.0f)
              );
 
@@ -139,7 +139,7 @@ namespace Frontier
             // 移動フェーズでない場合は終了
             if (_phase != PlMovePhase.PL_MOVE) return;
 
-            if (Input.GetKeyUp(KeyCode.Space))
+            if( _inputFcd.GetInputConfirm() )
             {
                 GridInfo info;
                 var curGridIndex = _stageCtrl.GetCurrentGridIndex();

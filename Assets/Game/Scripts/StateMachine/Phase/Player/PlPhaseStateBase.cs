@@ -36,7 +36,7 @@ namespace Frontier
         /// </summary>
         virtual protected void DetectRevertInput()
         {
-            if (Input.GetKeyUp(KeyCode.Backspace))
+            if (_inputFcd.GetInputCancel())
             {
                 Back();
             }

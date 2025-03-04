@@ -24,7 +24,7 @@
         ALL_CURSOR = 0,     // 全方向
         VERTICAL_CURSOR,    // 縦方向
         HORIZONTAL_CURSOR,  // 横方向
-        DECISION,           // 決定
+        CONFIRM,           // 決定
         CANCEL,             // 戻る
         ESCAPE,             // 終了
 

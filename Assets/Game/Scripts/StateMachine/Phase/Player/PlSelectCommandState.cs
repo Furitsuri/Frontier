@@ -34,7 +34,7 @@ namespace Frontier
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.VERTICAL_CURSOR, "Select",   CanAcceptInputDefault, _commandList.UpdateInput,   0.0f),
-                (GuideIcon.DECISION,        "Decision", CanAcceptInputDefault, DetectTransitionInput,      0.0f),
+                (GuideIcon.CONFIRM,        "Decision", CanAcceptInputDefault, DetectTransitionInput,      0.0f),
                 (GuideIcon.CANCEL,          "Back",     CanAcceptInputDefault, DetectRevertInput,          0.0f)
              );
 
@@ -107,7 +107,7 @@ namespace Frontier
         /// </summary>
         override protected void DetectRevertInput()
         {
-            if (Input.GetKeyUp(KeyCode.Backspace))
+            if ( _inputFcd.GetInputCancel() )
             {
                 Back();
 
@@ -124,7 +124,7 @@ namespace Frontier
         /// </summary>
         private void DetectTransitionInput()
         {
-            if (Input.GetKeyUp(KeyCode.Space))
+            if ( _inputFcd.GetInputConfirm() )
             {
                 TransitIndex = GetCommandValue();
             }
