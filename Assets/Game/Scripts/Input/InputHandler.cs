@@ -1,11 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InputHandler : MonoBehaviour
 {
+    /// <summary>
+    /// 入力対応中のデバイス
+    /// </summary>
+    private enum TargetDevice
+    {
+        None        = -1,
+        Keyboard,
+        GamePad,
+        TouchPanel,
+    }
+
+    private TargetDevice _targetDevice          = TargetDevice.None;
+    // 入力インターフェース
+    private IInput _iInput                      = null;
     // 入力ガイド表示
     private InputGuidePresenter _inputGuideView = null;
     // 前フレームで入力が有効であったかの確認
@@ -18,13 +31,76 @@ public class InputHandler : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        InitializeTargetDevice();
         _prevEnableCbs = new bool[(int)Constants.GuideIcon.NUM_MAX];
     }
 
     // Update is called once per frame
     void Update()
     {
+        UpdateInputDevice();
         UpdateInputCodes();
+    }
+
+    /// <summary>
+    /// 入力対応するデバイス設定を初期化します
+    /// </summary>
+    private void InitializeTargetDevice()
+    {
+        if( Keyboard.current != null )
+        {
+            _targetDevice = TargetDevice.Keyboard;
+            _iInput = new KeyboardInput();
+        }
+        else if( Gamepad.current != null )
+        {
+            _targetDevice = TargetDevice.GamePad;
+            _iInput = new PadInput();
+        }
+        else if( Touchscreen.current != null )
+        {
+            _targetDevice = TargetDevice.TouchPanel;
+        }
+        else
+        {
+            _targetDevice = TargetDevice.None;
+        }
+
+        if( _iInput != null )
+        {
+            SwitchInputDevice( _iInput );
+        }
+    }
+
+    /// <summary>
+    /// 入力を検知して、使用するデバイスの設定を切り替えます
+    /// </summary>
+    private void UpdateInputDevice()
+    {
+        if( _targetDevice != TargetDevice.Keyboard &&
+            Keyboard.current != null &&
+            Keyboard.current.anyKey.wasPressedThisFrame )
+        {
+            _targetDevice = TargetDevice.Keyboard;
+            _iInput = new KeyboardInput();
+            SwitchInputDevice(_iInput);
+        }
+        else if ( _targetDevice != TargetDevice.GamePad &&
+            Gamepad.current != null &&
+            Gamepad.current.buttonSouth.wasPressedThisFrame )
+        {
+            _targetDevice = TargetDevice.GamePad;
+            _iInput = new PadInput();
+            SwitchInputDevice(_iInput);
+        }
+        else if( _targetDevice != TargetDevice.TouchPanel &&
+            Touchscreen.current != null &&
+            Touchscreen.current.primaryTouch.press.isPressed )
+        {
+            _targetDevice = TargetDevice.TouchPanel;
+            _iInput= new TouchInput();
+            SwitchInputDevice(_iInput);
+        }
     }
 
     /// <summary>
@@ -66,6 +142,15 @@ public class InputHandler : MonoBehaviour
     }
 
     /// <summary>
+    /// 入力デバイスを切り替えます
+    /// </summary>
+    /// <param name="iInput">切替先の入力デバイス</param>
+    private void SwitchInputDevice( IInput iInput )
+    {
+        _iInput = iInput;
+    }
+
+    /// <summary>
     /// 初期化します
     /// </summary>
     /// <param name="inputGuidePresenter">入力ガイド表示クラス</param>
@@ -75,4 +160,22 @@ public class InputHandler : MonoBehaviour
         _inputGuideView    = inputGuidePresenter;
         _refInputCodes     = Array.AsReadOnly( inputCodes );
     }
+
+    /// <summary>
+    /// 決定ボタンが押下されたかを取得します
+    /// </summary>
+    /// <returns>ボタンの押下</returns>
+    public bool IsConfirmPressed() { return _iInput.IsConfirmPressed(); }
+
+    /// <summary>
+    /// 取消ボタンが押下されたかを取得します
+    /// </summary>
+    /// <returns>ボタンの押下</returns>
+    public bool IsCancelPressed() { return _iInput.IsCancelPressed(); }
+
+    /// <summary>
+    /// オプションボタンが押下されたかを取得します
+    /// </summary>
+    /// <returns>ボタンの押下</returns>
+    public bool IsOptionsPressed() { return _iInput.IsOptionsPressed(); }
 }

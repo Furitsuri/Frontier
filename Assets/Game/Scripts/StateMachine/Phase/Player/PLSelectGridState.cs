@@ -26,7 +26,7 @@ namespace Frontier
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
                 ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,     _stageCtrl.OperateGridCursor, 0.0f),
-                ( GuideIcon.DECISION,   "Command",  CanAcceptInputCommand, DetectTransitCommandInput,    0.0f),
+                ( GuideIcon.CONFIRM,   "Command",  CanAcceptInputCommand, DetectTransitCommandInput,    0.0f),
                 ( GuideIcon.ESCAPE,     "TURN END", CanAcceptInputDefault,     DetectTransitTurnEndInput,    0.0f)
              );
         }
@@ -91,7 +91,7 @@ namespace Frontier
         /// </summary>
         public void DetectTransitCommandInput()
         {
-            if( Input.GetKeyUp(KeyCode.Space) )
+            if( _inputFcd.GetInputConfirm() )
             {
                 TransitIndex = (int)TransitTag.CharacterCommand;
             }
