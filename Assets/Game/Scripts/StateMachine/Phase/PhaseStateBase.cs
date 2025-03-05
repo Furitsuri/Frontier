@@ -11,14 +11,16 @@ namespace Frontier
         private bool _isBack = false;
         public int TransitIndex { get; protected set; } = -1;
         protected HierarchyBuilder _hierarchyBld        = null;
+        protected InputFacade _inputFcd                 = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
         protected UISystem _uiSystem                    = null;
 
         [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld, BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem)
+        public void Construct( HierarchyBuilder hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem )
         {
             _hierarchyBld   = hierarchyBld;
+            _inputFcd       = inputFcd;
             _btlRtnCtrl     = btlRtnCtrl;
             _stageCtrl      = stgCtrl;
             _uiSystem       = uiSystem;

@@ -105,7 +105,7 @@ namespace Frontier
         /// <summary>
         /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
         /// </summary>
-        override protected void DetectRevertInput()
+        override protected bool DetectRevertInput()
         {
             if ( _inputFcd.GetInputCancel() )
             {
@@ -115,19 +115,27 @@ namespace Frontier
                 if( _selectPlayer.IsRewindStatePossible() )
                 {
                     Rewind();
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>
         /// 次のステートに遷移します
         /// </summary>
-        private void DetectTransitionInput()
+        private bool DetectTransitionInput()
         {
             if ( _inputFcd.GetInputConfirm() )
             {
                 TransitIndex = GetCommandValue();
+
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>

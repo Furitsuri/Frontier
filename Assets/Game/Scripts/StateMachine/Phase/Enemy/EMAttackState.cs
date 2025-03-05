@@ -78,7 +78,7 @@ namespace Frontier
                     // ダメージ予測表示UIを表示
                     _uiSystem.BattleUi.ToggleBattleExpect(true);
 
-                    if (Input.GetKeyUp(KeyCode.Space))
+                    if( _inputFcd.GetInputConfirm() )
                     {
                         // キャラクターのアクションゲージを消費
                         _attackCharacter.ConsumeActionGauge();

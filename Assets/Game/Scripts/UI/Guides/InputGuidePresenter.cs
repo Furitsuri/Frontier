@@ -56,7 +56,7 @@ public class InputGuidePresenter : MonoBehaviour
     // 表示するガイドUIの配列
     private InputGuideUI[] _guideUiArrray;
     // InputFacadeで管理している入力コード情報の参照
-    private ReadOnlyCollection<InputFacade.ToggleInputCode> _refInputCodes;
+    private ReadOnlyCollection<InputFacade.ToggleInputCode> _inputCodes;
     // 各スプライトファイル名の末尾の番号
     private static readonly string[] spriteTailNoString =
     // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
@@ -110,9 +110,9 @@ public class InputGuidePresenter : MonoBehaviour
     /// </summary>
     private void InitGuideUi()
     {
-        for (int i = 0; i < _refInputCodes.Count; ++i)
+        for (int i = 0; i < _inputCodes.Count; ++i)
         {
-            var code = _refInputCodes[i];
+            var code = _inputCodes[i];
             InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>(GuideUIPrefab, gameObject, true);
             if (guideUi == null) continue;
 
@@ -167,9 +167,9 @@ public class InputGuidePresenter : MonoBehaviour
     {
         bool isToggled = false;
 
-        for (int i = 0; i < _refInputCodes.Count; ++i)
+        for (int i = 0; i < _inputCodes.Count; ++i)
         {
-            var code = _refInputCodes[i];
+            var code = _inputCodes[i];
             bool isActive = ( code.EnableCb != null && code.EnableCb() );
             if( !isToggled )
             {
@@ -292,7 +292,7 @@ public class InputGuidePresenter : MonoBehaviour
     /// <param name="inputCodes">入力可能となる情報</param>
     public void Init( InputFacade.ToggleInputCode[] inputCodes )
     {
-        _refInputCodes = Array.AsReadOnly(inputCodes);
+        _inputCodes = Array.AsReadOnly(inputCodes);
 
         InitGuideUi();
     }
@@ -302,9 +302,9 @@ public class InputGuidePresenter : MonoBehaviour
     /// </summary>
     public void RegisterInputGuides()
     {
-        for( int i = 0; i < _refInputCodes.Count; ++i )
+        for( int i = 0; i < _inputCodes.Count; ++i )
         {
-            var code = _refInputCodes[i];
+            var code = _inputCodes[i];
 
             _guideUiArrray[i].Register(_sprites, new InputGuideUI.InputGuide(code.Icon, code.Explanation));
         }

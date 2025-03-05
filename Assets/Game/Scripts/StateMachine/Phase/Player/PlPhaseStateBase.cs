@@ -9,19 +9,7 @@ namespace Frontier
 {
     public class PlPhaseStateBase : PhaseStateBase
     {
-        protected InputFacade _inputFcd = null;
-
         protected Player _selectPlayer = null;
-
-        [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem )
-        {
-            _hierarchyBld   = hierarchyBld;
-            _inputFcd       = inputFcd;
-            _btlRtnCtrl     = btlRtnCtrl;
-            _stageCtrl      = stgCtrl;
-            _uiSystem       = uiSystem;
-        }
 
         /// <summary>
         /// 現在のステートから退避します
@@ -34,12 +22,16 @@ namespace Frontier
         /// <summary>
         /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
         /// </summary>
-        virtual protected void DetectRevertInput()
+        virtual protected bool DetectRevertInput()
         {
             if (_inputFcd.GetInputCancel())
             {
                 Back();
+
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>

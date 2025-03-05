@@ -28,7 +28,7 @@ namespace Frontier
             base.Init();
             
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDefault, DetectMoveInput,       0.0f),
+                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDefault, DetectMoveInput,       1.13f),
                 (GuideIcon.CONFIRM,     "Decision", CanAcceptInputDefault, DetectDecisionInput,   0.0f),
                 (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault, DetectRevertInput,     0.0f)
              );
@@ -107,7 +107,7 @@ namespace Frontier
             base.Exit();
         }
 
-        override protected void DetectRevertInput()
+        override protected bool DetectRevertInput()
         {
             base.DetectRevertInput();
 
@@ -115,29 +115,35 @@ namespace Frontier
             {
                 // 巻き戻しを行う
                 Rewind();
+
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
         /// 移動入力を検知します
         /// </summary>
-        public void DetectMoveInput()
+        public bool DetectMoveInput()
         {
             // 移動フェーズでない場合は終了
-            if (_phase != PlMovePhase.PL_MOVE) return;
+            if (_phase != PlMovePhase.PL_MOVE) return false;
             // 移動入力受付が不可能である場合は終了
-            if ( !_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize()) ) return;
+            if ( !_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize()) ) return false;
 
             _stageCtrl.OperateGridCursor();
+
+            return false;
         }
 
         /// <summary>
         /// 決定入力を検知して状況毎に異なる処理を行います
         /// </summary>
-        public void DetectDecisionInput()
+        public bool DetectDecisionInput()
         {
             // 移動フェーズでない場合は終了
-            if (_phase != PlMovePhase.PL_MOVE) return;
+            if (_phase != PlMovePhase.PL_MOVE) return false;
 
             if( _inputFcd.GetInputConfirm() )
             {
@@ -161,7 +167,11 @@ namespace Frontier
                 {
                     _phase = PlMovePhase.PL_MOVE_END;
                 }
+
+                return true;
             }
+
+            return false;
         }
     }
 }
