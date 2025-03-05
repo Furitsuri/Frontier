@@ -37,7 +37,7 @@ namespace Frontier
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.HORIZONTAL_CURSOR,   "Select",   CanAcceptInputDefault,     _commandList.UpdateInput,   0.0f),
-                (GuideIcon.CONFIRM,            "Decision", CanAcceptInputDefault,     DetectTransitionInput,      0.0f),
+                (GuideIcon.CONFIRM,             "Decision", CanAcceptInputDefault,     DetectTransitionInput,      0.0f),
                 (GuideIcon.CANCEL,              "Back",     CanAcceptInputDefault,     DetectRevertInput,          0.0f)
              );
 
@@ -66,7 +66,7 @@ namespace Frontier
         /// <summary>
         /// 次のステートに遷移します
         /// </summary>
-        private void DetectTransitionInput()
+        private bool DetectTransitionInput()
         {
             if (_inputFcd.GetInputConfirm())
             {
@@ -77,7 +77,11 @@ namespace Frontier
                 }
 
                 Back();
+
+                return true;
             }
+
+            return false;
         }
     }
 }

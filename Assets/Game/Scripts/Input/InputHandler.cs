@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,18 +22,13 @@ public class InputHandler : MonoBehaviour
     private IInput _iInput                      = null;
     // 入力ガイド表示
     private InputGuidePresenter _inputGuideView = null;
-    // 前フレームで入力が有効であったかの確認
-    private bool[] _prevEnableCbs               = null;
-    // 最後に入力操作をした時間の保持
-    private float _operateInputLastTime         = 0.0f;
-    // InputFacade内のInputCodeの参照値(書き換え不可)
-    private ReadOnlyCollection<InputFacade.ToggleInputCode> _refInputCodes;
+    // InputFacade内のInputCodeの参照値
+    private InputFacade.ToggleInputCode[] _inputCodes;
 
     // Start is called before the first frame update
     void Start()
     {
         InitializeTargetDevice();
-        _prevEnableCbs = new bool[(int)Constants.GuideIcon.NUM_MAX];
     }
 
     // Update is called once per frame
@@ -109,36 +105,21 @@ public class InputHandler : MonoBehaviour
     private void UpdateInputCodes()
     {
         // コールバック関数が設定されている場合は動作させる
-        foreach (var code in _refInputCodes)
+        // MEMO : _inputCodesがstructであるため、forech文の場合、要素が参照ではなくコピーされるためfor文で記述
+        for ( int i = 0; i < _inputCodes.Length; ++i)
         {
-            int codeIdx = (int)code.Icon;
-            bool enable = code.EnableCb != null && code.EnableCb();
+            bool enable = _inputCodes[i].EnableCb != null && _inputCodes[i].EnableCb();
 
-            if (enable)
+            if ( enable && _inputCodes[i].IsIntervalTimePassed() )
             {
-                if (code.InputCb != null)
+                if (_inputCodes[i].InputCb == null) continue;
+
+                if (_inputCodes[i].InputCb())
                 {
-                    code.InputCb();
+                    _inputCodes[i].SetInputLastTime(Time.time);
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// ユーザーがキー操作を行った際に、
-    /// 短い時間で何度も同じキーが押下されたと判定されないためにインターバル時間を設けます
-    /// </summary>
-    /// <returns>キー操作が有効か無効か</returns>
-    private bool OperateInputControl()
-    {
-        if (Constants.OPERATE_KET_INTERVAL <= Time.time - _operateInputLastTime)
-        {
-            _operateInputLastTime = Time.time;
-
-            return true;
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -157,9 +138,15 @@ public class InputHandler : MonoBehaviour
     /// <param name="inputCodes">入力情報コード</param>
     public void Init( InputGuidePresenter inputGuidePresenter, InputFacade.ToggleInputCode[] inputCodes )
     {
-        _inputGuideView    = inputGuidePresenter;
-        _refInputCodes     = Array.AsReadOnly( inputCodes );
+        _inputGuideView     = inputGuidePresenter;
+        _inputCodes         = inputCodes;
     }
+
+    /// <summary>
+    /// 押下された方向ボタンの種類を取得します
+    /// </summary>
+    /// <returns>押下されたボタンに対応する方向</returns>
+    public Constants.Direction GetDirectionalPressed() { return _iInput.GetDirectionalPressed(); }
 
     /// <summary>
     /// 決定ボタンが押下されたかを取得します

@@ -25,9 +25,9 @@ namespace Frontier
             
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,     _stageCtrl.OperateGridCursor, 0.0f),
-                ( GuideIcon.CONFIRM,   "Command",  CanAcceptInputCommand, DetectTransitCommandInput,    0.0f),
-                ( GuideIcon.ESCAPE,     "TURN END", CanAcceptInputDefault,     DetectTransitTurnEndInput,    0.0f)
+                ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,  DetectOperateCursor,        0.13f),
+                ( GuideIcon.CONFIRM,    "Command",  CanAcceptInputCommand,  DetectTransitCommandInput,  0.0f),
+                ( GuideIcon.ESCAPE,     "TURN END", CanAcceptInputDefault,  DetectTransitTurnEndInput,  0.0f)
              );
         }
 
@@ -87,27 +87,50 @@ namespace Frontier
         }
 
         /// <summary>
+        /// グリッドカーソルを操作します
+        /// </summary>
+        public bool DetectOperateCursor()
+        {
+            Constants.Direction direction = _inputFcd.GetInputDirection();
+
+            if( _stageCtrl.OperateGridCursor( direction ) )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// キャラクターコマンドの遷移へ移る際のコールバック関数です
         /// </summary>
-        public void DetectTransitCommandInput()
+        public bool DetectTransitCommandInput()
         {
             if( _inputFcd.GetInputConfirm() )
             {
                 TransitIndex = (int)TransitTag.CharacterCommand;
+
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
         /// ターン終了遷移へ移る際のコールバック関数です
         /// </summary>
         /// <returns>ターン終了の成否</returns>
-        public void DetectTransitTurnEndInput()
+        public bool DetectTransitTurnEndInput()
         {
             // ターン終了確認へ遷移
-            if (Input.GetKeyUp(KeyCode.Escape))
+            if( _inputFcd.GetInputOptions() )
             {
                 TransitIndex = (int)TransitTag.TurnEnd;
+
+                return true;
             }
+
+            return false;
         }
     }
 }

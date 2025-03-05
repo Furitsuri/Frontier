@@ -305,31 +305,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 受信した方向情報から、現在のグリッドを操作します
-        /// </summary>
-        /// <param name="direction">指定された進行方向</param>
-        public void OperateGridCursor( Constants.Direction direction )
-        {
-            switch( direction )
-            {
-                case Constants.Direction.FORWARD:
-                    _gridCursor.Up();
-                    break;
-                case Constants.Direction.BACK:
-                    _gridCursor.Down();
-                    break;
-                case Constants.Direction.LEFT:
-                    _gridCursor.Left();
-                    break;
-                case Constants.Direction.RIGHT:
-                    _gridCursor.Right();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
         /// 現在のグリッドをキー入力で操作します
         /// </summary>
         public void OperateGridCursor()
@@ -347,6 +322,29 @@ namespace Frontier.Stage
                 if (Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())     { _gridCursor.Left();   }
                 if (Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())    { _gridCursor.Right();  }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="direction"></param>
+        public bool OperateGridCursor( Constants.Direction direction )
+        {
+            // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
+            if (_gridCursor.GridState == GridCursor.State.ATTACK)
+            {
+                if ( direction == Constants.Direction.FORWARD || direction == Constants.Direction.LEFT) { _gridCursor.TransitPrevTarget();  return true; }
+                if ( direction == Constants.Direction.BACK || direction == Constants.Direction.RIGHT ) { _gridCursor.TransitNextTarget();   return true; }
+            }
+            else
+            {
+                if (direction == Constants.Direction.FORWARD)   { _gridCursor.Up();     return true; }
+                if (direction == Constants.Direction.BACK)      { _gridCursor.Down();   return true; }
+                if (direction == Constants.Direction.LEFT)      { _gridCursor.Left();   return true; }
+                if (direction == Constants.Direction.RIGHT)     { _gridCursor.Right();  return true; }
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Frontier;
+using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -10,16 +11,18 @@ public class InputFacade
     /// </summary>
     public struct ToggleInputCode
     {
-        // キーアイコン
+        // 入力アイコン
         public GuideIcon Icon;
         // アイコンに対する説明文
         public string Explanation;
         // 有効・無効を判定するコールバック
         public EnableCallback EnableCb;
-        // キーを押下した際にコールバックされる関数
+        // 入力を押下した際にコールバックされる関数
         public InputCallback InputCb;
-        // キー処理を有効にするインターバル
-        public float Interval;
+        // 入力処理を有効にするインターバル
+        public float InputInterval;
+        // 入力処理を行った最後の時間
+        private float InputLastTime;
 
         /// <summary>
         /// 入力コードを設定します
@@ -34,7 +37,8 @@ public class InputFacade
             Explanation     = expl;
             EnableCb        = enableCb;
             InputCb         = inputCb;
-            Interval        = interval;
+            InputInterval   = interval;
+            InputLastTime   = 0f;
         }
 
         /// <summary>
@@ -47,12 +51,30 @@ public class InputFacade
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="time"></param>
+        public void SetInputLastTime( float time )
+        {
+            InputLastTime = time;
+        }
+
+        /// <summary>
         /// 未登録であるかを取得します
         /// </summary>
         /// <returns>未登録か否か</returns>
         public bool IsUnRegistererd()
         {
             return ( EnableCb == null );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool IsIntervalTimePassed()
+        {
+            return ( InputInterval <= Time.time - InputLastTime );
         }
     }
 
@@ -63,7 +85,7 @@ public class InputFacade
     private ToggleInputCode[] _inputCodes;
 
     public delegate bool EnableCallback();
-    public delegate void InputCallback();
+    public delegate bool InputCallback();
 
     [Inject]
     public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
@@ -121,10 +143,10 @@ public class InputFacade
     {
         for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
         {
-            _inputCodes[i].Explanation  = "";
-            _inputCodes[i].EnableCb     = null;
-            _inputCodes[i].InputCb      = null;
-            _inputCodes[i].Interval     = 0.0f;
+            _inputCodes[i].Explanation      = "";
+            _inputCodes[i].EnableCb         = null;
+            _inputCodes[i].InputCb          = null;
+            _inputCodes[i].InputInterval    = 0.0f;
         }
     }
 
@@ -161,6 +183,12 @@ public class InputFacade
 
         RegisterInputCodes( args );
     }
+
+    /// <summary>
+    /// 押下された方向ボタンの種類を取得します
+    /// </summary>
+    /// <returns>押下されたボタンに対応する方向</returns>
+    public Constants.Direction GetInputDirection() { return _inputHdr.GetDirectionalPressed(); }
 
     /// <summary>
     /// 決定ボタンが押下されたかを取得します

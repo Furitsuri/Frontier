@@ -26,7 +26,7 @@ namespace Frontier.Entities
         /// キャラクターの思考タイプを設定します
         /// </summary>
         /// <param name="type">設定する思考タイプ</param>
-        virtual public void SetThinkType(Enemy.ThinkingType type) { }
+        virtual public void SetThinkType( Npc.ThinkingType type ) { }
 
         /// <summary>
         /// 設定されているAIを取得します

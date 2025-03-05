@@ -71,7 +71,7 @@ public class CommandList
     /// <summary>
     /// 入力情報の更新を行います
     /// </summary>
-    public void UpdateInput()
+    public bool UpdateInput()
     {
         bool isUpdate = false;
 
@@ -105,7 +105,11 @@ public class CommandList
         if (isUpdate) {
             _cmdIdxVal.index = GetCurrentIndex();
             _cmdIdxVal.value = GetCurrentValue();
+
+            return true;
         }
+
+        return false;
     }
 
     /// <summary>
