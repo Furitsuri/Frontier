@@ -5,84 +5,11 @@ using static Constants;
 
 public class InputFacade
 {
-    /// <summary>
-    /// 指定のKeyCodeがtrueであれば有効,
-    /// falseであれば無効を表します
-    /// </summary>
-    public struct ToggleInputCode
-    {
-        // 入力アイコン
-        public GuideIcon Icon;
-        // アイコンに対する説明文
-        public string Explanation;
-        // 有効・無効を判定するコールバック
-        public EnableCallback EnableCb;
-        // 入力を押下した際にコールバックされる関数
-        public InputCallback InputCb;
-        // 入力処理を有効にするインターバル
-        public float InputInterval;
-        // 入力処理を行った最後の時間
-        private float InputLastTime;
-
-        /// <summary>
-        /// 入力コードを設定します
-        /// </summary>
-        /// <param name="enableCb">入力受付判定のコールバック</param>
-        /// <param name="icon">ガイドアイコン</param>
-        /// <param name="expl">説明文</param>
-        /// <param name="inputCb">入力時のコールバック</param>
-        public ToggleInputCode( GuideIcon icon, string expl, EnableCallback enableCb, InputCallback inputCb, float interval )
-        {
-            Icon            = icon;
-            Explanation     = expl;
-            EnableCb        = enableCb;
-            InputCb         = inputCb;
-            InputInterval   = interval;
-            InputLastTime   = 0f;
-        }
-
-        /// <summary>
-        /// オペレーター
-        /// </summary>
-        /// <param name="tuple">オペレーター対象の設定</param>
-        public static implicit operator ToggleInputCode( ( GuideIcon, string, EnableCallback, InputCallback, float ) tuple)
-        {
-            return new ToggleInputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5 );
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="time"></param>
-        public void SetInputLastTime( float time )
-        {
-            InputLastTime = time;
-        }
-
-        /// <summary>
-        /// 未登録であるかを取得します
-        /// </summary>
-        /// <returns>未登録か否か</returns>
-        public bool IsUnRegistererd()
-        {
-            return ( EnableCb == null );
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public bool IsIntervalTimePassed()
-        {
-            return ( InputInterval <= Time.time - InputLastTime );
-        }
-    }
-
     private HierarchyBuilder _hierarchyBld      = null;
     private InputGuidePresenter _inputGuideView = null;
     private UISystem _uiSystem                  = null;
     private InputHandler _inputHdr              = null;
-    private ToggleInputCode[] _inputCodes;
+    private InputCode[] _inputCodes;
 
     public delegate bool EnableCallback();
     public delegate bool InputCallback();
@@ -99,7 +26,7 @@ public class InputFacade
     /// </summary>
     private void InitInputCodes()
     {
-        _inputCodes = new ToggleInputCode[(int)Constants.GuideIcon.NUM_MAX]
+        _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
         {
             ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f ),
             ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f ),
@@ -156,7 +83,7 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void RegisterInputCodes( params ToggleInputCode[] args )
+    public void RegisterInputCodes( params InputCode[] args )
     {
         foreach( var arg in args )
         {
@@ -177,7 +104,7 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void ReRegisterInputCodes( params ToggleInputCode[] args )
+    public void ReRegisterInputCodes( params InputCode[] args )
     {
         ResetInputCodes();
 

@@ -23,7 +23,7 @@ public class InputHandler : MonoBehaviour
     // 入力ガイド表示
     private InputGuidePresenter _inputGuideView = null;
     // InputFacade内のInputCodeの参照値
-    private InputFacade.ToggleInputCode[] _inputCodes;
+    private ReadOnlyCollection<InputCode> _inputCodes;
 
     // Start is called before the first frame update
     void Start()
@@ -105,19 +105,17 @@ public class InputHandler : MonoBehaviour
     private void UpdateInputCodes()
     {
         // コールバック関数が設定されている場合は動作させる
-        // MEMO : _inputCodesがstructであるため、forech文の場合、要素が参照ではなくコピーされるためfor文で記述
-        for ( int i = 0; i < _inputCodes.Length; ++i)
+        foreach( var code in _inputCodes )
         {
-            bool enable = _inputCodes[i].EnableCb != null && _inputCodes[i].EnableCb();
+            bool enable = code.EnableCb != null && code.EnableCb();
 
-            if ( enable && _inputCodes[i].IsIntervalTimePassed() )
+            if (!enable || !code.IsIntervalTimePassed()) continue;
+            
+            if (code.InputCb == null) continue;
+
+            if (code.InputCb())
             {
-                if (_inputCodes[i].InputCb == null) continue;
-
-                if (_inputCodes[i].InputCb())
-                {
-                    _inputCodes[i].SetInputLastTime(Time.time);
-                }
+                code.SetInputLastTime(Time.time);
             }
         }
     }
@@ -136,10 +134,11 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     /// <param name="inputGuidePresenter">入力ガイド表示クラス</param>
     /// <param name="inputCodes">入力情報コード</param>
-    public void Init( InputGuidePresenter inputGuidePresenter, InputFacade.ToggleInputCode[] inputCodes )
+    public void Init( InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes )
     {
         _inputGuideView     = inputGuidePresenter;
-        _inputCodes         = inputCodes;
+        // _inputCodes         = inputCodes;
+        _inputCodes         = Array.AsReadOnly( inputCodes );
     }
 
     /// <summary>

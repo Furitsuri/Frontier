@@ -1,0 +1,76 @@
+﻿using UnityEngine;
+using static Constants;
+using static InputFacade;
+
+/// <summary>
+/// 指定のKeyCodeがtrueであれば有効,
+/// falseであれば無効を表します
+/// </summary>
+public class InputCode
+{
+    // 入力アイコン
+    public GuideIcon Icon;
+    // アイコンに対する説明文
+    public string Explanation;
+    // 有効・無効を判定するコールバック
+    public EnableCallback EnableCb;
+    // 入力を押下した際にコールバックされる関数
+    public InputCallback InputCb;
+    // 入力処理を有効にするインターバル
+    public float InputInterval;
+    // 入力処理を行った最後の時間
+    private float InputLastTime;
+
+    /// <summary>
+    /// 入力コードを設定します
+    /// </summary>
+    /// <param name="enableCb">入力受付判定のコールバック</param>
+    /// <param name="icon">ガイドアイコン</param>
+    /// <param name="expl">説明文</param>
+    /// <param name="inputCb">入力時のコールバック</param>
+    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, InputCallback inputCb, float interval)
+    {
+        Icon            = icon;
+        Explanation     = expl;
+        EnableCb        = enableCb;
+        InputCb         = inputCb;
+        InputInterval   = interval;
+        InputLastTime   = 0f;
+    }
+
+    /// <summary>
+    /// オペレーター
+    /// </summary>
+    /// <param name="tuple">オペレーター対象の設定</param>
+    public static implicit operator InputCode((GuideIcon, string, EnableCallback, InputCallback, float) tuple)
+    {
+        return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
+    }
+
+    /// <summary>
+    /// 最後に入力を行った時間を設定します
+    /// </summary>
+    /// <param name="time">入力を行った時間</param>
+    public void SetInputLastTime(float time)
+    {
+        InputLastTime = time;
+    }
+
+    /// <summary>
+    /// 未登録であるかを取得します
+    /// </summary>
+    /// <returns>未登録か否か</returns>
+    public bool IsUnRegistererd()
+    {
+        return (EnableCb == null);
+    }
+
+    /// <summary>
+    /// インターバル時間が経過したかの判定を取得します
+    /// </summary>
+    /// <returns>インターバル時間が経過したか</returns>
+    public bool IsIntervalTimePassed()
+    {
+        return (InputInterval <= Time.time - InputLastTime);
+    }
+}

@@ -56,7 +56,7 @@ public class InputGuidePresenter : MonoBehaviour
     // 表示するガイドUIの配列
     private InputGuideUI[] _guideUiArrray;
     // InputFacadeで管理している入力コード情報の参照
-    private ReadOnlyCollection<InputFacade.ToggleInputCode> _inputCodes;
+    private ReadOnlyCollection<InputCode> _inputCodes;
     // 各スプライトファイル名の末尾の番号
     private static readonly string[] spriteTailNoString =
     // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
@@ -290,7 +290,7 @@ public class InputGuidePresenter : MonoBehaviour
     /// 初期化します
     /// </summary>
     /// <param name="inputCodes">入力可能となる情報</param>
-    public void Init( InputFacade.ToggleInputCode[] inputCodes )
+    public void Init( InputCode[] inputCodes )
     {
         _inputCodes = Array.AsReadOnly(inputCodes);
 
