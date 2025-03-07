@@ -38,6 +38,8 @@ namespace Frontier
             {
                 if (CurrentNode.IsBack() && CurrentNode.Parent == null)
                 {
+                    CurrentNode.Exit();
+
                     return true;
                 }
             }

@@ -55,6 +55,5 @@ namespace Frontier
             // 現在のステートから脱出する場合は入力を受け付けない
             return !IsBack();
         }
-
     }
 }
