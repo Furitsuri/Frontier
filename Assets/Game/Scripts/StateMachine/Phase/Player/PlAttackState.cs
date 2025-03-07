@@ -2,6 +2,7 @@
 using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
+using static Constants;
 
 namespace Frontier
 {
@@ -26,6 +27,11 @@ namespace Frontier
         override public void Init()
         {
             base.Init();
+
+            _inputFcd.RegisterInputCodes(
+                (GuideIcon.ALL_CURSOR,  "TargetSelect", CanAcceptInputDefault, DetectTargetSelectInput, DIRECTION_INPUT_INTERVAL),
+                (GuideIcon.CANCEL,      "Back",         CanAcceptInputDefault, DetectRevertInput,       0.0f)
+             );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
@@ -74,9 +80,6 @@ namespace Frontier
             switch (_phase)
             {
                 case PLAttackPhase.PL_ATTACK_SELECT_GRID:
-                    // グリッドの操作
-                    _stageCtrl.OperateGridCursor();
-
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
                     _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
@@ -195,6 +198,25 @@ namespace Frontier
             _stageCtrl.SetGridCursorActive(true);
 
             base.Exit();
+        }
+
+        /// <summary>
+        /// 攻撃対象選択の入力を検知します
+        /// </summary>
+        /// <returns>入力の有無</returns>
+        public bool DetectTargetSelectInput()
+        {
+            // 攻撃対象選択フェーズでない場合は終了
+            if (_phase != PLAttackPhase.PL_ATTACK_SELECT_GRID) return false;
+
+            Direction direction = _inputFcd.GetInputDirection();
+
+            if (_stageCtrl.OperateTargetSelect(direction))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
