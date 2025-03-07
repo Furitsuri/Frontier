@@ -21,7 +21,6 @@ namespace Frontier
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);
-
             
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
