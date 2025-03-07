@@ -28,9 +28,9 @@ namespace Frontier
             base.Init();
             
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDefault, DetectMoveInput,       1.13f),
-                (GuideIcon.CONFIRM,     "Decision", CanAcceptInputDefault, DetectDecisionInput,   0.0f),
-                (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault, DetectRevertInput,     0.0f)
+                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDefault, DetectMoveInput,     DIRECTION_INPUT_INTERVAL),
+                (GuideIcon.CONFIRM,     "Decision", CanAcceptInputDefault, DetectDecisionInput, 0.0f),
+                (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault, DetectRevertInput,   0.0f)
              );
 
             _phase = PlMovePhase.PL_MOVE;
@@ -132,7 +132,12 @@ namespace Frontier
             // 移動入力受付が不可能である場合は終了
             if ( !_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize()) ) return false;
 
-            _stageCtrl.OperateGridCursor();
+            Direction direction = _inputFcd.GetInputDirection();
+
+            if ( _stageCtrl.OperateGridCursor(direction) )
+            {
+                return true;
+            }
 
             return false;
         }

@@ -63,8 +63,6 @@ namespace Frontier.Stage
         private Footprint _footprint;
         private List<GridMesh> _gridMeshs;
         private List<int> _attackableGridIndexs;
-        private float _operateKeyInterval = 0.13f;
-        private float _operateKeyLastTime = 0;
         
         public int GridTotalNum { get; private set; } = 0;
 
@@ -305,61 +303,29 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 現在のグリッドをキー入力で操作します
+        /// 指定方向にグリッドを移動させます
         /// </summary>
-        public void OperateGridCursor()
-        {
-            // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
-            if (_gridCursor.GridState == GridCursor.State.ATTACK)
-            {
-                if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.LeftArrow))       { _gridCursor.TransitPrevTarget(); }
-                if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow))    { _gridCursor.TransitNextTarget(); }
-            }
-            else
-            {
-                if (Input.GetKey(KeyCode.UpArrow) && OperateKeyControl())       { _gridCursor.Up();     }
-                if (Input.GetKey(KeyCode.DownArrow) && OperateKeyControl())     { _gridCursor.Down();   }
-                if (Input.GetKey(KeyCode.LeftArrow) && OperateKeyControl())     { _gridCursor.Left();   }
-                if (Input.GetKey(KeyCode.RightArrow) && OperateKeyControl())    { _gridCursor.Right();  }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="direction">グリッドの移動方向</param>
+        /// /// <returns>グリッド移動の有無</returns>
         public bool OperateGridCursor( Constants.Direction direction )
         {
-            // 攻撃フェーズ状態では攻撃可能なキャラクターを左右で選択する
-            if (_gridCursor.GridState == GridCursor.State.ATTACK)
-            {
-                if ( direction == Constants.Direction.FORWARD || direction == Constants.Direction.LEFT) { _gridCursor.TransitPrevTarget();  return true; }
-                if ( direction == Constants.Direction.BACK || direction == Constants.Direction.RIGHT ) { _gridCursor.TransitNextTarget();   return true; }
-            }
-            else
-            {
-                if (direction == Constants.Direction.FORWARD)   { _gridCursor.Up();     return true; }
-                if (direction == Constants.Direction.BACK)      { _gridCursor.Down();   return true; }
-                if (direction == Constants.Direction.LEFT)      { _gridCursor.Left();   return true; }
-                if (direction == Constants.Direction.RIGHT)     { _gridCursor.Right();  return true; }
-            }
+            if (direction == Constants.Direction.FORWARD)   { _gridCursor.Up();     return true; }
+            if (direction == Constants.Direction.BACK)      { _gridCursor.Down();   return true; }
+            if (direction == Constants.Direction.LEFT)      { _gridCursor.Left();   return true; }
+            if (direction == Constants.Direction.RIGHT)     { _gridCursor.Right();  return true; }
 
             return false;
         }
 
         /// <summary>
-        /// キー操作をした際に、
-        /// 短い時間で何度も同じキーが押下されたと判定されないようにインターバルを設けます
+        /// 攻撃対象を設定します
         /// </summary>
-        /// <returns>キー操作が有効か無効か</returns>
-        private bool OperateKeyControl()
+        /// <param name="direction">グリッドの移動方向</param>
+        /// <returns>グリッド移動の有無</returns>
+        public bool OperateTargetSelect( Constants.Direction direction )
         {
-            if( _operateKeyInterval <= Time.time - _operateKeyLastTime)
-            {
-                _operateKeyLastTime = Time.time;
-
-                return true;
-            }
+            if (direction == Constants.Direction.FORWARD || direction == Constants.Direction.LEFT)  { _gridCursor.TransitPrevTarget(); return true; }
+            if (direction == Constants.Direction.BACK || direction == Constants.Direction.RIGHT)    { _gridCursor.TransitNextTarget(); return true; }
 
             return false;
         }

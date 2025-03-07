@@ -25,7 +25,7 @@ namespace Frontier
             
             // キーガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,  DetectOperateCursor,        0.13f),
+                ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,  DetectOperateCursor,        DIRECTION_INPUT_INTERVAL),
                 ( GuideIcon.CONFIRM,    "Command",  CanAcceptInputCommand,  DetectTransitCommandInput,  0.0f),
                 ( GuideIcon.ESCAPE,     "TURN END", CanAcceptInputDefault,  DetectTransitTurnEndInput,  0.0f)
              );

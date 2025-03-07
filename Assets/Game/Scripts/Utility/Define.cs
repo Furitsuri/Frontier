@@ -65,9 +65,9 @@
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
-    // 最後にキー操作を行ってから、次のキー操作が有効になるまでのインターバル
-    public const float OPERATE_KET_INTERVAL = 0.17f;
-    // キーガイドにおけるスプライトテキスト間の幅
+    // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
+    public const float DIRECTION_INPUT_INTERVAL = 0.13f;
+    // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
     public const string LAYER_NAME_CHARACTER            = "Character";
