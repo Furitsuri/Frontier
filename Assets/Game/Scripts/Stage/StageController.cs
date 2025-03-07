@@ -122,7 +122,7 @@ namespace Frontier.Stage
             Vector3[] vertices;
             Vector2[] uvs;
             int[] lines;
-            UnityEngine.Color[] colors;
+            Color[] colors;
 
             _stageModel.WidthX = GetGridSize() * _stageModel.GetGridRowNum() / 2.0f;
             _stageModel.WidthZ = GetGridSize() * _stageModel.GetGridColumnNum() / 2.0f;
@@ -132,7 +132,7 @@ namespace Frontier.Stage
             vertices = new Vector3[resolution];
             uvs = new Vector2[resolution];
             lines = new int[resolution];
-            colors = new UnityEngine.Color[resolution];
+            colors = new Color[resolution];
 
             // X方向の頂点
             for (int i = 0; count < 2 * (_stageModel.GetGridRowNum() + 1); ++i, count = 2 * i)
@@ -613,11 +613,10 @@ namespace Frontier.Stage
                     {
                         var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>(_gridMeshObject, true);
                         DebugUtils.NULL_ASSERT(gridMesh);
-                        if (gridMesh != null)
-                        {
-                            _gridMeshs.Add(gridMesh);
-                            _gridMeshs[count++].DrawGridMesh(info.charaStandPos, GetGridSize(), meshTypes[j]);
-                        }
+                        if( gridMesh == null ) continue;
+                     
+                        _gridMeshs.Add(gridMesh);
+                        _gridMeshs[count++].DrawGridMesh(info.charaStandPos, GetGridSize(), meshTypes[j]);
                         Debug.Log(dbgStrs[j] + i);
 
                         break;
@@ -640,7 +639,11 @@ namespace Frontier.Stage
             {
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
                 {
-                    Instantiate(_gridMeshObject);  // TODO : 仮
+                    var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>(_gridMeshObject, true);
+                    DebugUtils.NULL_ASSERT(gridMesh);
+                    if (gridMesh == null) continue;
+
+                    _gridMeshs.Add(gridMesh);
                     _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
 
                     Debug.Log("Attackable Grid Index : " + i);
