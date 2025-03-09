@@ -37,8 +37,6 @@ public class InputGuidePresenter : MonoBehaviour
 
     // キーガイドバーの入出状態
     private FadeMode _fadeMode = FadeMode.NEUTRAL;
-    // 前状態のガイドUIリストの数
-    private int _prevGuideUiListCount = 0;
     // 現在の背景の幅
     private float _currentBackGroundWidth = 0f;
     // ガイドが遷移する以前の背景の幅
@@ -89,11 +87,10 @@ public class InputGuidePresenter : MonoBehaviour
         _guideUiArrray          = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
         _rectTransform          = GetComponent<RectTransform>();
         _layoutGrp              = GetComponent<HorizontalLayoutGroup>();
-        _prevGuideUiListCount   = 0;
 
         DebugUtils.NULL_ASSERT( _hierarchyBld );
         DebugUtils.NULL_ASSERT( _rectTransform );
-        DebugUtils.NULL_ASSERT( _prevGuideUiListCount );
+        DebugUtils.NULL_ASSERT( _layoutGrp );
 
         LoadSprites();
     }
@@ -214,18 +211,9 @@ public class InputGuidePresenter : MonoBehaviour
     /// </summary>
     private void TransitFadeMode()
     {
-        _fadeMode = FadeMode.NEUTRAL;
-        int guideUiCount = EvaluateActiveGuideUiCount();
-
-        if ( 0 < Mathf.Abs(guideUiCount - _prevGuideUiListCount) )
-        {
-            _fadeMode = FadeMode.FADE;
-            // ガイドの登録に合わせ、ガイドを納める背景の幅を求める
-            _targetBackGroundWidth = CalcurateBackGroundWidth();
-        }
-
-        // 現在表示しているガイド数を保存
-        _prevGuideUiListCount = guideUiCount;
+        _fadeMode = FadeMode.FADE;
+        // ガイドの登録に合わせ、ガイドを納める背景の幅を求める
+        _targetBackGroundWidth = CalcurateBackGroundWidth();
         // フェード前の背景の幅を保存
         _prevTransitBackGroundWidth = _rectTransform.sizeDelta.x;
     }
