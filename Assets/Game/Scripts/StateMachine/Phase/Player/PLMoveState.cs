@@ -28,9 +28,9 @@ namespace Frontier
             base.Init();
             
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDefault, DetectMoveInput,     DIRECTION_INPUT_INTERVAL),
-                (GuideIcon.CONFIRM,     "Decision", CanAcceptInputDefault, DetectDecisionInput, 0.0f),
-                (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault, DetectRevertInput,   0.0f)
+                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDirection,    DetectDirectionInput,   DIRECTION_INPUT_INTERVAL),
+                (GuideIcon.CONFIRM,     "Decision", CanAcceptInputConfirm,      DetectConfirmInput,     0.0f),
+                (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault,      DetectRevertInput,      0.0f)
              );
 
             _phase = PlMovePhase.PL_MOVE;
@@ -123,18 +123,46 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool CanAcceptInputConfirm()
+        {
+            if (!CanAcceptInputDefault()) return false;
+
+            // 攻撃対象選択フェーズでない場合は終了
+            if (PlMovePhase.PL_MOVE == _phase) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool CanAcceptInputDirection()
+        {
+            if (!CanAcceptInputDefault()) return false;
+
+            // 移動フェーズでない場合、または移動入力受付が不可能である場合は終了
+            if (PlMovePhase.PL_MOVE == _phase && _selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize())) return true;
+
+            return false;
+        }
+
+        /// <summary>
         /// 移動入力を検知します
         /// </summary>
-        public bool DetectMoveInput()
+        public bool DetectDirectionInput()
         {
             // 移動フェーズでない場合は終了
-            if (_phase != PlMovePhase.PL_MOVE) return false;
+            if (PlMovePhase.PL_MOVE != _phase) return false;
             // 移動入力受付が不可能である場合は終了
-            if ( !_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize()) ) return false;
+            if (!_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize())) return false;
 
             Direction direction = _inputFcd.GetInputDirection();
 
-            if ( _stageCtrl.OperateGridCursor(direction) )
+            if (_stageCtrl.OperateGridCursor(direction))
             {
                 return true;
             }
@@ -145,11 +173,8 @@ namespace Frontier
         /// <summary>
         /// 決定入力を検知して状況毎に異なる処理を行います
         /// </summary>
-        public bool DetectDecisionInput()
+        public bool DetectConfirmInput()
         {
-            // 移動フェーズでない場合は終了
-            if (_phase != PlMovePhase.PL_MOVE) return false;
-
             if( _inputFcd.GetInputConfirm() )
             {
                 GridInfo info;

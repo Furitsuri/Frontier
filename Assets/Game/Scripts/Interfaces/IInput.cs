@@ -1,4 +1,7 @@
-﻿
+﻿/// <summary>
+/// 入力インターフェ―スです
+/// キーボードやゲームパッドなど、入力デバイスごとに切り替えます
+/// </summary>
 public interface IInput
 {
     public Constants.Direction GetDirectionalPressed();

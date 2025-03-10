@@ -1,19 +1,20 @@
 ﻿using Frontier.Stage;
 using Frontier.Entities;
 using UnityEngine;
+using static Constants;
 
 namespace Frontier
 {
     public class EMAttackState : PhaseStateBase
     {
-        private enum EMAttackPhase
+        private enum EmAttackPhase
         {
             EM_ATTACK_CONFIRM = 0,
             EM_ATTACK_EXECUTE,
             EM_ATTACK_END,
         }
 
-        private EMAttackPhase _phase;
+        private EmAttackPhase _phase;
         private int _curentGridIndex                    = -1;
         private Enemy _attackCharacter                  = null;
         private Character _targetCharacter              = null;
@@ -23,9 +24,13 @@ namespace Frontier
         {
             base.Init();
 
-            _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
-            _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
+            _inputFcd.RegisterInputCodes(
+                ( GuideIcon.CONFIRM,    "Confirm", CanAcceptConfirm,   DetectConfirmInput, 0.0f)
+            );
+
+            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
+            _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
+            _attackCharacter    = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_attackCharacter != null);
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
@@ -54,7 +59,7 @@ namespace Frontier
             // 攻撃シーケンスを初期化
             _attackSequence.Init();
 
-            _phase = EMAttackPhase.EM_ATTACK_CONFIRM;
+            _phase = EmAttackPhase.EM_ATTACK_CONFIRM;
         }
 
         override public bool Update()
@@ -67,7 +72,7 @@ namespace Frontier
 
             switch (_phase)
             {
-                case EMAttackPhase.EM_ATTACK_CONFIRM:
+                case EmAttackPhase.EM_ATTACK_CONFIRM:
                     // 使用スキルを選択する
                     _attackCharacter.SelectUseSkills(SkillsData.SituationType.ATTACK);
                     _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
@@ -78,37 +83,14 @@ namespace Frontier
                     // ダメージ予測表示UIを表示
                     _uiSystem.BattleUi.ToggleBattleExpect(true);
 
-                    if( _inputFcd.GetInputConfirm() )
-                    {
-                        // キャラクターのアクションゲージを消費
-                        _attackCharacter.ConsumeActionGauge();
-                        _targetCharacter.ConsumeActionGauge();
-
-                        // 選択グリッドを一時非表示
-                        _stageCtrl.SetGridCursorActive(false);
-
-                        // アタックカーソルUI非表示
-                        _uiSystem.BattleUi.ToggleAttackCursorE2P(false);
-
-                        // ダメージ予測表示UIを非表示
-                        _uiSystem.BattleUi.ToggleBattleExpect(false);
-
-                        // グリッド状態の描画をクリア
-                        _stageCtrl.ClearGridMeshDraw();
-
-                        // 攻撃シーケンスの開始
-                        _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
-
-                        _phase = EMAttackPhase.EM_ATTACK_EXECUTE;
-                    }
                     break;
-                case EMAttackPhase.EM_ATTACK_EXECUTE:
+                case EmAttackPhase.EM_ATTACK_EXECUTE:
                     if (_attackSequence.Update())
                     {
-                        _phase = EMAttackPhase.EM_ATTACK_END;
+                        _phase = EmAttackPhase.EM_ATTACK_END;
                     }
                     break;
-                case EMAttackPhase.EM_ATTACK_END:
+                case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
                     _attackCharacter.SetEndCommandStatus( Character.Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
@@ -166,6 +148,52 @@ namespace Frontier
             // Stage.StageController.Instance.SetGridCursorActive(true);
 
             base.Exit();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool CanAcceptConfirm()
+        {
+            if( !CanAcceptInputDefault() ) return false;
+
+            if( EmAttackPhase.EM_ATTACK_CONFIRM == _phase ) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool DetectConfirmInput()
+        {
+            if (_inputFcd.GetInputConfirm())
+            {
+                // キャラクターのアクションゲージを消費
+                _attackCharacter.ConsumeActionGauge();
+                _targetCharacter.ConsumeActionGauge();
+
+                // 選択グリッドを一時非表示
+                _stageCtrl.SetGridCursorActive(false);
+
+                // アタックカーソルUI非表示
+                _uiSystem.BattleUi.ToggleAttackCursorE2P(false);
+
+                // ダメージ予測表示UIを非表示
+                _uiSystem.BattleUi.ToggleBattleExpect(false);
+
+                // グリッド状態の描画をクリア
+                _stageCtrl.ClearGridMeshDraw();
+
+                // 攻撃シーケンスの開始
+                _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
+
+                _phase = EmAttackPhase.EM_ATTACK_EXECUTE;
+            }
+
+            return false;
         }
     }
 }
