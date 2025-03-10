@@ -8,7 +8,7 @@ using Zenject;
 
 namespace Frontier
 {
-    public class PlayerPhaseManager : PhaseManagerBase
+    public class PlayerPhaseHandler : PhaseHandlerBase
     {
         /// <summary>
         /// 初期化を行います

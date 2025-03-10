@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class EnemyPhaseManager : PhaseManagerBase
+    public class EnemyPhaseHandler : PhaseHandlerBase
     {
         /// <summary>
         /// 初期化を行います

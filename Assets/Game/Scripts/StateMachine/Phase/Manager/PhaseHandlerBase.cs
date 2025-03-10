@@ -4,7 +4,7 @@ using Zenject;
 
 namespace Frontier
 {
-    public class PhaseManagerBase : Tree<PhaseStateBase>
+    public class PhaseHandlerBase : Tree<PhaseStateBase>
     {
         protected bool _isFirstUpdate               = false;
         protected HierarchyBuilder _hierarchyBld    = null;
