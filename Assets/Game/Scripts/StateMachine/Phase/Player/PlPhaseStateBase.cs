@@ -44,16 +44,5 @@ namespace Frontier
             _selectPlayer.RewindToPreviousState();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_selectPlayer);
         }
-
-        /// <summary>
-        /// 入力を受付るかを取得します
-        /// 多くのケースでこちらの関数を用いて判定します
-        /// </summary>
-        /// <returns>入力受付の可否</returns>
-        protected bool CanAcceptInputDefault()
-        {
-            // 現在のステートから脱出する場合は入力を受け付けない
-            return !IsBack();
-        }
     }
 }
