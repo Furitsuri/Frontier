@@ -49,10 +49,10 @@ namespace Frontier.Battle
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleUISystem _battleUi                        = null;
         private SkillController _skillCtrl                      = null;
-        private PhaseManagerBase _currentPhaseManager           = null;
+        private PhaseHandlerBase _currentPhaseManager           = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = new();
-        private PhaseManagerBase[] _phaseManagers               = new PhaseManagerBase[((int)TurnType.NUM)];
+        private PhaseHandlerBase[] _phaseHdrs               = new PhaseHandlerBase[((int)TurnType.NUM)];
         
         private bool _transitNextPhase = false;
         private int _phaseManagerIndex = 0;
@@ -127,9 +127,9 @@ namespace Frontier.Battle
                 _btlFileLoader.CharacterLoad(_currentStageIndex);
             }
 
-            _phaseManagers[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseManager>();
-            _phaseManagers[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseManager>();
-            _currentPhaseManager = _phaseManagers[(int)TurnType.PLAYER_TURN];
+            _phaseHdrs[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>();
+            _phaseHdrs[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>();
+            _currentPhaseManager = _phaseHdrs[(int)TurnType.PLAYER_TURN];
             _currentPhaseManager.Init();
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();
@@ -186,7 +186,7 @@ namespace Frontier.Battle
 
                 // 次のマネージャに切り替える
                 _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
-                _currentPhaseManager = _phaseManagers[_phaseManagerIndex];
+                _currentPhaseManager = _phaseHdrs[_phaseManagerIndex];
                 _currentPhaseManager.Init();
             }
         }
