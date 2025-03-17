@@ -17,7 +17,6 @@ namespace Frontier
         override public void InstallBindings()
         {
             Container.Bind<InputFacade>().AsSingle();
-
             Container.Bind<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
