@@ -120,7 +120,30 @@ namespace Frontier.Entities
         /// <returns>直前のコマンドに戻れるか否か</returns>
         public bool IsRewindStatePossible()
         {
-            return true;
+            // 移動コマンドだけが終了している場合のみ直前の状態に戻れるように
+            // MEMO : コマンドが今後増えても問題ないようにfor文で判定しています
+            bool isPossible = true;
+            for( int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i )
+            {
+                if( i == (int)Command.COMMAND_TAG.MOVE )
+                {
+                    if (!IsEndCommand(Command.COMMAND_TAG.MOVE))
+                    {
+                        isPossible = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (IsEndCommand((Command.COMMAND_TAG)i))
+                    {
+                        isPossible = false;
+                        break;
+                    }
+                }
+            }
+
+            return isPossible;
         }
 
         /// <summary>

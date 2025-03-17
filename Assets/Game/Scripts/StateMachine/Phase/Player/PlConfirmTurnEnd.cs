@@ -34,12 +34,14 @@ namespace Frontier
             }
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal);
 
-            // キーガイドを登録
-            _inputFcd.RegisterInputCodes(
-                (GuideIcon.HORIZONTAL_CURSOR,   "Select",   CanAcceptInputDefault,     _commandList.UpdateInput,   0.0f),
-                (GuideIcon.CONFIRM,             "Confirm",  CanAcceptInputDefault,     DetectConfirmInput,      0.0f),
-                (GuideIcon.CANCEL,              "Back",     CanAcceptInputDefault,     DetectRevertInput,          0.0f)
-             );
+            // 入力ガイドを登録
+            _inputFcd.RegisterInputCodes<Constants.Direction>(
+                ( ( GuideIcon.HORIZONTAL_CURSOR, "Select", CanAcceptInputDefault, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput )
+            );
+            _inputFcd.RegisterInputCodes<bool>(
+                ( (GuideIcon.CONFIRM, "Confirm", CanAcceptInputDefault, 0.0f), AcceptConfirmInput ),
+                ( (GuideIcon.CANCEL, "Back", CanAcceptInputDefault, 0.0f), AcceptRevertInput )
+            );
 
             _uiSystem.BattleUi.ToggleConfirmTurnEnd(true);
         }
@@ -64,6 +66,16 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 方向入力を受け取り、コマンドリストを操作させます
+        /// </summary>
+        /// <param name="dir">方向入力</param>
+        /// <returns>入力によってリストカーソルの位置が更新されたか</returns>
+        protected override bool AcceptDirectionInput(Direction dir)
+        {
+            return _commandList.OperateListCursor(dir);
+        }
+
+        /// <summary>
         /// 次のステートに遷移します
         /// </summary>
         private bool DetectConfirmInput()
@@ -82,6 +94,25 @@ namespace Frontier
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 決定入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isConfirm">決定入力の有無</param>
+        private bool AcceptConfirmInput( bool isConfirm )
+        {
+            if( !isConfirm ) return false;
+
+            if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
+            {
+                // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
+                _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction(Character.CHARACTER_TAG.PLAYER);
+            }
+
+            Back();
+
+            return true;
         }
     }
 }

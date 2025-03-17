@@ -20,6 +20,28 @@ namespace Frontier
         }
 
         /// <summary>
+        /// キャンセル入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isRevert"></param>
+        virtual protected bool AcceptRevertInput(bool isRevert)
+        {
+            if (!isRevert) return false;
+
+            Back();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 方向入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="dir">方向入力</param>
+        virtual protected bool AcceptDirectionInput(Constants.Direction dir)
+        {
+            return _stageCtrl.OperateGridCursor(dir);
+        }
+
+        /// <summary>
         /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
         /// </summary>
         virtual protected bool DetectRevertInput()

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using static Constants;
 using static InputFacade;
 
@@ -8,14 +9,17 @@ using static InputFacade;
 /// </summary>
 public class InputCode
 {
+    public delegate bool EnableCallback();
+    public delegate bool AcceptInputCallback<T>(T arg);
+
     // 入力アイコン
     public GuideIcon Icon;
     // アイコンに対する説明文
     public string Explanation;
     // 有効・無効を判定するコールバック
     public EnableCallback EnableCb;
-    // 入力を押下した際にコールバックされる関数
-    public InputCallback InputCb;
+    // 入力受付のコールバック
+    private Delegate AcceptCb;
     // 入力処理を有効にするインターバル
     public float InputInterval;
     // 入力処理を行った最後の時間
@@ -28,12 +32,11 @@ public class InputCode
     /// <param name="icon">ガイドアイコン</param>
     /// <param name="expl">説明文</param>
     /// <param name="inputCb">入力時のコールバック</param>
-    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, InputCallback inputCb, float interval)
+    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, float interval)
     {
         Icon            = icon;
         Explanation     = expl;
         EnableCb        = enableCb;
-        InputCb         = inputCb;
         InputInterval   = interval;
         InputLastTime   = 0f;
     }
@@ -42,9 +45,54 @@ public class InputCode
     /// オペレーター
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
-    public static implicit operator InputCode((GuideIcon, string, EnableCallback, InputCallback, float) tuple)
+    public static implicit operator InputCode((GuideIcon, string, EnableCallback, float) tuple)
     {
-        return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
+        return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
+    }
+
+    /// <summary>
+    /// 入力受付時のコールバックを実行します
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="arg"></param>
+    public void ExecuteAcceptInputCallback<T>( T arg )
+    {
+        if (AcceptCb == null)
+        {
+            Debug.Assert(false);
+            return;
+        }
+
+        bool hasInput = false;
+
+        // 引数の型を判別
+        if (arg is Constants.Direction dir &&
+            AcceptCb is AcceptInputCallback<Constants.Direction> dirCb)
+        {
+            hasInput = dirCb( dir );
+        }
+        else if ( arg is bool booleanInput &&
+            AcceptCb is AcceptInputCallback<bool> booleanCb)
+        {
+            hasInput = booleanCb( booleanInput );
+        }
+        else
+        {
+            Debug.Assert(false, "入力受付のコールバックが正しく設定されていません。");
+        }
+
+        // 最後の入力時間を記録
+        if( hasInput ) SetInputLastTime(Time.time);
+    }
+
+    /// <summary>
+    /// 入力受付のコールバック
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="arg"></param>
+    public void SetAcceptCallback<T>( AcceptInputCallback<T> arg )
+    {
+        AcceptCb = arg;
     }
 
     /// <summary>
