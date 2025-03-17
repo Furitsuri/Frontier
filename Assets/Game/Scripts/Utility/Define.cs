@@ -24,7 +24,7 @@
         ALL_CURSOR = 0,     // 全方向
         VERTICAL_CURSOR,    // 縦方向
         HORIZONTAL_CURSOR,  // 横方向
-        CONFIRM,           // 決定
+        CONFIRM,            // 決定
         CANCEL,             // 戻る
         ESCAPE,             // 終了
 
@@ -67,6 +67,9 @@
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
     public const float DIRECTION_INPUT_INTERVAL = 0.13f;
+    public const float CONFIRM_INPUT_INTERVAL   = 0.0f;
+    public const float CANCEL_INPUT_INTERVAL    = 0.0f;
+    public const float OPTIONAL_INPUT_INTERVAL  = 0.0f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 

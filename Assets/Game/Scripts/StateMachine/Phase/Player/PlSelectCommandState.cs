@@ -31,12 +31,14 @@ namespace Frontier
             }
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal);
 
-            // キーガイドを登録
-            _inputFcd.RegisterInputCodes(
-                (GuideIcon.VERTICAL_CURSOR, "Select",   CanAcceptInputDefault, _commandList.UpdateInput,   0.0f),
-                (GuideIcon.CONFIRM,         "Confirm",  CanAcceptInputDefault, DetectConfirmInput,      0.0f),
-                (GuideIcon.CANCEL,          "Back",     CanAcceptInputDefault, DetectRevertInput,          0.0f)
-             );
+            // 入力ガイドを登録
+            _inputFcd.RegisterInputCodes<Constants.Direction>(
+                ((GuideIcon.VERTICAL_CURSOR, "Select", CanAcceptInputDefault, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput)
+            );
+            _inputFcd.RegisterInputCodes<bool>(
+                ( (GuideIcon.CONFIRM,   "Confirm", CanAcceptInputDefault, 0.0f),    AcceptConfirmInput),
+                ( (GuideIcon.CANCEL,    "Back", CanAcceptInputDefault, 0.0f),     AcceptRevertInput)
+            );
 
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript(this);
             _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList(executableCommands);
@@ -103,6 +105,16 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 方向入力を受け取り、コマンドリストを操作させます
+        /// </summary>
+        /// <param name="dir">方向入力</param>
+        /// <returns>入力によってリストカーソルの位置が更新されたか</returns>
+        override protected bool AcceptDirectionInput(Constants.Direction dir)
+        {
+            return _commandList.OperateListCursor(dir);
+        }
+
+        /// <summary>
         /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
         /// </summary>
         override protected bool DetectRevertInput()
@@ -131,6 +143,39 @@ namespace Frontier
             if ( _inputFcd.GetInputConfirm() )
             {
                 TransitIndex = GetCommandValue();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 決定入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isConfirm">決定入力の有無</param>
+        private bool AcceptConfirmInput( bool isConfirm )
+        {
+            if( !isConfirm ) return false;
+
+            TransitIndex = GetCommandValue();
+
+            return true;
+        }
+
+        /// <summary>
+        /// キャンセル入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isRevert">キャンセル入力の有無</param>
+        protected override bool AcceptRevertInput(bool isRevert)
+        {
+            if( base.AcceptRevertInput(isRevert) )
+            {
+                // 以前の状態に巻き戻せる場合は状態を巻き戻す
+                if (_selectPlayer.IsRewindStatePossible())
+                {
+                    Rewind();
+                }
 
                 return true;
             }

@@ -21,12 +21,15 @@ namespace Frontier
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);
-            
-            // キーガイドを登録
-            _inputFcd.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR, "Move",     CanAcceptInputDefault,  DetectOperateCursor,        DIRECTION_INPUT_INTERVAL),
-                ( GuideIcon.CONFIRM,    "Command",  CanAcceptInputCommand,  DetectTransitCommandInput,  0.0f),
-                ( GuideIcon.ESCAPE,     "TURN END", CanAcceptInputDefault,  DetectTransitTurnEndInput,  0.0f)
+
+            // 入力ガイドを登録
+            _inputFcd.RegisterInputCodes<Constants.Direction>(
+                ((GuideIcon.ALL_CURSOR, "Move", CanAcceptInputDefault, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput)
+             );
+
+            _inputFcd.RegisterInputCodes<bool>(
+                ((GuideIcon.CONFIRM, "Command", CanAcceptInputCommand, 0.0f), AcceptConfirmInput),
+                ((GuideIcon.ESCAPE, "TURN END", CanAcceptInputDefault, 0.0f), AcceptOptionalInput)
              );
         }
 
@@ -36,7 +39,7 @@ namespace Frontier
             // if( base.Update() ) { return true; }
 
             // 全てのキャラクターが待機済みになっていれば終了
-            if( _btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand(Character.CHARACTER_TAG.PLAYER))
+            if (_btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand(Character.CHARACTER_TAG.PLAYER))
             {
                 Back();
 
@@ -49,7 +52,7 @@ namespace Frontier
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
             int selectCharaIndex = info.charaIndex;
 
-            return ( 0 <= TransitIndex );
+            return (0 <= TransitIndex);
         }
 
         /// <summary>
@@ -69,7 +72,7 @@ namespace Frontier
         /// <returns>コマンド選択が可能か</returns>
         public bool CanAcceptInputCommand()
         {
-            if ( 0 <= TransitIndex )
+            if (0 <= TransitIndex)
             {
                 return false;
             }
@@ -92,7 +95,7 @@ namespace Frontier
         {
             Constants.Direction direction = _inputFcd.GetInputDirection();
 
-            if( _stageCtrl.OperateGridCursor( direction ) )
+            if (_stageCtrl.OperateGridCursor(direction))
             {
                 return true;
             }
@@ -105,7 +108,7 @@ namespace Frontier
         /// </summary>
         public bool DetectTransitCommandInput()
         {
-            if( _inputFcd.GetInputConfirm() )
+            if (_inputFcd.GetInputConfirm())
             {
                 TransitIndex = (int)TransitTag.CharacterCommand;
 
@@ -122,7 +125,7 @@ namespace Frontier
         public bool DetectTransitTurnEndInput()
         {
             // ターン終了確認へ遷移
-            if( _inputFcd.GetInputOptions() )
+            if (_inputFcd.GetInputOptions())
             {
                 TransitIndex = (int)TransitTag.TurnEnd;
 
@@ -130,6 +133,28 @@ namespace Frontier
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isConfirm"></param>
+        public bool AcceptConfirmInput(bool isConfirm)
+        {
+            if (!isConfirm) return false;
+
+            TransitIndex = (int)TransitTag.CharacterCommand;
+
+            return true;
+        }
+
+        public bool AcceptOptionalInput(bool isOptional)
+        {
+            if (!isOptional) return false;
+
+            TransitIndex = (int)TransitTag.TurnEnd;
+
+            return true;
         }
     }
 }

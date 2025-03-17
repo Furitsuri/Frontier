@@ -28,8 +28,8 @@ public class CommandList
 
     private LinkedList<int> _list;
     private LinkedListNode<int> _currentNode;
-    private KeyCode _transitPrevKey;
-    private KeyCode _transitNextKey;
+    private Constants.Direction _transitPrevInput;
+    private Constants.Direction _transitNextInput;
     // このクラスを使用するクラス内で、コマンドのIndex値、及びValue値を適応させたい変数を下記2つに設定します
     private CommandIndexedValue _cmdIdxVal;
 
@@ -54,13 +54,13 @@ public class CommandList
 
         if( direction == CommandDirection.VERTICAL )
         {
-            _transitPrevKey = KeyCode.UpArrow;
-            _transitNextKey = KeyCode.DownArrow;
+            _transitPrevInput = Constants.Direction.FORWARD;
+            _transitNextInput = Constants.Direction.BACK;
         }
         else if( direction == CommandDirection.HORIZONTAL )
         {
-            _transitPrevKey = KeyCode.LeftArrow;
-            _transitNextKey = KeyCode.RightArrow;
+            _transitPrevInput = Constants.Direction.LEFT;
+            _transitNextInput = Constants.Direction.RIGHT;
         }
 
         _cmdIdxVal = cmdIdxVal;
@@ -73,9 +73,10 @@ public class CommandList
     /// </summary>
     public bool UpdateInput()
     {
+        /*
         bool isUpdate = false;
 
-        if (Input.GetKeyDown(_transitPrevKey))
+        if (Input.GetKeyDown(_transitPrevInput))
         {
             isUpdate = true;
 
@@ -88,7 +89,7 @@ public class CommandList
                 _currentNode = _currentNode.Previous;
             }
         }
-        if (Input.GetKeyDown(_transitNextKey))
+        if (Input.GetKeyDown(_transitNextInput))
         {
             isUpdate = true;
 
@@ -108,7 +109,7 @@ public class CommandList
 
             return true;
         }
-
+        */
         return false;
     }
 
@@ -157,6 +158,53 @@ public class CommandList
         }
 
         _currentNode = _list.First;
+    }
+
+    /// <summary>
+    /// 入力を受け取ってコマンドリストの選択位置を変更します
+    /// </summary>
+    /// <param name="dir">方向入力</param>
+    /// <returns>受け取った入力によって位置を更新したか</returns>
+    public bool OperateListCursor( Constants.Direction dir )
+    {
+        bool isAccept = false;
+
+        if ( _transitPrevInput == dir )
+        {
+            isAccept = true;
+
+            if (_currentNode == _list.First)
+            {
+                _currentNode = _list.Last;
+            }
+            else
+            {
+                _currentNode = _currentNode.Previous;
+            }
+        }
+        if ( _transitNextInput == dir )
+        {
+            isAccept = true;
+
+            if (_currentNode == _list.Last)
+            {
+                _currentNode = _list.First;
+            }
+            else
+            {
+                _currentNode = _currentNode.Next;
+            }
+        }
+
+        if (isAccept)
+        {
+            _cmdIdxVal.index = GetCurrentIndex();
+            _cmdIdxVal.value = GetCurrentValue();
+
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

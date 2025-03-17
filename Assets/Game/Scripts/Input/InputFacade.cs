@@ -1,4 +1,5 @@
 ﻿using Frontier;
+using System;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -10,9 +11,6 @@ public class InputFacade
     private UISystem _uiSystem                  = null;
     private InputHandler _inputHdr              = null;
     private InputCode[] _inputCodes;
-
-    public delegate bool EnableCallback();
-    public delegate bool InputCallback();
 
     [Inject]
     public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
@@ -28,12 +26,12 @@ public class InputFacade
     {
         _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
         {
-            ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f ),
-            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f ),
-            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
-            ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
-            ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
-            ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f )
+            ( Constants.GuideIcon.ALL_CURSOR,          "", null, 0.0f ),
+            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, 0.0f ),
+            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, 0.0f ),
+            ( Constants.GuideIcon.CONFIRM,             "", null, 0.0f ),
+            ( Constants.GuideIcon.CANCEL,              "", null, 0.0f ),
+            ( Constants.GuideIcon.ESCAPE,              "", null, 0.0f )
         };
     }
 
@@ -72,7 +70,6 @@ public class InputFacade
         {
             _inputCodes[i].Explanation      = "";
             _inputCodes[i].EnableCb         = null;
-            _inputCodes[i].InputCb          = null;
             _inputCodes[i].InputInterval    = 0.0f;
         }
     }
@@ -83,14 +80,15 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void RegisterInputCodes( params InputCode[] args )
+    public void RegisterInputCodes<T>( params ( InputCode, InputCode.AcceptInputCallback<T>)[] args )
     {
         foreach( var arg in args )
         {
             // _inputCodesが未登録であれば登録する
-            if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
+            if (_inputCodes[(int)arg.Item1.Icon].IsUnRegistererd())
             {
-                _inputCodes[(int)arg.Icon] = arg;
+                _inputCodes[(int)arg.Item1.Icon] = arg.Item1;
+                _inputCodes[(int)arg.Item1.Icon].SetAcceptCallback( arg.Item2 );
             }
         }
 
@@ -104,7 +102,7 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void ReRegisterInputCodes( params InputCode[] args )
+    public void ReRegisterInputCodes<T>((InputCode, InputCode.AcceptInputCallback<T>)[] args)
     {
         ResetInputCodes();
 

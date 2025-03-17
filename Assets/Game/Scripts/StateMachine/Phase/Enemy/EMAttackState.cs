@@ -24,8 +24,8 @@ namespace Frontier
         {
             base.Init();
 
-            _inputFcd.RegisterInputCodes(
-                ( GuideIcon.CONFIRM,    "Confirm", CanAcceptConfirm,   DetectConfirmInput, 0.0f)
+            _inputFcd.RegisterInputCodes<bool>(
+                ((GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, 0.0f), AcceptConfirmInput)
             );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
@@ -194,6 +194,38 @@ namespace Frontier
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isConfirm"></param>
+        private bool AcceptConfirmInput( bool isConfirm )
+        {
+            if( !isConfirm ) return false;
+
+            // キャラクターのアクションゲージを消費
+            _attackCharacter.ConsumeActionGauge();
+            _targetCharacter.ConsumeActionGauge();
+
+            // 選択グリッドを一時非表示
+            _stageCtrl.SetGridCursorActive(false);
+
+            // アタックカーソルUI非表示
+            _uiSystem.BattleUi.ToggleAttackCursorE2P(false);
+
+            // ダメージ予測表示UIを非表示
+            _uiSystem.BattleUi.ToggleBattleExpect(false);
+
+            // グリッド状態の描画をクリア
+            _stageCtrl.ClearGridMeshDraw();
+
+            // 攻撃シーケンスの開始
+            _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
+
+            _phase = EmAttackPhase.EM_ATTACK_EXECUTE;
+
+            return true;
         }
     }
 }

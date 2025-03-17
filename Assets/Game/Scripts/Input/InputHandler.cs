@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,9 +6,9 @@ using UnityEngine.InputSystem;
 public class InputHandler : MonoBehaviour
 {
     /// <summary>
-    /// 入力対応中のデバイス
+    /// 入力元のデバイス
     /// </summary>
-    private enum TargetDevice
+    private enum InputSource
     {
         None        = -1,
         Keyboard,
@@ -17,18 +16,22 @@ public class InputHandler : MonoBehaviour
         TouchPanel,
     }
 
-    private TargetDevice _targetDevice          = TargetDevice.None;
+    // 入力元デバイス
+    private InputSource _inputSource          = InputSource.None;
     // 入力インターフェース
     private IInput _iInput                      = null;
     // 入力ガイド表示
     private InputGuidePresenter _inputGuideView = null;
     // InputFacade内のInputCodeの参照値
     private ReadOnlyCollection<InputCode> _inputCodes;
+    // ガイドアイコン毎に対応した入力関数
+    private IGetInputBase[] _inputForIcons;
 
     // Start is called before the first frame update
     void Start()
     {
-        InitializeTargetDevice();
+        InitializeInputSource();
+        InitializeInputForGuideIcon();
     }
 
     // Update is called once per frame
@@ -39,27 +42,46 @@ public class InputHandler : MonoBehaviour
     }
 
     /// <summary>
+    /// ガイドアイコン毎に対応する入力関数を初期化します
+    /// </summary>
+    private void InitializeInputForGuideIcon()
+    {
+        GetDirectionalInput.GetDirectionalInputCallback directionalInput  = _iInput.GetDirectionalPressed;
+        GetBooleanInput.GetBooleanInputCallback confirmInput              = _iInput.IsConfirmPressed;
+        GetBooleanInput.GetBooleanInputCallback cancelInput               = _iInput.IsCancelPressed;
+        GetBooleanInput.GetBooleanInputCallback optionalInput             = _iInput.IsOptionsPressed;
+
+        _inputForIcons                                              = new IGetInputBase[(int)Constants.GuideIcon.NUM_MAX];
+        _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(directionalInput);
+        _inputForIcons[(int)Constants.GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(directionalInput);
+        _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(directionalInput);
+        _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(confirmInput);
+        _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(cancelInput);
+        _inputForIcons[(int)Constants.GuideIcon.ESCAPE]             = new GetBooleanInput(optionalInput);
+    }
+
+    /// <summary>
     /// 入力対応するデバイス設定を初期化します
     /// </summary>
-    private void InitializeTargetDevice()
+    private void InitializeInputSource()
     {
         if( Keyboard.current != null )
         {
-            _targetDevice = TargetDevice.Keyboard;
+            _inputSource = InputSource.Keyboard;
             _iInput = new KeyboardInput();
         }
         else if( Gamepad.current != null )
         {
-            _targetDevice = TargetDevice.GamePad;
+            _inputSource = InputSource.GamePad;
             _iInput = new PadInput();
         }
         else if( Touchscreen.current != null )
         {
-            _targetDevice = TargetDevice.TouchPanel;
+            _inputSource = InputSource.TouchPanel;
         }
         else
         {
-            _targetDevice = TargetDevice.None;
+            _inputSource = InputSource.None;
         }
 
         if( _iInput != null )
@@ -73,27 +95,27 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     private void UpdateInputDevice()
     {
-        if( _targetDevice != TargetDevice.Keyboard &&
+        if( _inputSource != InputSource.Keyboard &&
             Keyboard.current != null &&
             Keyboard.current.anyKey.wasPressedThisFrame )
         {
-            _targetDevice = TargetDevice.Keyboard;
+            _inputSource = InputSource.Keyboard;
             _iInput = new KeyboardInput();
             SwitchInputDevice(_iInput);
         }
-        else if ( _targetDevice != TargetDevice.GamePad &&
+        else if ( _inputSource != InputSource.GamePad &&
             Gamepad.current != null &&
             Gamepad.current.buttonSouth.wasPressedThisFrame )
         {
-            _targetDevice = TargetDevice.GamePad;
+            _inputSource = InputSource.GamePad;
             _iInput = new PadInput();
             SwitchInputDevice(_iInput);
         }
-        else if( _targetDevice != TargetDevice.TouchPanel &&
+        else if( _inputSource != InputSource.TouchPanel &&
             Touchscreen.current != null &&
             Touchscreen.current.primaryTouch.press.isPressed )
         {
-            _targetDevice = TargetDevice.TouchPanel;
+            _inputSource = InputSource.TouchPanel;
             _iInput= new TouchInput();
             SwitchInputDevice(_iInput);
         }
@@ -107,16 +129,12 @@ public class InputHandler : MonoBehaviour
         // コールバック関数が設定されている場合は動作させる
         foreach( var code in _inputCodes )
         {
-            bool enable = code.EnableCb != null && code.EnableCb();
+            bool enable = ( code.EnableCb != null && code.EnableCb() );
 
             if (!enable || !code.IsIntervalTimePassed()) continue;
-            
-            if (code.InputCb == null) continue;
 
-            if (code.InputCb())
-            {
-                code.SetInputLastTime(Time.time);
-            }
+            var input = _inputForIcons[(int)code.Icon].GetInput();
+            code.ExecuteAcceptInputCallback(input);
         }
     }
 
@@ -136,31 +154,30 @@ public class InputHandler : MonoBehaviour
     /// <param name="inputCodes">入力情報コード</param>
     public void Init( InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes )
     {
-        _inputGuideView     = inputGuidePresenter;
-        // _inputCodes         = inputCodes;
-        _inputCodes         = Array.AsReadOnly( inputCodes );
+        _inputGuideView = inputGuidePresenter;
+        _inputCodes     = Array.AsReadOnly( inputCodes );
     }
 
     /// <summary>
-    /// 押下された方向ボタンの種類を取得します
+    /// 押下された方向入力の種類を取得します
     /// </summary>
     /// <returns>押下されたボタンに対応する方向</returns>
     public Constants.Direction GetDirectionalPressed() { return _iInput.GetDirectionalPressed(); }
 
     /// <summary>
-    /// 決定ボタンが押下されたかを取得します
+    /// 決定入力が押下されたかを取得します
     /// </summary>
     /// <returns>ボタンの押下</returns>
     public bool IsConfirmPressed() { return _iInput.IsConfirmPressed(); }
 
     /// <summary>
-    /// 取消ボタンが押下されたかを取得します
+    /// 取消入力が押下されたかを取得します
     /// </summary>
     /// <returns>ボタンの押下</returns>
     public bool IsCancelPressed() { return _iInput.IsCancelPressed(); }
 
     /// <summary>
-    /// オプションボタンが押下されたかを取得します
+    /// オプション入力が押下されたかを取得します
     /// </summary>
     /// <returns>ボタンの押下</returns>
     public bool IsOptionsPressed() { return _iInput.IsOptionsPressed(); }

@@ -28,9 +28,11 @@ namespace Frontier
         {
             base.Init();
 
-            _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "TargetSelect", CanAcceptInputDirection,    DetectTargetSelectInput, DIRECTION_INPUT_INTERVAL),
-                (GuideIcon.CANCEL,      "Back",         CanAcceptInputDefault,      DetectRevertInput,       0.0f)
+            _inputFcd.RegisterInputCodes<Constants.Direction>(
+                ( (GuideIcon.ALL_CURSOR, "TargetSelect", CanAcceptInputDirection, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput )
+             );
+            _inputFcd.RegisterInputCodes<bool>(
+                ((GuideIcon.CANCEL, "Back", CanAcceptInputDefault, 0.0f), AcceptRevertInput)
              );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();

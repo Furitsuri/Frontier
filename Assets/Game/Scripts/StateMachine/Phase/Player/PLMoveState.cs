@@ -26,11 +26,14 @@ namespace Frontier
         override public void Init()
         {
             base.Init();
-            
-            _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptInputDirection,    DetectDirectionInput,   DIRECTION_INPUT_INTERVAL),
-                (GuideIcon.CONFIRM,     "Decision", CanAcceptInputConfirm,      DetectConfirmInput,     0.0f),
-                (GuideIcon.CANCEL,      "Back",     CanAcceptInputDefault,      DetectRevertInput,      0.0f)
+
+            _inputFcd.RegisterInputCodes<Constants.Direction>(
+                ((GuideIcon.ALL_CURSOR, "Move", CanAcceptInputDirection, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput)
+             );
+
+            _inputFcd.RegisterInputCodes<bool>(
+                ((GuideIcon.CONFIRM, "Decision", CanAcceptInputConfirm, 0.0f), AcceptConfirmInput),
+                ((GuideIcon.CANCEL, "Back", CanAcceptInputDefault, 0.0f), AcceptRevertInput)
              );
 
             _phase = PlMovePhase.PL_MOVE;
@@ -107,6 +110,23 @@ namespace Frontier
             base.Exit();
         }
 
+        /// <summary>
+        /// キャンセル入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isRevert">キャンセル入力の有無</param>
+        override protected bool AcceptRevertInput(bool isRevert)
+        {
+            if( base.AcceptRevertInput(isRevert) )
+            {
+                // 巻き戻しを行う
+                Rewind();
+
+                return true;
+            }
+
+            return false;
+        }
+
         override protected bool DetectRevertInput()
         {
             base.DetectRevertInput();
@@ -155,11 +175,6 @@ namespace Frontier
         /// </summary>
         public bool DetectDirectionInput()
         {
-            // 移動フェーズでない場合は終了
-            if (PlMovePhase.PL_MOVE != _phase) return false;
-            // 移動入力受付が不可能である場合は終了
-            if (!_selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize())) return false;
-
             Direction direction = _inputFcd.GetInputDirection();
 
             if (_stageCtrl.OperateGridCursor(direction))
@@ -202,6 +217,37 @@ namespace Frontier
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 決定入力を検知して状況毎に異なる処理を行います
+        /// </summary>
+        public bool AcceptConfirmInput( bool isConfirm )
+        {
+            if( !isConfirm ) { return false; }
+
+            GridInfo info;
+            var curGridIndex    = _stageCtrl.GetCurrentGridIndex();
+            var plGridIndex     = _selectPlayer.GetCurrentGridIndex();
+            _stageCtrl.FetchCurrentGridInfo(out info);
+
+            // 出発地点と同一グリッドであれば戻る
+            if (curGridIndex == _departGridIndex)
+            {
+                Back();
+            }
+            // 移動不可地点
+            else if (info.estimatedMoveRange < 0)
+            {
+                // TODO : 移動不可であることを示すために効果音を鳴らすと良い
+            }
+            // キャラクターが存在していないことを確認
+            else if (0 == (info.flag & (StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)))
+            {
+                _phase = PlMovePhase.PL_MOVE_END;
+            }
+
+            return true;
         }
     }
 }
