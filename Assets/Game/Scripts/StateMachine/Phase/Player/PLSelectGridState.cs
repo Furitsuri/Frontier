@@ -89,56 +89,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// グリッドカーソルを操作します
+        /// 決定入力を受け取った際の処理を行います
         /// </summary>
-        public bool DetectOperateCursor()
-        {
-            Constants.Direction direction = _inputFcd.GetInputDirection();
-
-            if (_stageCtrl.OperateGridCursor(direction))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// キャラクターコマンドの遷移へ移る際のコールバック関数です
-        /// </summary>
-        public bool DetectTransitCommandInput()
-        {
-            if (_inputFcd.GetInputConfirm())
-            {
-                TransitIndex = (int)TransitTag.CharacterCommand;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// ターン終了遷移へ移る際のコールバック関数です
-        /// </summary>
-        /// <returns>ターン終了の成否</returns>
-        public bool DetectTransitTurnEndInput()
-        {
-            // ターン終了確認へ遷移
-            if (_inputFcd.GetInputOptions())
-            {
-                TransitIndex = (int)TransitTag.TurnEnd;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="isConfirm"></param>
+        /// <param name="isConfirm">決定入力の有無</param>
+        /// <returns>入力受付の是非</returns>
         public bool AcceptConfirmInput(bool isConfirm)
         {
             if (!isConfirm) return false;
@@ -148,6 +102,11 @@ namespace Frontier
             return true;
         }
 
+        /// <summary>
+        /// オプション入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="isOptional">オプション入力の有無</param>
+        /// <returns>入力受付の是非</returns>
         public bool AcceptOptionalInput(bool isOptional)
         {
             if (!isOptional) return false;

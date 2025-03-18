@@ -69,51 +69,6 @@ public class CommandList
     }
 
     /// <summary>
-    /// 入力情報の更新を行います
-    /// </summary>
-    public bool UpdateInput()
-    {
-        /*
-        bool isUpdate = false;
-
-        if (Input.GetKeyDown(_transitPrevInput))
-        {
-            isUpdate = true;
-
-            if (_currentNode == _list.First)
-            {
-                _currentNode = _list.Last;
-            }
-            else
-            {
-                _currentNode = _currentNode.Previous;
-            }
-        }
-        if (Input.GetKeyDown(_transitNextInput))
-        {
-            isUpdate = true;
-
-            if (_currentNode == _list.Last)
-            {
-                _currentNode = _list.First;
-            }
-            else
-            {
-                _currentNode = _currentNode.Next;
-            }
-        }
-
-        if (isUpdate) {
-            _cmdIdxVal.index = GetCurrentIndex();
-            _cmdIdxVal.value = GetCurrentValue();
-
-            return true;
-        }
-        */
-        return false;
-    }
-
-    /// <summary>
     /// 新たにコマンドを挿入します
     /// </summary>
     /// <param name="index">挿入目標とするListのIndex</param>

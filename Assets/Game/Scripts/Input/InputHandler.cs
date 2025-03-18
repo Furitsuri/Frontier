@@ -46,18 +46,18 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     private void InitializeInputForGuideIcon()
     {
-        GetDirectionalInput.GetDirectionalInputCallback directionalInput  = _iInput.GetDirectionalPressed;
-        GetBooleanInput.GetBooleanInputCallback confirmInput              = _iInput.IsConfirmPressed;
-        GetBooleanInput.GetBooleanInputCallback cancelInput               = _iInput.IsCancelPressed;
-        GetBooleanInput.GetBooleanInputCallback optionalInput             = _iInput.IsOptionsPressed;
+        GetDirectionalInput.GetDirectionalInputCallback directionalInputCb  = _iInput.GetDirectionalPressed;
+        GetBooleanInput.GetBooleanInputCallback confirmInputCb              = _iInput.IsConfirmPressed;
+        GetBooleanInput.GetBooleanInputCallback cancelInputCb               = _iInput.IsCancelPressed;
+        GetBooleanInput.GetBooleanInputCallback optionalInputCb             = _iInput.IsOptionsPressed;
 
         _inputForIcons                                              = new IGetInputBase[(int)Constants.GuideIcon.NUM_MAX];
-        _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(directionalInput);
-        _inputForIcons[(int)Constants.GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(directionalInput);
-        _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(directionalInput);
-        _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(confirmInput);
-        _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(cancelInput);
-        _inputForIcons[(int)Constants.GuideIcon.ESCAPE]             = new GetBooleanInput(optionalInput);
+        _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(directionalInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(directionalInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(directionalInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(confirmInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(cancelInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.ESCAPE]             = new GetBooleanInput(optionalInputCb);
     }
 
     /// <summary>
