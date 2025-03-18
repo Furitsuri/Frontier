@@ -127,25 +127,10 @@ namespace Frontier
             return false;
         }
 
-        override protected bool DetectRevertInput()
-        {
-            base.DetectRevertInput();
-
-            if ( IsBack() )
-            {
-                // 巻き戻しを行う
-                Rewind();
-
-                return true;
-            }
-
-            return false;
-        }
-
         /// <summary>
-        /// 
+        /// 決定入力受付の可否を判定します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>決定入力受付の可否</returns>
         private bool CanAcceptInputConfirm()
         {
             if (!CanAcceptInputDefault()) return false;
@@ -157,64 +142,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// 方向入力受付の可否を判定します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>方向入力受付の可否</returns>
         private bool CanAcceptInputDirection()
         {
             if (!CanAcceptInputDefault()) return false;
 
             // 移動フェーズでない場合、または移動入力受付が不可能である場合は終了
             if (PlMovePhase.PL_MOVE == _phase && _selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize())) return true;
-
-            return false;
-        }
-
-        /// <summary>
-        /// 移動入力を検知します
-        /// </summary>
-        public bool DetectDirectionInput()
-        {
-            Direction direction = _inputFcd.GetInputDirection();
-
-            if (_stageCtrl.OperateGridCursor(direction))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 決定入力を検知して状況毎に異なる処理を行います
-        /// </summary>
-        public bool DetectConfirmInput()
-        {
-            if( _inputFcd.GetInputConfirm() )
-            {
-                GridInfo info;
-                var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-                var plGridIndex = _selectPlayer.GetCurrentGridIndex();
-                _stageCtrl.FetchCurrentGridInfo(out info);
-
-                // 出発地点と同一グリッドであれば戻る
-                if (curGridIndex == _departGridIndex)
-                {
-                    Back();
-                }
-                // 移動不可地点
-                else if( info.estimatedMoveRange < 0 )
-                {
-                    // TODO : 移動不可であることを示すために効果音を鳴らすと良い
-                }
-                // キャラクターが存在していないことを確認
-                else if (0 == (info.flag & (StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)))
-                {
-                    _phase = PlMovePhase.PL_MOVE_END;
-                }
-
-                return true;
-            }
 
             return false;
         }

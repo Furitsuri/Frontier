@@ -76,27 +76,6 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 次のステートに遷移します
-        /// </summary>
-        private bool DetectConfirmInput()
-        {
-            if (_inputFcd.GetInputConfirm())
-            {
-                if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
-                {
-                    // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
-                    _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction(Character.CHARACTER_TAG.PLAYER);
-                }
-
-                Back();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 決定入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力の有無</param>

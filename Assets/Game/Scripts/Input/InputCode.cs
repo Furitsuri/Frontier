@@ -47,15 +47,18 @@ public class InputCode
     /// <param name="tuple">オペレーター対象の設定</param>
     public static implicit operator InputCode((GuideIcon, string, EnableCallback, float) tuple)
     {
+        // InputCode code = new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
+        // code.SetAcceptCallback<T>(tuple.Item4);
+
         return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
     }
 
     /// <summary>
     /// 入力受付時のコールバックを実行します
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="arg"></param>
-    public void ExecuteAcceptInputCallback<T>( T arg )
+    /// <typeparam name="T">実行するコールバックの型</typeparam>
+    /// <param name="input">受け取った入力</param>
+    public void ExecuteAcceptInputCallback<T>( T input )
     {
         if (AcceptCb == null)
         {
@@ -66,12 +69,12 @@ public class InputCode
         bool hasInput = false;
 
         // 引数の型を判別
-        if (arg is Constants.Direction dir &&
+        if (input is Constants.Direction dir &&
             AcceptCb is AcceptInputCallback<Constants.Direction> dirCb)
         {
             hasInput = dirCb( dir );
         }
-        else if ( arg is bool booleanInput &&
+        else if ( input is bool booleanInput &&
             AcceptCb is AcceptInputCallback<bool> booleanCb)
         {
             hasInput = booleanCb( booleanInput );
@@ -93,6 +96,11 @@ public class InputCode
     public void SetAcceptCallback<T>( AcceptInputCallback<T> arg )
     {
         AcceptCb = arg;
+    }
+
+    public void SetAcceptCallback(Delegate cb)
+    {
+        AcceptCb = cb;
     }
 
     /// <summary>

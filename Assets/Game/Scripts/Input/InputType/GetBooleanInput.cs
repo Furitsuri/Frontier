@@ -1,4 +1,4 @@
-public class GetBooleanInput : IGetInput<bool>, IGetInputBase
+public class GetBooleanInput : IGetInputBase, IGetGenericInput<bool>
 {
     public delegate bool GetBooleanInputCallback();
 
@@ -9,13 +9,13 @@ public class GetBooleanInput : IGetInput<bool>, IGetInputBase
         _callback = callback;
     }
 
-    public bool GetInput()
+    public bool GetGenericInput()
     {
         return _callback();
     }
 
     object IGetInputBase.GetInput()
     {
-        return GetInput();
+        return GetGenericInput();
     }
 }

@@ -5,5 +5,6 @@
 /// </summary>
 public interface IGetInputBase
 {
-    object GetInput(); // 返り値をobject型にすることで汎用的に扱う
+    // 返り値をobject型にすることで汎用的に扱う
+    object GetInput();
 }
