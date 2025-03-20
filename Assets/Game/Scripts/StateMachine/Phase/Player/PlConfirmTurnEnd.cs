@@ -35,12 +35,10 @@ namespace Frontier
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal);
 
             // 入力ガイドを登録
-            _inputFcd.RegisterInputCodes<Constants.Direction>(
-                ( ( GuideIcon.HORIZONTAL_CURSOR, "Select", CanAcceptInputDefault, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput )
-            );
-            _inputFcd.RegisterInputCodes<bool>(
-                ( (GuideIcon.CONFIRM, "Confirm", CanAcceptInputDefault, 0.0f), AcceptConfirmInput ),
-                ( (GuideIcon.CANCEL, "Back", CanAcceptInputDefault, 0.0f), AcceptRevertInput )
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.HORIZONTAL_CURSOR,    "Select", CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CONFIRM,              "Confirm", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.CANCEL,               "Back", CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
             );
 
             _uiSystem.BattleUi.ToggleConfirmTurnEnd(true);
@@ -70,7 +68,7 @@ namespace Frontier
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力によってリストカーソルの位置が更新されたか</returns>
-        protected override bool AcceptDirectionInput(Direction dir)
+        override protected bool AcceptDirection( Direction dir )
         {
             return _commandList.OperateListCursor(dir);
         }
@@ -78,8 +76,9 @@ namespace Frontier
         /// <summary>
         /// 決定入力を受けた際の処理を行います
         /// </summary>
-        /// <param name="isConfirm">決定入力の有無</param>
-        private bool AcceptConfirmInput( bool isConfirm )
+        /// <param name="isConfirm">決定入力</param>
+        /// /// <returns>決定入力の有無</returns>
+        override protected bool AcceptConfirm( bool isConfirm )
         {
             if( !isConfirm ) return false;
 

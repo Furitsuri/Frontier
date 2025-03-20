@@ -26,12 +26,12 @@ public class InputFacade
     {
         _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
         {
-            ( Constants.GuideIcon.ALL_CURSOR,          "", null, 0.0f ),
-            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, 0.0f ),
-            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, 0.0f ),
-            ( Constants.GuideIcon.CONFIRM,             "", null, 0.0f ),
-            ( Constants.GuideIcon.CANCEL,              "", null, 0.0f ),
-            ( Constants.GuideIcon.ESCAPE,              "", null, 0.0f )
+            ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f ),
+            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f ),
+            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
+            ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
+            ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
+            ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f )
         };
     }
 
@@ -80,15 +80,14 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void RegisterInputCodes<T>( params ( InputCode, InputCode.AcceptInputCallback<T>)[] args )
+    public void RegisterInputCodes( params InputCode[] args )
     {
         foreach( var arg in args )
         {
             // _inputCodesが未登録であれば登録する
-            if (_inputCodes[(int)arg.Item1.Icon].IsUnRegistererd())
+            if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
             {
-                _inputCodes[(int)arg.Item1.Icon] = arg.Item1;
-                _inputCodes[(int)arg.Item1.Icon].SetAcceptCallback( arg.Item2 );
+                _inputCodes[(int)arg.Icon] = arg;
             }
         }
 
@@ -102,7 +101,7 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void ReRegisterInputCodes<T>((InputCode, InputCode.AcceptInputCallback<T>)[] args)
+    public void ReRegisterInputCodes<T>(InputCode[] args)
     {
         ResetInputCodes();
 

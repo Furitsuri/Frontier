@@ -27,13 +27,10 @@ namespace Frontier
         {
             base.Init();
 
-            _inputFcd.RegisterInputCodes<Constants.Direction>(
-                ((GuideIcon.ALL_CURSOR, "Move", CanAcceptInputDirection, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput)
-             );
-
-            _inputFcd.RegisterInputCodes<bool>(
-                ((GuideIcon.CONFIRM, "Decision", CanAcceptInputConfirm, 0.0f), AcceptConfirmInput),
-                ((GuideIcon.CANCEL, "Back", CanAcceptInputDefault, 0.0f), AcceptRevertInput)
+            _inputFcd.RegisterInputCodes(
+                (GuideIcon.ALL_CURSOR,  "Move",     CanAcceptDirection,    new AcceptDirectionInput( AcceptDirection ),   DIRECTION_INPUT_INTERVAL),
+                (GuideIcon.CONFIRM,     "Decision", CanAcceptConfirm,      new AcceptBooleanInput( AcceptConfirm ),       0.0f),
+                (GuideIcon.CANCEL,      "Back",     CanAcceptDefault,      new AcceptBooleanInput( AcceptCancel ),        0.0f)
              );
 
             _phase = PlMovePhase.PL_MOVE;
@@ -111,29 +108,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// キャンセル入力を受けた際の処理を行います
-        /// </summary>
-        /// <param name="isRevert">キャンセル入力の有無</param>
-        override protected bool AcceptRevertInput(bool isRevert)
-        {
-            if( base.AcceptRevertInput(isRevert) )
-            {
-                // 巻き戻しを行う
-                Rewind();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 決定入力受付の可否を判定します
         /// </summary>
         /// <returns>決定入力受付の可否</returns>
-        private bool CanAcceptInputConfirm()
+        override protected bool CanAcceptConfirm()
         {
-            if (!CanAcceptInputDefault()) return false;
+            if (!CanAcceptDefault()) return false;
 
             // 攻撃対象選択フェーズでない場合は終了
             if (PlMovePhase.PL_MOVE == _phase) return true;
@@ -145,26 +125,38 @@ namespace Frontier
         /// 方向入力受付の可否を判定します
         /// </summary>
         /// <returns>方向入力受付の可否</returns>
-        private bool CanAcceptInputDirection()
+        override protected bool CanAcceptDirection()
         {
-            if (!CanAcceptInputDefault()) return false;
+            if (!CanAcceptDefault()) return false;
 
-            // 移動フェーズでない場合、または移動入力受付が不可能である場合は終了
+            // 移動フェーズでない場合、または移動入力受付が不可能である場合は不可
             if (PlMovePhase.PL_MOVE == _phase && _selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize())) return true;
 
             return false;
         }
 
         /// <summary>
-        /// 決定入力を検知して状況毎に異なる処理を行います
+        /// 方向入力を受け取り、キャラクターを操作します
         /// </summary>
-        public bool AcceptConfirmInput( bool isConfirm )
+        /// <param name="dir">方向入力</param>
+        /// <returns>入力によってキャラクター移動が行われたか</returns>
+        override protected bool AcceptDirection(Direction dir)
         {
-            if( !isConfirm ) { return false; }
+            return _stageCtrl.OperateGridCursor( dir );
+        }
+
+        /// <summary>
+        /// 決定入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isConfirm">決定入力</param>
+        /// <returns>決定入力実行の有無</returns>
+        override protected bool AcceptConfirm(bool isConfirm)
+        {
+            if (!isConfirm) { return false; }
 
             GridInfo info;
-            var curGridIndex    = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex     = _selectPlayer.GetCurrentGridIndex();
+            var curGridIndex = _stageCtrl.GetCurrentGridIndex();
+            var plGridIndex = _selectPlayer.GetCurrentGridIndex();
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 出発地点と同一グリッドであれば戻る
@@ -184,6 +176,24 @@ namespace Frontier
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// キャンセル入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isCancel">キャンセル入力</param>
+        /// <returns>キャンセル入力実行の有無</returns>
+        override protected bool AcceptCancel(bool isCancel)
+        {
+            if( base.AcceptCancel(isCancel) )
+            {
+                // 巻き戻しを行う
+                Rewind();
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

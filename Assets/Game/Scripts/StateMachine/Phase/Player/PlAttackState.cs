@@ -28,12 +28,11 @@ namespace Frontier
         {
             base.Init();
 
-            _inputFcd.RegisterInputCodes<Constants.Direction>(
-                ( (GuideIcon.ALL_CURSOR, "TargetSelect", CanAcceptInputDirection, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput )
-             );
-            _inputFcd.RegisterInputCodes<bool>(
-                ((GuideIcon.CANCEL, "Back", CanAcceptInputDefault, 0.0f), AcceptRevertInput)
-             );
+            // 入力ガイドを登録
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.ALL_CURSOR,   "TargetSelect", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CANCEL,       "TURN END",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
+            );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
@@ -203,12 +202,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// 方向入力の受付可否を判定します
         /// </summary>
-        /// <returns></returns>
-        private bool CanAcceptInputDirection()
+        /// <returns>方向入力の受付可否</returns>
+        override protected bool CanAcceptDirection()
         {
-            if (!CanAcceptInputDefault()) return false;
+            if (!CanAcceptDefault()) return false;
 
             // 攻撃対象選択フェーズでない場合は終了
             if (PLAttackPhase.PL_ATTACK_SELECT_GRID == _phase) return true;
@@ -220,11 +219,9 @@ namespace Frontier
         /// 攻撃対象選択の入力を検知します
         /// </summary>
         /// <returns>入力の有無</returns>
-        public bool DetectTargetSelectInput()
+        override protected bool AcceptDirection(Constants.Direction dir)
         {
-            Direction direction = _inputFcd.GetInputDirection();
-
-            if (_stageCtrl.OperateTargetSelect(direction))
+            if (_stageCtrl.OperateTargetSelect(dir))
             {
                 return true;
             }

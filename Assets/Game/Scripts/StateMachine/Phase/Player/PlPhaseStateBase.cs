@@ -12,48 +12,17 @@ namespace Frontier
         protected Player _selectPlayer = null;
 
         /// <summary>
-        /// 現在のステートから退避します
-        /// </summary>
-        override public void Exit()
-        {
-            _inputFcd.ResetInputCodes();
-        }
-
-        /// <summary>
         /// キャンセル入力を受けた際の処理を行います
         /// </summary>
-        /// <param name="isRevert"></param>
-        virtual protected bool AcceptRevertInput(bool isRevert)
+        /// <param name="isCancel">キャンセル入力</param>
+        /// <returns>入力実行の有無</returns>
+        virtual protected bool AcceptCancel( bool isCancel )
         {
-            if (!isRevert) return false;
+            if ( !isCancel ) return false;
 
             Back();
 
             return true;
-        }
-
-        /// <summary>
-        /// 方向入力を受け取った際の処理を行います
-        /// </summary>
-        /// <param name="dir">方向入力</param>
-        virtual protected bool AcceptDirectionInput(Constants.Direction dir)
-        {
-            return _stageCtrl.OperateGridCursor(dir);
-        }
-
-        /// <summary>
-        /// 入力を検知して、以前のステートに遷移するフラグをONに切り替えます
-        /// </summary>
-        virtual protected bool DetectRevertInput()
-        {
-            if (_inputFcd.GetInputCancel())
-            {
-                Back();
-
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>

@@ -23,14 +23,11 @@ namespace Frontier
             _stageCtrl.SetGridCursorActive(true);
 
             // 入力ガイドを登録
-            _inputFcd.RegisterInputCodes<Constants.Direction>(
-                ((GuideIcon.ALL_CURSOR, "Move", CanAcceptInputDefault, DIRECTION_INPUT_INTERVAL), AcceptDirectionInput)
-             );
-
-            _inputFcd.RegisterInputCodes<bool>(
-                ((GuideIcon.CONFIRM, "Command", CanAcceptInputCommand, 0.0f), AcceptConfirmInput),
-                ((GuideIcon.ESCAPE, "TURN END", CanAcceptInputDefault, 0.0f), AcceptOptionalInput)
-             );
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.ALL_CURSOR,   "Move", CanAcceptDefault,      new AcceptDirectionInput(AcceptDirection),  DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CONFIRM,      "Command", CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
+               (GuideIcon.ESCAPE,       "TURN END", CanAcceptDefault,  new AcceptBooleanInput(AcceptOptional),     0.0f)
+            );
         }
 
         override public bool Update()
@@ -56,21 +53,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 現状のステートから抜け出します
-        /// </summary>
-        override public void Exit()
-        {
-            // グリッド選択を無効化 → TODO : 無効化しないほうがゲーム実行時における見た目がよかったため、一旦コメントアウトで保留
-            // _stageCtrl.SetGridCursorActive( false );
-
-            base.Exit();
-        }
-
-        /// <summary>
         /// キャラクターコマンド遷移へ移る際のコールバック関数
         /// </summary>
         /// <returns>コマンド選択が可能か</returns>
-        public bool CanAcceptInputCommand()
+        override protected bool CanAcceptConfirm()
         {
             if (0 <= TransitIndex)
             {
@@ -89,11 +75,21 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 決定入力を受け取った際の処理を行います
+        /// 方向入力を受け取った際の処理を行います
         /// </summary>
-        /// <param name="isConfirm">決定入力の有無</param>
-        /// <returns>入力受付の是非</returns>
-        public bool AcceptConfirmInput(bool isConfirm)
+        /// <param name="dir">方向入力</param>
+        /// <returns>入力実行の有無</returns>
+        override protected bool AcceptDirection(Direction dir)
+        {
+            return _stageCtrl.OperateGridCursor(dir);
+        }
+
+        /// <summary>
+        /// 決定入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isConfirm">決定入力</param>
+        /// <returns>入力実行の有無</returns>
+        override protected bool AcceptConfirm(bool isConfirm)
         {
             if (!isConfirm) return false;
 
@@ -103,11 +99,11 @@ namespace Frontier
         }
 
         /// <summary>
-        /// オプション入力を受け取った際の処理を行います
+        /// オプション入力を受けた際の処理を行います
         /// </summary>
-        /// <param name="isOptional">オプション入力の有無</param>
-        /// <returns>入力受付の是非</returns>
-        public bool AcceptOptionalInput(bool isOptional)
+        /// <param name="isOptional">オプション入力</param>
+        /// <returns>入力実行の有無</returns>
+        override protected bool AcceptOptional(bool isOptional)
         {
             if (!isOptional) return false;
 

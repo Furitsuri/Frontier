@@ -49,6 +49,7 @@ namespace Frontier
         /// </summary>
         virtual public void Exit()
         {
+            _inputFcd.ResetInputCodes();
         }
 
         /// <summary>
@@ -82,10 +83,48 @@ namespace Frontier
         /// 多くのケースでこちらの関数を用いて判定します
         /// </summary>
         /// <returns>入力受付の可否</returns>
-        protected bool CanAcceptInputDefault()
+        protected bool CanAcceptDefault()
         {
             // 現在のステートから脱出する場合は入力を受け付けない
             return !IsBack();
+        }
+
+        virtual protected bool CanAcceptDirection() { return false; }
+
+        virtual protected bool CanAcceptConfirm() { return false; }
+
+        virtual protected bool CanAcceptCancel() { return false; }
+
+        virtual protected bool CanAcceptOptional() { return false; }
+
+        /// <summary>
+        /// 方向入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="dir">方向入力</param>
+        /// <returns>入力実行の有無</returns>
+        virtual protected bool AcceptDirection(Constants.Direction dir)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 決定入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isConfirm">決定入力</param>
+        /// <returns>入力実行の有無</returns>
+        virtual protected bool AcceptConfirm(bool isConfirm)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// オプション入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isOptional">オプション入力</param>
+        /// <returns>入力実行の有無</returns>
+        virtual protected bool AcceptOptional(bool isOptional)
+        {
+            return false;
         }
     }
 }
