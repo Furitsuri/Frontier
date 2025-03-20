@@ -23,10 +23,5 @@ namespace Frontier
             // 更新せずに終了
             Back();
         }
-
-        override public void Exit()
-        {
-            base.Exit();
-        }
     }
 }

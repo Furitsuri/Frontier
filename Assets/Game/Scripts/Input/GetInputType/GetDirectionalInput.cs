@@ -1,4 +1,4 @@
-public class GetDirectionalInput : IGetInputBase, IGetGenericInput<Constants.Direction>
+﻿public class GetDirectionalInput : IGetInputBase, IGetGenericInput<Constants.Direction>
 {
     public delegate Constants.Direction GetDirectionalInputCallback();
 

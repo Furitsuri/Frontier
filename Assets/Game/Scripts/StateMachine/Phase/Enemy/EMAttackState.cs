@@ -24,8 +24,8 @@ namespace Frontier
         {
             base.Init();
 
-            _inputFcd.RegisterInputCodes<bool>(
-                ((GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, 0.0f), AcceptConfirmInput)
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f)
             );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
@@ -151,12 +151,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// 決定入力受付の可否を判定します
         /// </summary>
-        /// <returns></returns>
-        private bool CanAcceptConfirm()
+        /// <returns>決定入力受付の可否</returns>
+        override protected bool CanAcceptConfirm()
         {
-            if( !CanAcceptInputDefault() ) return false;
+            if( !CanAcceptDefault() ) return false;
 
             if( EmAttackPhase.EM_ATTACK_CONFIRM == _phase ) return true;
 
@@ -167,7 +167,7 @@ namespace Frontier
         /// 決定入力を受け取った際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力の有無</param>
-        private bool AcceptConfirmInput( bool isConfirm )
+        override protected bool AcceptConfirm( bool isConfirm )
         {
             if( !isConfirm ) return false;
 
