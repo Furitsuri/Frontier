@@ -16,7 +16,7 @@ namespace Frontier
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptCancel( bool isCancel )
+        override protected bool AcceptCancel( bool isCancel )
         {
             if ( !isCancel ) return false;
 
