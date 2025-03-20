@@ -31,7 +31,7 @@ namespace Frontier
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR,   "TargetSelect", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CANCEL,       "TURN END",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
+               (GuideIcon.CANCEL,       "TURN END",     CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f)
             );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
@@ -213,6 +213,16 @@ namespace Frontier
             if (PLAttackPhase.PL_ATTACK_SELECT_GRID == _phase) return true;
 
             return false;
+        }
+
+        /// <summary>
+        /// キャンセル入力の受付可否を判定します
+        /// </summary>
+        /// <returns>キャンセル入力の受付可否</returns>
+        override protected bool CanAcceptCancel()
+        {
+            // Directionと同一
+            return CanAcceptDirection();
         }
 
         /// <summary>

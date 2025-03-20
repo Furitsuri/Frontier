@@ -118,6 +118,16 @@ namespace Frontier
         }
 
         /// <summary>
+        /// キャンセル入力を受けた際の処理を行います
+        /// </summary>
+        /// <param name="isCancel">キャンセル入力</param>
+        /// <returns>入力実行の有無</returns>
+        virtual protected bool AcceptCancel(bool isCancel)
+        {
+            return false;
+        }
+
+        /// <summary>
         /// オプション入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isOptional">オプション入力</param>
