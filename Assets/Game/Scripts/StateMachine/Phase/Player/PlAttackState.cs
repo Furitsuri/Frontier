@@ -31,7 +31,8 @@ namespace Frontier
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR,   "TargetSelect", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CANCEL,       "TURN END",     CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f)
+               (GuideIcon.CONFIRM,      "Confirm",      CanAcceptDirection, new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.CANCEL,       "TURN END",     CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel), 0.0f)
             );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
@@ -104,33 +105,6 @@ namespace Frontier
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
-                    if (_inputFcd.GetInputConfirm())
-                    {
-                        // 選択したキャラクターが敵である場合は攻撃開始
-                        if (_targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY)
-                        {
-                            // キャラクターのアクションゲージを消費
-                            _attackCharacter.ConsumeActionGauge();
-                            _targetCharacter.ConsumeActionGauge();
-
-                            // 選択グリッドを一時非表示
-                            _stageCtrl.SetGridCursorActive(false);
-                            
-                            // アタックカーソルUI非表示
-                            _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
-
-                            // ダメージ予測表示UIを非表示
-                            _uiSystem.BattleUi.ToggleBattleExpect(false);
-
-                            // グリッド状態の描画をクリア
-                            _stageCtrl.ClearGridMeshDraw();
-
-                            // 攻撃シーケンスの開始
-                            _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
-
-                            _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
-                        }
-                    }
                     break;
                 case PLAttackPhase.PL_ATTACK_EXECUTE:
                     if (_attackSequence.Update())
@@ -216,6 +190,16 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 決定入力の受付可否を判定します
+        /// </summary>
+        /// <returns>決定入力の受付可否</returns>
+        override protected bool CanAcceptConfirm()
+        {
+            // Directionと同一
+            return CanAcceptDirection();
+        }
+
+        /// <summary>
         /// キャンセル入力の受付可否を判定します
         /// </summary>
         /// <returns>キャンセル入力の受付可否</returns>
@@ -226,13 +210,53 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 攻撃対象選択の入力を検知します
+        /// 方向入力を受け取った際の処理を行います
         /// </summary>
-        /// <returns>入力の有無</returns>
+        /// <param name="dir">方向入力</param>
+        /// <returns>入力実行の有無</returns>
         override protected bool AcceptDirection(Constants.Direction dir)
         {
             if (_stageCtrl.OperateTargetSelect(dir))
             {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 決定入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="isConfirm">決定入力</param>
+        /// <returns>入力実行の有無</returns>
+        override protected bool AcceptConfirm( bool isConfirm )
+        {
+            if( !isConfirm ) return false;
+
+            // 選択したキャラクターが敵である場合は攻撃開始
+            if (_targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY)
+            {
+                // キャラクターのアクションゲージを消費
+                _attackCharacter.ConsumeActionGauge();
+                _targetCharacter.ConsumeActionGauge();
+
+                // 選択グリッドを一時非表示
+                _stageCtrl.SetGridCursorActive(false);
+
+                // アタックカーソルUI非表示
+                _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
+
+                // ダメージ予測表示UIを非表示
+                _uiSystem.BattleUi.ToggleBattleExpect(false);
+
+                // グリッド状態の描画をクリア
+                _stageCtrl.ClearGridMeshDraw();
+
+                // 攻撃シーケンスの開始
+                _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
+
+                _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
+
                 return true;
             }
 
