@@ -35,4 +35,24 @@ public class KeyboardInput : IInput
     { 
         return Input.GetKeyUp( KeyCode.Escape );
     }
+
+    public bool IsSub1Pressed()
+    {
+        return Input.GetKeyUp( KeyCode.A );
+    }
+
+    public bool IsSub2Pressed()
+    {
+        return Input.GetKeyUp(KeyCode.S);
+    }
+
+    public bool IsSub3Pressed()
+    {
+        return Input.GetKeyUp(KeyCode.D);
+    }
+
+    public bool IsSub4Pressed()
+    {
+        return Input.GetKeyUp(KeyCode.F);
+    }
 }

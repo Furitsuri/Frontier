@@ -26,7 +26,11 @@
         HORIZONTAL_CURSOR,  // 横方向
         CONFIRM,            // 決定
         CANCEL,             // 戻る
-        ESCAPE,             // 終了
+        ESCAPE,             // オプション
+        SUB1,               // 入力サブ1
+        SUB2,               // 入力サブ2
+        SUB3,               // 入力サブ3
+        SUB4,               // 入力サブ4
 
         NUM_MAX
     }

@@ -167,9 +167,9 @@ namespace Frontier
         /// 決定入力を受け取った際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力の有無</param>
-        override protected bool AcceptConfirm( bool isConfirm )
+        override protected bool AcceptConfirm( bool isInput )
         {
-            if( !isConfirm ) return false;
+            if( !isInput ) return false;
 
             // キャラクターのアクションゲージを消費
             _attackCharacter.ConsumeActionGauge();

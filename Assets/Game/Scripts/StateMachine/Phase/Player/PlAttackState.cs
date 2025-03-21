@@ -8,15 +8,16 @@ namespace Frontier
 {
     public class PlAttackState : PlPhaseStateBase
     {
-        private enum PLAttackPhase
+        private enum PlAttackPhase
         {
             PL_ATTACK_SELECT_GRID = 0,
             PL_ATTACK_EXECUTE,
             PL_ATTACK_END,
         }
 
-        private PLAttackPhase _phase = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+        private PlAttackPhase _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
         private int _curentGridIndex = -1;
+        private string[] _playerSkillNames = null;
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
         private CharacterAttackSequence _attackSequence = null;
@@ -28,26 +29,26 @@ namespace Frontier
         {
             base.Init();
 
+            _playerSkillNames = _selectPlayer.GetEquipSkillNames();
+
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "TargetSelect", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CONFIRM,      "Confirm",      CanAcceptDirection, new AcceptBooleanInput(AcceptConfirm), 0.0f),
-               (GuideIcon.CANCEL,       "TURN END",     CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel), 0.0f)
+               (GuideIcon.ALL_CURSOR,   "TargetSelect",         CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CONFIRM,      "Confirm",              CanAcceptDirection, new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.CANCEL,       "TURN END",             CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel), 0.0f),
+               (GuideIcon.SUB1,         _playerSkillNames[0],   CanAcceptSub1,      new AcceptBooleanInput(AcceptSub1), 0.0f),
+               (GuideIcon.SUB2,         _playerSkillNames[1],   CanAcceptSub2,      new AcceptBooleanInput(AcceptSub2), 0.0f),
+               (GuideIcon.SUB3,         _playerSkillNames[2],   CanAcceptSub3,      new AcceptBooleanInput(AcceptSub3), 0.0f),
+               (GuideIcon.SUB4,         _playerSkillNames[3],   CanAcceptSub4,      new AcceptBooleanInput(AcceptSub4), 0.0f)
             );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
-            _phase              = PLAttackPhase.PL_ATTACK_SELECT_GRID;
+            _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(_btlRtnCtrl.SelectCharacterInfo);
-
-            if (_attackCharacter == null)
-            {
-                Debug.Assert(false, "SelectPlayer Irregular.");
-                return;
-            }
+            _attackCharacter = _selectPlayer;
             var param = _attackCharacter.param;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
@@ -81,7 +82,7 @@ namespace Frontier
 
             switch (_phase)
             {
-                case PLAttackPhase.PL_ATTACK_SELECT_GRID:
+                case PlAttackPhase.PL_ATTACK_SELECT_GRID:
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
                     _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
@@ -106,14 +107,14 @@ namespace Frontier
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
 
                     break;
-                case PLAttackPhase.PL_ATTACK_EXECUTE:
+                case PlAttackPhase.PL_ATTACK_EXECUTE:
                     if (_attackSequence.Update())
                     {
-                        _phase = PLAttackPhase.PL_ATTACK_END;
+                        _phase = PlAttackPhase.PL_ATTACK_END;
                     }
 
                     break;
-                case PLAttackPhase.PL_ATTACK_END:
+                case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
                     _attackCharacter.SetEndCommandStatus( Character.Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
@@ -184,7 +185,7 @@ namespace Frontier
             if (!CanAcceptDefault()) return false;
 
             // 攻撃対象選択フェーズでない場合は終了
-            if (PLAttackPhase.PL_ATTACK_SELECT_GRID == _phase) return true;
+            if (PlAttackPhase.PL_ATTACK_SELECT_GRID == _phase) return true;
 
             return false;
         }
@@ -210,6 +211,46 @@ namespace Frontier
         }
 
         /// <summary>
+        /// サブ1の入力の受付可否を判定します
+        /// </summary>
+        /// <returns>サブ1の入力の受付可否</returns>
+        protected override bool CanAcceptSub1()
+        {
+            if (!CanAcceptDirection()) return false;
+
+            if (_playerSkillNames[0].Length <= 0 ) return false;
+
+            return _selectPlayer.CanToggleEquipSkill(0);
+        }
+
+        protected override bool CanAcceptSub2()
+        {
+            if (!CanAcceptDirection()) return false;
+
+            if (_playerSkillNames[1].Length <= 0) return false;
+
+            return _selectPlayer.CanToggleEquipSkill(1);
+        }
+
+        protected override bool CanAcceptSub3()
+        {
+            if (!CanAcceptDirection()) return false;
+
+            if (_playerSkillNames[2].Length <= 0) return false;
+
+            return _selectPlayer.CanToggleEquipSkill(2);
+        }
+
+        protected override bool CanAcceptSub4()
+        {
+            if (!CanAcceptDirection()) return false;
+
+            if (_playerSkillNames[3].Length <= 0) return false;
+
+            return _selectPlayer.CanToggleEquipSkill(3);
+        }
+
+        /// <summary>
         /// 方向入力を受け取った際の処理を行います
         /// </summary>
         /// <param name="dir">方向入力</param>
@@ -227,11 +268,11 @@ namespace Frontier
         /// <summary>
         /// 決定入力を受け取った際の処理を行います
         /// </summary>
-        /// <param name="isConfirm">決定入力</param>
+        /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptConfirm( bool isConfirm )
+        override protected bool AcceptConfirm( bool isInput )
         {
-            if( !isConfirm ) return false;
+            if( !isInput ) return false;
 
             // 選択したキャラクターが敵である場合は攻撃開始
             if (_targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY)
@@ -255,12 +296,40 @@ namespace Frontier
                 // 攻撃シーケンスの開始
                 _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
 
-                _phase = PLAttackPhase.PL_ATTACK_EXECUTE;
+                _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
 
                 return true;
             }
 
             return false;
+        }
+
+        protected override bool AcceptSub1(bool isInput)
+        {
+            if ( !isInput ) return false;
+
+            return _selectPlayer.ToggleUseSkillks(0);
+        }
+
+        protected override bool AcceptSub2(bool isInput)
+        {
+            if ( !isInput ) return false;
+
+            return _selectPlayer.ToggleUseSkillks(1);
+        }
+
+        protected override bool AcceptSub3(bool isInput)
+        {
+            if ( !isInput ) return false;
+
+            return _selectPlayer.ToggleUseSkillks(2);
+        }
+
+        protected override bool AcceptSub4(bool isInput)
+        {
+            if ( !isInput ) return false;
+
+            return _selectPlayer.ToggleUseSkillks(3);
         }
     }
 }

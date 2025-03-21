@@ -50,6 +50,10 @@ public class InputHandler : MonoBehaviour
         GetBooleanInput.GetBooleanInputCallback confirmInputCb              = _iInput.IsConfirmPressed;
         GetBooleanInput.GetBooleanInputCallback cancelInputCb               = _iInput.IsCancelPressed;
         GetBooleanInput.GetBooleanInputCallback optionalInputCb             = _iInput.IsOptionsPressed;
+        GetBooleanInput.GetBooleanInputCallback sub1InputCb                 = _iInput.IsSub1Pressed;
+        GetBooleanInput.GetBooleanInputCallback sub2InputCb                 = _iInput.IsSub2Pressed;
+        GetBooleanInput.GetBooleanInputCallback sub3InputCb                 = _iInput.IsSub3Pressed;
+        GetBooleanInput.GetBooleanInputCallback sub4InputCb                 = _iInput.IsSub4Pressed;
 
         _inputForIcons                                              = new IGetInputBase[(int)Constants.GuideIcon.NUM_MAX];
         _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(directionalInputCb);
@@ -58,6 +62,10 @@ public class InputHandler : MonoBehaviour
         _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(confirmInputCb);
         _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(cancelInputCb);
         _inputForIcons[(int)Constants.GuideIcon.ESCAPE]             = new GetBooleanInput(optionalInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.SUB1]               = new GetBooleanInput(sub1InputCb);
+        _inputForIcons[(int)Constants.GuideIcon.SUB2]               = new GetBooleanInput(sub2InputCb);
+        _inputForIcons[(int)Constants.GuideIcon.SUB3]               = new GetBooleanInput(sub3InputCb);
+        _inputForIcons[(int)Constants.GuideIcon.SUB4]               = new GetBooleanInput(sub4InputCb);
     }
 
     /// <summary>
@@ -157,28 +165,4 @@ public class InputHandler : MonoBehaviour
         _inputGuideView = inputGuidePresenter;
         _inputCodes     = Array.AsReadOnly( inputCodes );
     }
-
-    /// <summary>
-    /// 押下された方向入力の種類を取得します
-    /// </summary>
-    /// <returns>押下されたボタンに対応する方向</returns>
-    public Constants.Direction GetDirectionalPressed() { return _iInput.GetDirectionalPressed(); }
-
-    /// <summary>
-    /// 決定入力が押下されたかを取得します
-    /// </summary>
-    /// <returns>ボタンの押下</returns>
-    public bool IsConfirmPressed() { return _iInput.IsConfirmPressed(); }
-
-    /// <summary>
-    /// 取消入力が押下されたかを取得します
-    /// </summary>
-    /// <returns>ボタンの押下</returns>
-    public bool IsCancelPressed() { return _iInput.IsCancelPressed(); }
-
-    /// <summary>
-    /// オプション入力が押下されたかを取得します
-    /// </summary>
-    /// <returns>ボタンの押下</returns>
-    public bool IsOptionsPressed() { return _iInput.IsOptionsPressed(); }
 }

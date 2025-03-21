@@ -591,6 +591,16 @@ namespace Frontier.Entities
         {
         }
 
+        /// <summary>
+        /// 指定のスキルの使用設定を切り替えます
+        /// </summary>
+        /// <param name="index">指定のスキルのインデックス番号</param>
+        /// <returns>切替の有無</returns>
+        virtual public bool ToggleUseSkillks( int index )
+        {
+            return false;
+        }
+
         #endregion // VIRTUAL_PUBLIC_METHOD
 
         #region PUBLIC_METHOD
@@ -879,6 +889,55 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 指定のスキルが使用可能かを判定します
+        /// </summary>
+        /// <param name="skillIdx">スキルの装備インデックス値</param>
+        /// <returns>指定スキルの使用可否</returns>
+        public bool CanUseEquipSkill( int skillIdx )
+        {
+            if( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            {
+                Debug.Assert(false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。");
+
+                return false;
+            } 
+
+            int skillID = (int)param.equipSkills[skillIdx];
+            var skillData = SkillsData.data[skillID];
+
+            // コストが現在のアクションゲージ値を越えていないかをチェック
+            if ( param.consumptionActionGauge + skillData.Cost <= param.curActionGauge)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 指定のスキルの使用状態が切替可能かを判定します
+        /// </summary>
+        /// <param name="skillIdx">スキルの装備インデックス値</param>
+        /// <returns>指定スキルの使用状態切替可否</returns>
+        public bool CanToggleEquipSkill( int skillIdx )
+        {
+            if (Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx)
+            {
+                Debug.Assert(false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。");
+
+                return false;
+            }
+
+            // スキル使用ONの状態であれば、OFFにするだけなので、コストチェックする必要がない
+            if( tmpParam.isUseSkills[skillIdx] )
+            {
+                return true;
+            }
+
+            return CanUseEquipSkill(skillIdx);
+        }
+
+        /// <summary>
         /// 指定のコマンドが終了しているかを取得します
         /// </summary>
         /// <param name="cmdTag">指定するコマンドタグ</param>
@@ -1062,6 +1121,24 @@ namespace Frontier.Entities
         public int GetCurrentGridIndex()
         {
             return tmpParam.gridIndex;
+        }
+
+        /// <summary>
+        /// 装備中のスキルの名前を取得します
+        /// </summary>
+        /// <returns>スキル名の配列</returns>
+        public string[] GetEquipSkillNames()
+        {
+            string[] names = new string[ Constants.EQUIPABLE_SKILL_MAX_NUM ];
+
+            for(  int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                names[i] = "";
+                if (!param.IsValidSkill(i)) continue;
+                names[i] = SkillsData.data[ (int)param.equipSkills[i] ].Name;
+            }
+
+            return names;
         }
 
         /// <summary>
