@@ -167,7 +167,8 @@ namespace Frontier
                     // 使用時まで非アクティブにする
                     if (chara.BulletObject != null)
                     {
-                        _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>(chara.BulletObject, chara.gameObject, "Bullet", false, false);
+                        Bullet bullet = _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>(chara.BulletObject, chara.gameObject, "Bullet", false, false);
+                        chara.SetBullet(bullet);
                     }
 
                     // ファイルから読み込んだパラメータを設定
