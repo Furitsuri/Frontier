@@ -10,7 +10,6 @@ using static InputFacade;
 public class InputCode
 {
     public delegate bool EnableCallback();
-    public delegate bool AcceptInputCallback<T>(T arg);
 
     // 入力アイコン
     public GuideIcon Icon;
@@ -65,24 +64,6 @@ public class InputCode
         }
 
         bool hasInput = AcceptInput.AcceptInput( input );
-
-        /*
-        // 引数の型を判別
-        if (input is Constants.Direction dir &&
-            AcceptCb is AcceptInputCallback<Constants.Direction> dirCb)
-        {
-            hasInput = dirCb( dir );
-        }
-        else if ( input is bool booleanInput &&
-            AcceptCb is AcceptInputCallback<bool> booleanCb)
-        {
-            hasInput = booleanCb( booleanInput );
-        }
-        else
-        {
-            Debug.Assert(false, "入力受付のコールバックが正しく設定されていません。");
-        }
-        */
 
         // 最後の入力時間を記録
         if( hasInput ) SetInputLastTime(Time.time);

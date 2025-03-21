@@ -117,9 +117,9 @@ namespace Frontier
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptConfirm( bool isConfirm )
+        override protected bool AcceptConfirm( bool isInput )
         {
-            if( !isConfirm ) return false;
+            if( !isInput ) return false;
 
             TransitIndex = GetCommandValue();
 

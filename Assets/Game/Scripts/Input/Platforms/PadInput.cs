@@ -34,4 +34,24 @@ public class PadInput : IInput
     {
         return Input.GetButtonUp("Submit");
     }
+
+    public bool IsSub1Pressed()
+    {
+        return Input.GetButtonUp("joystick button 4");
+    }
+
+    public bool IsSub2Pressed()
+    {
+        return Input.GetButtonUp("joystick button 5");
+    }
+
+    public bool IsSub3Pressed()
+    {
+        return Input.GetButtonUp("joystick button 6");
+    }
+
+    public bool IsSub4Pressed()
+    {
+        return Input.GetButtonUp("joystick button 7");
+    }
 }

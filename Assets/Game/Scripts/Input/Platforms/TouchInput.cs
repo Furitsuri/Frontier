@@ -29,4 +29,24 @@ public class TouchInput : IInput
     {
         return false;
     }
+
+    public bool IsSub1Pressed()
+    { 
+        return false;
+    }
+
+    public bool IsSub2Pressed()
+    {
+        return false;
+    }
+
+    public bool IsSub3Pressed()
+    {
+        return false;
+    }
+
+    public bool IsSub4Pressed()
+    {
+        return false;
+    }
 }

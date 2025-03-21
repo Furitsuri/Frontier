@@ -11,6 +11,14 @@ namespace Frontier
     {
         protected Player _selectPlayer = null;
 
+        override public void Init()
+        {
+            base.Init();
+
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            DebugUtils.NULL_ASSERT(_selectPlayer);
+        }
+
         /// <summary>
         /// ƒLƒƒƒ“ƒZƒ‹“ü—Í‚ğó‚¯‚½Û‚Ìˆ—‚ğs‚¢‚Ü‚·
         /// </summary>

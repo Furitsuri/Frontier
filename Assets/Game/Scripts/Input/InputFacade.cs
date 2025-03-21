@@ -31,7 +31,11 @@ public class InputFacade
             ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
             ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
             ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
-            ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f )
+            ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB1,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB2,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB3,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB4,                "", null, null, 0.0f )
         };
     }
 
@@ -107,28 +111,4 @@ public class InputFacade
 
         RegisterInputCodes( args );
     }
-
-    /// <summary>
-    /// 押下された方向ボタンの種類を取得します
-    /// </summary>
-    /// <returns>押下されたボタンに対応する方向</returns>
-    public Constants.Direction GetInputDirection() { return _inputHdr.GetDirectionalPressed(); }
-
-    /// <summary>
-    /// 決定ボタンが押下されたかを取得します
-    /// </summary>
-    /// <returns>ボタンの押下</returns>
-    public bool GetInputConfirm() { return _inputHdr.IsConfirmPressed(); }
-
-    /// <summary>
-    /// 取消ボタンが押下されたかを取得します
-    /// </summary>
-    /// <returns>ボタンの押下</returns>
-    public bool GetInputCancel() { return _inputHdr.IsCancelPressed(); }
-
-    /// <summary>
-    /// オプションボタンが押下されたかを取得します
-    /// </summary>
-    /// <returns>ボタンの押下</returns>
-    public bool GetInputOptions() { return _inputHdr.IsOptionsPressed(); }
 }

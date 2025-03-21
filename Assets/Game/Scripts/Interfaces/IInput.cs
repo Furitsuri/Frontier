@@ -13,4 +13,12 @@ public interface IInput
     public bool IsPausePressed();
 
     public bool IsOptionsPressed();
+
+    public bool IsSub1Pressed();
+
+    public bool IsSub2Pressed();
+
+    public bool IsSub3Pressed();
+
+    public bool IsSub4Pressed();
 }

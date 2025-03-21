@@ -60,23 +60,27 @@ public class InputGuidePresenter : MonoBehaviour
     // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
     {
 #if UNITY_EDITOR
-            "_alpha_308",  // ALL_CURSOR
-            "_alpha_250",  // UP
-            "_alpha_251",  // DOWN
-            "_alpha_252",  // LEFT
-            "_alpha_253",  // RIGHT
-            "_alpha_201",  // DECISION
-            "_alpha_260",  // CANCEL
-            "_alpha_259",  // ESCAPE
+            "_alpha_309",   // ALL_CURSOR
+            "_alpha_315",   // VERTICAL
+            "_alpha_314",   // HORIZONTAL
+            "_alpha_201",   // CONFIRM
+            "_alpha_260",   // CANCEL
+            "_alpha_259",   // ESCAPE
+            "_alpha_189",   // SUB1
+            "_alpha_190",   // SUB2
+            "_alpha_191",   // SUB3
+            "_alpha_192",   // SUB4
 #elif UNITY_STANDALONE_WIN
-            "_***", // ALL_CURSOR
-            "_10",  // UP
-            "_11",  // DOWN
-            "_12",  // LEFT
-            "_13",  // RIGHT
-            "_20",  // DECISION
+            "_9",   // ALL_CURSOR
+            "_15",  // VERTICAL
+            "_14",  // HORIZONTAL
+            "_20",  // CONFIRM
             "_21",  // CANCEL
-            "_21",  // CANCEL
+            "_27",  // ESCAPE
+            "_100",  // SUB1
+            "_101",  // SUB2
+            "_102",  // SUB3
+            "_103",  // SUB4
 #else
 #endif
         };
@@ -84,6 +88,8 @@ public class InputGuidePresenter : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        Debug.Assert( spriteTailNoString.Length == (int)Constants.GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
+
         _guideUiArrray          = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
         _rectTransform          = GetComponent<RectTransform>();
         _layoutGrp              = GetComponent<HorizontalLayoutGroup>();

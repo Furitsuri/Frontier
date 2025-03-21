@@ -36,10 +36,6 @@ namespace Frontier
             _phase = PlMovePhase.PL_MOVE;
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
-            // 現在選択中のキャラクター情報を取得して移動範囲を表示
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            DebugUtils.NULL_ASSERT(_selectPlayer);
-
             // 移動開始前の情報を保存
             _selectPlayer.AdaptPrevMoveInfo();
             var param = _selectPlayer.param;
@@ -150,9 +146,9 @@ namespace Frontier
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>決定入力実行の有無</returns>
-        override protected bool AcceptConfirm(bool isConfirm)
+        override protected bool AcceptConfirm(bool isInput)
         {
-            if (!isConfirm) { return false; }
+            if (!isInput) { return false; }
 
             GridInfo info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();

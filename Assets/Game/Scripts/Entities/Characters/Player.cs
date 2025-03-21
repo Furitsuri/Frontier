@@ -221,5 +221,37 @@ namespace Frontier.Entities
                 }
             }
         }
+
+        /// <summary>
+        /// 指定のスキルの使用設定を切り替えます
+        /// </summary>
+        /// <param name="index">指定のスキルのインデックス番号</param>
+        /// <returns>切替の有無</returns>
+        override public bool ToggleUseSkillks(int index)
+        {
+            tmpParam.isUseSkills[index] = !tmpParam.isUseSkills[index];
+
+            int skillID = (int)param.equipSkills[index];
+            var skillData = SkillsData.data[skillID];
+
+            if (tmpParam.isUseSkills[index])
+            {
+                param.consumptionActionGauge += skillData.Cost;
+                skillModifiedParam.AtkNum += skillData.AddAtkNum;
+                skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
+                skillModifiedParam.DefMagnification += skillData.AddDefMag;
+            }
+            else
+            {
+                param.consumptionActionGauge -= skillData.Cost;
+                skillModifiedParam.AtkNum -= skillData.AddAtkNum;
+                skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
+                skillModifiedParam.DefMagnification -= skillData.AddDefMag;
+            }
+
+            _uiSystem.BattleUi.GetPlayerParamSkillBox(index).SetFlickEnabled(tmpParam.isUseSkills[index]);
+
+            return true;
+        }
     }
 }

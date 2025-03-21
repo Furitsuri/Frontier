@@ -97,6 +97,14 @@ namespace Frontier
 
         virtual protected bool CanAcceptOptional() { return false; }
 
+        virtual protected bool CanAcceptSub1() { return false; }
+
+        virtual protected bool CanAcceptSub2() { return false; }
+
+        virtual protected bool CanAcceptSub3() { return false; }
+
+        virtual protected bool CanAcceptSub4() { return false; }
+
         /// <summary>
         /// 方向入力を受け取った際の処理を行います
         /// </summary>
@@ -112,7 +120,7 @@ namespace Frontier
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptConfirm(bool isConfirm)
+        virtual protected bool AcceptConfirm(bool isInput)
         {
             return false;
         }
@@ -133,6 +141,26 @@ namespace Frontier
         /// <param name="isOptional">オプション入力</param>
         /// <returns>入力実行の有無</returns>
         virtual protected bool AcceptOptional(bool isOptional)
+        {
+            return false;
+        }
+
+        virtual protected bool AcceptSub1( bool isInput )
+        {
+            return false;
+        }
+
+        virtual protected bool AcceptSub2(bool isInput)
+        {
+            return false;
+        }
+
+        virtual protected bool AcceptSub3(bool isInput)
+        {
+            return false;
+        }
+
+        virtual protected bool AcceptSub4(bool isInput)
         {
             return false;
         }
