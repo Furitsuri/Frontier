@@ -606,6 +606,17 @@ namespace Frontier.Entities
         #region PUBLIC_METHOD
 
         /// <summary>
+        /// 弾を設定します
+        /// </summary>
+        /// <param name="bullet">設定する弾</param>
+        public void SetBullet( Bullet bullet )
+        {
+            Debug.Assert( bullet != null, "The argument 'bullet' is unexpectedly null." );
+
+            _bullet = bullet;
+        }
+
+        /// <summary>
         /// キャラクターの位置を設定します
         /// </summary>
         /// <param name="gridIndex">マップグリッドのインデックス</param>
@@ -1067,9 +1078,9 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 
+        /// 次のカメラ遷移に移れる状態かを判定します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>次のカメラ遷移に移れるか</returns>
         public bool IsTransitNextPhaseCamera()
         {
             if(_isTransitNextPhaseCamera)
@@ -1136,6 +1147,7 @@ namespace Frontier.Entities
                 names[i] = "";
                 if (!param.IsValidSkill(i)) continue;
                 names[i] = SkillsData.data[ (int)param.equipSkills[i] ].Name;
+                names[i] = names[i].Replace("_", Environment.NewLine);
             }
 
             return names;
