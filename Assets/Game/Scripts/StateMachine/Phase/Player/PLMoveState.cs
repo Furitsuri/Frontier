@@ -126,7 +126,7 @@ namespace Frontier
             if (!CanAcceptDefault()) return false;
 
             // 移動フェーズでない場合、または移動入力受付が不可能である場合は不可
-            if (PlMovePhase.PL_MOVE == _phase && _selectPlayer.IsAcceptableMovementOperation(_stageCtrl.GetGridSize())) return true;
+            if ( PlMovePhase.PL_MOVE == _phase ) return true;
 
             return false;
         }
