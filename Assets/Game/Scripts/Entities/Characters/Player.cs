@@ -98,6 +98,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 移動入力受付の可否判定を行います
+        /// TODO : 必要がなくなった可能性があるため、不必要と確信出来れば削除
         /// </summary>
         /// <returns>移動入力の受付可否</returns>
         public bool IsAcceptableMovementOperation(float gridSize)
