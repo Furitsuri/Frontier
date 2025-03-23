@@ -1,7 +1,7 @@
 ﻿using Frontier.Entities;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.Combat
 {
 
     /// <summary>

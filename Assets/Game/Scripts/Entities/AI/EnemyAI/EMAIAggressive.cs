@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -129,7 +130,7 @@ namespace Frontier
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
 
             // 自身の移動範囲をステージ上に登録する
-            bool isAttackable = !selfTmpParam.isEndCommand[(int)Character.Command.COMMAND_TAG.ATTACK];
+            bool isAttackable = !selfTmpParam.isEndCommand[(int)Command.COMMAND_TAG.ATTACK];
             _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterIndex, selfParam.characterTag, isAttackable);
 
             for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)

@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace Frontier
             _cmdIdxVal = new CommandList.CommandIndexedValue(0, 0);
 
             // UI側へこのスクリプトを登録し、UIを表示
-            List<Character.Command.COMMAND_TAG> executableCommands;
+            List<Command.COMMAND_TAG> executableCommands;
             _selectPlayer.FetchExecutableCommand(out executableCommands, _stageCtrl);
 
             // 入力ベース情報の設定
@@ -78,11 +79,11 @@ namespace Frontier
             if (base.Update())
             {
                 // 移動のみ終了している場合は移動前に戻れるように          
-                if (_selectPlayer.IsEndCommand(Character.Command.COMMAND_TAG.MOVE) && !_selectPlayer.IsEndCommand(Character.Command.COMMAND_TAG.ATTACK))
+                if (_selectPlayer.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_selectPlayer.IsEndCommand(Command.COMMAND_TAG.ATTACK))
                 {
                     _stageCtrl.FollowFootprint(_selectPlayer);
                     _stageCtrl.UpdateGridInfo();
-                    _selectPlayer.SetEndCommandStatus(Character.Command.COMMAND_TAG.MOVE, false );
+                    _selectPlayer.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
                 }
 
                 return true;

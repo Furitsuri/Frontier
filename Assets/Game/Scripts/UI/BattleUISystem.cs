@@ -1,4 +1,5 @@
 ﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Entities;
 using UnityEngine;
 using Zenject;

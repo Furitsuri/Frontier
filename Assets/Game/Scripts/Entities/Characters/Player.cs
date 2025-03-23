@@ -1,4 +1,5 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Combat;
+using Frontier.Stage;
 using UnityEngine;
 
 namespace Frontier.Entities

@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -101,7 +102,7 @@ namespace Frontier
                     break;
                 case EMMovePhase.EM_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _enemy.SetEndCommandStatus(Character.Command.COMMAND_TAG.MOVE, true);
+                    _enemy.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
 
                     // コマンド選択に戻る
                     Back();

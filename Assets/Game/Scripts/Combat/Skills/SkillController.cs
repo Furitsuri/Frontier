@@ -1,7 +1,7 @@
 ﻿using Frontier.Battle;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.Combat
 {
     public class SkillController : Controller
     {

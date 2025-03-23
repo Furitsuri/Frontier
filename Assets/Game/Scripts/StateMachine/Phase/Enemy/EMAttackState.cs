@@ -1,4 +1,5 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Combat;
+using Frontier.Stage;
 using Frontier.Entities;
 using UnityEngine;
 using static Constants;
@@ -92,7 +93,7 @@ namespace Frontier
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.SetEndCommandStatus( Character.Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 

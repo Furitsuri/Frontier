@@ -3,6 +3,7 @@ using Frontier.Entities;
 using System.Collections;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat;
 
 namespace Frontier.Battle
 {
