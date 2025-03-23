@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class EMWaitState : PhaseStateBase
+    public class EmWaitState : PhaseStateBase
     {
         override public void Init()
         {

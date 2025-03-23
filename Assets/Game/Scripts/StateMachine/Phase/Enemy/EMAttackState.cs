@@ -5,7 +5,7 @@ using static Constants;
 
 namespace Frontier
 {
-    public class EMAttackState : PhaseStateBase
+    public class EmAttackState : PhaseStateBase
     {
         private enum EmAttackPhase
         {

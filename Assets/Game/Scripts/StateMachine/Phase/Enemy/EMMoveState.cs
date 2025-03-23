@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class EMMoveState : PhaseStateBase
+    public class EmMoveState : PhaseStateBase
     {
         private enum EMMovePhase
         {
