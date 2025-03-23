@@ -6,7 +6,7 @@ using Zenject;
 
 namespace Frontier.Battle
 {
-    public class BattleRoutineController : MonoBehaviour, IBattleHandler
+    public class BattleRoutineController : MonoBehaviour
     {
         /// <summary>
         /// バトル状態の遷移
