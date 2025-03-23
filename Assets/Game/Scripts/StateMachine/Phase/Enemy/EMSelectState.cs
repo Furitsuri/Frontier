@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class EMSelectState : PhaseStateBase
+    public class EmSelectState : PhaseStateBase
     {
         Enemy _currentEnemy = null;
         IEnumerator<Character> _enemyEnumerator;
