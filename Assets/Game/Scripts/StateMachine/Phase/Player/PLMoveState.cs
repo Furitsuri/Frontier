@@ -1,4 +1,5 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Combat;
+using Frontier.Stage;
 using Frontier.Entities;
 using Frontier;
 using System.Collections.Generic;
@@ -48,7 +49,7 @@ namespace Frontier
             _stageCtrl.BindGridCursorState( GridCursor.State.MOVE, _selectPlayer);
 
             // 移動可能情報を登録及び表示
-            bool isAttackable = !_selectPlayer.IsEndCommand( Character.Command.COMMAND_TAG.ATTACK );
+            bool isAttackable = !_selectPlayer.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
         }
@@ -79,7 +80,7 @@ namespace Frontier
                     break;
                 case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _selectPlayer.SetEndCommandStatus(Character.Command.COMMAND_TAG.MOVE, true);
+                    _selectPlayer.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
                     // コマンド選択に戻る
                     Back();
 

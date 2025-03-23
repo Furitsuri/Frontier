@@ -1,4 +1,5 @@
 ﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Entities;
 using System;
 using System.Collections;
@@ -7,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Playables;
 
-namespace Frontier
+namespace Frontier.Combat
 {
     /// <summary>
     /// パリィスキルの処理を行います

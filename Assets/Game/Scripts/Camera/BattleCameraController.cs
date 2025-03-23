@@ -1,3 +1,4 @@
+using Frontier.Combat;
 using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;

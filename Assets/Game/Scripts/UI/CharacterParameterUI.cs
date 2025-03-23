@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;

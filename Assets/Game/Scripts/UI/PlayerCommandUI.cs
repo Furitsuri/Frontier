@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -42,14 +43,14 @@ namespace Frontier
         /// </summary>
         void InitCommandStrings()
         {
-            _commandStrings = new string[(int)Character.Command.COMMAND_TAG.NUM]
+            _commandStrings = new string[(int)Command.COMMAND_TAG.NUM]
             {
                 "MOVE",
                 "ATTACK",
                 "WAIT"
             };
 
-            Debug.Assert( _commandStrings.Length == (int)Character.Command.COMMAND_TAG.NUM );
+            Debug.Assert( _commandStrings.Length == (int)Command.COMMAND_TAG.NUM );
         }
 
         // Update is called once per frame
@@ -98,7 +99,7 @@ namespace Frontier
         /// 実行可能なコマンドをコマンドリストUIに設定します
         /// </summary>
         /// <param name="executableCommands">実行可能なコマンドリスト</param>
-        public void SetExecutableCommandList( in List<Character.Command.COMMAND_TAG> executableCommands )
+        public void SetExecutableCommandList( in List<Command.COMMAND_TAG> executableCommands )
         {
             float fontSize = 0;
 

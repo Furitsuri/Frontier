@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -47,7 +48,7 @@ namespace Frontier
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
                 if (!_isValidTarget)
                 {
-                    _currentEnemy.SetEndCommandStatus( Character.Command.COMMAND_TAG.ATTACK, true );
+                    _currentEnemy.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                 }
 
                 break;
@@ -73,7 +74,7 @@ namespace Frontier
             // 移動行動に遷移するか
             if ( ShouldTransitionToMove( _currentEnemy ) )
             {
-                TransitIndex = (int)Character.Command.COMMAND_TAG.MOVE;
+                TransitIndex = (int)Command.COMMAND_TAG.MOVE;
 
                 return true;
             }
@@ -81,7 +82,7 @@ namespace Frontier
             // 攻撃行動に遷移するか
             if ( ShouldTransitionToAttack( _currentEnemy ) )
             {
-                TransitIndex = (int)Character.Command.COMMAND_TAG.ATTACK;
+                TransitIndex = (int)Command.COMMAND_TAG.ATTACK;
 
                 return true;
             }
@@ -98,7 +99,7 @@ namespace Frontier
         {
             if (!_isValidDestination) return false;
 
-            if ( em.IsEndCommand( Character.Command.COMMAND_TAG.MOVE ) ) return false;
+            if ( em.IsEndCommand( Command.COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
@@ -112,7 +113,7 @@ namespace Frontier
         {
             if ( !_isValidTarget ) return false;
 
-            if ( em.IsEndCommand( Character.Command.COMMAND_TAG.ATTACK ) ) return false;
+            if ( em.IsEndCommand( Command.COMMAND_TAG.ATTACK ) ) return false;
 
             return true;
         }
@@ -124,7 +125,7 @@ namespace Frontier
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if ( em.IsEndCommand( Character.Command.COMMAND_TAG.MOVE ) && em.IsEndCommand( Character.Command.COMMAND_TAG.ATTACK ) )
+            if ( em.IsEndCommand( Command.COMMAND_TAG.MOVE ) && em.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
             {
                 em.EndAction();
                 return true;

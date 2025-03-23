@@ -1,6 +1,4 @@
-﻿using System;
-
-public interface IServiceProvider
+﻿public interface IServiceProvider
 {
     T GetService<T>();
 }
