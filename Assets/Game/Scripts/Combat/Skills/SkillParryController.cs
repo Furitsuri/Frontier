@@ -16,6 +16,19 @@ namespace Frontier.Combat
     public class SkillParryController : Controller
     {
         /// <summary>
+        /// パリィ更新用フェイズ
+        /// </summary>
+        public enum PARRY_PHASE
+        {
+            NONE = -1,
+
+            EXEC_PARRY,
+            AFTER_ATTACK,
+
+            NUM,
+        }
+
+        /// <summary>
         /// パリィ判定の種類
         /// </summary>
         public enum JudgeResult
