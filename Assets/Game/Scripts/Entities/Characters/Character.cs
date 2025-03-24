@@ -107,21 +107,6 @@ namespace Frontier.Entities
             }
         }
 
-        /// <summary>
-        /// 特定のスキル使用時のみに上乗せされるパラメータです
-        /// </summary>
-        public struct SkillModifiedParameter
-        {
-            public int AtkNum;
-            public float AtkMagnification;
-            public float DefMagnification;
-
-            public void Reset()
-            {
-                AtkNum = 1; AtkMagnification = 1f; DefMagnification = 1f;
-            }
-        }
-
         [System.Serializable]
         public struct CameraParameter
         {
@@ -170,7 +155,7 @@ namespace Frontier.Entities
         protected Bullet _bullet        = null;
         
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
-        protected SkillParryController.PARRY_PHASE _parryPhase;
+        protected ParrySkillController.PARRY_PHASE _parryPhase;
         public Parameter param;
         protected TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -181,7 +166,7 @@ namespace Frontier.Entities
         // 弾の取得
         public GameObject BulletObject => _bulletObject;
         // パリィ結果
-        public SkillParryController.JudgeResult ParryResult { get; set; } = SkillParryController.JudgeResult.NONE;
+        public ParrySkillController.JudgeResult ParryResult { get; set; } = ParrySkillController.JudgeResult.NONE;
         public AnimationController AnimCtrl { get; } = new AnimationController();
 
         // 攻撃用アニメーションタグ
@@ -291,7 +276,7 @@ namespace Frontier.Entities
         /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲートを設定します
         /// </summary>
         /// <param name="parryCtrl">パリィ操作クラス</param>
-        void SubscribeParryEvent( SkillParryController parryCtrl )
+        void SubscribeParryEvent( ParrySkillController parryCtrl )
         {
             parryCtrl.ProcessCompleted += ParryEventProcessCompleted;
         }
@@ -300,7 +285,7 @@ namespace Frontier.Entities
         /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲート設定を解除します
         /// </summary>
         /// <param name="parryCtrl">パリィ操作クラス</param>
-        void UnsubscribeParryEvent(SkillParryController parryCtrl)
+        void UnsubscribeParryEvent(ParrySkillController parryCtrl)
         {
             parryCtrl.ProcessCompleted -= ParryEventProcessCompleted;
         }
@@ -314,7 +299,7 @@ namespace Frontier.Entities
         {
             ParryResult = e.Result;
 
-            SkillParryController parryCtrl = sender as SkillParryController;
+            ParrySkillController parryCtrl = sender as ParrySkillController;
             parryCtrl.EndParryEvent();
 
             UnsubscribeParryEvent(parryCtrl);
@@ -382,14 +367,14 @@ namespace Frontier.Entities
         virtual public void ParryOpponentEvent()
         {
             // NONE以外の結果が通知されているはず
-            Debug.Assert(ParryResult != SkillParryController.JudgeResult.NONE);
+            Debug.Assert(ParryResult != ParrySkillController.JudgeResult.NONE);
 
             if (_opponent == null)
             {
                 Debug.Assert(false);
             }
 
-            if (ParryResult == SkillParryController.JudgeResult.FAILED)
+            if (ParryResult == ParrySkillController.JudgeResult.FAILED)
             {
                 return;
             }
@@ -602,7 +587,7 @@ namespace Frontier.Entities
         /// </summary>
         public void StartParrySequence()
         {
-            _parryPhase = SkillParryController.PARRY_PHASE.EXEC_PARRY;
+            _parryPhase = ParrySkillController.PARRY_PHASE.EXEC_PARRY;
             _elapsedTime = 0f;
 
             AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
@@ -618,7 +603,7 @@ namespace Frontier.Entities
         {
             if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
             
-            SkillParryController parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
+            ParrySkillController parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
             _opponent.SubscribeParryEvent(parryCtrl);
             parryCtrl.StartParryEvent(_opponent, this);
         }
@@ -732,12 +717,12 @@ namespace Frontier.Entities
 
             switch( _parryPhase )
             {
-                case SkillParryController.PARRY_PHASE.EXEC_PARRY:
+                case ParrySkillController.PARRY_PHASE.EXEC_PARRY:
                     if (isJustParry)
                     {
                         AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.SINGLE_ATTACK);
 
-                        _parryPhase = SkillParryController.PARRY_PHASE.AFTER_ATTACK;
+                        _parryPhase = ParrySkillController.PARRY_PHASE.AFTER_ATTACK;
                     }
                     else {
                         if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.PARRY))
@@ -748,7 +733,7 @@ namespace Frontier.Entities
                         }
                     }
                     break;
-                case SkillParryController.PARRY_PHASE.AFTER_ATTACK:
+                case ParrySkillController.PARRY_PHASE.AFTER_ATTACK:
                     break;
             }
 
@@ -849,7 +834,7 @@ namespace Frontier.Entities
         /// </summary>
         public void SetReceiveAttackSetting()
         {
-            ParryResult = SkillParryController.JudgeResult.NONE;
+            ParryResult = ParrySkillController.JudgeResult.NONE;
         }
 
         /// <summary>

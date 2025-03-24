@@ -13,7 +13,7 @@ namespace Frontier.Combat
     /// <summary>
     /// パリィスキルの処理を行います
     /// </summary>
-    public class SkillParryController : Controller
+    public class ParrySkillController : MonoBehaviour
     {
         /// <summary>
         /// パリィ更新用フェイズ
@@ -198,13 +198,13 @@ namespace Frontier.Combat
         {
             switch (result)
             {
-                case SkillParryController.JudgeResult.SUCCESS:
+                case ParrySkillController.JudgeResult.SUCCESS:
                     attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
                     break;
-                case SkillParryController.JudgeResult.FAILED:
+                case ParrySkillController.JudgeResult.FAILED:
                     useParryChara.skillModifiedParam.DefMagnification   *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param2;
                     break;
-                case SkillParryController.JudgeResult.JUST:
+                case ParrySkillController.JudgeResult.JUST:
                     attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
                     useParryChara.skillModifiedParam.AtkMagnification   *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param3;
                     break;
@@ -315,6 +315,6 @@ namespace Frontier.Combat
     /// </summary>
     public class SkillParryCtrlEventArgs : EventArgs
     {
-        public SkillParryController.JudgeResult Result { get; set; }
+        public ParrySkillController.JudgeResult Result { get; set; }
     }
 }

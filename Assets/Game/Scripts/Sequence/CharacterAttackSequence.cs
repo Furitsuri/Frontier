@@ -177,10 +177,10 @@ namespace Frontier
                         _phase = Phase.ATTACK;
                     }
 
-                    if (_targetCharacter.ParryResult != SkillParryController.JudgeResult.NONE)
+                    if (_targetCharacter.ParryResult != ParrySkillController.JudgeResult.NONE)
                     {
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                        if (_targetCharacter.ParryResult == SkillParryController.JudgeResult.FAILED)
+                        if (_targetCharacter.ParryResult == ParrySkillController.JudgeResult.FAILED)
                         {
                             _phase = Phase.ATTACK;
                         }

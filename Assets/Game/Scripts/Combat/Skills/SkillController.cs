@@ -5,12 +5,12 @@ namespace Frontier.Combat
 {
     public class SkillController : Controller
     {
-        private SkillParryController _parryCtrl = null;
-        public SkillParryController ParryController => _parryCtrl;
+        private ParrySkillController _parryCtrl = null;
+        public ParrySkillController ParryController => _parryCtrl;
 
         void Awake()
         {
-            _parryCtrl = gameObject.GetComponentInChildren<SkillParryController>();
+            _parryCtrl = gameObject.GetComponentInChildren<ParrySkillController>();
             Debug.Assert( _parryCtrl != null );
         }
 

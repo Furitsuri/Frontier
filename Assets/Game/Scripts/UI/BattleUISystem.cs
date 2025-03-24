@@ -101,8 +101,8 @@ namespace Frontier
             DamageValue.CharacterTransform  = character.transform;
 
             // パリィ成功時には専用の表記
-            if (character.ParryResult == SkillParryController.JudgeResult.SUCCESS ||
-                character.ParryResult == SkillParryController.JudgeResult.JUST)
+            if (character.ParryResult == ParrySkillController.JudgeResult.SUCCESS ||
+                character.ParryResult == ParrySkillController.JudgeResult.JUST)
             {
                 DamageValue.damageText.color    = Color.yellow;
                 DamageValue.damageText.text     = "DEFLECT";
