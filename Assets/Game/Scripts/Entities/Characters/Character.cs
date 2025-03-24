@@ -1,13 +1,10 @@
 ﻿using Frontier.Stage;
+using Frontier.Combat;
 using Frontier.Battle;
-using Frontier.Entities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using static Frontier.CharacterHashtable;
-using Frontier.Combat;
-using System.Security.Cryptography;
 
 namespace Frontier.Entities
 {
@@ -50,19 +47,6 @@ namespace Frontier.Entities
             CLOSINGE,
             ATTACK,
             DISTANCING,
-
-            NUM,
-        }
-
-        /// <summary>
-        /// パリィ更新用フェイズ
-        /// </summary>
-        public enum PARRY_PHASE
-        {
-            NONE = -1,
-
-            EXEC_PARRY,
-            AFTER_ATTACK,
 
             NUM,
         }
@@ -124,26 +108,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// バフ・デバフなどで上乗せされるパラメータです
-        /// </summary>
-        public struct ModifiedParameter
-        {
-            // 攻撃力
-            public int Atk;
-            // 防御力
-            public int Def;
-            // 移動レンジ
-            public int moveRange;
-            // アクションゲージ回復値
-            public int recoveryActionGauge;
-
-            public void Reset()
-            {
-                Atk = 0; Def = 0; moveRange = 0; recoveryActionGauge = 0;
-            }
-        }
-
-        /// <summary>
         /// 特定のスキル使用時のみに上乗せされるパラメータです
         /// </summary>
         public struct SkillModifiedParameter
@@ -155,63 +119,6 @@ namespace Frontier.Entities
             public void Reset()
             {
                 AtkNum = 1; AtkMagnification = 1f; DefMagnification = 1f;
-            }
-        }
-
-        /// <summary>
-        /// 戦闘中のみ一時的に使用するパラメータです
-        /// </summary>
-        public struct TmpParameter
-        {
-            // 該当コマンドの終了フラグ
-            public bool[] isEndCommand;
-            // 該当スキルの使用フラグ
-            public bool[] isUseSkills;
-            // 現在位置を示すグリッドインデックス
-            public int gridIndex;
-            // 1回の攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮しない)
-            public int expectedHpChange;
-            // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
-            public int totalExpectedHpChange;
-
-            /// <summary>
-            /// 現在の値をクローンして返します
-            /// 巻き戻しの際にバックアップを取りますが、C#の仕様上、配列部分が参照で渡されてしまうため、
-            /// Array.Copyで値渡しになるように書き換えています
-            /// </summary>
-            /// <returns>クローンした変数</returns>
-            public TmpParameter Clone()
-            {
-                TmpParameter copy = this;
-
-                copy.isEndCommand   = ( bool[] )isEndCommand.Clone();
-                copy.isUseSkills    = ( bool[] )isUseSkills.Clone();
-
-                return copy;
-            }
-
-            /// <summary>
-            /// スキルの使用フラグをリセットします
-            /// </summary>
-            public void ResetUseSkill()
-            {
-                for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
-                {
-                    isUseSkills[i] = false;
-                }
-            }
-
-            /// <summary>
-            /// 全てのパラメータをリセットします
-            /// </summary>
-            public void Reset()
-            {
-                for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
-                {
-                    isEndCommand[i] = false;
-                }
-
-                totalExpectedHpChange = expectedHpChange = 0;
             }
         }
 
@@ -263,7 +170,7 @@ namespace Frontier.Entities
         protected Bullet _bullet        = null;
         
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
-        protected PARRY_PHASE _parryPhase;
+        protected SkillParryController.PARRY_PHASE _parryPhase;
         public Parameter param;
         protected TmpParameter tmpParam;
         public ModifiedParameter modifiedParam;
@@ -695,7 +602,7 @@ namespace Frontier.Entities
         /// </summary>
         public void StartParrySequence()
         {
-            _parryPhase = PARRY_PHASE.EXEC_PARRY;
+            _parryPhase = SkillParryController.PARRY_PHASE.EXEC_PARRY;
             _elapsedTime = 0f;
 
             AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
@@ -825,12 +732,12 @@ namespace Frontier.Entities
 
             switch( _parryPhase )
             {
-                case PARRY_PHASE.EXEC_PARRY:
+                case SkillParryController.PARRY_PHASE.EXEC_PARRY:
                     if (isJustParry)
                     {
                         AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.SINGLE_ATTACK);
 
-                        _parryPhase = PARRY_PHASE.AFTER_ATTACK;
+                        _parryPhase = SkillParryController.PARRY_PHASE.AFTER_ATTACK;
                     }
                     else {
                         if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.PARRY))
@@ -841,7 +748,7 @@ namespace Frontier.Entities
                         }
                     }
                     break;
-                case PARRY_PHASE.AFTER_ATTACK:
+                case SkillParryController.PARRY_PHASE.AFTER_ATTACK:
                     break;
             }
 

@@ -17,7 +17,7 @@ namespace Frontier
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
-        override public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in Character.TmpParameter selfTmpParam)
+        override public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in TmpParameter selfTmpParam)
         {
             _isDetermined = true;
 
@@ -125,7 +125,7 @@ namespace Frontier
             return (IsValidDestination(), IsValidTarget());
         }
 
-        private bool CheckExistTargetInRange(Character.Parameter selfParam, Character.TmpParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
+        private bool CheckExistTargetInRange(Character.Parameter selfParam, TmpParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
         {
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
 
