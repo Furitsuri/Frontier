@@ -115,7 +115,7 @@ namespace Frontier
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateParamRender(Character selectCharacter, in Character.Parameter param, in Character.SkillModifiedParameter skillParam)
+        void UpdateParamRender(Character selectCharacter, in Character.Parameter param, in SkillModifiedParameter skillParam)
         {
             Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
 
