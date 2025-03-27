@@ -16,7 +16,7 @@ namespace Frontier
             base.Init();
 
             _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            DebugUtils.NULL_ASSERT(_selectPlayer);
+            // MEMO : 継承先のクラスによってはnullを許容するためnullチェックは行わない
         }
 
         /// <summary>

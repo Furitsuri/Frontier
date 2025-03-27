@@ -3,24 +3,24 @@ using UnityEngine;
 
 namespace Frontier.Combat
 {
-    public class SkillController : Controller
+    public class SkillController : MonoBehaviour
     {
-        private ParrySkillController _parryCtrl = null;
-        public ParrySkillController ParryController => _parryCtrl;
+        private ParrySkillHandler _parryHdlr = null;
+        public ParrySkillHandler ParryHdlr => _parryHdlr;
 
         void Awake()
         {
-            _parryCtrl = gameObject.GetComponentInChildren<ParrySkillController>();
-            Debug.Assert( _parryCtrl != null );
+            _parryHdlr = gameObject.GetComponentInChildren<ParrySkillHandler>();
+            Debug.Assert( _parryHdlr != null );
         }
 
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="btlRtnCtrl"></param>
+        /// <param name="btlRtnCtrl">戦闘ルーチン操作クラス</param>
         public void Init( BattleRoutineController btlRtnCtrl )
         {
-            _parryCtrl.Init( btlRtnCtrl );
+            _parryHdlr.Init( btlRtnCtrl );
         }
     }
 }

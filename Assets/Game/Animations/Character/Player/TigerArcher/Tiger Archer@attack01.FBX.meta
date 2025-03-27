@@ -625,7 +625,7 @@ ModelImporter:
       curves: []
       events:
       - time: 0.7428571
-        functionName: FireBullet
+        functionName: FireBulletOnAnimEvent
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

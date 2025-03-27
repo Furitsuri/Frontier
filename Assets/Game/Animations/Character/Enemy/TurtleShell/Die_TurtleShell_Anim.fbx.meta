@@ -262,7 +262,7 @@ ModelImporter:
       curves: []
       events:
       - time: 1
-        functionName: Die
+        functionName: DieOnAnimEvent
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

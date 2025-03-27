@@ -142,14 +142,14 @@ ModelImporter:
       curves: []
       events:
       - time: 0.2659568
-        functionName: StartParryJudgeEvent
+        functionName: StartParryOnAnimEvent
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 2
         messageOptions: 0
       - time: 0.3409669
-        functionName: AttackOpponentEvent
+        functionName: AttackOpponentOnAnimEvent
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

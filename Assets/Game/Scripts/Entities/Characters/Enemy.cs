@@ -15,17 +15,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
-        /// MEMO : モーションのイベントフラグから呼び出します
-        /// </summary>
-        override public void Die()
-        {
-            base.Die();
-
-            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList(this);
-        }
-
-        /// <summary>
         /// 思考タイプを設定します
         /// </summary>
         /// <param name="type">設定する思考タイプ</param>

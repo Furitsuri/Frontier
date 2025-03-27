@@ -98,7 +98,7 @@ namespace Frontier.Battle
             if (_skillCtrl == null)
             {
                 _skillCtrl = _hierarchyBld.CreateComponentAndOrganize<SkillController>(_skillCtrlObject, true);
-                DebugUtils.NULL_ASSERT(_skillCtrl);
+                NullCheck.AssertNotNull(_skillCtrl);
             }
 
             if( _btlFileLoader == null )

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Frontier.Combat;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,15 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="type">設定する思考タイプ</param>
         virtual public void SetThinkType( Npc.ThinkingType type ) { }
+
+        /// <summary>
+        /// 使用スキルを選択します
+        /// </summary>
+        /// <param name="type">攻撃、防御、常駐などのスキルタイプ</param>
+        override public void SelectUseSkills( SkillsData.SituationType type )
+        {
+
+        }
 
         /// <summary>
         /// 設定されているAIを取得します

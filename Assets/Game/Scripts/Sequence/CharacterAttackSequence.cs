@@ -41,8 +41,9 @@ namespace Frontier
         private Vector3 _destination = Vector3.zero;
         private Quaternion _atkCharaInitialRot = Quaternion.identity;
         private Quaternion _tgtCharaInitialRot = Quaternion.identity;
-        private UpdateAttack _updateAttackerAttack = null;
-        private UpdateAttack _updateTargetAttack = null;
+        private UpdateAttack _updateAttackerAttack  = null;
+        private UpdateAttack _updateTargetAttack    = null;
+        private ParrySkillNotifier _parryNotifier   = null;
 
         [Inject]
         public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem)
@@ -101,7 +102,7 @@ namespace Frontier
         /// <returns>処理の終了</returns>
         public bool Update()
         {
-            var parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
+            var parryCtrl = _btlRtnCtrl.SkillCtrl.ParryHdlr;
 
             switch (_phase)
             {
@@ -132,7 +133,11 @@ namespace Frontier
                         StartAttack(_attackCharacter, _targetCharacter);
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) _phase = Phase.WAIT_PARRY_RESULT;
+                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY))
+                        {
+                            _phase = Phase.WAIT_PARRY_RESULT;
+                            _parryNotifier = _targetCharacter.GetParrySkill;
+                        }
                         // それ以外は通常通り攻撃へ
                         else _phase = Phase.ATTACK;
                     }
@@ -177,10 +182,10 @@ namespace Frontier
                         _phase = Phase.ATTACK;
                     }
 
-                    if (_targetCharacter.ParryResult != ParrySkillController.JudgeResult.NONE)
+                    if ( !_parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.NONE ) )
                     {
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                        if (_targetCharacter.ParryResult == ParrySkillController.JudgeResult.FAILED)
+                        if ( _parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.FAILED ) )
                         {
                             _phase = Phase.ATTACK;
                         }
@@ -270,11 +275,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 死亡キャラクターを返します
+        /// 死亡キャラクターを取得します
         /// </summary>
         /// <returns>死亡キャラクター</returns>
         public Character GetDiedCharacter() { return _diedCharacter; }
-
 
         /// <summary>
         /// 攻撃キャラと被攻撃キャラ間との攻撃処理を実行します
@@ -321,7 +325,7 @@ namespace Frontier
         {
             // 更新用関数を切り替え
             _updateAttackerAttack   = _attackCharacter.UpdateParryOnAttacker;
-            _updateTargetAttack     = _targetCharacter.UpdateParryOnTargeter;
+            _updateTargetAttack     = _parryNotifier.UpdateParryOnTargeter;
         }
 
         /// <summary>

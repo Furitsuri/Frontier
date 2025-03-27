@@ -13,7 +13,7 @@ namespace Frontier.Combat
     /// <summary>
     /// パリィスキルの処理を行います
     /// </summary>
-    public class ParrySkillController : MonoBehaviour
+    public class ParrySkillHandler : MonoBehaviour
     {
         /// <summary>
         /// パリィ更新用フェイズ
@@ -73,18 +73,19 @@ namespace Frontier.Combat
         [Header("結果を表示する秒数")]
         private float _showUITime = 1.5f;
 
-        private float _radiusThresholdOnFail    = 0f;
-        private ParryRingEffect _ringEffect     = null;
-        private ParryResultEffect _resultEffect = null;
-        private BattleRoutineController _btlRtnCtrl           = null;
-        private Character _useParryCharacter    = null;
-        private Character _attackCharacter      = null;
-        private JudgeResult _judgeResult        = JudgeResult.NONE;
+        private float _radiusThresholdOnFail        = 0f;
+        private ParryRingEffect _ringEffect         = null;
+        private ParryResultEffect _resultEffect     = null;
+        private BattleRoutineController _btlRtnCtrl = null;
+        private ParrySkillNotifier _parryNotifier   = null;
+        private Character _useParryCharacter        = null;
+        private Character _attackCharacter          = null;
+        private JudgeResult _judgeResult            = JudgeResult.NONE;
         private (float inner, float outer) _judgeRingSuccessRange   = (0f, 0f);
         private (float inner, float outer) _judgeRingJustRange      = (0f, 0f);
 
         // パリィイベント終了時のデリゲート
-        public event EventHandler<SkillParryCtrlEventArgs> ProcessCompleted;
+        public event EventHandler<ParrySkillHdlrEventArgs> ProcessCompleted;
 
         // Update is called once per frame
         void Update()
@@ -95,7 +96,7 @@ namespace Frontier.Combat
                 _ui.terminate();
                 _resultEffect.terminate();
 
-                SkillParryCtrlEventArgs args = new SkillParryCtrlEventArgs();
+                ParrySkillHdlrEventArgs args = new ParrySkillHdlrEventArgs();
                 args.Result = _judgeResult;
 
                 // 結果と共にイベント終了を呼び出し元に通知
@@ -183,7 +184,7 @@ namespace Frontier.Combat
         /// パリィ判定終了時に呼び出すイベントハンドラ
         /// </summary>
         /// <param name="e">イベントオブジェクト</param>
-        void OnProcessCompleted( SkillParryCtrlEventArgs e )
+        void OnProcessCompleted( ParrySkillHdlrEventArgs e )
         {
             ProcessCompleted ?.Invoke( this, e );
         }
@@ -198,13 +199,13 @@ namespace Frontier.Combat
         {
             switch (result)
             {
-                case ParrySkillController.JudgeResult.SUCCESS:
+                case ParrySkillHandler.JudgeResult.SUCCESS:
                     attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
                     break;
-                case ParrySkillController.JudgeResult.FAILED:
+                case ParrySkillHandler.JudgeResult.FAILED:
                     useParryChara.skillModifiedParam.DefMagnification   *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param2;
                     break;
-                case ParrySkillController.JudgeResult.JUST:
+                case ParrySkillHandler.JudgeResult.JUST:
                     attackChara.skillModifiedParam.AtkMagnification     *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
                     useParryChara.skillModifiedParam.AtkMagnification   *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param3;
                     break;
@@ -245,11 +246,15 @@ namespace Frontier.Combat
         /// </summary>
         /// <param name="useCharacter">パリィを行うキャラクター</param>
         /// <param name="opponent">対戦相手</param>
-        public void StartParryEvent(Character useCharacter, Character opponent)
+        public void StartParryEvent( Character useCharacter, Character opponent )
         {
+            NullCheck.AssertNotNull(useCharacter);
+            NullCheck.AssertNotNull(opponent);
+
             gameObject.SetActive(true);
             _useParryCharacter  = useCharacter;
             _attackCharacter    = opponent;
+            _parryNotifier      = _useParryCharacter.GetParrySkill;
 
             // パリィエフェクトのシェーダー情報をカメラに描画するため、メインカメラにアタッチ
             Camera.main.gameObject.AddComponent<ParryRingEffect>();
@@ -271,7 +276,7 @@ namespace Frontier.Combat
             DelayBattleTimeScale(_delayTimeScale);
 
             // パリィモーションの開始
-            _useParryCharacter.StartParrySequence();
+            _parryNotifier.StartParrySequence();
 
             // 結果をNONEに初期化
             _judgeResult = JudgeResult.NONE;
@@ -311,10 +316,10 @@ namespace Frontier.Combat
     }
 
     /// <summary>
-    /// Skill`ParryControllerの結果通知に使用します
+    /// ParrySkillHandlerの結果通知に使用します
     /// </summary>
-    public class SkillParryCtrlEventArgs : EventArgs
+    public class ParrySkillHdlrEventArgs : EventArgs
     {
-        public ParrySkillController.JudgeResult Result { get; set; }
+        public ParrySkillHandler.JudgeResult Result { get; set; }
     }
 }
