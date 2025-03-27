@@ -51885,14 +51885,14 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 0.2
-    functionName: StopAnimationOnParry
+    functionName: StopParryAnimationOnAnimEvent
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 0.3
-    functionName: ParryOpponentEvent
+    functionName: ParryAttackOnAnimEvent
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

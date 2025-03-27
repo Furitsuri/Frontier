@@ -17,6 +17,7 @@ namespace Frontier
 
         private EmAttackPhase _phase;
         private int _curentGridIndex                    = -1;
+        private string[] _playerSkillNames              = null;
         private Enemy _attackCharacter                  = null;
         private Character _targetCharacter              = null;
         private CharacterAttackSequence _attackSequence = null;
@@ -24,10 +25,6 @@ namespace Frontier
         override public void Init()
         {
             base.Init();
-
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f)
-            );
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
@@ -50,6 +47,16 @@ namespace Frontier
 
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
+
+            _playerSkillNames = _targetCharacter.GetEquipSkillNames();
+
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm,         new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1,    new AcceptBooleanInput(AcceptSub1), 0.0f),
+               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2,    new AcceptBooleanInput(AcceptSub2), 0.0f),
+               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3,    new AcceptBooleanInput(AcceptSub3), 0.0f),
+               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4,    new AcceptBooleanInput(AcceptSub4), 0.0f)
+            );
 
             // 攻撃者の向きを設定
             var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.GetCurrentGridIndex());
@@ -165,6 +172,54 @@ namespace Frontier
         }
 
         /// <summary>
+        /// サブ1の入力の受付可否を判定します
+        /// </summary>
+        /// <returns>サブ1の入力の受付可否</returns>
+        protected override bool CanAcceptSub1()
+        {
+            if (!CanAcceptDefault()) return false;
+
+            if (EmAttackPhase.EM_ATTACK_CONFIRM != _phase) return false;
+
+            if (_playerSkillNames[0].Length <= 0) return false;
+
+            return _targetCharacter.CanToggleEquipSkill(0);
+        }
+
+        protected override bool CanAcceptSub2()
+        {
+            if (!CanAcceptDefault()) return false;
+
+            if (EmAttackPhase.EM_ATTACK_CONFIRM != _phase) return false;
+
+            if (_playerSkillNames[1].Length <= 0) return false;
+
+            return _targetCharacter.CanToggleEquipSkill(1);
+        }
+
+        protected override bool CanAcceptSub3()
+        {
+            if (!CanAcceptDefault()) return false;
+
+            if (EmAttackPhase.EM_ATTACK_CONFIRM != _phase) return false;
+
+            if (_playerSkillNames[2].Length <= 0) return false;
+
+            return _targetCharacter.CanToggleEquipSkill(2);
+        }
+
+        protected override bool CanAcceptSub4()
+        {
+            if (!CanAcceptDefault()) return false;
+
+            if (EmAttackPhase.EM_ATTACK_CONFIRM != _phase) return false;
+
+            if (_playerSkillNames[3].Length <= 0) return false;
+
+            return _targetCharacter.CanToggleEquipSkill(3);
+        }
+
+        /// <summary>
         /// 決定入力を受け取った際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力の有無</param>
@@ -194,6 +249,34 @@ namespace Frontier
             _phase = EmAttackPhase.EM_ATTACK_EXECUTE;
 
             return true;
+        }
+
+        protected override bool AcceptSub1(bool isInput)
+        {
+            if (!isInput) return false;
+
+            return _targetCharacter.ToggleUseSkillks(0);
+        }
+
+        protected override bool AcceptSub2(bool isInput)
+        {
+            if (!isInput) return false;
+
+            return _targetCharacter.ToggleUseSkillks(1);
+        }
+
+        protected override bool AcceptSub3(bool isInput)
+        {
+            if (!isInput) return false;
+
+            return _targetCharacter.ToggleUseSkillks(2);
+        }
+
+        protected override bool AcceptSub4(bool isInput)
+        {
+            if (!isInput) return false;
+
+            return _targetCharacter.ToggleUseSkillks(3);
         }
     }
 }

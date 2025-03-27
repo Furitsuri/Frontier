@@ -124,7 +124,7 @@ namespace Frontier
         [Inject]
         void Construct(BattleRoutineController btlRtnCtrl, HierarchyBuilder hierarchyBld)
         {
-            _btlRtnCtrl         = btlRtnCtrl;
+            _btlRtnCtrl     = btlRtnCtrl;
             _hierarchyBld   = hierarchyBld;
         }
 

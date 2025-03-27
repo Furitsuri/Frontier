@@ -149,17 +149,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 死亡処理。管理リストから削除し、ゲームオブジェクトを破棄します
-        /// モーションのイベントフラグから呼び出します
-        /// </summary>
-        override public void Die()
-        {
-            base.Die();
-
-            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList(this);
-        }
-
-        /// <summary>
         /// 使用スキルを選択します
         /// </summary>
         /// <param name="type">攻撃、防御、常駐などのスキルタイプ</param>

@@ -100,9 +100,12 @@ namespace Frontier
         {
             DamageValue.CharacterTransform  = character.transform;
 
+            var parryNotifier = character.GetParrySkill;
+
             // パリィ成功時には専用の表記
-            if (character.ParryResult == ParrySkillController.JudgeResult.SUCCESS ||
-                character.ParryResult == ParrySkillController.JudgeResult.JUST)
+            if ( parryNotifier != null &&
+                ( parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.SUCCESS ) ||
+                  parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.JUST) ) )
             {
                 DamageValue.damageText.color    = Color.yellow;
                 DamageValue.damageText.text     = "DEFLECT";

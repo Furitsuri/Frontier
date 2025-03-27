@@ -9,7 +9,7 @@ using Zenject;
 namespace Frontier.Entities
 {
     [SerializeField]
-    public class Character : MonoBehaviour
+    public class Character : MonoBehaviour, IBasicAnimationEvent, IParryAnimationEvent
     {
         /// <summary>
         /// キャラクターの種別を表すタグ
@@ -53,6 +53,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// キャラクターのパラメータの構造体です
+        /// Inspector上で編集出来ると便利なため、別ファイルに移譲していません
         /// </summary>
         [System.Serializable]
         public struct Parameter
@@ -107,6 +108,10 @@ namespace Frontier.Entities
             }
         }
 
+        /// <summary>
+        /// キャラクターに対するカメラパラメータの構造体です
+        /// Inspector上で編集出来ると便利なため、別ファイルに移譲していません
+        /// </summary>
         [System.Serializable]
         public struct CameraParameter
         {
@@ -155,19 +160,24 @@ namespace Frontier.Entities
         protected Bullet _bullet        = null;
         
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
-        protected ParrySkillController.PARRY_PHASE _parryPhase;
-        public Parameter param;
         protected TmpParameter tmpParam;
+
+        protected ParrySkillNotifier _parrySkill = null;
+        public Parameter param;
         public ModifiedParameter modifiedParam;
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
+
         // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public bool IsDeclaredDead { get; set; } = false;
-        // 弾の取得
+        // 弾オブジェクトの取得
         public GameObject BulletObject => _bulletObject;
-        // パリィ結果
-        public ParrySkillController.JudgeResult ParryResult { get; set; } = ParrySkillController.JudgeResult.NONE;
+        // アニメーションコントローラの取得
         public AnimationController AnimCtrl { get; } = new AnimationController();
+        // パリィスキル処理の取得
+        public ParrySkillNotifier GetParrySkill => _parrySkill;
+        // タイムスケールの取得
+        public TimeScale GetTimeScale => _timeScale;
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -242,6 +252,23 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 所有しているスキルの通知クラスを初期化します
+        /// </summary>
+        void InitSkillNotifier()
+        {
+            for( int i = 0; i <  (int)Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                int skillID = (int)param.equipSkills[i];
+
+                if( (int)SkillsData.ID.SKILL_PARRY == skillID )
+                {
+                    _parrySkill = _hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>();
+                    _parrySkill.Init( this );
+                }
+            }
+        }
+
+        /// <summary>
         /// 再帰を用いて、指定のタグで登録されているオブジェクトのマテリアルを登録します
         /// ※ 色変更の際に用いる
         /// </summary>
@@ -272,39 +299,6 @@ namespace Frontier.Entities
             }
         }
 
-        /// <summary>
-        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲートを設定します
-        /// </summary>
-        /// <param name="parryCtrl">パリィ操作クラス</param>
-        void SubscribeParryEvent( ParrySkillController parryCtrl )
-        {
-            parryCtrl.ProcessCompleted += ParryEventProcessCompleted;
-        }
-
-        /// <summary>
-        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲート設定を解除します
-        /// </summary>
-        /// <param name="parryCtrl">パリィ操作クラス</param>
-        void UnsubscribeParryEvent(ParrySkillController parryCtrl)
-        {
-            parryCtrl.ProcessCompleted -= ParryEventProcessCompleted;
-        }
-
-        /// <summary>
-        /// パリィイベント終了時に呼び出されるデリゲート
-        /// </summary>
-        /// <param name="sender">呼び出しを行うパリィイベントコントローラ</param>
-        /// <param name="e">イベントハンドラ用オブジェクト(この関数ではempty)</param>
-        void ParryEventProcessCompleted( object sender, SkillParryCtrlEventArgs e )
-        {
-            ParryResult = e.Result;
-
-            ParrySkillController parryCtrl = sender as ParrySkillController;
-            parryCtrl.EndParryEvent();
-
-            UnsubscribeParryEvent(parryCtrl);
-        }
-
         #endregion  // PRIVATE_METHOD
 
         #region VIRTUAL_PUBLIC_METHOD
@@ -315,23 +309,20 @@ namespace Frontier.Entities
         virtual public void Init()
         {
             tmpParam.gridIndex  = param.initGridIndex;
-            _elapsedTime        = 0f;
+            ResetElapsedTime();
 
             // 戦闘時間管理クラスに自身の時間管理クラスを登録
             _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );
+            // スキルの通知クラスを初期化
+            InitSkillNotifier();
         }
-
-        /// <summary>
-        /// 死亡処理を行います
-        /// </summary>
-        virtual public void Die() { }
 
         /// <summary>
         /// 対戦相手にダメージを与えるイベントを発生させます
         /// ※ 弾の着弾以外では近接攻撃アニメーションからも呼び出される設計です
         ///    近接攻撃キャラクターの攻撃アニメーションの適当なフレームでこのメソッドイベントを挿入してください
         /// </summary>
-        virtual public void AttackOpponentEvent()
+        virtual public void HurtOpponentByAnimation()
         {
             if (_opponent == null)
             {
@@ -362,75 +353,9 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 対戦相手の攻撃をパリィ(弾く)するイベントを発生させます　※攻撃アニメーションから呼び出されます
-        /// </summary>
-        virtual public void ParryOpponentEvent()
-        {
-            // NONE以外の結果が通知されているはず
-            Debug.Assert(ParryResult != ParrySkillController.JudgeResult.NONE);
-
-            if (_opponent == null)
-            {
-                Debug.Assert(false);
-            }
-
-            if (ParryResult == ParrySkillController.JudgeResult.FAILED)
-            {
-                return;
-            }
-
-            // 成功時(ジャスト含む)にはパリィ挙動
-            _opponent.ParryRecieveEvent();
-        }
-
-        /// <summary>
-        /// パリィを受けた際のイベントを発生させます
-        /// </summary>
-        virtual public void ParryRecieveEvent()
-        {
-            _timeScale.Reset();
-            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
-        }
-
-        /// <summary>
-        /// 弾を発射します
-        /// MEMO : モーションからイベントフラグ処理として呼ばれます
-        /// </summary>
-        virtual public void FireBullet()
-        {
-            if (_bullet == null || _opponent == null) return;
-
-            _bullet.gameObject.SetActive(true);
-
-            // 射出地点、目標地点などを設定して弾を発射
-            var firingPoint = transform.position;
-            firingPoint.y += camParam.UICameraLookAtCorrectY;
-            _bullet.SetFiringPoint(firingPoint);
-            var targetCoordinate = _opponent.transform.position;
-            targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
-            _bullet.SetTargetCoordinate(targetCoordinate);
-            var gridLength = _stageCtrl.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
-            _bullet.SetFlightTimeFromGridLength(gridLength);
-            _bullet.StartUpdateCoroutine(AttackOpponentEvent);
-
-            // 発射と同時に次のカメラに遷移させる
-            _isTransitNextPhaseCamera = true;
-
-            // この攻撃によって相手が倒されるかどうかを判定
-            _opponent.IsDeclaredDead = ( _opponent.param.CurHP + _opponent.tmpParam.expectedHpChange ) <= 0;
-            if( !_opponent.IsDeclaredDead && 0 < _atkRemainingNum )
-            {
-                --_atkRemainingNum;
-                AnimCtrl.SetAnimator(AttackAnimTags[_atkRemainingNum]);
-            }
-        }
-
-        /// <summary>
         /// 戦闘に使用するスキルを選択します
         /// </summary>
-        virtual public void SelectUseSkills(SkillsData.SituationType type)
-        {
-        }
+        virtual public void SelectUseSkills(SkillsData.SituationType type) {}
 
         /// <summary>
         /// 指定のスキルの使用設定を切り替えます
@@ -471,38 +396,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
-        /// </summary>
-        /// <param name="targetPos">向きを合わせる位置</param>
-        public void RotateToPosition( in Vector3 targetPos )
-        {
-            var selfPos     = _stageCtrl.GetGridCharaStandPos( tmpParam.gridIndex );
-            var direction   = targetPos - selfPos;
-            direction.y     = 0f;
-
-            _orderdRotation     = Quaternion.LookRotation(direction);
-            _isOrderedRotation  = true;
-        }
-
-        /// <summary>
-        /// 行動終了時など、行動不可の状態にします
-        /// キャラクターモデルの色を変更し、行動不可であることを示す処理も含めます
-        /// </summary>
-        public void BeImpossibleAction()
-        {
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
-            {
-                SetEndCommandStatus( (Command.COMMAND_TAG)i, true );
-            }
-
-            // 行動終了を示すためにマテリアルの色味をグレーに変更
-            for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
-            {
-                _textureMaterialsAndColors[i].material.color = Color.gray;
-            }
-        }
-
-        /// <summary>
         /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を設定します
         /// </summary>
         /// <param name="index">設定するインデックス値</param>
@@ -533,13 +426,34 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 行動を終了させます
+        /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
         /// </summary>
-        public void EndAction()
+        /// <param name="targetPos">向きを合わせる位置</param>
+        public void RotateToPosition(in Vector3 targetPos)
         {
-            for( int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i )
+            var selfPos = _stageCtrl.GetGridCharaStandPos(tmpParam.gridIndex);
+            var direction = targetPos - selfPos;
+            direction.y = 0f;
+
+            _orderdRotation = Quaternion.LookRotation(direction);
+            _isOrderedRotation = true;
+        }
+
+        /// <summary>
+        /// 行動終了時など、行動不可の状態にします
+        /// キャラクターモデルの色を変更し、行動不可であることを示す処理も含めます
+        /// </summary>
+        public void BeImpossibleAction()
+        {
+            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
             {
-                SetEndCommandStatus( (Command.COMMAND_TAG) i, true );
+                SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+            }
+
+            // 行動終了を示すためにマテリアルの色味をグレーに変更
+            for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
+            {
+                _textureMaterialsAndColors[i].material.color = Color.gray;
             }
         }
 
@@ -565,7 +479,7 @@ namespace Frontier.Entities
         {
             _isAttacked         = false;
             _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
-            _elapsedTime        = 0f;
+            ResetElapsedTime();
 
             AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
         }
@@ -583,29 +497,14 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// パリィシーケンスを開始します
+        /// 行動を終了させます
         /// </summary>
-        public void StartParrySequence()
+        public void EndAction()
         {
-            _parryPhase = ParrySkillController.PARRY_PHASE.EXEC_PARRY;
-            _elapsedTime = 0f;
-
-            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
-            // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
-            _timeScale.SetTimeScale(0.1f);
-        }
-
-        /// <summary>
-        /// パリィ判定処理を開始します
-        /// MEMO : モーションのイベントフラグから呼び出します
-        /// </summary>
-        public void StartParryJudgeEvent()
-        {
-            if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
-            
-            ParrySkillController parryCtrl = _btlRtnCtrl.SkillCtrl.ParryController;
-            _opponent.SubscribeParryEvent(parryCtrl);
-            parryCtrl.StartParryEvent(_opponent, this);
+            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            {
+                SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+            }
         }
 
         /// <summary>
@@ -632,7 +531,7 @@ namespace Frontier.Entities
                     gameObject.transform.position = Vector3.Lerp(departure, destination, t);
                     if (1.0f <= t)
                     {
-                        _elapsedTime = 0f;
+                        ResetElapsedTime();
                         AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
                         AnimCtrl.SetAnimator(attackAnimtag);
 
@@ -656,7 +555,7 @@ namespace Frontier.Entities
                     gameObject.transform.position = Vector3.Lerp(destination, departure, t);
                     if (1.0f <= t)
                     {
-                        _elapsedTime = 0f;
+                        ResetElapsedTime();
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.NONE;
 
                         return true;
@@ -702,41 +601,6 @@ namespace Frontier.Entities
         /// <returns>終了判定</returns>
         public bool UpdateParryOnAttacker(in Vector3 departure, in Vector3 destination)
         {
-            return false;
-        }
-
-        /// <summary>
-        /// 戦闘において、攻撃された側がパリィを行った際の行動を更新します
-        /// </summary>
-        /// <param name="departure">攻撃開始座標</param>
-        /// <param name="destination">攻撃目標座標</param>
-        /// <returns>終了判定</returns>
-        public bool UpdateParryOnTargeter(in Vector3 departure, in Vector3 destination)
-        {
-            bool isJustParry = false;
-
-            switch( _parryPhase )
-            {
-                case ParrySkillController.PARRY_PHASE.EXEC_PARRY:
-                    if (isJustParry)
-                    {
-                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.SINGLE_ATTACK);
-
-                        _parryPhase = ParrySkillController.PARRY_PHASE.AFTER_ATTACK;
-                    }
-                    else {
-                        if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.PARRY))
-                        {
-                            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
-
-                            return true;
-                        }
-                    }
-                    break;
-                case ParrySkillController.PARRY_PHASE.AFTER_ATTACK:
-                    break;
-            }
-
             return false;
         }
 
@@ -810,17 +674,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// パリィ処理の都合上でアニメーションを停止させます ※モーションから呼び出されます
-        /// </summary>
-        public void StopAnimationOnParry()
-        {
-            if(!_btlRtnCtrl.SkillCtrl.ParryController.IsJudgeEnd())
-            {
-                _timeScale.Stop();
-            }
-        }
-
-        /// <summary>
         /// 対戦相手を設定します
         /// </summary>
         /// <param name="opponent">対戦相手</param>
@@ -834,7 +687,10 @@ namespace Frontier.Entities
         /// </summary>
         public void SetReceiveAttackSetting()
         {
-            ParryResult = ParrySkillController.JudgeResult.NONE;
+            if( _parrySkill != null )
+            {
+                _parrySkill.ResetParryResult();
+            }
         }
 
         /// <summary>
@@ -846,6 +702,14 @@ namespace Frontier.Entities
             _opponent = null;
             // 使用スキル情報をリセット
             tmpParam.ResetUseSkill();
+        }
+
+        /// <summary>
+        /// キャラクターに対する時間計測をリセットします
+        /// </summary>
+        public void ResetElapsedTime()
+        {
+            _elapsedTime = 0;
         }
 
         /// <summary>
@@ -961,12 +825,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 設定されている弾を取得します
-        /// </summary>
-        /// <returns>Prefabに設定されている弾</returns>
-        public Bullet GetBullet() { return _bullet; }
-
-        /// <summary>
         /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します
         /// </summary>
         /// <returns>現在グリッドのインデックス値</returns>
@@ -1003,6 +861,123 @@ namespace Frontier.Entities
         {
             single  = tmpParam.expectedHpChange;
             total   = tmpParam.totalExpectedHpChange;
+        }
+
+        /// <summary>
+        /// 設定されている弾を取得します
+        /// </summary>
+        /// <returns>Prefabに設定されている弾</returns>
+        public Bullet GetBullet() { return _bullet; }
+
+        /// <summary>
+        /// 戦闘における対戦相手を取得します
+        /// </summary>
+        /// <returns>対戦相手</returns>
+        public Character GetOpponentChara() { return _opponent; }
+
+        /// <summary>
+        /// 死亡処理を開始します
+        /// </summary>
+        public void DieOnAnimEvent()
+        {
+            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList(this);
+        }
+
+        /// <summary>
+        /// キャラクターに設定されている弾を発射します
+        /// </summary>
+        public void FireBulletOnAnimEvent()
+        {
+            if (_bullet == null || _opponent == null) return;
+
+            _bullet.gameObject.SetActive(true);
+
+            // 射出地点、目標地点などを設定して弾を発射
+            var firingPoint = transform.position;
+            firingPoint.y += camParam.UICameraLookAtCorrectY;
+            _bullet.SetFiringPoint(firingPoint);
+            var targetCoordinate = _opponent.transform.position;
+            targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
+            _bullet.SetTargetCoordinate(targetCoordinate);
+            var gridLength = _stageCtrl.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
+            _bullet.SetFlightTimeFromGridLength(gridLength);
+            _bullet.StartUpdateCoroutine(HurtOpponentByAnimation);
+
+            // 発射と同時に次のカメラに遷移させる
+            _isTransitNextPhaseCamera = true;
+
+            // この攻撃によって相手が倒されるかどうかを判定
+            _opponent.IsDeclaredDead = (_opponent.param.CurHP + _opponent.tmpParam.expectedHpChange) <= 0;
+            if (!_opponent.IsDeclaredDead && 0 < _atkRemainingNum)
+            {
+                --_atkRemainingNum;
+                AnimCtrl.SetAnimator(AttackAnimTags[_atkRemainingNum]);
+            }
+        }
+
+        /// <summary>
+        /// 相手を攻撃した際の処理を開始します
+        /// </summary>
+        public void AttackOpponentOnAnimEvent()
+        {
+            if (_opponent == null)
+            {
+                Debug.Assert(false);
+            }
+
+            _isAttacked = true;
+            _opponent.param.CurHP += _opponent.tmpParam.expectedHpChange;
+
+            //　ダメージが0の場合はモーションを取らない
+            if (_opponent.tmpParam.expectedHpChange != 0)
+            {
+                if (_opponent.param.CurHP <= 0)
+                {
+                    _opponent.param.CurHP = 0;
+                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
+                }
+                // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
+                else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
+                {
+                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
+                }
+            }
+
+            // ダメージUIを表示
+            _uiSystem.BattleUi.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedHpChange);
+            _uiSystem.BattleUi.ToggleDamageUI(true);
+        }
+
+        /// <summary>
+        /// パリィイベントを開始します
+        /// MEMO ; パリィは各キャラクターの攻撃アニメーションに設定されたタイミングから開始するため、
+        ///        パリィを行うキャラクターのアニメーションではなく、
+        ///        その対戦相手のアニメーションから呼ばれることに注意してください
+        /// </summary>
+        public void StartParryOnAnimEvent()
+        {
+            if( _opponent.GetParrySkill == null ) return;
+
+            _opponent.GetParrySkill.StartParryJudgeEvent();
+        }
+
+        /// <summary>
+        /// 相手の攻撃を弾く動作を行います
+        /// </summary>
+        public void ParryAttackOnAnimEvent()
+        {
+            _parrySkill.ParryOpponentEvent();
+        }
+
+        /// <summary>
+        /// パリィ動作を停止させます
+        /// </summary>
+        public void StopParryAnimationOnAnimEvent()
+        {
+            if (!_btlRtnCtrl.SkillCtrl.ParryHdlr.IsJudgeEnd())
+            {
+                _timeScale.Stop();
+            }
         }
 
         #endregion // PUBLIC_METHOD
