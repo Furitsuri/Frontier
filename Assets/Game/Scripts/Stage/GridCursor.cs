@@ -17,11 +17,18 @@ namespace Frontier.Stage
             ATTACK
         }
 
+        [Header("移動補間時間")]
+        [SerializeField]
+        private float MoveInterpolationTime = 1f;
+
         private LineRenderer _lineRenderer;
         private StageModel _stageModel = null;
         private StageController _stageCtrl = null;
+        private Vector3 _beginPos   = Vector3.zero;
+        private Vector3 _endPos     = Vector3.zero;
         private int _atkTargetIndex = 0;
         private int _atkTargetNum = 0;
+        private float _totalTime = 0;
 
         public int Index { get; set; } = 0;
         public State GridState { get; set; } = State.NONE;
@@ -51,20 +58,37 @@ namespace Frontier.Stage
 
         private void Update()
         {
-            UpdateUI();
+            UpdateUI( Time.deltaTime );
         }
 
         /// <summary>
         /// 選択しているカーソル位置を更新します
         /// </summary>
-        void UpdateUI()
+        /// /// <param name="delta">フレーム間の時間</param>
+        void UpdateUI( float delta )
         {
-            GridInfo info;
-            _stageCtrl.FetchCurrentGridInfo(out info);
+            _endPos = GetCurrentPosition();
 
-            Vector3 centralPos = info.charaStandPos;
+            if ( GridState == State.NONE || GridState == State.MOVE)
+            {
+                UpdateLerpPosition(delta);
+            }
+            else
+            {
+                DrawSquareLine(_stageModel.GetGridSize(), _endPos);
+            }
+        }
 
-            DrawSquareLine(_stageModel.GetGridSize(), ref centralPos);
+        /// <summary>
+        /// グリッドの位置を線形補間で更新します
+        /// </summary>
+        /// <param name="delta">フレーム間の時間</param>
+        void UpdateLerpPosition( float delta )
+        {
+            _totalTime += delta;
+            Vector3 curPos = Vector3.Lerp( _beginPos, _endPos, _totalTime / MoveInterpolationTime);
+
+            DrawSquareLine(_stageModel.GetGridSize(), curPos);
         }
 
         /// <summary>
@@ -72,7 +96,7 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="gridSize">1グリッドのサイズ</param>
         /// <param name="centralPos">指定グリッドの中心位置</param>
-        void DrawSquareLine(float gridSize, ref Vector3 centralPos)
+        void DrawSquareLine(float gridSize, in Vector3 centralPos)
         {
             float halfSize = 0.5f * gridSize;
 
@@ -91,10 +115,32 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 線形補間移動を開始します
+        /// </summary>
+        void StartLerpMove()
+        {
+            _beginPos   = GetCurrentPosition();
+            _totalTime  = 0f;
+        }
+
+        /// <summary>
+        /// グリッドの現在座標を取得します
+        /// </summary>
+        /// <returns>グリッドの現在座標</returns>
+        Vector3 GetCurrentPosition()
+        {
+            GridInfo info;
+            _stageCtrl.FetchCurrentGridInfo(out info);
+
+            return info.charaStandPos;
+        }
+
+        /// <summary>
         /// インデックス値を現在グリッドの上に該当する値に設定します
         /// </summary>
         public void Up()
         {
+            StartLerpMove();
             Index += _stageModel.GetGridRowNum();
             if (_stageModel.GetGridRowNum() * _stageModel.GetGridRowNum() <= Index)
             {
@@ -107,6 +153,7 @@ namespace Frontier.Stage
         /// </summary>
         public void Down()
         {
+            StartLerpMove();
             Index -= _stageModel.GetGridRowNum();
             if (Index < 0)
             {
@@ -119,6 +166,7 @@ namespace Frontier.Stage
         /// </summary>
         public void Right()
         {
+            StartLerpMove();
             Index++;
             if (Index % _stageModel.GetGridRowNum() == 0)
             {
@@ -131,6 +179,7 @@ namespace Frontier.Stage
         /// </summary>
         public void Left()
         {
+            StartLerpMove();
             Index--;
             if ((Index + 1) % _stageModel.GetGridRowNum() == 0)
             {
@@ -148,9 +197,9 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 
+        /// オブジェクトのアクティブ・非アクティブを設定します
         /// </summary>
-        /// <param name="isActive"></param>
+        /// <param name="isActive">アクティブ設定</param>
         public void SetActive( bool isActive )
         {
             gameObject.SetActive( isActive );
