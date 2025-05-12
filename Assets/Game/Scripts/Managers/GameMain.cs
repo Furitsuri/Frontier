@@ -41,16 +41,18 @@ namespace Frontier
 
         private GameObject _stageImage;
         private InputFacade _inputFcd;
+        private TutorialFacade _tutorialFcd;
         private BattleRoutineController _btlRtnCtrl;
         private GamePhase _Phase;
 
         public static GameMain instance = null;
 
         [Inject]
-        public void Construct( InputFacade inputFcd, BattleRoutineController btlRtnCtrl )
+        public void Construct( InputFacade inputFcd, TutorialFacade tutorialFcd, BattleRoutineController btlRtnCtrl )
         {
-            _inputFcd   = inputFcd;
-            _btlRtnCtrl = btlRtnCtrl;
+            _inputFcd       = inputFcd;
+            _tutorialFcd    = tutorialFcd;
+            _btlRtnCtrl     = btlRtnCtrl;
         }
 
         void Awake()
@@ -92,6 +94,10 @@ namespace Frontier
             AnimDatas.Init();
             // 入力関連の初期化
             _inputFcd.Init();
+            // チュートリアル関連の初期化
+            _tutorialFcd.Init();
+            _tutorialFcd.RegisterPauseTarget(_btlRtnCtrl);
+
             // 戦闘マネージャの初期化
             // _btlRtnCtrl.Init();
 

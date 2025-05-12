@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6407282b39c7fcd43bdf2237141dd828, type: 3}
+  m_Name: HowToMove
+  m_EditorClassIdentifier: 
+  _title: HOW TO MOVE
+  flagBitIndex: 0
+  _tutorialElements:
+  - _headline: Move Command 1
+    _explain: Move
+    _image: {fileID: 21300000, guid: dbbd045bc4a42e049bfc0c7a3241af09, type: 3}
+  - _headline: Move Command 2
+    _explain: Move Move
+    _image: {fileID: 21300000, guid: dbbd045bc4a42e049bfc0c7a3241af09, type: 3}

@@ -612,7 +612,7 @@ namespace Frontier.Stage
                     if( conditions[j] )
                     {
                         var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>(_gridMeshObject, true);
-                        DebugUtils.NULL_ASSERT(gridMesh);
+                        NullCheck.AssertNotNull(gridMesh);
                         if( gridMesh == null ) continue;
                      
                         _gridMeshs.Add(gridMesh);
@@ -640,7 +640,7 @@ namespace Frontier.Stage
                 if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
                 {
                     var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>(_gridMeshObject, true);
-                    DebugUtils.NULL_ASSERT(gridMesh);
+                    NullCheck.AssertNotNull(gridMesh);
                     if (gridMesh == null) continue;
 
                     _gridMeshs.Add(gridMesh);

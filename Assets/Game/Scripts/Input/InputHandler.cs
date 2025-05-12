@@ -27,11 +27,27 @@ public class InputHandler : MonoBehaviour
     // ガイドアイコン毎に対応した入力関数
     private IGetInputBase[] _inputForIcons;
 
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// 初期化します
+    /// </summary>
+    /// <param name="inputGuidePresenter">入力ガイド表示クラス</param>
+    /// <param name="inputCodes">入力情報コード</param>
+    public void Init(InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes)
     {
+        _inputGuideView = inputGuidePresenter;
+        _inputCodes     = Array.AsReadOnly(inputCodes);
+
         InitializeInputSource();
         InitializeInputForGuideIcon();
+    }
+
+    /// <summary>
+    /// 入力デバイスを切り替えます
+    /// </summary>
+    /// <param name="iInput">切替先の入力デバイス</param>
+    private void SwitchInputDevice(IInput iInput)
+    {
+        _iInput = iInput;
     }
 
     // Update is called once per frame
@@ -144,25 +160,5 @@ public class InputHandler : MonoBehaviour
             var input = _inputForIcons[(int)code.Icon].GetInput();
             code.ExecuteAcceptInputCallback(input);
         }
-    }
-
-    /// <summary>
-    /// 入力デバイスを切り替えます
-    /// </summary>
-    /// <param name="iInput">切替先の入力デバイス</param>
-    private void SwitchInputDevice( IInput iInput )
-    {
-        _iInput = iInput;
-    }
-
-    /// <summary>
-    /// 初期化します
-    /// </summary>
-    /// <param name="inputGuidePresenter">入力ガイド表示クラス</param>
-    /// <param name="inputCodes">入力情報コード</param>
-    public void Init( InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes )
-    {
-        _inputGuideView = inputGuidePresenter;
-        _inputCodes     = Array.AsReadOnly( inputCodes );
     }
 }

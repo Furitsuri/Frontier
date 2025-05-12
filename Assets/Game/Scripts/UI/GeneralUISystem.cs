@@ -7,5 +7,8 @@ namespace Frontier
     {
         [Header("InputGuidePresenter")]
         public InputGuidePresenter InputGuideView;  // 入力ガイド表示
+
+        [Header("TutorialPresenter")]
+        public TutorialPresenter TutorialView;  // チュートリアル表示
     }
 }
