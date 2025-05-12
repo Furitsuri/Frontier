@@ -170,7 +170,7 @@ public class CommandList
     {
         if( _currentNode == null )
         {
-            DebugUtils.NULL_ASSERT(_currentNode);
+            NullCheck.AssertNotNull(_currentNode);
             return 0;
         }
 
@@ -192,7 +192,7 @@ public class CommandList
     {
         if (_currentNode == null)
         {
-            DebugUtils.NULL_ASSERT(_currentNode);
+            NullCheck.AssertNotNull(_currentNode);
             return 0;
         }
 

@@ -172,7 +172,7 @@ namespace Frontier
         public T CreateComponentAndOrganize<T>( bool initActive ) where T : Behaviour
         {
             T generateCpt = _generator.GenerateObjectAndAddComponent<T>(initActive);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             Organize(generateCpt);
 
@@ -189,7 +189,7 @@ namespace Frontier
         public T CreateComponentAndOrganize<T>(GameObject gameObject, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             Organize(generateCpt);
 
@@ -208,7 +208,7 @@ namespace Frontier
         public T CreateComponentWithNestedParent<T>(GameObject gameObject, GameObject parentObject, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             generateCpt.transform.parent = parentObject.transform;
 
@@ -229,7 +229,7 @@ namespace Frontier
         public T CreateComponentWithNestedNewDirectory<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive) where T : Behaviour
         {
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
             folderObject.transform.parent = parentObject.transform;
@@ -247,7 +247,7 @@ namespace Frontier
         public T CreateComponentAndOrganizeWithDiContainer<T>( bool initActive, bool isBind ) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(initActive, isBind);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             Organize(generateCpt);
 
@@ -260,11 +260,12 @@ namespace Frontier
         /// <typeparam name="T">作成するコンポーネントの型</typeparam>
         /// <param name="gameObject">コンポーネントの元となるゲームオブジェクト</param>
         /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
+        /// <param name="isBind">DIコンテナにバインドするか否か</param>
         /// <returns>作成したコンポーネント</returns>
         public T CreateComponentAndOrganizeWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             Organize(generateCpt);
 
@@ -279,11 +280,12 @@ namespace Frontier
         /// <param name="gameObject">コンポーネントの元となるゲームオブジェクト</param>
         /// <param name="parentObject">ヒエラルキー上で作成したオブジェクトの親となるオブジェクト</param>
         /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
+        /// <param name="isBind">DIコンテナにバインドするか否か</param>
         /// <returns>作成したコンポーネント</returns>
         public T CreateComponentNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             generateCpt.transform.parent = parentObject.transform;
 
@@ -304,7 +306,7 @@ namespace Frontier
         public T CreateComponentNestedNewDirectoryWithDiContainer<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive, bool isBind) where T : Behaviour
         {
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-            DebugUtils.NULL_ASSERT(generateCpt);
+            NullCheck.AssertNotNull(generateCpt);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
             folderObject.transform.parent = parentObject.transform;

@@ -1,4 +1,4 @@
-using Frontier.Combat;
+ï»¿using Frontier.Combat;
 using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,25 +11,25 @@ namespace Frontier
     public class BattleCameraController : Singleton<BattleCameraController>
     {
         /// <summary>
-        /// ƒJƒƒ‰‚Ìƒ‚[ƒh
+        /// ã‚«ãƒ¡ãƒ©ã®ãƒ¢ãƒ¼ãƒ‰
         /// </summary>
         public enum CameraMode
         {
-            FOLLOWING = 0,      // ‘I‘ğƒOƒŠƒbƒh’ÇÕó‘Ô
-            CHARACTER_MOVE,     // ƒLƒƒƒ‰ƒNƒ^[ˆÚ“®ó‘Ô
-            ATTACK_SEQUENCE,    // í“¬ó‘Ô
+            FOLLOWING = 0,      // é¸æŠã‚°ãƒªãƒƒãƒ‰è¿½è·¡çŠ¶æ…‹
+            CHARACTER_MOVE,     // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ç§»å‹•çŠ¶æ…‹
+            ATTACK_SEQUENCE,    // æˆ¦é—˜çŠ¶æ…‹
 
             NUM
         }
 
         /// <summary>
-        /// UŒ‚ƒV[ƒPƒ“ƒX‚É‚¨‚¯‚éƒJƒƒ‰ˆ—ƒtƒFƒCƒY
+        /// æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã«ãŠã‘ã‚‹ã‚«ãƒ¡ãƒ©å‡¦ç†ãƒ•ã‚§ã‚¤ã‚º
         /// </summary>
         enum AttackSequenceCameraPhase
         {
-            START = 0,      // í“¬ó‘Ô‚ÉˆÚsŠJn`í“¬ŠJn‚Ü‚Å
-            BATTLE_FIELD,   // í“¬’†`í“¬I—¹‚Ü‚Å
-            END,            // í“¬I—¹Œã`ƒXƒe[ƒWó‘Ô‚É‘JˆÚ‚Ü‚Å
+            START = 0,      // æˆ¦é—˜çŠ¶æ…‹ã«ç§»è¡Œé–‹å§‹ï½æˆ¦é—˜é–‹å§‹ã¾ã§
+            BATTLE_FIELD,   // æˆ¦é—˜ä¸­ï½æˆ¦é—˜çµ‚äº†ã¾ã§
+            END,            // æˆ¦é—˜çµ‚äº†å¾Œï½ã‚¹ãƒ†ãƒ¼ã‚¸çŠ¶æ…‹ã«é·ç§»ã¾ã§
 
             NUM
         }
@@ -70,25 +70,25 @@ namespace Frontier
         private CameraParamData[] _currentCameraParamDatas;
         private CameraMosaicEffect _mosaicEffectScript;
         private UISystem _uiSystem = null;
-        // ƒJƒƒ‰À•W‚ÌŠî“_‚Æ‚È‚éƒgƒ‰ƒ“ƒXƒtƒH[ƒ€
+        // ã‚«ãƒ¡ãƒ©åº§æ¨™ã®åŸºç‚¹ã¨ãªã‚‹ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ 
         private Transform _cameraBaseTransform;
-        // ƒJƒƒ‰‚Ì”íÊ‘ÌÀ•W‚ÌŠî“_‚Æ‚È‚éƒgƒ‰ƒ“ƒXƒtƒH[ƒ€
+        // ã‚«ãƒ¡ãƒ©ã®è¢«å†™ä½“åº§æ¨™ã®åŸºç‚¹ã¨ãªã‚‹ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ 
         private Transform _lookAtTransform;
-        // ƒJƒƒ‰À•W‚É‰ÁZ‚·‚éƒIƒtƒZƒbƒg’l
+        // ã‚«ãƒ¡ãƒ©åº§æ¨™ã«åŠ ç®—ã™ã‚‹ã‚ªãƒ•ã‚»ãƒƒãƒˆå€¤
         private Vector3 _cameraOffset;
-        // ƒLƒƒƒ‰ƒNƒ^[–ˆ‚Éİ’è‚³‚ê‚½ƒJƒƒ‰À•W‚É‰ÁZ‚·‚éƒIƒtƒZƒbƒg’l
+        // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼æ¯ã«è¨­å®šã•ã‚ŒãŸã‚«ãƒ¡ãƒ©åº§æ¨™ã«åŠ ç®—ã™ã‚‹ã‚ªãƒ•ã‚»ãƒƒãƒˆå€¤
         private Vector3 _characterCameraOffset;
-        // ‘Oó‘Ô(à‘OƒtƒŒ[ƒ€)‚É‚¨‚¯‚éƒJƒƒ‰À•W
+        // å‰çŠ¶æ…‹(â‰’å‰ãƒ•ãƒ¬ãƒ¼ãƒ )ã«ãŠã‘ã‚‹ã‚«ãƒ¡ãƒ©åº§æ¨™
         private Vector3 _prevCameraPosition;
-        // ”íÊ‘ÌÀ•W
+        // è¢«å†™ä½“åº§æ¨™
         private Vector3 _lookAtPosition;
-        // ‘Oó‘Ô(à‘OƒtƒŒ[ƒ€)‚É‚¨‚¯‚é”íÊ‘ÌÀ•W
+        // å‰çŠ¶æ…‹(â‰’å‰ãƒ•ãƒ¬ãƒ¼ãƒ )ã«ãŠã‘ã‚‹è¢«å†™ä½“åº§æ¨™
         private Vector3 _prevLookAtPosition;
-        // ƒJƒƒ‰‚ÌˆÚ“®–Ú•WÀ•W
+        // ã‚«ãƒ¡ãƒ©ã®ç§»å‹•ç›®æ¨™åº§æ¨™
         private Vector3 _followingPosition;
-        // ”íÊ‘ÌÀ•W‚ÆƒJƒƒ‰À•W‚Æ‚Ì·‚Æ‚È‚éƒIƒtƒZƒbƒg
+        // è¢«å†™ä½“åº§æ¨™ã¨ã‚«ãƒ¡ãƒ©åº§æ¨™ã¨ã®å·®ã¨ãªã‚‹ã‚ªãƒ•ã‚»ãƒƒãƒˆ
         private Vector3 _offset;
-        // ƒJƒƒ‰ˆÚ“®‘JˆÚ‚É—p‚¢‚éƒtƒFƒCƒY‚ÌƒCƒ“ƒfƒbƒNƒX’l
+        // ã‚«ãƒ¡ãƒ©ç§»å‹•é·ç§»ã«ç”¨ã„ã‚‹ãƒ•ã‚§ã‚¤ã‚ºã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤
         private int _cameraPhaseIndex       = 0;
         private float _followElapsedTime    = 0.0f;
         private float _fadeElapsedTime      = 0.0f;
@@ -125,7 +125,7 @@ namespace Frontier
             switch (_mode)
             {
                 case CameraMode.FOLLOWING:
-                    // MEMO : position‚ğŒˆ’è‚µ‚Ä‚©‚çLookAt‚ğİ’è‚µ‚È‚¢‚ÆA‰æ–Ê‚É‚©‚­‚Â‚«‚ª”­¶‚·‚é‚½‚ß’ˆÓ
+                    // MEMO : positionã‚’æ±ºå®šã—ã¦ã‹ã‚‰LookAtã‚’è¨­å®šã—ãªã„ã¨ã€ç”»é¢ã«ã‹ãã¤ããŒç™ºç”Ÿã™ã‚‹ãŸã‚æ³¨æ„
                     _followElapsedTime = Mathf.Clamp(_followElapsedTime + Time.deltaTime, 0f, _followDuration);
                     _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration);
                     break;
@@ -144,7 +144,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒ†ƒjƒbƒg‚ªˆÚ“®‚·‚éÛ‚ÌƒJƒƒ‰XV‚ğs‚¢‚Ü‚·
+        /// ãƒ¦ãƒ‹ãƒƒãƒˆãŒç§»å‹•ã™ã‚‹éš›ã®ã‚«ãƒ¡ãƒ©æ›´æ–°ã‚’è¡Œã„ã¾ã™
         /// </summary>
         private void UpdateCharacterMoveCamera()
         {
@@ -152,7 +152,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒ†ƒjƒbƒg“¯m‚Ì‘ÎíƒV[ƒPƒ“ƒX‚É‚¨‚¯‚éƒJƒƒ‰XV‚ğs‚¢‚Ü‚·
+        /// ãƒ¦ãƒ‹ãƒƒãƒˆåŒå£«ã®å¯¾æˆ¦ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã«ãŠã‘ã‚‹ã‚«ãƒ¡ãƒ©æ›´æ–°ã‚’è¡Œã„ã¾ã™
         /// </summary>
         private void UpdateAttackSequenceCamera()
         {
@@ -166,12 +166,12 @@ namespace Frontier
                         _mainCamera.transform.position  = Vector3.Lerp(_followingPosition, destCameraPos, fadeRate);
                         _mainCamera.transform.LookAt(_lookAtPosition);
 
-                        // w’èƒŒ[ƒg‚ğã‰ñ‚Á‚½Û‚Íƒ‚ƒUƒCƒNˆ—‚ğ{‚·
+                        // æŒ‡å®šãƒ¬ãƒ¼ãƒˆã‚’ä¸Šå›ã£ãŸéš›ã¯ãƒ¢ã‚¶ã‚¤ã‚¯å‡¦ç†ã‚’æ–½ã™
                         if (_mosaicStartFadeRate <= fadeRate)
                         {
                             _mosaicEffectScript.ToggleEnable(true);
 
-                            // _mosaicStartFadeRate‚Ì’l‚ÉˆË‘¶‚µ‚È‚¢Œ`‚ÅƒŒ[ƒg•Ï‰»‚·‚é‚æ‚¤‚É’²®‚µ‚Ä‚¢‚é
+                            // _mosaicStartFadeRateã®å€¤ã«ä¾å­˜ã—ãªã„å½¢ã§ãƒ¬ãƒ¼ãƒˆå¤‰åŒ–ã™ã‚‹ã‚ˆã†ã«èª¿æ•´ã—ã¦ã„ã‚‹
                             var blockSizeRate = 1.0f - Mathf.Clamp01(_mosaicBlockSizeMaxRate) * (fadeRate - _mosaicStartFadeRate) / (1f - _mosaicStartFadeRate);
                             _mosaicEffectScript.UpdateBlockSizeByRate(blockSizeRate);
                         }
@@ -180,10 +180,10 @@ namespace Frontier
                         {
                             _mosaicEffectScript.ToggleEnable(false);
                             _mosaicEffectScript.ResetBlockSize();
-                            // ƒpƒ‰ƒ[ƒ^‚ğ•\¦
+                            // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’è¡¨ç¤º
                             _uiSystem.BattleUi.TogglePlayerParameter(true);
                             _uiSystem.BattleUi.ToggleEnemyParameter(true);
-                            // í“¬ƒtƒB[ƒ‹ƒh‚ÉˆÚs
+                            // æˆ¦é—˜ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«ç§»è¡Œ
                             _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
                         }
                     }
@@ -212,12 +212,12 @@ namespace Frontier
                         var fadeRate = _fadeElapsedTime / _fadeDuration;
                         _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, fadeRate);
                         _mainCamera.transform.LookAt(_lookAtPosition);
-                        // START‚Ì”½‘Î‚Ìˆ—
+                        // STARTã®åå¯¾ã®å‡¦ç†
                         if (fadeRate < 1f - _mosaicStartFadeRate)
                         {
                             _mosaicEffectScript.ToggleEnable(true);
 
-                            // _mosaicStartFadeRate‚Ì’l‚ÉˆË‘¶‚µ‚È‚¢Œ`‚ÅƒŒ[ƒg•Ï‰»‚·‚é‚æ‚¤‚É’²®‚µ‚Ä‚¢‚é
+                            // _mosaicStartFadeRateã®å€¤ã«ä¾å­˜ã—ãªã„å½¢ã§ãƒ¬ãƒ¼ãƒˆå¤‰åŒ–ã™ã‚‹ã‚ˆã†ã«èª¿æ•´ã—ã¦ã„ã‚‹
                             var blockSizeRate = 1.0f - Mathf.Clamp01(_mosaicBlockSizeMaxRate) * (1f - (fadeRate / (1f - _mosaicStartFadeRate)));
                             _mosaicEffectScript.UpdateBlockSizeByRate(blockSizeRate);
                         }
@@ -243,9 +243,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ‘I‘ğƒJ[ƒ\ƒ‹‚É]‚¤ƒJƒƒ‰î•ñ‚ğİ’è‚µ‚Ü‚·
+        /// é¸æŠã‚«ãƒ¼ã‚½ãƒ«ã«å¾“ã†ã‚«ãƒ¡ãƒ©æƒ…å ±ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="pos">ƒJƒƒ‰‘ÎÛÀ•W</param>
+        /// <param name="pos">ã‚«ãƒ¡ãƒ©å¯¾è±¡åº§æ¨™</param>
         public void SetLookAtBasedOnSelectCursor(in Vector3 pos)
         {
             if (_mode == CameraMode.ATTACK_SEQUENCE) return;
@@ -257,10 +257,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ƒoƒgƒ‹‚ÌƒJƒƒ‰ƒf[ƒ^‚ğİ’è‚µ‚Ü‚·
+        /// ãƒãƒˆãƒ«æ™‚ã®ã‚«ãƒ¡ãƒ©ãƒ‡ãƒ¼ã‚¿ã‚’è¨­å®šã—ã¾ã™
         /// </summary>
-        /// <param name="closeDatas">‹ß‹——£UŒ‚ƒJƒƒ‰ƒf[ƒ^</param>
-        /// <param name="rangedDatas">‰“‹——£UŒ‚ƒJƒƒ‰ƒf[ƒ^</param>
+        /// <param name="closeDatas">è¿‘è·é›¢æ”»æ’ƒã‚«ãƒ¡ãƒ©ãƒ‡ãƒ¼ã‚¿</param>
+        /// <param name="rangedDatas">é è·é›¢æ”»æ’ƒã‚«ãƒ¡ãƒ©ãƒ‡ãƒ¼ã‚¿</param>
         public void SetCameraParamDatas(in List<CameraParamData[]> closeDatas, in List<CameraParamData[]> rangedDatas)
         {
             _closeAtkCameraParamDatas = closeDatas;
@@ -268,16 +268,16 @@ namespace Frontier
         }
 
         /// <summary>
-        /// UŒ‚‘JˆÚŠJn‚ÌƒJƒƒ‰İ’è‚ğs‚¢‚Ü‚·
+        /// æ”»æ’ƒé·ç§»é–‹å§‹æ™‚ã®ã‚«ãƒ¡ãƒ©è¨­å®šã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚‚·‚éƒLƒƒƒ‰ƒNƒ^[</param>
-        /// <param name="target">UŒ‚‘ÎÛƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
+        /// <param name="target">æ”»æ’ƒå¯¾è±¡ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void StartAttackSequenceMode( Character attacker, Character target )
         {
             if (attacker == null || target == null) return;
 
-            // ’Êí‚ÍUŒ‚ƒLƒƒƒ‰ƒNƒ^[‚ğ‹“_‚É‚µ‚½ƒJƒƒ‰ƒ[ƒN‚Æ‚·‚é‚ªA
-            // ƒpƒŠƒB‚ªg—p‚³‚ê‚éê‡‚Í•K‚¸”íUŒ‚ƒLƒƒƒ‰ƒNƒ^[‚ğ‹“_‚Æ‚·‚é
+            // é€šå¸¸ã¯æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’è¦–ç‚¹ã«ã—ãŸã‚«ãƒ¡ãƒ©ãƒ¯ãƒ¼ã‚¯ã¨ã™ã‚‹ãŒã€
+            // ãƒ‘ãƒªã‚£ãŒä½¿ç”¨ã•ã‚Œã‚‹å ´åˆã¯å¿…ãšè¢«æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’è¦–ç‚¹ã¨ã™ã‚‹
             var cameraFromChara = attacker;
             var cameraToChara   = target;
             if (target.IsSkillInUse(SkillsData.ID.SKILL_PARRY))
@@ -286,7 +286,7 @@ namespace Frontier
                 cameraToChara   = attacker;
             }
 
-            // UŒ‚ƒLƒƒƒ‰ƒNƒ^[‚ª‹ßÚƒ^ƒCƒv‚©‰“Šuƒ^ƒCƒv‚©‚É‚æ‚Á‚ÄQÆ‚·‚éƒJƒƒ‰ƒf[ƒ^‚ğ•ÏX‚·‚é
+            // æ”»æ’ƒã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒè¿‘æ¥ã‚¿ã‚¤ãƒ—ã‹é éš”ã‚¿ã‚¤ãƒ—ã‹ã«ã‚ˆã£ã¦å‚ç…§ã™ã‚‹ã‚«ãƒ¡ãƒ©ãƒ‡ãƒ¼ã‚¿ã‚’å¤‰æ›´ã™ã‚‹
             List<CameraParamData[]> cameraParamDatas;
             if (attacker.GetBullet() == null) cameraParamDatas = _closeAtkCameraParamDatas;
             else cameraParamDatas = _rangedAtkCameraParamDatas;
@@ -298,7 +298,7 @@ namespace Frontier
             _lookAtTransform        = cameraToChara.transform;
             _characterCameraOffset  = cameraFromChara.camParam.OffsetOnAtkSequence;
 
-            // ƒ‰ƒ“ƒ_ƒ€‚È’l‚ğ—p‚¢‚ÄAƒJƒƒ‰ˆÚ“®‚Ìƒpƒ^[ƒ“ƒf[ƒ^‚©‚çg—p‚·‚éƒf[ƒ^‚ğæ“¾‚·‚é
+            // ãƒ©ãƒ³ãƒ€ãƒ ãªå€¤ã‚’ç”¨ã„ã¦ã€ã‚«ãƒ¡ãƒ©ç§»å‹•ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ä½¿ç”¨ã™ã‚‹ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹
             int cameraIndex             = new System.Random().Next(0, cameraParamDatas.Count);
             _currentCameraParamDatas    = cameraParamDatas[cameraIndex];
             _cameraPhaseIndex           = 0;
@@ -307,20 +307,20 @@ namespace Frontier
             _pitch                      = _currentCameraParamDatas[_cameraPhaseIndex].Pitch;
             _yaw                        = _currentCameraParamDatas[_cameraPhaseIndex].Yaw;
 
-            // ƒJƒƒ‰Šî“_ƒLƒƒƒ‰‚Æ”íÊ‘ÌƒLƒƒƒ‰ŠÔ‚Ì’†S“_‚ÉŒü‚©‚Á‚ÄƒJƒƒ‰‚ğ‹ß‚Ã‚¯‚é
+            // ã‚«ãƒ¡ãƒ©åŸºç‚¹ã‚­ãƒ£ãƒ©ã¨è¢«å†™ä½“ã‚­ãƒ£ãƒ©é–“ã®ä¸­å¿ƒç‚¹ã«å‘ã‹ã£ã¦ã‚«ãƒ¡ãƒ©ã‚’è¿‘ã¥ã‘ã‚‹
             _lookAtPosition     = ( cameraFromChara.transform.position + cameraToChara.transform.position ) * 0.5f;
             _fadeElapsedTime    = 0f;
 
-            // ƒJƒƒ‰‚ÌŠî“_‚Æ‚È‚éÀ•W‚É‰ÁZ‚·‚éƒIƒtƒZƒbƒgÀ•W‚ğƒpƒ‰ƒ[ƒ^‚ğQÆ‚µ‚ÄŒvZ‚·‚é
+            // ã‚«ãƒ¡ãƒ©ã®åŸºç‚¹ã¨ãªã‚‹åº§æ¨™ã«åŠ ç®—ã™ã‚‹ã‚ªãƒ•ã‚»ãƒƒãƒˆåº§æ¨™ã‚’ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å‚ç…§ã—ã¦è¨ˆç®—ã™ã‚‹
             _cameraOffset = Methods.RotateVector(_cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward) * _length + _characterCameraOffset;
 
-            // ˆê“xƒpƒ‰ƒ[ƒ^‚ğ”ñ•\¦
+            // ä¸€åº¦ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’éè¡¨ç¤º
             _uiSystem.BattleUi.TogglePlayerParameter(false);
             _uiSystem.BattleUi.ToggleEnemyParameter(false);
         }
 
         /// <summary>
-        /// í“¬ƒtƒB[ƒ‹ƒh‚Ìİ’è‚ÉƒJƒƒ‰‚ÌˆÊ’u‚Æ‹“_‚ğ“K‡‚³‚¹‚Ü‚·
+        /// æˆ¦é—˜ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®è¨­å®šã«ã‚«ãƒ¡ãƒ©ã®ä½ç½®ã¨è¦–ç‚¹ã‚’é©åˆã•ã›ã¾ã™
         /// </summary>
         public void AdaptBattleFieldSetting()
         {
@@ -331,9 +331,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// UŒ‚‘JˆÚI—¹‚ÌƒJƒƒ‰İ’è‚ğs‚¢‚Ü‚·
+        /// æ”»æ’ƒé·ç§»çµ‚äº†æ™‚ã®ã‚«ãƒ¡ãƒ©è¨­å®šã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="attacker">UŒ‚‚·‚éƒLƒƒƒ‰ƒNƒ^[</param>
+        /// <param name="attacker">æ”»æ’ƒã™ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼</param>
         public void EndAttackSequenceMode(Character attacker)
         {
             _atkCameraPhase     = AttackSequenceCameraPhase.END;
@@ -344,10 +344,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// Ÿ‚ÌƒJƒƒ‰ƒpƒ‰ƒ[ƒ^ƒCƒ“ƒfƒbƒNƒXî•ñ‚É‘JˆÚ‚µ‚Ü‚·
+        /// æ¬¡ã®ã‚«ãƒ¡ãƒ©ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹æƒ…å ±ã«é·ç§»ã—ã¾ã™
         /// </summary>
-        /// <param name="nextBase">‘JˆÚæ‚ÌƒJƒƒ‰ˆÊ’u‘ÎÛ</param>
-        /// <param name="nextLookAt">‘JˆÚæ‚ÌƒJƒƒ‰‹ü‘ÎÛ</param>
+        /// <param name="nextBase">é·ç§»å…ˆã®ã‚«ãƒ¡ãƒ©ä½ç½®å¯¾è±¡</param>
+        /// <param name="nextLookAt">é·ç§»å…ˆã®ã‚«ãƒ¡ãƒ©è¦–ç·šå¯¾è±¡</param>
         public void TransitNextPhaseCameraParam(Transform nextBase = null, Transform nextLookAt = null)
         {
             _cameraPhaseIndex   = Mathf.Clamp(++_cameraPhaseIndex, 0, _currentCameraParamDatas.Length - 1);
@@ -365,18 +365,18 @@ namespace Frontier
         }
 
         /// <summary>
-        /// UŒ‚ƒV[ƒPƒ“ƒX‚É‘JˆÚ‚µ‚½‚©‚ğ•Ô‚µ‚Ü‚·
+        /// æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã«é·ç§»ã—ãŸã‹ã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>‘JˆÚ‚µ‚½‚©”Û‚©</returns>
+        /// <returns>é·ç§»ã—ãŸã‹å¦ã‹</returns>
         public bool IsFadeAttack()
         {
             return _mode == CameraMode.ATTACK_SEQUENCE && _atkCameraPhase == AttackSequenceCameraPhase.BATTLE_FIELD;
         }
 
         /// <summary>
-        /// ƒtƒF[ƒh‚ªI—¹‚µ‚½‚©”Û‚©‚ğ•Ô‚µ‚Ü‚·
+        /// ãƒ•ã‚§ãƒ¼ãƒ‰ãŒçµ‚äº†ã—ãŸã‹å¦ã‹ã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>ƒtƒF[ƒhI—¹‚µ‚½‚©</returns>
+        /// <returns>ãƒ•ã‚§ãƒ¼ãƒ‰çµ‚äº†ã—ãŸã‹</returns>
         public bool IsFadeEnd()
         {
             return _mode == CameraMode.FOLLOWING;

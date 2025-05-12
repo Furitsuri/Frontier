@@ -15,15 +15,17 @@ namespace Frontier
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
         protected UISystem _uiSystem                    = null;
+        private TutorialFacade _tutorialFcd             = null;
 
         [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem )
+        public void Construct( HierarchyBuilder hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem, TutorialFacade tutorialFcd )
         {
             _hierarchyBld   = hierarchyBld;
             _inputFcd       = inputFcd;
             _btlRtnCtrl     = btlRtnCtrl;
             _stageCtrl      = stgCtrl;
             _uiSystem       = uiSystem;
+            _tutorialFcd    = tutorialFcd;
         }
 
         /// <summary>
@@ -50,6 +52,9 @@ namespace Frontier
         virtual public void Exit()
         {
             _inputFcd.ResetInputCodes();
+
+            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
+            _tutorialFcd.TryShowTutorial();
         }
 
         /// <summary>

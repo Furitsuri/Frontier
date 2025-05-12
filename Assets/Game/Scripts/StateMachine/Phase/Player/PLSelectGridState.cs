@@ -53,7 +53,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// キャラクターコマンド遷移へ移る際のコールバック関数
+        /// キャラクターコマンドへ遷移可能かを判定します
         /// </summary>
         /// <returns>コマンド選択が可能か</returns>
         override protected bool CanAcceptConfirm()
@@ -94,6 +94,8 @@ namespace Frontier
             if (!isInput) return false;
 
             TransitIndex = (int)TransitTag.CharacterCommand;
+            // コマンドを開くことをチュートリアルへ通知
+            TutorialFacade.Notify( TutorialFacade.TriggerType.OpenBattleCommand);
 
             return true;
         }

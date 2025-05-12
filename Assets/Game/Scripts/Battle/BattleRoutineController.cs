@@ -7,7 +7,7 @@ using Frontier.Combat;
 
 namespace Frontier.Battle
 {
-    public class BattleRoutineController : MonoBehaviour
+    public class BattleRoutineController : MonoBehaviour, IGamePauseTarget
     {
         /// <summary>
         /// バトル状態の遷移
@@ -50,10 +50,10 @@ namespace Frontier.Battle
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleUISystem _battleUi                        = null;
         private SkillController _skillCtrl                      = null;
-        private PhaseHandlerBase _currentPhaseManager           = null;
+        private PhaseHandlerBase _currentPhaseHdlr              = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = new();
-        private PhaseHandlerBase[] _phaseHdrs               = new PhaseHandlerBase[((int)TurnType.NUM)];
+        private PhaseHandlerBase[] _phaseHdlrs                  = new PhaseHandlerBase[((int)TurnType.NUM)];
         
         private bool _transitNextPhase = false;
         private int _phaseManagerIndex = 0;
@@ -104,13 +104,13 @@ namespace Frontier.Battle
             if( _btlFileLoader == null )
             {
                 _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true,  false);
-                DebugUtils.NULL_ASSERT(_btlFileLoader);
+                NullCheck.AssertNotNull(_btlFileLoader);
             }
 
             if (_btlCharaCdr == null)
             {
                 _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>();
-                DebugUtils.NULL_ASSERT(_btlCharaCdr);
+                NullCheck.AssertNotNull(_btlCharaCdr);
             }
 
             _battleUi = _uiSystem.BattleUi;
@@ -128,10 +128,10 @@ namespace Frontier.Battle
                 _btlFileLoader.CharacterLoad(_currentStageIndex);
             }
 
-            _phaseHdrs[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>();
-            _phaseHdrs[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>();
-            _currentPhaseManager = _phaseHdrs[(int)TurnType.PLAYER_TURN];
-            _currentPhaseManager.Init();
+            _phaseHdlrs[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>();
+            _phaseHdlrs[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>();
+            _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN];
+            _currentPhaseHdlr.Init();
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();
 
@@ -163,7 +163,7 @@ namespace Frontier.Battle
             if (_battleUi.GameOver.isActiveAndEnabled) return;
 
             // フェーズマネージャを更新
-            _transitNextPhase = _currentPhaseManager.Update();
+            _transitNextPhase = _currentPhaseHdlr.Update();
         }
 
         void LateUpdate()
@@ -178,17 +178,19 @@ namespace Frontier.Battle
             // フェーズ移動の正否
             if (!_transitNextPhase)
             {
-                _currentPhaseManager.LateUpdate();
+                _currentPhaseHdlr.LateUpdate();
             }
             else
             {
                 // 一時パラメータをリセット
                 _btlCharaCdr.ResetTmpParamAllCharacter();
 
-                // 次のマネージャに切り替える
+                // 次のハンドラーに切り替える
                 _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
-                _currentPhaseManager = _phaseHdrs[_phaseManagerIndex];
-                _currentPhaseManager.Init();
+                _currentPhaseHdlr = _phaseHdlrs[_phaseManagerIndex];
+                _currentPhaseHdlr.Init();
+
+                // StartCoroutine(InitNextPhase());
             }
         }
 
@@ -235,7 +237,7 @@ namespace Frontier.Battle
         /// 終了状態かどうかを判定します
         /// </summary>
         /// <returns>true : 終了</returns>
-        public bool isEnd()
+        public bool IsEnd()
         {
             return _phase == BattlePhase.BATTLE_END;
         }
@@ -256,6 +258,25 @@ namespace Frontier.Battle
         {
             _battleUi.ToggleGameOverUI(true);
             _battleUi.StartGameOverAnim();
+        }
+
+        /// <summary>
+        /// MonoBehaviorを取得します
+        /// </summary>
+        /// <returns>このクラス自身</returns>
+        public MonoBehaviour GetUnderlyingBehaviour()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// 次のフェーズを初期化します
+        /// </summary>
+        /// <returns>IEnumerator</returns>
+        private IEnumerator InitNextPhase()
+        {
+            yield return null;
+            _currentPhaseHdlr.Init();
         }
     }
 }

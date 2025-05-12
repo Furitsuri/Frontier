@@ -9,7 +9,7 @@ public class InputFacade
     private HierarchyBuilder _hierarchyBld      = null;
     private InputGuidePresenter _inputGuideView = null;
     private UISystem _uiSystem                  = null;
-    private InputHandler _inputHdr              = null;
+    private InputHandler _inputHdl              = null;
     private InputCode[] _inputCodes;
 
     [Inject]
@@ -47,20 +47,20 @@ public class InputFacade
         // 入力コード情報を全て初期化
         InitInputCodes();
 
-        if (_inputHdr == null)
+        if (_inputHdl == null)
         {
-            _inputHdr = _hierarchyBld.CreateComponentAndOrganize<InputHandler>(true);
-            DebugUtils.NULL_ASSERT( _inputHdr );
+            _inputHdl = _hierarchyBld.CreateComponentAndOrganize<InputHandler>(true);
+            NullCheck.AssertNotNull( _inputHdl );
         }
 
         if( _inputGuideView == null )
         {
             _inputGuideView = _uiSystem.GeneralUi.InputGuideView;
-            DebugUtils.NULL_ASSERT(_inputGuideView);
+            NullCheck.AssertNotNull(_inputGuideView);
         }
 
         // 入力コード情報を受け渡す
-        _inputHdr.Init(_inputGuideView, _inputCodes);
+        _inputHdl.Init(_inputGuideView, _inputCodes);
         _inputGuideView.Init(_inputCodes);    
     }
 
@@ -92,6 +92,10 @@ public class InputFacade
             if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
             {
                 _inputCodes[(int)arg.Icon] = arg;
+            }
+            else
+            {
+                Debug.LogError($"InputCode is already registered. Icon: {arg.Icon}, Explanation: {arg.Explanation}");
             }
         }
 

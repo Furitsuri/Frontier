@@ -53,7 +53,7 @@ namespace Frontier
 
             // 選択中のプレイヤーを取得
             _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            DebugUtils.NULL_ASSERT(_selectPlayer);
+            NullCheck.AssertNotNull(_selectPlayer);
 
             // 可能な行動が全て終了している場合は終了
             if (_selectPlayer.IsEndAction())
