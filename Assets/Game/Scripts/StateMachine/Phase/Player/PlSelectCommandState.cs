@@ -32,12 +32,7 @@ namespace Frontier
             }
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal);
 
-            // 入力ガイドを登録
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.HORIZONTAL_CURSOR,    "Select", CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CONFIRM,              "Confirm", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f),
-               (GuideIcon.CANCEL,               "Back", CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
-            );
+            RegisterInputCodes();
 
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript(this);
             _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList(executableCommands);
@@ -101,6 +96,18 @@ namespace Frontier
             _uiSystem.BattleUi.TogglePLCommand(false);
 
             base.Exit();
+        }
+
+        /// <summary>
+        /// 入力コードを登録します
+        /// </summary>
+        public override void RegisterInputCodes()
+        {
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.HORIZONTAL_CURSOR, "Select", CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
+            );
         }
 
         /// <summary>

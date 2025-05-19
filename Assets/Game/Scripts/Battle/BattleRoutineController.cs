@@ -7,7 +7,7 @@ using Frontier.Combat;
 
 namespace Frontier.Battle
 {
-    public class BattleRoutineController : MonoBehaviour, IGamePauseTarget
+    public class BattleRoutineController : MonoBehaviour, IGamePauseTarget, IFocusRoutine
     {
         /// <summary>
         /// バトル状態の遷移
@@ -278,5 +278,75 @@ namespace Frontier.Battle
             yield return null;
             _currentPhaseHdlr.Init();
         }
+
+        /// <summary>
+        /// IFocusRoutineの実装です
+        /// クラス内の処理を駆動します
+        /// </summary>
+        public void Run()
+        {
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// IFocusRoutineの実装です
+        /// 中断させていた処理を再始動します
+        /// </summary>
+        public void Restart()
+        {
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// IFocusRoutineの実装です
+        /// 処理を中断します
+        /// </summary>
+        public void Pause()
+        {
+            if( _currentPhaseHdlr == null )
+            {
+                LogHelper.LogError("_currentPhaseHdlr is null");
+                return;
+            }
+
+            gameObject.SetActive(false);
+
+            _currentPhaseHdlr.Pause();
+        }
+
+        /// <summary>
+        /// IFocusRoutineの実装です
+        /// 処理を停止します
+        /// </summary>
+        public void Exit()
+        {
+            gameObject.SetActive(false);
+
+            _currentPhaseHdlr.Exit();
+        }
+
+        /// <summary>
+        /// IFocusRoutineの実装です
+        /// 指定のFocusStateと一致するか否かを判定します
+        /// </summary>
+        /// <returns>一致の成否</returns>
+        public bool IsMatchFocusState(FocusState state)
+        {
+            switch( state )
+                {
+                case FocusState.RUN:
+                case FocusState.RESERVE:
+                    return gameObject.activeSelf;
+                case FocusState.PAUSE:
+                case FocusState.EXIT:
+                    return !gameObject.activeSelf;
+                default:
+                    break;
+            }
+
+            return false;
+        }
+
+        public int GetPriority() { return (int)FocusRoutinePriority.BATTLE; }
     }
 }

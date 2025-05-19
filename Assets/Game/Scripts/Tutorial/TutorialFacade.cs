@@ -37,7 +37,7 @@ public class TutorialFacade
     {
         if (_tutorialHdl == null)
         {
-            _tutorialHdl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TutorialHandler>(true, false);
+            _tutorialHdl = _hierarchyBld.InstantiateWithDiContainer<TutorialHandler>();
             NullCheck.AssertNotNull(_tutorialHdl);
         }
 
@@ -70,16 +70,6 @@ public class TutorialFacade
     }
 
     /// <summary>
-    /// チュートリアル表示中に動作を停止させるBehvaiourを登録します
-    /// </summary>
-    /// <param name="target">動作を停止させる対象</param>
-    public void RegisterPauseTarget(IGamePauseTarget target)
-    {
-        var bhv = target.GetUnderlyingBehaviour();
-        _tutorialHdl.RegisterBehaviour(bhv);
-    }
-
-    /// <summary>
     /// チュートリアルのトリガーを通知します
     /// 通知されたトリガーは、チュートリアル表示処理の際に使用されます
     /// </summary>
@@ -98,5 +88,14 @@ public class TutorialFacade
     public static void Clear()
     {
         _pendingTriggers.Clear();
+    }
+
+    /// <summary>
+    /// チュートリアルの処理を行うハンドラを取得します
+    /// </summary>
+    /// <returns>ハンドラ</returns>
+    public IFocusRoutine GetFocusRoutine()
+    {
+        return _tutorialHdl;
     }
 }

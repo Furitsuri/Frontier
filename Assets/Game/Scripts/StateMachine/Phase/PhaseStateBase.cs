@@ -47,6 +47,14 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 現在のステートを中断します
+        /// </summary>
+        virtual public void Pause()
+        {
+            _inputFcd.ResetInputCodes();
+        }
+
+        /// <summary>
         /// 現在のステートから退避します
         /// </summary>
         virtual public void Exit()
@@ -56,6 +64,11 @@ namespace Frontier
             // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
             _tutorialFcd.TryShowTutorial();
         }
+
+        /// <summary>
+        /// 入力コードを登録します
+        /// </summary>
+        virtual public void RegisterInputCodes() { }
 
         /// <summary>
         /// 以前のステートに戻るフラグを取得します

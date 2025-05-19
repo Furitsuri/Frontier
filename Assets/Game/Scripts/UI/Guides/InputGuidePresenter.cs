@@ -248,7 +248,7 @@ public class InputGuidePresenter : MonoBehaviour
 
             if (_sprites[i] == null)
             {
-                Debug.LogError("File Not Found : " + fileName);
+                LogHelper.LogError("File Not Found : " + fileName);
             }
         }
     }

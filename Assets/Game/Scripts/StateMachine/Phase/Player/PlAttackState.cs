@@ -32,16 +32,7 @@ namespace Frontier
 
             _playerSkillNames = _selectPlayer.GetEquipSkillNames();
 
-            // 入力ガイドを登録
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "TARGET SELECT",        CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CONFIRM,      "CONFIRM",              CanAcceptDirection, new AcceptBooleanInput(AcceptConfirm), 0.0f),
-               (GuideIcon.CANCEL,       "TURN END",             CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel), 0.0f),
-               (GuideIcon.SUB1,         _playerSkillNames[0],   CanAcceptSub1,      new AcceptBooleanInput(AcceptSub1), 0.0f),
-               (GuideIcon.SUB2,         _playerSkillNames[1],   CanAcceptSub2,      new AcceptBooleanInput(AcceptSub2), 0.0f),
-               (GuideIcon.SUB3,         _playerSkillNames[2],   CanAcceptSub3,      new AcceptBooleanInput(AcceptSub3), 0.0f),
-               (GuideIcon.SUB4,         _playerSkillNames[3],   CanAcceptSub4,      new AcceptBooleanInput(AcceptSub4), 0.0f)
-            );
+            RegisterInputCodes();
 
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
@@ -175,6 +166,23 @@ namespace Frontier
             _stageCtrl.SetGridCursorActive(true);
 
             base.Exit();
+        }
+
+        /// <summary>
+        /// 入力コードを登録します
+        /// </summary>
+        public override void RegisterInputCodes()
+        {
+            // 入力ガイドを登録
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.ALL_CURSOR, "TARGET SELECT",  CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CONFIRM, "CONFIRM",           CanAcceptDirection, new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.CANCEL, "TURN END",           CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f),
+               (GuideIcon.SUB1, _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f),
+               (GuideIcon.SUB2, _playerSkillNames[1],   CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f),
+               (GuideIcon.SUB3, _playerSkillNames[2],   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f),
+               (GuideIcon.SUB4, _playerSkillNames[3],   CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f)
+            );
         }
 
         /// <summary>

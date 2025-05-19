@@ -73,6 +73,19 @@ namespace Frontier
             }
         }
 
+        virtual public void Pause()
+        {
+            // ステートの一時停止
+            CurrentNode.Pause();
+            // 入力コードの解除
+        }
+
+        virtual public void Exit()
+        {
+            // ステートの終了
+            CurrentNode.Exit();
+        }
+
         /// <summary>
         /// フェーズアニメーションを再生します
         /// </summary>

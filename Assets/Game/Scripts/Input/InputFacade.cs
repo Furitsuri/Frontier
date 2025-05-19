@@ -95,7 +95,7 @@ public class InputFacade
             }
             else
             {
-                Debug.LogError($"InputCode is already registered. Icon: {arg.Icon}, Explanation: {arg.Explanation}");
+                LogHelper.LogError($"InputCode is already registered. Icon: {arg.Icon}, Explanation: {arg.Explanation}");
             }
         }
 
