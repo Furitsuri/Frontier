@@ -18,6 +18,9 @@ namespace Frontier
         {
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
+            Container.Bind<ISaveHandler<TutorialSaveData>>()
+                 .To<TutorialSaveHandler>()
+                 .AsSingle();
             Container.Bind<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();

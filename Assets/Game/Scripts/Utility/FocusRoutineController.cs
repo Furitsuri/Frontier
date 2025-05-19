@@ -140,6 +140,9 @@ public class FocusRoutineController
                 // 現在のルーチンより優先度が高いルーチンが予約されておらず、かつ、現在のルーチンの実行を継続する場合はスルーします
                 if (_currentRoutine.IsMatchFocusState(FocusState.RUN)) return;
 
+                // 現在のルーチンについては判定しません(RUN以外が指定されている場合)
+                if (currentPriority == i) continue;
+
                 // 中断中のルーチンの中で、現在のルーチンの次に優先度が高いものを再開します
                 if (_routines[i].IsMatchFocusState(FocusState.PAUSE))
                 {

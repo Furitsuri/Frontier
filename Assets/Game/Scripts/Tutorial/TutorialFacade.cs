@@ -14,20 +14,22 @@ public class TutorialFacade
         // 他にも条件が増えていく
     }
 
-    private HierarchyBuilder _hierarchyBld      = null;
-    private UISystem _uiSystem                  = null;
-    private TutorialPresenter _tutorialView     = null;
-    private TutorialHandler _tutorialHdl        = null;
+    private HierarchyBuilder _hierarchyBld              = null;
+    private UISystem _uiSystem                          = null;
+    private TutorialPresenter _tutorialView             = null;
+    private TutorialHandler _tutorialHdl                = null;
+    private ISaveHandler<TutorialSaveData> _saveHdlr    = null;
     private static readonly List<TriggerType> _pendingTriggers = new();
 
     // 表示済みのトリガータイプ
-    private readonly HashSet<TutorialFacade.TriggerType> _shownTriggers = new();
+    private TutorialSaveData _saveData = null;
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld, UISystem uiSystem)
+    public void Construct(HierarchyBuilder hierarchyBld, UISystem uiSystem, ISaveHandler<TutorialSaveData> saveHandler)
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
+        _saveHdlr       = saveHandler;
     }
 
     /// <summary>
@@ -47,6 +49,8 @@ public class TutorialFacade
             NullCheck.AssertNotNull(_tutorialView);
         }
 
+        _saveData = _saveHdlr.Load();
+
         _tutorialHdl.Init( _tutorialView );
         _tutorialView.Init();
     }
@@ -58,13 +62,14 @@ public class TutorialFacade
     {
         foreach (var trigger in _pendingTriggers)
         {
-            if (_shownTriggers.Contains(trigger)) continue;
+            if (_saveData._shownTriggers.Contains(trigger)) continue;
 
-            // チュートリアルを表示します
+            // チュートリアルを表示
             if( _tutorialHdl.ShowTutorial(trigger) )
             {
-                // 表示済みのトリガータイプに追加
-                _shownTriggers.Add(trigger);
+                // 表示済みのトリガータイプに追加、保存
+                _saveData._shownTriggers.Add(trigger);
+                _saveHdlr.Save(_saveData);
             }
         }
     }
