@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using Zenject;
 using static Constants;
 using System;
-using System.Collections.Generic;
 using static TutorialFacade;
 
 public class TutorialHandler : IFocusRoutine
@@ -21,8 +20,6 @@ public class TutorialHandler : IFocusRoutine
     private ReadOnlyCollection<TutorialData> _tutorialDatas = null;
     // 参照しているチュートリアルデータの内容
     private ReadOnlyCollection<TutorialElement> _displayContents = null;
-    // 表示済みのトリガータイプ
-    private readonly HashSet<TutorialFacade.TriggerType> _shownTriggers = new();
 
     [Inject]
     public void Construct( InputFacade inputFcd )

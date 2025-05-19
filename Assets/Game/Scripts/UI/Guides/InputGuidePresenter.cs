@@ -1,4 +1,5 @@
 ﻿using Frontier;
+using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +33,6 @@ public class InputGuidePresenter : MonoBehaviour
     public float ResizeTime = 0.33f;
 
     // オブジェクト・コンポーネント作成クラス
-    [Inject]
     private HierarchyBuilder _hierarchyBld = null;
 
     // キーガイドバーの入出状態
@@ -85,20 +85,10 @@ public class InputGuidePresenter : MonoBehaviour
 #endif
         };
 
-    // Start is called before the first frame update
-    void Awake()
+    [Inject]
+    public void Construct(HierarchyBuilder hierarchyBld)
     {
-        Debug.Assert( spriteTailNoString.Length == (int)Constants.GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
-
-        _guideUiArrray          = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
-        _rectTransform          = GetComponent<RectTransform>();
-        _layoutGrp              = GetComponent<HorizontalLayoutGroup>();
-
-        NullCheck.AssertNotNull( _hierarchyBld );
-        NullCheck.AssertNotNull( _rectTransform );
-        NullCheck.AssertNotNull( _layoutGrp );
-
-        LoadSprites();
+        _hierarchyBld = hierarchyBld;
     }
 
     // Update is called once per frame
@@ -287,6 +277,18 @@ public class InputGuidePresenter : MonoBehaviour
     public void Init( InputCode[] inputCodes )
     {
         _inputCodes = Array.AsReadOnly(inputCodes);
+
+        Debug.Assert(spriteTailNoString.Length == (int)Constants.GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
+
+        _guideUiArrray  = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
+        _rectTransform  = GetComponent<RectTransform>();
+        _layoutGrp      = GetComponent<HorizontalLayoutGroup>();
+
+        NullCheck.AssertNotNull(_hierarchyBld);
+        NullCheck.AssertNotNull(_rectTransform);
+        NullCheck.AssertNotNull(_layoutGrp);
+
+        LoadSprites();
 
         InitGuideUi();
     }
