@@ -22,12 +22,7 @@ namespace Frontier
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorActive(true);
 
-            // 入力ガイドを登録
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "Move", CanAcceptDefault,      new AcceptDirectionInput(AcceptDirection),  DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CONFIRM,      "Command", CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
-               (GuideIcon.ESCAPE,       "TURN END", CanAcceptDefault,  new AcceptBooleanInput(AcceptOptional),     0.0f)
-            );
+            RegisterInputCodes();
         }
 
         override public bool Update()
@@ -50,6 +45,18 @@ namespace Frontier
             int selectCharaIndex = info.charaIndex;
 
             return (0 <= TransitIndex);
+        }
+
+        /// <summary>
+        /// 入力コードを登録します
+        /// </summary>
+        public override void RegisterInputCodes()
+        {
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.ALL_CURSOR, "Move", CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.CONFIRM, "Command", CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.ESCAPE, "TURN END", CanAcceptDefault, new AcceptBooleanInput(AcceptOptional), 0.0f)
+            );
         }
 
         /// <summary>

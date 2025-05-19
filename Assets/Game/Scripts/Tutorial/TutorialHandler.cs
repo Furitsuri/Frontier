@@ -9,15 +9,13 @@ using System;
 using System.Collections.Generic;
 using static TutorialFacade;
 
-public class TutorialHandler : MonoBehaviour
+public class TutorialHandler : IFocusRoutine
 {
-    private HierarchyBuilder _hierarchyBld  = null;
     private InputFacade _inputFcd           = null;
     private TutorialPresenter _tutorialView = null;
     private TutorialFileLoader _tutorialLdr = null;
-    private List<MonoBehaviour> _bhvList    = new List<MonoBehaviour>();
     private int _currentPageIndex           = 0;
-    private float _timeScale                = 1.0f;    
+    private FocusState _focusState          = FocusState.NONE;
 
     // チュートリアルデータの参照
     private ReadOnlyCollection<TutorialData> _tutorialDatas = null;
@@ -27,9 +25,8 @@ public class TutorialHandler : MonoBehaviour
     private readonly HashSet<TutorialFacade.TriggerType> _shownTriggers = new();
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld, InputFacade inputFcd )
+    public void Construct( InputFacade inputFcd )
     {
-        _hierarchyBld   = hierarchyBld;
         _inputFcd       = inputFcd;
     }
 
@@ -49,22 +46,13 @@ public class TutorialHandler : MonoBehaviour
 
         if (_tutorialLdr == null)
         {
-            Debug.LogError("チュートリアルデータの読み込みに失敗しました。");
+            LogHelper.LogError("チュートリアルデータの読み込みに失敗しました。");
             return;
         }
 
         _tutorialLdr.LoadData();
-    }
 
-    /// <summary>
-    /// チュートリアル表示中に動作を停止させるBehaviourを登録します
-    /// </summary>
-    /// <param name="bhv">対象のBehaviour</param>
-    public void RegisterBehaviour(MonoBehaviour bhv)
-    {
-        if (bhv == null) return;
-        
-        _bhvList.Add(bhv);
+        _focusState = FocusState.PAUSE;
     }
 
     /// <summary>
@@ -79,12 +67,16 @@ public class TutorialHandler : MonoBehaviour
         var matchingData = FindMatchingTutorialData(trigger);
         if( null == matchingData )
         {
-            Debug.LogError($"該当するチュートリアルデータが見つかりませんでした。TriggerType: {trigger}");
+            LogHelper.LogError($"該当するチュートリアルデータが見つかりませんでした。TriggerType: {trigger}");
             return false;
         }
 
-        // チュートリアルの表示
-        ShowTutorial(matchingData);
+        // 該当したチュートリアルのデータを表示する
+        _displayContents = matchingData.GetTutorialElements.AsReadOnly();
+        _tutorialView.ShowTutorial(_displayContents, _displayContents.Count, matchingData.GetFlagBitIdx);
+
+        // 実行を予約
+        _focusState = FocusState.RESERVE;
 
         return true;
     }
@@ -102,39 +94,6 @@ public class TutorialHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// チュートリアルの表示中に動作を停止させるBehaviourのtimeScaleを設定します
-    /// </summary>
-    /// <param name="time">設定するTimeScale値</param>
-    private void SetBehavioursTimeScale( float time )
-    {
-        foreach( var bvh in _bhvList )
-        {
-            if (bvh != null)
-            {
-                bvh.enabled = false;
-                bvh.gameObject.SetActive(false);
-            }
-        }
-    }
-
-    /// <summary>
-    /// チュートリアルを表示します
-    /// </summary>
-    private void ShowTutorial( TutorialData matchingData )
-    {
-        // 入力コードの登録
-        RegistInputCodes();
-
-        // 該当したチュートリアルのデータを表示する
-        _displayContents = matchingData.GetTutorialElements.AsReadOnly();
-        _tutorialView.ShowTutorial(_displayContents, _displayContents.Count, matchingData.GetFlagBitIdx);
-
-        // 時間速度の変更
-        _timeScale      = Time.timeScale;
-        SetBehavioursTimeScale(0);
-    }
-
-    /// <summary>
     /// チュートリアルを終了します
     /// </summary>
     private void ExitTutorial()
@@ -143,19 +102,10 @@ public class TutorialHandler : MonoBehaviour
         _tutorialView.Exit();
         // 入力コードの解除
         _inputFcd.ResetInputCodes();
-        // 時間速度を元に戻す
-        Time.timeScale = _timeScale;
         // 表示済みのトリガータイプをクリア
         TutorialFacade.Clear();
 
-        foreach (var bvh in _bhvList)
-        {
-            if (bvh != null)
-            {
-                bvh.enabled = true;
-                bvh.gameObject.SetActive(true);
-            }
-        }
+        _focusState = FocusState.EXIT;
     }
 
     /// <summary>
@@ -194,7 +144,7 @@ public class TutorialHandler : MonoBehaviour
     /// <returns>受付可否</returns>
     private bool CanAcceptDirection()
     {
-        return true;
+        return _focusState == FocusState.RUN;
     }
 
     /// <summary>
@@ -203,7 +153,7 @@ public class TutorialHandler : MonoBehaviour
     /// <returns>受付可否</returns>
     private bool CanAcceptConfirm()
     {
-        return true;
+        return _focusState == FocusState.RUN;
     }
 
     /// <summary>
@@ -212,7 +162,7 @@ public class TutorialHandler : MonoBehaviour
     /// <returns>受付可否</returns>
     private bool CanAcceptCancel()
     {
-        return true;
+        return _focusState == FocusState.RUN;
     }
 
     /// <summary>
@@ -293,4 +243,58 @@ public class TutorialHandler : MonoBehaviour
 
         return null;
     }
+
+    public void Run()
+    {
+        _focusState = FocusState.RUN;
+
+        // 入力コードを登録
+        RegistInputCodes();
+    }
+
+    public void Restart()
+    {
+        _focusState = FocusState.RUN;
+
+        // 入力コードを再登録
+        RegistInputCodes();
+    }
+
+    /// <summary>
+    /// IFocusRoutineの実装です
+    /// 処理を中断します
+    /// </summary>
+    public void Pause()
+    {
+        _focusState = FocusState.PAUSE;
+
+        // 入力コードの解除
+        _inputFcd.ResetInputCodes();
+    }
+
+    /// <summary>
+    /// IFocusRoutineの実装です
+    /// 処理を停止します
+    /// </summary>
+    public void Exit()
+    {
+        _focusState = FocusState.EXIT;
+
+        // チュートリアルの終了
+        _tutorialView.Exit();
+        // 入力コードの解除
+        _inputFcd.ResetInputCodes();
+    }
+
+    /// <summary>
+    /// IFocusRoutineの実装です
+    /// 指定のFocusStateと一致するか否かを判定します
+    /// </summary>
+    /// <returns>一致の成否</returns>
+    public bool IsMatchFocusState(FocusState state)
+    {
+        return _focusState == state;
+    }
+
+    public int GetPriority() { return (int)FocusRoutinePriority.TUTORIAL; }
 }

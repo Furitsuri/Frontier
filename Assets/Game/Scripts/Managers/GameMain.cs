@@ -40,6 +40,7 @@ namespace Frontier
         private float stageStartDelay = 2f;
 
         private GameObject _stageImage;
+        private FocusRoutineController _focusRtnCtrl;
         private InputFacade _inputFcd;
         private TutorialFacade _tutorialFcd;
         private BattleRoutineController _btlRtnCtrl;
@@ -66,6 +67,12 @@ namespace Frontier
                 Destroy(gameObject);
             }
 
+            if( _focusRtnCtrl == null )
+            {
+                _focusRtnCtrl = _hierarchyBld.InstantiateWithDiContainer<FocusRoutineController>();
+                NullCheck.AssertNotNull(_focusRtnCtrl);
+            }
+
             Debug.Assert(_hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。");
             Debug.Assert(_inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。");
 
@@ -85,6 +92,11 @@ namespace Frontier
             StartCoroutine(GameFlow());
         }
 
+        private void Update()
+        {
+            _focusRtnCtrl.Update();
+        }
+
         /// <summary>
         /// ゲームを初期化します
         /// </summary>
@@ -96,10 +108,11 @@ namespace Frontier
             _inputFcd.Init();
             // チュートリアル関連の初期化
             _tutorialFcd.Init();
-            _tutorialFcd.RegisterPauseTarget(_btlRtnCtrl);
 
             // 戦闘マネージャの初期化
             // _btlRtnCtrl.Init();
+
+            InitFocusRoutine();
 
             _stageImage = GameObject.Find("StageLevelImage");
             if (_stageImage != null)
@@ -148,6 +161,17 @@ namespace Frontier
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// フォーカスルーチンを初期化します
+        /// </summary>
+        private void InitFocusRoutine()
+        {
+            _focusRtnCtrl.Init();
+            _focusRtnCtrl.Register(_btlRtnCtrl, _btlRtnCtrl.GetPriority());
+            _focusRtnCtrl.Register(_tutorialFcd.GetFocusRoutine(), _tutorialFcd.GetFocusRoutine().GetPriority());
+            _focusRtnCtrl.RunRoutineAndPauseOthers(FocusRoutinePriority.BATTLE);
         }
     }
 }

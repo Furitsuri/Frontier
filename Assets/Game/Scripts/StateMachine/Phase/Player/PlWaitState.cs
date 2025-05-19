@@ -18,6 +18,7 @@ namespace Frontier
                 return;
             }
 
+            // 選択しているプレイヤーの行動をすべて終了
             selectPlayer.EndAction();
 
             // 更新せずに終了
