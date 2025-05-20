@@ -67,7 +67,14 @@ namespace Frontier
                 Destroy(gameObject);
             }
 
-            if( _focusRtnCtrl == null )
+            if (transform.parent != null)
+            {
+                transform.SetParent(null); // ルートに移動
+            }
+
+            DontDestroyOnLoad(gameObject);
+
+            if ( _focusRtnCtrl == null )
             {
                 _focusRtnCtrl = _hierarchyBld.InstantiateWithDiContainer<FocusRoutineController>();
                 NullCheck.AssertNotNull(_focusRtnCtrl);
@@ -75,8 +82,6 @@ namespace Frontier
 
             Debug.Assert(_hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。");
             Debug.Assert(_inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。");
-
-            DontDestroyOnLoad(gameObject);
 
             if (ManagerProvider.Instance == null)
             {

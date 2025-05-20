@@ -210,7 +210,7 @@ namespace Frontier
             T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
             NullCheck.AssertNotNull(generateCpt);
 
-            generateCpt.transform.parent = parentObject.transform;
+            generateCpt.transform.SetParent( parentObject.transform, false );
 
             return generateCpt;
         }
@@ -232,8 +232,8 @@ namespace Frontier
             NullCheck.AssertNotNull(generateCpt);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
-            folderObject.transform.parent = parentObject.transform;
-            generateCpt.transform.parent = folderObject.transform;
+            folderObject.transform.SetParent( parentObject.transform, false );
+            generateCpt.transform.SetParent( folderObject.transform, false );
 
             return generateCpt;
         }
@@ -287,7 +287,7 @@ namespace Frontier
             T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
             NullCheck.AssertNotNull(generateCpt);
 
-            generateCpt.transform.parent = parentObject.transform;
+            generateCpt.transform.SetParent(parentObject.transform, false);
 
             return generateCpt;
         }
@@ -309,8 +309,8 @@ namespace Frontier
             NullCheck.AssertNotNull(generateCpt);
 
             GameObject folderObject = new GameObject(newDirectoryObjectName);
-            folderObject.transform.parent = parentObject.transform;
-            generateCpt.transform.parent = folderObject.transform;
+            folderObject.transform.SetParent(parentObject.transform, false);
+            generateCpt.transform.SetParent(folderObject.transform, false);
 
             return generateCpt;
         }
