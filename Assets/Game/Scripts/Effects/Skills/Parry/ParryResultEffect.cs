@@ -6,7 +6,6 @@ namespace Frontier
     public class ParryResultEffect
     {
         private ParticleSystem[] _particles;
-        private ParrySkillHandler.JudgeResult _result;
         private ParticleSystem _playingParticle;
 
         /// <summary>
@@ -16,7 +15,6 @@ namespace Frontier
         public void Init(in ParticleSystem[] particles)
         {
             _particles  = particles;
-            _result     = ParrySkillHandler.JudgeResult.NONE;
         }
 
         /// <summary>
@@ -25,7 +23,6 @@ namespace Frontier
         public void terminate()
         {
             _playingParticle = null;
-            _result = ParrySkillHandler.JudgeResult.NONE;
         }
 
         /// <summary>
