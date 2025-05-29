@@ -32,6 +32,10 @@
         SUB3,               // 入力サブ3
         SUB4,               // 入力サブ4
 
+#if UNITY_EDITOR
+        DEBUG_MENU,         // デバッグメニュー
+#endif
+
         NUM_MAX
     }
 

@@ -35,7 +35,10 @@ public class InputFacade
             ( Constants.GuideIcon.SUB1,                "", null, null, 0.0f ),
             ( Constants.GuideIcon.SUB2,                "", null, null, 0.0f ),
             ( Constants.GuideIcon.SUB3,                "", null, null, 0.0f ),
-            ( Constants.GuideIcon.SUB4,                "", null, null, 0.0f )
+            ( Constants.GuideIcon.SUB4,                "", null, null, 0.0f ),
+#if UNITY_EDITOR
+            ( Constants.GuideIcon.DEBUG_MENU,          "", null, null, 0.0f )
+#endif  // UNITY_EDITOR
         };
     }
 
@@ -68,10 +71,17 @@ public class InputFacade
     /// 判定対象となる入力コードを初期化します
     /// Iconは変更しないため、そのままにします
     /// </summary>
-    public void ResetInputCodes()
+    public void ResetInputCodes( bool resetDebugMenu = false )
     {
         for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
         {
+#if UNITY_EDITOR
+            if( _inputCodes[i].Icon == Constants.GuideIcon.DEBUG_MENU && !resetDebugMenu )
+            {
+                // デバッグメニューは初期化しない
+                continue;
+            }
+#endif // UNITY_EDITOR
             _inputCodes[i].Explanation      = "";
             _inputCodes[i].EnableCb         = null;
             _inputCodes[i].InputInterval    = 0.0f;

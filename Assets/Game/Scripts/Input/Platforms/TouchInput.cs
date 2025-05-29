@@ -49,4 +49,9 @@ public class TouchInput : IInput
     {
         return false;
     }
+
+    public bool IsDebugMenuPressed()
+    {
+        return false;
+    }
 }
