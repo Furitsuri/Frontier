@@ -45,6 +45,9 @@ namespace Frontier
         private TutorialFacade _tutorialFcd;
         private BattleRoutineController _btlRtnCtrl;
         private GamePhase _Phase;
+#if UNITY_EDITOR
+        private DebugModeController _debugModeCtrl;
+#endif // UNITY_EDITOR
 
         public static GameMain instance = null;
 
@@ -87,6 +90,14 @@ namespace Frontier
             {
                 _hierarchyBld.CreateComponentAndOrganize<ManagerProvider>(_managerProvider, true);
             }
+
+#if UNITY_EDITOR
+            if (_debugModeCtrl == null)
+            {
+                _debugModeCtrl = _hierarchyBld.InstantiateWithDiContainer<DebugModeController>();
+                NullCheck.AssertNotNull(_debugModeCtrl);
+            }
+#endif // UNITY_EDITOR
         }
 
         // Start is called before the first frame update
@@ -116,6 +127,13 @@ namespace Frontier
 
             // 戦闘マネージャの初期化
             // _btlRtnCtrl.Init();
+
+#if UNITY_EDITOR
+            // デバッグモードの初期化
+            _debugModeCtrl.Init();
+            // デバッグモードへ移行するための入力コードを登録
+            ResgiterDebugInputCode();
+#endif // UNITY_EDITOR
 
             InitFocusRoutine();
 
@@ -178,5 +196,39 @@ namespace Frontier
             _focusRtnCtrl.Register(_tutorialFcd.GetFocusRoutine(), _tutorialFcd.GetFocusRoutine().GetPriority());
             _focusRtnCtrl.RunRoutineAndPauseOthers(FocusRoutinePriority.BATTLE);
         }
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// デバッグメニューを開くための入力コードを登録します。
+        /// </summary>
+        private void ResgiterDebugInputCode()
+        {
+            _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f));
+        }
+
+        /// <summary>
+        /// デバッグメニューを開くための入力を受け付けるかどうかを判定します。
+        /// </summary>
+        /// <returns>デバッグメニューへの遷移の可否</returns>
+        private bool CanAcceptDebugTransition()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// デバッグメニューへの遷移入力を受け付けた際の処理を行います。
+        /// </summary>
+        /// <param name="isDebugTranstion">デバッグメニューへの遷移入力</param>
+        /// <returns>入力実行の有無</returns>
+        private bool AcceptDebugTransition(bool isDebugTranstion)
+        {
+            if( !isDebugTranstion ) return false;
+
+            _inputFcd.ResetInputCodes( true );
+            _debugModeCtrl.OpenMenu();
+
+            return true;
+        }
+#endif // UNITY_EDITOR
     }
 }

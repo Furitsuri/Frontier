@@ -70,6 +70,7 @@ public class InputHandler : MonoBehaviour
         GetBooleanInput.GetBooleanInputCallback sub2InputCb                 = _iInput.IsSub2Pressed;
         GetBooleanInput.GetBooleanInputCallback sub3InputCb                 = _iInput.IsSub3Pressed;
         GetBooleanInput.GetBooleanInputCallback sub4InputCb                 = _iInput.IsSub4Pressed;
+        GetBooleanInput.GetBooleanInputCallback debugMenuInputCb            = _iInput.IsDebugMenuPressed;
 
         _inputForIcons                                              = new IGetInputBase[(int)Constants.GuideIcon.NUM_MAX];
         _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(directionalInputCb);
@@ -82,6 +83,9 @@ public class InputHandler : MonoBehaviour
         _inputForIcons[(int)Constants.GuideIcon.SUB2]               = new GetBooleanInput(sub2InputCb);
         _inputForIcons[(int)Constants.GuideIcon.SUB3]               = new GetBooleanInput(sub3InputCb);
         _inputForIcons[(int)Constants.GuideIcon.SUB4]               = new GetBooleanInput(sub4InputCb);
+#if UNITY_EDITOR
+        _inputForIcons[(int)Constants.GuideIcon.DEBUG_MENU]         = new GetBooleanInput(debugMenuInputCb);
+#endif  // UNITY_EDITOR
     }
 
     /// <summary>

@@ -45,7 +45,7 @@ namespace Frontier.Stage
         private GameObject _gridCursorObject;
 
         [SerializeField]
-        private StageModel _stageModel;
+        private StageData _stageData;
 
         [SerializeField]
         private bool isAdjustStageScale = false;
@@ -86,8 +86,8 @@ namespace Frontier.Stage
             // ステージ情報から各サイズを参照する
             if (isAdjustStageScale)
             {
-                _stageModel.SetGridRowNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.x) / GetGridSize()) );
-                _stageModel.SetGridColumnNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.z) / GetGridSize()) );
+                _stageData.SetGridRowNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.x) / GetGridSize()) );
+                _stageData.SetGridColumnNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.z) / GetGridSize()) );
             }
 
             // メッシュを描画
@@ -96,7 +96,7 @@ namespace Frontier.Stage
 
             // グリッド情報の初期化
             InitGridInfo();
-            _gridCursor.Init(0, _stageModel, this);
+            _gridCursor.Init(0, _stageData, this);
         }
 
         /// <summary>
@@ -124,24 +124,24 @@ namespace Frontier.Stage
             int[] lines;
             Color[] colors;
 
-            _stageModel.WidthX = GetGridSize() * _stageModel.GetGridRowNum() / 2.0f;
-            _stageModel.WidthZ = GetGridSize() * _stageModel.GetGridColumnNum() / 2.0f;
-            Vector2 startPosition = new Vector2(-_stageModel.WidthX, -_stageModel.WidthZ);
+            _stageData.WidthX = GetGridSize() * _stageData.GetGridRowNum() / 2.0f;
+            _stageData.WidthZ = GetGridSize() * _stageData.GetGridColumnNum() / 2.0f;
+            Vector2 startPosition = new Vector2(-_stageData.WidthX, -_stageData.WidthZ);
             Vector2 endPosition = -startPosition;
-            resolution = 2 * (_stageModel.GetGridRowNum() + _stageModel.GetGridColumnNum() + 2);
+            resolution = 2 * (_stageData.GetGridRowNum() + _stageData.GetGridColumnNum() + 2);
             vertices = new Vector3[resolution];
             uvs = new Vector2[resolution];
             lines = new int[resolution];
             colors = new Color[resolution];
 
             // X方向の頂点
-            for (int i = 0; count < 2 * (_stageModel.GetGridRowNum() + 1); ++i, count = 2 * i)
+            for (int i = 0; count < 2 * (_stageData.GetGridRowNum() + 1); ++i, count = 2 * i)
             {
                 vertices[count] = new Vector3(startPosition.x + ((float)i * GetGridSize()), startPosition.y, 0);
                 vertices[count + 1] = new Vector3(startPosition.x + ((float)i * GetGridSize()), endPosition.y, 0);
             }
             // Y(Z)方向の頂点
-            for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_stageModel.GetGridRowNum() + 1))
+            for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_stageData.GetGridRowNum() + 1))
             {
                 vertices[count] = new Vector3(startPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
                 vertices[count + 1] = new Vector3(endPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
@@ -169,7 +169,7 @@ namespace Frontier.Stage
         /// </summary>
         void InitGridInfo()
         {
-            GridTotalNum    = _stageModel.GetGridRowNum() * _stageModel.GetGridColumnNum();
+            GridTotalNum    = _stageData.GetGridRowNum() * _stageData.GetGridColumnNum();
             _gridInfo       = new GridInfo[GridTotalNum];
             _gridInfoBase   = new GridInfo[GridTotalNum]; ;
 
@@ -183,9 +183,9 @@ namespace Frontier.Stage
                 // グリッド位置からキャラの立ち位置への補正値
                 float charaPosCorrext = 0.5f * GetGridSize();
                 // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
-                float posX = -_stageModel.WidthX + i % _stageModel.GetGridRowNum() * GetGridSize() + charaPosCorrext;
+                float posX = -_stageData.WidthX + i % _stageData.GetGridRowNum() * GetGridSize() + charaPosCorrext;
                 // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
-                float posZ = -_stageModel.WidthZ + i / _stageModel.GetGridRowNum() * GetGridSize() + charaPosCorrext;
+                float posZ = -_stageData.WidthZ + i / _stageData.GetGridRowNum() * GetGridSize() + charaPosCorrext;
                 // 上記値から各グリッドのキャラの立ち位置を決定
                 _gridInfoBase[i].charaStandPos = _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
                 // TODO : ファイル読み込みから通行不能な箇所などのBitFlag情報を設定出来るようにする
@@ -239,14 +239,14 @@ namespace Frontier.Stage
             if (isAttackable && ( _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
             // 左端を除外
-            if (gridIndex % _stageModel.GetGridRowNum() != 0)
+            if (gridIndex % _stageData.GetGridRowNum() != 0)
                 RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexからX軸方向へ-1
             // 右端を除外
-            if ((gridIndex + 1) % _stageModel.GetGridRowNum() != 0)
+            if ((gridIndex + 1) % _stageData.GetGridRowNum() != 0)
                 RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexからX軸方向へ+1
             // Z軸方向への加算と減算はそのまま
-            RegistMoveableEachGrid(gridIndex - _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
-            RegistMoveableEachGrid(gridIndex + _stageModel.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
+            RegistMoveableEachGrid(gridIndex - _stageData.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
+            RegistMoveableEachGrid(gridIndex + _stageData.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -347,12 +347,12 @@ namespace Frontier.Stage
         /// <returns>隣り合うか否か</returns>
         public bool IsGridNextToEacheOther(int fstIndex, int scdIndex)
         {
-            bool updown = (Math.Abs(fstIndex - scdIndex) == _stageModel.GetGridRowNum());
+            bool updown = (Math.Abs(fstIndex - scdIndex) == _stageData.GetGridRowNum());
 
-            int fstQuotient = fstIndex / _stageModel.GetGridColumnNum();
-            int scdQuotient = scdIndex / _stageModel.GetGridColumnNum();
-            var fstRemainder = fstIndex % _stageModel.GetGridColumnNum();
-            var scdRemainder = scdIndex % _stageModel.GetGridColumnNum();
+            int fstQuotient = fstIndex / _stageData.GetGridColumnNum();
+            int scdQuotient = scdIndex / _stageData.GetGridColumnNum();
+            var fstRemainder = fstIndex % _stageData.GetGridColumnNum();
+            var scdRemainder = scdIndex % _stageData.GetGridColumnNum();
             bool leftright = (fstQuotient == scdQuotient) && (Math.Abs(fstRemainder - scdRemainder) == 1);
 
             return updown || leftright;
@@ -465,14 +465,14 @@ namespace Frontier.Stage
             if (--attackRange < 0) return;
 
             // 左端を除外
-            if (gridIndex % _stageModel.GetGridRowNum() != 0)
+            if (gridIndex % _stageData.GetGridRowNum() != 0)
                 RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag, departIndex);       // gridIndexからX軸方向へ-1
                                                                                                   // 右端を除外
-            if ((gridIndex + 1) % _stageModel.GetGridRowNum() != 0)
+            if ((gridIndex + 1) % _stageData.GetGridRowNum() != 0)
                 RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag, departIndex);       // gridIndexからX軸方向へ+1
                                                                                                   // Z軸方向への加算と減算はそのまま
-            RegistAttackableEachGrid(gridIndex - _stageModel.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridIndexからZ軸方向へ-1
-            RegistAttackableEachGrid(gridIndex + _stageModel.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridindexからZ軸方向へ+1
+            RegistAttackableEachGrid(gridIndex - _stageData.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridIndexからZ軸方向へ-1
+            RegistAttackableEachGrid(gridIndex + _stageData.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridindexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -701,7 +701,7 @@ namespace Frontier.Stage
         /// <returns>縦軸と横軸のグリッド数</returns>
         public (int, int) GetGridNumsXZ()
         {
-            return (_stageModel.GetGridRowNum(), _stageModel.GetGridColumnNum());
+            return (_stageData.GetGridRowNum(), _stageData.GetGridColumnNum());
         }
 
         /// <summary>
@@ -710,7 +710,7 @@ namespace Frontier.Stage
         /// <returns>グリッドの1辺の大きさ(長さ)</returns>
         public float GetGridSize()
         {
-            return _stageModel.GetGridSize();
+            return _stageData.GetGridSize();
         }
 
         /// <summary>
@@ -843,9 +843,9 @@ namespace Frontier.Stage
                 for (int j = i + 1; j < candidateRouteIndexs.Count; ++j)
                 {
                     int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
-                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != 0)) ||                                 // 左に存在(左端を除く)
-                        (diff == 1 && (candidateRouteIndexs[i] % _stageModel.GetGridRowNum() != _stageModel.GetGridRowNum() - 1)) ||    // 右に存在(右端を除く)
-                         Math.Abs(diff) == _stageModel.GetGridRowNum())                                                                 // 上または下に存在
+                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageData.GetGridRowNum() != 0)) ||                                 // 左に存在(左端を除く)
+                        (diff == 1 && (candidateRouteIndexs[i] % _stageData.GetGridRowNum() != _stageData.GetGridRowNum() - 1)) ||    // 右に存在(右端を除く)
+                         Math.Abs(diff) == _stageData.GetGridRowNum())                                                                 // 上または下に存在
                     {
                         // 移動可能な隣接グリッド情報をダイクストラに入れる
                         dijkstra.Add(i, j);
@@ -907,8 +907,8 @@ namespace Frontier.Stage
 
                 // ステージ情報からサイズを決める際はサイズ編集を不可にする
                 EditorGUI.BeginDisabledGroup(script.isAdjustStageScale);
-                script._stageModel.SetGridRowNum( EditorGUILayout.IntField("X方向グリッド数", script._stageModel.GetGridRowNum()) );
-                script._stageModel.SetGridColumnNum( EditorGUILayout.IntField("Z方向グリッド数", script._stageModel.GetGridColumnNum()) );
+                script._stageData.SetGridRowNum( EditorGUILayout.IntField("X方向グリッド数", script._stageData.GetGridRowNum()) );
+                script._stageData.SetGridColumnNum( EditorGUILayout.IntField("Z方向グリッド数", script._stageData.GetGridColumnNum()) );
                 EditorGUI.EndDisabledGroup();
 
                 base.OnInspectorGUI();

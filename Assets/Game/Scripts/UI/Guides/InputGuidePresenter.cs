@@ -70,6 +70,7 @@ public class InputGuidePresenter : MonoBehaviour
             "_alpha_190",   // SUB2
             "_alpha_191",   // SUB3
             "_alpha_192",   // SUB4
+            "_alpha_119",   // DEBUG_MENU
 #elif UNITY_STANDALONE_WIN
             "_9",   // ALL_CURSOR
             "_15",  // VERTICAL
@@ -81,6 +82,7 @@ public class InputGuidePresenter : MonoBehaviour
             "_101",  // SUB2
             "_102",  // SUB3
             "_103",  // SUB4
+            "_140",  // DEBUG
 #else
 #endif
         };

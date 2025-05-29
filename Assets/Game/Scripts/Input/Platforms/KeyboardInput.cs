@@ -17,28 +17,28 @@ public class KeyboardInput : IInput
     }
 
     public bool IsConfirmPressed()
-    { 
-        return Input.GetKeyUp( KeyCode.Space );
+    {
+        return Input.GetKeyUp(KeyCode.Space);
     }
 
     public bool IsCancelPressed()
-    { 
-        return Input.GetKeyUp( KeyCode.Backspace );
+    {
+        return Input.GetKeyUp(KeyCode.Backspace);
     }
 
     public bool IsPausePressed()
-    { 
+    {
         return false;
     }
 
     public bool IsOptionsPressed()
-    { 
-        return Input.GetKeyUp( KeyCode.Escape );
+    {
+        return Input.GetKeyUp(KeyCode.Escape);
     }
 
     public bool IsSub1Pressed()
     {
-        return Input.GetKeyUp( KeyCode.A );
+        return Input.GetKeyUp(KeyCode.A);
     }
 
     public bool IsSub2Pressed()
@@ -54,5 +54,10 @@ public class KeyboardInput : IInput
     public bool IsSub4Pressed()
     {
         return Input.GetKeyUp(KeyCode.F);
+    }
+
+    public bool IsDebugMenuPressed()
+    {
+        return Input.GetKeyUp(KeyCode.F12);
     }
 }

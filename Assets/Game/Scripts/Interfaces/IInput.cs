@@ -21,4 +21,6 @@ public interface IInput
     public bool IsSub3Pressed();
 
     public bool IsSub4Pressed();
+
+    public bool IsDebugMenuPressed();
 }

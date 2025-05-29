@@ -22,7 +22,7 @@ namespace Frontier.Stage
         private float MoveInterpolationTime = 1f;
 
         private LineRenderer _lineRenderer;
-        private StageModel _stageModel = null;
+        private StageData _stageData = null;
         private StageController _stageCtrl = null;
         private Vector3 _beginPos   = Vector3.zero;
         private Vector3 _endPos     = Vector3.zero;
@@ -45,10 +45,10 @@ namespace Frontier.Stage
         /// <param name="initIndex">初期インデックス値</param>
         /// <param name="rowNum">盤面における行に該当するグリッド数</param>
         /// <param name="columnNum">盤面における列に該当するグリッド数</param>
-        public void Init(int initIndex, StageModel stageModel, StageController stgCtrl)
+        public void Init(int initIndex, StageData stageModel, StageController stgCtrl)
         {
             Index           = initIndex;
-            _stageModel     = stageModel;
+            _stageData     = stageModel;
             _stageCtrl      = stgCtrl;
             _atkTargetIndex = 0;
             _atkTargetNum   = 0;
@@ -75,7 +75,7 @@ namespace Frontier.Stage
             }
             else
             {
-                DrawSquareLine(_stageModel.GetGridSize(), _endPos);
+                DrawSquareLine(_stageData.GetGridSize(), _endPos);
             }
         }
 
@@ -88,7 +88,7 @@ namespace Frontier.Stage
             _totalTime += delta;
             Vector3 curPos = Vector3.Lerp( _beginPos, _endPos, _totalTime / MoveInterpolationTime);
 
-            DrawSquareLine(_stageModel.GetGridSize(), curPos);
+            DrawSquareLine(_stageData.GetGridSize(), curPos);
         }
 
         /// <summary>
@@ -141,10 +141,10 @@ namespace Frontier.Stage
         public void Up()
         {
             StartLerpMove();
-            Index += _stageModel.GetGridRowNum();
-            if (_stageModel.GetGridRowNum() * _stageModel.GetGridRowNum() <= Index)
+            Index += _stageData.GetGridRowNum();
+            if (_stageData.GetGridRowNum() * _stageData.GetGridRowNum() <= Index)
             {
-                Index = Index % (_stageModel.GetGridRowNum() * _stageModel.GetGridRowNum());
+                Index = Index % (_stageData.GetGridRowNum() * _stageData.GetGridRowNum());
             }
         }
 
@@ -154,10 +154,10 @@ namespace Frontier.Stage
         public void Down()
         {
             StartLerpMove();
-            Index -= _stageModel.GetGridRowNum();
+            Index -= _stageData.GetGridRowNum();
             if (Index < 0)
             {
-                Index += _stageModel.GetGridRowNum() * _stageModel.GetGridRowNum();
+                Index += _stageData.GetGridRowNum() * _stageData.GetGridRowNum();
             }
         }
 
@@ -168,9 +168,9 @@ namespace Frontier.Stage
         {
             StartLerpMove();
             Index++;
-            if (Index % _stageModel.GetGridRowNum() == 0)
+            if (Index % _stageData.GetGridRowNum() == 0)
             {
-                Index -= _stageModel.GetGridRowNum();
+                Index -= _stageData.GetGridRowNum();
             }
         }
 
@@ -181,9 +181,9 @@ namespace Frontier.Stage
         {
             StartLerpMove();
             Index--;
-            if ((Index + 1) % _stageModel.GetGridRowNum() == 0)
+            if ((Index + 1) % _stageData.GetGridRowNum() == 0)
             {
-                Index += _stageModel.GetGridRowNum();
+                Index += _stageData.GetGridRowNum();
             }
         }
 
