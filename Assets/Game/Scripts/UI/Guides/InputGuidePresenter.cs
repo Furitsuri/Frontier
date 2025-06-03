@@ -37,6 +37,8 @@ public class InputGuidePresenter : MonoBehaviour
 
     // キーガイドバーの入出状態
     private FadeMode _fadeMode = FadeMode.NEUTRAL;
+    // 描画優先度
+    private int _sortingOrder = 0;
     // 現在の背景の幅
     private float _currentBackGroundWidth = 0f;
     // ガイドが遷移する以前の背景の幅
@@ -101,6 +103,54 @@ public class InputGuidePresenter : MonoBehaviour
     }
 
     /// <summary>
+    /// 初期化します
+    /// </summary>
+    /// <param name="inputCodes">入力可能となる情報</param>
+    public void Init(InputCode[] inputCodes)
+    {
+        _inputCodes = Array.AsReadOnly(inputCodes);
+
+        Debug.Assert(spriteTailNoString.Length == (int)Constants.GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
+
+        _guideUiArrray  = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
+        _rectTransform  = GetComponent<RectTransform>();
+        _layoutGrp      = GetComponent<HorizontalLayoutGroup>();
+
+        NullCheck.AssertNotNull(_hierarchyBld);
+        NullCheck.AssertNotNull(_rectTransform);
+        NullCheck.AssertNotNull(_layoutGrp);
+
+        LoadSprites();
+
+        InitGuideUi();
+    }
+
+    /// <summary>
+    /// 現在参照している入力コード情報から画面上に表示する入力ガイドを登録します
+    /// </summary>
+    public void RegisterInputGuides()
+    {
+        for (int i = 0; i < _inputCodes.Count; ++i)
+        {
+            var code = _inputCodes[i];
+
+            _guideUiArrray[i].Register(_sprites, new InputGuideUI.InputGuide(code.Icon, code.Explanation));
+        }
+
+        // フェード状態の遷移
+        TransitFadeMode();
+    }
+
+    /// <summary>
+    /// 描画優先度の値を設定します
+    /// </summary>
+    /// <param name="order">優先度値</param>
+    public void SetSortingOrder(int order)
+    {
+        _sortingOrder = order;
+    }
+
+    /// <summary>
     /// ガイドUiを初期化します
     /// </summary>
     private void InitGuideUi()
@@ -115,6 +165,7 @@ public class InputGuidePresenter : MonoBehaviour
             guideUi.Register(_sprites, guide);
             _guideUiArrray[i] = guideUi;
             _guideUiArrray[i].gameObject.SetActive(code.EnableCb != null && code.EnableCb());
+            _guideUiArrray[i].SetSpriteSortingOrder(_sortingOrder);
         }
     }
 
@@ -270,44 +321,5 @@ public class InputGuidePresenter : MonoBehaviour
         {
             guideUi.gameObject.SetActive(false);
         }
-    }
-
-    /// <summary>
-    /// 初期化します
-    /// </summary>
-    /// <param name="inputCodes">入力可能となる情報</param>
-    public void Init( InputCode[] inputCodes )
-    {
-        _inputCodes = Array.AsReadOnly(inputCodes);
-
-        Debug.Assert(spriteTailNoString.Length == (int)Constants.GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
-
-        _guideUiArrray  = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
-        _rectTransform  = GetComponent<RectTransform>();
-        _layoutGrp      = GetComponent<HorizontalLayoutGroup>();
-
-        NullCheck.AssertNotNull(_hierarchyBld);
-        NullCheck.AssertNotNull(_rectTransform);
-        NullCheck.AssertNotNull(_layoutGrp);
-
-        LoadSprites();
-
-        InitGuideUi();
-    }
-
-    /// <summary>
-    /// 現在参照している入力コード情報から画面上に表示する入力ガイドを登録します
-    /// </summary>
-    public void RegisterInputGuides()
-    {
-        for( int i = 0; i < _inputCodes.Count; ++i )
-        {
-            var code = _inputCodes[i];
-
-            _guideUiArrray[i].Register(_sprites, new InputGuideUI.InputGuide(code.Icon, code.Explanation));
-        }
-
-        // フェード状態の遷移
-        TransitFadeMode();
     }
 }

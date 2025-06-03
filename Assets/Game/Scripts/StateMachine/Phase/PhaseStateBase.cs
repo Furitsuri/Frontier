@@ -51,7 +51,7 @@ namespace Frontier
         /// </summary>
         virtual public void Pause()
         {
-            _inputFcd.ResetInputCodes();
+            _inputFcd.UnregisterInputCodes();
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Frontier
         /// </summary>
         virtual public void Exit()
         {
-            _inputFcd.ResetInputCodes();
+            _inputFcd.UnregisterInputCodes();
 
             // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
             _tutorialFcd.TryShowTutorial();

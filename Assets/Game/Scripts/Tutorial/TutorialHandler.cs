@@ -98,7 +98,7 @@ public class TutorialHandler : IFocusRoutine
         // チュートリアルの終了
         _tutorialView.Exit();
         // 入力コードの解除
-        _inputFcd.ResetInputCodes();
+        _inputFcd.UnregisterInputCodes();
         // 表示済みのトリガータイプをクリア
         TutorialFacade.Clear();
 
@@ -266,7 +266,7 @@ public class TutorialHandler : IFocusRoutine
         _focusState = FocusState.PAUSE;
 
         // 入力コードの解除
-        _inputFcd.ResetInputCodes();
+        _inputFcd.UnregisterInputCodes();
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ public class TutorialHandler : IFocusRoutine
         // チュートリアルの終了
         _tutorialView.Exit();
         // 入力コードの解除
-        _inputFcd.ResetInputCodes();
+        _inputFcd.UnregisterInputCodes();
     }
 
     /// <summary>
