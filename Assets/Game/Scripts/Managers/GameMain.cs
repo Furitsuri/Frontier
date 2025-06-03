@@ -46,7 +46,7 @@ namespace Frontier
         private BattleRoutineController _btlRtnCtrl;
         private GamePhase _Phase;
 #if UNITY_EDITOR
-        private DebugModeController _debugModeCtrl;
+        private DebugModeFacade _debugModeFcd;
 #endif // UNITY_EDITOR
 
         public static GameMain instance = null;
@@ -92,10 +92,10 @@ namespace Frontier
             }
 
 #if UNITY_EDITOR
-            if (_debugModeCtrl == null)
+            if (_debugModeFcd == null)
             {
-                _debugModeCtrl = _hierarchyBld.InstantiateWithDiContainer<DebugModeController>();
-                NullCheck.AssertNotNull(_debugModeCtrl);
+                _debugModeFcd = _hierarchyBld.InstantiateWithDiContainer<DebugModeFacade>();
+                NullCheck.AssertNotNull(_debugModeFcd);
             }
 #endif // UNITY_EDITOR
         }
@@ -108,9 +108,12 @@ namespace Frontier
             StartCoroutine(GameFlow());
         }
 
-        private void Update()
+        void Update()
         {
             _focusRtnCtrl.Update();
+#if UNITY_EDITOR
+            _debugModeFcd.Update();
+#endif // UNITY_EDITOR
         }
 
         /// <summary>
@@ -130,7 +133,7 @@ namespace Frontier
 
 #if UNITY_EDITOR
             // デバッグモードの初期化
-            _debugModeCtrl.Init();
+            _debugModeFcd.Init();
             // デバッグモードへ移行するための入力コードを登録
             ResgiterDebugInputCode();
 #endif // UNITY_EDITOR
@@ -224,8 +227,7 @@ namespace Frontier
         {
             if( !isDebugTranstion ) return false;
 
-            _inputFcd.ResetInputCodes( true );
-            _debugModeCtrl.OpenMenu();
+            _debugModeFcd.OpenDebugMenu();
 
             return true;
         }

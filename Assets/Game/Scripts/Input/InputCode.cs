@@ -18,7 +18,7 @@ public class InputCode
     // 有効・無効を判定するコールバック
     public EnableCallback EnableCb;
     // 入力受付のコールバック
-    private IAcceptInputBase AcceptInput;
+    public IAcceptInputBase AcceptInput;
     // 入力処理を有効にするインターバル
     public float InputInterval;
     // 入力処理を行った最後の時間
@@ -67,6 +67,14 @@ public class InputCode
 
         // 最後の入力時間を記録
         if( hasInput ) SetInputLastTime(Time.time);
+    }
+
+    /// <summary>
+    /// innterval時間をリセットします
+    /// </summary>
+    public void ResetIntervalTime()
+    {
+        InputLastTime = 0f;
     }
 
     /// <summary>

@@ -58,8 +58,6 @@ public class InputGuideUI : MonoBehaviour
     private RectTransform _rectTransform;
     // 子のオブジェクト
     private GameObject[] _objectChildren;
-    // ガイド幅
-    private float _width = 0f;
 
     void Awake()
     {
@@ -77,8 +75,40 @@ public class InputGuideUI : MonoBehaviour
         _rectTransform = gameObject.GetComponent<RectTransform>();
 
         Debug.Assert(_rectTransform != null, "GetComponent of \"RectTransform\" failed.");
+    }
 
-        _width = _rectTransform.rect.width;
+    /// <summary>
+    /// キーガイドを設定します
+    /// <param name="sprites">参照するスプライト配列</param>
+    /// <param name="guide">このUIに設定するガイド情報</param>
+    /// </summary>
+    public void Register(Sprite[] sprites, InputGuide guide)
+    {
+        InputGuideValue             = guide;
+        GuideSpriteRenderer.sprite  = sprites[(int)InputGuideValue._icon];
+        GuideExplanation.text       = InputGuideValue._explanation;
+
+        // Z軸の位置を0に設定, スケール値を1に設定
+        transform.localPosition     = new Vector3(transform.localPosition.x, transform.localPosition.y, 0f);
+        _rectTransform.localScale   = Vector3.one;
+        
+        // ガイド幅を調整
+        AdjustWidth();
+    }
+
+    /// <summary>
+    /// スプライトの描画優先度を設定します
+    /// </summary>
+    /// <param name="order">優先度値</param>
+    public void SetSpriteSortingOrder(int order)
+    {   if (GuideSpriteRenderer != null)
+        {
+            GuideSpriteRenderer.sortingOrder = order;
+        }
+        else
+        {
+            Debug.LogError("GuideSpriteRenderer is not assigned in InputGuideUI.");
+        }
     }
 
     /// <summary>
@@ -97,24 +127,5 @@ public class InputGuideUI : MonoBehaviour
 
         var guideWidth = textPosX + textRectTransform.sizeDelta.x;
         _rectTransform.sizeDelta = new Vector2(guideWidth, _rectTransform.sizeDelta.y);
-    }
-
-    /// <summary>
-    /// キーガイドを設定します
-    /// <param name="sprites">参照するスプライト配列</param>
-    /// <param name="guide">このUIに設定するガイド情報</param>
-    /// </summary>
-    public void Register(Sprite[] sprites, InputGuide guide)
-    {
-        InputGuideValue = guide;
-        GuideSpriteRenderer.sprite = sprites[(int)InputGuideValue._icon];
-        var position = transform.localPosition;
-        position.z = 0;
-        transform.localPosition = position;
-        _rectTransform.localScale = Vector3.one;
-        GuideExplanation.text = InputGuideValue._explanation;
-
-        // ガイド幅を調整
-        AdjustWidth();
     }
 }

@@ -10,5 +10,19 @@ namespace Frontier
 
         [Header("TutorialPresenter")]
         public TutorialPresenter TutorialView;  // チュートリアル表示
+
+        void Awake()
+        {
+            var canvas = GetComponent<Canvas>();
+            if (canvas == null)
+            {
+                LogHelper.LogError("Canvas component is missing on GeneralUISystem GameObject.");
+            }
+            else
+            {
+                var sortingOrder = canvas.sortingOrder;
+                InputGuideView.SetSortingOrder(sortingOrder);
+            }
+        }
     }
 }

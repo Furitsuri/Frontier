@@ -1,8 +1,10 @@
 ﻿using Frontier;
 using System;
 using UnityEngine;
+using System.Linq;
 using Zenject;
 using static Constants;
+using Cysharp.Threading.Tasks;
 
 public class InputFacade
 {
@@ -11,35 +13,14 @@ public class InputFacade
     private UISystem _uiSystem                  = null;
     private InputHandler _inputHdl              = null;
     private InputCode[] _inputCodes;
+    // 一時保存用の入力コード
+    private InputCode[] _backupInputCodes;
 
     [Inject]
     public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
-    }
-
-    /// <summary>
-    /// 判定対象となる入力コードを初期化します
-    /// </summary>
-    private void InitInputCodes()
-    {
-        _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
-        {
-            ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f ),
-            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f ),
-            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
-            ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
-            ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
-            ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f ),
-            ( Constants.GuideIcon.SUB1,                "", null, null, 0.0f ),
-            ( Constants.GuideIcon.SUB2,                "", null, null, 0.0f ),
-            ( Constants.GuideIcon.SUB3,                "", null, null, 0.0f ),
-            ( Constants.GuideIcon.SUB4,                "", null, null, 0.0f ),
-#if UNITY_EDITOR
-            ( Constants.GuideIcon.DEBUG_MENU,          "", null, null, 0.0f )
-#endif  // UNITY_EDITOR
-        };
     }
 
     /// <summary>
@@ -64,14 +45,20 @@ public class InputFacade
 
         // 入力コード情報を受け渡す
         _inputHdl.Init(_inputGuideView, _inputCodes);
-        _inputGuideView.Init(_inputCodes);    
+        _inputGuideView.Init(_inputCodes);
+
+        _backupInputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX];
+        for( int i = 0; i < _inputCodes.Length; ++i )
+        {
+            _backupInputCodes[i] = new InputCode(GuideIcon.ALL_CURSOR, "", null, null, 0f);
+        }
     }
 
     /// <summary>
     /// 判定対象となる入力コードを初期化します
     /// Iconは変更しないため、そのままにします
     /// </summary>
-    public void ResetInputCodes( bool resetDebugMenu = false )
+    public void UnregisterInputCodes( bool resetDebugMenu = false )
     {
         for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
         {
@@ -121,8 +108,84 @@ public class InputFacade
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
     public void ReRegisterInputCodes<T>(InputCode[] args)
     {
-        ResetInputCodes();
+        UnregisterInputCodes();
 
         RegisterInputCodes( args );
+    }
+
+    /// <summary>
+    /// 現在の入力コードをバックアップします。
+    /// </summary>
+    public void BackupInputCodes()
+    {
+        ResetIntervalTimeOnInputCodes();
+
+        // TODO : 参照渡しではなく、値渡しでバックアップを取るようにしているが、
+        //        もう少しスマートな記述にできないか検討する
+        for ( int i = 0; i < _inputCodes.Length; ++i )
+        {
+            _backupInputCodes[i].Icon           = _inputCodes[i].Icon;
+            _backupInputCodes[i].Explanation    = _inputCodes[i].Explanation;
+            _backupInputCodes[i].EnableCb       = _inputCodes[i].EnableCb;
+            _backupInputCodes[i].AcceptInput    = _inputCodes[i].AcceptInput;
+            _backupInputCodes[i].InputInterval  = _inputCodes[i].InputInterval;
+        }
+    }
+
+    /// <summary>
+    /// バックアップした入力コードを復元します。
+    /// </summary>
+    public void RestoreInputCodes()
+    {
+        if (_backupInputCodes == null)
+        {
+            LogHelper.LogError("No backup input codes to restore.");
+            return;
+        }
+
+        for (int i = 0; i < _inputCodes.Length; ++i)
+        {
+            _inputCodes[i].Icon             = _backupInputCodes[i].Icon;
+            _inputCodes[i].Explanation      = _backupInputCodes[i].Explanation;
+            _inputCodes[i].EnableCb         = _backupInputCodes[i].EnableCb;
+            _inputCodes[i].AcceptInput      = _backupInputCodes[i].AcceptInput;
+            _inputCodes[i].InputInterval    = _backupInputCodes[i].InputInterval;
+        }
+
+        _inputGuideView.RegisterInputGuides();
+    }
+
+    /// <summary>
+    /// 判定対象となる入力コードを初期化します
+    /// </summary>
+    private void InitInputCodes()
+    {
+        _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
+        {
+            ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f ),
+            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f ),
+            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
+            ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
+            ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
+            ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB1,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB2,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB3,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.SUB4,                "", null, null, 0.0f ),
+#if UNITY_EDITOR
+            ( Constants.GuideIcon.DEBUG_MENU,          "", null, null, 0.0f )
+#endif  // UNITY_EDITOR
+        };
+    }
+
+    /// <summary>
+    /// 入力コードのインターバル時間をリセットします。
+    /// </summary>
+    private void ResetIntervalTimeOnInputCodes()
+    {
+        for (int i = 0; i < _inputCodes.Length; ++i)
+        {
+            _inputCodes[i].ResetIntervalTime();
+        }
     }
 }
