@@ -106,9 +106,9 @@ namespace Frontier
         public override void RegisterInputCodes()
         {
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR, "Move", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL),
-                (GuideIcon.CONFIRM, "Decision", CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f),
-                (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
+                (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  GRID_DIRECTION_INPUT_INTERVAL),
+                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
+                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault,   new AcceptBooleanInput(AcceptCancel),       0.0f)
              );
         }
 
