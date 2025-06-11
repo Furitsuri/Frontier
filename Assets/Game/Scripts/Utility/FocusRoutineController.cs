@@ -8,12 +8,15 @@ using UnityEngine;
 /// </summary>
 public enum FocusRoutinePriority
 {
-    NONE = -1,
-    TUTORIAL,
-    EVENT,
-    BATTLE,
+    NONE    = -1,
 
-    MAX,
+    DEBUG_EDITOR,   // デバッグエディター
+    DEBUG_MENU,     // デバッグメニュー
+    TUTORIAL,       // チュートリアル
+    EVENT,          // イベント
+    BATTLE,         // 戦闘
+
+    NUM,
 }
 
 /// <summary>
@@ -22,7 +25,7 @@ public enum FocusRoutinePriority
 public class FocusRoutineController
 {
     IFocusRoutine _currentRoutine = null;
-    IFocusRoutine[] _routines = new IFocusRoutine[(int)FocusRoutinePriority.BATTLE + 1];
+    IFocusRoutine[] _routines = new IFocusRoutine[(int)FocusRoutinePriority.NUM];
 
     /// <summary>
     /// 初期化します
@@ -52,6 +55,8 @@ public class FocusRoutineController
             return;
         }
 
+        _currentRoutine.Update();
+
         UpdateRoutineIfNextIsDue();
     }
 
@@ -59,12 +64,10 @@ public class FocusRoutineController
     /// ルーチンを優先度を指定した上で登録します
     /// </summary>
     /// <param name="routine">登録するルーチン</param>
-    /// <param name="priority">登録するルーチンの優先度</param>
-    public void Register(IFocusRoutine routine, int priorityIdx )
+    /// <param name="p">登録するルーチンの優先度</param>
+    public void Register(IFocusRoutine routine, int p )
     {
-        int p = (int)priorityIdx;
-
-        if (p < 0 || (int)FocusRoutinePriority.MAX <= p || _routines[p] != null) return;
+        if (p < 0 || (int)FocusRoutinePriority.NUM <= p || _routines[p] != null) return;
         _routines[p] = routine;
     }
 
@@ -75,7 +78,7 @@ public class FocusRoutineController
     public void RunRoutineAndPauseOthers(FocusRoutinePriority priority)
     {
         int p = (int)priority;
-        if (p < 0 || (int)FocusRoutinePriority.MAX <= p || _routines[p] == null)
+        if (p < 0 || (int)FocusRoutinePriority.NUM <= p || _routines[p] == null)
         {
             LogHelper.LogError("Invalid priority");
             return;
@@ -103,47 +106,50 @@ public class FocusRoutineController
     }
 
     /// <summary>
-    /// 次のルーチンが実行されるべきかを確認し、実行されるべきであれば現在のルーチンを中断して新しいルーチンを実行します
+    /// 優先して実行されるべきルーチンの存在を確認し、存在する場合は現在のルーチンを中断して新しいルーチンを実行します
     /// </summary>
     private void UpdateRoutineIfNextIsDue()
     {
         int currentPriority = _currentRoutine.GetPriority();
 
+        if( _currentRoutine.IsMatchFocusState( FocusState.EXIT_SCHEDULED ) )
+        {
+            // 現在のルーチンが終了予定の場合は、現在のルーチンを終了します
+            _currentRoutine.Exit();
+        }
+
         // ルーチンの優先度を確認し、優先度が高いものがあれば中断します
         for (int i = 0; i < _routines.Length; i++)
         {
-            if (_routines[i] == null) continue;
+            if (_routines[i] == null || _routines[i].IsMatchFocusState(FocusState.EXIT)) continue;
 
+            // 現在のルーチンより優先度の高いものに対する判定
             if (i < currentPriority)
             {
-                if (_routines[i].IsMatchFocusState(FocusState.RESERVE))
+                // 現在のルーチンが実行中で優先度の高いルーチンが実行予定の場合は、中断して新たに実行
+                if (_routines[i].IsMatchFocusState(FocusState.RUN_SCHEDULED))
                 {
-                    // 現在のルーチンを中断します
-                    _currentRoutine.Pause();
+                    if (_currentRoutine.IsMatchFocusState(FocusState.RUN))
+                    {
+                        _currentRoutine.Pause();
+                    }
+                    
                     _currentRoutine = _routines[i];
-
-                    // 中断したルーチンの場合は、再開します
-                    if (_routines[i].IsMatchFocusState(FocusState.PAUSE))
-                    {
-                        _currentRoutine.Restart();
-                    }
-                    else
-                    {
-                        _currentRoutine.Run();
-                    }
+                    _currentRoutine.Run();
 
                     return;
                 }
             }
+            // 現在のルーチンより優先度の低いものに対する判定
             else
             {
-                // 現在のルーチンより優先度が高いルーチンが予約されておらず、かつ、現在のルーチンの実行を継続する場合はスルーします
+                // 現在のルーチンより優先度が高いルーチンが予約されておらず、かつ、現在のルーチンの実行を継続する場合はスルー
                 if (_currentRoutine.IsMatchFocusState(FocusState.RUN)) return;
 
-                // 現在のルーチンについては判定しません(RUN以外が指定されている場合)
+                // 現在のルーチンについては判定しない(RUN以外が指定されている場合)
                 if (currentPriority == i) continue;
 
-                // 中断中のルーチンの中で、現在のルーチンの次に優先度が高いものを再開します
+                // 中断中のルーチンのうち、現在のルーチンの次に優先度が高いものを再開
                 if (_routines[i].IsMatchFocusState(FocusState.PAUSE))
                 {
                     _currentRoutine = _routines[i];

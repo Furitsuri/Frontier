@@ -7,14 +7,14 @@ using Zenject;
 using static Constants;
 using System;
 using static TutorialFacade;
+using Unity.VisualScripting;
 
-public class TutorialHandler : IFocusRoutine
+public class TutorialHandler : FocusRoutineBase
 {
     private InputFacade _inputFcd           = null;
     private TutorialPresenter _tutorialView = null;
     private TutorialFileLoader _tutorialLdr = null;
     private int _currentPageIndex           = 0;
-    private FocusState _focusState          = FocusState.NONE;
 
     // チュートリアルデータの参照
     private ReadOnlyCollection<TutorialData> _tutorialDatas = null;
@@ -33,6 +33,8 @@ public class TutorialHandler : IFocusRoutine
     /// <param name="turtorialView">チュートリアル表示クラス</param>
     public void Init(TutorialPresenter turtorialView)
     {
+        base.Init();
+
         _tutorialView = turtorialView;
 
         GameObject obj = GameObject.Find("Tutorial");
@@ -48,8 +50,6 @@ public class TutorialHandler : IFocusRoutine
         }
 
         _tutorialLdr.LoadData();
-
-        _focusState = FocusState.PAUSE;
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class TutorialHandler : IFocusRoutine
         _tutorialView.ShowTutorial(_displayContents, _displayContents.Count, matchingData.GetFlagBitIdx);
 
         // 実行を予約
-        _focusState = FocusState.RESERVE;
+        ScheduleRun();
 
         return true;
     }
@@ -84,25 +84,10 @@ public class TutorialHandler : IFocusRoutine
     private void RegistInputCodes()
     {
         _inputFcd.RegisterInputCodes(
-            (GuideIcon.HORIZONTAL_CURSOR,   "PAGE TRANSACTION", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  DIRECTION_INPUT_INTERVAL),
+            (GuideIcon.HORIZONTAL_CURSOR,   "PAGE TRANSACTION", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL),
             (GuideIcon.CONFIRM,             "NEXT",             CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
             (GuideIcon.CANCEL,              "BACK",             CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel),       0.0f)
          );
-    }
-
-    /// <summary>
-    /// チュートリアルを終了します
-    /// </summary>
-    private void ExitTutorial()
-    {
-        // チュートリアルの終了
-        _tutorialView.Exit();
-        // 入力コードの解除
-        _inputFcd.UnregisterInputCodes();
-        // 表示済みのトリガータイプをクリア
-        TutorialFacade.Clear();
-
-        _focusState = FocusState.EXIT;
     }
 
     /// <summary>
@@ -141,7 +126,7 @@ public class TutorialHandler : IFocusRoutine
     /// <returns>受付可否</returns>
     private bool CanAcceptDirection()
     {
-        return _focusState == FocusState.RUN;
+        return IsMatchFocusState( FocusState.RUN );
     }
 
     /// <summary>
@@ -150,7 +135,7 @@ public class TutorialHandler : IFocusRoutine
     /// <returns>受付可否</returns>
     private bool CanAcceptConfirm()
     {
-        return _focusState == FocusState.RUN;
+        return IsMatchFocusState(FocusState.RUN);
     }
 
     /// <summary>
@@ -159,7 +144,7 @@ public class TutorialHandler : IFocusRoutine
     /// <returns>受付可否</returns>
     private bool CanAcceptCancel()
     {
-        return _focusState == FocusState.RUN;
+        return IsMatchFocusState(FocusState.RUN);
     }
 
     /// <summary>
@@ -196,8 +181,8 @@ public class TutorialHandler : IFocusRoutine
 
         if (_currentPageIndex >= _displayContents.Count - 1)
         {
-            // チュートリアルの終了
-            ExitTutorial();
+            // チュートリアルの終了を予約
+            ScheduleExit();
         }
         else
         {
@@ -217,8 +202,8 @@ public class TutorialHandler : IFocusRoutine
     {
         if (!isInput) return false;
 
-        // チュートリアルの終了
-        ExitTutorial();
+        // チュートリアルの終了を予約
+        ScheduleExit();
 
         return true;
     }
@@ -241,17 +226,22 @@ public class TutorialHandler : IFocusRoutine
         return null;
     }
 
-    public void Run()
+    // =========================================================
+    // IFocusRoutine 実装
+    // =========================================================
+    #region IFocusRoutine Implementation
+
+    override public void Run()
     {
-        _focusState = FocusState.RUN;
+        base.Run();
 
         // 入力コードを登録
         RegistInputCodes();
     }
 
-    public void Restart()
+    override public void Restart()
     {
-        _focusState = FocusState.RUN;
+        base.Restart();
 
         // 入力コードを再登録
         RegistInputCodes();
@@ -261,9 +251,9 @@ public class TutorialHandler : IFocusRoutine
     /// IFocusRoutineの実装です
     /// 処理を中断します
     /// </summary>
-    public void Pause()
+    override public void Pause()
     {
-        _focusState = FocusState.PAUSE;
+        base.Pause();
 
         // 入力コードの解除
         _inputFcd.UnregisterInputCodes();
@@ -273,25 +263,19 @@ public class TutorialHandler : IFocusRoutine
     /// IFocusRoutineの実装です
     /// 処理を停止します
     /// </summary>
-    public void Exit()
+    override public void Exit()
     {
-        _focusState = FocusState.EXIT;
+        base.Exit();
 
         // チュートリアルの終了
         _tutorialView.Exit();
         // 入力コードの解除
         _inputFcd.UnregisterInputCodes();
+        // 表示済みのトリガータイプをクリア
+        TutorialFacade.Clear();
     }
 
-    /// <summary>
-    /// IFocusRoutineの実装です
-    /// 指定のFocusStateと一致するか否かを判定します
-    /// </summary>
-    /// <returns>一致の成否</returns>
-    public bool IsMatchFocusState(FocusState state)
-    {
-        return _focusState == state;
-    }
+    override public int GetPriority() { return (int)FocusRoutinePriority.TUTORIAL; }
 
-    public int GetPriority() { return (int)FocusRoutinePriority.TUTORIAL; }
+    #endregion
 }

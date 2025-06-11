@@ -175,7 +175,7 @@ namespace Frontier
         {
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "TARGET SELECT",  CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), DIRECTION_INPUT_INTERVAL),
+               (GuideIcon.ALL_CURSOR, "TARGET SELECT",  CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL),
                (GuideIcon.CONFIRM, "CONFIRM",           CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f),
                (GuideIcon.CANCEL, "TURN END",           CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f),
                (GuideIcon.SUB1, _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f),

@@ -25,6 +25,21 @@ public class InputCode
     private float InputLastTime;
 
     /// <summary>
+    /// コピー元の入力コードをコピー先にコピーします
+    /// </summary>
+    /// <param name="src">コピー元</param>
+    /// <param name="dst">コピー先</param>
+    static public void CopyInputCode(InputCode src, InputCode dst)
+    {
+        dst.Icon            = src.Icon;
+        dst.Explanation     = src.Explanation;
+        dst.EnableCb        = src.EnableCb;
+        dst.AcceptInput     = src.AcceptInput;
+        dst.InputInterval   = src.InputInterval;
+        dst.InputLastTime   = src.InputLastTime;
+    }
+
+    /// <summary>
     /// 入力コードを設定します
     /// </summary>
     /// <param name="enableCb">入力受付判定のコールバック</param>
