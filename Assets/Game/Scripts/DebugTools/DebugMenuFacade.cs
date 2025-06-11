@@ -12,18 +12,18 @@ public enum DebugMainMenu
 
     STAGE_EDITOR,   // ステージエディター
     BATTLE,         // 戦闘
-    Tutorial,       // チュートリアル
+    TUTORIAL,       // チュートリアル
 
     MAX,
 }
 
-public class DebugModeFacade
+public class DebugMenuFacade
 {
-    private HierarchyBuilder _hierarchyBld      = null;
-    private UISystem _uiSystem                  = null;
-    private DebugMenuHandler _debugMenuHdlr     = null;
-    private DebugMenuPresenter _debugMenuView   = null;
-    private GameObject _debugUi                 = null;
+    private HierarchyBuilder _hierarchyBld          = null;
+    private UISystem _uiSystem                      = null;
+    private DebugMenuHandler _debugMenuHnd          = null;
+    private DebugMenuPresenter _debugMenuView       = null;
+    private GameObject _debugUi                     = null;
 
     [Inject]
     public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
@@ -46,10 +46,10 @@ public class DebugModeFacade
 
         _debugUi.SetActive(false); // 初期状態では非表示
 
-        if (_debugMenuHdlr == null)
+        if (_debugMenuHnd == null)
         {
-            _debugMenuHdlr = _hierarchyBld.InstantiateWithDiContainer<DebugMenuHandler>();
-            NullCheck.AssertNotNull(_debugMenuHdlr);
+            _debugMenuHnd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuHandler>();
+            NullCheck.AssertNotNull(_debugMenuHnd);
         }
 
         if( _debugMenuView == null )
@@ -59,18 +59,7 @@ public class DebugModeFacade
         }
 
         _debugMenuView.Init();
-        _debugMenuHdlr.Init(_debugMenuView, ToggleDebugCallback);
-    }
-
-    /// <summary>
-    /// 更新を行います
-    /// </summary>
-    public void Update()
-    {
-        if (!_debugUi.activeSelf) return;
-
-        // デバッグメニューの更新
-        _debugMenuHdlr.Update();
+        _debugMenuHnd.Init(_debugMenuView, ToggleDebugCallback);
     }
 
     /// <summary>
@@ -78,8 +67,7 @@ public class DebugModeFacade
     /// </summary>
     public void OpenDebugMenu()
     {
-        // デバッグメニューを開く
-        _debugMenuHdlr.OpenMenu();
+        _debugMenuHnd.ScheduleRun();
     }
 
     /// <summary>
@@ -88,5 +76,14 @@ public class DebugModeFacade
     public void ToggleDebugCallback()
     {
         _debugUi.SetActive(!_debugUi.activeSelf);
+    }
+
+    /// <summary>
+    /// デバッグメニュー処理を行うハンドラを取得します
+    /// </summary>
+    /// <returns>ハンドラ</returns>
+    public IFocusRoutine GetFocusRoutine()
+    {
+        return _debugMenuHnd;
     }
 }

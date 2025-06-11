@@ -47,6 +47,14 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 現在のステートを再開します
+        /// </summary>
+        virtual public void Restart()
+        {
+            RegisterInputCodes();
+        }
+
+        /// <summary>
         /// 現在のステートを中断します
         /// </summary>
         virtual public void Pause()

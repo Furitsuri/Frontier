@@ -62,6 +62,14 @@ public class DebugMenuPresenter : MonoBehaviour
     }
 
     /// <summary>
+    /// デバッグメニューの表示/非表示を切り替えます
+    /// </summary>
+    public void ToggleMenuVisibility()
+    {         
+        gameObject.SetActive(!gameObject.activeSelf);
+    }
+
+    /// <summary>
     /// デバッグのメニューリストを初期化します
     /// </summary>
     private void InitDebugMenuList()

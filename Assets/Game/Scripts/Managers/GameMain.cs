@@ -46,16 +46,17 @@ namespace Frontier
         private BattleRoutineController _btlRtnCtrl;
         private GamePhase _Phase;
 #if UNITY_EDITOR
-        private DebugModeFacade _debugModeFcd;
+        private DebugMenuFacade _debugMenuFcd;
 #endif // UNITY_EDITOR
 
         public static GameMain instance = null;
 
         [Inject]
-        public void Construct( InputFacade inputFcd, TutorialFacade tutorialFcd, BattleRoutineController btlRtnCtrl )
+        public void Construct( InputFacade inputFcd, TutorialFacade tutorialFcd, FocusRoutineController focusRoutineCtrl, BattleRoutineController btlRtnCtrl )
         {
             _inputFcd       = inputFcd;
             _tutorialFcd    = tutorialFcd;
+            _focusRtnCtrl   = focusRoutineCtrl;
             _btlRtnCtrl     = btlRtnCtrl;
         }
 
@@ -77,12 +78,6 @@ namespace Frontier
 
             DontDestroyOnLoad(gameObject);
 
-            if ( _focusRtnCtrl == null )
-            {
-                _focusRtnCtrl = _hierarchyBld.InstantiateWithDiContainer<FocusRoutineController>();
-                NullCheck.AssertNotNull(_focusRtnCtrl);
-            }
-
             Debug.Assert(_hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。");
             Debug.Assert(_inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。");
 
@@ -92,10 +87,10 @@ namespace Frontier
             }
 
 #if UNITY_EDITOR
-            if (_debugModeFcd == null)
+            if (_debugMenuFcd == null)
             {
-                _debugModeFcd = _hierarchyBld.InstantiateWithDiContainer<DebugModeFacade>();
-                NullCheck.AssertNotNull(_debugModeFcd);
+                _debugMenuFcd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>();
+                NullCheck.AssertNotNull(_debugMenuFcd);
             }
 #endif // UNITY_EDITOR
         }
@@ -111,9 +106,6 @@ namespace Frontier
         void Update()
         {
             _focusRtnCtrl.Update();
-#if UNITY_EDITOR
-            _debugModeFcd.Update();
-#endif // UNITY_EDITOR
         }
 
         /// <summary>
@@ -127,15 +119,14 @@ namespace Frontier
             _inputFcd.Init();
             // チュートリアル関連の初期化
             _tutorialFcd.Init();
-
             // 戦闘マネージャの初期化
             // _btlRtnCtrl.Init();
 
 #if UNITY_EDITOR
             // デバッグモードの初期化
-            _debugModeFcd.Init();
+            _debugMenuFcd.Init();
             // デバッグモードへ移行するための入力コードを登録
-            ResgiterDebugInputCode();
+            ResgiterInputCodeForDebugTransition();
 #endif // UNITY_EDITOR
 
             InitFocusRoutine();
@@ -195,18 +186,22 @@ namespace Frontier
         private void InitFocusRoutine()
         {
             _focusRtnCtrl.Init();
-            _focusRtnCtrl.Register(_btlRtnCtrl, _btlRtnCtrl.GetPriority());
+#if UNITY_EDITOR
+            _focusRtnCtrl.Register(_debugMenuFcd.GetFocusRoutine(), _debugMenuFcd.GetFocusRoutine().GetPriority());
+#endif // UNITY_EDITOR
             _focusRtnCtrl.Register(_tutorialFcd.GetFocusRoutine(), _tutorialFcd.GetFocusRoutine().GetPriority());
+            _focusRtnCtrl.Register(_btlRtnCtrl, _btlRtnCtrl.GetPriority());
             _focusRtnCtrl.RunRoutineAndPauseOthers(FocusRoutinePriority.BATTLE);
         }
 
 #if UNITY_EDITOR
         /// <summary>
         /// デバッグメニューを開くための入力コードを登録します。
+        /// ※この入力コードはUnity Editor上ではデバッグ状態以外の全ての状態で有効です。
         /// </summary>
-        private void ResgiterDebugInputCode()
+        private void ResgiterInputCodeForDebugTransition()
         {
-            _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f));
+            _inputFcd.RegisterInputCodeForDebugTransition((Constants.GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f));
         }
 
         /// <summary>
@@ -227,7 +222,7 @@ namespace Frontier
         {
             if( !isDebugTranstion ) return false;
 
-            _debugModeFcd.OpenDebugMenu();
+            _debugMenuFcd.OpenDebugMenu();
 
             return true;
         }

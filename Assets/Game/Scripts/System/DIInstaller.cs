@@ -11,6 +11,9 @@ namespace Frontier
 {
     public class DiInstaller : MonoInstaller
     {
+        [SerializeField]
+        private GameObject DebugEditorDriverPrefab = null;
+
         /// <summary>
         /// DIコンテナのバインド対象を設定します
         /// </summary>
@@ -18,6 +21,7 @@ namespace Frontier
         {
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
+            Container.Bind<FocusRoutineController>().AsSingle();
             Container.Bind<ISaveHandler<TutorialSaveData>>()
                  .To<TutorialSaveHandler>()
                  .AsSingle();
@@ -26,6 +30,11 @@ namespace Frontier
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
             Container.Bind<UISystem>().FromComponentInHierarchy().AsCached();
+#if UNITY_EDITOR
+            Container.Bind<DebugEditorMonoDriver>()
+                .FromComponentInNewPrefab(DebugEditorDriverPrefab)
+                .AsTransient();
+#endif // UNITY_EDITOR
         }
 
         /// <summary>

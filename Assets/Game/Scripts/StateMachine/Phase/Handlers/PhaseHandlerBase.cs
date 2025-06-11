@@ -73,11 +73,16 @@ namespace Frontier
             }
         }
 
+        virtual public void Restart()
+        {
+            // ステートの再開
+            CurrentNode.Restart();
+        }
+
         virtual public void Pause()
         {
             // ステートの一時停止
             CurrentNode.Pause();
-            // 入力コードの解除
         }
 
         virtual public void Exit()

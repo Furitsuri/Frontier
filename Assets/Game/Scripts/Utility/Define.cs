@@ -74,10 +74,11 @@
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
-    public const float DIRECTION_INPUT_INTERVAL = 0.13f;
-    public const float CONFIRM_INPUT_INTERVAL   = 0.0f;
-    public const float CANCEL_INPUT_INTERVAL    = 0.0f;
-    public const float OPTIONAL_INPUT_INTERVAL  = 0.0f;
+    public const float GRID_DIRECTION_INPUT_INTERVAL    = 0.13f;
+    public const float MENU_DIRECTION_INPUT_INTERVAL    = 0.23f;
+    public const float CONFIRM_INPUT_INTERVAL           = 0.0f;
+    public const float CANCEL_INPUT_INTERVAL            = 0.0f;
+    public const float OPTIONAL_INPUT_INTERVAL          = 0.0f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 

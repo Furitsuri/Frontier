@@ -13,8 +13,10 @@ public class InputFacade
     private UISystem _uiSystem                  = null;
     private InputHandler _inputHdl              = null;
     private InputCode[] _inputCodes;
-    // 一時保存用の入力コード
-    private InputCode[] _backupInputCodes;
+#if UNITY_EDITOR
+    private InputCode _debugTransitionInputCode = null;
+#endif // UNITY_EDITOR
+
 
     [Inject]
     public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
@@ -46,32 +48,20 @@ public class InputFacade
         // 入力コード情報を受け渡す
         _inputHdl.Init(_inputGuideView, _inputCodes);
         _inputGuideView.Init(_inputCodes);
-
-        _backupInputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX];
-        for( int i = 0; i < _inputCodes.Length; ++i )
-        {
-            _backupInputCodes[i] = new InputCode(GuideIcon.ALL_CURSOR, "", null, null, 0f);
-        }
     }
 
     /// <summary>
     /// 判定対象となる入力コードを初期化します
     /// Iconは変更しないため、そのままにします
     /// </summary>
-    public void UnregisterInputCodes( bool resetDebugMenu = false )
+    public void UnregisterInputCodes()
     {
         for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
         {
-#if UNITY_EDITOR
-            if( _inputCodes[i].Icon == Constants.GuideIcon.DEBUG_MENU && !resetDebugMenu )
-            {
-                // デバッグメニューは初期化しない
-                continue;
-            }
-#endif // UNITY_EDITOR
             _inputCodes[i].Explanation      = "";
             _inputCodes[i].EnableCb         = null;
-            _inputCodes[i].InputInterval    = 0.0f;
+            _inputCodes[i].ResetIntervalTime();
+            _inputCodes[i].SetInputLastTime(0.0f);
         }
     }
 
@@ -83,7 +73,15 @@ public class InputFacade
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
     public void RegisterInputCodes( params InputCode[] args )
     {
-        foreach( var arg in args )
+#if UNITY_EDITOR
+        // デバッグメニューに遷移するための入力コードをコピーさせる形で登録
+        if (_debugTransitionInputCode != null)
+        {   
+            InputCode.CopyInputCode(_debugTransitionInputCode, _inputCodes[(int)Constants.GuideIcon.DEBUG_MENU]);
+        }
+#endif // UNITY_EDITOR
+
+        foreach ( var arg in args )
         {
             // _inputCodesが未登録であれば登録する
             if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
@@ -100,6 +98,32 @@ public class InputFacade
         _inputGuideView.RegisterInputGuides();
     }
 
+#if UNITY_EDITOR
+    public void RegisterInputCodesInDebug(params InputCode[] args)
+    {
+        foreach (var arg in args)
+        {
+            // _inputCodesが未登録であれば登録する
+            if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
+            {
+                _inputCodes[(int)arg.Icon] = arg;
+            }
+            else
+            {
+                LogHelper.LogError($"InputCode is already registered. Icon: {arg.Icon}, Explanation: {arg.Explanation}");
+            }
+        }
+
+        // ガイドアイコンを登録
+        _inputGuideView.RegisterInputGuides();
+    }
+
+    public void RegisterInputCodeForDebugTransition( InputCode debugTransitionInputCode )
+    {
+        _debugTransitionInputCode = debugTransitionInputCode;
+    }
+#endif // UNITY_EDITOR
+
     /// <summary>
     /// 登録している入力コードを初期化した上で、
     /// 現在のゲーム遷移において有効とする操作入力を画面上に表示するガイドUIと併せて登録します。
@@ -111,48 +135,6 @@ public class InputFacade
         UnregisterInputCodes();
 
         RegisterInputCodes( args );
-    }
-
-    /// <summary>
-    /// 現在の入力コードをバックアップします。
-    /// </summary>
-    public void BackupInputCodes()
-    {
-        ResetIntervalTimeOnInputCodes();
-
-        // TODO : 参照渡しではなく、値渡しでバックアップを取るようにしているが、
-        //        もう少しスマートな記述にできないか検討する
-        for ( int i = 0; i < _inputCodes.Length; ++i )
-        {
-            _backupInputCodes[i].Icon           = _inputCodes[i].Icon;
-            _backupInputCodes[i].Explanation    = _inputCodes[i].Explanation;
-            _backupInputCodes[i].EnableCb       = _inputCodes[i].EnableCb;
-            _backupInputCodes[i].AcceptInput    = _inputCodes[i].AcceptInput;
-            _backupInputCodes[i].InputInterval  = _inputCodes[i].InputInterval;
-        }
-    }
-
-    /// <summary>
-    /// バックアップした入力コードを復元します。
-    /// </summary>
-    public void RestoreInputCodes()
-    {
-        if (_backupInputCodes == null)
-        {
-            LogHelper.LogError("No backup input codes to restore.");
-            return;
-        }
-
-        for (int i = 0; i < _inputCodes.Length; ++i)
-        {
-            _inputCodes[i].Icon             = _backupInputCodes[i].Icon;
-            _inputCodes[i].Explanation      = _backupInputCodes[i].Explanation;
-            _inputCodes[i].EnableCb         = _backupInputCodes[i].EnableCb;
-            _inputCodes[i].AcceptInput      = _backupInputCodes[i].AcceptInput;
-            _inputCodes[i].InputInterval    = _backupInputCodes[i].InputInterval;
-        }
-
-        _inputGuideView.RegisterInputGuides();
     }
 
     /// <summary>

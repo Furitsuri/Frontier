@@ -7,7 +7,7 @@ using Frontier.Combat;
 
 namespace Frontier.Battle
 {
-    public class BattleRoutineController : MonoBehaviour, IFocusRoutine
+    public class BattleRoutineController : FocusRoutineBaseWithMonoBehaviour
     {
         /// <summary>
         /// バトル状態の遷移
@@ -139,7 +139,7 @@ namespace Frontier.Battle
             _stgCtrl.UpdateGridInfo();
         }
 
-        void Update()
+        override public void Update()
         {
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             if (!Methods.IsDebugScene())
@@ -192,22 +192,6 @@ namespace Frontier.Battle
 
                 // StartCoroutine(InitNextPhase());
             }
-        }
-
-        /// <summary>
-        /// 各種パラメータを初期化させます
-        /// </summary>
-        public void Init()
-        {
-            _stgCtrl.Init(this);
-            _skillCtrl.Init(this);
-
-            // 初期フェイズを設定
-            _phase = BattlePhase.BATTLE_START;
-            // ファイル読込マネージャにカメラパラメータをロードさせる
-            _btlFileLoader.CameraParamLord(_battleCameraCtrl);
-            // スキルデータの読込
-            _btlFileLoader.SkillDataLord();
         }
 
         public IEnumerator Battle()
@@ -279,12 +263,37 @@ namespace Frontier.Battle
             _currentPhaseHdlr.Init();
         }
 
+        // =========================================================
+        // IFocusRoutineの実装
+        // =========================================================
+        #region IFocusRoutine Implementation
+
+        /// <summary>
+        /// 各種パラメータを初期化させます
+        /// </summary>
+        override public void Init()
+        {
+            // base.Init();
+
+            _stgCtrl.Init(this);
+            _skillCtrl.Init(this);
+
+            // 初期フェイズを設定
+            _phase = BattlePhase.BATTLE_START;
+            // ファイル読込マネージャにカメラパラメータをロードさせる
+            _btlFileLoader.CameraParamLord(_battleCameraCtrl);
+            // スキルデータの読込
+            _btlFileLoader.SkillDataLord();
+        }
+
         /// <summary>
         /// IFocusRoutineの実装です
         /// クラス内の処理を駆動します
         /// </summary>
-        public void Run()
+        override public void Run()
         {
+            base.Run();
+
             gameObject.SetActive(true);
         }
 
@@ -292,22 +301,22 @@ namespace Frontier.Battle
         /// IFocusRoutineの実装です
         /// 中断させていた処理を再始動します
         /// </summary>
-        public void Restart()
+        override public void Restart()
         {
+            base.Restart();
+
             gameObject.SetActive(true);
+
+            _currentPhaseHdlr.Restart();
         }
 
         /// <summary>
         /// IFocusRoutineの実装です
         /// 処理を中断します
         /// </summary>
-        public void Pause()
+        override public void Pause()
         {
-            if( _currentPhaseHdlr == null )
-            {
-                LogHelper.LogError("_currentPhaseHdlr is null");
-                return;
-            }
+            base.Pause();
 
             gameObject.SetActive(false);
 
@@ -318,35 +327,17 @@ namespace Frontier.Battle
         /// IFocusRoutineの実装です
         /// 処理を停止します
         /// </summary>
-        public void Exit()
+        override public void Exit()
         {
+            base.Exit();
+
             gameObject.SetActive(false);
 
             _currentPhaseHdlr.Exit();
         }
 
-        /// <summary>
-        /// IFocusRoutineの実装です
-        /// 指定のFocusStateと一致するか否かを判定します
-        /// </summary>
-        /// <returns>一致の成否</returns>
-        public bool IsMatchFocusState(FocusState state)
-        {
-            switch( state )
-                {
-                case FocusState.RUN:
-                case FocusState.RESERVE:
-                    return gameObject.activeSelf;
-                case FocusState.PAUSE:
-                case FocusState.EXIT:
-                    return !gameObject.activeSelf;
-                default:
-                    break;
-            }
+        override public int GetPriority() { return (int)FocusRoutinePriority.BATTLE; }
 
-            return false;
-        }
-
-        public int GetPriority() { return (int)FocusRoutinePriority.BATTLE; }
+        #endregion // IFocusRoutine Implementation
     }
 }
