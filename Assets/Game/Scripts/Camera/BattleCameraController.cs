@@ -69,7 +69,7 @@ namespace Frontier
         private List<CameraParamData[]> _rangedAtkCameraParamDatas;
         private CameraParamData[] _currentCameraParamDatas;
         private CameraMosaicEffect _mosaicEffectScript;
-        private UISystem _uiSystem = null;
+        private IUiSystem _uiSystem = null;
         // カメラ座標の基点となるトランスフォーム
         private Transform _cameraBaseTransform;
         // カメラの被写体座標の基点となるトランスフォーム
@@ -98,7 +98,7 @@ namespace Frontier
         private float _yaw                  = 0.0f;
 
         [Inject]
-        public void Construct( UISystem uiSystem )
+        public void Construct( IUiSystem uiSystem )
         {
             _uiSystem = uiSystem;
         }

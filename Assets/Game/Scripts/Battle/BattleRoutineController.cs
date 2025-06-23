@@ -39,11 +39,11 @@ namespace Frontier.Battle
         [SerializeField]
         private GameObject _btlFileLoadObject;
 
-        private DiInstaller _installer          = null;
+        private IInstaller _installer          = null;
         private HierarchyBuilder _hierarchyBld  = null;
         private InputFacade _inputFcd           = null;
         private StageController _stgCtrl        = null;
-        private UISystem _uiSystem              = null;
+        private IUiSystem _uiSystem              = null;
 
         private BattlePhase _phase;
         private BattleFileLoader _btlFileLoader                 = null;
@@ -73,7 +73,7 @@ namespace Frontier.Battle
         /// <param name="stgCtrl">ステージのコントローラ</param>
         /// <param name="uiSystem">UIシステム</param>
         [Inject]
-        void Construct(DiInstaller installer, HierarchyBuilder hierarchyBld, InputFacade inputFcd, StageController stgCtrl, UISystem uiSystem)
+        void Construct(IInstaller installer, HierarchyBuilder hierarchyBld, InputFacade inputFcd, StageController stgCtrl, IUiSystem uiSystem)
         {
             _installer      = installer;
             _hierarchyBld   = hierarchyBld;
@@ -139,7 +139,7 @@ namespace Frontier.Battle
             _stgCtrl.UpdateGridInfo();
         }
 
-        override public void Update()
+        void Update()
         {
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             if (!Methods.IsDebugScene())
@@ -152,7 +152,7 @@ namespace Frontier.Battle
             }
 
             // 現在のグリッド上に存在するキャラクター情報を更新
-            Stage.GridInfo info;
+            GridInfo info;
             _stgCtrl.FetchCurrentGridInfo(out info);
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
 

@@ -42,20 +42,11 @@ public class DebugMenuHandler : FocusRoutineBase
     }
 
     /// <summary>
-    /// デバッグメニューを閉じます
+    /// デバッグ画面全体とデバッグメニューの表示・非表示を切り替えます
     /// </summary>
-    public void CloseMenu()
+    private void ToggleDebugView()
     {
-        // デバッグメニューを閉じる
-        ToggleDebugMenu();
-    }
-
-    /// <summary>
-    /// デバッグメニューの表示/非表示を切り替えます
-    /// </summary>
-    private void ToggleDebugMenu()
-    {
-        _toggleDebugCb?.Invoke(); // コールバックを呼び出す
+        _toggleDebugCb?.Invoke();
         _debugMenuView.ToggleMenuVisibility();
     }
 
@@ -95,7 +86,7 @@ public class DebugMenuHandler : FocusRoutineBase
 
         // 現在の入力コードを抹消
         _inputFcd.UnregisterInputCodes();
-
+        
         _debugLhr[menuIdx].Init();
         _debugLhr[menuIdx].LaunchEditor();
     }
@@ -179,7 +170,7 @@ public class DebugMenuHandler : FocusRoutineBase
     /// <summary>
     /// 更新を行います
     /// </summary>
-    override public void Update()
+    override public void UpdateRoutine()
     {
         _debugMenuView.UpdateMenuCursor(_selectedMenuIndex);
     }
@@ -188,7 +179,7 @@ public class DebugMenuHandler : FocusRoutineBase
     {
         base.Run();
 
-        ToggleDebugMenu();
+        ToggleDebugView();
         _inputFcd.UnregisterInputCodes();
         RegisterInputCodes();
     }
@@ -197,7 +188,7 @@ public class DebugMenuHandler : FocusRoutineBase
     {
         base.Restart();
 
-        ToggleDebugMenu();
+        _debugMenuView.ToggleMenuVisibility();
         _inputFcd.UnregisterInputCodes();
         RegisterInputCodes();
     }
@@ -206,7 +197,7 @@ public class DebugMenuHandler : FocusRoutineBase
     {
         base.Pause();
 
-        ToggleDebugMenu();
+        _debugMenuView.ToggleMenuVisibility();
         _inputFcd.UnregisterInputCodes();
     }
 
@@ -214,7 +205,7 @@ public class DebugMenuHandler : FocusRoutineBase
     {
         base.Exit();
 
-        ToggleDebugMenu();
+        ToggleDebugView();
         _inputFcd.UnregisterInputCodes();
     }
 

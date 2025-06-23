@@ -11,7 +11,7 @@ public class FocusRoutineBaseWithMonoBehaviour : MonoBehaviour, IFocusRoutine
         _focusState = FocusState.EXIT;
     }
 
-    virtual public void Update() { }
+    virtual public void UpdateRoutine() { }
     virtual public void ScheduleRun()
     {
         _focusState = FocusState.RUN_SCHEDULED;
@@ -34,7 +34,7 @@ public class FocusRoutineBaseWithMonoBehaviour : MonoBehaviour, IFocusRoutine
     }
     virtual public void Exit()
     {
-        _focusState = FocusState.RUN;
+        _focusState = FocusState.EXIT;
     }
     virtual public bool IsMatchFocusState(FocusState state)
     {

@@ -19,11 +19,11 @@ namespace Frontier
 
         private BattleRoutineController _btlRtnCtrl = null;
         private StageController _stgCtrl            = null;
-        private UISystem _uiSystem                  = null;
+        private IUiSystem _uiSystem                  = null;
         private Character _prevCharacter            = null;
 
         [Inject]
-        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem )
+        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem )
         {
             _btlRtnCtrl = btlRtnCtrl;
             _stgCtrl    = stgCtrl;

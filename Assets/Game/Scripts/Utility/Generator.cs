@@ -5,13 +5,13 @@ using Zenject;
 public class Generator : MonoBehaviour
 {
     private DiContainer _container;
-    private DiInstaller _installer;
+    private IInstaller _installer;
 
     /// <summary>
     /// DIコンテナのインスタンスに注入します
     /// </summary>
     /// <param name="container">DIコンテナ</param>
-    public void Inject( DiContainer container, DiInstaller installer )
+    public void Inject( DiContainer container, IInstaller installer )
     {
         _container = container;
         _installer = installer;
