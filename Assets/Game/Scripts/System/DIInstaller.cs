@@ -9,7 +9,7 @@ using Zenject;
 
 namespace Frontier
 {
-    public class DiInstaller : MonoInstaller
+    public class DiInstaller : MonoInstaller, IInstaller
     {
         [SerializeField]
         private GameObject DebugEditorDriverPrefab = null;
@@ -25,15 +25,15 @@ namespace Frontier
             Container.Bind<ISaveHandler<TutorialSaveData>>()
                  .To<TutorialSaveHandler>()
                  .AsSingle();
-            Container.Bind<DiInstaller>().FromInstance(this);
+            Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
-            Container.Bind<UISystem>().FromComponentInHierarchy().AsCached();
+            Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>()
                 .FromComponentInNewPrefab(DebugEditorDriverPrefab)
-                .AsTransient();
+                .AsCached();
 #endif // UNITY_EDITOR
         }
 

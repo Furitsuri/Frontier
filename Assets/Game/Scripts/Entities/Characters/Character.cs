@@ -141,7 +141,7 @@ namespace Frontier.Entities
         protected HierarchyBuilder _hierarchyBld        = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
-        protected UISystem _uiSystem                    = null;
+        protected IUiSystem _uiSystem                    = null;
 
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
@@ -198,7 +198,7 @@ namespace Frontier.Entities
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( HierarchyBuilder hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl, UISystem uiSystem )
+        void Construct( HierarchyBuilder hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl, IUiSystem uiSystem )
         {
             _hierarchyBld   = hierarchyBld;
             _btlRtnCtrl     = battleMgr;

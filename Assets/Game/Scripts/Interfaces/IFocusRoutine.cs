@@ -18,7 +18,7 @@ public enum FocusState
 /// </summary>
 public interface IFocusRoutine
 {
-    public void Update() {}
+    public void UpdateRoutine() {}
 
     public void ScheduleRun();
 

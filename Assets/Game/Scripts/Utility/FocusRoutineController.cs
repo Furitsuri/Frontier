@@ -55,7 +55,7 @@ public class FocusRoutineController
             return;
         }
 
-        _currentRoutine.Update();
+        _currentRoutine.UpdateRoutine();
 
         UpdateRoutineIfNextIsDue();
     }

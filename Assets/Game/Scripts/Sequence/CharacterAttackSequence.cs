@@ -30,7 +30,7 @@ namespace Frontier
         private BattleRoutineController _btlRtnCtrl = null;
         private BattleCameraController _btlCamCtrl  = null;
         private StageController _stageCtrl          = null;
-        private UISystem _uiSystem                  = null;
+        private IUiSystem _uiSystem                  = null;
         private Character _attackCharacter          = null;
         private Character _targetCharacter          = null;
         private Character _diedCharacter            = null;
@@ -46,7 +46,7 @@ namespace Frontier
         private ParrySkillNotifier _parryNotifier   = null;
 
         [Inject]
-        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, UISystem uiSystem)
+        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem)
         {
             _btlRtnCtrl = btlRtnCtrl;
             _stageCtrl  = stgCtrl;

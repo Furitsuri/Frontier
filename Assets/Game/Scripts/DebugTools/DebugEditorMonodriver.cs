@@ -3,25 +3,58 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class DebugEditorMonoDriver : MonoBehaviour
+public class DebugEditorMonoDriver : FocusRoutineBaseWithMonoBehaviour
 {
-    private IUpdatable _handler;
+    private IEditorHandler _editorHnd;
 
-    private FocusRoutineController _focusRoutineCtrl = null;
-
-    [Inject]
-    public void Construct( FocusRoutineController focusRoutineCtrl )
+    public void Init(IEditorHandler handler)
     {
-        _focusRoutineCtrl = focusRoutineCtrl;
+        base.Init();
+
+        handler.SetFocusRoutine(this);
+        _editorHnd = handler;
     }
 
-    public void Init(IUpdatable handler)
+    #region IFocusRoutine Implementation
+
+    override public void UpdateRoutine()
     {
-        _handler = handler;
+        _editorHnd?.Update();
     }
 
-    void Update()
+    override public void ScheduleRun()
     {
-        _handler?.Update();
+        base.ScheduleRun();
     }
+
+    override public void Run()
+    {
+        _editorHnd?.Run();
+
+        base.Run();
+    }
+
+    override public void Restart()
+    {
+        base.Restart();
+    }
+
+    override public void Pause()
+    {
+        base.Pause();
+    }
+
+    override public void ScheduleExit()
+    {
+        base.ScheduleExit();
+    }
+
+    override public void Exit()
+    {
+        _editorHnd?.Exit();
+
+        base.Exit();
+    }
+
+    #endregion // IFocusRoutine Implementation
 }

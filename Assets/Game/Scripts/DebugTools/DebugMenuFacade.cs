@@ -20,13 +20,13 @@ public enum DebugMainMenu
 public class DebugMenuFacade
 {
     private HierarchyBuilder _hierarchyBld          = null;
-    private UISystem _uiSystem                      = null;
+    private IUiSystem _uiSystem                     = null;
     private DebugMenuHandler _debugMenuHnd          = null;
     private DebugMenuPresenter _debugMenuView       = null;
     private GameObject _debugUi                     = null;
 
     [Inject]
-    public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
+    public void Construct( HierarchyBuilder hierarchyBld, IUiSystem uiSystem )
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;

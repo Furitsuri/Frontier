@@ -54,7 +54,7 @@ namespace Frontier
         /// </summary>
         /// <param name="container">DIコンテナ</param>
         [Inject]
-        void Construct(DiContainer container, DiInstaller installer)
+        void Construct(DiContainer container, IInstaller installer)
         {
             if (_generator == null)
             {

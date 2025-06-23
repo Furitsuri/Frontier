@@ -4,18 +4,6 @@ using UnityEngine;
 
 namespace Frontier.Stage
 {
-    public enum TileType
-    {
-        None = 0,
-        Grass = 1,
-        Water = 2,
-        Mountain = 3,
-        Forest = 4,
-        Desert = 5,
-
-        MAX
-    }
-
     /// <summary>
     /// ステージ上のグリッド数などのデータ
     /// </summary>
@@ -44,5 +32,15 @@ namespace Frontier.Stage
         public void SetGridRowNum( int rowNum ) {  _gridRowNum = rowNum;}
 
         public void SetGridColumnNum( int columnNum ) { _gridColumnNum = columnNum; }
+
+#if UNITY_EDITOR
+        public int Width;
+        public int Height;
+        public StageTile[] Tiles;
+
+        public StageTile GetTile(int x, int y) => Tiles[y * Width + x];
+
+        public void SetTile(int x, int y, StageTile tile) => Tiles[y * Width + x] = tile;
+#endif // UNITY_EDITOR
     }
 }

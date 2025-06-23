@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class UISystem : MonoBehaviour
+    public class UISystem : MonoBehaviour, IUiSystem
     {
         private GeneralUISystem _generarlUi = null;
-        private BattleUISystem _battleUi    = null;
+        private BattleUISystem _battleUi = null;
 #if UNITY_EDITOR
-        private DebugUISystem _debugUi      = null;
+        private DebugUISystem _debugUi = null;
 #endif // UNITY_EDITOR
 
         public GeneralUISystem GeneralUi => _generarlUi;
@@ -33,19 +33,24 @@ namespace Frontier
         // Start is called before the first frame update
         void Awake()
         {
-            Transform childGeneralUI = transform.GetChild( (int)ChildIndex.General );
-            if( childGeneralUI != null )
+            InitializeUiSystem();
+        }
+
+        public void InitializeUiSystem()
+        {
+            Transform childGeneralUI = transform.GetChild((int)ChildIndex.General);
+            if (childGeneralUI != null)
             {
                 _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
             }
-            Debug.Assert( _generarlUi != null );
+            Debug.Assert(_generarlUi != null);
 
-            Transform childBattleUI = transform.GetChild( (int)ChildIndex.Battle );
-            if( childBattleUI != null )
+            Transform childBattleUI = transform.GetChild((int)ChildIndex.Battle);
+            if (childBattleUI != null)
             {
                 _battleUi = childBattleUI.GetComponent<BattleUISystem>();
             }
-            Debug.Assert( _battleUi != null );
+            Debug.Assert(_battleUi != null);
 
 #if UNITY_EDITOR
             Transform childDebugUI = transform.GetChild((int)ChildIndex.Debug);

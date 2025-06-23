@@ -11,7 +11,7 @@ public class FocusRoutineBase : IFocusRoutine
         _focusState = FocusState.EXIT;
     }
 
-    virtual public void Update() { }
+    virtual public void UpdateRoutine() { }
 
     virtual public void ScheduleRun()
     {

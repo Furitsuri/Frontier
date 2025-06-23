@@ -1,6 +1,7 @@
 ﻿using Frontier.Battle;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.IO.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -25,7 +26,7 @@ namespace Frontier
 
         [SerializeField]
         [Header("UI")]
-        private UISystem _UISystem;
+        private IUiSystem _UISystem;
 
         [SerializeField]
         [Header("UIカメラのオブジェクト")]
@@ -40,6 +41,7 @@ namespace Frontier
         private float stageStartDelay = 2f;
 
         private GameObject _stageImage;
+        private DiContainer _diContainer;
         private FocusRoutineController _focusRtnCtrl;
         private InputFacade _inputFcd;
         private TutorialFacade _tutorialFcd;
@@ -47,13 +49,15 @@ namespace Frontier
         private GamePhase _Phase;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
+        private DebugEditorMonoDriver _debugEditorMonoDrv;
 #endif // UNITY_EDITOR
 
         public static GameMain instance = null;
 
         [Inject]
-        public void Construct( InputFacade inputFcd, TutorialFacade tutorialFcd, FocusRoutineController focusRoutineCtrl, BattleRoutineController btlRtnCtrl )
+        public void Construct( DiContainer diContainer,  InputFacade inputFcd, TutorialFacade tutorialFcd, FocusRoutineController focusRoutineCtrl, BattleRoutineController btlRtnCtrl )
         {
+            _diContainer    = diContainer;
             _inputFcd       = inputFcd;
             _tutorialFcd    = tutorialFcd;
             _focusRtnCtrl   = focusRoutineCtrl;
@@ -92,6 +96,11 @@ namespace Frontier
                 _debugMenuFcd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>();
                 NullCheck.AssertNotNull(_debugMenuFcd);
             }
+            if( _debugEditorMonoDrv == null )
+            {
+                _debugEditorMonoDrv = _diContainer.Resolve<DebugEditorMonoDriver>();
+                NullCheck.AssertNotNull(_debugEditorMonoDrv);
+            }
 #endif // UNITY_EDITOR
         }
 
@@ -125,6 +134,7 @@ namespace Frontier
 #if UNITY_EDITOR
             // デバッグモードの初期化
             _debugMenuFcd.Init();
+            _debugEditorMonoDrv.Init();
             // デバッグモードへ移行するための入力コードを登録
             ResgiterInputCodeForDebugTransition();
 #endif // UNITY_EDITOR
@@ -187,6 +197,7 @@ namespace Frontier
         {
             _focusRtnCtrl.Init();
 #if UNITY_EDITOR
+            _focusRtnCtrl.Register(_debugEditorMonoDrv, (int)FocusRoutinePriority.DEBUG_EDITOR);
             _focusRtnCtrl.Register(_debugMenuFcd.GetFocusRoutine(), _debugMenuFcd.GetFocusRoutine().GetPriority());
 #endif // UNITY_EDITOR
             _focusRtnCtrl.Register(_tutorialFcd.GetFocusRoutine(), _tutorialFcd.GetFocusRoutine().GetPriority());

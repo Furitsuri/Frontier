@@ -15,7 +15,7 @@ public class TutorialFacade
     }
 
     private HierarchyBuilder _hierarchyBld              = null;
-    private UISystem _uiSystem                          = null;
+    private IUiSystem _uiSystem                          = null;
     private TutorialPresenter _tutorialView             = null;
     private TutorialHandler _tutorialHdl                = null;
     private ISaveHandler<TutorialSaveData> _saveHdlr    = null;
@@ -25,7 +25,7 @@ public class TutorialFacade
     private TutorialSaveData _saveData = null;
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld, UISystem uiSystem, ISaveHandler<TutorialSaveData> saveHandler)
+    public void Construct(HierarchyBuilder hierarchyBld, IUiSystem uiSystem, ISaveHandler<TutorialSaveData> saveHandler)
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;

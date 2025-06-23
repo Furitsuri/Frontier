@@ -10,7 +10,7 @@ public class InputFacade
 {
     private HierarchyBuilder _hierarchyBld      = null;
     private InputGuidePresenter _inputGuideView = null;
-    private UISystem _uiSystem                  = null;
+    private IUiSystem _uiSystem                  = null;
     private InputHandler _inputHdl              = null;
     private InputCode[] _inputCodes;
 #if UNITY_EDITOR
@@ -19,7 +19,7 @@ public class InputFacade
 
 
     [Inject]
-    public void Construct( HierarchyBuilder hierarchyBld, UISystem uiSystem )
+    public void Construct( HierarchyBuilder hierarchyBld, IUiSystem uiSystem )
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
