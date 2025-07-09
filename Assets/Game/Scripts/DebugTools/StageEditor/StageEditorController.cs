@@ -1,0 +1,236 @@
+﻿using Frontier.Stage;
+using System.ComponentModel;
+using UnityEngine;
+using Zenject;
+using static Constants;
+
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.StageEditor
+{
+    /// <summary>
+    /// ステージエディターのコントローラー
+    /// </summary>
+    public class StageEditorController : MonoBehaviour
+    {
+        [Header("Editor Settings")]
+        public int row    = 10;
+        public int column = 10;
+
+        [Header("Prefabs")]
+        [SerializeField]
+        private GameObject stagePrefab;
+        [SerializeField]
+        public GameObject[] tilePrefabs;
+        [SerializeField]
+        public GameObject cursorPrefab;
+
+        private InputFacade _inputFcd;
+        private HierarchyBuilderBase _hierarchyBld;
+        private TileBehaviour[,] tileObjects;
+        private StageData _stageData;
+        private StageMesh _stageMesh;
+        private GridCursorController _gridCursorCtrl;
+        private int selectedType = 0;
+        private int selectedHeight = 0;
+
+        private Vector3 offset = new Vector3(0, 5, -5); // ターゲットからの相対位置
+
+        private Camera _mainCamera;
+
+        [Inject]
+        public void Construct(InputFacade inputFacade, HierarchyBuilderBase hierarchyBld)
+        {
+            _inputFcd       = inputFacade;
+            _hierarchyBld   = hierarchyBld;
+        }
+
+        private void Start()
+        {
+            _inputFcd.Init();           // 入力ファサードの初期化
+            TileMaterialLibrary.Init(); // タイルマテリアルの初期化
+
+            CreateStage();
+            CreateCursor();
+            RegistInputCodes();         // 入力コードの登録
+
+            _mainCamera = Camera.main;
+        }
+
+        private void CreateStage()
+        {
+            if (_stageData == null)
+            {
+                _stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>(true);
+            }
+            _stageData.Init(row, column);
+
+            for (int y = 0; y < column; y++)
+            {
+                for (int x = 0; x < row; x++)
+                {
+                    _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
+                    _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
+                    _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
+                }
+            }
+
+            if( _stageMesh == null )
+            {
+                _stageMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageMesh>(true, false, "StageMesh");
+            }
+            _stageMesh.Init(true);
+            _stageMesh.DrawMesh();
+        }
+
+        private void CreateCursor()
+        {
+            var cursorObj = Instantiate(cursorPrefab, Vector3.zero, Quaternion.identity);
+            _gridCursorCtrl = cursorObj.GetComponent<GridCursorController>();
+            _gridCursorCtrl.Init(0, _stageData);
+        }
+
+        private void Update()
+        {
+            UpdateCamera(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
+            UpdateTileVisual(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
+        }
+
+        private void RegistInputCodes()
+        {
+            _inputFcd.RegisterInputCodes(
+                (GuideIcon.ALL_CURSOR,  "SELECT",       CanAcceptDirection,     new AcceptDirectionInput(AcceptDirection),  0.1f),
+                (GuideIcon.CONFIRM,     "CONFIRM",      CanAcceptConfirm,       new AcceptBooleanInput(AcceptConfirm),      0.0f),
+                (GuideIcon.SUB1,        "CHANGE TILE",  CanAcceptSub1,          new AcceptBooleanInput(AcceptSub1),         0.0f)
+                // (GuideIcon.SUB2, "", CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f),
+                // (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f),
+                // (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f)
+                );
+        }
+
+        private void HandleInput()
+        {
+            if (Input.GetKeyDown(KeyCode.X)) selectedHeight = Mathf.Clamp(selectedHeight + 1, 0, 5);
+            if (Input.GetKeyDown(KeyCode.C)) selectedHeight = Mathf.Clamp(selectedHeight - 1, 0, 5);
+
+            if (Input.GetKeyDown(KeyCode.S)) StageDataSerializer.Save(_stageData, "test_stage");
+            if (Input.GetKeyDown(KeyCode.L)) LoadStage("test_stage");
+        }
+
+        private void PlaceTile(int x, int y)
+        {
+            Destroy(tileObjects[x, y]);
+            _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
+
+            var tileBhv = tileObjects[x, y].GetComponent<TileBehaviour>();
+            if (tileBhv != null)
+            {
+                tileBhv.ApplyTileType((TileType)selectedType);
+            }
+            _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
+        }
+
+        private void UpdateCamera(int x, int y)
+        {
+            if (_mainCamera == null) return;
+            // カメラの位置を更新
+            Vector3 targetPosition = _gridCursorCtrl.GetPosition() + offset;
+            _mainCamera.transform.position = targetPosition;
+            _mainCamera.transform.LookAt(_gridCursorCtrl.GetPosition());
+        }
+
+        private void UpdateTileVisual(int x, int y)
+        {
+            // 選択中タイルの見た目の強調表示など
+        }
+
+        private void LoadStage(string fileName)
+        {
+            var data = StageDataSerializer.Load(fileName);
+            if (data == null) return;
+
+            // 簡易的に再ロード
+            foreach (Transform child in transform) Destroy(child.gameObject);
+            _stageData  = data;
+            row         = _stageData.GridRowNum;
+            column      = _stageData.GridColumnNum;
+            CreateStage();
+
+            /*
+            for (int y = 0; y < column; y++)
+            {
+                for (int x = 0; x < row; x++)
+                {
+                    var tile = data.GetTile(x, y);
+                    Destroy(tileObjects[x, y]);
+                    SpawnTile(x, y);
+                }
+            }
+            */
+        }
+
+        private bool CanAcceptDirection()
+        {
+            return true;
+        }
+
+        private bool CanAcceptConfirm()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// サブ1の入力の受付可否を判定します
+        /// </summary>
+        /// <returns>サブ1の入力の受付可否</returns>
+        private bool CanAcceptSub1()
+        {
+            return true;
+        }
+
+        private bool AcceptDirection(Direction dir)
+        {
+
+            if (dir == Direction.NONE) return false;
+
+            if (dir == Direction.RIGHT)         _gridCursorCtrl.Right();
+            else if (dir == Direction.LEFT)     _gridCursorCtrl.Left();
+            else if (dir == Direction.FORWARD)  _gridCursorCtrl.Up();
+            else if (dir == Direction.BACK)     _gridCursorCtrl.Down();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 決定入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="isInput">決定入力</param>
+        /// <returns>入力実行の有無</returns>
+        private bool AcceptConfirm(bool isInput)
+        {
+            if (isInput)
+            {
+                PlaceTile(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool AcceptSub1(bool isInput)
+        {
+            if (isInput)
+            {
+                selectedType = (selectedType + 1) % (int)TileType.NUM;
+
+                return true;
+            }
+            
+            return false;
+
+        }
+    }
+} // namespace Frontier.DebugTools.StageEditor
+
+#endif // UNITY_EDITOR
