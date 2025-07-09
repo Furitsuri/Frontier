@@ -62,8 +62,8 @@ namespace Frontier.Stage
             // Z方向の線分の頂点
             for (int i = 0; count < 2 * (_stageData.GridRowNum + 1); ++i, count = 2 * i)
             {
-                vertices[count]     = new Vector3(startPosition.x + ((float)i * TILE_SIZE), 0.1f, startPosition.y);
-                vertices[count + 1] = new Vector3(startPosition.x + ((float)i * TILE_SIZE), 0.1f, endPosition.y);
+                vertices[count]     = new Vector3(startPosition.x + ((float)i * TILE_SIZE), 0.0f, startPosition.y);
+                vertices[count + 1] = new Vector3(startPosition.x + ((float)i * TILE_SIZE), 0.0f, endPosition.y);
             }
             // X方向の線分の頂点
             for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_stageData.GridRowNum + 1))
