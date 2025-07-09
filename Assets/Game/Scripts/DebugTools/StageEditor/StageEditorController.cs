@@ -19,11 +19,11 @@ namespace Frontier.DebugTools.StageEditor
 
         [Header("Prefabs")]
         [SerializeField]
-        private GameObject stagePrefab;
-        [SerializeField]
         public GameObject[] tilePrefabs;
         [SerializeField]
         public GameObject cursorPrefab;
+        [SerializeField]
+        private EditParamPresenter EditParamView;
 
         private InputFacade _inputFcd;
         private HierarchyBuilderBase _hierarchyBld;
@@ -94,6 +94,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             UpdateCamera(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
             UpdateTileVisual(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
+            EditParamView.UpdateText(selectedType, selectedHeight);
         }
 
         private void RegistInputCodes()
@@ -101,8 +102,9 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "SELECT",       CanAcceptDirection,     new AcceptDirectionInput(AcceptDirection),  0.1f),
                 (GuideIcon.CONFIRM,     "CONFIRM",      CanAcceptConfirm,       new AcceptBooleanInput(AcceptConfirm),      0.0f),
-                (GuideIcon.SUB1,        "CHANGE TILE",  CanAcceptSub1,          new AcceptBooleanInput(AcceptSub1),         0.0f)
-                // (GuideIcon.SUB2, "", CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f),
+                (GuideIcon.SUB1,        "CHANGE TILE",  CanAcceptSub1,          new AcceptBooleanInput(AcceptSub1),         0.0f),
+                (GuideIcon.SUB2,        "ADD HEIGHT",   CanAcceptSub2,          new AcceptBooleanInput(AcceptSub2),         0.0f),
+                (GuideIcon.SUB3,        "SUB HEIGHT",   CanAcceptSub3,          new AcceptBooleanInput(AcceptSub3),         0.0f)
                 // (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f),
                 // (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f)
                 );
@@ -110,9 +112,6 @@ namespace Frontier.DebugTools.StageEditor
 
         private void HandleInput()
         {
-            if (Input.GetKeyDown(KeyCode.X)) selectedHeight = Mathf.Clamp(selectedHeight + 1, 0, 5);
-            if (Input.GetKeyDown(KeyCode.C)) selectedHeight = Mathf.Clamp(selectedHeight - 1, 0, 5);
-
             if (Input.GetKeyDown(KeyCode.S)) StageDataSerializer.Save(_stageData, "test_stage");
             if (Input.GetKeyDown(KeyCode.L)) LoadStage("test_stage");
         }
@@ -120,6 +119,9 @@ namespace Frontier.DebugTools.StageEditor
         private void PlaceTile(int x, int y)
         {
             Destroy(tileObjects[x, y]);
+            
+            _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
+            _stageData.GetTile(x, y).SetTileTypeAndHeight((TileType)selectedType, selectedHeight);
             _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
 
             var tileBhv = tileObjects[x, y].GetComponent<TileBehaviour>();
@@ -127,7 +129,6 @@ namespace Frontier.DebugTools.StageEditor
             {
                 tileBhv.ApplyTileType((TileType)selectedType);
             }
-            _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
         }
 
         private void UpdateCamera(int x, int y)
@@ -188,6 +189,16 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
+        private bool CanAcceptSub2()
+        {
+            return true;
+        }
+
+        private bool CanAcceptSub3()
+        {
+            return true;
+        }
+
         private bool AcceptDirection(Direction dir)
         {
 
@@ -228,7 +239,30 @@ namespace Frontier.DebugTools.StageEditor
             }
             
             return false;
+        }
 
+        private bool AcceptSub2(bool isInput)
+        {
+            if (isInput)
+            {
+                selectedHeight = Mathf.Clamp(selectedHeight + 1, 0, 5);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool AcceptSub3(bool isInput)
+        {
+            if (isInput)
+            {
+                selectedHeight = Mathf.Clamp(selectedHeight - 1, 0, 5);
+
+                return true;
+            }
+
+            return false;
         }
     }
 } // namespace Frontier.DebugTools.StageEditor

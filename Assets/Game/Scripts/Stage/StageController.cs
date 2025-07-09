@@ -55,8 +55,6 @@ namespace Frontier.Stage
 		private StageData _stageData;
         private StageMesh _stageMesh;
         private GridCursorController _gridCursorCtrl;
-        // private GridInfo[] _gridInfo;
-        // private GridInfo[] _gridInfoBase;
         private Footprint _footprint;
         private List<GridMesh> _gridMeshs;
         private List<int> _attackableGridIndexs;
@@ -102,36 +100,6 @@ namespace Frontier.Stage
                 _gridCursorCtrl.Init(0, _stageData);
             }
         }
-
-        /*
-        /// <summary>
-        /// グリッド情報を初期化します
-        /// </summary>
-        void InitGridInfo()
-        {
-            var gridTotalNum = _stageData.GetGridToralNum();
-            _gridInfo       = new GridInfo[gridTotalNum];
-            _gridInfoBase   = new GridInfo[gridTotalNum];
-
-            for (int i = 0; i < gridTotalNum; ++i)
-            {
-                // 初期化
-                _gridInfo[i]        = _hierarchyBld.InstantiateWithDiContainer<GridInfo>();
-                _gridInfoBase[i]    = _hierarchyBld.InstantiateWithDiContainer<GridInfo>();
-                _gridInfo[i].Init();
-                _gridInfoBase[i].Init();
-                // グリッド位置からキャラの立ち位置への補正値
-                float charaPosCorrext = 0.5f * TILE_SIZE;
-                // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
-                float posX = -_stageData.WidthX() + i % _stageData.GridRowNum * TILE_SIZE + charaPosCorrext;
-                // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
-                float posZ = -_stageData.WidthZ() + i / _stageData.GridRowNum * TILE_SIZE + charaPosCorrext;
-                // 上記値から各グリッドのキャラの立ち位置を決定
-                _gridInfoBase[i].charaStandPos = _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
-                // TODO : ファイル読み込みから通行不能な箇所などのBitFlag情報を設定出来るようにする
-            }
-        }
-        */
 
         /// <summary>
         /// _gridInfoの状態を基の状態に戻します
@@ -239,12 +207,6 @@ namespace Frontier.Stage
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((Character.CHARACTER_TAG)i))
                 {
                     var gridIndex       = chara.GetCurrentGridIndex();
-                    /*
-                    ref var info        = ref _gridInfo[gridIndex];
-                    info.charaTag       = chara.param.characterTag;
-                    info.charaIndex     = chara.param.characterIndex;
-                    Methods.SetBitFlag(ref info.flag, flags[i]);
-                    */
                     ref var tileInfo    = ref _stageData.GetTileInfo(gridIndex);
                     tileInfo.charaTag   = chara.param.characterTag;
                     tileInfo.charaIndex = chara.param.characterIndex;
