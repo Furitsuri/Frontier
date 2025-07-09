@@ -34,7 +34,7 @@ namespace Frontier
 
             RegisterInputCodes();
 
-            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
+            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
@@ -49,7 +49,7 @@ namespace Frontier
             if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.ENEMY))
             {
                 // アタッカーキャラクターの設定
-                _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
+                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);
 
                 // アタックカーソルUI表示
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true);
@@ -67,7 +67,7 @@ namespace Frontier
             }
 
             // 攻撃可能状態でなければ何もしない
-            if (_stageCtrl.GetGridCursorState() != Stage.GridCursor.State.ATTACK)
+            if (_stageCtrl.GetGridCursorControllerState() != Stage.GridCursorController.State.ATTACK)
             {
                 return false;
             }
@@ -163,7 +163,7 @@ namespace Frontier
             _stageCtrl.ClearGridMeshDraw();
 
             // 選択グリッドを表示
-            _stageCtrl.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorControllerActive(true);
 
             base.Exit();
         }
@@ -291,7 +291,7 @@ namespace Frontier
                 _targetCharacter.ConsumeActionGauge();
 
                 // 選択グリッドを一時非表示
-                _stageCtrl.SetGridCursorActive(false);
+                _stageCtrl.SetGridCursorControllerActive(false);
 
                 // アタックカーソルUI非表示
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(false);

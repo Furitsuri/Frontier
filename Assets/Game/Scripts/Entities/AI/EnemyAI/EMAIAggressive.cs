@@ -21,7 +21,7 @@ namespace Frontier
         {
             _isDetermined = true;
 
-            List<int> candidateRouteIndexs = new List<int>(_stageCtrl.GridTotalNum);
+            List<int> candidateRouteIndexs = new List<int>(_stageData.GetGridToralNum());
 
             List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates;
 
@@ -51,7 +51,7 @@ namespace Frontier
                 _targetCharacter = maxEvaluate.target;
 
                 // 進行可能グリッドをルート候補に挿入
-                for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
+                for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
                 {
                     if (0 <= _stageCtrl.GetGridInfo(i).estimatedMoveRange)
                     {
@@ -69,7 +69,7 @@ namespace Frontier
 
                 // 進行可能な全てのグリッドを探索候補に加える
                 var flag = Stage.StageController.BitFlag.CANNOT_MOVE | Stage.StageController.BitFlag.PLAYER_EXIST | Stage.StageController.BitFlag.OTHER_EXIST;
-                for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
+                for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
                 {
                     if (!Methods.CheckBitFlag(_stageCtrl.GetGridInfo(i).flag, flag))
                     {
@@ -133,7 +133,7 @@ namespace Frontier
             bool isAttackable = !selfTmpParam.isEndCommand[(int)Command.COMMAND_TAG.ATTACK];
             _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterIndex, selfParam.characterTag, isAttackable);
 
-            for (int i = 0; i < _stageCtrl.GridTotalNum; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
                 var info = _stageCtrl.GetGridInfo(i);
                 // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得

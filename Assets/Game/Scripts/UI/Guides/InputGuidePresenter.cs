@@ -33,7 +33,7 @@ public class InputGuidePresenter : MonoBehaviour
     public float ResizeTime = 0.33f;
 
     // オブジェクト・コンポーネント作成クラス
-    private HierarchyBuilder _hierarchyBld = null;
+    private HierarchyBuilderBase _hierarchyBld = null;
 
     // キーガイドバーの入出状態
     private FadeMode _fadeMode = FadeMode.NEUTRAL;
@@ -90,7 +90,7 @@ public class InputGuidePresenter : MonoBehaviour
         };
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld)
+    public void Construct(HierarchyBuilderBase hierarchyBld)
     {
         _hierarchyBld = hierarchyBld;
     }

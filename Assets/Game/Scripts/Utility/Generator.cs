@@ -23,9 +23,9 @@ public class Generator : MonoBehaviour
     /// <typeparam name="T">オブジェクトに追加するコンポーネント</typeparam>
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <returns>生成したコンポーネント</returns>
-    public T GenerateObjectAndAddComponent<T>(bool initActive) where T : Behaviour
+    public T GenerateObjectAndAddComponent<T>(bool initActive, string objName) where T : Behaviour
     {
-        GameObject gameObj = new GameObject();
+        GameObject gameObj = new GameObject(objName);
 
         T original = gameObj.AddComponent<T>();
 
@@ -55,15 +55,38 @@ public class Generator : MonoBehaviour
     }
 
     /// <summary>
+    /// DIコンテナを用いて、指定する型のコンポーネントを作成します。
+    /// </summary>
+    /// <typeparam name="T">作成するコンポーネントの型</typeparam>
+    /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
+    /// <param name="isBind">DIコンテナにバインドするか否か</param>
+    /// <returns>作成したコンポーネント</returns>
+    public T InstantiateComponentWithDiContainerOnNewObj<T>(bool initActive, bool isBind, string objectName) where T : Behaviour
+    {
+        T original = _container.InstantiateComponentOnNewGameObject<T>(objectName);
+        Debug.Assert(original != null);
+
+        original.gameObject.SetActive(initActive);
+
+        // Diコンテナにバインドする場合はここでバインド
+        if (isBind)
+        {
+            _installer.InstallBindings(original);
+        }
+
+        return original;
+    }
+
+    /// <summary>
     /// DIコンテナを用いて、指定のゲームオブジェクトをコンポーネントを付与する形で作成します
     /// </summary>
     /// <typeparam name="T">作成するコンポーネントの型</typeparam>
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T InstantiateComponentWithDiContainer<T>(bool initActive, bool isBind) where T : Behaviour
+    public T InstantiateAndAddComponentWithDiContainer<T>(bool initActive, bool isBind, string objectName) where T : Behaviour
     {
-        GameObject gameObj = new GameObject();
+        GameObject gameObj = new GameObject(objectName);
         T original = _container.InstantiatePrefabForComponent<T>(gameObj.AddComponent<T>().gameObject);
         Debug.Assert(original != null);
 
@@ -106,9 +129,17 @@ public class Generator : MonoBehaviour
     /// Diコンテナを用いて、インスタンスを作成します
     /// </summary>
     /// <typeparam name="T">作成するインスタンスの型</typeparam>
+    /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したインスタンス</returns>
-    public T InstantiateWithDiContainer<T>()
+    public T InstantiateWithDiContainer<T>( bool isBind )
     {
-        return _container.Instantiate<T>();
+        T original = _container.Instantiate<T>();
+
+        if ( isBind )
+        {
+            _installer.InstallBindings(original);
+        }
+
+        return original;
     }
 }

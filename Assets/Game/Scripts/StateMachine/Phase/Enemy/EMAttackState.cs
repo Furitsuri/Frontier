@@ -26,7 +26,7 @@ namespace Frontier
         {
             base.Init();
 
-            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>();
+            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _attackCharacter    = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_attackCharacter != null);
@@ -40,7 +40,7 @@ namespace Frontier
             if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter()))
             {
                 // アタッカーキャラクターの設定
-                _stageCtrl.BindGridCursorState(GridCursor.State.ATTACK, _attackCharacter);
+                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);
                 // アタックカーソルUI表示
                 _uiSystem.BattleUi.ToggleAttackCursorE2P(true);
             }
@@ -73,7 +73,7 @@ namespace Frontier
         override public bool Update()
         {
             // 攻撃可能状態でなければ何もしない
-            if (_stageCtrl.GetGridCursorState() != GridCursor.State.ATTACK)
+            if (_stageCtrl.GetGridCursorControllerState() != GridCursorController.State.ATTACK)
             {
                 return false;
             }
@@ -153,7 +153,7 @@ namespace Frontier
             //   その後プレイヤーに選択グリッドが移るという状況になります。
             //   その挙動が少しバグのように見えてしまうので、消去したままにすることにし、
             //   次のキャラクターが行動開始する際に表示するようにします。
-            // Stage.StageController.Instance.SetGridCursorActive(true);
+            // Stage.StageController.Instance.SetGridCursorControllerActive(true);
 
             base.Exit();
         }
@@ -232,7 +232,7 @@ namespace Frontier
             _targetCharacter.ConsumeActionGauge();
 
             // 選択グリッドを一時非表示
-            _stageCtrl.SetGridCursorActive(false);
+            _stageCtrl.SetGridCursorControllerActive(false);
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorE2P(false);

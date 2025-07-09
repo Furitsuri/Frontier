@@ -21,6 +21,7 @@ namespace Frontier
 
         protected BattleRoutineController _btlRtnCtrl;
         protected StageController _stageCtrl;
+        protected StageData _stageData;
         // 既に移動対象や攻撃対象を決定しているか
         protected bool _isDetermined = false;
         // 移動目標グリッドのインデックス値
@@ -39,10 +40,11 @@ namespace Frontier
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
 
         [Inject]
-        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl )
+        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, StageData stageData )
         {
-            _btlRtnCtrl     = btlRtnCtrl;
+            _btlRtnCtrl = btlRtnCtrl;
             _stageCtrl  = stgCtrl;
+            _stageData  = stageData;
         }
 
         /// <summary>
@@ -50,7 +52,7 @@ namespace Frontier
         /// </summary>
         override public void Init()
         {
-            _gridEvaluationValues   = new float[_stageCtrl.GridTotalNum];
+            _gridEvaluationValues   = new float[_stageData.GetGridToralNum()];
             _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
         }
 
@@ -161,7 +163,7 @@ namespace Frontier
             (() => baseIndex % GridRowNum != 0,                       baseIndex - 1),
             (() => (baseIndex + 1) % GridRowNum != 0,                 baseIndex + 1),
             (() => 0 <= (baseIndex - GridRowNum),                     baseIndex - GridRowNum),
-            (() => (baseIndex + GridRowNum) < _stageCtrl.GridTotalNum, baseIndex + GridRowNum)
+            (() => (baseIndex + GridRowNum) < _stageData.GetGridToralNum(), baseIndex + GridRowNum)
          };
 
             foreach (var tuple in tuples)

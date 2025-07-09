@@ -61,7 +61,7 @@ namespace Frontier
                 // グリッド情報更新
                 _enemy.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());
                 // 選択グリッドを表示
-                _stageCtrl.SetGridCursorActive(true);
+                _stageCtrl.SetGridCursorControllerActive(true);
 
                 _Phase = EMMovePhase.EM_MOVE_WAIT;
             }
@@ -76,7 +76,7 @@ namespace Frontier
                     if (Constants.ENEMY_SHOW_MOVE_RANGE_TIME <= _moveWaitTimer)
                     {
                         // 選択グリッドを一時非表示
-                        _stageCtrl.SetGridCursorActive(false);
+                        _stageCtrl.SetGridCursorControllerActive(false);
 
                         _Phase = EMMovePhase.EM_MOVE_EXECUTE;
                     }
@@ -120,7 +120,7 @@ namespace Frontier
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_enemy);
 
             // 選択グリッドを表示
-            _stageCtrl.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorControllerActive(true);
 
             // ステージグリッド上のキャラ情報を更新
             _stageCtrl.UpdateGridInfo();

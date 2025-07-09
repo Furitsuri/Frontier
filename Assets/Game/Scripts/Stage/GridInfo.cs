@@ -76,7 +76,7 @@ namespace Frontier.Stage
             info.charaStandPos      = charaStandPos;
             info.moveResist         = moveResist;
             info.estimatedMoveRange = estimatedMoveRange;
-            info.charaTag       = charaTag;
+            info.charaTag           = charaTag;
             info.charaIndex         = charaIndex;
             info.flag               = flag;
 

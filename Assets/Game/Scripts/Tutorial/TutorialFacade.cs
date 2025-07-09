@@ -14,7 +14,7 @@ public class TutorialFacade
         // 他にも条件が増えていく
     }
 
-    private HierarchyBuilder _hierarchyBld              = null;
+    private HierarchyBuilderBase _hierarchyBld              = null;
     private IUiSystem _uiSystem                          = null;
     private TutorialPresenter _tutorialView             = null;
     private TutorialHandler _tutorialHdl                = null;
@@ -25,7 +25,7 @@ public class TutorialFacade
     private TutorialSaveData _saveData = null;
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld, IUiSystem uiSystem, ISaveHandler<TutorialSaveData> saveHandler)
+    public void Construct(HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem, ISaveHandler<TutorialSaveData> saveHandler)
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
@@ -39,7 +39,7 @@ public class TutorialFacade
     {
         if (_tutorialHdl == null)
         {
-            _tutorialHdl = _hierarchyBld.InstantiateWithDiContainer<TutorialHandler>();
+            _tutorialHdl = _hierarchyBld.InstantiateWithDiContainer<TutorialHandler>(false);
             NullCheck.AssertNotNull(_tutorialHdl);
         }
 

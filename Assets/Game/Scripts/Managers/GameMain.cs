@@ -22,7 +22,7 @@ namespace Frontier
 
         [SerializeField]
         [Header("階層管理・オブジェクト生成クラス")]
-        private HierarchyBuilder _hierarchyBld;
+        private HierarchyBuilderBase _hierarchyBld;
 
         [SerializeField]
         [Header("UI")]
@@ -93,7 +93,7 @@ namespace Frontier
 #if UNITY_EDITOR
             if (_debugMenuFcd == null)
             {
-                _debugMenuFcd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>();
+                _debugMenuFcd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>(false);
                 NullCheck.AssertNotNull(_debugMenuFcd);
             }
             if( _debugEditorMonoDrv == null )

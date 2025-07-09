@@ -49,6 +49,10 @@
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
     // 経路探索におけるルートインデックス最大保持数
     public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 256;
+    // タイルの一辺の長さ(タイルはすべて正方形)
+    public const float TILE_SIZE = 1.0f;
+    // タイルの厚みの最小値
+    public const float TILE_THICKNESS_MIN = 0.01f;
     // グリッドのY座標に加算する補正値
     public const float ADD_GRID_POS_Y = 0.02f;
     // キャラクターの移動速度
@@ -58,7 +62,7 @@
     // キャラクターの回転終了閾値
     public const float CHARACTER_ROT_THRESHOLD = 3f;
     // プレイヤーの移動操作時、目標座標に対し入力を受け付けられるグリッドサイズの割合
-    public const float ACCEPTABLE_INPUT_GRID_SIZE_RATIO = 0.33f;
+    public const float ACCEPTABLE_INPUT_TILE_SIZE_RATIO = 0.33f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
     // 攻撃時に向きを定める際の待ち時間
@@ -74,11 +78,11 @@
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
-    public const float GRID_DIRECTION_INPUT_INTERVAL = 0.13f;
-    public const float MENU_DIRECTION_INPUT_INTERVAL = 0.23f;
-    public const float CONFIRM_INPUT_INTERVAL = 0.0f;
-    public const float CANCEL_INPUT_INTERVAL = 0.0f;
-    public const float OPTIONAL_INPUT_INTERVAL = 0.0f;
+    public const float GRID_DIRECTION_INPUT_INTERVAL    = 0.13f;
+    public const float MENU_DIRECTION_INPUT_INTERVAL    = 0.23f;
+    public const float CONFIRM_INPUT_INTERVAL           = 0.0f;
+    public const float CANCEL_INPUT_INTERVAL            = 0.0f;
+    public const float OPTIONAL_INPUT_INTERVAL          = 0.0f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 

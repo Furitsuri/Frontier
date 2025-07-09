@@ -19,14 +19,14 @@ public enum DebugMainMenu
 
 public class DebugMenuFacade
 {
-    private HierarchyBuilder _hierarchyBld          = null;
+    private HierarchyBuilderBase _hierarchyBld          = null;
     private IUiSystem _uiSystem                     = null;
     private DebugMenuHandler _debugMenuHnd          = null;
     private DebugMenuPresenter _debugMenuView       = null;
     private GameObject _debugUi                     = null;
 
     [Inject]
-    public void Construct( HierarchyBuilder hierarchyBld, IUiSystem uiSystem )
+    public void Construct( HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem )
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
@@ -48,7 +48,7 @@ public class DebugMenuFacade
 
         if (_debugMenuHnd == null)
         {
-            _debugMenuHnd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuHandler>();
+            _debugMenuHnd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuHandler>(false);
             NullCheck.AssertNotNull(_debugMenuHnd);
         }
 

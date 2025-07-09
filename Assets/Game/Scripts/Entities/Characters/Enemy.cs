@@ -26,13 +26,13 @@ namespace Frontier.Entities
             switch (_thikType)
             {
                 case ThinkingType.AGGERESSIVE:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiAggressive>();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiAggressive>(false);
                     break;
                 case ThinkingType.WAITING:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiWaitting>();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiWaitting>(false);
                     break;
                 default:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiBase>();
+                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiBase>(false);
                     break;
             }
 

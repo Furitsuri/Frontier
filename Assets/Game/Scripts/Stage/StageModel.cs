@@ -1,46 +1,47 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
+using static Constants;
 
 namespace Frontier.Stage
 {
     /// <summary>
     /// ステージ上のグリッド数などのデータ
     /// </summary>
-    public class StageData : MonoBehaviour
+    public class StageData
     {
-        [SerializeField]
-        private int _gridRowNum;
+        public int GridRowNum { get; private set; }                     // グリッドの行数
+        public int GridColumnNum { get; private set; }                  // グリッドの列数
+        public StageTileData[] TileDatas { get; private set; } = null;  // タイルデータ
 
-        [SerializeField]
-        private int _gridColumnNum;
+        public void Init( int tileRowNum, int tileColumnNum )
+        {
+            GridRowNum     = tileRowNum;
+            GridColumnNum  = tileColumnNum;
+            TileDatas      = new StageTileData[GridRowNum * GridColumnNum];
+        }
 
-        [SerializeField]
-        private float _gridSize = 1f;
+        public float WidthX() { return TILE_SIZE * GridRowNum; }
+        public float WidthZ() { return TILE_SIZE * GridColumnNum; }
 
-        public List<StageTileData> tiles = new();
+        public int GetGridToralNum() { return GridRowNum * GridColumnNum; }
 
-        public float WidthX { get; set; }
-        public float WidthZ { get; set; }
+        public StageTileData GetTile(int x, int y) => TileDatas[x + y * GridRowNum];
 
-        public int GetGridRowNum() { return _gridRowNum; }
+        public StageTileData GetTile(int index) => TileDatas[index];
 
-        public int GetGridColumnNum() {  return _gridColumnNum; }
+        public ref GridInfo GetTileInfo(int index)
+        {
+            return ref TileDatas[index].GetTileInfo();
+        }
 
-        public float GetGridSize() { return _gridSize; }
+        public void SetGridRowNum( int rowNum ) {  GridRowNum = rowNum;}
 
-        public void SetGridRowNum( int rowNum ) {  _gridRowNum = rowNum;}
+        public void SetGridColumnNum( int columnNum ) { GridColumnNum = columnNum; }
 
-        public void SetGridColumnNum( int columnNum ) { _gridColumnNum = columnNum; }
+        public void SetTile(int index, StageTileData tile) => TileDatas[index] = tile;
 
-#if UNITY_EDITOR
-        public int Width;
-        public int Height;
-        public StageTile[] Tiles;
-
-        public StageTile GetTile(int x, int y) => Tiles[y * Width + x];
-
-        public void SetTile(int x, int y, StageTile tile) => Tiles[y * Width + x] = tile;
-#endif // UNITY_EDITOR
+        public void SetTile(int x, int y, StageTileData tile) => TileDatas[y * GridRowNum + x] = tile;
     }
 }

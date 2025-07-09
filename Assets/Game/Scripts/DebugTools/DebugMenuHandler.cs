@@ -8,7 +8,7 @@ using static Constants;
 
 public class DebugMenuHandler : FocusRoutineBase
 {
-    private HierarchyBuilder _hierarchyBld  = null;
+    private HierarchyBuilderBase _hierarchyBld  = null;
     private InputFacade _inputFcd           = null;
 
     private DebugMenuPresenter _debugMenuView   = null;
@@ -21,7 +21,7 @@ public class DebugMenuHandler : FocusRoutineBase
     public ToggleDebugCallback _toggleDebugCb = null;
 
     [Inject]
-    public void Construct( HierarchyBuilder hierarchyBld, InputFacade inputFcd )
+    public void Construct( HierarchyBuilderBase hierarchyBld, InputFacade inputFcd )
     {
         _hierarchyBld   = hierarchyBld;
         _inputFcd       = inputFcd;
@@ -71,7 +71,7 @@ public class DebugMenuHandler : FocusRoutineBase
             {
                 case (int)DebugMainMenu.STAGE_EDITOR:
                     // ステージエディターのインスタンスを生成
-                    _debugLhr[menuIdx] = _hierarchyBld.InstantiateWithDiContainer<StageEditorLauncher>();
+                    _debugLhr[menuIdx] = _hierarchyBld.InstantiateWithDiContainer<StageEditorLauncher>(false);
                     break;
                 case (int)DebugMainMenu.BATTLE:
                     break;

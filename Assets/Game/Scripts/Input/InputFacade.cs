@@ -8,7 +8,7 @@ using Cysharp.Threading.Tasks;
 
 public class InputFacade
 {
-    private HierarchyBuilder _hierarchyBld      = null;
+    private HierarchyBuilderBase _hierarchyBld      = null;
     private InputGuidePresenter _inputGuideView = null;
     private IUiSystem _uiSystem                  = null;
     private InputHandler _inputHdl              = null;
@@ -19,7 +19,7 @@ public class InputFacade
 
 
     [Inject]
-    public void Construct( HierarchyBuilder hierarchyBld, IUiSystem uiSystem )
+    public void Construct( HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem )
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
@@ -35,7 +35,7 @@ public class InputFacade
 
         if (_inputHdl == null)
         {
-            _inputHdl = _hierarchyBld.CreateComponentAndOrganize<InputHandler>(true);
+            _inputHdl = _hierarchyBld.CreateComponentAndOrganize<InputHandler>(true, "InputHandler");
             NullCheck.AssertNotNull( _inputHdl );
         }
 

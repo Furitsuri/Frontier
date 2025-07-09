@@ -108,7 +108,7 @@ namespace Frontier.Entities
             {
                 var diff = _movementDestination - transform.position;
                 diff.y = 0;
-                if (diff.sqrMagnitude <= Mathf.Pow(gridSize * Constants.ACCEPTABLE_INPUT_GRID_SIZE_RATIO, 2f)) return true;
+                if (diff.sqrMagnitude <= Mathf.Pow(gridSize * Constants.ACCEPTABLE_INPUT_TILE_SIZE_RATIO, 2f)) return true;
 
                 return false;
             }
