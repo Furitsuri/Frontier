@@ -60,7 +60,7 @@ namespace Frontier
         private float BlinkingDuration;
 
         [Inject]
-        private HierarchyBuilder _hierarchyBld = null;
+        private HierarchyBuilderBase _hierarchyBld = null;
 
         private Character _character;
         private Camera _camera;
@@ -74,11 +74,11 @@ namespace Frontier
 
         void Start()
         {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderBaseのインスタンスが生成されていません。Injectの設定を確認してください。");
 
             _targetTexture = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
             TargetImage.texture = _targetTexture;
-            _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>(true);
+            _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>(true, "CharaParamCamera");
             _camera.enabled = false;
             _camera.clearFlags = CameraClearFlags.SolidColor;
             _camera.backgroundColor = new Color(0, 0, 0, 0);

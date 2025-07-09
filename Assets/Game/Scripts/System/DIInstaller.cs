@@ -22,11 +22,12 @@ namespace Frontier
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<FocusRoutineController>().AsSingle();
+            Container.Bind<StageData>().AsSingle();
             Container.Bind<ISaveHandler<TutorialSaveData>>()
                  .To<TutorialSaveHandler>()
                  .AsSingle();
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
-            Container.Bind<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
+            Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();

@@ -42,7 +42,7 @@ namespace Frontier
             footprint.gridIndex = _selectPlayer.GetCurrentGridIndex();
             footprint.rotation  = _selectPlayer.transform.rotation;
             _stageCtrl.LeaveFootprint(footprint);
-            _stageCtrl.BindGridCursorState( GridCursor.State.MOVE, _selectPlayer);
+            _stageCtrl.BindGridCursorControllerState( GridCursorController.State.MOVE, _selectPlayer);
 
             // 移動可能情報を登録及び表示
             bool isAttackable = !_selectPlayer.IsEndCommand( Command.COMMAND_TAG.ATTACK );
@@ -91,7 +91,7 @@ namespace Frontier
             // 操作対象データをリセット
             _stageCtrl.ClearGridCursroBind();
             // 選択グリッドを表示
-            _stageCtrl.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorControllerActive(true);
             // ステージグリッド上のキャラ情報を更新
             _stageCtrl.UpdateGridInfo();
             // グリッド状態の描画をクリア
@@ -147,7 +147,7 @@ namespace Frontier
         /// <returns>入力によってキャラクター移動が行われたか</returns>
         override protected bool AcceptDirection(Direction dir)
         {
-            return _stageCtrl.OperateGridCursor( dir );
+            return _stageCtrl.OperateGridCursorController( dir );
         }
 
         /// <summary>

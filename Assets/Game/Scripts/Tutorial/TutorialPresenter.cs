@@ -23,13 +23,13 @@ public class TutorialPresenter : MonoBehaviour
     private Image _nextArrowImg;
     private Image _prevArrowImg;
 
-    private HierarchyBuilder _hierarchyBld = null;
+    private HierarchyBuilderBase _hierarchyBld = null;
 
     // 表示内容の参照データ
     private ReadOnlyCollection<TutorialElement> _displayContents;
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld)
+    public void Construct(HierarchyBuilderBase hierarchyBld)
     {
         _hierarchyBld = hierarchyBld;
     }

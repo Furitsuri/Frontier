@@ -58,12 +58,12 @@ namespace Frontier
             // 遷移木の作成
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
-            RootNode = _hierarchyBld.InstantiateWithDiContainer<PlSelectGridState>();
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>());
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>());
-            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlMoveState>());
-            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlAttackState>());
-            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlWaitState>());
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<PlSelectGridState>(false);
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>(false));
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>(false));
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlMoveState>(false));
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlAttackState>(false));
+            RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlWaitState>(false));
 
             CurrentNode = RootNode;
         }

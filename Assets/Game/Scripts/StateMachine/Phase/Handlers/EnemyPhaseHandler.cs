@@ -56,10 +56,10 @@ namespace Frontier
         override protected void CreateTree()
         {
             // 遷移木の作成
-            RootNode = _hierarchyBld.InstantiateWithDiContainer<EmSelectState>();
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmMoveState>());
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmAttackState>());
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmWaitState>());
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<EmSelectState>(false);
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmMoveState>(false));
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmAttackState>(false));
+            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmWaitState>(false));
 
             CurrentNode = RootNode;
         }

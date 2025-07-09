@@ -20,7 +20,7 @@ namespace Frontier
             base.Init();
 
             // グリッド選択を有効化
-            _stageCtrl.SetGridCursorActive(true);
+            _stageCtrl.SetGridCursorControllerActive(true);
 
             RegisterInputCodes();
         }
@@ -88,7 +88,7 @@ namespace Frontier
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptDirection(Direction dir)
         {
-            return _stageCtrl.OperateGridCursor(dir);
+            return _stageCtrl.OperateGridCursorController(dir);
         }
 
         /// <summary>

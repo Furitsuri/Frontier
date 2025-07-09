@@ -2,10 +2,12 @@
 using Frontier.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml.Xsl;
 using UnityEditor;
 using UnityEngine;
 using Zenject;
+using static Constants;
 
 namespace Frontier.Stage
 {
@@ -36,170 +38,110 @@ namespace Frontier.Stage
         }
 
         [SerializeField]
-        private GameObject _stageObject;
-
-        [SerializeField]
         private GameObject _gridMeshObject;
 
         [SerializeField]
-        private GameObject _gridCursorObject;
+        private GameObject _gridCursorCtrlObject;
 
         [SerializeField]
-        private StageData _stageData;
-
-        [SerializeField]
-        private bool isAdjustStageScale = false;
+        public GameObject[] _tilePrefabs;
 
         [SerializeField]
         public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
 
         public bool back = true;
-        private HierarchyBuilder _hierarchyBld = null;
+        private HierarchyBuilderBase _hierarchyBld = null;
         private BattleRoutineController _btlRtnCtrl;
-        private Mesh _mesh;
-        private GridCursor _gridCursor;
-        private GridInfo[] _gridInfo;
-        private GridInfo[] _gridInfoBase;
+		private StageData _stageData;
+        private StageMesh _stageMesh;
+        private GridCursorController _gridCursorCtrl;
+        // private GridInfo[] _gridInfo;
+        // private GridInfo[] _gridInfoBase;
         private Footprint _footprint;
         private List<GridMesh> _gridMeshs;
         private List<int> _attackableGridIndexs;
-        
-        public int GridTotalNum { get; private set; } = 0;
 
         [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld )
+        public void Construct( HierarchyBuilderBase hierarchyBld, StageData stageData )
         {
-            _hierarchyBld = hierarchyBld;
+            _hierarchyBld   = hierarchyBld;
+            _stageData      = stageData;
         }
 
         void Awake()
         {
+            TileMaterialLibrary.Init(); // タイルマテリアルの初期化
+
             _gridMeshs = new List<GridMesh>();
             _attackableGridIndexs = new List<int>();
 
-            GameObject gridCursorObject = Instantiate(_gridCursorObject);
-            if (gridCursorObject != null)
-            {
-                _gridCursor = gridCursorObject.GetComponent<GridCursor>();
-            }
+            _stageData.Init(10, 10);
 
-            // ステージ情報から各サイズを参照する
-            if (isAdjustStageScale)
+            if (_stageMesh == null)
             {
-                _stageData.SetGridRowNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.x) / GetGridSize()) );
-                _stageData.SetGridColumnNum( (int)(Math.Floor(_stageObject.GetComponent<Renderer>().bounds.size.z) / GetGridSize()) );
+                _stageMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageMesh>(true, false, "StageMesh");
             }
-
-            // メッシュを描画
-            GetComponent<MeshFilter>().mesh = _mesh = new Mesh();
-            _mesh = ReGrid(_mesh);
+            _stageMesh.Init(true);
+            _stageMesh.DrawMesh();
 
             // グリッド情報の初期化
-            InitGridInfo();
-            _gridCursor.Init(0, _stageData, this);
+            for( int x = 0; x < _stageData.GridRowNum; ++x )
+            {
+                for( int y = 0; y < _stageData.GridColumnNum; ++y )
+                {
+                    _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
+                    _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
+                    _stageData.GetTile(x, y).InstantiateTileBhv(x, y, _tilePrefabs);
+                }
+            }
+
+            GameObject gridCursorObject = Instantiate(_gridCursorCtrlObject);
+            if (gridCursorObject != null)
+            {
+                _gridCursorCtrl = gridCursorObject.GetComponent<GridCursorController>();
+                _gridCursorCtrl.Init(0, _stageData);
+            }
         }
 
-        /// <summary>
-        /// ステージ上のグリッド線を描画します
-        /// </summary>
-        /// <param name="_mesh">描画に用いるメッシュ</param>
-        /// <returns>グリッド描画情報を持つメッシュ</returns>
-        Mesh ReGrid(Mesh _mesh)
-        {
-            if (back)
-            {
-                GetComponent<MeshRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-            else
-            {
-                GetComponent<MeshRenderer>().material = new Material(Shader.Find("GUI/Text Shader"));
-            }
-
-            _mesh.Clear();
-
-            int resolution;
-            int count = 0;
-            Vector3[] vertices;
-            Vector2[] uvs;
-            int[] lines;
-            Color[] colors;
-
-            _stageData.WidthX = GetGridSize() * _stageData.GetGridRowNum() / 2.0f;
-            _stageData.WidthZ = GetGridSize() * _stageData.GetGridColumnNum() / 2.0f;
-            Vector2 startPosition = new Vector2(-_stageData.WidthX, -_stageData.WidthZ);
-            Vector2 endPosition = -startPosition;
-            resolution = 2 * (_stageData.GetGridRowNum() + _stageData.GetGridColumnNum() + 2);
-            vertices = new Vector3[resolution];
-            uvs = new Vector2[resolution];
-            lines = new int[resolution];
-            colors = new Color[resolution];
-
-            // X方向の頂点
-            for (int i = 0; count < 2 * (_stageData.GetGridRowNum() + 1); ++i, count = 2 * i)
-            {
-                vertices[count] = new Vector3(startPosition.x + ((float)i * GetGridSize()), startPosition.y, 0);
-                vertices[count + 1] = new Vector3(startPosition.x + ((float)i * GetGridSize()), endPosition.y, 0);
-            }
-            // Y(Z)方向の頂点
-            for (int i = 0; count < resolution; ++i, count = 2 * i + 2 * (_stageData.GetGridRowNum() + 1))
-            {
-                vertices[count] = new Vector3(startPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
-                vertices[count + 1] = new Vector3(endPosition.x, endPosition.y - ((float)i * GetGridSize()), 0);
-            }
-
-            for (int i = 0; i < resolution; i++)
-            {
-                uvs[i] = Vector2.zero;
-                lines[i] = i;
-                colors[i] = UnityEngine.Color.black;
-            }
-
-            // Y軸正方向を基軸として回転させる
-            Vector3 rotDirection = Vector3.up;
-            _mesh.vertices = RotationVertices(vertices, rotDirection);
-            _mesh.uv = uvs;
-            _mesh.colors = colors;
-            _mesh.SetIndices(lines, MeshTopology.Lines, 0);
-
-            return _mesh;
-        }
-
+        /*
         /// <summary>
         /// グリッド情報を初期化します
         /// </summary>
         void InitGridInfo()
         {
-            GridTotalNum    = _stageData.GetGridRowNum() * _stageData.GetGridColumnNum();
-            _gridInfo       = new GridInfo[GridTotalNum];
-            _gridInfoBase   = new GridInfo[GridTotalNum]; ;
+            var gridTotalNum = _stageData.GetGridToralNum();
+            _gridInfo       = new GridInfo[gridTotalNum];
+            _gridInfoBase   = new GridInfo[gridTotalNum];
 
-            for (int i = 0; i < GridTotalNum; ++i)
+            for (int i = 0; i < gridTotalNum; ++i)
             {
                 // 初期化
-                _gridInfo[i] = new GridInfo();
-                _gridInfoBase[i] = new GridInfo();
+                _gridInfo[i]        = _hierarchyBld.InstantiateWithDiContainer<GridInfo>();
+                _gridInfoBase[i]    = _hierarchyBld.InstantiateWithDiContainer<GridInfo>();
                 _gridInfo[i].Init();
                 _gridInfoBase[i].Init();
                 // グリッド位置からキャラの立ち位置への補正値
-                float charaPosCorrext = 0.5f * GetGridSize();
+                float charaPosCorrext = 0.5f * TILE_SIZE;
                 // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
-                float posX = -_stageData.WidthX + i % _stageData.GetGridRowNum() * GetGridSize() + charaPosCorrext;
+                float posX = -_stageData.WidthX() + i % _stageData.GridRowNum * TILE_SIZE + charaPosCorrext;
                 // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
-                float posZ = -_stageData.WidthZ + i / _stageData.GetGridRowNum() * GetGridSize() + charaPosCorrext;
+                float posZ = -_stageData.WidthZ() + i / _stageData.GridRowNum * TILE_SIZE + charaPosCorrext;
                 // 上記値から各グリッドのキャラの立ち位置を決定
                 _gridInfoBase[i].charaStandPos = _gridInfo[i].charaStandPos = new Vector3(posX, 0, posZ);
                 // TODO : ファイル読み込みから通行不能な箇所などのBitFlag情報を設定出来るようにする
             }
         }
+        */
 
         /// <summary>
         /// _gridInfoの状態を基の状態に戻します
         /// </summary>
         void ResetGridInfo()
         {
-            for (int i = 0; i < GridTotalNum; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                _gridInfo[i] = _gridInfoBase[i].Copy();
+                // _gridInfo[i] = _gridInfoBase[i].Copy();
+                _stageData.TileDatas[i].CopyTileInfoBaseToOriginal();
             }
         }
 
@@ -215,11 +157,14 @@ namespace Frontier.Stage
         void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  Character.CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
         {
             // 範囲外のグリッドは考慮しない
-            if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
+            if (gridIndex < 0 || _stageData.GetGridToralNum() <= gridIndex) return;
+            // 指定のタイル情報を取得
+            var tileInfo = _stageData.GetTileInfo(gridIndex);
+            if (tileInfo == null) return;
             // 移動不可のグリッドに辿り着いた場合は終了
-            if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return;
+            if (Methods.CheckBitFlag(tileInfo.flag, BitFlag.CANNOT_MOVE)) return;
             // 既に計算済みのグリッドであれば終了
-            if (moveRange <= _gridInfo[gridIndex].estimatedMoveRange) return;
+            if (moveRange <= tileInfo.estimatedMoveRange) return;
             // 自身に対する敵対勢力キャラクターが存在すれば終了
             StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)Character.CHARACTER_TAG.NUM]
             {
@@ -227,26 +172,26 @@ namespace Frontier.Stage
                 BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
                 BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
             };
-            if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, opponentTag[(int)selfTag])) return;
+            if (Methods.CheckBitFlag(tileInfo.flag, opponentTag[(int)selfTag])) return;
 
             // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
-            int currentMoveRange = (isDeparture) ? moveRange : _gridInfo[gridIndex].moveResist + moveRange;
-            _gridInfo[gridIndex].estimatedMoveRange = currentMoveRange;
+            int currentMoveRange = (isDeparture) ? moveRange : tileInfo.moveResist + moveRange;
+            tileInfo.estimatedMoveRange = currentMoveRange;
 
             // 負の値であれば終了
             if (currentMoveRange < 0) return;
             // 攻撃範囲についても登録する
-            if (isAttackable && ( _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.NONE || _gridInfo[gridIndex].charaIndex == selfCharaIndex) )
+            if (isAttackable && ( tileInfo.charaTag == Character.CHARACTER_TAG.NONE || tileInfo.charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
             // 左端を除外
-            if (gridIndex % _stageData.GetGridRowNum() != 0)
+            if (gridIndex % _stageData.GridRowNum != 0)
                 RegistMoveableEachGrid(gridIndex - 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexからX軸方向へ-1
             // 右端を除外
-            if ((gridIndex + 1) % _stageData.GetGridRowNum() != 0)
+            if ((gridIndex + 1) % _stageData.GridRowNum != 0)
                 RegistMoveableEachGrid(gridIndex + 1, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);      // gridIndexからX軸方向へ+1
             // Z軸方向への加算と減算はそのまま
-            RegistMoveableEachGrid(gridIndex - _stageData.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
-            RegistMoveableEachGrid(gridIndex + _stageData.GetGridRowNum(), currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
+            RegistMoveableEachGrid(gridIndex - _stageData.GridRowNum, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ-1
+            RegistMoveableEachGrid(gridIndex + _stageData.GridRowNum, currentMoveRange, attackRange, selfCharaIndex, selfTag, isAttackable);  // gridIndexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -294,10 +239,16 @@ namespace Frontier.Stage
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((Character.CHARACTER_TAG)i))
                 {
                     var gridIndex       = chara.GetCurrentGridIndex();
+                    /*
                     ref var info        = ref _gridInfo[gridIndex];
                     info.charaTag       = chara.param.characterTag;
                     info.charaIndex     = chara.param.characterIndex;
                     Methods.SetBitFlag(ref info.flag, flags[i]);
+                    */
+                    ref var tileInfo    = ref _stageData.GetTileInfo(gridIndex);
+                    tileInfo.charaTag   = chara.param.characterTag;
+                    tileInfo.charaIndex = chara.param.characterIndex;
+                    Methods.SetBitFlag(ref tileInfo.flag, flags[i]);
                 }
             }
         }
@@ -307,12 +258,12 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="direction">グリッドの移動方向</param>
         /// /// <returns>グリッド移動の有無</returns>
-        public bool OperateGridCursor( Constants.Direction direction )
+        public bool OperateGridCursorController( Constants.Direction direction )
         {
-            if (direction == Constants.Direction.FORWARD)   { _gridCursor.Up();     return true; }
-            if (direction == Constants.Direction.BACK)      { _gridCursor.Down();   return true; }
-            if (direction == Constants.Direction.LEFT)      { _gridCursor.Left();   return true; }
-            if (direction == Constants.Direction.RIGHT)     { _gridCursor.Right();  return true; }
+            if (direction == Constants.Direction.FORWARD)   { _gridCursorCtrl.Up();     return true; }
+            if (direction == Constants.Direction.BACK)      { _gridCursorCtrl.Down();   return true; }
+            if (direction == Constants.Direction.LEFT)      { _gridCursorCtrl.Left();   return true; }
+            if (direction == Constants.Direction.RIGHT)     { _gridCursorCtrl.Right();  return true; }
 
             return false;
         }
@@ -324,8 +275,8 @@ namespace Frontier.Stage
         /// <returns>グリッド移動の有無</returns>
         public bool OperateTargetSelect( Constants.Direction direction )
         {
-            if (direction == Constants.Direction.FORWARD || direction == Constants.Direction.LEFT)  { _gridCursor.TransitPrevTarget(); return true; }
-            if (direction == Constants.Direction.BACK || direction == Constants.Direction.RIGHT)    { _gridCursor.TransitNextTarget(); return true; }
+            if (direction == Constants.Direction.FORWARD || direction == Constants.Direction.LEFT)  { _gridCursorCtrl.TransitPrevTarget(); return true; }
+            if (direction == Constants.Direction.BACK || direction == Constants.Direction.RIGHT)    { _gridCursorCtrl.TransitNextTarget(); return true; }
 
             return false;
         }
@@ -336,7 +287,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterGrid(Character character)
         {
-            _gridCursor.Index = character.GetCurrentGridIndex();
+            _gridCursorCtrl.Index = character.GetCurrentGridIndex();
         }
 
         /// <summary>
@@ -347,12 +298,12 @@ namespace Frontier.Stage
         /// <returns>隣り合うか否か</returns>
         public bool IsGridNextToEacheOther(int fstIndex, int scdIndex)
         {
-            bool updown = (Math.Abs(fstIndex - scdIndex) == _stageData.GetGridRowNum());
+            bool updown = (Math.Abs(fstIndex - scdIndex) == _stageData.GridRowNum);
 
-            int fstQuotient = fstIndex / _stageData.GetGridColumnNum();
-            int scdQuotient = scdIndex / _stageData.GetGridColumnNum();
-            var fstRemainder = fstIndex % _stageData.GetGridColumnNum();
-            var scdRemainder = scdIndex % _stageData.GetGridColumnNum();
+            int fstQuotient = fstIndex / _stageData.GridColumnNum;
+            int scdQuotient = scdIndex / _stageData.GridColumnNum;
+            var fstRemainder = fstIndex % _stageData.GridColumnNum;
+            var scdRemainder = scdIndex % _stageData.GridColumnNum;
             bool leftright = (fstQuotient == scdQuotient) && (Math.Abs(fstRemainder - scdRemainder) == 1);
 
             return updown || leftright;
@@ -368,7 +319,7 @@ namespace Frontier.Stage
         /// <param name="isAttackable">攻撃可能か否か</param>
         public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, int selfCharaIndex, Character.CHARACTER_TAG selfTag, bool isAttackable)
         {
-            Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
+            Debug.Assert(0 <= departIndex && departIndex < _stageData.GetGridToralNum(), "StageController : Irregular Index.");
 
             // 移動可否情報を各グリッドに登録
             RegistMoveableEachGrid(departIndex, moveRange, attackRange, selfCharaIndex, selfTag, isAttackable, true);
@@ -382,25 +333,25 @@ namespace Frontier.Stage
         /// <param name="selfTag">攻撃を行うキャラクター自身のキャラクタータグ</param>
         public bool RegistAttackAbleInfo(int departIndex, int attackRange, Character.CHARACTER_TAG selfTag)
         {
-            Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
+            Debug.Assert(0 <= departIndex && departIndex < _stageData.GetGridToralNum(), "StageController : Irregular Index.");
 
             _attackableGridIndexs.Clear();
             Character attackCandidate = null;
 
             // 全てのグリッドの攻撃可否情報を初期化
-            for (int i = 0; i < GridTotalNum; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE);
-                Methods.UnsetBitFlag(ref _gridInfo[i].flag, BitFlag.ATTACKABLE_TARGET);
+                Methods.UnsetBitFlag(ref _stageData.GetTileInfo(i).flag, BitFlag.ATTACKABLE);
+                Methods.UnsetBitFlag(ref _stageData.GetTileInfo(i).flag, BitFlag.ATTACKABLE_TARGET);
             }
 
             // 攻撃可否情報を各グリッドに登録
             RegistAttackableEachGrid(departIndex, attackRange, selfTag, departIndex);
 
             // 攻撃可能、かつ攻撃対象となるキャラクターが存在するグリッドをリストに登録
-            for (int i = 0; i < _gridInfo.Length; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                var info = _gridInfo[i];
+                var info = _stageData.GetTileInfo(i);
                 if (Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE))
                 {
                     attackCandidate = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
@@ -425,35 +376,36 @@ namespace Frontier.Stage
         void RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, int departIndex)
         {
             // 範囲外のグリッドは考慮しない
-            if (gridIndex < 0 || GridTotalNum <= gridIndex) return;
+            if (gridIndex < 0 || _stageData.GetGridToralNum() <= gridIndex) return;
             // 移動不可のグリッドには攻撃できない
-            if (Methods.CheckBitFlag(_gridInfo[gridIndex].flag, BitFlag.CANNOT_MOVE)) return;
+            if (Methods.CheckBitFlag(_stageData.GetTileInfo(gridIndex).flag, BitFlag.CANNOT_MOVE)) return;
             // 出発地点でなければ登録
             if (gridIndex != departIndex)
             {
-                Methods.SetBitFlag(ref _gridInfo[gridIndex].flag, BitFlag.ATTACKABLE);
+                Methods.SetBitFlag(ref _stageData.GetTileInfo(gridIndex).flag, BitFlag.ATTACKABLE);
+                var tileInfo = _stageData.GetTileInfo(gridIndex);
 
                 switch (selfTag)
                 {
                     case Character.CHARACTER_TAG.PLAYER:
-                        if (_gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.ENEMY ||
-                            _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.OTHER)
+                        if (tileInfo.charaTag == Character.CHARACTER_TAG.ENEMY ||
+                            tileInfo.charaTag == Character.CHARACTER_TAG.OTHER)
                         {
-                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
+                            Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     case Character.CHARACTER_TAG.ENEMY:
-                        if (_gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.PLAYER ||
-                            _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.OTHER)
+                        if (tileInfo.charaTag == Character.CHARACTER_TAG.PLAYER ||
+                            tileInfo.charaTag == Character.CHARACTER_TAG.OTHER)
                         {
-                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
+                            Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     case Character.CHARACTER_TAG.OTHER:
-                        if (_gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.PLAYER ||
-                            _gridInfo[gridIndex].charaTag == Character.CHARACTER_TAG.ENEMY)
+                        if (tileInfo.charaTag == Character.CHARACTER_TAG.PLAYER ||
+                            tileInfo.charaTag == Character.CHARACTER_TAG.ENEMY)
                         {
-                            Methods.SetBitFlag(ref _gridInfo[departIndex].flag, BitFlag.ATTACKABLE_TARGET);
+                            Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
                     default:
@@ -465,26 +417,26 @@ namespace Frontier.Stage
             if (--attackRange < 0) return;
 
             // 左端を除外
-            if (gridIndex % _stageData.GetGridRowNum() != 0)
+            if (gridIndex % _stageData.GridRowNum != 0)
                 RegistAttackableEachGrid(gridIndex - 1, attackRange, selfTag, departIndex);       // gridIndexからX軸方向へ-1
                                                                                                   // 右端を除外
-            if ((gridIndex + 1) % _stageData.GetGridRowNum() != 0)
+            if ((gridIndex + 1) % _stageData.GridRowNum != 0)
                 RegistAttackableEachGrid(gridIndex + 1, attackRange, selfTag, departIndex);       // gridIndexからX軸方向へ+1
                                                                                                   // Z軸方向への加算と減算はそのまま
-            RegistAttackableEachGrid(gridIndex - _stageData.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridIndexからZ軸方向へ-1
-            RegistAttackableEachGrid(gridIndex + _stageData.GetGridRowNum(), attackRange, selfTag, departIndex);   // gridindexからZ軸方向へ+1
+            RegistAttackableEachGrid(gridIndex - _stageData.GridRowNum, attackRange, selfTag, departIndex);   // gridIndexからZ軸方向へ-1
+            RegistAttackableEachGrid(gridIndex + _stageData.GridRowNum, attackRange, selfTag, departIndex);   // gridindexからZ軸方向へ+1
         }
 
         /// <summary>
         /// 攻撃可能なキャラクターが存在するグリッドにグリッドカーソルの位置を設定します
         /// </summary>
         /// <param name="target">予め攻撃対象が決まっている際に指定</param>
-        public void SetupGridCursorToAttackCandidate(Character target = null)
+        public void SetupGridCursorControllerToAttackCandidate(Character target = null)
         {
             // 選択グリッドを自動的に攻撃可能キャラクターの存在するグリッドインデックスに設定
             if (0 < _attackableGridIndexs.Count)
             {
-                _gridCursor.SetAtkTargetNum(_attackableGridIndexs.Count);
+                _gridCursorCtrl.SetAtkTargetNum(_attackableGridIndexs.Count);
 
                 // 攻撃対象が既に決まっている場合は対象を探す
                 if (target != null && 1 < _attackableGridIndexs.Count)
@@ -497,14 +449,14 @@ namespace Frontier.Stage
 
                         if (target == chara)
                         {
-                            _gridCursor.SetAtkTargetIndex(i);
+                            _gridCursorCtrl.SetAtkTargetIndex(i);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    _gridCursor.SetAtkTargetIndex(0);
+                    _gridCursorCtrl.SetAtkTargetIndex(0);
                 }
             }
         }
@@ -519,13 +471,13 @@ namespace Frontier.Stage
         {
             Character character = null;
 
-            _gridCursor.ClearAtkTargetInfo();
+            _gridCursorCtrl.ClearAtkTargetInfo();
             _attackableGridIndexs.Clear();
 
             // 攻撃可能、かつ攻撃対象となるキャラクターが存在するグリッドをリストに登録
-            for (int i = 0; i < _gridInfo.Length; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                var info = _gridInfo[i];
+                var info = _stageData.GetTileInfo(i);
                 if (Methods.CheckBitFlag(info.flag, BitFlag.ATTACKABLE))
                 {
                     character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
@@ -540,7 +492,7 @@ namespace Frontier.Stage
             // 選択グリッドを自動的に攻撃可能キャラクターの存在するグリッドインデックスに設定
             if (0 < _attackableGridIndexs.Count)
             {
-                _gridCursor.SetAtkTargetNum(_attackableGridIndexs.Count);
+                _gridCursorCtrl.SetAtkTargetNum(_attackableGridIndexs.Count);
 
                 // 攻撃対象が既に決まっている場合は対象を探す
                 if (target != null && 1 < _attackableGridIndexs.Count)
@@ -553,14 +505,14 @@ namespace Frontier.Stage
 
                         if (target == chara)
                         {
-                            _gridCursor.SetAtkTargetIndex(i);
+                            _gridCursorCtrl.SetAtkTargetIndex(i);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    _gridCursor.SetAtkTargetIndex(0);
+                    _gridCursorCtrl.SetAtkTargetIndex(0);
                 }
             }
 
@@ -575,7 +527,7 @@ namespace Frontier.Stage
         /// <param name="attackableRange">攻撃可能範囲値</param>
         public void DrawMoveableGrids(int departIndex, int moveableRange, int attackableRange)
         {
-            Debug.Assert( 0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index." );
+            Debug.Assert( 0 <= departIndex && departIndex < _stageData.GetGridToralNum(), "StageController : Irregular Index." );
 
             int count = 0;
 
@@ -596,9 +548,9 @@ namespace Frontier.Stage
             };
 
             // グリッドの状態をメッシュで描画
-            for (int i = 0; i < GridTotalNum; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                var info = _gridInfo[i];
+                var info = _stageData.GetTileInfo(i);
 
                 bool[] conditions =
                 {
@@ -616,7 +568,7 @@ namespace Frontier.Stage
                         if( gridMesh == null ) continue;
                      
                         _gridMeshs.Add(gridMesh);
-                        _gridMeshs[count++].DrawGridMesh(info.charaStandPos, GetGridSize(), meshTypes[j]);
+                        _gridMeshs[count++].DrawGridMesh(info.charaStandPos, TILE_SIZE, meshTypes[j]);
                         Debug.Log(dbgStrs[j] + i);
 
                         break;
@@ -631,20 +583,20 @@ namespace Frontier.Stage
         /// <param name="departIndex">攻撃キャラクターが存在するグリッドのインデックス値</param>
         public void DrawAttackableGrids(int departIndex)
         {
-            Debug.Assert(0 <= departIndex && departIndex < GridTotalNum, "StageController : Irregular Index.");
+            Debug.Assert(0 <= departIndex && departIndex < _stageData.GetGridToralNum(), "StageController : Irregular Index.");
 
             int count = 0;
             // グリッドの状態をメッシュで描画
-            for (int i = 0; i < GridTotalNum; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                if (Methods.CheckBitFlag(_gridInfo[i].flag, BitFlag.ATTACKABLE))
+                if (Methods.CheckBitFlag(_stageData.GetTileInfo(i).flag, BitFlag.ATTACKABLE))
                 {
                     var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>(_gridMeshObject, true);
                     NullCheck.AssertNotNull(gridMesh);
                     if (gridMesh == null) continue;
 
                     _gridMeshs.Add(gridMesh);
-                    _gridMeshs[count++].DrawGridMesh(_gridInfo[i].charaStandPos, GetGridSize(), GridMesh.MeshType.ATTACK);
+                    _gridMeshs[count++].DrawGridMesh(_stageData.GetTileInfo(i).charaStandPos, TILE_SIZE, GridMesh.MeshType.ATTACK);
 
                     Debug.Log("Attackable Grid Index : " + i);
                 }
@@ -657,9 +609,9 @@ namespace Frontier.Stage
         public void UnsetGridsBitFlag(BitFlag value)
         {
             // 全てのグリッドの移動・攻撃可否情報を初期化
-            for (int i = 0; i < GridTotalNum; ++i)
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                Methods.UnsetBitFlag(ref _gridInfo[i].flag, value);
+                Methods.UnsetBitFlag(ref _stageData.GetTileInfo(i).flag, value);
             }
         }
 
@@ -701,16 +653,7 @@ namespace Frontier.Stage
         /// <returns>縦軸と横軸のグリッド数</returns>
         public (int, int) GetGridNumsXZ()
         {
-            return (_stageData.GetGridRowNum(), _stageData.GetGridColumnNum());
-        }
-
-        /// <summary>
-        /// グリッドの1辺の大きさ(長さ)を取得します
-        /// </summary>
-        /// <returns>グリッドの1辺の大きさ(長さ)</returns>
-        public float GetGridSize()
-        {
-            return _stageData.GetGridSize();
+            return (_stageData.GridRowNum, _stageData.GridColumnNum);
         }
 
         /// <summary>
@@ -720,7 +663,7 @@ namespace Frontier.Stage
         /// <returns>グリッドにおける中心ワールド座標</returns>
         public Vector3 GetGridCharaStandPos(int index)
         {
-            return _gridInfo[index].charaStandPos;
+            return _stageData.GetTileInfo(index).charaStandPos;
         }
 
         /// <summary>
@@ -729,25 +672,25 @@ namespace Frontier.Stage
         /// <returns>現在の選択グリッドのインデックス値</returns>
         public int GetCurrentGridIndex()
         {
-            return _gridCursor.Index;
+            return _gridCursorCtrl.Index;
         }
 
         /// <summary>
         /// グリッドカーソルの状態を取得します
         /// </summary>
         /// <returns>現在の選択グリッドの状態</returns>
-        public GridCursor.State GetGridCursorState()
+        public GridCursorController.State GetGridCursorControllerState()
         {
-            return _gridCursor.GridState;
+            return _gridCursorCtrl.GridState;
         }
 
         /// <summary>
         /// グリッドカーソルがバインドしているキャラクターを取得します
         /// </summary>
         /// <returns>バインドしているキャラクター(存在しない場合はnull)</returns>
-        public Character GetGridCursorBindCharacter()
+        public Character GetGridCursorControllerBindCharacter()
         {
-            return _gridCursor.BindCharacter;
+            return _gridCursorCtrl.BindCharacter;
         }
 
         /// <summary>
@@ -755,19 +698,19 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="state">バインドタイプ</param>
         /// <param name="bindCharacter">バインド対象のキャラクター</param>
-        public void BindGridCursorState( GridCursor.State state, Character bindCharacter )
+        public void BindGridCursorControllerState( GridCursorController.State state, Character bindCharacter )
         {
-            _gridCursor.GridState       = state;
-            _gridCursor.BindCharacter   = bindCharacter;
+            _gridCursorCtrl.GridState       = state;
+            _gridCursorCtrl.BindCharacter   = bindCharacter;
         }
 
         /// <summary>
         /// 選択グリッドのアクティブ状態を設定します
         /// </summary>
         /// <param name="isActive">設定するアクティブ状態</param>
-        public void SetGridCursorActive( bool isActive )
+        public void SetGridCursorControllerActive( bool isActive )
         {
-            _gridCursor.SetActive( isActive );
+            _gridCursorCtrl.SetActive( isActive );
         }
 
         /// <summary>
@@ -775,13 +718,13 @@ namespace Frontier.Stage
         /// </summary>
         public void ClearGridCursroBind()
         {
-            if (_gridCursor.BindCharacter != null)
+            if (_gridCursorCtrl.BindCharacter != null)
             {
-                _gridCursor.BindCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_CHARACTER));
+                _gridCursorCtrl.BindCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_CHARACTER));
             }
 
-            _gridCursor.GridState       = GridCursor.State.NONE;
-            _gridCursor.BindCharacter   = null;
+            _gridCursorCtrl.GridState       = GridCursorController.State.NONE;
+            _gridCursorCtrl.BindCharacter   = null;
         }
 
         /// <summary>
@@ -793,16 +736,16 @@ namespace Frontier.Stage
         {
             int index = 0;
 
-            if (_gridCursor.GridState == GridCursor.State.ATTACK)
+            if (_gridCursorCtrl.GridState == GridCursorController.State.ATTACK)
             {
-                index = _attackableGridIndexs[_gridCursor.GetAtkTargetIndex()];
+                index = _attackableGridIndexs[_gridCursorCtrl.GetAtkTargetIndex()];
             }
             else
             {
-                index = _gridCursor.Index;
+                index = _gridCursorCtrl.Index;
             }
 
-            gridInfo = _gridInfo[index];
+            gridInfo = _stageData.GetTileInfo(index);
         }
 
         /// <summary>
@@ -812,7 +755,7 @@ namespace Frontier.Stage
         /// <returns>指定インデックスのグリッド情報</returns>
         public ref GridInfo GetGridInfo(int index)
         {
-            return ref _gridInfo[index];
+            return ref _stageData.GetTileInfo(index);
         }
 
         /// <summary>
@@ -843,9 +786,9 @@ namespace Frontier.Stage
                 for (int j = i + 1; j < candidateRouteIndexs.Count; ++j)
                 {
                     int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
-                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageData.GetGridRowNum() != 0)) ||                                 // 左に存在(左端を除く)
-                        (diff == 1 && (candidateRouteIndexs[i] % _stageData.GetGridRowNum() != _stageData.GetGridRowNum() - 1)) ||    // 右に存在(右端を除く)
-                         Math.Abs(diff) == _stageData.GetGridRowNum())                                                                 // 上または下に存在
+                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageData.GridRowNum != 0)) ||                                 // 左に存在(左端を除く)
+                        (diff == 1 && (candidateRouteIndexs[i] % _stageData.GridRowNum != _stageData.GridRowNum - 1)) ||    // 右に存在(右端を除く)
+                         Math.Abs(diff) == _stageData.GridRowNum)                                                                 // 上または下に存在
                     {
                         // 移動可能な隣接グリッド情報をダイクストラに入れる
                         dijkstra.Add(i, j);
@@ -873,7 +816,7 @@ namespace Frontier.Stage
         /// <param name="character">指定するキャラクター</param>
         public void FollowFootprint(Character character)
         {
-            _gridCursor.Index = _footprint.gridIndex;
+            _gridCursorCtrl.Index = _footprint.gridIndex;
             character.SetCurrentGridIndex(_footprint.gridIndex);
             GridInfo info;
             FetchCurrentGridInfo(out info);
@@ -889,9 +832,9 @@ namespace Frontier.Stage
         /// <returns>グリッド長</returns>
         public float CalcurateGridLength(int fromIndex, int toIndex)
         {
-            var from = _gridInfo[fromIndex].charaStandPos;
-            var to = _gridInfo[toIndex].charaStandPos;
-            var gridLength = (from - to).magnitude / GetGridSize();
+            var from    = _stageData.GetTileInfo(fromIndex).charaStandPos;
+            var to      = _stageData.GetTileInfo(toIndex).charaStandPos;
+            var gridLength = (from - to).magnitude / TILE_SIZE;
 
             return gridLength;
         }
@@ -907,8 +850,8 @@ namespace Frontier.Stage
 
                 // ステージ情報からサイズを決める際はサイズ編集を不可にする
                 EditorGUI.BeginDisabledGroup(script.isAdjustStageScale);
-                script._stageData.SetGridRowNum( EditorGUILayout.IntField("X方向グリッド数", script._stageData.GetGridRowNum()) );
-                script._stageData.SetGridColumnNum( EditorGUILayout.IntField("Z方向グリッド数", script._stageData.GetGridColumnNum()) );
+                script._stageData.SetGridRowNum( EditorGUILayout.IntField("X方向グリッド数", script._stageData.GridRowNum) );
+                script._stageData.SetGridColumnNum( EditorGUILayout.IntField("Z方向グリッド数", script._stageData.GridColumnNum) );
                 EditorGUI.EndDisabledGroup();
 
                 base.OnInspectorGUI();

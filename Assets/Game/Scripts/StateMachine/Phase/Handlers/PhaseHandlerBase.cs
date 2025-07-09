@@ -9,13 +9,13 @@ namespace Frontier
     {
         protected bool _isInitReserved                  = false;
         protected bool _isFirstUpdate                   = false;
-        protected HierarchyBuilder _hierarchyBld        = null;
+        protected HierarchyBuilderBase _hierarchyBld        = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stgCtrl              = null;
         protected BattleUISystem _btlUi                 = null;
         
         [Inject]
-        public void Construct( HierarchyBuilder hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl)
+        public void Construct( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl)
         {
             _hierarchyBld   = hierarchyBld;
             _btlRtnCtrl     = btlRtnCtrl;

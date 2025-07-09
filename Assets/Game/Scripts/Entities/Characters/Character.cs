@@ -138,7 +138,7 @@ namespace Frontier.Entities
         private GameObject _bulletObject;
 
         // Injectされるインスタンス
-        protected HierarchyBuilder _hierarchyBld        = null;
+        protected HierarchyBuilderBase _hierarchyBld        = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
         protected IUiSystem _uiSystem                    = null;
@@ -198,7 +198,7 @@ namespace Frontier.Entities
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( HierarchyBuilder hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl, IUiSystem uiSystem )
+        void Construct( HierarchyBuilderBase hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl, IUiSystem uiSystem )
         {
             _hierarchyBld   = hierarchyBld;
             _btlRtnCtrl     = battleMgr;
@@ -262,7 +262,7 @@ namespace Frontier.Entities
 
                 if( (int)SkillsData.ID.SKILL_PARRY == skillID )
                 {
-                    _parrySkill = _hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>();
+                    _parrySkill = _hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false);
                     _parrySkill.Init( this );
                 }
             }

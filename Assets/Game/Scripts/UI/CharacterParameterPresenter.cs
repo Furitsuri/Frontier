@@ -41,11 +41,11 @@ namespace Frontier
         {
             Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(_btlRtnCtrl.SelectCharacterInfo);
 
-            var bindCharacter = _stgCtrl.GetGridCursorBindCharacter();
+            var bindCharacter = _stgCtrl.GetGridCursorControllerBindCharacter();
 
-            switch (_stgCtrl.GetGridCursorState())
+            switch (_stgCtrl.GetGridCursorControllerState())
             {
-                case Stage.GridCursor.State.ATTACK: // 攻撃対象選択時
+                case Stage.GridCursorController.State.ATTACK: // 攻撃対象選択時
                     Debug.Assert(bindCharacter != null);
 
                     _uiSystem.BattleUi.TogglePlayerParameter(true);
@@ -68,7 +68,7 @@ namespace Frontier
                     }
                     break;
                 
-                case Stage.GridCursor.State.MOVE:   // 移動候補選択時
+                case Stage.GridCursorController.State.MOVE:   // 移動候補選択時
                     Debug.Assert(bindCharacter != null);
 
                     PlayerParameter.SetDisplayCharacter(bindCharacter);

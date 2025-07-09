@@ -40,7 +40,7 @@ namespace Frontier.Battle
         private GameObject _btlFileLoadObject;
 
         private IInstaller _installer          = null;
-        private HierarchyBuilder _hierarchyBld  = null;
+        private HierarchyBuilderBase _hierarchyBld  = null;
         private InputFacade _inputFcd           = null;
         private StageController _stgCtrl        = null;
         private IUiSystem _uiSystem              = null;
@@ -73,7 +73,7 @@ namespace Frontier.Battle
         /// <param name="stgCtrl">ステージのコントローラ</param>
         /// <param name="uiSystem">UIシステム</param>
         [Inject]
-        void Construct(IInstaller installer, HierarchyBuilder hierarchyBld, InputFacade inputFcd, StageController stgCtrl, IUiSystem uiSystem)
+        void Construct(IInstaller installer, HierarchyBuilderBase hierarchyBld, InputFacade inputFcd, StageController stgCtrl, IUiSystem uiSystem)
         {
             _installer      = installer;
             _hierarchyBld   = hierarchyBld;
@@ -109,7 +109,7 @@ namespace Frontier.Battle
 
             if (_btlCharaCdr == null)
             {
-                _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>();
+                _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>(false);
                 NullCheck.AssertNotNull(_btlCharaCdr);
             }
 
@@ -128,8 +128,8 @@ namespace Frontier.Battle
                 _btlFileLoader.CharacterLoad(_currentStageIndex);
             }
 
-            _phaseHdlrs[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>();
-            _phaseHdlrs[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>();
+            _phaseHdlrs[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false);
+            _phaseHdlrs[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false);
             _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN];
             _currentPhaseHdlr.Init();
 

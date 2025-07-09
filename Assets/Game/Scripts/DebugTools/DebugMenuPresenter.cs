@@ -10,7 +10,7 @@ using Zenject;
 
 public class DebugMenuPresenter : MonoBehaviour
 {
-    private HierarchyBuilder _hierarchyBld = null;
+    private HierarchyBuilderBase _hierarchyBld = null;
 
     [SerializeField]
     private GameObject DebugMenuList;
@@ -26,7 +26,7 @@ public class DebugMenuPresenter : MonoBehaviour
     }
 
     [Inject]
-    public void Construct(HierarchyBuilder hierarchyBld)
+    public void Construct(HierarchyBuilderBase hierarchyBld)
     {
         _hierarchyBld = hierarchyBld;
     }

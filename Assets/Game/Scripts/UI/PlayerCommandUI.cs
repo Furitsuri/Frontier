@@ -14,7 +14,7 @@ namespace Frontier
         private GameObject _TMPCommandStringSample;
 
         [Inject]
-        private HierarchyBuilder _hierarchyBld = null;
+        private HierarchyBuilderBase _hierarchyBld = null;
 
         private List<TextMeshProUGUI> _commandTexts = new List<TextMeshProUGUI>();
         private RectTransform _commandUIBaseRectTransform;
@@ -24,7 +24,7 @@ namespace Frontier
 
         void Awake()
         {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderのインスタンスが生成されていません。Injectの設定を確認してください。");
+            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderBaseのインスタンスが生成されていません。Injectの設定を確認してください。");
 
             _commandUIBaseRectTransform     = gameObject.GetComponent<RectTransform>();
             _cmdTextVerticalLayout          = gameObject.GetComponent<VerticalLayoutGroup>();

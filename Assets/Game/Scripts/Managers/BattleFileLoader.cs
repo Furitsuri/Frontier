@@ -52,7 +52,7 @@ namespace Frontier
         [SerializeField]
         public string RangedAtkCameraParamFilePath;
 
-        private HierarchyBuilder _hierarchyBld = null;
+        private HierarchyBuilderBase _hierarchyBld = null;
 
         // バトルマネージャ
         private BattleRoutineController _btlRtnCtrl;
@@ -122,7 +122,7 @@ namespace Frontier
         /// <param name="btlRtnCtrl"></param>
         /// <param name="hierarchyBld"></param>
         [Inject]
-        void Construct(BattleRoutineController btlRtnCtrl, HierarchyBuilder hierarchyBld)
+        void Construct(BattleRoutineController btlRtnCtrl, HierarchyBuilderBase hierarchyBld)
         {
             _btlRtnCtrl     = btlRtnCtrl;
             _hierarchyBld   = hierarchyBld;
