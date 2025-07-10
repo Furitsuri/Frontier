@@ -240,10 +240,10 @@ namespace Frontier.Stage
 
             Vector3[] linePoints = new Vector3[]
             {
-                new Vector3(-halfSize, tileScale.y, -halfSize) + centralPos,
-                new Vector3(-halfSize, tileScale.y,  halfSize) + centralPos,
-                new Vector3( halfSize, tileScale.y,  halfSize) + centralPos,
-                new Vector3( halfSize, tileScale.y, -halfSize) + centralPos,
+                new Vector3(-halfSize, GRID_CURSOR_OFFSET_Y, -halfSize) + centralPos,
+                new Vector3(-halfSize, GRID_CURSOR_OFFSET_Y,  halfSize) + centralPos,
+                new Vector3( halfSize, GRID_CURSOR_OFFSET_Y,  halfSize) + centralPos,
+                new Vector3( halfSize, GRID_CURSOR_OFFSET_Y, -halfSize) + centralPos,
             };
 
             // SetVertexCountは廃止されているはずだが、使用しないと正常に描画されなかったため使用(2023/5/26)

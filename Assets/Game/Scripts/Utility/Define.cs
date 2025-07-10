@@ -52,9 +52,11 @@
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値
-    public const float TILE_THICKNESS_MIN = 0.01f;
+    public const float TILE_THICKNESS_MIN   = 0.01f;
     // グリッドのY座標に加算する補正値
-    public const float ADD_GRID_POS_Y = 0.02f;
+    public const float ADD_GRID_POS_Y       = 0.02f;
+    // グリッドカーソルのY座標に加算する補正値
+    public const float GRID_CURSOR_OFFSET_Y = 0.03f;
     // キャラクターの移動速度
     public const float CHARACTER_MOVE_SPEED = 7.5f;
     // キャラクターの回転速度
