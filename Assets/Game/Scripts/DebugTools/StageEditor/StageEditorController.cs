@@ -1,5 +1,7 @@
 ﻿using Frontier.Stage;
+using System;
 using System.ComponentModel;
+using Unity.Mathematics;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -102,12 +104,11 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "SELECT",       CanAcceptDirection,     new AcceptDirectionInput(AcceptDirection),  0.1f),
                 (GuideIcon.CONFIRM,     "CONFIRM",      CanAcceptConfirm,       new AcceptBooleanInput(AcceptConfirm),      0.0f),
-                (GuideIcon.SUB1,        "CHANGE TILE",  CanAcceptSub1,          new AcceptBooleanInput(AcceptSub1),         0.0f),
-                (GuideIcon.SUB2,        "ADD HEIGHT",   CanAcceptSub2,          new AcceptBooleanInput(AcceptSub2),         0.0f),
-                (GuideIcon.SUB3,        "SUB HEIGHT",   CanAcceptSub3,          new AcceptBooleanInput(AcceptSub3),         0.0f)
-                // (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f),
-                // (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f)
-                );
+                (GuideIcon.SUB1,        "SUB TILE NUM", CanAcceptSub,           new AcceptBooleanInput(AcceptSub1),         0.0f),
+                (GuideIcon.SUB2,        "ADD TILE NUM", CanAcceptSub,           new AcceptBooleanInput(AcceptSub2),         0.0f),
+                (GuideIcon.SUB3,        "SUB HEIGHT",   CanAcceptSub,           new AcceptBooleanInput(AcceptSub3),         0.0f),
+                (GuideIcon.SUB4,        "ADD HEIGHT",   CanAcceptSub,           new AcceptBooleanInput(AcceptSub4),         0.0f)
+            );
         }
 
         private void HandleInput()
@@ -184,17 +185,7 @@ namespace Frontier.DebugTools.StageEditor
         /// サブ1の入力の受付可否を判定します
         /// </summary>
         /// <returns>サブ1の入力の受付可否</returns>
-        private bool CanAcceptSub1()
-        {
-            return true;
-        }
-
-        private bool CanAcceptSub2()
-        {
-            return true;
-        }
-
-        private bool CanAcceptSub3()
+        private bool CanAcceptSub()
         {
             return true;
         }
@@ -233,7 +224,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedType = (selectedType + 1) % (int)TileType.NUM;
+                selectedType = Math.Clamp(selectedType - 1, 0, (int)TileType.NUM);
 
                 return true;
             }
@@ -245,7 +236,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedHeight = Mathf.Clamp(selectedHeight + 1, 0, 5);
+                selectedType = Math.Clamp( selectedType + 1, 0, (int)TileType.NUM );
 
                 return true;
             }
@@ -258,6 +249,18 @@ namespace Frontier.DebugTools.StageEditor
             if (isInput)
             {
                 selectedHeight = Mathf.Clamp(selectedHeight - 1, 0, 5);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool AcceptSub4(bool isInput)
+        {
+            if (isInput)
+            {
+                selectedHeight = Mathf.Clamp(selectedHeight + 1, 0, 5);
 
                 return true;
             }
