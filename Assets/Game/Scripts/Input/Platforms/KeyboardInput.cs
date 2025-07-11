@@ -18,22 +18,27 @@ public class KeyboardInput : IInput
 
     public bool IsConfirmPressed()
     {
-        return Input.GetKeyUp(KeyCode.Space);
+        return Input.GetKeyUp(KeyCode.Tab);
     }
 
     public bool IsCancelPressed()
     {
-        return Input.GetKeyUp(KeyCode.Backspace);
+        return Input.GetKeyUp(KeyCode.Escape);
     }
 
-    public bool IsPausePressed()
+    public bool IsToolPressed()
     {
-        return false;
+        return Input.GetKeyUp(KeyCode.LeftControl);
+    }
+
+    public bool IsInfoPressed()
+    {
+        return Input.GetKeyUp(KeyCode.LeftShift);
     }
 
     public bool IsOptionsPressed()
     {
-        return Input.GetKeyUp(KeyCode.Escape);
+        return Input.GetKeyUp(KeyCode.Space);
     }
 
     public bool IsSub1Pressed()

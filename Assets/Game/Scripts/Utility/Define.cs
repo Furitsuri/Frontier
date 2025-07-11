@@ -26,6 +26,8 @@
         HORIZONTAL_CURSOR,  // 横方向
         CONFIRM,            // 決定
         CANCEL,             // 戻る
+        TOOL,               // ツール
+        INFO,               // 情報
         ESCAPE,             // オプション
         SUB1,               // 入力サブ1
         SUB2,               // 入力サブ2

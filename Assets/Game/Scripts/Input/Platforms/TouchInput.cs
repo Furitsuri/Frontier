@@ -25,6 +25,16 @@ public class TouchInput : IInput
         return false;
     }
 
+    public bool IsToolPressed()
+    {
+        return false;
+    }
+
+    public bool IsInfoPressed()
+    {
+        return false;
+    }
+
     public bool IsOptionsPressed()
     {
         return false;

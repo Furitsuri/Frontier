@@ -65,26 +65,30 @@ public class InputGuidePresenter : MonoBehaviour
             "_alpha_309",   // ALL_CURSOR
             "_alpha_315",   // VERTICAL
             "_alpha_314",   // HORIZONTAL
-            "_alpha_201",   // CONFIRM
-            "_alpha_260",   // CANCEL
-            "_alpha_259",   // ESCAPE
-            "_alpha_189",   // SUB1
-            "_alpha_190",   // SUB2
-            "_alpha_191",   // SUB3
-            "_alpha_192",   // SUB4
+            "_alpha_263",   // CONFIRM(Tab)
+            "_alpha_259",   // CANCEL(Esc)
+            "_alpha_202",   // TOOL(Ctrl)
+            "_alpha_204",   // INFO(Shift)
+            "_alpha_201",   // OPTION(Space)
+            "_alpha_94",    // SUB1(1)
+            "_alpha_95",    // SUB2(2)
+            "_alpha_96",    // SUB3(3)
+            "_alpha_97",    // SUB4(4)
             "_alpha_119",   // DEBUG_MENU
 #elif UNITY_STANDALONE_WIN
-            "_9",   // ALL_CURSOR
-            "_15",  // VERTICAL
-            "_14",  // HORIZONTAL
-            "_20",  // CONFIRM
-            "_21",  // CANCEL
-            "_27",  // ESCAPE
-            "_100",  // SUB1
-            "_101",  // SUB2
-            "_102",  // SUB3
-            "_103",  // SUB4
-            "_140",  // DEBUG
+            "_9",       // ALL_CURSOR
+            "_15",      // VERTICAL
+            "_14",      // HORIZONTAL
+            "_20",      // CONFIRM
+            "_21",      // CANCEL
+            "_20",      // TOOL
+            "_21",      // INFO
+            "_27",      // ESCAPE
+            "_100",     // SUB1
+            "_101",     // SUB2
+            "_102",     // SUB3
+            "_103",     // SUB4
+            "_140",     // DEBUG
 #else
 #endif
         };
