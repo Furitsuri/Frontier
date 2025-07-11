@@ -10,7 +10,9 @@ public interface IInput
 
     public bool IsCancelPressed();
 
-    public bool IsPausePressed();
+    public bool IsToolPressed();
+
+    public bool IsInfoPressed();
 
     public bool IsOptionsPressed();
 

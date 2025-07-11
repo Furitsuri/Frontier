@@ -25,9 +25,14 @@ public class PadInput : IInput
         return Input.GetButtonUp("Cancel");
     }
 
-    public bool IsPausePressed()
+    public bool IsToolPressed()
     {
-        return false;
+        return Input.GetButtonUp("Jump");
+    }
+
+    public bool IsInfoPressed()
+    {
+        return Input.GetButtonUp("Cancel"); ;
     }
 
     public bool IsOptionsPressed()

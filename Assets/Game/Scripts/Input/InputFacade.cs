@@ -149,6 +149,8 @@ public class InputFacade
             ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f ),
             ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f ),
             ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f ),
+            ( Constants.GuideIcon.TOOL,                "", null, null, 0.0f ),
+            ( Constants.GuideIcon.INFO,                "", null, null, 0.0f ),
             ( Constants.GuideIcon.ESCAPE,              "", null, null, 0.0f ),
             ( Constants.GuideIcon.SUB1,                "", null, null, 0.0f ),
             ( Constants.GuideIcon.SUB2,                "", null, null, 0.0f ),
