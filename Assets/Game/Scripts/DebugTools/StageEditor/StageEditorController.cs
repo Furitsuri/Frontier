@@ -29,12 +29,11 @@ namespace Frontier.DebugTools.StageEditor
 
         private InputFacade _inputFcd;
         private HierarchyBuilderBase _hierarchyBld;
-        private TileBehaviour[,] tileObjects;
         private StageData _stageData;
         private StageMesh _stageMesh;
         private GridCursorController _gridCursorCtrl;
         private int selectedType = 0;
-        private int selectedHeight = 0;
+        private float selectedHeight = 0;
 
         private Vector3 offset = new Vector3(0, 5, -5); // ターゲットからの相対位置
 
@@ -117,19 +116,17 @@ namespace Frontier.DebugTools.StageEditor
             if (Input.GetKeyDown(KeyCode.L)) LoadStage("test_stage");
         }
 
+        /// <summary>
+        /// 指定された位置にタイルを設置します
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         private void PlaceTile(int x, int y)
         {
-            Destroy(tileObjects[x, y]);
-            
-            _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
+            _stageData.GetTile(x, y).Dispose(); // 既存のタイルを破棄
             _stageData.GetTile(x, y).SetTileTypeAndHeight((TileType)selectedType, selectedHeight);
-            _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
-
-            var tileBhv = tileObjects[x, y].GetComponent<TileBehaviour>();
-            if (tileBhv != null)
-            {
-                tileBhv.ApplyTileType((TileType)selectedType);
-            }
+            _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
+            _stageData.GetTile(x, y).InstantiateTileBhv(x, y,  tilePrefabs);
         }
 
         private void UpdateCamera(int x, int y)
@@ -270,7 +267,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedHeight = Mathf.Clamp(selectedHeight - 1, 0, 5);
+                selectedHeight = Mathf.Clamp((float)selectedHeight - 0.5f, 0.0f, 5.0f);
 
                 return true;
             }
@@ -282,7 +279,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedHeight = Mathf.Clamp(selectedHeight + 1, 0, 5);
+                selectedHeight = Mathf.Clamp((float)selectedHeight + 0.5f, 0.0f, 5.0f);
 
                 return true;
             }

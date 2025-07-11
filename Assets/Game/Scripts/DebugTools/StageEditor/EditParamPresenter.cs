@@ -19,7 +19,7 @@ public class EditParamPresenter : MonoBehaviour
     /// </summary>
     /// <param name="type">タイプ</param>
     /// <param name="height">高さ</param>
-    public void UpdateText( int type, int height )
+    public void UpdateText( int type, float height )
     {
         _tileTypeStr.text   = ((TileType)type).ToString();
         _heightStr.text     = height.ToString();

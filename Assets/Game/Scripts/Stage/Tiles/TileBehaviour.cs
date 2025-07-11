@@ -14,6 +14,19 @@ namespace Frontier.Stage
             transform.localScale = TileMaterialLibrary.GetDefaultTileScale();
         }
 
+        /// <summary>
+        /// 破棄処理を行います。
+        /// </summary>
+        public void Dispose()
+        {
+            if (_renderer != null)
+            {
+                Destroy(_renderer.material);
+            }
+
+            Destroy(gameObject);
+        }
+
         public void ApplyTileType(TileType type)
         {
             _renderer.material = TileMaterialLibrary.GetMaterial(type);

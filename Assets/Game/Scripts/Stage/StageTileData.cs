@@ -10,7 +10,7 @@ public class StageTileData
     /// ステージデータとして保存するもののみpublic属性にしています。
     /// </summary>
     public TileType TileType { get; private set; }
-    public int Height { get; private set; }
+    public float Height { get; private set; }
 
     private HierarchyBuilderBase _hierarchyBld;
     private TileBehaviour _tileBhv = null;
@@ -30,6 +30,23 @@ public class StageTileData
         _tileBhv        = null;
         _tileInfo       = null;
         _tileInfoBase   = null;
+    }
+
+    public void Dispose()
+    {
+        if (_tileBhv != null)
+        {
+            _tileBhv.Dispose();
+            _tileBhv = null;
+        }
+        if (_tileInfo != null)
+        {
+            _tileInfo = null;
+        }
+        if (_tileInfoBase != null)
+        {
+            _tileInfoBase = null;
+        }
     }
 
     public StageTileData(TileType type = TileType.None, int height = 0)
@@ -66,11 +83,11 @@ public class StageTileData
 
         Vector3 position = new Vector3(
             x * TILE_SIZE + 0.5f * TILE_SIZE,   // X座標はグリッドの中心に配置
-            Height - TILE_THICKNESS_MIN,        // Y座標はタイルの高さ(タイルの厚みの最小値は減算する)
+            0.5f * Height - TILE_THICKNESS_MIN, // Y座標はタイルの高さ(タイルの厚みの最小値は減算する)
             y * TILE_SIZE + 0.5f * TILE_SIZE    // Z座標はグリッドの中心に配置
         );
 
-        _tileBhv = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[(int)TileType], true, false);
+        _tileBhv = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[0], true, false);
         _tileBhv.transform.position     = position;
         _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_THICKNESS_MIN, TILE_SIZE);
         _tileBhv.transform.rotation     = Quaternion.identity;
@@ -82,16 +99,10 @@ public class StageTileData
         _tileInfo = _tileInfoBase.Copy();
     }
 
-    public void SetTileTypeAndHeight(TileType type, int height)
+    public void SetTileTypeAndHeight(TileType type, float height)
     {
         TileType    = type;
         Height      = height;
-        if (_tileBhv != null)
-        {
-            _tileBhv.ApplyTileType(type);
-            _tileBhv.transform.localScale = new Vector3(TILE_SIZE, height + TILE_THICKNESS_MIN, TILE_SIZE);
-            _tileInfo.charaStandPos = _tileInfoBase.charaStandPos = new Vector3(_tileBhv.transform.position.x, Height, _tileBhv.transform.position.z);
-        }
     }
 
     public Vector3 GetTileScale()
