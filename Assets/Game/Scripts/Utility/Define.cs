@@ -85,6 +85,8 @@
     public const float CONFIRM_INPUT_INTERVAL           = 0.0f;
     public const float CANCEL_INPUT_INTERVAL            = 0.0f;
     public const float OPTIONAL_INPUT_INTERVAL          = 0.0f;
+    public const float GUIDE_TEXT_MIN_SIZE              = 10f;
+    public const float GUIDE_TEXT_MAX_SIZE              = 20f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
