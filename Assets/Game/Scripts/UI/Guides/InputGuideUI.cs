@@ -57,19 +57,19 @@ public class InputGuideUI : MonoBehaviour
     // 入力ガイドの枠UI
     private RectTransform _rectTransform;
     // 子のオブジェクト
-    private GameObject[] _objectChildren;
+    private GameObject[] _childrenObjects;
 
     void Awake()
     {
         // 子のオブジェクトを取得
-        _objectChildren = new GameObject[(int)ChildIndex.NUM];
+        _childrenObjects = new GameObject[(int)ChildIndex.NUM];
         for (int i = 0; i < (int)ChildIndex.NUM; ++i)
         {
             Transform childTransform = transform.GetChild(i);
 
             Debug.Assert(childTransform != null, $"Not Found : Child of \"{Enum.GetValues(typeof(ChildIndex)).GetValue(i).ToString()}\".");
 
-            _objectChildren[i] = childTransform.gameObject;
+            _childrenObjects[i] = childTransform.gameObject;
         }
 
         _rectTransform = gameObject.GetComponent<RectTransform>();
@@ -91,7 +91,10 @@ public class InputGuideUI : MonoBehaviour
         // Z軸の位置を0に設定, スケール値を1に設定
         transform.localPosition     = new Vector3(transform.localPosition.x, transform.localPosition.y, 0f);
         _rectTransform.localScale   = Vector3.one;
-        
+
+        // 説明文の文字の大きさなどの設定を初期化
+        InitTextMeshSetting();
+
         // ガイド幅を調整
         AdjustWidth();
     }
@@ -112,17 +115,29 @@ public class InputGuideUI : MonoBehaviour
     }
 
     /// <summary>
+    /// TextMeshProのパラメータを初期化します
+    /// </summary>
+    private void InitTextMeshSetting()
+    {
+        GuideExplanation.enableAutoSizing   = true;
+        GuideExplanation.fontSizeMin        = Constants.GUIDE_TEXT_MIN_SIZE;
+        GuideExplanation.fontSizeMax        = Constants.GUIDE_TEXT_MAX_SIZE;
+        GuideExplanation.enableWordWrapping = true;
+        GuideExplanation.overflowMode       = TextOverflowModes.Truncate;
+    }
+
+    /// <summary>
     /// 表示する文字列やスプライトに応じて、ガイド幅の長さを調整します
     /// </summary>
     private void AdjustWidth()
     {
-        var spriteRectTransform = _objectChildren[(int)ChildIndex.SPRITE].GetComponent<RectTransform>();
+        var spriteRectTransform = _childrenObjects[(int)ChildIndex.SPRITE].GetComponent<RectTransform>();
         Debug.Assert(spriteRectTransform != null, "GetComponent of \"RectTransform in sprite\" failed.");
         var textPosX = spriteRectTransform.anchoredPosition.x + 0.5f * spriteRectTransform.rect.width * spriteRectTransform.localScale.x + Constants.SPRITE_TEXT_SPACING_ON_KEY_GUIDE;
 
-        var textRectTransform = _objectChildren[(int)ChildIndex.TEXT].GetComponent<RectTransform>();
+        var textRectTransform = _childrenObjects[(int)ChildIndex.TEXT].GetComponent<RectTransform>();
         Debug.Assert(textRectTransform != null, "GetComponent of \"RectTransform in text\" failed.");
-        textRectTransform.anchoredPosition = new Vector2(textPosX, textRectTransform.anchoredPosition.y);
+        textRectTransform.anchoredPosition = new Vector2(textPosX, 0);
         textRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, GuideExplanation.preferredWidth);
 
         var guideWidth = textPosX + textRectTransform.sizeDelta.x;

@@ -104,6 +104,7 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "SELECT",       CanAcceptDirection,     new AcceptDirectionInput(AcceptDirection),  0.1f),
                 (GuideIcon.CONFIRM,     "CONFIRM",      CanAcceptConfirm,       new AcceptBooleanInput(AcceptConfirm),      0.0f),
+                (GuideIcon.ESCAPE,      "SAVE",         CanAcceptEscape,        new AcceptBooleanInput(AcceptEscape),       0.0f),
                 (GuideIcon.SUB1,        "SUB TILE NUM", CanAcceptSub,           new AcceptBooleanInput(AcceptSub1),         0.0f),
                 (GuideIcon.SUB2,        "ADD TILE NUM", CanAcceptSub,           new AcceptBooleanInput(AcceptSub2),         0.0f),
                 (GuideIcon.SUB3,        "SUB HEIGHT",   CanAcceptSub,           new AcceptBooleanInput(AcceptSub3),         0.0f),
@@ -113,7 +114,6 @@ namespace Frontier.DebugTools.StageEditor
 
         private void HandleInput()
         {
-            if (Input.GetKeyDown(KeyCode.S)) StageDataSerializer.Save(_stageData, "test_stage");
             if (Input.GetKeyDown(KeyCode.L)) LoadStage("test_stage");
         }
 
@@ -181,8 +181,13 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
+        private bool CanAcceptEscape()
+        {
+            return true;
+        }
+
         /// <summary>
-        /// サブ1の入力の受付可否を判定します
+        /// サブ入力の受付可否を判定します
         /// </summary>
         /// <returns>サブ1の入力の受付可否</returns>
         private bool CanAcceptSub()
@@ -213,6 +218,23 @@ namespace Frontier.DebugTools.StageEditor
             if (isInput)
             {
                 PlaceTile(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 決定入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="isInput">決定入力</param>
+        /// <returns>入力実行の有無</returns>
+        private bool AcceptEscape(bool isInput)
+        {
+            if (isInput)
+            {
+                StageDataSerializer.Save(_stageData, "test_stage");
 
                 return true;
             }
