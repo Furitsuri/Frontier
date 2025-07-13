@@ -32,8 +32,9 @@ namespace Frontier.DebugTools.StageEditor
         private StageData _stageData;
         private StageMesh _stageMesh;
         private GridCursorController _gridCursorCtrl;
-        private int selectedType = 0;
-        private float selectedHeight = 0;
+        private StageEditMode _editMode     = StageEditMode.TILE_EDIT;
+        private int _selectedType           = 0;
+        private float _selectedHeight       = 0;
 
         private Vector3 offset = new Vector3(0, 5, -5); // ターゲットからの相対位置
 
@@ -73,15 +74,18 @@ namespace Frontier.DebugTools.StageEditor
                     _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
                     _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
                     _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
+                    _stageData.GetTile(x, y).InstantiateTileMesh();
                 }
             }
 
+            /*
             if( _stageMesh == null )
             {
                 _stageMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageMesh>(true, false, "StageMesh");
             }
             _stageMesh.Init(true);
             _stageMesh.DrawMesh();
+            */
         }
 
         private void CreateCursor()
@@ -95,7 +99,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             UpdateCamera(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
             UpdateTileVisual(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
-            EditParamView.UpdateText(selectedType, selectedHeight);
+            EditParamView.UpdateText(_editMode, _selectedType, _selectedHeight);
         }
 
         private void RegistInputCodes()
@@ -124,9 +128,10 @@ namespace Frontier.DebugTools.StageEditor
         private void PlaceTile(int x, int y)
         {
             _stageData.GetTile(x, y).Dispose(); // 既存のタイルを破棄
-            _stageData.GetTile(x, y).SetTileTypeAndHeight((TileType)selectedType, selectedHeight);
+            _stageData.GetTile(x, y).SetTileTypeAndHeight((TileType)_selectedType, _selectedHeight);
             _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
             _stageData.GetTile(x, y).InstantiateTileBhv(x, y,  tilePrefabs);
+            _stageData.GetTile(x, y).InstantiateTileMesh();
         }
 
         private void UpdateCamera(int x, int y)
@@ -243,7 +248,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedType = Math.Clamp(selectedType - 1, 0, (int)TileType.NUM);
+                _selectedType = Math.Clamp(_selectedType - 1, 0, (int)TileType.NUM);
 
                 return true;
             }
@@ -255,7 +260,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedType = Math.Clamp( selectedType + 1, 0, (int)TileType.NUM );
+                _selectedType = Math.Clamp( _selectedType + 1, 0, (int)TileType.NUM );
 
                 return true;
             }
@@ -267,7 +272,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedHeight = Mathf.Clamp((float)selectedHeight - 0.5f, 0.0f, 5.0f);
+                _selectedHeight = Mathf.Clamp((float)_selectedHeight - 0.5f, 0.0f, 5.0f);
 
                 return true;
             }
@@ -279,7 +284,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (isInput)
             {
-                selectedHeight = Mathf.Clamp((float)selectedHeight + 0.5f, 0.0f, 5.0f);
+                _selectedHeight = Mathf.Clamp((float)_selectedHeight + 0.5f, 0.0f, 5.0f);
 
                 return true;
             }

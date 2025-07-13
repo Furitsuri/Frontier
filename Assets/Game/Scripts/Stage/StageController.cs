@@ -90,6 +90,7 @@ namespace Frontier.Stage
                     _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
                     _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
                     _stageData.GetTile(x, y).InstantiateTileBhv(x, y, _tilePrefabs);
+                    _stageData.GetTile(x, y).InstantiateTileMesh();
                 }
             }
 
