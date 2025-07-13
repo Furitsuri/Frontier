@@ -13,9 +13,10 @@ public class StageTileData
     public float Height { get; private set; }
 
     private HierarchyBuilderBase _hierarchyBld;
-    private TileBehaviour _tileBhv = null;
-    private GridInfo _tileInfo = null;
-    private GridInfo _tileInfoBase = null;
+    private TileBehaviour _tileBhv  = null;
+    private TileMesh _tileMesh      = null;
+    private GridInfo _tileInfo      = null;
+    private GridInfo _tileInfoBase  = null;
 
     [Inject]
     public void Construct(HierarchyBuilderBase hierarchyBld)
@@ -28,6 +29,7 @@ public class StageTileData
         TileType        = TileType.None;
         Height          = 0;
         _tileBhv        = null;
+        _tileMesh       = null;
         _tileInfo       = null;
         _tileInfoBase   = null;
     }
@@ -38,6 +40,11 @@ public class StageTileData
         {
             _tileBhv.Dispose();
             _tileBhv = null;
+        }
+        if (_tileMesh != null)
+        {
+            _tileMesh.Dispose();
+            _tileMesh = null;
         }
         if (_tileInfo != null)
         {
@@ -92,6 +99,20 @@ public class StageTileData
         _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_THICKNESS_MIN, TILE_SIZE);
         _tileBhv.transform.rotation     = Quaternion.identity;
         _tileBhv.ApplyTileType(TileType);
+    }
+
+    public void InstantiateTileMesh()
+    {
+        if (_tileMesh != null) return; // 既にインスタンス化されている場合は何もしない
+
+        _tileMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileMesh>(true, false, "TileMesh");
+        if (_tileMesh == null)
+        {
+            Debug.LogError("TileMeshのインスタンス化に失敗しました。");
+            return;
+        }
+        _tileMesh.Init(true);
+        _tileMesh.DrawMesh();
     }
 
     public void CopyTileInfoBaseToOriginal()
