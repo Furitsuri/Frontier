@@ -9,39 +9,47 @@ namespace Frontier.Stage
     /// <summary>
     /// ステージ上のグリッド数などのデータ
     /// </summary>
+    [System.Serializable]
     public class StageData
     {
-        public int GridRowNum { get; private set; }                     // グリッドの行数
-        public int GridColumnNum { get; private set; }                  // グリッドの列数
-        public StageTileData[] TileDatas { get; private set; } = null;  // タイルデータ
+        [SerializeField]
+        private int _gridRowNum;                     // グリッドの行数
+        [SerializeField]
+        private int _gridColumnNum;                  // グリッドの列数
+        [SerializeField]
+        private StageTileData[] _tileDatas = null;  // タイルデータ
+
+        public int GridRowNum => _gridRowNum;
+        public int GridColumnNum => _gridColumnNum;
 
         public void Init( int tileRowNum, int tileColumnNum )
         {
-            GridRowNum     = tileRowNum;
-            GridColumnNum  = tileColumnNum;
-            TileDatas      = new StageTileData[GridRowNum * GridColumnNum];
+            _gridRowNum     = tileRowNum;
+            _gridColumnNum  = tileColumnNum;
+            _tileDatas      = new StageTileData[_gridRowNum * _gridColumnNum];
         }
 
-        public float WidthX() { return TILE_SIZE * GridRowNum; }
-        public float WidthZ() { return TILE_SIZE * GridColumnNum; }
+        public StageTileData[] TileDatas => _tileDatas;
+        public float WidthX() { return TILE_SIZE * _gridRowNum; }
+        public float WidthZ() { return TILE_SIZE * _gridColumnNum; }
 
-        public int GetGridToralNum() { return GridRowNum * GridColumnNum; }
+        public int GetGridToralNum() { return _gridRowNum * _gridColumnNum; }
 
-        public StageTileData GetTile(int x, int y) => TileDatas[x + y * GridRowNum];
+        public StageTileData GetTile(int x, int y) => _tileDatas[x + y * _gridRowNum];
 
-        public StageTileData GetTile(int index) => TileDatas[index];
+        public StageTileData GetTile(int index) => _tileDatas[index];
 
         public ref GridInfo GetTileInfo(int index)
         {
-            return ref TileDatas[index].GetTileInfo();
+            return ref _tileDatas[index].GetTileInfo();
         }
 
-        public void SetGridRowNum( int rowNum ) {  GridRowNum = rowNum;}
+        public void SetGridRowNum( int rowNum ) {  _gridRowNum = rowNum;}
 
-        public void SetGridColumnNum( int columnNum ) { GridColumnNum = columnNum; }
+        public void SetGridColumnNum( int columnNum ) { _gridColumnNum = columnNum; }
 
-        public void SetTile(int index, StageTileData tile) => TileDatas[index] = tile;
+        public void SetTile(int index, StageTileData tile) => _tileDatas[index] = tile;
 
-        public void SetTile(int x, int y, StageTileData tile) => TileDatas[y * GridRowNum + x] = tile;
+        public void SetTile(int x, int y, StageTileData tile) => _tileDatas[y * _gridRowNum + x] = tile;
     }
 }

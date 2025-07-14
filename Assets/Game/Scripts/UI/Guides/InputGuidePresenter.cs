@@ -83,7 +83,7 @@ public class InputGuidePresenter : MonoBehaviour
             "_21",      // CANCEL
             "_20",      // TOOL
             "_21",      // INFO
-            "_27",      // ESCAPE
+            "_27",      // SPACE
             "_100",     // SUB1
             "_101",     // SUB2
             "_102",     // SUB3

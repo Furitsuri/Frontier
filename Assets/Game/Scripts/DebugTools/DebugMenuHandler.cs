@@ -55,7 +55,7 @@ public class DebugMenuHandler : FocusRoutineBase
         _inputFcd.RegisterInputCodesInDebug(
             (GuideIcon.VERTICAL_CURSOR, "SELECT",   CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL),
             (GuideIcon.CONFIRM,         "CONFIRM",  CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
-            (GuideIcon.ESCAPE,          "EXIT",     CanAcceptOptional,  new AcceptBooleanInput(AcceptOptional),     0.0f)
+            (GuideIcon.SPACE,          "EXIT",     CanAcceptOptional,  new AcceptBooleanInput(AcceptOptional),     0.0f)
         );
     }
 

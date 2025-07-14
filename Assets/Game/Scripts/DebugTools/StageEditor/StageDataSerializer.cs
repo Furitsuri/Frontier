@@ -1,4 +1,5 @@
 ﻿using Frontier.Stage;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -17,12 +18,25 @@ namespace Frontier.DebugTools.StageEditor
     {
         private static string FolderPath => Path.Combine(Application.persistentDataPath, "StageData");
 
-        public static void Save(StageData data, string fileName)
+        public static bool Save(StageData data, string fileName)
         {
-            Directory.CreateDirectory(FolderPath);
-            string json = JsonUtility.ToJson(data, true);
-            File.WriteAllText(Path.Combine(FolderPath, $"{fileName}.json"), json);
+            try
+            {
+                Directory.CreateDirectory(FolderPath);
+                string json = JsonUtility.ToJson(data, true);
+                File.WriteAllText(Path.Combine(FolderPath, $"{fileName}.json"), json);
+
+                Debug.Log(JsonUtility.ToJson(data, true));
+
+                return true; // 成功
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"ステージデータの保存に失敗しました: {e.Message}");
+                return false; // 失敗
+            }
         }
+
 
         public static StageData Load(string fileName)
         {
