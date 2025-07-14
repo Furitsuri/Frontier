@@ -103,7 +103,7 @@ namespace Frontier.Battle
 
             if( _btlFileLoader == null )
             {
-                _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true,  false);
+                _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true,  false, typeof(BattleFileLoader).Name);
                 NullCheck.AssertNotNull(_btlFileLoader);
             }
 

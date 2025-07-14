@@ -94,7 +94,7 @@ public class StageTileData
             y * TILE_SIZE + 0.5f * TILE_SIZE    // Z座標はグリッドの中心に配置
         );
 
-        _tileBhv = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[0], true, false);
+        _tileBhv = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[0], true, false, $"Tile_X{x}_Y{y}");
         _tileBhv.transform.position     = position;
         _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_THICKNESS_MIN, TILE_SIZE);
         _tileBhv.transform.rotation     = Quaternion.identity;
@@ -104,14 +104,22 @@ public class StageTileData
     public void InstantiateTileMesh()
     {
         if (_tileMesh != null) return; // 既にインスタンス化されている場合は何もしない
+        if (_tileBhv == null)
+        {
+            Debug.LogError("TileBehaviourがインスタンス化されていません。TileMeshの初期化に失敗しました。");
+            return;
+        }
 
-        _tileMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileMesh>(true, false, "TileMesh");
+        _tileMesh = _hierarchyBld.CreateComponentNestedParentWithDiContainer<TileMesh>(_tileBhv.gameObject, true, false, "TileMesh");
         if (_tileMesh == null)
         {
             Debug.LogError("TileMeshのインスタンス化に失敗しました。");
             return;
         }
-        _tileMesh.Init(true);
+
+        Vector3 meshPos         = _tileBhv.transform.position;
+        float tileHalfHeight    = 0.5f * _tileBhv.transform.localScale.y;    // タイルの高さの半分をY座標に加算して、タイルの中心に配置
+        _tileMesh.Init(true, meshPos, tileHalfHeight);
         _tileMesh.DrawMesh();
     }
 

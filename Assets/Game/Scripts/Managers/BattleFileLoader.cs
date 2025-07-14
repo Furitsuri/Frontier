@@ -162,7 +162,7 @@ namespace Frontier
                 foreach ( var param in dataContainer.CharacterParams )
                 {
                     int prefabIndex = param.Prefab;
-                    Character chara = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Character>(CharacterPrefabs[i][prefabIndex], true, false);
+                    Character chara = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Character>(CharacterPrefabs[i][prefabIndex], true, false, typeof(Character).Name);
 
                     // 弾オブジェクトが設定されていれば生成
                     // 使用時まで非アクティブにする
@@ -271,7 +271,7 @@ namespace Frontier
         {
             if (param.characterTag == Character.CHARACTER_TAG.PLAYER)
             {
-                Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false);
+                Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (player == null) return;
 
                 player.param = param;
@@ -281,7 +281,7 @@ namespace Frontier
             }
             else
             {
-                Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(PlayersPrefab[prefabIndex], true, false);
+                Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (enemy == null) return;
 
                 enemy.param = param;

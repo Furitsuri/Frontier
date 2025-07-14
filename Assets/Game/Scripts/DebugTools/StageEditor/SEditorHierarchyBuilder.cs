@@ -64,7 +64,6 @@ public class SEditorHierarchyBuilder : HierarchyBuilderBase
             "Stage" => original switch
             {
                 TileBehaviour => _stageObjGrp._tileObj,
-                StageMesh => _stageObjGrp._meshObj,
                 Player => _stageObjGrp._gimickObj,
                 _ => this.gameObject
             },

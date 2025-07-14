@@ -30,7 +30,6 @@ namespace Frontier.DebugTools.StageEditor
         private InputFacade _inputFcd;
         private HierarchyBuilderBase _hierarchyBld;
         private StageData _stageData;
-        private StageMesh _stageMesh;
         private GridCursorController _gridCursorCtrl;
         private StageEditMode _editMode     = StageEditMode.TILE_EDIT;
         private int _selectedType           = 0;
@@ -77,15 +76,6 @@ namespace Frontier.DebugTools.StageEditor
                     _stageData.GetTile(x, y).InstantiateTileMesh();
                 }
             }
-
-            /*
-            if( _stageMesh == null )
-            {
-                _stageMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageMesh>(true, false, "StageMesh");
-            }
-            _stageMesh.Init(true);
-            _stageMesh.DrawMesh();
-            */
         }
 
         private void CreateCursor()

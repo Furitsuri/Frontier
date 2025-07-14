@@ -140,12 +140,29 @@ public class HierarchyBuilderBase : MonoBehaviour
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T CreateComponentAndOrganizeWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
+    public T CreateComponentAndOrganizeWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind, string objectName) where T : Behaviour
     {
+        gameObject.name = objectName;
         T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
         NullCheck.AssertNotNull(generateCpt);
 
         Organize(generateCpt);
+
+        return generateCpt;
+    }
+
+    /// <summary>
+    /// DIコンテナを用いてオブジェクト及びコンポーネントを作成し、ヒエラルキー上の任意のオブジェクトの階層下に設置します
+    /// </summary>
+    /// <typeparam name="T">作成するコンポーネントの型</typeparam>
+    /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
+    /// <returns>作成したコンポーネント</returns>
+    public T CreateComponentNestedParentWithDiContainer<T>(GameObject parentObject, bool initActive, bool isBind, string objectName) where T : Behaviour
+    {
+        T generateCpt = _generator.InstantiateComponentWithDiContainerOnNewObj<T>(initActive, isBind, objectName);
+        NullCheck.AssertNotNull(generateCpt);
+
+        generateCpt.transform.SetParent(parentObject.transform, false);
 
         return generateCpt;
     }
@@ -160,8 +177,9 @@ public class HierarchyBuilderBase : MonoBehaviour
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T CreateComponentNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind) where T : Behaviour
+    public T CreateComponentNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind, string objectName) where T : Behaviour
     {
+        gameObject.name = objectName;
         T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
         NullCheck.AssertNotNull(generateCpt);
 

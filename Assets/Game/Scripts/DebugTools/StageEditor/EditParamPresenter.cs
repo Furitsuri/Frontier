@@ -25,9 +25,9 @@ namespace Frontier.DebugTools.StageEditor
         /// <param name="height">高さ</param>
         public void UpdateText(StageEditMode mode, int type, float height)
         {
-            _editModeStr.text = mode.ToString();
-            _tileTypeStr.text = ((TileType)type).ToString();
-            _heightStr.text = height.ToString();
+            _editModeStr.text   = mode.ToString().Replace('_', ' ');
+            _tileTypeStr.text   = ((TileType)type).ToString();
+            _heightStr.text     = height.ToString();
         }
     }
 }
