@@ -53,7 +53,6 @@ namespace Frontier.Stage
         private HierarchyBuilderBase _hierarchyBld = null;
         private BattleRoutineController _btlRtnCtrl;
 		private StageData _stageData;
-        private StageMesh _stageMesh;
         private GridCursorController _gridCursorCtrl;
         private Footprint _footprint;
         private List<GridMesh> _gridMeshs;
@@ -74,13 +73,6 @@ namespace Frontier.Stage
             _attackableGridIndexs = new List<int>();
 
             _stageData.Init(10, 10);
-
-            if (_stageMesh == null)
-            {
-                _stageMesh = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageMesh>(true, false, "StageMesh");
-            }
-            _stageMesh.Init(true);
-            _stageMesh.DrawMesh();
 
             // グリッド情報の初期化
             for( int x = 0; x < _stageData.GridRowNum; ++x )
