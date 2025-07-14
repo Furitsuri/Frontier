@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 116
+  controlID: 118
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -129,7 +129,7 @@ MonoBehaviour:
   - {fileID: 12}
   - {fileID: 20}
   m_Selected: 1
-  m_LastSelected: 2
+  m_LastSelected: 0
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -270,8 +270,8 @@ MonoBehaviour:
     y: 0
     width: 1051
     height: 709
-  m_MinSize: {x: 202, y: 221}
-  m_MaxSize: {x: 4002, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 19}
   m_Panes:
   - {fileID: 18}
@@ -341,9 +341,9 @@ MonoBehaviour:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 415}
-    m_SelectedIDs: b0850000
-    m_LastClickedID: 34224
-    m_ExpandedIDs: 00000000ac850000ae850000b0850000b285000000ca9a3bffffff7f
+    m_SelectedIDs: b2850000
+    m_LastClickedID: 34226
+    m_ExpandedIDs: 00000000c0850000c2850000c4850000c6850000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -371,7 +371,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000ac850000ae850000b0850000b2850000
+    m_ExpandedIDs: 00000000c0850000c2850000c4850000c6850000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -398,7 +398,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: d47e0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -474,7 +474,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Game/Scripts/Stage/Meshes
+    - Assets/Game/Scripts/Stage/Enums
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -482,16 +482,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 62
   m_LastFolders:
-  - Assets/Game/Scripts/Stage/Meshes
+  - Assets/Game/Scripts/Stage/Enums
   m_LastFoldersGridSize: 62
   m_LastProjectPath: C:\Users\tssm4\Unity\FRONTIER
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 483}
-    m_SelectedIDs: 6c860000
-    m_LastClickedID: 34412
-    m_ExpandedIDs: 00000000ac850000ae850000b0850000b2850000da850000408600005a86000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 467}
+    m_SelectedIDs: 4e860000
+    m_LastClickedID: 34382
+    m_ExpandedIDs: 00000000c0850000c2850000c4850000c6850000ee8500005086000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -519,7 +519,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000ac850000ae850000b0850000b2850000
+    m_ExpandedIDs: 00000000c0850000c2850000c4850000c6850000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -777,7 +777,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Game/Prefabs/UI/InputGuide
+    - Assets/Game/Scenes/Editors
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -785,16 +785,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Game/Prefabs/UI/InputGuide
+  - Assets/Game/Scenes/Editors
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\tssm4\Unity\FRONTIER
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 259}
-    m_SelectedIDs: 0c860000
-    m_LastClickedID: 34316
-    m_ExpandedIDs: 00000000ac850000ae850000b0850000b2850000
+    scrollPos: {x: 0, y: 319}
+    m_SelectedIDs: 4e860000
+    m_LastClickedID: 34382
+    m_ExpandedIDs: 00000000c0850000c2850000c4850000c6850000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -822,7 +822,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000ac850000ae850000b0850000b2850000
+    m_ExpandedIDs: 00000000c0850000c2850000c4850000c6850000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -962,7 +962,7 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: ba370000
+      m_SelectedIDs: 7a080000
       m_LastClickedID: 0
       m_ExpandedIDs: e4f9ffff
       m_RenameOverlay:
@@ -1344,9 +1344,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 93.85961, y: -5.6449776, z: 52.179726}
+    m_Target: {x: 40.31058, y: -80.64208, z: 39.660564}
     speed: 2
-    m_Value: {x: 93.85961, y: -5.6449776, z: 52.179726}
+    m_Value: {x: 40.31058, y: -80.64208, z: 39.660564}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1392,13 +1392,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.026117831, y: -0.50694543, z: 0.015370523, w: -0.86145383}
+    m_Target: {x: -0.42313114, y: -0.35627404, z: 0.18562624, w: -0.81215036}
     speed: 2
-    m_Value: {x: -0.026117638, y: -0.5069417, z: 0.015370409, w: -0.86144745}
+    m_Value: {x: -0.42312765, y: -0.35627112, z: 0.18562472, w: -0.8121437}
   m_Size:
-    m_Target: 57.431812
+    m_Target: 51.85105
     speed: 2
-    m_Value: 57.431812
+    m_Value: 51.85105
   m_Ortho:
     m_Target: 0
     speed: 2
