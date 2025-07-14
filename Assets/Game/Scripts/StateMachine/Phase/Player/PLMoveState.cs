@@ -120,6 +120,11 @@ namespace Frontier
         {
             if (!CanAcceptDefault()) return false;
 
+            // 移動不可地点であれば不可
+            GridInfo info;
+            _stageCtrl.FetchCurrentGridInfo(out info);
+            if (info.estimatedMoveRange < 0) return false;
+
             // 攻撃対象選択フェーズでない場合は終了
             if (PlMovePhase.PL_MOVE == _phase) return true;
 
@@ -168,11 +173,6 @@ namespace Frontier
             if (curGridIndex == _departGridIndex)
             {
                 Back();
-            }
-            // 移動不可地点
-            else if (info.estimatedMoveRange < 0)
-            {
-                // TODO : 移動不可であることを示すために効果音を鳴らすと良い
             }
             // キャラクターが存在していないことを確認
             else if (0 == (info.flag & (StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)))
