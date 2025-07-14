@@ -78,7 +78,7 @@ public class InputHandler : MonoBehaviour
         _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(directionalInputCb);
         _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(confirmInputCb);
         _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(cancelInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.ESCAPE]             = new GetBooleanInput(optionalInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.SPACE]             = new GetBooleanInput(optionalInputCb);
         _inputForIcons[(int)Constants.GuideIcon.SUB1]               = new GetBooleanInput(sub1InputCb);
         _inputForIcons[(int)Constants.GuideIcon.SUB2]               = new GetBooleanInput(sub2InputCb);
         _inputForIcons[(int)Constants.GuideIcon.SUB3]               = new GetBooleanInput(sub3InputCb);

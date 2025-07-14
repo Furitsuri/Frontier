@@ -9,14 +9,19 @@ public class StageTileData
     /// <summary>
     /// ステージデータとして保存するもののみpublic属性にしています。
     /// </summary>
-    public TileType TileType { get; private set; }
-    public float Height { get; private set; }
+    [SerializeField]
+    private TileType _tileType;
+    [SerializeField]
+    private float _height;
 
     private HierarchyBuilderBase _hierarchyBld;
     private TileBehaviour _tileBhv  = null;
     private TileMesh _tileMesh      = null;
     private GridInfo _tileInfo      = null;
     private GridInfo _tileInfoBase  = null;
+
+    public TileType Type => _tileType;
+    public float Height => _height;
 
     [Inject]
     public void Construct(HierarchyBuilderBase hierarchyBld)
@@ -26,8 +31,8 @@ public class StageTileData
 
     public void Init()
     {
-        TileType        = TileType.None;
-        Height          = 0;
+        _tileType        = TileType.None;
+        _height          = 0;
         _tileBhv        = null;
         _tileMesh       = null;
         _tileInfo       = null;
@@ -58,8 +63,8 @@ public class StageTileData
 
     public StageTileData(TileType type = TileType.None, int height = 0)
     {
-        TileType    = type;
-        Height      = height;
+        _tileType    = type;
+        _height      = height;
     }
 
     public void InstantiateTileInfo( int index, int rowNum )
@@ -98,7 +103,7 @@ public class StageTileData
         _tileBhv.transform.position     = position;
         _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_THICKNESS_MIN, TILE_SIZE);
         _tileBhv.transform.rotation     = Quaternion.identity;
-        _tileBhv.ApplyTileType(TileType);
+        _tileBhv.ApplyTileType(_tileType);
     }
 
     public void InstantiateTileMesh()
@@ -130,8 +135,8 @@ public class StageTileData
 
     public void SetTileTypeAndHeight(TileType type, float height)
     {
-        TileType    = type;
-        Height      = height;
+        _tileType    = type;
+        _height      = height;
     }
 
     public Vector3 GetTileScale()

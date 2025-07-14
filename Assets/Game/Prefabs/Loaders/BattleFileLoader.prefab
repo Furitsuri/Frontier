@@ -50,10 +50,12 @@ MonoBehaviour:
   EnemiesPrefab:
   - {fileID: 7153141402127884706, guid: 43db87572dc3d1842bcc4298ff637b49, type: 3}
   - {fileID: 6753617674297473082, guid: 2bec217a3905df94888e00a48ed03539, type: 3}
+  OthersPrefab: []
   PlayerParamFilePath:
   - Assets/Resources/CharactersData/Stage1/Frontier_Stage1_CharacterData_Player.json
   EnemyParamFilePath:
   - Assets/Resources/CharactersData/Stage1/Frontier_Stage1_CharacterData_Enemy.json
+  OtherParamFilePath: []
   SkillDataFilePath: Assets/Resources/SkillData/SkillData.json
   CloseAtkCameraParamFilePath: Assets/Resources/CameraData/Frontier_CharacterAttack_CameraParam_CloseAtk.json
   RangedAtkCameraParamFilePath: Assets/Resources/CameraData/Frontier_CharacterAttack_CameraParam_RangedAtk.json

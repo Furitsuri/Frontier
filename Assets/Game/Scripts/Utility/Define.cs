@@ -28,7 +28,7 @@
         CANCEL,             // 戻る
         TOOL,               // ツール
         INFO,               // 情報
-        ESCAPE,             // オプション
+        SPACE,              // オプション
         SUB1,               // 入力サブ1
         SUB2,               // 入力サブ2
         SUB3,               // 入力サブ3
