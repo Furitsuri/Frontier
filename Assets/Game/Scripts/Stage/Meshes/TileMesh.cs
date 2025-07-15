@@ -90,7 +90,7 @@ namespace Frontier.Stage
             }
             
             // XY平面上の線分の頂点
-            startPosition   = new Vector2(_tilePos.x - 0.5f * TILE_SIZE, _tilePos.y - 2f * _tileHalfHeight);    // タイル位置はTileBehaviourの位置を基準にしているため、Y座標はタイルの高さを考慮している
+            startPosition   = new Vector2(_tilePos.x - 0.5f * TILE_SIZE, _tilePos.y - TILE_SIZE);    // タイル位置はTileBehaviourの位置を基準にしており、スケーリングによって高さは自動的に変化するためこの値
             endPosition     = new Vector2(_tilePos.x + 0.5f * TILE_SIZE, _tilePos.y);
             for (int i = 0; count < resolution; ++i, count = 4 * i + (int)(0.5f * resolution))
             {
