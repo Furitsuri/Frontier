@@ -51,7 +51,7 @@ public class StageEditorHandler : IEditorHandler
             (GuideIcon.VERTICAL_CURSOR, "SELECT", CanAcceptDirection,   new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL),
             (GuideIcon.CONFIRM,         "CONFIRM", CanAcceptConfirm,    new AcceptBooleanInput(AcceptConfirm), 0.0f),
             (GuideIcon.CANCEL,          "CANCEL", CanAcceptCancel,      new AcceptBooleanInput(AcceptCancel), 0.0f),
-            (GuideIcon.SPACE,          "EXIT", CanAcceptOptional,      new AcceptBooleanInput(AcceptOptional), 0.0f)
+            (GuideIcon.OPT2,            "EXIT", CanAcceptOptional,      new AcceptBooleanInput(AcceptOptional), 0.0f)
         );
     }
 

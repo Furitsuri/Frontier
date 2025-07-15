@@ -62,29 +62,22 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     private void InitializeInputForGuideIcon()
     {
-        GetDirectionalInput.GetDirectionalInputCallback directionalInputCb  = _iInput.GetDirectionalPressed;
-        GetBooleanInput.GetBooleanInputCallback confirmInputCb              = _iInput.IsConfirmPressed;
-        GetBooleanInput.GetBooleanInputCallback cancelInputCb               = _iInput.IsCancelPressed;
-        GetBooleanInput.GetBooleanInputCallback optionalInputCb             = _iInput.IsOptionsPressed;
-        GetBooleanInput.GetBooleanInputCallback sub1InputCb                 = _iInput.IsSub1Pressed;
-        GetBooleanInput.GetBooleanInputCallback sub2InputCb                 = _iInput.IsSub2Pressed;
-        GetBooleanInput.GetBooleanInputCallback sub3InputCb                 = _iInput.IsSub3Pressed;
-        GetBooleanInput.GetBooleanInputCallback sub4InputCb                 = _iInput.IsSub4Pressed;
-        GetBooleanInput.GetBooleanInputCallback debugMenuInputCb            = _iInput.IsDebugMenuPressed;
-
         _inputForIcons                                              = new IGetInputBase[(int)Constants.GuideIcon.NUM_MAX];
-        _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(directionalInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(directionalInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(directionalInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(confirmInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(cancelInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.SPACE]             = new GetBooleanInput(optionalInputCb);
-        _inputForIcons[(int)Constants.GuideIcon.SUB1]               = new GetBooleanInput(sub1InputCb);
-        _inputForIcons[(int)Constants.GuideIcon.SUB2]               = new GetBooleanInput(sub2InputCb);
-        _inputForIcons[(int)Constants.GuideIcon.SUB3]               = new GetBooleanInput(sub3InputCb);
-        _inputForIcons[(int)Constants.GuideIcon.SUB4]               = new GetBooleanInput(sub4InputCb);
+        _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(_iInput.GetDirectionalPressed);
+        _inputForIcons[(int)Constants.GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(_iInput.GetDirectionalPressed);
+        _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(_iInput.GetDirectionalPressed);
+        _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(_iInput.IsConfirmPressed);
+        _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(_iInput.IsCancelPressed);
+        _inputForIcons[(int)Constants.GuideIcon.TOOL]               = new GetBooleanInput(_iInput.IsToolPressed);
+        _inputForIcons[(int)Constants.GuideIcon.INFO]               = new GetBooleanInput(_iInput.IsInfoPressed);
+        _inputForIcons[(int)Constants.GuideIcon.OPT1]               = new GetBooleanInput(_iInput.IsOptions1Pressed);
+        _inputForIcons[(int)Constants.GuideIcon.OPT2]               = new GetBooleanInput(_iInput.IsOptions2Pressed);
+        _inputForIcons[(int)Constants.GuideIcon.SUB1]               = new GetBooleanInput(_iInput.IsSub1Pressed);
+        _inputForIcons[(int)Constants.GuideIcon.SUB2]               = new GetBooleanInput(_iInput.IsSub2Pressed);
+        _inputForIcons[(int)Constants.GuideIcon.SUB3]               = new GetBooleanInput(_iInput.IsSub3Pressed);
+        _inputForIcons[(int)Constants.GuideIcon.SUB4]               = new GetBooleanInput(_iInput.IsSub4Pressed);
 #if UNITY_EDITOR
-        _inputForIcons[(int)Constants.GuideIcon.DEBUG_MENU]         = new GetBooleanInput(debugMenuInputCb);
+        _inputForIcons[(int)Constants.GuideIcon.DEBUG_MENU]         = new GetBooleanInput(_iInput.IsDebugMenuPressed);
 #endif  // UNITY_EDITOR
     }
 

@@ -35,7 +35,12 @@ public class TouchInput : IInput
         return false;
     }
 
-    public bool IsOptionsPressed()
+    public bool IsOptions1Pressed()
+    {
+        return false;
+    }
+
+    public bool IsOptions2Pressed()
     {
         return false;
     }

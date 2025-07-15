@@ -14,7 +14,9 @@ public interface IInput
 
     public bool IsInfoPressed();
 
-    public bool IsOptionsPressed();
+    public bool IsOptions1Pressed();
+
+    public bool IsOptions2Pressed();
 
     public bool IsSub1Pressed();
 
