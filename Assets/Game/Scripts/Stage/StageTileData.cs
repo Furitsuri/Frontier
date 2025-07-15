@@ -29,6 +29,11 @@ public class StageTileData
         _hierarchyBld = hierarchyBld;
     }
 
+    public void Inject(HierarchyBuilderBase hierarchyBld)
+    {
+        _hierarchyBld = hierarchyBld;
+    }
+
     public void Init()
     {
         _tileType        = TileType.None;

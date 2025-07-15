@@ -34,6 +34,7 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditMode _editMode     = StageEditMode.TILE_EDIT;
         private int _selectedType           = 0;
         private float _selectedHeight       = 0;
+        private string _editFileName        = "test_stage"; // 編集するステージファイル名
 
         private Vector3 offset = new Vector3(0, 5, -5); // ターゲットからの相対位置
 
@@ -63,8 +64,8 @@ namespace Frontier.DebugTools.StageEditor
             if (_stageData == null)
             {
                 _stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>(true);
+                _stageData.Init(row, column);
             }
-            _stageData.Init(row, column);
 
             for (int y = 0; y < column; y++)
             {
@@ -106,11 +107,6 @@ namespace Frontier.DebugTools.StageEditor
             );
         }
 
-        private void HandleInput()
-        {
-            if (Input.GetKeyDown(KeyCode.L)) LoadStage("test_stage");
-        }
-
         /// <summary>
         /// 指定された位置にタイルを設置します
         /// </summary>
@@ -139,29 +135,36 @@ namespace Frontier.DebugTools.StageEditor
             // 選択中タイルの見た目の強調表示など
         }
 
-        private void LoadStage(string fileName)
+        private bool LoadStage(string fileName)
         {
             var data = StageDataSerializer.Load(fileName);
-            if (data == null) return;
+            if (data == null) return false;
+
+            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
+            {
+                _stageData.GetTile(i).Dispose(); // 既存のタイルを破棄
+            }
 
             // 簡易的に再ロード
             foreach (Transform child in transform) Destroy(child.gameObject);
             _stageData  = data;
             row         = _stageData.GridRowNum;
             column      = _stageData.GridColumnNum;
-            CreateStage();
 
-            /*
             for (int y = 0; y < column; y++)
             {
                 for (int x = 0; x < row; x++)
                 {
-                    var tile = data.GetTile(x, y);
-                    Destroy(tileObjects[x, y]);
-                    SpawnTile(x, y);
+                    _stageData.GetTile(x, y).Inject( _hierarchyBld );
+                    _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
+                    _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
+                    _stageData.GetTile(x, y).InstantiateTileMesh();
                 }
             }
-            */
+
+            _gridCursorCtrl.Init(0, _stageData);
+
+            return true;
         }
 
         private bool CanAcceptDirection()
@@ -219,85 +222,73 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         /// <summary>
-        /// オプション入力を受け取った際の処理を行います
+        /// オプション入力1を受け取った際の処理を行います
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
         private bool AcceptOption1(bool isInput)
         {
-            if (isInput)
+            if ( !isInput ) return false;
+            
+            if (!LoadStage(_editFileName))
             {
-
-                    return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
-        /// オプション入力を受け取った際の処理を行います
+        /// オプション入力2を受け取った際の処理を行います
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
         private bool AcceptOption2(bool isInput)
         {
-            if (isInput)
-            {
-                if (StageDataSerializer.Save(_stageData, "test_stage"))
-                {
-                    return true;
-                }
-            }
+            if (!isInput) return false;
 
-            return false;
+            if (!StageDataSerializer.Save(_stageData, _editFileName))
+            {
+                return false;
+            }
+            
+            return true;
         }
 
         private bool AcceptSub1(bool isInput)
         {
-            if (isInput)
-            {
-                _selectedType = Math.Clamp(_selectedType - 1, 0, (int)TileType.NUM);
+            if (!isInput) return false;
 
-                return true;
-            }
+            _selectedType = Math.Clamp(_selectedType - 1, 0, (int)TileType.NUM);
             
-            return false;
+            return true;
         }
 
         private bool AcceptSub2(bool isInput)
         {
-            if (isInput)
-            {
-                _selectedType = Math.Clamp( _selectedType + 1, 0, (int)TileType.NUM );
+            if (!isInput) return false;
 
-                return true;
-            }
+            _selectedType = Math.Clamp(_selectedType + 1, 0, (int)TileType.NUM);
 
-            return false;
+            return true;
         }
 
         private bool AcceptSub3(bool isInput)
         {
-            if (isInput)
-            {
-                _selectedHeight = Mathf.Clamp((float)_selectedHeight - 0.5f, 0.0f, 5.0f);
+            if (!isInput) return false;
 
-                return true;
-            }
+            _selectedHeight = Mathf.Clamp((float)_selectedHeight - 0.5f, 0.0f, 5.0f);
 
-            return false;
+            return true;
         }
 
         private bool AcceptSub4(bool isInput)
         {
-            if (isInput)
-            {
-                _selectedHeight = Mathf.Clamp((float)_selectedHeight + 0.5f, 0.0f, 5.0f);
+            if (!isInput) return false;
 
-                return true;
-            }
+            _selectedHeight = Mathf.Clamp((float)_selectedHeight + 0.5f, 0.0f, 5.0f);
 
-            return false;
+            return true;
         }
     }
 } // namespace Frontier.DebugTools.StageEditor
