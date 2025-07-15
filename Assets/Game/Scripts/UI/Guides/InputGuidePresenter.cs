@@ -69,7 +69,8 @@ public class InputGuidePresenter : MonoBehaviour
             "_alpha_259",   // CANCEL(Esc)
             "_alpha_202",   // TOOL(Ctrl)
             "_alpha_204",   // INFO(Shift)
-            "_alpha_201",   // OPTION(Space)
+            "_alpha_203",   // OPTION1(Alt)
+            "_alpha_201",   // OPTION2(Space)
             "_alpha_94",    // SUB1(1)
             "_alpha_95",    // SUB2(2)
             "_alpha_96",    // SUB3(3)
@@ -83,7 +84,8 @@ public class InputGuidePresenter : MonoBehaviour
             "_21",      // CANCEL
             "_20",      // TOOL
             "_21",      // INFO
-            "_27",      // SPACE
+            "_27",      // OPTION1
+            "_27",      // OPTION2
             "_100",     // SUB1
             "_101",     // SUB2
             "_102",     // SUB3

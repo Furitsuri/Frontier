@@ -36,7 +36,12 @@ public class KeyboardInput : IInput
         return Input.GetKeyUp(KeyCode.LeftShift);
     }
 
-    public bool IsOptionsPressed()
+    public bool IsOptions1Pressed()
+    {
+        return Input.GetKeyUp(KeyCode.LeftAlt);
+    }
+
+    public bool IsOptions2Pressed()
     {
         return Input.GetKeyUp(KeyCode.Space);
     }

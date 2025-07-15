@@ -97,7 +97,8 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "SELECT",       CanAcceptDirection,     new AcceptDirectionInput(AcceptDirection),  0.1f),
                 (GuideIcon.CONFIRM,     "CONFIRM",      CanAcceptConfirm,       new AcceptBooleanInput(AcceptConfirm),      0.0f),
-                (GuideIcon.SPACE,       "SAVE",         CanAcceptOption,        new AcceptBooleanInput(AcceptOption),       0.0f),
+                (GuideIcon.OPT1,        "Load",         CanAcceptOption,        new AcceptBooleanInput(AcceptOption1),      0.0f),
+                (GuideIcon.OPT2,        "SAVE",         CanAcceptOption,        new AcceptBooleanInput(AcceptOption2),      0.0f),
                 (GuideIcon.SUB1,        "SUB TILE NUM", CanAcceptSub,           new AcceptBooleanInput(AcceptSub1),         0.0f),
                 (GuideIcon.SUB2,        "ADD TILE NUM", CanAcceptSub,           new AcceptBooleanInput(AcceptSub2),         0.0f),
                 (GuideIcon.SUB3,        "SUB HEIGHT",   CanAcceptSub,           new AcceptBooleanInput(AcceptSub3),         0.0f),
@@ -222,7 +223,23 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptOption(bool isInput)
+        private bool AcceptOption1(bool isInput)
+        {
+            if (isInput)
+            {
+
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// オプション入力を受け取った際の処理を行います
+        /// </summary>
+        /// <param name="isInput">決定入力</param>
+        /// <returns>入力実行の有無</returns>
+        private bool AcceptOption2(bool isInput)
         {
             if (isInput)
             {

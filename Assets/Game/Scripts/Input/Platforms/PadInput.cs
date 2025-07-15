@@ -35,7 +35,12 @@ public class PadInput : IInput
         return Input.GetButtonUp("Cancel"); ;
     }
 
-    public bool IsOptionsPressed()
+    public bool IsOptions1Pressed()
+    {
+        return Input.GetButtonUp("Submit");
+    }
+
+    public bool IsOptions2Pressed()
     {
         return Input.GetButtonUp("Submit");
     }
