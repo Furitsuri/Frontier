@@ -14,7 +14,6 @@ namespace Frontier.Stage
         private Mesh _mesh;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
-        private float _tileHalfHeight = 0.0f;
 
         private void Awake()
         {
@@ -35,7 +34,6 @@ namespace Frontier.Stage
                 GetComponent<MeshRenderer>().material = new Material(Shader.Find("GUI/Text Shader"));
             }
 
-            _tileHalfHeight     = tileHalfHeight;
             transform.position  = pos + new Vector3( 0f, tileHalfHeight, 0f);
         }
 
