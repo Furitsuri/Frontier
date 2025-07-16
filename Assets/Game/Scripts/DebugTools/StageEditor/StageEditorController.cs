@@ -72,9 +72,9 @@ namespace Frontier.DebugTools.StageEditor
                 for (int x = 0; x < row; x++)
                 {
                     _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
-                    _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
-                    _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
-                    _stageData.GetTile(x, y).InstantiateTileMesh();
+                    _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld);
+                    _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs, _hierarchyBld);
+                    _stageData.GetTile(x, y).InstantiateTileMesh( _hierarchyBld );
                 }
             }
         }
@@ -116,9 +116,9 @@ namespace Frontier.DebugTools.StageEditor
         {
             _stageData.GetTile(x, y).Dispose(); // 既存のタイルを破棄
             _stageData.GetTile(x, y).SetTileTypeAndHeight((TileType)_selectedType, _selectedHeight);
-            _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
-            _stageData.GetTile(x, y).InstantiateTileBhv(x, y,  tilePrefabs);
-            _stageData.GetTile(x, y).InstantiateTileMesh();
+            _stageData.GetTile(x, y).InstantiateTileInfo( x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld );
+            _stageData.GetTile(x, y).InstantiateTileBhv( x, y,  tilePrefabs, _hierarchyBld );
+            _stageData.GetTile(x, y).InstantiateTileMesh( _hierarchyBld );
         }
 
         private void UpdateCamera(int x, int y)
@@ -140,25 +140,25 @@ namespace Frontier.DebugTools.StageEditor
             var data = StageDataSerializer.Load(fileName);
             if (data == null) return false;
 
-            for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
-            {
-                _stageData.GetTile(i).Dispose(); // 既存のタイルを破棄
-            }
-
+            _stageData.Dispose(); // 既存のステージデータを破棄
+            
             // 簡易的に再ロード
             foreach (Transform child in transform) Destroy(child.gameObject);
-            _stageData  = data;
-            row         = _stageData.GridRowNum;
-            column      = _stageData.GridColumnNum;
+            row         = data.GridRowNum;
+            column      = data.GridColumnNum;
+            _stageData.Init(row, column); // 新しいステージデータを初期化
 
             for (int y = 0; y < column; y++)
             {
                 for (int x = 0; x < row; x++)
                 {
-                    _stageData.GetTile(x, y).Inject( _hierarchyBld );
-                    _stageData.GetTile(x, y).InstantiateTileInfo(x + y * _stageData.GridRowNum, _stageData.GridRowNum);
-                    _stageData.GetTile(x, y).InstantiateTileBhv(x, y, tilePrefabs);
-                    _stageData.GetTile(x, y).InstantiateTileMesh();
+                    var srcTile = data.GetTile(x, y);
+                    _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
+                    var applyTile = _stageData.GetTile( x, y );
+                    applyTile.SetTileTypeAndHeight( (TileType)srcTile.Type, srcTile.Height );
+                    applyTile.InstantiateTileInfo( x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld );
+                    applyTile.InstantiateTileBhv( x, y, tilePrefabs, _hierarchyBld );
+                    applyTile.InstantiateTileMesh( _hierarchyBld );
                 }
             }
 
