@@ -1,9 +1,57 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class EditorStateBase : StateBase
 {
+    [Inject]
+    public void Construct(InputFacade inputFcd)
+    {
+        _inputFcd = inputFcd;
+    }
+
+    /// <summary>
+    /// 現在のステートを実行します
+    /// </summary>
+    override public void RunState()
+    {
+        base.RunState();
+        RegisterInputCodes();
+    }
+
+    /// <summary>
+    /// 現在のステートを再開します
+    /// </summary>
+    override public void RestartState()
+    {
+        base.RestartState();
+        RegisterInputCodes();
+    }
+
+    /// <summary>
+    /// 現在のステートを中断します
+    /// </summary>
+    override public void PauseState()
+    {
+        base.PauseState();
+        UnregisterInputCodes();
+    }
+
+    /// <summary>
+    /// 現在のステートから退避します
+    /// </summary>
+    override public void ExitState()
+    {
+        base.ExitState();
+        UnregisterInputCodes();
+    }
+
+    /// <summary>
+    /// 入力コードを登録します
+    /// </summary>
+    virtual public void RegisterInputCodes() { }
+
     /// <summary>
     /// 入力を受付るかを取得します
     /// 多くのケースでこちらの関数を用いて判定します
@@ -13,6 +61,11 @@ public class EditorStateBase : StateBase
     {
         // 現在のステートから脱出する場合は入力を受け付けない
         return !IsBack();
+    }
+
+    virtual public void UnregisterInputCodes()
+    {
+        _inputFcd.UnregisterInputCodes();
     }
 
     virtual protected bool CanAcceptDirection() { return false; }
