@@ -9,7 +9,7 @@ using Zenject;
 
 namespace Frontier
 {
-    public class GameMain : MonoBehaviour
+    public class GameMain : FocusRoutineController
     {
         enum GamePhase
         {
@@ -19,10 +19,6 @@ namespace Frontier
             GAME_END_SCENE,
             GAME_END,
         }
-
-        [SerializeField]
-        [Header("階層管理・オブジェクト生成クラス")]
-        private HierarchyBuilderBase _hierarchyBld;
 
         [SerializeField]
         [Header("UI")]
@@ -42,10 +38,9 @@ namespace Frontier
 
         private GameObject _stageImage;
         private DiContainer _diContainer;
-        private FocusRoutineController _focusRtnCtrl;
+        private HierarchyBuilderBase _hierarchyBld;
         private InputFacade _inputFcd;
         private TutorialFacade _tutorialFcd;
-        private BattleRoutineController _btlRtnCtrl;
         private GamePhase _Phase;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
@@ -55,13 +50,12 @@ namespace Frontier
         public static GameMain instance = null;
 
         [Inject]
-        public void Construct( DiContainer diContainer,  InputFacade inputFcd, TutorialFacade tutorialFcd, FocusRoutineController focusRoutineCtrl, BattleRoutineController btlRtnCtrl )
+        public void Construct( DiContainer diContainer,  InputFacade inputFcd, HierarchyBuilderBase hierarchyBld, TutorialFacade tutorialFcd )
         {
             _diContainer    = diContainer;
             _inputFcd       = inputFcd;
+            _hierarchyBld   = hierarchyBld;
             _tutorialFcd    = tutorialFcd;
-            _focusRtnCtrl   = focusRoutineCtrl;
-            _btlRtnCtrl     = btlRtnCtrl;
         }
 
         void Awake()
@@ -107,6 +101,12 @@ namespace Frontier
         // Start is called before the first frame update
         void Start()
         {
+            // 入力関連の初期化
+            _inputFcd.Init();
+            // チュートリアル関連の初期化
+            _tutorialFcd.Init();
+
+            base.Init();
             InitGame();
 
             StartCoroutine(GameFlow());
@@ -114,7 +114,12 @@ namespace Frontier
 
         void Update()
         {
-            _focusRtnCtrl.Update();
+            base.UpdateRoutine();
+        }
+
+        void LateUpdate()
+        {
+            base.LateUpdateRoutine();
         }
 
         /// <summary>
@@ -124,10 +129,14 @@ namespace Frontier
         {
             // アニメーションデータの初期化
             AnimDatas.Init();
+
+            /*
             // 入力関連の初期化
             _inputFcd.Init();
             // チュートリアル関連の初期化
             _tutorialFcd.Init();
+            */
+
             // 戦闘マネージャの初期化
             // _btlRtnCtrl.Init();
 
@@ -138,8 +147,6 @@ namespace Frontier
             // デバッグモードへ移行するための入力コードを登録
             ResgiterInputCodeForDebugTransition();
 #endif // UNITY_EDITOR
-
-            InitFocusRoutine();
 
             _stageImage = GameObject.Find("StageLevelImage");
             if (_stageImage != null)
@@ -190,6 +197,7 @@ namespace Frontier
             }
         }
 
+        /*
         /// <summary>
         /// フォーカスルーチンを初期化します
         /// </summary>
@@ -204,6 +212,7 @@ namespace Frontier
             _focusRtnCtrl.Register(_btlRtnCtrl, _btlRtnCtrl.GetPriority());
             _focusRtnCtrl.RunRoutineAndPauseOthers(FocusRoutinePriority.BATTLE);
         }
+        */
 
 #if UNITY_EDITOR
         /// <summary>

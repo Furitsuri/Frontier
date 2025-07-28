@@ -142,4 +142,16 @@ public class Generator : MonoBehaviour
 
         return original;
     }
+
+    public T InstantiateWithDiContainer<T>(T original, Vector3 position, Quaternion rotation, bool isBind) where T : UnityEngine.Object
+    {
+        T instance = _container.InstantiatePrefabForComponent<T>(original, position, rotation, null);
+        Debug.Assert(instance != null);
+        
+        if (isBind)
+        {
+            _installer.InstallBindings(instance);
+        }
+        return instance;
+    }
 }

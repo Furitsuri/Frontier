@@ -22,7 +22,7 @@ public class StageGroup
     public GameObject _gimickObj;
 }
 
-public class SEditorHierarchyBuilder : HierarchyBuilderBase
+public class StageEditorHierarchyBuilder : HierarchyBuilderBase
 {
     [SerializeField]
     [Header("カメラオブジェクト")]

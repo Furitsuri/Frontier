@@ -355,7 +355,7 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var centralPos = _stageCtrl.transform.position;
+            var centralPos = _stageCtrl.GetCentralPos();
 
             // 味方と敵対側で分別
             Character ally = null;

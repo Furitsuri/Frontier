@@ -114,7 +114,7 @@ namespace Frontier
 
         }
 
-        override public void Exit()
+        override public void ExitState()
         {
             // 敵の位置に選択グリッドを合わせる
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_enemy);
@@ -128,7 +128,7 @@ namespace Frontier
             // グリッド状態の描画をクリア
             _stageCtrl.ClearGridMeshDraw();
 
-            base.Exit();
+            base.ExitState();
         }
     }
 }

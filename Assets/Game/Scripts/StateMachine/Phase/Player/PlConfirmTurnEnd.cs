@@ -34,8 +34,6 @@ namespace Frontier
             }
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal);
 
-            RegisterInputCodes();
-
             _uiSystem.BattleUi.ToggleConfirmTurnEnd(true);
         }
 
@@ -51,11 +49,11 @@ namespace Frontier
             return IsBack();
         }
 
-        override public void Exit()
+        override public void ExitState()
         {
             _uiSystem.BattleUi.ToggleConfirmTurnEnd(false);
 
-            base.Exit();
+            base.ExitState();
         }
 
         /// <summary>

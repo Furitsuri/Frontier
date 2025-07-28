@@ -6,20 +6,19 @@ using static Constants;
 
 namespace Frontier
 {
-    public class PhaseStateBase : TreeNode<PhaseStateBase>
+    public class PhaseStateBase : StateBase
     {
-        private bool _isBack = false;
-        public int TransitIndex { get; protected set; } = -1;
-        protected HierarchyBuilderBase _hierarchyBld        = null;
-        protected InputFacade _inputFcd                 = null;
+        protected HierarchyBuilderBase _hierarchyBld    = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stageCtrl            = null;
-        protected IUiSystem _uiSystem                    = null;
+        protected IUiSystem _uiSystem                   = null;
         private TutorialFacade _tutorialFcd             = null;
 
         [Inject]
         public void Construct( HierarchyBuilderBase hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem, TutorialFacade tutorialFcd )
         {
+            base.Construct(inputFcd);
+
             _hierarchyBld   = hierarchyBld;
             _inputFcd       = inputFcd;
             _btlRtnCtrl     = btlRtnCtrl;
@@ -29,70 +28,14 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 初期化します
-        /// </summary>
-        virtual public void Init()
-        {
-            TransitIndex    = -1;
-            _isBack         = false;
-        }
-
-        /// <summary>
-        /// 更新します
-        /// </summary>
-        /// <returns>trueである場合は直前のフラグへ遷移</returns>
-        virtual public bool Update()
-        {
-            return IsBack();
-        }
-
-        /// <summary>
-        /// 現在のステートを再開します
-        /// </summary>
-        virtual public void Restart()
-        {
-            RegisterInputCodes();
-        }
-
-        /// <summary>
-        /// 現在のステートを中断します
-        /// </summary>
-        virtual public void Pause()
-        {
-            _inputFcd.UnregisterInputCodes();
-        }
-
-        /// <summary>
         /// 現在のステートから退避します
         /// </summary>
-        virtual public void Exit()
+        override public void ExitState()
         {
-            _inputFcd.UnregisterInputCodes();
+            base.ExitState();
 
             // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
             _tutorialFcd.TryShowTutorial();
-        }
-
-        /// <summary>
-        /// 入力コードを登録します
-        /// </summary>
-        virtual public void RegisterInputCodes() { }
-
-        /// <summary>
-        /// 以前のステートに戻るフラグを取得します
-        /// </summary>
-        /// <returns>戻るフラグ</returns>
-        virtual public bool IsBack()
-        {
-            return _isBack;
-        }
-
-        /// <summary>
-        /// 親の遷移に戻ります
-        /// </summary>
-        protected void Back()
-        {
-            _isBack = true;
         }
 
         /// <summary>

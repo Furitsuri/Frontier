@@ -8,9 +8,9 @@ using Cysharp.Threading.Tasks;
 
 public class InputFacade
 {
-    private HierarchyBuilderBase _hierarchyBld      = null;
+    private HierarchyBuilderBase _hierarchyBld  = null;
     private InputGuidePresenter _inputGuideView = null;
-    private IUiSystem _uiSystem                  = null;
+    private IUiSystem _uiSystem                 = null;
     private InputHandler _inputHdl              = null;
     private InputCode[] _inputCodes;
 #if UNITY_EDITOR

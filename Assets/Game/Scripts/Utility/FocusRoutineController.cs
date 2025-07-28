@@ -22,9 +22,18 @@ public enum FocusRoutinePriority
 /// <summary>
 /// FocusRoutineをその優先度毎に制御するクラス
 /// </summary>
-public class FocusRoutineController
+public class FocusRoutineController : MonoBehaviour
 {
     IFocusRoutine _currentRoutine = null;
+
+    [SerializeField]
+    [Header("割込み優先度の高いものから順に、各ルーチンを挿入してください")]
+    private FocusRoutineBaseWithMonoBehaviour[] _focusRoutineBhvs = null;
+
+    [SerializeField]
+    [Header("上記で挿入したもののうち、最初に実行するルーチンのインデックス値を指定してください")]
+    private int _firstRoutineIndex = 0;
+
     IFocusRoutine[] _routines = new IFocusRoutine[(int)FocusRoutinePriority.NUM];
 
     /// <summary>
@@ -42,12 +51,27 @@ public class FocusRoutineController
             }
             _routines[i] = null;
         }
+
+        // SerializeFieldで設定された各ルーチンを登録します
+        for ( int i = 0; i < _focusRoutineBhvs.Length; ++i )
+        {
+            Register(_focusRoutineBhvs[i], i);
+        }
+
+        // 最初に実行するルーチンのインデックス値が不正な場合は、0に設定します
+        if ( _firstRoutineIndex < 0 || _focusRoutineBhvs.Length <= _firstRoutineIndex || _routines[_firstRoutineIndex] == null)
+        {
+            LogHelper.LogError("Invalid first routine index specified.");
+            _firstRoutineIndex = 0;
+        }
+
+        RunRoutineAndPauseOthers( (FocusRoutinePriority)_firstRoutineIndex );
     }
 
     /// <summary>
     /// 優先度の高いルーチンが実行されている場合は、現在のルーチンを中断して新しいルーチンを実行します
     /// </summary>
-    public void Update()
+    public void UpdateRoutine()
     {
         if (null == _currentRoutine)
         {
@@ -58,6 +82,11 @@ public class FocusRoutineController
         _currentRoutine.UpdateRoutine();
 
         UpdateRoutineIfNextIsDue();
+    }
+
+    public void LateUpdateRoutine()
+    {
+        _currentRoutine.LateUpdateRoutine();
     }
 
     /// <summary>

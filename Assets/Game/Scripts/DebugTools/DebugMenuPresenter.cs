@@ -45,12 +45,12 @@ public class DebugMenuPresenter : MonoBehaviour
     /// <summary>
     /// メニューカーソルを更新します
     /// </summary>
-    public void UpdateMenuCursor( int idx )
+    public void UpdateMenuCursor( int index )
     {
         // 選択中のメニューのテキストを強調表示
         for (int i = 0; i < _menuTexts.Count; ++i)
         {
-            if (i == idx)
+            if (i == index)
             {
                 _menuTexts[i].color = Color.yellow;
             }
