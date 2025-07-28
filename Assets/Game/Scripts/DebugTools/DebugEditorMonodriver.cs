@@ -22,6 +22,11 @@ public class DebugEditorMonoDriver : FocusRoutineBaseWithMonoBehaviour
         _editorHnd?.Update();
     }
 
+    override public void LateUpdateRoutine()
+    {
+        _editorHnd?.LateUpdate();
+    }
+
     override public void ScheduleRun()
     {
         base.ScheduleRun();
@@ -29,9 +34,9 @@ public class DebugEditorMonoDriver : FocusRoutineBaseWithMonoBehaviour
 
     override public void Run()
     {
-        _editorHnd?.Run();
-
         base.Run();
+
+        _editorHnd?.Run();
     }
 
     override public void Restart()

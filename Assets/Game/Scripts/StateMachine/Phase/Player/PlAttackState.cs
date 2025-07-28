@@ -30,10 +30,7 @@ namespace Frontier
         {
             base.Init();
 
-            _playerSkillNames = _selectPlayer.GetEquipSkillNames();
-
-            RegisterInputCodes();
-
+            _playerSkillNames   = _selectPlayer.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
@@ -118,7 +115,7 @@ namespace Frontier
             return false;
         }
 
-        override public void Exit()
+        override public void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
@@ -165,7 +162,7 @@ namespace Frontier
             // 選択グリッドを表示
             _stageCtrl.SetGridCursorControllerActive(true);
 
-            base.Exit();
+            base.ExitState();
         }
 
         /// <summary>

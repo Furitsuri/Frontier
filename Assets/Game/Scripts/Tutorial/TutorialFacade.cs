@@ -14,10 +14,9 @@ public class TutorialFacade
         // 他にも条件が増えていく
     }
 
-    private HierarchyBuilderBase _hierarchyBld              = null;
-    private IUiSystem _uiSystem                          = null;
+    private IUiSystem _uiSystem                         = null;
     private TutorialPresenter _tutorialView             = null;
-    private TutorialHandler _tutorialHdl                = null;
+    private TutorialHandler _tutorialHdlr               = null;
     private ISaveHandler<TutorialSaveData> _saveHdlr    = null;
     private static readonly List<TriggerType> _pendingTriggers = new();
 
@@ -25,11 +24,11 @@ public class TutorialFacade
     private TutorialSaveData _saveData = null;
 
     [Inject]
-    public void Construct(HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem, ISaveHandler<TutorialSaveData> saveHandler)
+    public void Construct(IUiSystem uiSystem, TutorialHandler tutorialHdlr, ISaveHandler<TutorialSaveData> saveHandler)
     {
-        _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
         _saveHdlr       = saveHandler;
+        _tutorialHdlr   = tutorialHdlr;
     }
 
     /// <summary>
@@ -37,12 +36,6 @@ public class TutorialFacade
     /// </summary>
     public void Init()
     {
-        if (_tutorialHdl == null)
-        {
-            _tutorialHdl = _hierarchyBld.InstantiateWithDiContainer<TutorialHandler>(false);
-            NullCheck.AssertNotNull(_tutorialHdl);
-        }
-
         if (_tutorialView == null)
         {
             _tutorialView = _uiSystem.GeneralUi.TutorialView;
@@ -51,7 +44,7 @@ public class TutorialFacade
 
         _saveData = _saveHdlr.Load();
 
-        _tutorialHdl.Init( _tutorialView );
+        _tutorialHdlr.Init( _tutorialView );
         _tutorialView.Init();
     }
 
@@ -65,7 +58,7 @@ public class TutorialFacade
             if (_saveData._shownTriggers.Contains(trigger)) continue;
 
             // チュートリアルを表示
-            if( _tutorialHdl.ShowTutorial(trigger) )
+            if( _tutorialHdlr.ShowTutorial(trigger) )
             {
                 // 表示済みのトリガータイプに追加、保存
                 _saveData._shownTriggers.Add(trigger);
@@ -101,6 +94,6 @@ public class TutorialFacade
     /// <returns>ハンドラ</returns>
     public IFocusRoutine GetFocusRoutine()
     {
-        return _tutorialHdl;
+        return _tutorialHdlr;
     }
 }

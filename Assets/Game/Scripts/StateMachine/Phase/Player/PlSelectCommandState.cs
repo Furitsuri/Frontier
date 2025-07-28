@@ -32,8 +32,6 @@ namespace Frontier
             }
             _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal);
 
-            RegisterInputCodes();
-
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript(this);
             _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList(executableCommands);
             _uiSystem.BattleUi.TogglePLCommand(true);
@@ -90,12 +88,12 @@ namespace Frontier
         /// <summary>
         /// 現在のステートから離脱します
         /// </summary>
-        override public void Exit()
+        override public void ExitState()
         {
             // UIを非表示
             _uiSystem.BattleUi.TogglePLCommand(false);
 
-            base.Exit();
+            base.ExitState();
         }
 
         /// <summary>

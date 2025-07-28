@@ -9,7 +9,7 @@ namespace Frontier
     {
         protected bool _isInitReserved                  = false;
         protected bool _isFirstUpdate                   = false;
-        protected HierarchyBuilderBase _hierarchyBld        = null;
+        protected HierarchyBuilderBase _hierarchyBld    = null;
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stgCtrl              = null;
         protected BattleUISystem _btlUi                 = null;
@@ -37,7 +37,7 @@ namespace Frontier
         {
             if (_isInitReserved)
             {
-                CurrentNode.Init();
+                CurrentNode.RunState();
                 _isInitReserved = false;
             }
 
@@ -46,7 +46,7 @@ namespace Frontier
             {
                 if (CurrentNode.IsBack() && CurrentNode.Parent == null)
                 {
-                    CurrentNode.Exit();
+                    CurrentNode.ExitState();
 
                     return true;
                 }
@@ -61,34 +61,41 @@ namespace Frontier
             int transitIndex = CurrentNode.TransitIndex;
             if (0 <= transitIndex)
             {
-                CurrentNode.Exit();
-                CurrentNode = CurrentNode.Children[transitIndex];
-                _isInitReserved = true;
+                CurrentNode.ExitState();
+                CurrentNode = CurrentNode.GetChildren<PhaseStateBase>( transitIndex );
+                _isInitReserved = true; // 初期化を予約します
             }
             else if (CurrentNode.IsBack())
             {
-                CurrentNode.Exit();
-                CurrentNode = CurrentNode.Parent;
+                CurrentNode.ExitState();
+                CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
                 _isInitReserved = true;
             }
+        }
+
+        virtual public void Run()
+        {
+            // ステートの開始
+            Init();
+            CurrentNode.RunState();
         }
 
         virtual public void Restart()
         {
             // ステートの再開
-            CurrentNode.Restart();
+            CurrentNode.RestartState();
         }
 
         virtual public void Pause()
         {
             // ステートの一時停止
-            CurrentNode.Pause();
+            CurrentNode.PauseState();
         }
 
         virtual public void Exit()
         {
             // ステートの終了
-            CurrentNode.Exit();
+            CurrentNode.ExitState();
         }
 
         /// <summary>

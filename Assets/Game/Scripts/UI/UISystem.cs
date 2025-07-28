@@ -7,9 +7,9 @@ namespace Frontier
     public class UISystem : MonoBehaviour, IUiSystem
     {
         private GeneralUISystem _generarlUi = null;
-        private BattleUISystem _battleUi = null;
+        private BattleUISystem _battleUi    = null;
 #if UNITY_EDITOR
-        private DebugUISystem _debugUi = null;
+        private DebugUISystem _debugUi      = null;
 #endif // UNITY_EDITOR
 
         public GeneralUISystem GeneralUi => _generarlUi;

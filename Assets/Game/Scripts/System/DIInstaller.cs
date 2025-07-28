@@ -11,9 +11,6 @@ namespace Frontier
 {
     public class DiInstaller : MonoInstaller, IInstaller
     {
-        [SerializeField]
-        private GameObject DebugEditorDriverPrefab = null;
-
         /// <summary>
         /// DIコンテナのバインド対象を設定します
         /// </summary>
@@ -21,20 +18,17 @@ namespace Frontier
         {
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
-            Container.Bind<FocusRoutineController>().AsSingle();
             Container.Bind<StageData>().AsSingle();
-            Container.Bind<ISaveHandler<TutorialSaveData>>()
-                 .To<TutorialSaveHandler>()
-                 .AsSingle();
+            Container.Bind<ISaveHandler<TutorialSaveData>>().To<TutorialSaveHandler>().AsSingle();
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
+            Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
-            Container.Bind<DebugEditorMonoDriver>()
-                .FromComponentInNewPrefab(DebugEditorDriverPrefab)
-                .AsCached();
+            Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
+            Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
         }
 

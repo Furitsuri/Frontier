@@ -223,6 +223,11 @@ public class HierarchyBuilderBase : MonoBehaviour
         return _generator.InstantiateWithDiContainer<T>(isBind);
     }
 
+    public T InstantiateWithDiContainer<T>(T original, Vector3 position, Quaternion rotation, bool isBind) where T : UnityEngine.Object
+    {
+        return _generator.InstantiateWithDiContainer(original, position, rotation, isBind);
+    }
+
     /// <summary>
     /// 引数に指定したビヘイビアの紐づけ先のオブジェクトを決定します
     /// </summary>

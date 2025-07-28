@@ -6,7 +6,7 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-public class DebugMenuHandler : FocusRoutineBase
+public class DebugMenuHandler : FocusRoutineBaseWithMonoBehaviour
 {
     private HierarchyBuilderBase _hierarchyBld  = null;
     private InputFacade _inputFcd           = null;
@@ -69,10 +69,6 @@ public class DebugMenuHandler : FocusRoutineBase
         {
             switch( menuIdx )
             {
-                case (int)DebugMainMenu.STAGE_EDITOR:
-                    // ステージエディターのインスタンスを生成
-                    _debugLhr[menuIdx] = _hierarchyBld.InstantiateWithDiContainer<StageEditorLauncher>(false);
-                    break;
                 case (int)DebugMainMenu.BATTLE:
                     break;
                 case (int)DebugMainMenu.TUTORIAL:

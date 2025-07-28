@@ -10,7 +10,6 @@ public enum DebugMainMenu
 {
     NONE = -1,      // デバッグメニューなし
 
-    STAGE_EDITOR,   // ステージエディター
     BATTLE,         // 戦闘
     TUTORIAL,       // チュートリアル
 
@@ -21,15 +20,16 @@ public class DebugMenuFacade
 {
     private HierarchyBuilderBase _hierarchyBld          = null;
     private IUiSystem _uiSystem                     = null;
-    private DebugMenuHandler _debugMenuHnd          = null;
+    private DebugMenuHandler _debugMenuHdlr          = null;
     private DebugMenuPresenter _debugMenuView       = null;
     private GameObject _debugUi                     = null;
 
     [Inject]
-    public void Construct( HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem )
+    public void Construct( HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem, DebugMenuHandler debugMenuHdlr )
     {
         _hierarchyBld   = hierarchyBld;
         _uiSystem       = uiSystem;
+        _debugMenuHdlr  = debugMenuHdlr;
     }
 
     /// <summary>
@@ -46,12 +46,6 @@ public class DebugMenuFacade
 
         _debugUi.SetActive(false); // 初期状態では非表示
 
-        if (_debugMenuHnd == null)
-        {
-            _debugMenuHnd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuHandler>(false);
-            NullCheck.AssertNotNull(_debugMenuHnd);
-        }
-
         if( _debugMenuView == null )
         {
             _debugMenuView = _uiSystem.DebugUi.DebugMenuView;
@@ -59,7 +53,7 @@ public class DebugMenuFacade
         }
 
         _debugMenuView.Init();
-        _debugMenuHnd.Init(_debugMenuView, ToggleDebugCallback);
+        _debugMenuHdlr.Init(_debugMenuView, ToggleDebugCallback);
     }
 
     /// <summary>
@@ -67,7 +61,7 @@ public class DebugMenuFacade
     /// </summary>
     public void OpenDebugMenu()
     {
-        _debugMenuHnd.ScheduleRun();
+        _debugMenuHdlr.ScheduleRun();
     }
 
     /// <summary>
@@ -84,6 +78,6 @@ public class DebugMenuFacade
     /// <returns>ハンドラ</returns>
     public IFocusRoutine GetFocusRoutine()
     {
-        return _debugMenuHnd;
+        return _debugMenuHdlr;
     }
 }

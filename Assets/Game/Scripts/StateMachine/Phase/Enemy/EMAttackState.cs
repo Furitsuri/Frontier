@@ -50,14 +50,6 @@ namespace Frontier
 
             _playerSkillNames = _targetCharacter.GetEquipSkillNames();
 
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm,         new AcceptBooleanInput(AcceptConfirm), 0.0f),
-               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1,    new AcceptBooleanInput(AcceptSub1), 0.0f),
-               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2,    new AcceptBooleanInput(AcceptSub2), 0.0f),
-               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3,    new AcceptBooleanInput(AcceptSub3), 0.0f),
-               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4,    new AcceptBooleanInput(AcceptSub4), 0.0f)
-            );
-
             // 攻撃者の向きを設定
             var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.GetCurrentGridIndex());
             _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
@@ -110,7 +102,7 @@ namespace Frontier
             return false;
         }
 
-        override public void Exit()
+        override public void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
@@ -155,7 +147,18 @@ namespace Frontier
             //   次のキャラクターが行動開始する際に表示するようにします。
             // Stage.StageController.Instance.SetGridCursorControllerActive(true);
 
-            base.Exit();
+            base.ExitState();
+        }
+
+        public override void RegisterInputCodes()
+        {
+            _inputFcd.RegisterInputCodes(
+               (GuideIcon.CONFIRM,  "Confirm",              CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f),
+               (GuideIcon.SUB1,     _playerSkillNames[0],   CanAcceptSub1,      new AcceptBooleanInput(AcceptSub1), 0.0f),
+               (GuideIcon.SUB2,     _playerSkillNames[1],   CanAcceptSub2,      new AcceptBooleanInput(AcceptSub2), 0.0f),
+               (GuideIcon.SUB3,     _playerSkillNames[2],   CanAcceptSub3,      new AcceptBooleanInput(AcceptSub3), 0.0f),
+               (GuideIcon.SUB4,     _playerSkillNames[3],   CanAcceptSub4,      new AcceptBooleanInput(AcceptSub4), 0.0f)
+            );
         }
 
         /// <summary>
@@ -175,7 +178,7 @@ namespace Frontier
         /// サブ1の入力の受付可否を判定します
         /// </summary>
         /// <returns>サブ1の入力の受付可否</returns>
-        protected override bool CanAcceptSub1()
+        override protected bool CanAcceptSub1()
         {
             if (!CanAcceptDefault()) return false;
 
@@ -186,7 +189,7 @@ namespace Frontier
             return _targetCharacter.CanToggleEquipSkill(0);
         }
 
-        protected override bool CanAcceptSub2()
+        override protected bool CanAcceptSub2()
         {
             if (!CanAcceptDefault()) return false;
 
@@ -197,7 +200,7 @@ namespace Frontier
             return _targetCharacter.CanToggleEquipSkill(1);
         }
 
-        protected override bool CanAcceptSub3()
+        override protected bool CanAcceptSub3()
         {
             if (!CanAcceptDefault()) return false;
 
@@ -208,7 +211,7 @@ namespace Frontier
             return _targetCharacter.CanToggleEquipSkill(2);
         }
 
-        protected override bool CanAcceptSub4()
+        override protected bool CanAcceptSub4()
         {
             if (!CanAcceptDefault()) return false;
 
@@ -251,28 +254,28 @@ namespace Frontier
             return true;
         }
 
-        protected override bool AcceptSub1(bool isInput)
+        override protected bool AcceptSub1(bool isInput)
         {
             if (!isInput) return false;
 
             return _targetCharacter.ToggleUseSkillks(0);
         }
 
-        protected override bool AcceptSub2(bool isInput)
+        override protected bool AcceptSub2(bool isInput)
         {
             if (!isInput) return false;
 
             return _targetCharacter.ToggleUseSkillks(1);
         }
 
-        protected override bool AcceptSub3(bool isInput)
+        override protected bool AcceptSub3(bool isInput)
         {
             if (!isInput) return false;
 
             return _targetCharacter.ToggleUseSkillks(2);
         }
 
-        protected override bool AcceptSub4(bool isInput)
+        override protected bool AcceptSub4(bool isInput)
         {
             if (!isInput) return false;
 

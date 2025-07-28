@@ -42,25 +42,6 @@ namespace Frontier.Stage
             }
         }
 
-        /*
-        public void CopyFrom(StageData other)
-        {
-            _gridRowNum     = other._gridRowNum;
-            _gridColumnNum  = other._gridColumnNum;
-            if (_tileDatas == null || _tileDatas.Length != other._tileDatas.Length)
-            {
-                _tileDatas = new StageTileData[other._tileDatas.Length];
-            }
-            for (int i = 0; i < other._tileDatas.Length; i++)
-            {
-                if (_tileDatas[i] == null)
-                {
-                    _tileDatas[i] = new StageTileData();
-                }
-                _tileDatas[i].CopyFrom(other._tileDatas[i]);
-            }
-        }*/
-
         public StageTileData[] TileDatas => _tileDatas;
         public float WidthX() { return TILE_SIZE * _gridRowNum; }
         public float WidthZ() { return TILE_SIZE * _gridColumnNum; }

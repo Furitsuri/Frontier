@@ -84,16 +84,13 @@ namespace Frontier.Battle
 
         void Awake()
         {
+            Debug.Assert(_uiSystem != null, "UISystemのインスタンスが生成されていません。Injectの設定を確認してください。");
+
             var btlCameraObj = GameObject.FindWithTag("MainCamera");
             if ( btlCameraObj != null ) 
             {
                 _battleCameraCtrl = btlCameraObj.GetComponent<BattleCameraController>();
             }
-        }
-
-        void Start()
-        {
-            Debug.Assert(_uiSystem != null, "UISystemのインスタンスが生成されていません。Injectの設定を確認してください。");
 
             if (_skillCtrl == null)
             {
@@ -101,9 +98,9 @@ namespace Frontier.Battle
                 NullCheck.AssertNotNull(_skillCtrl);
             }
 
-            if( _btlFileLoader == null )
+            if (_btlFileLoader == null)
             {
-                _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true,  false, typeof(BattleFileLoader).Name);
+                _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true, false, typeof(BattleFileLoader).Name);
                 NullCheck.AssertNotNull(_btlFileLoader);
             }
 
@@ -111,86 +108,6 @@ namespace Frontier.Battle
             {
                 _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>(false);
                 NullCheck.AssertNotNull(_btlCharaCdr);
-            }
-
-            _battleUi = _uiSystem.BattleUi;
-            _installer.InstallBindings<BattleUISystem>( _battleUi );
-
-            Init();
-
-            _btlCharaCdr.Init();
-
-            // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-            if (!Methods.IsDebugScene())
-#endif
-            {
-                _btlFileLoader.CharacterLoad(_currentStageIndex);
-            }
-
-            _phaseHdlrs[(int)TurnType.PLAYER_TURN]   = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false);
-            _phaseHdlrs[(int)TurnType.ENEMY_TURN]    = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false);
-            _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN];
-            _currentPhaseHdlr.Init();
-
-            _btlCharaCdr.PlaceAllCharactersAtStartPosition();
-
-            // グリッド情報を更新
-            _stgCtrl.UpdateGridInfo();
-        }
-
-        void Update()
-        {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-            if (!Methods.IsDebugScene())
-#endif
-            {
-                if (GameMain.instance.IsInvoking())
-                {
-                    return;
-                }
-            }
-
-            // 現在のグリッド上に存在するキャラクター情報を更新
-            GridInfo info;
-            _stgCtrl.FetchCurrentGridInfo(out info);
-            _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
-
-            SelectCharacterInfo = new CharacterHashtable.Key(info.charaTag, info.charaIndex);
-
-            if (_battleUi.StageClear.isActiveAndEnabled) return;
-
-            if (_battleUi.GameOver.isActiveAndEnabled) return;
-
-            // フェーズマネージャを更新
-            _transitNextPhase = _currentPhaseHdlr.Update();
-        }
-
-        void LateUpdate()
-        {
-            if (_battleUi.StageClear.isActiveAndEnabled) return;
-
-            if (_battleUi.GameOver.isActiveAndEnabled) return;
-
-            // 勝利、全滅チェックを行う
-            if ( _btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim) ) { return; }
-
-            // フェーズ移動の正否
-            if (!_transitNextPhase)
-            {
-                _currentPhaseHdlr.LateUpdate();
-            }
-            else
-            {
-                // 一時パラメータをリセット
-                _btlCharaCdr.ResetTmpParamAllCharacter();
-
-                // 次のハンドラーに切り替える
-                _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
-                _currentPhaseHdlr = _phaseHdlrs[_phaseManagerIndex];
-                _currentPhaseHdlr.Init();
-
-                // StartCoroutine(InitNextPhase());
             }
         }
 
@@ -253,16 +170,6 @@ namespace Frontier.Battle
             return this;
         }
 
-        /// <summary>
-        /// 次のフェーズを初期化します
-        /// </summary>
-        /// <returns>IEnumerator</returns>
-        private IEnumerator InitNextPhase()
-        {
-            yield return null;
-            _currentPhaseHdlr.Init();
-        }
-
         // =========================================================
         // IFocusRoutineの実装
         // =========================================================
@@ -273,17 +180,94 @@ namespace Frontier.Battle
         /// </summary>
         override public void Init()
         {
-            // base.Init();
+            base.Init();
 
             _stgCtrl.Init(this);
             _skillCtrl.Init(this);
+            _btlCharaCdr.Init();
 
+            _battleUi = _uiSystem.BattleUi;
+            _installer.InstallBindings<BattleUISystem>(_battleUi);
+
+            // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            if (!Methods.IsDebugScene())
+#endif
+            {
+                _btlFileLoader.CharacterLoad(_currentStageIndex);
+            }
+
+            _phaseHdlrs[(int)TurnType.PLAYER_TURN] = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false);
+            _phaseHdlrs[(int)TurnType.ENEMY_TURN] = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false);
+            _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN];
+
+            _btlCharaCdr.PlaceAllCharactersAtStartPosition();
+
+            // グリッド情報を更新
+            _stgCtrl.UpdateGridInfo();
             // 初期フェイズを設定
             _phase = BattlePhase.BATTLE_START;
             // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.CameraParamLord(_battleCameraCtrl);
             // スキルデータの読込
             _btlFileLoader.SkillDataLord();
+        }
+
+        override public void UpdateRoutine()
+        {
+            base.UpdateRoutine();
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            if (!Methods.IsDebugScene())
+#endif
+            {
+                if (GameMain.instance.IsInvoking())
+                {
+                    return;
+                }
+            }
+
+            // 現在のグリッド上に存在するキャラクター情報を更新
+            GridInfo info;
+            _stgCtrl.FetchCurrentGridInfo(out info);
+            _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
+
+            SelectCharacterInfo = new CharacterHashtable.Key(info.charaTag, info.charaIndex);
+
+            if (_battleUi.StageClear.isActiveAndEnabled) return;
+
+            if (_battleUi.GameOver.isActiveAndEnabled) return;
+
+            // フェーズマネージャを更新
+            _transitNextPhase = _currentPhaseHdlr.Update();
+        }
+
+        override public void LateUpdateRoutine()
+        {
+            base.LateUpdateRoutine();
+
+            if (_battleUi.StageClear.isActiveAndEnabled) return;
+
+            if (_battleUi.GameOver.isActiveAndEnabled) return;
+
+            // 勝利、全滅チェックを行う
+            if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }
+
+            // フェーズ移動の正否
+            if (!_transitNextPhase)
+            {
+                _currentPhaseHdlr.LateUpdate();
+            }
+            else
+            {
+                // 一時パラメータをリセット
+                _btlCharaCdr.ResetTmpParamAllCharacter();
+
+                // 次のハンドラーに切り替える
+                _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
+                _currentPhaseHdlr = _phaseHdlrs[_phaseManagerIndex];
+                _currentPhaseHdlr.Run();
+            }
         }
 
         /// <summary>
@@ -294,7 +278,7 @@ namespace Frontier.Battle
         {
             base.Run();
 
-            gameObject.SetActive(true);
+            _currentPhaseHdlr.Run();
         }
 
         /// <summary>
@@ -304,8 +288,6 @@ namespace Frontier.Battle
         override public void Restart()
         {
             base.Restart();
-
-            gameObject.SetActive(true);
 
             _currentPhaseHdlr.Restart();
         }
@@ -318,8 +300,6 @@ namespace Frontier.Battle
         {
             base.Pause();
 
-            gameObject.SetActive(false);
-
             _currentPhaseHdlr.Pause();
         }
 
@@ -330,8 +310,6 @@ namespace Frontier.Battle
         override public void Exit()
         {
             base.Exit();
-
-            gameObject.SetActive(false);
 
             _currentPhaseHdlr.Exit();
         }

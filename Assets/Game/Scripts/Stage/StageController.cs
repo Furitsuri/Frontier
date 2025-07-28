@@ -612,6 +612,17 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// ステージの中心位置を取得します
+        /// </summary>
+        /// <returns>ステージの中心位置</returns>
+        public Vector3 GetCentralPos()
+        {
+            Vector3 retCentralPos = transform.position + new Vector3( 0.5f * _stageData.WidthX(), 0f, 0.5f * _stageData.WidthZ() );
+
+            return retCentralPos;
+        }
+
+        /// <summary>
         /// 指定グリッドにおけるキャラクターのワールド座標を取得します
         /// </summary>
         /// <param name="index">指定グリッド</param>

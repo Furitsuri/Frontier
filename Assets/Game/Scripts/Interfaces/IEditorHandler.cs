@@ -6,7 +6,7 @@ public interface IEditorHandler
 {
     public void SetFocusRoutine( IFocusRoutine routine );
     public void Update();
-
+    public void LateUpdate();
     public void Run();
 
     public void Exit();

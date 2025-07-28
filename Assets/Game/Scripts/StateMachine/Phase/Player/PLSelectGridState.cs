@@ -22,7 +22,7 @@ namespace Frontier
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorControllerActive(true);
 
-            RegisterInputCodes();
+            // RegisterInputCodes();
         }
 
         override public bool Update()
@@ -50,7 +50,7 @@ namespace Frontier
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        public override void RegisterInputCodes()
+        override public void RegisterInputCodes()
         {
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR,   "MOVE",     CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), GRID_DIRECTION_INPUT_INTERVAL),

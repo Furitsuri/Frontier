@@ -19,7 +19,7 @@ namespace Frontier
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);
             Container.Bind<IUiSystem>().To<EditorUiSystem>().FromComponentInHierarchy().AsCached();
-            Container.Bind<HierarchyBuilderBase>().To<SEditorHierarchyBuilder>().FromComponentInHierarchy().AsCached();
+            Container.Bind<HierarchyBuilderBase>().To<StageEditorHierarchyBuilder>().FromComponentInHierarchy().AsCached();
         }
 
         /// <summary>

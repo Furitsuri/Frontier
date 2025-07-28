@@ -28,8 +28,6 @@ namespace Frontier
         {
             base.Init();
 
-            RegisterInputCodes();
-
             _phase = PlMovePhase.PL_MOVE;
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
 
@@ -86,7 +84,7 @@ namespace Frontier
             return false;
         }
 
-        override public void Exit()
+        override public void ExitState()
         {
             // 操作対象データをリセット
             _stageCtrl.ClearGridCursroBind();
@@ -97,7 +95,7 @@ namespace Frontier
             // グリッド状態の描画をクリア
             _stageCtrl.ClearGridMeshDraw();
 
-            base.Exit();
+            base.ExitState();
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ using System;
 using static TutorialFacade;
 using Unity.VisualScripting;
 
-public class TutorialHandler : FocusRoutineBase
+public class TutorialHandler : FocusRoutineBaseWithMonoBehaviour
 {
     private InputFacade _inputFcd           = null;
     private TutorialPresenter _tutorialView = null;
