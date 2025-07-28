@@ -13,7 +13,7 @@ namespace Frontier.DebugTools.StageEditor
     /// <summary>
     /// ステージエディターのコントローラー
     /// </summary>
-    public class StageEditorController : FocusRoutineBaseWithMonoBehaviour
+    public class StageEditorController : FocusRoutineBase
     {
         public class RefParams
         {
