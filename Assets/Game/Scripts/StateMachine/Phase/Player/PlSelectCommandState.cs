@@ -99,7 +99,7 @@ namespace Frontier
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        public override void RegisterInputCodes()
+        override public void RegisterInputCodes()
         {
             _inputFcd.RegisterInputCodes(
                (GuideIcon.VERTICAL_CURSOR,  "Select",   CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL),
