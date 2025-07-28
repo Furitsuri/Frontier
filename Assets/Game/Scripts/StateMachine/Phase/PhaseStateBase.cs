@@ -17,25 +17,12 @@ namespace Frontier
         [Inject]
         public void Construct( HierarchyBuilderBase hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem, TutorialFacade tutorialFcd )
         {
-            base.Construct(inputFcd);
-
             _hierarchyBld   = hierarchyBld;
             _inputFcd       = inputFcd;
             _btlRtnCtrl     = btlRtnCtrl;
             _stageCtrl      = stgCtrl;
             _uiSystem       = uiSystem;
             _tutorialFcd    = tutorialFcd;
-        }
-
-        /// <summary>
-        /// 現在のステートから退避します
-        /// </summary>
-        override public void ExitState()
-        {
-            base.ExitState();
-
-            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
-            _tutorialFcd.TryShowTutorial();
         }
 
         /// <summary>
@@ -48,11 +35,60 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 現在のステートを実行します
+        /// </summary>
+        override public void RunState()
+        {
+            base.RunState();
+            RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// 現在のステートを再開します
+        /// </summary>
+        override public void RestartState()
+        {
+            base.RestartState();
+            RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// 現在のステートを中断します
+        /// </summary>
+        override public void PauseState()
+        {
+            base.PauseState();
+            UnregisterInputCodes();
+        }
+
+        /// <summary>
+        /// 現在のステートから退避します
+        /// </summary>
+        override public void ExitState()
+        {
+            base.ExitState();
+            UnregisterInputCodes();
+
+            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
+            _tutorialFcd.TryShowTutorial();
+        }
+
+        /// <summary>
+        /// 入力コードを登録します
+        /// </summary>
+        virtual public void RegisterInputCodes() { }
+
+        virtual public void UnregisterInputCodes()
+        {
+            _inputFcd.UnregisterInputCodes();
+        }
+
+        /// <summary>
         /// 入力を受付るかを取得します
         /// 多くのケースでこちらの関数を用いて判定します
         /// </summary>
         /// <returns>入力受付の可否</returns>
-        protected bool CanAcceptDefault()
+        virtual protected bool CanAcceptDefault()
         {
             // 現在のステートから脱出する場合は入力を受け付けない
             return !IsBack();

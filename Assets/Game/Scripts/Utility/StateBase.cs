@@ -9,12 +9,6 @@ public class StateBase : TreeNode<StateBase>
     protected bool _isBack = false;
     protected InputFacade _inputFcd = null;
 
-    [Inject]
-    public void Construct(InputFacade inputFcd)
-    {
-        _inputFcd = inputFcd;
-    }
-
     /// <summary>
     /// 初期化します
     /// </summary>
@@ -81,32 +75,22 @@ public class StateBase : TreeNode<StateBase>
     {
         // ステートの初期化を行う
         Init();
-        RegisterInputCodes();
     }
 
     /// <summary>
     /// 現在のステートを再開します
     /// </summary>
-    virtual public void RestartState()
-    {
-        RegisterInputCodes();
-    }
+    virtual public void RestartState() { }
 
     /// <summary>
     /// 現在のステートを中断します
     /// </summary>
-    virtual public void PauseState()
-    {
-        UnregisterInputCodes();
-    }
+    virtual public void PauseState() { }
 
     /// <summary>
     /// 現在のステートから退避します
     /// </summary>
-    virtual public void ExitState()
-    {
-        UnregisterInputCodes();
-    }
+    virtual public void ExitState() { }
 
     /// <summary>
     /// 以前のステートに戻るフラグを取得します
@@ -123,15 +107,5 @@ public class StateBase : TreeNode<StateBase>
     protected void Back()
     {
         _isBack = true;
-    }
-
-    /// <summary>
-    /// 入力コードを登録します
-    /// </summary>
-    virtual public void RegisterInputCodes() { }
-
-    virtual public void UnregisterInputCodes()
-    {
-        _inputFcd.UnregisterInputCodes();
     }
 }
