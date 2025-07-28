@@ -7,7 +7,7 @@ using Frontier.Combat;
 
 namespace Frontier.Battle
 {
-    public class BattleRoutineController : FocusRoutineBaseWithMonoBehaviour
+    public class BattleRoutineController : FocusRoutineBase
     {
         /// <summary>
         /// バトル状態の遷移

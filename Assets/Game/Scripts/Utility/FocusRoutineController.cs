@@ -28,7 +28,7 @@ public class FocusRoutineController : MonoBehaviour
 
     [SerializeField]
     [Header("割込み優先度の高いものから順に、各ルーチンを挿入してください")]
-    private FocusRoutineBaseWithMonoBehaviour[] _focusRoutineBhvs = null;
+    private FocusRoutineBase[] _focusRoutineBhvs = null;
 
     [SerializeField]
     [Header("上記で挿入したもののうち、最初に実行するルーチンのインデックス値を指定してください")]

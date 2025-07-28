@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class DebugEditorMonoDriver : FocusRoutineBaseWithMonoBehaviour
+public class DebugEditorMonoDriver : FocusRoutineBase
 {
     private IEditorHandler _editorHnd;
 

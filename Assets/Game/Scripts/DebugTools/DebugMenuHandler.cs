@@ -6,7 +6,7 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-public class DebugMenuHandler : FocusRoutineBaseWithMonoBehaviour
+public class DebugMenuHandler : FocusRoutineBase
 {
     private HierarchyBuilderBase _hierarchyBld  = null;
     private InputFacade _inputFcd           = null;
