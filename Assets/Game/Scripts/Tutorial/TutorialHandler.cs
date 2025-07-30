@@ -83,10 +83,12 @@ public class TutorialHandler : FocusRoutineBase
     /// </summary>
     private void RegistInputCodes()
     {
+        int hashCode = Hash.GetStableHash(GetType().Name);
+
         _inputFcd.RegisterInputCodes(
-            (GuideIcon.HORIZONTAL_CURSOR,   "PAGE TRANSACTION", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL),
-            (GuideIcon.CONFIRM,             "NEXT",             CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
-            (GuideIcon.CANCEL,              "BACK",             CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel),       0.0f)
+            (GuideIcon.HORIZONTAL_CURSOR,   "PAGE TRANSACTION", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+            (GuideIcon.CONFIRM,             "NEXT",             CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+            (GuideIcon.CANCEL,              "BACK",             CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
          );
     }
 
@@ -256,7 +258,7 @@ public class TutorialHandler : FocusRoutineBase
         base.Pause();
 
         // 入力コードの解除
-        _inputFcd.UnregisterInputCodes();
+        _inputFcd.UnregisterInputCodes(Hash.GetStableHash(GetType().Name));
     }
 
     /// <summary>
@@ -270,7 +272,7 @@ public class TutorialHandler : FocusRoutineBase
         // チュートリアルの終了
         _tutorialView.Exit();
         // 入力コードの解除
-        _inputFcd.UnregisterInputCodes();
+        _inputFcd.UnregisterInputCodes(Hash.GetStableHash(GetType().Name));
         // 表示済みのトリガータイプをクリア
         TutorialFacade.Clear();
     }

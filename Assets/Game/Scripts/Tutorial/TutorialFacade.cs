@@ -14,11 +14,11 @@ public class TutorialFacade
         // 他にも条件が増えていく
     }
 
-    private IUiSystem _uiSystem                         = null;
-    private TutorialPresenter _tutorialView             = null;
-    private TutorialHandler _tutorialHdlr               = null;
-    private ISaveHandler<TutorialSaveData> _saveHdlr    = null;
-    private static readonly List<TriggerType> _pendingTriggers = new();
+    private IUiSystem _uiSystem                                 = null;
+    private TutorialPresenter _tutorialView                     = null;
+    private TutorialHandler _tutorialHdlr                       = null;
+    private ISaveHandler<TutorialSaveData> _saveHdlr            = null;
+    private static readonly List<TriggerType> _pendingTriggers  = new();
 
     // 表示済みのトリガータイプ
     private TutorialSaveData _saveData = null;

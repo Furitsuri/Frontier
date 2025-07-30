@@ -8,37 +8,43 @@ using static Constants;
 
 public class DebugMenuHandler : FocusRoutineBase
 {
-    private HierarchyBuilderBase _hierarchyBld  = null;
-    private InputFacade _inputFcd           = null;
-
+    private InputFacade _inputFcd               = null;
     private DebugMenuPresenter _debugMenuView   = null;
     private IDebugLauncher[] _debugLhr          = null;
     // 選択中のメニューインデックス
     private int _selectedMenuIndex              = 0;
+    private int _inputHashCode                  = -1;
     private ReadOnlyCollection<TextMeshProUGUI> _menuTexts;
     // デバッグON/OFFのコールバック
     public delegate void ToggleDebugCallback();
+    // デバッグメニューへの遷移の入力可否コールバック
+    private InputCode.EnableCallback _canAcceptDebugTransitionCb = null;
+    // デバッグメニューへの遷移入力のコールバック
+    private AcceptBooleanInput.AcceptBooleanInputCallback _acceptDebugTransitionCb = null;
+
     public ToggleDebugCallback _toggleDebugCb = null;
 
     [Inject]
-    public void Construct( HierarchyBuilderBase hierarchyBld, InputFacade inputFcd )
+    public void Construct( InputFacade inputFcd )
     {
-        _hierarchyBld   = hierarchyBld;
         _inputFcd       = inputFcd;
     }
 
     /// <summary>
     /// 初期化します
     /// </summary>
-    public void Init( DebugMenuPresenter debugMenuView, ToggleDebugCallback cb )
+    public void Init( DebugMenuPresenter debugMenuView, ToggleDebugCallback cb, InputCode.EnableCallback canAcceptCb, AcceptBooleanInput.AcceptBooleanInputCallback acceptInputCb)
     {
         base.Init();
 
-        _debugMenuView      = debugMenuView;
-        _menuTexts          = _debugMenuView.MenuTexts;
-        _selectedMenuIndex  = 0;
-        _toggleDebugCb      = cb;
-        _debugLhr           = new IDebugLauncher[(int)DebugMainMenu.MAX];
+        _debugMenuView              = debugMenuView;
+        _menuTexts                  = _debugMenuView.MenuTexts;
+        _selectedMenuIndex          = 0;
+        _toggleDebugCb              = cb;
+        _debugLhr                   = new IDebugLauncher[(int)DebugMainMenu.MAX];
+        _inputHashCode              = Hash.GetStableHash(GetType().Name);
+        _canAcceptDebugTransitionCb = canAcceptCb;
+        _acceptDebugTransitionCb    = acceptInputCb;
     }
 
     /// <summary>
@@ -52,10 +58,12 @@ public class DebugMenuHandler : FocusRoutineBase
 
     private void RegisterInputCodes()
     {
-        _inputFcd.RegisterInputCodesInDebug(
-            (GuideIcon.VERTICAL_CURSOR, "SELECT",   CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL),
-            (GuideIcon.CONFIRM,         "CONFIRM",  CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f),
-            (GuideIcon.OPT2,            "EXIT",     CanAcceptOptional,  new AcceptBooleanInput(AcceptOptional),     0.0f)
+        int hashCode = Hash.GetStableHash(GetType().Name);
+
+        _inputFcd.RegisterInputCodes(
+            (GuideIcon.VERTICAL_CURSOR, "SELECT",   CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+            (GuideIcon.CONFIRM,         "CONFIRM",  CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f, hashCode),
+            (GuideIcon.CANCEL,          "EXIT",     CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel),       0.0f, hashCode)
         );
     }
 
@@ -81,7 +89,7 @@ public class DebugMenuHandler : FocusRoutineBase
         }
 
         // 現在の入力コードを抹消
-        _inputFcd.UnregisterInputCodes();
+        _inputFcd.UnregisterInputCodes(_inputHashCode);
         
         _debugLhr[menuIdx].Init();
         _debugLhr[menuIdx].LaunchEditor();
@@ -97,7 +105,7 @@ public class DebugMenuHandler : FocusRoutineBase
         return true;
     }
 
-    private bool CanAcceptOptional()
+    private bool CanAcceptCancel()
     {
         return true;
     }
@@ -145,7 +153,7 @@ public class DebugMenuHandler : FocusRoutineBase
     /// </summary>
     /// <param name="isInput">オプション入力</param>
     /// <returns>入力実行の有無</returns>
-    private bool AcceptOptional(bool isInput)
+    private bool AcceptCancel(bool isInput)
     {
         if( isInput ) 
         {
@@ -185,7 +193,7 @@ public class DebugMenuHandler : FocusRoutineBase
         base.Restart();
 
         _debugMenuView.ToggleMenuVisibility();
-        _inputFcd.UnregisterInputCodes();
+        _inputFcd.UnregisterInputCodes(_inputHashCode);
         RegisterInputCodes();
     }
 
@@ -194,7 +202,7 @@ public class DebugMenuHandler : FocusRoutineBase
         base.Pause();
 
         _debugMenuView.ToggleMenuVisibility();
-        _inputFcd.UnregisterInputCodes();
+        _inputFcd.UnregisterInputCodes(_inputHashCode);
     }
 
     override public void Exit()
@@ -202,7 +210,9 @@ public class DebugMenuHandler : FocusRoutineBase
         base.Exit();
 
         ToggleDebugView();
-        _inputFcd.UnregisterInputCodes();
+        _inputFcd.UnregisterInputCodes(_inputHashCode);
+        int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
+        _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptBooleanInput(_acceptDebugTransitionCb), 0.0f, hashCode));
     }
 
     override public int GetPriority() { return (int)FocusRoutinePriority.DEBUG_MENU; }

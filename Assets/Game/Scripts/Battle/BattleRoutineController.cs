@@ -39,11 +39,10 @@ namespace Frontier.Battle
         [SerializeField]
         private GameObject _btlFileLoadObject;
 
-        private IInstaller _installer          = null;
+        private IInstaller _installer               = null;
         private HierarchyBuilderBase _hierarchyBld  = null;
-        private InputFacade _inputFcd           = null;
-        private StageController _stgCtrl        = null;
-        private IUiSystem _uiSystem              = null;
+        private StageController _stgCtrl            = null;
+        private IUiSystem _uiSystem                 = null;
 
         private BattlePhase _phase;
         private BattleFileLoader _btlFileLoader                 = null;
@@ -73,11 +72,10 @@ namespace Frontier.Battle
         /// <param name="stgCtrl">ステージのコントローラ</param>
         /// <param name="uiSystem">UIシステム</param>
         [Inject]
-        void Construct(IInstaller installer, HierarchyBuilderBase hierarchyBld, InputFacade inputFcd, StageController stgCtrl, IUiSystem uiSystem)
+        void Construct(IInstaller installer, HierarchyBuilderBase hierarchyBld, StageController stgCtrl, IUiSystem uiSystem)
         {
             _installer      = installer;
             _hierarchyBld   = hierarchyBld;
-            _inputFcd       = inputFcd;
             _stgCtrl        = stgCtrl;
             _uiSystem       = uiSystem;
         }
@@ -197,8 +195,8 @@ namespace Frontier.Battle
                 _btlFileLoader.CharacterLoad(_currentStageIndex);
             }
 
-            _phaseHdlrs[(int)TurnType.PLAYER_TURN] = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false);
-            _phaseHdlrs[(int)TurnType.ENEMY_TURN] = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false);
+            _phaseHdlrs[(int)TurnType.PLAYER_TURN]  = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false);
+            _phaseHdlrs[(int)TurnType.ENEMY_TURN]   = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false);
             _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN];
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();

@@ -35,6 +35,15 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 入力コードのハッシュ値を取得します
+        /// </summary>
+        /// <returns>入力コードのハッシュ値</returns>
+        protected int GetInputCodeHash()
+        {
+            return Hash.GetStableHash(GetType().Name);
+        }
+
+        /// <summary>
         /// 現在のステートを実行します
         /// </summary>
         override public void RunState()
@@ -58,7 +67,7 @@ namespace Frontier
         override public void PauseState()
         {
             base.PauseState();
-            UnregisterInputCodes();
+            UnregisterInputCodes(Hash.GetStableHash(GetType().Name));
         }
 
         /// <summary>
@@ -67,7 +76,7 @@ namespace Frontier
         override public void ExitState()
         {
             base.ExitState();
-            UnregisterInputCodes();
+            UnregisterInputCodes(Hash.GetStableHash(GetType().Name));
 
             // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
             _tutorialFcd.TryShowTutorial();
@@ -78,9 +87,13 @@ namespace Frontier
         /// </summary>
         virtual public void RegisterInputCodes() { }
 
-        virtual public void UnregisterInputCodes()
+        /// <summary>
+        /// 指定するハッシュ値の入力コードを登録解除します
+        /// </summary>
+        /// <param name="hashCode">ハッシュ値</param>
+        virtual public void UnregisterInputCodes( int hashCode )
         {
-            _inputFcd.UnregisterInputCodes();
+            _inputFcd.UnregisterInputCodes( hashCode );
         }
 
         /// <summary>
