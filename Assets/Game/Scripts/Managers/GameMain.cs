@@ -130,22 +130,12 @@ namespace Frontier
             // アニメーションデータの初期化
             AnimDatas.Init();
 
-            /*
-            // 入力関連の初期化
-            _inputFcd.Init();
-            // チュートリアル関連の初期化
-            _tutorialFcd.Init();
-            */
-
-            // 戦闘マネージャの初期化
-            // _btlRtnCtrl.Init();
-
 #if UNITY_EDITOR
             // デバッグモードの初期化
-            _debugMenuFcd.Init();
+            _debugMenuFcd.Init( CanAcceptDebugTransition, AcceptDebugTransition );
             _debugEditorMonoDrv.Init();
             // デバッグモードへ移行するための入力コードを登録
-            ResgiterInputCodeForDebugTransition();
+            ResgiterInputCodes();
 #endif // UNITY_EDITOR
 
             _stageImage = GameObject.Find("StageLevelImage");
@@ -219,9 +209,11 @@ namespace Frontier
         /// デバッグメニューを開くための入力コードを登録します。
         /// ※この入力コードはUnity Editor上ではデバッグ状態以外の全ての状態で有効です。
         /// </summary>
-        private void ResgiterInputCodeForDebugTransition()
+        private void ResgiterInputCodes()
         {
-            _inputFcd.RegisterInputCodeForDebugTransition((Constants.GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f));
+            int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
+
+            _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f, hashCode));
         }
 
         /// <summary>

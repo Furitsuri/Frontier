@@ -27,8 +27,10 @@ namespace Frontier.DebugTools
 
         override public void RegisterInputCodes()
         {
-            _inputFcd.RegisterInputCodesInDebug(
-                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f)
+            int hashCode = GetInputCodeHash();
+
+            _inputFcd.RegisterInputCodes(
+                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode)
             );
         }
 

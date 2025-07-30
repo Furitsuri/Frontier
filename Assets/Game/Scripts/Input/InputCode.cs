@@ -21,48 +21,38 @@ public class InputCode
     public IAcceptInputBase AcceptInput;
     // 入力処理を有効にするインターバル
     public float InputInterval;
+    // 入力コード登録を行ったクラスのハッシュ値
+    public int RegisterClassHashCode;
     // 入力処理を行った最後の時間
     private float InputLastTime;
 
     /// <summary>
-    /// コピー元の入力コードをコピー先にコピーします
-    /// </summary>
-    /// <param name="src">コピー元</param>
-    /// <param name="dst">コピー先</param>
-    static public void CopyInputCode(InputCode src, InputCode dst)
-    {
-        dst.Icon            = src.Icon;
-        dst.Explanation     = src.Explanation;
-        dst.EnableCb        = src.EnableCb;
-        dst.AcceptInput     = src.AcceptInput;
-        dst.InputInterval   = src.InputInterval;
-        dst.InputLastTime   = src.InputLastTime;
-    }
-
-    /// <summary>
     /// 入力コードを設定します
     /// </summary>
-    /// <param name="enableCb">入力受付判定のコールバック</param>
     /// <param name="icon">ガイドアイコン</param>
     /// <param name="expl">説明文</param>
-    /// <param name="inputCb">入力時のコールバック</param>
-    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval)
+    /// <param name="enableCb">入力受付判定のコールバック</param>
+    /// <param name="acceptInput">入力時のコールバック</param>
+    /// <param name="interval">入力受付のインターバル時間</param>
+    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
+    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode)
     {
-        Icon            = icon;
-        Explanation     = expl;
-        EnableCb        = enableCb;
-        AcceptInput     = acceptInput;
-        InputInterval   = interval;
-        InputLastTime   = 0f;
+        Icon                    = icon;
+        Explanation             = expl;
+        EnableCb                = enableCb;
+        AcceptInput             = acceptInput;
+        InputInterval           = interval;
+        RegisterClassHashCode   = hashCode;
+        InputLastTime           = 0f;
     }
 
     /// <summary>
     /// オペレーター
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
-    public static implicit operator InputCode((GuideIcon, string, EnableCallback, IAcceptInputBase, float) tuple)
+    public static implicit operator InputCode((GuideIcon, string, EnableCallback, IAcceptInputBase, float, int) tuple)
     {
-        return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
+        return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6);
     }
 
     /// <summary>

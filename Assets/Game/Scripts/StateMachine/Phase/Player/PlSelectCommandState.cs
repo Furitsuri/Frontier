@@ -101,10 +101,12 @@ namespace Frontier
         /// </summary>
         override public void RegisterInputCodes()
         {
+            int hashCode = GetInputCodeHash();
+
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.VERTICAL_CURSOR,  "Select",   CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL),
-               (GuideIcon.CONFIRM,          "Confirm",  CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f),
-               (GuideIcon.CANCEL,           "Back",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f)
+               (GuideIcon.VERTICAL_CURSOR,  "Select",   CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,          "Confirm",  CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+               (GuideIcon.CANCEL,           "Back",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
             );
         }
 

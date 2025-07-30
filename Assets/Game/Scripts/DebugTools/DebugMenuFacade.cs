@@ -1,4 +1,5 @@
 ﻿using Frontier;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -35,7 +36,7 @@ public class DebugMenuFacade
     /// <summary>
     /// 初期化します
     /// </summary>
-    public void Init()
+    public void Init( InputCode.EnableCallback canAcceptCb, AcceptBooleanInput.AcceptBooleanInputCallback acceptInputCb )
     {
         _debugUi = GameObjectFinder.FindInSceneEvenIfInactive("DebugUI");
         if (null == _debugUi)
@@ -53,7 +54,7 @@ public class DebugMenuFacade
         }
 
         _debugMenuView.Init();
-        _debugMenuHdlr.Init(_debugMenuView, ToggleDebugCallback);
+        _debugMenuHdlr.Init(_debugMenuView, ToggleDebugCallback, canAcceptCb, acceptInputCb);
     }
 
     /// <summary>

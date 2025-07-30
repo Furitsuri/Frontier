@@ -40,6 +40,8 @@ public class DebugMenuPresenter : MonoBehaviour
         NullCheck.AssertNotNull(_verticalLayoutGroup);
 
         InitDebugMenuList();
+
+        gameObject.SetActive(false);    // 初期状態では無効にする
     }
 
     /// <summary>

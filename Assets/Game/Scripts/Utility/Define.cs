@@ -93,17 +93,18 @@
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
-    public const string LAYER_NAME_CHARACTER = "Character";
-    public const string LAYER_NAME_LEFT_PARAM_WINDOW = "ParamRenderLeft";
-    public const string LAYER_NAME_RIGHT_PARAM_WINDOW = "ParamRenderRight";
-    public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH = "CharacterSkinMesh";
-    public const string GUIDE_SPRITE_FOLDER_PASS = "Sprites/Originals/UI/InputGuide/";
-    public const string TILE_MATERIALS_FOLDER_PASS = "Materials/Tile/";
+    public const string LAYER_NAME_CHARACTER                = "Character";
+    public const string LAYER_NAME_LEFT_PARAM_WINDOW        = "ParamRenderLeft";
+    public const string LAYER_NAME_RIGHT_PARAM_WINDOW       = "ParamRenderRight";
+    public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
+    public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";
+    public const string TILE_MATERIALS_FOLDER_PASS          = "Materials/Tile/";
 #if UNITY_EDITOR
-    public const string GUIDE_SPRITE_FILE_NAME = "Preview Keyboard & Mouse";
+    public const string DEBUG_TRANSION_INPUT_HASH_STRING    = "DEBUG";
+    public const string GUIDE_SPRITE_FILE_NAME              = "Preview Keyboard & Mouse";
 #elif UNITY_STANDALONE_WIN
-    public const string GUIDE_SPRITE_FILE_NAME          = "Preview Steam Deck";
+    public const string GUIDE_SPRITE_FILE_NAME              = "Preview Steam Deck";
 #else
-    public const string GUIDE_SPRITE_FILE_NAME          = "Preview Steam Deck";
+    public const string GUIDE_SPRITE_FILE_NAME              = "Preview Steam Deck";
 #endif
 }

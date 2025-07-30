@@ -55,15 +55,17 @@ namespace Frontier.DebugTools
 
         override public void RegisterInputCodes()
         {
+            int hashCode = GetInputCodeHash();
+
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), 0.1f),
-                (GuideIcon.CONFIRM, "CHANGE",       CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f),
-                (GuideIcon.OPT1, "LOAD",            CanAcceptOptional1, new AcceptBooleanInput(AcceptOptional1), 0.0f),
-                (GuideIcon.OPT2, "SAVE",            CanAcceptOptional2, new AcceptBooleanInput(AcceptOptional2), 0.0f),
-                (GuideIcon.SUB2, "ADD TILE",        CanAcceptSub2,      new AcceptBooleanInput(AcceptSub2), 0.0f),
-                (GuideIcon.SUB1, "SUB TILE",        CanAcceptSub1,      new AcceptBooleanInput(AcceptSub1), 0.0f),
-                (GuideIcon.SUB3, "SUB HEIGHT",      CanAcceptSub3,      new AcceptBooleanInput(AcceptSub3), 0.0f),
-                (GuideIcon.SUB4, "ADD HEIGHT",      CanAcceptSub4,      new AcceptBooleanInput(AcceptSub4), 0.0f)
+                (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), 0.1f, hashCode),
+                (GuideIcon.CONFIRM, "CHANGE",       CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+                (GuideIcon.OPT1, "LOAD",            CanAcceptOptional1, new AcceptBooleanInput(AcceptOptional1), 0.0f, hashCode),
+                (GuideIcon.OPT2, "SAVE",            CanAcceptOptional2, new AcceptBooleanInput(AcceptOptional2), 0.0f, hashCode),
+                (GuideIcon.SUB2, "ADD TILE",        CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
+                (GuideIcon.SUB1, "SUB TILE",        CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
+                (GuideIcon.SUB3, "SUB HEIGHT",      CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
+                (GuideIcon.SUB4, "ADD HEIGHT",      CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f, hashCode)
             );
         }
 
