@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Frontier;
 using Zenject;
 
-public class TutorialPresenter : MonoBehaviour
+public class TutorialPresenter : BasePresenter
 {
     [SerializeField]
     private TextMeshProUGUI _headline;
@@ -37,8 +37,10 @@ public class TutorialPresenter : MonoBehaviour
     /// <summary>
     /// チュートリアルの表示内容に対する初期化を行います
     /// </summary>
-    public void Init()
+    override public void Init()
     {
+        base.Init();
+
         // 初期状態では非表示にする
         gameObject.SetActive(false);
 

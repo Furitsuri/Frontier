@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
-public class DebugMenuPresenter : MonoBehaviour
+public class DebugMenuPresenter : BasePresenter
 {
     private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -34,7 +34,7 @@ public class DebugMenuPresenter : MonoBehaviour
     /// <summary>
     /// 初期化します
     /// </summary>
-    public void Init()
+    override public void Init()
     {   
         _verticalLayoutGroup = DebugMenuList.GetComponent<VerticalLayoutGroup>();
         NullCheck.AssertNotNull(_verticalLayoutGroup);

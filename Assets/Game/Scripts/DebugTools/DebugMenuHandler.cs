@@ -6,7 +6,7 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-public class DebugMenuHandler : FocusRoutineBase
+public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
 {
     private InputFacade _inputFcd               = null;
     private DebugMenuPresenter _debugMenuView   = null;
