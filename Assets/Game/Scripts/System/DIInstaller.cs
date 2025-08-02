@@ -24,11 +24,13 @@ namespace Frontier
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
+            Container.Bind<TutorialPresenter>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
+            Container.Bind<DebugMenuPresenter>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
         }
 

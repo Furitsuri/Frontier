@@ -4,7 +4,7 @@ using UnityEngine;
 using Frontier;
 using Zenject;
 
-public class TutorialFacade
+public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler, TutorialPresenter>
 {
     public enum TriggerType
     {
@@ -15,8 +15,6 @@ public class TutorialFacade
     }
 
     private IUiSystem _uiSystem                                 = null;
-    private TutorialPresenter _tutorialView                     = null;
-    private TutorialHandler _tutorialHdlr                       = null;
     private ISaveHandler<TutorialSaveData> _saveHdlr            = null;
     private static readonly List<TriggerType> _pendingTriggers  = new();
 
@@ -28,24 +26,25 @@ public class TutorialFacade
     {
         _uiSystem       = uiSystem;
         _saveHdlr       = saveHandler;
-        _tutorialHdlr   = tutorialHdlr;
     }
 
     /// <summary>
     /// 初期化します
     /// </summary>
-    public void Init()
+    override public void Init()
     {
-        if (_tutorialView == null)
+        // base.Init()は呼び出さない
+
+        if (presenter == null)
         {
-            _tutorialView = _uiSystem.GeneralUi.TutorialView;
-            NullCheck.AssertNotNull(_tutorialView);
+            presenter = _uiSystem.GeneralUi.TutorialView;
+            NullCheck.AssertNotNull(presenter);
         }
 
         _saveData = _saveHdlr.Load();
 
-        _tutorialHdlr.Init( _tutorialView );
-        _tutorialView.Init();
+        handler.Init( presenter );
+        presenter.Init();
     }
 
     /// <summary>
@@ -58,7 +57,7 @@ public class TutorialFacade
             if (_saveData._shownTriggers.Contains(trigger)) continue;
 
             // チュートリアルを表示
-            if( _tutorialHdlr.ShowTutorial(trigger) )
+            if( handler.ShowTutorial(trigger) )
             {
                 // 表示済みのトリガータイプに追加、保存
                 _saveData._shownTriggers.Add(trigger);
@@ -94,6 +93,6 @@ public class TutorialFacade
     /// <returns>ハンドラ</returns>
     public IFocusRoutine GetFocusRoutine()
     {
-        return _tutorialHdlr;
+        return handler;
     }
 }

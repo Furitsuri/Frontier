@@ -17,21 +17,9 @@ public enum DebugMainMenu
     MAX,
 }
 
-public class DebugMenuFacade
+public class DebugMenuFacade : BaseFacadeWithFocusRoutineHandler<DebugMenuHandler, DebugMenuPresenter>
 {
-    private HierarchyBuilderBase _hierarchyBld          = null;
-    private IUiSystem _uiSystem                     = null;
-    private DebugMenuHandler _debugMenuHdlr          = null;
-    private DebugMenuPresenter _debugMenuView       = null;
     private GameObject _debugUi                     = null;
-
-    [Inject]
-    public void Construct( HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem, DebugMenuHandler debugMenuHdlr )
-    {
-        _hierarchyBld   = hierarchyBld;
-        _uiSystem       = uiSystem;
-        _debugMenuHdlr  = debugMenuHdlr;
-    }
 
     /// <summary>
     /// 初期化します
@@ -47,14 +35,8 @@ public class DebugMenuFacade
 
         _debugUi.SetActive(false); // 初期状態では非表示
 
-        if( _debugMenuView == null )
-        {
-            _debugMenuView = _uiSystem.DebugUi.DebugMenuView;
-            NullCheck.AssertNotNull(_debugMenuView);
-        }
-
-        _debugMenuView.Init();
-        _debugMenuHdlr.Init(_debugMenuView, ToggleDebugCallback, canAcceptCb, acceptInputCb);
+        presenter.Init();
+        handler.Init(presenter, ToggleDebugCallback, canAcceptCb, acceptInputCb);
     }
 
     /// <summary>
@@ -62,7 +44,7 @@ public class DebugMenuFacade
     /// </summary>
     public void OpenDebugMenu()
     {
-        _debugMenuHdlr.ScheduleRun();
+        handler.ScheduleRun();
     }
 
     /// <summary>
@@ -79,6 +61,6 @@ public class DebugMenuFacade
     /// <returns>ハンドラ</returns>
     public IFocusRoutine GetFocusRoutine()
     {
-        return _debugMenuHdlr;
+        return handler;
     }
 }

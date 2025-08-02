@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Frontier.Events
 {
-    public class EventHandler : BaseHandler
+    public class EventHandler : BaseHandlerExtendedFocusRoutine
     {
         override public void Init()
         {
