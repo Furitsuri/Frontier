@@ -974,7 +974,7 @@ namespace Frontier.Entities
         /// </summary>
         public void StopParryAnimationOnAnimEvent()
         {
-            if (!_btlRtnCtrl.SkillCtrl.ParryHdlr.IsJudgeEnd())
+            if (!(_btlRtnCtrl.SkillCtrl.CurrentSkillHandler as ParrySkillHandler).IsJudgeEnd())
             {
                 _timeScale.Stop();
             }

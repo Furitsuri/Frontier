@@ -102,8 +102,6 @@ namespace Frontier
         /// <returns>処理の終了</returns>
         public bool Update()
         {
-            var parryCtrl = _btlRtnCtrl.SkillCtrl.ParryHdlr;
-
             switch (_phase)
             {
                 case Phase.START:
