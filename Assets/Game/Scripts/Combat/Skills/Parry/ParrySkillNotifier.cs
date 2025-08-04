@@ -130,7 +130,7 @@ public class ParrySkillNotifier
     {
         if (!_skillUser.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
 
-        ParrySkillHandler parryCtrl = _btlRtnCtrl.SkillCtrl.ParryHdlr;
+        ParrySkillHandler parryCtrl = _btlRtnCtrl.SkillCtrl.CurrentSkillHandler as ParrySkillHandler;
         SubscribeParryEvent(parryCtrl);
         parryCtrl.StartParryEvent( _skillUser, _skillUser.GetOpponentChara() );
     }

@@ -2,13 +2,14 @@
 using Frontier.Entities;
 using System;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier.Combat
 {
     /// <summary>
     /// パリィスキルの処理を行います
     /// </summary>
-    public class ParrySkillHandler : MonoBehaviour
+    public class ParrySkillHandler : MonoBehaviour, ICombatSkillHandler
     {
         /// <summary>
         /// パリィ更新用フェイズ
@@ -81,6 +82,12 @@ namespace Frontier.Combat
 
         // パリィイベント終了時のデリゲート
         public event EventHandler<ParrySkillHdlrEventArgs> ProcessCompleted;
+
+        [Inject]
+        public void Construct(BattleRoutineController btlRtnCtrl)
+        {
+            _btlRtnCtrl = btlRtnCtrl;
+        }
 
         // Update is called once per frame
         void Update()
@@ -215,11 +222,8 @@ namespace Frontier.Combat
         /// <summary>
         /// 初期化します
         /// </summary>
-        /// <param name="btlRtnCtrl">バトルマネージャ</param>
-        public void Init(BattleRoutineController btlRtnCtrl)
+        public void Init()
         {
-            _btlRtnCtrl = btlRtnCtrl;
-
             _ui.Init(_showUITime);
             _ui.gameObject.SetActive(false);
 

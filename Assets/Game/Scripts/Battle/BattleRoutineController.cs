@@ -48,7 +48,7 @@ namespace Frontier.Battle
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleUISystem _battleUi                        = null;
-        private SkillController _skillCtrl                      = null;
+        private CombatSkillController _skillCtrl                      = null;
         private PhaseHandlerBase _currentPhaseHdlr              = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = new();
@@ -60,7 +60,7 @@ namespace Frontier.Battle
         // 現在選択中のキャラクターインデックス
         public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
-        public SkillController SkillCtrl => _skillCtrl;
+        public CombatSkillController SkillCtrl => _skillCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Frontier.Battle
 
             if (_skillCtrl == null)
             {
-                _skillCtrl = _hierarchyBld.CreateComponentAndOrganize<SkillController>(_skillCtrlObject, true);
+                _skillCtrl = _hierarchyBld.CreateComponentAndOrganize<CombatSkillController>(_skillCtrlObject, true);
                 NullCheck.AssertNotNull(_skillCtrl);
             }
 
@@ -180,8 +180,11 @@ namespace Frontier.Battle
         {
             base.Init();
 
+            // TODO : 仮処理のため、後々適切な場所に移動させること
+            _skillCtrl.Register( FindObjectOfType<ParrySkillHandler>() );
+
             _stgCtrl.Init(this);
-            _skillCtrl.Init(this);
+            _skillCtrl.Init();
             _btlCharaCdr.Init();
 
             _battleUi = _uiSystem.BattleUi;
