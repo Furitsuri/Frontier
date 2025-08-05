@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 using Zenject;
+using static Constants;
 
 namespace Frontier
 {
@@ -122,6 +123,11 @@ namespace Frontier
             base.LateUpdateRoutine();
         }
 
+        void FixedUpdate()
+        {
+            base.FixedUpdateRoutine();
+        }
+
         /// <summary>
         /// ゲームを初期化します
         /// </summary>
@@ -213,7 +219,7 @@ namespace Frontier
         {
             int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
 
-            _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f, hashCode));
+            _inputFcd.RegisterInputCodes((new GuideIcon[] { Constants.GuideIcon.DEBUG_MENU }, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f, hashCode));
         }
 
         /// <summary>

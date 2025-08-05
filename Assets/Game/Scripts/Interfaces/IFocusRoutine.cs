@@ -22,6 +22,8 @@ public interface IFocusRoutine
     
     public void LateUpdateRoutine() {}
 
+    public void FixedUpdateRoutine() {}
+
     public void ScheduleRun();
 
     public void Run();

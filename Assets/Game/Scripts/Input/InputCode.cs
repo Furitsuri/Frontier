@@ -12,7 +12,7 @@ public class InputCode
     public delegate bool EnableCallback();
 
     // 入力アイコン
-    public GuideIcon Icon;
+    public GuideIcon[] Icons;
     // アイコンに対する説明文
     public string Explanation;
     // 有効・無効を判定するコールバック
@@ -35,9 +35,9 @@ public class InputCode
     /// <param name="acceptInput">入力時のコールバック</param>
     /// <param name="interval">入力受付のインターバル時間</param>
     /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
-    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode)
+    public InputCode(GuideIcon[] icons, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode)
     {
-        Icon                    = icon;
+        Icons                   = icons;
         Explanation             = expl;
         EnableCb                = enableCb;
         AcceptInput             = acceptInput;
@@ -50,7 +50,7 @@ public class InputCode
     /// オペレーター
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
-    public static implicit operator InputCode((GuideIcon, string, EnableCallback, IAcceptInputBase, float, int) tuple)
+    public static implicit operator InputCode((GuideIcon[], string, EnableCallback, IAcceptInputBase, float, int) tuple)
     {
         return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6);
     }
