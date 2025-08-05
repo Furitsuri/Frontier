@@ -89,6 +89,11 @@ public class FocusRoutineController : MonoBehaviour
         _currentRoutine.LateUpdateRoutine();
     }
 
+    public void FixedUpdateRoutine()
+    {
+        _currentRoutine.FixedUpdateRoutine();
+    }
+
     /// <summary>
     /// ルーチンを優先度を指定した上で登録します
     /// </summary>

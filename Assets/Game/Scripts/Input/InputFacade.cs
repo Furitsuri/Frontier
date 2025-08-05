@@ -90,13 +90,14 @@ public class InputFacade
         foreach ( var arg in args )
         {
             // _inputCodesが未登録であれば登録する
-            if (_inputCodes[(int)arg.Icon].IsUnRegistererd())
+            // 1つのコードに複数アイコンを登録する場合は、先頭に指定しているアイコンを基準にする
+            if (_inputCodes[(int)arg.Icons.First()].IsUnRegistererd())
             {
-                _inputCodes[(int)arg.Icon] = arg;
+                _inputCodes[(int)arg.Icons.First()] = arg;
             }
             else
             {
-                LogHelper.LogError($"InputCode is already registered. Icon: {arg.Icon}, Explanation: {arg.Explanation}");
+                LogHelper.LogError($"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}");
             }
         }
 
@@ -124,21 +125,21 @@ public class InputFacade
     {
         _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
         {
-            ( Constants.GuideIcon.ALL_CURSOR,          "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.VERTICAL_CURSOR,     "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.HORIZONTAL_CURSOR,   "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.CONFIRM,             "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.CANCEL,              "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.TOOL,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.INFO,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.OPT1,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.OPT2,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.SUB1,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.SUB2,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.SUB3,                "", null, null, 0.0f, -1),
-            ( Constants.GuideIcon.SUB4,                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.ALL_CURSOR },         "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.VERTICAL_CURSOR },    "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.HORIZONTAL_CURSOR },  "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.CONFIRM },            "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.CANCEL },             "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.TOOL},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.INFO},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.OPT1},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.OPT2},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.SUB1},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.SUB2},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.SUB3},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ Constants.GuideIcon.SUB4 },               "", null, null, 0.0f, -1),
 #if UNITY_EDITOR
-            ( Constants.GuideIcon.DEBUG_MENU,          "", null, null, 0.0f, -1)
+            ( new GuideIcon[]{ Constants.GuideIcon.DEBUG_MENU },         "", null, null, 0.0f, -1)
 #endif  // UNITY_EDITOR
         };
     }

@@ -25,5 +25,29 @@ namespace Frontier.Combat
         {
             _currentSkillHandler = hdlr;
         }
+
+        public void Update()
+        {             
+            if ( _currentSkillHandler != null )
+            {
+                _currentSkillHandler.Update();
+            }
+        }
+
+        public void LateUpdate()
+        {
+            if ( _currentSkillHandler != null )
+            {
+                _currentSkillHandler.LateUpdate();
+            }
+        }
+
+        public void FixedUpdate()
+        {
+            if ( _currentSkillHandler != null )
+            {
+                _currentSkillHandler.FixedUpdate();
+            }
+        }
     }
 }

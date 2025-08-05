@@ -41,5 +41,10 @@ namespace Frontier.DebugTools
         {
             base.LateUpdateRoutine();
         }
+
+        void FixedUpdate()
+        {
+            base.FixedUpdateRoutine();
+        }
     }
 }

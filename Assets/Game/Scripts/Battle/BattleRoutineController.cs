@@ -48,7 +48,7 @@ namespace Frontier.Battle
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleUISystem _battleUi                        = null;
-        private CombatSkillController _skillCtrl                      = null;
+        private CombatSkillController _skillCtrl                = null;
         private PhaseHandlerBase _currentPhaseHdlr              = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = new();
@@ -238,6 +238,8 @@ namespace Frontier.Battle
             if (_battleUi.StageClear.isActiveAndEnabled) return;
 
             if (_battleUi.GameOver.isActiveAndEnabled) return;
+
+            _skillCtrl.Update();
 
             // フェーズマネージャを更新
             _transitNextPhase = _currentPhaseHdlr.Update();

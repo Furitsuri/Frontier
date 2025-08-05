@@ -1316,8 +1316,8 @@ MonoBehaviour:
   _focusRoutineBhvs:
   - {fileID: 691112985}
   - {fileID: 1928300474}
-  - {fileID: 2020674925}
   - {fileID: 405018023}
+  - {fileID: 2020674925}
   - {fileID: 5858461908685381426}
   _firstRoutineIndex: 4
   _UICameraObject: {fileID: 6651904351024763421}
@@ -1957,8 +1957,8 @@ Transform:
   m_Children:
   - {fileID: 691112984}
   - {fileID: 1928300473}
-  - {fileID: 2020674924}
   - {fileID: 405018022}
+  - {fileID: 2020674924}
   - {fileID: 2311374713325000248}
   m_Father: {fileID: 0}
   m_RootOrder: 12

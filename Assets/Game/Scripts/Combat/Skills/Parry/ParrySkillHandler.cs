@@ -90,7 +90,7 @@ namespace Frontier.Combat
         }
 
         // Update is called once per frame
-        void Update()
+        public void Update()
         {
             // エフェクト終了と同時に無効に切替
             if ( _resultEffect.IsEndPlaying() )
@@ -149,7 +149,9 @@ namespace Frontier.Combat
             }
         }
 
-        void FixedUpdate()
+        public void LateUpdate() { }
+
+        public void FixedUpdate()
         {
             // フレームレートによるズレを防ぐためFixedで更新
             _ringEffect.FixedUpdateEffect();

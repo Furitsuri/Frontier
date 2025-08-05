@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -154,7 +155,7 @@ public class InputHandler : MonoBehaviour
 
             if (!enable || !code.IsIntervalTimePassed()) continue;
 
-            var input = _inputForIcons[(int)code.Icon].GetInput();
+            var input = _inputForIcons[(int)code.Icons.First()].GetInput();
             code.ExecuteAcceptInputCallback(input);
         }
     }
