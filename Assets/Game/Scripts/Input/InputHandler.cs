@@ -161,9 +161,6 @@ public class InputHandler : MonoBehaviour
 
                 code.ExecuteAcceptInputCallback(input, i);
             }
-
-            // var input = _inputForIcons[(int)code.Icons.First()].GetInput();
-            // code.ExecuteAcceptInputCallback(input);
         }
     }
 }

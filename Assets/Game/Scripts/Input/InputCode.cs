@@ -45,12 +45,44 @@ public class InputCode
         RegisterClassHashCode   = hashCode;
         InputLastTime           = 0f;
     }
+    
+    /// <summary>
+    /// ガイドアイコン及び入力受付関数が単一ケースの入力コードを設定します
+    /// </summary>
+    /// <param name="icon">ガイドアイコン</param>
+    /// <param name="expl">説明文</param>
+    /// <param name="enableCb">入力受付判定のコールバック</param>
+    /// <param name="acceptInput">入力時のコールバック</param>
+    /// <param name="interval">入力受付のインターバル時間</param>
+    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
+    public InputCode(GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode)
+    {
+        Icons           = new GuideIcon[1];
+        AcceptInputs    = new IAcceptInputBase[1];
+
+        Icons[0] = icon;
+        Explanation = expl;
+        EnableCb = enableCb;
+        AcceptInputs[0] = acceptInput;
+        InputInterval = interval;
+        RegisterClassHashCode = hashCode;
+        InputLastTime = 0f;
+    }
 
     /// <summary>
     /// オペレーター
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
     public static implicit operator InputCode((GuideIcon[], string, EnableCallback, IAcceptInputBase[], float, int) tuple)
+    {
+        return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6);
+    }
+
+    /// <summary>
+    /// オペレーター
+    /// </summary>
+    /// <param name="tuple">オペレーター対象の設定</param>
+    public static implicit operator InputCode((GuideIcon, string, EnableCallback, IAcceptInputBase, float, int) tuple)
     {
         return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6);
     }

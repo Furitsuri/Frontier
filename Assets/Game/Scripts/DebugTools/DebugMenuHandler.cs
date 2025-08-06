@@ -61,9 +61,9 @@ public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
         int hashCode = Hash.GetStableHash(GetType().Name);
 
         _inputFcd.RegisterInputCodes(
-            (new GuideIcon[] { GuideIcon.VERTICAL_CURSOR }, "SELECT",   CanAcceptDirection, new IAcceptInputBase[] { new AcceptDirectionInput(AcceptDirection) },  MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-            (new GuideIcon[] { GuideIcon.CONFIRM },         "CONFIRM",  CanAcceptConfirm,   new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm) },      0.0f, hashCode),
-            (new GuideIcon[] { GuideIcon.CANCEL },          "EXIT",     CanAcceptCancel, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptCancel) },       0.0f, hashCode)
+            (GuideIcon.VERTICAL_CURSOR, "SELECT",   CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+            (GuideIcon.CONFIRM,         "CONFIRM",  CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm),      0.0f, hashCode),
+            (GuideIcon.CANCEL,          "EXIT",     CanAcceptCancel, new AcceptBooleanInput(AcceptCancel),       0.0f, hashCode)
         );
     }
 
@@ -212,7 +212,7 @@ public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
         ToggleDebugView();
         _inputFcd.UnregisterInputCodes(_inputHashCode);
         int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
-        _inputFcd.RegisterInputCodes((new GuideIcon[] { Constants.GuideIcon.DEBUG_MENU }, "DEBUG", _canAcceptDebugTransitionCb, new IAcceptInputBase[] { new AcceptBooleanInput(_acceptDebugTransitionCb) }, 0.0f, hashCode));
+        _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptBooleanInput(_acceptDebugTransitionCb), 0.0f, hashCode));
     }
 
     override public int GetPriority() { return (int)FocusRoutinePriority.DEBUG_MENU; }
