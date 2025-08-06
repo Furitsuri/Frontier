@@ -18,7 +18,7 @@ public class InputCode
     // 有効・無効を判定するコールバック
     public EnableCallback EnableCb;
     // 入力受付のコールバック
-    public IAcceptInputBase AcceptInput;
+    public IAcceptInputBase[] AcceptInputs;
     // 入力処理を有効にするインターバル
     public float InputInterval;
     // 入力コード登録を行ったクラスのハッシュ値
@@ -35,12 +35,12 @@ public class InputCode
     /// <param name="acceptInput">入力時のコールバック</param>
     /// <param name="interval">入力受付のインターバル時間</param>
     /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
-    public InputCode(GuideIcon[] icons, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode)
+    public InputCode(GuideIcon[] icons, string expl, EnableCallback enableCb, IAcceptInputBase[] acceptInputs, float interval, int hashCode)
     {
         Icons                   = icons;
         Explanation             = expl;
         EnableCb                = enableCb;
-        AcceptInput             = acceptInput;
+        AcceptInputs            = acceptInputs;
         InputInterval           = interval;
         RegisterClassHashCode   = hashCode;
         InputLastTime           = 0f;
@@ -50,7 +50,7 @@ public class InputCode
     /// オペレーター
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
-    public static implicit operator InputCode((GuideIcon[], string, EnableCallback, IAcceptInputBase, float, int) tuple)
+    public static implicit operator InputCode((GuideIcon[], string, EnableCallback, IAcceptInputBase[], float, int) tuple)
     {
         return new InputCode(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6);
     }
@@ -60,15 +60,15 @@ public class InputCode
     /// </summary>
     /// <typeparam name="T">実行するコールバックの型</typeparam>
     /// <param name="input">受け取った入力</param>
-    public void ExecuteAcceptInputCallback<T>( T input )
+    public void ExecuteAcceptInputCallback<T>( T input, int acceptIdx )
     {
-        if (AcceptInput == null)
+        if (AcceptInputs == null || AcceptInputs[acceptIdx] == null)
         {
             Debug.Assert(false);
             return;
         }
 
-        bool hasInput = AcceptInput.AcceptInput( input );
+        bool hasInput = AcceptInputs[acceptIdx].Accept( input );
 
         // 最後の入力時間を記録
         if( hasInput ) SetInputLastTime(Time.time);

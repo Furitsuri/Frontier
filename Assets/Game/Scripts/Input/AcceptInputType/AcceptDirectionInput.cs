@@ -16,7 +16,7 @@ public class AcceptDirectionInput : IAcceptInputBase, IAcceptGenericInput<Consta
         return _callback(input);
     }
 
-    bool IAcceptInputBase.AcceptInput(object obj)
+    bool IAcceptInputBase.Accept(object obj)
     {
         Constants.Direction? value = obj as Constants.Direction?;
 

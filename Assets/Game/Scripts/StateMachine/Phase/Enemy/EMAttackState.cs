@@ -155,11 +155,11 @@ namespace Frontier
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (new GuideIcon[] { GuideIcon.CONFIRM },  "Confirm",              CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB1 },     _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB2 },     _playerSkillNames[1],   CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB3 },     _playerSkillNames[2],   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB4 },     _playerSkillNames[3],   CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f, hashCode)
+               (new GuideIcon[] { GuideIcon.CONFIRM },  "Confirm",              CanAcceptConfirm, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB1 },     _playerSkillNames[0],   CanAcceptSub1, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub1) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB2 },     _playerSkillNames[1],   CanAcceptSub2, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub2) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB3 },     _playerSkillNames[2],   CanAcceptSub3, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub3) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB4 },     _playerSkillNames[3],   CanAcceptSub4, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub4) }, 0.0f, hashCode)
             );
         }
 

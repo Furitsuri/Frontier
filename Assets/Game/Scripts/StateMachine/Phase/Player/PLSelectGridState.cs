@@ -55,9 +55,9 @@ namespace Frontier
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (new GuideIcon[] { GuideIcon.ALL_CURSOR },   "MOVE",     CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (new GuideIcon[] { GuideIcon.CONFIRM },      "COMMAND",  CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.OPT2 },         "TURN END", CanAcceptDefault, new AcceptBooleanInput(AcceptOptional), 0.0f, hashCode)
+               (new GuideIcon[] { GuideIcon.ALL_CURSOR },   "MOVE",     CanAcceptDefault, new IAcceptInputBase[] { new AcceptDirectionInput(AcceptDirection) }, GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (new GuideIcon[] { GuideIcon.CONFIRM },      "COMMAND",  CanAcceptConfirm, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.OPT2 },         "TURN END", CanAcceptDefault, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptOptional) }, 0.0f, hashCode)
             );
         }
 

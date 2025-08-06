@@ -30,7 +30,7 @@ namespace Frontier.DebugTools
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (new GuideIcon[] { GuideIcon.CONFIRM }, "CONFIRM", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode)
+                (new GuideIcon[] { GuideIcon.CONFIRM }, "CONFIRM", CanAcceptDefault, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm) }, 0.0f, hashCode)
             );
         }
 

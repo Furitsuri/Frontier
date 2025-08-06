@@ -174,13 +174,13 @@ namespace Frontier
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (new GuideIcon[] { GuideIcon.ALL_CURSOR },   "TARGET SELECT",        CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (new GuideIcon[] { GuideIcon.CONFIRM },      "CONFIRM",              CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.CANCEL },       "TURN END",             CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB1 },         _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB2 },         _playerSkillNames[1],   CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB3 },         _playerSkillNames[2],   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB4 },         _playerSkillNames[3],   CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f, hashCode)
+               (new GuideIcon[] { GuideIcon.ALL_CURSOR }, "TARGET SELECT", CanAcceptDirection, new IAcceptInputBase[] { new AcceptDirectionInput(AcceptDirection) }, MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (new GuideIcon[] { GuideIcon.CONFIRM }, "CONFIRM", CanAcceptConfirm, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm)}, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.CANCEL }, "TURN END",             CanAcceptCancel, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptCancel) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB1 }, _playerSkillNames[0],   CanAcceptSub1, new IAcceptInputBase[] {new AcceptBooleanInput(AcceptSub1)}, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB2 }, _playerSkillNames[1],   CanAcceptSub2, new IAcceptInputBase[] {new AcceptBooleanInput(AcceptSub2)}, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB3 }, _playerSkillNames[2],   CanAcceptSub3, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub3) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB4 }, _playerSkillNames[3],   CanAcceptSub4, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub4) }, 0.0f, hashCode)
             );
         }
 

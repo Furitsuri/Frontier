@@ -6,5 +6,5 @@
 public interface IAcceptInputBase
 {
     // 引数をobject型にすることで汎用的に扱う
-    bool AcceptInput( object obj );
+    bool Accept( object obj );
 }
