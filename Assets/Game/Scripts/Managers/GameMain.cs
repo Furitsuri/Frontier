@@ -219,7 +219,7 @@ namespace Frontier
         {
             int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
 
-            _inputFcd.RegisterInputCodes((new GuideIcon[] { Constants.GuideIcon.DEBUG_MENU }, "DEBUG", CanAcceptDebugTransition, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptDebugTransition) }, 0.0f, hashCode));
+            _inputFcd.RegisterInputCodes((GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f, hashCode));
         }
 
         /// <summary>

@@ -86,9 +86,9 @@ public class TutorialHandler : BaseHandlerExtendedFocusRoutine
         int hashCode = Hash.GetStableHash(GetType().Name);
 
         _inputFcd.RegisterInputCodes(
-            (new GuideIcon[] { GuideIcon.HORIZONTAL_CURSOR },   "PAGE TRANSACTION", CanAcceptDirection, new IAcceptInputBase[] { new AcceptDirectionInput(AcceptDirection) },  MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-            (new GuideIcon[] { GuideIcon.CONFIRM },             "NEXT",             CanAcceptConfirm,   new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm) }, 0.0f, hashCode),
-            (new GuideIcon[] { GuideIcon.CANCEL },              "BACK",             CanAcceptCancel,    new IAcceptInputBase[] { new AcceptBooleanInput(AcceptCancel) }, 0.0f, hashCode)
+            (GuideIcon.HORIZONTAL_CURSOR,   "PAGE TRANSACTION", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+            (GuideIcon.CONFIRM,             "NEXT",             CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+            (GuideIcon.CANCEL,              "BACK",             CanAcceptCancel,    new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
          );
     }
 
