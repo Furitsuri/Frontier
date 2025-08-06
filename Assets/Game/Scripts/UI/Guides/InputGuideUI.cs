@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// 入力ガイド表示における各ガイド部分です。
@@ -15,7 +18,7 @@ public class InputGuideUI : MonoBehaviour
     public struct InputGuide
     {
         // キーアイコン
-        public Constants.GuideIcon _icon;
+        public Constants.GuideIcon[] _icons;
         // アイコンに対する説明文
         public string _explanation;
 
@@ -24,9 +27,9 @@ public class InputGuideUI : MonoBehaviour
         /// </summary>
         /// <param name="icon">ガイドスプライトのアイコンタイプ</param>
         /// <param name="explanation">キーに対する説明文</param>
-        public InputGuide(Constants.GuideIcon icon, string explanation)
+        public InputGuide(Constants.GuideIcon[] icons, string explanation)
         {
-            _icon = icon;
+            _icons = icons;
             _explanation = explanation;
         }
     }
@@ -46,7 +49,7 @@ public class InputGuideUI : MonoBehaviour
 
     [SerializeField]
     [Header("ガイドUIスプライト")]
-    private SpriteRenderer GuideSpriteRenderer;
+    private List<SpriteRenderer> GuideSpriteRenderers = new List<SpriteRenderer>();
 
     [SerializeField]
     [Header("説明テキスト")]
@@ -54,10 +57,17 @@ public class InputGuideUI : MonoBehaviour
 
     // 値保持
     public InputGuide InputGuideValue { get; private set; } 
+    private HierarchyBuilderBase _hierarchyBld = null;
     // 入力ガイドの枠UI
     private RectTransform _rectTransform;
     // 子のオブジェクト
     private GameObject[] _childrenObjects;
+
+    [Inject]
+    public void Construct( HierarchyBuilderBase hierarchyBld )
+    {
+        _hierarchyBld = hierarchyBld;
+    }
 
     void Awake()
     {
@@ -85,7 +95,20 @@ public class InputGuideUI : MonoBehaviour
     public void Register(Sprite[] sprites, InputGuide guide)
     {
         InputGuideValue             = guide;
-        GuideSpriteRenderer.sprite  = sprites[(int)InputGuideValue._icon];
+        for( int i = 0; i < InputGuideValue._icons.Length; ++i)
+        {
+            // ヒエラルキー上ではGuideSpriteRendererに対して1つのスプライトしか設定していないため、
+            // 必要に応じてListに要素を加算する
+            if(GuideSpriteRenderers.Count <= i)
+            {
+                SpriteRenderer newSpriteRenderer = Instantiate(GuideSpriteRenderers[0]);
+                newSpriteRenderer.transform.SetParent(this.gameObject.transform, false);
+                newSpriteRenderer.transform.SetSiblingIndex(i);
+
+                GuideSpriteRenderers.Add(newSpriteRenderer);
+            }
+            GuideSpriteRenderers[i].sprite = sprites[(int)InputGuideValue._icons[i]];
+        }
         GuideExplanation.text       = InputGuideValue._explanation;
 
         // Z軸の位置を0に設定, スケール値を1に設定
@@ -104,9 +127,12 @@ public class InputGuideUI : MonoBehaviour
     /// </summary>
     /// <param name="order">優先度値</param>
     public void SetSpriteSortingOrder(int order)
-    {   if (GuideSpriteRenderer != null)
+    {   if (GuideSpriteRenderers != null)
         {
-            GuideSpriteRenderer.sortingOrder = order;
+            for (int i = 0; i < GuideSpriteRenderers.Count; ++i)
+            {
+                GuideSpriteRenderers[i].sortingOrder = order;
+            }
         }
         else
         {

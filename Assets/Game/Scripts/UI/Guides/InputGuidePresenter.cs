@@ -141,7 +141,7 @@ public class InputGuidePresenter : MonoBehaviour
         {
             var code = _inputCodes[i];
 
-            _guideUiArrray[i].Register(_sprites, new InputGuideUI.InputGuide(code.Icons.First(), code.Explanation));
+            _guideUiArrray[i].Register(_sprites, new InputGuideUI.InputGuide(code.Icons, code.Explanation));
         }
 
         // フェード状態の遷移
@@ -168,7 +168,7 @@ public class InputGuidePresenter : MonoBehaviour
             InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>(GuideUIPrefab, gameObject, true);
             if (guideUi == null) continue;
 
-            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide(code.Icons.First(), code.Explanation);
+            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide(code.Icons, code.Explanation);
             guideUi.Register(_sprites, guide);
             _guideUiArrray[i] = guideUi;
             _guideUiArrray[i].gameObject.SetActive(code.EnableCb != null && code.EnableCb());
@@ -244,6 +244,9 @@ public class InputGuidePresenter : MonoBehaviour
     /// </summary>
     private float CalcurateBackGroundWidth()
     {
+        // レイアウトの更新を行ってから計算する
+        Canvas.ForceUpdateCanvases();
+
         // レイアウトグループの設定を反映
         var taregtWidth = _layoutGrp.padding.left + _layoutGrp.padding.right + _layoutGrp.spacing * (EvaluateActiveGuideUiCount() - 1);
 

@@ -155,8 +155,15 @@ public class InputHandler : MonoBehaviour
 
             if (!enable || !code.IsIntervalTimePassed()) continue;
 
-            var input = _inputForIcons[(int)code.Icons.First()].GetInput();
-            code.ExecuteAcceptInputCallback(input);
+            for( int i = 0; i < code.Icons.Length; ++i )
+            {
+                var input = _inputForIcons[(int)code.Icons[i]].GetInput();
+
+                code.ExecuteAcceptInputCallback(input, i);
+            }
+
+            // var input = _inputForIcons[(int)code.Icons.First()].GetInput();
+            // code.ExecuteAcceptInputCallback(input);
         }
     }
 }

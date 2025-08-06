@@ -17,7 +17,7 @@ public class AcceptBooleanInput : IAcceptInputBase, IAcceptGenericInput<bool>
         return _callback( input );
     }
 
-    bool IAcceptInputBase.AcceptInput( object obj )
+    bool IAcceptInputBase.Accept( object obj )
     {
         bool? value = obj as bool?;
 

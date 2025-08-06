@@ -58,14 +58,12 @@ namespace Frontier.DebugTools
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (new GuideIcon[] { GuideIcon.ALL_CURSOR },  "SELECT",       CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), 0.1f, hashCode),
-                (new GuideIcon[] { GuideIcon.CONFIRM },     "CHANGE",       CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.OPT1 },        "LOAD",         CanAcceptOptional1, new AcceptBooleanInput(AcceptOptional1), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.OPT2 },        "SAVE",         CanAcceptOptional2, new AcceptBooleanInput(AcceptOptional2), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1 },        "SUB TILE",     CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB2 },        "ADD TILE",     CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB3 },        "SUB HEIGHT",   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB4 },        "ADD HEIGHT",   CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f, hashCode)
+                (new GuideIcon[] { GuideIcon.ALL_CURSOR }, "SELECT", CanAcceptDirection, new IAcceptInputBase[] { new AcceptDirectionInput(AcceptDirection) }, 0.1f, hashCode),
+                (new GuideIcon[] { GuideIcon.CONFIRM }, "CHANGE", CanAcceptConfirm, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptConfirm) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.OPT1 }, "LOAD", CanAcceptOptional1, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptOptional1) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.OPT2 }, "SAVE", CanAcceptOptional2, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptOptional2) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "TILE CHANGE", CanAcceptSub1, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub1), new AcceptBooleanInput(AcceptSub2) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "HEIGHT CHANGE", CanAcceptSub3, new IAcceptInputBase[] { new AcceptBooleanInput(AcceptSub3), new AcceptBooleanInput(AcceptSub4) }, 0.0f, hashCode)
             );
         }
 
