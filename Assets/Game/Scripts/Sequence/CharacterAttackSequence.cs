@@ -43,14 +43,16 @@ namespace Frontier
         private Quaternion _tgtCharaInitialRot = Quaternion.identity;
         private UpdateAttack _updateAttackerAttack  = null;
         private UpdateAttack _updateTargetAttack    = null;
+        private CombatSkillEventController _combatSkillCtrl = null;
         private ParrySkillNotifier _parryNotifier   = null;
 
         [Inject]
-        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem)
+        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, CombatSkillEventController combatSkillCtrl, IUiSystem uiSystem)
         {
-            _btlRtnCtrl = btlRtnCtrl;
-            _stageCtrl  = stgCtrl;
-            _uiSystem   = uiSystem;
+            _btlRtnCtrl         = btlRtnCtrl;
+            _stageCtrl          = stgCtrl;
+            _combatSkillCtrl    = combatSkillCtrl;
+            _uiSystem           = uiSystem;
         }
 
         /// <summary>
@@ -133,6 +135,9 @@ namespace Frontier
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY))
                         {
+                            _combatSkillCtrl.Register<ParrySkillHandler>();
+
+                            _combatSkillCtrl.Init();
                             _phase = Phase.WAIT_PARRY_RESULT;
                             _parryNotifier = _targetCharacter.GetParrySkill;
                         }
