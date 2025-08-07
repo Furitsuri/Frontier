@@ -9,7 +9,7 @@ namespace Frontier.Combat
     /// <summary>
     /// パリィスキルの処理を行います
     /// </summary>
-    public class ParrySkillHandler : MonoBehaviour, ICombatSkillHandler
+    public class ParrySkillHandler : CombatSkillEventHandlerBase
     {
         /// <summary>
         /// パリィ更新用フェイズ
@@ -89,8 +89,29 @@ namespace Frontier.Combat
             _btlRtnCtrl = btlRtnCtrl;
         }
 
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        override public void Init()
+        {
+            _ui.Init(_showUITime);
+            _ui.gameObject.SetActive(false);
+
+            _resultEffect = new ParryResultEffect();
+            ParticleSystem[] particles = new ParticleSystem[]
+            {
+                _successParticle,
+                _failureParticle,
+                _justParticle
+            };
+            _resultEffect.Init(particles);
+
+            // 実行されるまでは無効に
+            gameObject.SetActive(false);
+        }
+
         // Update is called once per frame
-        public void Update()
+        override public void Update()
         {
             if (_ringEffect == null || _resultEffect == null) return;
 
@@ -151,9 +172,9 @@ namespace Frontier.Combat
             }
         }
 
-        public void LateUpdate() { }
+       override public void LateUpdate() { }
 
-        public void FixedUpdate()
+        override public void FixedUpdate()
         {
             if( _ringEffect == null) return;
 
@@ -223,27 +244,6 @@ namespace Frontier.Combat
             }
 
             _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(attackChara, useParryChara);
-        }
-
-        /// <summary>
-        /// 初期化します
-        /// </summary>
-        public void Init()
-        {
-            _ui.Init(_showUITime);
-            _ui.gameObject.SetActive(false);
-
-            _resultEffect = new ParryResultEffect();
-            ParticleSystem[] particles = new ParticleSystem[]
-            {
-                _successParticle,
-                _failureParticle,
-                _justParticle
-            };
-            _resultEffect.Init(particles);
-
-            // 実行されるまでは無効に
-            gameObject.SetActive(false);
         }
 
         /// <summary>

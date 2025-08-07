@@ -3,10 +3,23 @@ using UnityEngine;
 
 namespace Frontier.Combat
 {
-    public class CombatSkillController : MonoBehaviour
+    public class CombatSkillEventController : MonoBehaviour
     {
-        private ICombatSkillHandler _currentSkillHandler = null;
-        public ICombatSkillHandler CurrentSkillHandler => _currentSkillHandler;
+        private CombatSkillEventHandlerBase _currentSkillHandler = null;
+        public CombatSkillEventHandlerBase CurrentSkillHandler => _currentSkillHandler;
+
+        [SerializeField]
+        [Header("発動時にイベントを発動させる戦闘スキルハンドラを設定してください")]
+        private CombatSkillEventHandlerBase[] _combatSkillEventHandlers = null;
+
+        private void Start()
+        {
+            // 登録されているハンドラを一度全て無効化します
+            foreach ( var hdlr in _combatSkillEventHandlers )
+            {
+                hdlr.gameObject.SetActive( false );
+            }
+        }
 
         /// <summary>
         /// 初期化します
@@ -14,16 +27,26 @@ namespace Frontier.Combat
         /// <param name="btlRtnCtrl">戦闘ルーチン操作クラス</param>
         public void Init()
         {
-            _currentSkillHandler.Init();
+            if( _currentSkillHandler != null )
+            {
+                // 既にハンドラが登録されている場合は初期化を行う
+                _currentSkillHandler.Init();
+            }
         }
 
         /// <summary>
         /// 戦闘スキルハンドラを登録します
         /// </summary>
-        /// <param name="hdlr">登録するハンドラ</param>
-        public void Register( ICombatSkillHandler hdlr )
+        public void Register<T>() where T : CombatSkillEventHandlerBase
         {
-            _currentSkillHandler = hdlr;
+            for( int i = 0; i < _combatSkillEventHandlers.Length; ++i )
+            {
+                if( _combatSkillEventHandlers[i] is T )
+                {
+                    _currentSkillHandler = _combatSkillEventHandlers[i];
+                    break;
+                }
+            }
         }
 
         public void Update()
