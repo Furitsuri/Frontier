@@ -37,6 +37,7 @@ namespace Frontier.Combat
         /// <summary>
         /// 戦闘スキルハンドラを登録します
         /// </summary>
+        /// <typeparam name="T">登録対象の型</typeparam>
         public void Register<T>() where T : CombatSkillEventHandlerBase
         {
             for( int i = 0; i < _combatSkillEventHandlers.Length; ++i )
@@ -44,8 +45,26 @@ namespace Frontier.Combat
                 if( _combatSkillEventHandlers[i] is T )
                 {
                     _currentSkillHandler = _combatSkillEventHandlers[i];
-                    break;
+                    return;
                 }
+            }
+
+            LogHelper.LogError( $"CombatSkillEventController: Register failed. {typeof(T).Name} not found in handlers." );
+        }
+
+        /// <summary>
+        /// 戦闘スキルハンドラを登録解除します
+        /// </summary>
+        /// <typeparam name="T">登録解除対象の型</typeparam>
+        public void Unregister<T>() where T : CombatSkillEventHandlerBase
+        {
+            if( _currentSkillHandler is T )
+            {
+                _currentSkillHandler = null;
+            }
+            else
+            {
+                LogHelper.LogError( $"CombatSkillEventController: Unregister failed. {typeof(T).Name} is not the current handler." );
             }
         }
 
