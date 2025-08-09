@@ -23,3 +23,5 @@
 /Zenject-ReflectionBaking-Editor.csproj
 /Zenject-TestFramework.csproj
 /Zenject-UnitTests-Editor.csproj
+/Assets/Unity.VisualScripting.Generated
+/Assets/Unity.VisualScripting.Generated.meta
