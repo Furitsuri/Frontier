@@ -187,6 +187,9 @@ namespace Frontier
 
                     if ( !_parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.NONE ) )
                     {
+                        // パリィ結果が出た場合はパリィスキルハンドラを登録解除
+                        _combatSkillCtrl.Unregister<ParrySkillHandler>();
+
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
                         if ( _parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.FAILED ) )
                         {

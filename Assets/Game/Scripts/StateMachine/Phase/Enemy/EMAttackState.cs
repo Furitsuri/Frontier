@@ -150,7 +150,7 @@ namespace Frontier
             base.ExitState();
         }
 
-        public override void RegisterInputCodes()
+        override public void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 
