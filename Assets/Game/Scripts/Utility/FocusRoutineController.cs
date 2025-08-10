@@ -10,11 +10,12 @@ public enum FocusRoutinePriority
 {
     NONE    = -1,
 
-    DEBUG_EDITOR,   // デバッグエディター
-    DEBUG_MENU,     // デバッグメニュー
-    TUTORIAL,       // チュートリアル
-    EVENT,          // イベント
-    BATTLE,         // 戦闘
+    DEBUG_EDITOR,       // デバッグエディター
+    DEBUG_MENU,         // デバッグメニュー
+    TUTORIAL,           // チュートリアル
+    EVENT,              // イベント
+    BATTLE_SKILL_EVENT, // 戦闘スキルイベント
+    BATTLE,             // 戦闘
 
     NUM,
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Frontier.Combat
 {
-    public class CombatSkillEventController : MonoBehaviour
+    public class CombatSkillEventController : FocusRoutineBase
     {
         private CombatSkillEventHandlerBase _currentSkillHandler = null;
         public CombatSkillEventHandlerBase CurrentSkillHandler => _currentSkillHandler;
@@ -21,11 +21,13 @@ namespace Frontier.Combat
             }
         }
 
+        #region IFocusRoutine Implementation
+
         /// <summary>
         /// 初期化します
         /// </summary>
         /// <param name="btlRtnCtrl">戦闘ルーチン操作クラス</param>
-        public void Init()
+        override public void Init()
         {
             if( _currentSkillHandler != null )
             {
@@ -33,6 +35,17 @@ namespace Frontier.Combat
                 _currentSkillHandler.Init();
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        override public int GetPriority()
+        {
+            return (int)FocusRoutinePriority.BATTLE_SKILL_EVENT;
+        }
+
+        #endregion
 
         /// <summary>
         /// 戦闘スキルハンドラを登録します
