@@ -1,24 +1,23 @@
 ﻿using Frontier.Battle;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier.Combat
 {
     public class CombatSkillEventController : FocusRoutineBase
     {
+        private HierarchyBuilderBase _hierarchyBld = null;
         private CombatSkillEventHandlerBase _currentSkillHandler = null;
         public CombatSkillEventHandlerBase CurrentSkillHandler => _currentSkillHandler;
 
         [SerializeField]
-        [Header("発動時にイベントを発動させる戦闘スキルハンドラを設定してください")]
-        private CombatSkillEventHandlerBase[] _combatSkillEventHandlers = null;
+        [Header("スキル発動時にイベントを発動させる、戦闘スキルハンドラを設定してください")]
+        private CombatSkillEventHandlerBase[] _combatSkillEventHdlrs = null;
 
-        private void Start()
+        [Inject]
+        void Construct( HierarchyBuilderBase hierarchyBld )
         {
-            // 登録されているハンドラを一度全て無効化します
-            foreach ( var hdlr in _combatSkillEventHandlers )
-            {
-                hdlr.gameObject.SetActive( false );
-            }
+            _hierarchyBld = hierarchyBld;
         }
 
         #region IFocusRoutine Implementation
@@ -36,13 +35,42 @@ namespace Frontier.Combat
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        public override void Exit()
+        {
+            Debug.Assert( _currentSkillHandler != null );
+
+            _currentSkillHandler.Exit();
+
+            base.Exit();
+        }
+
         override public int GetPriority()
         {
             return (int)FocusRoutinePriority.BATTLE_SKILL_EVENT;
+        }
+
+        override public void UpdateRoutine()
+        {
+            if (_currentSkillHandler != null)
+            {
+                _currentSkillHandler.Update();
+            }
+        }
+
+        override public void LateUpdateRoutine()
+        {
+            if (_currentSkillHandler != null)
+            {
+                _currentSkillHandler.LateUpdate();
+            }
+        }
+
+        override public void FixedUpdateRoutine()
+        {
+            if (_currentSkillHandler != null)
+            {
+                _currentSkillHandler.FixedUpdate();
+            }
         }
 
         #endregion
@@ -53,11 +81,16 @@ namespace Frontier.Combat
         /// <typeparam name="T">登録対象の型</typeparam>
         public void Register<T>() where T : CombatSkillEventHandlerBase
         {
-            for( int i = 0; i < _combatSkillEventHandlers.Length; ++i )
+            if( _currentSkillHandler != null )
             {
-                if( _combatSkillEventHandlers[i] is T )
+                Destroy( _currentSkillHandler );
+            }
+
+            for( int i = 0; i < _combatSkillEventHdlrs.Length; ++i )
+            {
+                if( _combatSkillEventHdlrs[i] is T )
                 {
-                    _currentSkillHandler = _combatSkillEventHandlers[i];
+                    _currentSkillHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<T>( _combatSkillEventHdlrs[i].gameObject, true, false, "" );
                     return;
                 }
             }
@@ -78,30 +111,6 @@ namespace Frontier.Combat
             else
             {
                 LogHelper.LogError( $"CombatSkillEventController: Unregister failed. {typeof(T).Name} is not the current handler." );
-            }
-        }
-
-        public void Update()
-        {             
-            if ( _currentSkillHandler != null )
-            {
-                _currentSkillHandler.Update();
-            }
-        }
-
-        public void LateUpdate()
-        {
-            if ( _currentSkillHandler != null )
-            {
-                _currentSkillHandler.LateUpdate();
-            }
-        }
-
-        public void FixedUpdate()
-        {
-            if ( _currentSkillHandler != null )
-            {
-                _currentSkillHandler.FixedUpdate();
             }
         }
     }

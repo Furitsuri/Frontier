@@ -1,6 +1,7 @@
 ﻿using Frontier.Battle;
 using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Stage;
 using UnityEngine;
 using Zenject;
 
@@ -33,13 +34,17 @@ namespace Frontier
         [Header("GameOver")]
         public GameOverUI GameOver;                     // ゲームオーバー画面
 
-        // BattleUIのRectTransform
-        private RectTransform _rectTransform;
+        private CombatSkillEventController _combatSkillCtrl;
+        private RectTransform _rectTransform;                   // BattleUIのRectTransform
+        private Camera _uiCamera;                               // UI表示用のカメラ
 
-        // UI表示用のカメラ
-        private Camera _uiCamera;
+        [Inject]
+        public void Construct(CombatSkillEventController combatSkillCtrl)
+        {
+            _combatSkillCtrl = combatSkillCtrl;
+        }
 
-        void Awake()
+            void Awake()
         {
             _rectTransform      = GetComponent<RectTransform>();
             var cameraObject    = GameObject.Find("UI_Camera");
@@ -103,9 +108,10 @@ namespace Frontier
             var parryNotifier = character.GetParrySkill;
 
             // パリィ成功時には専用の表記
-            if ( parryNotifier != null &&
-                ( parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.SUCCESS ) ||
-                  parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.JUST) ) )
+            ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
+            if (parrySkillHdlr != null &&
+                ( parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.SUCCESS ) ||
+                  parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.JUST) ) )
             {
                 DamageValue.damageText.color    = Color.yellow;
                 DamageValue.damageText.text     = "DEFLECT";

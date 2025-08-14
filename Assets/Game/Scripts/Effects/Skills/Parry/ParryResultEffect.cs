@@ -37,6 +37,15 @@ namespace Frontier
         }
 
         /// <summary>
+        /// エフェクト再生中かどうかの判定を返します
+        /// </summary>
+        /// <returns>再生中かどうかの正否</returns>
+        public bool IsPlyaing()
+        {
+            return _playingParticle != null && _playingParticle.IsAlive();
+        }
+
+        /// <summary>
         /// エフェクト終了の判定を返します
         /// </summary>
         /// <returns>終了の正否</returns>
