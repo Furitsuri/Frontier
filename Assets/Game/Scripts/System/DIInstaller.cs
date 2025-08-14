@@ -6,6 +6,7 @@ using System.ComponentModel;
 using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat;
 
 namespace Frontier
 {
@@ -23,6 +24,7 @@ namespace Frontier
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
+            Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialPresenter>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();

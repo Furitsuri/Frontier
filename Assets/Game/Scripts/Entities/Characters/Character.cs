@@ -1,10 +1,11 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Battle;
 using Frontier.Combat;
-using Frontier.Battle;
+using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using static Frontier.Combat.ParrySkillHandler;
 
 namespace Frontier.Entities
 {
@@ -138,10 +139,11 @@ namespace Frontier.Entities
         private GameObject _bulletObject;
 
         // Injectされるインスタンス
-        protected HierarchyBuilderBase _hierarchyBld        = null;
-        protected BattleRoutineController _btlRtnCtrl   = null;
-        protected StageController _stageCtrl            = null;
-        protected IUiSystem _uiSystem                    = null;
+        protected HierarchyBuilderBase _hierarchyBld                = null;
+        protected BattleRoutineController _btlRtnCtrl               = null;
+        protected CombatSkillEventController _combatSkillEventCtrl  = null;
+        protected StageController _stageCtrl                        = null;
+        protected IUiSystem _uiSystem                               = null;
 
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
@@ -160,6 +162,7 @@ namespace Frontier.Entities
         protected Bullet _bullet        = null;
         
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
+        protected PARRY_PHASE _parryPhase = PARRY_PHASE.NONE;
         protected TmpParameter tmpParam;
 
         protected ParrySkillNotifier _parrySkill = null;
@@ -198,12 +201,13 @@ namespace Frontier.Entities
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( HierarchyBuilderBase hierarchyBld,  BattleRoutineController battleMgr, StageController stageCtrl, IUiSystem uiSystem )
+        void Construct( HierarchyBuilderBase hierarchyBld,  BattleRoutineController battleMgr, CombatSkillEventController combatSkillEventCtrl, StageController stageCtrl, IUiSystem uiSystem )
         {
-            _hierarchyBld   = hierarchyBld;
-            _btlRtnCtrl     = battleMgr;
-            _stageCtrl      = stageCtrl;
-            _uiSystem       = uiSystem;
+            _hierarchyBld           = hierarchyBld;
+            _btlRtnCtrl             = battleMgr;
+            _combatSkillEventCtrl   = combatSkillEventCtrl;
+            _stageCtrl              = stageCtrl;
+            _uiSystem               = uiSystem;
         }
 
         void Awake()
@@ -497,6 +501,18 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// パリィアニメーションを開始します
+        /// </summary>
+        public void StartParryAnimation()
+        {
+            _parryPhase = PARRY_PHASE.EXEC_PARRY;
+
+            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
+            ResetElapsedTime();
+            GetTimeScale.SetTimeScale(0.1f);    // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
+        }
+
+        /// <summary>
         /// 行動を終了させます
         /// </summary>
         public void EndAction()
@@ -605,6 +621,42 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 戦闘において、攻撃された側がパリィを行った際の行動を更新します
+        /// </summary>
+        /// <param name="departure">攻撃開始座標</param>
+        /// <param name="destination">攻撃目標座標</param>
+        /// <returns>終了判定</returns>
+        public bool UpdateParryOnTargeter(in Vector3 departure, in Vector3 destination)
+        {
+            bool isJustParry = false;
+
+            switch (_parryPhase)
+            {
+                case PARRY_PHASE.EXEC_PARRY:
+                    if (isJustParry)
+                    {
+                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.SINGLE_ATTACK);
+
+                        _parryPhase = PARRY_PHASE.AFTER_ATTACK;
+                    }
+                    else
+                    {
+                        if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.PARRY))
+                        {
+                            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
+
+                            return true;
+                        }
+                    }
+                    break;
+                case PARRY_PHASE.AFTER_ATTACK:
+                    break;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 指定のスキルが使用可能かを判定します
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
@@ -687,10 +739,7 @@ namespace Frontier.Entities
         /// </summary>
         public void SetReceiveAttackSetting()
         {
-            if( _parrySkill != null )
-            {
-                _parrySkill.ResetParryResult();
-            }
+
         }
 
         /// <summary>
@@ -963,6 +1012,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 相手の攻撃を弾く動作を行います
+        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
         /// </summary>
         public void ParryAttackOnAnimEvent()
         {
@@ -970,11 +1020,16 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// パリィ動作を停止させます
+        /// パリィの判定が得られる以前に、パリィによる振り払いモーションが再生されてしまうとまずいため、
+        /// 振り払い直前でアニメーションを停止するために用います
+        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
         /// </summary>
         public void StopParryAnimationOnAnimEvent()
         {
-            if (!(_btlRtnCtrl.SkillCtrl.CurrentSkillHandler as ParrySkillHandler).IsJudgeEnd())
+            ParrySkillHandler parrySkillHdlr = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
+            if (parrySkillHdlr == null) return;
+
+            if (!parrySkillHdlr.IsJudgeEnd())
             {
                 _timeScale.Stop();
             }

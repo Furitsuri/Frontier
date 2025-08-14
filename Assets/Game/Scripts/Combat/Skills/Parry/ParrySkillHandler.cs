@@ -1,9 +1,11 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
 using System;
+using UnityEditor.Search;
 using UnityEngine;
 using Zenject;
 using static Constants;
+using static Frontier.Combat.ParrySkillHandler;
 
 namespace Frontier.Combat
 {
@@ -76,10 +78,10 @@ namespace Frontier.Combat
         private BattleRoutineController _btlRtnCtrl = null;
         private ParryRingEffect _ringEffect         = null;
         private ParryResultEffect _resultEffect     = null;
-        private ParrySkillNotifier _parryNotifier   = null;
         private Character _useParryCharacter        = null;
         private Character _attackCharacter          = null;
-        private JudgeResult _judgeResult            = JudgeResult.NONE;
+        private JudgeResult _judgeResult            = JudgeResult.NONE; // パリィの成否結果
+        public JudgeResult ParryResult { get; set; } = ParrySkillHandler.JudgeResult.NONE;
         private (float inner, float outer) _judgeRingSuccessRange   = (0f, 0f);
         private (float inner, float outer) _judgeRingJustRange      = (0f, 0f);
 
@@ -87,10 +89,18 @@ namespace Frontier.Combat
         public event EventHandler<ParrySkillHdlrEventArgs> ProcessCompleted;
 
         [Inject]
-        public void Construct( InputFacade inputFcd, BattleRoutineController btlRtnCtrl )
+        void Construct( InputFacade inputFcd, BattleRoutineController btlRtnCtrl )
         {
             _inputFcd   = inputFcd;
             _btlRtnCtrl = btlRtnCtrl;
+        }
+
+        void Start()
+        {
+            if (_resultEffect == null)
+            {
+                _resultEffect = new ParryResultEffect();
+            }
         }
 
         /// <summary>
@@ -101,7 +111,6 @@ namespace Frontier.Combat
             _ui.Init(_showUITime);
             _ui.gameObject.SetActive(false);
 
-            _resultEffect = new ParryResultEffect();
             ParticleSystem[] particles = new ParticleSystem[]
             {
                 _successParticle,
@@ -113,11 +122,13 @@ namespace Frontier.Combat
             // 実行されるまでは無効に
             gameObject.SetActive(false);
 
+            _judgeResult = JudgeResult.NONE;
+
             _inputCodeHash = Hash.GetStableHash(GetType().Name);
             RegisterInputCodes( _inputCodeHash );
         }
 
-        public override void Exit()
+        override public void Exit()
         {
             _inputFcd.UnregisterInputCodes(_inputCodeHash);
         }
@@ -146,15 +157,17 @@ namespace Frontier.Combat
             // 結果が既に出ている場合はここで終了
             if ( IsJudgeEnd() ) return;
 
-            float shrinkRadius = _ringEffect.GetCurShrinkRingRadius();
-
             // shrinkRadiusが成功範囲外に出ている場合は、パリィ失敗とする
+            float shrinkRadius = _ringEffect.GetCurShrinkRingRadius();
             if (shrinkRadius < _radiusThresholdOnFail)
             {
                 _judgeResult    = JudgeResult.FAILED;
             }
+        }
 
-            if( IsJudgeEnd() )
+        override public void LateUpdate()
+        {
+            if ( IsJudgeEnd() && !_resultEffect.IsPlyaing() )
             {
                 _ui.gameObject.SetActive(true);
                 _ui.ShowResult(_judgeResult);
@@ -170,8 +183,6 @@ namespace Frontier.Combat
                 ApplyModifiedParamFromResult(_useParryCharacter, _attackCharacter, _judgeResult);
             }
         }
-
-        override public void LateUpdate() { }
 
         override public void FixedUpdate()
         {
@@ -194,7 +205,6 @@ namespace Frontier.Combat
             gameObject.SetActive(true);
             _useParryCharacter  = useCharacter;
             _attackCharacter    = opponent;
-            _parryNotifier      = _useParryCharacter.GetParrySkill;
 
             // パリィエフェクトのシェーダー情報をカメラに描画するため、メインカメラにアタッチ
             Camera.main.gameObject.AddComponent<ParryRingEffect>();
@@ -216,7 +226,7 @@ namespace Frontier.Combat
             DelayBattleTimeScale(_delayTimeScale);
 
             // パリィモーションの開始
-            _parryNotifier.StartParrySequence();
+            _useParryCharacter.StartParryAnimation();
 
             // 結果をNONEに初期化
             _judgeResult = JudgeResult.NONE;
@@ -252,6 +262,16 @@ namespace Frontier.Combat
         public bool IsJudgeEnd()
         {
             return _judgeResult != JudgeResult.NONE;
+        }
+
+        /// <summary>
+        /// パリィ結果が指定の値と合致しているかを判定します
+        /// </summary>
+        /// <param name="result">指定するパリィ結果</param>
+        /// <returns>合致しているか否か</returns>
+        public bool IsMatchResult( JudgeResult result )
+        {
+            return _judgeResult == result;
         }
 
         /// <summary>

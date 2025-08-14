@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Linq;
 using Zenject;
 using static Constants;
-using Cysharp.Threading.Tasks;
 
 public class InputFacade
 {

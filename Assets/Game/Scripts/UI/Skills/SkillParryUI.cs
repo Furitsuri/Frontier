@@ -8,8 +8,6 @@ namespace Frontier
 {
     public class SkillParryUI : MonoBehaviour
     {
-        
-
         [SerializeField]
         private TextMeshProUGUI TMPJudge;
         

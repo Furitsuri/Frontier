@@ -48,7 +48,6 @@ namespace Frontier.Battle
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleUISystem _battleUi                        = null;
-        private CombatSkillEventController _skillCtrl                = null;
         private PhaseHandlerBase _currentPhaseHdlr              = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = new();
@@ -60,7 +59,6 @@ namespace Frontier.Battle
         // 現在選択中のキャラクターインデックス
         public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
-        public CombatSkillEventController SkillCtrl => _skillCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
 
         /// <summary>
@@ -88,12 +86,6 @@ namespace Frontier.Battle
             if ( btlCameraObj != null ) 
             {
                 _battleCameraCtrl = btlCameraObj.GetComponent<BattleCameraController>();
-            }
-
-            if (_skillCtrl == null)
-            {
-                _skillCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CombatSkillEventController>(_skillCtrlObject, true, true, "CombatSkillEventCtrl");
-                NullCheck.AssertNotNull(_skillCtrl);
             }
 
             if (_btlFileLoader == null)
@@ -181,7 +173,6 @@ namespace Frontier.Battle
             base.Init();
 
             _stgCtrl.Init(this);
-            _skillCtrl.Init();
             _btlCharaCdr.Init();
 
             _battleUi = _uiSystem.BattleUi;
@@ -232,11 +223,8 @@ namespace Frontier.Battle
 
             SelectCharacterInfo = new CharacterHashtable.Key(info.charaTag, info.charaIndex);
 
-            if (_battleUi.StageClear.isActiveAndEnabled) return;
-
-            if (_battleUi.GameOver.isActiveAndEnabled) return;
-
-            _skillCtrl.Update();
+            // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
+            if (_battleUi.StageClear.isActiveAndEnabled || _battleUi.GameOver.isActiveAndEnabled) return;
 
             // フェーズマネージャを更新
             _transitNextPhase = _currentPhaseHdlr.Update();

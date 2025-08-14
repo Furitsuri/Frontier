@@ -137,9 +137,8 @@ namespace Frontier
                         {
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
-                            _combatSkillCtrl.Init();
-                            _phase = Phase.WAIT_PARRY_RESULT;
                             _parryNotifier = _targetCharacter.GetParrySkill;
+                            _phase = Phase.WAIT_PARRY_RESULT;
                         }
                         // それ以外は通常通り攻撃へ
                         else _phase = Phase.ATTACK;
@@ -185,13 +184,14 @@ namespace Frontier
                         _phase = Phase.ATTACK;
                     }
 
-                    if ( !_parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.NONE ) )
+                    ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
+                    if ( !parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.NONE ) )
                     {
                         // パリィ結果が出た場合はパリィスキルハンドラを登録解除
                         _combatSkillCtrl.Unregister<ParrySkillHandler>();
 
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                        if ( _parryNotifier.IsMatchResult( ParrySkillHandler.JudgeResult.FAILED ) )
+                        if ( parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.FAILED ) )
                         {
                             _phase = Phase.ATTACK;
                         }
@@ -331,7 +331,7 @@ namespace Frontier
         {
             // 更新用関数を切り替え
             _updateAttackerAttack   = _attackCharacter.UpdateParryOnAttacker;
-            _updateTargetAttack     = _parryNotifier.UpdateParryOnTargeter;
+            _updateTargetAttack     = _targetCharacter.UpdateParryOnTargeter;
         }
 
         /// <summary>
