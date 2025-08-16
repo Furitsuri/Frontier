@@ -199,7 +199,7 @@ namespace Frontier.Stage
             {
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((Character.CHARACTER_TAG)i))
                 {
-                    var gridIndex       = chara.GetCurrentGridIndex();
+                    var gridIndex       = chara.tmpParam.GetCurrentGridIndex();
                     ref var tileInfo    = ref _stageData.GetTileInfo(gridIndex);
                     tileInfo.charaTag   = chara.characterParam.characterTag;
                     tileInfo.charaIndex = chara.characterParam.characterIndex;
@@ -242,7 +242,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterGrid(Character character)
         {
-            _gridCursorCtrl.Index = character.GetCurrentGridIndex();
+            _gridCursorCtrl.Index = character.tmpParam.GetCurrentGridIndex();
         }
 
         /// <summary>

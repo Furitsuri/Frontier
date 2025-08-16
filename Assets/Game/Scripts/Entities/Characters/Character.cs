@@ -103,12 +103,12 @@ namespace Frontier.Entities
         protected Character _opponent                       = null; // 戦闘時の対戦相手
         protected Bullet _bullet                            = null; // 矢などの弾
         protected ParrySkillNotifier _parrySkill            = null;
-        protected TemporaryParameter tmpParam;
         
         public ModifiedParameter modifiedParam;
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
         public CharacterParameter characterParam;
+        public TemporaryParameter tmpParam;
 
         // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public bool IsDeclaredDead { get; set; } = false;
@@ -759,45 +759,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します
-        /// </summary>
-        /// <returns>現在グリッドのインデックス値</returns>
-        public int GetCurrentGridIndex()
-        {
-            return tmpParam.gridIndex;
-        }
-
-        /// <summary>
-        /// 装備中のスキルの名前を取得します
-        /// </summary>
-        /// <returns>スキル名の配列</returns>
-        public string[] GetEquipSkillNames()
-        {
-            string[] names = new string[ Constants.EQUIPABLE_SKILL_MAX_NUM ];
-
-            for(  int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                names[i] = "";
-                if (!characterParam.IsValidSkill(i)) continue;
-                names[i] = SkillsData.data[ (int)characterParam.equipSkills[i] ].Name;
-                names[i] = names[i].Replace("_", Environment.NewLine);
-            }
-
-            return names;
-        }
-
-        /// <summary>
-        /// ダメージを受けた際のHPの予測変動量を取得します
-        /// </summary>
-        /// <param name="single">単発攻撃の予測変動量</param>
-        /// <param name="total">複数回攻撃の予測総変動量</param>
-        public void AssignExpectedHpChange( out int single, out int total )
-        {
-            single  = tmpParam.expectedHpChange;
-            total   = tmpParam.totalExpectedHpChange;
-        }
-
-        /// <summary>
         /// 設定されている弾を取得します
         /// </summary>
         /// <returns>Prefabに設定されている弾</returns>
@@ -811,6 +772,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 死亡処理を開始します
+        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
         /// </summary>
         public void DieOnAnimEvent()
         {
@@ -819,6 +781,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// キャラクターに設定されている弾を発射します
+        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
         /// </summary>
         public void FireBulletOnAnimEvent()
         {
@@ -851,6 +814,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 相手を攻撃した際の処理を開始します
+        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
         /// </summary>
         public void AttackOpponentOnAnimEvent()
         {

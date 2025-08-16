@@ -80,7 +80,7 @@ namespace Frontier
                 // 各プレイヤーが存在するグリッドの評価値を計算する
                 foreach (Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
                 {
-                    int destGridIndex = player.GetCurrentGridIndex();
+                    int destGridIndex = player.tmpParam.GetCurrentGridIndex();
                     ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
                     // 目的座標にはキャラクターがいるため、候補ルートから既に除かれているので加える

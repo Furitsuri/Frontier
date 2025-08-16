@@ -128,7 +128,7 @@ namespace Frontier
             TMPAtkNumValue.gameObject.SetActive(1 < skillParam.AtkNum);
 
             int hpChange, totalHpChange;
-            selectCharacter.AssignExpectedHpChange( out hpChange, out totalHpChange );
+            selectCharacter.tmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
 
             totalHpChange = Mathf.Clamp(totalHpChange, -param.CurHP, param.MaxHP - param.CurHP);
             if (0 < totalHpChange)

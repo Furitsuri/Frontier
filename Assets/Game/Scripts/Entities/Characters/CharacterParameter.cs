@@ -106,5 +106,24 @@ namespace Frontier.Entities
 
             return false;
         }
+
+        /// <summary>
+        /// 装備中のスキルの名前を取得します
+        /// </summary>
+        /// <returns>スキル名の配列</returns>
+        public string[] GetEquipSkillNames()
+        {
+            string[] names = new string[Constants.EQUIPABLE_SKILL_MAX_NUM];
+
+            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            {
+                names[i] = "";
+                if ( !IsValidSkill(i) ) continue;
+                names[i] = SkillsData.data[(int)equipSkills[i]].Name;
+                names[i] = names[i].Replace("_", Environment.NewLine);
+            }
+
+            return names;
+        }
     }
 }

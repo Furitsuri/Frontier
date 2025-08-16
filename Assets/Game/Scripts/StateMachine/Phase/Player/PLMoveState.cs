@@ -37,7 +37,7 @@ namespace Frontier
 
             // キャラクターの現在の位置情報を保持
             StageController.Footprint footprint = new StageController.Footprint();
-            footprint.gridIndex = _selectPlayer.GetCurrentGridIndex();
+            footprint.gridIndex = _selectPlayer.tmpParam.GetCurrentGridIndex();
             footprint.rotation  = _selectPlayer.transform.rotation;
             _stageCtrl.LeaveFootprint(footprint);
             _stageCtrl.BindGridCursorControllerState( GridCursorController.State.MOVE, _selectPlayer);
@@ -66,7 +66,7 @@ namespace Frontier
                     // 移動目的座標の更新
                     GridInfo info;
                     var curGridIndex    = stageGrid.GetCurrentGridIndex();
-                    var plGridIndex     = _selectPlayer.GetCurrentGridIndex();
+                    var plGridIndex     = _selectPlayer.tmpParam.GetCurrentGridIndex();
                     stageGrid.FetchCurrentGridInfo(out info);
 
                     // 移動更新
@@ -166,7 +166,7 @@ namespace Frontier
 
             GridInfo info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex = _selectPlayer.GetCurrentGridIndex();
+            var plGridIndex = _selectPlayer.tmpParam.GetCurrentGridIndex();
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 出発地点と同一グリッドであれば戻る

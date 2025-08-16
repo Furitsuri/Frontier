@@ -38,7 +38,7 @@ namespace Frontier.Combat
             if (character.IsEndCommand(COMMAND_TAG.ATTACK)) return false;
 
             // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-            bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.GetCurrentGridIndex(), character.characterParam.attackRange, character.characterParam.characterTag);
+            bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.tmpParam.GetCurrentGridIndex(), character.characterParam.attackRange, character.characterParam.characterTag);
 
             // 実行不可である場合は登録した攻撃情報を全てクリア
             if (!isExecutable)
