@@ -17,7 +17,7 @@ namespace Frontier
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
-        override public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in TmpParameter selfTmpParam)
+        override public (bool, bool) DetermineDestinationAndTarget(in CharacterParameter selfParam, in TemporaryParameter selfTmpParam)
         {
             _isDetermined = true;
 
@@ -38,7 +38,7 @@ namespace Frontier
                         var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(opponent);
 
                         if (character == null) continue;
-                        var eValue = CalcurateEvaluateAttack(selfParam, character.param);
+                        var eValue = CalcurateEvaluateAttack(selfParam, character.characterParam);
                         if (maxEvaluate.eValue < eValue)
                         {
                             maxEvaluate = (candidate.gridIndex, character, eValue);
@@ -87,7 +87,7 @@ namespace Frontier
                     candidateRouteIndexs.Add(destGridIndex);
 
                     // 攻撃による評価値を加算
-                    evaluateValue += CalcurateEvaluateAttack(selfParam, player.param);
+                    evaluateValue += CalcurateEvaluateAttack(selfParam, player.characterParam);
 
                     // 経路コストの逆数を乗算(経路コストが低いほど評価値を大きくするため)
                     List<(int routeIndexs, int routeCost)> route = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, destGridIndex, candidateRouteIndexs);
@@ -125,7 +125,7 @@ namespace Frontier
             return (IsValidDestination(), IsValidTarget());
         }
 
-        private bool CheckExistTargetInRange(Character.Parameter selfParam, TmpParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
+        private bool CheckExistTargetInRange(CharacterParameter selfParam, TemporaryParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
         {
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
 

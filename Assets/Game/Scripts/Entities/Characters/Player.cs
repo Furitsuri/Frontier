@@ -12,7 +12,7 @@ namespace Frontier.Entities
         /// </summary>
         private struct PrevMoveInfo
         {
-            public TmpParameter tmpParam;
+            public TemporaryParameter tmpParam;
             public Quaternion rotDir;
 
             /// <summary>
@@ -166,10 +166,10 @@ namespace Frontier.Entities
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                if (!param.IsValidSkill(i)) continue;
+                if (!characterParam.IsValidSkill(i)) continue;
 
                 // 指定されたタイプ以外のスキルは無視する
-                var skillType = SkillsData.data[(int)param.equipSkills[i]].Type;
+                var skillType = SkillsData.data[(int)characterParam.equipSkills[i]].Type;
                 _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
                 if (skillType != type)
                 {
@@ -181,19 +181,19 @@ namespace Frontier.Entities
                 {
                     tmpParam.isUseSkills[i] = !tmpParam.isUseSkills[i];
 
-                    int skillID = (int)param.equipSkills[i];
+                    int skillID = (int)characterParam.equipSkills[i];
                     var skillData = SkillsData.data[skillID];
 
                     if (tmpParam.isUseSkills[i])
                     {
                         // コストが現在のアクションゲージ値を越えている場合は無視
-                        if (param.curActionGauge < param.consumptionActionGauge + skillData.Cost)
+                        if (characterParam.curActionGauge < characterParam.consumptionActionGauge + skillData.Cost)
                         {
                             tmpParam.isUseSkills[i] = false;
                             continue;
                         }
 
-                        param.consumptionActionGauge += skillData.Cost;
+                        characterParam.consumptionActionGauge += skillData.Cost;
 
                         skillModifiedParam.AtkNum += skillData.AddAtkNum;
                         skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
@@ -201,7 +201,7 @@ namespace Frontier.Entities
                     }
                     else
                     {
-                        param.consumptionActionGauge -= skillData.Cost;
+                        characterParam.consumptionActionGauge -= skillData.Cost;
 
                         skillModifiedParam.AtkNum -= skillData.AddAtkNum;
                         skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
@@ -222,19 +222,19 @@ namespace Frontier.Entities
         {
             tmpParam.isUseSkills[index] = !tmpParam.isUseSkills[index];
 
-            int skillID = (int)param.equipSkills[index];
+            int skillID = (int)characterParam.equipSkills[index];
             var skillData = SkillsData.data[skillID];
 
             if (tmpParam.isUseSkills[index])
             {
-                param.consumptionActionGauge += skillData.Cost;
+                characterParam.consumptionActionGauge += skillData.Cost;
                 skillModifiedParam.AtkNum += skillData.AddAtkNum;
                 skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
                 skillModifiedParam.DefMagnification += skillData.AddDefMag;
             }
             else
             {
-                param.consumptionActionGauge -= skillData.Cost;
+                characterParam.consumptionActionGauge -= skillData.Cost;
                 skillModifiedParam.AtkNum -= skillData.AddAtkNum;
                 skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
                 skillModifiedParam.DefMagnification -= skillData.AddDefMag;

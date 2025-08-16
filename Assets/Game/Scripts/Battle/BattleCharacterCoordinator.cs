@@ -60,11 +60,11 @@ namespace Frontier.Battle
                 foreach ( var chara in charaList )
                 {
                     // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-                    int gridIndex = chara.param.initGridIndex;
+                    int gridIndex = chara.characterParam.initGridIndex;
                     // プレイヤーの画面上の位置を設定
                     chara.transform.position = _stgCtrl.GetGridCharaStandPos(gridIndex);
                     // 向きを設定
-                    chara.transform.rotation = rot[(int)chara.param.initDir];
+                    chara.transform.rotation = rot[(int)chara.characterParam.initDir];
                     // 対応するグリッドに立っているプレイヤーのインデックスを設定
                     _stgCtrl.GetGridInfo(gridIndex).SetExistCharacter(chara);
                 }
@@ -77,7 +77,7 @@ namespace Frontier.Battle
         /// <param name="chara">登録対象のキャラクター</param>
         public void AddCharacterToList(Character chara)
         {
-            var param = chara.param;
+            var param = chara.characterParam;
             CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
             switch( chara )
@@ -319,19 +319,19 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
-                        if (!player.IsDead()) { isAnnihilated = false; break; }
+                        if (!player.characterParam.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
                 case Character.CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
-                        if (!enemy.IsDead()) { isAnnihilated = false; break; }
+                        if (!enemy.characterParam.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
                 case Character.CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
-                        if (!other.IsDead()) { isAnnihilated = false; break; }
+                        if (!other.characterParam.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
             }
@@ -420,8 +420,8 @@ namespace Frontier.Battle
                 return;
             }
 
-            int targetDef = (int)Mathf.Floor((target.param.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.param.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
+            int targetDef = (int)Mathf.Floor((target.characterParam.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.characterParam.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
             int changeHP = (targetDef - attackerAtk);
 
             target.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
@@ -466,19 +466,19 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
-                        player.RecoveryActionGauge();
+                        player.characterParam.RecoveryActionGauge();
                     }
                     break;
                 case Character.CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
-                        enemy.RecoveryActionGauge();
+                        enemy.characterParam.RecoveryActionGauge();
                     }
                     break;
                 case Character.CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
-                        other.RecoveryActionGauge();
+                        other.characterParam.RecoveryActionGauge();
                     }
                     break;
             }

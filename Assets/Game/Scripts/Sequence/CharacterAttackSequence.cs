@@ -156,7 +156,7 @@ namespace Frontier
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
 
                         // 対象が死亡している場合は死亡処理へ
-                        if (_targetCharacter.IsDead())
+                        if (_targetCharacter.characterParam.IsDead())
                         {
                             _diedCharacter = _targetCharacter;
                             _phase = Phase.DIE;
@@ -210,7 +210,7 @@ namespace Frontier
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
-                        if (_attackCharacter.IsDead())
+                        if (_attackCharacter.characterParam.IsDead())
                         {
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
@@ -230,7 +230,7 @@ namespace Frontier
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
-                        if (_attackCharacter.IsDead())
+                        if (_attackCharacter.characterParam.IsDead())
                         {
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
@@ -366,19 +366,19 @@ namespace Frontier
             // 味方と敵対側で分別
             Character ally = null;
             Character opponent = null;
-            if (attacker.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
+            if (attacker.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
             {
                 ally = attacker;
                 opponent = target;
             }
             else
             {
-                if (target.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
+                if (target.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
                 {
                     ally = target;
                     opponent = attacker;
                 }
-                else if (target.IsMatchCharacterTag(Character.CHARACTER_TAG.OTHER))
+                else if (target.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.OTHER))
                 {
                     ally = target;
                     opponent = attacker;

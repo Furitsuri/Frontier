@@ -35,7 +35,7 @@ namespace Frontier
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>目的地と攻撃対象それぞれが決定されたか否か</returns>
-        virtual public (bool, bool) DetermineDestinationAndTarget(in Character.Parameter selfParam, in TmpParameter selfTmpParam) { return (false, false); }
+        virtual public (bool, bool) DetermineDestinationAndTarget(in CharacterParameter selfParam, in TemporaryParameter selfTmpParam) { return (false, false); }
 
         /// <summary>
         /// 移動目標と攻撃対象キャラクターをリセットします

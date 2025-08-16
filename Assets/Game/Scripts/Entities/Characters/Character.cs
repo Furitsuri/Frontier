@@ -53,67 +53,10 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// キャラクターのパラメータの構造体です
-        /// Inspector上で編集出来ると便利なため、別ファイルに移譲していません
-        /// </summary>
-        [System.Serializable]
-        public struct Parameter
-        {
-            // キャラクタータイプ
-            public CHARACTER_TAG characterTag;
-            // キャラクター番号
-            public int characterIndex;
-            // 最大HP
-            public int MaxHP;
-            // 現在HP
-            public int CurHP;
-            // 攻撃力
-            public int Atk;
-            // 防御力
-            public int Def;
-            // 移動レンジ
-            public int moveRange;
-            // 攻撃レンジ
-            public int attackRange;
-            // アクションゲージ最大値
-            public int maxActionGauge;
-            // アクションゲージ現在値
-            public int curActionGauge;
-            // アクションゲージ回復値
-            public int recoveryActionGauge;
-            // アクションゲージ消費値
-            public int consumptionActionGauge;
-            // ステージ開始時グリッド座標(インデックス)
-            public int initGridIndex;
-            // ステージ開始時向き
-            public Constants.Direction initDir;
-            // 装備しているスキル
-            public SkillsData.ID[] equipSkills;
-
-            /// <summary>
-            /// 指定のスキルが有効か否かを返します
-            /// </summary>
-            /// <param name="index">指定インデックス</param>
-            /// <returns>有効か否か</returns>
-            public bool IsValidSkill(int index)
-            {
-                return SkillsData.ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < SkillsData.ID.SKILL_NUM;
-            }
-
-            /// <summary>
-            /// アクションゲージ消費量をリセットします
-            /// </summary>
-            public void ResetConsumptionActionGauge()
-            {
-                consumptionActionGauge = 0;
-            }
-        }
-
-        /// <summary>
         /// キャラクターに対するカメラパラメータの構造体です
         /// Inspector上で編集出来ると便利なため、別ファイルに移譲していません
         /// </summary>
-        [System.Serializable]
+        [Serializable]
         public struct CameraParameter
         {
             [Header("攻撃シーケンス時カメラオフセット")]
@@ -154,22 +97,18 @@ namespace Frontier.Entities
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         
-        // 攻撃シーケンスにおける残り攻撃回数
-        protected int _atkRemainingNum  = 0;
-        // 戦闘時の対戦相手
-        protected Character _opponent   = null;
-        // 矢などの弾
-        protected Bullet _bullet        = null;
-        
+        protected int _atkRemainingNum                      = 0;    // 攻撃シーケンスにおける残り攻撃回数
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
-        protected PARRY_PHASE _parryPhase = PARRY_PHASE.NONE;
-        protected TmpParameter tmpParam;
-
-        protected ParrySkillNotifier _parrySkill = null;
-        public Parameter param;
+        protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
+        protected Character _opponent                       = null; // 戦闘時の対戦相手
+        protected Bullet _bullet                            = null; // 矢などの弾
+        protected ParrySkillNotifier _parrySkill            = null;
+        protected TemporaryParameter tmpParam;
+        
         public ModifiedParameter modifiedParam;
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
+        public CharacterParameter characterParam;
 
         // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public bool IsDeclaredDead { get; set; } = false;
@@ -214,7 +153,7 @@ namespace Frontier.Entities
         {
             _timeScale.OnValueChange    = AnimCtrl.UpdateTimeScale;
             IsDeclaredDead              = false;
-            param.equipSkills           = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            characterParam.equipSkills  = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
             tmpParam.isEndCommand       = new bool[(int)Command.COMMAND_TAG.NUM];
             tmpParam.isUseSkills        = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
             tmpParam.Reset();
@@ -262,7 +201,7 @@ namespace Frontier.Entities
         {
             for( int i = 0; i <  (int)Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                int skillID = (int)param.equipSkills[i];
+                int skillID = (int)characterParam.equipSkills[i];
 
                 if( (int)SkillsData.ID.SKILL_PARRY == skillID )
                 {
@@ -312,7 +251,7 @@ namespace Frontier.Entities
         /// </summary>
         virtual public void Init()
         {
-            tmpParam.gridIndex  = param.initGridIndex;
+            tmpParam.gridIndex  = characterParam.initGridIndex;
             ResetElapsedTime();
 
             // 戦闘時間管理クラスに自身の時間管理クラスを登録
@@ -334,14 +273,14 @@ namespace Frontier.Entities
             }
 
             _isAttacked = true;
-            _opponent.param.CurHP += _opponent.tmpParam.expectedHpChange;
+            _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
             if (_opponent.tmpParam.expectedHpChange != 0)
             {
-                if (_opponent.param.CurHP <= 0)
+                if (_opponent.characterParam.CurHP <= 0)
                 {
-                    _opponent.param.CurHP = 0;
+                    _opponent.characterParam.CurHP = 0;
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
@@ -657,37 +596,11 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定のスキルが使用可能かを判定します
-        /// </summary>
-        /// <param name="skillIdx">スキルの装備インデックス値</param>
-        /// <returns>指定スキルの使用可否</returns>
-        public bool CanUseEquipSkill( int skillIdx )
-        {
-            if( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
-            {
-                Debug.Assert(false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。");
-
-                return false;
-            } 
-
-            int skillID = (int)param.equipSkills[skillIdx];
-            var skillData = SkillsData.data[skillID];
-
-            // コストが現在のアクションゲージ値を越えていないかをチェック
-            if ( param.consumptionActionGauge + skillData.Cost <= param.curActionGauge)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 指定のスキルの使用状態が切替可能かを判定します
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
         /// <returns>指定スキルの使用状態切替可否</returns>
-        public bool CanToggleEquipSkill( int skillIdx )
+        public bool CanToggleEquipSkill( int skillIdx, SkillsData.SituationType situationType )
         {
             if (Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx)
             {
@@ -702,7 +615,7 @@ namespace Frontier.Entities
                 return true;
             }
 
-            return CanUseEquipSkill(skillIdx);
+            return characterParam.CanUseEquipSkill(skillIdx, situationType);
         }
 
         /// <summary>
@@ -775,22 +688,13 @@ namespace Frontier.Entities
         /// </summary>
         public void ConsumeActionGauge()
         {
-            param.curActionGauge -= param.consumptionActionGauge;
-            param.consumptionActionGauge = 0;
+            characterParam.curActionGauge -= characterParam.consumptionActionGauge;
+            characterParam.consumptionActionGauge = 0;
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
                 _uiSystem.BattleUi.GetPlayerParamSkillBox(i).StopFlick();
             }
-        }
-
-        /// <summary>
-        /// アクションゲージをrecoveryActionGaugeの分だけ回復します
-        /// 基本的に自ターン開始時に呼びます
-        /// </summary>
-        public void RecoveryActionGauge()
-        {
-            param.curActionGauge = Mathf.Clamp(param.curActionGauge + param.recoveryActionGauge, 0, param.maxActionGauge);
         }
 
         /// <summary>
@@ -809,16 +713,6 @@ namespace Frontier.Entities
             }
 
             executableCommands = _executableCommands;
-        }
-
-        /// <summary>
-        /// 指定したキャラクタータグに合致するかを取得します
-        /// </summary>
-        /// <param name="tag">指定するキャラクタータグ</param>
-        /// <returns>合致しているか否か</returns>
-        public bool IsMatchCharacterTag( CHARACTER_TAG tag )
-        {
-            return param.characterTag == tag;
         }
 
         /// <summary>
@@ -848,15 +742,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 死亡判定を返します
-        /// </summary>
-        /// <returns>死亡しているか否か</returns>
-        public bool IsDead()
-        {
-            return param.CurHP <= 0;
-        }
-
-        /// <summary>
         /// 指定のスキルが使用登録されているかを判定します
         /// </summary>
         /// <param name="skillID">指定スキルID</param>
@@ -867,7 +752,7 @@ namespace Frontier.Entities
             {
                 if (!tmpParam.isUseSkills[i]) continue;
 
-                if (param.equipSkills[i] == skillID) return true;
+                if (characterParam.equipSkills[i] == skillID) return true;
             }
 
             return false;
@@ -893,8 +778,8 @@ namespace Frontier.Entities
             for(  int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 names[i] = "";
-                if (!param.IsValidSkill(i)) continue;
-                names[i] = SkillsData.data[ (int)param.equipSkills[i] ].Name;
+                if (!characterParam.IsValidSkill(i)) continue;
+                names[i] = SkillsData.data[ (int)characterParam.equipSkills[i] ].Name;
                 names[i] = names[i].Replace("_", Environment.NewLine);
             }
 
@@ -956,7 +841,7 @@ namespace Frontier.Entities
             _isTransitNextPhaseCamera = true;
 
             // この攻撃によって相手が倒されるかどうかを判定
-            _opponent.IsDeclaredDead = (_opponent.param.CurHP + _opponent.tmpParam.expectedHpChange) <= 0;
+            _opponent.IsDeclaredDead = (_opponent.characterParam.CurHP + _opponent.tmpParam.expectedHpChange) <= 0;
             if (!_opponent.IsDeclaredDead && 0 < _atkRemainingNum)
             {
                 --_atkRemainingNum;
@@ -975,14 +860,14 @@ namespace Frontier.Entities
             }
 
             _isAttacked = true;
-            _opponent.param.CurHP += _opponent.tmpParam.expectedHpChange;
+            _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
             if (_opponent.tmpParam.expectedHpChange != 0)
             {
-                if (_opponent.param.CurHP <= 0)
+                if (_opponent.characterParam.CurHP <= 0)
                 {
-                    _opponent.param.CurHP = 0;
+                    _opponent.characterParam.CurHP = 0;
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない

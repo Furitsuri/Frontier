@@ -31,7 +31,7 @@ namespace Frontier
             _enemy = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_enemy != null);
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var param = _enemy.param;
+            var param = _enemy.characterParam;
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
             _movePathList = _enemy.GetAi().GetProposedMoveRoute();

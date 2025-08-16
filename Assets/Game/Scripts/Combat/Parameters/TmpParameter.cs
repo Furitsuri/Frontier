@@ -3,7 +3,7 @@
     /// <summary>
     /// 戦闘中のみ一時的に使用するパラメータです
     /// </summary>
-    public struct TmpParameter
+    public struct TemporaryParameter
     {
         // 該当コマンドの終了フラグ
         public bool[] isEndCommand;
@@ -22,9 +22,9 @@
         /// Array.Copyで値渡しになるように書き換えています
         /// </summary>
         /// <returns>クローンした変数</returns>
-        public TmpParameter Clone()
+        public TemporaryParameter Clone()
         {
-            TmpParameter copy = this;
+            TemporaryParameter copy = this;
 
             copy.isEndCommand = (bool[])isEndCommand.Clone();
             copy.isUseSkills = (bool[])isUseSkills.Clone();

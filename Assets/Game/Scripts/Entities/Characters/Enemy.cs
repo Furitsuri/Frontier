@@ -44,7 +44,7 @@ namespace Frontier.Entities
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
-            return _baseAI.DetermineDestinationAndTarget(param, tmpParam);
+            return _baseAI.DetermineDestinationAndTarget(characterParam, tmpParam);
         }
 
         /// <summary>
