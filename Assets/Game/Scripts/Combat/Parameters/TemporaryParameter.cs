@@ -55,5 +55,25 @@
 
             totalExpectedHpChange = expectedHpChange = 0;
         }
+
+        /// <summary>
+        /// ダメージを受けた際のHPの予測変動量を取得します
+        /// </summary>
+        /// <param name="single">単発攻撃の予測変動量</param>
+        /// <param name="total">複数回攻撃の予測総変動量</param>
+        public void AssignExpectedHpChange(out int single, out int total)
+        {
+            single  = expectedHpChange;
+            total   = totalExpectedHpChange;
+        }
+
+        /// <summary>
+        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します
+        /// </summary>
+        /// <returns>現在グリッドのインデックス値</returns>
+        public int GetCurrentGridIndex()
+        {
+            return gridIndex;
+        }
     }
 }

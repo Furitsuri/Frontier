@@ -30,7 +30,7 @@ namespace Frontier
         {
             base.Init();
 
-            _playerSkillNames   = _selectPlayer.GetEquipSkillNames();
+            _playerSkillNames   = _selectPlayer.characterParam.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
@@ -79,9 +79,9 @@ namespace Frontier
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
-                        var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.GetCurrentGridIndex());
+                        var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.GetCurrentGridIndex());
                         _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos );
-                        var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.GetCurrentGridIndex());
+                        var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.GetCurrentGridIndex());
                         _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
                     }
 

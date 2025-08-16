@@ -48,12 +48,12 @@ namespace Frontier
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
-            _playerSkillNames = _targetCharacter.GetEquipSkillNames();
+            _playerSkillNames = _targetCharacter.characterParam.GetEquipSkillNames();
 
             // 攻撃者の向きを設定
-            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.GetCurrentGridIndex());
+            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.GetCurrentGridIndex());
             _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
-            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.GetCurrentGridIndex());
+            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.GetCurrentGridIndex());
             _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
 
             // 攻撃シーケンスを初期化

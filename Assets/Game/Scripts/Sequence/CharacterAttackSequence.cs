@@ -259,7 +259,7 @@ namespace Frontier
                         TransitStageField(_attackCharacter, _targetCharacter);
 
                         // 攻撃シーケンス用カメラを終了
-                        var info = _stageCtrl.GetGridInfo(_attackCharacter.GetCurrentGridIndex());
+                        var info = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.GetCurrentGridIndex());
                         _btlCamCtrl.EndAttackSequenceMode(_attackCharacter);
 
                         _phase = Phase.END;
@@ -422,10 +422,10 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var info = _stageCtrl.GetGridInfo(attacker.GetCurrentGridIndex());
+            var info = _stageCtrl.GetGridInfo(attacker.tmpParam.GetCurrentGridIndex());
             _attackCharacter.transform.position = info.charaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            info = _stageCtrl.GetGridInfo(target.GetCurrentGridIndex());
+            info = _stageCtrl.GetGridInfo(target.tmpParam.GetCurrentGridIndex());
             _targetCharacter.transform.position = info.charaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
         }
