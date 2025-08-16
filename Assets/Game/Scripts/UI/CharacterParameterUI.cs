@@ -105,7 +105,7 @@ namespace Frontier
             Debug.Assert(_character != null);
 
             // パラメータ表示を反映
-            UpdateParamRender(_character, _character.param, _character.skillModifiedParam);
+            UpdateParamRender(_character, _character.characterParam, _character.skillModifiedParam);
             // カメラ描画を反映
             UpdateCamraRender(_character, _character.camParam);
         }
@@ -115,7 +115,7 @@ namespace Frontier
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateParamRender(Character selectCharacter, in Character.Parameter param, in SkillModifiedParameter skillParam)
+        void UpdateParamRender(Character selectCharacter, in CharacterParameter param, in SkillModifiedParameter skillParam)
         {
             Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
 

@@ -7,7 +7,7 @@ namespace Frontier
     public class DebugBattleRoutineController : MonoBehaviour
     {
         [SerializeField]
-        private Character.Parameter GenerateUnitParamSetting;
+        private CharacterParameter GenerateUnitParamSetting;
 
         [SerializeField]
         private BattleRoutineController _btlRtnCtrl;

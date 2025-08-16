@@ -38,7 +38,7 @@ namespace Frontier
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _selectPlayer;
-            var param = _attackCharacter.param;
+            var param = _attackCharacter.characterParam;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
@@ -121,7 +121,7 @@ namespace Frontier
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
             {
-                var key = new CharacterHashtable.Key(diedCharacter.param.characterTag, diedCharacter.param.characterIndex);
+                var key = new CharacterHashtable.Key(diedCharacter.characterParam.characterTag, diedCharacter.characterParam.characterIndex);
                 NoticeCharacterDied(key);
                 // 破棄
                 diedCharacter.Remove();
@@ -150,9 +150,9 @@ namespace Frontier
             }
 
             // 使用スキルコスト見積もりをリセット
-            _attackCharacter.param.ResetConsumptionActionGauge();
+            _attackCharacter.characterParam.ResetConsumptionActionGauge();
             _attackCharacter.skillModifiedParam.Reset();
-            _targetCharacter.param.ResetConsumptionActionGauge();
+            _targetCharacter.characterParam.ResetConsumptionActionGauge();
             _targetCharacter.skillModifiedParam.Reset();
 
             // グリッド状態の描画をクリア
@@ -228,7 +228,7 @@ namespace Frontier
 
             if (_playerSkillNames[0].Length <= 0 ) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(0);
+            return _selectPlayer.CanToggleEquipSkill(0, SkillsData.SituationType.ATTACK);
         }
 
         protected override bool CanAcceptSub2()
@@ -237,7 +237,7 @@ namespace Frontier
 
             if (_playerSkillNames[1].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(1);
+            return _selectPlayer.CanToggleEquipSkill(1, SkillsData.SituationType.ATTACK);
         }
 
         protected override bool CanAcceptSub3()
@@ -246,7 +246,7 @@ namespace Frontier
 
             if (_playerSkillNames[2].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(2);
+            return _selectPlayer.CanToggleEquipSkill(2, SkillsData.SituationType.ATTACK);
         }
 
         protected override bool CanAcceptSub4()
@@ -255,7 +255,7 @@ namespace Frontier
 
             if (_playerSkillNames[3].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(3);
+            return _selectPlayer.CanToggleEquipSkill(3, SkillsData.SituationType.ATTACK);
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Frontier
             if( !isInput ) return false;
 
             // 選択したキャラクターが敵である場合は攻撃開始
-            if (_targetCharacter != null && _targetCharacter.param.characterTag == Character.CHARACTER_TAG.ENEMY)
+            if (_targetCharacter != null && _targetCharacter.characterParam.characterTag == Character.CHARACTER_TAG.ENEMY)
             {
                 // キャラクターのアクションゲージを消費
                 _attackCharacter.ConsumeActionGauge();

@@ -173,9 +173,9 @@ namespace Frontier
                     }
 
                     // ファイルから読み込んだパラメータを設定
-                    ApplyCharacterParams(ref chara.param, param);
+                    ApplyCharacterParams(ref chara.characterParam, param);
                     chara.Init();
-                    if( !chara.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER) )
+                    if( !chara.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER) )
                     {
                         var npc = chara as Npc;
                         npc.SetThinkType((Npc.ThinkingType)param.ThinkType);
@@ -224,7 +224,7 @@ namespace Frontier
         /// </summary>
         /// <param name="param">適応先のキャラクターパラメータ</param>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        private void ApplyCharacterParams(ref Character.Parameter param, in CharacterParamData fdata)
+        private void ApplyCharacterParams(ref CharacterParameter param, in CharacterParamData fdata)
         {
             param.characterTag = (Character.CHARACTER_TAG)fdata.CharacterTag;
             param.characterIndex = fdata.CharacterIndex;
@@ -267,14 +267,14 @@ namespace Frontier
         /// <summary>
         /// デバッグ用にユニットを生成します
         /// </summary>
-        public void DebugBattleLoadUnit(int prefabIndex, ref Character.Parameter param)
+        public void DebugBattleLoadUnit(int prefabIndex, ref CharacterParameter param)
         {
             if (param.characterTag == Character.CHARACTER_TAG.PLAYER)
             {
                 Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (player == null) return;
 
-                player.param = param;
+                player.characterParam = param;
                 player.Init();
 
                 _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(player);
@@ -284,7 +284,7 @@ namespace Frontier
                 Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (enemy == null) return;
 
-                enemy.param = param;
+                enemy.characterParam = param;
                 enemy.Init();
 
                 _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(enemy);

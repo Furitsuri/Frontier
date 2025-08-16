@@ -43,8 +43,8 @@ namespace Frontier.Stage
         /// <param name="chara">設定するキャラクター</param>
         public void SetExistCharacter( Character chara )
         {
-            charaTag    = chara.param.characterTag;
-            charaIndex  = chara.param.characterIndex;
+            charaTag    = chara.characterParam.characterTag;
+            charaIndex  = chara.characterParam.characterIndex;
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Frontier.Stage
         /// <returns>合致しているか否か</returns>
         public bool IsMatchExistCharacter( Character chara )
         {
-            return ( charaTag == chara.param.characterTag && charaIndex == chara.param.characterIndex );
+            return ( charaTag == chara.characterParam.characterTag && charaIndex == chara.characterParam.characterIndex );
         }
 
         /// <summary>

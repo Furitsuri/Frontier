@@ -201,8 +201,8 @@ namespace Frontier.Stage
                 {
                     var gridIndex       = chara.GetCurrentGridIndex();
                     ref var tileInfo    = ref _stageData.GetTileInfo(gridIndex);
-                    tileInfo.charaTag   = chara.param.characterTag;
-                    tileInfo.charaIndex = chara.param.characterIndex;
+                    tileInfo.charaTag   = chara.characterParam.characterTag;
+                    tileInfo.charaIndex = chara.characterParam.characterIndex;
                     Methods.SetBitFlag(ref tileInfo.flag, flags[i]);
                 }
             }
@@ -311,7 +311,7 @@ namespace Frontier.Stage
                 {
                     attackCandidate = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
-                    if (attackCandidate != null && attackCandidate.param.characterTag != selfTag)
+                    if (attackCandidate != null && attackCandidate.characterParam.characterTag != selfTag)
                     {
                         _attackableGridIndexs.Add(i);
                     }
@@ -437,7 +437,7 @@ namespace Frontier.Stage
                 {
                     character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
-                    if (character != null && character.param.characterTag == targetTag)
+                    if (character != null && character.characterParam.characterTag == targetTag)
                     {
                         _attackableGridIndexs.Add(i);
                     }

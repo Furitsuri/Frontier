@@ -33,7 +33,7 @@ namespace Frontier
 
             // 移動開始前の情報を保存
             _selectPlayer.AdaptPrevMoveInfo();
-            var param = _selectPlayer.param;
+            var param = _selectPlayer.characterParam;
 
             // キャラクターの現在の位置情報を保持
             StageController.Footprint footprint = new StageController.Footprint();

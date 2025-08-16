@@ -124,7 +124,7 @@ namespace Frontier
         /// <returns>有効か否か</returns>
         public bool IsValidTargetCharacterIndex()
         {
-            return (_targetCharacter != null && _targetCharacter.param.characterTag != Character.CHARACTER_TAG.ENEMY);
+            return (_targetCharacter != null && _targetCharacter.characterParam.characterTag != Character.CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Frontier
         /// <param name="mySelf">自身</param>
         /// <param name="TargetCharacter">対象のキャラクター</param>
         /// <returns>評価値</returns>
-        protected float CalcurateEvaluateAttack(in Character.Parameter selfParam, in Character.Parameter targetParam)
+        protected float CalcurateEvaluateAttack(in CharacterParameter selfParam, in CharacterParameter targetParam)
         {
             float evaluateValue = 0f;
 
