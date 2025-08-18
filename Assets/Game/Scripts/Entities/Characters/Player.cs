@@ -129,7 +129,7 @@ namespace Frontier.Entities
             {
                 if( i == (int)Command.COMMAND_TAG.MOVE )
                 {
-                    if (!IsEndCommand(Command.COMMAND_TAG.MOVE))
+                    if (!tmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE))
                     {
                         isPossible = false;
                         break;
@@ -137,7 +137,7 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    if (IsEndCommand((Command.COMMAND_TAG)i))
+                    if (tmpParam.IsEndCommand((Command.COMMAND_TAG)i))
                     {
                         isPossible = false;
                         break;
@@ -170,7 +170,7 @@ namespace Frontier.Entities
 
                 // 指定されたタイプ以外のスキルは無視する
                 var skillType = SkillsData.data[(int)characterParam.equipSkills[i]].Type;
-                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
+                _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
                 if (skillType != type)
                 {
                     continue;
@@ -208,7 +208,7 @@ namespace Frontier.Entities
                         skillModifiedParam.DefMagnification -= skillData.AddDefMag;
                     }
 
-                    _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetFlickEnabled(tmpParam.isUseSkills[i]);
+                    _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).SetFlickEnabled(tmpParam.isUseSkills[i]);
                 }
             }
         }
@@ -240,7 +240,7 @@ namespace Frontier.Entities
                 skillModifiedParam.DefMagnification -= skillData.AddDefMag;
             }
 
-            _uiSystem.BattleUi.GetPlayerParamSkillBox(index).SetFlickEnabled(tmpParam.isUseSkills[index]);
+            _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(index).SetFlickEnabled(tmpParam.isUseSkills[index]);
 
             return true;
         }

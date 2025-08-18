@@ -92,7 +92,7 @@ namespace Frontier
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.tmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -117,8 +117,8 @@ namespace Frontier
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
-            _attackCharacter.SetExpectedHpChange(0, 0);
-            _targetCharacter.SetExpectedHpChange(0, 0);
+            _attackCharacter.tmpParam.SetExpectedHpChange(0, 0);
+            _targetCharacter.tmpParam.SetExpectedHpChange(0, 0);
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
@@ -233,8 +233,8 @@ namespace Frontier
             if( !isInput ) return false;
 
             // キャラクターのアクションゲージを消費
-            _attackCharacter.ConsumeActionGauge();
-            _targetCharacter.ConsumeActionGauge();
+            ConsumeActionGauge(_attackCharacter);
+            ConsumeActionGauge(_targetCharacter);
 
             // 選択グリッドを一時非表示
             _stageCtrl.SetGridCursorControllerActive(false);

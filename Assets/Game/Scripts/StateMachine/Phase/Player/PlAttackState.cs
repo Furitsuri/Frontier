@@ -105,7 +105,7 @@ namespace Frontier
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.tmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -131,8 +131,8 @@ namespace Frontier
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _attackCharacter.SetExpectedHpChange(0, 0);
-            _targetCharacter.SetExpectedHpChange(0, 0);
+            _attackCharacter.tmpParam.SetExpectedHpChange(0, 0);
+            _targetCharacter.tmpParam.SetExpectedHpChange(0, 0);
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
@@ -174,9 +174,9 @@ namespace Frontier
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "TARGET SELECT", CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "TURN END",             CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode),
+               (GuideIcon.ALL_CURSOR, "TARGET SELECT",  CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, "CONFIRM",           CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "TURN END",           CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode),
                (GuideIcon.SUB1, _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
                (GuideIcon.SUB2, _playerSkillNames[1],   CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
                (GuideIcon.SUB3, _playerSkillNames[2],   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
@@ -286,8 +286,8 @@ namespace Frontier
             if (_targetCharacter != null && _targetCharacter.characterParam.characterTag == Character.CHARACTER_TAG.ENEMY)
             {
                 // キャラクターのアクションゲージを消費
-                _attackCharacter.ConsumeActionGauge();
-                _targetCharacter.ConsumeActionGauge();
+                ConsumeActionGauge(_attackCharacter);
+                ConsumeActionGauge(_targetCharacter);
 
                 // 選択グリッドを一時非表示
                 _stageCtrl.SetGridCursorControllerActive(false);

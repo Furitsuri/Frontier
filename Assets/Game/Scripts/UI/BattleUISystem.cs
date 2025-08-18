@@ -2,6 +2,7 @@
 using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
+using System.ComponentModel;
 using UnityEngine;
 using Zenject;
 
@@ -133,6 +134,12 @@ namespace Frontier
                     DamageValue.damageText.color = Color.white;
                 }
             }
+        }
+
+        public void ShowDamageOnCharacter( Character chara )
+        {
+            SetDamageUIPosByCharaPos(chara, chara.tmpParam.expectedHpChange);
+            ToggleDamageUI(true);
         }
 
         public void TogglePhaseUI(bool isActive, BattleRoutineController.TurnType turntype)

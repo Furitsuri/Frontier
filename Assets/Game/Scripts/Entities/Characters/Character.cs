@@ -52,31 +52,6 @@ namespace Frontier.Entities
             NUM,
         }
 
-        /// <summary>
-        /// キャラクターに対するカメラパラメータの構造体です
-        /// Inspector上で編集出来ると便利なため、別ファイルに移譲していません
-        /// </summary>
-        [Serializable]
-        public struct CameraParameter
-        {
-            [Header("攻撃シーケンス時カメラオフセット")]
-            public Vector3 OffsetOnAtkSequence;
-            [Header("パラメータ表示UI用カメラオフセット(Y座標)")]
-            public float UICameraLengthY;
-            [Header("パラメータ表示UI用カメラオフセット(Z座標)")]
-            public float UICameraLengthZ;
-            // UI表示用カメラターゲット(Y方向)
-            public float UICameraLookAtCorrectY;
-
-            public CameraParameter(in Vector3  offset, float lengthY, float lengthZ, float lookAtCorrectY)
-            {
-                OffsetOnAtkSequence     = offset;
-                UICameraLengthY         = lengthY;
-                UICameraLengthZ         = lengthZ;
-                UICameraLookAtCorrectY  = lookAtCorrectY;
-            }
-        }
-
         [SerializeField]
         [Header("弾オブジェクト")]
         private GameObject _bulletObject;
@@ -86,7 +61,6 @@ namespace Frontier.Entities
         protected BattleRoutineController _btlRtnCtrl               = null;
         protected CombatSkillEventController _combatSkillEventCtrl  = null;
         protected StageController _stageCtrl                        = null;
-        protected IUiSystem _uiSystem                               = null;
 
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
@@ -110,16 +84,11 @@ namespace Frontier.Entities
         public CharacterParameter characterParam;
         public TemporaryParameter tmpParam;
 
-        // 死亡確定フラグ(攻撃シーケンスにおいて使用)
-        public bool IsDeclaredDead { get; set; } = false;
-        // 弾オブジェクトの取得
-        public GameObject BulletObject => _bulletObject;
-        // アニメーションコントローラの取得
-        public AnimationController AnimCtrl { get; } = new AnimationController();
-        // パリィスキル処理の取得
-        public ParrySkillNotifier GetParrySkill => _parrySkill;
-        // タイムスケールの取得
-        public TimeScale GetTimeScale => _timeScale;
+        public bool IsDeclaredDead { get; set; } = false;   // 死亡確定フラグ(攻撃シーケンスにおいて使用)
+        public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
+        public GameObject BulletObject => _bulletObject;    // 弾オブジェクトの取得
+        public ParrySkillNotifier GetParrySkill => _parrySkill; // パリィスキル処理の取得
+        public TimeScale GetTimeScale => _timeScale;    // タイムスケールの取得
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -140,13 +109,12 @@ namespace Frontier.Entities
         #region PRIVATE_METHOD
 
         [Inject]
-        void Construct( HierarchyBuilderBase hierarchyBld,  BattleRoutineController battleMgr, CombatSkillEventController combatSkillEventCtrl, StageController stageCtrl, IUiSystem uiSystem )
+        void Construct( HierarchyBuilderBase hierarchyBld,  BattleRoutineController battleMgr, CombatSkillEventController combatSkillEventCtrl, StageController stageCtrl )
         {
             _hierarchyBld           = hierarchyBld;
             _btlRtnCtrl             = battleMgr;
             _combatSkillEventCtrl   = combatSkillEventCtrl;
             _stageCtrl              = stageCtrl;
-            _uiSystem               = uiSystem;
         }
 
         void Awake()
@@ -261,41 +229,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 対戦相手にダメージを与えるイベントを発生させます
-        /// ※ 弾の着弾以外では近接攻撃アニメーションからも呼び出される設計です
-        ///    近接攻撃キャラクターの攻撃アニメーションの適当なフレームでこのメソッドイベントを挿入してください
-        /// </summary>
-        virtual public void HurtOpponentByAnimation()
-        {
-            if (_opponent == null)
-            {
-                Debug.Assert(false);
-            }
-
-            _isAttacked = true;
-            _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
-
-            //　ダメージが0の場合はモーションを取らない
-            if (_opponent.tmpParam.expectedHpChange != 0)
-            {
-                if (_opponent.characterParam.CurHP <= 0)
-                {
-                    _opponent.characterParam.CurHP = 0;
-                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
-                }
-                // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
-                {
-                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
-                }
-            }
-
-            // ダメージUIを表示
-            _uiSystem.BattleUi.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedHpChange);
-            _uiSystem.BattleUi.ToggleDamageUI(true);
-        }
-
-        /// <summary>
         /// 戦闘に使用するスキルを選択します
         /// </summary>
         virtual public void SelectUseSkills(SkillsData.SituationType type) {}
@@ -339,36 +272,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を設定します
-        /// </summary>
-        /// <param name="index">設定するインデックス値</param>
-        public void SetCurrentGridIndex(int index)
-        {
-            tmpParam.gridIndex = index;
-        }
-
-        /// <summary>
-        /// 戦闘などにおけるHPの予測変動量を設定します
-        /// </summary>
-        /// <param name="single">単発攻撃における予測変動量</param>
-        /// <param name="total">複数回攻撃における予測総変動量</param>
-        public void SetExpectedHpChange( int single, int total )
-        {
-            tmpParam.expectedHpChange       = single;
-            tmpParam.totalExpectedHpChange  = total;
-        }
-
-        /// <summary>
-        /// 各終了コマンドの状態を設定します
-        /// </summary>
-        /// <param name="isEnd">設定する終了状態のOnまたはOff</param>
-        /// <param name="cmdTag">設定対象のコマンドタグ</param>
-        public void SetEndCommandStatus( Command.COMMAND_TAG cmdTag, bool isEnd )
-        {
-            tmpParam.isEndCommand[(int)cmdTag] = isEnd;
-        }
-
-        /// <summary>
         /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
         /// </summary>
         /// <param name="targetPos">向きを合わせる位置</param>
@@ -390,7 +293,7 @@ namespace Frontier.Entities
         {
             for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
             {
-                SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+                tmpParam.SetEndCommandStatus((Command.COMMAND_TAG)i, true);
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -449,17 +352,6 @@ namespace Frontier.Entities
             AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
             ResetElapsedTime();
             GetTimeScale.SetTimeScale(0.1f);    // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
-        }
-
-        /// <summary>
-        /// 行動を終了させます
-        /// </summary>
-        public void EndAction()
-        {
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
-            {
-                SetEndCommandStatus((Command.COMMAND_TAG)i, true);
-            }
         }
 
         /// <summary>
@@ -619,26 +511,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定のコマンドが終了しているかを取得します
-        /// </summary>
-        /// <param name="cmdTag">指定するコマンドタグ</param>
-        /// <returns>指定のコマンドが終了しているか否か</returns>
-        public bool IsEndCommand( Command.COMMAND_TAG cmdTag )
-        {
-            return tmpParam.isEndCommand[(int)cmdTag];
-        }
-
-        /// <summary>
-        /// 現在のターンにおける行動が終了しているかを取得します
-        /// MEMO : 仕様上、待機コマンドが終了していれば、行動全てを終了していると判定しています
-        /// </summary>
-        /// <returns>行動が終了しているか</returns>
-        public bool IsEndAction()
-        {
-            return IsEndCommand( Command.COMMAND_TAG.WAIT );
-        }
-
-        /// <summary>
         /// 対戦相手を設定します
         /// </summary>
         /// <param name="opponent">対戦相手</param>
@@ -681,20 +553,6 @@ namespace Frontier.Entities
         {
             Destroy(gameObject);
             Destroy(this);
-        }
-
-        /// <summary>
-        /// アクションゲージを消費します
-        /// </summary>
-        public void ConsumeActionGauge()
-        {
-            characterParam.curActionGauge -= characterParam.consumptionActionGauge;
-            characterParam.consumptionActionGauge = 0;
-
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
-            {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).StopFlick();
-            }
         }
 
         /// <summary>
@@ -770,6 +628,8 @@ namespace Frontier.Entities
         /// <returns>対戦相手</returns>
         public Character GetOpponentChara() { return _opponent; }
 
+        #region CALL_BY_ANIMATION
+
         /// <summary>
         /// 死亡処理を開始します
         /// ※各キャラクターのパリィ用アニメーションから呼ばれます
@@ -842,8 +702,41 @@ namespace Frontier.Entities
             }
 
             // ダメージUIを表示
-            _uiSystem.BattleUi.SetDamageUIPosByCharaPos(_opponent, _opponent.tmpParam.expectedHpChange);
-            _uiSystem.BattleUi.ToggleDamageUI(true);
+            _btlRtnCtrl.BtlUi.ShowDamageOnCharacter(_opponent);
+        }
+
+        /// <summary>
+        /// 対戦相手にダメージを与えるイベントを発生させます
+        /// ※ 弾の着弾以外では近接攻撃アニメーションからも呼び出される設計です
+        ///    近接攻撃キャラクターの攻撃アニメーションの適当なフレームでこのメソッドイベントを挿入してください
+        /// </summary>
+        public void HurtOpponentByAnimation()
+        {
+            if (_opponent == null)
+            {
+                Debug.Assert(false);
+            }
+
+            _isAttacked = true;
+            _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
+
+            //　ダメージが0の場合はモーションを取らない
+            if (_opponent.tmpParam.expectedHpChange != 0)
+            {
+                if (_opponent.characterParam.CurHP <= 0)
+                {
+                    _opponent.characterParam.CurHP = 0;
+                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
+                }
+                // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
+                else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
+                {
+                    _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
+                }
+            }
+
+            // ダメージUIを表示
+            _btlRtnCtrl.BtlUi.ShowDamageOnCharacter(_opponent);
         }
 
         /// <summary>
@@ -883,6 +776,8 @@ namespace Frontier.Entities
                 _timeScale.Stop();
             }
         }
+
+        #endregion // CALL_BY_ANIMATION
 
         #endregion // PUBLIC_METHOD
     }

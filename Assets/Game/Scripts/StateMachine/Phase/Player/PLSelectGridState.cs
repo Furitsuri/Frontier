@@ -75,7 +75,7 @@ namespace Frontier
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if (character != null &&
                  character.characterParam.characterTag == Character.CHARACTER_TAG.PLAYER &&
-                 !character.IsEndAction())
+                 !character.tmpParam.IsEndAction())
             {
                 return true;
             }

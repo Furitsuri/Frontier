@@ -219,7 +219,7 @@ namespace Frontier
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateCamraRender(Character selectCharacter, in Character.CameraParameter camParam)
+        void UpdateCamraRender(Character selectCharacter, in CameraParameter camParam)
         {
             Transform playerTransform = selectCharacter.transform;
             Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * camParam.UICameraLengthZ;

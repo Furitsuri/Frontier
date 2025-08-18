@@ -68,12 +68,73 @@
         }
 
         /// <summary>
+        /// 戦闘などにおけるHPの予測変動量を設定します
+        /// </summary>
+        /// <param name="single">単発攻撃における予測変動量</param>
+        /// <param name="total">複数回攻撃における予測総変動量</param>
+        public void SetExpectedHpChange(int single, int total)
+        {
+            expectedHpChange        = single;
+            totalExpectedHpChange   = total;
+        }
+
+        /// <summary>
+        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を設定します
+        /// </summary>
+        /// <param name="index">設定するインデックス値</param>
+        public void SetCurrentGridIndex(int index)
+        {
+            gridIndex = index;
+        }
+
+        /// <summary>
+        /// 各終了コマンドの状態を設定します
+        /// </summary>
+        /// <param name="isEnd">設定する終了状態のOnまたはOff</param>
+        /// <param name="cmdTag">設定対象のコマンドタグ</param>
+        public void SetEndCommandStatus(Command.COMMAND_TAG cmdTag, bool isEnd)
+        {
+            isEndCommand[(int)cmdTag] = isEnd;
+        }
+
+        /// <summary>
+        /// 行動を終了させます
+        /// </summary>
+        public void EndAction()
+        {
+            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            {
+                SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+            }
+        }
+
+        /// <summary>
         /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します
         /// </summary>
         /// <returns>現在グリッドのインデックス値</returns>
         public int GetCurrentGridIndex()
         {
             return gridIndex;
+        }
+
+        /// <summary>
+        /// 指定のコマンドが終了しているかを取得します
+        /// </summary>
+        /// <param name="cmdTag">指定するコマンドタグ</param>
+        /// <returns>指定のコマンドが終了しているか否か</returns>
+        public bool IsEndCommand(Command.COMMAND_TAG cmdTag)
+        {
+            return isEndCommand[(int)cmdTag];
+        }
+
+        /// <summary>
+        /// 現在のターンにおける行動が終了しているかを取得します
+        /// MEMO : 仕様上、待機コマンドが終了していれば、行動全てを終了していると判定しています
+        /// </summary>
+        /// <returns>行動が終了しているか</returns>
+        public bool IsEndAction()
+        {
+            return IsEndCommand(Command.COMMAND_TAG.WAIT);
         }
     }
 }
