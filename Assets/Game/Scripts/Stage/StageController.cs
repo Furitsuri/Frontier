@@ -783,7 +783,7 @@ namespace Frontier.Stage
         public void FollowFootprint(Character character)
         {
             _gridCursorCtrl.Index = _footprint.gridIndex;
-            character.SetCurrentGridIndex(_footprint.gridIndex);
+            character.tmpParam.SetCurrentGridIndex(_footprint.gridIndex);
             GridInfo info;
             FetchCurrentGridInfo(out info);
             character.transform.position = info.charaStandPos;

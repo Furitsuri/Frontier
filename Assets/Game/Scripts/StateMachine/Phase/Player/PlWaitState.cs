@@ -19,7 +19,7 @@ namespace Frontier
             }
 
             // 選択しているプレイヤーの行動をすべて終了
-            selectPlayer.EndAction();
+            selectPlayer.tmpParam.EndAction();
 
             // 更新せずに終了
             Back();

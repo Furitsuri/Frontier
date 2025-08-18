@@ -220,7 +220,7 @@ namespace Frontier.Battle
 
             foreach( var chara in charaList[(int)tag])
             {
-                if (!chara.IsEndAction())
+                if (!chara.tmpParam.IsEndAction())
                 {
                     return false;
                 }
@@ -385,7 +385,7 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
-                        player.EndAction();
+                        player.tmpParam.EndAction();
                     }
 
                     break;
@@ -393,7 +393,7 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
-                        enemy.EndAction();
+                        enemy.tmpParam.EndAction();
                     }
 
                     break;
@@ -401,7 +401,7 @@ namespace Frontier.Battle
                 case Character.CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
-                        other.EndAction();
+                        other.tmpParam.EndAction();
                     }
 
                     break;
@@ -424,7 +424,7 @@ namespace Frontier.Battle
             int attackerAtk = (int)Mathf.Floor((attacker.characterParam.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
             int changeHP = (targetDef - attackerAtk);
 
-            target.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
+            target.tmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>

@@ -49,7 +49,7 @@ namespace Frontier
             NullCheck.AssertNotNull(_selectPlayer);
 
             // 可能な行動が全て終了している場合は終了
-            if (_selectPlayer.IsEndAction())
+            if (_selectPlayer.tmpParam.IsEndAction())
             {
                 return;
             }
@@ -63,7 +63,7 @@ namespace Frontier
         /// <returns>0以上の値のとき次の状態に遷移します</returns>
         override public bool Update()
         {
-            if( _selectPlayer.IsEndAction() )
+            if( _selectPlayer.tmpParam.IsEndAction() )
             {
                 Back();
                 return true;
@@ -72,11 +72,11 @@ namespace Frontier
             if (base.Update())
             {
                 // 移動のみ終了している場合は移動前に戻れるように          
-                if (_selectPlayer.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_selectPlayer.IsEndCommand(Command.COMMAND_TAG.ATTACK))
+                if (_selectPlayer.tmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_selectPlayer.tmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
                 {
                     _stageCtrl.FollowFootprint(_selectPlayer);
                     _stageCtrl.UpdateGridInfo();
-                    _selectPlayer.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
+                    _selectPlayer.tmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
                 }
 
                 return true;

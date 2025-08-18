@@ -128,59 +128,49 @@ namespace Frontier
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptDirection(Constants.Direction dir)
-        {
-            return false;
-        }
+        virtual protected bool AcceptDirection(Constants.Direction dir) { return false; }
 
         /// <summary>
         /// 決定入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptConfirm(bool isInput)
-        {
-            return false;
-        }
+        virtual protected bool AcceptConfirm(bool isInput) { return false; }
 
         /// <summary>
         /// キャンセル入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptCancel(bool isCancel)
-        {
-            return false;
-        }
+        virtual protected bool AcceptCancel(bool isCancel) { return false; }
 
         /// <summary>
         /// オプション入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isOptional">オプション入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptOptional(bool isOptional)
-        {
-            return false;
-        }
+        virtual protected bool AcceptOptional(bool isOptional) { return false; }
 
-        virtual protected bool AcceptSub1( bool isInput )
-        {
-            return false;
-        }
+        virtual protected bool AcceptSub1( bool isInput ) { return false; }
 
-        virtual protected bool AcceptSub2(bool isInput)
-        {
-            return false;
-        }
+        virtual protected bool AcceptSub2(bool isInput) { return false; }
 
-        virtual protected bool AcceptSub3(bool isInput)
-        {
-            return false;
-        }
+        virtual protected bool AcceptSub3(bool isInput) { return false; }
 
-        virtual protected bool AcceptSub4(bool isInput)
+        virtual protected bool AcceptSub4(bool isInput) { return false; }
+
+        /// <summary>
+        /// 指定キャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
+        /// </summary>
+        public void ConsumeActionGauge(Entities.Character chara)
         {
-            return false;
+            chara.characterParam.curActionGauge -= chara.characterParam.consumptionActionGauge;
+            chara.characterParam.consumptionActionGauge = 0;
+
+            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            {
+                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).StopFlick();
+            }
         }
     }
 }
