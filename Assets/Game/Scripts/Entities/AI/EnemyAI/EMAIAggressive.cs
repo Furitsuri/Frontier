@@ -78,7 +78,7 @@ namespace Frontier
                 }
 
                 // 各プレイヤーが存在するグリッドの評価値を計算する
-                foreach (Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
+                foreach (Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
                 {
                     int destGridIndex = player.tmpParam.GetCurrentGridIndex();
                     ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];

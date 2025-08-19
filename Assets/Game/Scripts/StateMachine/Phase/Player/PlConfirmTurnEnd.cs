@@ -93,7 +93,7 @@ namespace Frontier
             if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
             {
                 // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
-                _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction(Character.CHARACTER_TAG.PLAYER);
+                _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction(CHARACTER_TAG.PLAYER);
             }
 
             Back();

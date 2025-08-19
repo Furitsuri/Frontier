@@ -119,15 +119,15 @@ public static class Methods
         var formerTag = former.characterParam.characterTag;
         var latterTag = latter.characterParam.characterTag;
 
-        if ( formerTag != Character.CHARACTER_TAG.PLAYER )
+        if ( formerTag != CHARACTER_TAG.PLAYER )
         {
-            if( latterTag == Character.CHARACTER_TAG.PLAYER )
+            if( latterTag == CHARACTER_TAG.PLAYER )
             {
                 return latter;
             }
             else
             {
-                if( formerTag == Character.CHARACTER_TAG.OTHER )
+                if( formerTag == CHARACTER_TAG.OTHER )
                 {
                     return former;
                 }

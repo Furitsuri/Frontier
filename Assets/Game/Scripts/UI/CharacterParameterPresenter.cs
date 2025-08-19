@@ -56,7 +56,7 @@ namespace Frontier
                     // PLAYER 対 ENEMY
                     // OTHER  対 ENEMY
                     // PLAYER 対 OTHER
-                    if (bindCharacter.characterParam.characterTag != Character.CHARACTER_TAG.ENEMY)
+                    if (bindCharacter.characterParam.characterTag != CHARACTER_TAG.ENEMY)
                     {
                         PlayerParameter.SetDisplayCharacter(bindCharacter);
                         EnemyParameter.SetDisplayCharacter(selectCharacter);
@@ -79,13 +79,13 @@ namespace Frontier
 
                 default:
                     // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
-                    _uiSystem.BattleUi.TogglePlayerParameter(selectCharacter != null && selectCharacter.characterParam.characterTag == Character.CHARACTER_TAG.PLAYER);
-                    _uiSystem.BattleUi.ToggleEnemyParameter(selectCharacter != null && selectCharacter.characterParam.characterTag == Character.CHARACTER_TAG.ENEMY);
+                    _uiSystem.BattleUi.TogglePlayerParameter(selectCharacter != null && selectCharacter.characterParam.characterTag == CHARACTER_TAG.PLAYER);
+                    _uiSystem.BattleUi.ToggleEnemyParameter(selectCharacter != null && selectCharacter.characterParam.characterTag == CHARACTER_TAG.ENEMY);
 
                     // パラメータ表示を更新
                     if (selectCharacter != null)
                     {
-                        if (selectCharacter.characterParam.characterTag == Character.CHARACTER_TAG.PLAYER)
+                        if (selectCharacter.characterParam.characterTag == CHARACTER_TAG.PLAYER)
                         {
                             PlayerParameter.SetDisplayCharacter(selectCharacter);
                         }

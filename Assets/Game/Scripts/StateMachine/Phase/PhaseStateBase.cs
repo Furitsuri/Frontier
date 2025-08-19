@@ -158,19 +158,5 @@ namespace Frontier
         virtual protected bool AcceptSub3(bool isInput) { return false; }
 
         virtual protected bool AcceptSub4(bool isInput) { return false; }
-
-        /// <summary>
-        /// 指定キャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
-        /// </summary>
-        public void ConsumeActionGauge(Entities.Character chara)
-        {
-            chara.characterParam.curActionGauge -= chara.characterParam.consumptionActionGauge;
-            chara.characterParam.consumptionActionGauge = 0;
-
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
-            {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).StopFlick();
-            }
-        }
     }
 }

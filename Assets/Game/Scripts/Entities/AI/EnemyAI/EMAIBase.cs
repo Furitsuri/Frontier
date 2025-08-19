@@ -124,7 +124,7 @@ namespace Frontier
         /// <returns>有効か否か</returns>
         public bool IsValidTargetCharacterIndex()
         {
-            return (_targetCharacter != null && _targetCharacter.characterParam.characterTag != Character.CHARACTER_TAG.ENEMY);
+            return (_targetCharacter != null && _targetCharacter.characterParam.characterTag != CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace Frontier
                 if (tuple.lambda())
                 {
                     var gridInfo = _stageCtrl.GetGridInfo(tuple.index);
-                    if (gridInfo.charaTag == Character.CHARACTER_TAG.PLAYER || gridInfo.charaTag == Character.CHARACTER_TAG.OTHER)
+                    if (gridInfo.charaTag == CHARACTER_TAG.PLAYER || gridInfo.charaTag == CHARACTER_TAG.OTHER)
                     {
                         opponentCharaIndexs.Add(new CharacterHashtable.Key(gridInfo.charaTag, gridInfo.charaIndex));
                     }

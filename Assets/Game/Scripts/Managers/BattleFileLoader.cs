@@ -148,7 +148,7 @@ namespace Frontier
                 new List<GameObject>(OthersPrefab),
             };
 
-            for (int i = 0; i < (int)Character.CHARACTER_TAG.NUM; ++i)
+            for (int i = 0; i < (int)CHARACTER_TAG.NUM; ++i)
             {
                 if ( ParamFilePaths[i].Count <= 0 ) continue;
 
@@ -175,7 +175,7 @@ namespace Frontier
                     // ファイルから読み込んだパラメータを設定
                     ApplyCharacterParams(ref chara.characterParam, param);
                     chara.Init();
-                    if( !chara.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER) )
+                    if( !chara.characterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER) )
                     {
                         var npc = chara as Npc;
                         npc.SetThinkType((Npc.ThinkingType)param.ThinkType);
@@ -226,7 +226,7 @@ namespace Frontier
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
         private void ApplyCharacterParams(ref CharacterParameter param, in CharacterParamData fdata)
         {
-            param.characterTag = (Character.CHARACTER_TAG)fdata.CharacterTag;
+            param.characterTag = (CHARACTER_TAG)fdata.CharacterTag;
             param.characterIndex = fdata.CharacterIndex;
             param.CurHP = param.MaxHP = fdata.MaxHP;
             param.Atk = fdata.Atk;
@@ -269,7 +269,7 @@ namespace Frontier
         /// </summary>
         public void DebugBattleLoadUnit(int prefabIndex, ref CharacterParameter param)
         {
-            if (param.characterTag == Character.CHARACTER_TAG.PLAYER)
+            if (param.characterTag == CHARACTER_TAG.PLAYER)
             {
                 Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (player == null) return;
