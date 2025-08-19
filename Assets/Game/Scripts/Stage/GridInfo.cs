@@ -15,7 +15,7 @@ namespace Frontier.Stage
         // 移動値の見積もり値
         public int estimatedMoveRange;
         // グリッド上に存在するキャラクターのタイプ
-        public Character.CHARACTER_TAG charaTag;
+        public CHARACTER_TAG charaTag;
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // フラグ情報
@@ -32,7 +32,7 @@ namespace Frontier.Stage
             charaStandPos       = Vector3.zero;
             moveResist          = -1;
             estimatedMoveRange  = -1;
-            charaTag            = Character.CHARACTER_TAG.NONE;
+            charaTag            = CHARACTER_TAG.NONE;
             charaIndex          = -1;
             flag                = Stage.StageController.BitFlag.NONE;
         }

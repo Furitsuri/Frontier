@@ -13,20 +13,20 @@ namespace Frontier
         override public void Init()
         {
             // 目標座標や攻撃対象をリセット
-            foreach (Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
+            foreach (Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY))
             {
                 enemy.GetAi().ResetDestinationAndTarget();
             }
             // MEMO : 上記リセット後に初期化する必要があるためにこの位置であることに注意
             base.Init();
             // 選択グリッドを(1番目の)敵のグリッド位置に合わせる
-            if (0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.ENEMY) && _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY) != null)
+            if (0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount(CHARACTER_TAG.ENEMY) && _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY) != null)
             {
-                Character enemy = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).First();
+                Character enemy = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterGrid(enemy);
             }
             // アクションゲージの回復
-            _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.ENEMY);
+            _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup(CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>

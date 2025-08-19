@@ -115,7 +115,7 @@ namespace Frontier.Stage
         /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
         /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
         /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-        void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  Character.CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
+        void RegistMoveableEachGrid(int gridIndex, int moveRange, int attackRange, int selfCharaIndex,  CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false)
         {
             // 範囲外のグリッドは考慮しない
             if (gridIndex < 0 || _stageData.GetGridToralNum() <= gridIndex) return;
@@ -127,7 +127,7 @@ namespace Frontier.Stage
             // 既に計算済みのグリッドであれば終了
             if (moveRange <= tileInfo.estimatedMoveRange) return;
             // 自身に対する敵対勢力キャラクターが存在すれば終了
-            StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)Character.CHARACTER_TAG.NUM]
+            StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)CHARACTER_TAG.NUM]
             {
                 BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERにおける敵対勢力
                 BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
@@ -142,7 +142,7 @@ namespace Frontier.Stage
             // 負の値であれば終了
             if (currentMoveRange < 0) return;
             // 攻撃範囲についても登録する
-            if (isAttackable && ( tileInfo.charaTag == Character.CHARACTER_TAG.NONE || tileInfo.charaIndex == selfCharaIndex) )
+            if (isAttackable && ( tileInfo.charaTag == CHARACTER_TAG.NONE || tileInfo.charaIndex == selfCharaIndex) )
                 RegistAttackableEachGrid(gridIndex, attackRange, selfTag, gridIndex);
             // 左端を除外
             if (gridIndex % _stageData.GridRowNum != 0)
@@ -195,9 +195,9 @@ namespace Frontier.Stage
                 BitFlag.OTHER_EXIST
             };
 
-            for( int i = 0; i < (int)Character.CHARACTER_TAG.NUM; ++i )
+            for( int i = 0; i < (int)CHARACTER_TAG.NUM; ++i )
             {
-                foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((Character.CHARACTER_TAG)i))
+                foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((CHARACTER_TAG)i))
                 {
                     var gridIndex       = chara.tmpParam.GetCurrentGridIndex();
                     ref var tileInfo    = ref _stageData.GetTileInfo(gridIndex);
@@ -272,7 +272,7 @@ namespace Frontier.Stage
         /// <param name="attackRange">攻撃可能範囲値</param>
         /// <param name="selfTag">キャラクタータグ</param>
         /// <param name="isAttackable">攻撃可能か否か</param>
-        public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, int selfCharaIndex, Character.CHARACTER_TAG selfTag, bool isAttackable)
+        public void RegistMoveableInfo(int departIndex, int moveRange, int attackRange, int selfCharaIndex, CHARACTER_TAG selfTag, bool isAttackable)
         {
             Debug.Assert(0 <= departIndex && departIndex < _stageData.GetGridToralNum(), "StageController : Irregular Index.");
 
@@ -286,7 +286,7 @@ namespace Frontier.Stage
         /// <param name="departIndex">攻撃キャラクターが存在するグリッドのインデックス値</param>
         /// <param name="attackRange">攻撃可能範囲値</param>
         /// <param name="selfTag">攻撃を行うキャラクター自身のキャラクタータグ</param>
-        public bool RegistAttackAbleInfo(int departIndex, int attackRange, Character.CHARACTER_TAG selfTag)
+        public bool RegistAttackAbleInfo(int departIndex, int attackRange, CHARACTER_TAG selfTag)
         {
             Debug.Assert(0 <= departIndex && departIndex < _stageData.GetGridToralNum(), "StageController : Irregular Index.");
 
@@ -328,7 +328,7 @@ namespace Frontier.Stage
         /// <param name="attackRange">攻撃可能範囲値</param>
         /// <param name="selfTag">自身のキャラクタータグ</param>
         /// <param name="departIndex">出発グリッドインデックス</param>
-        void RegistAttackableEachGrid(int gridIndex, int attackRange, Character.CHARACTER_TAG selfTag, int departIndex)
+        void RegistAttackableEachGrid(int gridIndex, int attackRange, CHARACTER_TAG selfTag, int departIndex)
         {
             // 範囲外のグリッドは考慮しない
             if (gridIndex < 0 || _stageData.GetGridToralNum() <= gridIndex) return;
@@ -342,23 +342,23 @@ namespace Frontier.Stage
 
                 switch (selfTag)
                 {
-                    case Character.CHARACTER_TAG.PLAYER:
-                        if (tileInfo.charaTag == Character.CHARACTER_TAG.ENEMY ||
-                            tileInfo.charaTag == Character.CHARACTER_TAG.OTHER)
+                    case CHARACTER_TAG.PLAYER:
+                        if (tileInfo.charaTag == CHARACTER_TAG.ENEMY ||
+                            tileInfo.charaTag == CHARACTER_TAG.OTHER)
                         {
                             Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
-                    case Character.CHARACTER_TAG.ENEMY:
-                        if (tileInfo.charaTag == Character.CHARACTER_TAG.PLAYER ||
-                            tileInfo.charaTag == Character.CHARACTER_TAG.OTHER)
+                    case CHARACTER_TAG.ENEMY:
+                        if (tileInfo.charaTag == CHARACTER_TAG.PLAYER ||
+                            tileInfo.charaTag == CHARACTER_TAG.OTHER)
                         {
                             Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE_TARGET);
                         }
                         break;
-                    case Character.CHARACTER_TAG.OTHER:
-                        if (tileInfo.charaTag == Character.CHARACTER_TAG.PLAYER ||
-                            tileInfo.charaTag == Character.CHARACTER_TAG.ENEMY)
+                    case CHARACTER_TAG.OTHER:
+                        if (tileInfo.charaTag == CHARACTER_TAG.PLAYER ||
+                            tileInfo.charaTag == CHARACTER_TAG.ENEMY)
                         {
                             Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE_TARGET);
                         }
@@ -422,7 +422,7 @@ namespace Frontier.Stage
         /// <param name="targetTag">攻撃対象のタグ</param>
         /// <param name="target">予め攻撃対象が決まっている際に指定</param>
         /// <returns>攻撃可能キャラクターが存在している</returns>
-        public bool RegistAttackTargetGridIndexs(Character.CHARACTER_TAG targetTag, Character target = null)
+        public bool RegistAttackTargetGridIndexs(CHARACTER_TAG targetTag, Character target = null)
         {
             Character character = null;
 

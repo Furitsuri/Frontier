@@ -17,13 +17,13 @@ namespace Frontier
         {
             base.Init();
 
-            if (0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount(Character.CHARACTER_TAG.PLAYER))
+            if (0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount(CHARACTER_TAG.PLAYER))
             {
                 // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
-                Character player = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER).First();
+                Character player = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterGrid(player);
                 // アクションゲージの回復
-                _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup(Character.CHARACTER_TAG.PLAYER);
+                _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup(CHARACTER_TAG.PLAYER);
             }
         }
 

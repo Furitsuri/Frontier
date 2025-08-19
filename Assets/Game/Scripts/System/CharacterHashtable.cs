@@ -10,9 +10,9 @@ namespace Frontier
 
         public struct Key
         {
-            public Character.CHARACTER_TAG characterTag;
+            public CHARACTER_TAG characterTag;
             public int characterIndex;
-            public Key(Character.CHARACTER_TAG tag, int index)
+            public Key(CHARACTER_TAG tag, int index)
             {
                 characterTag = tag;
                 characterIndex = index;
@@ -58,7 +58,7 @@ namespace Frontier
             return this[hashKey];
         }
 
-        private string ConvertHashKey(Character.CHARACTER_TAG tag, int characterIndex)
+        private string ConvertHashKey(CHARACTER_TAG tag, int characterIndex)
         {
             // 3桁以上の設定は想定しない
             Debug.Assert(characterIndex.ToString().Length <= 2);

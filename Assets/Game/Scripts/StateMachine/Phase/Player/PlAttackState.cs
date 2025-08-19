@@ -43,7 +43,7 @@ namespace Frontier
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (_stageCtrl.RegistAttackTargetGridIndexs(Character.CHARACTER_TAG.ENEMY))
+            if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY))
             {
                 // アタッカーキャラクターの設定
                 _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);
@@ -283,11 +283,11 @@ namespace Frontier
             if( !isInput ) return false;
 
             // 選択したキャラクターが敵である場合は攻撃開始
-            if (_targetCharacter != null && _targetCharacter.characterParam.characterTag == Character.CHARACTER_TAG.ENEMY)
+            if (_targetCharacter != null && _targetCharacter.characterParam.characterTag == CHARACTER_TAG.ENEMY)
             {
                 // キャラクターのアクションゲージを消費
-                ConsumeActionGauge(_attackCharacter);
-                ConsumeActionGauge(_targetCharacter);
+                _attackCharacter.ConsumeActionGauge();
+                _targetCharacter.ConsumeActionGauge();
 
                 // 選択グリッドを一時非表示
                 _stageCtrl.SetGridCursorControllerActive(false);

@@ -12,46 +12,6 @@ namespace Frontier.Entities
     [SerializeField]
     public class Character : MonoBehaviour, IBasicAnimationEvent, IParryAnimationEvent
     {
-        /// <summary>
-        /// キャラクターの種別を表すタグ
-        /// </summary>
-        public enum CHARACTER_TAG
-        {
-            NONE = -1,
-            PLAYER,
-            ENEMY,
-            OTHER,
-
-            NUM,
-        }
-
-        /// <summary>
-        /// 移動タイプ
-        /// </summary>
-        public enum MOVE_TYPE
-        {
-            NORMAL = 0,
-            HORSE,
-            FLY,
-            HEAVY,
-
-            NUM,
-        }
-
-        /// <summary>
-        /// 近接攻撃更新用フェイズ
-        /// </summary>
-        public enum CLOSED_ATTACK_PHASE
-        {
-            NONE = -1,
-
-            CLOSINGE,
-            ATTACK,
-            DISTANCING,
-
-            NUM,
-        }
-
         [SerializeField]
         [Header("弾オブジェクト")]
         private GameObject _bulletObject;
@@ -64,14 +24,12 @@ namespace Frontier.Entities
 
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
-        private bool _isAttacked                = false;
-        private float _elapsedTime              = 0f;
         private readonly TimeScale _timeScale   = new TimeScale();
+        private ICharacterCombatAnimation _combatAnim;
         private Quaternion _orderdRotation      = Quaternion.identity;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         
-        protected int _atkRemainingNum                      = 0;    // 攻撃シーケンスにおける残り攻撃回数
         protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null; // 戦闘時の対戦相手
@@ -84,8 +42,12 @@ namespace Frontier.Entities
         public CharacterParameter characterParam;
         public TemporaryParameter tmpParam;
 
+        public int AtkRemainingNum { get; set; } = 0;   // 攻撃シーケンスにおける残り攻撃回数
+        public float ElapsedTime { get; set; } = 0f;
+        public bool IsAttacked { get; set; } = false;
         public bool IsDeclaredDead { get; set; } = false;   // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
+        public ICharacterCombatAnimation CombatAnim => _combatAnim;
         public GameObject BulletObject => _bulletObject;    // 弾オブジェクトの取得
         public ParrySkillNotifier GetParrySkill => _parrySkill; // パリィスキル処理の取得
         public TimeScale GetTimeScale => _timeScale;    // タイムスケールの取得
@@ -226,6 +188,11 @@ namespace Frontier.Entities
             _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );
             // スキルの通知クラスを初期化
             InitSkillNotifier();
+            // Initが呼ばれる時点では、bulletが既に行われていることが必須
+            _combatAnim = (_bullet == null) ? 
+                _hierarchyBld.InstantiateWithDiContainer<CharacterClosedAttackAnimation>(false) :
+                _hierarchyBld.InstantiateWithDiContainer<CharacterRangedAttackAnimation>(false);
+            _combatAnim.Init(this, AttackAnimTags);
         }
 
         /// <summary>
@@ -286,6 +253,20 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 指定キャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
+        /// </summary>
+        public void ConsumeActionGauge()
+        {
+            characterParam.curActionGauge -= characterParam.consumptionActionGauge;
+            characterParam.consumptionActionGauge = 0;
+
+            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            {
+                _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).StopFlick();
+            }
+        }
+
+        /// <summary>
         /// 行動終了時など、行動不可の状態にします
         /// キャラクターモデルの色を変更し、行動不可であることを示す処理も含めます
         /// </summary>
@@ -319,30 +300,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 近接攻撃シーケンスを開始します
-        /// </summary>
-        public void StartClosedAttackSequence()
-        {
-            _isAttacked         = false;
-            _closingAttackPhase = CLOSED_ATTACK_PHASE.CLOSINGE;
-            ResetElapsedTime();
-
-            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
-        }
-
-        /// <summary>
-        /// 遠隔攻撃シーケンスを開始します
-        /// </summary>
-        public void StartRangedAttackSequence()
-        {
-            _isAttacked         = false;
-            _atkRemainingNum    = skillModifiedParam.AtkNum - 1;   // 攻撃回数を1消費
-            var attackAnimtag   = AttackAnimTags[_atkRemainingNum];
-
-            AnimCtrl.SetAnimator(attackAnimtag);
-        }
-
-        /// <summary>
         /// パリィアニメーションを開始します
         /// </summary>
         public void StartParryAnimation()
@@ -352,91 +309,6 @@ namespace Frontier.Entities
             AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
             ResetElapsedTime();
             GetTimeScale.SetTimeScale(0.1f);    // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
-        }
-
-        /// <summary>
-        /// 近接攻撃時の流れを更新します
-        /// </summary>
-        /// <param name="departure">近接攻撃の開始地点</param>
-        /// <param name="destination">近接攻撃の終了地点</param>
-        /// <returns>終了判定</returns>
-        public bool UpdateClosedAttack(in Vector3 departure, in Vector3 destination)
-        {
-            var attackAnimtag = AttackAnimTags[skillModifiedParam.AtkNum - 1];
-
-            if (GetBullet() != null) return false;
-
-            float t = 0f;
-            bool isReservedParry = _opponent.IsSkillInUse(SkillsData.ID.SKILL_PARRY);
-
-            switch (_closingAttackPhase)
-            {
-                case CLOSED_ATTACK_PHASE.CLOSINGE:
-                    _elapsedTime += Time.deltaTime;
-                    t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_CLOSING_TIME);
-                    t = Mathf.SmoothStep(0f, 1f, t);
-                    gameObject.transform.position = Vector3.Lerp(departure, destination, t);
-                    if (1.0f <= t)
-                    {
-                        ResetElapsedTime();
-                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
-                        AnimCtrl.SetAnimator(attackAnimtag);
-
-                        _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
-                    }
-                    break;
-
-                case CLOSED_ATTACK_PHASE.ATTACK:
-                    if (IsEndAttackAnimSequence())
-                    {
-                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
-
-                        _closingAttackPhase = CLOSED_ATTACK_PHASE.DISTANCING;
-                    }
-                    break;
-                case CLOSED_ATTACK_PHASE.DISTANCING:
-                    // 攻撃前の場所に戻る
-                    _elapsedTime += Time.deltaTime;
-                    t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_DISTANCING_TIME);
-                    t = Mathf.SmoothStep(0f, 1f, t);
-                    gameObject.transform.position = Vector3.Lerp(destination, departure, t);
-                    if (1.0f <= t)
-                    {
-                        ResetElapsedTime();
-                        _closingAttackPhase = CLOSED_ATTACK_PHASE.NONE;
-
-                        return true;
-                    }
-                    break;
-                default: break;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 遠隔攻撃時の流れを更新します
-        /// </summary>
-        /// <param name="departure">遠隔攻撃の開始地点</param>
-        /// <param name="destination">遠隔攻撃の終了地点</param>
-        /// <returns>終了判定</returns>
-        public bool UpdateRangedAttack(in Vector3 departure, in Vector3 destination)
-        {
-            if (GetBullet() == null) return false;
-
-            // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
-            if (IsTransitNextPhaseCamera())
-            {
-                _btlRtnCtrl.GetCameraController().TransitNextPhaseCameraParam(null, GetBullet().transform);
-            }
-            // 攻撃終了した場合はWaitに切り替え
-            if (IsEndAttackAnimSequence())
-            {
-                AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
-            }
-
-            // 対戦相手が攻撃を被弾済み、かつ、Wait状態に切り替え済みの場合に終了
-            return _isAttacked && AnimCtrl.IsPlayingAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.WAIT);
         }
 
         /// <summary>
@@ -543,7 +415,7 @@ namespace Frontier.Entities
         /// </summary>
         public void ResetElapsedTime()
         {
-            _elapsedTime = 0;
+            ElapsedTime = 0;
         }
 
         /// <summary>
@@ -641,7 +513,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// キャラクターに設定されている弾を発射します
-        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
+        /// ※各キャラクターのアニメーションから呼ばれます
         /// </summary>
         public void FireBulletOnAnimEvent()
         {
@@ -665,16 +537,16 @@ namespace Frontier.Entities
 
             // この攻撃によって相手が倒されるかどうかを判定
             _opponent.IsDeclaredDead = (_opponent.characterParam.CurHP + _opponent.tmpParam.expectedHpChange) <= 0;
-            if (!_opponent.IsDeclaredDead && 0 < _atkRemainingNum)
+            if (!_opponent.IsDeclaredDead && 0 < AtkRemainingNum)
             {
-                --_atkRemainingNum;
-                AnimCtrl.SetAnimator(AttackAnimTags[_atkRemainingNum]);
+                --AtkRemainingNum;
+                AnimCtrl.SetAnimator(AttackAnimTags[AtkRemainingNum]);
             }
         }
 
         /// <summary>
         /// 相手を攻撃した際の処理を開始します
-        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
+        /// ※各キャラクターのアニメーションから呼ばれます
         /// </summary>
         public void AttackOpponentOnAnimEvent()
         {
@@ -683,7 +555,7 @@ namespace Frontier.Entities
                 Debug.Assert(false);
             }
 
-            _isAttacked = true;
+            IsAttacked = true;
             _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
@@ -717,7 +589,7 @@ namespace Frontier.Entities
                 Debug.Assert(false);
             }
 
-            _isAttacked = true;
+            IsAttacked = true;
             _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない

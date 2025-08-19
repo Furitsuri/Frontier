@@ -57,7 +57,7 @@ namespace Frontier.Battle
         private int _phaseManagerIndex = 0;
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
-        public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
+        public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
         public BattleUISystem BtlUi => _battleUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;

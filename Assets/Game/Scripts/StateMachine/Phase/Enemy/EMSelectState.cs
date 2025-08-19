@@ -22,7 +22,7 @@ namespace Frontier
             // ステージグリッド上のキャラ情報を更新
             _stageCtrl.UpdateGridInfo();
 
-            _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY).GetEnumerator();
+            _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).GetEnumerator();
             _currentEnemy = null;
 
             // 行動済みでないキャラクターを選択する

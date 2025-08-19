@@ -89,10 +89,10 @@ namespace Frontier
 
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
-            if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.UpdateClosedAttack;
-            else _updateAttackerAttack = _attackCharacter.UpdateRangedAttack;
-            if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.UpdateClosedAttack;
-            else _updateTargetAttack = _targetCharacter.UpdateRangedAttack;
+            if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.CombatAnim.UpdateAttack;  // _attackCharacter.UpdateClosedAttack;
+            else _updateAttackerAttack = _attackCharacter.CombatAnim.UpdateAttack; // _attackCharacter.UpdateRangedAttack;
+            if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.CombatAnim.UpdateAttack; // _targetCharacter.UpdateClosedAttack;
+            else _updateTargetAttack = _targetCharacter.CombatAnim.UpdateAttack; // _targetCharacter.UpdateRangedAttack;
 
             // 攻撃シーケンスの開始
             _btlCamCtrl.StartAttackSequenceMode(_attackCharacter, _targetCharacter);
@@ -293,12 +293,13 @@ namespace Frontier
         /// <param name="target">被攻撃キャラクター</param>
         private void StartAttack(Character attacker, Character target)
         {
-            if (attacker.GetBullet() != null) attacker.StartRangedAttackSequence();
+            if (attacker.GetBullet() != null) attacker.CombatAnim.StartAttack(); // attacker.StartRangedAttackSequence();
             else
             {
                 _departure = attacker.transform.position;
                 _destination = target.transform.position + target.transform.forward;    // 対象の前方1mを目標地点にする
-                attacker.StartClosedAttackSequence();
+                attacker.CombatAnim.StartAttack();
+                // attacker.StartClosedAttackSequence();
             }
 
             // 攻撃受け手用の設定をセット
@@ -344,7 +345,7 @@ namespace Frontier
             // メッシュ及びattakerとtarget以外のキャラクターを非表示に
             _stageCtrl.ToggleMeshDisplay(false);
 
-            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
+            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
             {
                 if (player != attacker && player != target)
                 {
@@ -352,7 +353,7 @@ namespace Frontier
                 }
             }
 
-            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
+            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY))
             {
                 if (enemy != attacker && enemy != target)
                 {
@@ -366,19 +367,19 @@ namespace Frontier
             // 味方と敵対側で分別
             Character ally = null;
             Character opponent = null;
-            if (attacker.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
+            if (attacker.characterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
             {
                 ally = attacker;
                 opponent = target;
             }
             else
             {
-                if (target.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.PLAYER))
+                if (target.characterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
                 {
                     ally = target;
                     opponent = attacker;
                 }
-                else if (target.characterParam.IsMatchCharacterTag(Character.CHARACTER_TAG.OTHER))
+                else if (target.characterParam.IsMatchCharacterTag(CHARACTER_TAG.OTHER))
                 {
                     ally = target;
                     opponent = attacker;
@@ -411,12 +412,12 @@ namespace Frontier
             // 非表示にしていたものを表示
             _stageCtrl.ToggleMeshDisplay(true);
 
-            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.PLAYER))
+            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
             {
                 player.gameObject.SetActive(true);
             }
 
-            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(Character.CHARACTER_TAG.ENEMY))
+            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY))
             {
                 enemy.gameObject.SetActive(true);
             }

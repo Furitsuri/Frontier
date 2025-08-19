@@ -31,9 +31,9 @@ namespace Frontier.Battle
         /// </summary>
         public void Init()
         {
-            _diedCharacterKey           = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
-            _battleBossCharacterKey     = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
-            _escortTargetCharacterKey   = new CharacterHashtable.Key(Character.CHARACTER_TAG.NONE, -1);
+            _diedCharacterKey           = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+            _battleBossCharacterKey     = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+            _escortTargetCharacterKey   = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
         }
 
         /// <summary>
@@ -142,9 +142,9 @@ namespace Frontier.Battle
         /// <param name="tag">キャラクタータグ</param>
         /// <param name="index">キャラクターインデックス</param>
         /// <returns>指定のキーに対応するキャラクター</returns>
-        public Character GetCharacterFromHashtable(Character.CHARACTER_TAG tag, int index)
+        public Character GetCharacterFromHashtable(CHARACTER_TAG tag, int index)
         {
-            if (tag == Character.CHARACTER_TAG.NONE || index < 0) return null;
+            if (tag == CHARACTER_TAG.NONE || index < 0) return null;
             CharacterHashtable.Key hashKey = new CharacterHashtable.Key(tag, index);
 
             return _characterHash.Get(hashKey) as Character;
@@ -157,7 +157,7 @@ namespace Frontier.Battle
         /// <returns>指定のキーに対応するキャラクター</returns>
         public Character GetCharacterFromHashtable(CharacterHashtable.Key key)
         {
-            if (key.characterTag == Character.CHARACTER_TAG.NONE || key.characterIndex < 0) return null;
+            if (key.characterTag == CHARACTER_TAG.NONE || key.characterIndex < 0) return null;
 
             return _characterHash.Get(key) as Character;
         }
@@ -166,7 +166,7 @@ namespace Frontier.Battle
         /// キャラクターをリストから順番に取得します
         /// </summary>
         /// <returns>キャラクター</returns>
-        public IEnumerable<Character> GetCharacterEnumerable( Character.CHARACTER_TAG tag )
+        public IEnumerable<Character> GetCharacterEnumerable( CHARACTER_TAG tag )
         {
             List<Character>[] charaList = new List<Character>[]
             {
@@ -183,19 +183,19 @@ namespace Frontier.Battle
             /*
             switch ( tag )
             {
-                case Character.CHARACTER_TAG.PLAYER:
+                case CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
                         yield return player;
                     }
                     break;
-                case Character.CHARACTER_TAG.ENEMY:
+                case CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
                         yield return enemy;
                     }
                     break;
-                case Character.CHARACTER_TAG.OTHER:
+                case CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
                         yield return other;
@@ -209,7 +209,7 @@ namespace Frontier.Battle
         /// 全ての行動可能キャラクターの行動が終了したかを判定します
         /// </summary>
         /// <returns>全ての行動可能キャラクターの行動が終了したか</returns>
-        public bool IsEndAllArmyWaitCommand(Character.CHARACTER_TAG tag)
+        public bool IsEndAllArmyWaitCommand(CHARACTER_TAG tag)
         {
             List<Character>[] charaList = new List<Character>[]
             {
@@ -237,7 +237,7 @@ namespace Frontier.Battle
         public bool IsDiedBossCharacter(CharacterHashtable.Key diedCharacterKey)
         {
             // ステージにボスが設定されているかのチェック
-            if (_battleBossCharacterKey.characterTag != Character.CHARACTER_TAG.NONE)
+            if (_battleBossCharacterKey.characterTag != CHARACTER_TAG.NONE)
             {
                 return (diedCharacterKey == _battleBossCharacterKey);
             }
@@ -253,7 +253,7 @@ namespace Frontier.Battle
         public bool IsDiedEscortCharacter(CharacterHashtable.Key diedCharacterKey)
         {
             // ステージ上に庇護対象のキャラクターが設定されているかのチェック
-            if (_escortTargetCharacterKey.characterTag != Character.CHARACTER_TAG.NONE)
+            if (_escortTargetCharacterKey.characterTag != CHARACTER_TAG.NONE)
             {
                 return (diedCharacterKey == _escortTargetCharacterKey);
             }
@@ -269,7 +269,7 @@ namespace Frontier.Battle
         /// <returns>勝利、敗戦処理に遷移するか否か</returns>
         public bool CheckVictoryOrDefeat( StageAnim clearAnim, StageAnim overAnim )
         {
-            if (_diedCharacterKey.characterTag == Character.CHARACTER_TAG.NONE) return false;
+            if (_diedCharacterKey.characterTag == CHARACTER_TAG.NONE) return false;
             
             // ステージにボスが設定されているかのチェック
             if (IsDiedBossCharacter(_diedCharacterKey))
@@ -286,11 +286,11 @@ namespace Frontier.Battle
 
             if ( CheckCharacterAnnihilated(_diedCharacterKey.characterTag) )
             {
-                if (_diedCharacterKey.characterTag == Character.CHARACTER_TAG.ENEMY)
+                if (_diedCharacterKey.characterTag == CHARACTER_TAG.ENEMY)
                 {
                     clearAnim();
                 }
-                else if (_diedCharacterKey.characterTag == Character.CHARACTER_TAG.PLAYER)
+                else if (_diedCharacterKey.characterTag == CHARACTER_TAG.PLAYER)
                 {
                     overAnim();
                 }
@@ -310,25 +310,25 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="characterTag">軍勢のタグ</param>
         /// <returns>対象軍勢が全滅しているか</returns>
-        public bool CheckCharacterAnnihilated(Character.CHARACTER_TAG characterTag)
+        public bool CheckCharacterAnnihilated(CHARACTER_TAG characterTag)
         {
             bool isAnnihilated = true;
 
             switch (characterTag)
             {
-                case Character.CHARACTER_TAG.PLAYER:
+                case CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
                         if (!player.characterParam.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
-                case Character.CHARACTER_TAG.ENEMY:
+                case CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
                         if (!enemy.characterParam.IsDead()) { isAnnihilated = false; break; }
                     }
                     break;
-                case Character.CHARACTER_TAG.OTHER:
+                case CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
                         if (!other.characterParam.IsDead()) { isAnnihilated = false; break; }
@@ -356,13 +356,13 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="tag">指定するキャラクターのタグ</param>
         /// <returns>指定タグの総ユニット数</returns>
-        public int GetCharacterCount(Character.CHARACTER_TAG tag)
+        public int GetCharacterCount(CHARACTER_TAG tag)
         {
             switch (tag)
             {
-                case Character.CHARACTER_TAG.PLAYER:    return _players.Count;
-                case Character.CHARACTER_TAG.ENEMY:     return _enemies.Count;
-                case Character.CHARACTER_TAG.OTHER:     return _others.Count;
+                case CHARACTER_TAG.PLAYER:    return _players.Count;
+                case CHARACTER_TAG.ENEMY:     return _enemies.Count;
+                case CHARACTER_TAG.OTHER:     return _others.Count;
                 default: return -1;
             }
         }
@@ -378,11 +378,11 @@ namespace Frontier.Battle
         /// 主にターンを終了させる際に使用します
         /// </summary>
         /// /// <param name="tag">指定する軍勢のタグ</param>
-        public void ApplyAllArmyEndAction(Character.CHARACTER_TAG tag)
+        public void ApplyAllArmyEndAction(CHARACTER_TAG tag)
         {
             switch( tag )
             {
-                case Character.CHARACTER_TAG.PLAYER:
+                case CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
                         player.tmpParam.EndAction();
@@ -390,7 +390,7 @@ namespace Frontier.Battle
 
                     break;
 
-                case Character.CHARACTER_TAG.ENEMY:
+                case CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
                         enemy.tmpParam.EndAction();
@@ -398,7 +398,7 @@ namespace Frontier.Battle
 
                     break;
 
-                case Character.CHARACTER_TAG.OTHER:
+                case CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
                         other.tmpParam.EndAction();
@@ -451,7 +451,7 @@ namespace Frontier.Battle
         /// </summary>
         public void ResetDiedCharacter()
         {
-            _diedCharacterKey.characterTag = Character.CHARACTER_TAG.NONE;
+            _diedCharacterKey.characterTag = CHARACTER_TAG.NONE;
             _diedCharacterKey.characterIndex = -1;
         }
 
@@ -459,23 +459,23 @@ namespace Frontier.Battle
         /// 指定のキャラクター群のアクションゲージを回復させます
         /// </summary>
         /// <param name="tag">キャラクター群のタグ</param>
-        public void RecoveryActionGaugeForGroup(Character.CHARACTER_TAG tag)
+        public void RecoveryActionGaugeForGroup(CHARACTER_TAG tag)
         {
             switch (tag)
             {
-                case Character.CHARACTER_TAG.PLAYER:
+                case CHARACTER_TAG.PLAYER:
                     foreach (Player player in _players)
                     {
                         player.characterParam.RecoveryActionGauge();
                     }
                     break;
-                case Character.CHARACTER_TAG.ENEMY:
+                case CHARACTER_TAG.ENEMY:
                     foreach (Enemy enemy in _enemies)
                     {
                         enemy.characterParam.RecoveryActionGauge();
                     }
                     break;
-                case Character.CHARACTER_TAG.OTHER:
+                case CHARACTER_TAG.OTHER:
                     foreach (Other other in _others)
                     {
                         other.characterParam.RecoveryActionGauge();

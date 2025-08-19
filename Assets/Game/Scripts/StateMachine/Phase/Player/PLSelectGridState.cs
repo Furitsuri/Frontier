@@ -31,7 +31,7 @@ namespace Frontier
             // if( base.Update() ) { return true; }
 
             // 全てのキャラクターが待機済みになっていれば終了
-            if (_btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand(Character.CHARACTER_TAG.PLAYER))
+            if (_btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand(CHARACTER_TAG.PLAYER))
             {
                 Back();
 
@@ -74,7 +74,7 @@ namespace Frontier
 
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if (character != null &&
-                 character.characterParam.characterTag == Character.CHARACTER_TAG.PLAYER &&
+                 character.characterParam.characterTag == CHARACTER_TAG.PLAYER &&
                  !character.tmpParam.IsEndAction())
             {
                 return true;
