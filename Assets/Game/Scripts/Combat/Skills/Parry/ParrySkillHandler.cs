@@ -226,7 +226,9 @@ namespace Frontier.Combat
             DelayBattleTimeScale(_delayTimeScale);
 
             // パリィモーションの開始
-            _useParryCharacter.StartParryAnimation();
+            // _useParryCharacter.StartParryAnimation();
+            _useParryCharacter.RegisterCombatAnimation( COMBAT_ANIMATION_TYPE.PARRY );
+            _useParryCharacter.CombatAnimSeq.StartSequence();
 
             // 結果をNONEに初期化
             _judgeResult = JudgeResult.NONE;

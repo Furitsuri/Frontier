@@ -1,9 +1,11 @@
-﻿using Frontier.Stage;
-using Frontier.Battle;
+﻿using Frontier.Battle;
 using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Stage;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Zenject;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Frontier
 {
@@ -25,12 +27,12 @@ namespace Frontier
         delegate bool UpdateAttack(in Vector3 arg1, in Vector3 arg2);
 
         private Phase _phase;
-        private float _elapsedTime      = 0f;
-        private bool _counterConditions = false;
+        private float _elapsedTime                  = 0f;
+        private bool _counterConditions             = false;
         private BattleRoutineController _btlRtnCtrl = null;
         private BattleCameraController _btlCamCtrl  = null;
         private StageController _stageCtrl          = null;
-        private IUiSystem _uiSystem                  = null;
+        private IUiSystem _uiSystem                 = null;
         private Character _attackCharacter          = null;
         private Character _targetCharacter          = null;
         private Character _diedCharacter            = null;
@@ -89,10 +91,11 @@ namespace Frontier
 
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
-            if (_attackCharacter.GetBullet() == null) _updateAttackerAttack = _attackCharacter.CombatAnim.UpdateAttack;  // _attackCharacter.UpdateClosedAttack;
-            else _updateAttackerAttack = _attackCharacter.CombatAnim.UpdateAttack; // _attackCharacter.UpdateRangedAttack;
-            if (_targetCharacter.GetBullet() == null) _updateTargetAttack = _targetCharacter.CombatAnim.UpdateAttack; // _targetCharacter.UpdateClosedAttack;
-            else _updateTargetAttack = _targetCharacter.CombatAnim.UpdateAttack; // _targetCharacter.UpdateRangedAttack;
+            // キャラクターの攻撃タイプによって動作するアニメーションを変更する
+            _attackCharacter.RegisterCombatAnimation(_attackCharacter.GetBullet() == null ? COMBAT_ANIMATION_TYPE.CLOSED : COMBAT_ANIMATION_TYPE.RANGED);
+            _updateAttackerAttack = _attackCharacter.CombatAnimSeq.UpdateSequence;
+            _targetCharacter.RegisterCombatAnimation(_targetCharacter.GetBullet() == null ? COMBAT_ANIMATION_TYPE.CLOSED : COMBAT_ANIMATION_TYPE.RANGED);
+            _updateTargetAttack = _targetCharacter.CombatAnimSeq.UpdateSequence;
 
             // 攻撃シーケンスの開始
             _btlCamCtrl.StartAttackSequenceMode(_attackCharacter, _targetCharacter);
@@ -293,14 +296,10 @@ namespace Frontier
         /// <param name="target">被攻撃キャラクター</param>
         private void StartAttack(Character attacker, Character target)
         {
-            if (attacker.GetBullet() != null) attacker.CombatAnim.StartAttack(); // attacker.StartRangedAttackSequence();
-            else
-            {
-                _departure = attacker.transform.position;
-                _destination = target.transform.position + target.transform.forward;    // 対象の前方1mを目標地点にする
-                attacker.CombatAnim.StartAttack();
-                // attacker.StartClosedAttackSequence();
-            }
+            // キャラクターの攻撃タイプによって動作するアニメーションを変更する
+            _departure      = attacker.transform.position;
+            _destination    = target.transform.position + target.transform.forward;
+            attacker.CombatAnimSeq.StartSequence();
 
             // 攻撃受け手用の設定をセット
             target.SetReceiveAttackSetting();
@@ -331,8 +330,8 @@ namespace Frontier
         private void ToggleParryUpdate(Character attacker, Character target)
         {
             // 更新用関数を切り替え
-            _updateAttackerAttack   = _attackCharacter.UpdateParryOnAttacker;
-            _updateTargetAttack     = _targetCharacter.UpdateParryOnTargeter;
+            _updateAttackerAttack   = (in Vector3 arg1, in Vector3 arg2) => false;  // 攻撃側は何もしない
+            _updateTargetAttack     = _targetCharacter.CombatAnimSeq.UpdateSequence;
         }
 
         /// <summary>

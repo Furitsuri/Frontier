@@ -4,11 +4,10 @@ using System;
 using System.Collections.ObjectModel;
 using UnityEngine;
 using Zenject;
-using static UnityEngine.EventSystems.StandaloneInputModule;
 
 namespace Frontier.Entities
 {
-    public class CharacterRangedAttackAnimation : ICharacterCombatAnimation
+    public class RangedAttackAnimationSequence : ICombatAnimationSequence
     {
         private Character _character;
         private BattleRoutineController _btlRtnCtrl = null;
@@ -20,6 +19,16 @@ namespace Frontier.Entities
             _btlRtnCtrl = btlRtnCtrl;
         }
 
+        /// <summary>
+        /// 攻撃アニメーションの終了判定を返します
+        /// </summary>
+        /// <returns>攻撃アニメーションが終了しているか</returns>
+        private bool IsEndAttackAnimSequence()
+        {
+            return _character.AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||                  // 最後の攻撃のState名は必ずAtkEndStateNameで一致させる
+                (_character.GetOpponentChara().IsDeclaredDead && _character.AnimCtrl.IsEndCurrentAnimation());  // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
+        }
+
         public void Init( Character character, AnimDatas.AnimeConditionsTag[] consitionTags )
         {
             _character      = character;
@@ -29,7 +38,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 遠隔攻撃シーケンスを開始します
         /// </summary>
-        public void StartAttack()
+        public void StartSequence()
         {
             _character.IsAttacked       = false;
             _character.AtkRemainingNum  = _character.skillModifiedParam.AtkNum - 1;   // 攻撃回数を1消費
@@ -44,7 +53,7 @@ namespace Frontier.Entities
         /// <param name="departure">遠隔攻撃の開始地点</param>
         /// <param name="destination">遠隔攻撃の終了地点</param>
         /// <returns>終了判定</returns>
-        public bool UpdateAttack(in Vector3 departure, in Vector3 destination)
+        public bool UpdateSequence(in Vector3 departure, in Vector3 destination)
         {
             var bullet = _character.GetBullet();
             if (bullet == null) return false;
@@ -55,7 +64,7 @@ namespace Frontier.Entities
                 _btlRtnCtrl.GetCameraController().TransitNextPhaseCameraParam(null, bullet.transform);
             }
             // 攻撃終了した場合はWaitに切り替え
-            if (_character.IsEndAttackAnimSequence())
+            if (IsEndAttackAnimSequence())
             {
                 _character.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
             }
