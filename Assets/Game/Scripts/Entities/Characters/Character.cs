@@ -30,7 +30,8 @@ namespace Frontier.Entities
         private Quaternion _orderdRotation      = Quaternion.identity;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
-        
+        private Func<ICombatAnimationSequence>[] _animSeqfactories;
+
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null; // 戦闘時の対戦相手
         protected Bullet _bullet                            = null; // 矢などの弾
@@ -90,6 +91,13 @@ namespace Frontier.Entities
             modifiedParam.Reset();
             skillModifiedParam.Reset();
             AnimCtrl.Init(GetComponent<Animator>());
+
+            _animSeqfactories = new Func<ICombatAnimationSequence>[]
+            {
+                () => _hierarchyBld.InstantiateWithDiContainer<ClosedAttackAnimationSequence>(false),
+                () => _hierarchyBld.InstantiateWithDiContainer<RangedAttackAnimationSequence>(false),
+                () => _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false)
+            };
 
             // キャラクターモデルのマテリアルが設定されているObjectを取得し、
             // Materialと初期のColor設定を保存
@@ -253,21 +261,7 @@ namespace Frontier.Entities
         /// <param name="type"></param>
         public void RegisterCombatAnimation( COMBAT_ANIMATION_TYPE type )
         {
-            switch ( type )
-            {
-                case COMBAT_ANIMATION_TYPE.CLOSED:
-                    _combatAnimSeq = _hierarchyBld.InstantiateWithDiContainer<ClosedAttackAnimationSequence>(false);
-                    break;
-                case COMBAT_ANIMATION_TYPE.RANGED:
-                    _combatAnimSeq = _hierarchyBld.InstantiateWithDiContainer<RangedAttackAnimationSequence>(false);
-                    break;
-                case COMBAT_ANIMATION_TYPE.PARRY:
-                    _combatAnimSeq = _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false);
-                    break;
-                default:
-                    Debug.Assert(false, "指定しているCOMBAT_ANIMATION_TYPEの値を確認してください。");
-                    break;
-            }
+            _combatAnimSeq = _animSeqfactories[(int)type]();
 
             if( _combatAnimSeq != null )
             {
