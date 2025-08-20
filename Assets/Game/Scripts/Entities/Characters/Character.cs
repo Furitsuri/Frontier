@@ -1,6 +1,7 @@
 ﻿using Frontier.Battle;
 using Frontier.Combat;
 using Frontier.Stage;
+using ModestTree;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,12 +26,11 @@ namespace Frontier.Entities
         private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
         private readonly TimeScale _timeScale   = new TimeScale();
-        private ICharacterCombatAnimation _combatAnim;
+        private ICombatAnimationSequence _combatAnimSeq;
         private Quaternion _orderdRotation      = Quaternion.identity;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         
-        protected CLOSED_ATTACK_PHASE _closingAttackPhase;
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null; // 戦闘時の対戦相手
         protected Bullet _bullet                            = null; // 矢などの弾
@@ -47,7 +47,7 @@ namespace Frontier.Entities
         public bool IsAttacked { get; set; } = false;
         public bool IsDeclaredDead { get; set; } = false;   // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
-        public ICharacterCombatAnimation CombatAnim => _combatAnim;
+        public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
         public GameObject BulletObject => _bulletObject;    // 弾オブジェクトの取得
         public ParrySkillNotifier GetParrySkill => _parrySkill; // パリィスキル処理の取得
         public TimeScale GetTimeScale => _timeScale;    // タイムスケールの取得
@@ -188,11 +188,6 @@ namespace Frontier.Entities
             _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );
             // スキルの通知クラスを初期化
             InitSkillNotifier();
-            // Initが呼ばれる時点では、bulletが既に行われていることが必須
-            _combatAnim = (_bullet == null) ? 
-                _hierarchyBld.InstantiateWithDiContainer<CharacterClosedAttackAnimation>(false) :
-                _hierarchyBld.InstantiateWithDiContainer<CharacterRangedAttackAnimation>(false);
-            _combatAnim.Init(this, AttackAnimTags);
         }
 
         /// <summary>
@@ -253,6 +248,34 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        public void RegisterCombatAnimation( COMBAT_ANIMATION_TYPE type )
+        {
+            switch ( type )
+            {
+                case COMBAT_ANIMATION_TYPE.CLOSED:
+                    _combatAnimSeq = _hierarchyBld.InstantiateWithDiContainer<ClosedAttackAnimationSequence>(false);
+                    break;
+                case COMBAT_ANIMATION_TYPE.RANGED:
+                    _combatAnimSeq = _hierarchyBld.InstantiateWithDiContainer<RangedAttackAnimationSequence>(false);
+                    break;
+                case COMBAT_ANIMATION_TYPE.PARRY:
+                    _combatAnimSeq = _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false);
+                    break;
+                default:
+                    Debug.Assert(false, "指定しているCOMBAT_ANIMATION_TYPEの値を確認してください。");
+                    break;
+            }
+
+            if( _combatAnimSeq != null )
+            {
+                _combatAnimSeq.Init(this, AttackAnimTags);
+            }
+        }
+
+        /// <summary>
         /// 指定キャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
         /// </summary>
         public void ConsumeActionGauge()
@@ -300,66 +323,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// パリィアニメーションを開始します
-        /// </summary>
-        public void StartParryAnimation()
-        {
-            _parryPhase = PARRY_PHASE.EXEC_PARRY;
-
-            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
-            ResetElapsedTime();
-            GetTimeScale.SetTimeScale(0.1f);    // タイムスケールを遅くし、パリィ挙動をスローモーションで見せる
-        }
-
-        /// <summary>
-        /// 戦闘において、攻撃した側がパリィを受けた際の行動を更新します
-        /// MEMO : パリィを受けた側は基本的に行動しないためfalseを返すのみ
-        /// </summary>
-        /// <param name="departure">攻撃開始座標</param>
-        /// <param name="destination">攻撃目標座標</param>
-        /// <returns>終了判定</returns>
-        public bool UpdateParryOnAttacker(in Vector3 departure, in Vector3 destination)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// 戦闘において、攻撃された側がパリィを行った際の行動を更新します
-        /// </summary>
-        /// <param name="departure">攻撃開始座標</param>
-        /// <param name="destination">攻撃目標座標</param>
-        /// <returns>終了判定</returns>
-        public bool UpdateParryOnTargeter(in Vector3 departure, in Vector3 destination)
-        {
-            bool isJustParry = false;
-
-            switch (_parryPhase)
-            {
-                case PARRY_PHASE.EXEC_PARRY:
-                    if (isJustParry)
-                    {
-                        AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.SINGLE_ATTACK);
-
-                        _parryPhase = PARRY_PHASE.AFTER_ATTACK;
-                    }
-                    else
-                    {
-                        if (AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.PARRY))
-                        {
-                            AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
-
-                            return true;
-                        }
-                    }
-                    break;
-                case PARRY_PHASE.AFTER_ATTACK:
-                    break;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 指定のスキルの使用状態が切替可能かを判定します
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
@@ -394,10 +357,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 攻撃を受ける際の設定を行います
         /// </summary>
-        public void SetReceiveAttackSetting()
-        {
-
-        }
+        public void SetReceiveAttackSetting() {}
 
         /// <summary>
         /// 対戦相手の設定をリセットします
@@ -446,16 +406,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 攻撃アニメーションの終了判定を返します
-        /// </summary>
-        /// <returns>攻撃アニメーションが終了しているか</returns>
-        public bool IsEndAttackAnimSequence()
-        {
-            return AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||  // 最後の攻撃のState名は必ずAtkEndStateNameで一致させる
-                (_opponent.IsDeclaredDead && AnimCtrl.IsEndCurrentAnimation());      // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
-        }
-
-        /// <summary>
         /// 次のカメラ遷移に移れる状態かを判定します
         /// </summary>
         /// <returns>次のカメラ遷移に移れるか</returns>
@@ -463,8 +413,7 @@ namespace Frontier.Entities
         {
             if(_isTransitNextPhaseCamera)
             {
-                // trueの場合は次回以後の判定のためにfalseに戻す
-                _isTransitNextPhaseCamera = false;
+                _isTransitNextPhaseCamera = false;  // trueの場合は次回以後の判定のためにfalseに戻す
                 return true;
             }
 
@@ -504,7 +453,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 死亡処理を開始します
-        /// ※各キャラクターのパリィ用アニメーションから呼ばれます
+        /// ※各キャラクターのアニメーションから呼ばれます
         /// </summary>
         public void DieOnAnimEvent()
         {
@@ -532,8 +481,7 @@ namespace Frontier.Entities
             _bullet.SetFlightTimeFromGridLength(gridLength);
             _bullet.StartUpdateCoroutine(HurtOpponentByAnimation);
 
-            // 発射と同時に次のカメラに遷移させる
-            _isTransitNextPhaseCamera = true;
+            _isTransitNextPhaseCamera = true;   // 発射と同時に次のカメラに遷移させる
 
             // この攻撃によって相手が倒されるかどうかを判定
             _opponent.IsDeclaredDead = (_opponent.characterParam.CurHP + _opponent.tmpParam.expectedHpChange) <= 0;

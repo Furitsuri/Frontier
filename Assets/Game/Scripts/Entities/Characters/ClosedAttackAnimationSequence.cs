@@ -1,15 +1,26 @@
 using Frontier.Combat;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace Frontier.Entities
 {
-    public class CharacterClosedAttackAnimation : ICharacterCombatAnimation
+    public class ClosedAttackAnimationSequence : ICombatAnimationSequence
     {
         private CLOSED_ATTACK_PHASE _closingAttackPhase;
         private Character _character;
         private ReadOnlyCollection<AnimDatas.AnimeConditionsTag> AttackAnimTags;
+
+        /// <summary>
+        /// 攻撃アニメーションの終了判定を返します
+        /// </summary>
+        /// <returns>攻撃アニメーションが終了しているか</returns>
+        private bool IsEndAttackAnimSequence()
+        {
+            return _character.AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||                  // 最後の攻撃のState名は必ずAtkEndStateNameで一致させる
+                (_character.GetOpponentChara().IsDeclaredDead && _character.AnimCtrl.IsEndCurrentAnimation());  // 複数回攻撃時でも、途中で相手が死亡することが確約される場合は攻撃を終了する
+        }
 
         public void Init( Character character, AnimDatas.AnimeConditionsTag[] consitionTags)
         {
@@ -21,7 +32,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 近接攻撃シーケンスを開始します
         /// </summary>
-        public void StartAttack()
+        public void StartSequence()
         {
             _character.IsAttacked   = false;
             _closingAttackPhase     = CLOSED_ATTACK_PHASE.CLOSINGE;
@@ -36,7 +47,7 @@ namespace Frontier.Entities
         /// <param name="departure">近接攻撃の開始地点</param>
         /// <param name="destination">近接攻撃の終了地点</param>
         /// <returns>終了判定</returns>
-        public bool UpdateAttack(in Vector3 departure, in Vector3 destination)
+        public bool UpdateSequence(in Vector3 departure, in Vector3 destination)
         {
             var attackAnimtag = AttackAnimTags[_character.skillModifiedParam.AtkNum - 1];
 
@@ -63,7 +74,7 @@ namespace Frontier.Entities
                     break;
 
                 case CLOSED_ATTACK_PHASE.ATTACK:
-                    if (_character.IsEndAttackAnimSequence())
+                    if (IsEndAttackAnimSequence())
                     {
                         _character.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
 
