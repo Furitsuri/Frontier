@@ -1,7 +1,7 @@
-namespace Frontier.Entities
+ï»¿namespace Frontier.Entities
 {
     /// <summary>
-    /// ˆÚ“®ƒ^ƒCƒv
+    /// ç§»å‹•ã‚¿ã‚¤ãƒ—
     /// </summary>
     public enum MOVE_TYPE
     {

@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,6 +7,9 @@ using Zenject;
 
 namespace Frontier.Battle
 {
+    /// <summary>
+    /// 戦闘キャラクターの配置や消去、取得などを行います
+    /// </summary>
     public class BattleCharacterCoordinator
     {
         Stage.StageController _stgCtrl = null;
@@ -13,6 +17,7 @@ namespace Frontier.Battle
         private List<Player> _players               = new List<Player>(Constants.CHARACTER_MAX_NUM);
         private List<Enemy> _enemies                = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
         private List<Other> _others                 = new List<Other>(Constants.CHARACTER_MAX_NUM);
+        private Dictionary<CHARACTER_TAG, IEnumerable<Character>> _characterGroups;
         private CharacterHashtable _characterHash   = new CharacterHashtable();
         private CharacterHashtable.Key _diedCharacterKey;
         private CharacterHashtable.Key _battleBossCharacterKey;
@@ -34,6 +39,13 @@ namespace Frontier.Battle
             _diedCharacterKey           = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
             _battleBossCharacterKey     = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
             _escortTargetCharacterKey   = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+
+            _characterGroups = new Dictionary<CHARACTER_TAG, IEnumerable<Character>>
+            {
+                { CHARACTER_TAG.PLAYER, _players },
+                { CHARACTER_TAG.ENEMY,  _enemies },
+                { CHARACTER_TAG.OTHER,  _others }
+            };
         }
 
         /// <summary>
@@ -80,27 +92,16 @@ namespace Frontier.Battle
             var param = chara.characterParam;
             CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
-            switch( chara )
+            Action<Character>[] addActionsByType = new Action<Character>[]
             {
-                case Other:
-                    Other ot = chara as Other;
-                    Debug.Assert( ot != null, "Failed to cast from Character to Other" );
+                c => _players.Add(c as Player), // PLAYER
+                c => _enemies.Add(c as Enemy),  // ENEMY
+                c => _others.Add(c as Other)    // OTHER
+            };
 
-                    _others.Add(ot);
-                    break;
-                case Player:
-                    Player pl = chara as Player;
-                    Debug.Assert( pl != null, "Failed to cast from Character to Player" );
+            Debug.Assert(addActionsByType.Length == (int)CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。");
 
-                    _players.Add(pl);
-                    break;
-                case Enemy:
-                    Enemy em = chara as Enemy;
-                    Debug.Assert( em != null, "Failed to cast from Character to Enemy" );
-
-                    _enemies.Add(em);
-                    break;
-            }
+            addActionsByType[(int)chara.characterParam.characterTag](chara);
             
             _characterHash.Add(key, chara);
         }
@@ -111,27 +112,16 @@ namespace Frontier.Battle
         /// <param name="chara">削除対象のプレイヤー</param>
         public void RemoveCharacterFromList(Character chara)
         {
-            switch (chara)
+            Action<Character>[] removeActionsByType = new Action<Character>[]
             {
-                case Other:
-                    Other ot = chara as Other;
-                    Debug.Assert(ot != null, "Failed to cast from Character to Other");
+                c => _players.Remove(c as Player), // PLAYER
+                c => _enemies.Remove(c as Enemy),  // ENEMY
+                c => _others.Remove(c as Other)    // OTHER
+            };
 
-                    _others.Remove(ot);
-                    break;
-                case Player:
-                    Player pl = chara as Player;
-                    Debug.Assert(pl != null, "Failed to cast from Character to Player");
+            Debug.Assert(removeActionsByType.Length == (int)CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。");
 
-                    _players.Remove(pl);
-                    break;
-                case Enemy:
-                    Enemy em = chara as Enemy;
-                    Debug.Assert(em != null, "Failed to cast from Character to Enemy");
-
-                    _enemies.Remove(em);
-                    break;
-            }
+            removeActionsByType[(int)chara.characterParam.characterTag](chara);
 
             _characterHash.Remove(chara);
         }
@@ -179,30 +169,6 @@ namespace Frontier.Battle
             {
                 yield return chara;
             }
-
-            /*
-            switch ( tag )
-            {
-                case CHARACTER_TAG.PLAYER:
-                    foreach (Player player in _players)
-                    {
-                        yield return player;
-                    }
-                    break;
-                case CHARACTER_TAG.ENEMY:
-                    foreach (Enemy enemy in _enemies)
-                    {
-                        yield return enemy;
-                    }
-                    break;
-                case CHARACTER_TAG.OTHER:
-                    foreach (Other other in _others)
-                    {
-                        yield return other;
-                    }
-                    break;
-            }
-            */
         }
 
         /// <summary>
@@ -211,21 +177,16 @@ namespace Frontier.Battle
         /// <returns>全ての行動可能キャラクターの行動が終了したか</returns>
         public bool IsEndAllArmyWaitCommand(CHARACTER_TAG tag)
         {
-            List<Character>[] charaList = new List<Character>[]
+            if (_characterGroups.TryGetValue(tag, out var group))
             {
-                _players.ToList<Character>(),
-                _enemies.ToList<Character>(),
-                _others.ToList<Character>()
-            };
-
-            foreach( var chara in charaList[(int)tag])
-            {
-                if (!chara.tmpParam.IsEndAction())
+                foreach (var c in group)
                 {
-                    return false;
+                    if (!c.tmpParam.IsEndAction())
+                    {
+                        return false;
+                    }
                 }
             }
-
             return true;
         }
 
@@ -308,34 +269,23 @@ namespace Frontier.Battle
         /// <summary>
         /// 対象軍勢が全滅しているかを確認します
         /// </summary>
-        /// <param name="characterTag">軍勢のタグ</param>
+        /// <param name="tag">軍勢のタグ</param>
         /// <returns>対象軍勢が全滅しているか</returns>
-        public bool CheckCharacterAnnihilated(CHARACTER_TAG characterTag)
+        public bool CheckCharacterAnnihilated(CHARACTER_TAG tag)
         {
             bool isAnnihilated = true;
 
-            switch (characterTag)
+            if (_characterGroups.TryGetValue(tag, out var group))
             {
-                case CHARACTER_TAG.PLAYER:
-                    foreach (Player player in _players)
+                foreach (var c in group)
+                {
+                    if (!c.characterParam.IsDead())
                     {
-                        if (!player.characterParam.IsDead()) { isAnnihilated = false; break; }
+                        isAnnihilated = false;
+                        break;
                     }
-                    break;
-                case CHARACTER_TAG.ENEMY:
-                    foreach (Enemy enemy in _enemies)
-                    {
-                        if (!enemy.characterParam.IsDead()) { isAnnihilated = false; break; }
-                    }
-                    break;
-                case CHARACTER_TAG.OTHER:
-                    foreach (Other other in _others)
-                    {
-                        if (!other.characterParam.IsDead()) { isAnnihilated = false; break; }
-                    }
-                    break;
+                }
             }
-
             return isAnnihilated;
         }
 
@@ -380,31 +330,12 @@ namespace Frontier.Battle
         /// /// <param name="tag">指定する軍勢のタグ</param>
         public void ApplyAllArmyEndAction(CHARACTER_TAG tag)
         {
-            switch( tag )
+            if (_characterGroups.TryGetValue(tag, out var group))
             {
-                case CHARACTER_TAG.PLAYER:
-                    foreach (Player player in _players)
-                    {
-                        player.tmpParam.EndAction();
-                    }
-
-                    break;
-
-                case CHARACTER_TAG.ENEMY:
-                    foreach (Enemy enemy in _enemies)
-                    {
-                        enemy.tmpParam.EndAction();
-                    }
-
-                    break;
-
-                case CHARACTER_TAG.OTHER:
-                    foreach (Other other in _others)
-                    {
-                        other.tmpParam.EndAction();
-                    }
-
-                    break;
+                foreach (var c in group)
+                {
+                    c.tmpParam.EndAction();
+                }
             }
         }
 
@@ -461,26 +392,12 @@ namespace Frontier.Battle
         /// <param name="tag">キャラクター群のタグ</param>
         public void RecoveryActionGaugeForGroup(CHARACTER_TAG tag)
         {
-            switch (tag)
+            if (_characterGroups.TryGetValue(tag, out var group))
             {
-                case CHARACTER_TAG.PLAYER:
-                    foreach (Player player in _players)
-                    {
-                        player.characterParam.RecoveryActionGauge();
-                    }
-                    break;
-                case CHARACTER_TAG.ENEMY:
-                    foreach (Enemy enemy in _enemies)
-                    {
-                        enemy.characterParam.RecoveryActionGauge();
-                    }
-                    break;
-                case CHARACTER_TAG.OTHER:
-                    foreach (Other other in _others)
-                    {
-                        other.characterParam.RecoveryActionGauge();
-                    }
-                    break;
+                foreach (var c in group)
+                {
+                    c.characterParam.RecoveryActionGauge();
+                }
             }
         }
     }

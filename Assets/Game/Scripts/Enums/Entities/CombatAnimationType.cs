@@ -1,7 +1,7 @@
-namespace Frontier.Entities
+ï»¿namespace Frontier.Entities
 {
     /// <summary>
-    /// í“¬‚É‚¨‚¯‚éƒLƒƒƒ‰ƒNƒ^[‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒ^ƒCƒv
+    /// æˆ¦é—˜æ™‚ã«ãŠã‘ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚¤ãƒ—
     /// </summary>
     public enum COMBAT_ANIMATION_TYPE
     {
