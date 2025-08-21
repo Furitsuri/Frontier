@@ -1,7 +1,7 @@
-namespace Frontier.Entities
+ï»¿namespace Frontier.Entities
 {
     /// <summary>
-    /// ‹ßÚUŒ‚XV—pƒtƒFƒCƒY
+    /// è¿‘æ¥æ”»æ’ƒæ›´æ–°ç”¨ãƒ•ã‚§ã‚¤ã‚º
     /// </summary>
     public enum CLOSED_ATTACK_PHASE
     {

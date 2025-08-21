@@ -1,7 +1,7 @@
-namespace Frontier.Entities
+ï»¿namespace Frontier.Entities
 {
     /// <summary>
-    /// ƒLƒƒƒ‰ƒNƒ^[‚Ìí•Ê‚ğ•\‚·ƒ^ƒO
+    /// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç¨®åˆ¥ã‚’è¡¨ã™ã‚¿ã‚°
     /// </summary>
     public enum CHARACTER_TAG
     {
