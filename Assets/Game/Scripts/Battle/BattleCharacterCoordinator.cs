@@ -363,17 +363,15 @@ namespace Frontier.Battle
         /// </summary>
         public void ResetTmpParamAllCharacter()
         {
-            foreach (Player player in _players)
+            for (int i = 0; i < (int)CHARACTER_TAG.NUM; ++i)
             {
-                player.BePossibleAction();
-            }
-            foreach (Enemy enemy in _enemies)
-            {
-                enemy.BePossibleAction();
-            }
-            foreach (Other other in _others)
-            {
-                other.BePossibleAction();
+                if (_characterGroups.TryGetValue((CHARACTER_TAG)i, out var group))
+                {
+                    foreach (var c in group)
+                    {
+                        c.BePossibleAction();
+                    }
+                }
             }
         }
 
