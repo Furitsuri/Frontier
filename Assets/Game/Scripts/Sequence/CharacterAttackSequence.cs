@@ -86,8 +86,7 @@ namespace Frontier
             _attackCharacter.SetOpponentCharacter(_targetCharacter);
             _targetCharacter.SetOpponentCharacter(_attackCharacter);
 
-            // カウンター条件の設定
-            _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER);
+            _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER); // カウンター条件の設定
 
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
@@ -159,7 +158,7 @@ namespace Frontier
                         if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
 
                         // 対象が死亡している場合は死亡処理へ
-                        if (_targetCharacter.characterParam.IsDead())
+                        if (_targetCharacter.Params.CharacterParam.IsDead())
                         {
                             _diedCharacter = _targetCharacter;
                             _phase = Phase.DIE;
@@ -213,7 +212,7 @@ namespace Frontier
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
 
-                        if (_attackCharacter.characterParam.IsDead())
+                        if (_attackCharacter.Params.CharacterParam.IsDead())
                         {
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
@@ -230,18 +229,16 @@ namespace Frontier
                 case Phase.COUNTER:
                     if (_updateTargetAttack(_departure, _destination))
                     {
-                        // カメラ対象とカメラパラメータを変更
-                        _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
+                        _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);  // カメラ対象とカメラパラメータを変更
 
-                        if (_attackCharacter.characterParam.IsDead())
+                        if (_attackCharacter.Params.CharacterParam.IsDead())
                         {
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
                         }
                         else
                         {
-                            // ダメージUIを非表示
-                            _uiSystem.BattleUi.ToggleDamageUI(false);
+                            _uiSystem.BattleUi.ToggleDamageUI(false);   // ダメージUIを非表示
 
                             _phase = Phase.WAIT_END;
                         }
@@ -258,11 +255,10 @@ namespace Frontier
                     {
                         _elapsedTime = 0f;
 
-                        // バトルフィールドからステージフィールドに遷移
-                        TransitStageField(_attackCharacter, _targetCharacter);
+                        TransitStageField(_attackCharacter, _targetCharacter);  // バトルフィールドからステージフィールドに遷移
 
                         // 攻撃シーケンス用カメラを終了
-                        var info = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.GetCurrentGridIndex());
+                        var info = _stageCtrl.GetGridInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
                         _btlCamCtrl.EndAttackSequenceMode(_attackCharacter);
 
                         _phase = Phase.END;
@@ -341,8 +337,7 @@ namespace Frontier
         /// <param name="target">被攻撃キャラクター</param>
         private void TransitBattleField(Character attacker, Character target)
         {
-            // メッシュ及びattakerとtarget以外のキャラクターを非表示に
-            _stageCtrl.ToggleMeshDisplay(false);
+            _stageCtrl.ToggleMeshDisplay(false); // メッシュ及びattakerとtarget以外のキャラクターを非表示に
 
             foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
             {
@@ -360,25 +355,24 @@ namespace Frontier
                 }
             }
 
-            // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var centralPos = _stageCtrl.GetCentralPos();
+            var centralPos = _stageCtrl.GetCentralPos(); // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
 
             // 味方と敵対側で分別
-            Character ally = null;
-            Character opponent = null;
-            if (attacker.characterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
+            Character ally      = null;
+            Character opponent  = null;
+            if (attacker.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
             {
                 ally = attacker;
                 opponent = target;
             }
             else
             {
-                if (target.characterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
+                if (target.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
                 {
                     ally = target;
                     opponent = attacker;
                 }
-                else if (target.characterParam.IsMatchCharacterTag(CHARACTER_TAG.OTHER))
+                else if (target.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.OTHER))
                 {
                     ally = target;
                     opponent = attacker;
@@ -422,10 +416,10 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var info = _stageCtrl.GetGridInfo(attacker.tmpParam.GetCurrentGridIndex());
+            var info = _stageCtrl.GetGridInfo(attacker.Params.TmpParam.GetCurrentGridIndex());
             _attackCharacter.transform.position = info.charaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            info = _stageCtrl.GetGridInfo(target.tmpParam.GetCurrentGridIndex());
+            info = _stageCtrl.GetGridInfo(target.Params.TmpParam.GetCurrentGridIndex());
             _targetCharacter.transform.position = info.charaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
         }

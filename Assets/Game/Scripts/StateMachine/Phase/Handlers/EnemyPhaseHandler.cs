@@ -69,7 +69,7 @@ namespace Frontier
         /// </summary>
         override protected void StartPhaseAnim()
         {
-            _btlUi.TogglePhaseUI(true, BattleRoutineController.TurnType.ENEMY_TURN);
+            _btlUi.TogglePhaseUI(true, TurnType.ENEMY_TURN);
             _btlUi.StartAnimPhaseUI();
         }
     }

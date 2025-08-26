@@ -105,7 +105,7 @@ namespace Frontier
             Debug.Assert(_character != null);
 
             // パラメータ表示を反映
-            UpdateParamRender(_character, _character.characterParam, _character.skillModifiedParam);
+            UpdateParamRender(_character, _character.Params.CharacterParam, _character.skillModifiedParam);
             // カメラ描画を反映
             UpdateCamraRender(_character, _character.camParam);
         }
@@ -128,7 +128,7 @@ namespace Frontier
             TMPAtkNumValue.gameObject.SetActive(1 < skillParam.AtkNum);
 
             int hpChange, totalHpChange;
-            selectCharacter.tmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
+            selectCharacter.Params.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
 
             totalHpChange = Mathf.Clamp(totalHpChange, -param.CurHP, param.MaxHP - param.CurHP);
             if (0 < totalHpChange)
@@ -201,7 +201,7 @@ namespace Frontier
         /// <summary>
         /// テキストの色を反映します
         /// </summary>
-        /// <param name="tmpParam">該当キャラクターの一時パラメータ</param>
+        /// <param name="changeHP">HPの変動量</param>
         void ApplyTextColor(int changeHP)
         {
             if (changeHP < 0)

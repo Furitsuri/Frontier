@@ -71,14 +71,12 @@ namespace Frontier.Battle
             {
                 foreach ( var chara in charaList )
                 {
-                    // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-                    int gridIndex = chara.characterParam.initGridIndex;
-                    // プレイヤーの画面上の位置を設定
-                    chara.transform.position = _stgCtrl.GetGridCharaStandPos(gridIndex);
-                    // 向きを設定
-                    chara.transform.rotation = rot[(int)chara.characterParam.initDir];
-                    // 対応するグリッドに立っているプレイヤーのインデックスを設定
-                    _stgCtrl.GetGridInfo(gridIndex).SetExistCharacter(chara);
+                    
+                    int gridIndex = chara.Params.CharacterParam.initGridIndex;  // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
+                    chara.Params.TmpParam.SetCurrentGridIndex(gridIndex);       // ステージ上のグリッド位置の設定
+                    chara.transform.position = _stgCtrl.GetGridCharaStandPos(gridIndex);        // プレイヤーの画面上の位置を設定
+                    chara.transform.rotation = rot[(int)chara.Params.CharacterParam.initDir];   // 向きを設定
+                    _stgCtrl.GetGridInfo(gridIndex).SetExistCharacter(chara);   // 対応するグリッドに立っているキャラクターを登録
                 }
             }
         }
@@ -89,7 +87,7 @@ namespace Frontier.Battle
         /// <param name="chara">登録対象のキャラクター</param>
         public void AddCharacterToList(Character chara)
         {
-            var param = chara.characterParam;
+            var param = chara.Params.CharacterParam;
             CharacterHashtable.Key key = new CharacterHashtable.Key(param.characterTag, param.characterIndex);
 
             Action<Character>[] addActionsByType = new Action<Character>[]
@@ -101,7 +99,7 @@ namespace Frontier.Battle
 
             Debug.Assert(addActionsByType.Length == (int)CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。");
 
-            addActionsByType[(int)chara.characterParam.characterTag](chara);
+            addActionsByType[(int)chara.Params.CharacterParam.characterTag](chara);
             
             _characterHash.Add(key, chara);
         }
@@ -121,7 +119,7 @@ namespace Frontier.Battle
 
             Debug.Assert(removeActionsByType.Length == (int)CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。");
 
-            removeActionsByType[(int)chara.characterParam.characterTag](chara);
+            removeActionsByType[(int)chara.Params.CharacterParam.characterTag](chara);
 
             _characterHash.Remove(chara);
         }
@@ -181,7 +179,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    if (!c.tmpParam.IsEndAction())
+                    if (!c.Params.TmpParam.IsEndAction())
                     {
                         return false;
                     }
@@ -279,7 +277,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    if (!c.characterParam.IsDead())
+                    if (!c.Params.CharacterParam.IsDead())
                     {
                         isAnnihilated = false;
                         break;
@@ -334,7 +332,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    c.tmpParam.EndAction();
+                    c.Params.TmpParam.EndAction();
                 }
             }
         }
@@ -351,11 +349,11 @@ namespace Frontier.Battle
                 return;
             }
 
-            int targetDef = (int)Mathf.Floor((target.characterParam.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.characterParam.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
+            int targetDef = (int)Mathf.Floor((target.Params.CharacterParam.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.Params.CharacterParam.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
             int changeHP = (targetDef - attackerAtk);
 
-            target.tmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
+            target.Params.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>
@@ -394,7 +392,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    c.characterParam.RecoveryActionGauge();
+                    c.Params.CharacterParam.RecoveryActionGauge();
                 }
             }
         }

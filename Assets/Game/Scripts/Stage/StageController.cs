@@ -199,10 +199,10 @@ namespace Frontier.Stage
             {
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable((CHARACTER_TAG)i))
                 {
-                    var gridIndex       = chara.tmpParam.GetCurrentGridIndex();
+                    var gridIndex       = chara.Params.TmpParam.GetCurrentGridIndex();
                     ref var tileInfo    = ref _stageData.GetTileInfo(gridIndex);
-                    tileInfo.charaTag   = chara.characterParam.characterTag;
-                    tileInfo.charaIndex = chara.characterParam.characterIndex;
+                    tileInfo.charaTag   = chara.Params.CharacterParam.characterTag;
+                    tileInfo.charaIndex = chara.Params.CharacterParam.characterIndex;
                     Methods.SetBitFlag(ref tileInfo.flag, flags[i]);
                 }
             }
@@ -242,7 +242,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterGrid(Character character)
         {
-            _gridCursorCtrl.Index = character.tmpParam.GetCurrentGridIndex();
+            _gridCursorCtrl.Index = character.Params.TmpParam.GetCurrentGridIndex();
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace Frontier.Stage
                 {
                     attackCandidate = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
-                    if (attackCandidate != null && attackCandidate.characterParam.characterTag != selfTag)
+                    if (attackCandidate != null && attackCandidate.Params.CharacterParam.characterTag != selfTag)
                     {
                         _attackableGridIndexs.Add(i);
                     }
@@ -437,7 +437,7 @@ namespace Frontier.Stage
                 {
                     character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
-                    if (character != null && character.characterParam.characterTag == targetTag)
+                    if (character != null && character.Params.CharacterParam.characterTag == targetTag)
                     {
                         _attackableGridIndexs.Add(i);
                     }
@@ -783,7 +783,7 @@ namespace Frontier.Stage
         public void FollowFootprint(Character character)
         {
             _gridCursorCtrl.Index = _footprint.gridIndex;
-            character.tmpParam.SetCurrentGridIndex(_footprint.gridIndex);
+            character.Params.TmpParam.SetCurrentGridIndex(_footprint.gridIndex);
             GridInfo info;
             FetchCurrentGridInfo(out info);
             character.transform.position = info.charaStandPos;

@@ -30,7 +30,7 @@ namespace Frontier
         {
             base.Init();
 
-            _playerSkillNames   = _selectPlayer.characterParam.GetEquipSkillNames();
+            _playerSkillNames   = _selectPlayer.Params.CharacterParam.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
@@ -38,7 +38,7 @@ namespace Frontier
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _selectPlayer;
-            var param = _attackCharacter.characterParam;
+            var param = _attackCharacter.Params.CharacterParam;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
@@ -79,9 +79,9 @@ namespace Frontier
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
-                        var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.GetCurrentGridIndex());
+                        var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
                         _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos );
-                        var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.GetCurrentGridIndex());
+                        var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
                         _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
                     }
 
@@ -105,7 +105,7 @@ namespace Frontier
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.tmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -121,7 +121,7 @@ namespace Frontier
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
             {
-                var key = new CharacterHashtable.Key(diedCharacter.characterParam.characterTag, diedCharacter.characterParam.characterIndex);
+                var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
                 NoticeCharacterDied(key);
                 // 破棄
                 diedCharacter.Remove();
@@ -131,8 +131,8 @@ namespace Frontier
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _attackCharacter.tmpParam.SetExpectedHpChange(0, 0);
-            _targetCharacter.tmpParam.SetExpectedHpChange(0, 0);
+            _attackCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
+            _targetCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
@@ -150,9 +150,9 @@ namespace Frontier
             }
 
             // 使用スキルコスト見積もりをリセット
-            _attackCharacter.characterParam.ResetConsumptionActionGauge();
+            _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _attackCharacter.skillModifiedParam.Reset();
-            _targetCharacter.characterParam.ResetConsumptionActionGauge();
+            _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.skillModifiedParam.Reset();
 
             // グリッド状態の描画をクリア
@@ -283,7 +283,7 @@ namespace Frontier
             if( !isInput ) return false;
 
             // 選択したキャラクターが敵である場合は攻撃開始
-            if (_targetCharacter != null && _targetCharacter.characterParam.characterTag == CHARACTER_TAG.ENEMY)
+            if (_targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY)
             {
                 // キャラクターのアクションゲージを消費
                 _attackCharacter.ConsumeActionGauge();

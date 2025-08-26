@@ -32,7 +32,7 @@ namespace Frontier
             Debug.Assert(_attackCharacter != null);
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            var param = _attackCharacter.characterParam;
+            var param = _attackCharacter.Params.CharacterParam;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
@@ -48,12 +48,12 @@ namespace Frontier
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
 
-            _playerSkillNames = _targetCharacter.characterParam.GetEquipSkillNames();
+            _playerSkillNames = _targetCharacter.Params.CharacterParam.GetEquipSkillNames();
 
             // 攻撃者の向きを設定
-            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.tmpParam.GetCurrentGridIndex());
+            var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
             _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
-            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.tmpParam.GetCurrentGridIndex());
+            var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
             _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
 
             // 攻撃シーケンスを初期化
@@ -92,7 +92,7 @@ namespace Frontier
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.tmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -108,7 +108,7 @@ namespace Frontier
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if (diedCharacter != null)
             {
-                var key = new CharacterHashtable.Key(diedCharacter.characterParam.characterTag, diedCharacter.characterParam.characterIndex);
+                var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
                 NoticeCharacterDied(key);
                 // 破棄
                 diedCharacter.Remove();
@@ -117,8 +117,8 @@ namespace Frontier
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
-            _attackCharacter.tmpParam.SetExpectedHpChange(0, 0);
-            _targetCharacter.tmpParam.SetExpectedHpChange(0, 0);
+            _attackCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
+            _targetCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
@@ -133,9 +133,9 @@ namespace Frontier
                 _uiSystem.BattleUi.GetEnemyParamSkillBox(i).SetUseable(true);
             }
             // 使用スキルコスト見積もりをリセット
-            _attackCharacter.characterParam.ResetConsumptionActionGauge();
+            _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _attackCharacter.skillModifiedParam.Reset();
-            _targetCharacter.characterParam.ResetConsumptionActionGauge();
+            _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.skillModifiedParam.Reset();
             // グリッド状態の描画をクリア
             _stageCtrl.UpdateGridInfo();

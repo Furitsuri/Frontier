@@ -1,4 +1,4 @@
-﻿namespace Frontier.Combat
+﻿namespace Frontier.Entities
 {
     /// <summary>
     /// バフ・デバフなどで上乗せされるパラメータです
@@ -14,9 +14,14 @@
         // アクションゲージ回復値
         public int recoveryActionGauge;
 
-        public void Reset()
+        public void Init()
         {
             Atk = 0; Def = 0; moveRange = 0; recoveryActionGauge = 0;
+        }
+
+        public void Reset()
+        {
+            Init();
         }
     }
 }

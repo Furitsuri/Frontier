@@ -1,4 +1,6 @@
-﻿namespace Frontier.Combat
+﻿using Frontier.Combat;
+
+namespace Frontier.Entities
 {
     /// <summary>
     /// 戦闘中のみ一時的に使用するパラメータです
@@ -15,6 +17,25 @@
         public int expectedHpChange;
         // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
         public int totalExpectedHpChange;
+
+        public void Awake()
+        {
+            isEndCommand    = new bool[(int)Command.COMMAND_TAG.NUM];
+            isUseSkills     = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
+        }
+
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        public void Init()
+        {
+            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            {
+                isEndCommand[i] = false;
+            }
+
+            totalExpectedHpChange = expectedHpChange = 0;
+        }
 
         /// <summary>
         /// 現在の値をクローンして返します
@@ -48,12 +69,7 @@
         /// </summary>
         public void Reset()
         {
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
-            {
-                isEndCommand[i] = false;
-            }
-
-            totalExpectedHpChange = expectedHpChange = 0;
+            Init();
         }
 
         /// <summary>

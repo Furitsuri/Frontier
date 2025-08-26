@@ -36,12 +36,11 @@ namespace Frontier.Entities
         protected Character _opponent                       = null; // 戦闘時の対戦相手
         protected Bullet _bullet                            = null; // 矢などの弾
         protected ParrySkillNotifier _parrySkill            = null;
-        
+        protected CharacterParameters _params;
+
         public ModifiedParameter modifiedParam;
         public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
-        public CharacterParameter characterParam;
-        public TemporaryParameter tmpParam;
 
         public int AtkRemainingNum { get; set; } = 0;   // 攻撃シーケンスにおける残り攻撃回数
         public float ElapsedTime { get; set; } = 0f;
@@ -49,9 +48,10 @@ namespace Frontier.Entities
         public bool IsDeclaredDead { get; set; } = false;   // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
-        public GameObject BulletObject => _bulletObject;    // 弾オブジェクトの取得
-        public ParrySkillNotifier GetParrySkill => _parrySkill; // パリィスキル処理の取得
-        public TimeScale GetTimeScale => _timeScale;    // タイムスケールの取得
+        public GameObject BulletObject => _bulletObject;            // 弾オブジェクトの取得
+        public ParrySkillNotifier GetParrySkill => _parrySkill;     // パリィスキル処理の取得
+        public TimeScale GetTimeScale => _timeScale;                // タイムスケールの取得
+        public CharacterParameters Params => _params;       // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -82,14 +82,12 @@ namespace Frontier.Entities
 
         void Awake()
         {
+            _params = _hierarchyBld.InstantiateWithDiContainer<CharacterParameters>( false );
+
             _timeScale.OnValueChange    = AnimCtrl.UpdateTimeScale;
             IsDeclaredDead              = false;
-            characterParam.equipSkills  = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
-            tmpParam.isEndCommand       = new bool[(int)Command.COMMAND_TAG.NUM];
-            tmpParam.isUseSkills        = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
-            tmpParam.Reset();
-            modifiedParam.Reset();
-            skillModifiedParam.Reset();
+            _params.Awake();
+
             AnimCtrl.Init(GetComponent<Animator>());
 
             _animSeqfactories = new Func<ICombatAnimationSequence>[]
@@ -119,7 +117,7 @@ namespace Frontier.Entities
             }
 
             // 移動と攻撃が終了していれば、行動不可に遷移
-            var endCommand = tmpParam.isEndCommand;
+            var endCommand = _params.TmpParam.isEndCommand;
             if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
             {
                 BeImpossibleAction();
@@ -139,9 +137,9 @@ namespace Frontier.Entities
         {
             for( int i = 0; i <  (int)Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                int skillID = (int)characterParam.equipSkills[i];
+                int skillID = (int)_params.CharacterParam.equipSkills[i];
 
-                if( (int)SkillsData.ID.SKILL_PARRY == skillID )
+                if ( (int)SkillsData.ID.SKILL_PARRY == skillID )
                 {
                     _parrySkill = _hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false);
                     _parrySkill.Init( this );
@@ -189,7 +187,10 @@ namespace Frontier.Entities
         /// </summary>
         virtual public void Init()
         {
-            tmpParam.gridIndex  = characterParam.initGridIndex;
+            modifiedParam.Init();
+            skillModifiedParam.Init();
+            _params.Init();
+
             ResetElapsedTime();
 
             // 戦闘時間管理クラスに自身の時間管理クラスを登録
@@ -235,7 +236,7 @@ namespace Frontier.Entities
         /// <param name="dir">キャラクター角度</param>
         public void SetPosition(int gridIndex, in Quaternion dir)
         {
-            tmpParam.gridIndex = gridIndex;
+            _params.TmpParam.SetCurrentGridIndex( gridIndex );
             var info = _stageCtrl.GetGridInfo(gridIndex);
             transform.position = info.charaStandPos;
             transform.rotation = dir;
@@ -247,7 +248,7 @@ namespace Frontier.Entities
         /// <param name="targetPos">向きを合わせる位置</param>
         public void RotateToPosition(in Vector3 targetPos)
         {
-            var selfPos = _stageCtrl.GetGridCharaStandPos(tmpParam.gridIndex);
+            var selfPos = _stageCtrl.GetGridCharaStandPos(_params.TmpParam.gridIndex);
             var direction = targetPos - selfPos;
             direction.y = 0f;
 
@@ -274,8 +275,8 @@ namespace Frontier.Entities
         /// </summary>
         public void ConsumeActionGauge()
         {
-            characterParam.curActionGauge -= characterParam.consumptionActionGauge;
-            characterParam.consumptionActionGauge = 0;
+            _params.CharacterParam.curActionGauge -= _params.CharacterParam.consumptionActionGauge;
+            _params.CharacterParam.consumptionActionGauge = 0;
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
@@ -291,7 +292,7 @@ namespace Frontier.Entities
         {
             for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
             {
-                tmpParam.SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+                _params.TmpParam.SetEndCommandStatus((Command.COMMAND_TAG)i, true); // 代替先
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -307,7 +308,7 @@ namespace Frontier.Entities
         /// </summary>
         public void BePossibleAction()
         {
-            tmpParam.Reset();
+            _params.TmpParam.Reset();   // 代替先
 
             // マテリアルの色味を通常の色味に戻す
             for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
@@ -331,12 +332,12 @@ namespace Frontier.Entities
             }
 
             // スキル使用ONの状態であれば、OFFにするだけなので、コストチェックする必要がない
-            if( tmpParam.isUseSkills[skillIdx] )
+            if( _params.TmpParam.isUseSkills[skillIdx] )
             {
                 return true;
             }
 
-            return characterParam.CanUseEquipSkill(skillIdx, situationType);
+            return _params.CharacterParam.CanUseEquipSkill(skillIdx, situationType);
         }
 
         /// <summary>
@@ -358,10 +359,8 @@ namespace Frontier.Entities
         /// </summary>
         public void ResetOnEndOfAttackSequence()
         {
-            // 対戦相手情報をリセット
-            _opponent = null;
-            // 使用スキル情報をリセット
-            tmpParam.ResetUseSkill();
+            _opponent = null;                   // 対戦相手情報をリセット
+            _params.TmpParam.ResetUseSkill();   // 使用スキル情報をリセット
         }
 
         /// <summary>
@@ -423,9 +422,9 @@ namespace Frontier.Entities
         {
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                if (!tmpParam.isUseSkills[i]) continue;
+                if(!_params.TmpParam.isUseSkills[i] ) continue;
 
-                if (characterParam.equipSkills[i] == skillID) return true;
+                if (_params.CharacterParam.equipSkills[i] == skillID) return true;
             }
 
             return false;
@@ -471,14 +470,14 @@ namespace Frontier.Entities
             var targetCoordinate = _opponent.transform.position;
             targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
             _bullet.SetTargetCoordinate(targetCoordinate);
-            var gridLength = _stageCtrl.CalcurateGridLength(tmpParam.gridIndex, _opponent.tmpParam.gridIndex);
+            var gridLength = _stageCtrl.CalcurateGridLength(_params.TmpParam.gridIndex, _opponent.Params.TmpParam.gridIndex); // 代替先
             _bullet.SetFlightTimeFromGridLength(gridLength);
             _bullet.StartUpdateCoroutine(HurtOpponentByAnimation);
 
             _isTransitNextPhaseCamera = true;   // 発射と同時に次のカメラに遷移させる
 
             // この攻撃によって相手が倒されるかどうかを判定
-            _opponent.IsDeclaredDead = (_opponent.characterParam.CurHP + _opponent.tmpParam.expectedHpChange) <= 0;
+            _opponent.IsDeclaredDead = (_opponent.Params.CharacterParam.CurHP + _opponent.Params.TmpParam.expectedHpChange) <= 0;   // 代替先
             if (!_opponent.IsDeclaredDead && 0 < AtkRemainingNum)
             {
                 --AtkRemainingNum;
@@ -498,14 +497,14 @@ namespace Frontier.Entities
             }
 
             IsAttacked = true;
-            _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
+            _opponent.Params.CharacterParam.CurHP += _opponent.Params.TmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
-            if (_opponent.tmpParam.expectedHpChange != 0)
+            if( _opponent.Params.TmpParam.expectedHpChange != 0 )
             {
-                if (_opponent.characterParam.CurHP <= 0)
+                if (_opponent.Params.CharacterParam.CurHP <= 0)
                 {
-                    _opponent.characterParam.CurHP = 0;
+                    _opponent.Params.CharacterParam.CurHP = 0;
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
@@ -515,8 +514,7 @@ namespace Frontier.Entities
                 }
             }
 
-            // ダメージUIを表示
-            _btlRtnCtrl.BtlUi.ShowDamageOnCharacter(_opponent);
+            _btlRtnCtrl.BtlUi.ShowDamageOnCharacter(_opponent); // ダメージUIを表示
         }
 
         /// <summary>
@@ -532,14 +530,14 @@ namespace Frontier.Entities
             }
 
             IsAttacked = true;
-            _opponent.characterParam.CurHP += _opponent.tmpParam.expectedHpChange;
+            _opponent.Params.CharacterParam.CurHP += _opponent.Params.TmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
-            if (_opponent.tmpParam.expectedHpChange != 0)
+            if (_opponent.Params.TmpParam.expectedHpChange != 0)
             {
-                if (_opponent.characterParam.CurHP <= 0)
+                if (_opponent.Params.CharacterParam.CurHP <= 0)
                 {
-                    _opponent.characterParam.CurHP = 0;
+                    _opponent.Params.CharacterParam.CurHP = 0;
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない

@@ -163,6 +163,7 @@ namespace Frontier
                 {
                     int prefabIndex = param.Prefab;
                     Character chara = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Character>(CharacterPrefabs[i][prefabIndex], true, false, typeof(Character).Name);
+                    chara.Init();
 
                     // 弾オブジェクトが設定されていれば生成
                     // 使用時まで非アクティブにする
@@ -172,10 +173,9 @@ namespace Frontier
                         chara.SetBullet(bullet);
                     }
 
-                    // ファイルから読み込んだパラメータを設定
-                    ApplyCharacterParams(ref chara.characterParam, param);
-                    chara.Init();
-                    if( !chara.characterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER) )
+                    chara.Params.CharacterParam.Apply( param ); // ファイルから読み込んだパラメータを設定
+
+                    if ( !chara.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER) )
                     {
                         var npc = chara as Npc;
                         npc.SetThinkType((Npc.ThinkingType)param.ThinkType);
@@ -220,30 +220,6 @@ namespace Frontier
         }
 
         /// <summary>
-        /// キャラクターパラメータを適応させます
-        /// </summary>
-        /// <param name="param">適応先のキャラクターパラメータ</param>
-        /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        private void ApplyCharacterParams(ref CharacterParameter param, in CharacterParamData fdata)
-        {
-            param.characterTag = (CHARACTER_TAG)fdata.CharacterTag;
-            param.characterIndex = fdata.CharacterIndex;
-            param.CurHP = param.MaxHP = fdata.MaxHP;
-            param.Atk = fdata.Atk;
-            param.Def = fdata.Def;
-            param.moveRange = fdata.MoveRange;
-            param.attackRange = fdata.AtkRange;
-            param.curActionGauge = param.maxActionGauge = fdata.ActGaugeMax;
-            param.recoveryActionGauge = fdata.ActRecovery;
-            param.initGridIndex = fdata.InitGridIndex;
-            param.initDir = (Constants.Direction)fdata.InitDir;
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
-            {
-                param.equipSkills[i] = (SkillsData.ID)fdata.Skills[i];
-            }
-        }
-
-        /// <summary>
         /// スキルデータを適応させます
         /// </summary>
         /// <param name="data">適応先のスキルデータ</param>
@@ -274,8 +250,8 @@ namespace Frontier
                 Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (player == null) return;
 
-                player.characterParam = param;
                 player.Init();
+                player.Params.CharacterParam = param;
 
                 _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(player);
             }
@@ -284,8 +260,8 @@ namespace Frontier
                 Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
                 if (enemy == null) return;
 
-                enemy.characterParam = param;
                 enemy.Init();
+                enemy.Params.CharacterParam = param;
 
                 _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(enemy);
             }

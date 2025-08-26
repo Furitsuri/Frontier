@@ -33,17 +33,17 @@ namespace Frontier
 
             // 移動開始前の情報を保存
             _selectPlayer.AdaptPrevMoveInfo();
-            var param = _selectPlayer.characterParam;
+            var param = _selectPlayer.Params.CharacterParam;
 
             // キャラクターの現在の位置情報を保持
             StageController.Footprint footprint = new StageController.Footprint();
-            footprint.gridIndex = _selectPlayer.tmpParam.GetCurrentGridIndex();
+            footprint.gridIndex = _selectPlayer.Params.TmpParam.GetCurrentGridIndex();
             footprint.rotation  = _selectPlayer.transform.rotation;
             _stageCtrl.LeaveFootprint(footprint);
             _stageCtrl.BindGridCursorControllerState( GridCursorController.State.MOVE, _selectPlayer);
 
             // 移動可能情報を登録及び表示
-            bool isAttackable = !_selectPlayer.tmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
+            bool isAttackable = !_selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
         }
@@ -66,7 +66,7 @@ namespace Frontier
                     // 移動目的座標の更新
                     GridInfo info;
                     var curGridIndex    = stageGrid.GetCurrentGridIndex();
-                    var plGridIndex     = _selectPlayer.tmpParam.GetCurrentGridIndex();
+                    var plGridIndex     = _selectPlayer.Params.TmpParam.GetCurrentGridIndex();
                     stageGrid.FetchCurrentGridInfo(out info);
 
                     // 移動更新
@@ -74,7 +74,7 @@ namespace Frontier
                     break;
                 case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _selectPlayer.tmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
+                    _selectPlayer.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
                     // コマンド選択に戻る
                     Back();
 
@@ -166,7 +166,7 @@ namespace Frontier
 
             GridInfo info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex = _selectPlayer.tmpParam.GetCurrentGridIndex();
+            var plGridIndex = _selectPlayer.Params.TmpParam.GetCurrentGridIndex();
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 出発地点と同一グリッドであれば戻る
