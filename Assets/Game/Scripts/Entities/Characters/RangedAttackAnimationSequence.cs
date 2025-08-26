@@ -41,7 +41,7 @@ namespace Frontier.Entities
         public void StartSequence()
         {
             _character.IsAttacked       = false;
-            _character.AtkRemainingNum  = _character.skillModifiedParam.AtkNum - 1;   // UŒ‚‰ñ”‚ğ1Á”ï
+            _character.AtkRemainingNum  = _character.Params.SkillModifiedParam.AtkNum - 1;   // UŒ‚‰ñ”‚ğ1Á”ï
             var attackAnimtag           = AttackAnimTags[_character.AtkRemainingNum];
 
             _character.AnimCtrl.SetAnimator(attackAnimtag);

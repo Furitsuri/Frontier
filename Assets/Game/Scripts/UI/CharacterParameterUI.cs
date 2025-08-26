@@ -105,7 +105,7 @@ namespace Frontier
             Debug.Assert(_character != null);
 
             // パラメータ表示を反映
-            UpdateParamRender(_character, _character.Params.CharacterParam, _character.skillModifiedParam);
+            UpdateParamRender(_character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam);
             // カメラ描画を反映
             UpdateCamraRender(_character, _character.camParam);
         }

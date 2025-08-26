@@ -349,11 +349,11 @@ namespace Frontier.Battle
                 return;
             }
 
-            int targetDef = (int)Mathf.Floor((target.Params.CharacterParam.Def + target.modifiedParam.Def) * target.skillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.Params.CharacterParam.Atk + attacker.modifiedParam.Atk) * attacker.skillModifiedParam.AtkMagnification);
-            int changeHP = (targetDef - attackerAtk);
+            int targetDef   = (int)Mathf.Floor((target.Params.CharacterParam.Def + target.Params.ModifiedParam.Def) * target.Params.SkillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.Params.CharacterParam.Atk + attacker.Params.ModifiedParam.Atk) * attacker.Params.SkillModifiedParam.AtkMagnification);
+            int changeHP    = (targetDef - attackerAtk);
 
-            target.Params.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.skillModifiedParam.AtkNum, 0) );
+            target.Params.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.Params.SkillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>

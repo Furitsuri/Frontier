@@ -38,8 +38,6 @@ namespace Frontier.Entities
         protected ParrySkillNotifier _parrySkill            = null;
         protected CharacterParameters _params;
 
-        public ModifiedParameter modifiedParam;
-        public SkillModifiedParameter skillModifiedParam;
         public CameraParameter camParam;
 
         public int AtkRemainingNum { get; set; } = 0;   // 攻撃シーケンスにおける残り攻撃回数
@@ -187,8 +185,6 @@ namespace Frontier.Entities
         /// </summary>
         virtual public void Init()
         {
-            modifiedParam.Init();
-            skillModifiedParam.Init();
             _params.Init();
 
             ResetElapsedTime();
