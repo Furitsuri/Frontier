@@ -124,7 +124,7 @@ namespace Frontier
         /// <returns>有効か否か</returns>
         public bool IsValidTargetCharacterIndex()
         {
-            return (_targetCharacter != null && _targetCharacter.characterParam.characterTag != CHARACTER_TAG.ENEMY);
+            return (_targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY);
         }
 
         /// <summary>

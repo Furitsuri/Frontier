@@ -12,9 +12,8 @@ using Zenject;
 /// </summary>
 public class ParrySkillNotifier
 {
+    private Character _skillUser = null;    // スキル使用者
     private CombatSkillEventController _combatSkillEventCtrl    = null;
-    // スキル使用者
-    private Character _skillUser = null;
 
     [Inject]
     public void Construct( CombatSkillEventController combatSkillEventCtrl )
@@ -59,7 +58,7 @@ public class ParrySkillNotifier
     /// 対戦相手の攻撃をパリィ(弾く)するイベントを発生させます
     /// ※攻撃アニメーションから呼び出されます
     /// </summary>
-    virtual public void ParryOpponentEvent()
+    public void ParryOpponentEvent()
     {
         ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
         if (parryCtrl == null) return;
@@ -84,7 +83,7 @@ public class ParrySkillNotifier
     /// <summary>
     /// パリィを受けた際のイベントを発生させます
     /// </summary>
-    virtual public void ParryRecieveEvent()
+    public void ParryRecieveEvent()
     {
         Character opponent = _skillUser.GetOpponentChara();
         NullCheck.AssertNotNull(opponent);

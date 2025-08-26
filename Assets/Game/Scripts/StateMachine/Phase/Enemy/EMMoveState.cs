@@ -31,7 +31,7 @@ namespace Frontier
             _enemy = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_enemy != null);
             _departGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var param = _enemy.characterParam;
+            var param = _enemy.Params.CharacterParam;
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
             _movePathList = _enemy.GetAi().GetProposedMoveRoute();
@@ -59,7 +59,7 @@ namespace Frontier
                 // 移動アニメーション開始
                 _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
                 // グリッド情報更新
-                _enemy.tmpParam.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());
+                _enemy.Params.TmpParam.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());
                 // 選択グリッドを表示
                 _stageCtrl.SetGridCursorControllerActive(true);
 
@@ -102,7 +102,7 @@ namespace Frontier
                     break;
                 case EMMovePhase.EM_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _enemy.tmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
+                    _enemy.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
 
                     // コマンド選択に戻る
                     Back();

@@ -218,8 +218,8 @@ namespace Frontier.Combat
             _ui.gameObject.SetActive(false);
 
             // 防御側の防御力と攻撃側の攻撃力からパリィ判定範囲を算出して設定
-            int selfDef = (int)Mathf.Floor( (_useParryCharacter.characterParam.Def + _useParryCharacter.modifiedParam.Def) * _useParryCharacter.skillModifiedParam.DefMagnification );
-            int oppoAtk = (int)Mathf.Floor( (_attackCharacter.characterParam.Atk + _attackCharacter.modifiedParam.Atk) * _attackCharacter.skillModifiedParam.AtkMagnification );
+            int selfDef = (int)Mathf.Floor( (_useParryCharacter.Params.CharacterParam.Def + _useParryCharacter.modifiedParam.Def) * _useParryCharacter.skillModifiedParam.DefMagnification );
+            int oppoAtk = (int)Mathf.Floor( (_attackCharacter.Params.CharacterParam.Atk + _attackCharacter.modifiedParam.Atk) * _attackCharacter.skillModifiedParam.AtkMagnification );
             CalcurateParryRingParam(selfDef, oppoAtk);
 
             // パリィ中のキャラクタースローモーション速度を設定

@@ -1,4 +1,4 @@
-﻿namespace Frontier.Combat
+﻿namespace Frontier.Entities
 {
     /// <summary>
     /// 特定のスキル使用時のみに上乗せされるパラメータです
@@ -8,10 +8,15 @@
         public int AtkNum;
         public float AtkMagnification;
         public float DefMagnification;
-    
-        public void Reset()
+        
+        public void Init()
         {
             AtkNum = 1; AtkMagnification = 1f; DefMagnification = 1f;
+        }
+
+        public void Reset()
+        {
+            Init();
         }
     }
 }

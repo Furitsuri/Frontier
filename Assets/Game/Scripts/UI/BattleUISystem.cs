@@ -138,11 +138,11 @@ namespace Frontier
 
         public void ShowDamageOnCharacter( Character chara )
         {
-            SetDamageUIPosByCharaPos(chara, chara.tmpParam.expectedHpChange);
+            SetDamageUIPosByCharaPos(chara, chara.Params.TmpParam.expectedHpChange);
             ToggleDamageUI(true);
         }
 
-        public void TogglePhaseUI(bool isActive, BattleRoutineController.TurnType turntype)
+        public void TogglePhaseUI(bool isActive, TurnType turntype)
         {
             Phase.gameObject.SetActive(isActive);
             Phase.PhaseText[(int)turntype].gameObject.SetActive(isActive);

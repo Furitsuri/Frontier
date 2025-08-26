@@ -48,7 +48,7 @@ namespace Frontier
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
                 if (!_isValidTarget)
                 {
-                    _currentEnemy.tmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _currentEnemy.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                 }
 
                 break;
@@ -99,7 +99,7 @@ namespace Frontier
         {
             if (!_isValidDestination) return false;
 
-            if ( em.tmpParam.IsEndCommand( Command.COMMAND_TAG.MOVE ) ) return false;
+            if ( em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
@@ -113,7 +113,7 @@ namespace Frontier
         {
             if ( !_isValidTarget ) return false;
 
-            if ( em.tmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) ) return false;
+            if ( em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) ) return false;
 
             return true;
         }
@@ -125,13 +125,13 @@ namespace Frontier
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if ( em.tmpParam.IsEndCommand( Command.COMMAND_TAG.MOVE ) && em.tmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            if ( em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.MOVE ) && em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
             {
-                em.tmpParam.EndAction();
+                em.Params.TmpParam.EndAction();
                 return true;
             }
 
-            if ( em.tmpParam.IsEndAction() ) return true;
+            if ( em.Params.TmpParam.IsEndAction() ) return true;
 
             return false;
         }

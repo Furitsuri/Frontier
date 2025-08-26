@@ -4,33 +4,12 @@ using System.Collections;
 using UnityEngine;
 using Zenject;
 using Frontier.Combat;
+using System;
 
 namespace Frontier.Battle
 {
     public class BattleRoutineController : FocusRoutineBase
     {
-        /// <summary>
-        /// バトル状態の遷移
-        /// </summary>
-        enum BattlePhase
-        {
-            BATTLE_START = 0,
-            BATTLE_PLAYER_COMMAND,
-            BATTLE_RESULT,
-            BATTLE_END,
-        }
-
-        /// <summary>
-        /// 戦闘におけるターンの種類
-        /// </summary>
-        public enum TurnType
-        {
-            PLAYER_TURN = 0,
-            ENEMY_TURN,
-
-            NUM
-        }
-
         [Header("スキルコントローラオブジェクト")]
         [SerializeField]
         private GameObject _skillCtrlObject;
@@ -39,18 +18,17 @@ namespace Frontier.Battle
         [SerializeField]
         private GameObject _btlFileLoadObject;
 
-        private IInstaller _installer               = null;
+        // DIで参照されるインスタンス
         private HierarchyBuilderBase _hierarchyBld  = null;
         private StageController _stgCtrl            = null;
-        private IUiSystem _uiSystem                 = null;
+        private BattleUISystem _btlUi               = null;
 
         private BattlePhase _phase;
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
-        private BattleUISystem _battleUi                        = null;
-        private PhaseHandlerBase _currentPhaseHdlr              = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
-        private BattleTimeScaleController _battleTimeScaleCtrl  = new();
+        private BattleTimeScaleController _battleTimeScaleCtrl  = null;
+        private PhaseHandlerBase _currentPhaseHdlr              = null;
         private PhaseHandlerBase[] _phaseHdlrs                  = new PhaseHandlerBase[((int)TurnType.NUM)];
         
         private bool _transitNextPhase = false;
@@ -58,31 +36,26 @@ namespace Frontier.Battle
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
         public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
-        public BattleUISystem BtlUi => _battleUi;
+        public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
 
         /// <summary>
         /// Diコンテナから引数を注入します
         /// </summary>
-        /// <param name="installer">DIインストーラ</param>
         /// <param name="hierarchyBld">オブジェクト・コンポーネント作成</param>
-        /// <param name="inputFcd">入力システムのファサード</param>
         /// <param name="stgCtrl">ステージのコントローラ</param>
-        /// <param name="uiSystem">UIシステム</param>
+        /// <param name="btlUi">戦闘UI</param>
         [Inject]
-        void Construct(IInstaller installer, HierarchyBuilderBase hierarchyBld, StageController stgCtrl, IUiSystem uiSystem)
+        void Construct(HierarchyBuilderBase hierarchyBld, StageController stgCtrl, BattleUISystem btlUi)
         {
-            _installer      = installer;
             _hierarchyBld   = hierarchyBld;
             _stgCtrl        = stgCtrl;
-            _uiSystem       = uiSystem;
+            _btlUi          = btlUi;
         }
 
         void Awake()
         {
-            Debug.Assert(_uiSystem != null, "UISystemのインスタンスが生成されていません。Injectの設定を確認してください。");
-
             var btlCameraObj = GameObject.FindWithTag("MainCamera");
             if ( btlCameraObj != null ) 
             {
@@ -99,6 +72,22 @@ namespace Frontier.Battle
             {
                 _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>(false);
                 NullCheck.AssertNotNull(_btlCharaCdr);
+            }
+
+            if( _battleTimeScaleCtrl == null)
+            {
+                _battleTimeScaleCtrl = _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>(false);
+                NullCheck.AssertNotNull( _battleTimeScaleCtrl);
+            }
+
+            Func<PhaseHandlerBase>[] phaseHdlrFactorys = new Func<PhaseHandlerBase>[]
+            {
+                () => _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false),
+                () => _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false),
+            };
+            for( int i = 0; i < _phaseHdlrs.Length; ++i )
+            {
+                if( _phaseHdlrs[i] == null ) _phaseHdlrs[i] = phaseHdlrFactorys[i]();
             }
         }
 
@@ -139,8 +128,8 @@ namespace Frontier.Battle
         /// </summary>
         public void StartStageClearAnim()
         {
-            _battleUi.ToggleStageClearUI(true);
-            _battleUi.StartStageClearAnim();
+            _btlUi.ToggleStageClearUI(true);
+            _btlUi.StartStageClearAnim();
         }
 
         /// <summary>
@@ -148,8 +137,8 @@ namespace Frontier.Battle
         /// </summary>
         public void StartGameOverAnim()
         {
-            _battleUi.ToggleGameOverUI(true);
-            _battleUi.StartGameOverAnim();
+            _btlUi.ToggleGameOverUI(true);
+            _btlUi.StartGameOverAnim();
         }
 
         /// <summary>
@@ -176,9 +165,6 @@ namespace Frontier.Battle
             _stgCtrl.Init(this);
             _btlCharaCdr.Init();
 
-            _battleUi = _uiSystem.BattleUi;
-            _installer.InstallBindings<BattleUISystem>(_battleUi);
-
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             if (!Methods.IsDebugScene())
@@ -187,20 +173,12 @@ namespace Frontier.Battle
                 _btlFileLoader.CharacterLoad(_currentStageIndex);
             }
 
-            _phaseHdlrs[(int)TurnType.PLAYER_TURN]  = _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false);
-            _phaseHdlrs[(int)TurnType.ENEMY_TURN]   = _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false);
-            _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN];
-
-            _btlCharaCdr.PlaceAllCharactersAtStartPosition();
-
-            // グリッド情報を更新
-            _stgCtrl.UpdateGridInfo();
-            // 初期フェイズを設定
-            _phase = BattlePhase.BATTLE_START;
-            // ファイル読込マネージャにカメラパラメータをロードさせる
-            _btlFileLoader.CameraParamLord(_battleCameraCtrl);
-            // スキルデータの読込
-            _btlFileLoader.SkillDataLord();
+            _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
+            _stgCtrl.UpdateGridInfo();                                  // グリッド情報を更新
+            _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
+            _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN]; // PLAYERターンから開始(MEMO : ステージによって変更する場合はステージ読込処理から変更出来るように修正)
+            _btlFileLoader.CameraParamLord(_battleCameraCtrl);          // ファイル読込マネージャにカメラパラメータをロードさせる
+            _btlFileLoader.SkillDataLord();                             // スキルデータの読込
         }
 
         override public void UpdateRoutine()
@@ -225,7 +203,7 @@ namespace Frontier.Battle
             SelectCharacterInfo = new CharacterHashtable.Key(info.charaTag, info.charaIndex);
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if (_battleUi.StageClear.isActiveAndEnabled || _battleUi.GameOver.isActiveAndEnabled) return;
+            if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
 
             // フェーズマネージャを更新
             _transitNextPhase = _currentPhaseHdlr.Update();
@@ -235,9 +213,9 @@ namespace Frontier.Battle
         {
             base.LateUpdateRoutine();
 
-            if (_battleUi.StageClear.isActiveAndEnabled) return;
+            if (_btlUi.StageClear.isActiveAndEnabled) return;
 
-            if (_battleUi.GameOver.isActiveAndEnabled) return;
+            if (_btlUi.GameOver.isActiveAndEnabled) return;
 
             // 勝利、全滅チェックを行う
             if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }

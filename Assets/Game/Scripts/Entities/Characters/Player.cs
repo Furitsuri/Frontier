@@ -42,7 +42,7 @@ namespace Frontier.Entities
             if ( 0 <= gridInfo.estimatedMoveRange && ( !gridInfo.IsExistCharacter() || gridInfo.IsMatchExistCharacter(this) ) )
             {
                 _movementDestination    = gridInfo.charaStandPos;
-                tmpParam.gridIndex      = gridIndex;
+                _params.TmpParam.gridIndex      = gridIndex;
             }
 
             Vector3 dir         = (_movementDestination - transform.position).normalized;
@@ -74,7 +74,7 @@ namespace Frontier.Entities
         /// </summary>
         public void AdaptPrevMoveInfo()
         {
-            _prevMoveInfo.tmpParam  = tmpParam.Clone();
+            _prevMoveInfo.tmpParam  = _params.TmpParam.Clone();
             _prevMoveInfo.rotDir    = transform.rotation;
         }
 
@@ -91,8 +91,8 @@ namespace Frontier.Entities
         /// </summary>
         public void RewindToPreviousState()
         {
-            tmpParam = _prevMoveInfo.tmpParam;
-            SetPosition( tmpParam.gridIndex, _prevMoveInfo.rotDir );
+            _params.TmpParam = _prevMoveInfo.tmpParam;
+            SetPosition( _params.TmpParam.gridIndex, _prevMoveInfo.rotDir );
             // グリッド情報を更新
             _stageCtrl.UpdateGridInfo();
         }
@@ -129,7 +129,7 @@ namespace Frontier.Entities
             {
                 if( i == (int)Command.COMMAND_TAG.MOVE )
                 {
-                    if (!tmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE))
+                    if (!_params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE))
                     {
                         isPossible = false;
                         break;
@@ -137,7 +137,7 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    if (tmpParam.IsEndCommand((Command.COMMAND_TAG)i))
+                    if (_params.TmpParam.IsEndCommand((Command.COMMAND_TAG)i))
                     {
                         isPossible = false;
                         break;
@@ -166,10 +166,10 @@ namespace Frontier.Entities
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                if (!characterParam.IsValidSkill(i)) continue;
+                if (!_params.CharacterParam.IsValidSkill(i)) continue;
 
                 // 指定されたタイプ以外のスキルは無視する
-                var skillType = SkillsData.data[(int)characterParam.equipSkills[i]].Type;
+                var skillType = SkillsData.data[(int)_params.CharacterParam.equipSkills[i]].Type;
                 _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).SetUseable(skillType == type);
                 if (skillType != type)
                 {
@@ -179,21 +179,21 @@ namespace Frontier.Entities
                 // キーが押下されたら、キーに対応するスキルの使用状態を切り替える
                 if (Input.GetKeyUp(keyCodes[i]))
                 {
-                    tmpParam.isUseSkills[i] = !tmpParam.isUseSkills[i];
+                    _params.TmpParam.isUseSkills[i] = !_params.TmpParam.isUseSkills[i];
 
-                    int skillID = (int)characterParam.equipSkills[i];
+                    int skillID = (int)_params.CharacterParam.equipSkills[i];
                     var skillData = SkillsData.data[skillID];
 
-                    if (tmpParam.isUseSkills[i])
+                    if (_params.TmpParam.isUseSkills[i])
                     {
                         // コストが現在のアクションゲージ値を越えている場合は無視
-                        if (characterParam.curActionGauge < characterParam.consumptionActionGauge + skillData.Cost)
+                        if (_params.CharacterParam.curActionGauge < _params.CharacterParam.consumptionActionGauge + skillData.Cost)
                         {
-                            tmpParam.isUseSkills[i] = false;
+                            _params.TmpParam.isUseSkills[i] = false;
                             continue;
                         }
 
-                        characterParam.consumptionActionGauge += skillData.Cost;
+                        _params.CharacterParam.consumptionActionGauge += skillData.Cost;
 
                         skillModifiedParam.AtkNum += skillData.AddAtkNum;
                         skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
@@ -201,14 +201,14 @@ namespace Frontier.Entities
                     }
                     else
                     {
-                        characterParam.consumptionActionGauge -= skillData.Cost;
+                        _params.CharacterParam.consumptionActionGauge -= skillData.Cost;
 
                         skillModifiedParam.AtkNum -= skillData.AddAtkNum;
                         skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
                         skillModifiedParam.DefMagnification -= skillData.AddDefMag;
                     }
 
-                    _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).SetFlickEnabled(tmpParam.isUseSkills[i]);
+                    _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).SetFlickEnabled(_params.TmpParam.isUseSkills[i]);
                 }
             }
         }
@@ -220,27 +220,27 @@ namespace Frontier.Entities
         /// <returns>切替の有無</returns>
         override public bool ToggleUseSkillks(int index)
         {
-            tmpParam.isUseSkills[index] = !tmpParam.isUseSkills[index];
+            _params.TmpParam.isUseSkills[index] = !_params.TmpParam.isUseSkills[index];
 
-            int skillID = (int)characterParam.equipSkills[index];
+            int skillID = (int)_params.CharacterParam.equipSkills[index];
             var skillData = SkillsData.data[skillID];
 
-            if (tmpParam.isUseSkills[index])
+            if (_params.TmpParam.isUseSkills[index])
             {
-                characterParam.consumptionActionGauge += skillData.Cost;
+                _params.CharacterParam.consumptionActionGauge += skillData.Cost;
                 skillModifiedParam.AtkNum += skillData.AddAtkNum;
                 skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
                 skillModifiedParam.DefMagnification += skillData.AddDefMag;
             }
             else
             {
-                characterParam.consumptionActionGauge -= skillData.Cost;
+                _params.CharacterParam.consumptionActionGauge -= skillData.Cost;
                 skillModifiedParam.AtkNum -= skillData.AddAtkNum;
                 skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
                 skillModifiedParam.DefMagnification -= skillData.AddDefMag;
             }
 
-            _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(index).SetFlickEnabled(tmpParam.isUseSkills[index]);
+            _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(index).SetFlickEnabled(_params.TmpParam.isUseSkills[index]);
 
             return true;
         }

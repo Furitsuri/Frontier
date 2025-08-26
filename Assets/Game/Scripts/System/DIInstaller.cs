@@ -24,6 +24,7 @@ namespace Frontier
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
+            Container.Bind<BattleUISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialPresenter>().FromComponentInHierarchy().AsCached();

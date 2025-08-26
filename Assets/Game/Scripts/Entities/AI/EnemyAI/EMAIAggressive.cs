@@ -38,7 +38,7 @@ namespace Frontier
                         var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(opponent);
 
                         if (character == null) continue;
-                        var eValue = CalcurateEvaluateAttack(selfParam, character.characterParam);
+                        var eValue = CalcurateEvaluateAttack(selfParam, character.Params.CharacterParam);
                         if (maxEvaluate.eValue < eValue)
                         {
                             maxEvaluate = (candidate.gridIndex, character, eValue);
@@ -80,14 +80,14 @@ namespace Frontier
                 // 各プレイヤーが存在するグリッドの評価値を計算する
                 foreach (Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
                 {
-                    int destGridIndex = player.tmpParam.GetCurrentGridIndex();
+                    int destGridIndex = player.Params.TmpParam.GetCurrentGridIndex();
                     ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
                     // 目的座標にはキャラクターがいるため、候補ルートから既に除かれているので加える
                     candidateRouteIndexs.Add(destGridIndex);
 
                     // 攻撃による評価値を加算
-                    evaluateValue += CalcurateEvaluateAttack(selfParam, player.characterParam);
+                    evaluateValue += CalcurateEvaluateAttack(selfParam, player.Params.CharacterParam);
 
                     // 経路コストの逆数を乗算(経路コストが低いほど評価値を大きくするため)
                     List<(int routeIndexs, int routeCost)> route = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, destGridIndex, candidateRouteIndexs);

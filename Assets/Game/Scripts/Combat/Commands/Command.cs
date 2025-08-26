@@ -19,7 +19,7 @@ namespace Frontier.Combat
 
         public static bool IsExecutableCommandBase(Character character)
         {
-            if (character.tmpParam.IsEndAction()) return false;
+            if (character.Params.TmpParam.IsEndAction()) return false;
 
             return true;
         }
@@ -28,17 +28,17 @@ namespace Frontier.Combat
         {
             if (!IsExecutableCommandBase(character)) return false;
 
-            return !character.tmpParam.IsEndCommand(COMMAND_TAG.MOVE);
+            return !character.Params.TmpParam.IsEndCommand(COMMAND_TAG.MOVE);
         }
 
         public static bool IsExecutableAttackCommand(Character character, StageController stageCtrl)
         {
             if (!IsExecutableCommandBase(character)) return false;
 
-            if (character.tmpParam.IsEndCommand(COMMAND_TAG.ATTACK)) return false;
+            if (character.Params.TmpParam.IsEndCommand(COMMAND_TAG.ATTACK)) return false;
 
             // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-            bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.tmpParam.GetCurrentGridIndex(), character.characterParam.attackRange, character.characterParam.characterTag);
+            bool isExecutable = stageCtrl.RegistAttackAbleInfo(character.Params.TmpParam.GetCurrentGridIndex(), character.Params.CharacterParam.attackRange, character.Params.CharacterParam.characterTag);
 
             // 実行不可である場合は登録した攻撃情報を全てクリア
             if (!isExecutable)
