@@ -101,13 +101,10 @@ namespace Frontier
         // Update is called once per frame
         void Update()
         {
-            // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
-            Debug.Assert(_character != null);
+            Debug.Assert(_character != null);   // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
 
-            // パラメータ表示を反映
-            UpdateParamRender(_character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam);
-            // カメラ描画を反映
-            UpdateCamraRender(_character, _character.camParam);
+            UpdateParamRender(_character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam);  // パラメータ表示を反映
+            UpdateCameraRender(_character, _character.Params.CameraParam);  // カメラ描画を反映
         }
 
         /// <summary>
@@ -219,7 +216,7 @@ namespace Frontier
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateCamraRender(Character selectCharacter, in CameraParameter camParam)
+        void UpdateCameraRender(Character selectCharacter, in CameraParameter camParam)
         {
             Transform playerTransform = selectCharacter.transform;
             Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * camParam.UICameraLengthZ;

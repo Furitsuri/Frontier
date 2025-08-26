@@ -1,16 +1,21 @@
 using Frontier.Entities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Frontier.BattleFileLoader;
 
+[Serializable]
 public class CharacterParameters
 {
+    [SerializeField]
+    [Header("ƒJƒƒ‰")]
+    private CameraParameter _camParam;
+
     private CharacterParameter _characterParam;
     private TemporaryParameter _tmpParam;
     private ModifiedParameter _modifiedParam;
     private SkillModifiedParameter _skillModifiedParam;
-    private CameraParameter _camParam;
 
     public ref CharacterParameter CharacterParam => ref _characterParam;
     public ref TemporaryParameter TmpParam => ref _tmpParam;

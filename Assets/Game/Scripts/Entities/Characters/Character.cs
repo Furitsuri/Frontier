@@ -17,6 +17,10 @@ namespace Frontier.Entities
         [Header("弾オブジェクト")]
         private GameObject _bulletObject;
 
+        [SerializeField]
+        [Header("パラメータ群")]
+        protected CharacterParameters _params;
+
         // Injectされるインスタンス
         protected HierarchyBuilderBase _hierarchyBld                = null;
         protected BattleRoutineController _btlRtnCtrl               = null;
@@ -36,9 +40,6 @@ namespace Frontier.Entities
         protected Character _opponent                       = null; // 戦闘時の対戦相手
         protected Bullet _bullet                            = null; // 矢などの弾
         protected ParrySkillNotifier _parrySkill            = null;
-        protected CharacterParameters _params;
-
-        public CameraParameter camParam;
 
         public int AtkRemainingNum { get; set; } = 0;   // 攻撃シーケンスにおける残り攻撃回数
         public float ElapsedTime { get; set; } = 0f;
@@ -80,8 +81,6 @@ namespace Frontier.Entities
 
         void Awake()
         {
-            _params = _hierarchyBld.InstantiateWithDiContainer<CharacterParameters>( false );
-
             _timeScale.OnValueChange    = AnimCtrl.UpdateTimeScale;
             IsDeclaredDead              = false;
             _params.Awake();
@@ -288,7 +287,7 @@ namespace Frontier.Entities
         {
             for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
             {
-                _params.TmpParam.SetEndCommandStatus((Command.COMMAND_TAG)i, true); // 代替先
+                _params.TmpParam.SetEndCommandStatus((Command.COMMAND_TAG)i, true);
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -304,7 +303,7 @@ namespace Frontier.Entities
         /// </summary>
         public void BePossibleAction()
         {
-            _params.TmpParam.Reset();   // 代替先
+            _params.TmpParam.Reset();
 
             // マテリアルの色味を通常の色味に戻す
             for (int i = 0; i < _textureMaterialsAndColors.Count; ++i)
@@ -438,7 +437,9 @@ namespace Frontier.Entities
         /// <returns>対戦相手</returns>
         public Character GetOpponentChara() { return _opponent; }
 
-        #region CALL_BY_ANIMATION
+        // アニメーションのイベントフラグから呼ばれる関数群です。
+        // Unityの仕様上、アニメーションから呼び出される関数はCharacterに直接定義されている必要があるため、他クラスには分離出来ません。
+        #region CALL_BY_ANIMATION 
 
         /// <summary>
         /// 死亡処理を開始します
@@ -461,19 +462,19 @@ namespace Frontier.Entities
 
             // 射出地点、目標地点などを設定して弾を発射
             var firingPoint = transform.position;
-            firingPoint.y += camParam.UICameraLookAtCorrectY;
+            firingPoint.y += _params.CameraParam.UICameraLookAtCorrectY;
             _bullet.SetFiringPoint(firingPoint);
             var targetCoordinate = _opponent.transform.position;
-            targetCoordinate.y += _opponent.camParam.UICameraLookAtCorrectY;
+            targetCoordinate.y += _opponent.Params.CameraParam.UICameraLookAtCorrectY;
             _bullet.SetTargetCoordinate(targetCoordinate);
-            var gridLength = _stageCtrl.CalcurateGridLength(_params.TmpParam.gridIndex, _opponent.Params.TmpParam.gridIndex); // 代替先
+            var gridLength = _stageCtrl.CalcurateGridLength(_params.TmpParam.gridIndex, _opponent.Params.TmpParam.gridIndex);
             _bullet.SetFlightTimeFromGridLength(gridLength);
             _bullet.StartUpdateCoroutine(HurtOpponentByAnimation);
 
             _isTransitNextPhaseCamera = true;   // 発射と同時に次のカメラに遷移させる
 
             // この攻撃によって相手が倒されるかどうかを判定
-            _opponent.IsDeclaredDead = (_opponent.Params.CharacterParam.CurHP + _opponent.Params.TmpParam.expectedHpChange) <= 0;   // 代替先
+            _opponent.IsDeclaredDead = (_opponent.Params.CharacterParam.CurHP + _opponent.Params.TmpParam.expectedHpChange) <= 0;
             if (!_opponent.IsDeclaredDead && 0 < AtkRemainingNum)
             {
                 --AtkRemainingNum;

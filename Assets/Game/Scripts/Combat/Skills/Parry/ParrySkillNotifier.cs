@@ -5,22 +5,12 @@ using Frontier.Entities;
 using Unity.VisualScripting;
 using UnityEditor.Search;
 using UnityEngine;
-using Zenject;
 
 /// <summary>
 /// パリィスキルを使用するエンティティに持たせるクラスです
 /// </summary>
-public class ParrySkillNotifier
+public class ParrySkillNotifier : SkillNotifierBase
 {
-    private Character _skillUser = null;    // スキル使用者
-    private CombatSkillEventController _combatSkillEventCtrl    = null;
-
-    [Inject]
-    public void Construct( CombatSkillEventController combatSkillEventCtrl )
-    {
-        _combatSkillEventCtrl   = combatSkillEventCtrl;
-    }
-
     /// <summary>
     /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲートを設定します
     /// </summary>
@@ -90,15 +80,6 @@ public class ParrySkillNotifier
 
         opponent.GetTimeScale.Reset();
         opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
-    }
-
-    /// <summary>
-    /// 初期化します
-    /// </summary>
-    /// <param name="user">スキルの使用者</param>
-    public void Init( Character user )
-    {
-        _skillUser = user;
     }
 
     /// <summary>
