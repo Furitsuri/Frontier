@@ -195,17 +195,17 @@ namespace Frontier.Entities
 
                         _params.CharacterParam.consumptionActionGauge += skillData.Cost;
 
-                        skillModifiedParam.AtkNum += skillData.AddAtkNum;
-                        skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
-                        skillModifiedParam.DefMagnification += skillData.AddDefMag;
+                        Params.SkillModifiedParam.AtkNum += skillData.AddAtkNum;
+                        Params.SkillModifiedParam.AtkMagnification += skillData.AddAtkMag;
+                        Params.SkillModifiedParam.DefMagnification += skillData.AddDefMag;
                     }
                     else
                     {
                         _params.CharacterParam.consumptionActionGauge -= skillData.Cost;
 
-                        skillModifiedParam.AtkNum -= skillData.AddAtkNum;
-                        skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
-                        skillModifiedParam.DefMagnification -= skillData.AddDefMag;
+                        Params.SkillModifiedParam.AtkNum -= skillData.AddAtkNum;
+                        Params.SkillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
+                        Params.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
                     }
 
                     _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).SetFlickEnabled(_params.TmpParam.isUseSkills[i]);
@@ -228,16 +228,16 @@ namespace Frontier.Entities
             if (_params.TmpParam.isUseSkills[index])
             {
                 _params.CharacterParam.consumptionActionGauge += skillData.Cost;
-                skillModifiedParam.AtkNum += skillData.AddAtkNum;
-                skillModifiedParam.AtkMagnification += skillData.AddAtkMag;
-                skillModifiedParam.DefMagnification += skillData.AddDefMag;
+                Params.SkillModifiedParam.AtkNum += skillData.AddAtkNum;
+                Params.SkillModifiedParam.AtkMagnification += skillData.AddAtkMag;
+                Params.SkillModifiedParam.DefMagnification += skillData.AddDefMag;
             }
             else
             {
                 _params.CharacterParam.consumptionActionGauge -= skillData.Cost;
-                skillModifiedParam.AtkNum -= skillData.AddAtkNum;
-                skillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
-                skillModifiedParam.DefMagnification -= skillData.AddDefMag;
+                Params.SkillModifiedParam.AtkNum -= skillData.AddAtkNum;
+                Params.SkillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
+                Params.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
             }
 
             _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(index).SetFlickEnabled(_params.TmpParam.isUseSkills[index]);

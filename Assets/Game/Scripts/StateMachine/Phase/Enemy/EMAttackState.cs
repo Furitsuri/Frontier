@@ -134,9 +134,9 @@ namespace Frontier
             }
             // 使用スキルコスト見積もりをリセット
             _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-            _attackCharacter.skillModifiedParam.Reset();
+            _attackCharacter.Params.SkillModifiedParam.Reset();
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-            _targetCharacter.skillModifiedParam.Reset();
+            _targetCharacter.Params.SkillModifiedParam.Reset();
             // グリッド状態の描画をクリア
             _stageCtrl.UpdateGridInfo();
             _stageCtrl.ClearGridMeshDraw();
