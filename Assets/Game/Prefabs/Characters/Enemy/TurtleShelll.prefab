@@ -904,22 +904,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletObject: {fileID: 0}
-  param:
-    characterTag: 1
-    characterIndex: 0
-    MaxHP: 0
-    CurHP: 0
-    Atk: 0
-    Def: 0
-    moveRange: 0
-    attackRange: 0
-    maxActionGauge: 0
-    curActionGauge: 0
-    recoveryActionGauge: 0
-    consumptionActionGauge: 0
-    initGridIndex: 0
-    initDir: 0
-    equipSkills: 
+  _params:
+    _camParam:
+      OffsetOnAtkSequence: {x: 0, y: 0, z: 0}
+      UICameraLengthY: 0.8
+      UICameraLengthZ: 1.4
+      UICameraLookAtCorrectY: 0.45
   camParam:
     OffsetOnAtkSequence: {x: 0, y: 0, z: 0}
     UICameraLengthY: 0.8

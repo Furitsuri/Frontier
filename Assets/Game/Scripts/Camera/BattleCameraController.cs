@@ -296,7 +296,7 @@ namespace Frontier
             _prevCameraPosition     = transform.position;
             _cameraBaseTransform    = cameraFromChara.transform;
             _lookAtTransform        = cameraToChara.transform;
-            _characterCameraOffset  = cameraFromChara.camParam.OffsetOnAtkSequence;
+            _characterCameraOffset  = cameraFromChara.Params.CameraParam.OffsetOnAtkSequence;
 
             // ランダムな値を用いて、カメラ移動のパターンデータから使用するデータを取得する
             int cameraIndex             = new System.Random().Next(0, cameraParamDatas.Count);
