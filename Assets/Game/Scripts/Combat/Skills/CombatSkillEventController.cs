@@ -35,7 +35,7 @@ namespace Frontier.Combat
             }
         }
 
-        public override void Exit()
+        override public void Exit()
         {
             Debug.Assert( _currentSkillHandler != null );
 

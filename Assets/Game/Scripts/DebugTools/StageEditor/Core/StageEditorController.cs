@@ -92,7 +92,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorView.UpdateText(_editMode, _refParams.SelectedType, _refParams.SelectedHeight);
         }
 
-        public override void LateUpdateRoutine()
+        override public void LateUpdateRoutine()
         {
             _stageEditorHandler.LateUpdate();
         }

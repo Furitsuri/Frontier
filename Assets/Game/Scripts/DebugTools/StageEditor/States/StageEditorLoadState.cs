@@ -2,7 +2,7 @@
 {
     public class StageEditorLoadState : StageEditorSaveLoadState
     {
-        public override void Init()
+        override public void Init()
         {
             SetWordCallback("Load Completed!");
 

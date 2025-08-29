@@ -10,7 +10,7 @@ namespace Frontier.Entities
         /// プレイヤーキャラクターが移動を開始する前の情報です
         /// 移動後に状態を巻き戻す際に使用します
         /// </summary>
-        private struct PrevMoveInfo
+        public struct PrevMoveInfo
         {
             public TemporaryParameter tmpParam;
             public Quaternion rotDir;
@@ -29,6 +29,8 @@ namespace Frontier.Entities
         private Vector3 _movementDestination = Vector3.zero;
         private PrevMoveInfo _prevMoveInfo;
 
+        public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
+
         /// <summary>
         /// プレイヤーキャラクターの移動時の更新処理を行います
         /// </summary>
@@ -41,8 +43,8 @@ namespace Frontier.Entities
             // 移動可のグリッドに対してのみ目的地を更新(自身を除くキャラクターが存在するグリッドには移動させない)
             if ( 0 <= gridInfo.estimatedMoveRange && ( !gridInfo.IsExistCharacter() || gridInfo.IsMatchExistCharacter(this) ) )
             {
-                _movementDestination    = gridInfo.charaStandPos;
-                _params.TmpParam.gridIndex      = gridIndex;
+                _movementDestination        = gridInfo.charaStandPos;
+                _params.TmpParam.gridIndex  = gridIndex;
             }
 
             Vector3 dir         = (_movementDestination - transform.position).normalized;

@@ -44,11 +44,7 @@ namespace Frontier
         {
             base.Init();
 
-            // 選択中のプレイヤーを取得
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull(_selectPlayer);
-
-            // 可能な行動が全て終了している場合は終了
+            // 可能な行動が全て終了している場合は即終了
             if (_selectPlayer.Params.TmpParam.IsEndAction())
             {
                 return;
@@ -90,8 +86,15 @@ namespace Frontier
         /// </summary>
         override public void ExitState()
         {
-            // UIを非表示
-            _uiSystem.BattleUi.TogglePLCommand(false);
+            // 移動コマンドを選択した場合は、この時点でのキャラクターの位置情報を保存する
+            // ( PlMoveStateのInitなどで保存すると、『移動ステート中に敵を直接攻撃→攻撃をキャンセルして移動に戻る』とした場合に、
+            //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
+            if ( TransitIndex == (int)Command.COMMAND_TAG.MOVE )
+            {
+                _selectPlayer.AdaptPrevMoveInfo();
+            }
+
+            _uiSystem.BattleUi.TogglePLCommand(false);  // UIを非表示
 
             base.ExitState();
         }

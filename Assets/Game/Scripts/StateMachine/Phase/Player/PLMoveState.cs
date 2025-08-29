@@ -20,6 +20,7 @@ namespace Frontier
             PL_MOVE_END,
         }
 
+        const int TransitAttackStateValue = 0;
         private PlMovePhase _phase = PlMovePhase.PL_MOVE_SELECT_GRID;
         private int _departGridIndex = -1;
         private List<(int routeIndexs, int routeCost)> _movePathList = new List<(int, int)>(Constants.DIJKSTRA_ROUTE_INDEXS_MAX_NUM);
@@ -28,11 +29,17 @@ namespace Frontier
         {
             base.Init();
 
-            _phase = PlMovePhase.PL_MOVE;
-            _departGridIndex = _stageCtrl.GetCurrentGridIndex();
+            // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
+            if( _selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            {
+                _phase = PlMovePhase.PL_MOVE_END;
+                return;
+            }
+            else _phase = PlMovePhase.PL_MOVE;
+
+            _departGridIndex = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
 
             // 移動開始前の情報を保存
-            _selectPlayer.AdaptPrevMoveInfo();
             var param = _selectPlayer.Params.CharacterParam;
 
             // キャラクターの現在の位置情報を保持
@@ -81,27 +88,25 @@ namespace Frontier
                     return true;
             }
 
-            return false;
+            return (0 <= TransitIndex);
         }
 
         override public void ExitState()
         {
-            // 操作対象データをリセット
-            _stageCtrl.ClearGridCursroBind();
-            // 選択グリッドを表示
-            _stageCtrl.SetGridCursorControllerActive(true);
-            // ステージグリッド上のキャラ情報を更新
-            _stageCtrl.UpdateGridInfo();
-            // グリッド状態の描画をクリア
-            _stageCtrl.ClearGridMeshDraw();
+            _stageCtrl.SetGridCursorControllerActive(true); // 選択グリッドを表示
+            _stageCtrl.UpdateGridInfo();                    // ステージグリッド上のキャラ情報を更新
+            _stageCtrl.ClearGridMeshDraw();                 // グリッド状態の描画をクリア
 
-            base.ExitState();
+			// 直接遷移しない場合は操作対象データをリセット
+			if ( TransitIndex != TransitAttackStateValue ) _stageCtrl.ClearGridCursroBind();
+
+			base.ExitState();
         }
 
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        public override void RegisterInputCodes()
+        override public void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 
@@ -120,12 +125,17 @@ namespace Frontier
         {
             if (!CanAcceptDefault()) return false;
 
-            // 移動不可地点であれば不可
             GridInfo info;
             _stageCtrl.FetchCurrentGridInfo(out info);
-            if (info.estimatedMoveRange < 0) return false;
+            if (info.estimatedMoveRange < 0)
+            {
+                // 敵対勢力が存在している場合は直接攻撃を可能とするためにtrueを返す
+                if ( CanAttackOnMove( in info ) ) return true;
 
-            // 攻撃対象選択フェーズでない場合は終了
+                return false;  // 移動不可地点であれば不可
+            }
+
+            // 移動フェーズでない場合は終了
             if (PlMovePhase.PL_MOVE == _phase) return true;
 
             return false;
@@ -174,8 +184,13 @@ namespace Frontier
             {
                 Back();
             }
-            // キャラクターが存在していないことを確認
-            else if (0 == (info.flag & (StageController.BitFlag.PLAYER_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST)))
+            // 敵キャラクターが存在している場合は攻撃へ遷移
+            else if( Methods.CheckBitFlag( info.flag, BitFlag.ENEMY_EXIST ) )
+            {
+                TransitIndex = TransitAttackStateValue;
+            }
+            // 敵キャラクター意外が存在していないことを確認
+            else if (0 == (info.flag & (BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST)))
             {
                 _phase = PlMovePhase.PL_MOVE_END;
             }
@@ -199,6 +214,21 @@ namespace Frontier
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 移動中(現在のステート中)に攻撃へと直接遷移出来るか否かを取得します
+        /// </summary>
+        /// <param name="info">グリッド情報</param>
+        /// <returns>直接遷移の可否</returns>
+        private bool CanAttackOnMove( in GridInfo info )
+        {
+            if( info.estimatedMoveRange != TILE_ON_OPPONENT_VALUE ) return false;
+
+            // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
+            ( int, int ) ranges = _stageCtrl.CalcurateRanges( _selectPlayer.Params.TmpParam.gridIndex,  _stageCtrl.GetCurrentGridIndex());
+
+            return ranges.Item1 + ranges.Item2 <= _selectPlayer.Params.CharacterParam.attackRange;
         }
     }
 }

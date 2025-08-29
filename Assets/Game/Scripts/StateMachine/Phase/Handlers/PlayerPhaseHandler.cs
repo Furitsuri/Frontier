@@ -65,6 +65,8 @@ namespace Frontier
             RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlMoveState>(false));
             RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlAttackState>(false));
             RootNode.Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlWaitState>(false));
+            // Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)。
+            RootNode.Children[0].Children[0].AddChild(_hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>(false));
 
             CurrentNode = RootNode;
         }
