@@ -1,4 +1,4 @@
-using Frontier;
+ï»¿using Frontier;
 using Frontier.Battle;
 using Frontier.Stage;
 using Frontier.Entities;
@@ -15,15 +15,16 @@ namespace Frontier
         {
             base.Init();
 
+            // é¸æŠä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—
             _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            // MEMO : Œp³æ‚ÌƒNƒ‰ƒX‚É‚æ‚Á‚Ä‚Ínull‚ğ‹–—e‚·‚é‚½‚ßnullƒ`ƒFƒbƒN‚Ís‚í‚È‚¢
+            // MEMO : ç¶™æ‰¿å…ˆã®ã‚¯ãƒ©ã‚¹ã«ã‚ˆã£ã¦ã¯nullã‚’è¨±å®¹ã™ã‚‹ãŸã‚nullãƒã‚§ãƒƒã‚¯ã¯è¡Œã‚ãªã„
         }
 
         /// <summary>
-        /// ƒLƒƒƒ“ƒZƒ‹“ü—Í‚ğó‚¯‚½Û‚Ìˆ—‚ğs‚¢‚Ü‚·
+        /// ã‚­ãƒ£ãƒ³ã‚»ãƒ«å…¥åŠ›ã‚’å—ã‘ãŸéš›ã®å‡¦ç†ã‚’è¡Œã„ã¾ã™
         /// </summary>
-        /// <param name="isCancel">ƒLƒƒƒ“ƒZƒ‹“ü—Í</param>
-        /// <returns>“ü—ÍÀs‚Ì—L–³</returns>
+        /// <param name="isCancel">ã‚­ãƒ£ãƒ³ã‚»ãƒ«å…¥åŠ›</param>
+        /// <returns>å…¥åŠ›å®Ÿè¡Œã®æœ‰ç„¡</returns>
         override protected bool AcceptCancel( bool isCancel )
         {
             if ( !isCancel ) return false;
@@ -34,7 +35,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ˆÈ‘O‚Ìó‘Ô‚ÉŠª‚«–ß‚µ‚Ü‚·
+        /// ä»¥å‰ã®çŠ¶æ…‹ã«å·»ãæˆ»ã—ã¾ã™
         /// </summary>
         protected void Rewind()
         {

@@ -59,7 +59,7 @@ namespace Frontier
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        public override void RegisterInputCodes()
+        override public void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

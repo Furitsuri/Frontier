@@ -1,4 +1,6 @@
-﻿static public class Constants
+﻿using UnityEngine;
+
+static public class Constants
 {
     /// <summary>
     /// ステージ上の進行方向
@@ -52,6 +54,8 @@
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
     // 経路探索におけるルートインデックス最大保持数
     public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 256;
+    // タイル上に敵対勢力が存在していることを示す値
+    public const int TILE_ON_OPPONENT_VALUE = -256;
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値
@@ -66,6 +70,8 @@
     public const float CHARACTER_ROT_SPEED = 10f;
     // キャラクターの回転終了閾値
     public const float CHARACTER_ROT_THRESHOLD = 3f;
+    // キャラクターの向き判定を行う際に許容する角度誤差
+    public const float CHARACTER_ANGLE_THRESHOLD_DEGREES = 5f;
     // プレイヤーの移動操作時、目標座標に対し入力を受け付けられるグリッドサイズの割合
     public const float ACCEPTABLE_INPUT_TILE_SIZE_RATIO = 0.33f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
@@ -107,4 +113,6 @@
 #else
     public const string GUIDE_SPRITE_FILE_NAME              = "Preview Steam Deck";
 #endif
+
+    static public readonly float DOT_THRESHOLD = Mathf.Cos(CHARACTER_ANGLE_THRESHOLD_DEGREES * Mathf.Deg2Rad);
 }

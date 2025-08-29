@@ -300,6 +300,67 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 対象のキャラクターにとって、最も近い視線上のキャラクターを取得します
+        /// </summary>
+        /// <param name="baseChara">対象キャラクター</param>
+        /// <returns>最も近い視線上のキャラクター</returns>
+        public List<Character> GetLineOfSightCharacter( Character baseChara, CHARACTER_TAG tag )
+        {
+            List<Character> list = new List<Character>();
+
+            var baseGridInfo = _stgCtrl.GetGridInfo( baseChara.Params.TmpParam.gridIndex );
+            NullCheck.AssertNotNull( baseGridInfo );
+            Vector3 basePos     = baseGridInfo.charaStandPos;
+            Vector3 baseForward = baseChara.transform.forward;
+            baseForward.y = 0f;
+
+            if (_characterGroups.TryGetValue(tag, out var group))
+            {
+                foreach (var c in group)
+                {
+                    var targetGridInfo = _stgCtrl.GetGridInfo(c.Params.TmpParam.gridIndex);
+                    NullCheck.AssertNotNull(targetGridInfo);
+                    Vector3 targetPos = targetGridInfo.charaStandPos;
+
+                    var direction = targetPos - basePos;
+                    direction.y = 0f;
+                    direction = direction.normalized;
+
+                    // 内積で向きが一致しているかを確認
+                    float dot = Vector3.Dot(baseForward, direction);
+                    if( Constants.DOT_THRESHOLD < dot )
+                    {
+                        list.Add(c);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        public Character GetNearestLineOfSightCharacter( Character baseChara, CHARACTER_TAG tag )
+        {
+            Character retChara = null;
+
+            List<Character> charaList = GetLineOfSightCharacter(baseChara, tag);
+            if( charaList.Count <= 0 ) { return null; }
+
+            int totalRange = int.MaxValue;
+
+            foreach( var chara in charaList )
+            {
+                int range = _stgCtrl.CalcurateTotalRange(baseChara.Params.TmpParam.gridIndex, chara.Params.TmpParam.gridIndex);
+                if( range < totalRange )
+                {
+                    totalRange  = range;
+                    retChara    = chara;
+                }
+            }
+
+            return retChara;
+        }
+
+        /// <summary>
         /// 指定されたキャラクタータグの総ユニット数を取得します
         /// </summary>
         /// <param name="tag">指定するキャラクターのタグ</param>

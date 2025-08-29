@@ -9,19 +9,24 @@ namespace Frontier
 {
     public class PlAttackState : PlPhaseStateBase
     {
-        private enum PlAttackPhase
+        protected enum PlAttackPhase
         {
             PL_ATTACK_SELECT_GRID = 0,
             PL_ATTACK_EXECUTE,
             PL_ATTACK_END,
         }
 
-        private PlAttackPhase _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-        private int _curentGridIndex = -1;
-        private string[] _playerSkillNames = null;
-        private Character _attackCharacter = null;
-        private Character _targetCharacter = null;
-        private CharacterAttackSequence _attackSequence = null;
+        protected PlAttackPhase _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
+        protected int _curentGridIndex = -1;
+        protected string[] _playerSkillNames = null;
+        protected Character _attackCharacter = null;
+        protected Character _targetCharacter = null;
+        protected CharacterAttackSequence _attackSequence = null;
+
+        protected void PlPhaseStateInit()
+        {
+            base.Init();
+        }
 
         /// <summary>
         /// 初期化します
@@ -43,13 +48,10 @@ namespace Frontier
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY))
+            if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY )))
             {
-                // アタッカーキャラクターの設定
-                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);
-
-                // アタックカーソルUI表示
-                _uiSystem.BattleUi.ToggleAttackCursorP2E(true);
+                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
+                _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
             }
 
             // 攻撃シーケンスを初期化
@@ -168,7 +170,7 @@ namespace Frontier
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        public override void RegisterInputCodes()
+        override public void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 
@@ -222,7 +224,7 @@ namespace Frontier
         /// サブ1の入力の受付可否を判定します
         /// </summary>
         /// <returns>サブ1の入力の受付可否</returns>
-        protected override bool CanAcceptSub1()
+        override protected bool CanAcceptSub1()
         {
             if (!CanAcceptDirection()) return false;
 
@@ -231,7 +233,7 @@ namespace Frontier
             return _selectPlayer.CanToggleEquipSkill(0, SkillsData.SituationType.ATTACK);
         }
 
-        protected override bool CanAcceptSub2()
+        override protected bool CanAcceptSub2()
         {
             if (!CanAcceptDirection()) return false;
 
@@ -240,7 +242,7 @@ namespace Frontier
             return _selectPlayer.CanToggleEquipSkill(1, SkillsData.SituationType.ATTACK);
         }
 
-        protected override bool CanAcceptSub3()
+        override protected bool CanAcceptSub3()
         {
             if (!CanAcceptDirection()) return false;
 
@@ -249,7 +251,7 @@ namespace Frontier
             return _selectPlayer.CanToggleEquipSkill(2, SkillsData.SituationType.ATTACK);
         }
 
-        protected override bool CanAcceptSub4()
+        override protected bool CanAcceptSub4()
         {
             if (!CanAcceptDirection()) return false;
 
@@ -312,28 +314,28 @@ namespace Frontier
             return false;
         }
 
-        protected override bool AcceptSub1(bool isInput)
+        override protected bool AcceptSub1(bool isInput)
         {
             if ( !isInput ) return false;
 
             return _selectPlayer.ToggleUseSkillks(0);
         }
 
-        protected override bool AcceptSub2(bool isInput)
+        override protected bool AcceptSub2(bool isInput)
         {
             if ( !isInput ) return false;
 
             return _selectPlayer.ToggleUseSkillks(1);
         }
 
-        protected override bool AcceptSub3(bool isInput)
+        override protected bool AcceptSub3(bool isInput)
         {
             if ( !isInput ) return false;
 
             return _selectPlayer.ToggleUseSkillks(2);
         }
 
-        protected override bool AcceptSub4(bool isInput)
+        override protected bool AcceptSub4(bool isInput)
         {
             if ( !isInput ) return false;
 
