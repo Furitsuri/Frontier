@@ -74,7 +74,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 現在の移動前情報を適応します
         /// </summary>
-        public void AdaptPrevMoveInfo()
+        public void HoldBeforeMoveInfo()
         {
             _prevMoveInfo.tmpParam  = _params.TmpParam.Clone();
             _prevMoveInfo.rotDir    = transform.rotation;
@@ -95,8 +95,6 @@ namespace Frontier.Entities
         {
             _params.TmpParam = _prevMoveInfo.tmpParam;
             SetPosition( _params.TmpParam.gridIndex, _prevMoveInfo.rotDir );
-            // グリッド情報を更新
-            _stageCtrl.UpdateGridInfo();
         }
 
         /// <summary>

@@ -11,8 +11,9 @@ namespace Frontier.Stage
         public enum MeshType
         {
             MOVE = 0,
-            ATTACK,
-            ATTACKABLE_TARGET,
+            REACHABLE_ATTACK,
+            ATTACKABLE,
+            ATTACKABLE_TARGET_EXIST,
 
             NUM_MAX
         }
@@ -24,11 +25,6 @@ namespace Frontier.Stage
         {
             meshFilter      = GetComponent<MeshFilter>();
             meshRenderer    = GetComponent<MeshRenderer>();
-
-            /*
-            // ステージグリッドに自身を登録
-            ManagerProvider.Instance.GetService<StageController>().AddGridMeshToList(this);
-            */
         }
 
         /// <summary>
@@ -59,6 +55,7 @@ namespace Frontier.Stage
                 new Color(0f, 0f, 1f, 0.65f),
                 new Color(1f, 0f, 0f, 0.65f),
                 new Color(1f, 1f, 0f, 0.65f),
+                new Color(1f, 0f, 0f, 0.95f),
             };
             Debug.Assert(colors.Length == (int)MeshType.NUM_MAX, "Mesh type num is incorrect.");
 

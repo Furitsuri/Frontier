@@ -50,7 +50,7 @@ namespace Frontier
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
             if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY )))
             {
-                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
+                _stageCtrl.BindToGridCursor(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
             }
 
@@ -157,7 +157,7 @@ namespace Frontier
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
 
-            // グリッド状態の描画をクリア
+            // グリッドの状態を更新してグリッドの描画をクリア
             _stageCtrl.UpdateGridInfo();
             _stageCtrl.ClearGridMeshDraw();
 
@@ -178,7 +178,7 @@ namespace Frontier
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR, "TARGET SELECT",  CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM, "CONFIRM",           CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "TURN END",           CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "BACK",               CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode),
                (GuideIcon.SUB1, _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
                (GuideIcon.SUB2, _playerSkillNames[1],   CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
                (GuideIcon.SUB3, _playerSkillNames[2],   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
@@ -187,17 +187,26 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 操作対象のプレイヤーを設定します
+        /// </summary>
+        override protected void AdaptSelectPlayer()
+        {
+            // グリッドカーソルで選択中のプレイヤーを取得
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _selectPlayer );
+        }
+
+        /// <summary>
         /// 方向入力の受付可否を判定します
         /// </summary>
         /// <returns>方向入力の受付可否</returns>
         override protected bool CanAcceptDirection()
         {
-            if (!CanAcceptDefault()) return false;
+            if ( !CanAcceptDefault() )                              { return false; }
+            if ( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase )    { return false; }   // 攻撃対象選択フェーズでない場合は終了
+            if ( _stageCtrl.GetAttackabkeTargetNum() <= 1 )         { return false; }   // 攻撃可能な標的数が1より大きくなければ終了
 
-            // 攻撃対象選択フェーズでない場合は終了
-            if (PlAttackPhase.PL_ATTACK_SELECT_GRID == _phase) return true;
-
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -206,8 +215,10 @@ namespace Frontier
         /// <returns>決定入力の受付可否</returns>
         override protected bool CanAcceptConfirm()
         {
-            // Directionと同一
-            return CanAcceptDirection();
+            if ( !CanAcceptDefault() ) { return false; }
+            if ( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
+
+            return true;
         }
 
         /// <summary>
@@ -216,8 +227,8 @@ namespace Frontier
         /// <returns>キャンセル入力の受付可否</returns>
         override protected bool CanAcceptCancel()
         {
-            // Directionと同一
-            return CanAcceptDirection();
+            // Confirmと同一
+            return CanAcceptConfirm();
         }
 
         /// <summary>
@@ -226,7 +237,7 @@ namespace Frontier
         /// <returns>サブ1の入力の受付可否</returns>
         override protected bool CanAcceptSub1()
         {
-            if (!CanAcceptDirection()) return false;
+            if (!CanAcceptConfirm()) return false;
 
             if (_playerSkillNames[0].Length <= 0 ) return false;
 
@@ -235,7 +246,7 @@ namespace Frontier
 
         override protected bool CanAcceptSub2()
         {
-            if (!CanAcceptDirection()) return false;
+            if (!CanAcceptConfirm()) return false;
 
             if (_playerSkillNames[1].Length <= 0) return false;
 
@@ -244,7 +255,7 @@ namespace Frontier
 
         override protected bool CanAcceptSub3()
         {
-            if (!CanAcceptDirection()) return false;
+            if (!CanAcceptConfirm()) return false;
 
             if (_playerSkillNames[2].Length <= 0) return false;
 
@@ -253,7 +264,7 @@ namespace Frontier
 
         override protected bool CanAcceptSub4()
         {
-            if (!CanAcceptDirection()) return false;
+            if (!CanAcceptConfirm()) return false;
 
             if (_playerSkillNames[3].Length <= 0) return false;
 

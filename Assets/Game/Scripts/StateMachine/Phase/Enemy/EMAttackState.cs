@@ -40,7 +40,7 @@ namespace Frontier
             if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter()))
             {
                 // アタッカーキャラクターの設定
-                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);
+                _stageCtrl.BindToGridCursor(GridCursorController.State.ATTACK, _attackCharacter);
                 // アタックカーソルUI表示
                 _uiSystem.BattleUi.ToggleAttackCursorE2P(true);
             }

@@ -16,8 +16,9 @@ public class StageTileData
 
     private TileBehaviour _tileBhv  = null;
     private TileMesh _tileMesh      = null;
-    private GridInfo _tileInfo      = null;
-    private GridInfo _tileInfoBase  = null;
+    private GridInfo _tileInfo      = null; // 現在のタイル情報
+    private GridInfo _tileInfoBase  = null; // 初期化状態のタイル情報
+    private GridInfo _tileInfoHold  = null; // 一時保存用のタイル情報
 
     public TileType Type => _tileType;
     public float Height => _height;
@@ -52,6 +53,10 @@ public class StageTileData
         {
             _tileInfoBase = null;
         }
+        if ( _tileInfoHold != null )
+        {
+            _tileInfoHold = null;
+        }
     }
 
     public StageTileData(TileType type = TileType.None, int height = 0)
@@ -62,9 +67,10 @@ public class StageTileData
 
     public void InstantiateTileInfo( int index, int rowNum, HierarchyBuilderBase hierarchyBld )
     {
-        _tileInfo       = hierarchyBld.InstantiateWithDiContainer<GridInfo>(false);
-        _tileInfoBase   = hierarchyBld.InstantiateWithDiContainer<GridInfo>(false);
-        if (_tileInfo == null || _tileInfoBase == null )
+        _tileInfo       = hierarchyBld.InstantiateWithDiContainer<GridInfo>( false );
+        _tileInfoBase   = hierarchyBld.InstantiateWithDiContainer<GridInfo>( false );
+        _tileInfoHold   = hierarchyBld.InstantiateWithDiContainer<GridInfo>( false );   // _tileInfoHoldは一時保存で使用されるため、Initする必要がない
+        if (_tileInfo == null || _tileInfoBase == null || _tileInfoHold == null )
         {
             Debug.LogError("TileInfoのインスタンス化に失敗しました。");
             return;
@@ -78,7 +84,7 @@ public class StageTileData
         float posX = index % rowNum * TILE_SIZE + charaPosCorrext;
         // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
         float posZ = index / rowNum * TILE_SIZE + charaPosCorrext;
-        // 上記値から各グリッドのキャラの立ち位置を決定
+        // 上記の値から各グリッドのキャラの立ち位置を決定
         _tileInfoBase.charaStandPos = _tileInfo.charaStandPos = new Vector3(posX, Height, posZ);
     }
 
@@ -121,9 +127,28 @@ public class StageTileData
         _tileMesh.DrawMesh();
     }
 
-    public void CopyTileInfoBaseToOriginal()
+    /// <summary>
+    /// 現在のタイル情報を一時保存します
+    /// </summary>
+    public void HoldCurrentTileInfo()
+    {
+        _tileInfoHold = _tileInfo.Copy();
+    }
+
+    /// <summary>
+    /// 初期状態のタイル情報を、現在のタイル情報に適応させます
+    /// </summary>
+    public void ApplyBaseTileInfo()
     {
         _tileInfo = _tileInfoBase.Copy();
+    }
+
+    /// <summary>
+    /// 一時保存中のタイル情報を、現在のタイル情報に適応させます
+    /// </summary>
+    public void ApplyHeldTileInfo()
+    {
+        _tileInfo = _tileInfoHold.Copy();
     }
 
     public void SetTileTypeAndHeight(TileType type, float height)

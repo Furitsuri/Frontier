@@ -67,7 +67,7 @@ namespace Frontier
 
             if (base.Update())
             {
-                // 移動のみ終了している場合は移動前に戻れるように          
+                // コマンドのうち、移動のみが終了している場合は移動前の状態に戻れるように          
                 if (_selectPlayer.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_selectPlayer.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
                 {
                     _stageCtrl.FollowFootprint(_selectPlayer);
@@ -91,7 +91,9 @@ namespace Frontier
             //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
             if ( TransitIndex == (int)Command.COMMAND_TAG.MOVE )
             {
-                _selectPlayer.AdaptPrevMoveInfo();
+                _selectPlayer.HoldBeforeMoveInfo();
+                _stageCtrl.HoldFootprint( _selectPlayer );  // キャラクターの現在の位置情報を保持
+                _stageCtrl.HoldAllTileInfo();               // 移動中直接攻撃時にキャンセルした際の処理に対応するため、現在のタイル情報を保持
             }
 
             _uiSystem.BattleUi.TogglePLCommand(false);  // UIを非表示
@@ -111,6 +113,16 @@ namespace Frontier
                (GuideIcon.CONFIRM,          "Confirm",  CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
                (GuideIcon.CANCEL,           "Back",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
             );
+        }
+
+        /// <summary>
+        /// 操作対象のプレイヤーを設定します
+        /// </summary>
+        override protected void AdaptSelectPlayer()
+        {
+            // グリッドカーソルで選択中のプレイヤーを取得
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _selectPlayer );
         }
 
         /// <summary>

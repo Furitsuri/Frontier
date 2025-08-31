@@ -53,9 +53,7 @@ static public class Constants
     // 1グリッドに隣接するグリッドの最大数
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
     // 経路探索におけるルートインデックス最大保持数
-    public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 256;
-    // タイル上に敵対勢力が存在していることを示す値
-    public const int TILE_ON_OPPONENT_VALUE = -256;
+    public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 255;
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値

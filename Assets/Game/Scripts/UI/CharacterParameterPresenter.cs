@@ -41,7 +41,7 @@ namespace Frontier
         {
             Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(_btlRtnCtrl.SelectCharacterInfo);
 
-            var bindCharacter = _stgCtrl.GetGridCursorControllerBindCharacter();
+            var bindCharacter = _stgCtrl.GetBindCharacterFromGridCursor();
 
             switch (_stgCtrl.GetGridCursorControllerState())
             {

@@ -30,27 +30,22 @@ namespace Frontier
             base.Init();
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            if (_selectPlayer.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
             }
-            else _phase = PlMovePhase.PL_MOVE;
+            else { _phase = PlMovePhase.PL_MOVE; }
 
             _departGridIndex = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
 
-            // 移動開始前の情報を保存
-            var param = _selectPlayer.Params.CharacterParam;
-
-            // キャラクターの現在の位置情報を保持
-            StageController.Footprint footprint = new StageController.Footprint();
-            footprint.gridIndex = _selectPlayer.Params.TmpParam.GetCurrentGridIndex();
-            footprint.rotation  = _selectPlayer.transform.rotation;
-            _stageCtrl.LeaveFootprint(footprint);
-            _stageCtrl.BindGridCursorControllerState( GridCursorController.State.MOVE, _selectPlayer);
+            
+            _stageCtrl.ApplyAllTileInfoFromHeld();
+            _stageCtrl.BindToGridCursor( GridCursorController.State.MOVE, _selectPlayer);
 
             // 移動可能情報を登録及び表示
             bool isAttackable = !_selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
+            var param = _selectPlayer.Params.CharacterParam;
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
         }
@@ -94,11 +89,14 @@ namespace Frontier
         override public void ExitState()
         {
             _stageCtrl.SetGridCursorControllerActive(true); // 選択グリッドを表示
-            _stageCtrl.UpdateGridInfo();                    // ステージグリッド上のキャラ情報を更新
             _stageCtrl.ClearGridMeshDraw();                 // グリッド状態の描画をクリア
 
-			// 直接遷移しない場合は操作対象データをリセット
-			if ( TransitIndex != TransitAttackStateValue ) _stageCtrl.ClearGridCursroBind();
+            // 攻撃に直接遷移しない場合のみに限定される処理
+            if ( !IsTransitAttackOnMoveState() )
+            {
+                _stageCtrl.UpdateGridInfo();        // ステージグリッド上のキャラ情報を更新
+                _stageCtrl.ClearGridCursroBind();   // 操作対象データをリセット
+            }
 
 			base.ExitState();
         }
@@ -118,27 +116,39 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 操作対象のプレイヤーを設定します
+        /// </summary>
+        override protected void AdaptSelectPlayer()
+        {
+            // グリッドカーソルで選択中のプレイヤーを取得
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _selectPlayer );
+        }
+
+        /// <summary>
         /// 決定入力受付の可否を判定します
         /// </summary>
         /// <returns>決定入力受付の可否</returns>
         override protected bool CanAcceptConfirm()
         {
-            if (!CanAcceptDefault()) return false;
+            if ( !CanAcceptDefault() ) { return false; }
+
+            if ( PlMovePhase.PL_MOVE != _phase ) { return false; }     // 移動フェーズでない場合は終了
 
             GridInfo info;
-            _stageCtrl.FetchCurrentGridInfo(out info);
-            if (info.estimatedMoveRange < 0)
+            _stageCtrl.FetchCurrentGridInfo( out info );
+            if ( info.estimatedMoveRange < 0 )
             {
-                // 敵対勢力が存在している場合は直接攻撃を可能とするためにtrueを返す
-                if ( CanAttackOnMove( in info ) ) return true;
-
-                return false;  // 移動不可地点であれば不可
+                // 敵対勢力が存在しており、自身の攻撃レンジ以内の場合にはtrueを返す
+                if ( CanAttackOnMove( in info ) ) { return true; }
+                else { return false; }  // 移動不可地点であれば不可
+            }
+            else
+            {
+                if ( Methods.CheckBitFlag( info.flag, BitFlag.PLAYER_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
             }
 
-            // 移動フェーズでない場合は終了
-            if (PlMovePhase.PL_MOVE == _phase) return true;
-
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -184,10 +194,10 @@ namespace Frontier
             {
                 Back();
             }
-            // 敵キャラクターが存在している場合は攻撃へ遷移
-            else if( Methods.CheckBitFlag( info.flag, BitFlag.ENEMY_EXIST ) )
+            // 攻撃可能なキャラクターが存在している場合は攻撃へ遷移
+            else if ( Methods.CheckBitFlag( info.flag, BitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
-                TransitIndex = TransitAttackStateValue;
+                TransitAttackOnMoveState();
             }
             // 敵キャラクター意外が存在していないことを確認
             else if (0 == (info.flag & (BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST)))
@@ -217,13 +227,30 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 移動中攻撃に遷移します
+        /// </summary>
+        private void TransitAttackOnMoveState()
+        {
+            TransitIndex = TransitAttackStateValue;
+        }
+
+        /// <summary>
+        /// 移動中攻撃に遷移するかどうかを取得します
+        /// </summary>
+        /// <returns>遷移の是非</returns>
+        private bool IsTransitAttackOnMoveState()
+        {
+            return ( TransitIndex == TransitAttackStateValue );
+        }
+
+        /// <summary>
         /// 移動中(現在のステート中)に攻撃へと直接遷移出来るか否かを取得します
         /// </summary>
         /// <param name="info">グリッド情報</param>
         /// <returns>直接遷移の可否</returns>
         private bool CanAttackOnMove( in GridInfo info )
         {
-            if( info.estimatedMoveRange != TILE_ON_OPPONENT_VALUE ) return false;
+            if( !Methods.CheckBitFlag( info.flag, BitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
             ( int, int ) ranges = _stageCtrl.CalcurateRanges( _selectPlayer.Params.TmpParam.gridIndex,  _stageCtrl.GetCurrentGridIndex());
