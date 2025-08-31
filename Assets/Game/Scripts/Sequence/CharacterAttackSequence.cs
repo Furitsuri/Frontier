@@ -5,6 +5,7 @@ using Frontier.Stage;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat.Skill;
 using static UnityEngine.GraphicsBuffer;
 
 namespace Frontier
@@ -86,7 +87,7 @@ namespace Frontier
             _attackCharacter.SetOpponentCharacter(_targetCharacter);
             _targetCharacter.SetOpponentCharacter(_attackCharacter);
 
-            _counterConditions = _targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_COUNTER); // カウンター条件の設定
+            _counterConditions = _targetCharacter.IsSkillInUse(ID.SKILL_COUNTER); // カウンター条件の設定
 
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
@@ -135,7 +136,7 @@ namespace Frontier
                         StartAttack(_attackCharacter, _targetCharacter);
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_PARRY))
+                        if (_targetCharacter.IsSkillInUse(ID.SKILL_PARRY))
                         {
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
@@ -155,7 +156,7 @@ namespace Frontier
                         _uiSystem.BattleUi.ToggleDamageUI(false);
 
                         // ガードスキルを使用時はガードモーションを戻す
-                        if (_targetCharacter.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
+                        if (_targetCharacter.IsSkillInUse(ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
 
                         // 対象が死亡している場合は死亡処理へ
                         if (_targetCharacter.Params.CharacterParam.IsDead())
@@ -301,7 +302,7 @@ namespace Frontier
             target.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if (target.IsSkillInUse(SkillsData.ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, true);
+            if (target.IsSkillInUse(ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, true);
         }
 
         /// <summary>

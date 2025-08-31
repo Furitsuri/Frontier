@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Frontier.Combat.Skill;
 using static Frontier.BattleFileLoader;
 using static Frontier.Entities.Character;
 
@@ -28,7 +29,7 @@ namespace Frontier.Entities
         public int consumptionActionGauge;  // アクションゲージ消費値
         public int initGridIndex;           // ステージ開始時グリッド座標(インデックス)
         public Constants.Direction initDir; // ステージ開始時向き
-        public SkillsData.ID[] equipSkills; // 装備しているスキル
+        public ID[] equipSkills;            // 装備しているスキル
 
         /// <summary>
         /// キャラクターパラメータを適応させます
@@ -51,13 +52,13 @@ namespace Frontier.Entities
             param.initDir = (Constants.Direction)fdata.InitDir;
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                param.equipSkills[i] = (SkillsData.ID)fdata.Skills[i];
+                param.equipSkills[i] = (ID )fdata.Skills[i];
             }
         }
 
         public void Awake()
         {
-            equipSkills = new SkillsData.ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            equipSkills = new ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
         }
 
         public void Init()
@@ -97,7 +98,7 @@ namespace Frontier.Entities
             this.initDir                = (Constants.Direction)fdata.InitDir;
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                this.equipSkills[i] = (SkillsData.ID)fdata.Skills[i];
+                this.equipSkills[i] = (ID)fdata.Skills[i];
             }
         }
 
@@ -144,7 +145,7 @@ namespace Frontier.Entities
         /// <returns>有効か否か</returns>
         public bool IsValidSkill(int index)
         {
-            return SkillsData.ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < SkillsData.ID.SKILL_NUM;
+            return ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < ID.SKILL_NUM;
         }
 
         /// <summary>
@@ -152,26 +153,26 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
         /// <returns>指定スキルの使用可否</returns>
-        public bool CanUseEquipSkill(int skillIdx, SkillsData.SituationType situationType)
+        public bool CanUseEquipSkill( int skillIdx, SituationType situationType )
         {
-            if (Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx)
+            if ( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
-                Debug.Assert(false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。");
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
 
                 return false;
             }
 
             int skillID = (int)equipSkills[skillIdx];
             var skillData = SkillsData.data[skillID];
-            
+
             // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
-            if( skillData.Type != situationType )
+            if ( skillData.Type != situationType )
             {
                 return false;
             }
 
             // コストが現在のアクションゲージ値を越えていないかをチェック
-            if (consumptionActionGauge + skillData.Cost <= curActionGauge)
+            if ( consumptionActionGauge + skillData.Cost <= curActionGauge )
             {
                 return true;
             }

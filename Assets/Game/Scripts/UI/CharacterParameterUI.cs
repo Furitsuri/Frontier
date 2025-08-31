@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using Frontier.Combat.Skill;
 
 namespace Frontier
 {

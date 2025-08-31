@@ -2,9 +2,8 @@
 using Frontier.Battle;
 using Frontier.Combat;
 using Frontier.Entities;
-using Unity.VisualScripting;
-using UnityEditor.Search;
 using UnityEngine;
+using Frontier.Combat.Skill;
 
 /// <summary>
 /// パリィスキルを使用するエンティティに持たせるクラスです
@@ -87,7 +86,7 @@ public class ParrySkillNotifier : SkillNotifierBase
     /// </summary>
     public void StartParryJudgeEvent()
     {
-        if (!_skillUser.IsSkillInUse(SkillsData.ID.SKILL_PARRY)) return;
+        if (!_skillUser.IsSkillInUse(ID.SKILL_PARRY)) return;
 
         ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
         if (parryCtrl == null) return;
