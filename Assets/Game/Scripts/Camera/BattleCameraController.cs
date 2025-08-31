@@ -3,6 +3,7 @@ using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat.Skill;
 
 #pragma warning disable 0414
 
@@ -280,7 +281,7 @@ namespace Frontier
             // パリィが使用される場合は必ず被攻撃キャラクターを視点とする
             var cameraFromChara = attacker;
             var cameraToChara   = target;
-            if (target.IsSkillInUse(SkillsData.ID.SKILL_PARRY))
+            if (target.IsSkillInUse(ID.SKILL_PARRY))
             {
                 cameraFromChara = target;
                 cameraToChara   = attacker;

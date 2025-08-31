@@ -5,7 +5,7 @@ using UnityEditor.Search;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static Frontier.Combat.ParrySkillHandler;
+using Frontier.Combat.Skill;
 
 namespace Frontier.Combat
 {
@@ -323,14 +323,14 @@ namespace Frontier.Combat
             switch (result)
             {
                 case ParrySkillHandler.JudgeResult.SUCCESS:
-                    attackChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
+                    attackChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param1;
                     break;
                 case ParrySkillHandler.JudgeResult.FAILED:
-                    useParryChara.Params.SkillModifiedParam.DefMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param2;
+                    useParryChara.Params.SkillModifiedParam.DefMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param2;
                     break;
                 case ParrySkillHandler.JudgeResult.JUST:
-                    attackChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param1;
-                    useParryChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)SkillsData.ID.SKILL_PARRY].Param3;
+                    attackChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param1;
+                    useParryChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param3;
                     break;
                 default:
                     Debug.Assert(false);

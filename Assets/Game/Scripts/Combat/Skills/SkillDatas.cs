@@ -1,7 +1,7 @@
 ﻿using Frontier.Entities;
 using UnityEngine;
 
-namespace Frontier.Combat
+namespace Frontier.Combat.Skill
 {
 
     /// <summary>
@@ -9,28 +9,6 @@ namespace Frontier.Combat
     /// </summary>
     public static class SkillsData
     {
-        public enum ID
-        {
-            SKILL_NONE = -1,
-
-            SKILL_PARRY,
-            SKILL_GUARD,
-            SKILL_COUNTER,
-            SKILL_DOUBLE_STRIKE,
-            SKILL_TRIPLE_STRIKE,
-
-            SKILL_NUM,
-        }
-
-        public enum SituationType
-        {
-            ATTACK = 0,
-            DEFENCE,
-            PASSIVE,
-
-            TYPE_NUM,
-        }
-
         [System.Serializable]
         public struct Data
         {

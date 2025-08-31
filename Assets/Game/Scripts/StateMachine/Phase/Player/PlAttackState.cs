@@ -1,8 +1,7 @@
 ﻿using Frontier.Combat;
 using Frontier.Stage;
 using Frontier.Entities;
-using System.Collections.Generic;
-using UnityEngine;
+using Frontier.Combat.Skill;
 using static Constants;
 
 namespace Frontier
@@ -91,8 +90,8 @@ namespace Frontier
                     _uiSystem.BattleUi.ToggleBattleExpect(true);
 
                     // 使用スキルを選択する
-                    _attackCharacter.SelectUseSkills(SkillsData.SituationType.ATTACK);
-                    _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
+                    _attackCharacter.SelectUseSkills(SituationType.ATTACK);
+                    _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
@@ -241,7 +240,7 @@ namespace Frontier
 
             if (_playerSkillNames[0].Length <= 0 ) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(0, SkillsData.SituationType.ATTACK);
+            return _selectPlayer.CanToggleEquipSkill(0, SituationType.ATTACK);
         }
 
         override protected bool CanAcceptSub2()
@@ -250,7 +249,7 @@ namespace Frontier
 
             if (_playerSkillNames[1].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(1, SkillsData.SituationType.ATTACK);
+            return _selectPlayer.CanToggleEquipSkill(1, SituationType.ATTACK);
         }
 
         override protected bool CanAcceptSub3()
@@ -259,7 +258,7 @@ namespace Frontier
 
             if (_playerSkillNames[2].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(2, SkillsData.SituationType.ATTACK);
+            return _selectPlayer.CanToggleEquipSkill(2, SituationType.ATTACK);
         }
 
         override protected bool CanAcceptSub4()
@@ -268,7 +267,7 @@ namespace Frontier
 
             if (_playerSkillNames[3].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(3, SkillsData.SituationType.ATTACK);
+            return _selectPlayer.CanToggleEquipSkill(3, SituationType.ATTACK);
         }
 
         /// <summary>

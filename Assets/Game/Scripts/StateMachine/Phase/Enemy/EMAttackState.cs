@@ -2,6 +2,7 @@
 using Frontier.Stage;
 using Frontier.Entities;
 using UnityEngine;
+using Frontier.Combat.Skill;
 using static Constants;
 
 namespace Frontier
@@ -74,8 +75,8 @@ namespace Frontier
             {
                 case EmAttackPhase.EM_ATTACK_CONFIRM:
                     // 使用スキルを選択する
-                    _attackCharacter.SelectUseSkills(SkillsData.SituationType.ATTACK);
-                    _targetCharacter.SelectUseSkills(SkillsData.SituationType.DEFENCE);
+                    _attackCharacter.SelectUseSkills(SituationType.ATTACK);
+                    _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
 
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
@@ -188,7 +189,7 @@ namespace Frontier
 
             if (_playerSkillNames[0].Length <= 0) return false;
 
-            return _targetCharacter.CanToggleEquipSkill(0, SkillsData.SituationType.DEFENCE);
+            return _targetCharacter.CanToggleEquipSkill(0, SituationType.DEFENCE);
         }
 
         override protected bool CanAcceptSub2()
@@ -199,7 +200,7 @@ namespace Frontier
 
             if (_playerSkillNames[1].Length <= 0) return false;
 
-            return _targetCharacter.CanToggleEquipSkill(1, SkillsData.SituationType.DEFENCE);
+            return _targetCharacter.CanToggleEquipSkill(1, SituationType.DEFENCE);
         }
 
         override protected bool CanAcceptSub3()
@@ -210,7 +211,7 @@ namespace Frontier
 
             if (_playerSkillNames[2].Length <= 0) return false;
 
-            return _targetCharacter.CanToggleEquipSkill(2, SkillsData.SituationType.DEFENCE);
+            return _targetCharacter.CanToggleEquipSkill(2, SituationType.DEFENCE);
         }
 
         override protected bool CanAcceptSub4()
@@ -221,7 +222,7 @@ namespace Frontier
 
             if (_playerSkillNames[3].Length <= 0) return false;
 
-            return _targetCharacter.CanToggleEquipSkill(3, SkillsData.SituationType.DEFENCE);
+            return _targetCharacter.CanToggleEquipSkill(3, SituationType.DEFENCE);
         }
 
         /// <summary>

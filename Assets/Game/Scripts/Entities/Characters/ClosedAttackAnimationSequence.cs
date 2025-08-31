@@ -3,6 +3,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using UnityEngine;
+using Frontier.Combat.Skill;
 
 namespace Frontier.Entities
 {
@@ -47,36 +48,36 @@ namespace Frontier.Entities
         /// <param name="departure">近接攻撃の開始地点</param>
         /// <param name="destination">近接攻撃の終了地点</param>
         /// <returns>終了判定</returns>
-        public bool UpdateSequence(in Vector3 departure, in Vector3 destination)
+        public bool UpdateSequence( in Vector3 departure, in Vector3 destination )
         {
             var attackAnimtag = AttackAnimTags[_character.Params.SkillModifiedParam.AtkNum - 1];
 
-            if (_character.GetBullet() != null) return false;
+            if ( _character.GetBullet() != null ) return false;
 
             float t = 0f;
-            bool isReservedParry = _character.GetOpponentChara().IsSkillInUse(SkillsData.ID.SKILL_PARRY);
+            bool isReservedParry = _character.GetOpponentChara().IsSkillInUse(ID.SKILL_PARRY);
 
-            switch (_closingAttackPhase)
+            switch ( _closingAttackPhase )
             {
                 case CLOSED_ATTACK_PHASE.CLOSINGE:
                     _character.ElapsedTime += Time.deltaTime;
-                    t = Mathf.Clamp01(_character.ElapsedTime / Constants.ATTACK_CLOSING_TIME);
-                    t = Mathf.SmoothStep(0f, 1f, t);
-                    _character.gameObject.transform.position = Vector3.Lerp(departure, destination, t);
-                    if (1.0f <= t)
+                    t = Mathf.Clamp01( _character.ElapsedTime / Constants.ATTACK_CLOSING_TIME );
+                    t = Mathf.SmoothStep( 0f, 1f, t );
+                    _character.gameObject.transform.position = Vector3.Lerp( departure, destination, t );
+                    if ( 1.0f <= t )
                     {
                         _character.ResetElapsedTime();
-                        _character.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
-                        _character.AnimCtrl.SetAnimator(attackAnimtag);
+                        _character.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, false );
+                        _character.AnimCtrl.SetAnimator( attackAnimtag );
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.ATTACK;
                     }
                     break;
 
                 case CLOSED_ATTACK_PHASE.ATTACK:
-                    if (IsEndAttackAnimSequence())
+                    if ( IsEndAttackAnimSequence() )
                     {
-                        _character.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.WAIT);
+                        _character.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.WAIT );
 
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.DISTANCING;
                     }
@@ -84,10 +85,10 @@ namespace Frontier.Entities
                 case CLOSED_ATTACK_PHASE.DISTANCING:
                     // 攻撃前の場所に戻る
                     _character.ElapsedTime += Time.deltaTime;
-                    t = Mathf.Clamp01(_character.ElapsedTime / Constants.ATTACK_DISTANCING_TIME);
-                    t = Mathf.SmoothStep(0f, 1f, t);
-                    _character.gameObject.transform.position = Vector3.Lerp(destination, departure, t);
-                    if (1.0f <= t)
+                    t = Mathf.Clamp01( _character.ElapsedTime / Constants.ATTACK_DISTANCING_TIME );
+                    t = Mathf.SmoothStep( 0f, 1f, t );
+                    _character.gameObject.transform.position = Vector3.Lerp( destination, departure, t );
+                    if ( 1.0f <= t )
                     {
                         _character.ResetElapsedTime();
                         _closingAttackPhase = CLOSED_ATTACK_PHASE.NONE;

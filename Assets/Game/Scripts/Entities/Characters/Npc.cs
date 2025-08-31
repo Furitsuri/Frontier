@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Frontier.Combat.Skill;
 
 namespace Frontier.Entities
 {
@@ -33,7 +34,7 @@ namespace Frontier.Entities
         /// 使用スキルを選択します
         /// </summary>
         /// <param name="type">攻撃、防御、常駐などのスキルタイプ</param>
-        override public void SelectUseSkills( SkillsData.SituationType type )
+        override public void SelectUseSkills( SituationType type )
         {
 
         }

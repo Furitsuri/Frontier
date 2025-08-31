@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat.Skill;
 using static Frontier.Combat.ParrySkillHandler;
 
 namespace Frontier.Entities
@@ -136,7 +137,7 @@ namespace Frontier.Entities
             {
                 int skillID = (int)_params.CharacterParam.equipSkills[i];
 
-                if ( (int)SkillsData.ID.SKILL_PARRY == skillID )
+                if ( (int)ID.SKILL_PARRY == skillID )
                 {
                     _parrySkill = _hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false);
                     _parrySkill.Init( this );
@@ -197,7 +198,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 戦闘に使用するスキルを選択します
         /// </summary>
-        virtual public void SelectUseSkills(SkillsData.SituationType type) {}
+        virtual public void SelectUseSkills( SituationType type ) { }
 
         /// <summary>
         /// 指定のスキルの使用設定を切り替えます
@@ -317,7 +318,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
         /// <returns>指定スキルの使用状態切替可否</returns>
-        public bool CanToggleEquipSkill( int skillIdx, SkillsData.SituationType situationType )
+        public bool CanToggleEquipSkill( int skillIdx, SituationType situationType )
         {
             if (Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx)
             {
@@ -413,13 +414,13 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillID">指定スキルID</param>
         /// <returns>使用登録されているか否か</returns>
-        public bool IsSkillInUse(SkillsData.ID skillID)
+        public bool IsSkillInUse( ID skillID )
         {
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            for ( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if(!_params.TmpParam.isUseSkills[i] ) continue;
+                if ( !_params.TmpParam.isUseSkills[i] ) continue;
 
-                if (_params.CharacterParam.equipSkills[i] == skillID) return true;
+                if ( _params.CharacterParam.equipSkills[i] == skillID ) return true;
             }
 
             return false;
@@ -505,7 +506,7 @@ namespace Frontier.Entities
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
+                else if (!_opponent.IsSkillInUse(ID.SKILL_GUARD))
                 {
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
                 }
@@ -538,7 +539,7 @@ namespace Frontier.Entities
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if (!_opponent.IsSkillInUse(SkillsData.ID.SKILL_GUARD))
+                else if (!_opponent.IsSkillInUse(ID.SKILL_GUARD))
                 {
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
                 }
