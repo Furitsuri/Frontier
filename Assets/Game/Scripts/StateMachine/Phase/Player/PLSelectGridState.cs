@@ -21,8 +21,6 @@ namespace Frontier
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorControllerActive(true);
-
-            // RegisterInputCodes();
         }
 
         override public bool Update()

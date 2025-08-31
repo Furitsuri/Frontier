@@ -72,6 +72,16 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 操作対象のプレイヤーを設定します
+        /// </summary>
+        override protected void AdaptSelectPlayer()
+        {
+            // グリッドカーソルで選択中のプレイヤーを取得
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _selectPlayer );
+        }
+
+        /// <summary>
         /// 方向入力を受け取り、コマンドリストを操作させます
         /// </summary>
         /// <param name="dir">方向入力</param>

@@ -11,13 +11,25 @@ namespace Frontier
     {
         protected Player _selectPlayer = null;
 
+        virtual protected void AdaptSelectPlayer() { }
+
+        /// <summary>
+        /// 以前の状態に巻き戻します
+        /// </summary>
+        protected void Rewind()
+        {
+            if ( _selectPlayer == null ) { return; }
+
+            _selectPlayer.RewindToPreviousState();
+            _stageCtrl.UpdateGridInfo();    // グリッド情報を更新
+            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _selectPlayer );
+        }
+
         override public void Init()
         {
             base.Init();
 
-            // 選択中のプレイヤーを取得
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            // MEMO : 継承先のクラスによってはnullを許容するためnullチェックは行わない
+            AdaptSelectPlayer();
         }
 
         /// <summary>
@@ -32,17 +44,6 @@ namespace Frontier
             Back();
 
             return true;
-        }
-
-        /// <summary>
-        /// 以前の状態に巻き戻します
-        /// </summary>
-        protected void Rewind()
-        {
-            if (_selectPlayer == null) return;
-
-            _selectPlayer.RewindToPreviousState();
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid(_selectPlayer);
         }
     }
 }

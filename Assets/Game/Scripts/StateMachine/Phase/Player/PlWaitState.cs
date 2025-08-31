@@ -9,20 +9,21 @@ namespace Frontier
         {
             base.Init();
 
-            // 選択中のプレイヤーを取得
-            var selectPlayer = (Player)_btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if (selectPlayer == null)
-            {
-                Debug.Assert(false);
-
-                return;
-            }
-
             // 選択しているプレイヤーの行動をすべて終了
-            selectPlayer.Params.TmpParam.EndAction();
+            _selectPlayer.Params.TmpParam.EndAction();
 
             // 更新せずに終了
             Back();
+        }
+
+        /// <summary>
+        /// 操作対象のプレイヤーを設定します
+        /// </summary>
+        override protected void AdaptSelectPlayer()
+        {
+            // グリッドカーソルで選択中のプレイヤーを取得
+            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _selectPlayer );
         }
     }
 }

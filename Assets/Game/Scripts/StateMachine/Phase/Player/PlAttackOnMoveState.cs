@@ -13,14 +13,13 @@ namespace Frontier
     {
         override public void Init()
         {
+            PlPhaseStateInit(); // base.Init()は呼ばない(PlAttackState.Init()が呼ばれてしまうため)
+
             Character targetChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            NullCheck.AssertNotNull( targetChara );
 
-            PlPhaseStateInit();
-
-            // PlMoveStateでBindを解除せずに遷移しているので、ここで取得
-            _selectPlayer = _stageCtrl.GetGridCursorControllerBindCharacter() as Player;
-            _stageCtrl.ClearGridCursroBind();                           // 念のため解除
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid(_selectPlayer);   // グリッドカーソル位置を元に戻す
+            _stageCtrl.ClearGridCursroBind();                               // 念のためバインドを解除
+            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _selectPlayer );     // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _selectPlayer.Params.CharacterParam.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
@@ -37,12 +36,71 @@ namespace Frontier
             // グリッドカーソル上のキャラクターを攻撃対象に設定
             if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY, targetChara))
             {
-                _stageCtrl.BindGridCursorControllerState(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
+                _stageCtrl.BindToGridCursor(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
             }
 
             // 攻撃シーケンスを初期化
             _attackSequence.Init();
+        }
+
+        override public void ExitState()
+        {
+            //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
+            Character diedCharacter = _attackSequence.GetDiedCharacter();
+            if ( diedCharacter != null )
+            {
+                var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
+                NoticeCharacterDied( key );
+                // 破棄
+                diedCharacter.Remove();
+            }
+
+            // アタッカーキャラクターの設定を解除
+            _stageCtrl.ClearGridCursroBind();
+
+            // 予測ダメージをリセット
+            _attackCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
+            _targetCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
+
+            // アタックカーソルUI非表示
+            _uiSystem.BattleUi.ToggleAttackCursorP2E( false );
+
+            // ダメージ予測表示UIを非表示
+            _uiSystem.BattleUi.ToggleBattleExpect( false );
+
+            // 使用スキルの点滅を非表示
+            for ( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
+                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUseable( true );
+                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
+                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetUseable( true );
+            }
+
+            // 使用スキルコスト見積もりをリセット
+            _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
+            _attackCharacter.Params.SkillModifiedParam.Reset();
+            _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
+            _targetCharacter.Params.SkillModifiedParam.Reset();
+
+            // グリッドの状態を更新してグリッドの描画をクリア
+            _stageCtrl.UpdateGridInfo();
+            _stageCtrl.ClearGridMeshDraw();
+
+            // 選択グリッドを表示
+            _stageCtrl.SetGridCursorControllerActive( true );
+
+            base.ExitState();
+        }
+
+        /// <summary>
+        /// 操作対象のプレイヤーを設定します
+        /// </summary>
+        override protected void AdaptSelectPlayer()
+        {
+            _selectPlayer = _stageCtrl.GetBindCharacterFromGridCursor() as Player;
+            NullCheck.AssertNotNull( _selectPlayer );
         }
     }
 }

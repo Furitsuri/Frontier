@@ -187,6 +187,8 @@ namespace Frontier.Stage
             return Index / _stageData.GridRowNum;
         }
 
+        public int GetAttackableTargetNum() { return _atkTargetNum; }
+
         public Vector3 GetPosition()
         {
             return _currentPos;

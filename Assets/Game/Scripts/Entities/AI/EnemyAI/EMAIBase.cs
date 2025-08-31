@@ -35,7 +35,7 @@ namespace Frontier
         // 進行経路
         protected List<(int routeIndex, int routeCost)> _suggestedMoveRoute;
 
-        virtual protected float ATTACKABLE_TARGET_VALUE { get; } = 0;
+        virtual protected float ATTACKABLE_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
 
@@ -184,7 +184,7 @@ namespace Frontier
         /// </summary>
         /// <param name="info">指定グリッド情報</param>
         /// <returns>評価値</returns>
-        virtual protected float GetEvaluateEnableTargetAttackBase(in Stage.GridInfo info) { return ATTACKABLE_TARGET_VALUE; }
+        virtual protected float GetEvaluateEnableTargetAttackBase(in Stage.GridInfo info) { return ATTACKABLE_VALUE; }
 
         virtual protected float GetEvaluateEnableDefeat(in Stage.GridInfo info) { return ENABLE_DEFEAT_VALUE; }
     }

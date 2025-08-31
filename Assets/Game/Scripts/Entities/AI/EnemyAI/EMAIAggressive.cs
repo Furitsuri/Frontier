@@ -8,7 +8,7 @@ namespace Frontier
 {
     public class EmAiAggressive : EmAiBase
     {
-        override protected float ATTACKABLE_TARGET_VALUE { get; } = 50;
+        override protected float ATTACKABLE_VALUE { get; } = 50;
         override protected float WITHIN_RANGE_VALUE { get; } = 50;
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Frontier
             {
                 var info = _stageCtrl.GetGridInfo(i);
                 // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得
-                if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.ATTACKABLE_TARGET) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
+                if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.ATTACKABLE) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
                 {
                     // グリッドの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterHashtable.Key> opponentKeys;
