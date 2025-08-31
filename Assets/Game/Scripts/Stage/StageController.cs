@@ -821,34 +821,17 @@ namespace Frontier.Stage
                 Methods.SetBitFlag(ref _stageData.GetTileInfo(gridIndex).flag, BitFlag.REACHABLE_ATTACK);
                 var tileInfo = _stageData.GetTileInfo(gridIndex);
 
-                switch (selfTag)
+                bool[] isMatch =
                 {
-                    case CHARACTER_TAG.PLAYER:
-                        if (tileInfo.charaTag == CHARACTER_TAG.ENEMY ||
-                            tileInfo.charaTag == CHARACTER_TAG.OTHER)
-                        {
-                            Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE);
-                            Methods.SetBitFlag(ref _stageData.GetTileInfo(gridIndex).flag, BitFlag.ATTACKABLE_TARGET_EXIST);
-                        }
-                        break;
-                    case CHARACTER_TAG.ENEMY:
-                        if (tileInfo.charaTag == CHARACTER_TAG.PLAYER ||
-                            tileInfo.charaTag == CHARACTER_TAG.OTHER)
-                        {
-                            Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE);
-                            Methods.SetBitFlag(ref _stageData.GetTileInfo(gridIndex).flag, BitFlag.ATTACKABLE_TARGET_EXIST);
-                        }
-                        break;
-                    case CHARACTER_TAG.OTHER:
-                        if (tileInfo.charaTag == CHARACTER_TAG.PLAYER ||
-                            tileInfo.charaTag == CHARACTER_TAG.ENEMY)
-                        {
-                            Methods.SetBitFlag(ref _stageData.GetTileInfo(departIndex).flag, BitFlag.ATTACKABLE);
-                            Methods.SetBitFlag(ref _stageData.GetTileInfo(gridIndex).flag, BitFlag.ATTACKABLE_TARGET_EXIST);
-                        }
-                        break;
-                    default:
-                        break;
+                    (tileInfo.charaTag == CHARACTER_TAG.ENEMY || tileInfo.charaTag == CHARACTER_TAG.OTHER),     // PLAYER
+                    (tileInfo.charaTag == CHARACTER_TAG.PLAYER || tileInfo.charaTag == CHARACTER_TAG.OTHER),    // ENEMY
+                    (tileInfo.charaTag == CHARACTER_TAG.PLAYER || tileInfo.charaTag == CHARACTER_TAG.ENEMY)     // OTHER
+                };
+
+                if( isMatch[ (int)selfTag ] )
+                {
+                    Methods.SetBitFlag( ref _stageData.GetTileInfo( departIndex ).flag, BitFlag.ATTACKABLE );
+                    Methods.SetBitFlag( ref _stageData.GetTileInfo( gridIndex ).flag, BitFlag.ATTACKABLE_TARGET_EXIST );
                 }
             }
 
