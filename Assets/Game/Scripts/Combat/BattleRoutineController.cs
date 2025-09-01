@@ -5,6 +5,7 @@ using UnityEngine;
 using Zenject;
 using Frontier.Combat;
 using System;
+using Frontier.Combat.Skill;
 
 namespace Frontier.Battle
 {
@@ -78,6 +79,11 @@ namespace Frontier.Battle
             {
                 _battleTimeScaleCtrl = _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>(false);
                 NullCheck.AssertNotNull( _battleTimeScaleCtrl);
+            }
+
+            if ( SkillsData.skillNotifierFactory == null )
+            {
+                SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
             }
 
             Func<PhaseHandlerBase>[] phaseHdlrFactorys = new Func<PhaseHandlerBase>[]

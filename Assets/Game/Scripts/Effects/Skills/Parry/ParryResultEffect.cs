@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Frontier.Combat;
+using Frontier.Combat.Skill;
 
 namespace Frontier
 {
@@ -29,7 +30,7 @@ namespace Frontier
         /// エフェクト再生を開始します
         /// </summary>
         /// <param name="result">パリィの結果</param>
-        public void PlayEffect( ParrySkillHandler.JudgeResult result )
+        public void PlayEffect( JudgeResult result )
         {
             _playingParticle = _particles[(int)result];
             Debug.Assert(_playingParticle != null);

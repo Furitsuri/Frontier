@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Frontier.Combat;
 using TMPro;
 using UnityEngine;
+using Frontier.Combat.Skill;
 
 namespace Frontier
 {
@@ -18,8 +19,8 @@ namespace Frontier
 
         void Awake()
         {
-            Debug.Assert(_judgeTexts.Length == (int)ParrySkillHandler.JudgeResult.MAX, "The number of elements in the enums does not match the number of elements in the strings.");
-            Debug.Assert(_judgeColors.Length == (int)ParrySkillHandler.JudgeResult.MAX, "The number of elements in the enums does not match the number of elements in the colors.");
+            Debug.Assert(_judgeTexts.Length == (int)JudgeResult.MAX, "The number of elements in the enums does not match the number of elements in the strings.");
+            Debug.Assert(_judgeColors.Length == (int)JudgeResult.MAX, "The number of elements in the enums does not match the number of elements in the colors.");
         }
 
         void Update()
@@ -58,7 +59,7 @@ namespace Frontier
         /// 
         /// </summary>
         /// <param name="result"></param>
-        public void ShowResult(ParrySkillHandler.JudgeResult result)
+        public void ShowResult(JudgeResult result)
         {
             TMPJudge.text = _judgeTexts[(int)result];
             TMPJudge.color = _judgeColors[(int)result];

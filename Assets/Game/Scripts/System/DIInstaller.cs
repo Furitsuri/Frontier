@@ -7,6 +7,7 @@ using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using Zenject;
 using Frontier.Combat;
+using Frontier.Combat.Skill;
 
 namespace Frontier
 {

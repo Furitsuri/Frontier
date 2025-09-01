@@ -51,7 +51,7 @@ namespace Frontier
             if ( diedCharacter != null )
             {
                 var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
-                NoticeCharacterDied( key );
+                NorifyCharacterDied( key );
                 // 破棄
                 diedCharacter.Remove();
             }
