@@ -281,7 +281,7 @@ namespace Frontier
             // パリィが使用される場合は必ず被攻撃キャラクターを視点とする
             var cameraFromChara = attacker;
             var cameraToChara   = target;
-            if (target.IsSkillInUse(ID.SKILL_PARRY))
+            if (0 <= target.GetUsingSkillSlotIndexById(ID.SKILL_PARRY))
             {
                 cameraFromChara = target;
                 cameraToChara   = attacker;

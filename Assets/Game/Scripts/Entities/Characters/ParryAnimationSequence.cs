@@ -1,7 +1,7 @@
 using Frontier.Battle;
 using UnityEngine;
 using Zenject;
-using static Frontier.Combat.ParrySkillHandler;
+using Frontier.Combat.Skill;
 
 namespace Frontier.Entities
 {

@@ -5,41 +5,14 @@ using UnityEditor.Search;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using Frontier.Combat.Skill;
 
-namespace Frontier.Combat
+namespace Frontier.Combat.Skill
 {
     /// <summary>
     /// パリィスキルの処理を行います
     /// </summary>
     public class ParrySkillHandler : CombatSkillEventHandlerBase
     {
-        /// <summary>
-        /// パリィ更新用フェイズ
-        /// </summary>
-        public enum PARRY_PHASE
-        {
-            NONE = -1,
-
-            EXEC_PARRY,
-            AFTER_ATTACK,
-
-            NUM,
-        }
-
-        /// <summary>
-        /// パリィ判定の種類
-        /// </summary>
-        public enum JudgeResult
-        {
-            NONE = -1,
-            SUCCESS,    // 成功
-            FAILED,     // 失敗
-            JUST,       // ジャスト成功
-
-            MAX,
-        }
-
         [SerializeField]
         [Header("UIスクリプト")]
         private SkillParryUI _ui;
@@ -81,7 +54,7 @@ namespace Frontier.Combat
         private Character _useParryCharacter        = null;
         private Character _attackCharacter          = null;
         private JudgeResult _judgeResult            = JudgeResult.NONE; // パリィの成否結果
-        public JudgeResult ParryResult { get; set; } = ParrySkillHandler.JudgeResult.NONE;
+        public JudgeResult ParryResult { get; set; } = JudgeResult.NONE;
         private (float inner, float outer) _judgeRingSuccessRange   = (0f, 0f);
         private (float inner, float outer) _judgeRingJustRange      = (0f, 0f);
 
@@ -322,13 +295,13 @@ namespace Frontier.Combat
         {
             switch (result)
             {
-                case ParrySkillHandler.JudgeResult.SUCCESS:
+                case JudgeResult.SUCCESS:
                     attackChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param1;
                     break;
-                case ParrySkillHandler.JudgeResult.FAILED:
+                case JudgeResult.FAILED:
                     useParryChara.Params.SkillModifiedParam.DefMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param2;
                     break;
-                case ParrySkillHandler.JudgeResult.JUST:
+                case JudgeResult.JUST:
                     attackChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param1;
                     useParryChara.Params.SkillModifiedParam.AtkMagnification *= SkillsData.data[(int)ID.SKILL_PARRY].Param3;
                     break;
@@ -381,6 +354,6 @@ namespace Frontier.Combat
     /// </summary>
     public class ParrySkillHdlrEventArgs : EventArgs
     {
-        public ParrySkillHandler.JudgeResult Result { get; set; }
+        public JudgeResult Result { get; set; }
     }
 }

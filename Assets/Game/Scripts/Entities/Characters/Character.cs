@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using Frontier.Combat.Skill;
-using static Frontier.Combat.ParrySkillHandler;
 
 namespace Frontier.Entities
 {
@@ -40,18 +39,18 @@ namespace Frontier.Entities
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null; // 戦闘時の対戦相手
         protected Bullet _bullet                            = null; // 矢などの弾
-        protected ParrySkillNotifier _parrySkill            = null;
+        protected SkillNotifierBase[] _skillNotifier        = null; // スキル使用通知
 
-        public int AtkRemainingNum { get; set; } = 0;   // 攻撃シーケンスにおける残り攻撃回数
+        public int AtkRemainingNum { get; set; } = 0;                               // 攻撃シーケンスにおける残り攻撃回数
         public float ElapsedTime { get; set; } = 0f;
         public bool IsAttacked { get; set; } = false;
-        public bool IsDeclaredDead { get; set; } = false;   // 死亡確定フラグ(攻撃シーケンスにおいて使用)
+        public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
-        public GameObject BulletObject => _bulletObject;            // 弾オブジェクトの取得
-        public ParrySkillNotifier GetParrySkill => _parrySkill;     // パリィスキル処理の取得
-        public TimeScale GetTimeScale => _timeScale;                // タイムスケールの取得
-        public CharacterParameters Params => _params;       // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
+        public GameObject BulletObject => _bulletObject;                            // 弾オブジェクトの取得
+        public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
+        public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
+        public CharacterParameters Params => _params;                               // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -87,6 +86,8 @@ namespace Frontier.Entities
             _params.Awake();
 
             AnimCtrl.Init(GetComponent<Animator>());
+
+            _skillNotifier = new SkillNotifierBase[Constants.EQUIPABLE_SKILL_MAX_NUM];
 
             _animSeqfactories = new Func<ICombatAnimationSequence>[]
             {
@@ -137,11 +138,8 @@ namespace Frontier.Entities
             {
                 int skillID = (int)_params.CharacterParam.equipSkills[i];
 
-                if ( (int)ID.SKILL_PARRY == skillID )
-                {
-                    _parrySkill = _hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false);
-                    _parrySkill.Init( this );
-                }
+                _skillNotifier[i] = SkillsData.skillNotifierFactory[skillID]();
+                _skillNotifier[i].Init(this);
             }
         }
 
@@ -394,6 +392,12 @@ namespace Frontier.Entities
             executableCommands = _executableCommands;
         }
 
+        
+        public void NotifySkillActivated( int skillId )
+        {
+            // _skillNotifier = SkillsData.skillNotifierFactory[skillId];
+        }
+
         /// <summary>
         /// 次のカメラ遷移に移れる状態かを判定します
         /// </summary>
@@ -414,16 +418,16 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillID">指定スキルID</param>
         /// <returns>使用登録されているか否か</returns>
-        public bool IsSkillInUse( ID skillID )
+        public int GetUsingSkillSlotIndexById( ID skillID )
         {
             for ( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if ( !_params.TmpParam.isUseSkills[i] ) continue;
+                if ( !_params.TmpParam.isUseSkills[i] ) { continue; }
 
-                if ( _params.CharacterParam.equipSkills[i] == skillID ) return true;
+                if ( _params.CharacterParam.equipSkills[i] == skillID ) { return i; }
             }
 
-            return false;
+            return -1;
         }
 
         /// <summary>
@@ -506,7 +510,7 @@ namespace Frontier.Entities
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if (!_opponent.IsSkillInUse(ID.SKILL_GUARD))
+                else if (_opponent.GetUsingSkillSlotIndexById(ID.SKILL_GUARD) < 0)
                 {
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
                 }
@@ -539,7 +543,7 @@ namespace Frontier.Entities
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.DIE);
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if (!_opponent.IsSkillInUse(ID.SKILL_GUARD))
+                else if (_opponent.GetUsingSkillSlotIndexById(ID.SKILL_GUARD) < 0)
                 {
                     _opponent.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GET_HIT);
                 }
@@ -557,9 +561,12 @@ namespace Frontier.Entities
         /// </summary>
         public void StartParryOnAnimEvent()
         {
-            if( _opponent.GetParrySkill == null ) return;
+            int parrySkillIdx       = _opponent.GetUsingSkillSlotIndexById( ID.SKILL_PARRY );
+            if( parrySkillIdx < 0 ) { return; }
+            var parrySkillNotifier  = _opponent.SkillNotifier(parrySkillIdx) as ParrySkillNotifier;
+            NullCheck.AssertNotNull(parrySkillNotifier);
 
-            _opponent.GetParrySkill.StartParryJudgeEvent();
+            parrySkillNotifier.StartParryJudgeEvent();
         }
 
         /// <summary>
@@ -568,7 +575,12 @@ namespace Frontier.Entities
         /// </summary>
         public void ParryAttackOnAnimEvent()
         {
-            _parrySkill.ParryOpponentEvent();
+            int parrySkillIdx       = _opponent.GetUsingSkillSlotIndexById( ID.SKILL_PARRY );
+            if ( parrySkillIdx < 0 ) { return; }
+            var parrySkillNotifier  = _opponent.SkillNotifier(parrySkillIdx) as ParrySkillNotifier;
+            NullCheck.AssertNotNull( parrySkillNotifier );
+
+            parrySkillNotifier.ParryOpponentEvent();
         }
 
         /// <summary>

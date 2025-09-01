@@ -2,7 +2,7 @@
 using UnityEngine;
 using Zenject;
 
-namespace Frontier.Combat
+namespace Frontier.Combat.Skill
 {
     public class CombatSkillEventController : FocusRoutineBase
     {

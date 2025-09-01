@@ -23,12 +23,14 @@ namespace Frontier
             _stgCtrl        = stgCtrl;
         }
 
+        /// <summary>
+        /// 初期化します
+        /// MEMO : CurrentNode::Init()は、CurrentNode::RunState()が呼ばれた際にセットとして自動で呼び出されるため、このタイミングでは呼びません。
+        /// </summary>
         virtual public void Init()
         {
             // 遷移木の作成
             CreateTree();
-
-            CurrentNode.Init();
 
             _isFirstUpdate = true;
         }

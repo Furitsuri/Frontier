@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GuardSkillNotifier : SkillNotifierBase
+namespace Frontier.Combat.Skill
 {
+    public class GuardSkillNotifier : SkillNotifierBase
+    {
 
+    }
 }

@@ -87,7 +87,7 @@ namespace Frontier
             _attackCharacter.SetOpponentCharacter(_targetCharacter);
             _targetCharacter.SetOpponentCharacter(_attackCharacter);
 
-            _counterConditions = _targetCharacter.IsSkillInUse(ID.SKILL_COUNTER); // カウンター条件の設定
+            _counterConditions = ( 0 <= _targetCharacter.GetUsingSkillSlotIndexById(ID.SKILL_COUNTER) ); // カウンター条件の設定
 
             // 攻撃更新処理の条件別設定
             if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
@@ -134,13 +134,15 @@ namespace Frontier
                     {
                         _elapsedTime = 0f;
                         StartAttack(_attackCharacter, _targetCharacter);
+                        int parryIdx = _targetCharacter.GetUsingSkillSlotIndexById(ID.SKILL_PARRY );
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if (_targetCharacter.IsSkillInUse(ID.SKILL_PARRY))
+                        if ( 0 <= parryIdx )
                         {
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
-                            _parryNotifier = _targetCharacter.GetParrySkill;
+                            _parryNotifier = _targetCharacter.SkillNotifier(parryIdx) as ParrySkillNotifier;
+                            NullCheck.AssertNotNull(_parryNotifier);
                             _phase = Phase.WAIT_PARRY_RESULT;
                         }
                         // それ以外は通常通り攻撃へ
@@ -156,7 +158,8 @@ namespace Frontier
                         _uiSystem.BattleUi.ToggleDamageUI(false);
 
                         // ガードスキルを使用時はガードモーションを戻す
-                        if (_targetCharacter.IsSkillInUse(ID.SKILL_GUARD)) _targetCharacter.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, false);
+                        int guardSkillIdx = _targetCharacter.GetUsingSkillSlotIndexById(ID.SKILL_GUARD);
+                        if ( 0 <= guardSkillIdx ) { _targetCharacter.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, false ); }
 
                         // 対象が死亡している場合は死亡処理へ
                         if (_targetCharacter.Params.CharacterParam.IsDead())
@@ -188,13 +191,13 @@ namespace Frontier
                     }
 
                     ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
-                    if ( !parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.NONE ) )
+                    if ( !parrySkillHdlr.IsMatchResult( JudgeResult.NONE ) )
                     {
                         // パリィ結果が出た場合はパリィスキルハンドラを登録解除
                         _combatSkillCtrl.Unregister<ParrySkillHandler>();
 
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                        if ( parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.FAILED ) )
+                        if ( parrySkillHdlr.IsMatchResult( JudgeResult.FAILED ) )
                         {
                             _phase = Phase.ATTACK;
                         }
@@ -302,7 +305,7 @@ namespace Frontier
             target.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if (target.IsSkillInUse(ID.SKILL_GUARD)) target.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.GUARD, true);
+            if ( 0 <= target.GetUsingSkillSlotIndexById( ID.SKILL_GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using Frontier.Stage;
 using System.ComponentModel;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat.Skill;
 
 namespace Frontier
 {
@@ -106,13 +107,11 @@ namespace Frontier
         {
             DamageValue.CharacterTransform  = character.transform;
 
-            var parryNotifier = character.GetParrySkill;
-
             // パリィ成功時には専用の表記
             ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
             if (parrySkillHdlr != null &&
-                ( parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.SUCCESS ) ||
-                  parrySkillHdlr.IsMatchResult( ParrySkillHandler.JudgeResult.JUST) ) )
+                ( parrySkillHdlr.IsMatchResult( JudgeResult.SUCCESS ) ||
+                  parrySkillHdlr.IsMatchResult( JudgeResult.JUST) ) )
             {
                 DamageValue.damageText.color    = Color.yellow;
                 DamageValue.damageText.text     = "DEFLECT";

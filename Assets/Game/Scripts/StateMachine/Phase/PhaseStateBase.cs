@@ -29,7 +29,7 @@ namespace Frontier
         /// 死亡したキャラクターの存在を通知します
         /// </summary>
         /// <param name="characterKey">死亡したキャラクターのハッシュキー</param>
-        protected void NoticeCharacterDied(CharacterHashtable.Key characterKey)
+        protected void NorifyCharacterDied(CharacterHashtable.Key characterKey)
         {
             _btlRtnCtrl.BtlCharaCdr.SetDiedCharacterKey(characterKey);
         }

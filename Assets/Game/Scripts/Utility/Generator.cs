@@ -1,4 +1,5 @@
 ﻿using Frontier;
+using System;
 using UnityEngine;
 using Zenject;
 
@@ -141,6 +142,20 @@ public class Generator : MonoBehaviour
         }
 
         return original;
+    }
+
+    /// <summary>
+    /// Diコンテナを用いて、インスタンスを作成します
+    /// </summary>
+    /// <typeparam name="T">作成するインスタンスの型</typeparam>
+    /// <param name="type">指定する型</param>
+    /// <param name="isBind">DIコンテナにバインドするか否か</param>
+    /// <returns>作成したインスタンス</returns>
+    public T InstantiateWithDiContainer<T>( Type type, bool isBind )
+    {
+        object obj = _container.Instantiate( type );
+
+        return (T)obj;
     }
 
     public T InstantiateWithDiContainer<T>(T original, Vector3 position, Quaternion rotation, bool isBind) where T : UnityEngine.Object
