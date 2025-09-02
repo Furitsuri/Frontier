@@ -188,7 +188,7 @@ namespace Frontier
         /// <summary>
         /// 各スキルのデータをロードします
         /// </summary>
-        public void SkillDataLord()
+        public void LoadSkillsData()
         {
             string json = File.ReadAllText(SkillDataFilePath);
             var dataContainer = JsonUtility.FromJson<SkillDataContainer>(json);

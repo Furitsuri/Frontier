@@ -25,18 +25,23 @@ namespace Frontier.Combat.Skill
             public float Param4;
         }
 
-        public static Data[] data = new Data[(int)ID.SKILL_NUM];
-        public static Func<SkillNotifierBase>[] skillNotifierFactory = null;
+        public static Data[] data                                       = new Data[(int)ID.SKILL_NUM];
+        public static Func<SkillNotifierBase>[] skillNotifierFactory    = null;
+        private static readonly SkillNotifierBase sharedNotifier        = new SkillNotifierBase();  // 使いまわし前提のため静的読み取り専用
 
         public static void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {
+            if ( skillNotifierFactory != null ) { return; }
+
+            // MEMO : バフなどのDataのみで対応可能なものは何もする必要がないため、
+            //        ベースクラスであるSkillNotifierBaseで対応しています。
             Func<SkillNotifierBase>[] factories = new Func<SkillNotifierBase>[(int)ID.SKILL_NUM]
             {
-                () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),  // SKILL_PARRY
-                () => hierarchyBld.InstantiateWithDiContainer<GuardSkillNotifier>(false),  // SKILL_GUARD
-                () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),  // SKILL_COUNTER
-                () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),  // SKILL_DOUBLE_STRIKE
-                () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),  // SKILL_TRIPLE_STRIKE
+                () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),   // SKILL_PARRY
+                () => sharedNotifier,                                                       // SKILL_GUARD
+                () => sharedNotifier,                                                       // SKILL_COUNTER
+                () => sharedNotifier,                                                       // SKILL_DOUBLE_STRIKE
+                () => sharedNotifier,                                                       // SKILL_TRIPLE_STRIKE
             };
 
             skillNotifierFactory = factories;
