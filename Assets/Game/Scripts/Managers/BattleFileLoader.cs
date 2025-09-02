@@ -202,7 +202,7 @@ namespace Frontier
         /// <summary>
         /// カメラのパラメータを読み込みます
         /// </summary>
-        public void CameraParamLord( BattleCameraController cameraController )
+        public void LoadCameraParams( BattleCameraController cameraController )
         {
             string json = File.ReadAllText(CloseAtkCameraParamFilePath);
             var dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>(json);

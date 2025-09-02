@@ -1,12 +1,13 @@
 ﻿using Frontier.Battle;
 using Frontier.Combat;
+using Frontier.Combat.Skill;
 using Frontier.Stage;
 using ModestTree;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using Frontier.Combat.Skill;
+using Zenject.SpaceFighter;
 
 namespace Frontier.Entities
 {
@@ -27,7 +28,6 @@ namespace Frontier.Entities
         protected CombatSkillEventController _combatSkillEventCtrl  = null;
         protected StageController _stageCtrl                        = null;
 
-        private bool _isTransitNextPhaseCamera  = false;
         private bool _isOrderedRotation         = false;
         private readonly TimeScale _timeScale   = new TimeScale();
         private ICombatAnimationSequence _combatAnimSeq;
@@ -399,21 +399,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 次のカメラ遷移に移れる状態かを判定します
-        /// </summary>
-        /// <returns>次のカメラ遷移に移れるか</returns>
-        public bool IsTransitNextPhaseCamera()
-        {
-            if(_isTransitNextPhaseCamera)
-            {
-                _isTransitNextPhaseCamera = false;  // trueの場合は次回以後の判定のためにfalseに戻す
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 指定のスキルが使用登録されているかを判定します
         /// </summary>
         /// <param name="skillID">指定スキルID</param>
@@ -475,8 +460,7 @@ namespace Frontier.Entities
             var gridLength = _stageCtrl.CalcurateGridLength(_params.TmpParam.gridIndex, _opponent.Params.TmpParam.gridIndex);
             _bullet.SetFlightTimeFromGridLength(gridLength);
             _bullet.StartUpdateCoroutine(HurtOpponentByAnimation);
-
-            _isTransitNextPhaseCamera = true;   // 発射と同時に次のカメラに遷移させる
+            _btlRtnCtrl.GetCameraController().TransitNextPhaseCameraParam( null, _bullet.transform );   // 発射と同時に次のカメラパラメータを適用
 
             // この攻撃によって相手が倒されるかどうかを判定
             _opponent.IsDeclaredDead = (_opponent.Params.CharacterParam.CurHP + _opponent.Params.TmpParam.expectedHpChange) <= 0;
