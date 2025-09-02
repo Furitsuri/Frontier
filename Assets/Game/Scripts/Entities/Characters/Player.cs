@@ -36,8 +36,10 @@ namespace Frontier.Entities
         /// プレイヤーキャラクターの移動時の更新処理を行います
         /// </summary>
         /// <param name="gridIndex">キャラクターの現在地となるグリッドのインデックス値</param>
+        /// <param name="moveSpeedRate">移動速度レート</param>
         /// <param name="gridInfo">指定グリッドの情報</param>
-        public void UpdateMove(int gridIndex, in GridInfo gridInfo)
+        /// <returns>移動の完了</returns>
+        public bool UpdateMove(int gridIndex, float moveSpeedRate, in GridInfo gridInfo)
         {
             bool toggleAnimation = false;
 
@@ -49,7 +51,7 @@ namespace Frontier.Entities
             }
 
             Vector3 dir         = (_movementDestination - transform.position).normalized;
-            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * DeltaTimeProvider.DeltaTime;
+            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
             Vector3 afterDir    = (_movementDestination - afterPos);
             afterDir.y          = 0f;
             afterDir            = afterDir.normalized;
@@ -69,7 +71,9 @@ namespace Frontier.Entities
                 _isPrevMoving = true;
             }
 
-            if (toggleAnimation) AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving);
+            if ( toggleAnimation ) { AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving ); }
+
+            return !_isPrevMoving;
         }
 
         /// <summary>

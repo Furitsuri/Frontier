@@ -64,6 +64,8 @@ static public class Constants
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
     // キャラクターの移動速度
     public const float CHARACTER_MOVE_SPEED = 7.5f;
+    // キャラクターの高速移動時の移動速度レート
+    public const float CHARACTER_MOVE_HIGH_SPEED_RATE = 3.0f;
     // キャラクターの回転速度
     public const float CHARACTER_ROT_SPEED = 10f;
     // キャラクターの回転終了閾値
