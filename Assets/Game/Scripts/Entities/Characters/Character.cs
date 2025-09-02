@@ -106,7 +106,7 @@ namespace Frontier.Entities
             // 向き回転命令
             if (_isOrderedRotation)
             {
-                transform.rotation = Quaternion.Slerp(transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * Time.deltaTime);
+                transform.rotation = Quaternion.Slerp( transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * DeltaTimeProvider.DeltaTime );
 
                 float angleDiff = Quaternion.Angle(transform.rotation, _orderdRotation);
                 if (Math.Abs(angleDiff) < Constants.CHARACTER_ROT_THRESHOLD)
@@ -480,10 +480,10 @@ namespace Frontier.Entities
 
             // この攻撃によって相手が倒されるかどうかを判定
             _opponent.IsDeclaredDead = (_opponent.Params.CharacterParam.CurHP + _opponent.Params.TmpParam.expectedHpChange) <= 0;
-            if (!_opponent.IsDeclaredDead && 0 < AtkRemainingNum)
+            if ( !_opponent.IsDeclaredDead && 0 < AtkRemainingNum )
             {
                 --AtkRemainingNum;
-                AnimCtrl.SetAnimator(AttackAnimTags[AtkRemainingNum]);
+                AnimCtrl.SetAnimator( AttackAnimTags[AtkRemainingNum] );
             }
         }
 

@@ -162,7 +162,7 @@ namespace Frontier
                         // アクションゲージ使用時は点滅させる
                         if ((param.curActionGauge - param.consumptionActionGauge) <= i)
                         {
-                            _blinkingElapsedTime += Time.deltaTime;
+                            _blinkingElapsedTime += DeltaTimeProvider.DeltaTime;
                             _alpha = Mathf.PingPong(_blinkingElapsedTime / BlinkingDuration, 1.0f);
                             elem.color = new Color(0, 1, 0, _alpha);
                         }

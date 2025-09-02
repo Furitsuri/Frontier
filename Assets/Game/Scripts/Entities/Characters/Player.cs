@@ -49,7 +49,7 @@ namespace Frontier.Entities
             }
 
             Vector3 dir         = (_movementDestination - transform.position).normalized;
-            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * Time.deltaTime;
+            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * DeltaTimeProvider.DeltaTime;
             Vector3 afterDir    = (_movementDestination - afterPos);
             afterDir.y          = 0f;
             afterDir            = afterDir.normalized;

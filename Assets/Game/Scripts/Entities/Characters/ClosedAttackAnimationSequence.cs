@@ -60,7 +60,7 @@ namespace Frontier.Entities
             switch ( _closingAttackPhase )
             {
                 case CLOSED_ATTACK_PHASE.CLOSINGE:
-                    _character.ElapsedTime += Time.deltaTime;
+                    _character.ElapsedTime += DeltaTimeProvider.DeltaTime;
                     t = Mathf.Clamp01( _character.ElapsedTime / Constants.ATTACK_CLOSING_TIME );
                     t = Mathf.SmoothStep( 0f, 1f, t );
                     _character.gameObject.transform.position = Vector3.Lerp( departure, destination, t );
@@ -84,7 +84,7 @@ namespace Frontier.Entities
                     break;
                 case CLOSED_ATTACK_PHASE.DISTANCING:
                     // çUåÇëOÇÃèÍèäÇ…ñﬂÇÈ
-                    _character.ElapsedTime += Time.deltaTime;
+                    _character.ElapsedTime += DeltaTimeProvider.DeltaTime;
                     t = Mathf.Clamp01( _character.ElapsedTime / Constants.ATTACK_DISTANCING_TIME );
                     t = Mathf.SmoothStep( 0f, 1f, t );
                     _character.gameObject.transform.position = Vector3.Lerp( destination, departure, t );

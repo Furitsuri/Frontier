@@ -196,7 +196,7 @@ namespace Frontier.Stage
 
         private void Update()
         {
-            UpdateUI( Time.deltaTime );
+            UpdateUI( DeltaTimeProvider.DeltaTime );
         }
 
         /// <summary>

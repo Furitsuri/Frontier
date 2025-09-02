@@ -72,7 +72,7 @@ namespace Frontier
             switch (_Phase)
             {
                 case EMMovePhase.EM_MOVE_WAIT:
-                    _moveWaitTimer += Time.deltaTime;
+                    _moveWaitTimer += DeltaTimeProvider.DeltaTime;
                     if (Constants.ENEMY_SHOW_MOVE_RANGE_TIME <= _moveWaitTimer)
                     {
                         // 選択グリッドを一時非表示
@@ -85,7 +85,7 @@ namespace Frontier
 
                 case EMMovePhase.EM_MOVE_EXECUTE:
                     Vector3 dir = (_moveGridPos[_movingIndex] - _EMTransform.position).normalized;
-                    _EMTransform.position += dir * Constants.CHARACTER_MOVE_SPEED * Time.deltaTime;
+                    _EMTransform.position += dir * Constants.CHARACTER_MOVE_SPEED * DeltaTimeProvider.DeltaTime;
                     _EMTransform.rotation = Quaternion.LookRotation(dir);
                     Vector3 afterDir = (_moveGridPos[_movingIndex] - _EMTransform.position).normalized;
                     if (Vector3.Dot(dir, afterDir) < 0)

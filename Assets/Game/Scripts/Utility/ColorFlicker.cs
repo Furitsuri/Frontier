@@ -40,7 +40,7 @@ public class ColorFlicker<T> where T : IColorEditable
     {
         if (!_enabled) return;
 
-        _elapsedTime += Time.deltaTime;
+        _elapsedTime += DeltaTimeProvider.DeltaTime;
         colorFlickObject.Color = Color.Lerp(startColor, endColor, Mathf.PingPong(_elapsedTime / duration, 1.0f));
     }
 
