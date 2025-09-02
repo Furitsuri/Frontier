@@ -17,7 +17,7 @@ public class Arrow : Bullet
         velocity.z  = diff_XZ.magnitude / _flightTime;
         velocity.y  = diff.y / _flightTime - 0.5f * Physics.gravity.y * _flightTime;
         
-        for( float time = 0f; time < _flightTime; time += Time.deltaTime )
+        for( float time = 0f; time < _flightTime; time += DeltaTimeProvider.DeltaTime )
         {
             Vector3 nextPos = Vector3.Lerp(_firingPoint, _targetCoordinate, time / _flightTime);
             nextPos.y = _firingPoint.y + velocity.y * time + 0.5f * Physics.gravity.y * time * time;

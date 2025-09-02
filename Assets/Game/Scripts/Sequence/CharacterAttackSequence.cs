@@ -111,7 +111,7 @@ namespace Frontier
             {
                 case Phase.START:
                     // START_ROTATION_TIMEが経過するまで向きを変更します
-                    _elapsedTime += Time.deltaTime;
+                    _elapsedTime += DeltaTimeProvider.DeltaTime;
                     float t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_ROTATIION_TIME);
                     t = Mathf.SmoothStep(0f, 1f, t);
 
@@ -130,7 +130,7 @@ namespace Frontier
                     }
                     break;
                 case Phase.WAIT_ATTACK:
-                    if (Constants.ATTACK_SEQUENCE_WAIT_ATTACK_TIME < (_elapsedTime += Time.deltaTime))
+                    if (Constants.ATTACK_SEQUENCE_WAIT_ATTACK_TIME < (_elapsedTime += DeltaTimeProvider.DeltaTime))
                     {
                         _elapsedTime = 0f;
                         StartAttack(_attackCharacter, _targetCharacter);
@@ -255,7 +255,7 @@ namespace Frontier
                     }
                     break;
                 case Phase.WAIT_END:
-                    if (Constants.ATTACK_SEQUENCE_WAIT_END_TIME < (_elapsedTime += Time.deltaTime))
+                    if (Constants.ATTACK_SEQUENCE_WAIT_END_TIME < (_elapsedTime += DeltaTimeProvider.DeltaTime))
                     {
                         _elapsedTime = 0f;
 

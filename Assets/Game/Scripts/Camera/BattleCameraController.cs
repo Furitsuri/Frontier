@@ -127,7 +127,7 @@ namespace Frontier
             {
                 case CameraMode.FOLLOWING:
                     // MEMO : positionを決定してからLookAtを設定しないと、画面にかくつきが発生するため注意
-                    _followElapsedTime = Mathf.Clamp(_followElapsedTime + Time.deltaTime, 0f, _followDuration);
+                    _followElapsedTime = Mathf.Clamp(_followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration);
                     _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration);
                     break;
 
@@ -161,7 +161,7 @@ namespace Frontier
             {
                 case AttackSequenceCameraPhase.START:
                     {
-                        _fadeElapsedTime                = Mathf.Clamp(_fadeElapsedTime + Time.deltaTime, 0f, _fadeDuration);
+                        _fadeElapsedTime                = Mathf.Clamp(_fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration);
                         var fadeRate                    = _fadeElapsedTime / _fadeDuration;
                         var destCameraPos               = _cameraBaseTransform.position + _cameraOffset;
                         _mainCamera.transform.position  = Vector3.Lerp(_followingPosition, destCameraPos, fadeRate);
@@ -198,7 +198,7 @@ namespace Frontier
                             return;
                         }
 
-                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + Time.deltaTime, 0f, _atkCameraLerpDuration);
+                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _atkCameraLerpDuration);
                         var lerpRate = _fadeElapsedTime / _atkCameraLerpDuration;
                         var nextCameraPosition = _cameraBaseTransform.position + _cameraOffset;
                         _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, nextCameraPosition, lerpRate);
@@ -209,7 +209,7 @@ namespace Frontier
 
                 case AttackSequenceCameraPhase.END:
                     {
-                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + Time.deltaTime, 0f, _fadeDuration);
+                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration);
                         var fadeRate = _fadeElapsedTime / _fadeDuration;
                         _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, fadeRate);
                         _mainCamera.transform.LookAt(_lookAtPosition);

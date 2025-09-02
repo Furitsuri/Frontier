@@ -187,7 +187,7 @@ public class InputGuidePresenter : MonoBehaviour
         switch (_fadeMode)
         {
             case FadeMode.FADE:
-                _fadeTime += Time.deltaTime;
+                _fadeTime += DeltaTimeProvider.DeltaTime;
                 _currentBackGroundWidth = Mathf.Lerp(_prevTransitBackGroundWidth, _targetBackGroundWidth, _fadeTime / ResizeTime);
 
                 if (Mathf.Abs(_targetBackGroundWidth - _currentBackGroundWidth) < Mathf.Epsilon)

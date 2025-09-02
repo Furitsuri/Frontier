@@ -27,7 +27,7 @@ namespace Frontier
         {
             if (!_isUpdate) return;
 
-            _showTime -= Time.deltaTime;
+            _showTime -= DeltaTimeProvider.DeltaTime;
 
             if (_showTime < 0f)
             {
