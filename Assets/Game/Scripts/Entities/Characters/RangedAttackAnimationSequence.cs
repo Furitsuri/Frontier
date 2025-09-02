@@ -55,14 +55,6 @@ namespace Frontier.Entities
         /// <returns>終了判定</returns>
         public bool UpdateSequence(in Vector3 departure, in Vector3 destination)
         {
-            var bullet = _character.GetBullet();
-            if (bullet == null) return false;
-
-            // 遠隔攻撃は特定のフレームでカメラ対象とパラメータを変更する
-            if (_character.IsTransitNextPhaseCamera())
-            {
-                _btlRtnCtrl.GetCameraController().TransitNextPhaseCameraParam(null, bullet.transform);
-            }
             // 攻撃終了した場合はWaitに切り替え
             if (IsEndAttackAnimSequence())
             {
