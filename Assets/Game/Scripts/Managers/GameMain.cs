@@ -166,7 +166,6 @@ namespace Frontier
         {
             while (_Phase != GamePhase.GAME_END)
             {
-                // Debug.Log(_Phase);
                 yield return null;
 
                 switch (_Phase)

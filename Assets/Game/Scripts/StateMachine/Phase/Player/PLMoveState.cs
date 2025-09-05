@@ -22,7 +22,6 @@ namespace Frontier
         const int TransitAttackStateValue = 0;
         private PlMovePhase _phase = PlMovePhase.PL_MOVE;
         private int _departGridIndex = -1;
-        private List<(int routeIndexs, int routeCost)> _movePathList = new List<(int, int)>(Constants.DIJKSTRA_ROUTE_INDEXS_MAX_NUM);
 
         override public void Init()
         {
@@ -36,9 +35,8 @@ namespace Frontier
             }
             else { _phase = PlMovePhase.PL_MOVE; }
 
-            _departGridIndex = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
+            _departGridIndex    = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
 
-            
             _stageCtrl.ApplyAllTileInfoFromHeld();
             _stageCtrl.BindToGridCursor( GridCursorController.State.MOVE, _selectPlayer);
 
@@ -47,6 +45,8 @@ namespace Frontier
             var param = _selectPlayer.Params.CharacterParam;
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
+
+            _selectPlayer.MovePathHandler.SetUpCandidateRouteIndexs();  // 移動候補となるタイル情報を準備
         }
 
         override public bool Update()
@@ -62,18 +62,24 @@ namespace Frontier
             switch( _phase )
             {
                 case PlMovePhase.PL_MOVE:
-                    UpdatePlayerMove( 1.0f );
+                    if ( IsPathUpdateRequired() )
+                    {
+                        _selectPlayer.MovePathHandler.SetUpRoutePositions();
+                    }
+                    _selectPlayer.UpdateMovePath( 1.0f );
                     break;
 
                 case PlMovePhase.PL_MOVE_RESERVE_END:
                     // 移動完了後に終了へ移行
-                    if ( UpdatePlayerMove( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
+                    if ( _selectPlayer.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
                     {
                         _phase = PlMovePhase.PL_MOVE_END;
                     }
                     break;
 
                 case PlMovePhase.PL_MOVE_END:
+                    // 保険として、終了のタイミングで更新し直す
+                    _selectPlayer.Params.TmpParam.gridIndex = _stageCtrl.GetCurrentGridIndex();
                     // 移動したキャラクターの移動コマンドを選択不可にする
                     _selectPlayer.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
                     Back();     // コマンド選択に戻る
@@ -108,8 +114,8 @@ namespace Frontier
 
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
+                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault,   new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
              );
         }
 
@@ -143,7 +149,7 @@ namespace Frontier
             }
             else
             {
-                if ( Methods.CheckBitFlag( info.flag, BitFlag.PLAYER_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
+                if ( Methods.CheckBitFlag( info.flag, BitFlag.ALLY_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
             }
 
             return true;
@@ -155,7 +161,7 @@ namespace Frontier
         /// <returns>方向入力受付の可否</returns>
         override protected bool CanAcceptDirection()
         {
-            if (!CanAcceptDefault()) return false;
+            if ( !CanAcceptDefault() ) { return false; }
 
             // 移動フェーズでない場合、または移動入力受付が不可能である場合は不可
             if ( PlMovePhase.PL_MOVE == _phase ) return true;
@@ -184,7 +190,6 @@ namespace Frontier
 
             GridInfo info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex = _selectPlayer.Params.TmpParam.GetCurrentGridIndex();
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 出発地点と同一グリッドであれば戻る
@@ -198,7 +203,7 @@ namespace Frontier
                 TransitAttackOnMoveState();
             }
             // 敵キャラクター意外が存在していないことを確認
-            else if (0 == (info.flag & (BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST)))
+            else if (0 == (info.flag & (BitFlag.ALLY_EXIST | BitFlag.OTHER_EXIST)))
             {
                 _phase = PlMovePhase.PL_MOVE_RESERVE_END;
             }
@@ -233,28 +238,27 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private bool IsPathUpdateRequired()
+        {
+            int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
+            int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
+
+            GridInfo info = _stageCtrl.GetGridInfo( destinationTileIndex );
+            if ( !_selectPlayer.MovePathHandler.IsPassableTile( destinationTileIndex ) ) { return false; }
+
+            return _selectPlayer.MovePathHandler.CalcurateMovePathRoute( departingTileIndex, destinationTileIndex );
+        }
+
+        /// <summary>
         /// 移動中攻撃に遷移するかどうかを取得します
         /// </summary>
         /// <returns>遷移の是非</returns>
         private bool IsTransitAttackOnMoveState()
         {
             return ( TransitIndex == TransitAttackStateValue );
-        }
-
-        /// <summary>
-        /// プレイヤーの移動を更新します
-        /// </summary>
-        /// <param name="moveSpeedRate">移動速度のレート</param>
-        /// <returns>移動の完了</returns>
-        private bool UpdatePlayerMove( float moveSpeedRate )
-        {
-            // 移動目的座標の更新
-            GridInfo info;
-            var curGridIndex    = _stageCtrl.GetCurrentGridIndex();
-            var plGridIndex     = _selectPlayer.Params.TmpParam.GetCurrentGridIndex();
-            _stageCtrl.FetchCurrentGridInfo( out info );
-
-            return _selectPlayer.UpdateMove( curGridIndex, moveSpeedRate, info );   // 移動更新
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 ﻿using Frontier.Combat;
-using Frontier.Stage;
-using UnityEngine;
 using Frontier.Combat.Skill;
+using Frontier.Stage;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Frontier.Entities
 {
@@ -29,45 +31,95 @@ namespace Frontier.Entities
         private bool _isPrevMoving = false;
         private Vector3 _movementDestination = Vector3.zero;
         private PrevMoveInfo _prevMoveInfo;
+        protected MovePathHandler _movePathHandler = null;
 
+        public MovePathHandler MovePathHandler => _movePathHandler;
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
 
         /// <summary>
         /// プレイヤーキャラクターの移動時の更新処理を行います
         /// </summary>
-        /// <param name="gridIndex">キャラクターの現在地となるグリッドのインデックス値</param>
+        /// <param name="designatedGridIdx">キャラクターの現在地となるグリッドのインデックス値</param>
         /// <param name="moveSpeedRate">移動速度レート</param>
         /// <param name="gridInfo">指定グリッドの情報</param>
         /// <returns>移動の完了</returns>
-        public bool UpdateMove(int gridIndex, float moveSpeedRate, in GridInfo gridInfo)
+        public bool UpdateMove( int designatedGridIdx, float moveSpeedRate )
         {
+            GridInfo gridInfo = _stageCtrl.GetGridInfo( designatedGridIdx );
             bool toggleAnimation = false;
 
             // 移動可のグリッドに対してのみ目的地を更新(自身を除くキャラクターが存在するグリッドには移動させない)
-            if ( 0 <= gridInfo.estimatedMoveRange && ( !gridInfo.IsExistCharacter() || gridInfo.IsMatchExistCharacter(this) ) )
+            if ( 0 <= gridInfo.estimatedMoveRange && ( !gridInfo.IsExistCharacter() || gridInfo.IsMatchExistCharacter( this ) ) )
             {
-                _movementDestination        = gridInfo.charaStandPos;
-                _params.TmpParam.gridIndex  = gridIndex;
+                _movementDestination = gridInfo.charaStandPos;
+                _params.TmpParam.gridIndex = designatedGridIdx;
             }
 
             Vector3 dir         = (_movementDestination - transform.position).normalized;
             Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
             Vector3 afterDir    = (_movementDestination - afterPos);
-            afterDir.y          = 0f;
-            afterDir            = afterDir.normalized;
-            if ( Vector3.Dot(dir, afterDir) <= 0 )
+            afterDir.y = 0f;
+            afterDir = afterDir.normalized;
+            if ( Vector3.Dot( dir, afterDir ) <= 0 )
             {
                 transform.position = _movementDestination;
 
-                if (_isPrevMoving) toggleAnimation = true;
+                if ( _isPrevMoving ) toggleAnimation = true;
                 _isPrevMoving = false;
             }
             else
             {
                 transform.position = afterPos;
-                transform.rotation = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.LookRotation( dir );
 
-                if (!_isPrevMoving) toggleAnimation = true;
+                if ( !_isPrevMoving ) toggleAnimation = true;
+                _isPrevMoving = true;
+            }
+
+            if ( toggleAnimation ) { AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving ); }
+
+            return !_isPrevMoving;
+        }
+
+        public bool UpdateMovePath( float moveSpeedRate )
+        {
+            Func<bool> HasReachedDestination = () => { return _movePathHandler.MoveRoutePositions.Count <= _movePathHandler.NextTileIndex; };
+
+            // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
+            if ( HasReachedDestination() ) { return true; }
+
+            bool toggleAnimation    = false;
+            var nextTilePos         = _movePathHandler.GetNextTilePosition();
+
+            Vector3 dir         = (nextTilePos - transform.position).normalized;
+            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
+            Vector3 afterDir    = (nextTilePos - afterPos);
+            afterDir.y          = 0f;
+            afterDir            = afterDir.normalized;
+
+            // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
+            if ( Vector3.Dot( dir, afterDir ) <= 0 )
+            {
+                // 位置とタイル位置情報を更新
+                transform.position          = nextTilePos;
+                _params.TmpParam.gridIndex  = _movePathHandler.GetNextRouteIndex();
+
+                if ( _isPrevMoving ) { toggleAnimation = true; }
+
+                _movePathHandler.IncrementNextTileIndex();  // 目標インデックス値をインクリメント
+
+                // 最終インデックスに到達している場合は移動アニメーションを停止して終了
+                if ( HasReachedDestination() )
+                {
+                    _isPrevMoving = false;
+                }
+            }
+            else
+            {
+                transform.position = afterPos;
+                transform.rotation = Quaternion.LookRotation( dir );
+
+                if ( !_isPrevMoving ) toggleAnimation = true;
                 _isPrevMoving = true;
             }
 
@@ -151,6 +203,17 @@ namespace Frontier.Entities
             }
 
             return isPossible;
+        }
+
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        override public void Init()
+        {
+            base.Init();
+
+            _movePathHandler = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>(false);
+            _movePathHandler.Init( this );
         }
 
         /// <summary>

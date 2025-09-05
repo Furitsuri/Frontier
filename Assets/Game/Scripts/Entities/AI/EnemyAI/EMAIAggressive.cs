@@ -59,7 +59,7 @@ namespace Frontier
                     }
                 }
                 candidateRouteIndexs.Add(selfTmpParam.gridIndex);   // 現在地点も挿入
-                _suggestedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
+                _proposedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
             }
             // 攻撃範囲内に敵対キャラクターが存在しない場合は、評価値を計算して最も高いグリッド位置へ向かうように
             else
@@ -68,7 +68,7 @@ namespace Frontier
                 (List<(int routeIndex, int routeCost)> route, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
 
                 // 進行可能な全てのグリッドを探索候補に加える
-                var flag = Stage.StageController.BitFlag.CANNOT_MOVE | Stage.StageController.BitFlag.PLAYER_EXIST | Stage.StageController.BitFlag.OTHER_EXIST;
+                var flag = Stage.StageController.BitFlag.CANNOT_MOVE | Stage.StageController.BitFlag.ALLY_EXIST | Stage.StageController.BitFlag.OTHER_EXIST;
                 for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
                 {
                     if (!Methods.CheckBitFlag(_stageCtrl.GetGridInfo(i).flag, flag))
@@ -104,9 +104,9 @@ namespace Frontier
                 // 最も高い評価値のルートのうち、最大限の移動レンジで進んだグリッドへ向かうように設定
                 int range = selfParam.moveRange;
                 int prevCost = 0;   // routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
-                _suggestedMoveRoute = maxEvaluateRoute.route;
+                _proposedMoveRoute = maxEvaluateRoute.route;
 
-                foreach ((int routeIndex, int routeCost) r in _suggestedMoveRoute)
+                foreach ((int routeIndex, int routeCost) r in _proposedMoveRoute)
                 {
                     range -= (r.routeCost - prevCost);
                     prevCost = r.routeCost;
@@ -118,13 +118,20 @@ namespace Frontier
                 }
             }
 
-            int removeBaseIndex = _suggestedMoveRoute.FindIndex(item => item.routeIndex == _destinationGridIndex) + 1;
-            int removeCount = _suggestedMoveRoute.Count - removeBaseIndex;
-            _suggestedMoveRoute.RemoveRange(removeBaseIndex, removeCount);
+            int removeBaseIndex = _proposedMoveRoute.FindIndex(item => item.routeIndex == _destinationGridIndex) + 1;
+            int removeCount = _proposedMoveRoute.Count - removeBaseIndex;
+            _proposedMoveRoute.RemoveRange(removeBaseIndex, removeCount);
 
             return (IsValidDestination(), IsValidTarget());
         }
 
+        /// <summary>
+        /// 攻撃対象が自身の攻撃範囲に存在するかを取得します
+        /// </summary>
+        /// <param name="selfParam">自身のパラメータ</param>
+        /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
+        /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
+        /// <returns>存在の是非</returns>
         private bool CheckExistTargetInRange(CharacterParameter selfParam, TemporaryParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
         {
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
