@@ -24,7 +24,7 @@ namespace Frontier.Stage
             REACHABLE_ATTACK        = 1 << 1,   // 攻撃が到達可能なグリッド
             ATTACKABLE              = 1 << 2,   // 攻撃対象を攻撃可能なグリッド(ATTACKABLEの内容を実質含んでいる)
             ATTACKABLE_TARGET_EXIST = 1 << 3,   // 攻撃対象が存在しており、尚且つ攻撃が可能なグリッド
-            PLAYER_EXIST            = 1 << 4,   // プレイヤーキャラクターが存在
+            ALLY_EXIST              = 1 << 4,   // 味方キャラクターが存在
             ENEMY_EXIST             = 1 << 5,   // 敵キャラクターが存在
             OTHER_EXIST             = 1 << 6,   // 第三勢力が存在
         }
@@ -116,7 +116,7 @@ namespace Frontier.Stage
             // キャラクターが存在するグリッドの情報を更新
             BitFlag[] flags =
             {
-                BitFlag.PLAYER_EXIST,
+                BitFlag.ALLY_EXIST,
                 BitFlag.ENEMY_EXIST,
                 BitFlag.OTHER_EXIST
             };
@@ -585,6 +585,15 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// ステージ上の全てのタイルの数を取得します
+        /// </summary>
+        /// <returns>全てのタイルの数</returns>
+        public int GetTotalTileNum()
+        {
+            return _stageData.GetGridToralNum();
+        }
+
+        /// <summary>
         /// 2つのグリッド間の総レンジ数を求めます
         /// </summary>
         /// <param name="gridIdxA"></param>
@@ -676,6 +685,8 @@ namespace Frontier.Stage
         /// <param name="destGridIndex">目的地グリッドのインデックス</param>
         public List<(int routeIndexs, int routeCost)> ExtractShortestRouteIndexs(int departGridIndex, int destGridIndex, in List<int> candidateRouteIndexs)
         {
+            if ( departGridIndex == destGridIndex ) { return null; }
+
             Dijkstra dijkstra = new Dijkstra(candidateRouteIndexs.Count);
 
             // 出発グリッドからのインデックスの差を取得
@@ -684,9 +695,9 @@ namespace Frontier.Stage
                 for (int j = i + 1; j < candidateRouteIndexs.Count; ++j)
                 {
                     int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
-                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageData.GridRowNum != 0)) ||                                 // 左に存在(左端を除く)
+                    if ((diff == -1 && (candidateRouteIndexs[i] % _stageData.GridRowNum != 0)) ||                           // 左に存在(左端を除く)
                         (diff == 1 && (candidateRouteIndexs[i] % _stageData.GridRowNum != _stageData.GridRowNum - 1)) ||    // 右に存在(右端を除く)
-                         Math.Abs(diff) == _stageData.GridRowNum)                                                                 // 上または下に存在
+                         Math.Abs(diff) == _stageData.GridRowNum)                                                           // 上または下に存在
                     {
                         // 移動可能な隣接グリッド情報をダイクストラに入れる
                         dijkstra.Add(i, j);
@@ -777,8 +788,8 @@ namespace Frontier.Stage
             StageController.BitFlag[] opponentTag = new StageController.BitFlag[(int)CHARACTER_TAG.NUM]
             {
                 BitFlag.ENEMY_EXIST  | BitFlag.OTHER_EXIST,     // PLAYERにおける敵対勢力
-                BitFlag.PLAYER_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
-                BitFlag.PLAYER_EXIST | BitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
+                BitFlag.ALLY_EXIST | BitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
+                BitFlag.ALLY_EXIST | BitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
             };
             if (Methods.CheckBitFlag(tileInfo.flag, opponentTag[(int)selfTag])) { return; }
 

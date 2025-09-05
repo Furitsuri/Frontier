@@ -33,7 +33,7 @@ namespace Frontier
         // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
         protected List<TargetCandidateInfo> _targetChandidateInfos = null;
         // 進行経路
-        protected List<(int routeIndex, int routeCost)> _suggestedMoveRoute;
+        protected List<(int routeIndex, int routeCost)> _proposedMoveRoute;
 
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
@@ -80,7 +80,7 @@ namespace Frontier
         /// <returns>進行予定の移動ルート情報</returns>
         override public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
         {
-            return _suggestedMoveRoute;
+            return _proposedMoveRoute;
         }
 
         /// <summary>
