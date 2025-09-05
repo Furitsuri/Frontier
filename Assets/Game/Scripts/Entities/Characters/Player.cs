@@ -81,6 +81,11 @@ namespace Frontier.Entities
             return !_isPrevMoving;
         }
 
+        /// <summary>
+        /// プレイヤーキャラクターを作成したパスに沿って移動させます
+        /// </summary>
+        /// <param name="moveSpeedRate">移動速度レート</param>
+        /// <returns>移動が終了したか</returns>
         public bool UpdateMovePath( float moveSpeedRate )
         {
             Func<bool> HasReachedDestination = () => { return _movePathHandler.MoveRoutePositions.Count <= _movePathHandler.NextTileIndex; };
