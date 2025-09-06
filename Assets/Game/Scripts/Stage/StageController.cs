@@ -50,10 +50,11 @@ namespace Frontier.Stage
         [SerializeField]
         public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
 
-        public bool back = true;
         private HierarchyBuilderBase _hierarchyBld = null;
+        private StageData _stageData;
+
+        public bool back = true;
         private BattleRoutineController _btlRtnCtrl;
-		private StageData _stageData;
         private GridCursorController _gridCursorCtrl;
         private Footprint _footprint;
         private List<GridMesh> _gridMeshs;
@@ -708,6 +709,49 @@ namespace Frontier.Stage
 
             // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
             return dijkstra.GetMinRoute(candidateRouteIndexs.IndexOf(departGridIndex), candidateRouteIndexs.IndexOf(destGridIndex), candidateRouteIndexs);
+        }
+
+        /// <summary>
+        /// 出発地点と目的地から移動経路となるグリッドのインデックスリストを取得します
+        /// </summary>
+        /// <param name="departGridIndex">出発地グリッドのインデックス</param>
+        /// <param name="destGridIndex">目的地グリッドのインデックス</param>
+        public List<(int routeIndex, int routeCost, Vector3 tilePosition)> ExtractShortestRoute( int departGridIndex, int destGridIndex, in List<int> candidateRouteIndexs )
+        {
+            if ( departGridIndex == destGridIndex ) { return null; }
+
+            Dijkstra dijkstra = new Dijkstra(candidateRouteIndexs.Count);
+
+            // 出発グリッドからのインデックスの差を取得
+            for ( int i = 0; i + 1 < candidateRouteIndexs.Count; ++i )
+            {
+                for ( int j = i + 1; j < candidateRouteIndexs.Count; ++j )
+                {
+                    int diff = candidateRouteIndexs[j] - candidateRouteIndexs[i];
+                    if ( ( diff == -1 && ( candidateRouteIndexs[i] % _stageData.GridRowNum != 0 ) ) ||                          // 左に存在(左端を除く)
+                        ( diff == 1 && ( candidateRouteIndexs[i] % _stageData.GridRowNum != _stageData.GridRowNum - 1 ) ) ||    // 右に存在(右端を除く)
+                         Math.Abs( diff ) == _stageData.GridRowNum )                                                            // 上または下に存在
+                    {
+                        // 移動可能な隣接グリッド情報をダイクストラに入れる
+                        dijkstra.Add( i, j );
+                        dijkstra.Add( j, i );
+                    }
+                }
+            }
+
+            // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
+            var minRoute = dijkstra.GetMinRoute( candidateRouteIndexs.IndexOf( departGridIndex ), candidateRouteIndexs.IndexOf( destGridIndex ), candidateRouteIndexs );
+            if( minRoute == null ) { return null; }
+
+            List< (int routeIndex, int routeCost, Vector3 tilePosition) > retRoute = new List< (int routeIndex, int routeCost, Vector3 tilePosition) >();
+            retRoute.Clear();
+            for ( int i = 0; i < minRoute.Count; ++i )
+            {
+                var currentInfo = minRoute[i];
+                retRoute.Add( (currentInfo.routeIndex, currentInfo.routeCost, GetGridInfo( currentInfo.routeIndex ).charaStandPos) );
+            }
+
+            return retRoute;
         }
 
         /// <summary>

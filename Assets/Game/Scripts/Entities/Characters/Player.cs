@@ -88,7 +88,10 @@ namespace Frontier.Entities
         /// <returns>移動が終了したか</returns>
         public bool UpdateMovePath( float moveSpeedRate )
         {
-            Func<bool> HasReachedDestination = () => { return _movePathHandler.MoveRoutePositions.Count <= _movePathHandler.NextTileIndex; };
+            Func<bool> HasReachedDestination = () =>
+            {
+                return _movePathHandler.ProposedMoveRoute.Count <= _movePathHandler.NextTileIndex;
+            };
 
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
             if ( HasReachedDestination() ) { return true; }

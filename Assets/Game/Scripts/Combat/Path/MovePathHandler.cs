@@ -10,14 +10,13 @@ public class MovePathHandler
 {
     private StageController _stageCtrl  = null;
 
-    private int _nextTileIndex                                          = 0;
-    private Character _owner                                            = null;
-    private List<int> _candidateRouteIndexs                             = null;
-    private List<(int routeIndex, int routeCost)> _proposedMoveRoute    = null;
-    private List<Vector3> _moveRoutePositions                           = new List<Vector3>();
+    private int _nextTileIndex                                                              = 0;
+    private Character _owner                                                                = null;
+    private List<int> _candidateRouteIndexs                                                 = null;
+    private List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMoveRoute  = new List<(int routeIndex, int routeCost, Vector3 tilePosition)>();
 
     public int NextTileIndex => _nextTileIndex;
-    public List<Vector3> MoveRoutePositions => _moveRoutePositions;
+    public List<(int routeIndex, int routeCost, Vector3 tilePosition)> ProposedMoveRoute => _proposedMoveRoute;
 
     [Inject]
     private void Construct( StageController stageCtrl )
@@ -51,36 +50,13 @@ public class MovePathHandler
     {
         _candidateRouteIndexs.Clear();  // 一度クリア
 
-        // 通行不可フラグ
-        var impassableFlag = StageController.BitFlag.CANNOT_MOVE | StageController.BitFlag.ALLY_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST;
-
         // 進行可能なタイルをルート候補に挿入
         for ( int i = 0; i < _stageCtrl.GetTotalTileNum(); ++i )
         {
-            var tileInfo    = _stageCtrl.GetGridInfo( i );
-            // 味方が存在していても自身は除く
-            bool ownerExist = ( tileInfo.charaTag == _owner.Params.CharacterParam.characterTag ) && ( tileInfo.charaIndex == _owner.Params.CharacterParam.characterIndex );
-
-            if ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, impassableFlag ) ) )
+            if( IsPassableTile( i ) )
             {
                 _candidateRouteIndexs.Add( i );
             }
-        }
-    }
-
-    /// <summary>
-    /// 移動する各タイル上の座標情報を設定します
-    /// </summary>
-    public void SetUpRoutePositions()
-    {
-        // 各インスタンスを初期化
-        _nextTileIndex = 0;
-        _moveRoutePositions.Clear();
-
-        // パスのインデックスからグリッド座標を得る
-        for ( int i = 0; i < _proposedMoveRoute.Count; ++i )
-        {
-            _moveRoutePositions.Add( _stageCtrl.GetGridInfo( _proposedMoveRoute[i].routeIndex ).charaStandPos );
         }
     }
 
@@ -96,15 +72,20 @@ public class MovePathHandler
     /// <param name="destinationlTileIndex">目標地点となるタイルのインデックス値</param>
     public bool CalcurateMovePathRoute( int departingTileIndex, int destinationlTileIndex )
     {
-        if ( departingTileIndex == destinationlTileIndex )
+        if( !IsPassableTile( destinationlTileIndex ) ) { return false; }
+
+        var route = _stageCtrl.ExtractShortestRoute( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
+        if( route == null ) { return false; }
+        _proposedMoveRoute = route;
+
+        if ( 0 < _proposedMoveRoute.Count )
         {
-            _proposedMoveRoute = null;
-            return false;
+            _nextTileIndex = 0;
+
+            return true;
         }
 
-        _proposedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
-
-        return ( _proposedMoveRoute != null && 0 < _proposedMoveRoute.Count );
+        return false;
     }
 
     /// <summary>
@@ -126,7 +107,7 @@ public class MovePathHandler
     /// <returns>目標座標</returns>
     public Vector3 GetNextTilePosition()
     {
-        return _moveRoutePositions[_nextTileIndex];
+        return _proposedMoveRoute[_nextTileIndex].tilePosition;
     }
 
     /// <summary>

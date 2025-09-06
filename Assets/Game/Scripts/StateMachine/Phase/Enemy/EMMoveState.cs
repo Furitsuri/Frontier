@@ -14,15 +14,20 @@ namespace Frontier
             EM_MOVE_END,
         }
 
-        private Enemy _enemy;
         private EMMovePhase _Phase = EMMovePhase.EM_MOVE_WAIT;
         private int _departGridIndex = -1;
         private int _movingIndex = 0;
         private float _moveWaitTimer = 0f;
+        private Enemy _enemy;
         private List<(int routeIndexs, int routeCost)> _movePathList;
         private List<Vector3> _moveGridPos;
         private Transform _EMTransform;
 
+        /// <summary>
+        /// 初期化します
+        /// MEMO : 移動する経路自体は既にEmSelectStateで決定済みの想定で設計されています。
+        ///        EmMoveStateの初期化時点でどこに移動するか(引いては何を行うか)を決定していては遅いためです。
+        /// </summary>
         override public void Init()
         {
             base.Init();
@@ -51,17 +56,13 @@ namespace Frontier
                     // パスのインデックスからグリッド座標を得る
                     _moveGridPos.Add(_stageCtrl.GetGridInfo(_movePathList[i].routeIndexs).charaStandPos);
                 }
-                _movingIndex = 0;
-                _moveWaitTimer = 0f;
+                _movingIndex    = 0;
+                _moveWaitTimer  = 0f;
 
-                // 処理軽減のためtranformをキャッシュ
-                _EMTransform = _enemy.transform;
-                // 移動アニメーション開始
-                _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);
-                // グリッド情報更新
-                _enemy.Params.TmpParam.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());
-                // 選択グリッドを表示
-                _stageCtrl.SetGridCursorControllerActive(true);
+                _EMTransform = _enemy.transform;                                                        // 処理軽減のためtranformをキャッシュ
+                _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);                   // 移動アニメーション開始
+                _enemy.Params.TmpParam.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());   // グリッド情報更新
+                _stageCtrl.SetGridCursorControllerActive(true);                                         // 選択グリッドを表示
 
                 _Phase = EMMovePhase.EM_MOVE_WAIT;
             }
@@ -111,7 +112,6 @@ namespace Frontier
             }
 
             return false;
-
         }
 
         override public void ExitState()

@@ -62,10 +62,7 @@ namespace Frontier
             switch( _phase )
             {
                 case PlMovePhase.PL_MOVE:
-                    if ( IsPathUpdateRequired() )
-                    {
-                        _selectPlayer.MovePathHandler.SetUpRoutePositions();
-                    }
+                    SetUpPathRoute();
                     _selectPlayer.UpdateMovePath( 1.0f );
                     break;
 
@@ -238,18 +235,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// 
+        /// パスの更新が必要かどうかを判定します
         /// </summary>
         /// <returns></returns>
-        private bool IsPathUpdateRequired()
+        private void SetUpPathRoute()
         {
             int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
 
-            GridInfo info = _stageCtrl.GetGridInfo( destinationTileIndex );
-            if ( !_selectPlayer.MovePathHandler.IsPassableTile( destinationTileIndex ) ) { return false; }
-
-            return _selectPlayer.MovePathHandler.CalcurateMovePathRoute( departingTileIndex, destinationTileIndex );
+            _selectPlayer.MovePathHandler.CalcurateMovePathRoute( departingTileIndex, destinationTileIndex );
         }
 
         /// <summary>

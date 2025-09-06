@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,23 @@ namespace Frontier.Entities
 {
     public class Enemy : Npc
     {
+        /// <summary>
+        /// 目標座標と標的キャラクターを取得します
+        /// </summary>
+        public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
+        {
+            destinationIndex    = _baseAI.GetDestinationGridIndex();
+            targetCharacter     = _baseAI.GetTargetCharacter();
+        }
+
+        /// <summary>
+        /// 目的座標と標的キャラクターを決定する
+        /// </summary>
+        public (bool, bool) DetermineDestinationAndTargetWithAI()
+        {
+            return _baseAI.DetermineDestinationAndTarget( _params.CharacterParam, _params.TmpParam );
+        }
+
         /// <summary>
         /// 初期化します
         /// </summary>
@@ -18,42 +36,20 @@ namespace Frontier.Entities
         /// 思考タイプを設定します
         /// </summary>
         /// <param name="type">設定する思考タイプ</param>
-        override public void SetThinkType(ThinkingType type)
+        override public void SetThinkType( ThinkingType type )
         {
             _thikType = type;
 
             // 思考タイプによってemAIに代入する派生クラスを変更する
-            switch (_thikType)
+            Func<BaseAi>[] emAiFactorys = new Func<BaseAi>[(int)ThinkingType.NUM]
             {
-                case ThinkingType.AGGERESSIVE:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiAggressive>(false);
-                    break;
-                case ThinkingType.WAITING:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiWaitting>(false);
-                    break;
-                default:
-                    _baseAI = _hierarchyBld.InstantiateWithDiContainer<EmAiBase>(false);
-                    break;
-            }
+                () => _hierarchyBld.InstantiateWithDiContainer<EmAiBase>(false),        // BASE
+                () => _hierarchyBld.InstantiateWithDiContainer<EmAiAggressive>(false),  // AGGRESSIVE
+                () => _hierarchyBld.InstantiateWithDiContainer<EmAiWaiting>(false),     // WAITING
+            };
 
-            _baseAI.Init();
-        }
-
-        /// <summary>
-        /// 目的座標と標的キャラクターを決定する
-        /// </summary>
-        public (bool, bool) DetermineDestinationAndTargetWithAI()
-        {
-            return _baseAI.DetermineDestinationAndTarget(_params.CharacterParam, _params.TmpParam);
-        }
-
-        /// <summary>
-        /// 目標座標と標的キャラクターを取得します
-        /// </summary>
-        public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
-        {
-            destinationIndex    = _baseAI.GetDestinationGridIndex();
-            targetCharacter     = _baseAI.GetTargetCharacter();
+            _baseAI = emAiFactorys[( int )_thikType]();
+            _baseAI.Init( this );
         }
     }
 }

@@ -6,10 +6,12 @@ namespace Frontier
 {
     public abstract class BaseAi
     {
+        virtual public MovePathHandler MovePathHandler => null;
+
         /// <summary>
         /// 初期化します
         /// </summary>
-        virtual public void Init() {}
+        virtual public void Init( Character owner ) {}
 
         /// <summary>
         /// 目的地のグリッドインデックスを取得します
