@@ -176,7 +176,7 @@ namespace Frontier
                     if ( !chara.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER) )
                     {
                         var npc = chara as Npc;
-                        npc.SetThinkType((Npc.ThinkingType)param.ThinkType);
+                        npc.SetThinkType((ThinkingType)param.ThinkType);
                     }
 
                     _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(chara);

@@ -59,6 +59,9 @@ namespace Frontier
                     }
                 }
                 candidateRouteIndexs.Add(selfTmpParam.gridIndex);   // 現在地点も挿入
+                
+                MovePathHandler.SetUpCandidateRouteIndexs();
+
                 _proposedMoveRoute = _stageCtrl.ExtractShortestRouteIndexs(selfTmpParam.gridIndex, _destinationGridIndex, candidateRouteIndexs);
             }
             // 攻撃範囲内に敵対キャラクターが存在しない場合は、評価値を計算して最も高いグリッド位置へ向かうように
