@@ -37,51 +37,6 @@ namespace Frontier.Entities
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
 
         /// <summary>
-        /// プレイヤーキャラクターの移動時の更新処理を行います
-        /// </summary>
-        /// <param name="designatedGridIdx">キャラクターの現在地となるグリッドのインデックス値</param>
-        /// <param name="moveSpeedRate">移動速度レート</param>
-        /// <param name="gridInfo">指定グリッドの情報</param>
-        /// <returns>移動の完了</returns>
-        public bool UpdateMove( int designatedGridIdx, float moveSpeedRate )
-        {
-            GridInfo gridInfo = _stageCtrl.GetGridInfo( designatedGridIdx );
-            bool toggleAnimation = false;
-
-            // 移動可のグリッドに対してのみ目的地を更新(自身を除くキャラクターが存在するグリッドには移動させない)
-            if ( 0 <= gridInfo.estimatedMoveRange && ( !gridInfo.IsExistCharacter() || gridInfo.IsMatchExistCharacter( this ) ) )
-            {
-                _movementDestination = gridInfo.charaStandPos;
-                _params.TmpParam.gridIndex = designatedGridIdx;
-            }
-
-            Vector3 dir         = (_movementDestination - transform.position).normalized;
-            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
-            Vector3 afterDir    = (_movementDestination - afterPos);
-            afterDir.y = 0f;
-            afterDir = afterDir.normalized;
-            if ( Vector3.Dot( dir, afterDir ) <= 0 )
-            {
-                transform.position = _movementDestination;
-
-                if ( _isPrevMoving ) toggleAnimation = true;
-                _isPrevMoving = false;
-            }
-            else
-            {
-                transform.position = afterPos;
-                transform.rotation = Quaternion.LookRotation( dir );
-
-                if ( !_isPrevMoving ) toggleAnimation = true;
-                _isPrevMoving = true;
-            }
-
-            if ( toggleAnimation ) { AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving ); }
-
-            return !_isPrevMoving;
-        }
-
-        /// <summary>
         /// プレイヤーキャラクターを作成したパスに沿って移動させます
         /// </summary>
         /// <param name="moveSpeedRate">移動速度レート</param>

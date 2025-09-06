@@ -19,9 +19,9 @@ namespace Frontier
             PL_MOVE_END,
         }
 
-        const int TransitAttackStateValue = 0;
-        private PlMovePhase _phase = PlMovePhase.PL_MOVE;
-        private int _departGridIndex = -1;
+        const int TransitAttackStateValue   = 0;
+        private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
+        private int _departGridIndex        = -1;
 
         override public void Init()
         {

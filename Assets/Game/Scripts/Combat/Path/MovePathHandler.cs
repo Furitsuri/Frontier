@@ -53,7 +53,10 @@ public class MovePathHandler
         // 進行可能なタイルをルート候補に挿入
         for ( int i = 0; i < _stageCtrl.GetTotalTileNum(); ++i )
         {
-            if( IsPassableTile( i ) )
+            var tileInfo    = _stageCtrl.GetGridInfo( i );
+            bool ownerExist = ( tileInfo.charaTag == _owner.Params.CharacterParam.characterTag ) && ( tileInfo.charaIndex == _owner.Params.CharacterParam.characterIndex );
+
+            if ( ( 0 <= tileInfo.estimatedMoveRange || ownerExist ) )
             {
                 _candidateRouteIndexs.Add( i );
             }
