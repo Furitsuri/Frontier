@@ -13,8 +13,8 @@ namespace Frontier.Entities
         /// </summary>
         public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
         {
-            destinationIndex    = _baseAI.GetDestinationGridIndex();
-            targetCharacter     = _baseAI.GetTargetCharacter();
+            destinationIndex    = _baseAi.GetDestinationGridIndex();
+            targetCharacter     = _baseAi.GetTargetCharacter();
         }
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace Frontier.Entities
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
-            return _baseAI.DetermineDestinationAndTarget( _params.CharacterParam, _params.TmpParam );
+            return _baseAi.DetermineDestinationAndTarget( _params.CharacterParam, _params.TmpParam );
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace Frontier.Entities
                 () => _hierarchyBld.InstantiateWithDiContainer<AiWaiting>(false),     // WAITING
             };
 
-            _baseAI = emAiFactorys[( int )_thikType]();
-            _baseAI.Init( this );
+            _baseAi = emAiFactorys[( int )_thikType]();
+            _baseAi.Init( this );
         }
     }
 }

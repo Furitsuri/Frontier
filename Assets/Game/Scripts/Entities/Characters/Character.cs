@@ -1,6 +1,7 @@
 ﻿using Frontier.Battle;
 using Frontier.Combat;
 using Frontier.Combat.Skill;
+using Frontier.Entities.Ai;
 using Frontier.Stage;
 using ModestTree;
 using System;
@@ -35,11 +36,13 @@ namespace Frontier.Entities
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
+        protected BaseAi _baseAi = null;                                            // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
 
+        protected ThinkingType _thikType                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
-        protected Character _opponent                       = null; // 戦闘時の対戦相手
-        protected Bullet _bullet                            = null; // 矢などの弾
-        protected SkillNotifierBase[] _skillNotifier        = null; // スキル使用通知
+        protected Character _opponent                       = null;                 // 戦闘時の対戦相手
+        protected Bullet _bullet                            = null;                 // 矢などの弾
+        protected SkillNotifierBase[] _skillNotifier        = null;                 // スキル使用通知
 
         public int AtkRemainingNum { get; set; } = 0;                               // 攻撃シーケンスにおける残り攻撃回数
         public float ElapsedTime { get; set; } = 0f;
@@ -51,6 +54,7 @@ namespace Frontier.Entities
         public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
         public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
         public CharacterParameters Params => _params;                               // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
+        public BaseAi GetAi() => _baseAi;                                           // AIの取得
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -197,6 +201,12 @@ namespace Frontier.Entities
         /// 戦闘に使用するスキルを選択します
         /// </summary>
         virtual public void SelectUseSkills( SituationType type ) { }
+
+        /// <summary>
+        /// キャラクターの思考タイプを設定します
+        /// </summary>
+        /// <param name="type">設定する思考タイプ</param>
+        virtual public void SetThinkType( ThinkingType type ) { }
 
         /// <summary>
         /// 指定のスキルの使用設定を切り替えます
