@@ -254,7 +254,7 @@ namespace Frontier
             int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
 
-            _selectPlayer.GetAi().MovePathHandler.FindRealTimeMoveRoute( departingTileIndex, destinationTileIndex );
+            _selectPlayer.GetAi().MovePathHandler.FindActuallyMoveRoute( departingTileIndex, destinationTileIndex );
         }
 
         /// <summary>

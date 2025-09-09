@@ -96,14 +96,16 @@ public class MovePathHandler
     }
 
     /// <summary>
-    /// 移動可能範囲を考慮した上で、出発地点と目標地点を指定して最短移動ルートを取得します
+    /// 探索済みのルートをリセットせず、移動可能範囲を考慮した上で、出発地点と目標地点を指定して最短移動ルートを取得します
+    /// 移動操作中に移動ルートを探索する際に使用します
     /// </summary>
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
     /// <returns>ルート取得の是非</returns>
-    public bool FindRealTimeMoveRoute( int departingTileIndex, int destinationlTileIndex )
+    public bool FindActuallyMoveRoute( int departingTileIndex, int destinationlTileIndex )
     {
-        if ( !IsPassableTile( destinationlTileIndex ) ) { return false; }
+        // 指定のインデックス位置にキャラクターが留まれない場合は失敗
+        if ( !CanStandOnTile( destinationlTileIndex ) ) { return false; }
 
         var route = _stageCtrl.ExtractShortestRoute( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
         if ( route == null ) { return false; }
@@ -132,9 +134,7 @@ public class MovePathHandler
         outReachableTileIndex = departingTileIndex;
         if ( !FindMoveRoute( departingTileIndex, destinationlTileIndex ) ) {  return false; }
 
-        // 最も評価値の高いルートのうち、最大限の移動レンジで進んだグリッドへ向かうように設定
-
-        int prevCost            = 0;   // routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
+        int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
         int reachableTileIndex  = 0;
 
         foreach ( (int routeIndex, int routeCost, Vector3 t) r in _proposedMoveRoute )
@@ -158,11 +158,11 @@ public class MovePathHandler
     }
 
     /// <summary>
-    /// 指定の
+    /// 指定のタイルの位置に留まることが出来るかを判定します
     /// </summary>
-    /// <param name="tileIdx"></param>
-    /// <returns></returns>
-    public bool IsPassableTile( int tileIdx )
+    /// <param name="tileIdx">指定のタイル位置のインデックス</param>
+    /// <returns>留まることの可否</returns>
+    public bool CanStandOnTile( int tileIdx )
     {
         var tileInfo    = _stageCtrl.GetGridInfo( tileIdx );
         bool ownerExist = ( tileInfo.charaTag == _owner.Params.CharacterParam.characterTag ) && ( tileInfo.charaIndex == _owner.Params.CharacterParam.characterIndex );
