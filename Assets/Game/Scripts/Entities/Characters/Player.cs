@@ -1,5 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.Combat.Skill;
+using Frontier.Entities.Ai;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
@@ -31,9 +32,6 @@ namespace Frontier.Entities
         private bool _isPrevMoving = false;
         private Vector3 _movementDestination = Vector3.zero;
         private PrevMoveInfo _prevMoveInfo;
-        protected MovePathHandler _movePathHandler = null;
-
-        public MovePathHandler MovePathHandler => _movePathHandler;
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
 
         /// <summary>
@@ -45,14 +43,14 @@ namespace Frontier.Entities
         {
             Func<bool> HasReachedDestination = () =>
             {
-                return _movePathHandler.ProposedMoveRoute.Count <= _movePathHandler.NextTileIndex;
+                return _baseAi.MovePathHandler.ProposedMoveRoute.Count <= _baseAi.MovePathHandler.NextTileIndex;
             };
 
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
             if ( HasReachedDestination() ) { return true; }
 
             bool toggleAnimation    = false;
-            var nextTilePos         = _movePathHandler.GetNextTilePosition();
+            var nextTilePos         = _baseAi.MovePathHandler.GetNextTilePosition();
 
             Vector3 dir         = (nextTilePos - transform.position).normalized;
             Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
@@ -65,11 +63,11 @@ namespace Frontier.Entities
             {
                 // 位置とタイル位置情報を更新
                 transform.position          = nextTilePos;
-                _params.TmpParam.gridIndex  = _movePathHandler.GetNextRouteIndex();
+                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetNextRouteIndex();
 
                 if ( _isPrevMoving ) { toggleAnimation = true; }
 
-                _movePathHandler.IncrementNextTileIndex();  // 目標インデックス値をインクリメント
+                _baseAi.MovePathHandler.IncrementNextTileIndex();  // 目標インデックス値をインクリメント
 
                 // 最終インデックスに到達している場合は移動アニメーションを停止して終了
                 if ( HasReachedDestination() )
@@ -174,9 +172,10 @@ namespace Frontier.Entities
         override public void Init()
         {
             base.Init();
-
-            _movePathHandler = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>(false);
-            _movePathHandler.Init( this );
+            _baseAi = _hierarchyBld.InstantiateWithDiContainer<AiBase>( false );
+            NullCheck.AssertNotNull( _baseAi );
+            _baseAi.Init( this );
+            _baseAi.MovePathHandler.Init( this );
         }
 
         /// <summary>
