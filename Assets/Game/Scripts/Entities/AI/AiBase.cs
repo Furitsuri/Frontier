@@ -1,14 +1,14 @@
-﻿using Frontier.Stage;
-using Frontier.Battle;
+﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-namespace Frontier
+namespace Frontier.Entities.Ai
 {
-    public class EmAiBase : BaseAi
+    public class AiBase : BaseAi
     {
         /// <summary>
         /// 自身の攻撃(移動)可能範囲内に存在する攻撃対象キャラクターの情報です
@@ -27,10 +27,10 @@ namespace Frontier
         protected bool _isDetermined                                = false;    // 既に移動対象や攻撃対象を決定しているか 
         protected int _destinationGridIndex                         = -1;       // 移動目標グリッドのインデックス値
         protected float[] _gridEvaluationValues                     = null;     // 各グリッドの評価値
-        protected Character _targetCharacter                        = null;     // 攻撃対象のキャラクターのインデックス値
+        protected Character _targetCharacter                        = null;     // 攻撃対象のキャラクター
         protected MovePathHandler _movePathHandler                  = null;     // 移動経路のパス決定・移動時に使用
         protected List<TargetCandidateInfo> _targetChandidateInfos  = null;     // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
-        protected List<(int routeIndex, int routeCost)> _proposedMoveRoute;     // 進行経路
+        protected List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMoveRoute;     // 進行経路
 
         override public MovePathHandler MovePathHandler => _movePathHandler;
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
@@ -71,6 +71,17 @@ namespace Frontier
         public bool IsValidTargetCharacterIndex()
         {
             return ( _targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY );
+        }
+
+        /// <summary>
+        /// 全てのタイルの評価値をリセットします
+        /// </summary>
+        protected void ResetAllTileEvaluationValues()
+        {
+            for( int i = 0; i < _gridEvaluationValues.Length; ++i )
+            {
+                _gridEvaluationValues[i] = 0f;
+            }
         }
 
         /// <summary>
@@ -126,6 +137,20 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居た場合の処理を行います
+        /// </summary>
+        /// <param name="selfParam">自身のパラメータ</param>
+        /// <param name="selfTmpParam">自身の一時パラメータ</param>
+        virtual protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameter selfParam, in TemporaryParameter selfTmpParam, List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates ) { }
+
+        /// <summary>
+        /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居ない場合の処理を行います
+        /// </summary>
+        /// <param name="selfParam">自身のパラメータ</param>
+        /// <param name="selfTmpParam">自身の一時パラメータ</param>
+        virtual protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameter selfParam, in TemporaryParameter selfTmpParam ) { }
+
+        /// <summary>
         /// いずれかのターゲットに攻撃可能なグリッドの評価値を返します
         /// </summary>
         /// <param name="info">指定グリッド情報</param>
@@ -142,6 +167,7 @@ namespace Frontier
             _gridEvaluationValues   = new float[_stageData.GetGridToralNum()];
             _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
             _movePathHandler        = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false );
+
             _movePathHandler.Init(owner);
         }
 
@@ -184,7 +210,7 @@ namespace Frontier
         /// 進行予定の移動ルートを取得します
         /// </summary>
         /// <returns>進行予定の移動ルート情報</returns>
-        override public List<(int routeIndex, int routeCost)> GetProposedMoveRoute()
+        override public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMoveRoute()
         {
             return _proposedMoveRoute;
         }

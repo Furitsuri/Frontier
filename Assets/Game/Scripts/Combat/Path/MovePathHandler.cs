@@ -1,7 +1,9 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using Zenject;
@@ -46,17 +48,19 @@ public class MovePathHandler
     /// <summary>
     /// 移動候補となるタイル設定を行います
     /// </summary>
-    public void SetUpCandidateRouteIndexs()
+    /// <param name="condition">
+    /// 移動候補とする条件式。intは下記のfor文で使用するiに対応します。
+    /// object[]に対し、呼び出し側で任意のパラメータを指定してください。
+    /// </param>
+    /// <param name="args">任意パラメータ。Characterの持つTmpParameterなどを指定して条件文を構成出来ます</param>
+    public void SetUpCandidateRouteIndexs( bool isReset,  Func<int, object[], bool> condition, params object[] args )
     {
-        _candidateRouteIndexs.Clear();  // 一度クリア
+        if ( isReset ) { _candidateRouteIndexs.Clear(); }  // 一度クリア
 
         // 進行可能なタイルをルート候補に挿入
         for ( int i = 0; i < _stageCtrl.GetTotalTileNum(); ++i )
         {
-            var tileInfo    = _stageCtrl.GetGridInfo( i );
-            bool ownerExist = ( tileInfo.charaTag == _owner.Params.CharacterParam.characterTag ) && ( tileInfo.charaIndex == _owner.Params.CharacterParam.characterIndex );
-
-            if ( ( 0 <= tileInfo.estimatedMoveRange || ownerExist ) )
+            if ( condition( i, args ) )  // 条件を呼び出し側で設定
             {
                 _candidateRouteIndexs.Add( i );
             }
@@ -73,9 +77,9 @@ public class MovePathHandler
     /// </summary>
     /// <param name="departingTileIndex">出発地点となるタイルのインデックス値</param>
     /// <param name="destinationlTileIndex">目標地点となるタイルのインデックス値</param>
-    public bool CalcurateMovePathRoute( int departingTileIndex, int destinationlTileIndex )
+    public bool FindMoveRoute( int departingTileIndex, int destinationlTileIndex )
     {
-        if( !IsPassableTile( destinationlTileIndex ) ) { return false; }
+        _proposedMoveRoute.Clear();
 
         var route = _stageCtrl.ExtractShortestRoute( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
         if( route == null ) { return false; }
@@ -89,6 +93,68 @@ public class MovePathHandler
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 移動可能範囲を考慮した上で、出発地点と目標地点を指定して最短移動ルートを取得します
+    /// </summary>
+    /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
+    /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
+    /// <returns>ルート取得の是非</returns>
+    public bool FindRealTimeMoveRoute( int departingTileIndex, int destinationlTileIndex )
+    {
+        if ( !IsPassableTile( destinationlTileIndex ) ) { return false; }
+
+        var route = _stageCtrl.ExtractShortestRoute( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
+        if ( route == null ) { return false; }
+        _proposedMoveRoute = route;
+
+        if ( 0 < _proposedMoveRoute.Count )
+        {
+            _nextTileIndex = 0;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 目標地点のタイルに対し、移動出来るタイルのうち、最も近い位置のタイルへのパスを取得します
+    /// </summary>
+    /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
+    /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
+    /// <param name="moveRange">移動可能レンジ</param>
+    /// <param name="outReachableTileIndex">目標地点に対し、移動可能な範囲の中で最も近い位置のタイルのインデックス値</param>
+    /// <returns>ルート取得の是非</returns>
+    public bool FindNearestReachableTileRoute( int departingTileIndex, int destinationlTileIndex, int moveRange, out int outReachableTileIndex )
+    {
+        outReachableTileIndex = departingTileIndex;
+        if ( !FindMoveRoute( departingTileIndex, destinationlTileIndex ) ) {  return false; }
+
+        // 最も評価値の高いルートのうち、最大限の移動レンジで進んだグリッドへ向かうように設定
+
+        int prevCost            = 0;   // routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
+        int reachableTileIndex  = 0;
+
+        foreach ( (int routeIndex, int routeCost, Vector3 t) r in _proposedMoveRoute )
+        {
+            moveRange -= ( r.routeCost - prevCost );
+            prevCost = r.routeCost;
+
+            if ( moveRange < 0 ) { break; }
+
+            // グリッド上にキャラクターが存在しないことを確認
+            if ( !_stageCtrl.GetGridInfo( r.routeIndex ).IsExistCharacter() ) { reachableTileIndex = r.routeIndex; }
+        }
+
+        // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
+        int removeBaseIndex = _proposedMoveRoute.FindIndex(item => item.routeIndex == reachableTileIndex) + 1;
+        int removeCount     = _proposedMoveRoute.Count - removeBaseIndex;
+        _proposedMoveRoute.RemoveRange( removeBaseIndex, removeCount );
+        outReachableTileIndex = reachableTileIndex;
+
+        return true;
     }
 
     /// <summary>

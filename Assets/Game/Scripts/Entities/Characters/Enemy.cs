@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Frontier.Entities.Ai;
 
 namespace Frontier.Entities
 {
@@ -43,9 +44,9 @@ namespace Frontier.Entities
             // 思考タイプによってemAIに代入する派生クラスを変更する
             Func<BaseAi>[] emAiFactorys = new Func<BaseAi>[(int)ThinkingType.NUM]
             {
-                () => _hierarchyBld.InstantiateWithDiContainer<EmAiBase>(false),        // BASE
-                () => _hierarchyBld.InstantiateWithDiContainer<EmAiAggressive>(false),  // AGGRESSIVE
-                () => _hierarchyBld.InstantiateWithDiContainer<EmAiWaiting>(false),     // WAITING
+                () => _hierarchyBld.InstantiateWithDiContainer<AiBase>(false),        // BASE
+                () => _hierarchyBld.InstantiateWithDiContainer<AiAggressive>(false),  // AGGRESSIVE
+                () => _hierarchyBld.InstantiateWithDiContainer<AiWaiting>(false),     // WAITING
             };
 
             _baseAI = emAiFactorys[( int )_thikType]();

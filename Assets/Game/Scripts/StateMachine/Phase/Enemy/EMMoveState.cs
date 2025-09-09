@@ -19,7 +19,7 @@ namespace Frontier
         private int _movingIndex = 0;
         private float _moveWaitTimer = 0f;
         private Enemy _enemy;
-        private List<(int routeIndexs, int routeCost)> _movePathList;
+        private List<(int routeIndexs, int routeCost, Vector3 tilePosition)> _movePathList;
         private List<Vector3> _moveGridPos;
         private Transform _EMTransform;
 
@@ -39,7 +39,7 @@ namespace Frontier
             var param = _enemy.Params.CharacterParam;
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
-            _movePathList = _enemy.GetAi().GetProposedMoveRoute();
+            _movePathList = _enemy.GetAi().MovePathHandler.ProposedMoveRoute; // _enemy.GetAi().GetProposedMoveRoute();
 
             // 移動目標地点が、現在地点であった場合は即時終了
             if (_movePathList.Count <= 0)

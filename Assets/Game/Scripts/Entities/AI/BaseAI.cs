@@ -1,8 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace Frontier
+namespace Frontier.Entities.Ai
 {
     public abstract class BaseAi
     {
@@ -29,7 +30,7 @@ namespace Frontier
         /// 進行予定の移動ルートを取得します
         /// </summary>
         /// <returns>進行予定の移動ルート情報</returns>
-        virtual public List<(int routeIndex, int routeCost)> GetProposedMoveRoute() { return null; }
+        virtual public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMoveRoute() { return null; }
 
         /// <summary>
         /// 目的地と攻撃対象を決定します
