@@ -129,22 +129,22 @@ public class MovePathHandler
     /// <param name="moveRange">移動可能レンジ</param>
     /// <param name="outReachableTileIndex">目標地点に対し、移動可能な範囲の中で最も近い位置のタイルのインデックス値</param>
     /// <returns>ルート取得の是非</returns>
-    public bool FindNearestReachableTileRoute( int departingTileIndex, int destinationlTileIndex, int moveRange, out int outReachableTileIndex )
+    public bool FindNearestReachableTileRoute( int departingTileIndex, int destinationlTileIndex, int moveRange )
     {
-        outReachableTileIndex = departingTileIndex;
         if ( !FindMoveRoute( departingTileIndex, destinationlTileIndex ) ) {  return false; }
 
         int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
         int reachableTileIndex  = 0;
 
+        // 得られたルートのうち、移動可能なインデックス値を辿る
         foreach ( (int routeIndex, int routeCost, Vector3 t) r in _proposedMoveRoute )
         {
             moveRange -= ( r.routeCost - prevCost );
             prevCost = r.routeCost;
 
+            // 移動レンジを超えれば終了
             if ( moveRange < 0 ) { break; }
-
-            // グリッド上にキャラクターが存在しないことを確認
+            // グリッド上にキャラクターが存在しないことを確認して更新
             if ( !_stageCtrl.GetGridInfo( r.routeIndex ).IsExistCharacter() ) { reachableTileIndex = r.routeIndex; }
         }
 
@@ -152,7 +152,6 @@ public class MovePathHandler
         int removeBaseIndex = _proposedMoveRoute.FindIndex(item => item.routeIndex == reachableTileIndex) + 1;
         int removeCount     = _proposedMoveRoute.Count - removeBaseIndex;
         _proposedMoveRoute.RemoveRange( removeBaseIndex, removeCount );
-        outReachableTileIndex = reachableTileIndex;
 
         return true;
     }

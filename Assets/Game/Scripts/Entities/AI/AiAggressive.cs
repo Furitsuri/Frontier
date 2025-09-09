@@ -101,8 +101,8 @@ namespace Frontier.Entities.Ai
             }
 
             // 評価値の高い位置と相手を目標移動位置、攻撃対象に設定
-            _destinationGridIndex = maxEvaluate.gridIndex;
-            _targetCharacter = maxEvaluate.target;
+            _destinationGridIndex   = maxEvaluate.gridIndex;
+            _targetCharacter        = maxEvaluate.target;
 
             // 現在移動可能なタイルと、自身が現在存在するタイルをルート候補とする条件
             Func<int, object[], bool> condition = (index, args) =>
@@ -159,7 +159,11 @@ namespace Frontier.Entities.Ai
                 if ( maxEvaluateRoute.evaluateValue < evaluateValue ) { maxEvaluateRoute = (route, evaluateValue); }
             }
 
-            MovePathHandler.FindNearestReachableTileRoute( selfTmpParam.gridIndex, maxEvaluateRoute.route[^1].routeIndex, selfParam.moveRange, out _destinationGridIndex );
+            if( MovePathHandler.FindNearestReachableTileRoute( selfTmpParam.gridIndex, maxEvaluateRoute.route[^1].routeIndex, selfParam.moveRange ) )
+            {
+                _destinationGridIndex = MovePathHandler.ProposedMoveRoute[^1].routeIndex;
+                return;
+            }
 
             /*
             // 最も評価値の高いルートのうち、最大限の移動レンジで進んだグリッドへ向かうように設定
