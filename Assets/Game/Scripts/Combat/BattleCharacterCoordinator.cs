@@ -17,6 +17,7 @@ namespace Frontier.Battle
         private List<Player> _players               = new List<Player>(Constants.CHARACTER_MAX_NUM);
         private List<Enemy> _enemies                = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
         private List<Other> _others                 = new List<Other>(Constants.CHARACTER_MAX_NUM);
+        private List<Character> _allCharacters      = new List<Character>();
         private Dictionary<CHARACTER_TAG, IEnumerable<Character>> _characterGroups;
         private CharacterHashtable _characterHash   = new CharacterHashtable();
         private CharacterHashtable.Key _diedCharacterKey;
@@ -100,6 +101,7 @@ namespace Frontier.Battle
             Debug.Assert(addActionsByType.Length == (int)CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。");
 
             addActionsByType[(int)chara.Params.CharacterParam.characterTag](chara);
+            _allCharacters.Add(chara);
             
             _characterHash.Add(key, chara);
         }
@@ -120,6 +122,7 @@ namespace Frontier.Battle
             Debug.Assert(removeActionsByType.Length == (int)CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。");
 
             removeActionsByType[(int)chara.Params.CharacterParam.characterTag](chara);
+            _allCharacters.Remove(chara);
 
             _characterHash.Remove(chara);
         }
@@ -154,18 +157,14 @@ namespace Frontier.Battle
         /// キャラクターをリストから順番に取得します
         /// </summary>
         /// <returns>キャラクター</returns>
-        public IEnumerable<Character> GetCharacterEnumerable( CHARACTER_TAG tag )
+        public IEnumerable<Character> GetCharacterEnumerable( params CHARACTER_TAG[] tags )
         {
-            List<Character>[] charaList = new List<Character>[]
+            foreach ( var character in _allCharacters )
             {
-                _players.ToList<Character>(),
-                _enemies.ToList<Character>(),
-                _others.ToList<Character>()
-            };
-
-            foreach (var chara in charaList[(int)tag])
-            {
-                yield return chara;
+                if ( tags.Contains( character.Params.CharacterParam.characterTag ) )
+                {
+                    yield return character;
+                }
             }
         }
 

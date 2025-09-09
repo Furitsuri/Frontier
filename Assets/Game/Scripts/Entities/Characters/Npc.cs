@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frontier.Combat.Skill;
+using Frontier.Entities.Ai;
 
 namespace Frontier.Entities
 {

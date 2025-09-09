@@ -1,12 +1,14 @@
-﻿using Frontier.Combat;
-using Frontier.Stage;
+﻿using Frontier;
+using Frontier.Combat;
 using Frontier.Entities;
-using Frontier;
+using Frontier.Stage;
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using static Constants;
-using Unity.VisualScripting;
 using static Frontier.Stage.StageController;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier
 {
@@ -46,7 +48,16 @@ namespace Frontier
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
-            _selectPlayer.MovePathHandler.SetUpCandidateRouteIndexs();  // 移動候補となるタイル情報を準備
+            // SetUpCandidateRouteIndexsで用いる条件式
+            Func<int, object[], bool> condition = ( index, args ) =>
+            {
+                var tileInfo    = _stageCtrl.GetGridInfo(index);
+                bool ownerExist =   (tileInfo.charaTag == _selectPlayer.Params.CharacterParam.characterTag) &&
+                                    (tileInfo.charaIndex == _selectPlayer.Params.CharacterParam.characterIndex);
+                return (0 <= tileInfo.estimatedMoveRange || ownerExist);
+            };
+
+            _selectPlayer.MovePathHandler.SetUpCandidateRouteIndexs( true, condition );  // 移動候補となるタイル情報を準備
         }
 
         override public bool Update()
@@ -243,7 +254,7 @@ namespace Frontier
             int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
 
-            _selectPlayer.MovePathHandler.CalcurateMovePathRoute( departingTileIndex, destinationTileIndex );
+            _selectPlayer.MovePathHandler.FindRealTimeMoveRoute( departingTileIndex, destinationTileIndex );
         }
 
         /// <summary>

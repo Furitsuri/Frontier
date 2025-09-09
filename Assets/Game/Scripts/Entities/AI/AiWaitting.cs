@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.Entities.Ai
 {
-    public class EmAiWaiting : EmAiBase
+    public class AiWaiting : AiBase
     {
     }
 }
