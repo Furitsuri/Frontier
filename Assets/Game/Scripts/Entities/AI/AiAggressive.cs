@@ -114,8 +114,8 @@ namespace Frontier.Entities.Ai
                 return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, flag ) ) );
             };
 
-            MovePathHandler.SetUpCandidateRouteIndexs( true, condition, selfTmpParam );
-            MovePathHandler.FindMoveRoute( selfTmpParam.gridIndex, _destinationGridIndex );
+            MovePathHandler.SetUpCandidatePathIndexs( true, condition, selfTmpParam );
+            MovePathHandler.FindMovePath( selfTmpParam.gridIndex, _destinationGridIndex );
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Frontier.Entities.Ai
                 var tileInfo    = _stageCtrl.GetGridInfo( index );
                 return ( !Methods.CheckBitFlag( tileInfo.flag, flag ) );
             };
-            MovePathHandler.SetUpCandidateRouteIndexs( true, condition );
+            MovePathHandler.SetUpCandidatePathIndexs( true, condition );
 
             // 各プレイヤーが存在するグリッドの評価値を計算する
             foreach ( Character chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.OTHER ) )
@@ -146,7 +146,7 @@ namespace Frontier.Entities.Ai
                 evaluateValue += CalcurateEvaluateAttack( selfParam, chara.Params.CharacterParam );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまり近いターゲットほど評価値を大きくするため)
-                if( !MovePathHandler.FindMoveRoute( selfTmpParam.gridIndex, destGridIndex ) )
+                if( !MovePathHandler.FindMovePath( selfTmpParam.gridIndex, destGridIndex ) )
                 {
                     Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;

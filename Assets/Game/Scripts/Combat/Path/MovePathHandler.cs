@@ -10,12 +10,12 @@ public class MovePathHandler
 {
     private StageController _stageCtrl  = null;
 
-    private int _nextTileIndex                          = 0;
+    private int _focusedTileIndex                          = 0;
     private Character _owner                            = null;
     private List<int> _candidateRouteIndexs             = null;
     private List<PathInformation> _proposedMovePath    = new List<PathInformation>();
 
-    public int NextTileIndex => _nextTileIndex;
+    public int FocusedTileIndex => _focusedTileIndex;
     public List<PathInformation> ProposedMovePath => _proposedMovePath;
 
     [Inject]
@@ -29,7 +29,7 @@ public class MovePathHandler
     /// </summary>
     public void Init( Character Owner )
     {
-        _nextTileIndex = 0;
+        _focusedTileIndex = 0;
         _owner = Owner;
 
         if ( _candidateRouteIndexs == null )
@@ -41,7 +41,7 @@ public class MovePathHandler
     /// <summary>
     /// 目標とするタイルを更新するため、インデックスをインクリメントします
     /// </summary>
-    public void IncrementNextTileIndex() { ++_nextTileIndex; }
+    public void IncrementFocusedTileIndex() { ++_focusedTileIndex; }
 
     /// <summary>
     /// 移動候補となるタイル設定を行います
@@ -51,7 +51,7 @@ public class MovePathHandler
     /// object[]に対し、呼び出し側で任意のパラメータを指定してください。
     /// </param>
     /// <param name="args">任意パラメータ。Characterの持つTmpParameterなどを指定して条件文を構成出来ます</param>
-    public void SetUpCandidateRouteIndexs( bool isReset,  Func<int, object[], bool> condition, params object[] args )
+    public void SetUpCandidatePathIndexs( bool isReset,  Func<int, object[], bool> condition, params object[] args )
     {
         if ( isReset ) { _candidateRouteIndexs.Clear(); }  // 一度クリア
 
@@ -69,9 +69,9 @@ public class MovePathHandler
     /// 取得したパス上から、インデックスから参照されるタイルのインデックス値を取得します
     /// </summary>
     /// <returns>参照されるタイルのインデックス値</returns>
-    public int GetNextTileIndex()
+    public int GetFocusedTileIndex()
     {
-        return _proposedMovePath[_nextTileIndex].TileIndex;
+        return _proposedMovePath[_focusedTileIndex].TileIndex;
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class MovePathHandler
     /// </summary>
     /// <param name="departingTileIndex">出発地点となるタイルのインデックス値</param>
     /// <param name="destinationlTileIndex">目標地点となるタイルのインデックス値</param>
-    public bool FindMoveRoute( int departingTileIndex, int destinationlTileIndex )
+    public bool FindMovePath( int departingTileIndex, int destinationlTileIndex )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -95,7 +95,7 @@ public class MovePathHandler
 
         if ( 0 < _proposedMovePath.Count )
         {
-            _nextTileIndex = 0;
+            _focusedTileIndex = 0;
 
             return true;
         }
@@ -105,12 +105,12 @@ public class MovePathHandler
 
     /// <summary>
     /// 探索済みのルートをリセットせず、移動可能範囲を考慮した上で、出発地点と目標地点を指定して最短移動ルートを取得します
-    /// 移動操作中に移動ルートを探索する際に使用します
+    /// 移動操作をしてる最中に移動ルートを探索するといった、動的な状況で使用します
     /// </summary>
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
     /// <returns>ルート取得の是非</returns>
-    public bool FindActuallyMoveRoute( int departingTileIndex, int destinationlTileIndex )
+    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -127,7 +127,7 @@ public class MovePathHandler
 
         if ( 0 < _proposedMovePath.Count )
         {
-            _nextTileIndex = 0;
+            _focusedTileIndex = 0;
 
             return true;
         }
@@ -182,9 +182,9 @@ public class MovePathHandler
     /// 次の目標座標を取得します
     /// </summary>
     /// <returns>目標座標</returns>
-    public Vector3 GetNextTilePosition()
+    public Vector3 GetFocusedTilePosition()
     {
-        return _stageCtrl.GetGridInfo( _proposedMovePath[_nextTileIndex].TileIndex ).charaStandPos;
+        return _stageCtrl.GetGridInfo( _proposedMovePath[_focusedTileIndex].TileIndex ).charaStandPos;
     }
 
     /// <summary>
