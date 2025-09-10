@@ -48,7 +48,7 @@ namespace Frontier
             _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
             _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
 
-            // SetUpCandidateRouteIndexsで用いる条件式
+            // SetUpCandidatePathIndexsで用いる条件式
             Func<int, object[], bool> condition = ( index, args ) =>
             {
                 var tileInfo    = _stageCtrl.GetGridInfo(index);
@@ -57,7 +57,7 @@ namespace Frontier
                 return (0 <= tileInfo.estimatedMoveRange || ownerExist);
             };
 
-            _selectPlayer.GetAi().MovePathHandler.SetUpCandidateRouteIndexs( true, condition );  // 移動候補となるタイル情報を準備
+            _selectPlayer.GetAi().MovePathHandler.SetUpCandidatePathIndexs( true, condition );  // 移動候補となるタイル情報を準備
         }
 
         override public bool Update()
@@ -254,7 +254,7 @@ namespace Frontier
             int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
 
-            _selectPlayer.GetAi().MovePathHandler.FindActuallyMoveRoute( departingTileIndex, destinationTileIndex );
+            _selectPlayer.GetAi().MovePathHandler.FindActuallyMovePath( departingTileIndex, destinationTileIndex );
         }
 
         /// <summary>

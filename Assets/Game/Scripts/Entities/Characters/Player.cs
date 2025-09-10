@@ -43,18 +43,18 @@ namespace Frontier.Entities
         {
             Func<bool> HasReachedDestination = () =>
             {
-                return _baseAi.MovePathHandler.ProposedMovePath.Count <= _baseAi.MovePathHandler.NextTileIndex;
+                return _baseAi.MovePathHandler.ProposedMovePath.Count <= _baseAi.MovePathHandler.FocusedTileIndex;
             };
 
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
             if ( HasReachedDestination() ) { return true; }
 
             bool toggleAnimation    = false;
-            var nextTilePos         = _baseAi.MovePathHandler.GetNextTilePosition();
+            var focusedTilePos         = _baseAi.MovePathHandler.GetFocusedTilePosition();
 
-            Vector3 dir         = (nextTilePos - transform.position).normalized;
+            Vector3 dir         = (focusedTilePos - transform.position).normalized;
             Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
-            Vector3 afterDir    = (nextTilePos - afterPos);
+            Vector3 afterDir    = (focusedTilePos - afterPos);
             afterDir.y          = 0f;
             afterDir            = afterDir.normalized;
 
@@ -62,12 +62,12 @@ namespace Frontier.Entities
             if ( Vector3.Dot( dir, afterDir ) <= 0 )
             {
                 // 位置とタイル位置情報を更新
-                transform.position          = nextTilePos;
-                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetNextTileIndex();
+                transform.position          = focusedTilePos;
+                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetFocusedTileIndex();
 
                 if ( _isPrevMoving ) { toggleAnimation = true; }
 
-                _baseAi.MovePathHandler.IncrementNextTileIndex();  // 目標インデックス値をインクリメント
+                _baseAi.MovePathHandler.IncrementFocusedTileIndex();  // 目標インデックス値をインクリメント
 
                 // 最終インデックスに到達している場合は移動アニメーションを停止して終了
                 if ( HasReachedDestination() )
