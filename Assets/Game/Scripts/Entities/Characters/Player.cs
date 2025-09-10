@@ -43,7 +43,7 @@ namespace Frontier.Entities
         {
             Func<bool> HasReachedDestination = () =>
             {
-                return _baseAi.MovePathHandler.ProposedMoveRoute.Count <= _baseAi.MovePathHandler.NextTileIndex;
+                return _baseAi.MovePathHandler.ProposedMovePath.Count <= _baseAi.MovePathHandler.NextTileIndex;
             };
 
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
@@ -63,7 +63,7 @@ namespace Frontier.Entities
             {
                 // 位置とタイル位置情報を更新
                 transform.position          = nextTilePos;
-                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetNextRouteIndex();
+                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetNextTileIndex();
 
                 if ( _isPrevMoving ) { toggleAnimation = true; }
 

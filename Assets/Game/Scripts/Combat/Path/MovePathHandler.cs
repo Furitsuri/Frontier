@@ -3,8 +3,6 @@ using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using Zenject;
 
@@ -12,13 +10,13 @@ public class MovePathHandler
 {
     private StageController _stageCtrl  = null;
 
-    private int _nextTileIndex                                                              = 0;
-    private Character _owner                                                                = null;
-    private List<int> _candidateRouteIndexs                                                 = null;
-    private List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMoveRoute  = new List<(int routeIndex, int routeCost, Vector3 tilePosition)>();
+    private int _nextTileIndex                          = 0;
+    private Character _owner                            = null;
+    private List<int> _candidateRouteIndexs             = null;
+    private List<PathInformation> _proposedMovePath    = new List<PathInformation>();
 
     public int NextTileIndex => _nextTileIndex;
-    public List<(int routeIndex, int routeCost, Vector3 tilePosition)> ProposedMoveRoute => _proposedMoveRoute;
+    public List<PathInformation> ProposedMovePath => _proposedMovePath;
 
     [Inject]
     private void Construct( StageController stageCtrl )
@@ -67,9 +65,13 @@ public class MovePathHandler
         }
     }
 
-    public int GetNextRouteIndex()
+    /// <summary>
+    /// 取得したパス上から、インデックスから参照されるタイルのインデックス値を取得します
+    /// </summary>
+    /// <returns>参照されるタイルのインデックス値</returns>
+    public int GetNextTileIndex()
     {
-        return _proposedMoveRoute[_nextTileIndex].routeIndex;
+        return _proposedMovePath[_nextTileIndex].TileIndex;
     }
 
     /// <summary>
@@ -79,13 +81,19 @@ public class MovePathHandler
     /// <param name="destinationlTileIndex">目標地点となるタイルのインデックス値</param>
     public bool FindMoveRoute( int departingTileIndex, int destinationlTileIndex )
     {
-        _proposedMoveRoute.Clear();
+        if ( _candidateRouteIndexs.Count <= 0 )
+        {
+            Debug.LogError( "_candidateRouteIndexs is not set up. Please check." );
+            return false;
+        }
 
-        var route = _stageCtrl.ExtractShortestRoute( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
+        _proposedMovePath.Clear();
+
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
         if( route == null ) { return false; }
-        _proposedMoveRoute = route;
+        _proposedMovePath = route;
 
-        if ( 0 < _proposedMoveRoute.Count )
+        if ( 0 < _proposedMovePath.Count )
         {
             _nextTileIndex = 0;
 
@@ -104,14 +112,20 @@ public class MovePathHandler
     /// <returns>ルート取得の是非</returns>
     public bool FindActuallyMoveRoute( int departingTileIndex, int destinationlTileIndex )
     {
+        if ( _candidateRouteIndexs.Count <= 0 )
+        {
+            Debug.LogError( "_candidateRouteIndexs is not set up. Please check." );
+            return false;
+        }
+
         // 指定のインデックス位置にキャラクターが留まれない場合は失敗
         if ( !CanStandOnTile( destinationlTileIndex ) ) { return false; }
 
-        var route = _stageCtrl.ExtractShortestRoute( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
         if ( route == null ) { return false; }
-        _proposedMoveRoute = route;
+        _proposedMovePath = route;
 
-        if ( 0 < _proposedMoveRoute.Count )
+        if ( 0 < _proposedMovePath.Count )
         {
             _nextTileIndex = 0;
 
@@ -122,38 +136,33 @@ public class MovePathHandler
     }
 
     /// <summary>
-    /// 目標地点のタイルに対し、移動出来るタイルのうち、最も近い位置のタイルへのパスを取得します
+    /// 渡されたパスの長さを指定の長さに調整し、保持します
     /// </summary>
-    /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
-    /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
-    /// <param name="moveRange">移動可能レンジ</param>
-    /// <param name="outReachableTileIndex">目標地点に対し、移動可能な範囲の中で最も近い位置のタイルのインデックス値</param>
-    /// <returns>ルート取得の是非</returns>
-    public bool FindNearestReachableTileRoute( int departingTileIndex, int destinationlTileIndex, int moveRange )
+    /// <param name="range">移動可能レンジ</param>
+    /// <param name="adjustTargetPath">調整対象のパス</param>
+    public void AdjustPathToRangeAndSet(  int range, in List<PathInformation> adjustTargetPath )
     {
-        if ( !FindMoveRoute( departingTileIndex, destinationlTileIndex ) ) {  return false; }
-
         int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
         int reachableTileIndex  = 0;
 
         // 得られたルートのうち、移動可能なインデックス値を辿る
-        foreach ( (int routeIndex, int routeCost, Vector3 t) r in _proposedMoveRoute )
+        foreach ( PathInformation p in adjustTargetPath )
         {
-            moveRange -= ( r.routeCost - prevCost );
-            prevCost = r.routeCost;
+            range -= ( p.MoveCost - prevCost );
+            prevCost = p.MoveCost;
 
             // 移動レンジを超えれば終了
-            if ( moveRange < 0 ) { break; }
+            if ( range < 0 ) { break; }
             // グリッド上にキャラクターが存在しないことを確認して更新
-            if ( !_stageCtrl.GetGridInfo( r.routeIndex ).IsExistCharacter() ) { reachableTileIndex = r.routeIndex; }
+            if ( !_stageCtrl.GetGridInfo( p.TileIndex ).IsExistCharacter() ) { reachableTileIndex = p.TileIndex; }
         }
 
         // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
-        int removeBaseIndex = _proposedMoveRoute.FindIndex(item => item.routeIndex == reachableTileIndex) + 1;
-        int removeCount     = _proposedMoveRoute.Count - removeBaseIndex;
-        _proposedMoveRoute.RemoveRange( removeBaseIndex, removeCount );
+        int removeBaseIndex = adjustTargetPath.FindIndex(item => item.TileIndex == reachableTileIndex) + 1;
+        int removeCount     = adjustTargetPath.Count - removeBaseIndex;
+        adjustTargetPath.RemoveRange( removeBaseIndex, removeCount );
 
-        return true;
+        _proposedMovePath = adjustTargetPath;
     }
 
     /// <summary>
@@ -175,7 +184,7 @@ public class MovePathHandler
     /// <returns>目標座標</returns>
     public Vector3 GetNextTilePosition()
     {
-        return _proposedMoveRoute[_nextTileIndex].tilePosition;
+        return _stageCtrl.GetGridInfo( _proposedMovePath[_nextTileIndex].TileIndex ).charaStandPos;
     }
 
     /// <summary>

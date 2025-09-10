@@ -126,7 +126,7 @@ namespace Frontier.Entities.Ai
         override protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameter selfParam, in TemporaryParameter selfTmpParam )
         {
             // 最大評価ルート保存用
-            (List<(int routeIndex, int routeCost, Vector3 TilePosition)> route, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
+            (List<PathInformation> path, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
 
             // 移動値を無視した上で、進行可能なタイルをルート候補とする条件
             Func<int, object[], bool> condition = (index, args) =>
@@ -151,42 +151,17 @@ namespace Frontier.Entities.Ai
                     Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;
                 }
-                var route       = MovePathHandler.ProposedMoveRoute.ToList();
-                int totalCost   = route[^1].routeCost;    // ^1は最後の要素のインデックス(C#8.0以降から使用可能)
+                var path       = MovePathHandler.ProposedMovePath.ToList();
+                int totalCost   = path[^1].MoveCost;    // ^1は最後の要素のインデックス(C#8.0以降から使用可能)
                 evaluateValue *= 1f / totalCost;
 
                 // 最も評価の高いルートを保存
-                if ( maxEvaluateRoute.evaluateValue < evaluateValue ) { maxEvaluateRoute = (route, evaluateValue); }
+                if ( maxEvaluateRoute.evaluateValue < evaluateValue ) { maxEvaluateRoute = (path, evaluateValue); }
             }
 
-            if( MovePathHandler.FindNearestReachableTileRoute( selfTmpParam.gridIndex, maxEvaluateRoute.route[^1].routeIndex, selfParam.moveRange ) )
-            {
-                _destinationGridIndex = MovePathHandler.ProposedMoveRoute[^1].routeIndex;
-                return;
-            }
-
-            /*
-            // 最も評価値の高いルートのうち、最大限の移動レンジで進んだグリッドへ向かうように設定
-            int range           = selfParam.moveRange;
-            int prevCost        = 0;   // routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
-            _proposedMoveRoute  = maxEvaluateRoute.route;
-
-            foreach ( (int routeIndex, int routeCost, Vector3 t) r in _proposedMoveRoute )
-            {
-                range -= ( r.routeCost - prevCost );
-                prevCost = r.routeCost;
-
-                if ( range < 0 ) break;
-
-                // グリッド上にキャラクターが存在しないことを確認
-                if ( !_stageCtrl.GetGridInfo( r.routeIndex ).IsExistCharacter() ) _destinationGridIndex = r.routeIndex;
-            }
-
-            // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
-            int removeBaseIndex = _proposedMoveRoute.FindIndex(item => item.routeIndex == _destinationGridIndex) + 1;
-            int removeCount     = _proposedMoveRoute.Count - removeBaseIndex;
-            _proposedMoveRoute.RemoveRange( removeBaseIndex, removeCount );
-            */
+            // 得られたルートのパスをキャラクターの移動レンジ分に調整する
+            MovePathHandler.AdjustPathToRangeAndSet( selfParam.moveRange, in maxEvaluateRoute.path );
+            _destinationGridIndex = MovePathHandler.ProposedMovePath[^1].TileIndex;
         }
     }
 }

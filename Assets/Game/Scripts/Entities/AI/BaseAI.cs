@@ -30,7 +30,7 @@ namespace Frontier.Entities.Ai
         /// 進行予定の移動ルートを取得します
         /// </summary>
         /// <returns>進行予定の移動ルート情報</returns>
-        virtual public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMoveRoute() { return null; }
+        virtual public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMovePath() { return null; }
 
         /// <summary>
         /// 目的地と攻撃対象を決定します
