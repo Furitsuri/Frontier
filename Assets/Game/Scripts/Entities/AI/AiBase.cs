@@ -30,7 +30,7 @@ namespace Frontier.Entities.Ai
         protected Character _targetCharacter                        = null;     // 攻撃対象のキャラクター
         protected MovePathHandler _movePathHandler                  = null;     // 移動経路のパス決定・移動時に使用
         protected List<TargetCandidateInfo> _targetChandidateInfos  = null;     // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
-        protected List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMoveRoute;     // 進行経路
+        protected List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMovePath;     // 進行経路
 
         override public MovePathHandler MovePathHandler => _movePathHandler;
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
@@ -210,9 +210,9 @@ namespace Frontier.Entities.Ai
         /// 進行予定の移動ルートを取得します
         /// </summary>
         /// <returns>進行予定の移動ルート情報</returns>
-        override public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMoveRoute()
+        override public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMovePath()
         {
-            return _proposedMoveRoute;
+            return _proposedMovePath;
         }
     }
 }
