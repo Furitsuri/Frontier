@@ -43,14 +43,14 @@ namespace Frontier.Entities
         {
             Func<bool> HasReachedDestination = () =>
             {
-                return _baseAi.MovePathHandler.ProposedMovePath.Count <= _baseAi.MovePathHandler.FocusedTileIndex;
+                return _baseAi.MovePathHandler.ProposedMovePath.Count <= _baseAi.MovePathHandler.FocusedWaypointIndex;
             };
 
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
             if ( HasReachedDestination() ) { return true; }
 
             bool toggleAnimation    = false;
-            var focusedTilePos         = _baseAi.MovePathHandler.GetFocusedTilePosition();
+            var focusedTilePos      = _baseAi.MovePathHandler.GetFocusedTilePosition();
 
             Vector3 dir         = (focusedTilePos - transform.position).normalized;
             Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
@@ -58,16 +58,24 @@ namespace Frontier.Entities
             afterDir.y          = 0f;
             afterDir            = afterDir.normalized;
 
+            Vector3 diffXZ = focusedTilePos - afterPos;
+            diffXZ.y = 0f;
+
+            if ( diffXZ.magnitude < Constants.TILE_SIZE * 0.5f )
+            { 
+                _params.TmpParam.gridIndex = _baseAi.MovePathHandler.GetFocusedWaypointIndex();
+            }
+
             // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
             if ( Vector3.Dot( dir, afterDir ) <= 0 )
             {
                 // 位置とタイル位置情報を更新
                 transform.position          = focusedTilePos;
-                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetFocusedTileIndex();
+                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetFocusedWaypointIndex();
 
                 if ( _isPrevMoving ) { toggleAnimation = true; }
 
-                _baseAi.MovePathHandler.IncrementFocusedTileIndex();  // 目標インデックス値をインクリメント
+                _baseAi.MovePathHandler.IncrementFocusedWaypointIndex();  // 目標インデックス値をインクリメント
 
                 // 最終インデックスに到達している場合は移動アニメーションを停止して終了
                 if ( HasReachedDestination() )

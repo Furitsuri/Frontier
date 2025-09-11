@@ -684,7 +684,7 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="departGridIndex">出発地グリッドのインデックス</param>
         /// <param name="destGridIndex">目的地グリッドのインデックス</param>
-        public List<PathInformation> ExtractShortestPath(int departGridIndex, int destGridIndex, in List<int> candidateRouteIndexs)
+        public List<WaypointInformation> ExtractShortestPath(int departGridIndex, int destGridIndex, in List<int> candidateRouteIndexs)
         {
             if ( departGridIndex == destGridIndex ) { return null; }
 

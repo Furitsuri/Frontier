@@ -10,13 +10,13 @@ public class MovePathHandler
 {
     private StageController _stageCtrl  = null;
 
-    private int _focusedTileIndex                          = 0;
+    private int _focusedWaypointIndex                   = 0;
     private Character _owner                            = null;
     private List<int> _candidateRouteIndexs             = null;
-    private List<PathInformation> _proposedMovePath    = new List<PathInformation>();
+    private List<WaypointInformation> _proposedMovePath = new List<WaypointInformation>();
 
-    public int FocusedTileIndex => _focusedTileIndex;
-    public List<PathInformation> ProposedMovePath => _proposedMovePath;
+    public int FocusedWaypointIndex => _focusedWaypointIndex;
+    public List<WaypointInformation> ProposedMovePath => _proposedMovePath;
 
     [Inject]
     private void Construct( StageController stageCtrl )
@@ -29,7 +29,7 @@ public class MovePathHandler
     /// </summary>
     public void Init( Character Owner )
     {
-        _focusedTileIndex = 0;
+        _focusedWaypointIndex = 0;
         _owner = Owner;
 
         if ( _candidateRouteIndexs == null )
@@ -41,7 +41,7 @@ public class MovePathHandler
     /// <summary>
     /// 目標とするタイルを更新するため、インデックスをインクリメントします
     /// </summary>
-    public void IncrementFocusedTileIndex() { ++_focusedTileIndex; }
+    public void IncrementFocusedWaypointIndex() { ++_focusedWaypointIndex; }
 
     /// <summary>
     /// 移動候補となるタイル設定を行います
@@ -69,9 +69,9 @@ public class MovePathHandler
     /// 取得したパス上から、インデックスから参照されるタイルのインデックス値を取得します
     /// </summary>
     /// <returns>参照されるタイルのインデックス値</returns>
-    public int GetFocusedTileIndex()
+    public int GetFocusedWaypointIndex()
     {
-        return _proposedMovePath[_focusedTileIndex].TileIndex;
+        return _proposedMovePath[_focusedWaypointIndex].TileIndex;
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public class MovePathHandler
 
         if ( 0 < _proposedMovePath.Count )
         {
-            _focusedTileIndex = 0;
+            _focusedWaypointIndex = 0;
 
             return true;
         }
@@ -127,7 +127,7 @@ public class MovePathHandler
 
         if ( 0 < _proposedMovePath.Count )
         {
-            _focusedTileIndex = 0;
+            _focusedWaypointIndex = 0;
 
             return true;
         }
@@ -140,13 +140,13 @@ public class MovePathHandler
     /// </summary>
     /// <param name="range">移動可能レンジ</param>
     /// <param name="adjustTargetPath">調整対象のパス</param>
-    public void AdjustPathToRangeAndSet(  int range, in List<PathInformation> adjustTargetPath )
+    public void AdjustPathToRangeAndSet(  int range, in List<WaypointInformation> adjustTargetPath )
     {
         int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
         int reachableTileIndex  = 0;
 
         // 得られたルートのうち、移動可能なインデックス値を辿る
-        foreach ( PathInformation p in adjustTargetPath )
+        foreach ( WaypointInformation p in adjustTargetPath )
         {
             range -= ( p.MoveCost - prevCost );
             prevCost = p.MoveCost;
@@ -184,7 +184,7 @@ public class MovePathHandler
     /// <returns>目標座標</returns>
     public Vector3 GetFocusedTilePosition()
     {
-        return _stageCtrl.GetGridInfo( _proposedMovePath[_focusedTileIndex].TileIndex ).charaStandPos;
+        return _stageCtrl.GetGridInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex ).charaStandPos;
     }
 
     /// <summary>

@@ -126,7 +126,7 @@ namespace Frontier.Entities.Ai
         override protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameter selfParam, in TemporaryParameter selfTmpParam )
         {
             // 最大評価ルート保存用
-            (List<PathInformation> path, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
+            (List<WaypointInformation> path, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
 
             // 移動値を無視した上で、進行可能なタイルをルート候補とする条件
             Func<int, object[], bool> condition = (index, args) =>
