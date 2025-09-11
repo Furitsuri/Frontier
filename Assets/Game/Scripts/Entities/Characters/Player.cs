@@ -39,15 +39,10 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="moveSpeedRate">移動速度レート</param>
         /// <returns>移動が終了したか</returns>
-        public bool UpdateMovePath( float moveSpeedRate )
+        public bool UpdateMovePath( float moveSpeedRate = 1.0f )
         {
-            Func<bool> HasReachedDestination = () =>
-            {
-                return _baseAi.MovePathHandler.ProposedMovePath.Count <= _baseAi.MovePathHandler.FocusedWaypointIndex;
-            };
-
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
-            if ( HasReachedDestination() ) { return true; }
+            if ( _baseAi.MovePathHandler.IsEndPathTrace() ) { return true; }
 
             bool toggleAnimation    = false;
             var focusedTilePos      = _baseAi.MovePathHandler.GetFocusedTilePosition();
@@ -61,11 +56,6 @@ namespace Frontier.Entities
             Vector3 diffXZ = focusedTilePos - afterPos;
             diffXZ.y = 0f;
 
-            if ( diffXZ.magnitude < Constants.TILE_SIZE * 0.5f )
-            { 
-                _params.TmpParam.gridIndex = _baseAi.MovePathHandler.GetFocusedWaypointIndex();
-            }
-
             // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
             if ( Vector3.Dot( dir, afterDir ) <= 0 )
             {
@@ -78,7 +68,7 @@ namespace Frontier.Entities
                 _baseAi.MovePathHandler.IncrementFocusedWaypointIndex();  // 目標インデックス値をインクリメント
 
                 // 最終インデックスに到達している場合は移動アニメーションを停止して終了
-                if ( HasReachedDestination() )
+                if ( _baseAi.MovePathHandler.IsEndPathTrace() )
                 {
                     _isPrevMoving = false;
                 }

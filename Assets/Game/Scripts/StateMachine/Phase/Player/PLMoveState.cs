@@ -74,7 +74,7 @@ namespace Frontier
             {
                 case PlMovePhase.PL_MOVE:
                     SetUpPathRoute();
-                    _selectPlayer.UpdateMovePath( 1.0f );
+                    _selectPlayer.UpdateMovePath();
                     break;
 
                 case PlMovePhase.PL_MOVE_RESERVE_END:
@@ -253,14 +253,22 @@ namespace Frontier
         {
             int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
+            MovePathHandler pathHdlr    = _selectPlayer.GetAi().MovePathHandler;
+            bool isEndPathTrace         = pathHdlr.IsEndPathTrace();
 
-            _selectPlayer.GetAi().MovePathHandler.FindActuallyMovePath( departingTileIndex, destinationTileIndex );
+            // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
+            if ( !isEndPathTrace )
+            {
+                departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
+            }
+
+            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, isEndPathTrace );
         }
 
         /// <summary>
-        /// 移動中攻撃に遷移するかどうかを取得します
+        /// 移動中攻撃に遷移しているかどうかを取得します
         /// </summary>
-        /// <returns>遷移の是非</returns>
+        /// <returns>遷移の有無</returns>
         private bool IsTransitAttackOnMoveState()
         {
             return ( TransitIndex == TransitAttackStateValue );
