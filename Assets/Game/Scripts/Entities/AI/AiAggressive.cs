@@ -19,7 +19,7 @@ namespace Frontier.Entities.Ai
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
         /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
-        /// <returns>存在の是非</returns>
+        /// <returns>存在の有無</returns>
         private bool CheckExistTargetInRange(CharacterParameter selfParam, TemporaryParameter selfTmpParam, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
         {
             candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);

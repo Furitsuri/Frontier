@@ -6,13 +6,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
+/// <summary>
+/// タイル間を移動する際に求めるパスの作成・管理を行うハンドラです。
+/// 複数キャラクター同時移動を行った際や突撃スキル使用時には各キャラクターでパスを計算、保持する必要があるため、
+/// キャラクター1人1人が持つ設計となっています。
+/// </summary>
 public class MovePathHandler
 {
     private StageController _stageCtrl  = null;
 
+    // _proposedMovePathをトレースする際に用いるインデックス値
     private int _focusedWaypointIndex                   = 0;
+    // このクラスの持ち主となるキャラクター
     private Character _owner                            = null;
+    // pathの候補となるタイルインデックス値のリスト。逆に言えば、このリストに挿入されていないインデックスのタイルは通行しない
     private List<int> _candidateRouteIndexs             = null;
+    // 計算から得られる移動パス
     private List<WaypointInformation> _proposedMovePath = new List<WaypointInformation>();
 
     public int FocusedWaypointIndex => _focusedWaypointIndex;
@@ -75,6 +84,15 @@ public class MovePathHandler
     }
 
     /// <summary>
+    /// pathのトレースが終了しているかを取得します
+    /// </summary>
+    /// <returns>トレースが終了したか否か</returns>
+    public bool IsEndPathTrace()
+    {
+        return _proposedMovePath.Count <= _focusedWaypointIndex;
+    }
+
+    /// <summary>
     /// 出発地点と目標地点を指定して、最短移動ルートを取得します
     /// </summary>
     /// <param name="departingTileIndex">出発地点となるタイルのインデックス値</param>
@@ -104,13 +122,13 @@ public class MovePathHandler
     }
 
     /// <summary>
-    /// 探索済みのルートをリセットせず、移動可能範囲を考慮した上で、出発地点と目標地点を指定して最短移動ルートを取得します
-    /// 移動操作をしてる最中に移動ルートを探索するといった、動的な状況で使用します
+    /// _ownerが移動可能、及び位置することが出来るタイルを考慮した上で、出発地点と目標地点を指定して最短移動ルートを取得します。
+    /// 移動操作をしてる最中に移動ルートを探索するといった、動的な状況で使用します。
     /// </summary>
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
-    /// <returns>ルート取得の是非</returns>
-    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex )
+    /// <returns>ルート取得の可否</returns>
+    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, bool isEndPathTrace )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -123,7 +141,15 @@ public class MovePathHandler
 
         var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
         if ( route == null ) { return false; }
-        _proposedMovePath = route;
+        // 現在のパストレースが終了していない場合は、直近のwaypointを移動対象として先頭に登録
+        if ( !isEndPathTrace )
+        {
+            _proposedMovePath.Insert( 0, _proposedMovePath[_focusedWaypointIndex]);
+            // 先頭要素以外は削除
+            if ( 1 < _proposedMovePath.Count ) { _proposedMovePath.RemoveRange( 1, _proposedMovePath.Count - 1 ); }
+        }
+        else { _proposedMovePath.Clear(); }
+        _proposedMovePath.AddRange( route );    // 連結させることで、パストレースの終了の有無に関わらず新しいパスを作成
 
         if ( 0 < _proposedMovePath.Count )
         {
