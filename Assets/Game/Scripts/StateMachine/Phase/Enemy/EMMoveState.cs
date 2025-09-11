@@ -19,7 +19,7 @@ namespace Frontier
         private int _movingIndex = 0;
         private float _moveWaitTimer = 0f;
         private Enemy _enemy;
-        private List<PathInformation> _movePathList;
+        private List<WaypointInformation> _movePathList;
         private List<Vector3> _moveGridPos;
         private Transform _EMTransform;
 

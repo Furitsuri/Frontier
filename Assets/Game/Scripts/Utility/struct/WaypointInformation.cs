@@ -1,6 +1,6 @@
-public struct PathInformation
+public struct WaypointInformation
 {
-    public PathInformation( int index, int cost )
+    public WaypointInformation( int index, int cost )
     {
         TileIndex   = index;
         MoveCost    = cost;
