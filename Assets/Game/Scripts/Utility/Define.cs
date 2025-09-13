@@ -54,10 +54,20 @@ static public class Constants
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
     // 経路探索におけるルートインデックス最大保持数
     public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 255;
+    // ステージに設定可能なタイルの最小数(横軸)
+    public const int TILE_ROW_MIN_NUM       = 5;
+    // ステージに設定可能なタイルの最小数(縦軸)
+    public const int TILE_COLUMN_MIN_NUM    = 5;
+    // ステージに設定可能なタイルの最大数(横軸)
+    public const int TILE_ROW_MAX_NUM       = 25;
+    // ステージに設定可能なタイルの最大数(縦軸)
+    public const int TILE_COLUMN_MAX_NUM    = 25;
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値
-    public const float TILE_THICKNESS_MIN   = 0.01f;
+    public const float TILE_MIN_THICKNESS   = 0.01f;
+    // タイルの高さの最大値
+    public const float TILE_MAX_HEIGHT      = 5.0f;
     // グリッドのY座標に加算する補正値
     public const float ADD_GRID_POS_Y       = 0.02f;
     // グリッドカーソルのY座標に加算する補正値
