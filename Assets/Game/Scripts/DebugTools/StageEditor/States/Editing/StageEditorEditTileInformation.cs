@@ -9,9 +9,9 @@ namespace Frontier.DebugTools
 {
     public class StageEditorEditTileInformation : StageEditorEditBase
     {
-        override public void Init( Action<int, int> placeTileCb, Func<string, bool> loadStageCb )
+        override public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb )
         {
-            base.Init( placeTileCb, loadStageCb );
+            base.Init( placeTileCb, resizeTileGridCb );
         }
 
         override public void Update()
@@ -19,14 +19,10 @@ namespace Frontier.DebugTools
             base.Update();
         }
 
-        override public bool CanAcceptConfirm() { return false; }
-
+        override public bool CanAcceptConfirm() { return CanAcceptInputAlways(); }
         override public bool CanAcceptCancel() { return false; }
-
         override public bool CanAcceptSub1() { return false; }
-
         override public bool CanAcceptSub2() { return false; }
-
         override public bool CanAcceptSub3() { return 0f < _refParams.SelectedHeight; }
         override public bool CanAcceptSub4() { return _refParams.SelectedHeight < TILE_MAX_HEIGHT; }
 

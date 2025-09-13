@@ -71,6 +71,16 @@ namespace Frontier.DebugTools.StageEditor
             _stageData.GetTile(x, y).InstantiateTileMesh( _hierarchyBld );
         }
 
+        /// <summary>
+        /// タイルの行数、列数を編集します
+        /// </summary>
+        /// <param name="newRows">行数</param>
+        /// <param name="newColumns">列数</param>
+        private void ResizeTileGrid( int newRows, int newColumns )
+        {
+
+        }
+
         private void UpdateCamera(int x, int y)
         {
             if (_mainCamera == null) return;
@@ -180,7 +190,7 @@ namespace Frontier.DebugTools.StageEditor
             CreateStage();
             CreateCursor();
 
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
 
             _mainCamera = Camera.main;
