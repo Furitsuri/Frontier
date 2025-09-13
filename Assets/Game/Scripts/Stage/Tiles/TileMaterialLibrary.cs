@@ -5,11 +5,11 @@ using static Constants;
 
 namespace Frontier.Stage
 {
-    public static class TileMaterialLibrary
+    static public class TileMaterialLibrary
     {
         private static Dictionary<TileType, Material> _materials;
 
-        public static void Init()
+        static public void Init()
         {
             string[] strings = new string[(int)TileType.NUM]
             {
@@ -47,18 +47,18 @@ namespace Frontier.Stage
             }
         }
 
-        public static Material GetMaterial(TileType type)
+        static public Material GetMaterial(TileType type)
         {
             return _materials[type];
         }
 
-        public static Vector3 GetDefaultTileScale()
+        static public Vector3 GetDefaultTileScale()
         {
             // タイルのデフォルトスケールを返す
             return new Vector3(TILE_SIZE, TILE_THICKNESS_MIN, TILE_SIZE);
         }
 
-        public static Vector3 GetScale(TileType type)
+        static public Vector3 GetScale(TileType type)
         {
             // 高さ調整もここで一元化
             return new Vector3(1, 0.1f, 1);

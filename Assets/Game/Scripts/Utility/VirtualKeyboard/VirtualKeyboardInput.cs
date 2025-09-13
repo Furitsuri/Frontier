@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class VirtualKeyboardInput : MonoBehaviour
 {
-    public static VirtualKeyboardInput Instance { get; private set; }
+    static public VirtualKeyboardInput Instance { get; private set; }
 
     [SerializeField] private TMP_Text inputDisplay;
 

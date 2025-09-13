@@ -36,7 +36,7 @@ namespace Frontier
                 return true;
             }
 
-            Stage.GridInfo info;
+            Stage.TileInformation info;
             _stageCtrl.FetchCurrentGridInfo(out info);
 
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ

@@ -14,11 +14,11 @@ namespace Frontier.DebugTools.StageEditor
     /// StageDataはMonoBehaviourを継承しているため、JsonUtilityで直接シリアライズできない。
     /// そのため、StageDataのデータを保持するクラスを作成し、それをシリアライズする。
     /// </remarks>
-    public static class StageDataSerializer
+    static public class StageDataSerializer
     {
         private static string FolderPath => Path.Combine(Application.persistentDataPath, "StageData");
 
-        public static bool Save(StageData data, string fileName)
+        static public bool Save(StageData data, string fileName)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace Frontier.DebugTools.StageEditor
         }
 
 
-        public static StageData Load(string fileName)
+        static public StageData Load(string fileName)
         {
             string path = Path.Combine(FolderPath, $"{fileName}.json");
             if (!File.Exists(path)) return null;

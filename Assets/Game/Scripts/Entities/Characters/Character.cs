@@ -241,7 +241,7 @@ namespace Frontier.Entities
         public void SetPosition(int gridIndex, in Quaternion dir)
         {
             _params.TmpParam.SetCurrentGridIndex( gridIndex );
-            var info = _stageCtrl.GetGridInfo(gridIndex);
+            var info = _stageCtrl.GetTileInfo(gridIndex);
             transform.position = info.charaStandPos;
             transform.rotation = dir;
         }

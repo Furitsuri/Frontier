@@ -48,7 +48,7 @@ namespace Frontier
         private DebugEditorMonoDriver _debugEditorMonoDrv;
 #endif // UNITY_EDITOR
 
-        public static GameMain instance = null;
+        static public GameMain instance = null;
 
         [Inject]
         public void Construct( DiContainer diContainer,  InputFacade inputFcd, HierarchyBuilderBase hierarchyBld, TutorialFacade tutorialFcd )

@@ -54,7 +54,7 @@ namespace Frontier
                 for (int i = 0; i < _movePathList.Count; ++i)
                 {
                     // パスのインデックスからグリッド座標を得る
-                    _moveGridPos.Add(_stageCtrl.GetGridInfo(_movePathList[i].TileIndex).charaStandPos);
+                    _moveGridPos.Add(_stageCtrl.GetTileInfo(_movePathList[i].TileIndex).charaStandPos);
                 }
                 _movingIndex    = 0;
                 _moveWaitTimer  = 0f;

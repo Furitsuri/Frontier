@@ -4,9 +4,9 @@ using UnityEngine;
 /// <summary>
 /// Nullチェックに使用する例外処理用クラスです
 /// </summary>
-public static class NullCheck
+static public class NullCheck
 {
-    public static void AssertNotNull(object obj)
+    static public void AssertNotNull(object obj)
     {
         if (obj == null)
         {

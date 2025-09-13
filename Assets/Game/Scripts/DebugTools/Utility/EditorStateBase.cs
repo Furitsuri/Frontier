@@ -87,6 +87,10 @@ public class EditorStateBase : StateBase
 
     virtual protected bool CanAcceptCancel() { return false; }
 
+    virtual protected bool CanAcceptTool() { return false; }
+
+    virtual protected bool CanAcceptInfo() { return false; }
+
     virtual protected bool CanAcceptOptional1() { return false; }
 
     virtual protected bool CanAcceptOptional2() { return false; }
@@ -125,6 +129,26 @@ public class EditorStateBase : StateBase
     /// <param name="isCancel">キャンセル入力</param>
     /// <returns>入力実行の有無</returns>
     virtual protected bool AcceptCancel(bool isCancel)
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// ツール画面入力を受けた際の処理を行います
+    /// </summary>
+    /// <param name="isInput">ツール画面入力</param>
+    /// <returns>入力実行の有無</returns>
+    virtual protected bool AcceptTool ( bool isInput )
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// 情報画面入力を受けた際の処理を行います
+    /// </summary>
+    /// <param name="isInput">情報画面入力</param>
+    /// <returns>入力実行の有無</returns>
+    virtual protected bool AcceptInfo( bool isInput )
     {
         return false;
     }

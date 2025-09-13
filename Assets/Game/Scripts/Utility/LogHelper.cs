@@ -1,9 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public static class LogHelper
+static public class LogHelper
 {
-    public static void LogError(
+    static public void LogError(
         string message,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "",

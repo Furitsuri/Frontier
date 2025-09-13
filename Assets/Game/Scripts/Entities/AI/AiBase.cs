@@ -108,7 +108,7 @@ namespace Frontier.Entities.Ai
             {
                 if ( tuple.lambda() )
                 {
-                    var gridInfo = _stageCtrl.GetGridInfo(tuple.index);
+                    var gridInfo = _stageCtrl.GetTileInfo(tuple.index);
                     if ( gridInfo.charaTag == CHARACTER_TAG.PLAYER || gridInfo.charaTag == CHARACTER_TAG.OTHER )
                     {
                         opponentCharaIndexs.Add( new CharacterHashtable.Key( gridInfo.charaTag, gridInfo.charaIndex ) );
@@ -155,9 +155,9 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="info">指定グリッド情報</param>
         /// <returns>評価値</returns>
-        virtual protected float GetEvaluateEnableTargetAttackBase( in Stage.GridInfo info ) { return ATTACKABLE_VALUE; }
+        virtual protected float GetEvaluateEnableTargetAttackBase( in Stage.TileInformation info ) { return ATTACKABLE_VALUE; }
 
-        virtual protected float GetEvaluateEnableDefeat( in Stage.GridInfo info ) { return ENABLE_DEFEAT_VALUE; }
+        virtual protected float GetEvaluateEnableDefeat( in Stage.TileInformation info ) { return ENABLE_DEFEAT_VALUE; }
 
         /// <summary>
         /// 初期化します

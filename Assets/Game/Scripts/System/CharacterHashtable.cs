@@ -18,12 +18,12 @@ namespace Frontier
                 characterIndex = index;
             }
 
-            public static bool operator ==(Key a, Key b)
+            static public bool operator ==(Key a, Key b)
             {
                 return a.characterTag == b.characterTag && a.characterIndex == b.characterIndex;
             }
 
-            public static bool operator !=(Key a, Key b)
+            static public bool operator !=(Key a, Key b)
             {
                 return a.characterTag != b.characterTag || a.characterIndex != b.characterIndex;
             }

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using Zenject;
+using Frontier.DebugTools.StageEditor;
 
 namespace Frontier
 {
@@ -19,6 +20,7 @@ namespace Frontier
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);
             Container.Bind<IUiSystem>().To<EditorUiSystem>().FromComponentInHierarchy().AsCached();
+            // Container.Bind<StageEditorController>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<StageEditorHierarchyBuilder>().FromComponentInHierarchy().AsCached();
         }
 

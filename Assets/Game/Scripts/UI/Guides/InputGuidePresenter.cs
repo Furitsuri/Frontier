@@ -1,15 +1,8 @@
-﻿using Frontier;
-using Frontier.Stage;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.U2D;
 using UnityEngine.UI;
 using Zenject;
-using static UnityEngine.EventSystems.StandaloneInputModule;
 
 /// <summary>
 /// 入力ガイド関連の表示制御を行います
@@ -19,7 +12,7 @@ public class InputGuidePresenter : MonoBehaviour
     /// <summary>
     /// フェード中の各モード
     /// </summary>
-    public enum FadeMode
+    private enum FadeMode
     {
         NEUTRAL = 0,
         FADE,
@@ -171,7 +164,7 @@ public class InputGuidePresenter : MonoBehaviour
             InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide(code.Icons, code.Explanation);
             guideUi.Register(_sprites, guide);
             _guideUiArrray[i] = guideUi;
-            _guideUiArrray[i].gameObject.SetActive(code.EnableCb != null && code.EnableCb());
+            _guideUiArrray[i].gameObject.SetActive( !Methods.AllMatch( code.EnableCbs, arg => ( arg == null || !arg() ) ) );
             _guideUiArrray[i].SetSpriteSortingOrder(_sortingOrder);
         }
     }
@@ -222,14 +215,27 @@ public class InputGuidePresenter : MonoBehaviour
 
         for (int i = 0; i < _inputCodes.Count; ++i)
         {
-            var code = _inputCodes[i];
-            bool isActive = ( code.EnableCb != null && code.EnableCb() );
-            if( !isToggled )
+            bool isActive   = false;
+            var code        = _inputCodes[i];
+            var guideUi     = _guideUiArrray[i];
+
+            if ( code.EnableCbs != null )
             {
-                isToggled = (isActive != _guideUiArrray[i].gameObject.activeSelf);
+                // キーの有効判定コールバックの返り値次第で対応するガイドアイコンについても表示を切り替える
+                for ( int j = 0; j < code.EnableCbs.Length; ++j )
+                {
+                    bool isEnable = ( code.EnableCbs[j] != null && code.EnableCbs[j]() );
+                    if ( !isToggled )
+                    {
+                        isToggled = ( isEnable != guideUi.GetSpriteRendererActive( j ) );
+                    }
+                    guideUi.SetSpriteRendererActive( j, isEnable );
+
+                    if ( isEnable ) { isActive = true; }
+                }
             }
-            
-            _guideUiArrray[i].gameObject.SetActive( isActive );
+
+            guideUi.gameObject.SetActive( isActive );
         }
 
         // アクティブ状態が切替られたガイド項目があるため、フェード処理を行う
@@ -242,6 +248,7 @@ public class InputGuidePresenter : MonoBehaviour
     /// <summary>
     /// 入力ガイドバーの背景の幅を更新します
     /// </summary>
+    /// <returns>更新後のガイドバーの幅</returns>
     private float CalcurateBackGroundWidth()
     {
         // レイアウトの更新を行ってから計算する

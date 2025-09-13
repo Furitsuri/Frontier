@@ -5,23 +5,23 @@ using UnityEngine;
 
 public class ServiceLocator<T> where T : class
 {
-    public static T Instance
+    static public T Instance
     {
         get;
         private set;
     }
 
-    public static bool IsValid()
+    static public bool IsValid()
     {
         return Instance != null;
     }
 
-    public static void Bind( T instance )
+    static public void Bind( T instance )
     {
         Instance = instance;
     }
 
-    public static void Unbind( T instance )
+    static public void Unbind( T instance )
     {
         if( Instance == instance )
         {
@@ -29,7 +29,7 @@ public class ServiceLocator<T> where T : class
         }
     }
 
-    public static void Clear()
+    static public void Clear()
     {
         Instance = null;
     }

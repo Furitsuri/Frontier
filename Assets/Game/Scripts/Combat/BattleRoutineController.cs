@@ -202,7 +202,7 @@ namespace Frontier.Battle
             }
 
             // 現在のグリッド上に存在するキャラクター情報を更新
-            GridInfo info;
+            TileInformation info;
             _stgCtrl.FetchCurrentGridInfo(out info);
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
 

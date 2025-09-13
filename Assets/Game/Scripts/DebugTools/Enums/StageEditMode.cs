@@ -4,8 +4,9 @@
     {
         NONE = -1,
 
-        TILE_EDIT,
-        INITIAL_POS_EDIT,
+        EDIT_TILE,
+        EDIT_TILE_COUNT,
+        EDIT_CHARACTER_INITIAL_POS,
 
         NUM
     }

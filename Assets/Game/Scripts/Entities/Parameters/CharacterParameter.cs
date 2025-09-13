@@ -37,7 +37,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="param">適応先のキャラクターパラメータ</param>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        public static void ApplyParams(ref CharacterParameter param, in CharacterParamData fdata)
+        static public void ApplyParams(ref CharacterParameter param, in CharacterParamData fdata)
         {
             param.characterTag = (CHARACTER_TAG)fdata.CharacterTag;
             param.characterIndex = fdata.CharacterIndex;

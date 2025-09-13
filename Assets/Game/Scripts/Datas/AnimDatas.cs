@@ -28,7 +28,7 @@ namespace Frontier
         /// <summary>
         /// アニメーションの各遷移条件名
         /// </summary>
-        public static readonly string[] ANIME_CONDITIONS_NAMES =
+        static public readonly string[] ANIME_CONDITIONS_NAMES =
         {
             "Wait",
             "Run",
@@ -42,14 +42,14 @@ namespace Frontier
         };
 
         // アニメーション名ハッシュリスト
-        public static List<int> AnimNameHashList;
+        static public List<int> AnimNameHashList;
         // 攻撃遷移終了判定に用いる名称
-        public static string AtkEndStateName;
+        static public string AtkEndStateName;
 
         /// <summary>
         /// 初期化します
         /// </summary>
-        public static void Init()
+        static public void Init()
         {
             // タグとアニメーションの数は一致していること
             Debug.Assert(ANIME_CONDITIONS_NAMES.Length == (int)AnimeConditionsTag.NUM);

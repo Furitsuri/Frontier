@@ -2,9 +2,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
-public static class Hash
+static public class Hash
 {
-    public static int GetStableHash(string input)
+    static public int GetStableHash(string input)
     {
         using (var md5 = MD5.Create())
         {

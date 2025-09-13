@@ -80,9 +80,9 @@ namespace Frontier
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
-                        var targetGridInfo = _stageCtrl.GetGridInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
+                        var targetGridInfo = _stageCtrl.GetTileInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
                         _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos );
-                        var attackerGridInfo = _stageCtrl.GetGridInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
+                        var attackerGridInfo = _stageCtrl.GetTileInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
                         _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
                     }
 

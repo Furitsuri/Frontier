@@ -17,21 +17,21 @@ namespace Frontier.Combat
             NUM,
         }
 
-        public static bool IsExecutableCommandBase(Character character)
+        static public bool IsExecutableCommandBase(Character character)
         {
             if (character.Params.TmpParam.IsEndAction()) return false;
 
             return true;
         }
 
-        public static bool IsExecutableMoveCommand(Character character, StageController stageCtrl)
+        static public bool IsExecutableMoveCommand(Character character, StageController stageCtrl)
         {
             if (!IsExecutableCommandBase(character)) return false;
 
             return !character.Params.TmpParam.IsEndCommand(COMMAND_TAG.MOVE);
         }
 
-        public static bool IsExecutableAttackCommand(Character character, StageController stageCtrl)
+        static public bool IsExecutableAttackCommand(Character character, StageController stageCtrl)
         {
             if (!IsExecutableCommandBase(character)) return false;
 
@@ -49,7 +49,7 @@ namespace Frontier.Combat
             return isExecutable;
         }
 
-        public static bool IsExecutableWaitCommand(Character character, StageController stageCtrl)
+        static public bool IsExecutableWaitCommand(Character character, StageController stageCtrl)
         {
             return IsExecutableCommandBase(character);
         }

@@ -71,7 +71,7 @@ public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler,
     /// 通知されたトリガーは、チュートリアル表示処理の際に使用されます
     /// </summary>
     /// <param name="type">通知するトリガータイプ</param>
-    public static void Notify(TriggerType type)
+    static public void Notify(TriggerType type)
     {
         if (!_pendingTriggers.Contains(type))
         {
@@ -82,7 +82,7 @@ public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler,
     /// <summary>
     /// 通知済みのトリガーをクリアします
     /// </summary>
-    public static void Clear()
+    static public void Clear()
     {
         _pendingTriggers.Clear();
     }

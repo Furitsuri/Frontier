@@ -6,7 +6,7 @@ namespace Frontier.Stage
     /// <summary>
     /// グリッド単位における情報
     /// </summary>
-    public class GridInfo
+    public class TileInformation
     {
         // キャラクターの立ち位置座標(※)
         public Vector3 charaStandPos;
@@ -70,9 +70,9 @@ namespace Frontier.Stage
         /// 現在の値をコピーして対象に渡します
         /// </summary>
         /// <returns>値をコピーしたオブジェクト</returns>
-        public GridInfo Copy()
+        public TileInformation Copy()
         {
-            GridInfo info           = new GridInfo();
+            TileInformation info           = new TileInformation();
             info.charaStandPos      = charaStandPos;
             info.moveResist         = moveResist;
             info.estimatedMoveRange = estimatedMoveRange;

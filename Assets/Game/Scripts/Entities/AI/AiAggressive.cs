@@ -30,7 +30,7 @@ namespace Frontier.Entities.Ai
 
             for (int i = 0; i < _stageData.GetGridToralNum(); ++i)
             {
-                var info = _stageCtrl.GetGridInfo(i);
+                var info = _stageCtrl.GetTileInfo(i);
                 // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得
                 if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.ATTACKABLE) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
                 {
@@ -107,7 +107,7 @@ namespace Frontier.Entities.Ai
             // 現在移動可能なタイルと、自身が現在存在するタイルをルート候補とする条件
             Func<int, object[], bool> condition = (index, args) =>
             {
-                var tileInfo    = _stageCtrl.GetGridInfo( index );
+                var tileInfo    = _stageCtrl.GetTileInfo( index );
                 var flag        = StageController.BitFlag.CANNOT_MOVE | StageController.BitFlag.ALLY_EXIST |  StageController.BitFlag.OTHER_EXIST;
                 bool ownerExist = (index == ((TemporaryParameter)args[0]).gridIndex);
 
@@ -132,7 +132,7 @@ namespace Frontier.Entities.Ai
             Func<int, object[], bool> condition = (index, args) =>
             {
                 var flag        = Stage.StageController.BitFlag.CANNOT_MOVE;
-                var tileInfo    = _stageCtrl.GetGridInfo( index );
+                var tileInfo    = _stageCtrl.GetTileInfo( index );
                 return ( !Methods.CheckBitFlag( tileInfo.flag, flag ) );
             };
             MovePathHandler.SetUpCandidatePathIndexs( true, condition );
