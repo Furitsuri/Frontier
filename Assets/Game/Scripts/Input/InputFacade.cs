@@ -54,9 +54,10 @@ public class InputFacade
         for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
         {
             _inputCodes[i].Explanation      = "";
-            _inputCodes[i].EnableCb         = null;
+            _inputCodes[i].EnableCbs        = null;
             _inputCodes[i].ResetIntervalTime();
             _inputCodes[i].SetInputLastTime(0.0f);
+            _inputCodes[i].RegisterClassHashCode = 0;
         }
     }
 
@@ -71,7 +72,7 @@ public class InputFacade
             if (_inputCodes[i].RegisterClassHashCode == hashCode)
             {
                 _inputCodes[i].Explanation      = "";
-                _inputCodes[i].EnableCb         = null;
+                _inputCodes[i].EnableCbs        = null;
                 _inputCodes[i].ResetIntervalTime();
                 _inputCodes[i].SetInputLastTime(0.0f);
             }
@@ -88,6 +89,8 @@ public class InputFacade
     {
         foreach ( var arg in args )
         {
+            if ( arg == null ) { continue; }
+
             // _inputCodesが未登録であれば登録する
             // 1つのコードに複数アイコンを登録する場合は、先頭に指定しているアイコンを基準にする
             if (_inputCodes[(int)arg.Icons.First()].IsUnRegistererd())
@@ -122,23 +125,23 @@ public class InputFacade
     /// </summary>
     private void InitInputCodes()
     {
-        _inputCodes = new InputCode[(int)Constants.GuideIcon.NUM_MAX]
+        _inputCodes = new InputCode[(int)GuideIcon.NUM_MAX]
         {
-            ( new GuideIcon[]{ Constants.GuideIcon.ALL_CURSOR },         "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.VERTICAL_CURSOR },    "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.HORIZONTAL_CURSOR },  "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.CONFIRM },            "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.CANCEL },             "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.TOOL},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.INFO},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.OPT1},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.OPT2},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.SUB1},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.SUB2},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.SUB3},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ Constants.GuideIcon.SUB4 },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.ALL_CURSOR },         "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.VERTICAL_CURSOR },    "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.HORIZONTAL_CURSOR },  "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.CONFIRM },            "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.CANCEL },             "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.TOOL},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.INFO},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.OPT1},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.OPT2},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB1},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB2},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB3},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB4 },               "", null, null, 0.0f, -1),
 #if UNITY_EDITOR
-            ( new GuideIcon[]{ Constants.GuideIcon.DEBUG_MENU },         "", null, null, 0.0f, -1)
+            ( new GuideIcon[]{ GuideIcon.DEBUG_MENU },         "", null, null, 0.0f, -1)
 #endif  // UNITY_EDITOR
         };
     }

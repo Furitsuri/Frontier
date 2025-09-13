@@ -151,15 +151,16 @@ public class InputHandler : MonoBehaviour
         // コールバック関数が設定されている場合は動作させる
         foreach( var code in _inputCodes )
         {
-            bool enable = ( code.EnableCb != null && code.EnableCb() );
-
-            if (!enable || !code.IsIntervalTimePassed()) continue;
+            // 有効判定コールバックが登録されていない or インターバル時間が過ぎていない場合は無効
+            if ( code.EnableCbs == null || !code.IsIntervalTimePassed() ) { continue; }
 
             for( int i = 0; i < code.Icons.Length; ++i )
             {
-                var input = _inputForIcons[(int)code.Icons[i]].GetInput();
+                bool enable = ( code.EnableCbs[i] != null && code.EnableCbs[i]() );
+                if ( !enable ) { continue; }
 
-                code.ExecuteAcceptInputCallback(input, i);
+                var input = _inputForIcons[(int)code.Icons[i]].GetInput();
+                if ( code.ExecuteAcceptInputCallback( input, i ) ) { break; }   // 入力があった場合は必ずブレークする
             }
         }
     }
