@@ -94,13 +94,13 @@ public class StageTileData
 
         Vector3 position = new Vector3(
             x * TILE_SIZE + 0.5f * TILE_SIZE,   // X座標はグリッドの中心に配置
-            0.5f * Height - TILE_THICKNESS_MIN, // Y座標はタイルの高さ(タイルの厚みの最小値は減算する)
+            0.5f * Height - TILE_MIN_THICKNESS, // Y座標はタイルの高さ(タイルの厚みの最小値は減算する)
             y * TILE_SIZE + 0.5f * TILE_SIZE    // Z座標はグリッドの中心に配置
         );
 
         _tileBhv = hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[0], true, false, $"Tile_X{x}_Y{y}");
         _tileBhv.transform.position     = position;
-        _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_THICKNESS_MIN, TILE_SIZE);
+        _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_MIN_THICKNESS, TILE_SIZE);
         _tileBhv.transform.rotation     = Quaternion.identity;
         _tileBhv.ApplyTileType(_tileType);
     }

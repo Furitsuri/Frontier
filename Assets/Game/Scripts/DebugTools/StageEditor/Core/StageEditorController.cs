@@ -19,13 +19,11 @@ namespace Frontier.DebugTools.StageEditor
         public class RefParams
         {
             public StageEditMode EditMode   = StageEditMode.EDIT_TILE;  // 編集モード
+            public int Row                  = 10;                       // タイルの行数
+            public int Col                  = 10;                       // タイルの列数
             public int SelectedType         = 0;                        // 選択中のタイルタイプ
             public float SelectedHeight     = 0;                        // 選択中のタイル高さ
         }
-
-        [Header("Editor Settings")]
-        public int row    = 10;
-        public int column = 10;
 
         [Header("Prefabs")]
         [SerializeField]
@@ -95,12 +93,12 @@ namespace Frontier.DebugTools.StageEditor
             if ( _stageData == null )
             {
                 _stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>( true );
-                _stageData.Init( row, column );
+                _stageData.Init( _refParams.Row, _refParams.Col );
             }
 
-            for ( int y = 0; y < column; y++ )
+            for ( int y = 0; y < _refParams.Col; y++ )
             {
-                for ( int x = 0; x < row; x++ )
+                for ( int x = 0; x < _refParams.Row; x++ )
                 {
                     _stageData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
                     _stageData.GetTile( x, y ).InstantiateTileInfo( x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld );
@@ -131,13 +129,13 @@ namespace Frontier.DebugTools.StageEditor
             
             // 簡易的に再ロード
             foreach (Transform child in transform) Destroy(child.gameObject);
-            row         = data.GridRowNum;
-            column      = data.GridColumnNum;
-            _stageData.Init(row, column); // 新しいステージデータを初期化
+            _refParams.Row = data.GridRowNum;
+            _refParams.Col = data.GridColumnNum;
+            _stageData.Init( _refParams.Row, _refParams.Col ); // 新しいステージデータを初期化
 
-            for (int y = 0; y < column; y++)
+            for (int y = 0; y < _refParams.Col; y++)
             {
-                for (int x = 0; x < row; x++)
+                for (int x = 0; x < _refParams.Row; x++)
                 {
                     var srcTile = data.GetTile(x, y);
                     _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));

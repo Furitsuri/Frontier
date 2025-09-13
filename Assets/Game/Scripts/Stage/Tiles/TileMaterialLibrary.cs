@@ -55,7 +55,7 @@ namespace Frontier.Stage
         static public Vector3 GetDefaultTileScale()
         {
             // タイルのデフォルトスケールを返す
-            return new Vector3(TILE_SIZE, TILE_THICKNESS_MIN, TILE_SIZE);
+            return new Vector3(TILE_SIZE, TILE_MIN_THICKNESS, TILE_SIZE);
         }
 
         static public Vector3 GetScale(TileType type)

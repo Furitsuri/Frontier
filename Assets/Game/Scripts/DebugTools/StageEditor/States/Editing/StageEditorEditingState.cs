@@ -9,7 +9,6 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 using static InputCode;
-using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace Frontier.DebugTools
 {
@@ -18,7 +17,7 @@ namespace Frontier.DebugTools
         /// <summary>
         /// 遷移先を示すタグ
         /// </summary>
-        enum TransitTag
+        private enum TransitTag
         {
             Save = 0,
             Load,
@@ -31,7 +30,8 @@ namespace Frontier.DebugTools
         private HierarchyBuilderBase _hierarchyBld          = null;
         private StageData _stageData                        = null;
         private GridCursorController _gridCursorCtrl        = null;
-        private StageEditorController.RefParams _refParams  = null;
+        private StageEditorEditBase _currentEdit            = null;
+        private StageEditorEditBase[] _editClasses          = null;
         private InputCode[] _sub1sub2InputCode              = null;
         private InputCode[] _sub3sub4InputCode              = null;
         private StageEditMode _editMode                     = StageEditMode.NONE;
@@ -40,12 +40,11 @@ namespace Frontier.DebugTools
         private string _editFileName = "test_stage"; // 編集するステージファイル名
 
         [Inject]
-        public void Construct( HierarchyBuilderBase hierarchyBld, StageData stageData, GridCursorController gridCursorCtrl, StageEditorController.RefParams refParams )
+        private void Construct( HierarchyBuilderBase hierarchyBld, StageData stageData, GridCursorController gridCursorCtrl )
         {
             _hierarchyBld   = hierarchyBld;
             _stageData      = stageData;
             _gridCursorCtrl = gridCursorCtrl;
-            _refParams      = refParams;
         }
 
         public void SetCallbacks( Action<int, int> placeTileCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
@@ -60,6 +59,17 @@ namespace Frontier.DebugTools
         override public void Init()
         {
             base.Init();
+
+            // エディットモード毎に編集出来る内容を切り替えるため、各エディットクラスを配列内に挿入
+            _editClasses = new StageEditorEditBase[ (int)StageEditMode.NUM ]
+            {
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditTileInformation>(false),
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
+                null
+            };
+
+            _currentEdit = _editClasses[(int)_editMode];
+            _currentEdit.Init( PlaceTileCallback, LoadStageCallback );
 
             int hashCode = GetInputCodeHash();
 
@@ -80,6 +90,8 @@ namespace Frontier.DebugTools
 
         override public bool Update()
         {
+            _currentEdit.Update();
+
             return (0 <= TransitIndex);
         }
 
@@ -100,8 +112,10 @@ namespace Frontier.DebugTools
 
         override protected bool CanAcceptTool() { return 0 < (int)_editMode ; }
         override protected bool CanAcceptInfo() { return ( int )_editMode < (int)StageEditMode.NUM - 1; }
-        override protected bool CanAcceptSub3() { return 0f < _refParams.SelectedHeight; }
-        override protected bool CanAcceptSub4() { return _refParams.SelectedHeight < 5.0f; }
+        override protected bool CanAcceptSub1() { return _currentEdit.CanAcceptSub1(); }
+        override protected bool CanAcceptSub2() { return _currentEdit.CanAcceptSub2(); }
+        override protected bool CanAcceptSub3() { return _currentEdit.CanAcceptSub3(); }
+        override protected bool CanAcceptSub4() { return _currentEdit.CanAcceptSub4(); }
 
         override protected bool AcceptDirection(Direction dir)
         {
@@ -123,14 +137,7 @@ namespace Frontier.DebugTools
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptConfirm(bool isInput)
         {
-            if (isInput)
-            {
-                PlaceTileCallback(_gridCursorCtrl.X(), _gridCursorCtrl.Y());
-
-                return true;
-            }
-
-            return false;
+            return _currentEdit.AcceptConfirm(isInput);
         }
 
         /// <summary>
@@ -145,6 +152,8 @@ namespace Frontier.DebugTools
                 _editMode = ChangeEditModeCallback( -1 );
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
+                _currentEdit = _editClasses[( int )_editMode];
+                _currentEdit.Init( PlaceTileCallback, LoadStageCallback );
                 return true;
             }
 
@@ -163,6 +172,8 @@ namespace Frontier.DebugTools
                 _editMode = ChangeEditModeCallback( 1 );
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
+                _currentEdit = _editClasses[( int )_editMode];
+                _currentEdit.Init( PlaceTileCallback, LoadStageCallback );
                 return true;
             }
 
@@ -207,52 +218,12 @@ namespace Frontier.DebugTools
             return true;
         }
 
-        /// <summary>
-        /// タイルタイプの値をデクリメントします。
-        /// 値が負になった場合は最大値-1とすることでループさせます。
-        /// </summary>
-        /// <param name="isInput">入力の有無</param>
-        /// <returns>入力受付の有無</returns>
-        override protected bool AcceptSub1(bool isInput)
-        {
-            if (!isInput) return false;
+        override protected bool AcceptSub1(bool isInput ) { return _currentEdit.AcceptSub1( isInput ); }
 
-            if ( --_refParams.SelectedType < 0 ) { _refParams.SelectedType = ( int )TileType.NUM - 1; }
+        override protected bool AcceptSub2(bool isInput ) { return _currentEdit.AcceptSub2( isInput ); }
 
-            return true;
-        }
+        override protected bool AcceptSub3(bool isInput ) { return _currentEdit.AcceptSub3( isInput ); }
 
-        /// <summary>
-        /// タイルタイプの値をインクリメントします。
-        /// 値が最大値を超えた場合は0とすることでループさせます。
-        /// </summary>
-        /// <param name="isInput">入力の有無</param>
-        /// <returns>入力受付の有無</returns>
-        override protected bool AcceptSub2(bool isInput)
-        {
-            if (!isInput) return false;
-
-            if( (int)TileType.NUM <= ++_refParams.SelectedType ) { _refParams.SelectedType = 0; }
-
-            return true;
-        }
-
-        override protected bool AcceptSub3(bool isInput)
-        {
-            if (!isInput) return false;
-
-            _refParams.SelectedHeight = Mathf.Clamp((float)_refParams.SelectedHeight - 0.5f, 0.0f, 5.0f);
-
-            return true;
-        }
-
-        override protected bool AcceptSub4(bool isInput)
-        {
-            if (!isInput) return false;
-
-            _refParams.SelectedHeight = Mathf.Clamp((float)_refParams.SelectedHeight + 0.5f, 0.0f, 5.0f);
-
-            return true;
-        }
+        override protected bool AcceptSub4(bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
     }
 }

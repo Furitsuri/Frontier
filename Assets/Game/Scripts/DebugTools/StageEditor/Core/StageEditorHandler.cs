@@ -20,7 +20,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorView        = stageEditorView;
             PlaceTileCallback       = placeTileCb;
             LoadStageCallback       = loadStageCb;
-            ChangeEditModeCallback = changeEditModeCb;
+            ChangeEditModeCallback  = changeEditModeCb;
 
             base.Init();
         }
