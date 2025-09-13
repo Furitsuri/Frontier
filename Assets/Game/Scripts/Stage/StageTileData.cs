@@ -16,9 +16,9 @@ public class StageTileData
 
     private TileBehaviour _tileBhv  = null;
     private TileMesh _tileMesh      = null;
-    private GridInfo _tileInfo      = null; // 現在のタイル情報
-    private GridInfo _tileInfoBase  = null; // 初期化状態のタイル情報
-    private GridInfo _tileInfoHold  = null; // 一時保存用のタイル情報
+    private TileInformation _tileInfo      = null; // 現在のタイル情報
+    private TileInformation _tileInfoBase  = null; // 初期化状態のタイル情報
+    private TileInformation _tileInfoHold  = null; // 一時保存用のタイル情報
 
     public TileType Type => _tileType;
     public float Height => _height;
@@ -67,9 +67,9 @@ public class StageTileData
 
     public void InstantiateTileInfo( int index, int rowNum, HierarchyBuilderBase hierarchyBld )
     {
-        _tileInfo       = hierarchyBld.InstantiateWithDiContainer<GridInfo>( false );
-        _tileInfoBase   = hierarchyBld.InstantiateWithDiContainer<GridInfo>( false );
-        _tileInfoHold   = hierarchyBld.InstantiateWithDiContainer<GridInfo>( false );   // _tileInfoHoldは一時保存で使用されるため、Initする必要がない
+        _tileInfo       = hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );
+        _tileInfoBase   = hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );
+        _tileInfoHold   = hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );   // _tileInfoHoldは一時保存で使用されるため、Initする必要がない
         if (_tileInfo == null || _tileInfoBase == null || _tileInfoHold == null )
         {
             Debug.LogError("TileInfoのインスタンス化に失敗しました。");
@@ -167,7 +167,7 @@ public class StageTileData
         return _tileBhv.transform.localScale;
     }
 
-    public ref GridInfo GetTileInfo()
+    public ref TileInformation GetTileInfo()
     {
         return ref _tileInfo;
     }

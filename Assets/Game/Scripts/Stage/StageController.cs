@@ -45,6 +45,10 @@ namespace Frontier.Stage
         private GameObject _gridCursorCtrlObject;
 
         [SerializeField]
+        [Header("ステージファイル読込")]
+        private GameObject _stageFileLoader;
+
+        [SerializeField]
         public GameObject[] _tilePrefabs;
 
         [SerializeField]
@@ -199,7 +203,7 @@ namespace Frontier.Stage
                 {
                     for (int i = 0; i < _attackableGridIndexs.Count; ++i)
                     {
-                        var info = GetGridInfo(_attackableGridIndexs[i]);
+                        var info = GetTileInfo(_attackableGridIndexs[i]);
 
                         Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex);
 
@@ -394,7 +398,7 @@ namespace Frontier.Stage
         /// 攻撃対象選択状態では選択している攻撃対象が存在するグリッド情報を取得します
         /// </summary>
         /// <param name="gridInfo">該当するグリッドの情報</param>
-        public void FetchCurrentGridInfo(out GridInfo gridInfo)
+        public void FetchCurrentGridInfo(out TileInformation gridInfo)
         {
             int index = 0;
 
@@ -461,7 +465,7 @@ namespace Frontier.Stage
                 {
                     for (int i = 0; i < _attackableGridIndexs.Count; ++i)
                     {
-                        var info = GetGridInfo(_attackableGridIndexs[i]);
+                        var info = GetTileInfo(_attackableGridIndexs[i]);
                         if (target == _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(info.charaTag, info.charaIndex))
                         {
                             _gridCursorCtrl.SetAtkTargetIndex(i);
@@ -674,7 +678,7 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="index">指定するインデックス値</param>
         /// <returns>指定インデックスのグリッド情報</returns>
-        public ref GridInfo GetGridInfo(int index)
+        public ref TileInformation GetTileInfo(int index)
         {
             return ref _stageData.GetTileInfo(index);
         }
@@ -729,7 +733,7 @@ namespace Frontier.Stage
         {
             _gridCursorCtrl.Index = _footprint.gridIndex;
             character.Params.TmpParam.SetCurrentGridIndex(_footprint.gridIndex);
-            GridInfo info;
+            TileInformation info;
             FetchCurrentGridInfo(out info);
             character.transform.position = info.charaStandPos;
             character.transform.rotation = _footprint.rotation;

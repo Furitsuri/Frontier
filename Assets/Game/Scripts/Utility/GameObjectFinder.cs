@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public static class GameObjectFinder
+static public class GameObjectFinder
 {
     /// <summary>
     /// シーン内の全 GameObject（非アクティブ含む）から名前で探索します。
     /// </summary>
     /// <param name="name">検索したいオブジェクト名</param>
     /// <returns>見つかった GameObject（複数ある場合は最初の1つ）</returns>
-    public static GameObject FindInSceneEvenIfInactive(string name)
+    static public GameObject FindInSceneEvenIfInactive(string name)
     {
         foreach (var rootObj in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
         {

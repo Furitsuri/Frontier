@@ -6,14 +6,14 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-public static class Methods
+static public class Methods
 {
     /// <summary>
     /// 自分自身を含むすべての子オブジェクトのレイヤーを設定します
     /// </summary>
     /// <param name="self">自身</param>
     /// <param name="layer">指定レイヤー</param>
-    public static void SetLayerRecursively(this GameObject self, int layer)
+    static public void SetLayerRecursively(this GameObject self, int layer)
     {
         self.layer = layer;
 
@@ -29,7 +29,7 @@ public static class Methods
     /// <typeparam name="T">Enum</typeparam>
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
-    public static void SetBitFlag<T>(ref T flags, T value) where T : Enum
+    static public void SetBitFlag<T>(ref T flags, T value) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
         int valueInt = Convert.ToInt32(value);
@@ -38,12 +38,24 @@ public static class Methods
     }
 
     /// <summary>
+    /// 対象のビットフラグの全ての設定を解除します
+    /// </summary>
+    /// <typeparam name="T">Enum</typeparam>
+    /// <param name="flags">対象とするフラグ</param>
+    static public void ClearBitFlag<T>( ref T flags ) where T : Enum
+    {
+        int flagsValue = Convert.ToInt32(flags);
+        flagsValue &= ~flagsValue; // flagsValue = 0でも問題ない
+        flags = ( T )Enum.ToObject( typeof( T ), flagsValue );
+    }
+
+    /// <summary>
     /// 対象の指定のビットフラグを解除します
     /// </summary>
     /// <typeparam name="T">Enum</typeparam>
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
-    public static void UnsetBitFlag<T>(ref T flags, T value) where T : Enum
+    static public void UnsetBitFlag<T>(ref T flags, T value) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
         int valueInt = Convert.ToInt32(value);
@@ -58,7 +70,7 @@ public static class Methods
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
     /// <returns>設定されているか否か</returns>
-    public static bool CheckBitFlag<T>(in T flags, T value) where T : Enum
+    static public bool CheckBitFlag<T>(in T flags, T value) where T : Enum
     {
         int flagsValue = Convert.ToInt32(flags);
         int valueInt = Convert.ToInt32(value);
@@ -66,15 +78,24 @@ public static class Methods
     }
 
     /// <summary>
-    /// 対象のビットフラグの全ての設定を解除します
+    /// 
     /// </summary>
-    /// <typeparam name="T">Enum</typeparam>
-    /// <param name="flags">対象とするフラグ</param>
-    public static void ClearBitFlag<T>(ref T flags) where T : Enum
+    /// <typeparam name="T"></typeparam>
+    /// <param name="array"></param>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    static public bool AllMatch<T>( T[] array, Func<T, bool> predicate )
     {
-        int flagsValue = Convert.ToInt32(flags);
-        flagsValue &= ~flagsValue; // flagsValue = 0でも問題ない
-        flags = (T)Enum.ToObject(typeof(T), flagsValue);
+        if ( array == null || predicate == null ) return false;
+
+        foreach ( var item in array )
+        {
+            if ( !predicate( item ) )
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>
@@ -86,7 +107,7 @@ public static class Methods
     /// <param name="yaw">回転させるヨー角度(Degree)</param>
     /// <param name="vec">回転するベクトル</param>
     /// <returns>回転結果のベクトル</returns>
-    public static Vector3 RotateVector( in Transform baseTransform, float roll, float pitch, float yaw, in Vector3 vec )
+    static public Vector3 RotateVector( in Transform baseTransform, float roll, float pitch, float yaw, in Vector3 vec )
     {
         Vector3 rollAxis, rightAxis, yawAxis;
 
@@ -114,7 +135,7 @@ public static class Methods
     /// <param name="former">前者</param>
     /// <param name="latter">後者</param>
     /// <returns>前者と後者のうち、より味方に近い側</returns>
-    public static Character CompareAllyCharacter( Character former, Character latter )
+    static public Character CompareAllyCharacter( Character former, Character latter )
     {
         var formerTag = former.Params.CharacterParam.characterTag;
         var latterTag = latter.Params.CharacterParam.characterTag;
@@ -142,7 +163,7 @@ public static class Methods
     }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
-    public static bool IsDebugScene()
+    static public bool IsDebugScene()
     {
         var curSceneName = SceneManager.GetActiveScene().name;
         return curSceneName.Contains("Debug");

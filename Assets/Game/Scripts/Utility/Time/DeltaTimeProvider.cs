@@ -5,16 +5,16 @@
 /// デバッグ時は固定値を返すことで、ブレーク時の飛び跳ねを防止。
 /// Update と FixedUpdate どちらにも対応。
 /// </summary>
-public static class DeltaTimeProvider
+static public class DeltaTimeProvider
 {
     /// <summary>デバッグ時に固定フレーム時間を使用するか</summary>
-    public static bool UseFixedDeltaTimeInDebug = false;
+    static public bool UseFixedDeltaTimeInDebug = false;
 
     /// <summary>デバッグ時に返す固定 DeltaTime (60FPS想定)</summary>
     private const float fixedDeltaTime = 0.00058623f;
 
     /// <summary>Update 用の deltaTime</summary>
-    public static float DeltaTime
+    static public float DeltaTime
     {
         get
         {
@@ -29,7 +29,7 @@ public static class DeltaTimeProvider
     }
 
     /// <summary>FixedUpdate 用の deltaTime</summary>
-    public static float FixedDeltaTime
+    static public float FixedDeltaTime
     {
         get
         {

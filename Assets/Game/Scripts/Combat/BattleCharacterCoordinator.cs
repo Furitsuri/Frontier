@@ -77,7 +77,7 @@ namespace Frontier.Battle
                     chara.Params.TmpParam.SetCurrentGridIndex(gridIndex);       // ステージ上のグリッド位置の設定
                     chara.transform.position = _stgCtrl.GetGridCharaStandPos(gridIndex);        // プレイヤーの画面上の位置を設定
                     chara.transform.rotation = rot[(int)chara.Params.CharacterParam.initDir];   // 向きを設定
-                    _stgCtrl.GetGridInfo(gridIndex).SetExistCharacter(chara);   // 対応するグリッドに立っているキャラクターを登録
+                    _stgCtrl.GetTileInfo(gridIndex).SetExistCharacter(chara);   // 対応するグリッドに立っているキャラクターを登録
                 }
             }
         }
@@ -292,7 +292,7 @@ namespace Frontier.Battle
         /// <returns>選択しているグリッド上のキャラクター</returns>
         public Character GetSelectCharacter()
         {
-            Stage.GridInfo info;
+            Stage.TileInformation info;
             _stgCtrl.FetchCurrentGridInfo(out info);
 
             return GetCharacterFromHashtable(info.charaTag, info.charaIndex);
@@ -307,7 +307,7 @@ namespace Frontier.Battle
         {
             List<Character> list = new List<Character>();
 
-            var baseGridInfo = _stgCtrl.GetGridInfo( baseChara.Params.TmpParam.gridIndex );
+            var baseGridInfo = _stgCtrl.GetTileInfo( baseChara.Params.TmpParam.gridIndex );
             NullCheck.AssertNotNull( baseGridInfo );
             Vector3 basePos     = baseGridInfo.charaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
@@ -317,7 +317,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    var targetGridInfo = _stgCtrl.GetGridInfo(c.Params.TmpParam.gridIndex);
+                    var targetGridInfo = _stgCtrl.GetTileInfo(c.Params.TmpParam.gridIndex);
                     NullCheck.AssertNotNull(targetGridInfo);
                     Vector3 targetPos = targetGridInfo.charaStandPos;
 

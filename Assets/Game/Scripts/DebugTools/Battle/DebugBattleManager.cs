@@ -12,7 +12,7 @@ namespace Frontier
         [SerializeField]
         private BattleRoutineController _btlRtnCtrl;
 
-        public static DebugBattleRoutineController instance = null;
+        static public DebugBattleRoutineController instance = null;
 
         void Awake()
         {

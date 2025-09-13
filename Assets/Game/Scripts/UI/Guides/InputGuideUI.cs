@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
-using Zenject;
 
 /// <summary>
 /// 入力ガイド表示における各ガイド部分です。
@@ -29,8 +27,8 @@ public class InputGuideUI : MonoBehaviour
         /// <param name="explanation">キーに対する説明文</param>
         public InputGuide(Constants.GuideIcon[] icons, string explanation)
         {
-            _icons = icons;
-            _explanation = explanation;
+            _icons          = icons;
+            _explanation    = explanation;
         }
     }
 
@@ -57,17 +55,10 @@ public class InputGuideUI : MonoBehaviour
 
     // 値保持
     public InputGuide InputGuideValue { get; private set; } 
-    private HierarchyBuilderBase _hierarchyBld = null;
     // 入力ガイドの枠UI
     private RectTransform _rectTransform;
     // 子のオブジェクト
     private GameObject[] _childrenObjects;
-
-    [Inject]
-    public void Construct( HierarchyBuilderBase hierarchyBld )
-    {
-        _hierarchyBld = hierarchyBld;
-    }
 
     void Awake()
     {
@@ -94,11 +85,10 @@ public class InputGuideUI : MonoBehaviour
     /// </summary>
     public void Register(Sprite[] sprites, InputGuide guide)
     {
-        InputGuideValue             = guide;
+        InputGuideValue = guide;
         for( int i = 0; i < InputGuideValue._icons.Length; ++i)
         {
-            // ヒエラルキー上ではGuideSpriteRendererに対して1つのスプライトしか設定していないため、
-            // 必要に応じてListに要素を加算する
+            // プレハブ上ではGuideSpriteRendererに対して1つのスプライトしか設定していないため、必要に応じてListに要素を加算する
             if(GuideSpriteRenderers.Count <= i)
             {
                 SpriteRenderer newSpriteRenderer = Instantiate(GuideSpriteRenderers[0]);
@@ -115,11 +105,8 @@ public class InputGuideUI : MonoBehaviour
         transform.localPosition     = new Vector3(transform.localPosition.x, transform.localPosition.y, 0f);
         _rectTransform.localScale   = Vector3.one;
 
-        // 説明文の文字の大きさなどの設定を初期化
-        InitTextMeshSetting();
-
-        // ガイド幅を調整
-        AdjustWidth();
+        InitTextMeshSetting();  // 説明文の文字の大きさなどの設定を初期化
+        AdjustWidth();          // ガイド幅を調整
     }
 
     /// <summary>
@@ -138,6 +125,26 @@ public class InputGuideUI : MonoBehaviour
         {
             Debug.LogError("GuideSpriteRenderer is not assigned in InputGuideUI.");
         }
+    }
+
+    /// <summary>
+    /// 指定したスプライトのアクティブ設定を行います
+    /// </summary>
+    /// <param name="spriteIndex">RegistterInputCodes()で登録したスプライトにおけるインデックス</param>
+    /// <param name="isActive">アクティブ設定</param>
+    public void SetSpriteRendererActive( int spriteIndex, bool isActive )
+    {
+        GuideSpriteRenderers[spriteIndex].gameObject.SetActive( isActive );
+    }
+
+    /// <summary>
+    /// 指定したインデックスのスプライトがアクティブかを取得します
+    /// </summary>
+    /// <param name="spriteIndex">RegistterInputCodes()で登録したスプライトにおけるインデックス</param>
+    /// <returns>表示がアクティブか否か</returns>
+    public bool GetSpriteRendererActive( int spriteIndex )
+    {
+        return GuideSpriteRenderers[spriteIndex].gameObject.activeSelf;
     }
 
     /// <summary>

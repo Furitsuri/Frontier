@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class Singleton<T> : MonoBehaviour where T : Singleton<T>
 {
-    public static T Instance { get; private set; } = null;
+    static public T Instance { get; private set; } = null;
 
-    public static bool IsValid() => Instance != null;
+    static public bool IsValid() => Instance != null;
 
     void Awake()
     {

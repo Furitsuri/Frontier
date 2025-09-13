@@ -52,7 +52,7 @@ namespace Frontier.Stage
 
         public StageTileData GetTile(int index) => _tileDatas[index];
 
-        public ref GridInfo GetTileInfo(int index)
+        public ref TileInformation GetTileInfo(int index)
         {
             return ref _tileDatas[index].GetTileInfo();
         }

@@ -180,7 +180,7 @@ public class MovePathHandler
             // 移動レンジを超えれば終了
             if ( range < 0 ) { break; }
             // グリッド上にキャラクターが存在しないことを確認して更新
-            if ( !_stageCtrl.GetGridInfo( p.TileIndex ).IsExistCharacter() ) { reachableTileIndex = p.TileIndex; }
+            if ( !_stageCtrl.GetTileInfo( p.TileIndex ).IsExistCharacter() ) { reachableTileIndex = p.TileIndex; }
         }
 
         // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
@@ -198,7 +198,7 @@ public class MovePathHandler
     /// <returns>留まることの可否</returns>
     public bool CanStandOnTile( int tileIdx )
     {
-        var tileInfo    = _stageCtrl.GetGridInfo( tileIdx );
+        var tileInfo    = _stageCtrl.GetTileInfo( tileIdx );
         bool ownerExist = ( tileInfo.charaTag == _owner.Params.CharacterParam.characterTag ) && ( tileInfo.charaIndex == _owner.Params.CharacterParam.characterIndex );
 
         return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, ImpassableFlag() ) ) );
@@ -210,7 +210,7 @@ public class MovePathHandler
     /// <returns>目標座標</returns>
     public Vector3 GetFocusedTilePosition()
     {
-        return _stageCtrl.GetGridInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex ).charaStandPos;
+        return _stageCtrl.GetTileInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex ).charaStandPos;
     }
 
     /// <summary>

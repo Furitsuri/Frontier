@@ -51,7 +51,7 @@ namespace Frontier
             // SetUpCandidatePathIndexsで用いる条件式
             Func<int, object[], bool> condition = ( index, args ) =>
             {
-                var tileInfo    = _stageCtrl.GetGridInfo(index);
+                var tileInfo    = _stageCtrl.GetTileInfo(index);
                 bool ownerExist =   (tileInfo.charaTag == _selectPlayer.Params.CharacterParam.characterTag) &&
                                     (tileInfo.charaIndex == _selectPlayer.Params.CharacterParam.characterIndex);
                 return (0 <= tileInfo.estimatedMoveRange || ownerExist);
@@ -73,7 +73,7 @@ namespace Frontier
             switch( _phase )
             {
                 case PlMovePhase.PL_MOVE:
-                    SetUpPathRoute();
+                    SetupMovePath();
                     _selectPlayer.UpdateMovePath();
                     break;
 
@@ -147,7 +147,7 @@ namespace Frontier
 
             if ( PlMovePhase.PL_MOVE != _phase ) { return false; }     // 移動フェーズでない場合は終了
 
-            GridInfo info;
+            TileInformation info;
             _stageCtrl.FetchCurrentGridInfo( out info );
             if ( info.estimatedMoveRange < 0 )
             {
@@ -196,7 +196,7 @@ namespace Frontier
         {
             if (!isInput) { return false; }
 
-            GridInfo info;
+            TileInformation info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
             _stageCtrl.FetchCurrentGridInfo(out info);
 
@@ -246,10 +246,9 @@ namespace Frontier
         }
 
         /// <summary>
-        /// パスの更新が必要かどうかを判定します
+        /// 移動するパスを作成します
         /// </summary>
-        /// <returns></returns>
-        private void SetUpPathRoute()
+        private void SetupMovePath()
         {
             int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
@@ -279,7 +278,7 @@ namespace Frontier
         /// </summary>
         /// <param name="info">グリッド情報</param>
         /// <returns>直接遷移の可否</returns>
-        private bool CanAttackOnMove( in GridInfo info )
+        private bool CanAttackOnMove( in TileInformation info )
         {
             if( !Methods.CheckBitFlag( info.flag, BitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
 

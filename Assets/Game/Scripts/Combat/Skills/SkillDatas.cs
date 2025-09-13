@@ -7,7 +7,7 @@ namespace Frontier.Combat.Skill
     /// <summary>
     /// 各スキルの実行内容の関数集合です
     /// </summary>
-    public static class SkillsData
+    static public class SkillsData
     {
         [System.Serializable]
         public struct Data
@@ -25,11 +25,11 @@ namespace Frontier.Combat.Skill
             public float Param4;
         }
 
-        public static Data[] data                                       = new Data[(int)ID.SKILL_NUM];
-        public static Func<SkillNotifierBase>[] skillNotifierFactory    = null;
+        static public Data[] data                                       = new Data[(int)ID.SKILL_NUM];
+        static public Func<SkillNotifierBase>[] skillNotifierFactory    = null;
         private static readonly SkillNotifierBase sharedNotifier        = new SkillNotifierBase();  // 使いまわし前提のため静的読み取り専用
 
-        public static void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
+        static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {
             if ( skillNotifierFactory != null ) { return; }
 
@@ -52,7 +52,7 @@ namespace Frontier.Combat.Skill
         /// </summary>
         /// <param name="modifiedParam">スキル使用キャラのバフ・デバフ用パラメータ</param>
         /// <param name="param">スキル使用キャラのパラメータ</param>
-        public static void ExecGuard(ref ModifiedParameter modifiedParam, ref CharacterParameter param)
+        static public void ExecGuard(ref ModifiedParameter modifiedParam, ref CharacterParameter param)
         {
             modifiedParam.Def = (int)Mathf.Floor(param.Def * 0.5f);
             param.consumptionActionGauge += 1;
