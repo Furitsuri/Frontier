@@ -24,6 +24,7 @@ namespace Frontier.DebugTools
         }
 
         private Action<int, int> PlaceTileCallback;
+        private Action<int, int> ResizeTileGridCallback;
         private Func<string, bool> LoadStageCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
@@ -47,13 +48,13 @@ namespace Frontier.DebugTools
             _gridCursorCtrl = gridCursorCtrl;
         }
 
-        public void SetCallbacks( Action<int, int> placeTileCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback       = placeTileCb;
+            ResizeTileGridCallback  = risizeTileGridCb;
             LoadStageCallback       = loadStageCb;
             ChangeEditModeCallback  = changeEditModeCb;
-
-            _editMode = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
+            _editMode               = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
 
         override public void Init()
@@ -65,11 +66,11 @@ namespace Frontier.DebugTools
             {
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditTileInformation>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
-                null
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditCharacterInitialPosition>(false)
             };
 
             _currentEdit = _editClasses[(int)_editMode];
-            _currentEdit.Init( PlaceTileCallback, LoadStageCallback );
+            _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback );
 
             int hashCode = GetInputCodeHash();
 
@@ -153,7 +154,7 @@ namespace Frontier.DebugTools
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( PlaceTileCallback, LoadStageCallback );
+                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback );
                 return true;
             }
 
@@ -173,7 +174,7 @@ namespace Frontier.DebugTools
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( PlaceTileCallback, LoadStageCallback );
+                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback );
                 return true;
             }
 

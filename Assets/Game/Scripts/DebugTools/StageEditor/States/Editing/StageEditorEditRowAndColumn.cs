@@ -7,9 +7,9 @@ namespace Frontier.DebugTools
 {
     public class StageEditorEditRowAndColumn : StageEditorEditBase
     {
-        override public void Init( Action<int, int> placeTileCb, Func<string, bool> loadStageCb )
+        override public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb )
         {
-            base.Init( placeTileCb, loadStageCb );
+            base.Init( placeTileCb, resizeTileGridCb );
         }
 
         override public void Update()
@@ -17,16 +17,24 @@ namespace Frontier.DebugTools
             base.Update();
         }
 
-        override public bool CanAcceptConfirm() { return false; }
-
+        override public bool CanAcceptConfirm() { return CanAcceptInputAlways(); }
         override public bool CanAcceptCancel() { return false; }
-
         override public bool CanAcceptSub1() { return TILE_ROW_MIN_NUM < _refParams.Row; }
         override public bool CanAcceptSub2() { return _refParams.Row < TILE_ROW_MAX_NUM; }
         override public bool CanAcceptSub3() { return TILE_COLUMN_MIN_NUM < _refParams.Col; }
         override public bool CanAcceptSub4() { return _refParams.Col < TILE_COLUMN_MAX_NUM; }
 
-        override public bool AcceptConfirm( bool isInput ) { return false; }
+        override public bool AcceptConfirm( bool isInput )
+        {
+            if ( isInput )
+            {
+                ResizeTileGridCallback( _refParams.Row, _refParams.Col );
+
+                return true;
+            }
+
+            return false;
+        }
 
         override public bool AcceptCancel( bool isCancel ) { return false; }
 

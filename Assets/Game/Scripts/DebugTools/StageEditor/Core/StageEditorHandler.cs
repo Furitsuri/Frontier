@@ -10,15 +10,17 @@ namespace Frontier.DebugTools.StageEditor
     public class StageEditorHandler : EditorHandlerBase
     {
         private Action<int, int> PlaceTileCallback;
+        private Action<int, int> ResizeTileGridCallback;
         private Func<string, bool> LoadStageCallback;
         private Func< int, StageEditMode > ChangeEditModeCallback;
 
         private StageEditorPresenter _stageEditorView   = null;
 
-        public void Init(StageEditorPresenter stageEditorView, Action<int, int> placeTileCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void Init(StageEditorPresenter stageEditorView, Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
             _stageEditorView        = stageEditorView;
             PlaceTileCallback       = placeTileCb;
+            ResizeTileGridCallback  = risizeTileGridCb;
             LoadStageCallback       = loadStageCb;
             ChangeEditModeCallback  = changeEditModeCb;
 
@@ -28,7 +30,7 @@ namespace Frontier.DebugTools.StageEditor
         override protected void CreateTree()
         {
             StageEditorEditingState stageEditorEditingState = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditingState>(false);
-            stageEditorEditingState.SetCallbacks(PlaceTileCallback, LoadStageCallback, ChangeEditModeCallback);
+            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, LoadStageCallback, ChangeEditModeCallback);
 
             StageEditorSaveState stageEditorSaveState = _hierarchyBld.InstantiateWithDiContainer<StageEditorSaveState>(false);
             stageEditorSaveState.SetCallbacks( _stageEditorView.ToggleNotifyView, _stageEditorView.SetNotifyWord );

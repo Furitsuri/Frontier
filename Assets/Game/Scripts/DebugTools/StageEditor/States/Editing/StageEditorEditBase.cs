@@ -14,7 +14,7 @@ namespace Frontier.DebugTools
         protected StageEditorController.RefParams _refParams  = null;
 
         protected Action<int, int> PlaceTileCallback;
-        protected Func<string, bool> LoadStageCallback;
+        protected Action<int, int> ResizeTileGridCallback;
 
         [Inject]
         private void Construct( GridCursorController gridCursorCtrl, StageEditorController.RefParams refParams )
@@ -23,10 +23,10 @@ namespace Frontier.DebugTools
             _refParams      = refParams;
         }
 
-        virtual public void Init( Action<int, int> placeTileCb, Func<string, bool> loadStageCb )
+        virtual public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb )
         {
-            PlaceTileCallback = placeTileCb;
-            LoadStageCallback = loadStageCb;
+            PlaceTileCallback       = placeTileCb;
+            ResizeTileGridCallback  = resizeTileGridCb;
         }
 
         virtual public void Update()
