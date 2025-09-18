@@ -1,16 +1,13 @@
-﻿using Frontier.DebugTools.StageEditor;
-using Frontier.Stage;
+﻿using Frontier.Stage;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditorInternal;
 using UnityEngine;
 using Zenject;
 using static Constants;
 using static InputCode;
 
-namespace Frontier.DebugTools
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditingState : EditorStateBase
     {
@@ -221,3 +218,5 @@ namespace Frontier.DebugTools
         override protected bool AcceptSub4(bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
     }
 }
+
+#endif // UNITY_EDITOR

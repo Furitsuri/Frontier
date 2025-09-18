@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
+#if UNITY_EDITOR
+
 public class EditorHandlerBase : Tree<EditorStateBase>
 {
     protected bool _isInitReserved = false;
@@ -95,3 +97,5 @@ public class EditorHandlerBase : Tree<EditorStateBase>
     {
     }
 }
+
+#endif // UNITY_EDITOR

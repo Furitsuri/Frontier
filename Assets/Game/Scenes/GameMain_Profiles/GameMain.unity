@@ -2649,9 +2649,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _notifyImage: {fileID: 0}
+  _editParams: []
   _editModeTextMesh: {fileID: 0}
-  _tileTypeTextMesh: {fileID: 0}
-  _heightTextMesh: {fileID: 0}
+  _firstParamTextMesh: []
+  _secondParamTextMesh: []
 --- !u!114 &1781175478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9056,9 +9057,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a9dbcf2599f9e49882fba902ffcb40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageFileLoaderPrefab: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}
   _gridMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
   _gridCursorCtrlObject: {fileID: 8350404123717608506, guid: 1b64c7c7109b2d64d8e59331fbee99c9, type: 3}
-  _stageFileLoader: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}
   _tilePrefabs:
   - {fileID: 1062838171624191041, guid: dab4b0ab12a0da546a1e0422940ae4ec, type: 3}
   back: 1

@@ -217,8 +217,8 @@ public class MovePathHandler
     /// 通行不可となるタイルフラグ情報
     /// </summary>
     /// <returns></returns>
-    static public StageController.BitFlag ImpassableFlag()
+    static public TileBitFlag ImpassableFlag()
     {
-        return StageController.BitFlag.CANNOT_MOVE | StageController.BitFlag.ALLY_EXIST | StageController.BitFlag.ENEMY_EXIST | StageController.BitFlag.OTHER_EXIST;
+        return TileBitFlag.CANNOT_MOVE | TileBitFlag.ALLY_EXIST | TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST;
     }
 }

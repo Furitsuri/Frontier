@@ -1,6 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using Frontier.DebugTools.StageEditor;
+
+#if UNITY_EDITOR
 
 public class DebugUISystem : MonoBehaviour
 {
@@ -10,3 +11,5 @@ public class DebugUISystem : MonoBehaviour
     [Header("StageEditorPresenter")]
     public StageEditorPresenter StageEditorView;    // ステージエディット機能表示
 }
+
+#endif // UNITY_EDITOR

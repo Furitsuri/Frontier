@@ -32,7 +32,7 @@ namespace Frontier.Entities.Ai
             {
                 var info = _stageCtrl.GetTileInfo(i);
                 // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得
-                if (Methods.CheckBitFlag(info.flag, Stage.StageController.BitFlag.ATTACKABLE) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
+                if (Methods.CheckBitFlag(info.flag, Stage.TileBitFlag.ATTACKABLE) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
                 {
                     // グリッドの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterHashtable.Key> opponentKeys;
@@ -108,7 +108,7 @@ namespace Frontier.Entities.Ai
             Func<int, object[], bool> condition = (index, args) =>
             {
                 var tileInfo    = _stageCtrl.GetTileInfo( index );
-                var flag        = StageController.BitFlag.CANNOT_MOVE | StageController.BitFlag.ALLY_EXIST |  StageController.BitFlag.OTHER_EXIST;
+                var flag        = TileBitFlag.CANNOT_MOVE | TileBitFlag.ALLY_EXIST |  TileBitFlag.OTHER_EXIST;
                 bool ownerExist = (index == ((TemporaryParameter)args[0]).gridIndex);
 
                 return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, flag ) ) );
@@ -131,7 +131,7 @@ namespace Frontier.Entities.Ai
             // 移動値を無視した上で、進行可能なタイルをルート候補とする条件
             Func<int, object[], bool> condition = (index, args) =>
             {
-                var flag        = Stage.StageController.BitFlag.CANNOT_MOVE;
+                var flag        = Stage.TileBitFlag.CANNOT_MOVE;
                 var tileInfo    = _stageCtrl.GetTileInfo( index );
                 return ( !Methods.CheckBitFlag( tileInfo.flag, flag ) );
             };

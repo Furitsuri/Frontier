@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
+#if UNITY_EDITOR
+
 public class EditorStateBase : StateBase
 {
     [Inject]
@@ -193,3 +195,5 @@ public class EditorStateBase : StateBase
         return false;
     }
 }
+
+#endif // UNITY_EDITOR

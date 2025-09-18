@@ -7,7 +7,7 @@ using Zenject;
 /// <summary>
 /// 入力ガイド関連の表示制御を行います
 /// </summary>using System.Collections.ObjectModel;
-public class InputGuidePresenter : MonoBehaviour
+public sealed class InputGuidePresenter : MonoBehaviour
 {
     /// <summary>
     /// フェード中の各モード

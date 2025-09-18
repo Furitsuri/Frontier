@@ -1,23 +1,21 @@
-﻿using Frontier.DebugTools.StageEditor;
-using Frontier.Stage;
+﻿using Frontier.Stage;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Zenject;
 
-namespace Frontier.DebugTools
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditBase
     {
         protected GridCursorController _gridCursorCtrl        = null;
-        protected StageEditorController.RefParams _refParams  = null;
+        protected StageEditorController.StageEditRefParams _refParams  = null;
 
         protected Action<int, int> PlaceTileCallback;
         protected Action<int, int> ResizeTileGridCallback;
 
         [Inject]
-        private void Construct( GridCursorController gridCursorCtrl, StageEditorController.RefParams refParams )
+        private void Construct( GridCursorController gridCursorCtrl, StageEditorController.StageEditRefParams refParams )
         {
             _gridCursorCtrl = gridCursorCtrl;
             _refParams      = refParams;
@@ -59,3 +57,5 @@ namespace Frontier.DebugTools
         virtual public bool AcceptSub4( bool isInput ) { return false; }
     }
 }
+
+#endif // UNITY_EDITOR

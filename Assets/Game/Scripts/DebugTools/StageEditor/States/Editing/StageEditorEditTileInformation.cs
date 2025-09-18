@@ -4,7 +4,9 @@ using UnityEngine;
 using static Constants;
 using static InputCode;
 
-namespace Frontier.DebugTools
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditTileInformation : StageEditorEditBase
     {
@@ -88,3 +90,4 @@ namespace Frontier.DebugTools
         }
     }
 }
+#endif //UNITY_EDITOR
