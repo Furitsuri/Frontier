@@ -66,19 +66,19 @@ namespace Frontier.Battle
             if (_btlFileLoader == null)
             {
                 _btlFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>(_btlFileLoadObject, true, false, typeof(BattleFileLoader).Name);
-                NullCheck.AssertNotNull(_btlFileLoader);
+                NullCheck.AssertNotNull(_btlFileLoader, nameof( _btlFileLoader ) );
             }
 
             if (_btlCharaCdr == null)
             {
                 _btlCharaCdr = _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>(false);
-                NullCheck.AssertNotNull(_btlCharaCdr);
+                NullCheck.AssertNotNull(_btlCharaCdr, nameof( _btlCharaCdr ) );
             }
 
             if( _battleTimeScaleCtrl == null)
             {
                 _battleTimeScaleCtrl = _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>(false);
-                NullCheck.AssertNotNull( _battleTimeScaleCtrl);
+                NullCheck.AssertNotNull( _battleTimeScaleCtrl, nameof( _battleTimeScaleCtrl ) );
             }
 
             if ( SkillsData.skillNotifierFactory == null )

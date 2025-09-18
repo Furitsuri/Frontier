@@ -56,6 +56,7 @@ namespace Frontier.Stage
             }
 
             Destroy(gameObject);
+            Destroy( this );
         }
 
         public void DrawMesh()

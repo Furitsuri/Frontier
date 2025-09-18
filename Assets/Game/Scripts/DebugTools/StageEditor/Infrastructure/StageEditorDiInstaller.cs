@@ -18,9 +18,11 @@ namespace Frontier
         override public void InstallBindings()
         {
             Container.Bind<InputFacade>().AsSingle();
+            Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();
+
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);
+
             Container.Bind<IUiSystem>().To<EditorUiSystem>().FromComponentInHierarchy().AsCached();
-            // Container.Bind<StageEditorController>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<StageEditorHierarchyBuilder>().FromComponentInHierarchy().AsCached();
         }
 
@@ -32,6 +34,11 @@ namespace Frontier
         public void InstallBindings<T>(T instance)
         {
             Container.Bind<T>().FromInstance(instance).AsCached();
+        }
+
+        public void Rebind<T>(T instance)
+        {
+            Container.Rebind<T>().FromInstance( instance ).AsCached();
         }
     }
 }

@@ -46,4 +46,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _stageNames:
   - test_stage
-  tilePrefabs: []

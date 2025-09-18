@@ -34,7 +34,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentAndOrganize<T>(bool initActive, string objName) where T : Behaviour
     {
         T generateCpt = _generator.GenerateObjectAndAddComponent<T>(initActive, objName);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull( generateCpt, nameof( generateCpt ) );
 
         Organize(generateCpt);
 
@@ -51,7 +51,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentAndOrganize<T>(GameObject gameObject, bool initActive) where T : Behaviour
     {
         T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         Organize(generateCpt);
 
@@ -70,7 +70,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentWithNestedParent<T>(GameObject gameObject, GameObject parentObject, bool initActive) where T : Behaviour
     {
         T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         generateCpt.transform.SetParent(parentObject.transform, false);
 
@@ -91,7 +91,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentWithNestedNewDirectory<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive) where T : Behaviour
     {
         T generateCpt = _generator.GenerateComponentFromObject<T>(gameObject, initActive);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         GameObject folderObject = new GameObject(newDirectoryObjectName);
         folderObject.transform.SetParent(parentObject.transform, false);
@@ -109,7 +109,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentAndOrganizeWithDiContainer<T>(bool initActive, bool isBind, string objectName) where T : Behaviour
     {
         T generateCpt = _generator.InstantiateComponentWithDiContainerOnNewObj<T>(initActive, isBind, objectName);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         Organize(generateCpt);
 
@@ -125,7 +125,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateAndAddComponentAndOrganizeWithDiContainer<T>(bool initActive, bool isBind, string objectName) where T : Behaviour
     {
         T generateCpt = _generator.InstantiateAndAddComponentWithDiContainer<T>(initActive, isBind, objectName);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         Organize(generateCpt);
 
@@ -144,7 +144,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     {
         gameObject.name = objectName;
         T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         Organize(generateCpt);
 
@@ -160,7 +160,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentNestedParentWithDiContainer<T>(GameObject parentObject, bool initActive, bool isBind, string objectName) where T : Behaviour
     {
         T generateCpt = _generator.InstantiateComponentWithDiContainerOnNewObj<T>(initActive, isBind, objectName);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         generateCpt.transform.SetParent(parentObject.transform, false);
 
@@ -181,7 +181,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     {
         gameObject.name = objectName;
         T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         generateCpt.transform.SetParent(parentObject.transform, false);
 
@@ -202,7 +202,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T CreateComponentNestedNewDirectoryWithDiContainer<T>(GameObject gameObject, GameObject parentObject, string newDirectoryObjectName, bool initActive, bool isBind) where T : Behaviour
     {
         T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-        NullCheck.AssertNotNull(generateCpt);
+        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         GameObject folderObject = new GameObject(newDirectoryObjectName);
         folderObject.transform.SetParent(parentObject.transform, false);

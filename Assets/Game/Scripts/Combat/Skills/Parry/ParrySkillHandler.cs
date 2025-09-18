@@ -172,8 +172,8 @@ namespace Frontier.Combat.Skill
         /// <param name="opponent">対戦相手</param>
         public void StartParryEvent( Character useCharacter, Character opponent )
         {
-            NullCheck.AssertNotNull(useCharacter);
-            NullCheck.AssertNotNull(opponent);
+            NullCheck.AssertNotNull(useCharacter, nameof( useCharacter ) );
+            NullCheck.AssertNotNull(opponent, nameof( opponent ) );
 
             gameObject.SetActive(true);
             _useParryCharacter  = useCharacter;

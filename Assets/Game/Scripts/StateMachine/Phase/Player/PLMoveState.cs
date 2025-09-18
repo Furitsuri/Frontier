@@ -134,7 +134,7 @@ namespace Frontier
         {
             // グリッドカーソルで選択中のプレイヤーを取得
             _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull( _selectPlayer );
+            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
         }
 
         /// <summary>

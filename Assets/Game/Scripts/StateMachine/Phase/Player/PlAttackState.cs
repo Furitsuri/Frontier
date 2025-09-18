@@ -125,7 +125,7 @@ namespace Frontier
                 var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
                 NorifyCharacterDied(key);
                 // 破棄
-                diedCharacter.Remove();
+                diedCharacter.Dispose();
             }
 
             // アタッカーキャラクターの設定を解除
@@ -192,7 +192,7 @@ namespace Frontier
         {
             // グリッドカーソルで選択中のプレイヤーを取得
             _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull( _selectPlayer );
+            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
         }
 
         /// <summary>

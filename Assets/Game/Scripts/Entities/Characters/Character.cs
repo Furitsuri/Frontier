@@ -131,6 +131,8 @@ namespace Frontier.Entities
         {
             // 戦闘時間管理クラスの登録を解除
             _btlRtnCtrl.TimeScaleCtrl.Unregist(_timeScale);
+
+            Dispose();
         }
 
         /// <summary>
@@ -195,6 +197,24 @@ namespace Frontier.Entities
             _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );
             // スキルの通知クラスを初期化
             InitSkillNotifier();
+        }
+
+        /// <summary>
+        /// 破棄処理を行います
+        /// </summary>
+        virtual public void Dispose()
+        {
+            // 戦闘時間管理クラスの登録を解除
+            _btlRtnCtrl.TimeScaleCtrl.Unregist( _timeScale );
+
+            if ( _bullet != null )
+            {
+                _bullet.Dispose();
+                _bullet = null;
+            }
+
+            Destroy( gameObject );
+            Destroy(this);
         }
 
         /// <summary>
@@ -376,15 +396,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ゲームオブジェクトを削除します
-        /// </summary>
-        public void Remove()
-        {
-            Destroy(gameObject);
-            Destroy(this);
-        }
-
-        /// <summary>
         /// 実行可能なコマンドを抽出します
         /// </summary>
         /// <param name="executableCommands">抽出先の引き数</param>
@@ -558,7 +569,7 @@ namespace Frontier.Entities
             int parrySkillIdx       = _opponent.GetUsingSkillSlotIndexById( ID.SKILL_PARRY );
             if( parrySkillIdx < 0 ) { return; }
             var parrySkillNotifier  = _opponent.SkillNotifier(parrySkillIdx) as ParrySkillNotifier;
-            NullCheck.AssertNotNull(parrySkillNotifier);
+            NullCheck.AssertNotNull(parrySkillNotifier, nameof( parrySkillNotifier ) );
 
             parrySkillNotifier.StartParryJudgeEvent();
         }
@@ -572,7 +583,7 @@ namespace Frontier.Entities
             int parrySkillIdx       = _opponent.GetUsingSkillSlotIndexById( ID.SKILL_PARRY );
             if ( parrySkillIdx < 0 ) { return; }
             var parrySkillNotifier  = _opponent.SkillNotifier(parrySkillIdx) as ParrySkillNotifier;
-            NullCheck.AssertNotNull( parrySkillNotifier );
+            NullCheck.AssertNotNull( parrySkillNotifier , nameof( parrySkillNotifier ) );
 
             parrySkillNotifier.ParryOpponentEvent();
         }

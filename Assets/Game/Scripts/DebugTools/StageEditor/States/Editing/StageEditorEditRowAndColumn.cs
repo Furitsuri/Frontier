@@ -28,7 +28,7 @@ namespace Frontier.DebugTools
         {
             if ( isInput )
             {
-                ResizeTileGridCallback( _refParams.Row, _refParams.Col );
+                ResizeTileGridCallback( _refParams.Col, _refParams.Row );
 
                 return true;
             }
@@ -42,7 +42,7 @@ namespace Frontier.DebugTools
         {
             if ( !isInput ) return false;
 
-            _refParams.Row = Math.Clamp( _refParams.Row - 1, TILE_ROW_MIN_NUM, TILE_ROW_MAX_NUM );
+            _refParams.Col = Math.Clamp( _refParams.Col - 1, TILE_COLUMN_MIN_NUM, TILE_COLUMN_MAX_NUM );
 
             return true;
         }
@@ -51,7 +51,7 @@ namespace Frontier.DebugTools
         {
             if ( !isInput ) return false;
 
-            _refParams.Row = Math.Clamp( _refParams.Row + 1, TILE_ROW_MIN_NUM, TILE_ROW_MAX_NUM );
+            _refParams.Col = Math.Clamp( _refParams.Col + 1, TILE_COLUMN_MIN_NUM, TILE_COLUMN_MAX_NUM );
 
             return true;
         }
@@ -60,7 +60,7 @@ namespace Frontier.DebugTools
         {
             if ( !isInput ) return false;
 
-            _refParams.Col = Math.Clamp( _refParams.Col - 1, TILE_COLUMN_MIN_NUM, TILE_COLUMN_MAX_NUM );
+            _refParams.Row = Math.Clamp( _refParams.Row - 1, TILE_ROW_MIN_NUM, TILE_ROW_MAX_NUM );
 
             return true;
         }
@@ -69,7 +69,7 @@ namespace Frontier.DebugTools
         {
             if ( !isInput ) return false;
 
-            _refParams.Col = Math.Clamp( _refParams.Col + 1, TILE_COLUMN_MIN_NUM, TILE_COLUMN_MAX_NUM );
+            _refParams.Row = Math.Clamp( _refParams.Row + 1, TILE_ROW_MIN_NUM, TILE_ROW_MAX_NUM );
 
             return true;
         }

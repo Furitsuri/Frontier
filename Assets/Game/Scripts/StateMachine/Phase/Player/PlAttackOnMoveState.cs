@@ -16,7 +16,7 @@ namespace Frontier
             PlPhaseStateInit(); // base.Init()は呼ばない(PlAttackState.Init()が呼ばれてしまうため)
 
             Character targetChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            NullCheck.AssertNotNull( targetChara );
+            NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
             _stageCtrl.ClearGridCursroBind();                               // 念のためバインドを解除
             _stageCtrl.ApplyCurrentGrid2CharacterGrid( _selectPlayer );     // グリッドカーソル位置を元に戻す
@@ -53,7 +53,7 @@ namespace Frontier
                 var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
                 NorifyCharacterDied( key );
                 // 破棄
-                diedCharacter.Remove();
+                diedCharacter.Dispose();
             }
 
             // アタッカーキャラクターの設定を解除
@@ -100,7 +100,7 @@ namespace Frontier
         override protected void AdaptSelectPlayer()
         {
             _selectPlayer = _stageCtrl.GetBindCharacterFromGridCursor() as Player;
-            NullCheck.AssertNotNull( _selectPlayer );
+            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
         }
     }
 }

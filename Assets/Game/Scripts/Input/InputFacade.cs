@@ -31,13 +31,13 @@ public class InputFacade
         if (_inputHdlr == null)
         {
             _inputHdlr = _hierarchyBld.CreateComponentAndOrganize<InputHandler>(true, "InputHandler");
-            NullCheck.AssertNotNull( _inputHdlr );
+            NullCheck.AssertNotNull( _inputHdlr , nameof( _inputHdlr ) );
         }
 
         if( _inputGuideView == null )
         {
             _inputGuideView = _uiSystem.GeneralUi.InputGuideView;
-            NullCheck.AssertNotNull(_inputGuideView);
+            NullCheck.AssertNotNull(_inputGuideView, nameof( _inputGuideView ) );
         }
 
         // 入力コード情報を受け渡す

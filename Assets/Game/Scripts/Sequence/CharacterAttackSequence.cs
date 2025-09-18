@@ -142,7 +142,7 @@ namespace Frontier
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
                             _parryNotifier = _targetCharacter.SkillNotifier(parryIdx) as ParrySkillNotifier;
-                            NullCheck.AssertNotNull(_parryNotifier);
+                            NullCheck.AssertNotNull( _parryNotifier, nameof( _parryNotifier ) );
                             _phase = Phase.WAIT_PARRY_RESULT;
                         }
                         // それ以外は通常通り攻撃へ

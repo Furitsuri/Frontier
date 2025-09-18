@@ -116,9 +116,9 @@ public class InputGuidePresenter : MonoBehaviour
         _rectTransform  = GetComponent<RectTransform>();
         _layoutGrp      = GetComponent<HorizontalLayoutGroup>();
 
-        NullCheck.AssertNotNull(_hierarchyBld);
-        NullCheck.AssertNotNull(_rectTransform);
-        NullCheck.AssertNotNull(_layoutGrp);
+        NullCheck.AssertNotNull(_hierarchyBld, nameof( _hierarchyBld ) );
+        NullCheck.AssertNotNull(_rectTransform, nameof( _rectTransform ) );
+        NullCheck.AssertNotNull(_layoutGrp, nameof( _layoutGrp ) );
 
         LoadSprites();
 

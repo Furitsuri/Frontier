@@ -6,11 +6,10 @@ using UnityEngine;
 /// </summary>
 static public class NullCheck
 {
-    static public void AssertNotNull(object obj)
+    static public void AssertNotNull(object obj, string paramName)
     {
         if (obj == null)
         {
-            string paramName = nameof(obj);
             Debug.Assert(false, $"{paramName} should not be null.");
             throw new ArgumentNullException(paramName);
         }

@@ -3,7 +3,6 @@ using Frontier.DebugTools.StageEditor;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace Frontier.Stage
 {
@@ -12,41 +11,64 @@ namespace Frontier.Stage
         [SerializeField]
         private List<string> _stageNames;
 
-        [Header("Prefabs")]
-        [SerializeField]
-        public GameObject[] tilePrefabs;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
 
-        private HierarchyBuilderBase _hierarchyBld;
+        private GameObject[] _tilePrefabs;
 
-        private void Construct( HierarchyBuilderBase hierarchyBld )
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tilePregabs"></param>
+        public void Init( GameObject[] tilePregabs )
         {
-            _hierarchyBld = hierarchyBld;
+            NullCheck.AssertNotNull( _stageDataProvider , nameof( _stageDataProvider ) );
+            NullCheck.AssertNotNull( _hierarchyBld , nameof( _hierarchyBld ) );
+
+            _tilePrefabs = tilePregabs;
         }
 
-        public bool Load( int stageIndex, ref StageData stageData )
+        /// <summary>
+        /// ステージデータをファイル名を指定することで読み込みます
+        /// </summary>
+        /// <param name="fileName">指定するファイル名</param>
+        /// <returns>読込の成否</returns>
+        public bool Load( string fileName )
         {
-            var data = StageDataSerializer.Load(_stageNames[stageIndex]);
-            if ( data == null ) return false;
+            var data = StageDataSerializer.Load(fileName);
+            if ( data == null ) { return false; }
 
-            var row     = data.GridRowNum;
-            var column  = data.GridColumnNum;
-            stageData.Init( row, column ); // 新しいステージデータを初期化
-
-            for ( int y = 0; y < column; y++ )
+            // 既存のステージデータが存在する場合は破棄
+            if ( null != _stageDataProvider.CurrentData )
             {
-                for ( int x = 0; x < row; x++ )
+                _stageDataProvider.CurrentData.Dispose();
+            }
+
+            var row = data.GridRowNum;
+            var col = data.GridColumnNum;
+            _stageDataProvider.CurrentData.Init( row, col ); // 新しいステージデータを初期化
+
+            for ( int x = 0; x < col; x++ )
+            {
+                for ( int y = 0; y < row; y++ )
                 {
                     var srcTile = data.GetTile(x, y);
-                    stageData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
-                    var applyTile = stageData.GetTile( x, y );
-                    applyTile.SetTileTypeAndHeight( ( TileType )srcTile.Type, srcTile.Height );
-                    applyTile.InstantiateTileInfo( x + y * stageData.GridRowNum, stageData.GridRowNum, _hierarchyBld );
-                    applyTile.InstantiateTileBhv( x, y, tilePrefabs, _hierarchyBld );
-                    applyTile.InstantiateTileMesh( _hierarchyBld );
+                    _stageDataProvider.CurrentData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
+                    _stageDataProvider.CurrentData.GetTile( x, y ).Init( x, y, srcTile.Height, srcTile.Type, _tilePrefabs );
                 }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// ステージデータをファイル名配列にインデックスを指定する形で読込みます
+        /// </summary>
+        /// <param name="stageNameIdx">ステージ名配列へのインデックス値</param>
+        /// <returns>読込の成否</returns>
+        public bool Load( int stageNameIdx )
+        {
+            return Load( _stageNames[stageNameIdx] );
         }
     }
 }

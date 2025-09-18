@@ -77,7 +77,7 @@ namespace Frontier.Combat.Skill
         public void ParryRecieveEvent()
         {
             Character opponent = _skillUser.GetOpponentChara();
-            NullCheck.AssertNotNull( opponent );
+            NullCheck.AssertNotNull( opponent , nameof( opponent ) );
 
             opponent.GetTimeScale.Reset();
             opponent.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );

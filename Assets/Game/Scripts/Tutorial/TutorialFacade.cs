@@ -38,7 +38,7 @@ public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler,
         if (presenter == null)
         {
             presenter = _uiSystem.GeneralUi.TutorialView;
-            NullCheck.AssertNotNull(presenter);
+            NullCheck.AssertNotNull(presenter, nameof( presenter ) );
         }
 
         _saveData = _saveHdlr.Load();

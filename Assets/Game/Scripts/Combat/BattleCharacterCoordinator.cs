@@ -308,7 +308,7 @@ namespace Frontier.Battle
             List<Character> list = new List<Character>();
 
             var baseGridInfo = _stgCtrl.GetTileInfo( baseChara.Params.TmpParam.gridIndex );
-            NullCheck.AssertNotNull( baseGridInfo );
+            NullCheck.AssertNotNull( baseGridInfo, nameof(baseGridInfo) );
             Vector3 basePos     = baseGridInfo.charaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y = 0f;
@@ -318,7 +318,7 @@ namespace Frontier.Battle
                 foreach (var c in group)
                 {
                     var targetGridInfo = _stgCtrl.GetTileInfo(c.Params.TmpParam.gridIndex);
-                    NullCheck.AssertNotNull(targetGridInfo);
+                    NullCheck.AssertNotNull(targetGridInfo, nameof( targetGridInfo ) );
                     Vector3 targetPos = targetGridInfo.charaStandPos;
 
                     var direction = targetPos - basePos;

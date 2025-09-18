@@ -37,7 +37,7 @@ public class DebugMenuPresenter : BasePresenter
     override public void Init()
     {   
         _verticalLayoutGroup = DebugMenuList.GetComponent<VerticalLayoutGroup>();
-        NullCheck.AssertNotNull(_verticalLayoutGroup);
+        NullCheck.AssertNotNull(_verticalLayoutGroup, nameof( _verticalLayoutGroup ) );
 
         InitDebugMenuList();
 

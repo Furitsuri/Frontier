@@ -47,5 +47,10 @@ namespace Frontier
         {
             Container.Bind<T>().FromInstance( instance ).AsCached();
         }
+
+        public void Rebind<T>( T instance )
+        {
+            Container.Rebind<T>().FromInstance( instance ).AsCached();
+        }
     }
 }
