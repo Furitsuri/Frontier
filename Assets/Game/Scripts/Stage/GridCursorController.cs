@@ -9,16 +9,6 @@ namespace Frontier.Stage
 {
     public class GridCursorController : MonoBehaviour
     {
-        /// <summary>
-        /// グリッドカーソルの状態
-        /// </summary>
-        public enum State
-        {
-            NONE = 0,
-            MOVE,
-            ATTACK
-        }
-
         [Header("移動補間時間")]
         [SerializeField]
         private float MoveInterpolationTime = 1f;
@@ -34,7 +24,7 @@ namespace Frontier.Stage
         private float _totalTime        = 0;
 
         public int Index { get; set; } = 0;
-        public State GridState { get; set; } = State.NONE;
+        public GridCursorState GridState { get; set; } = GridCursorState.NONE;
         public Character BindCharacter { get; set; } = null;
 
         private void Start()
@@ -53,7 +43,7 @@ namespace Frontier.Stage
             Index           = initIndex;
             _atkTargetIndex = 0;
             _atkTargetNum   = 0;
-            GridState       = State.NONE;
+            GridState       = GridCursorState.NONE;
             BindCharacter   = null;
         }
 
@@ -200,7 +190,7 @@ namespace Frontier.Stage
         {
             _endPos = GetGoalPosition();
 
-            if ( GridState == State.NONE || GridState == State.MOVE)
+            if ( GridState == GridCursorState.NONE || GridState == GridCursorState.MOVE)
             {
                 UpdateLerpPosition(delta);
             }

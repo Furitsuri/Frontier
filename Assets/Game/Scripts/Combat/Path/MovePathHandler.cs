@@ -208,9 +208,9 @@ public class MovePathHandler
     /// 次の目標座標を取得します
     /// </summary>
     /// <returns>目標座標</returns>
-    public Vector3 GetFocusedTilePosition()
+    public TileInformation GetFocusedTileInformation()
     {
-        return _stageCtrl.GetTileInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex ).charaStandPos;
+        return _stageCtrl.GetTileInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex );
     }
 
     /// <summary>

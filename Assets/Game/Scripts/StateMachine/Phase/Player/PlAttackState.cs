@@ -49,7 +49,7 @@ namespace Frontier
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
             if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY )))
             {
-                _stageCtrl.BindToGridCursor(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
             }
 
@@ -65,7 +65,7 @@ namespace Frontier
             }
 
             // 攻撃可能状態でなければ何もしない
-            if (_stageCtrl.GetGridCursorControllerState() != Stage.GridCursorController.State.ATTACK)
+            if (_stageCtrl.GetGridCursorControllerState() != GridCursorState.ATTACK)
             {
                 return false;
             }

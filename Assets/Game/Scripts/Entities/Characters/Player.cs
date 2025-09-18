@@ -5,6 +5,7 @@ using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static Constants;
 
 namespace Frontier.Entities
 {
@@ -45,7 +46,8 @@ namespace Frontier.Entities
             if ( _baseAi.MovePathHandler.IsEndPathTrace() ) { return true; }
 
             bool toggleAnimation    = false;
-            var focusedTilePos      = _baseAi.MovePathHandler.GetFocusedTilePosition();
+            var focusedTileInfo     = _baseAi.MovePathHandler.GetFocusedTileInformation();
+            var focusedTilePos      = focusedTileInfo.charaStandPos;
 
             Vector3 dir         = (focusedTilePos - transform.position).normalized;
             Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
@@ -75,6 +77,13 @@ namespace Frontier.Entities
             }
             else
             {
+                Vector3 diffPositionXZ = focusedTilePos - transform.position;
+                diffPositionXZ.y = 0f;
+                if ( diffPositionXZ.sqrMagnitude < TILE_SIZE * TILE_SIZE )
+                {
+                    _underfootTileInfo = focusedTileInfo;
+                }
+
                 transform.position = afterPos;
                 transform.rotation = Quaternion.LookRotation( dir );
 
