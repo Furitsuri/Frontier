@@ -185,31 +185,7 @@ namespace Frontier.DebugTools.StageEditor
         private bool LoadStage(string fileName)
         {
             _stageFileLoader.Load( fileName );
-
-            /*
-            var data = StageDataSerializer.Load(fileName);
-            if (data == null) return false;
-
-            _stageDataProvider.CurrentData.Dispose(); // 既存のステージデータを破棄
-            
-            // 簡易的に再ロード
-            foreach (Transform child in transform) Destroy(child.gameObject);
-            _refParams.Row = data.GridRowNum;
-            _refParams.Col = data.GridColumnNum;
-            _stageDataProvider.CurrentData.Init( _refParams.Row, _refParams.Col ); // 新しいステージデータを初期化
-
-            for (int x = 0; x < _refParams.Col; x++)
-            {
-                for (int y = 0; y < _refParams.Row; y++)
-                {
-                    var srcTile = data.GetTile(x, y);
-                    _stageDataProvider.CurrentData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
-                    _stageDataProvider.CurrentData.GetTile( x, y ).Init( x, y, srcTile.Height, srcTile.Type, tilePrefabs );
-                }
-            }
-            */
-
-            _gridCursorCtrl.Init( 0 );
+            _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
 
             return true;
         }
