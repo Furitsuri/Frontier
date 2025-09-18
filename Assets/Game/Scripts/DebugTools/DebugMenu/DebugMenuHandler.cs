@@ -85,7 +85,7 @@ public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
                     throw new ArgumentOutOfRangeException(nameof(menuIdx), "Invalid menu index for debug launcher.");
             }
 
-            NullCheck.AssertNotNull(_debugLhr[menuIdx]);
+            NullCheck.AssertNotNull(_debugLhr[menuIdx], "_debugLhr[menuIdx]" );
         }
 
         // 現在の入力コードを抹消

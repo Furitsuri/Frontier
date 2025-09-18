@@ -170,7 +170,7 @@ public class CommandList
     {
         if( _currentNode == null )
         {
-            NullCheck.AssertNotNull(_currentNode);
+            NullCheck.AssertNotNull(_currentNode, nameof( _currentNode ) );
             return 0;
         }
 
@@ -192,7 +192,7 @@ public class CommandList
     {
         if (_currentNode == null)
         {
-            NullCheck.AssertNotNull(_currentNode);
+            NullCheck.AssertNotNull(_currentNode, nameof( _currentNode ) );
             return 0;
         }
 

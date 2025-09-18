@@ -89,12 +89,12 @@ namespace Frontier
             if (_debugMenuFcd == null)
             {
                 _debugMenuFcd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>(false);
-                NullCheck.AssertNotNull(_debugMenuFcd);
+                NullCheck.AssertNotNull( _debugMenuFcd, nameof( _debugMenuFcd ) );
             }
             if( _debugEditorMonoDrv == null )
             {
                 _debugEditorMonoDrv = _diContainer.Resolve<DebugEditorMonoDriver>();
-                NullCheck.AssertNotNull(_debugEditorMonoDrv);
+                NullCheck.AssertNotNull( _debugEditorMonoDrv, nameof( _debugEditorMonoDrv ) );
             }
 #endif // UNITY_EDITOR
         }

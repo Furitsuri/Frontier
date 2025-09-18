@@ -48,6 +48,11 @@ public class Bullet : MonoBehaviour
     {
     }
 
+    virtual public void Dispose()
+    {
+        Destroy( gameObject );
+    }
+
     /// <summary>
     /// 位置更新用のコルーチンです
     /// BulletをActiveにした後に呼び出してください

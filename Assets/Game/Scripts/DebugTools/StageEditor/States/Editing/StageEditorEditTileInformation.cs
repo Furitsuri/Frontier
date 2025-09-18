@@ -2,7 +2,6 @@
 using System;
 using UnityEngine;
 using static Constants;
-using static Frontier.DebugTools.StageEditor.StageEditorController;
 using static InputCode;
 
 namespace Frontier.DebugTools

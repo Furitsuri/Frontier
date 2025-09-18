@@ -112,7 +112,7 @@ namespace Frontier
                 var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
                 NorifyCharacterDied(key);
                 // 破棄
-                diedCharacter.Remove();
+                diedCharacter.Dispose();
             }
 
             // アタッカーキャラクターの設定を解除

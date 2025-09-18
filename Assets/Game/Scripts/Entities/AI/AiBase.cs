@@ -98,10 +98,10 @@ namespace Frontier.Entities.Ai
             // 十字方向の判定関数とインデックスをタプルに詰め込む
             (Func<bool> lambda, int index)[] tuples = new (Func<bool>, int)[]
             {
-                (() => baseIndex % GridRowNum != 0,                       baseIndex - 1),
-                (() => (baseIndex + 1) % GridRowNum != 0,                 baseIndex + 1),
-                (() => 0 <= (baseIndex - GridRowNum),                     baseIndex - GridRowNum),
-                (() => (baseIndex + GridRowNum) < _stageData.GetGridToralNum(), baseIndex + GridRowNum)
+                (() => baseIndex % GridColumnNum != 0,                       baseIndex - 1),
+                (() => (baseIndex + 1) % GridColumnNum != 0,                 baseIndex + 1),
+                (() => 0 <= (baseIndex - GridColumnNum),                     baseIndex - GridColumnNum),
+                (() => (baseIndex + GridColumnNum) < _stageData.GetTileTotalNum(), baseIndex + GridColumnNum)
             };
 
             foreach ( var tuple in tuples )
@@ -164,7 +164,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         override public void Init(Character owner )
         {
-            _gridEvaluationValues   = new float[_stageData.GetGridToralNum()];
+            _gridEvaluationValues   = new float[_stageData.GetTileTotalNum()];
             _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
             _movePathHandler        = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false );
 

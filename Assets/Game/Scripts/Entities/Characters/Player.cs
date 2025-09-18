@@ -171,7 +171,7 @@ namespace Frontier.Entities
         {
             base.Init();
             _baseAi = _hierarchyBld.InstantiateWithDiContainer<AiBase>( false );
-            NullCheck.AssertNotNull( _baseAi );
+            NullCheck.AssertNotNull( _baseAi , nameof( _baseAi ) );
             _baseAi.Init( this );
             _baseAi.MovePathHandler.Init( this );
         }

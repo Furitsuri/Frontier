@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditorInternal;
 using UnityEngine;
 using Zenject;
@@ -23,6 +24,16 @@ namespace Frontier.DebugTools.StageEditor
             public int Col                  = 10;                       // タイルの列数
             public int SelectedType         = 0;                        // 選択中のタイルタイプ
             public float SelectedHeight     = 0;                        // 選択中のタイル高さ
+
+            /// <summary>
+            /// ステージデータの内容を適応させます
+            /// </summary>
+            /// <param name="stageData">参照するステージデータ</param>
+            public void AdaptStageData( StageData stageData )
+            {
+                Row = stageData.GridRowNum;
+                Col = stageData.GridColumnNum;
+            }
         }
 
         [Header("Prefabs")]
@@ -30,57 +41,88 @@ namespace Frontier.DebugTools.StageEditor
         public GameObject[] tilePrefabs;
         [SerializeField]
         public GameObject cursorPrefab;
+        [SerializeField]
+        public GameObject stageFileLoaderPrefab;
 
-        private InputFacade _inputFcd;
-        private HierarchyBuilderBase _hierarchyBld;
-        private IUiSystem _uiSystem;
+        [Inject] private IUiSystem _uiSystem                    = null;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private InputFacade _inputFcd                  = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorPresenter _stageEditorView   = null;
-        private StageData _stageData                    = null;
+        private StageFileLoader _stageFileLoader        = null;
         private GridCursorController _gridCursorCtrl    = null;
         private RefParams _refParams                    = null;
         private StageEditMode _editMode                 = StageEditMode.EDIT_TILE;
         private Vector3 offset                          = new Vector3(0, 5, -5);    // ターゲットからの相対位置
 
-        [Inject]
-        public void Construct(InputFacade inputFacade, HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem)
-        {
-            _inputFcd       = inputFacade;
-            _hierarchyBld   = hierarchyBld;
-            _uiSystem       = uiSystem;
-        }
-
-        private void CreateCursor()
-        {
-            _gridCursorCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>(cursorPrefab, true, true, "GridCursorController");
-            _gridCursorCtrl.Init(0, _stageData);
-        }
-
         /// <summary>
         /// 指定された位置にタイルを設置します
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="x">指定する横軸のインデックス</param>
+        /// <param name="y">指定する縦軸のインデックス</param>
         private void PlaceTile(int x, int y)
         {
-            _stageData.GetTile(x, y).Dispose(); // 既存のタイルを破棄
-            _stageData.GetTile(x, y).SetTileTypeAndHeight((TileType)_refParams.SelectedType, _refParams.SelectedHeight);
-            _stageData.GetTile(x, y).InstantiateTileInfo( x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld );
-            _stageData.GetTile(x, y).InstantiateTileBhv( x, y,  tilePrefabs, _hierarchyBld );
-            _stageData.GetTile(x, y).InstantiateTileMesh( _hierarchyBld );
+            var data = _stageDataProvider.CurrentData;
+
+            data.GetTile(x, y).Dispose(); // 既存のタイルを破棄
+            data.GetTile( x, y ).Init( x, y, _refParams.SelectedHeight, ( TileType )_refParams.SelectedType, tilePrefabs );
         }
 
         /// <summary>
         /// タイルの行数、列数を編集します
         /// </summary>
-        /// <param name="newRows">行数</param>
-        /// <param name="newColumns">列数</param>
-        private void ResizeTileGrid( int newRows, int newColumns )
+        /// <param name="newRow">行数</param>
+        /// <param name="newColumn">列数</param>
+        private void ResizeTileGrid( int newCol, int newRow )
         {
+            StageData resizeStageData = _hierarchyBld.InstantiateWithDiContainer<StageData>(false);
+            resizeStageData.Init( newRow, newCol );
 
+            int minRow = Mathf.Min( newRow, _stageDataProvider.CurrentData.GridRowNum );
+            int minCol = Mathf.Min( newCol, _stageDataProvider.CurrentData.GridColumnNum );
+
+            for ( int i = 0; i < newCol; ++i )
+            {
+                for ( int j = 0; j < newRow; ++j )
+                {
+                    // 変更前のステージデータと重複するタイルは変更前のものを複製する
+                    if ( i < minCol && j < minRow )
+                    {
+                        resizeStageData.SetTile( i, j, _stageDataProvider.CurrentData.GetTile( i, j ).Clone( i, j, tilePrefabs ) );
+                    }
+                    else
+                    {
+                        // 追加で生成するタイルは、端のタイルを参照して作成する
+                        if( minCol <= i && minRow <= j )
+                        {
+                            resizeStageData.SetTile( i, j, _stageDataProvider.CurrentData.GetTile( minCol - 1, minRow - 1 ).Clone( i, j, tilePrefabs ) );
+                        }
+                        else if( minCol <= i )
+                        {
+                            resizeStageData.SetTile( i, j, _stageDataProvider.CurrentData.GetTile( minCol - 1, j ).Clone( i, j, tilePrefabs ) );
+                        }
+                        else if( minRow <= j )
+                        {
+                            resizeStageData.SetTile( i, j, _stageDataProvider.CurrentData.GetTile( i, minRow - 1 ).Clone( i, j, tilePrefabs ) );
+                        }
+                    }
+                }
+            }
+
+            _stageDataProvider.CurrentData.Dispose();
+            _stageDataProvider.CurrentData = resizeStageData;      // 作成したデータを保持
+
+            _gridCursorCtrl.Init( 0 );  // グリッドカーソル位置を初期化
         }
 
+        /// <summary>
+        /// カメラの更新処理です
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         private void UpdateCamera(int x, int y)
         {
             if (_mainCamera == null) return;
@@ -98,24 +140,27 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// ステージを作成します
         /// </summary>
-        private void CreateStage()
+        private StageData CreateStage()
         {
-            if ( _stageData == null )
-            {
-                _stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>( true );
-                _stageData.Init( _refParams.Row, _refParams.Col );
-            }
+            StageData stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>( false );
+            NullCheck.AssertNotNull( stageData, nameof(stageData) );
+            stageData.Init( _refParams.Row, _refParams.Col, 0f, TileType.None, tilePrefabs );
 
-            for ( int y = 0; y < _refParams.Col; y++ )
-            {
-                for ( int x = 0; x < _refParams.Row; x++ )
-                {
-                    _stageData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
-                    _stageData.GetTile( x, y ).InstantiateTileInfo( x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld );
-                    _stageData.GetTile( x, y ).InstantiateTileBhv( x, y, tilePrefabs, _hierarchyBld );
-                    _stageData.GetTile( x, y ).InstantiateTileMesh( _hierarchyBld );
-                }
-            }
+            return stageData;
+        }
+
+        /// <summary>
+        /// グリッドカーソルを作成します
+        /// </summary>
+        /// <param name="stageData">作成の際に参照するステージデータ</param>
+        /// <returns>作成したグリッドカーソル</returns>
+        private GridCursorController CreateCursor( StageData stageData )
+        {
+            GridCursorController gridCursorCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>(cursorPrefab, true, true, "GridCursorController");
+            NullCheck.AssertNotNull( gridCursorCtrl, nameof(gridCursorCtrl) );
+            gridCursorCtrl.Init( 0 );
+
+            return gridCursorCtrl;
         }
 
         /// <summary>
@@ -127,37 +172,44 @@ namespace Frontier.DebugTools.StageEditor
             var nextMode    = Math.Clamp( ( int )_editMode + add, 0, (int)StageEditMode.NUM - 1 );
             _editMode       = ( StageEditMode )nextMode;
 
+            _stageEditorView.SwitchEditParamView( nextMode );   // モードに応じたパラメータを表示
+
             return _editMode;
         }
 
+        /// <summary>
+        /// ステージを読み込みます
+        /// </summary>
+        /// <param name="fileName">読み込むステージのファイル名</param>
+        /// <returns>読込の成否</returns>
         private bool LoadStage(string fileName)
         {
+            _stageFileLoader.Load( fileName );
+
+            /*
             var data = StageDataSerializer.Load(fileName);
             if (data == null) return false;
 
-            _stageData.Dispose(); // 既存のステージデータを破棄
+            _stageDataProvider.CurrentData.Dispose(); // 既存のステージデータを破棄
             
             // 簡易的に再ロード
             foreach (Transform child in transform) Destroy(child.gameObject);
             _refParams.Row = data.GridRowNum;
             _refParams.Col = data.GridColumnNum;
-            _stageData.Init( _refParams.Row, _refParams.Col ); // 新しいステージデータを初期化
+            _stageDataProvider.CurrentData.Init( _refParams.Row, _refParams.Col ); // 新しいステージデータを初期化
 
-            for (int y = 0; y < _refParams.Col; y++)
+            for (int x = 0; x < _refParams.Col; x++)
             {
-                for (int x = 0; x < _refParams.Row; x++)
+                for (int y = 0; y < _refParams.Row; y++)
                 {
                     var srcTile = data.GetTile(x, y);
-                    _stageData.SetTile(x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>(false));
-                    var applyTile = _stageData.GetTile( x, y );
-                    applyTile.SetTileTypeAndHeight( (TileType)srcTile.Type, srcTile.Height );
-                    applyTile.InstantiateTileInfo( x + y * _stageData.GridRowNum, _stageData.GridRowNum, _hierarchyBld );
-                    applyTile.InstantiateTileBhv( x, y, tilePrefabs, _hierarchyBld );
-                    applyTile.InstantiateTileMesh( _hierarchyBld );
+                    _stageDataProvider.CurrentData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
+                    _stageDataProvider.CurrentData.GetTile( x, y ).Init( x, y, srcTile.Height, srcTile.Type, tilePrefabs );
                 }
             }
+            */
 
-            _gridCursorCtrl.Init(0, _stageData);
+            _gridCursorCtrl.Init( 0 );
 
             return true;
         }
@@ -170,13 +222,19 @@ namespace Frontier.DebugTools.StageEditor
             if ( null == _stageEditorView )
             {
                 _stageEditorView = _uiSystem.DebugUi.StageEditorView;
-                NullCheck.AssertNotNull( _stageEditorView );
+                NullCheck.AssertNotNull( _stageEditorView, nameof( _stageEditorView ) );
             }
 
             if ( null == _stageEditorHandler )
             {
                 _stageEditorHandler = _hierarchyBld.InstantiateWithDiContainer<StageEditorHandler>( false );
-                NullCheck.AssertNotNull( _stageEditorHandler );
+                NullCheck.AssertNotNull( _stageEditorHandler, nameof( _stageEditorHandler ) );
+            }
+
+            if ( null == _stageFileLoader )
+            {
+                _stageFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" );
+                NullCheck.AssertNotNull( _stageFileLoader, nameof( _stageFileLoader ) );
             }
 
             if ( null == _refParams )
@@ -187,11 +245,16 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            CreateStage();
-            CreateCursor();
+            _stageDataProvider.CurrentData  = CreateStage(); // プロバイダーに登録
+            _gridCursorCtrl                 = CreateCursor( _stageDataProvider.CurrentData );
+
+            _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
+
+            _stageFileLoader.Init( tilePrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
+
 
             _mainCamera = Camera.main;
         }
@@ -202,7 +265,7 @@ namespace Frontier.DebugTools.StageEditor
 
             UpdateCamera( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
             UpdateTileVisual( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
-            _stageEditorView.UpdateText( _editMode, _refParams.SelectedType, _refParams.SelectedHeight );
+            _stageEditorView.UpdateText( _editMode, _refParams );
         }
 
         override public void LateUpdateRoutine()

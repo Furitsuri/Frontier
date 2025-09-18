@@ -1,6 +1,7 @@
 ﻿using Frontier.Entities;
 using UnityEngine;
 using static Constants;
+using Zenject;
 
 #pragma warning disable 0618
 
@@ -22,8 +23,9 @@ namespace Frontier.Stage
         [SerializeField]
         private float MoveInterpolationTime = 1f;
 
+        [Inject] IStageDataProvider _stageDataProvider   = null;
+
         private LineRenderer _lineRenderer;
-        private StageData _stageData    = null;
         private Vector3 _beginPos       = Vector3.zero;
         private Vector3 _endPos         = Vector3.zero;
         private Vector3 _currentPos     = Vector3.zero;
@@ -46,10 +48,9 @@ namespace Frontier.Stage
         /// <param name="initIndex">初期インデックス値</param>
         /// <param name="rowNum">盤面における行に該当するグリッド数</param>
         /// <param name="columnNum">盤面における列に該当するグリッド数</param>
-        public void Init(int initIndex, StageData stageData)
+        public void Init( int initIndex )
         {
             Index           = initIndex;
-            _stageData      = stageData;
             _atkTargetIndex = 0;
             _atkTargetNum   = 0;
             GridState       = State.NONE;
@@ -61,13 +62,11 @@ namespace Frontier.Stage
         /// </summary>
         public void Up()
         {
-            var rowNum = _stageData.GridRowNum;
-
             StartLerpMove();
-            Index += rowNum;
-            if (rowNum * rowNum <= Index)
+            Index += _stageDataProvider.CurrentData.GridColumnNum;
+            if ( _stageDataProvider.CurrentData.GetTileTotalNum() <= Index)
             {
-                Index = Index % (rowNum * rowNum);
+                Index = Index % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
             }
         }
 
@@ -76,13 +75,11 @@ namespace Frontier.Stage
         /// </summary>
         public void Down()
         {
-            var rowNum = _stageData.GridRowNum;
-
             StartLerpMove();
-            Index -= rowNum;
+            Index -= _stageDataProvider.CurrentData.GridColumnNum;
             if (Index < 0)
             {
-                Index += rowNum * rowNum;
+                Index += _stageDataProvider.CurrentData.GetTileTotalNum();
             }
         }
 
@@ -91,13 +88,11 @@ namespace Frontier.Stage
         /// </summary>
         public void Right()
         {
-            var rowNum = _stageData.GridRowNum;
-
             StartLerpMove();
             Index++;
-            if (Index % rowNum == 0)
+            if (Index % _stageDataProvider.CurrentData.GridColumnNum == 0)
             {
-                Index -= rowNum;
+                Index -= _stageDataProvider.CurrentData.GridColumnNum;
             }
         }
 
@@ -106,13 +101,11 @@ namespace Frontier.Stage
         /// </summary>
         public void Left()
         {
-            var rowNum = _stageData.GridRowNum;
-
             StartLerpMove();
             Index--;
-            if ((Index + 1) % rowNum == 0)
+            if ((Index + 1) % _stageDataProvider.CurrentData.GridColumnNum == 0)
             {
-                Index += rowNum;
+                Index += _stageDataProvider.CurrentData.GridColumnNum;
             }
         }
 
@@ -179,12 +172,12 @@ namespace Frontier.Stage
 
         public int X()
         {
-            return Index % _stageData.GridRowNum;
+            return Index % _stageDataProvider.CurrentData.GridColumnNum;
         }
 
         public int Y()
         {
-            return Index / _stageData.GridRowNum;
+            return Index / _stageDataProvider.CurrentData.GridColumnNum;
         }
 
         public int GetAttackableTargetNum() { return _atkTargetNum; }
@@ -238,7 +231,7 @@ namespace Frontier.Stage
         {
             float halfSize = 0.5f * gridSize;
 
-            Vector3 tileScale = _stageData.GetTile(Index).GetTileScale();
+            Vector3 tileScale = _stageDataProvider.CurrentData.GetTile(Index).GetTileScale();
 
             Vector3[] linePoints = new Vector3[]
             {
@@ -268,7 +261,7 @@ namespace Frontier.Stage
         /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            return _stageData.GetTileInfo(Index).charaStandPos;
+            return _stageDataProvider.CurrentData.GetTileInfo(Index).charaStandPos;
         }
     }
 }

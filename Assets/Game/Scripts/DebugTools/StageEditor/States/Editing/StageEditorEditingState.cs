@@ -28,9 +28,10 @@ namespace Frontier.DebugTools
         private Func<string, bool> LoadStageCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
-        private HierarchyBuilderBase _hierarchyBld          = null;
-        private StageData _stageData                        = null;
-        private GridCursorController _gridCursorCtrl        = null;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        [Inject] private GridCursorController _gridCursorCtrl   = null;
+
         private StageEditorEditBase _currentEdit            = null;
         private StageEditorEditBase[] _editClasses          = null;
         private InputCode[] _sub1sub2InputCode              = null;
@@ -39,14 +40,6 @@ namespace Frontier.DebugTools
 
         public GameObject[] tilePrefabs;
         private string _editFileName = "test_stage"; // 編集するステージファイル名
-
-        [Inject]
-        private void Construct( HierarchyBuilderBase hierarchyBld, StageData stageData, GridCursorController gridCursorCtrl )
-        {
-            _hierarchyBld   = hierarchyBld;
-            _stageData      = stageData;
-            _gridCursorCtrl = gridCursorCtrl;
-        }
 
         public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
@@ -209,7 +202,7 @@ namespace Frontier.DebugTools
         {
             if (!isInput) return false;
 
-            if (!StageDataSerializer.Save(_stageData, _editFileName))
+            if (!StageDataSerializer.Save(_stageDataProvider.CurrentData, _editFileName))
             {
                 return false;
             }

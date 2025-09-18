@@ -1,4 +1,5 @@
 ﻿using Frontier.Stage;
+using System;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -14,23 +15,26 @@ public class StageTileData
     [SerializeField]
     private float _height;
 
-    private TileBehaviour _tileBhv  = null;
-    private TileMesh _tileMesh      = null;
-    private TileInformation _tileInfo      = null; // 現在のタイル情報
-    private TileInformation _tileInfoBase  = null; // 初期化状態のタイル情報
-    private TileInformation _tileInfoHold  = null; // 一時保存用のタイル情報
+    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
+    private TileBehaviour _tileBhv          = null;
+    private TileMesh _tileMesh              = null;
+    private TileInformation _tileInfo       = null; // 現在のタイル情報
+    private TileInformation _tileInfoBase   = null; // 初期化状態のタイル情報
+    private TileInformation _tileInfoHold   = null; // 一時保存用のタイル情報
 
     public TileType Type => _tileType;
     public float Height => _height;
 
-    public void Init()
+    public void Init( int x, int y, float height, TileType type, GameObject[] prefabs )
     {
-        _tileType        = TileType.None;
-        _height          = 0;
-        _tileBhv        = null;
-        _tileMesh       = null;
-        _tileInfo       = null;
-        _tileInfoBase   = null;
+        _tileType       = type;
+        _height         = height;
+        _tileBhv        = CreateTileBehaviour( x, y, _height, _tileType, prefabs );
+        _tileMesh       = CreateTileMesh( _tileBhv );
+        _tileInfo       = CreateTileInfo( x, y );
+        _tileInfoBase   = CreateTileInfo( x, y );
+        _tileInfoHold   = CreateTileInfo( x, y );
     }
 
     public void Dispose()
@@ -65,32 +69,48 @@ public class StageTileData
         _height      = height;
     }
 
-    public void InstantiateTileInfo( int index, int rowNum, HierarchyBuilderBase hierarchyBld )
+    /// <summary>
+    /// 複製したクラスを生成します
+    /// </summary>
+    /// <param name="rowIndex"></param>
+    /// <param name="colIndex"></param>
+    /// <param name="prefabs"></param>
+    /// <returns></returns>
+    public StageTileData Clone( int colIndex, int rowIndex, GameObject[] prefabs )
     {
-        _tileInfo       = hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );
-        _tileInfoBase   = hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );
-        _tileInfoHold   = hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );   // _tileInfoHoldは一時保存で使用されるため、Initする必要がない
-        if (_tileInfo == null || _tileInfoBase == null || _tileInfoHold == null )
-        {
-            Debug.LogError("TileInfoのインスタンス化に失敗しました。");
-            return;
-        }
+        var retData = _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false );
+        retData.Init( colIndex, rowIndex, this.Height, this.Type, prefabs );
 
-        _tileInfo.Init();
-        _tileInfoBase.Init();
-        // グリッド位置からキャラの立ち位置への補正値
-        float charaPosCorrext = 0.5f * TILE_SIZE;
-        // 1次元配列でデータを扱うため, 横(X軸)方向は剰余で考慮する
-        float posX = index % rowNum * TILE_SIZE + charaPosCorrext;
-        // 1次元配列でデータを扱うため, 縦(Z軸)方向は商で考慮する
-        float posZ = index / rowNum * TILE_SIZE + charaPosCorrext;
-        // 上記の値から各グリッドのキャラの立ち位置を決定
-        _tileInfoBase.charaStandPos = _tileInfo.charaStandPos = new Vector3(posX, Height, posZ);
+        return retData;
     }
 
-    public void InstantiateTileBhv(int x, int y, GameObject[] prefabs, HierarchyBuilderBase hierarchyBld )
+    public TileInformation CreateTileInfo( int x, int y )
     {
-        if (_tileBhv != null) return; // 既にインスタンス化されている場合は何もしない
+        TileInformation retTileInfo = _hierarchyBld.InstantiateWithDiContainer<TileInformation>( false );
+        if ( retTileInfo == null )
+        {
+            Debug.LogError( "TileInfoのインスタンス化に失敗しました。" );
+            return null;
+        }
+
+        retTileInfo.Init();
+        
+        float charaPosCorrext = 0.5f * TILE_SIZE;       // グリッド位置からキャラの立ち位置への補正値
+        float posX = x * TILE_SIZE + charaPosCorrext;
+        float posZ = y * TILE_SIZE + charaPosCorrext;
+        retTileInfo.charaStandPos = new Vector3( posX, Height, posZ );  // 上記の値から各グリッドのキャラの立ち位置を決定
+
+        return retTileInfo;
+    }
+
+    public TileBehaviour CreateTileBehaviour(int x, int y, float height, TileType tileType, GameObject[] prefabs )
+    {
+        TileBehaviour retTileBhv = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[0], true, false, $"Tile_X{x}_Y{y}");
+        if ( retTileBhv == null )
+        {
+            Debug.LogError( "TileBehaviourのインスタンス化に失敗しました。" );
+            return null;
+        }
 
         Vector3 position = new Vector3(
             x * TILE_SIZE + 0.5f * TILE_SIZE,   // X座標はグリッドの中心に配置
@@ -98,33 +118,26 @@ public class StageTileData
             y * TILE_SIZE + 0.5f * TILE_SIZE    // Z座標はグリッドの中心に配置
         );
 
-        _tileBhv = hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TileBehaviour>(prefabs[0], true, false, $"Tile_X{x}_Y{y}");
-        _tileBhv.transform.position     = position;
-        _tileBhv.transform.localScale   = new Vector3(TILE_SIZE, Height + TILE_MIN_THICKNESS, TILE_SIZE);
-        _tileBhv.transform.rotation     = Quaternion.identity;
-        _tileBhv.ApplyTileType(_tileType);
+        retTileBhv.Init( x, y, height, tileType );
+
+        return retTileBhv;
     }
 
-    public void InstantiateTileMesh( HierarchyBuilderBase hierarchyBld )
+    public TileMesh CreateTileMesh( TileBehaviour tileBhv )
     {
-        if (_tileMesh != null) return; // 既にインスタンス化されている場合は何もしない
-        if (_tileBhv == null)
+        TileMesh retTileMesh = _hierarchyBld.CreateComponentNestedParentWithDiContainer<TileMesh>(tileBhv.gameObject, true, false, "TileMesh");
+        if ( retTileMesh == null )
         {
-            Debug.LogError("TileBehaviourがインスタンス化されていません。TileMeshの初期化に失敗しました。");
-            return;
+            Debug.LogError( "TileMeshのインスタンス化に失敗しました。" );
+            return null;
         }
 
-        _tileMesh = hierarchyBld.CreateComponentNestedParentWithDiContainer<TileMesh>(_tileBhv.gameObject, true, false, "TileMesh");
-        if (_tileMesh == null)
-        {
-            Debug.LogError("TileMeshのインスタンス化に失敗しました。");
-            return;
-        }
+        Vector3 meshPos         = tileBhv.transform.position;
+        float tileHalfHeight    = 0.5f * tileBhv.transform.localScale.y;    // タイルの高さの半分をY座標に加算して、タイルの中心に配置
+        retTileMesh.Init( true, meshPos, tileHalfHeight );
+        retTileMesh.DrawMesh();
 
-        Vector3 meshPos         = _tileBhv.transform.position;
-        float tileHalfHeight    = 0.5f * _tileBhv.transform.localScale.y;    // タイルの高さの半分をY座標に加算して、タイルの中心に配置
-        _tileMesh.Init(true, meshPos, tileHalfHeight);
-        _tileMesh.DrawMesh();
+        return retTileMesh;
     }
 
     /// <summary>
