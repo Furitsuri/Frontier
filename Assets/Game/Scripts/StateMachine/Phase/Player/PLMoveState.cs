@@ -157,7 +157,7 @@ namespace Frontier
             }
             else
             {
-                if ( Methods.CheckBitFlag( info.flag, BitFlag.ALLY_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
+                if ( Methods.CheckBitFlag( info.flag, TileBitFlag.ALLY_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
             }
 
             return true;
@@ -206,12 +206,12 @@ namespace Frontier
                 Back();
             }
             // 攻撃可能なキャラクターが存在している場合は攻撃へ遷移
-            else if ( Methods.CheckBitFlag( info.flag, BitFlag.ATTACKABLE_TARGET_EXIST ) )
+            else if ( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 TransitAttackOnMoveState();
             }
             // 敵キャラクター意外が存在していないことを確認
-            else if (0 == (info.flag & (BitFlag.ALLY_EXIST | BitFlag.OTHER_EXIST)))
+            else if (0 == (info.flag & (TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST)))
             {
                 _phase = PlMovePhase.PL_MOVE_RESERVE_END;
             }
@@ -280,7 +280,7 @@ namespace Frontier
         /// <returns>直接遷移の可否</returns>
         private bool CanAttackOnMove( in TileInformation info )
         {
-            if( !Methods.CheckBitFlag( info.flag, BitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
+            if( !Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
             ( int, int ) ranges = _stageCtrl.CalcurateRanges( _selectPlayer.Params.TmpParam.gridIndex,  _stageCtrl.GetCurrentGridIndex());

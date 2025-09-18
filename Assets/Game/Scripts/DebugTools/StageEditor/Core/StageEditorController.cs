@@ -1,12 +1,7 @@
 ﻿using Frontier.Stage;
 using System;
-using System.ComponentModel;
-using Unity.Mathematics;
-using Unity.VisualScripting;
-using UnityEditorInternal;
 using UnityEngine;
 using Zenject;
-using static Constants;
 
 #if UNITY_EDITOR
 
@@ -17,7 +12,7 @@ namespace Frontier.DebugTools.StageEditor
     /// </summary>
     public class StageEditorController : FocusRoutineBase
     {
-        public class RefParams
+        public class StageEditRefParams
         {
             public StageEditMode EditMode   = StageEditMode.EDIT_TILE;  // 編集モード
             public int Row                  = 10;                       // タイルの行数
@@ -54,7 +49,7 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditorPresenter _stageEditorView   = null;
         private StageFileLoader _stageFileLoader        = null;
         private GridCursorController _gridCursorCtrl    = null;
-        private RefParams _refParams                    = null;
+        private StageEditRefParams _refParams           = null;
         private StageEditMode _editMode                 = StageEditMode.EDIT_TILE;
         private Vector3 offset                          = new Vector3(0, 5, -5);    // ターゲットからの相対位置
 
@@ -152,9 +147,8 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// グリッドカーソルを作成します
         /// </summary>
-        /// <param name="stageData">作成の際に参照するステージデータ</param>
         /// <returns>作成したグリッドカーソル</returns>
-        private GridCursorController CreateCursor( StageData stageData )
+        private GridCursorController CreateCursor()
         {
             GridCursorController gridCursorCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>(cursorPrefab, true, true, "GridCursorController");
             NullCheck.AssertNotNull( gridCursorCtrl, nameof(gridCursorCtrl) );
@@ -215,14 +209,14 @@ namespace Frontier.DebugTools.StageEditor
 
             if ( null == _refParams )
             {
-                _refParams = _hierarchyBld.InstantiateWithDiContainer<RefParams>( true );
+                _refParams = _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true );
             }
 
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
             _stageDataProvider.CurrentData  = CreateStage(); // プロバイダーに登録
-            _gridCursorCtrl                 = CreateCursor( _stageDataProvider.CurrentData );
+            _gridCursorCtrl                 = CreateCursor();
 
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 

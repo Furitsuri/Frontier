@@ -6,7 +6,7 @@ using Zenject;
 
 namespace Frontier.Stage
 {
-    public class StageFileLoader : MonoBehaviour
+    public sealed class StageFileLoader : MonoBehaviour
     {
         [SerializeField]
         private List<string> _stageNames;
@@ -17,9 +17,9 @@ namespace Frontier.Stage
         private GameObject[] _tilePrefabs;
 
         /// <summary>
-        /// 
+        /// 初期化します
         /// </summary>
-        /// <param name="tilePregabs"></param>
+        /// <param name="tilePregabs">ステージのタイルを配置する際に参照するタイルデータのプレハブ群</param>
         public void Init( GameObject[] tilePregabs )
         {
             NullCheck.AssertNotNull( _stageDataProvider , nameof( _stageDataProvider ) );
@@ -42,6 +42,11 @@ namespace Frontier.Stage
             if ( null != _stageDataProvider.CurrentData )
             {
                 _stageDataProvider.CurrentData.Dispose();
+            }
+            // 存在しない場合は作成
+            else
+            {
+                _stageDataProvider.CurrentData = _hierarchyBld.InstantiateWithDiContainer<StageData>( false );
             }
 
             var row = data.GridRowNum;

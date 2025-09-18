@@ -127,6 +127,11 @@ namespace Frontier.Entities
             }
         }
 
+        void LateUpdate()
+        {
+            ControlTransformRotation(); // 角度制御
+        }
+
         void OnDestroy()
         {
             // 戦闘時間管理クラスの登録を解除
@@ -238,6 +243,23 @@ namespace Frontier.Entities
             return false;
         }
 
+        #endregion // VIRTUAL_PUBLIC_METHOD
+
+        #region VIRTUAL_PUBLIC_METHOD
+
+        /// <summary>
+        /// キャラクターの角度を制御します
+        /// </summary>
+        virtual protected void ControlTransformRotation()
+        {
+            // キャラクターの向きを保ったまま、常にXZ平面に対して垂直にする
+            Vector3 forward = transform.forward;
+            forward.y = 0; // Y成分を消す
+            if ( 0.0001f < forward.sqrMagnitude )
+            {
+                transform.rotation = Quaternion.LookRotation( forward, Vector3.up );
+            }
+        }
         #endregion // VIRTUAL_PUBLIC_METHOD
 
         #region PUBLIC_METHOD

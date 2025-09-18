@@ -19,7 +19,7 @@ namespace Frontier.Stage
         // グリッド上に存在するキャラクターのインデックス
         public int charaIndex;
         // フラグ情報
-        public StageController.BitFlag flag;
+        public TileBitFlag flag;
         // ※ 一度設定された後は変更することがない変数
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Frontier.Stage
             estimatedMoveRange  = -1;
             charaTag            = CHARACTER_TAG.NONE;
             charaIndex          = -1;
-            flag                = Stage.StageController.BitFlag.NONE;
+            flag                = Stage.TileBitFlag.NONE;
         }
 
         /// <summary>

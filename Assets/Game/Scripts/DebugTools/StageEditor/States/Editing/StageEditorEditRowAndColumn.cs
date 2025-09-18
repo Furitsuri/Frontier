@@ -1,9 +1,10 @@
 ﻿using System;
-using UnityEngine;
 using static Constants;
 using static InputCode;
 
-namespace Frontier.DebugTools
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditRowAndColumn : StageEditorEditBase
     {
@@ -75,3 +76,4 @@ namespace Frontier.DebugTools
         }
     }
 }
+#endif // UNITY_EDITOR

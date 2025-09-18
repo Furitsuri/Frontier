@@ -8,16 +8,6 @@ namespace Frontier.Stage
     [RequireComponent(typeof(MeshRenderer))]
     public class GridMesh : MonoBehaviour
     {
-        public enum MeshType
-        {
-            MOVE = 0,
-            REACHABLE_ATTACK,
-            ATTACKABLE,
-            ATTACKABLE_TARGET_EXIST,
-
-            NUM_MAX
-        }
-
         MeshFilter meshFilter;
         MeshRenderer meshRenderer;
 

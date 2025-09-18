@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Frontier.DebugTools
+namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditCharacterInitialPosition : StageEditorEditBase
     {

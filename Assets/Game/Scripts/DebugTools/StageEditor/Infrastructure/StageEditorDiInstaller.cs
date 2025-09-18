@@ -1,14 +1,9 @@
 ﻿using Frontier.Stage;
-using Frontier.Battle;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using UnityEditor.PackageManager.UI;
-using UnityEngine;
 using Zenject;
-using Frontier.DebugTools.StageEditor;
 
-namespace Frontier
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorDiInstaller : MonoInstaller, IInstaller
     {
@@ -42,3 +37,5 @@ namespace Frontier
         }
     }
 }
+
+#endif // UNITY_EDITOR
