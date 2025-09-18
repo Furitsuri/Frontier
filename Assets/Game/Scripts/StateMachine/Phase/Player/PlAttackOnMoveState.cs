@@ -36,7 +36,7 @@ namespace Frontier
             // グリッドカーソル上のキャラクターを攻撃対象に設定
             if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY, targetChara))
             {
-                _stageCtrl.BindToGridCursor(GridCursorController.State.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
             }
 

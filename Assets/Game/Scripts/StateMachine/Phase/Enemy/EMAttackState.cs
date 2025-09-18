@@ -41,7 +41,7 @@ namespace Frontier
             if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter()))
             {
                 // アタッカーキャラクターの設定
-                _stageCtrl.BindToGridCursor(GridCursorController.State.ATTACK, _attackCharacter);
+                _stageCtrl.BindToGridCursor(GridCursorState.ATTACK, _attackCharacter);
                 // アタックカーソルUI表示
                 _uiSystem.BattleUi.ToggleAttackCursorE2P(true);
             }
@@ -66,7 +66,7 @@ namespace Frontier
         override public bool Update()
         {
             // 攻撃可能状態でなければ何もしない
-            if (_stageCtrl.GetGridCursorControllerState() != GridCursorController.State.ATTACK)
+            if (_stageCtrl.GetGridCursorControllerState() != GridCursorState.ATTACK)
             {
                 return false;
             }

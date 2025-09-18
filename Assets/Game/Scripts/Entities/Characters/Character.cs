@@ -3,12 +3,10 @@ using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
 using Frontier.Stage;
-using ModestTree;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using Zenject.SpaceFighter;
 
 namespace Frontier.Entities
 {
@@ -23,11 +21,10 @@ namespace Frontier.Entities
         [Header("パラメータ群")]
         protected CharacterParameters _params;
 
-        // Injectされるインスタンス
-        protected HierarchyBuilderBase _hierarchyBld                = null;
-        protected BattleRoutineController _btlRtnCtrl               = null;
-        protected CombatSkillEventController _combatSkillEventCtrl  = null;
-        protected StageController _stageCtrl                        = null;
+        [Inject] protected HierarchyBuilderBase _hierarchyBld                = null;
+        [Inject] protected BattleRoutineController _btlRtnCtrl               = null;
+        [Inject] protected CombatSkillEventController _combatSkillEventCtrl  = null;
+        [Inject] protected StageController _stageCtrl                        = null;
 
         private bool _isOrderedRotation         = false;
         private readonly TimeScale _timeScale   = new TimeScale();
@@ -41,6 +38,7 @@ namespace Frontier.Entities
         protected ThinkingType _thikType                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null;                 // 戦闘時の対戦相手
+        protected TileInformation _underfootTileInfo        = null;                 // 足元のタイル情報
         protected Bullet _bullet                            = null;                 // 矢などの弾
         protected SkillNotifierBase[] _skillNotifier        = null;                 // スキル使用通知
 
@@ -73,15 +71,6 @@ namespace Frontier.Entities
         };
 
         #region PRIVATE_METHOD
-
-        [Inject]
-        void Construct( HierarchyBuilderBase hierarchyBld,  BattleRoutineController battleMgr, CombatSkillEventController combatSkillEventCtrl, StageController stageCtrl )
-        {
-            _hierarchyBld           = hierarchyBld;
-            _btlRtnCtrl             = battleMgr;
-            _combatSkillEventCtrl   = combatSkillEventCtrl;
-            _stageCtrl              = stageCtrl;
-        }
 
         void Awake()
         {
@@ -129,7 +118,8 @@ namespace Frontier.Entities
 
         void LateUpdate()
         {
-            ControlTransformRotation(); // 角度制御
+            AdjustTransformPosition();  // 座標補正
+            AdjustTransformRotation();  // 角度補正
         }
 
         void OnDestroy()
@@ -248,9 +238,22 @@ namespace Frontier.Entities
         #region VIRTUAL_PUBLIC_METHOD
 
         /// <summary>
-        /// キャラクターの角度を制御します
+        /// キャラクターの座標を補正します
         /// </summary>
-        virtual protected void ControlTransformRotation()
+        virtual protected void AdjustTransformPosition()
+        {
+            if( null == _underfootTileInfo )
+            {
+                return;
+            }
+
+            transform.position = new Vector3( transform.position.x, _underfootTileInfo.charaStandPos.y, transform.position.z );
+        }
+
+        /// <summary>
+        /// キャラクターの角度を補正します
+        /// </summary>
+        virtual protected void AdjustTransformRotation()
         {
             // キャラクターの向きを保ったまま、常にXZ平面に対して垂直にする
             Vector3 forward = transform.forward;

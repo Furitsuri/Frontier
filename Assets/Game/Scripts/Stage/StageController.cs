@@ -327,7 +327,7 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="state">バインドタイプ</param>
         /// <param name="bindCharacter">バインド対象のキャラクター</param>
-        public void BindToGridCursor(GridCursorController.State state, Character character)
+        public void BindToGridCursor( GridCursorState state, Character character)
         {
             _gridCursorCtrl.GridState       = state;
             _gridCursorCtrl.BindCharacter   = character;
@@ -352,7 +352,7 @@ namespace Frontier.Stage
                 _gridCursorCtrl.BindCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_CHARACTER));
             }
 
-            _gridCursorCtrl.GridState       = GridCursorController.State.NONE;
+            _gridCursorCtrl.GridState       = GridCursorState.NONE;
             _gridCursorCtrl.BindCharacter   = null;
         }
 
@@ -365,7 +365,7 @@ namespace Frontier.Stage
         {
             int index = 0;
 
-            if (_gridCursorCtrl.GridState == GridCursorController.State.ATTACK)
+            if (_gridCursorCtrl.GridState == GridCursorState.ATTACK)
             {
                 index = _attackableGridIndexs[_gridCursorCtrl.GetAtkTargetIndex()];
             }
@@ -622,7 +622,7 @@ namespace Frontier.Stage
         /// グリッドカーソルの状態を取得します
         /// </summary>
         /// <returns>現在の選択グリッドの状態</returns>
-        public GridCursorController.State GetGridCursorControllerState()
+        public GridCursorState GetGridCursorControllerState()
         {
             return _gridCursorCtrl.GridState;
         }

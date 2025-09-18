@@ -40,7 +40,7 @@ namespace Frontier
             _departGridIndex    = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
 
             _stageCtrl.ApplyAllTileInfoFromHeld();
-            _stageCtrl.BindToGridCursor( GridCursorController.State.MOVE, _selectPlayer);
+            _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _selectPlayer);
 
             // 移動可能情報を登録及び表示
             bool isAttackable = !_selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );

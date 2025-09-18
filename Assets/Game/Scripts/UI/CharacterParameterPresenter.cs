@@ -45,7 +45,7 @@ namespace Frontier
 
             switch (_stgCtrl.GetGridCursorControllerState())
             {
-                case Stage.GridCursorController.State.ATTACK: // 攻撃対象選択時
+                case GridCursorState.ATTACK: // 攻撃対象選択時
                     Debug.Assert(bindCharacter != null);
 
                     _uiSystem.BattleUi.TogglePlayerParameter(true);
@@ -68,7 +68,7 @@ namespace Frontier
                     }
                     break;
                 
-                case Stage.GridCursorController.State.MOVE:   // 移動候補選択時
+                case GridCursorState.MOVE:   // 移動候補選択時
                     Debug.Assert(bindCharacter != null);
 
                     PlayerParameter.SetDisplayCharacter(bindCharacter);
