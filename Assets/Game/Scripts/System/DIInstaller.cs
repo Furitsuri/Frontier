@@ -1,13 +1,8 @@
 ﻿using Frontier.Stage;
 using Frontier.Battle;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using UnityEditor.PackageManager.UI;
-using UnityEngine;
-using Zenject;
-using Frontier.Combat;
 using Frontier.Combat.Skill;
+using Frontier.DebugTools.DebugMenu;
+using Zenject;
 
 namespace Frontier
 {
@@ -36,7 +31,7 @@ namespace Frontier
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
-            Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
+            Container.Bind<DebugMenuHandler >().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuPresenter>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
         }

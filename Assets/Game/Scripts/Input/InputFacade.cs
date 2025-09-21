@@ -7,18 +7,12 @@ using static Constants;
 
 public class InputFacade
 {
-    private HierarchyBuilderBase _hierarchyBld  = null;
+    [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
+    [Inject] private IUiSystem _uiSystem                 = null;
+
     private InputGuidePresenter _inputGuideView = null;
-    private IUiSystem _uiSystem                 = null;
     private InputHandler _inputHdlr             = null;
     private InputCode[] _inputCodes;
-
-    [Inject]
-    public void Construct( HierarchyBuilderBase hierarchyBld, IUiSystem uiSystem )
-    {
-        _hierarchyBld   = hierarchyBld;
-        _uiSystem       = uiSystem;
-    }
 
     /// <summary>
     /// 初期化します

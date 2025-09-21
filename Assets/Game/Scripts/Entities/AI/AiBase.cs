@@ -19,10 +19,10 @@ namespace Frontier.Entities.Ai
             public List<int> targetCharaIndexs;
         }
 
-        protected BattleRoutineController _btlRtnCtrl;
-        protected HierarchyBuilderBase _hierarchyBld;
-        protected StageController _stageCtrl;
-        protected StageData _stageData;
+        [Inject] protected BattleRoutineController _btlRtnCtrl;
+        [Inject] protected HierarchyBuilderBase _hierarchyBld;
+        [Inject] protected StageController _stageCtrl;
+        [Inject] protected StageData _stageData;
         
         protected bool _isDetermined                                = false;    // 既に移動対象や攻撃対象を決定しているか 
         protected int _destinationGridIndex                         = -1;       // 移動目標グリッドのインデックス値
@@ -36,15 +36,6 @@ namespace Frontier.Entities.Ai
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
-
-        [Inject]
-        public void Construct( BattleRoutineController btlRtnCtrl, HierarchyBuilderBase hierarchyBld, StageController stgCtrl, StageData stageData )
-        {
-            _btlRtnCtrl     = btlRtnCtrl;
-            _hierarchyBld   = hierarchyBld;
-            _stageCtrl      = stgCtrl;
-            _stageData      = stageData;
-        }
 
         /// <summary>
         /// 移動目標が有効かを判定します

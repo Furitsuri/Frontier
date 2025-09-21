@@ -19,10 +19,9 @@ namespace Frontier.Battle
         [SerializeField]
         private GameObject _btlFileLoadObject;
 
-        // DIで参照されるインスタンス
-        private HierarchyBuilderBase _hierarchyBld  = null;
-        private StageController _stgCtrl            = null;
-        private BattleUISystem _btlUi               = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
+        [Inject] private StageController _stgCtrl            = null;
+        [Inject] private BattleUISystem _btlUi               = null;
 
         private BattlePhase _phase;
         private BattleFileLoader _btlFileLoader                 = null;
@@ -33,27 +32,13 @@ namespace Frontier.Battle
         private PhaseHandlerBase[] _phaseHdlrs                  = new PhaseHandlerBase[((int)TurnType.NUM)];
         
         private bool _transitNextPhase = false;
-        private int _phaseManagerIndex = 0;
+        private int _phaseHandlerIndex = 0;
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
         public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
-
-        /// <summary>
-        /// Diコンテナから引数を注入します
-        /// </summary>
-        /// <param name="hierarchyBld">オブジェクト・コンポーネント作成</param>
-        /// <param name="stgCtrl">ステージのコントローラ</param>
-        /// <param name="btlUi">戦闘UI</param>
-        [Inject]
-        void Construct(HierarchyBuilderBase hierarchyBld, StageController stgCtrl, BattleUISystem btlUi)
-        {
-            _hierarchyBld   = hierarchyBld;
-            _stgCtrl        = stgCtrl;
-            _btlUi          = btlUi;
-        }
 
         void Awake()
         {
@@ -211,8 +196,7 @@ namespace Frontier.Battle
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
 
-            // フェーズマネージャを更新
-            _transitNextPhase = _currentPhaseHdlr.Update();
+            _transitNextPhase = _currentPhaseHdlr.Update(); // フェーズマネージャを更新
         }
 
         override public void LateUpdateRoutine()
@@ -237,8 +221,8 @@ namespace Frontier.Battle
                 _btlCharaCdr.ResetTmpParamAllCharacter();
 
                 // 次のハンドラーに切り替える
-                _phaseManagerIndex = (_phaseManagerIndex + 1) % (int)TurnType.NUM;
-                _currentPhaseHdlr = _phaseHdlrs[_phaseManagerIndex];
+                _phaseHandlerIndex = (_phaseHandlerIndex + 1) % (int)TurnType.NUM;
+                _currentPhaseHdlr = _phaseHdlrs[_phaseHandlerIndex];
                 _currentPhaseHdlr.Run();
             }
         }
