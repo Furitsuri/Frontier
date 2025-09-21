@@ -22,6 +22,7 @@ namespace Frontier.Entities
         public int Atk;                     // 攻撃力
         public int Def;                     // 防御力
         public int moveRange;               // 移動レンジ
+        public int jumpForce;               // ジャンプレンジ
         public int attackRange;             // 攻撃レンジ
         public int maxActionGauge;          // アクションゲージ最大値
         public int curActionGauge;          // アクションゲージ現在値
@@ -39,17 +40,18 @@ namespace Frontier.Entities
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
         static public void ApplyParams(ref CharacterParameter param, in CharacterParamData fdata)
         {
-            param.characterTag = (CHARACTER_TAG)fdata.CharacterTag;
-            param.characterIndex = fdata.CharacterIndex;
-            param.CurHP = param.MaxHP = fdata.MaxHP;
-            param.Atk = fdata.Atk;
-            param.Def = fdata.Def;
-            param.moveRange = fdata.MoveRange;
-            param.attackRange = fdata.AtkRange;
-            param.curActionGauge = param.maxActionGauge = fdata.ActGaugeMax;
-            param.recoveryActionGauge = fdata.ActRecovery;
-            param.initGridIndex = fdata.InitGridIndex;
-            param.initDir = (Constants.Direction)fdata.InitDir;
+            param.characterTag          = (CHARACTER_TAG)fdata.CharacterTag;
+            param.characterIndex        = fdata.CharacterIndex;
+            param.CurHP                 = param.MaxHP = fdata.MaxHP;
+            param.Atk                   = fdata.Atk;
+            param.Def                   = fdata.Def;
+            param.moveRange             = fdata.MoveRange;
+            param.jumpForce             = fdata.MoveRange;  // TODO : エクセルが使用できず、ジャンプレンジのデータを入れられないため、移動レンジと同じ値を入れておく
+            param.attackRange           = fdata.AtkRange;
+            param.curActionGauge        = param.maxActionGauge = fdata.ActGaugeMax;
+            param.recoveryActionGauge   = fdata.ActRecovery;
+            param.initGridIndex         = fdata.InitGridIndex;
+            param.initDir               = (Constants.Direction)fdata.InitDir;
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
                 param.equipSkills[i] = (ID )fdata.Skills[i];
@@ -63,20 +65,21 @@ namespace Frontier.Entities
 
         public void Init()
         {
-            characterTag = CHARACTER_TAG.NONE;
-            characterIndex = 0;
-            MaxHP = 0;
-            CurHP = 0;
-            Atk = 0;
-            Def = 0;
-            moveRange = 0;
-            attackRange = 0;
-            maxActionGauge = 0;
-            curActionGauge = 0;
-            recoveryActionGauge = 0;
-            consumptionActionGauge = 0;
-            initGridIndex = 0;
-            initDir = Constants.Direction.NONE;
+            characterTag            = CHARACTER_TAG.NONE;
+            characterIndex          = 0;
+            MaxHP                   = 0;
+            CurHP                   = 0;
+            Atk                     = 0;
+            Def                     = 0;
+            moveRange               = 0;
+            jumpForce               = 0;
+            attackRange             = 0;
+            maxActionGauge          = 0;
+            curActionGauge          = 0;
+            recoveryActionGauge     = 0;
+            consumptionActionGauge  = 0;
+            initGridIndex           = 0;
+            initDir                 = Constants.Direction.NONE;
         }
 
         /// <summary>
@@ -91,6 +94,7 @@ namespace Frontier.Entities
             this.Atk                    = fdata.Atk;
             this.Def                    = fdata.Def;
             this.moveRange              = fdata.MoveRange;
+            this.jumpForce              = fdata.JumpRange;
             this.attackRange            = fdata.AtkRange;
             this.curActionGauge         = this.maxActionGauge = fdata.ActGaugeMax;
             this.recoveryActionGauge    = fdata.ActRecovery;

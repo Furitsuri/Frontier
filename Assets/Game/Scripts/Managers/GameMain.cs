@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
+using Frontier.DebugTools.DebugMenu;
 using Zenject;
 using static Constants;
 

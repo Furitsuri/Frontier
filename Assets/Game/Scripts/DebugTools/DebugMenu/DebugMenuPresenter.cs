@@ -8,81 +8,80 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
-public class DebugMenuPresenter : BasePresenter
+#if UNITY_EDITOR
+
+namespace Frontier.DebugTools.DebugMenu
 {
-    private HierarchyBuilderBase _hierarchyBld = null;
-
-    [SerializeField]
-    private GameObject DebugMenuList;
-    [SerializeField]
-    private GameObject DebugMenuElement;
-
-    private List<TextMeshProUGUI> _menuTexts = new List<TextMeshProUGUI>();
-    private VerticalLayoutGroup _verticalLayoutGroup;
-
-    public ReadOnlyCollection<TextMeshProUGUI> MenuTexts
+    public class DebugMenuPresenter : BasePresenter
     {
-        get { return _menuTexts.AsReadOnly(); }
-    }
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-    [Inject]
-    public void Construct(HierarchyBuilderBase hierarchyBld)
-    {
-        _hierarchyBld = hierarchyBld;
-    }
+        [SerializeField] private GameObject DebugMenuList;
+        [SerializeField] private GameObject DebugMenuElement;
 
-    /// <summary>
-    /// 初期化します
-    /// </summary>
-    override public void Init()
-    {   
-        _verticalLayoutGroup = DebugMenuList.GetComponent<VerticalLayoutGroup>();
-        NullCheck.AssertNotNull(_verticalLayoutGroup, nameof( _verticalLayoutGroup ) );
+        private List<TextMeshProUGUI> _menuTexts = new List<TextMeshProUGUI>();
+        private VerticalLayoutGroup _verticalLayoutGroup;
 
-        InitDebugMenuList();
-
-        gameObject.SetActive(false);    // 初期状態では無効にする
-    }
-
-    /// <summary>
-    /// メニューカーソルを更新します
-    /// </summary>
-    public void UpdateMenuCursor( int index )
-    {
-        // 選択中のメニューのテキストを強調表示
-        for (int i = 0; i < _menuTexts.Count; ++i)
+        public ReadOnlyCollection<TextMeshProUGUI> MenuTexts
         {
-            if (i == index)
+            get { return _menuTexts.AsReadOnly(); }
+        }
+
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        override public void Init()
+        {
+            _verticalLayoutGroup = DebugMenuList.GetComponent<VerticalLayoutGroup>();
+            NullCheck.AssertNotNull(_verticalLayoutGroup, nameof(_verticalLayoutGroup));
+
+            InitDebugMenuList();
+
+            gameObject.SetActive(false);    // 初期状態では無効にする
+        }
+
+        /// <summary>
+        /// メニューカーソルを更新します
+        /// </summary>
+        public void UpdateMenuCursor(int index)
+        {
+            // 選択中のメニューのテキストを強調表示
+            for (int i = 0; i < _menuTexts.Count; ++i)
             {
-                _menuTexts[i].color = Color.yellow;
-            }
-            else
-            {
-                _menuTexts[i].color = Color.white;
+                if (i == index)
+                {
+                    _menuTexts[i].color = Color.yellow;
+                }
+                else
+                {
+                    _menuTexts[i].color = Color.white;
+                }
             }
         }
-    }
 
-    /// <summary>
-    /// デバッグメニューの表示/非表示を切り替えます
-    /// </summary>
-    public void ToggleMenuVisibility()
-    {         
-        gameObject.SetActive(!gameObject.activeSelf);
-    }
-
-    /// <summary>
-    /// デバッグのメニューリストを初期化します
-    /// </summary>
-    private void InitDebugMenuList()
-    {
-        _menuTexts.Clear();
-
-        for (int i = 0; i < (int)DebugMainMenu.MAX; ++i)
+        /// <summary>
+        /// デバッグメニューの表示/非表示を切り替えます
+        /// </summary>
+        public void ToggleMenuVisibility()
         {
-            TextMeshProUGUI textUGUI = _hierarchyBld.CreateComponentWithNestedParent<TextMeshProUGUI>(DebugMenuElement, DebugMenuList, true );
-            textUGUI.text = ((DebugMainMenu)i).ToString().Replace('_', ' ');    // アンダースコアをスペースに置き換え
-            _menuTexts.Add(textUGUI);
+            gameObject.SetActive(!gameObject.activeSelf);
+        }
+
+        /// <summary>
+        /// デバッグのメニューリストを初期化します
+        /// </summary>
+        private void InitDebugMenuList()
+        {
+            _menuTexts.Clear();
+
+            for (int i = 0; i < (int)DebugMainMenuTag.MAX; ++i)
+            {
+                TextMeshProUGUI textUGUI = _hierarchyBld.CreateComponentWithNestedParent<TextMeshProUGUI>(DebugMenuElement, DebugMenuList, true);
+                textUGUI.text = ((DebugMainMenuTag)i).ToString().Replace('_', ' ');    // アンダースコアをスペースに置き換え
+                _menuTexts.Add(textUGUI);
+            }
         }
     }
 }
+
+#endif // UNITY_EDITOR

@@ -26,7 +26,7 @@ namespace Frontier.Entities.Ai
 
             // 自身の移動範囲をステージ上に登録する
             bool isAttackable = !selfTmpParam.isEndCommand[(int)Command.COMMAND_TAG.ATTACK];
-            _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.characterIndex, selfParam.characterTag, isAttackable);
+            _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, 0f, selfParam.characterTag, isAttackable);
 
             for (int i = 0; i < _stageData.GetTileTotalNum(); ++i)
             {
@@ -115,7 +115,7 @@ namespace Frontier.Entities.Ai
             };
 
             MovePathHandler.SetUpCandidatePathIndexs( true, condition, selfTmpParam );
-            MovePathHandler.FindMovePath( selfTmpParam.gridIndex, _destinationGridIndex );
+            MovePathHandler.FindMovePath( selfTmpParam.gridIndex, _destinationGridIndex, selfParam.jumpForce );
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace Frontier.Entities.Ai
                 evaluateValue += CalcurateEvaluateAttack( selfParam, chara.Params.CharacterParam );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまり近いターゲットほど評価値を大きくするため)
-                if( !MovePathHandler.FindMovePath( selfTmpParam.gridIndex, destGridIndex ) )
+                if( !MovePathHandler.FindMovePath( selfTmpParam.gridIndex, destGridIndex, selfParam.jumpForce ) )
                 {
                     Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;

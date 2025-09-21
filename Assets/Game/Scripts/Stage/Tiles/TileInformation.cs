@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Frontier.Stage
 {
     /// <summary>
-    /// グリッド単位における情報
+    /// タイル単位における情報
     /// </summary>
     public class TileInformation
     {

@@ -30,31 +30,31 @@ namespace Frontier
             base.Init();
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if ( _selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            if( _selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
             }
             else { _phase = PlMovePhase.PL_MOVE; }
 
-            _departGridIndex    = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
+            _departGridIndex = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
 
             _stageCtrl.ApplyAllTileInfoFromHeld();
-            _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _selectPlayer);
+            _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _selectPlayer );
 
             // 移動可能情報を登録及び表示
             bool isAttackable = !_selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             var param = _selectPlayer.Params.CharacterParam;
-            _stageCtrl.RegistMoveableInfo(_departGridIndex, param.moveRange, param.attackRange, param.characterIndex, param.characterTag, isAttackable);
-            _stageCtrl.DrawMoveableGrids(_departGridIndex, param.moveRange, param.attackRange);
+            _stageCtrl.RegistMoveableInfo( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, 0f, param.characterTag, isAttackable );
+            _stageCtrl.DrawMoveableGrids( _departGridIndex, param.moveRange, param.attackRange );
 
             // SetUpCandidatePathIndexsで用いる条件式
             Func<int, object[], bool> condition = ( index, args ) =>
             {
-                var tileInfo    = _stageCtrl.GetTileInfo(index);
-                bool ownerExist =   (tileInfo.charaTag == _selectPlayer.Params.CharacterParam.characterTag) &&
-                                    (tileInfo.charaIndex == _selectPlayer.Params.CharacterParam.characterIndex);
-                return (0 <= tileInfo.estimatedMoveRange || ownerExist);
+                var tileInfo = _stageCtrl.GetTileInfo( index );
+                bool ownerExist = ( tileInfo.charaTag == _selectPlayer.Params.CharacterParam.characterTag ) &&
+                                    ( tileInfo.charaIndex == _selectPlayer.Params.CharacterParam.characterIndex );
+                return ( 0 <= tileInfo.estimatedMoveRange || ownerExist );
             };
 
             _selectPlayer.GetAi().MovePathHandler.SetUpCandidatePathIndexs( true, condition );  // 移動候補となるタイル情報を準備
@@ -62,10 +62,10 @@ namespace Frontier
 
         override public bool Update()
         {
-            if ( base.Update() )
+            if( base.Update() )
             {
                 // キャラクターのグリッドの位置に選択グリッドの位置を戻す
-                _stageCtrl.FollowFootprint(_selectPlayer);
+                _stageCtrl.FollowFootprint( _selectPlayer );
 
                 return true;
             }
@@ -79,7 +79,7 @@ namespace Frontier
 
                 case PlMovePhase.PL_MOVE_RESERVE_END:
                     // 移動完了後に終了へ移行
-                    if ( _selectPlayer.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
+                    if( _selectPlayer.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
                     {
                         _phase = PlMovePhase.PL_MOVE_END;
                     }
@@ -89,28 +89,28 @@ namespace Frontier
                     // 保険として、終了のタイミングで更新し直す
                     _selectPlayer.Params.TmpParam.gridIndex = _stageCtrl.GetCurrentGridIndex();
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _selectPlayer.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
+                    _selectPlayer.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.MOVE, true );
                     Back();     // コマンド選択に戻る
 
                     return true;
             }
 
-            return (0 <= TransitIndex);
+            return ( 0 <= TransitIndex );
         }
 
         override public void ExitState()
         {
-            _stageCtrl.SetGridCursorControllerActive(true); // 選択グリッドを表示
+            _stageCtrl.SetGridCursorControllerActive( true ); // 選択グリッドを表示
             _stageCtrl.ClearGridMeshDraw();                 // グリッド状態の描画をクリア
 
             // 攻撃に直接遷移しない場合のみに限定される処理
-            if ( !IsTransitAttackOnMoveState() )
+            if( !IsTransitAttackOnMoveState() )
             {
                 _stageCtrl.UpdateGridInfo();        // ステージグリッド上のキャラ情報を更新
                 _stageCtrl.ClearGridCursroBind();   // 操作対象データをリセット
             }
 
-			base.ExitState();
+            base.ExitState();
         }
 
         /// <summary>
@@ -121,9 +121,9 @@ namespace Frontier
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptDirectionInput(AcceptDirection),  GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm,   new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault,   new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
+                (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM, "DECISION", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL, "BACK", CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
              );
         }
 
@@ -143,21 +143,21 @@ namespace Frontier
         /// <returns>決定入力受付の可否</returns>
         override protected bool CanAcceptConfirm()
         {
-            if ( !CanAcceptDefault() ) { return false; }
+            if( !CanAcceptDefault() ) { return false; }
 
-            if ( PlMovePhase.PL_MOVE != _phase ) { return false; }     // 移動フェーズでない場合は終了
+            if( PlMovePhase.PL_MOVE != _phase ) { return false; }     // 移動フェーズでない場合は終了
 
             TileInformation info;
             _stageCtrl.FetchCurrentGridInfo( out info );
-            if ( info.estimatedMoveRange < 0 )
+            if( info.estimatedMoveRange < 0 )
             {
                 // 敵対勢力が存在しており、自身の攻撃レンジ以内の場合にはtrueを返す
-                if ( CanAttackOnMove( in info ) ) { return true; }
+                if( CanAttackOnMove( in info ) ) { return true; }
                 else { return false; }  // 移動不可地点であれば不可
             }
             else
             {
-                if ( Methods.CheckBitFlag( info.flag, TileBitFlag.ALLY_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
+                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ALLY_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
             }
 
             return true;
@@ -169,10 +169,10 @@ namespace Frontier
         /// <returns>方向入力受付の可否</returns>
         override protected bool CanAcceptDirection()
         {
-            if ( !CanAcceptDefault() ) { return false; }
+            if( !CanAcceptDefault() ) { return false; }
 
             // 移動フェーズでない場合、または移動入力受付が不可能である場合は不可
-            if ( PlMovePhase.PL_MOVE == _phase ) return true;
+            if( PlMovePhase.PL_MOVE == _phase ) return true;
 
             return false;
         }
@@ -182,7 +182,7 @@ namespace Frontier
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力によってキャラクター移動が行われたか</returns>
-        override protected bool AcceptDirection(Direction dir)
+        override protected bool AcceptDirection( Direction dir )
         {
             return _stageCtrl.OperateGridCursorController( dir );
         }
@@ -192,26 +192,26 @@ namespace Frontier
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>決定入力実行の有無</returns>
-        override protected bool AcceptConfirm(bool isInput)
+        override protected bool AcceptConfirm( bool isInput )
         {
-            if (!isInput) { return false; }
+            if( !isInput ) { return false; }
 
             TileInformation info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _stageCtrl.FetchCurrentGridInfo(out info);
+            _stageCtrl.FetchCurrentGridInfo( out info );
 
             // 出発地点と同一グリッドであれば戻る
-            if (curGridIndex == _departGridIndex)
+            if( curGridIndex == _departGridIndex )
             {
                 Back();
             }
             // 攻撃可能なキャラクターが存在している場合は攻撃へ遷移
-            else if ( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+            else if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 TransitAttackOnMoveState();
             }
             // 敵キャラクター意外が存在していないことを確認
-            else if (0 == (info.flag & (TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST)))
+            else if( 0 == ( info.flag & ( TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST ) ) )
             {
                 _phase = PlMovePhase.PL_MOVE_RESERVE_END;
             }
@@ -224,9 +224,9 @@ namespace Frontier
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>キャンセル入力実行の有無</returns>
-        override protected bool AcceptCancel(bool isCancel)
+        override protected bool AcceptCancel( bool isCancel )
         {
-            if( base.AcceptCancel(isCancel) )
+            if( base.AcceptCancel( isCancel ) )
             {
                 // 巻き戻しを行う
                 Rewind();
@@ -250,18 +250,18 @@ namespace Frontier
         /// </summary>
         private void SetupMovePath()
         {
-            int departingTileIndex      = _selectPlayer.Params.TmpParam.gridIndex;
-            int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
-            MovePathHandler pathHdlr    = _selectPlayer.GetAi().MovePathHandler;
-            bool isEndPathTrace         = pathHdlr.IsEndPathTrace();
+            int departingTileIndex = _selectPlayer.Params.TmpParam.gridIndex;
+            int destinationTileIndex = _stageCtrl.GetCurrentGridIndex();
+            MovePathHandler pathHdlr = _selectPlayer.GetAi().MovePathHandler;
+            bool isEndPathTrace = pathHdlr.IsEndPathTrace();
 
             // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
-            if ( !isEndPathTrace )
+            if( !isEndPathTrace )
             {
                 departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
             }
 
-            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, isEndPathTrace );
+            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _selectPlayer.Params.CharacterParam.jumpForce, isEndPathTrace );
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Frontier
             if( !Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
-            ( int, int ) ranges = _stageCtrl.CalcurateRanges( _selectPlayer.Params.TmpParam.gridIndex,  _stageCtrl.GetCurrentGridIndex());
+            (int, int) ranges = _stageCtrl.CalcurateRanges( _selectPlayer.Params.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
 
             return ranges.Item1 + ranges.Item2 <= _selectPlayer.Params.CharacterParam.attackRange;
         }

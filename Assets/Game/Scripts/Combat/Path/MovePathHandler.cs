@@ -97,7 +97,7 @@ public class MovePathHandler
     /// </summary>
     /// <param name="departingTileIndex">出発地点となるタイルのインデックス値</param>
     /// <param name="destinationlTileIndex">目標地点となるタイルのインデックス値</param>
-    public bool FindMovePath( int departingTileIndex, int destinationlTileIndex )
+    public bool FindMovePath( int departingTileIndex, int destinationlTileIndex, int jumpForce )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -107,7 +107,7 @@ public class MovePathHandler
 
         _proposedMovePath.Clear();
 
-        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, jumpForce, _candidateRouteIndexs );
         if( route == null ) { return false; }
         _proposedMovePath = route;
 
@@ -128,7 +128,7 @@ public class MovePathHandler
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
     /// <returns>ルート取得の可否</returns>
-    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, bool isEndPathTrace )
+    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int jumpForce, bool isEndPathTrace )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -139,7 +139,7 @@ public class MovePathHandler
         // 指定のインデックス位置にキャラクターが留まれない場合は失敗
         if ( !CanStandOnTile( destinationlTileIndex ) ) { return false; }
 
-        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, jumpForce, _candidateRouteIndexs );
         if ( route == null ) { return false; }
         // 現在のパストレースが終了していない場合は、直近のwaypointを移動対象として先頭に登録
         if ( !isEndPathTrace )

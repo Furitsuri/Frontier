@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Frontier.DebugTools.DebugMenu;
 using Frontier.DebugTools.StageEditor;
 
 #if UNITY_EDITOR

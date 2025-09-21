@@ -64,6 +64,7 @@ namespace Frontier
             public int Atk;
             public int Def;
             public int MoveRange;
+            public int JumpRange;
             public int AtkRange;
             public int ActGaugeMax;
             public int ActRecovery;
@@ -224,17 +225,17 @@ namespace Frontier
         /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
         private void ApplySkillsData(ref SkillsData.Data data, in FileSkillData fdata)
         {
-            data.Name = fdata.Name;
-            data.Cost = fdata.Cost;
-            data.Type = (SituationType)fdata.Type;
-            data.Duration = fdata.Duration;
-            data.AddAtkMag = fdata.AddAtkMag;
-            data.AddDefMag = fdata.AddDefMag;
-            data.AddAtkNum = fdata.AddAtkNum;
-            data.Param1 = fdata.Param1;
-            data.Param2 = fdata.Param2;
-            data.Param3 = fdata.Param3;
-            data.Param4 = fdata.Param4;
+            data.Name       = fdata.Name;
+            data.Cost       = fdata.Cost;
+            data.Type       = (SituationType)fdata.Type;
+            data.Duration   = fdata.Duration;
+            data.AddAtkMag  = fdata.AddAtkMag;
+            data.AddDefMag  = fdata.AddDefMag;
+            data.AddAtkNum  = fdata.AddAtkNum;
+            data.Param1     = fdata.Param1;
+            data.Param2     = fdata.Param2;
+            data.Param3     = fdata.Param3;
+            data.Param4     = fdata.Param4;
         }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
