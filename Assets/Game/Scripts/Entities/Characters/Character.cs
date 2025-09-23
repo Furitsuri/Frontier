@@ -37,8 +37,6 @@ namespace Frontier.Entities
         protected ThinkingType _thikType                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null;                 // 戦闘時の対戦相手
-        protected StageTileData _underfootTileData          = null;                 // 足元のタイルデータ
-        protected TileInformation _underfootTileInfo        = null;                 // 足元のタイル情報
         protected Bullet _bullet                            = null;                 // 矢などの弾
         protected SkillNotifierBase[] _skillNotifier        = null;                 // スキル使用通知
 
@@ -260,19 +258,8 @@ namespace Frontier.Entities
         {
             _params.TmpParam.SetCurrentGridIndex( gridIndex );
             var info = _stageCtrl.GetTileInfo(gridIndex);
-            transform.position = info.charaStandPos;
-            transform.rotation = dir;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tileData"></param>
-        /// <param name="tileInfo"></param>
-        public void SetUnderfootTileDataAndInformation( StageTileData tileData, TileInformation tileInfo )
-        {
-            _underfootTileData = tileData;
-            _underfootTileInfo = tileInfo;
+            _transformHdlr.SetPosition( info.charaStandPos );
+            _transformHdlr.SetRotation( dir );
         }
 
         /// <summary>

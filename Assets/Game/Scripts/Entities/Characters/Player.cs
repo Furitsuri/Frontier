@@ -207,14 +207,6 @@ namespace Frontier.Entities
                     jumpAction( currentTileData.Height, focusedTileData.Height, currentTileInfo.charaStandPos, focusedTilePos );
                 }
 
-                // キャラクターの下にあるタイル情報を更新
-                Vector3 diffPositionXZ = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ();
-                if( diffPositionXZ.sqrMagnitude < Math.Pow( TILE_SIZE, 2f ) )   // TODO : 0.5f *TILE_SIZEの間違いでは？
-                {
-                    _underfootTileData = focusedTileData;
-                    _underfootTileInfo = focusedTileInfo;
-                }
-
                 _isPrevMoving = true;
             }
 
