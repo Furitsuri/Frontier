@@ -77,7 +77,6 @@ namespace Frontier.Battle
                     chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileInfo( gridIndex ).charaStandPos );   // プレイヤーの画面上の位置を設定
                     chara.GetTransformHandler.SetRotation( rot[(int)chara.Params.CharacterParam.initDir] );     // 向きを設定
                     _stgCtrl.GetTileInfo( gridIndex ).SetExistCharacter( chara );                               // 対応するグリッドに立っているキャラクターを登録
-                    chara.SetUnderfootTileDataAndInformation( _stgCtrl.GetTileData( gridIndex ), _stgCtrl.GetTileInfo( gridIndex ) );
                 }
             }
         }
