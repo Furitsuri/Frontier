@@ -81,9 +81,9 @@ namespace Frontier
                     if( prevTargetCharacter != _targetCharacter )
                     {
                         var targetGridInfo = _stageCtrl.GetTileInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
-                        _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos );
+                        _attackCharacter.GetTransformHandler.RotateToPosition(targetGridInfo.charaStandPos );
                         var attackerGridInfo = _stageCtrl.GetTileInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
-                        _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
+                        _attackCharacter.GetTransformHandler.RotateToPosition(attackerGridInfo.charaStandPos);
                     }
 
                     // ダメージ予測表示UIを表示

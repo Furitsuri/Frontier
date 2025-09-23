@@ -111,7 +111,7 @@ namespace Frontier.Stage
         {
             for( int i = 0; i < _stageDataProvider.CurrentData.TileDatas.Length; ++i )
             {
-                _stageDataProvider.CurrentData.GetTile( i ).HoldCurrentTileInfo();
+                _stageDataProvider.CurrentData.GetTileData( i ).HoldCurrentTileInfo();
             }
         }
 
@@ -122,7 +122,7 @@ namespace Frontier.Stage
         {
             for( int i = 0; i < _stageDataProvider.CurrentData.TileDatas.Length; ++i )
             {
-                _stageDataProvider.CurrentData.GetTile( i ).ApplyHeldTileInfo();
+                _stageDataProvider.CurrentData.GetTileData( i ).ApplyHeldTileInfo();
             }
         }
 
@@ -610,16 +610,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 指定グリッドにおけるキャラクターのワールド座標を取得します
-        /// </summary>
-        /// <param name="index">指定グリッド</param>
-        /// <returns>グリッドにおける中心ワールド座標</returns>
-        public Vector3 GetGridCharaStandPos( int index )
-        {
-            return _stageDataProvider.CurrentData.GetTileInfo( index ).charaStandPos;
-        }
-
-        /// <summary>
         /// グリッドカーソルの状態を取得します
         /// </summary>
         /// <returns>現在の選択グリッドの状態</returns>
@@ -635,6 +625,11 @@ namespace Frontier.Stage
         public Character GetBindCharacterFromGridCursor()
         {
             return _gridCursorCtrl.BindCharacter;
+        }
+
+        public StageTileData GetTileData( int index )
+        {
+            return _stageDataProvider.CurrentData.GetTileData( index );
         }
 
         /// <summary>
@@ -677,7 +672,7 @@ namespace Frontier.Stage
             // ジャンプ可能か否かを判定するラムダ式( 2つのタイルそれぞれの判定を一つの変数に纏めたいので、( bool, bool )の値に格納しています )
             Func<int, int, ( bool, bool )> canJumpOver = ( int a, int b ) =>
             {
-                float diffHeight = stageData.GetTile( b ).Height - stageData.GetTile( a ).Height;
+                float diffHeight = stageData.GetTileData( b ).Height - stageData.GetTileData( a ).Height;
                 return ( ( 0 < diffHeight ) ? (int)Math.Ceiling( diffHeight ) <= jumpForce : true, ( 0 < -diffHeight ) ? (int)Math.Ceiling( -diffHeight ) <= jumpForce : true );
             };
 

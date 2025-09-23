@@ -62,6 +62,8 @@ static public class Constants
     public const int TILE_ROW_MAX_NUM       = 25;
     // ステージに設定可能なタイルの最大数(縦軸)
     public const int TILE_COLUMN_MAX_NUM    = 25;
+    // ジャンプ動作が必要と判定する高低差
+    public const int NEED_JUMP_HEIGHT_DIFFERENCE = 1;
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値
@@ -73,7 +75,7 @@ static public class Constants
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
     // キャラクターの移動速度
-    public const float CHARACTER_MOVE_SPEED = 7.5f;
+    public const float CHARACTER_MOVE_SPEED = 6.5f;
     // キャラクターの高速移動時の移動速度レート
     public const float CHARACTER_MOVE_HIGH_SPEED_RATE = 3.0f;
     // キャラクターの回転速度
@@ -84,6 +86,10 @@ static public class Constants
     public const float CHARACTER_ANGLE_THRESHOLD_DEGREES = 5f;
     // プレイヤーの移動操作時、目標座標に対し入力を受け付けられるグリッドサイズの割合
     public const float ACCEPTABLE_INPUT_TILE_SIZE_RATIO = 0.33f;
+    // ジャンプ動作時に対象のタイル位置が相対的に正のY座標に存在する場合に加速度に対して加算する値
+    public const float JUMP_POSITIVE_Y_ACCELERATION = 10f;
+    // ジャンプ動作時に対象のタイル位置が相対的に負のY座標に存在する場合の垂直方向の初速度
+    public const float JUMP_NEGATIVE_Y_VELOCITY = 3f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
     // 攻撃時に向きを定める際の待ち時間
