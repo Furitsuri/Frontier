@@ -7,21 +7,21 @@ namespace Frontier
 {
     public class EmMoveState : PhaseStateBase
     {
-        private enum EMMovePhase
+        private enum EmMovePhase
         {
             EM_MOVE_WAIT = 0,
             EM_MOVE_EXECUTE,
             EM_MOVE_END,
         }
 
-        private EMMovePhase _Phase = EMMovePhase.EM_MOVE_WAIT;
+        private EmMovePhase _Phase = EmMovePhase.EM_MOVE_WAIT;
         private int _departGridIndex = -1;
         private int _movingIndex = 0;
         private float _moveWaitTimer = 0f;
         private Enemy _enemy;
         private List<WaypointInformation> _movePathList;
         private List<Vector3> _moveGridPos;
-        private Transform _EMTransform;
+        private Transform _ownerTransform;
 
         /// <summary>
         /// 初期化します
@@ -44,7 +44,7 @@ namespace Frontier
             // 移動目標地点が、現在地点であった場合は即時終了
             if (_movePathList.Count <= 0)
             {
-                _Phase = EMMovePhase.EM_MOVE_END;
+                _Phase = EmMovePhase.EM_MOVE_END;
             }
             // 移動前処理
             else
@@ -59,12 +59,12 @@ namespace Frontier
                 _movingIndex    = 0;
                 _moveWaitTimer  = 0f;
 
-                _EMTransform = _enemy.transform;                                                        // 処理軽減のためtranformをキャッシュ
+                _ownerTransform = _enemy.transform;                                                        // 処理軽減のためtranformをキャッシュ
                 _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, true);                   // 移動アニメーション開始
                 _enemy.Params.TmpParam.SetCurrentGridIndex(_enemy.GetAi().GetDestinationGridIndex());   // グリッド情報更新
                 _stageCtrl.SetGridCursorControllerActive(true);                                         // 選択グリッドを表示
 
-                _Phase = EMMovePhase.EM_MOVE_WAIT;
+                _Phase = EmMovePhase.EM_MOVE_WAIT;
             }
         }
 
@@ -72,36 +72,36 @@ namespace Frontier
         {
             switch (_Phase)
             {
-                case EMMovePhase.EM_MOVE_WAIT:
+                case EmMovePhase.EM_MOVE_WAIT:
                     _moveWaitTimer += DeltaTimeProvider.DeltaTime;
                     if (Constants.ENEMY_SHOW_MOVE_RANGE_TIME <= _moveWaitTimer)
                     {
                         // 選択グリッドを一時非表示
                         _stageCtrl.SetGridCursorControllerActive(false);
 
-                        _Phase = EMMovePhase.EM_MOVE_EXECUTE;
+                        _Phase = EmMovePhase.EM_MOVE_EXECUTE;
                     }
 
                     break;
 
-                case EMMovePhase.EM_MOVE_EXECUTE:
-                    Vector3 dir = (_moveGridPos[_movingIndex] - _EMTransform.position).normalized;
-                    _EMTransform.position += dir * Constants.CHARACTER_MOVE_SPEED * DeltaTimeProvider.DeltaTime;
-                    _EMTransform.rotation = Quaternion.LookRotation(dir);
-                    Vector3 afterDir = (_moveGridPos[_movingIndex] - _EMTransform.position).normalized;
+                case EmMovePhase.EM_MOVE_EXECUTE:
+                    Vector3 dir = (_moveGridPos[_movingIndex] - _ownerTransform.position).normalized;
+                    _ownerTransform.position += dir * Constants.CHARACTER_MOVE_SPEED * DeltaTimeProvider.DeltaTime;
+                    _ownerTransform.rotation = Quaternion.LookRotation(dir);
+                    Vector3 afterDir = (_moveGridPos[_movingIndex] - _ownerTransform.position).normalized;
                     if (Vector3.Dot(dir, afterDir) < 0)
                     {
-                        _EMTransform.position = _moveGridPos[_movingIndex];
+                        _ownerTransform.position = _moveGridPos[_movingIndex];
                         _movingIndex++;
 
                         if (_moveGridPos.Count <= _movingIndex)
                         {
                             _enemy.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.MOVE, false);
-                            _Phase = EMMovePhase.EM_MOVE_END;
+                            _Phase = EmMovePhase.EM_MOVE_END;
                         }
                     }
                     break;
-                case EMMovePhase.EM_MOVE_END:
+                case EmMovePhase.EM_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
                     _enemy.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, true);
 

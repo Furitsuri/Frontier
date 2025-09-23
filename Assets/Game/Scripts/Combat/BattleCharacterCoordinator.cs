@@ -72,12 +72,12 @@ namespace Frontier.Battle
             {
                 foreach ( var chara in charaList )
                 {
-                    
-                    int gridIndex = chara.Params.CharacterParam.initGridIndex;  // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-                    chara.Params.TmpParam.SetCurrentGridIndex(gridIndex);       // ステージ上のグリッド位置の設定
-                    chara.transform.position = _stgCtrl.GetGridCharaStandPos(gridIndex);        // プレイヤーの画面上の位置を設定
-                    chara.transform.rotation = rot[(int)chara.Params.CharacterParam.initDir];   // 向きを設定
-                    _stgCtrl.GetTileInfo(gridIndex).SetExistCharacter(chara);   // 対応するグリッドに立っているキャラクターを登録
+                    int gridIndex = chara.Params.CharacterParam.initGridIndex;                                  // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
+                    chara.Params.TmpParam.SetCurrentGridIndex( gridIndex );                                     // ステージ上のグリッド位置の設定
+                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileInfo( gridIndex ).charaStandPos );   // プレイヤーの画面上の位置を設定
+                    chara.GetTransformHandler.SetRotation( rot[(int)chara.Params.CharacterParam.initDir] );     // 向きを設定
+                    _stgCtrl.GetTileInfo( gridIndex ).SetExistCharacter( chara );                               // 対応するグリッドに立っているキャラクターを登録
+                    chara.SetUnderfootTileDataAndInformation( _stgCtrl.GetTileData( gridIndex ), _stgCtrl.GetTileInfo( gridIndex ) );
                 }
             }
         }

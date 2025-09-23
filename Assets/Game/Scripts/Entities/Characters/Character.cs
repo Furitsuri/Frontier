@@ -26,18 +26,18 @@ namespace Frontier.Entities
         [Inject] protected CombatSkillEventController _combatSkillEventCtrl  = null;
         [Inject] protected StageController _stageCtrl                        = null;
 
-        private bool _isOrderedRotation         = false;
         private readonly TimeScale _timeScale   = new TimeScale();
         private ICombatAnimationSequence _combatAnimSeq;
-        private Quaternion _orderdRotation      = Quaternion.identity;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
-        protected BaseAi _baseAi = null;                                            // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
+        protected BaseAi _baseAi                    = null;                         // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
+        protected TransformHandler _transformHdlr   = null;                         // キャラクターのTransform操作を行うクラス
 
         protected ThinkingType _thikType                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null;                 // 戦闘時の対戦相手
+        protected StageTileData _underfootTileData          = null;                 // 足元のタイルデータ
         protected TileInformation _underfootTileInfo        = null;                 // 足元のタイル情報
         protected Bullet _bullet                            = null;                 // 矢などの弾
         protected SkillNotifierBase[] _skillNotifier        = null;                 // スキル使用通知
@@ -53,6 +53,7 @@ namespace Frontier.Entities
         public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
         public CharacterParameters Params => _params;                               // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
         public BaseAi GetAi() => _baseAi;                                           // AIの取得
+        public TransformHandler GetTransformHandler => _transformHdlr;           // Transform操作クラスの取得
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -89,6 +90,12 @@ namespace Frontier.Entities
                 () => _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false)
             };
 
+            if( null == _transformHdlr )
+            {
+                _transformHdlr = _hierarchyBld.InstantiateWithDiContainer<TransformHandler>( false );
+                NullCheck.AssertNotNull( _transformHdlr, nameof( _transformHdlr ) );
+            }
+
             // キャラクターモデルのマテリアルが設定されているObjectを取得し、
             // Materialと初期のColor設定を保存
             RegistMaterialsRecursively(this.transform, Constants.OBJECT_TAG_NAME_CHARA_SKIN_MESH);
@@ -96,17 +103,7 @@ namespace Frontier.Entities
 
         void Update()
         {
-            // 向き回転命令
-            if (_isOrderedRotation)
-            {
-                transform.rotation = Quaternion.Slerp( transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * DeltaTimeProvider.DeltaTime );
-
-                float angleDiff = Quaternion.Angle(transform.rotation, _orderdRotation);
-                if (Math.Abs(angleDiff) < Constants.CHARACTER_ROT_THRESHOLD)
-                {
-                    _isOrderedRotation = false;
-                }
-            }
+            _transformHdlr.Update( DeltaTimeProvider.DeltaTime ); // TransformHandlerの更新
 
             // 移動と攻撃が終了していれば、行動不可に遷移
             var endCommand = _params.TmpParam.isEndCommand;
@@ -118,8 +115,6 @@ namespace Frontier.Entities
 
         void LateUpdate()
         {
-            AdjustTransformPosition();  // 座標補正
-            AdjustTransformRotation();  // 角度補正
         }
 
         void OnDestroy()
@@ -185,13 +180,11 @@ namespace Frontier.Entities
         virtual public void Init()
         {
             _params.Init();
+            _transformHdlr.Init( this.transform );
 
             ResetElapsedTime();
-
-            // 戦闘時間管理クラスに自身の時間管理クラスを登録
-            _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );
-            // スキルの通知クラスを初期化
-            InitSkillNotifier();
+            _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale ); // 戦闘時間管理クラスに自身の時間管理クラスを登録
+            InitSkillNotifier();                            // スキルの通知クラスを初期化
         }
 
         /// <summary>
@@ -233,36 +226,16 @@ namespace Frontier.Entities
             return false;
         }
 
-        #endregion // VIRTUAL_PUBLIC_METHOD
-
-        #region VIRTUAL_PUBLIC_METHOD
-
         /// <summary>
-        /// キャラクターの座標を補正します
+        /// キャラクターを作成したパスに沿って移動させます
         /// </summary>
-        virtual protected void AdjustTransformPosition()
+        /// <param name="moveSpeedRate">移動速度レート</param>
+        /// <returns>移動が終了したか</returns>
+        virtual public bool UpdateMovePath( float moveSpeedRate )
         {
-            if( null == _underfootTileInfo )
-            {
-                return;
-            }
-
-            transform.position = new Vector3( transform.position.x, _underfootTileInfo.charaStandPos.y, transform.position.z );
+            return false;
         }
 
-        /// <summary>
-        /// キャラクターの角度を補正します
-        /// </summary>
-        virtual protected void AdjustTransformRotation()
-        {
-            // キャラクターの向きを保ったまま、常にXZ平面に対して垂直にする
-            Vector3 forward = transform.forward;
-            forward.y = 0; // Y成分を消す
-            if ( 0.0001f < forward.sqrMagnitude )
-            {
-                transform.rotation = Quaternion.LookRotation( forward, Vector3.up );
-            }
-        }
         #endregion // VIRTUAL_PUBLIC_METHOD
 
         #region PUBLIC_METHOD
@@ -292,17 +265,14 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
+        /// 
         /// </summary>
-        /// <param name="targetPos">向きを合わせる位置</param>
-        public void RotateToPosition(in Vector3 targetPos)
+        /// <param name="tileData"></param>
+        /// <param name="tileInfo"></param>
+        public void SetUnderfootTileDataAndInformation( StageTileData tileData, TileInformation tileInfo )
         {
-            var selfPos = _stageCtrl.GetGridCharaStandPos(_params.TmpParam.gridIndex);
-            var direction = targetPos - selfPos;
-            direction.y = 0f;
-
-            _orderdRotation = Quaternion.LookRotation(direction);
-            _isOrderedRotation = true;
+            _underfootTileData = tileData;
+            _underfootTileInfo = tileInfo;
         }
 
         /// <summary>

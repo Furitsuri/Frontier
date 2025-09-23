@@ -221,7 +221,7 @@ namespace Frontier.Stage
         {
             float halfSize = 0.5f * gridSize;
 
-            Vector3 tileScale = _stageDataProvider.CurrentData.GetTile(Index).GetTileScale();
+            Vector3 tileScale = _stageDataProvider.CurrentData.GetTileData(Index).GetTileScale();
 
             Vector3[] linePoints = new Vector3[]
             {

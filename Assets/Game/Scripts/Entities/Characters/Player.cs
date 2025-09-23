@@ -31,70 +31,8 @@ namespace Frontier.Entities
         }
 
         private bool _isPrevMoving = false;
-        private Vector3 _movementDestination = Vector3.zero;
         private PrevMoveInfo _prevMoveInfo;
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
-
-        /// <summary>
-        /// プレイヤーキャラクターを作成したパスに沿って移動させます
-        /// </summary>
-        /// <param name="moveSpeedRate">移動速度レート</param>
-        /// <returns>移動が終了したか</returns>
-        public bool UpdateMovePath( float moveSpeedRate = 1.0f )
-        {
-            // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
-            if ( _baseAi.MovePathHandler.IsEndPathTrace() ) { return true; }
-
-            bool toggleAnimation    = false;
-            var focusedTileInfo     = _baseAi.MovePathHandler.GetFocusedTileInformation();
-            var focusedTilePos      = focusedTileInfo.charaStandPos;
-
-            Vector3 dir         = (focusedTilePos - transform.position).normalized;
-            Vector3 afterPos    = transform.position + dir * Constants.CHARACTER_MOVE_SPEED * moveSpeedRate * DeltaTimeProvider.DeltaTime;
-            Vector3 afterDir    = (focusedTilePos - afterPos);
-            afterDir.y          = 0f;
-            afterDir            = afterDir.normalized;
-
-            Vector3 diffXZ = focusedTilePos - afterPos;
-            diffXZ.y = 0f;
-
-            // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
-            if ( Vector3.Dot( dir, afterDir ) <= 0 )
-            {
-                // 位置とタイル位置情報を更新
-                transform.position          = focusedTilePos;
-                _params.TmpParam.gridIndex  = _baseAi.MovePathHandler.GetFocusedWaypointIndex();
-
-                if ( _isPrevMoving ) { toggleAnimation = true; }
-
-                _baseAi.MovePathHandler.IncrementFocusedWaypointIndex();  // 目標インデックス値をインクリメント
-
-                // 最終インデックスに到達している場合は移動アニメーションを停止して終了
-                if ( _baseAi.MovePathHandler.IsEndPathTrace() )
-                {
-                    _isPrevMoving = false;
-                }
-            }
-            else
-            {
-                Vector3 diffPositionXZ = focusedTilePos - transform.position;
-                diffPositionXZ.y = 0f;
-                if ( diffPositionXZ.sqrMagnitude < TILE_SIZE * TILE_SIZE )
-                {
-                    _underfootTileInfo = focusedTileInfo;
-                }
-
-                transform.position = afterPos;
-                transform.rotation = Quaternion.LookRotation( dir );
-
-                if ( !_isPrevMoving ) toggleAnimation = true;
-                _isPrevMoving = true;
-            }
-
-            if ( toggleAnimation ) { AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving ); }
-
-            return !_isPrevMoving;
-        }
 
         /// <summary>
         /// 現在の移動前情報を適応します
@@ -102,7 +40,7 @@ namespace Frontier.Entities
         public void HoldBeforeMoveInfo()
         {
             _prevMoveInfo.tmpParam  = _params.TmpParam.Clone();
-            _prevMoveInfo.rotDir    = transform.rotation;
+            _prevMoveInfo.rotDir    = _transformHdlr.GetRotation();
         }
 
         /// <summary>
@@ -120,25 +58,6 @@ namespace Frontier.Entities
         {
             _params.TmpParam = _prevMoveInfo.tmpParam;
             SetPosition( _params.TmpParam.gridIndex, _prevMoveInfo.rotDir );
-        }
-
-        /// <summary>
-        /// 移動入力受付の可否判定を行います
-        /// TODO : 必要がなくなった可能性があるため、不必要と確信出来れば削除
-        /// </summary>
-        /// <returns>移動入力の受付可否</returns>
-        public bool IsAcceptableMovementOperation(float gridSize)
-        {
-            if (_isPrevMoving)
-            {
-                var diff = _movementDestination - transform.position;
-                diff.y = 0;
-                if (diff.sqrMagnitude <= Mathf.Pow(gridSize * Constants.ACCEPTABLE_INPUT_TILE_SIZE_RATIO, 2f)) return true;
-
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -215,6 +134,93 @@ namespace Frontier.Entities
             _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(index).SetFlickEnabled(_params.TmpParam.isUseSkills[index]);
 
             return true;
+        }
+
+        /// <summary>
+        /// プレイヤーキャラクターを作成したパスに沿って移動させます
+        /// </summary>
+        /// <param name="moveSpeedRate">移動速度レート</param>
+        /// <returns>移動が終了したか</returns>
+        override public bool UpdateMovePath( float moveSpeedRate = 1.0f )
+        {
+            var pathHdlr = _baseAi.MovePathHandler;
+
+            // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
+            if( pathHdlr.IsEndPathTrace() ) { return true; }
+
+            bool toggleAnimation    = false;
+            var focusedTileData     = pathHdlr.GetFocusedTileData();
+            var focusedTileInfo     = pathHdlr.GetFocusedTileInformation();
+            var focusedTilePos      = focusedTileInfo.charaStandPos;
+            Vector3 prevDirXZ       = ( focusedTilePos - _transformHdlr.GetPreviousPosition() ).XZ().normalized;
+            Vector3 focusDirXZ      = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+            Action<float, float, Vector3, Vector3> jumpAction = ( float dprtHeight, float destHeight, Vector3 dprtPos, Vector3 destPos ) =>
+            {
+                // 高低差が一定以上ある場合はジャンプ動作を開始
+                if( NEED_JUMP_HEIGHT_DIFFERENCE <= ( int ) Math.Abs( destHeight - dprtHeight ) )
+                {
+                    _transformHdlr.StartJump( in dprtPos, in destPos, moveSpeedRate );
+                }
+            };
+
+            // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
+            if( Vector3.Dot( prevDirXZ, focusDirXZ ) <= 0 )
+            {
+                _transformHdlr.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
+                _transformHdlr.ResetVelocityAcceleration();     // 速度、加速度をリセット
+                _params.TmpParam.gridIndex  = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
+                pathHdlr.IncrementFocusedWaypointIndex();                            // 目標インデックス値をインクリメントして次の目標タイルに更新
+
+                // 最終インデックスに到達している場合は移動アニメーションを停止して終了
+                if( pathHdlr.IsEndPathTrace() )
+                {
+                    if( _isPrevMoving ) { toggleAnimation = true; }
+
+                    _isPrevMoving = false;
+                }
+                // まだ移動が続く場合は次の目標タイルを目指して速度と向きを設定
+                else
+                {
+                    var nextTileData    = pathHdlr.GetFocusedTileData();
+                    var nextTileInfo    = pathHdlr.GetFocusedTileInformation();
+                    var nextTilePos     = nextTileInfo.charaStandPos;
+                    Vector3 nextDirXZ   = ( nextTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+
+                    _transformHdlr.SetVelocityAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _transformHdlr.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
+
+                    jumpAction( focusedTileData.Height, nextTileData.Height, focusedTilePos, nextTilePos );
+                }
+            }
+            else
+            {
+                // 移動開始の場合は速度と向きを設定
+                if( !_isPrevMoving )
+                {
+                    var currentTileData    = _stageCtrl.GetTileData( Params.TmpParam.gridIndex );
+                    var currentTileInfo    = _stageCtrl.GetTileInfo( Params.TmpParam.gridIndex );
+
+                    _transformHdlr.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _transformHdlr.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
+                    toggleAnimation = true;
+
+                    jumpAction( currentTileData.Height, focusedTileData.Height, currentTileInfo.charaStandPos, focusedTilePos );
+                }
+
+                // キャラクターの下にあるタイル情報を更新
+                Vector3 diffPositionXZ = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ();
+                if( diffPositionXZ.sqrMagnitude < Math.Pow( TILE_SIZE, 2f ) )   // TODO : 0.5f *TILE_SIZEの間違いでは？
+                {
+                    _underfootTileData = focusedTileData;
+                    _underfootTileInfo = focusedTileInfo;
+                }
+
+                _isPrevMoving = true;
+            }
+
+            if( toggleAnimation ) { AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving ); } // 移動アニメーションの切替
+
+            return !_isPrevMoving;
         }
     }
 }

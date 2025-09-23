@@ -52,10 +52,10 @@ namespace Frontier
             _playerSkillNames = _targetCharacter.Params.CharacterParam.GetEquipSkillNames();
 
             // 攻撃者の向きを設定
-            var targetGridInfo = _stageCtrl.GetTileInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
-            _attackCharacter.RotateToPosition(targetGridInfo.charaStandPos);
-            var attackerGridInfo = _stageCtrl.GetTileInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
-            _targetCharacter.RotateToPosition(attackerGridInfo.charaStandPos);
+            var targetGridInfo = _stageCtrl.GetTileInfo( _targetCharacter.Params.TmpParam.GetCurrentGridIndex() );
+            _attackCharacter.GetTransformHandler.RotateToPosition( targetGridInfo.charaStandPos );
+            var attackerGridInfo = _stageCtrl.GetTileInfo( _attackCharacter.Params.TmpParam.GetCurrentGridIndex() );
+            _targetCharacter.GetTransformHandler.RotateToPosition( attackerGridInfo.charaStandPos );
 
             // 攻撃シーケンスを初期化
             _attackSequence.Init();

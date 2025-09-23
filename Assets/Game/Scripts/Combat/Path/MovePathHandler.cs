@@ -204,10 +204,15 @@ public class MovePathHandler
         return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, ImpassableFlag() ) ) );
     }
 
+    public StageTileData GetFocusedTileData()
+    {
+        return _stageCtrl.GetTileData( _proposedMovePath[_focusedWaypointIndex].TileIndex );
+    }
+
     /// <summary>
-    /// 次の目標座標を取得します
+    /// 次の目標タイルのタイル情報を取得します
     /// </summary>
-    /// <returns>目標座標</returns>
+    /// <returns>タイル情報</returns>
     public TileInformation GetFocusedTileInformation()
     {
         return _stageCtrl.GetTileInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex );

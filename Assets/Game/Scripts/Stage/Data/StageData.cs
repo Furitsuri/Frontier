@@ -67,7 +67,7 @@ namespace Frontier.Stage
 
         public StageTileData GetTile(int x, int y) => _tileDatas[x + (y * _gridColumnNum)];
 
-        public StageTileData GetTile(int index) => _tileDatas[index];
+        public StageTileData GetTileData(int index) => _tileDatas[index];
 
         /// <summary>
         /// 指定された行のタイルデータをList状にしてまとめて取得します
