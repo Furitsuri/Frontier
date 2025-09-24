@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using static Constants;
 
 namespace Frontier.Entities
 {
@@ -31,9 +32,9 @@ namespace Frontier.Entities
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
+        protected bool _isPrevMoving                = false;
         protected BaseAi _baseAi                    = null;                         // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
         protected TransformHandler _transformHdlr   = null;                         // キャラクターのTransform操作を行うクラス
-
         protected ThinkingType _thikType                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
         protected Character _opponent                       = null;                 // 戦闘時の対戦相手
@@ -177,6 +178,8 @@ namespace Frontier.Entities
         /// </summary>
         virtual public void Init()
         {
+            _isPrevMoving = false;
+
             _params.Init();
             _transformHdlr.Init( this.transform );
 
@@ -225,13 +228,82 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// キャラクターを作成したパスに沿って移動させます
+        /// キャラクターを、作成済みのパスに沿って移動させます
         /// </summary>
         /// <param name="moveSpeedRate">移動速度レート</param>
         /// <returns>移動が終了したか</returns>
-        virtual public bool UpdateMovePath( float moveSpeedRate )
+        virtual public bool UpdateMovePath( float moveSpeedRate = 1.0f )
         {
-            return false;
+            var pathHdlr = _baseAi.MovePathHandler;
+
+            // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
+            if( pathHdlr.IsEndPathTrace() ) { return true; }
+
+            bool toggleAnimation = false;
+            var focusedTileData = pathHdlr.GetFocusedTileData();
+            var focusedTileInfo = pathHdlr.GetFocusedTileInformation();
+            var focusedTilePos = focusedTileInfo.charaStandPos;
+            Vector3 prevDirXZ = ( focusedTilePos - _transformHdlr.GetPreviousPosition() ).XZ().normalized;
+            Vector3 focusDirXZ = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+            Action<float, float, Vector3, Vector3> jumpAction = ( float dprtHeight, float destHeight, Vector3 dprtPos, Vector3 destPos ) =>
+            {
+                // 高低差が一定以上ある場合はジャンプ動作を開始
+                if( NEED_JUMP_HEIGHT_DIFFERENCE <= ( int ) Math.Abs( destHeight - dprtHeight ) )
+                {
+                    _transformHdlr.StartJump( in dprtPos, in destPos, moveSpeedRate );
+                }
+            };
+
+            // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
+            if( Vector3.Dot( prevDirXZ, focusDirXZ ) <= 0 )
+            {
+                _transformHdlr.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
+                _transformHdlr.ResetVelocityAcceleration();     // 速度、加速度をリセット
+                _params.TmpParam.gridIndex = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
+                pathHdlr.IncrementFocusedWaypointIndex();                            // 目標インデックス値をインクリメントして次の目標タイルに更新
+
+                // 最終インデックスに到達している場合は移動アニメーションを停止して終了
+                if( pathHdlr.IsEndPathTrace() )
+                {
+                    if( _isPrevMoving ) { toggleAnimation = true; }
+
+                    _isPrevMoving = false;
+                }
+                // まだ移動が続く場合は次の目標タイルを目指して速度と向きを設定
+                else
+                {
+                    var nextTileData = pathHdlr.GetFocusedTileData();
+                    var nextTileInfo = pathHdlr.GetFocusedTileInformation();
+                    var nextTilePos = nextTileInfo.charaStandPos;
+                    Vector3 nextDirXZ = ( nextTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+
+                    _transformHdlr.SetVelocityAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _transformHdlr.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
+
+                    jumpAction( focusedTileData.Height, nextTileData.Height, focusedTilePos, nextTilePos );
+                }
+            }
+            else
+            {
+                // 移動開始の場合は速度と向きを設定
+                if( !_isPrevMoving )
+                {
+                    var currentTileData = _stageCtrl.GetTileData( Params.TmpParam.gridIndex );
+                    var currentTileInfo = _stageCtrl.GetTileInfo( Params.TmpParam.gridIndex );
+
+                    _transformHdlr.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _transformHdlr.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
+                    toggleAnimation = true;
+
+                    jumpAction( currentTileData.Height, focusedTileData.Height, currentTileInfo.charaStandPos, focusedTilePos );
+                }
+
+                _isPrevMoving = true;
+            }
+
+            if( toggleAnimation ) { AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, _isPrevMoving ); } // 移動アニメーションの切替
+
+            return !_isPrevMoving;
         }
 
         #endregion // VIRTUAL_PUBLIC_METHOD

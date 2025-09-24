@@ -10,7 +10,7 @@ namespace Frontier
             base.Init();
 
             // 選択しているプレイヤーの行動をすべて終了
-            _selectPlayer.Params.TmpParam.EndAction();
+            _plOwner.Params.TmpParam.EndAction();
 
             // 更新せずに終了
             Back();
@@ -22,8 +22,8 @@ namespace Frontier
         override protected void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
+            _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
     }
 }
