@@ -9,7 +9,7 @@ namespace Frontier
 {
     public class PlPhaseStateBase : PhaseStateBase
     {
-        protected Player _selectPlayer = null;
+        protected Player _plOwner = null;
 
         virtual protected void AdaptSelectPlayer() { }
 
@@ -18,11 +18,11 @@ namespace Frontier
         /// </summary>
         protected void Rewind()
         {
-            if ( _selectPlayer == null ) { return; }
+            if ( _plOwner == null ) { return; }
 
-            _selectPlayer.RewindToPreviousState();
+            _plOwner.RewindToPreviousState();
             _stageCtrl.UpdateGridInfo();    // グリッド情報を更新
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _selectPlayer );
+            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _plOwner );
         }
 
         override public void Init()

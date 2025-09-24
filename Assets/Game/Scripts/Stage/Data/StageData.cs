@@ -62,11 +62,8 @@ namespace Frontier.Stage
         public StageTileData[] TileDatas => _tileDatas;
         public float WidthX() { return TILE_SIZE * _gridColumnNum; }
         public float WidthZ() { return TILE_SIZE * _gridRowNum; }
-
         public int GetTileTotalNum() { return _gridRowNum * _gridColumnNum; }
-
         public StageTileData GetTile(int x, int y) => _tileDatas[x + (y * _gridColumnNum)];
-
         public StageTileData GetTileData(int index) => _tileDatas[index];
 
         /// <summary>
@@ -127,11 +124,8 @@ namespace Frontier.Stage
         }
 
         public void SetGridRowNum( int rowNum ) {  _gridRowNum = rowNum;}
-
         public void SetGridColNum( int colNum ) { _gridColumnNum = colNum; }
-
         public void SetTile(int index, StageTileData tile) => _tileDatas[index] = tile;
-
         public void SetTile(int x, int y, StageTileData tile) => _tileDatas[x + (y * _gridColumnNum )] = tile;
     }
 }

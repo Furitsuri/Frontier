@@ -6,20 +6,20 @@ using static Constants;
 public class TransformHandler
 {
     private Transform _transform;
-    private Vector3 _velocity;                                  // 速度
-    private Vector3 _accel;                                     // 加速度
-    private Vector3 _prevPosition;                              // 1フレーム前の位置
-    private Quaternion _prevRotation;                           // 1フレーム前の回転
-    private Quaternion _orderdRotation = Quaternion.identity;   // 指示されている回転量
+    private Vector3 _velocity;                    // 速度
+    private Vector3 _accel;                       // 加速度
+    private Vector3 _prevPosition;                // 1フレーム前の位置
+    private Quaternion _prevRotation;             // 1フレーム前の回転
+    private Quaternion? _orderdRotation = null;   // 指示されている回転量(nullは指示がないことを示す)
 
     public void Init( Transform transform )
     {
         _transform      = transform;
-        _orderdRotation = Quaternion.identity;
         _velocity       = new Vector3( 0, 0, 0 );
         _accel          = new Vector3( 0, 0, 0 );
         _prevPosition   = _transform.position;
         _prevRotation   = _transform.rotation;
+        _orderdRotation = null;
     }
 
     public void Update( float deltaTime )
@@ -35,14 +35,14 @@ public class TransformHandler
         AdjustRotationToXZPlane();  // キャラクターの角度をXZ平面に垂直となるように補正
 
         // 向き回転命令
-        if( _orderdRotation != Quaternion.identity )
+        if( _orderdRotation != null )
         {
-            _transform.rotation = Quaternion.Slerp( _transform.rotation, _orderdRotation, Constants.CHARACTER_ROT_SPEED * DeltaTimeProvider.DeltaTime );
+            _transform.rotation = Quaternion.Slerp( _transform.rotation, _orderdRotation.Value, Constants.CHARACTER_ROT_SPEED * DeltaTimeProvider.DeltaTime );
 
-            float angleDiff = Quaternion.Angle( _transform.rotation, _orderdRotation );
+            float angleDiff = Quaternion.Angle( _transform.rotation, _orderdRotation.Value );
             if( Mathf.Abs( angleDiff ) < Constants.CHARACTER_ROT_THRESHOLD )
             {
-                _orderdRotation = Quaternion.identity;
+                _orderdRotation = null;
             }
         }
     }

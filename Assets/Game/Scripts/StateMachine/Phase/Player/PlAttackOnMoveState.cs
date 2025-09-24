@@ -19,16 +19,16 @@ namespace Frontier
             NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
             _stageCtrl.ClearGridCursroBind();                               // 念のためバインドを解除
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _selectPlayer );     // グリッドカーソル位置を元に戻す
+            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _plOwner );     // グリッドカーソル位置を元に戻す
 
-            _playerSkillNames   = _selectPlayer.Params.CharacterParam.GetEquipSkillNames();
+            _playerSkillNames   = _plOwner.Params.CharacterParam.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex    = _selectPlayer.Params.TmpParam.gridIndex;
+            _curentGridIndex    = _plOwner.Params.TmpParam.gridIndex;
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _selectPlayer;
+            _attackCharacter = _plOwner;
             var param = _attackCharacter.Params.CharacterParam;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
@@ -99,8 +99,8 @@ namespace Frontier
         /// </summary>
         override protected void AdaptSelectPlayer()
         {
-            _selectPlayer = _stageCtrl.GetBindCharacterFromGridCursor() as Player;
-            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
+            _plOwner = _stageCtrl.GetBindCharacterFromGridCursor() as Player;
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
     }
 }

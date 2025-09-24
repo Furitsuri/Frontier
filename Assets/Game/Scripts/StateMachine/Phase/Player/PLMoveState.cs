@@ -30,21 +30,21 @@ namespace Frontier
             base.Init();
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            if( _plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
             }
             else { _phase = PlMovePhase.PL_MOVE; }
 
-            _departGridIndex = _selectPlayer.PrevMoveInformaiton.tmpParam.gridIndex;
+            _departGridIndex = _plOwner.PrevMoveInformaiton.tmpParam.gridIndex;
 
             _stageCtrl.ApplyAllTileInfoFromHeld();
-            _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _selectPlayer );
+            _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
-            bool isAttackable = !_selectPlayer.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
-            var param = _selectPlayer.Params.CharacterParam;
+            bool isAttackable = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
+            var param = _plOwner.Params.CharacterParam;
             _stageCtrl.RegistMoveableInfo( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, 0f, param.characterTag, isAttackable );
             _stageCtrl.DrawMoveableGrids( _departGridIndex, param.moveRange, param.attackRange );
 
@@ -52,12 +52,12 @@ namespace Frontier
             Func<int, object[], bool> condition = ( index, args ) =>
             {
                 var tileInfo = _stageCtrl.GetTileInfo( index );
-                bool ownerExist = ( tileInfo.charaTag == _selectPlayer.Params.CharacterParam.characterTag ) &&
-                                    ( tileInfo.charaIndex == _selectPlayer.Params.CharacterParam.characterIndex );
+                bool ownerExist = ( tileInfo.charaTag == _plOwner.Params.CharacterParam.characterTag ) &&
+                                    ( tileInfo.charaIndex == _plOwner.Params.CharacterParam.characterIndex );
                 return ( 0 <= tileInfo.estimatedMoveRange || ownerExist );
             };
 
-            _selectPlayer.GetAi().MovePathHandler.SetUpCandidatePathIndexs( true, condition );  // 移動候補となるタイル情報を準備
+            _plOwner.GetAi().MovePathHandler.SetUpCandidatePathIndexs( true, condition );  // 移動候補となるタイル情報を準備
         }
 
         override public bool Update()
@@ -65,7 +65,7 @@ namespace Frontier
             if( base.Update() )
             {
                 // キャラクターのグリッドの位置に選択グリッドの位置を戻す
-                _stageCtrl.FollowFootprint( _selectPlayer );
+                _stageCtrl.FollowFootprint( _plOwner );
 
                 return true;
             }
@@ -74,12 +74,12 @@ namespace Frontier
             {
                 case PlMovePhase.PL_MOVE:
                     SetupMovePath();
-                    _selectPlayer.UpdateMovePath();
+                    _plOwner.UpdateMovePath();
                     break;
 
                 case PlMovePhase.PL_MOVE_RESERVE_END:
                     // 移動完了後に終了へ移行
-                    if( _selectPlayer.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
+                    if( _plOwner.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
                     {
                         _phase = PlMovePhase.PL_MOVE_END;
                     }
@@ -87,9 +87,9 @@ namespace Frontier
 
                 case PlMovePhase.PL_MOVE_END:
                     // 保険として、終了のタイミングで更新し直す
-                    _selectPlayer.Params.TmpParam.gridIndex = _stageCtrl.GetCurrentGridIndex();
+                    _plOwner.Params.TmpParam.gridIndex = _stageCtrl.GetCurrentGridIndex();
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _selectPlayer.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.MOVE, true );
+                    _plOwner.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.MOVE, true );
                     Back();     // コマンド選択に戻る
 
                     return true;
@@ -133,8 +133,8 @@ namespace Frontier
         override protected void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
+            _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 
         /// <summary>
@@ -250,10 +250,10 @@ namespace Frontier
         /// </summary>
         private void SetupMovePath()
         {
-            int departingTileIndex = _selectPlayer.Params.TmpParam.gridIndex;
-            int destinationTileIndex = _stageCtrl.GetCurrentGridIndex();
-            MovePathHandler pathHdlr = _selectPlayer.GetAi().MovePathHandler;
-            bool isEndPathTrace = pathHdlr.IsEndPathTrace();
+            int departingTileIndex      = _plOwner.Params.TmpParam.gridIndex;
+            int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
+            MovePathHandler pathHdlr    = _plOwner.GetAi().MovePathHandler;
+            bool isEndPathTrace         = pathHdlr.IsEndPathTrace();
 
             // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
             if( !isEndPathTrace )
@@ -261,7 +261,7 @@ namespace Frontier
                 departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
             }
 
-            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _selectPlayer.Params.CharacterParam.jumpForce, isEndPathTrace );
+            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, isEndPathTrace );
         }
 
         /// <summary>
@@ -283,9 +283,9 @@ namespace Frontier
             if( !Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
-            (int, int) ranges = _stageCtrl.CalcurateRanges( _selectPlayer.Params.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
+            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.Params.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
 
-            return ranges.Item1 + ranges.Item2 <= _selectPlayer.Params.CharacterParam.attackRange;
+            return ranges.Item1 + ranges.Item2 <= _plOwner.Params.CharacterParam.attackRange;
         }
     }
 }

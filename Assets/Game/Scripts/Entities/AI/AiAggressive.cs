@@ -28,7 +28,7 @@ namespace Frontier.Entities.Ai
             bool isAttackable = !selfTmpParam.isEndCommand[(int)Command.COMMAND_TAG.ATTACK];
             _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, 0f, selfParam.characterTag, isAttackable);
 
-            for (int i = 0; i < _stageData.GetTileTotalNum(); ++i)
+            for (int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i)
             {
                 var info = _stageCtrl.GetTileInfo(i);
                 // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得

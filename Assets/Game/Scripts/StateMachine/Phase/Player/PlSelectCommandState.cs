@@ -22,7 +22,7 @@ namespace Frontier
 
             // UI側へこのスクリプトを登録し、UIを表示
             List<Command.COMMAND_TAG> executableCommands;
-            _selectPlayer.FetchExecutableCommand(out executableCommands, _stageCtrl);
+            _plOwner.FetchExecutableCommand(out executableCommands, _stageCtrl);
 
             // 入力ベース情報の設定
             List<int> commandIndexs = new List<int>();
@@ -45,7 +45,7 @@ namespace Frontier
             base.Init();
 
             // 可能な行動が全て終了している場合は即終了
-            if (_selectPlayer.Params.TmpParam.IsEndAction())
+            if (_plOwner.Params.TmpParam.IsEndAction())
             {
                 return;
             }
@@ -59,7 +59,7 @@ namespace Frontier
         /// <returns>0以上の値のとき次の状態に遷移します</returns>
         override public bool Update()
         {
-            if( _selectPlayer.Params.TmpParam.IsEndAction() )
+            if( _plOwner.Params.TmpParam.IsEndAction() )
             {
                 Back();
                 return true;
@@ -68,11 +68,11 @@ namespace Frontier
             if (base.Update())
             {
                 // コマンドのうち、移動のみが終了している場合は移動前の状態に戻れるように          
-                if (_selectPlayer.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_selectPlayer.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
+                if (_plOwner.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_plOwner.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
                 {
-                    _stageCtrl.FollowFootprint(_selectPlayer);
+                    _stageCtrl.FollowFootprint(_plOwner);
                     _stageCtrl.UpdateGridInfo();
-                    _selectPlayer.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
+                    _plOwner.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
                 }
 
                 return true;
@@ -91,8 +91,8 @@ namespace Frontier
             //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
             if ( TransitIndex == (int)Command.COMMAND_TAG.MOVE )
             {
-                _selectPlayer.HoldBeforeMoveInfo();
-                _stageCtrl.HoldFootprint( _selectPlayer );  // キャラクターの現在の位置情報を保持
+                _plOwner.HoldBeforeMoveInfo();
+                _stageCtrl.HoldFootprint( _plOwner );  // キャラクターの現在の位置情報を保持
                 _stageCtrl.HoldAllTileInfo();               // 移動中直接攻撃時にキャンセルした際の処理に対応するため、現在のタイル情報を保持
             }
 
@@ -121,8 +121,8 @@ namespace Frontier
         override protected void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
+            _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Frontier
             if( base.AcceptCancel(isCancel) )
             {
                 // 以前の状態に巻き戻せる場合は状態を巻き戻す
-                if (_selectPlayer.IsRewindStatePossible())
+                if (_plOwner.IsRewindStatePossible())
                 {
                     Rewind();
                 }

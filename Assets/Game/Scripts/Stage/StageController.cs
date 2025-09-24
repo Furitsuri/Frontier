@@ -639,7 +639,7 @@ namespace Frontier.Stage
         /// <returns>指定インデックスのグリッド情報</returns>
         public ref TileInformation GetTileInfo( int index )
         {
-            return ref _stageDataProvider.CurrentData.GetTileInfo( index );
+            return ref _stageDataProvider.CurrentData.GetTileData( index ).GetTileInfo();
         }
 
         /// <summary>

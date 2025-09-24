@@ -19,11 +19,11 @@ namespace Frontier.Entities.Ai
             public List<int> targetCharaIndexs;
         }
 
-        [Inject] protected BattleRoutineController _btlRtnCtrl;
-        [Inject] protected HierarchyBuilderBase _hierarchyBld;
-        [Inject] protected StageController _stageCtrl;
-        [Inject] protected StageData _stageData;
-        
+        [Inject] protected BattleRoutineController _btlRtnCtrl      = null;
+        [Inject] protected HierarchyBuilderBase _hierarchyBld       = null;
+        [Inject] protected StageController _stageCtrl               = null;
+        [Inject] protected IStageDataProvider _stageDataProvider    = null;
+
         protected bool _isDetermined                                = false;    // 既に移動対象や攻撃対象を決定しているか 
         protected int _destinationGridIndex                         = -1;       // 移動目標グリッドのインデックス値
         protected float[] _gridEvaluationValues                     = null;     // 各グリッドの評価値
@@ -92,7 +92,7 @@ namespace Frontier.Entities.Ai
                 (() => baseIndex % GridColumnNum != 0,                       baseIndex - 1),
                 (() => (baseIndex + 1) % GridColumnNum != 0,                 baseIndex + 1),
                 (() => 0 <= (baseIndex - GridColumnNum),                     baseIndex - GridColumnNum),
-                (() => (baseIndex + GridColumnNum) < _stageData.GetTileTotalNum(), baseIndex + GridColumnNum)
+                (() => (baseIndex + GridColumnNum) < _stageDataProvider.CurrentData.GetTileTotalNum(), baseIndex + GridColumnNum)
             };
 
             foreach ( var tuple in tuples )
@@ -155,7 +155,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         override public void Init(Character owner )
         {
-            _gridEvaluationValues   = new float[_stageData.GetTileTotalNum()];
+            _gridEvaluationValues   = new float[_stageDataProvider.CurrentData.GetTileTotalNum()];
             _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
             _movePathHandler        = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false );
 

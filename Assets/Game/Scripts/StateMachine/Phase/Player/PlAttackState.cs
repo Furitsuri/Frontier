@@ -34,14 +34,14 @@ namespace Frontier
         {
             base.Init();
 
-            _playerSkillNames   = _selectPlayer.Params.CharacterParam.GetEquipSkillNames();
+            _playerSkillNames   = _plOwner.Params.CharacterParam.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _selectPlayer;
+            _attackCharacter = _plOwner;
             var param = _attackCharacter.Params.CharacterParam;
             _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
             _stageCtrl.DrawAttackableGrids(_curentGridIndex);
@@ -83,7 +83,7 @@ namespace Frontier
                         var targetGridInfo = _stageCtrl.GetTileInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
                         _attackCharacter.GetTransformHandler.RotateToPosition(targetGridInfo.charaStandPos );
                         var attackerGridInfo = _stageCtrl.GetTileInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
-                        _attackCharacter.GetTransformHandler.RotateToPosition(attackerGridInfo.charaStandPos);
+                        _targetCharacter.GetTransformHandler.RotateToPosition(attackerGridInfo.charaStandPos);
                     }
 
                     // ダメージ予測表示UIを表示
@@ -191,8 +191,8 @@ namespace Frontier
         override protected void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            _selectPlayer = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
-            NullCheck.AssertNotNull( _selectPlayer, nameof( _selectPlayer ) );
+            _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Frontier
 
             if (_playerSkillNames[0].Length <= 0 ) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(0, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill(0, SituationType.ATTACK);
         }
 
         override protected bool CanAcceptSub2()
@@ -249,7 +249,7 @@ namespace Frontier
 
             if (_playerSkillNames[1].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(1, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill(1, SituationType.ATTACK);
         }
 
         override protected bool CanAcceptSub3()
@@ -258,7 +258,7 @@ namespace Frontier
 
             if (_playerSkillNames[2].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(2, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill(2, SituationType.ATTACK);
         }
 
         override protected bool CanAcceptSub4()
@@ -267,7 +267,7 @@ namespace Frontier
 
             if (_playerSkillNames[3].Length <= 0) return false;
 
-            return _selectPlayer.CanToggleEquipSkill(3, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill(3, SituationType.ATTACK);
         }
 
         /// <summary>
@@ -328,28 +328,28 @@ namespace Frontier
         {
             if ( !isInput ) return false;
 
-            return _selectPlayer.ToggleUseSkillks(0);
+            return _plOwner.ToggleUseSkillks(0);
         }
 
         override protected bool AcceptSub2(bool isInput)
         {
             if ( !isInput ) return false;
 
-            return _selectPlayer.ToggleUseSkillks(1);
+            return _plOwner.ToggleUseSkillks(1);
         }
 
         override protected bool AcceptSub3(bool isInput)
         {
             if ( !isInput ) return false;
 
-            return _selectPlayer.ToggleUseSkillks(2);
+            return _plOwner.ToggleUseSkillks(2);
         }
 
         override protected bool AcceptSub4(bool isInput)
         {
             if ( !isInput ) return false;
 
-            return _selectPlayer.ToggleUseSkillks(3);
+            return _plOwner.ToggleUseSkillks(3);
         }
     }
 }

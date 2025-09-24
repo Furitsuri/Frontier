@@ -1,9 +1,9 @@
 ﻿using Frontier.Combat;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
+using System;
+using UnityEngine;
+using static Constants;
 
 namespace Frontier.Entities
 {
