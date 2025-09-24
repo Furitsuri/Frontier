@@ -673,7 +673,7 @@ namespace Frontier.Stage
             Func<int, int, ( bool, bool )> canJumpOver = ( int a, int b ) =>
             {
                 float diffHeight = stageData.GetTileData( b ).Height - stageData.GetTileData( a ).Height;
-                return ( ( 0 < diffHeight ) ? (int)Math.Ceiling( diffHeight ) <= jumpForce : true, ( 0 < -diffHeight ) ? (int)Math.Ceiling( -diffHeight ) <= jumpForce : true );
+                return ( ( 0 < diffHeight ) ? (int)Mathf.Floor( diffHeight ) <= jumpForce : true, ( 0 < -diffHeight ) ? (int)Mathf.Floor( -diffHeight ) <= jumpForce : true );
             };
 
             // 出発グリッドからのインデックスの差を取得
@@ -806,7 +806,7 @@ namespace Frontier.Stage
             // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
             float currHeight    = _stageDataProvider.CurrentData.TileDatas[gridIndex].Height;
             float diffHeight    = currHeight - prevHeight;
-            int heightRegist    = (int)Math.Ceiling( diffHeight );
+            int heightRegist    = (int)Mathf.Floor( diffHeight );
             int jumpResist      = ( jumpForce < heightRegist ) ? (jumpForce - heightRegist) : 0;    // ジャンプ値を超過した分を移動抵抗値として加算する(超過していなければ0)
 
             // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
