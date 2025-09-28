@@ -24,13 +24,13 @@ namespace Frontier.Entities.Ai
         [Inject] protected StageController _stageCtrl               = null;
         [Inject] protected IStageDataProvider _stageDataProvider    = null;
 
-        protected bool _isDetermined                                = false;    // 既に移動対象や攻撃対象を決定しているか 
-        protected int _destinationGridIndex                         = -1;       // 移動目標グリッドのインデックス値
-        protected float[] _gridEvaluationValues                     = null;     // 各グリッドの評価値
-        protected Character _targetCharacter                        = null;     // 攻撃対象のキャラクター
-        protected MovePathHandler _movePathHandler                  = null;     // 移動経路のパス決定・移動時に使用
-        protected List<TargetCandidateInfo> _targetChandidateInfos  = null;     // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
-        protected List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMovePath;     // 進行経路
+        protected bool _isDetermined                = false;                            // 既に移動対象や攻撃対象を決定しているか 
+        protected int _destinationTileIndex         = -1;                               // 移動目標グリッドのインデックス値
+        protected float[] _gridEvaluationValues     = null;                             // 各グリッドの評価値
+        protected Character _targetCharacter        = null;                             // 攻撃対象のキャラクター
+        protected MovePathHandler _movePathHandler  = null;                             // 移動経路のパス決定・移動時に使用
+        protected List<TargetCandidateInfo> _targetChandidateInfos  = null;             // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
+        protected List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMovePath;     // 進行経路( TODO : 恐らく不要。確認次第削除 )
 
         override public MovePathHandler MovePathHandler => _movePathHandler;
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
@@ -43,7 +43,7 @@ namespace Frontier.Entities.Ai
         /// <returns>有効か否か</returns>
         public bool IsValidDestination()
         {
-            return 0 <= _destinationGridIndex;
+            return 0 <= _destinationTileIndex;
         }
 
         /// <summary>
@@ -132,28 +132,28 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        virtual protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameter selfParam, in TemporaryParameter selfTmpParam, List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates ) { }
+        virtual protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates ) { }
 
         /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居ない場合の処理を行います
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        virtual protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameter selfParam, in TemporaryParameter selfTmpParam ) { }
+        virtual protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts ) { }
 
         /// <summary>
         /// いずれかのターゲットに攻撃可能なグリッドの評価値を返します
         /// </summary>
         /// <param name="info">指定グリッド情報</param>
         /// <returns>評価値</returns>
-        virtual protected float GetEvaluateEnableTargetAttackBase( in Stage.TileInformation info ) { return ATTACKABLE_VALUE; }
+        virtual protected float GetEvaluateEnableTargetAttackBase( in TileInformation info ) { return ATTACKABLE_VALUE; }
 
-        virtual protected float GetEvaluateEnableDefeat( in Stage.TileInformation info ) { return ENABLE_DEFEAT_VALUE; }
+        virtual protected float GetEvaluateEnableDefeat( in TileInformation info ) { return ENABLE_DEFEAT_VALUE; }
 
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init(Character owner )
+        override public void Init( Character owner )
         {
             _gridEvaluationValues   = new float[_stageDataProvider.CurrentData.GetTileTotalNum()];
             _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
@@ -169,7 +169,7 @@ namespace Frontier.Entities.Ai
         override public void ResetDestinationAndTarget()
         {
             _isDetermined           = false;
-            _destinationGridIndex   = -1;
+            _destinationTileIndex   = -1;
             _targetCharacter        = null;
         }
 
@@ -185,7 +185,7 @@ namespace Frontier.Entities.Ai
         /// <returns>目的地のグリッドインデックス</returns>
         override public int GetDestinationGridIndex()
         {
-            return _destinationGridIndex;
+            return _destinationTileIndex;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Entities;
+using Frontier.Stage;
 using System;
 using UnityEngine;
 using Zenject;
@@ -30,13 +31,13 @@ namespace Frontier.Stage
 
         public void Init( int x, int y, float height, TileType type, GameObject[] prefabs )
         {
-            _tileType = type;
-            _height = height;
-            _tileBhv = CreateTileBehaviour( x, y, _height, _tileType, prefabs );
-            _tileMesh = CreateTileMesh( _tileBhv );
-            _tileInfo = CreateTileInfo( x, y );
-            _tileInfoBase = CreateTileInfo( x, y );
-            _tileInfoHold = CreateTileInfo( x, y );
+            _tileType       = type;
+            _height         = height;
+            _tileBhv        = CreateTileBehaviour( x, y, _height, _tileType, prefabs );
+            _tileMesh       = CreateTileMesh( _tileBhv );
+            _tileInfo       = CreateTileInfo( x, y );
+            _tileInfoBase   = CreateTileInfo( x, y );
+            _tileInfoHold   = CreateTileInfo( x, y );
         }
 
         public void Dispose()

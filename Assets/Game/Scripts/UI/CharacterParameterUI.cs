@@ -117,12 +117,12 @@ namespace Frontier
         {
             Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
 
-            TMPMaxHPValue.text = $"{param.MaxHP}";
-            TMPCurHPValue.text = $"{param.CurHP}";
-            TMPAtkValue.text = $"{param.Atk}";
-            TMPDefValue.text = $"{param.Def}";
-            TMPAtkNumValue.text = $"x {skillParam.AtkNum}";
-            TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
+            TMPMaxHPValue.text          = $"{param.MaxHP}";
+            TMPCurHPValue.text          = $"{param.CurHP}";
+            TMPAtkValue.text            = $"{param.Atk}";
+            TMPDefValue.text            = $"{param.Def}";
+            TMPAtkNumValue.text         = $"x {skillParam.AtkNum}";
+            TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
             TMPAtkNumValue.gameObject.SetActive(1 < skillParam.AtkNum);
 
             int hpChange, totalHpChange;

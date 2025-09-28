@@ -1,5 +1,6 @@
 ﻿namespace Frontier.Stage
 {
+    [System.Flags]
     public enum TileBitFlag
     {
         NONE                    = 0,
