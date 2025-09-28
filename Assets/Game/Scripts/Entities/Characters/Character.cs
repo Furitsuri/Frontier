@@ -40,19 +40,22 @@ namespace Frontier.Entities
         protected Character _opponent                       = null;                 // 戦闘時の対戦相手
         protected Bullet _bullet                            = null;                 // 矢などの弾
         protected SkillNotifierBase[] _skillNotifier        = null;                 // スキル使用通知
+        protected int[] _tileCostTable                      = null;                 // タイル移動時のコストテーブル(並列計算する可能性があるため、キャラ毎に保持)
 
         public int AtkRemainingNum { get; set; } = 0;                               // 攻撃シーケンスにおける残り攻撃回数
+        public int StatusEffectBitFlag { get; set; } = 0;                           // キャラクターに設定されているステータス効果のビットフラグ
         public float ElapsedTime { get; set; } = 0f;
         public bool IsAttacked { get; set; } = false;
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
+        public int[] TileCostTable => _tileCostTable;                               // タイル移動コストテーブルの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
         public GameObject BulletObject => _bulletObject;                            // 弾オブジェクトの取得
         public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
         public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
         public CharacterParameters Params => _params;                               // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
         public BaseAi GetAi() => _baseAi;                                           // AIの取得
-        public TransformHandler GetTransformHandler => _transformHdlr;           // Transform操作クラスの取得
+        public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
 
         // 攻撃用アニメーションタグ
         private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -184,8 +187,9 @@ namespace Frontier.Entities
             _transformHdlr.Init( this.transform );
 
             ResetElapsedTime();
-            _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale ); // 戦闘時間管理クラスに自身の時間管理クラスを登録
-            InitSkillNotifier();                            // スキルの通知クラスを初期化
+            _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );     // 戦闘時間管理クラスに自身の時間管理クラスを登録
+            InitSkillNotifier();                                // スキルの通知クラスを初期化
+            ApplyCostTable( TileCostTables.defaultCostTable );  // タイル移動コストテーブルを初期化
         }
 
         /// <summary>
@@ -393,6 +397,15 @@ namespace Frontier.Entities
             {
                 _textureMaterialsAndColors[i].material.color = _textureMaterialsAndColors[i].originalColor;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="costTable"></param>
+        public void ApplyCostTable( int[] costTable )
+        {
+            _tileCostTable = costTable;
         }
 
         /// <summary>

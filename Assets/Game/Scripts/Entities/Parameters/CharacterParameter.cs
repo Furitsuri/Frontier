@@ -46,7 +46,7 @@ namespace Frontier.Entities
             param.Atk                   = fdata.Atk;
             param.Def                   = fdata.Def;
             param.moveRange             = fdata.MoveRange;
-            param.jumpForce             = fdata.MoveRange;  // TODO : エクセルが使用できず、ジャンプレンジのデータを入れられないため、移動レンジと同じ値を入れておく
+            param.jumpForce             = fdata.JumpForce;
             param.attackRange           = fdata.AtkRange;
             param.curActionGauge        = param.maxActionGauge = fdata.ActGaugeMax;
             param.recoveryActionGauge   = fdata.ActRecovery;
@@ -94,7 +94,7 @@ namespace Frontier.Entities
             this.Atk                    = fdata.Atk;
             this.Def                    = fdata.Def;
             this.moveRange              = fdata.MoveRange;
-            this.jumpForce              = fdata.JumpRange;
+            this.jumpForce              = fdata.JumpForce;
             this.attackRange            = fdata.AtkRange;
             this.curActionGauge         = this.maxActionGauge = fdata.ActGaugeMax;
             this.recoveryActionGauge    = fdata.ActRecovery;
@@ -121,6 +121,15 @@ namespace Frontier.Entities
         public void RecoveryActionGauge()
         {
             curActionGauge = Mathf.Clamp( curActionGauge + recoveryActionGauge, 0, maxActionGauge );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="damage"></param>
+        public void AddDamage( int damage )
+        {
+            CurHP = Mathf.Clamp( CurHP - damage, 0, MaxHP );
         }
 
         /// <summary>

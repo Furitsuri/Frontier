@@ -31,12 +31,34 @@ static public class Methods
     /// <typeparam name="T">Enum</typeparam>
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
+    static public void SetBitFlag<T>( ref int flags, T value ) where T : Enum
+    {
+        int valueInt    = Convert.ToInt32( value );
+        flags           |= 1 << valueInt;
+    }
+
+    /// <summary>
+    /// 対象に指定のビットフラグを設定します
+    /// </summary>
+    /// <typeparam name="T">Enum</typeparam>
+    /// <param name="flags">対象とするフラグ</param>
+    /// <param name="value">指定するビット値</param>
     static public void SetBitFlag<T>(ref T flags, T value) where T : Enum
     {
-        int flagsValue = Convert.ToInt32(flags);
-        int valueInt = Convert.ToInt32(value);
-        flagsValue |= valueInt;
-        flags = (T)Enum.ToObject(typeof(T), flagsValue);
+        int flagsValue  = Convert.ToInt32(flags);
+        int valueInt    = Convert.ToInt32(value);
+        flagsValue      |= valueInt;
+        flags           = (T)Enum.ToObject(typeof(T), flagsValue);
+    }
+
+    /// <summary>
+    /// 対象のビットフラグの全ての設定を解除します
+    /// </summary>
+    /// <typeparam name="T">Enum</typeparam>
+    /// <param name="flags">対象とするフラグ</param>
+    static public void ClearBitFlag<T>( ref int flags )
+    {
+        flags = 0;
     }
 
     /// <summary>
@@ -46,9 +68,21 @@ static public class Methods
     /// <param name="flags">対象とするフラグ</param>
     static public void ClearBitFlag<T>( ref T flags ) where T : Enum
     {
-        int flagsValue = Convert.ToInt32(flags);
-        flagsValue &= ~flagsValue; // flagsValue = 0でも問題ない
-        flags = ( T )Enum.ToObject( typeof( T ), flagsValue );
+        int flagsValue  = Convert.ToInt32(flags);
+        flagsValue      &= ~flagsValue; // flagsValue = 0でも問題ない
+        flags           = ( T )Enum.ToObject( typeof( T ), flagsValue );
+    }
+
+    /// <summary>
+    /// 対象の指定のビットフラグを解除します
+    /// </summary>
+    /// <typeparam name="T">Enum</typeparam>
+    /// <param name="flags">対象とするフラグ</param>
+    /// <param name="value">指定するビット値</param>
+    static public void UnsetBitFlag<T>( ref int flags, T value ) where T : Enum
+    {
+        int valueInt    = Convert.ToInt32( value );
+        flags           &= ~( 1 << valueInt );
     }
 
     /// <summary>
@@ -59,10 +93,23 @@ static public class Methods
     /// <param name="value">指定するビット値</param>
     static public void UnsetBitFlag<T>(ref T flags, T value) where T : Enum
     {
-        int flagsValue = Convert.ToInt32(flags);
-        int valueInt = Convert.ToInt32(value);
-        flagsValue &= ~valueInt;
-        flags = (T)Enum.ToObject(typeof(T), flagsValue);
+        int flagsValue  = Convert.ToInt32(flags);
+        int valueInt    = Convert.ToInt32(value);
+        flagsValue      &= ~valueInt;
+        flags           = (T)Enum.ToObject(typeof(T), flagsValue);
+    }
+
+    /// <summary>
+    /// 対象に指定のビットフラグが設定されているかをチェックします
+    /// </summary>
+    /// <typeparam name="T">Enum</typeparam>
+    /// <param name="flags">対象とするフラグ</param>
+    /// <param name="value">指定するビット値</param>
+    /// <returns>設定されているか否か</returns>
+    static public bool CheckBitFlag<T>( in int flags, T value ) where T : Enum
+    {
+        int valueInt = Convert.ToInt32( value );
+        return 0 != ( flags & ( 1 << valueInt ) );
     }
 
     /// <summary>

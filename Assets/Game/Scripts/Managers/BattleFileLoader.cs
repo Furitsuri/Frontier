@@ -64,7 +64,7 @@ namespace Frontier
             public int Atk;
             public int Def;
             public int MoveRange;
-            public int JumpRange;
+            public int JumpForce;
             public int AtkRange;
             public int ActGaugeMax;
             public int ActRecovery;

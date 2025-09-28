@@ -64,6 +64,10 @@ static public class Constants
     public const int TILE_COLUMN_MAX_NUM    = 25;
     // ジャンプ動作が必要と判定する高低差
     public const int NEED_JUMP_HEIGHT_DIFFERENCE = 1;
+    // 降下する際に必要なジャンプ力に対して加算するマージン
+    public const int DESCENT_MARGIN = 1;
+    // ステータス異常のビットフラグにおいて、カテゴリーの区切りとなるビット数
+    public const int STATUS_EFFECT_CATEGORY_BIT = 8;
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値
@@ -104,6 +108,8 @@ static public class Constants
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
+    // 毒ダメージの割合
+    public const float POISON_DAMAGE_RATE = 0.1f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
     public const float GRID_DIRECTION_INPUT_INTERVAL    = 0.13f;
     public const float MENU_DIRECTION_INPUT_INTERVAL    = 0.23f;

@@ -22,7 +22,7 @@ namespace Frontier.Entities
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
-            return _baseAi.DetermineDestinationAndTarget( _params.CharacterParam, _params.TmpParam );
+            return _baseAi.DetermineDestinationAndTarget( in _params, _tileCostTable );
         }
 
         /// <summary>

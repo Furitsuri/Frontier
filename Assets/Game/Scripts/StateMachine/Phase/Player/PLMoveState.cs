@@ -43,9 +43,10 @@ namespace Frontier
             _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
-            bool isAttackable = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
-            var param = _plOwner.Params.CharacterParam;
-            _stageCtrl.RegistMoveableInfo( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, 0f, param.characterTag, isAttackable );
+            bool isAttackable   = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
+            var param           = _plOwner.Params.CharacterParam;
+            float tileHeight    = _stageCtrl.GetTileData( _departGridIndex ).Height;
+            _stageCtrl.RegistMoveableInfo( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable );
             _stageCtrl.DrawMoveableGrids( _departGridIndex, param.moveRange, param.attackRange );
 
             // SetUpCandidatePathIndexsで用いる条件式
@@ -147,13 +148,13 @@ namespace Frontier
 
             if( PlMovePhase.PL_MOVE != _phase ) { return false; }     // 移動フェーズでない場合は終了
 
+            // 移動不可の地点であっても、敵対勢力が存在しており自身の攻撃レンジ以内の場合にはtrueを返す
             TileInformation info;
             _stageCtrl.FetchCurrentGridInfo( out info );
             if( info.estimatedMoveRange < 0 )
             {
-                // 敵対勢力が存在しており、自身の攻撃レンジ以内の場合にはtrueを返す
                 if( CanAttackOnMove( in info ) ) { return true; }
-                else { return false; }  // 移動不可地点であれば不可
+                else { return false; }  // 単純な移動不可地点であれば不可
             }
             else
             {
@@ -261,7 +262,7 @@ namespace Frontier
                 departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
             }
 
-            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, isEndPathTrace );
+            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, _plOwner.TileCostTable, isEndPathTrace );
         }
 
         /// <summary>

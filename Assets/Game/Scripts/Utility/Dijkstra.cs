@@ -47,7 +47,7 @@ public class Dijkstra
             var v = q.Dequeue();
 
             // 記録されているコストと異なる(コストがより大きい)場合は無視
-            if (v.cost > costInfo[v.index].cost) continue;
+            if( v.cost > costInfo[v.index].cost ) { continue; }
 
             // 今回確定した頂点からつながる頂点に対して更新を行う
             foreach (var e in _graph[v.index])
@@ -63,7 +63,7 @@ public class Dijkstra
 
         for( int i = goalIndex; i != startIndex; i = costInfo[i].fromIndex )
         {
-            List.Add( new WaypointInformation( pathList[i], costInfo[i].cost));
+            List.Add( new WaypointInformation( pathList[i], costInfo[i].cost ) );
         }
         List.Reverse();
 
@@ -79,9 +79,9 @@ public class Dijkstra
 
         public Edge(int from, int to, int cost)
         {
-            this.from = from;
-            this.to = to;
-            this.cost = cost;
+            this.from   = from;
+            this.to     = to;
+            this.cost   = cost;
         }
     }
 

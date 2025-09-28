@@ -8,7 +8,7 @@ namespace Frontier.Stage
     /// </summary>
     public class TileInformation
     {
-        // キャラクターの立ち位置座標(※)
+        // キャラクターの立ち位置座標(※) ※は一度設定された後は変更することがない変数
         public Vector3 charaStandPos;
         // 移動阻害値(※)
         public int moveResist;
@@ -20,7 +20,6 @@ namespace Frontier.Stage
         public int charaIndex;
         // フラグ情報
         public TileBitFlag flag;
-        // ※ 一度設定された後は変更することがない変数
 
         /// <summary>
         /// 初期化します

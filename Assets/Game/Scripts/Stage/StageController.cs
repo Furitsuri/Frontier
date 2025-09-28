@@ -131,15 +131,15 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="departIndex">移動キャラクターが存在するグリッドのインデックス値</param>
         /// <param name="moveRange">移動可能範囲値</param>
-        /// <param name="attackRange">攻撃可能範囲値</param>
+        /// <param name="atkRange">攻撃可能範囲値</param>
         /// <param name="selfTag">キャラクタータグ</param>
         /// <param name="isAttackable">攻撃可能か否か</param>
-        public void RegistMoveableInfo( int departIndex, int moveRange, int attackRange, int jumpForce, int selfCharaIndex, float currHeight, CHARACTER_TAG selfTag, bool isAttackable )
+        public void RegistMoveableInfo( int dprtIndex, int moveRange, int atkRange, int jumpForce, int selfCharaIndex, float curHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
         {
-            Debug.Assert( departIndex.IsBetween( 0, _stageDataProvider.CurrentData.GetTileTotalNum() - 1 ), "StageController : Irregular Index." );
+            Debug.Assert( dprtIndex.IsBetween( 0, _stageDataProvider.CurrentData.GetTileTotalNum() - 1 ), "StageController : Irregular Index." );
 
             // 移動可否情報を各グリッドに登録
-            RegistMoveableEachGrid( departIndex, moveRange, attackRange, jumpForce, selfCharaIndex, currHeight, selfTag, isAttackable, true );
+            RegistMoveableEachGrid( dprtIndex, moveRange, atkRange, jumpForce, selfCharaIndex, curHeight, in ownerTileCosts, selfTag, isAttackable, true );
         }
 
         /// <summary>
@@ -234,11 +234,10 @@ namespace Frontier.Stage
                     {
                         var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>( _gridMeshObject, true );
                         NullCheck.AssertNotNull( gridMesh, nameof( gridMesh ) );
-                        if( gridMesh == null ) continue;
+                        if( gridMesh == null ) { continue; }
 
                         _gridMeshs.Add( gridMesh );
                         _gridMeshs[count++].DrawGridMesh( info.charaStandPos, TILE_SIZE, meshTypes[j] );
-                        Debug.Log( dbgStrs[j] + i );
 
                         break;
                     }
@@ -647,11 +646,12 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="departGridIndex">出発地グリッドのインデックス</param>
         /// <param name="destGridIndex">目的地グリッドのインデックス</param>
-        public List<WaypointInformation> ExtractShortestPath( int departGridIndex, int destGridIndex, int jumpForce, in List<int> candidateRouteIndexs )
+        public List<WaypointInformation> ExtractShortestPath( int departGridIndex, int destGridIndex, int ownerJumpForce, in int[] ownerTileCosts, in List<int> candidateRouteIndexs )
         {
             if( departGridIndex == destGridIndex ) { return null; }
 
-            jumpForce = 1;
+            ownerJumpForce = 1; // TODO : 動作確認用に仮で入れている。あとで必ず消すこと
+
             Dijkstra dijkstra   = new Dijkstra( candidateRouteIndexs.Count );
             StageData stageData = _stageDataProvider.CurrentData;
             int colNum          = stageData.GridColumnNum;
@@ -673,7 +673,7 @@ namespace Frontier.Stage
             Func<int, int, ( bool, bool )> canJumpOver = ( int a, int b ) =>
             {
                 float diffHeight = stageData.GetTileData( b ).Height - stageData.GetTileData( a ).Height;
-                return ( ( 0 < diffHeight ) ? (int)Mathf.Floor( diffHeight ) <= jumpForce : true, ( 0 < -diffHeight ) ? (int)Mathf.Floor( -diffHeight ) <= jumpForce : true );
+                return ( ( 0 < diffHeight ) ? (int)Mathf.Floor( diffHeight ) <= ownerJumpForce : true, ( 0 < -diffHeight ) ? (int)Mathf.Floor( -diffHeight ) <= ownerJumpForce : true );
             };
 
             // 出発グリッドからのインデックスの差を取得
@@ -688,16 +688,16 @@ namespace Frontier.Stage
                     // 移動可能な隣接グリッド情報をダイクストラに入れる
                     if( canJump.Item1 && canJump.Item2 )
                     {
-                        dijkstra.Add( i, j );
-                        dijkstra.Add( j, i );
+                        dijkstra.Add( i, j, CalcurateTileCost( i, j, ownerJumpForce, in ownerTileCosts ) );
+                        dijkstra.Add( j, i, CalcurateTileCost( j, i, ownerJumpForce, in ownerTileCosts ) );
                     }
                     else if( canJump.Item1 )
                     {
-                        dijkstra.Add( i, j );
+                        dijkstra.Add( i, j, CalcurateTileCost( i, j, ownerJumpForce, in ownerTileCosts ) );
                     }
                     else if( canJump.Item2 )
                     {
-                        dijkstra.Add( j, i );
+                        dijkstra.Add( j, i, CalcurateTileCost( j, i, ownerJumpForce, in ownerTileCosts ) );
                     }
                 }
             }
@@ -776,66 +776,68 @@ namespace Frontier.Stage
         /// <summary>
         /// 移動可能なグリッドを登録します
         /// </summary>
-        /// <param name="gridIndex">登録対象のグリッドインデックス</param>
+        /// <param name="tileIndex">登録対象のグリッドインデックス</param>
         /// <param name="moveRange">移動可能範囲値</param>
+        /// <param name="atkRange">攻撃可能範囲値</param>
         /// <param name="jumpForce">ジャンプ値</param>
-        /// <param name="attackRange">攻撃可能範囲値</param>
+        /// <param name="ownerIndex">移動キャラクターのキャラクターインデックス</param>
+        /// <param name="prevHeight">移動前のタイルの高さ</param>
+        /// <param name="ownerTileCosts">各タイルの移動コスト(ステータス異常によって変化するためキャラ毎に個別)</param>
         /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
         /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
         /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-        private void RegistMoveableEachGrid( int gridIndex, int moveRange, int attackRange, int jumpForce, int selfCharaIndex, float prevHeight, CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false )
+        private void RegistMoveableEachGrid( int tileIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float prevHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false )
         {
-            // 範囲外のグリッドは考慮しない
-            if( gridIndex < 0 || _stageDataProvider.CurrentData.GetTileTotalNum() <= gridIndex ) return;
+            // 範囲外のタイルは考慮しない
+            if( tileIndex < 0 || _stageDataProvider.CurrentData.GetTileTotalNum() <= tileIndex ) { return; }
             // 指定のタイル情報を取得
-            var tileInfo = _stageDataProvider.CurrentData.GetTileInfo( gridIndex );
-            if( tileInfo == null ) return;
+            var tileInfo = _stageDataProvider.CurrentData.GetTileInfo( tileIndex );
+            if( tileInfo == null ) { return; }
             // 移動不可のグリッドに辿り着いた場合は終了
-            if( Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) ) return;
+            if( Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
             // 既に計算済みのグリッドであれば終了
-            if( moveRange <= tileInfo.estimatedMoveRange ) return;
+            if( moveRange <= tileInfo.estimatedMoveRange ) { return; }
             // 自身に対する敵対勢力キャラクターが存在すれば終了
             TileBitFlag[] opponentTag = new TileBitFlag[( int ) CHARACTER_TAG.NUM]
             {
-                TileBitFlag.ENEMY_EXIST  | TileBitFlag.OTHER_EXIST,   // PLAYERにおける敵対勢力
+                TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST,   // PLAYERにおける敵対勢力
                 TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST,     // ENEMYにおける敵対勢力
                 TileBitFlag.ALLY_EXIST | TileBitFlag.ENEMY_EXIST      // OTHERにおける敵対勢力
             };
             if( Methods.CheckBitFlag( tileInfo.flag, opponentTag[( int ) selfTag] ) ) { return; }
 
             // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
-            float currHeight    = _stageDataProvider.CurrentData.TileDatas[gridIndex].Height;
-            float diffHeight    = currHeight - prevHeight;
-            int heightRegist    = (int)Mathf.Floor( diffHeight );
-            int jumpResist      = ( jumpForce < heightRegist ) ? (jumpForce - heightRegist) : 0;    // ジャンプ値を超過した分を移動抵抗値として加算する(超過していなければ0)
+            float curHeight     = _stageDataProvider.CurrentData.TileDatas[tileIndex].Height;
+            int heightCost      = CalcurateHeightCost( prevHeight, curHeight, jumpForce );
 
             // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
-            int currentMoveRange = ( isDeparture ) ? moveRange : tileInfo.moveResist + jumpResist + moveRange;
+            int tileTypeIndex           = Convert.ToInt32( _stageDataProvider.CurrentData.TileDatas[tileIndex].Type );
+            int currentMoveRange        = ( isDeparture ) ? moveRange : moveRange - ownerTileCosts[tileTypeIndex] - heightCost;
             tileInfo.estimatedMoveRange = currentMoveRange;
 
             // 負の値であれば終了
             if( currentMoveRange < 0 ) { return; }
             // 攻撃範囲についても登録する
-            if( isAttackable && ( tileInfo.charaTag == CHARACTER_TAG.NONE || tileInfo.charaIndex == selfCharaIndex ) )
+            if( isAttackable && ( tileInfo.charaTag == CHARACTER_TAG.NONE || tileInfo.charaIndex == ownerIndex ) )
             {
-                RegistAttackableEachGrid( gridIndex, attackRange, selfTag, gridIndex );
+                RegistAttackableEachGrid( tileIndex, atkRange, selfTag, tileIndex );
             }
 
             int columnNum = _stageDataProvider.CurrentData.GridColumnNum;
 
             // 左端を除外
-            if( gridIndex % columnNum != 0 )
+            if( tileIndex % columnNum != 0 )
             {
-                RegistMoveableEachGrid( gridIndex - 1, currentMoveRange, attackRange, jumpForce, selfCharaIndex, currHeight, selfTag, isAttackable );      // gridIndexからX軸方向へ-1
+                RegistMoveableEachGrid( tileIndex - 1, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );      // tileIndexからX軸方向へ-1
             }
             // 右端を除外
-            if( ( gridIndex + 1 ) % columnNum != 0 )
+            if( ( tileIndex + 1 ) % columnNum != 0 )
             {
-                RegistMoveableEachGrid( gridIndex + 1, currentMoveRange, attackRange, jumpForce, selfCharaIndex, currHeight, selfTag, isAttackable );      // gridIndexからX軸方向へ+1
+                RegistMoveableEachGrid( tileIndex + 1, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );      // tileIndexからX軸方向へ+1
             }
             // Z軸方向への加算と減算はそのまま
-            RegistMoveableEachGrid( gridIndex - columnNum, currentMoveRange, attackRange, jumpForce, selfCharaIndex, currHeight, selfTag, isAttackable );  // gridIndexからZ軸方向へ-1
-            RegistMoveableEachGrid( gridIndex + columnNum, currentMoveRange, attackRange, jumpForce, selfCharaIndex, currHeight, selfTag, isAttackable );  // gridIndexからZ軸方向へ+1
+            RegistMoveableEachGrid( tileIndex - columnNum, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ-1
+            RegistMoveableEachGrid( tileIndex + columnNum, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -883,6 +885,54 @@ namespace Frontier.Stage
                                                                                                     // Z軸方向への加算と減算はそのまま
             RegistAttackableEachGrid( gridIndex - _stageDataProvider.CurrentData.GridColumnNum, attackRange, selfTag, departIndex );   // gridIndexからZ軸方向へ-1
             RegistAttackableEachGrid( gridIndex + _stageDataProvider.CurrentData.GridColumnNum, attackRange, selfTag, departIndex );   // gridindexからZ軸方向へ+1
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dprtIndex"></param>
+        /// <param name="destIndex"></param>
+        /// <param name="jumpForce"></param>
+        /// <param name="ownerTileCosts"></param>
+        /// <returns></returns>
+        private int CalcurateTileCost( int dprtIndex, int destIndex, int jumpForce, in int[] ownerTileCosts )
+        {
+            // 目的地のタイルのタイプから移動コストを取得
+            var destTileData        = _stageDataProvider.CurrentData.GetTileData( destIndex );
+            TileType destTileType   = destTileData.Type;
+            int tileCost            = ownerTileCosts[( int ) destTileType ];
+
+            // 高低差コストを取得
+            int heightCost = CalcurateHeightCost( dprtIndex, destIndex, jumpForce );
+
+            return tileCost + heightCost;
+        }
+
+        private int CalcurateHeightCost( int dprtIndex, int destIndex, int jumpForce )
+        {
+            float dprtHeight = _stageDataProvider.CurrentData.GetTileData( dprtIndex ).Height;
+            float destHeight = _stageDataProvider.CurrentData.GetTileData( destIndex ).Height;
+
+            return CalcurateHeightCost( dprtHeight, destHeight, jumpForce );
+        }
+
+        private int CalcurateHeightCost( float dprtHeight, float destHeight, int jumpForce )
+        {
+            int retCost = 0;
+            float diffHeightCeil = Mathf.Ceil( destHeight - dprtHeight );
+
+            if( jumpForce < diffHeightCeil ||                           // ジャンプ力を超過している場合は、移動不可
+                diffHeightCeil <= -1 * ( jumpForce + DESCENT_MARGIN ) ) // 移動先のタイルが低くてても、高低差がジャンプ力+定数を超過している場合は、移動不可
+            {
+                retCost += short.MaxValue;  // int.MaxValueを入れるとオーバーフローしてしまうため、short.MaxValueに留める
+            }
+            // ジャンプ力以内の高さであれば、その分をコストに加算する
+            else if( 0 < diffHeightCeil )
+            {
+                retCost += Convert.ToInt32( diffHeightCeil );
+            }
+
+            return retCost;
         }
 
         /// <summary>

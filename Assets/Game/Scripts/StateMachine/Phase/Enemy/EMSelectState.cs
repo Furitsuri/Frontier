@@ -15,21 +15,19 @@ namespace Frontier
 
         override public void Init()
         {
-            bool isExist = false;
+            bool isExist = false;   // 行動可能なキャラクターが存在するか
 
             base.Init();
 
-            // ステージグリッド上のキャラ情報を更新
-            _stageCtrl.UpdateGridInfo();
+            _stageCtrl.UpdateGridInfo();    // ステージグリッド上のキャラ情報を更新
 
-            _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).GetEnumerator();
-            _currentEnemy = null;
+            _enemyEnumerator    = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).GetEnumerator();
+            _currentEnemy       = null;
 
             // 行動済みでないキャラクターを選択する
             while (_enemyEnumerator.MoveNext())
             {
                 _currentEnemy = _enemyEnumerator.Current as Enemy;
-
                 if (ShouldTransitionToNextCharacter(_currentEnemy))
                 {
                     continue;
@@ -37,8 +35,7 @@ namespace Frontier
 
                 isExist = true;
 
-                // 選択グリッドを合わせる
-                _stageCtrl.ApplyCurrentGrid2CharacterGrid(_currentEnemy);
+                _stageCtrl.ApplyCurrentGrid2CharacterGrid(_currentEnemy);   // 選択グリッドを合わせる
 
                 if(!_currentEnemy.GetAi().IsDetermined())
                 {
@@ -46,7 +43,8 @@ namespace Frontier
                 }
 
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
-                if (!_isValidTarget)
+                // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
+                if( !_isValidTarget)
                 {
                     _currentEnemy.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
                 }
@@ -67,7 +65,7 @@ namespace Frontier
             // int gridIndex;
             // Character targetCharacter = null;
 
-            if ( IsBack() ) return true;
+            if( IsBack() ) { return true; }
 
             // _currentEnemy.FetchDestinationAndTarget( out gridIndex, out targetCharacter );
 

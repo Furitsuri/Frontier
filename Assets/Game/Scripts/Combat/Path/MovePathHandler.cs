@@ -95,9 +95,11 @@ public class MovePathHandler
     /// <summary>
     /// 出発地点と目標地点を指定して、最短移動ルートを取得します
     /// </summary>
-    /// <param name="departingTileIndex">出発地点となるタイルのインデックス値</param>
-    /// <param name="destinationlTileIndex">目標地点となるタイルのインデックス値</param>
-    public bool FindMovePath( int departingTileIndex, int destinationlTileIndex, int jumpForce )
+    /// <param name="dprtTileIndex">出発地点となるタイルのインデックス値</param>
+    /// <param name="destTileIndex">目標地点となるタイルのインデックス値</param>
+    /// <param name="ownerJumpForce">移動キャラクターのジャンプ力</param>
+    /// <param name="ownerStatuses">移動キャラクターのステータス</param>
+    public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -107,7 +109,7 @@ public class MovePathHandler
 
         _proposedMovePath.Clear();
 
-        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, jumpForce, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( dprtTileIndex, destTileIndex, ownerJumpForce, in ownerTileCosts, _candidateRouteIndexs );
         if( route == null ) { return false; }
         _proposedMovePath = route;
 
@@ -128,7 +130,7 @@ public class MovePathHandler
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
     /// <returns>ルート取得の可否</returns>
-    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int jumpForce, bool isEndPathTrace )
+    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
         {
@@ -139,7 +141,7 @@ public class MovePathHandler
         // 指定のインデックス位置にキャラクターが留まれない場合は失敗
         if ( !CanStandOnTile( destinationlTileIndex ) ) { return false; }
 
-        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, jumpForce, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, ownerJumpForce, in ownerTileCosts, _candidateRouteIndexs );
         if ( route == null ) { return false; }
         // 現在のパストレースが終了していない場合は、直近のwaypointを移動対象として先頭に登録
         if ( !isEndPathTrace )
@@ -166,7 +168,7 @@ public class MovePathHandler
     /// </summary>
     /// <param name="range">移動可能レンジ</param>
     /// <param name="adjustTargetPath">調整対象のパス</param>
-    public void AdjustPathToRangeAndSet(  int range, in List<WaypointInformation> adjustTargetPath )
+    public void AdjustPathToRangeAndSet(  int range, int jumpForce, in List<WaypointInformation> adjustTargetPath )
     {
         int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
         int reachableTileIndex  = 0;
