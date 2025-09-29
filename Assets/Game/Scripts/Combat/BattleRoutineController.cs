@@ -165,7 +165,7 @@ namespace Frontier.Battle
             }
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
-            _stgCtrl.UpdateGridInfo();                                  // グリッド情報を更新
+            _stgCtrl.UpdateTileInfo();                                  // グリッド情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
             _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN]; // PLAYERターンから開始(MEMO : ステージによって変更する場合はステージ読込処理から変更出来るように修正)
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);          // ファイル読込マネージャにカメラパラメータをロードさせる

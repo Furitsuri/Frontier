@@ -23,7 +23,7 @@ namespace Frontier.Entities
         public int Def;                     // 防御力
         public int moveRange;               // 移動レンジ
         public int jumpForce;               // ジャンプレンジ
-        public int attackRange;             // 攻撃レンジ
+        public int attackRange;             // 攻撃レンジ( 高低差にもそのまま適用される )
         public int maxActionGauge;          // アクションゲージ最大値
         public int curActionGauge;          // アクションゲージ現在値
         public int recoveryActionGauge;     // アクションゲージ回復値

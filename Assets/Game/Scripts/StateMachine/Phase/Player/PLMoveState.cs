@@ -1,5 +1,4 @@
-﻿using Frontier;
-using Frontier.Combat;
+﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
 using System;
@@ -7,8 +6,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Constants;
-using static Frontier.Stage.StageController;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier
 {
@@ -46,8 +43,8 @@ namespace Frontier
             bool isAttackable   = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             var param           = _plOwner.Params.CharacterParam;
             float tileHeight    = _stageCtrl.GetTileData( _departGridIndex ).Height;
-            _stageCtrl.RegistMoveableInfo( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable );
-            _stageCtrl.DrawMoveableGrids( _departGridIndex, param.moveRange, param.attackRange );
+            _stageCtrl.RegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable, true );
+            _stageCtrl.DrawAllTileInformationMeshes();
 
             // SetUpCandidatePathIndexsで用いる条件式
             Func<int, object[], bool> condition = ( index, args ) =>
@@ -101,13 +98,13 @@ namespace Frontier
 
         override public void ExitState()
         {
-            _stageCtrl.SetGridCursorControllerActive( true ); // 選択グリッドを表示
-            _stageCtrl.ClearGridMeshDraw();                 // グリッド状態の描画をクリア
+            _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
+            _stageCtrl.ClearGridMeshDraw();                     // グリッド状態の描画をクリア
 
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
             {
-                _stageCtrl.UpdateGridInfo();        // ステージグリッド上のキャラ情報を更新
+                _stageCtrl.UpdateTileInfo();        // ステージグリッド上のキャラ情報を更新
                 _stageCtrl.ClearGridCursroBind();   // 操作対象データをリセット
             }
 

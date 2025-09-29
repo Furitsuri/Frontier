@@ -7,6 +7,6 @@
         ATTACKABLE,
         ATTACKABLE_TARGET_EXIST,
 
-        NUM_MAX
+        NUM
     }
 }
