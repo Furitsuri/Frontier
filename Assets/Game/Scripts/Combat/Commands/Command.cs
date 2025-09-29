@@ -42,10 +42,11 @@ namespace Frontier.Combat
             }
 
             // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-            bool isExecutable = stageCtrl.BeginRegisterAttackableInformation( tmpParam.GetCurrentGridIndex(), charaParam.attackRange, charaParam.characterTag );
+            stageCtrl.BeginRegisterAttackableTiles( tmpParam.GetCurrentGridIndex(), charaParam.attackRange, charaParam.characterTag, true );
+            bool isExecutable = stageCtrl.CorrectAttackableTileIndexs( charaParam.characterTag );
 
-            // 実行不可である場合は登録した攻撃情報を全てクリア
-            if( !isExecutable ) { stageCtrl.ClearAttackableInformation(); }
+			// 実行不可である場合は登録した攻撃情報を全てクリア
+			if( !isExecutable ) { stageCtrl.ClearAttackableInformation(); }
 
             return isExecutable;
         }

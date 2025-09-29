@@ -43,7 +43,7 @@ namespace Frontier
             bool isAttackable   = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             var param           = _plOwner.Params.CharacterParam;
             float tileHeight    = _stageCtrl.GetTileData( _departGridIndex ).Height;
-            _stageCtrl.RegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable, true );
+            _stageCtrl.BeginRegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable );
             _stageCtrl.DrawAllTileInformationMeshes();
 
             // SetUpCandidatePathIndexsで用いる条件式

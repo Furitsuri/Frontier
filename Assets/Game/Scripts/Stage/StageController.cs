@@ -126,74 +126,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 移動可能なグリッドを登録します
-        /// </summary>
-        /// <param name="tileIndex">登録対象のグリッドインデックス</param>
-        /// <param name="moveRange">移動可能範囲値</param>
-        /// <param name="atkRange">攻撃可能範囲値</param>
-        /// <param name="jumpForce">ジャンプ値</param>
-        /// <param name="ownerIndex">移動キャラクターのキャラクターインデックス</param>
-        /// <param name="prevHeight">移動前のタイルの高さ</param>
-        /// <param name="ownerTileCosts">各タイルの移動コスト(ステータス異常によって変化するためキャラ毎に個別)</param>
-        /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
-        /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
-        /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-        public void RegisterMoveableTiles( int tileIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float prevHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable, bool isDeparture = false )
-        {
-            var stageData = _stageDataProvider.CurrentData;
-            int columnNum = stageData.GridColumnNum;
-
-            // 範囲外のタイルは考慮しない
-            if( tileIndex < 0 || stageData.GetTileTotalNum() <= tileIndex ) { return; }
-            // 指定のタイル情報を取得
-            var tileInfo = stageData.GetTileInfo( tileIndex );
-            if( tileInfo == null ) { return; }
-            // 移動不可のグリッドに辿り着いた場合は終了
-            if( Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
-            // 既に計算済みのグリッドであれば終了
-            if( moveRange <= tileInfo.estimatedMoveRange ) { return; }
-            // 自身に対する敵対勢力キャラクターが存在すれば終了
-            TileBitFlag[] opponentTag = new TileBitFlag[( int ) CHARACTER_TAG.NUM]
-            {
-                TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST,   // PLAYERにおける敵対勢力
-                TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST,    // ENEMYにおける敵対勢力
-                TileBitFlag.ALLY_EXIST | TileBitFlag.ENEMY_EXIST     // OTHERにおける敵対勢力
-            };
-            if( Methods.CheckBitFlag( tileInfo.flag, opponentTag[( int ) selfTag] ) ) { return; }
-
-            // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
-            float curHeight     = stageData.TileDatas[tileIndex].Height;
-            int heightCost      = CalcurateHeightCost( prevHeight, curHeight, jumpForce );
-
-            // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
-            int tileTypeIndex           = Convert.ToInt32( stageData.TileDatas[tileIndex].Type );
-            int currentMoveRange        = ( isDeparture ) ? moveRange : moveRange - ownerTileCosts[tileTypeIndex] - heightCost;
-            tileInfo.estimatedMoveRange = currentMoveRange;
-
-            // 負の値であれば終了
-            if( currentMoveRange < 0 ) { return; }
-            // 攻撃範囲についても登録する
-            if( isAttackable && ( tileInfo.charaTag == CHARACTER_TAG.NONE || tileInfo.charaIndex == ownerIndex ) )
-            {
-                RegisterAttackableTilesEntryPoint( tileIndex, atkRange, selfTag );
-            }
-
-            // 左端を除外
-            if( tileIndex % columnNum != 0 )
-            {
-                RegisterMoveableTiles( tileIndex - 1, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );      // tileIndexからX軸方向へ-1
-            }
-            // 右端を除外
-            if( ( tileIndex + 1 ) % columnNum != 0 )
-            {
-                RegisterMoveableTiles( tileIndex + 1, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );      // tileIndexからX軸方向へ+1
-            }
-            // Z軸方向への加算と減算はそのまま
-            RegisterMoveableTiles( tileIndex - columnNum, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ-1
-            RegisterMoveableTiles( tileIndex + columnNum, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ+1
-        }
-
-        /// <summary>
         /// 選択グリッドを指定のキャラクターのグリッドに合わせます
         /// </summary>
         /// <param name="character">指定キャラクター</param>
@@ -344,68 +276,78 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// タイルに攻撃可能情報を登録します
+        /// タイルへの移動可能情報の登録を開始します
+        /// </summary>
+        /// <param name="dprtIndex"></param>
+        /// <param name="moveRange"></param>
+        /// <param name="atkRange"></param>
+        /// <param name="jumpForce"></param>
+        /// <param name="ownerIndex"></param>
+        /// <param name="prevHeight"></param>
+        /// <param name="ownerTileCosts"></param>
+        /// <param name="selfTag"></param>
+        /// <param name="isAttackable"></param>
+        public void BeginRegisterMoveableTiles( int dprtIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float dprtHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
+        {
+            Debug.Assert( dprtIndex.IsBetween( 0, _stageDataProvider.CurrentData.GetTileTotalNum() - 1 ), "StageController : Irregular Index." );
+
+            var tileInfo = _stageDataProvider.CurrentData.GetTileInfo( dprtIndex );
+            if( tileInfo == null ) { return; }
+            tileInfo.estimatedMoveRange = moveRange;
+
+            RegisterMoveableTilesAllSides( dprtIndex, moveRange, atkRange, jumpForce, ownerIndex, dprtHeight, in ownerTileCosts, selfTag, isAttackable );
+        }
+
+        /// <summary>
+        /// タイルへの攻撃可能情報の登録を開始します
         /// </summary>
         /// <param name="dprtIndex">攻撃キャラクターが存在するグリッドのインデックス値</param>
         /// <param name="atkRange">攻撃可能範囲値</param>
         /// <param name="selfTag">攻撃を行うキャラクター自身のキャラクタータグ</param>
-        public bool BeginRegisterAttackableInformation( int dprtIndex, int atkRange, CHARACTER_TAG selfTag )
+        public void BeginRegisterAttackableTiles( int dprtIndex, int atkRange, CHARACTER_TAG ownerTag, bool isClearAttackableInfo )
         {
             Debug.Assert( dprtIndex.IsBetween( 0, _stageDataProvider.CurrentData.GetTileTotalNum() - 1 ), "StageController : Irregular Index." );
 
-            ClearAttackableInformation();                                   // 全てのタイルの攻撃可否情報を初期化
-            RegisterAttackableTilesEntryPoint( dprtIndex, atkRange, selfTag );   // 攻撃可否情報を各タイルに登録
+            if( isClearAttackableInfo ) { ClearAttackableInformation(); }   // 全てのタイルの攻撃可否情報を初期化
 
-            // 攻撃可能、かつ自身にとって攻撃対象となるキャラクターが存在するタイルをリストに登録
-            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
-            {
-                var info = _stageDataProvider.CurrentData.GetTileInfo( i );
-                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
-                {
-                    Character attackCandidate = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable( info.charaTag, info.charaIndex );
-                    if( attackCandidate != null && attackCandidate.Params.CharacterParam.characterTag != selfTag )
-                    {
-                        _attackableTileIndexs.Add( i );
-                    }
-                }
-            }
-
-            return ( 0 < _attackableTileIndexs.Count );
+            // 攻撃可否情報を各タイルに登録
+            int targetTileIndex = dprtIndex;    // 開始時点では出発タイルと同じ
+            RegisterAttackableTilesAllSides( dprtIndex, targetTileIndex, atkRange, ownerTag );
         }
 
         /// <summary>
-        /// 攻撃可能タイルのうち、攻撃可能キャラクターが存在するタイルをリストに登録します
+        /// 攻撃可能タイルのうち、攻撃可能キャラクターが存在するタイルを専用のリストに追加していきます
         /// </summary>
-        /// <param name="targetTag">攻撃対象のタグ</param>
+        /// <param name="selfTag">攻撃を行うキャラクターのキャラクタータグ</param>
         /// <param name="target">予め攻撃対象が決まっている際に指定</param>
         /// <returns>攻撃可能キャラクターが存在している</returns>
-        public bool RegisterAttackableTileIndexs( CHARACTER_TAG targetTag, Character target = null )
+        public bool CorrectAttackableTileIndexs( CHARACTER_TAG selfTag, Character target = null )
         {
             Character character = null;
 
             _gridCursorCtrl.ClearAtkTargetInfo();
             _attackableTileIndexs.Clear();
 
-            // 攻撃可能、かつ攻撃対象となるキャラクターが存在するグリッドをリストに登録
+            // 攻撃可能、かつ攻撃対象となるキャラクターが存在するタイルのインデックス値をリストに登録
             for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
             {
                 var info = _stageDataProvider.CurrentData.GetTileInfo( i );
                 if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {
                     character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable( info.charaTag, info.charaIndex );
-                    if( character != null && character.Params.CharacterParam.characterTag == targetTag )
+                    if( character != null && character.Params.CharacterParam.characterTag != selfTag )
                     {
                         _attackableTileIndexs.Add( i );
                     }
                 }
             }
 
-            // 選択グリッドを自動的に攻撃可能キャラクターの存在するグリッドインデックスに設定
+            // グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定
             if( 0 < _attackableTileIndexs.Count )
             {
                 _gridCursorCtrl.SetAtkTargetNum( _attackableTileIndexs.Count );
 
-                // 攻撃対象が既に決まっている場合は対象を探す
+                // 攻撃対象が定められている場合はその対象を探す
                 if( target != null && 1 < _attackableTileIndexs.Count )
                 {
                     for( int i = 0; i < _attackableTileIndexs.Count; ++i )
@@ -418,6 +360,7 @@ namespace Frontier.Stage
                         }
                     }
                 }
+                // 定められていない場合は先頭を指定する
                 else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }
             }
 
@@ -460,12 +403,14 @@ namespace Frontier.Stage
         /// <returns>隣り合うか否か</returns>
         public bool IsGridNextToEacheOther( int fstIndex, int scdIndex )
         {
-            bool updown = ( Math.Abs( fstIndex - scdIndex ) == _stageDataProvider.CurrentData.GridColumnNum );
+            var colNum = _stageDataProvider.CurrentData.GridColumnNum;
 
-            int fstQuotient     = fstIndex / _stageDataProvider.CurrentData.GridColumnNum;
-            int scdQuotient     = scdIndex / _stageDataProvider.CurrentData.GridColumnNum;
-            var fstRemainder    = fstIndex % _stageDataProvider.CurrentData.GridColumnNum;
-            var scdRemainder    = scdIndex % _stageDataProvider.CurrentData.GridColumnNum;
+            bool updown = ( Math.Abs( fstIndex - scdIndex ) == colNum );
+
+            int fstQuotient     = fstIndex / colNum;
+            int scdQuotient     = scdIndex / colNum;
+            var fstRemainder    = fstIndex % colNum;
+            var scdRemainder    = scdIndex % colNum;
             bool leftright      = ( fstQuotient == scdQuotient ) && ( Math.Abs( fstRemainder - scdRemainder ) == 1 );
 
             return updown || leftright;
@@ -593,19 +538,6 @@ namespace Frontier.Stage
             StageData stageData = _stageDataProvider.CurrentData;
             int colNum          = stageData.GridColumnNum;
 
-            // 隣接しているか否かを判定するラムダ式
-            Func<int, int, bool> isAdjacent = ( int a, int b ) =>
-            {
-                int diff = b - a;
-                return
-                    // 左に存在(左端を除く)
-                    ( diff == -1 && ( a % colNum != 0 ) ) ||
-                    // 右に存在(右端を除く)
-                    ( diff == 1 && ( a % colNum != colNum - 1 ) ) ||
-                    // 上または下に存在
-                    Math.Abs( diff ) == colNum;
-            };
-
             // ジャンプ可能か否かを判定するラムダ式( 2つのタイルそれぞれの判定を一つの変数に纏めたいので、( bool, bool )の値に格納しています )
             Func<int, int, ( bool, bool )> canJumpOver = ( int a, int b ) =>
             {
@@ -618,7 +550,7 @@ namespace Frontier.Stage
             {
                 for( int j = i + 1; j < candidateRouteIndexs.Count; ++j )
                 {
-                    if( !isAdjacent( candidateRouteIndexs[i], candidateRouteIndexs[j] ) ) { continue; } // 隣接していなければ次へ
+                    if( !IsGridNextToEacheOther( candidateRouteIndexs[i], candidateRouteIndexs[j] ) ) { continue; } // 隣接していなければ次へ
 
                     (bool, bool) canJump = canJumpOver( candidateRouteIndexs[i], candidateRouteIndexs[j] ); // ジャンプ可能か否かを判定
 
@@ -711,42 +643,115 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 攻撃可能なタイルを登録するための起点処理を行います
+        /// 指定のタイルから四方に向けて、移動可能なタイルを登録する処理を展開します
         /// </summary>
-        /// <param name="dprtIndex">出発タイルインデックス</param>
-        /// <param name="atkRange">攻撃可能範囲値</param>
-        /// <param name="ownerTag">自身のキャラクタータグ</param>
-        private void RegisterAttackableTilesEntryPoint( int dprtIndex, int atkRange, CHARACTER_TAG ownerTag )
+        /// <param name="tileIndex"></param>
+        /// <param name="moveRange"></param>
+        /// <param name="atkRange"></param>
+        /// <param name="jumpForce"></param>
+        /// <param name="ownerIndex"></param>
+        /// <param name="height"></param>
+        /// <param name="ownerTileCosts"></param>
+        /// <param name="selfTag"></param>
+        /// <param name="isAttackable"></param>
+        private void RegisterMoveableTilesAllSides( int tileIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float height, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
         {
-            var stageData       = _stageDataProvider.CurrentData;
-            int targetTileIndex = dprtIndex;
+            int colNum      = _stageDataProvider.CurrentData.GridColumnNum;
 
-            RegisterAttackableTilesAllSides( dprtIndex, targetTileIndex, atkRange, ownerTag );
+            // 左端を除外
+            if( tileIndex % colNum != 0 )
+            {
+                RegisterMoveableTiles( tileIndex - 1, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );   // tileIndexからX軸方向へ-1
+            }
+            // 右端を除外
+            if( ( tileIndex + 1 ) % colNum != 0 )
+            {
+                RegisterMoveableTiles( tileIndex + 1, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );   // tileIndexからX軸方向へ+1
+            }
+            // Z軸方向への加算と減算はそのまま
+            RegisterMoveableTiles( tileIndex - colNum, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ-1
+            RegisterMoveableTiles( tileIndex + colNum, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ+1
         }
 
         /// <summary>
-        /// 四方に攻撃可能なタイルを登録する処理を展開します
+        /// 指定のタイルから四方に向けて、攻撃可能なタイルを登録する処理を展開します
         /// </summary>
         /// <param name="dprtIndex">出発タイルインデックス</param>
         /// <param name="atkRange">攻撃可能範囲値</param>
         /// <param name="ownerTag">自身のキャラクタータグ</param>
         private void RegisterAttackableTilesAllSides( int dprtIndex, int targetTileIndex, int atkRange, CHARACTER_TAG ownerTag )
         {
-            var stageData       = _stageDataProvider.CurrentData;
+            int colNum = _stageDataProvider.CurrentData.GridColumnNum;
 
             // 左端を除外
-            if( targetTileIndex % stageData.GridColumnNum != 0 )
+            if( targetTileIndex % colNum != 0 )
             {
-                RegisterAttackableTiles( dprtIndex, targetTileIndex - 1, atkRange, ownerTag );   // targetTileIndexからX軸方向へ -1
+                RegisterAttackableTiles( dprtIndex, targetTileIndex - 1, atkRange, ownerTag );  // targetTileIndexからX軸方向へ-1
             }
             // 右端を除外
-            if( ( targetTileIndex + 1 ) % stageData.GridColumnNum != 0 )
+            if( ( targetTileIndex + 1 ) % colNum != 0 )
             {
-                RegisterAttackableTiles( dprtIndex, targetTileIndex + 1, atkRange, ownerTag );   // targetTileIndexからX軸方向へ +1
+                RegisterAttackableTiles( dprtIndex, targetTileIndex + 1, atkRange, ownerTag );  // targetTileIndexからX軸方向へ+1
             }
             // Z軸方向への加算と減算はそのまま
-            RegisterAttackableTiles( dprtIndex, targetTileIndex - stageData.GridColumnNum, atkRange, ownerTag );   // targetTileIndexからZ軸方向へ-1
-            RegisterAttackableTiles( dprtIndex, targetTileIndex + stageData.GridColumnNum, atkRange, ownerTag );   // targetTileIndexからZ軸方向へ+1
+            RegisterAttackableTiles( dprtIndex, targetTileIndex - colNum, atkRange, ownerTag ); // targetTileIndexからZ軸方向へ-1
+            RegisterAttackableTiles( dprtIndex, targetTileIndex + colNum, atkRange, ownerTag ); // targetTileIndexからZ軸方向へ+1
+        }
+
+        /// <summary>
+        /// 移動可能なグリッドを登録します
+        /// </summary>
+        /// <param name="tileIndex">登録対象のグリッドインデックス</param>
+        /// <param name="moveRange">移動可能範囲値</param>
+        /// <param name="atkRange">攻撃可能範囲値</param>
+        /// <param name="jumpForce">ジャンプ値</param>
+        /// <param name="ownerIndex">移動キャラクターのキャラクターインデックス</param>
+        /// <param name="prevHeight">移動前のタイルの高さ</param>
+        /// <param name="ownerTileCosts">各タイルの移動コスト(ステータス異常によって変化するためキャラ毎に個別)</param>
+        /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
+        /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
+        /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
+        private void RegisterMoveableTiles( int tileIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float prevHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
+        {
+            var stageData = _stageDataProvider.CurrentData;
+            int columnNum = stageData.GridColumnNum;
+
+            // 範囲外のタイルは考慮しない
+            if( tileIndex < 0 || stageData.GetTileTotalNum() <= tileIndex ) { return; }
+            // 指定のタイル情報を取得
+            var tileInfo = stageData.GetTileInfo( tileIndex );
+            if( tileInfo == null ) { return; }
+            // 移動不可のグリッドに辿り着いた場合は終了
+            if( Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
+            // 既に計算済みのグリッドであれば終了
+            if( moveRange <= tileInfo.estimatedMoveRange ) { return; }
+            // 自身に対する敵対勢力キャラクターが存在すれば終了
+            TileBitFlag[] opponentTag = new TileBitFlag[( int ) CHARACTER_TAG.NUM]
+            {
+                TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST,   // PLAYERにおける敵対勢力
+                TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST,    // ENEMYにおける敵対勢力
+                TileBitFlag.ALLY_EXIST | TileBitFlag.ENEMY_EXIST     // OTHERにおける敵対勢力
+            };
+            if( Methods.CheckBitFlag( tileInfo.flag, opponentTag[( int ) selfTag] ) ) { return; }
+
+            // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
+            float curHeight     = stageData.TileDatas[tileIndex].Height;
+            int heightCost      = CalcurateHeightCost( prevHeight, curHeight, jumpForce );
+
+            // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
+            int tileTypeIndex           = Convert.ToInt32( stageData.TileDatas[tileIndex].Type );
+            int currentMoveRange        =  moveRange - ownerTileCosts[tileTypeIndex] - heightCost;
+            tileInfo.estimatedMoveRange = currentMoveRange;
+
+            // 負の値であれば終了
+            if( currentMoveRange < 0 ) { return; }
+            // 攻撃範囲についても登録する
+            if( isAttackable && ( tileInfo.charaTag == CHARACTER_TAG.NONE || tileInfo.charaIndex == ownerIndex ) )
+            {
+                BeginRegisterAttackableTiles( tileIndex, atkRange, selfTag, false );
+            }
+
+            RegisterMoveableTilesAllSides( tileIndex, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );
         }
 
         /// <summary>
@@ -795,7 +800,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 
+        /// 隣接タイル間の移動コストを計算します
         /// </summary>
         /// <param name="dprtIndex"></param>
         /// <param name="destIndex"></param>
@@ -804,6 +809,8 @@ namespace Frontier.Stage
         /// <returns></returns>
         private int CalcurateTileCost( int dprtIndex, int destIndex, int jumpForce, in int[] ownerTileCosts )
         {
+            Debug.Assert( IsGridNextToEacheOther( dprtIndex, destIndex ), "" );
+
             // 目的地のタイルのタイプから移動コストを取得
             var destTileData        = _stageDataProvider.CurrentData.GetTileData( destIndex );
             TileType destTileType   = destTileData.Type;
@@ -815,8 +822,17 @@ namespace Frontier.Stage
             return tileCost + heightCost;
         }
 
+        /// <summary>
+        /// 隣接タイル間の高低差コストを計算します
+        /// </summary>
+        /// <param name="dprtIndex"></param>
+        /// <param name="destIndex"></param>
+        /// <param name="jumpForce"></param>
+        /// <returns></returns>
         private int CalcurateHeightCost( int dprtIndex, int destIndex, int jumpForce )
         {
+            Debug.Assert( IsGridNextToEacheOther( dprtIndex, destIndex ), "" );
+
             float dprtHeight = _stageDataProvider.CurrentData.GetTileData( dprtIndex ).Height;
             float destHeight = _stageDataProvider.CurrentData.GetTileData( destIndex ).Height;
 
