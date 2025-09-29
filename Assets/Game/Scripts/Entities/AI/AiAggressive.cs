@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Frontier.Entities.Ai
 {
@@ -20,27 +21,27 @@ namespace Frontier.Entities.Ai
         /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
         /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
         /// <returns>存在の有無</returns>
-        private bool CheckExistTargetInRange(CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates)
+        private bool CheckExistTargetInRange( CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates )
         {
-            candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>(Constants.CHARACTER_MAX_NUM);
+            candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>( Constants.CHARACTER_MAX_NUM );
 
             // 自身の移動範囲をステージ上に登録する
-            bool isAttackable = !selfTmpParam.isEndCommand[(int)Command.COMMAND_TAG.ATTACK];
-            float curHeight = _stageCtrl.GetTileData(selfTmpParam.gridIndex).Height;
-            _stageCtrl.RegistMoveableInfo(selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, curHeight, in ownerTileCosts, selfParam.characterTag, isAttackable);
+            bool isAttackable = !selfTmpParam.isEndCommand[( int ) Command.COMMAND_TAG.ATTACK];
+            float curHeight = _stageCtrl.GetTileData( selfTmpParam.gridIndex ).Height;
+            _stageCtrl.RegisterMoveableTiles( selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, curHeight, in ownerTileCosts, selfParam.characterTag, isAttackable, true );
 
-            for (int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i)
+            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
             {
-                var info = _stageCtrl.GetTileInfo(i);
+                var info = _stageCtrl.GetTileInfo( i );
                 // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得
-                if (Methods.CheckBitFlag(info.flag, TileBitFlag.ATTACKABLE) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
+                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE ) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
                 {
                     // グリッドの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterHashtable.Key> opponentKeys;
-                    ExtractAttackabkeOpponentIndexs(i, out opponentKeys);
-                    if (0 < opponentKeys.Count)
+                    ExtractAttackabkeOpponentIndexs( i, out opponentKeys );
+                    if( 0 < opponentKeys.Count )
                     {
-                        candidates.Add((i, opponentKeys));
+                        candidates.Add( (i, opponentKeys) );
                     }
                 }
             }
@@ -61,7 +62,7 @@ namespace Frontier.Entities.Ai
             List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates;
 
             // 攻撃範囲内に敵対キャラクターが存在するか確認し、存在する場合はそのキャラクター達を取得
-            if ( CheckExistTargetInRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, out candidates ) )
+            if( CheckExistTargetInRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, out candidates ) )
             {
                 DetermineDestinationAndTargetInAttackRange( in ownerParams, in ownerTileCosts, candidates );
             }
@@ -86,15 +87,15 @@ namespace Frontier.Entities.Ai
             (int gridIndex, Character target, float eValue) maxEvaluate = (-1, null, int.MinValue);
 
             // 戦闘結果の評価が最も高い相手を求める
-            foreach ( var candidate in candidates )
+            foreach( var candidate in candidates )
             {
-                foreach ( var opponent in candidate.opponents )
+                foreach( var opponent in candidate.opponents )
                 {
-                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(opponent);
-                    if ( character == null ) continue;
+                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable( opponent );
+                    if( character == null ) continue;
 
-                    var eValue = CalcurateEvaluateAttack( ownerParams.CharacterParam, character.Params.CharacterParam);
-                    if ( maxEvaluate.eValue < eValue )
+                    var eValue = CalcurateEvaluateAttack( ownerParams.CharacterParam, character.Params.CharacterParam );
+                    if( maxEvaluate.eValue < eValue )
                     {
                         maxEvaluate = (candidate.gridIndex, character, eValue);
                     }
@@ -106,11 +107,11 @@ namespace Frontier.Entities.Ai
             _targetCharacter        = maxEvaluate.target;
 
             // 現在移動可能なタイルと、自身が現在存在するタイルをルート候補とする条件
-            Func<int, object[], bool> condition = (index, args) =>
+            Func<int, object[], bool> condition = ( index, args ) =>
             {
                 var tileInfo    = _stageCtrl.GetTileInfo( index );
-                var flag        = TileBitFlag.CANNOT_MOVE | TileBitFlag.ALLY_EXIST |  TileBitFlag.OTHER_EXIST;
-                bool ownerExist = (index == ((TemporaryParameter)args[0]).gridIndex);
+                var flag        = TileBitFlag.CANNOT_MOVE | TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST;
+                bool ownerExist = ( index == ( ( TemporaryParameter ) args[0] ).gridIndex );
 
                 return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, flag ) ) );
             };

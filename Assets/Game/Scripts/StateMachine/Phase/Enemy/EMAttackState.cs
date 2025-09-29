@@ -34,17 +34,15 @@ namespace Frontier
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
-            _stageCtrl.DrawAttackableGrids(_curentGridIndex);
+            _stageCtrl.BeginRegisterAttackableInformation(_curentGridIndex, param.attackRange, param.characterTag);
+            _stageCtrl.DrawAllTileInformationMeshes();
 
-            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter()))
+            // 攻撃可能なタイル内に攻撃対象がいた場合にグリッドを合わせる
+            if( _stageCtrl.RegisterAttackableTileIndexs( CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter() ) )
             {
-                // アタッカーキャラクターの設定
-                _stageCtrl.BindToGridCursor(GridCursorState.ATTACK, _attackCharacter);
-                // アタックカーソルUI表示
-                _uiSystem.BattleUi.ToggleAttackCursorE2P(true);
-            }
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
+				_uiSystem.BattleUi.ToggleAttackCursorE2P( true );                           // アタックカーソルUI表示
+			}
 
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
@@ -139,7 +137,7 @@ namespace Frontier
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
             // グリッド状態の描画をクリア
-            _stageCtrl.UpdateGridInfo();
+            _stageCtrl.UpdateTileInfo();
             _stageCtrl.ClearGridMeshDraw();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、

@@ -35,7 +35,7 @@ namespace Frontier
             _emOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert(_emOwner != null);
             var param           = _emOwner.Params.CharacterParam;
-            _stageCtrl.DrawMoveableGrids( _emOwner.Params.TmpParam.gridIndex, param.moveRange, param.attackRange );
+            _stageCtrl.DrawAllTileInformationMeshes();
 
             // 移動目標地点が、現在地点であった場合は即時終了
             if( _emOwner.GetAi().MovePathHandler.ProposedMovePath.Count <= 0 )
@@ -84,7 +84,7 @@ namespace Frontier
         {
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_emOwner);    // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetGridCursorControllerActive(true);         // 選択グリッドを表示
-            _stageCtrl.UpdateGridInfo();                            // ステージグリッド上のキャラ情報を更新
+            _stageCtrl.UpdateTileInfo();                            // ステージグリッド上のキャラ情報を更新
             _stageCtrl.ClearGridMeshDraw();                         // グリッド状態の描画をクリア
 
             base.ExitState();

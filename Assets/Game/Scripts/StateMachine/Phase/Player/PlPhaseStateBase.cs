@@ -21,7 +21,7 @@ namespace Frontier
             if ( _plOwner == null ) { return; }
 
             _plOwner.RewindToPreviousState();
-            _stageCtrl.UpdateGridInfo();    // グリッド情報を更新
+            _stageCtrl.UpdateTileInfo();    // グリッド情報を更新
             _stageCtrl.ApplyCurrentGrid2CharacterGrid( _plOwner );
         }
 

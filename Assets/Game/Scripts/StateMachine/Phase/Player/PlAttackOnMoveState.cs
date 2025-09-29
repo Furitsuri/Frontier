@@ -30,11 +30,11 @@ namespace Frontier
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
             var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.RegistAttackAbleInfo(_curentGridIndex, param.attackRange, param.characterTag);
-            _stageCtrl.DrawAttackableGrids(_curentGridIndex);
+            _stageCtrl.BeginRegisterAttackableInformation( _curentGridIndex, param.attackRange, param.characterTag );
+            _stageCtrl.DrawAllTileInformationMeshes();
 
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if (_stageCtrl.RegistAttackTargetGridIndexs(CHARACTER_TAG.ENEMY, targetChara))
+            if (_stageCtrl.RegisterAttackableTileIndexs(CHARACTER_TAG.ENEMY, targetChara))
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
@@ -85,7 +85,7 @@ namespace Frontier
             _targetCharacter.Params.SkillModifiedParam.Reset();
 
             // グリッドの状態を更新してグリッドの描画をクリア
-            _stageCtrl.UpdateGridInfo();
+            _stageCtrl.UpdateTileInfo();
             _stageCtrl.ClearGridMeshDraw();
 
             // 選択グリッドを表示

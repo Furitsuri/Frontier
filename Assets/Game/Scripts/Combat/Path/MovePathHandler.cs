@@ -98,7 +98,7 @@ public class MovePathHandler
     /// <param name="dprtTileIndex">出発地点となるタイルのインデックス値</param>
     /// <param name="destTileIndex">目標地点となるタイルのインデックス値</param>
     /// <param name="ownerJumpForce">移動キャラクターのジャンプ力</param>
-    /// <param name="ownerStatuses">移動キャラクターのステータス</param>
+    /// <param name="ownerTileCosts">移動キャラクターの各タイルの移動コスト</param>
     public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )
     {
         if ( _candidateRouteIndexs.Count <= 0 )
