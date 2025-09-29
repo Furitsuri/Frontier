@@ -34,11 +34,11 @@ namespace Frontier
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.BeginRegisterAttackableInformation(_curentGridIndex, param.attackRange, param.characterTag);
+            _stageCtrl.BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
             _stageCtrl.DrawAllTileInformationMeshes();
 
-            // 攻撃可能なタイル内に攻撃対象がいた場合にグリッドを合わせる
-            if( _stageCtrl.RegisterAttackableTileIndexs( CHARACTER_TAG.PLAYER, _attackCharacter.GetAi().GetTargetCharacter() ) )
+            // 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
+            if( _stageCtrl.CorrectAttackableTileIndexs( CHARACTER_TAG.ENEMY, _attackCharacter.GetAi().GetTargetCharacter() ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
 				_uiSystem.BattleUi.ToggleAttackCursorE2P( true );                           // アタックカーソルUI表示
