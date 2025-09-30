@@ -43,11 +43,11 @@ namespace Frontier
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
             var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
             _stageCtrl.DrawAllTileInformationMeshes();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (_stageCtrl.CorrectAttackableTileIndexs(CHARACTER_TAG.PLAYER, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY )))
+            if (_stageCtrl.TileInfoDataHdlr().CorrectAttackableTileIndexs(CHARACTER_TAG.PLAYER, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY )))
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
@@ -157,7 +157,7 @@ namespace Frontier
             _targetCharacter.Params.SkillModifiedParam.Reset();
 
             // グリッドの状態を更新してグリッドの描画をクリア
-            _stageCtrl.UpdateTileInfo();
+            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
             _stageCtrl.ClearGridMeshDraw();
 
             // 選択グリッドを表示

@@ -28,7 +28,7 @@ namespace Frontier.Entities.Ai
             // 自身の移動範囲をステージ上に登録する
             bool isAttackable = !selfTmpParam.isEndCommand[( int ) Command.COMMAND_TAG.ATTACK];
             float curHeight = _stageCtrl.GetTileData( selfTmpParam.gridIndex ).Height;
-            _stageCtrl.BeginRegisterMoveableTiles( selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, curHeight, in ownerTileCosts, selfParam.characterTag, isAttackable );
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, curHeight, in ownerTileCosts, selfParam.characterTag, isAttackable );
 
             for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
             {
