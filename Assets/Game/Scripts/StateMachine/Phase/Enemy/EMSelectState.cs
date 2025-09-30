@@ -19,7 +19,7 @@ namespace Frontier
 
             base.Init();
 
-            _stageCtrl.UpdateTileInfo();    // ステージグリッド上のキャラ情報を更新
+            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();    // ステージグリッド上のキャラ情報を更新
 
             _enemyEnumerator    = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).GetEnumerator();
             _currentEnemy       = null;

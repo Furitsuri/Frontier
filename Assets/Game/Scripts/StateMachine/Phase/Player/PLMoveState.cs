@@ -43,7 +43,7 @@ namespace Frontier
             bool isAttackable   = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             var param           = _plOwner.Params.CharacterParam;
             float tileHeight    = _stageCtrl.GetTileData( _departGridIndex ).Height;
-            _stageCtrl.BeginRegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable );
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable );
             _stageCtrl.DrawAllTileInformationMeshes();
 
             // SetUpCandidatePathIndexsで用いる条件式
@@ -104,8 +104,8 @@ namespace Frontier
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
             {
-                _stageCtrl.UpdateTileInfo();        // ステージグリッド上のキャラ情報を更新
-                _stageCtrl.ClearGridCursroBind();   // 操作対象データをリセット
+                _stageCtrl.TileInfoDataHdlr().UpdateTileInfo(); // ステージグリッド上のキャラ情報を更新
+                _stageCtrl.ClearGridCursroBind();           // 操作対象データをリセット
             }
 
             base.ExitState();
@@ -147,7 +147,7 @@ namespace Frontier
 
             // 移動不可の地点であっても、敵対勢力が存在しており自身の攻撃レンジ以内の場合にはtrueを返す
             TileInformation info;
-            _stageCtrl.FetchCurrentGridInfo( out info );
+            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
             if( info.estimatedMoveRange < 0 )
             {
                 if( CanAttackOnMove( in info ) ) { return true; }
@@ -196,7 +196,7 @@ namespace Frontier
 
             TileInformation info;
             var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _stageCtrl.FetchCurrentGridInfo( out info );
+            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
 
             // 出発地点と同一グリッドであれば戻る
             if( curGridIndex == _departGridIndex )

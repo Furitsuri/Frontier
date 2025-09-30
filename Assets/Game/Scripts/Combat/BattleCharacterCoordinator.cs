@@ -292,7 +292,7 @@ namespace Frontier.Battle
         public Character GetSelectCharacter()
         {
             Stage.TileInformation info;
-            _stgCtrl.FetchCurrentGridInfo(out info);
+            _stgCtrl.TileInfoDataHdlr().FetchCurrentTileInfo(out info);
 
             return GetCharacterFromHashtable(info.charaTag, info.charaIndex);
         }

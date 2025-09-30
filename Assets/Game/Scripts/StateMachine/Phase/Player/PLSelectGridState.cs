@@ -37,7 +37,7 @@ namespace Frontier
             }
 
             Stage.TileInformation info;
-            _stageCtrl.FetchCurrentGridInfo(out info);
+            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo(out info);
 
             // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
             int selectCharaIndex = info.charaIndex;

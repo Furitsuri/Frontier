@@ -34,11 +34,11 @@ namespace Frontier
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
             _stageCtrl.DrawAllTileInformationMeshes();
 
             // 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
-            if( _stageCtrl.CorrectAttackableTileIndexs( CHARACTER_TAG.ENEMY, _attackCharacter.GetAi().GetTargetCharacter() ) )
+            if( _stageCtrl.TileInfoDataHdlr().CorrectAttackableTileIndexs( CHARACTER_TAG.ENEMY, _attackCharacter.GetAi().GetTargetCharacter() ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
 				_uiSystem.BattleUi.ToggleAttackCursorE2P( true );                           // アタックカーソルUI表示
@@ -137,7 +137,7 @@ namespace Frontier
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
             // グリッド状態の描画をクリア
-            _stageCtrl.UpdateTileInfo();
+            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
             _stageCtrl.ClearGridMeshDraw();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、

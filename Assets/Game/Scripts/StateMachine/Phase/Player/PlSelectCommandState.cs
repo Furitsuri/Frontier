@@ -71,7 +71,7 @@ namespace Frontier
                 if (_plOwner.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_plOwner.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
                 {
                     _stageCtrl.FollowFootprint(_plOwner);
-                    _stageCtrl.UpdateTileInfo();
+                    _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
                     _plOwner.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
                 }
 
