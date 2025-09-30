@@ -1,25 +1,38 @@
 ﻿using Frontier.Entities;
+using Frontier.Stage;
 using static Constants;
 
 namespace Frontier
 {
     public class PlSelectTileState : PlPhaseStateBase
     {
+        private enum TransitTag
+        {
+            CHARACTER_COMMAND = 0,
+            TURN_END,
+        }
+
+        private InputCodeStringWrapper _confirmStrWrapper;
+        private string[] _confirmStrings;
+
         /// <summary>
         /// 遷移先を示すタグ
         /// </summary>
-        enum TransitTag
-        {
-            CharacterCommand = 0,
-            TurnEnd,
-        }
-
         override public void Init()
         {
             base.Init();
 
             // グリッド選択を有効化
             _stageCtrl.SetGridCursorControllerActive(true);
+
+            // Confirmアイコンの文字列を設定
+            _confirmStrings = new string[( int ) CHARACTER_TAG.NUM]
+            {
+                "COMMAND",      // PLAYER
+                "SHOW RANGE",   // ENEMY
+                "SHOW RANGE",   // OTHER
+            };
+            _confirmStrWrapper = new InputCodeStringWrapper( _confirmStrings[0] );
         }
 
         override public bool Update()
@@ -52,9 +65,9 @@ namespace Frontier
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "MOVE",     CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      "COMMAND",  CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.OPT2,         "TURN END", CanAcceptDefault, new AcceptBooleanInput(AcceptOptional), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "MOVE",             CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      _confirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
+               (GuideIcon.OPT2,         "TURN END",         CanAcceptDefault, new AcceptBooleanInput(AcceptOptional), 0.0f, hashCode)
             );
         }
 
@@ -70,14 +83,18 @@ namespace Frontier
             }
 
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if (character != null &&
-                 character.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER &&
-                 !character.Params.TmpParam.IsEndAction())
+            if( null == character ) { return false; }
+
+            // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
+            if( character.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+            {
+                return !character.Params.TmpParam.IsEndAction();
+            }
+            // 敵キャラクター、その他のキャラクターの場合、レンジ表示を行うため常に選択可能
+            else
             {
                 return true;
             }
-
-            return false;
         }
 
         /// <summary>
@@ -87,7 +104,20 @@ namespace Frontier
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptDirection(Direction dir)
         {
-            return _stageCtrl.OperateGridCursorController(dir);
+            bool retEnable = _stageCtrl.OperateGridCursorController( dir );
+
+            if( retEnable )
+            {
+                TileInformation tileInfo;
+                _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out tileInfo );
+                if( tileInfo.charaTag != CHARACTER_TAG.NONE )
+                {
+                    // Confirmアイコンの文字列を設定
+                    _confirmStrWrapper.Explanation = _confirmStrings[( int ) tileInfo.charaTag];
+                }
+            }
+
+            return retEnable;
         }
 
         /// <summary>
@@ -99,7 +129,7 @@ namespace Frontier
         {
             if (!isInput) return false;
 
-            TransitIndex = (int)TransitTag.CharacterCommand;
+            TransitIndex = (int)TransitTag.CHARACTER_COMMAND;
             // コマンドを開くことをチュートリアルへ通知
             TutorialFacade.Notify( TutorialFacade.TriggerType.OpenBattleCommand);
 
@@ -115,7 +145,7 @@ namespace Frontier
         {
             if (!isOptional) return false;
 
-            TransitIndex = (int)TransitTag.TurnEnd;
+            TransitIndex = (int)TransitTag.TURN_END;
 
             return true;
         }

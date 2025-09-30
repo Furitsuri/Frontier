@@ -47,7 +47,7 @@ public class InputFacade
     {
         for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
         {
-            _inputCodes[i].Explanation      = "";
+            _inputCodes[i].Explanation      = new InputCodeStringWrapper("");
             _inputCodes[i].EnableCbs        = null;
             _inputCodes[i].ResetIntervalTime();
             _inputCodes[i].SetInputLastTime(0.0f);
@@ -65,7 +65,7 @@ public class InputFacade
         {
             if (_inputCodes[i].RegisterClassHashCode == hashCode)
             {
-                _inputCodes[i].Explanation      = "";
+                _inputCodes[i].Explanation      = new InputCodeStringWrapper( "" );
                 _inputCodes[i].EnableCbs        = null;
                 _inputCodes[i].ResetIntervalTime();
                 _inputCodes[i].SetInputLastTime(0.0f);

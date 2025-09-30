@@ -134,7 +134,7 @@ public sealed class InputGuidePresenter : MonoBehaviour
         {
             var code = _inputCodes[i];
 
-            _guideUiArrray[i].Register(_sprites, new InputGuideUI.InputGuide(code.Icons, code.Explanation));
+            _guideUiArrray[i].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
         }
 
         // フェード状態の遷移
@@ -161,7 +161,7 @@ public sealed class InputGuidePresenter : MonoBehaviour
             InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>(GuideUIPrefab, gameObject, true);
             if (guideUi == null) continue;
 
-            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide(code.Icons, code.Explanation);
+            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide(code.Icons, code.Explanation );
             guideUi.Register(_sprites, guide);
             _guideUiArrray[i] = guideUi;
             _guideUiArrray[i].gameObject.SetActive( !Methods.AllMatch( code.EnableCbs, arg => ( arg == null || !arg() ) ) );

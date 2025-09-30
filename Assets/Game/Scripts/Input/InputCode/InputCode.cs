@@ -14,7 +14,7 @@ public class InputCode
     // 入力アイコン
     public GuideIcon[] Icons;
     // アイコンに対する説明文
-    public string Explanation;
+    public InputCodeStringWrapper Explanation;
     // 有効・無効を判定するコールバック
     public EnableCallback[] EnableCbs;
     // 入力受付のコールバック
@@ -29,21 +29,65 @@ public class InputCode
     /// <summary>
     /// 入力コードを設定します
     /// </summary>
-    /// <param name="icon">ガイドアイコン</param>
+    /// <param name="icons">ガイドアイコン</param>
+    /// <param name="explwrapper">説明文が挿入されたラッパー</param>
+    /// <param name="enableCbs">入力受付判定のコールバック</param>
+    /// <param name="acceptInputs">入力時のコールバック</param>
+    /// <param name="interval">入力受付のインターバル時間</param>
+    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
+    public InputCode( GuideIcon[] icons, InputCodeStringWrapper explwrapper, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode )
+    {
+        Icons                   = icons;
+        Explanation             = explwrapper;
+        EnableCbs               = enableCbs;
+        AcceptInputs            = acceptInputs;
+        InputInterval           = interval;
+        RegisterClassHashCode   = hashCode;
+        InputLastTime           = 0f;
+    }
+
+    /// <summary>
+    /// 入力コードを設定します
+    /// </summary>
+    /// <param name="icons">ガイドアイコン</param>
     /// <param name="expl">説明文</param>
-    /// <param name="enableCb">入力受付判定のコールバック</param>
-    /// <param name="acceptInput">入力時のコールバック</param>
+    /// <param name="enableCbs">入力受付判定のコールバック</param>
+    /// <param name="acceptInputs">入力時のコールバック</param>
     /// <param name="interval">入力受付のインターバル時間</param>
     /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
     public InputCode( GuideIcon[] icons, string expl, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode )
     {
-        Icons = icons;
-        Explanation = expl;
-        EnableCbs = enableCbs;
-        AcceptInputs = acceptInputs;
-        InputInterval = interval;
-        RegisterClassHashCode = hashCode;
-        InputLastTime = 0f;
+        Icons                   = icons;
+        Explanation             = new InputCodeStringWrapper( expl );
+        EnableCbs               = enableCbs;
+        AcceptInputs            = acceptInputs;
+        InputInterval           = interval;
+        RegisterClassHashCode   = hashCode;
+        InputLastTime           = 0f;
+    }
+
+    /// <summary>
+    /// ガイドアイコン及び入力受付関数が単一ケースの入力コードを設定します
+    /// </summary>
+    /// <param name="icon">ガイドアイコン</param>
+    /// <param name="explwrapper">説明文</param>
+    /// <param name="enableCb">入力受付判定のコールバック</param>
+    /// <param name="acceptInput">入力時のコールバック</param>
+    /// <param name="interval">入力受付のインターバル時間</param>
+    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
+    public InputCode( GuideIcon icon, InputCodeStringWrapper explwrapper, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
+    {
+        Icons           = new GuideIcon[1];
+        EnableCbs       = new EnableCallback[1];
+        AcceptInputs    = new IAcceptInputBase[1];
+
+        Icons[0]                = icon;
+        Explanation             = explwrapper;
+        EnableCbs[0]            = enableCb;
+        AcceptInputs[0]         = acceptInput;
+        InputInterval           = interval;
+        RegisterClassHashCode   = hashCode;
+        InputLastTime           = 0f;
     }
 
     /// <summary>
@@ -57,17 +101,17 @@ public class InputCode
     /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
     public InputCode( GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
     {
-        Icons = new GuideIcon[1];
-        EnableCbs = new EnableCallback[1];
-        AcceptInputs = new IAcceptInputBase[1];
+        Icons           = new GuideIcon[1];
+        EnableCbs       = new EnableCallback[1];
+        AcceptInputs    = new IAcceptInputBase[1];
 
-        Icons[0] = icon;
-        Explanation = expl;
-        EnableCbs[0] = enableCb;
-        AcceptInputs[0] = acceptInput;
-        InputInterval = interval;
-        RegisterClassHashCode = hashCode;
-        InputLastTime = 0f;
+        Icons[0]                = icon;
+        Explanation             = new InputCodeStringWrapper( expl );
+        EnableCbs[0]            = enableCb;
+        AcceptInputs[0]         = acceptInput;
+        InputInterval           = interval;
+        RegisterClassHashCode   = hashCode;
+        InputLastTime           = 0f;
     }
 
     /// <summary>
@@ -91,7 +135,25 @@ public class InputCode
     /// オペレーター
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
+    static public implicit operator InputCode( (GuideIcon[], InputCodeStringWrapper, EnableCallback[], IAcceptInputBase[], float, int) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
+    }
+
+    /// <summary>
+    /// オペレーター
+    /// </summary>
+    /// <param name="tuple">オペレーター対象の設定</param>
     static public implicit operator InputCode( (GuideIcon[], string, EnableCallback[], IAcceptInputBase[], float, int) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
+    }
+
+    /// <summary>
+    /// オペレーター
+    /// </summary>
+    /// <param name="tuple">オペレーター対象の設定</param>
+    static public implicit operator InputCode( (GuideIcon, InputCodeStringWrapper, EnableCallback, IAcceptInputBase, float, int) tuple )
     {
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
     }
