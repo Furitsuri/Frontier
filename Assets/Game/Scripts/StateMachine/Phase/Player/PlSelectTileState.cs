@@ -1,10 +1,9 @@
 ﻿using Frontier.Entities;
-using UnityEngine;
 using static Constants;
 
 namespace Frontier
 {
-    public class PlSelectGridState : PlPhaseStateBase
+    public class PlSelectTileState : PlPhaseStateBase
     {
         /// <summary>
         /// 遷移先を示すタグ
