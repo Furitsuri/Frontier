@@ -58,7 +58,7 @@ namespace Frontier
             // 遷移木の作成
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
-            RootNode = _hierarchyBld.InstantiateWithDiContainer<PlSelectGridState>(false);
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<PlSelectTileState>(false);
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>(false));
             RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>(false));
             // Children[0]はPlSelectCommandState

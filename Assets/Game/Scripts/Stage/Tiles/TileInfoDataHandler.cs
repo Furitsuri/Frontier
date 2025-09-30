@@ -200,7 +200,7 @@ namespace Frontier.Stage
         /// <param name="destIndex">移動目標となるタイルインデックス</param>
         /// <param name="jumpForce">ジャンプ力</param>
         /// <param name="ownerTileCosts">移動を行うキャラクターのタイルコスト</param>
-        /// <returns></returns>
+        /// <returns>タイル間のコスト及び移動可否</returns>
         public ( int cost, bool passable ) CalcurateTileCost( int dprtIndex, int destIndex, int jumpForce, in int[] ownerTileCosts )
         {
             // 隣接していないタイル間の移動は不可
