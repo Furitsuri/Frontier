@@ -18,17 +18,17 @@ public class InputGuideUI : MonoBehaviour
         // キーアイコン
         public Constants.GuideIcon[] _icons;
         // アイコンに対する説明文
-        public string _explanation;
+        public InputCodeStringWrapper _explWrapper;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="icon">ガイドスプライトのアイコンタイプ</param>
         /// <param name="explanation">キーに対する説明文</param>
-        public InputGuide(Constants.GuideIcon[] icons, string explanation)
+        public InputGuide(Constants.GuideIcon[] icons, InputCodeStringWrapper explWrapper )
         {
             _icons          = icons;
-            _explanation    = explanation;
+            _explWrapper    = explWrapper;
         }
     }
 
@@ -78,6 +78,11 @@ public class InputGuideUI : MonoBehaviour
         Debug.Assert(_rectTransform != null, "GetComponent of \"RectTransform\" failed.");
     }
 
+    void Update()
+    {
+        GuideExplanation.text = InputGuideValue._explWrapper.Explanation;
+    }
+
     /// <summary>
     /// キーガイドを設定します
     /// <param name="sprites">参照するスプライト配列</param>
@@ -99,7 +104,7 @@ public class InputGuideUI : MonoBehaviour
             }
             GuideSpriteRenderers[i].sprite = sprites[(int)InputGuideValue._icons[i]];
         }
-        GuideExplanation.text       = InputGuideValue._explanation;
+        GuideExplanation.text       = InputGuideValue._explWrapper.Explanation;
 
         // Z軸の位置を0に設定, スケール値を1に設定
         transform.localPosition     = new Vector3(transform.localPosition.x, transform.localPosition.y, 0f);
