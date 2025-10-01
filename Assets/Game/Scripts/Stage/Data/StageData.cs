@@ -75,7 +75,7 @@ namespace Frontier.Stage
         {
             List<StageTileData> stageTileDatas = new List<StageTileData>();
 
-            if ( !rowIndex.IsBetween( 0, _gridRowNum - 1 ) )
+            if ( !rowIndex.IsInHalfOpenRange( 0, _gridRowNum ) )
             {
                 Debug.LogError("指定されたインデックス値がデータの範囲外のものになっています。");
                 return stageTileDatas;
@@ -83,7 +83,7 @@ namespace Frontier.Stage
 
             for( int i = 0; i < _tileDatas.Length; ++i )
             {
-                if( i.IsBetween( rowIndex * _gridColumnNum, ( rowIndex + 1 ) * _gridColumnNum - 1 ) )
+                if( i.IsInHalfOpenRange( rowIndex * _gridColumnNum, ( rowIndex + 1 ) * _gridColumnNum ) )
                 {
                     stageTileDatas.Add( _tileDatas[i] );
                 }
@@ -101,7 +101,7 @@ namespace Frontier.Stage
         {
             List<StageTileData> stageTileDatas = new List<StageTileData>();
 
-            if ( !colIndex.IsBetween( 0, _gridColumnNum - 1 ) )
+            if ( !colIndex.IsInHalfOpenRange( 0, _gridColumnNum ) )
             {
                 Debug.LogError( "指定されたインデックス値がデータの範囲外のものになっています。" );
                 return stageTileDatas;

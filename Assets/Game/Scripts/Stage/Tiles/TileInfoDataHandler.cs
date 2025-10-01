@@ -64,7 +64,7 @@ namespace Frontier.Stage
         /// <param name="isAttackable"></param>
         public void BeginRegisterMoveableTiles( int dprtIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float dprtHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
         {
-            Debug.Assert( dprtIndex.IsBetween( 0, _stageDataProvider.CurrentData.GetTileTotalNum() - 1 ), "StageController : Irregular Index." );
+            Debug.Assert( dprtIndex.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );
 
             var tileInfo = _stageDataProvider.CurrentData.GetTileInfo( dprtIndex );
             if( tileInfo == null ) { return; }
@@ -81,7 +81,7 @@ namespace Frontier.Stage
         /// <param name="selfTag">攻撃を行うキャラクター自身のキャラクタータグ</param>
         public void BeginRegisterAttackableTiles( int dprtIndex, int atkRange, CHARACTER_TAG ownerTag, bool isClearAttackableInfo )
         {
-            Debug.Assert( dprtIndex.IsBetween( 0, _stageDataProvider.CurrentData.GetTileTotalNum() - 1 ), "StageController : Irregular Index." );
+            Debug.Assert( dprtIndex.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );
 
             if( isClearAttackableInfo ) { ClearAttackableInformation(); }   // 全てのタイルの攻撃可否情報を初期化
 
@@ -367,7 +367,7 @@ namespace Frontier.Stage
         {
             // 範囲外のグリッドは考慮しない
             var stageData = _stageDataProvider.CurrentData;
-            if( !targetTileIndex.IsBetween( 0, stageData.GetTileTotalNum() - 1 ) ) { return; }
+            if( !targetTileIndex.IsInHalfOpenRange( 0, stageData.GetTileTotalNum() ) ) { return; }
             // 移動不可のグリッドには攻撃できない
             if( Methods.CheckBitFlag( stageData.GetTileInfo( targetTileIndex ).flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
             // 高低差が攻撃範囲を超過している場合は攻撃できない
