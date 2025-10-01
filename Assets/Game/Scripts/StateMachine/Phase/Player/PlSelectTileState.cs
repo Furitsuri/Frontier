@@ -48,11 +48,13 @@ namespace Frontier
                 return true;
             }
 
-            Stage.TileInformation info;
+            TileInformation info;
             _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo(out info);
-
-            // 現在の選択グリッド上に未行動のプレイヤーが存在する場合は行動選択へ
-            int selectCharaIndex = info.charaIndex;
+            if( info.charaTag.IsInOpenRangeEnum( CHARACTER_TAG.NONE, CHARACTER_TAG.NUM ) )
+            {
+                // Confirmアイコンの文字列を更新
+                _confirmStrWrapper.Explanation = _confirmStrings[( int ) info.charaTag];
+            }
 
             return (0 <= TransitIndex);
         }
@@ -104,20 +106,7 @@ namespace Frontier
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptDirection(Direction dir)
         {
-            bool retEnable = _stageCtrl.OperateGridCursorController( dir );
-
-            if( retEnable )
-            {
-                TileInformation tileInfo;
-                _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out tileInfo );
-                if( tileInfo.charaTag != CHARACTER_TAG.NONE )
-                {
-                    // Confirmアイコンの文字列を設定
-                    _confirmStrWrapper.Explanation = _confirmStrings[( int ) tileInfo.charaTag];
-                }
-            }
-
-            return retEnable;
+            return _stageCtrl.OperateGridCursorController( dir );
         }
 
         /// <summary>

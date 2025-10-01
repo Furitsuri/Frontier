@@ -28,6 +28,8 @@ public class InputCode
 
     /// <summary>
     /// 入力コードを設定します
+    /// 複数のガイドアイコン及び入力受付関数を設定できます
+    /// 説明文はラッパークラスを使用してください
     /// </summary>
     /// <param name="icons">ガイドアイコン</param>
     /// <param name="explwrapper">説明文が挿入されたラッパー</param>
@@ -48,6 +50,7 @@ public class InputCode
 
     /// <summary>
     /// 入力コードを設定します
+    /// 上記と同様ですが、説明文を直接文字列で指定します
     /// </summary>
     /// <param name="icons">ガイドアイコン</param>
     /// <param name="expl">説明文</param>
@@ -67,7 +70,9 @@ public class InputCode
     }
 
     /// <summary>
+    /// 入力コードを設定します
     /// ガイドアイコン及び入力受付関数が単一ケースの入力コードを設定します
+    /// 説明文はラッパークラスを使用してください
     /// </summary>
     /// <param name="icon">ガイドアイコン</param>
     /// <param name="explwrapper">説明文</param>
@@ -91,7 +96,8 @@ public class InputCode
     }
 
     /// <summary>
-    /// ガイドアイコン及び入力受付関数が単一ケースの入力コードを設定します
+    /// 入力コードを設定します
+    /// 上記と同様ですが、説明文を直接文字列で指定します
     /// </summary>
     /// <param name="icon">ガイドアイコン</param>
     /// <param name="expl">説明文</param>
@@ -132,7 +138,7 @@ public class InputCode
     }
 
     /// <summary>
-    /// オペレーター
+    /// 上記のコンストラクタをタプルでまとめて呼び出せるようにするためのオペレーター群です
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
     static public implicit operator InputCode( (GuideIcon[], InputCodeStringWrapper, EnableCallback[], IAcceptInputBase[], float, int) tuple )
@@ -140,28 +146,16 @@ public class InputCode
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
     }
 
-    /// <summary>
-    /// オペレーター
-    /// </summary>
-    /// <param name="tuple">オペレーター対象の設定</param>
     static public implicit operator InputCode( (GuideIcon[], string, EnableCallback[], IAcceptInputBase[], float, int) tuple )
     {
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
     }
 
-    /// <summary>
-    /// オペレーター
-    /// </summary>
-    /// <param name="tuple">オペレーター対象の設定</param>
     static public implicit operator InputCode( (GuideIcon, InputCodeStringWrapper, EnableCallback, IAcceptInputBase, float, int) tuple )
     {
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
     }
 
-    /// <summary>
-    /// オペレーター
-    /// </summary>
-    /// <param name="tuple">オペレーター対象の設定</param>
     static public implicit operator InputCode( (GuideIcon, string, EnableCallback, IAcceptInputBase, float, int) tuple )
     {
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );

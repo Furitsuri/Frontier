@@ -80,7 +80,7 @@ public class InputGuideUI : MonoBehaviour
 
     void Update()
     {
-        GuideExplanation.text = InputGuideValue._explWrapper.Explanation;
+        GuideExplanation.text = InputGuideValue._explWrapper.Explanation;   // 説明文を更新
     }
 
     /// <summary>
