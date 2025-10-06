@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using Frontier.Entities.Ai;
+using Frontier.Stage;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
-using Frontier.Entities.Ai;
 
 namespace Frontier.Entities
 {
@@ -51,6 +50,11 @@ namespace Frontier.Entities
 
             _baseAi = emAiFactorys[( int )_thikType]();
             _baseAi.Init( this );
+        }
+
+        override public void ToggleAttackableRangeDisplay()
+        {
+            _attackableRangeHandler.ToggleAttackableRangeDisplay( in _params, in _tileCostTable, TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
         }
     }
 }

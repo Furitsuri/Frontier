@@ -99,7 +99,7 @@ namespace Frontier
         override public void ExitState()
         {
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
-            _stageCtrl.ClearGridMeshDraw();                     // グリッド状態の描画をクリア
+            _stageCtrl.ClearTileMeshDraw();                     // グリッド状態の描画をクリア
 
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )

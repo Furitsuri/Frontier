@@ -44,7 +44,7 @@ namespace Frontier.Stage
         private StageFileLoader _stageFileLoader;
         private TileInfoDataHandler _tileInfoDataHdlr;
         private Footprint _footprint;
-        private List<GridMesh> _gridMeshs;
+        private List<GridMesh> _tileMeshes;
 
         public TileInfoDataHandler TileInfoDataHdlr() => _tileInfoDataHdlr;
 
@@ -66,7 +66,7 @@ namespace Frontier.Stage
                 NullCheck.AssertNotNull( _tileInfoDataHdlr, nameof( _tileInfoDataHdlr ) );
             }
 
-            _gridMeshs              = new List<GridMesh>();
+            _tileMeshes              = new List<GridMesh>();
         }
 
         #region PUBLIC_METHOD
@@ -127,7 +127,7 @@ namespace Frontier.Stage
                 var info = _stageDataProvider.CurrentData.GetTileInfo( i );
 
                 // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
-                ( MeshType meshType, bool condition )[] meshTypeAndConditions = new ( MeshType, bool )[ (int) MeshType.NUM ]
+                ( MeshType meshType, bool condition )[] meshTypeAndConditions = new ( MeshType, bool )[]
                 {
                     ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
                     ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(info.flag, TileBitFlag.REACHABLE_ATTACK) ),
@@ -136,16 +136,15 @@ namespace Frontier.Stage
                     ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(info.flag, TileBitFlag.ATTACKABLE) ),
                 };
 
-                for( int j = 0; j < ( int ) MeshType.NUM; ++j )
+                for( int j = 0; j < meshTypeAndConditions.Length; ++j )
                 {
                     if( meshTypeAndConditions[j].condition )
                     {
                         var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>( _gridMeshObject, true );
                         NullCheck.AssertNotNull( gridMesh, nameof( gridMesh ) );
-                        if( gridMesh == null ) { continue; }
 
-                        _gridMeshs.Add( gridMesh );
-                        _gridMeshs[count++].DrawTileMesh( info.charaStandPos, TILE_SIZE, ( MeshType )Enum.ToObject( typeof( MeshType ), meshTypeAndConditions[j].meshType ) );
+                        _tileMeshes.Add( gridMesh );
+                        _tileMeshes[count++].DrawTileMesh( info.charaStandPos, TILE_SIZE, TileColors.Colors[( int )  meshTypeAndConditions[j].meshType ] );
 
                         break;
                     }
@@ -154,16 +153,16 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 全てのグリッドメッシュの描画を消去します
+        /// 全てのタイルメッシュの描画を消去します
         /// </summary>
-        public void ClearGridMeshDraw()
+        public void ClearTileMeshDraw()
         {
-            foreach( var grid in _gridMeshs )
+            foreach( var grid in _tileMeshes )
             {
                 grid.ClearDraw();
                 grid.Remove();
             }
-            _gridMeshs.Clear();
+            _tileMeshes.Clear();
         }
 
         /// <summary>
@@ -263,7 +262,7 @@ namespace Frontier.Stage
         /// ステージ上の全てのタイルの数を取得します
         /// </summary>
         /// <returns>全てのタイルの数</returns>
-        public int GetTotalTileNum()
+        public int GetTileTotalNum()
         {
             return _stageDataProvider.CurrentData.GetTileTotalNum();
         }

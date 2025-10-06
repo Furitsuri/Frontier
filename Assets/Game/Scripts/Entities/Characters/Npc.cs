@@ -1,14 +1,34 @@
-﻿using Frontier.Combat;
-using Frontier.Combat.Skill;
-using Frontier.Entities.Ai;
-using System;
-using UnityEngine;
-using static Constants;
+﻿using Frontier.Combat.Skill;
 
 namespace Frontier.Entities
 {
     public class Npc : Character
     {
+        protected AttackableRangeHandler _attackableRangeHandler = null;
+
+        public override void Init()
+        {
+            base.Init();
+
+            if( _attackableRangeHandler == null )
+            {
+                _attackableRangeHandler = _hierarchyBld.InstantiateWithDiContainer<AttackableRangeHandler>( false );
+                NullCheck.AssertNotNull( _attackableRangeHandler, nameof( _attackableRangeHandler ) );
+            }
+        }
+
+        public void UnsetAttackableRangeDisplay()
+        {
+            _attackableRangeHandler.UnsetAttackableRangeDisplay();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        virtual public void ToggleAttackableRangeDisplay()
+        {
+        }
+
         /// <summary>
         /// 使用スキルを選択します
         /// </summary>

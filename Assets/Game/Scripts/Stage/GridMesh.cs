@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Frontier.Stage
 {
@@ -23,7 +21,7 @@ namespace Frontier.Stage
         /// <param name="position">メッシュを描画する座標の中心点</param>
         /// <param name="tileSize">グリッドのサイズ</param>
         /// <param name="meshType">メッシュタイプ</param>
-        public void DrawTileMesh( in Vector3 position, float tileSize, MeshType meshType )
+        public void DrawTileMesh( in Vector3 position, float tileSize, Color color )
         {
             var mesh        = new Mesh();
             float halfSize  = 0.5f * tileSize;
@@ -40,16 +38,8 @@ namespace Frontier.Stage
             { 0, 1, 2, 0, 2, 3}, 0
             );
 
-            Color[] colors = new Color[ (int) MeshType.NUM ]
-            {
-                new Color(0f, 0f, 1f, 0.65f),   // 移動可能なタイル
-                new Color(1f, 1f, 0f, 0.65f),   // 攻撃が到達可能な立ち位置となるタイル( TileBitFlag.REACHABLE_ATTACK )
-                new Color(1f, 0f, 0f, 0.65f),   // 攻撃可能なタイル( TileBitFlag.ATTACKABLE )
-                new Color(1f, 0f, 0f, 0.95f),   // 攻撃可能なタイルで、尚且つ攻撃対象が存在している( ATTACKABLE_TARGET_EXIST )
-            };
-            
-            meshRenderer.material.color = colors[( int ) meshType]; // タイプによって色を変更
-            meshFilter.sharedMesh       = mesh;                     // MeshFilterを通してメッシュをMeshRendererにセット  
+            meshRenderer.material.color = color;
+            meshFilter.sharedMesh       = mesh;  // MeshFilterを通してメッシュをMeshRendererにセット  
         }
 
         /// <summary>

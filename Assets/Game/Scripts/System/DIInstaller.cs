@@ -3,6 +3,7 @@ using Frontier.Battle;
 using Frontier.Combat.Skill;
 using Frontier.DebugTools.DebugMenu;
 using Zenject;
+using Froniter.Registries;
 
 namespace Frontier
 {
@@ -20,14 +21,15 @@ namespace Frontier
 
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
 
+            Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
+            Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<BattleUISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialPresenter>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
-            Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuHandler >().FromComponentInHierarchy().AsCached();
