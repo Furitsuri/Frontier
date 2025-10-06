@@ -85,7 +85,7 @@ namespace Frontier
             _stageCtrl.ApplyCurrentGrid2CharacterGrid(_emOwner);    // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetGridCursorControllerActive(true);         // 選択グリッドを表示
             _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();                            // ステージグリッド上のキャラ情報を更新
-            _stageCtrl.ClearGridMeshDraw();                         // グリッド状態の描画をクリア
+            _stageCtrl.ClearTileMeshDraw();                         // グリッド状態の描画をクリア
 
             base.ExitState();
         }

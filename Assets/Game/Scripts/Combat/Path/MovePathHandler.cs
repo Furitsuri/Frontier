@@ -20,7 +20,7 @@ public class MovePathHandler
     // このクラスの持ち主となるキャラクター
     private Character _owner                            = null;
     // pathの候補となるタイルインデックス値のリスト。逆に言えば、このリストに挿入されていないインデックスのタイルは通行しない
-    private List<int> _candidateRouteIndexs             = null;
+    private List<int> _candidatePathIndexs             = null;
     // 計算から得られる移動パス
     private List<WaypointInformation> _proposedMovePath = new List<WaypointInformation>();
 
@@ -41,9 +41,9 @@ public class MovePathHandler
         _focusedWaypointIndex = 0;
         _owner = Owner;
 
-        if ( _candidateRouteIndexs == null )
+        if ( _candidatePathIndexs == null )
         {
-            _candidateRouteIndexs = new List<int>( _stageCtrl.GetTotalTileNum() );
+            _candidatePathIndexs = new List<int>( _stageCtrl.GetTileTotalNum() );
         }
     }
 
@@ -62,14 +62,14 @@ public class MovePathHandler
     /// <param name="args">任意パラメータ。Characterの持つTmpParameterなどを指定して条件文を構成出来ます</param>
     public void SetUpCandidatePathIndexs( bool isReset,  Func<int, object[], bool> condition, params object[] args )
     {
-        if ( isReset ) { _candidateRouteIndexs.Clear(); }  // 一度クリア
+        if ( isReset ) { _candidatePathIndexs.Clear(); }  // 一度クリア
 
         // 進行可能なタイルをルート候補に挿入
-        for ( int i = 0; i < _stageCtrl.GetTotalTileNum(); ++i )
+        for ( int i = 0; i < _stageCtrl.GetTileTotalNum(); ++i )
         {
-            if ( condition( i, args ) )  // 条件を呼び出し側で設定
+            if ( condition( i, args ) )  // 条件は呼び出し側で設定
             {
-                _candidateRouteIndexs.Add( i );
+                _candidatePathIndexs.Add( i );
             }
         }
     }
@@ -101,15 +101,15 @@ public class MovePathHandler
     /// <param name="ownerTileCosts">移動キャラクターの各タイルの移動コスト</param>
     public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )
     {
-        if ( _candidateRouteIndexs.Count <= 0 )
+        if ( _candidatePathIndexs.Count <= 0 )
         {
-            Debug.LogError( "_candidateRouteIndexs is not set up. Please check." );
+            Debug.LogError( "_candidatePathIndexs is not set up. Please check." );
             return false;
         }
 
         _proposedMovePath.Clear();
 
-        var route = _stageCtrl.ExtractShortestPath( dprtTileIndex, destTileIndex, ownerJumpForce, in ownerTileCosts, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( dprtTileIndex, destTileIndex, ownerJumpForce, in ownerTileCosts, _candidatePathIndexs );
         if( route == null ) { return false; }
         _proposedMovePath = route;
 
@@ -132,16 +132,16 @@ public class MovePathHandler
     /// <returns>ルート取得の可否</returns>
     public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace )
     {
-        if ( _candidateRouteIndexs.Count <= 0 )
+        if ( _candidatePathIndexs.Count <= 0 )
         {
-            Debug.LogError( "_candidateRouteIndexs is not set up. Please check." );
+            Debug.LogError( "_candidatePathIndexs is not set up. Please check." );
             return false;
         }
 
         // 指定のインデックス位置にキャラクターが留まれない場合は失敗
         if ( !CanStandOnTile( destinationlTileIndex ) ) { return false; }
 
-        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, ownerJumpForce, in ownerTileCosts, _candidateRouteIndexs );
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, ownerJumpForce, in ownerTileCosts, _candidatePathIndexs );
         if ( route == null ) { return false; }
         // 現在のパストレースが終了していない場合は、直近のwaypointを移動対象として先頭に登録
         if ( !isEndPathTrace )

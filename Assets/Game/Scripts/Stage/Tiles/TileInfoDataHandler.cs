@@ -331,18 +331,18 @@ namespace Frontier.Stage
             TileBitFlag[] opponentTag = new TileBitFlag[( int ) CHARACTER_TAG.NUM]
             {
                 TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST,   // PLAYERにおける敵対勢力
-                TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST,    // ENEMYにおける敵対勢力
-                TileBitFlag.ALLY_EXIST | TileBitFlag.ENEMY_EXIST     // OTHERにおける敵対勢力
+                TileBitFlag.ALLY_EXIST  | TileBitFlag.OTHER_EXIST,    // ENEMYにおける敵対勢力
+                TileBitFlag.ALLY_EXIST  | TileBitFlag.ENEMY_EXIST     // OTHERにおける敵対勢力
             };
             if( Methods.CheckBitFlag( tileInfo.flag, opponentTag[( int ) selfTag] ) ) { return; }
 
             // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
             float curHeight = stageData.TileDatas[tileIndex].Height;
-            int heightCost = CalcurateHeightCost( prevHeight, curHeight, jumpForce );
+            int heightCost  = CalcurateHeightCost( prevHeight, curHeight, jumpForce );
 
             // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
-            int tileTypeIndex = Convert.ToInt32( stageData.TileDatas[tileIndex].Type );
-            int currentMoveRange = moveRange - ownerTileCosts[tileTypeIndex] - heightCost;
+            int tileTypeIndex           = Convert.ToInt32( stageData.TileDatas[tileIndex].Type );
+            int currentMoveRange        = moveRange - ownerTileCosts[tileTypeIndex] - heightCost;
             tileInfo.estimatedMoveRange = currentMoveRange;
 
             // 負の値であれば終了

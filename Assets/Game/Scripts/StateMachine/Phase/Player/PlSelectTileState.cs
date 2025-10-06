@@ -118,9 +118,24 @@ namespace Frontier
         {
             if (!isInput) return false;
 
-            TransitIndex = (int)TransitTag.CHARACTER_COMMAND;
-            // コマンドを開くことをチュートリアルへ通知
-            TutorialFacade.Notify( TutorialFacade.TriggerType.OpenBattleCommand);
+            Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null == character ) { return false; }
+
+            // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
+            if( character.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+            {
+                TransitIndex = ( int ) TransitTag.CHARACTER_COMMAND;
+                // コマンドを開くことをチュートリアルへ通知
+                TutorialFacade.Notify( TutorialFacade.TriggerType.OpenBattleCommand );
+            }
+            // 敵キャラクター、その他のキャラクターの場合、攻撃範囲表示を行う
+            else
+            {
+                Npc npc = character as Npc;
+                if( null == npc ) { return false; }
+
+                npc.ToggleAttackableRangeDisplay(); // 攻撃範囲表示を切り替える
+            }
 
             return true;
         }

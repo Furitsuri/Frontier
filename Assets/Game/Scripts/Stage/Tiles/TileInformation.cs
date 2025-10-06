@@ -20,6 +20,8 @@ namespace Frontier.Stage
         public int charaIndex;
         // フラグ情報
         public TileBitFlag flag;
+        // この情報に紐づくキャラクターのキー情報
+        public CharacterHashtable.Key CharaKey;
 
         /// <summary>
         /// 初期化します

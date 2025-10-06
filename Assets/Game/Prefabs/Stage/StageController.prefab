@@ -96,9 +96,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a9dbcf2599f9e49882fba902ffcb40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _stageObject: {fileID: 1134309799419615495, guid: 6642b525af9c940489c16ed6aa32bf99, type: 3}
+  deafultLoadStageIndex: 0
+  stageFileLoaderPrefab: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}
   _gridMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
-  _gridCursorObject: {fileID: 8350404123717608506, guid: 1b64c7c7109b2d64d8e59331fbee99c9, type: 3}
-  _stageModel: {fileID: 3824299472642216680, guid: 4898c7bbfda97db41a62d1d4e15de0cc, type: 3}
-  isAdjustStageScale: 1
+  _gridCursorCtrlObject: {fileID: 8350404123717608506, guid: 1b64c7c7109b2d64d8e59331fbee99c9, type: 3}
+  _tilePrefabs: []
   back: 1

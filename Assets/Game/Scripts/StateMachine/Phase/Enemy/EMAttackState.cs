@@ -138,7 +138,7 @@ namespace Frontier
             _targetCharacter.Params.SkillModifiedParam.Reset();
             // グリッド状態の描画をクリア
             _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
-            _stageCtrl.ClearGridMeshDraw();
+            _stageCtrl.ClearTileMeshDraw();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、
             //   その後プレイヤーに選択グリッドが移るという状況になります。
@@ -245,7 +245,7 @@ namespace Frontier
             _uiSystem.BattleUi.ToggleBattleExpect(false);
 
             // グリッド状態の描画をクリア
-            _stageCtrl.ClearGridMeshDraw();
+            _stageCtrl.ClearTileMeshDraw();
 
             // 攻撃シーケンスの開始
             _attackSequence.StartSequence(_attackCharacter, _targetCharacter);

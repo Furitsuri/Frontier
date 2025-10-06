@@ -158,7 +158,7 @@ namespace Frontier
 
             // グリッドの状態を更新してグリッドの描画をクリア
             _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
-            _stageCtrl.ClearGridMeshDraw();
+            _stageCtrl.ClearTileMeshDraw();
 
             // 選択グリッドを表示
             _stageCtrl.SetGridCursorControllerActive(true);
@@ -311,7 +311,7 @@ namespace Frontier
                 _uiSystem.BattleUi.ToggleBattleExpect(false);
 
                 // グリッド状態の描画をクリア
-                _stageCtrl.ClearGridMeshDraw();
+                _stageCtrl.ClearTileMeshDraw();
 
                 // 攻撃シーケンスの開始
                 _attackSequence.StartSequence(_attackCharacter, _targetCharacter);

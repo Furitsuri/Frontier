@@ -6,6 +6,8 @@
         REACHABLE_ATTACK,
         ATTACKABLE,
         ATTACKABLE_TARGET_EXIST,
+        ENEMIES_ATTACKABLE,
+        OTHERS_ATTACKABLE,
 
         NUM
     }

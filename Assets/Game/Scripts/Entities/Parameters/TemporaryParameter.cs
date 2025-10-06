@@ -11,7 +11,7 @@ namespace Frontier.Entities
         public bool[] isEndCommand;
         // 該当スキルの使用フラグ
         public bool[] isUseSkills;
-        // 現在位置を示すグリッドインデックス
+        // 現在位置を示すタイルインデックス
         public int gridIndex;
         // 1回の攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮しない)
         public int expectedHpChange;
