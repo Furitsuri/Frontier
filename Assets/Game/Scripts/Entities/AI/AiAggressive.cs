@@ -21,24 +21,24 @@ namespace Frontier.Entities.Ai
         /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
         /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
         /// <returns>存在の有無</returns>
-        private bool CheckExistTargetInRange( CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, out List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates )
+        private bool CheckExistTargetInRange( CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, in CharacterKey ownerKey, out List<(int gridIndex, List<CharacterKey> opponents)> candidates )
         {
-            candidates = new List<(int gridIndex, List<CharacterHashtable.Key> opponents)>( Constants.CHARACTER_MAX_NUM );
+            candidates = new List<(int gridIndex, List<CharacterKey> opponents)>( Constants.CHARACTER_MAX_NUM );
 
             // 自身の移動範囲をステージ上に登録する
             bool isAttackable = !selfTmpParam.isEndCommand[( int ) Command.COMMAND_TAG.ATTACK];
             float curHeight = _stageCtrl.GetTileData( selfTmpParam.gridIndex ).Height;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, selfParam.characterIndex, curHeight, in ownerTileCosts, selfParam.characterTag, isAttackable );
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, curHeight, in ownerTileCosts, in ownerKey, isAttackable );
 
             for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
             {
-                var info = _stageCtrl.GetTileInfo( i );
-                // 攻撃可能地点かつキャラクターが存在していない(自分自身は有効)グリッドを取得
-                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE ) && ( info.charaIndex < 0 || info.charaIndex == selfParam.characterIndex ) )
+                var tileInfo = _stageCtrl.GetTileInfo( i );
+                // 移動可能地点かつキャラクターが存在していない(自分自身は有効)タイルを取得
+                if( 0 <= tileInfo.estimatedMoveRange && ( !tileInfo.CharaKey.IsValid()  || tileInfo.CharaKey == ownerKey ) )
                 {
-                    // グリッドの十字方向に存在する敵対キャラクターを抽出
-                    List<CharacterHashtable.Key> opponentKeys;
-                    ExtractAttackabkeOpponentIndexs( i, out opponentKeys );
+                    // タイルの十字方向に存在する敵対キャラクターを抽出
+                    List<CharacterKey> opponentKeys;
+                    ExtractAttackabkeOpponentIndexs( i, ownerKey.CharacterTag, out opponentKeys );
                     if( 0 < opponentKeys.Count )
                     {
                         candidates.Add( (i, opponentKeys) );
@@ -55,14 +55,14 @@ namespace Frontier.Entities.Ai
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
-        override public (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts )
+        override public (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts, in CharacterKey ownerKey )
         {
             _isDetermined = true;
 
-            List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates;
+            List<(int gridIndex, List<CharacterKey> opponents)> candidates;
 
             // 攻撃範囲内に敵対キャラクターが存在するか確認し、存在する場合はそのキャラクター達を取得
-            if( CheckExistTargetInRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, out candidates ) )
+            if( CheckExistTargetInRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, in ownerKey, out candidates ) )
             {
                 DetermineDestinationAndTargetInAttackRange( in ownerParams, in ownerTileCosts, candidates );
             }
@@ -82,7 +82,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        override protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates )
+        override protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates )
         {
             (int gridIndex, Character target, float eValue) maxEvaluate = (-1, null, int.MinValue);
 
@@ -91,7 +91,7 @@ namespace Frontier.Entities.Ai
             {
                 foreach( var opponent in candidate.opponents )
                 {
-                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable( opponent );
+                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( opponent );
                     if( character == null ) continue;
 
                     var eValue = CalcurateEvaluateAttack( ownerParams.CharacterParam, character.Params.CharacterParam );
@@ -109,14 +109,14 @@ namespace Frontier.Entities.Ai
             // 現在移動可能なタイルと、自身が現在存在するタイルをルート候補とする条件
             Func<int, object[], bool> condition = ( index, args ) =>
             {
-                var tileInfo    = _stageCtrl.GetTileInfo( index );
-                var flag        = TileBitFlag.CANNOT_MOVE | TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST;
-                bool ownerExist = ( index == ( ( TemporaryParameter ) args[0] ).gridIndex );
+                var tileInfo        = _stageCtrl.GetTileInfo( index );
+                bool IsSameFaction  = tileInfo.CharaKey.CharacterTag == ( ( CharacterParameter ) args[0] ).characterTag || !tileInfo.CharaKey.IsValid();
+                bool ownerExist     = ( index == ( ( TemporaryParameter ) args[1] ).gridIndex );
 
-                return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, flag ) ) );
+                return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || ( !Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) && IsSameFaction ) ) );
             };
 
-            MovePathHandler.SetUpCandidatePathIndexs( true, condition, ownerParams.TmpParam );
+            MovePathHandler.SetUpCandidatePathIndexs( true, condition, ownerParams.CharacterParam, ownerParams.TmpParam );
             MovePathHandler.FindMovePath( ownerParams.TmpParam.gridIndex, _destinationTileIndex, ownerParams.CharacterParam.jumpForce, ownerTileCosts );
         }
 

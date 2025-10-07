@@ -20,12 +20,12 @@ namespace Frontier.Entities
         protected List<GridMesh> _attackableTileMeshes = new List<GridMesh>();
 
         /// <summary>
-        /// 
+        /// 攻撃範囲の表示を切り替えます
         /// </summary>
         /// <param name="cParams"></param>
         /// <param name="tileCostTable"></param>
         /// <param name="color"></param>
-        public void ToggleAttackableRangeDisplay( in CharacterParameters cParams, in int[] tileCostTable, Color color )
+        public void ToggleAttackableRangeDisplay( in CharacterParameters cParams, in int[] tileCostTable, in CharacterKey charaKey, Color color )
         {
             _isDisplayAttackableRange = !_isDisplayAttackableRange;
 
@@ -35,29 +35,14 @@ namespace Frontier.Entities
             }
             else
             {
-                List<int> attackableTileIndexs = new List<int>();
-
-                var param           = cParams.CharacterParam;
-                int tileIndex       = cParams.TmpParam.gridIndex;
-                float tileHeight    = _stageCtrl.GetTileData( tileIndex ).Height;
-                _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
-                _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( tileIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, tileCostTable, param.characterTag, true );
-
-                for( int i = 0; i < _stageCtrl.GetTileTotalNum(); ++i )
-                {
-                    var info = _stageCtrl.GetTileInfo( i );
-                    if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE ) )
-                    {
-                        attackableTileIndexs.Add( i );
-                    }
-                }
+                List<int> attackableTileIndexs = ExtractAttackableTiles(cParams, tileCostTable, charaKey);
 
                 DrawTileMashes( attackableTileIndexs, TileColors.Colors[( int ) MeshType.ATTACKABLE] );
             }
         }
 
         /// <summary>
-        /// 
+        /// 攻撃範囲の表示を解除します
         /// </summary>
         public void UnsetAttackableRangeDisplay()
         {
@@ -88,6 +73,30 @@ namespace Frontier.Entities
                 tile.Remove();
             }
             _attackableTileMeshes.Clear();
+        }
+
+        public List<int> ExtractAttackableTiles( in CharacterParameters cParams, in int[] tileCostTable, in CharacterKey charaKey )
+        {
+            List<int> attackableTileIndexs = new List<int>();
+
+            var param           = cParams.CharacterParam;
+            int tileIndex       = cParams.TmpParam.gridIndex;
+            float tileHeight    = _stageCtrl.GetTileData( tileIndex ).Height;
+            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( tileIndex, param.moveRange, param.attackRange, param.jumpForce, tileHeight, tileCostTable, charaKey, true );
+
+            for( int i = 0; i < _stageCtrl.GetTileTotalNum(); ++i )
+            {
+                var info = _stageCtrl.GetTileInfo( i );
+                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE ) )
+                {
+                    attackableTileIndexs.Add( i );
+                }
+            }
+
+            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
+
+            return attackableTileIndexs;
         }
     }
 }

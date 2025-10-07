@@ -38,7 +38,7 @@ namespace Frontier.Entities.Ai
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>目的地と攻撃対象それぞれが決定されたか否か</returns>
-        virtual public (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts ) { return (false, false); }
+        virtual public (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts, in CharacterKey charaKey ) { return (false, false); }
 
         /// <summary>
         /// 移動目標と攻撃対象キャラクターをリセットします

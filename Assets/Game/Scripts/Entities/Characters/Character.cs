@@ -47,6 +47,7 @@ namespace Frontier.Entities
         public float ElapsedTime { get; set; } = 0f;
         public bool IsAttacked { get; set; } = false;
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
+        public CharacterKey CharaKey { get; set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );    // キャラクターのハッシュキー
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
         public int[] TileCostTable => _tileCostTable;                               // タイル移動コストテーブルの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
@@ -57,8 +58,17 @@ namespace Frontier.Entities
         public BaseAi GetAi() => _baseAi;                                           // AIの取得
         public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
 
+        // 各勢力における敵対勢力(攻撃可能)キャラクタータグ
+        static public Func<CHARACTER_TAG, bool>[] IsOpponentFaction = new Func<CHARACTER_TAG, bool>[( int ) CHARACTER_TAG.NUM]
+        {
+            tag => (tag == CHARACTER_TAG.ENEMY || tag == CHARACTER_TAG.OTHER),  // PLAYERにおける攻撃可能勢力
+            tag => (tag == CHARACTER_TAG.PLAYER || tag == CHARACTER_TAG.OTHER),  // ENEMYにおける攻撃可能勢力
+            tag => (tag == CHARACTER_TAG.PLAYER || tag == CHARACTER_TAG.ENEMY),  // OTHERにおける攻撃可能勢力
+        };
+           
+
         // 攻撃用アニメーションタグ
-        private static AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
+        static private AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
         {
             AnimDatas.AnimeConditionsTag.SINGLE_ATTACK,
             AnimDatas.AnimeConditionsTag.DOUBLE_ATTACK,
@@ -66,7 +76,7 @@ namespace Frontier.Entities
         };
 
         private delegate bool IsExecutableCommand(Character character, StageController stageCtrl);
-        private static IsExecutableCommand[] _executableCommandTables =
+        static private IsExecutableCommand[] _executableCommandTables =
         {
             Command.IsExecutableMoveCommand,
             Command.IsExecutableAttackCommand,
@@ -525,7 +535,6 @@ namespace Frontier.Entities
         /// </summary>
         public void DieOnAnimEvent()
         {
-            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList(this);
         }
 
         /// <summary>

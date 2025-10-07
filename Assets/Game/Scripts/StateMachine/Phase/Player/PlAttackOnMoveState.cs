@@ -50,7 +50,7 @@ namespace Frontier
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if ( diedCharacter != null )
             {
-                var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
+                var key = new CharacterKey(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
                 NorifyCharacterDied( key );
                 // 破棄
                 diedCharacter.Dispose();

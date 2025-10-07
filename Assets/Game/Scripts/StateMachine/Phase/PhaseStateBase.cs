@@ -1,6 +1,5 @@
 ﻿using Frontier.Stage;
 using Frontier.Battle;
-using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -29,9 +28,10 @@ namespace Frontier
         /// 死亡したキャラクターの存在を通知します
         /// </summary>
         /// <param name="characterKey">死亡したキャラクターのハッシュキー</param>
-        protected void NorifyCharacterDied(CharacterHashtable.Key characterKey)
+        protected void NorifyCharacterDied( in CharacterKey characterKey )
         {
-            _btlRtnCtrl.BtlCharaCdr.SetDiedCharacterKey(characterKey);
+            _btlRtnCtrl.BtlCharaCdr.SetDiedCharacterKey( characterKey );
+            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( characterKey );
         }
 
         /// <summary>

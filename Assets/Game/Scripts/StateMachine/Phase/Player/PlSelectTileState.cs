@@ -41,7 +41,7 @@ namespace Frontier
             // if( base.Update() ) { return true; }
 
             // 全てのキャラクターが待機済みになっていれば終了
-            if (_btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand(CHARACTER_TAG.PLAYER))
+            if( _btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand( CHARACTER_TAG.PLAYER ) )
             {
                 Back();
 
@@ -49,14 +49,14 @@ namespace Frontier
             }
 
             TileInformation info;
-            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo(out info);
-            if( info.charaTag.IsInOpenRangeEnum( CHARACTER_TAG.NONE, CHARACTER_TAG.NUM ) )
+            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
+            if( info.CharaKey.IsValid() )
             {
                 // Confirmアイコンの文字列を更新
-                _confirmStrWrapper.Explanation = _confirmStrings[( int ) info.charaTag];
+                _confirmStrWrapper.Explanation = _confirmStrings[( int ) info.CharaKey.CharacterTag];
             }
 
-            return (0 <= TransitIndex);
+            return ( 0 <= TransitIndex );
         }
 
         /// <summary>

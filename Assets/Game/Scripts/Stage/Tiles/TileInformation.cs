@@ -14,14 +14,10 @@ namespace Frontier.Stage
         public int moveResist;
         // 移動値の見積もり値
         public int estimatedMoveRange;
-        // グリッド上に存在するキャラクターのタイプ
-        public CHARACTER_TAG charaTag;
-        // グリッド上に存在するキャラクターのインデックス
-        public int charaIndex;
+        // タイル上に存在するキャラクターのハッシュキー
+        public CharacterKey CharaKey;
         // フラグ情報
         public TileBitFlag flag;
-        // この情報に紐づくキャラクターのキー情報
-        public CharacterHashtable.Key CharaKey;
 
         /// <summary>
         /// 初期化します
@@ -33,8 +29,7 @@ namespace Frontier.Stage
             charaStandPos       = Vector3.zero;
             moveResist          = -1;
             estimatedMoveRange  = -1;
-            charaTag            = CHARACTER_TAG.NONE;
-            charaIndex          = -1;
+            CharaKey            = new CharacterKey( CHARACTER_TAG.NONE, -1 );
             flag                = Stage.TileBitFlag.NONE;
         }
 
@@ -44,8 +39,7 @@ namespace Frontier.Stage
         /// <param name="chara">設定するキャラクター</param>
         public void SetExistCharacter( Character chara )
         {
-            charaTag    = chara.Params.CharacterParam.characterTag;
-            charaIndex  = chara.Params.CharacterParam.characterIndex;
+            CharaKey = new CharacterKey( chara.Params.CharacterParam.characterTag, chara.Params.CharacterParam.characterIndex );
         }
 
         /// <summary>
@@ -54,7 +48,7 @@ namespace Frontier.Stage
         /// <returns>グリッド上にキャラクターの存在しているか</returns>
         public bool IsExistCharacter()
         {
-            return 0 <= charaIndex;
+            return CharaKey != new CharacterKey( CHARACTER_TAG.NONE, -1 );
         }
 
         /// <summary>
@@ -64,7 +58,7 @@ namespace Frontier.Stage
         /// <returns>合致しているか否か</returns>
         public bool IsMatchExistCharacter( Character chara )
         {
-            return ( charaTag == chara.Params.CharacterParam.characterTag && charaIndex == chara.Params.CharacterParam.characterIndex );
+            return ( CharaKey.CharacterTag == chara.Params.CharacterParam.characterTag && CharaKey.CharacterIndex == chara.Params.CharacterParam.characterIndex );
         }
 
         /// <summary>
@@ -73,12 +67,11 @@ namespace Frontier.Stage
         /// <returns>値をコピーしたオブジェクト</returns>
         public TileInformation Copy()
         {
-            TileInformation info           = new TileInformation();
+            TileInformation info    = new TileInformation();
             info.charaStandPos      = charaStandPos;
             info.moveResist         = moveResist;
             info.estimatedMoveRange = estimatedMoveRange;
-            info.charaTag           = charaTag;
-            info.charaIndex         = charaIndex;
+            info.CharaKey           = CharaKey;
             info.flag               = flag;
 
             return info;

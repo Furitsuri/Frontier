@@ -21,7 +21,7 @@ namespace Frontier.Entities
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
-            return _baseAi.DetermineDestinationAndTarget( in _params, in _tileCostTable );
+            return _baseAi.DetermineDestinationAndTarget( in _params, in _tileCostTable, CharaKey );
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Frontier.Entities
 
         override public void ToggleAttackableRangeDisplay()
         {
-            _attackableRangeHandler.ToggleAttackableRangeDisplay( in _params, in _tileCostTable, TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
+            _attackableRangeHandler.ToggleAttackableRangeDisplay( in _params, in _tileCostTable, CharaKey, TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
         }
     }
 }

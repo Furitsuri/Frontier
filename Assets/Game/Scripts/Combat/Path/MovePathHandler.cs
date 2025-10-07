@@ -201,9 +201,9 @@ public class MovePathHandler
     public bool CanStandOnTile( int tileIdx )
     {
         var tileInfo    = _stageCtrl.GetTileInfo( tileIdx );
-        bool ownerExist = ( tileInfo.charaTag == _owner.Params.CharacterParam.characterTag ) && ( tileInfo.charaIndex == _owner.Params.CharacterParam.characterIndex );
+        bool ownerExist = ( tileInfo.CharaKey == _owner.CharaKey );
 
-        return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || !Methods.CheckBitFlag( tileInfo.flag, ImpassableFlag() ) ) );
+        return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || ( !Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) && !tileInfo.CharaKey.IsValid() ) ) );
     }
 
     public StageTileData GetFocusedTileData()
@@ -218,14 +218,5 @@ public class MovePathHandler
     public TileInformation GetFocusedTileInformation()
     {
         return _stageCtrl.GetTileInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex );
-    }
-
-    /// <summary>
-    /// 通行不可となるタイルフラグ情報
-    /// </summary>
-    /// <returns></returns>
-    static public TileBitFlag ImpassableFlag()
-    {
-        return TileBitFlag.CANNOT_MOVE | TileBitFlag.ALLY_EXIST | TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST;
     }
 }

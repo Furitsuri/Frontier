@@ -80,10 +80,8 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="baseIndex">指定インデックス(十字方向の中心インデックス)</param>
         /// <param name="opponentCharaIndexs">抜き出しに使用するリスト</param>
-        protected void ExtractAttackabkeOpponentIndexs( int baseIndex, out List<CharacterHashtable.Key> opponentCharaIndexs )
+        protected void ExtractAttackabkeOpponentIndexs( int baseIndex, CHARACTER_TAG ownerTag, out List<CharacterKey> opponentCharaIndexs )
         {
-            opponentCharaIndexs = new List<CharacterHashtable.Key>( 4 );
-            ;
             (int GridRowNum, int GridColumnNum) = _stageCtrl.GetGridNumsXZ();
 
             // 十字方向の判定関数とインデックスをタプルに詰め込む
@@ -95,14 +93,17 @@ namespace Frontier.Entities.Ai
                 (() => (baseIndex + GridColumnNum) < _stageDataProvider.CurrentData.GetTileTotalNum(), baseIndex + GridColumnNum)
             };
 
-            foreach ( var tuple in tuples )
+            opponentCharaIndexs = new List<CharacterKey>( tuples.Length );
+
+            foreach( var tuple in tuples )
             {
-                if ( tuple.lambda() )
+                if( tuple.lambda() )
                 {
-                    var gridInfo = _stageCtrl.GetTileInfo(tuple.index);
-                    if ( gridInfo.charaTag == CHARACTER_TAG.PLAYER || gridInfo.charaTag == CHARACTER_TAG.OTHER )
+                    // 敵対勢力(攻撃可能)であることを確認した上でリストに追加
+                    var tileInfo = _stageCtrl.GetTileInfo( tuple.index );
+                    if( Character.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileInfo.CharaKey.CharacterTag ) )
                     {
-                        opponentCharaIndexs.Add( new CharacterHashtable.Key( gridInfo.charaTag, gridInfo.charaIndex ) );
+                        opponentCharaIndexs.Add( tileInfo.CharaKey );
                     }
                 }
             }
@@ -132,7 +133,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        virtual protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterHashtable.Key> opponents)> candidates ) { }
+        virtual protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates ) { }
 
         /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居ない場合の処理を行います

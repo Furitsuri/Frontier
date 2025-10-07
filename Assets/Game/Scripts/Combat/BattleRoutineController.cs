@@ -35,7 +35,7 @@ namespace Frontier.Battle
         private int _phaseHandlerIndex = 0;
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
-        public CharacterHashtable.Key SelectCharacterInfo { get; private set; } = new CharacterHashtable.Key(CHARACTER_TAG.NONE, -1);
+        public CharacterKey SelectCharacterInfo { get; private set; } = new CharacterKey(CHARACTER_TAG.NONE, -1);
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
@@ -165,7 +165,7 @@ namespace Frontier.Battle
             }
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
-            _stgCtrl.TileInfoDataHdlr().UpdateTileInfo();               // グリッド情報を更新
+            _stgCtrl.TileInfoDataHdlr().UpdateTileInfo();               // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
             _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN]; // PLAYERターンから開始(MEMO : ステージによって変更する場合はステージ読込処理から変更出来るように修正)
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);          // ファイル読込マネージャにカメラパラメータをロードさせる
@@ -191,7 +191,7 @@ namespace Frontier.Battle
             _stgCtrl.TileInfoDataHdlr().FetchCurrentTileInfo(out info);
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
 
-            SelectCharacterInfo = new CharacterHashtable.Key(info.charaTag, info.charaIndex);
+            SelectCharacterInfo = info.CharaKey;
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
@@ -203,9 +203,9 @@ namespace Frontier.Battle
         {
             base.LateUpdateRoutine();
 
-            if (_btlUi.StageClear.isActiveAndEnabled) return;
+            if( _btlUi.StageClear.isActiveAndEnabled ) { return; }
 
-            if (_btlUi.GameOver.isActiveAndEnabled) return;
+            if( _btlUi.GameOver.isActiveAndEnabled ) { return; }
 
             // 勝利、全滅チェックを行う
             if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }
@@ -221,8 +221,8 @@ namespace Frontier.Battle
                 _btlCharaCdr.ResetTmpParamAllCharacter();
 
                 // 次のハンドラーに切り替える
-                _phaseHandlerIndex = (_phaseHandlerIndex + 1) % (int)TurnType.NUM;
-                _currentPhaseHdlr = _phaseHdlrs[_phaseHandlerIndex];
+                _phaseHandlerIndex  = (_phaseHandlerIndex + 1) % (int)TurnType.NUM;
+                _currentPhaseHdlr   = _phaseHdlrs[_phaseHandlerIndex];
                 _currentPhaseHdlr.Run();
             }
         }
