@@ -39,7 +39,7 @@ namespace Frontier
         // Update is called once per frame
         void Update()
         {
-            Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable(_btlRtnCtrl.SelectCharacterInfo);
+            Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary(_btlRtnCtrl.SelectCharacterInfo);
 
             var bindCharacter = _stgCtrl.GetBindCharacterFromGridCursor();
 

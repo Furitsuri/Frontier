@@ -105,10 +105,10 @@ namespace Frontier
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
-            if (diedCharacter != null)
+            if( diedCharacter != null )
             {
-                var key = new CharacterHashtable.Key(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
-                NorifyCharacterDied(key);
+                var key = new CharacterKey( diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex );
+                NorifyCharacterDied( key );
                 // 破棄
                 diedCharacter.Dispose();
             }

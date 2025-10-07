@@ -43,15 +43,14 @@ namespace Frontier
             bool isAttackable   = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
             var param           = _plOwner.Params.CharacterParam;
             float tileHeight    = _stageCtrl.GetTileData( _departGridIndex ).Height;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, param.characterIndex, tileHeight, _plOwner.TileCostTable, param.characterTag, isAttackable );
+            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, tileHeight, _plOwner.TileCostTable, _plOwner.CharaKey, isAttackable );
             _stageCtrl.DrawAllTileInformationMeshes();
 
             // SetUpCandidatePathIndexsで用いる条件式
             Func<int, object[], bool> condition = ( index, args ) =>
             {
                 var tileInfo = _stageCtrl.GetTileInfo( index );
-                bool ownerExist = ( tileInfo.charaTag == _plOwner.Params.CharacterParam.characterTag ) &&
-                                    ( tileInfo.charaIndex == _plOwner.Params.CharacterParam.characterIndex );
+                bool ownerExist = ( tileInfo.CharaKey == _plOwner.CharaKey );
                 return ( 0 <= tileInfo.estimatedMoveRange || ownerExist );
             };
 
@@ -155,7 +154,7 @@ namespace Frontier
             }
             else
             {
-                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ALLY_EXIST ) ) { return false; }    // 味方がいる場合は移動不可
+                if( info.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER ) { return false; }    // 味方がいる場合は移動不可
             }
 
             return true;
@@ -208,8 +207,8 @@ namespace Frontier
             {
                 TransitAttackOnMoveState();
             }
-            // 敵キャラクター意外が存在していないことを確認
-            else if( 0 == ( info.flag & ( TileBitFlag.ALLY_EXIST | TileBitFlag.OTHER_EXIST ) ) )
+            // キャラクターが存在していないことを確認
+            else if( !info.CharaKey.IsValid() )
             {
                 _phase = PlMovePhase.PL_MOVE_RESERVE_END;
             }

@@ -30,22 +30,13 @@ namespace Frontier.Stage
         {
             ResetTileInfo();    // 一度全てのタイル情報を元に戻す
 
-            // キャラクターが存在するタイルの情報を更新
-            TileBitFlag[] flags =
-            {
-                TileBitFlag.ALLY_EXIST,
-                TileBitFlag.ENEMY_EXIST,
-                TileBitFlag.OTHER_EXIST
-            };
             for( int i = 0; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( ( CHARACTER_TAG ) i ) )
                 {
                     var gridIndex       = chara.Params.TmpParam.GetCurrentGridIndex();
                     ref var tileInfo    = ref _stageDataProvider.CurrentData.GetTileInfo( gridIndex );
-                    tileInfo.charaTag   = chara.Params.CharacterParam.characterTag;
-                    tileInfo.charaIndex = chara.Params.CharacterParam.characterIndex;
-                    Methods.SetBitFlag( ref tileInfo.flag, flags[i] );
+                    tileInfo.CharaKey   = new CharacterKey( chara.Params.CharacterParam.characterTag, chara.Params.CharacterParam.characterIndex );
                 }
             }
         }
@@ -62,7 +53,7 @@ namespace Frontier.Stage
         /// <param name="ownerTileCosts"></param>
         /// <param name="selfTag"></param>
         /// <param name="isAttackable"></param>
-        public void BeginRegisterMoveableTiles( int dprtIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float dprtHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
+        public void BeginRegisterMoveableTiles( int dprtIndex, int moveRange, int atkRange, int jumpForce, float dprtHeight, in int[] ownerTileCosts, in CharacterKey ownerKey, bool isAttackable )
         {
             Debug.Assert( dprtIndex.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );
 
@@ -70,7 +61,7 @@ namespace Frontier.Stage
             if( tileInfo == null ) { return; }
             tileInfo.estimatedMoveRange = moveRange;
 
-            RegisterMoveableTilesAllSides( dprtIndex, moveRange, atkRange, jumpForce, ownerIndex, dprtHeight, in ownerTileCosts, selfTag, isAttackable );
+            RegisterMoveableTilesAllSides( dprtIndex, moveRange, atkRange, jumpForce, dprtHeight, in ownerTileCosts, in ownerKey, isAttackable );
         }
 
         /// <summary>
@@ -160,7 +151,7 @@ namespace Frontier.Stage
                 var info = _stageDataProvider.CurrentData.GetTileInfo( i );
                 if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {
-                    character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable( info.charaTag, info.charaIndex );
+                    character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( info.CharaKey );
                     if( character != null && character.Params.CharacterParam.characterTag != selfTag )
                     {
                         _attackableTileIndexs.Add( i );
@@ -179,7 +170,7 @@ namespace Frontier.Stage
                     for( int i = 0; i < _attackableTileIndexs.Count; ++i )
                     {
                         var info = _stageDataProvider.CurrentData.GetTileData( _attackableTileIndexs[i] ).GetTileInfo();
-                        if( target == _btlRtnCtrl.BtlCharaCdr.GetCharacterFromHashtable( info.charaTag, info.charaIndex ) )
+                        if( target == _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( info.CharaKey ) )
                         {
                             _gridCursorCtrl.SetAtkTargetIndex( i );
                             break;
@@ -256,23 +247,23 @@ namespace Frontier.Stage
         /// <param name="ownerTileCosts"></param>
         /// <param name="selfTag"></param>
         /// <param name="isAttackable"></param>
-        private void RegisterMoveableTilesAllSides( int tileIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float height, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
+        private void RegisterMoveableTilesAllSides( int tileIndex, int moveRange, int atkRange, int jumpForce, float height, in int[] ownerTileCosts, in CharacterKey ownerKey, bool isAttackable )
         {
             int colNum = _stageDataProvider.CurrentData.GridColumnNum;
 
             // 左端を除外
             if( tileIndex % colNum != 0 )
             {
-                RegisterMoveableTiles( tileIndex - 1, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );   // tileIndexからX軸方向へ-1
+                RegisterMoveableTiles( tileIndex - 1, moveRange, atkRange, jumpForce, height, in ownerTileCosts, in ownerKey, isAttackable );   // tileIndexからX軸方向へ-1
             }
             // 右端を除外
             if( ( tileIndex + 1 ) % colNum != 0 )
             {
-                RegisterMoveableTiles( tileIndex + 1, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );   // tileIndexからX軸方向へ+1
+                RegisterMoveableTiles( tileIndex + 1, moveRange, atkRange, jumpForce, height, in ownerTileCosts, in ownerKey, isAttackable );   // tileIndexからX軸方向へ+1
             }
             // Z軸方向への加算と減算はそのまま
-            RegisterMoveableTiles( tileIndex - colNum, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ-1
-            RegisterMoveableTiles( tileIndex + colNum, moveRange, atkRange, jumpForce, ownerIndex, height, in ownerTileCosts, selfTag, isAttackable );  // tileIndexからZ軸方向へ+1
+            RegisterMoveableTiles( tileIndex - colNum, moveRange, atkRange, jumpForce, height, in ownerTileCosts, in ownerKey, isAttackable );  // tileIndexからZ軸方向へ-1
+            RegisterMoveableTiles( tileIndex + colNum, moveRange, atkRange, jumpForce, height, in ownerTileCosts, in ownerKey, isAttackable );  // tileIndexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -313,7 +304,7 @@ namespace Frontier.Stage
         /// <param name="selfTag">呼び出し元キャラクターのキャラクタータグ</param>
         /// <param name="isAttackable">呼び出し元のキャラクターが攻撃可能か否か</param>
         /// <param name="isDeparture">出発グリッドから呼び出されたか否か</param>
-        private void RegisterMoveableTiles( int tileIndex, int moveRange, int atkRange, int jumpForce, int ownerIndex, float prevHeight, in int[] ownerTileCosts, CHARACTER_TAG selfTag, bool isAttackable )
+        private void RegisterMoveableTiles( int tileIndex, int moveRange, int atkRange, int jumpForce, float prevHeight, in int[] ownerTileCosts, in CharacterKey ownerKey, bool isAttackable )
         {
             var stageData = _stageDataProvider.CurrentData;
             int columnNum = stageData.GridColumnNum;
@@ -327,14 +318,8 @@ namespace Frontier.Stage
             if( Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
             // 既に計算済みのグリッドであれば終了
             if( moveRange <= tileInfo.estimatedMoveRange ) { return; }
-            // 自身に対する敵対勢力キャラクターが存在すれば終了
-            TileBitFlag[] opponentTag = new TileBitFlag[( int ) CHARACTER_TAG.NUM]
-            {
-                TileBitFlag.ENEMY_EXIST | TileBitFlag.OTHER_EXIST,   // PLAYERにおける敵対勢力
-                TileBitFlag.ALLY_EXIST  | TileBitFlag.OTHER_EXIST,    // ENEMYにおける敵対勢力
-                TileBitFlag.ALLY_EXIST  | TileBitFlag.ENEMY_EXIST     // OTHERにおける敵対勢力
-            };
-            if( Methods.CheckBitFlag( tileInfo.flag, opponentTag[( int ) selfTag] ) ) { return; }
+            // 自身における敵対勢力キャラクターが存在すれば終了
+            if( Character.IsOpponentFaction[Convert.ToInt32( ownerKey.CharacterTag )]( tileInfo.CharaKey.CharacterTag ) ) { return; }
 
             // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
             float curHeight = stageData.TileDatas[tileIndex].Height;
@@ -348,12 +333,12 @@ namespace Frontier.Stage
             // 負の値であれば終了
             if( currentMoveRange < 0 ) { return; }
             // 攻撃範囲についても登録する
-            if( isAttackable && ( tileInfo.charaTag == CHARACTER_TAG.NONE || tileInfo.charaIndex == ownerIndex ) )
+            if( isAttackable && ( !tileInfo.CharaKey.IsValid() || tileInfo.CharaKey == ownerKey ) )
             {
-                BeginRegisterAttackableTiles( tileIndex, atkRange, selfTag, false );
+                BeginRegisterAttackableTiles( tileIndex, atkRange, ownerKey.CharacterTag, false );
             }
 
-            RegisterMoveableTilesAllSides( tileIndex, currentMoveRange, atkRange, jumpForce, ownerIndex, curHeight, in ownerTileCosts, selfTag, isAttackable );
+            RegisterMoveableTilesAllSides( tileIndex, currentMoveRange, atkRange, jumpForce, curHeight, in ownerTileCosts, in ownerKey, isAttackable );
         }
 
         /// <summary>
@@ -381,12 +366,13 @@ namespace Frontier.Stage
             {
                 Methods.SetBitFlag( ref stageData.GetTileInfo( targetTileIndex ).flag, TileBitFlag.ATTACKABLE );
                 var tileInfo = stageData.GetTileInfo( targetTileIndex );
+                var charaTag = tileInfo.CharaKey.CharacterTag;
 
-                bool[] isMatch =
+				bool[] isMatch =
                 {
-                    (tileInfo.charaTag == CHARACTER_TAG.ENEMY || tileInfo.charaTag == CHARACTER_TAG.OTHER),     // PLAYER
-                    (tileInfo.charaTag == CHARACTER_TAG.PLAYER || tileInfo.charaTag == CHARACTER_TAG.OTHER),    // ENEMY
-                    (tileInfo.charaTag == CHARACTER_TAG.PLAYER || tileInfo.charaTag == CHARACTER_TAG.ENEMY)     // OTHER
+                    (charaTag == CHARACTER_TAG.ENEMY    || charaTag == CHARACTER_TAG.OTHER),    // PLAYER
+                    (charaTag == CHARACTER_TAG.PLAYER   || charaTag == CHARACTER_TAG.OTHER),    // ENEMY
+                    (charaTag == CHARACTER_TAG.PLAYER   || charaTag == CHARACTER_TAG.ENEMY)     // OTHER
                 };
 
                 if( isMatch[( int ) ownerTag] )

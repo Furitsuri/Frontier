@@ -173,6 +173,7 @@ namespace Frontier
                     }
 
                     chara.Params.CharacterParam.Apply( param ); // ファイルから読み込んだパラメータを設定
+                    chara.CharaKey = new CharacterKey( (CHARACTER_TAG)param.CharacterTag, param.CharacterIndex );
 
                     if ( !chara.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER) )
                     {

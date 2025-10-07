@@ -352,21 +352,21 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="departGridIndex">出発地グリッドのインデックス</param>
         /// <param name="destGridIndex">目的地グリッドのインデックス</param>
-        public List<WaypointInformation> ExtractShortestPath( int departGridIndex, int destGridIndex, int ownerJumpForce, in int[] ownerTileCosts, in List<int> candidateRouteIndexs )
+        public List<WaypointInformation> ExtractShortestPath( int departGridIndex, int destGridIndex, int ownerJumpForce, in int[] ownerTileCosts, in List<int> candidatePathIndexs )
         {
             if( departGridIndex == destGridIndex ) { return null; } // 出発地と目的地が同じ場合は経路なし
 
-            Dijkstra dijkstra   = new Dijkstra( candidateRouteIndexs.Count );
+            Dijkstra dijkstra   = new Dijkstra( candidatePathIndexs.Count );
             StageData stageData = _stageDataProvider.CurrentData;
             int colNum          = stageData.GridColumnNum;
 
             // 出発グリッドからのインデックスの差を取得
-            for( int i = 0; i + 1 < candidateRouteIndexs.Count; ++i )
+            for( int i = 0; i + 1 < candidatePathIndexs.Count; ++i )
             {
-                for( int j = i + 1; j < candidateRouteIndexs.Count; ++j )
+                for( int j = i + 1; j < candidatePathIndexs.Count; ++j )
                 {
-                    (int i2jCost, bool passablei2j ) = _tileInfoDataHdlr.CalcurateTileCost( candidateRouteIndexs[i], candidateRouteIndexs[j], ownerJumpForce, in ownerTileCosts );
-                    (int j2iCost, bool passablej2i ) = _tileInfoDataHdlr.CalcurateTileCost( candidateRouteIndexs[j], candidateRouteIndexs[i], ownerJumpForce, in ownerTileCosts );
+                    (int i2jCost, bool passablei2j ) = _tileInfoDataHdlr.CalcurateTileCost( candidatePathIndexs[i], candidatePathIndexs[j], ownerJumpForce, in ownerTileCosts );
+                    (int j2iCost, bool passablej2i ) = _tileInfoDataHdlr.CalcurateTileCost( candidatePathIndexs[j], candidatePathIndexs[i], ownerJumpForce, in ownerTileCosts );
 
                     // 移動可能な隣接タイル情報をダイクストラに入れる
                     if( passablei2j )
@@ -381,7 +381,7 @@ namespace Frontier.Stage
             }
 
             // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
-            return dijkstra.GetMinRoute( candidateRouteIndexs.IndexOf( departGridIndex ), candidateRouteIndexs.IndexOf( destGridIndex ), candidateRouteIndexs );
+            return dijkstra.GetMinRoute( candidatePathIndexs.IndexOf( departGridIndex ), candidatePathIndexs.IndexOf( destGridIndex ), candidatePathIndexs );
         }
 
         /// <summary>
