@@ -5,7 +5,7 @@ using static Constants;
 
 namespace Frontier.Stage
 {
-    public class TileBehaviour : MonoBehaviour
+    public class TileBehaviour : MonoBehaviour, IDisposer
     {
         private MeshRenderer _renderer;
 
@@ -39,11 +39,10 @@ namespace Frontier.Stage
                 y * TILE_SIZE + 0.5f * TILE_SIZE    // Z座標はグリッドの中心に配置
             );
 
-            transform.position = position;
-            transform.localScale = new Vector3( TILE_SIZE, height + TILE_MIN_THICKNESS, TILE_SIZE );
-            transform.rotation = Quaternion.identity;
-
-            _renderer.material = TileMaterialLibrary.GetMaterial( type );
+            transform.position      = position;
+            transform.localScale    = new Vector3( TILE_SIZE, height + TILE_MIN_THICKNESS, TILE_SIZE );
+            transform.rotation      = Quaternion.identity;
+            _renderer.material      = TileMaterialLibrary.GetMaterial( type );
         }
 
         public void ApplyTileType(TileType type)

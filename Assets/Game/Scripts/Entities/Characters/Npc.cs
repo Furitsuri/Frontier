@@ -4,22 +4,9 @@ namespace Frontier.Entities
 {
     public class Npc : Character
     {
-        protected AttackableRangeHandler _attackableRangeHandler = null;
-
-        public override void Init()
+        override public void Init()
         {
             base.Init();
-
-            if( _attackableRangeHandler == null )
-            {
-                _attackableRangeHandler = _hierarchyBld.InstantiateWithDiContainer<AttackableRangeHandler>( false );
-                NullCheck.AssertNotNull( _attackableRangeHandler, nameof( _attackableRangeHandler ) );
-            }
-        }
-
-        public void UnsetAttackableRangeDisplay()
-        {
-            _attackableRangeHandler.UnsetAttackableRangeDisplay();
         }
 
         /// <summary>

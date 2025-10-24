@@ -45,7 +45,7 @@ public class InputFacade
     /// </summary>
     public void UnregisterInputCodes()
     {
-        for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
+        for ( int i = 0; i < (int)GuideIcon.NUM_MAX; ++i)
         {
             _inputCodes[i].Explanation      = new InputCodeStringWrapper("");
             _inputCodes[i].EnableCbs        = null;
@@ -61,7 +61,7 @@ public class InputFacade
     /// <param name="hashCode">ハッシュ値</param>
     public void UnregisterInputCodes( int hashCode )
     {
-        for ( int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
+        for ( int i = 0; i < (int)GuideIcon.NUM_MAX; ++i)
         {
             if (_inputCodes[i].RegisterClassHashCode == hashCode)
             {

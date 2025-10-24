@@ -54,7 +54,7 @@ namespace Frontier.Entities
 
         override public void ToggleAttackableRangeDisplay()
         {
-            _attackableRangeHandler.ToggleAttackableRangeDisplay( in _params, in _tileCostTable, CharaKey, TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
+            _actionRangeCtrl.ToggleAttackableRangeDisplay( in TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
         }
     }
 }

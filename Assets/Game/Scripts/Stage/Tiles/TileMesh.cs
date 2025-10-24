@@ -2,9 +2,12 @@
 
 namespace Frontier.Stage
 {
+    /// <summary>
+    /// 移動可能、攻撃可能など、タイルに対する情報を表示します
+    /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(MeshRenderer))]
-    public class GridMesh : MonoBehaviour
+    public class TileMesh : MonoBehaviour
     {
         MeshFilter meshFilter;
         MeshRenderer meshRenderer;

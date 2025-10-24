@@ -26,12 +26,14 @@ namespace Frontier.DebugTools.StageEditor
             /// <param name="stageData">参照するステージデータ</param>
             public void AdaptStageData( StageData stageData )
             {
-                Row = stageData.GridRowNum;
-                Col = stageData.GridColumnNum;
+                Row = stageData.TileRowNum;
+                Col = stageData.TileColNum;
             }
         }
 
         [Header("Prefabs")]
+        [SerializeField]
+        public GameObject[] tileBhvPrefabs;
         [SerializeField]
         public GameObject[] tilePrefabs;
         [SerializeField]
@@ -62,8 +64,12 @@ namespace Frontier.DebugTools.StageEditor
         {
             var data = _stageDataProvider.CurrentData;
 
-            data.GetTile(x, y).Dispose(); // 既存のタイルを破棄
-            data.GetTile( x, y ).Init( x, y, _refParams.SelectedHeight, ( TileType )_refParams.SelectedType, tilePrefabs );
+            data.GetTile( x, y ).Dispose();
+            data.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
+            var staticData = _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false );
+            staticData.Init( x, y, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
+            data.SetStaticData( x, y, staticData );
+            data.GetTile( x, y ).Init( x, y, staticData.Height, staticData.TileType );
         }
 
         /// <summary>
@@ -76,8 +82,8 @@ namespace Frontier.DebugTools.StageEditor
             StageData resizeStageData = _hierarchyBld.InstantiateWithDiContainer<StageData>(false);
             resizeStageData.Init( newRow, newCol );
 
-            int minRow = Mathf.Min( newRow, _stageDataProvider.CurrentData.GridRowNum );
-            int minCol = Mathf.Min( newCol, _stageDataProvider.CurrentData.GridColumnNum );
+            int minRow = Mathf.Min( newRow, _stageDataProvider.CurrentData.TileRowNum );
+            int minCol = Mathf.Min( newCol, _stageDataProvider.CurrentData.TileColNum );
 
             for ( int i = 0; i < newCol; ++i )
             {
@@ -135,11 +141,12 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// ステージを作成します
         /// </summary>
-        private StageData CreateStage()
+        private StageData CreateDefaultStage()
         {
             StageData stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>( false );
             NullCheck.AssertNotNull( stageData, nameof(stageData) );
-            stageData.Init( _refParams.Row, _refParams.Col, 0f, TileType.None, tilePrefabs );
+            stageData.Init( _refParams.Row, _refParams.Col );
+            stageData.CreateDefaultTiles( tilePrefabs );
 
             return stageData;
         }
@@ -215,12 +222,12 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            _stageDataProvider.CurrentData  = CreateStage(); // プロバイダーに登録
+            _stageDataProvider.CurrentData  = CreateDefaultStage(); // プロバイダーに登録
             _gridCursorCtrl                 = CreateCursor();
 
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
-            _stageFileLoader.Init( tilePrefabs );
+            _stageFileLoader.Init( tilePrefabs, tileBhvPrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();

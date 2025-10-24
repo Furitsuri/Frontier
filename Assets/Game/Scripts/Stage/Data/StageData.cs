@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static Frontier.DebugTools.StageEditor.StageEditorController;
 
 namespace Frontier.Stage
 {
@@ -13,119 +12,97 @@ namespace Frontier.Stage
     [System.Serializable]
     public class StageData
     {
-        [SerializeField]
-        private int _gridRowNum;                    // グリッドの行数
-        [SerializeField]
-        private int _gridColumnNum;                 // グリッドの列数
-        [SerializeField]
-        private StageTileData[] _tileDatas = null;  // タイルデータ
+        [SerializeField] private int _tileRowNum;                           // タイルの行数
+        [SerializeField] private int _tileColNum;                           // タイルの列数
+        [SerializeField] private TileStaticData[] _tileStaticDatas = null;  // タイルの静的データ(_tilesを生成する際に用いる)
+
+        private Tile[] _tiles = null;           // タイル
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        public int GridRowNum => _gridRowNum;
-        public int GridColumnNum => _gridColumnNum;
+        public int TileRowNum => _tileRowNum;
+        public int TileColNum => _tileColNum;
 
         public void Init( int tileRowNum, int tileColumnNum )
         {
-            _gridRowNum     = tileRowNum;
-            _gridColumnNum  = tileColumnNum;
-            _tileDatas      = new StageTileData[_gridRowNum * _gridColumnNum];
+            _tileRowNum         = tileRowNum;
+            _tileColNum         = tileColumnNum;
+            _tileStaticDatas    = new TileStaticData[_tileRowNum * _tileColNum];
+            _tiles              = new Tile[_tileRowNum * _tileColNum];
         }
 
-        public void Init( int tileRowNum, int tileColumnNum, float height, TileType type, GameObject[] tilePrefabs )
+        public void CreateDefaultTiles( GameObject[] tilePrefabs )
         {
-            Init( tileRowNum, tileColumnNum );
-
-            for ( int x = 0; x < tileColumnNum; x++ )
+            for( int x = 0; x < _tileColNum; x++ )
             {
-                for ( int y = 0; y < tileRowNum; y++ )
+                for( int y = 0; y < _tileRowNum; y++ )
                 {
-                    SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
-                    GetTile( x, y ).Init( x, y, 0f, TileType.None, tilePrefabs );
+                    _tiles[x + ( y * _tileColNum )] = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" );
+                    _tiles[x + ( y * _tileColNum )].Init( x, y, 0f, TileType.None );
                 }
             }
         }
 
         public void Dispose()
         {
-            if (_tileDatas != null)
+            if( _tiles != null )
             {
-                foreach (var tile in _tileDatas)
+                foreach( var tile in _tiles )
                 {
-                    tile.Dispose();
+                    Methods.Dispose( tile );
                 }
 
-                _tileDatas = null;
+                _tiles = null;
+            }
+            if( _tileStaticDatas != null )
+            {
+                foreach( var staticData in _tileStaticDatas )
+                {
+                    Methods.Dispose( staticData );
+                }
+
+                _tileStaticDatas = null;
             }
         }
 
-        public StageTileData[] TileDatas => _tileDatas;
-        public float WidthX() { return TILE_SIZE * _gridColumnNum; }
-        public float WidthZ() { return TILE_SIZE * _gridRowNum; }
-        public int GetTileTotalNum() { return _gridRowNum * _gridColumnNum; }
-        public StageTileData GetTile(int x, int y) => _tileDatas[x + (y * _gridColumnNum)];
-        public StageTileData GetTileData(int index) => _tileDatas[index];
+        public float WidthX() { return TILE_SIZE * _tileColNum; }
+        public float WidthZ() { return TILE_SIZE * _tileRowNum; }
+        public int GetTileTotalNum() { return _tileRowNum * _tileColNum; }
+        public TileStaticData GetStaticData( int x, int y ) => _tileStaticDatas[x + ( y * _tileColNum )];
+        public Tile GetTile( int index ) => _tiles[index];
+        public Tile GetTile( int x, int y ) => _tiles[x + ( y * _tileColNum )];
+        public Tile[] Tiles => _tiles;
 
-        /// <summary>
-        /// 指定された行のタイルデータをList状にしてまとめて取得します
-        /// </summary>
-        /// <param name="rowIndex">指定行</param>
-        /// <returns>タイルデータ</returns>
-        public List<StageTileData> GetTilesAtRow( int rowIndex )
+        public TileStaticData GetTileStaticData( int index )
         {
-            List<StageTileData> stageTileDatas = new List<StageTileData>();
+            return _tiles[index].StaticData();
+        }
 
-            if ( !rowIndex.IsInHalfOpenRange( 0, _gridRowNum ) )
-            {
-                Debug.LogError("指定されたインデックス値がデータの範囲外のものになっています。");
-                return stageTileDatas;
-            }
-
-            for( int i = 0; i < _tileDatas.Length; ++i )
-            {
-                if( i.IsInHalfOpenRange( rowIndex * _gridColumnNum, ( rowIndex + 1 ) * _gridColumnNum ) )
-                {
-                    stageTileDatas.Add( _tileDatas[i] );
-                }
-            }
-
-            return stageTileDatas;
+        public TileDynamicData GetTileDynamicData( int index )
+        {
+            return _tiles[index].DynamicData();
         }
 
         /// <summary>
-        /// 指定された列のタイルデータをList状にしてまとめて取得します
+        /// BehaviourとMeshを除いた状態で複製したStageDataを生成します
         /// </summary>
-        /// <param name="colIndex">指定列</param>
-        /// <returns>タイルデータ</returns>
-        public List<StageTileData> GetTilesAtCol( int colIndex )
+        /// <returns></returns>
+        public TileDynamicData[] DeepCloneStageDynamicData()
         {
-            List<StageTileData> stageTileDatas = new List<StageTileData>();
+            TileDynamicData[] retDatas = new TileDynamicData[_tiles.Length];
 
-            if ( !colIndex.IsInHalfOpenRange( 0, _gridColumnNum ) )
+            for( int x = 0; x < TileColNum; x++ )
             {
-                Debug.LogError( "指定されたインデックス値がデータの範囲外のものになっています。" );
-                return stageTileDatas;
-            }
-
-            for ( int i = 0; i < _tileDatas.Length; ++i )
-            {
-                if ( i % colIndex == 0 )
+                for( int y = 0; y < TileRowNum; y++ )
                 {
-                    stageTileDatas.Add( _tileDatas[i] );
+                    retDatas[x + ( y * TileColNum )] = this.GetTile( x, y ).DynamicData().DeepClone();
                 }
             }
 
-            return stageTileDatas;
+            return retDatas;
         }
 
-        public ref TileInformation GetTileInfo(int index)
-        {
-            return ref _tileDatas[index].GetTileInfo();
-        }
-
-        public void SetGridRowNum( int rowNum ) {  _gridRowNum = rowNum;}
-        public void SetGridColNum( int colNum ) { _gridColumnNum = colNum; }
-        public void SetTile(int index, StageTileData tile) => _tileDatas[index] = tile;
-        public void SetTile(int x, int y, StageTileData tile) => _tileDatas[x + (y * _gridColumnNum )] = tile;
+        public void SetStaticData( int x, int y, TileStaticData staticData ) { _tileStaticDatas[x + ( y * _tileColNum )] = staticData; }
+        public void SetTile( int x, int y, Tile tile ) => _tiles[x + ( y * _tileColNum )] = tile;
     }
 }

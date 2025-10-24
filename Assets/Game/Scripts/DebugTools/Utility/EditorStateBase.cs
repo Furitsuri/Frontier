@@ -110,7 +110,7 @@ public class EditorStateBase : StateBase
     /// </summary>
     /// <param name="dir">方向入力</param>
     /// <returns>入力実行の有無</returns>
-    virtual protected bool AcceptDirection(Constants.Direction dir)
+    virtual protected bool AcceptDirection(Direction dir)
     {
         return false;
     }

@@ -214,7 +214,7 @@ namespace Frontier.DebugTools.DebugMenu
             ToggleDebugView();
             _inputFcd.UnregisterInputCodes(_inputHashCode);
             int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
-            _inputFcd.RegisterInputCodes((Constants.GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptBooleanInput(_acceptDebugTransitionCb), 0.0f, hashCode));
+            _inputFcd.RegisterInputCodes((GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptBooleanInput(_acceptDebugTransitionCb), 0.0f, hashCode));
         }
 
         override public int GetPriority() { return (int)FocusRoutinePriority.DEBUG_MENU; }

@@ -5,9 +5,9 @@
 /// </summary>
 public class TouchInput : IInput
 {
-    public Constants.Direction GetDirectionalPressed()
+    public Direction GetDirectionalPressed()
     {
-        return Constants.Direction.NONE;
+        return Direction.NONE;
     }
 
     public bool IsConfirmPressed()

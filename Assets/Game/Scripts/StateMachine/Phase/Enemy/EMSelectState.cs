@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class EmSelectState : PhaseStateBase
     {
@@ -19,7 +19,7 @@ namespace Frontier
 
             base.Init();
 
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();    // ステージグリッド上のキャラ情報を更新
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();    // ステージグリッド上のキャラ情報を更新
 
             _enemyEnumerator    = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).GetEnumerator();
             _currentEnemy       = null;
@@ -35,7 +35,7 @@ namespace Frontier
 
                 isExist = true;
 
-                _stageCtrl.ApplyCurrentGrid2CharacterGrid(_currentEnemy);   // 選択グリッドを合わせる
+                _stageCtrl.ApplyCurrentGrid2CharacterTile(_currentEnemy);   // 選択グリッドを合わせる
 
                 if(!_currentEnemy.GetAi().IsDetermined())
                 {
@@ -43,10 +43,10 @@ namespace Frontier
                 }
 
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
-                // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
+                // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
                 if( !_isValidTarget)
                 {
-                    _currentEnemy.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _currentEnemy.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                 }
 
                 break;
@@ -72,7 +72,7 @@ namespace Frontier
             // 移動行動に遷移するか
             if ( ShouldTransitionToMove( _currentEnemy ) )
             {
-                TransitIndex = (int)Command.COMMAND_TAG.MOVE;
+                TransitIndex = (int)COMMAND_TAG.MOVE;
 
                 return true;
             }
@@ -80,7 +80,7 @@ namespace Frontier
             // 攻撃行動に遷移するか
             if ( ShouldTransitionToAttack( _currentEnemy ) )
             {
-                TransitIndex = (int)Command.COMMAND_TAG.ATTACK;
+                TransitIndex = (int)COMMAND_TAG.ATTACK;
 
                 return true;
             }
@@ -97,7 +97,7 @@ namespace Frontier
         {
             if (!_isValidDestination) return false;
 
-            if ( em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.MOVE ) ) return false;
+            if ( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
@@ -111,7 +111,7 @@ namespace Frontier
         {
             if ( !_isValidTarget ) return false;
 
-            if ( em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) ) return false;
+            if ( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
 
             return true;
         }
@@ -123,7 +123,7 @@ namespace Frontier
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if ( em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.MOVE ) && em.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            if ( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
                 em.Params.TmpParam.EndAction();
                 return true;

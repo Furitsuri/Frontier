@@ -1,4 +1,5 @@
-﻿using Froniter.Registries;
+﻿using Froniter.Entities;
+using Froniter.Registries;
 using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,15 +10,32 @@ using static Constants;
 
 namespace Frontier.Entities
 {
+    /// <summary>
+    /// 攻撃可能範囲の取得、及びその表示・非表示を切り替えるハンドラです
+    /// </summary>
     public class AttackableRangeHandler
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private StageController _stageCtrl         = null;
         [Inject] protected PrefabRegistry _prefabReg        = null;
 
-        protected bool _isDisplayAttackableRange = false;
-        protected List<AttackableRangeData> _attackableRanges = new List<AttackableRangeData>();
-        protected List<GridMesh> _attackableTileMeshes = new List<GridMesh>();
+        private bool _isDisplayAttackableRange                  = false;
+        private Character _owner                                = null;
+        private ActionableTileMap _actionableTileMap            = null;
+        private List<TileMesh> _attackableTileMeshes            = new List<TileMesh>();
+
+        public ActionableTileMap ActionableTileMap { get { return _actionableTileMap; } }
+        public void Init( Character owner )
+        {
+            _owner                  = owner;
+
+            if( null == _actionableTileMap )
+            {
+                _actionableTileMap = _hierarchyBld.InstantiateWithDiContainer<ActionableTileMap>( false );
+                NullCheck.AssertNotNull( _actionableTileMap, "_actionableTileMap" );
+            }
+            _actionableTileMap.Init();
+        }
 
         /// <summary>
         /// 攻撃範囲の表示を切り替えます
@@ -25,7 +43,7 @@ namespace Frontier.Entities
         /// <param name="cParams"></param>
         /// <param name="tileCostTable"></param>
         /// <param name="color"></param>
-        public void ToggleAttackableRangeDisplay( in CharacterParameters cParams, in int[] tileCostTable, in CharacterKey charaKey, Color color )
+        public void ToggleAttackableRangeDisplay( in Color color )
         {
             _isDisplayAttackableRange = !_isDisplayAttackableRange;
 
@@ -35,10 +53,13 @@ namespace Frontier.Entities
             }
             else
             {
-                List<int> attackableTileIndexs = ExtractAttackableTiles(cParams, tileCostTable, charaKey);
-
-                DrawTileMashes( attackableTileIndexs, TileColors.Colors[( int ) MeshType.ATTACKABLE] );
+                DrawTileMashes( _actionableTileMap, in color );
             }
+        }
+
+        public void SetActionableTileDatas( ActionableTileMap actionableTileMap )
+        {
+            _actionableTileMap = actionableTileMap;
         }
 
         /// <summary>
@@ -51,17 +72,18 @@ namespace Frontier.Entities
             ClearTileMeshes();
         }
 
-        public void DrawTileMashes( List<int> tileIndexs, Color color )
+        public void DrawTileMashes( ActionableTileMap actionableTileMap, in Color color )
         {
-            for( int i = 0; i < tileIndexs.Count; ++i )
+            int count = 0;
+            foreach( var data in actionableTileMap.AttackableTileMap )
             {
-                var info = _stageCtrl.GetTileInfo( tileIndexs.ElementAt( i ) );
-                NullCheck.AssertNotNull( info, nameof( info ) );
-                var tileMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>( _prefabReg.TileMeshPrefab, true );
+                var tileSData = _stageCtrl.GetTileStaticData( data.Key );
+                NullCheck.AssertNotNull( tileSData, nameof( tileSData ) );
+                var tileMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true );
                 NullCheck.AssertNotNull( tileMesh, nameof( tileMesh ) );
 
                 _attackableTileMeshes.Add( tileMesh );
-                _attackableTileMeshes[i].DrawTileMesh( info.charaStandPos, TILE_SIZE, color );
+                _attackableTileMeshes[count++].DrawTileMesh( tileSData.CharaStandPos, TILE_SIZE, color );
             }
         }
 
@@ -75,6 +97,7 @@ namespace Frontier.Entities
             _attackableTileMeshes.Clear();
         }
 
+        /* TODO : 必要ないと確定したら削除
         public List<int> ExtractAttackableTiles( in CharacterParameters cParams, in int[] tileCostTable, in CharacterKey charaKey )
         {
             List<int> attackableTileIndexs = new List<int>();
@@ -82,8 +105,8 @@ namespace Frontier.Entities
             var param           = cParams.CharacterParam;
             int tileIndex       = cParams.TmpParam.gridIndex;
             float tileHeight    = _stageCtrl.GetTileData( tileIndex ).Height;
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( tileIndex, param.moveRange, param.attackRange, param.jumpForce, tileHeight, tileCostTable, charaKey, true );
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();
+            _stageCtrl.TileDataHdlr().BeginRegisterMoveableTiles( tileIndex, param.moveRange, param.attackRange, param.jumpForce, tileHeight, tileCostTable, charaKey, true );
 
             for( int i = 0; i < _stageCtrl.GetTileTotalNum(); ++i )
             {
@@ -94,9 +117,10 @@ namespace Frontier.Entities
                 }
             }
 
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();
 
             return attackableTileIndexs;
         }
+        */
     }
 }

@@ -1,6 +1,6 @@
-﻿public class GetDirectionalInput : IGetInputBase, IGetGenericInput<Constants.Direction>
+﻿public class GetDirectionalInput : IGetInputBase, IGetGenericInput<Direction>
 {
-    public delegate Constants.Direction GetDirectionalInputCallback();
+    public delegate Direction GetDirectionalInputCallback();
 
     private GetDirectionalInputCallback _callback;
 
@@ -9,7 +9,7 @@
         _callback = callback;
     }
 
-    public Constants.Direction GetGenericInput()
+    public Direction GetGenericInput()
     {
         return _callback();
     }

@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Froniter.Entities;
+using Frontier.Entities;
 using Frontier.Stage;
 using System;
 using System.Collections;
@@ -13,66 +14,26 @@ using Zenject;
 /// </summary>
 public class MovePathHandler
 {
-    private StageController _stageCtrl  = null;
+    [Inject] private StageController _stageCtrl  = null;
 
-    // _proposedMovePathをトレースする際に用いるインデックス値
-    private int _focusedWaypointIndex                   = 0;
-    // このクラスの持ち主となるキャラクター
-    private Character _owner                            = null;
-    // pathの候補となるタイルインデックス値のリスト。逆に言えば、このリストに挿入されていないインデックスのタイルは通行しない
-    private List<int> _candidatePathIndexs             = null;
-    // 計算から得られる移動パス
-    private List<WaypointInformation> _proposedMovePath = new List<WaypointInformation>();
-
-    public int FocusedWaypointIndex => _focusedWaypointIndex;
+    private int _focusedWaypointIndex                   = 0;                                // _proposedMovePathをトレースする際に用いるインデックス値
+    private Character _owner = null;
+    private List<WaypointInformation> _proposedMovePath = new List<WaypointInformation>();  // 計算から得られる移動パス
     public List<WaypointInformation> ProposedMovePath => _proposedMovePath;
-
-    [Inject]
-    private void Construct( StageController stageCtrl )
-    {
-        _stageCtrl = stageCtrl;
-    }
 
     /// <summary>
     /// 初期化します
     /// </summary>
-    public void Init( Character Owner )
+    public void Init( Character owner )
     {
-        _focusedWaypointIndex = 0;
-        _owner = Owner;
-
-        if ( _candidatePathIndexs == null )
-        {
-            _candidatePathIndexs = new List<int>( _stageCtrl.GetTileTotalNum() );
-        }
+        _focusedWaypointIndex   = 0;
+        _owner = owner;
     }
 
     /// <summary>
     /// 目標とするタイルを更新するため、インデックスをインクリメントします
     /// </summary>
     public void IncrementFocusedWaypointIndex() { ++_focusedWaypointIndex; }
-
-    /// <summary>
-    /// 移動候補となるタイル設定を行います
-    /// </summary>
-    /// <param name="condition">
-    /// 移動候補とする条件式。intは下記のfor文で使用するiに対応します。
-    /// object[]に対し、呼び出し側で任意のパラメータを指定してください。
-    /// </param>
-    /// <param name="args">任意パラメータ。Characterの持つTmpParameterなどを指定して条件文を構成出来ます</param>
-    public void SetUpCandidatePathIndexs( bool isReset,  Func<int, object[], bool> condition, params object[] args )
-    {
-        if ( isReset ) { _candidatePathIndexs.Clear(); }  // 一度クリア
-
-        // 進行可能なタイルをルート候補に挿入
-        for ( int i = 0; i < _stageCtrl.GetTileTotalNum(); ++i )
-        {
-            if ( condition( i, args ) )  // 条件は呼び出し側で設定
-            {
-                _candidatePathIndexs.Add( i );
-            }
-        }
-    }
 
     /// <summary>
     /// 取得したパス上から、インデックスから参照されるタイルのインデックス値を取得します
@@ -99,9 +60,9 @@ public class MovePathHandler
     /// <param name="destTileIndex">目標地点となるタイルのインデックス値</param>
     /// <param name="ownerJumpForce">移動キャラクターのジャンプ力</param>
     /// <param name="ownerTileCosts">移動キャラクターの各タイルの移動コスト</param>
-    public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )
+    public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts, Dictionary<int, TileDynamicData> moveableTileMap )
     {
-        if ( _candidatePathIndexs.Count <= 0 )
+        if ( moveableTileMap.Count <= 0 )
         {
             Debug.LogError( "_candidatePathIndexs is not set up. Please check." );
             return false;
@@ -109,7 +70,7 @@ public class MovePathHandler
 
         _proposedMovePath.Clear();
 
-        var route = _stageCtrl.ExtractShortestPath( dprtTileIndex, destTileIndex, ownerJumpForce, in ownerTileCosts, _candidatePathIndexs );
+        var route = _stageCtrl.ExtractShortestPath( dprtTileIndex, destTileIndex, ownerJumpForce, in ownerTileCosts, moveableTileMap );
         if( route == null ) { return false; }
         _proposedMovePath = route;
 
@@ -130,18 +91,18 @@ public class MovePathHandler
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
     /// <returns>ルート取得の可否</returns>
-    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace )
+    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace, ActionableTileMap actionableTileMap )
     {
-        if ( _candidatePathIndexs.Count <= 0 )
+        if ( actionableTileMap.MoveableTileMap.Count <= 0 )
         {
             Debug.LogError( "_candidatePathIndexs is not set up. Please check." );
             return false;
         }
 
         // 指定のインデックス位置にキャラクターが留まれない場合は失敗
-        if ( !CanStandOnTile( destinationlTileIndex ) ) { return false; }
+        if( !CanStandOnTile( actionableTileMap.GetMoveableTile( destinationlTileIndex ) ) ) { return false; }
 
-        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, ownerJumpForce, in ownerTileCosts, _candidatePathIndexs );
+        var route = _stageCtrl.ExtractShortestPath( departingTileIndex, destinationlTileIndex, ownerJumpForce, in ownerTileCosts, actionableTileMap.MoveableTileMap );
         if ( route == null ) { return false; }
         // 現在のパストレースが終了していない場合は、直近のwaypointを移動対象として先頭に登録
         if ( !isEndPathTrace )
@@ -182,7 +143,7 @@ public class MovePathHandler
             // 移動レンジを超えれば終了
             if ( range < 0 ) { break; }
             // グリッド上にキャラクターが存在しないことを確認して更新
-            if ( !_stageCtrl.GetTileInfo( p.TileIndex ).IsExistCharacter() ) { reachableTileIndex = p.TileIndex; }
+            if ( !_stageCtrl.GetTileDynamicData( p.TileIndex ).IsExistCharacter() ) { reachableTileIndex = p.TileIndex; }
         }
 
         // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
@@ -197,26 +158,16 @@ public class MovePathHandler
     /// 指定のタイルの位置に留まることが出来るかを判定します
     /// </summary>
     /// <param name="tileIdx">指定のタイル位置のインデックス</param>
+    /// <param name="moveableTileMap">移動可否を示すタイルマップ</param>
     /// <returns>留まることの可否</returns>
-    public bool CanStandOnTile( int tileIdx )
+    public bool CanStandOnTile( TileDynamicData tileDData )
     {
-        var tileInfo    = _stageCtrl.GetTileInfo( tileIdx );
-        bool ownerExist = ( tileInfo.CharaKey == _owner.CharaKey );
-
-        return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || ( !Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) && !tileInfo.CharaKey.IsValid() ) ) );
+        // 有効 かつ 自身以外のCharacterが存在しない
+        return ( null != tileDData ) && ( tileDData.CharaKey == _owner.CharaKey || !tileDData.CharaKey.IsValid() );
     }
 
-    public StageTileData GetFocusedTileData()
+    public TileStaticData GetFocusedTileStaticData()
     {
-        return _stageCtrl.GetTileData( _proposedMovePath[_focusedWaypointIndex].TileIndex );
-    }
-
-    /// <summary>
-    /// 次の目標タイルのタイル情報を取得します
-    /// </summary>
-    /// <returns>タイル情報</returns>
-    public TileInformation GetFocusedTileInformation()
-    {
-        return _stageCtrl.GetTileInfo( _proposedMovePath[_focusedWaypointIndex].TileIndex );
+        return _stageCtrl.GetTileStaticData( _proposedMovePath[_focusedWaypointIndex].TileIndex );
     }
 }

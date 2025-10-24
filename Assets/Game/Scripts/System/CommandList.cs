@@ -28,8 +28,8 @@ public class CommandList
 
     private LinkedList<int> _list;
     private LinkedListNode<int> _currentNode;
-    private Constants.Direction _transitPrevInput;
-    private Constants.Direction _transitNextInput;
+    private Direction _transitPrevInput;
+    private Direction _transitNextInput;
     // このクラスを使用するクラス内で、コマンドのIndex値、及びValue値を適応させたい変数を下記2つに設定します
     private CommandIndexedValue _cmdIdxVal;
 
@@ -54,13 +54,13 @@ public class CommandList
 
         if( direction == CommandDirection.VERTICAL )
         {
-            _transitPrevInput = Constants.Direction.FORWARD;
-            _transitNextInput = Constants.Direction.BACK;
+            _transitPrevInput = Direction.FORWARD;
+            _transitNextInput = Direction.BACK;
         }
         else if( direction == CommandDirection.HORIZONTAL )
         {
-            _transitPrevInput = Constants.Direction.LEFT;
-            _transitNextInput = Constants.Direction.RIGHT;
+            _transitPrevInput = Direction.LEFT;
+            _transitNextInput = Direction.RIGHT;
         }
 
         _cmdIdxVal = cmdIdxVal;
@@ -120,7 +120,7 @@ public class CommandList
     /// </summary>
     /// <param name="dir">方向入力</param>
     /// <returns>受け取った入力によって位置を更新したか</returns>
-    public bool OperateListCursor( Constants.Direction dir )
+    public bool OperateListCursor( Direction dir )
     {
         bool isAccept = false;
 

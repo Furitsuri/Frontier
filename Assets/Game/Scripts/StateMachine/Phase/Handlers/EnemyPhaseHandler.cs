@@ -3,7 +3,7 @@ using Frontier.Battle;
 using System.Linq;
 using UnityEngine;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class EnemyPhaseHandler : PhaseHandlerBase
     {
@@ -13,53 +13,68 @@ namespace Frontier
         override public void Init()
         {
             // 目標座標や攻撃対象をリセット
-            foreach (Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY))
+            foreach( Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
             {
                 enemy.GetAi().ResetDestinationAndTarget();
             }
             // MEMO : 上記リセット後に初期化する必要があるためにこの位置であることに注意
             base.Init();
             // 選択グリッドを(1番目の)敵のグリッド位置に合わせる
-            if (0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount(CHARACTER_TAG.ENEMY) && _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY) != null)
+            if( 0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.ENEMY ) && _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) != null )
             {
-                Character enemy = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).First();
-                _stgCtrl.ApplyCurrentGrid2CharacterGrid(enemy);
+                Character enemy = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).First();
+                _stgCtrl.ApplyCurrentGrid2CharacterTile( enemy );
             }
             // アクションゲージの回復
-            _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup(CHARACTER_TAG.ENEMY);
+            _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.ENEMY );
+
+            // フェーズアニメーションの開始
+            StartPhaseAnim();
         }
 
         /// <summary>
         /// 更新を行います
         /// </summary>
-        override public bool Update()
+        override public void Update()
         {
-            if (_isFirstUpdate)
+            if( _isFirstUpdate )
             {
-                // フェーズアニメーションの開始
-                StartPhaseAnim();
-
                 _isFirstUpdate = false;
 
-                return false;
+                return;
             }
 
             // フェーズアニメーション中は操作無効
-            if (_btlUi.IsPlayingPhaseUI())
+            if( _btlUi.IsPlayingPhaseUI() )
             {
-                return false;
+                return;
             }
 
-            return base.Update();
+            base.Update();
         }
 
         override protected void CreateTree()
         {
             // 遷移木の作成
-            RootNode = _hierarchyBld.InstantiateWithDiContainer<EmSelectState>(false);
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmMoveState>(false));
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmAttackState>(false));
-            RootNode.AddChild(_hierarchyBld.InstantiateWithDiContainer<EmWaitState>(false));
+            /*
+             *  親子図
+             * 
+             *      EmPhaseAnimationState
+             *              ｜
+             *              └─ EmSelectState
+             *                      ｜
+             *                      ├─ EmMoveState
+             *                      ｜
+             *                      ├─ EmAttackState
+             *                      ｜
+             *                      └─ EmWaitState
+             */
+
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<EmPhaseStateAnimation>( false );
+            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSelectState>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
 
             CurrentNode = RootNode;
         }
@@ -69,7 +84,7 @@ namespace Frontier
         /// </summary>
         override protected void StartPhaseAnim()
         {
-            _btlUi.TogglePhaseUI(true, TurnType.ENEMY_TURN);
+            _btlUi.TogglePhaseUI( true, TurnType.ENEMY_TURN );
             _btlUi.StartAnimPhaseUI();
         }
     }

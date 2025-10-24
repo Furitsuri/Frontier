@@ -1,23 +1,18 @@
 ﻿using Frontier.Entities;
-using UnityEngine;
+using Zenject;
 
 namespace Frontier.Stage
 {
-    /// <summary>
-    /// タイル単位における情報
-    /// </summary>
-    public class TileInformation
+    public class TileDynamicData
     {
-        // キャラクターの立ち位置座標(※) ※は一度設定された後は変更することがない変数
-        public Vector3 charaStandPos;
-        // 移動阻害値(※)
-        public int moveResist;
+        [Inject] HierarchyBuilderBase _hierarchyBld = null;
+
         // 移動値の見積もり値
-        public int estimatedMoveRange;
+        public int EstimatedMoveRange;
         // タイル上に存在するキャラクターのハッシュキー
         public CharacterKey CharaKey;
         // フラグ情報
-        public TileBitFlag flag;
+        public TileBitFlag Flag;
 
         /// <summary>
         /// 初期化します
@@ -26,11 +21,9 @@ namespace Frontier.Stage
         /// </summary>
         public void Init()
         {
-            charaStandPos       = Vector3.zero;
-            moveResist          = -1;
-            estimatedMoveRange  = -1;
+            EstimatedMoveRange  = -1;
             CharaKey            = new CharacterKey( CHARACTER_TAG.NONE, -1 );
-            flag                = Stage.TileBitFlag.NONE;
+            Flag                = Stage.TileBitFlag.NONE;
         }
 
         /// <summary>
@@ -62,19 +55,17 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 現在の値をコピーして対象に渡します
+        /// 現在の状態をクローンして対象に渡します
         /// </summary>
-        /// <returns>値をコピーしたオブジェクト</returns>
-        public TileInformation Copy()
+        /// <returns>クローンオブジェクト</returns>
+        public TileDynamicData DeepClone()
         {
-            TileInformation info    = new TileInformation();
-            info.charaStandPos      = charaStandPos;
-            info.moveResist         = moveResist;
-            info.estimatedMoveRange = estimatedMoveRange;
-            info.CharaKey           = CharaKey;
-            info.flag               = flag;
+            TileDynamicData retData     = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
+            retData.EstimatedMoveRange  = this.EstimatedMoveRange;
+            retData.CharaKey            = this.CharaKey;
+            retData.Flag                = this.Flag;
 
-            return info;
+            return retData;
         }
     }
 }

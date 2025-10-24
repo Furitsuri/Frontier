@@ -3,7 +3,7 @@ using Frontier.Entities;
 using System.Collections;
 using UnityEngine;
 using Zenject;
-using Frontier.Combat;
+using Frontier.StateMachine;
 using System;
 using Frontier.Combat.Skill;
 
@@ -31,7 +31,6 @@ namespace Frontier.Battle
         private PhaseHandlerBase _currentPhaseHdlr              = null;
         private PhaseHandlerBase[] _phaseHdlrs                  = new PhaseHandlerBase[((int)TurnType.NUM)];
         
-        private bool _transitNextPhase = false;
         private int _phaseHandlerIndex = 0;
         private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
@@ -165,7 +164,7 @@ namespace Frontier.Battle
             }
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
-            _stgCtrl.TileInfoDataHdlr().UpdateTileInfo();               // タイル情報を更新
+            _stgCtrl.TileDataHdlr().UpdateTileInfo();               // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
             _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN]; // PLAYERターンから開始(MEMO : ステージによって変更する場合はステージ読込処理から変更出来るように修正)
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);          // ファイル読込マネージャにカメラパラメータをロードさせる
@@ -187,16 +186,16 @@ namespace Frontier.Battle
             }
 
             // 現在のグリッド上に存在するキャラクター情報を更新
-            TileInformation info;
-            _stgCtrl.TileInfoDataHdlr().FetchCurrentTileInfo(out info);
-            _battleCameraCtrl.SetLookAtBasedOnSelectCursor(info.charaStandPos);
+            ( var tileSData, var tileDData ) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
+            _battleCameraCtrl.SetLookAtBasedOnSelectCursor(tileSData.CharaStandPos);
 
-            SelectCharacterInfo = info.CharaKey;
+            SelectCharacterInfo = tileDData.CharaKey;
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
 
-            _transitNextPhase = _currentPhaseHdlr.Update(); // フェーズマネージャを更新
+            // TEST : _transitNextPhase = _currentPhaseHdlr.Update(); // フェーズマネージャを更新
+            _currentPhaseHdlr.Update();
         }
 
         override public void LateUpdateRoutine()
@@ -210,6 +209,19 @@ namespace Frontier.Battle
             // 勝利、全滅チェックを行う
             if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }
 
+            if( _currentPhaseHdlr.LateUpdate() )
+            {
+                // 一時パラメータをリセット
+                _btlCharaCdr.ResetTmpParamAllCharacter();
+
+                // 次のハンドラーに切り替える
+                _phaseHandlerIndex = ( _phaseHandlerIndex + 1 ) % ( int ) TurnType.NUM;
+                _currentPhaseHdlr.Exit();
+                _currentPhaseHdlr = _phaseHdlrs[_phaseHandlerIndex];
+                _currentPhaseHdlr.Run();
+            }
+
+            /* TEST
             // フェーズ移動の正否
             if (!_transitNextPhase)
             {
@@ -222,9 +234,11 @@ namespace Frontier.Battle
 
                 // 次のハンドラーに切り替える
                 _phaseHandlerIndex  = (_phaseHandlerIndex + 1) % (int)TurnType.NUM;
+                _currentPhaseHdlr.Exit();
                 _currentPhaseHdlr   = _phaseHdlrs[_phaseHandlerIndex];
                 _currentPhaseHdlr.Run();
             }
+            */
         }
 
         /// <summary>

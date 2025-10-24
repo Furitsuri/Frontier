@@ -11,6 +11,23 @@ using UnityEngine.UIElements;
 static public class Methods
 {
     /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="obj"></param>
+    static public void Dispose<T>( T obj ) where T : class
+    {
+        if( obj == null ) { return; }
+
+        if( obj is IDisposer disposer )
+        {
+            disposer.Dispose();
+        }
+
+        obj = null;
+    }
+
+    /// <summary>
     /// 自分自身を含むすべての子オブジェクトのレイヤーを設定します
     /// </summary>
     /// <param name="self">自身</param>

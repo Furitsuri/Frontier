@@ -7,8 +7,6 @@ namespace Frontier.Entities.Ai
 {
     public abstract class BaseAi
     {
-        virtual public MovePathHandler MovePathHandler => null;
-
         /// <summary>
         /// 初期化します
         /// </summary>
@@ -25,12 +23,6 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <returns>攻撃対象にしているキャラクター</returns>
         virtual public Character GetTargetCharacter() { return null; }
-
-        /// <summary>
-        /// 進行予定の移動ルートを取得します
-        /// </summary>
-        /// <returns>進行予定の移動ルート情報</returns>
-        virtual public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMovePath() { return null; }
 
         /// <summary>
         /// 目的地と攻撃対象を決定します

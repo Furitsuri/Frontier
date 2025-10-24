@@ -3,7 +3,7 @@ using Frontier.Battle;
 using Zenject;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PhaseStateBase : StateBase
     {
@@ -128,7 +128,7 @@ namespace Frontier
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        virtual protected bool AcceptDirection(Constants.Direction dir) { return false; }
+        virtual protected bool AcceptDirection(Direction dir) { return false; }
 
         /// <summary>
         /// 決定入力を受けた際の処理を行います

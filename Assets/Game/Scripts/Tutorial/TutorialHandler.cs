@@ -154,7 +154,7 @@ public class TutorialHandler : BaseHandlerExtendedFocusRoutine
     /// </summary>
     /// <param name="dir">方向入力</param>
     /// <returns>入力実行の有無</returns>
-    private bool AcceptDirection( Constants.Direction dir )
+    private bool AcceptDirection( Direction dir )
     {
         switch( dir )
         {

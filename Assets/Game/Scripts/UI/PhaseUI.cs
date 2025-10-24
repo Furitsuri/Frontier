@@ -28,7 +28,7 @@ public class PhaseUI : MonoBehaviour
     public bool IsPlayingAnim()
     {
         var info = _animator.GetCurrentAnimatorStateInfo(0);
-        if( 0f < info.normalizedTime && info.normalizedTime < 1f )
+        if( 0f < info.length && info.normalizedTime < 1f )
         {
             return true;
         }
