@@ -110,9 +110,9 @@ public sealed class InputGuidePresenter : MonoBehaviour
     {
         _inputCodes = Array.AsReadOnly(inputCodes);
 
-        Debug.Assert(spriteTailNoString.Length == (int)Constants.GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
+        Debug.Assert(spriteTailNoString.Length == (int)GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
 
-        _guideUiArrray  = new InputGuideUI[(int)Constants.GuideIcon.NUM_MAX];
+        _guideUiArrray  = new InputGuideUI[(int)GuideIcon.NUM_MAX];
         _rectTransform  = GetComponent<RectTransform>();
         _layoutGrp      = GetComponent<HorizontalLayoutGroup>();
 
@@ -289,11 +289,11 @@ public sealed class InputGuidePresenter : MonoBehaviour
     /// </summary>
     private void LoadSprites()
     {
-        _sprites = new Sprite[(int)Constants.GuideIcon.NUM_MAX];
+        _sprites = new Sprite[(int)GuideIcon.NUM_MAX];
 
         // ガイドスプライトの読み込みを行い、アサインする
         Sprite[] guideSprites = Resources.LoadAll<Sprite>(Constants.GUIDE_SPRITE_FOLDER_PASS + Constants.GUIDE_SPRITE_FILE_NAME);
-        for (int i = 0; i < (int)Constants.GuideIcon.NUM_MAX; ++i)
+        for (int i = 0; i < (int)GuideIcon.NUM_MAX; ++i)
         {
             string fileName = Constants.GUIDE_SPRITE_FILE_NAME + spriteTailNoString[i];
 

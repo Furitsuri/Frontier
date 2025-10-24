@@ -4,7 +4,7 @@
 /// </summary>
 public interface IInput
 {
-    public Constants.Direction GetDirectionalPressed();
+    public Direction GetDirectionalPressed();
 
     public bool IsConfirmPressed();
 

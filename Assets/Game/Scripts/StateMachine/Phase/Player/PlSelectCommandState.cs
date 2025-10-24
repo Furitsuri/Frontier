@@ -1,12 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using System.Collections.Generic;
-using System.Reflection;
-using UnityEngine;
-using UnityEngine.Assertions;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PlSelectCommandState : PlPhaseStateBase
     {
@@ -18,23 +15,23 @@ namespace Frontier
         /// </summary>
         private void InitInputInfo()
         {
-            _cmdIdxVal = new CommandList.CommandIndexedValue(0, 0);
+            _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
 
             // UI側へこのスクリプトを登録し、UIを表示
-            List<Command.COMMAND_TAG> executableCommands;
-            _plOwner.FetchExecutableCommand(out executableCommands, _stageCtrl);
+            List<COMMAND_TAG> executableCommands;
+            _plOwner.FetchExecutableCommand( out executableCommands, _stageCtrl );
 
             // 入力ベース情報の設定
             List<int> commandIndexs = new List<int>();
-            foreach (var executableCmd in executableCommands)
+            foreach( var executableCmd in executableCommands )
             {
-                commandIndexs.Add((int)executableCmd);
+                commandIndexs.Add( ( int ) executableCmd );
             }
-            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal);
+            _commandList.Init( ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript(this);
-            _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList(executableCommands);
-            _uiSystem.BattleUi.TogglePLCommand(true);
+            _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript( this );
+            _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
+            _uiSystem.BattleUi.TogglePLCommand( true );
         }
 
         /// <summary>
@@ -45,7 +42,7 @@ namespace Frontier
             base.Init();
 
             // 可能な行動が全て終了している場合は即終了
-            if (_plOwner.Params.TmpParam.IsEndAction())
+            if( _plOwner.Params.TmpParam.IsEndAction() )
             {
                 return;
             }
@@ -65,20 +62,20 @@ namespace Frontier
                 return true;
             }
 
-            if (base.Update())
+            if( base.Update() )
             {
                 // コマンドのうち、移動のみが終了している場合は移動前の状態に戻れるように          
-                if (_plOwner.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE) && !_plOwner.Params.TmpParam.IsEndCommand(Command.COMMAND_TAG.ATTACK))
+                if( _plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && !_plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
                 {
-                    _stageCtrl.FollowFootprint(_plOwner);
-                    _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
-                    _plOwner.Params.TmpParam.SetEndCommandStatus(Command.COMMAND_TAG.MOVE, false );
+                    _stageCtrl.FollowFootprint( _plOwner );
+                    _stageCtrl.TileDataHdlr().UpdateTileInfo();
+                    _plOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, false );
                 }
 
                 return true;
             }
 
-            return (0 <= TransitIndex);
+            return ( 0 <= TransitIndex );
         }
 
         /// <summary>
@@ -89,14 +86,14 @@ namespace Frontier
             // 移動コマンドを選択した場合は、この時点でのキャラクターの位置情報を保存する
             // ( PlMoveStateのInitなどで保存すると、『移動ステート中に敵を直接攻撃→攻撃をキャンセルして移動に戻る』とした場合に、
             //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
-            if ( TransitIndex == (int)Command.COMMAND_TAG.MOVE )
+            if( TransitIndex == ( int ) COMMAND_TAG.MOVE )
             {
                 _plOwner.HoldBeforeMoveInfo();
                 _stageCtrl.HoldFootprint( _plOwner );  // キャラクターの現在の位置情報を保持
-                _stageCtrl.HoldAllTileInfo();               // 移動中直接攻撃時にキャンセルした際の処理に対応するため、現在のタイル情報を保持
+                _stageCtrl.HoldAllTileDynamicData();          // 移動中直接攻撃時にキャンセルした際の処理に対応するため、現在のタイル情報を保持
             }
 
-            _uiSystem.BattleUi.TogglePLCommand(false);  // UIを非表示
+            _uiSystem.BattleUi.TogglePLCommand( false );  // UIを非表示
 
             base.ExitState();
         }
@@ -109,9 +106,9 @@ namespace Frontier
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.VERTICAL_CURSOR,  "Select",   CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,          "Confirm",  CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.CANCEL,           "Back",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
+               (GuideIcon.VERTICAL_CURSOR, "Select", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
             );
         }
 
@@ -130,9 +127,9 @@ namespace Frontier
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection(Constants.Direction dir)
+        override protected bool AcceptDirection( Direction dir )
         {
-            return _commandList.OperateListCursor(dir);
+            return _commandList.OperateListCursor( dir );
         }
 
         /// <summary>
@@ -153,12 +150,12 @@ namespace Frontier
         /// キャンセル入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isCancel">キャンセル入力の有無</param>
-        override protected bool AcceptCancel(bool isCancel)
+        override protected bool AcceptCancel( bool isCancel )
         {
-            if( base.AcceptCancel(isCancel) )
+            if( base.AcceptCancel( isCancel ) )
             {
                 // 以前の状態に巻き戻せる場合は状態を巻き戻す
-                if (_plOwner.IsRewindStatePossible())
+                if( _plOwner.IsRewindStatePossible() )
                 {
                     Rewind();
                 }

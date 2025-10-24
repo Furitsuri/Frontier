@@ -63,22 +63,22 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     private void InitializeInputForGuideIcon()
     {
-        _inputForIcons                                              = new IGetInputBase[(int)Constants.GuideIcon.NUM_MAX];
-        _inputForIcons[(int)Constants.GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(_iInput.GetDirectionalPressed);
-        _inputForIcons[(int)Constants.GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(_iInput.GetDirectionalPressed);
-        _inputForIcons[(int)Constants.GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(_iInput.GetDirectionalPressed);
-        _inputForIcons[(int)Constants.GuideIcon.CONFIRM]            = new GetBooleanInput(_iInput.IsConfirmPressed);
-        _inputForIcons[(int)Constants.GuideIcon.CANCEL]             = new GetBooleanInput(_iInput.IsCancelPressed);
-        _inputForIcons[(int)Constants.GuideIcon.TOOL]               = new GetBooleanInput(_iInput.IsToolPressed);
-        _inputForIcons[(int)Constants.GuideIcon.INFO]               = new GetBooleanInput(_iInput.IsInfoPressed);
-        _inputForIcons[(int)Constants.GuideIcon.OPT1]               = new GetBooleanInput(_iInput.IsOptions1Pressed);
-        _inputForIcons[(int)Constants.GuideIcon.OPT2]               = new GetBooleanInput(_iInput.IsOptions2Pressed);
-        _inputForIcons[(int)Constants.GuideIcon.SUB1]               = new GetBooleanInput(_iInput.IsSub1Pressed);
-        _inputForIcons[(int)Constants.GuideIcon.SUB2]               = new GetBooleanInput(_iInput.IsSub2Pressed);
-        _inputForIcons[(int)Constants.GuideIcon.SUB3]               = new GetBooleanInput(_iInput.IsSub3Pressed);
-        _inputForIcons[(int)Constants.GuideIcon.SUB4]               = new GetBooleanInput(_iInput.IsSub4Pressed);
+        _inputForIcons                                    = new IGetInputBase[(int)GuideIcon.NUM_MAX];
+        _inputForIcons[(int)GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(_iInput.GetDirectionalPressed);
+        _inputForIcons[(int)GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(_iInput.GetDirectionalPressed);
+        _inputForIcons[(int)GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(_iInput.GetDirectionalPressed);
+        _inputForIcons[(int)GuideIcon.CONFIRM]            = new GetBooleanInput(_iInput.IsConfirmPressed);
+        _inputForIcons[(int)GuideIcon.CANCEL]             = new GetBooleanInput(_iInput.IsCancelPressed);
+        _inputForIcons[(int)GuideIcon.TOOL]               = new GetBooleanInput(_iInput.IsToolPressed);
+        _inputForIcons[(int)GuideIcon.INFO]               = new GetBooleanInput(_iInput.IsInfoPressed);
+        _inputForIcons[(int)GuideIcon.OPT1]               = new GetBooleanInput(_iInput.IsOptions1Pressed);
+        _inputForIcons[(int)GuideIcon.OPT2]               = new GetBooleanInput(_iInput.IsOptions2Pressed);
+        _inputForIcons[(int)GuideIcon.SUB1]               = new GetBooleanInput(_iInput.IsSub1Pressed);
+        _inputForIcons[(int)GuideIcon.SUB2]               = new GetBooleanInput(_iInput.IsSub2Pressed);
+        _inputForIcons[(int)GuideIcon.SUB3]               = new GetBooleanInput(_iInput.IsSub3Pressed);
+        _inputForIcons[(int)GuideIcon.SUB4]               = new GetBooleanInput(_iInput.IsSub4Pressed);
 #if UNITY_EDITOR
-        _inputForIcons[(int)Constants.GuideIcon.DEBUG_MENU]         = new GetBooleanInput(_iInput.IsDebugMenuPressed);
+        _inputForIcons[(int)GuideIcon.DEBUG_MENU]         = new GetBooleanInput(_iInput.IsDebugMenuPressed);
 #endif  // UNITY_EDITOR
     }
 

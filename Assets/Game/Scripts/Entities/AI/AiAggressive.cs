@@ -21,32 +21,37 @@ namespace Frontier.Entities.Ai
         /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
         /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
         /// <returns>存在の有無</returns>
-        private bool CheckExistTargetInRange( CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, in CharacterKey ownerKey, out List<(int gridIndex, List<CharacterKey> opponents)> candidates )
+        private bool CollectTargetInActionableRange( CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, in CharacterKey ownerKey, out List<(int tileIndex, List<CharacterKey> opponents)> candidates )
         {
-            candidates = new List<(int gridIndex, List<CharacterKey> opponents)>( Constants.CHARACTER_MAX_NUM );
+            candidates = new List<(int tileIndex, List<CharacterKey> opponents)>( Constants.CHARACTER_MAX_NUM );
 
             // 自身の移動範囲をステージ上に登録する
-            bool isAttackable = !selfTmpParam.isEndCommand[( int ) Command.COMMAND_TAG.ATTACK];
-            float curHeight = _stageCtrl.GetTileData( selfTmpParam.gridIndex ).Height;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( selfTmpParam.gridIndex, selfParam.moveRange, selfParam.attackRange, selfParam.jumpForce, curHeight, in ownerTileCosts, in ownerKey, isAttackable );
+            bool isAttackable = !selfTmpParam.isEndCommand[( int ) COMMAND_TAG.ATTACK];
+            float curHeight = _stageCtrl.GetTileStaticData( selfTmpParam.gridIndex ).Height;
 
-            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
+            _owner.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.gridIndex, curHeight );
+            _owner.ActionRangeCtrl.DrawActionableRange();
+
+            // 攻撃可能範囲に攻撃対象がいるかどうかを判定
+            for( int i = 0; i < _owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.Count; ++i )
             {
-                var tileInfo = _stageCtrl.GetTileInfo( i );
-                // 移動可能地点かつキャラクターが存在していない(自分自身は有効)タイルを取得
-                if( 0 <= tileInfo.estimatedMoveRange && ( !tileInfo.CharaKey.IsValid()  || tileInfo.CharaKey == ownerKey ) )
+                var tileIndex = _owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Key;
+                var tileDData = _owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Value;
+
+                // 移動可能地点、かつキャラクターが存在していない(自分自身は有効)タイルを取得
+                if( 0 <= tileDData.EstimatedMoveRange && ( !tileDData.CharaKey.IsValid() || tileDData.CharaKey == ownerKey ) )
                 {
                     // タイルの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterKey> opponentKeys;
-                    ExtractAttackabkeOpponentIndexs( i, ownerKey.CharacterTag, out opponentKeys );
+                    ExtractAttackabkeOpponentIndexs( tileIndex, ownerKey.CharacterTag, out opponentKeys );
                     if( 0 < opponentKeys.Count )
                     {
-                        candidates.Add( (i, opponentKeys) );
+                        candidates.Add( (tileIndex, opponentKeys) );
                     }
                 }
             }
 
-            return 0 < candidates.Count;
+            return ( 0 < candidates.Count );
         }
 
         /// <summary>
@@ -59,10 +64,10 @@ namespace Frontier.Entities.Ai
         {
             _isDetermined = true;
 
-            List<(int gridIndex, List<CharacterKey> opponents)> candidates;
+            List<(int tileIndex, List<CharacterKey> opponents)> candidates = null;
 
             // 攻撃範囲内に敵対キャラクターが存在するか確認し、存在する場合はそのキャラクター達を取得
-            if( CheckExistTargetInRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, in ownerKey, out candidates ) )
+            if( CollectTargetInActionableRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, in ownerKey, out candidates ) )
             {
                 DetermineDestinationAndTargetInAttackRange( in ownerParams, in ownerTileCosts, candidates );
             }
@@ -106,18 +111,7 @@ namespace Frontier.Entities.Ai
             _destinationTileIndex   = maxEvaluate.gridIndex;
             _targetCharacter        = maxEvaluate.target;
 
-            // 現在移動可能なタイルと、自身が現在存在するタイルをルート候補とする条件
-            Func<int, object[], bool> condition = ( index, args ) =>
-            {
-                var tileInfo        = _stageCtrl.GetTileInfo( index );
-                bool IsSameFaction  = tileInfo.CharaKey.CharacterTag == ( ( CharacterParameter ) args[0] ).characterTag || !tileInfo.CharaKey.IsValid();
-                bool ownerExist     = ( index == ( ( TemporaryParameter ) args[1] ).gridIndex );
-
-                return ( 0 <= tileInfo.estimatedMoveRange && ( ownerExist || ( !Methods.CheckBitFlag( tileInfo.flag, TileBitFlag.CANNOT_MOVE ) && IsSameFaction ) ) );
-            };
-
-            MovePathHandler.SetUpCandidatePathIndexs( true, condition, ownerParams.CharacterParam, ownerParams.TmpParam );
-            MovePathHandler.FindMovePath( ownerParams.TmpParam.gridIndex, _destinationTileIndex, ownerParams.CharacterParam.jumpForce, ownerTileCosts );
+            _owner.ActionRangeCtrl.MovePathHdlr.FindMovePath( ownerParams.TmpParam.gridIndex, _destinationTileIndex, ownerParams.CharacterParam.jumpForce, ownerTileCosts, _owner.ActionRangeCtrl.ActionableTileMap.MoveableTileMap );
         }
 
         /// <summary>
@@ -130,14 +124,19 @@ namespace Frontier.Entities.Ai
             // 最大評価ルート保存用
             (List<WaypointInformation> path, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
 
-            // 移動値を無視した上で、進行可能なタイルをルート候補とする条件
-            Func<int, object[], bool> condition = (index, args) =>
+            // 未編集の現在のステージデータを用いる
+            Func<TileDynamicData[]> setup = () =>
             {
-                var flag        = TileBitFlag.CANNOT_MOVE;
-                var tileInfo    = _stageCtrl.GetTileInfo( index );
-                return ( !Methods.CheckBitFlag( tileInfo.flag, flag ) );
+                return _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
             };
-            MovePathHandler.SetUpCandidatePathIndexs( true, condition );
+            // 移動値を無視した上で、進行可能なタイル全てをルート候補とする条件
+            Func<TileDynamicData, object[], bool> condition = ( tileDData, args ) =>
+            {
+                var flag = TileBitFlag.CANNOT_MOVE;
+                return ( !Methods.CheckBitFlag( tileDData.Flag, flag ) );
+            };
+
+            _owner.ActionRangeCtrl.SetupMoveableRangeDataFilterByCondition( setup, condition );
 
             // 各プレイヤーが存在するグリッドの評価値を計算する
             foreach ( Character chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.OTHER ) )
@@ -148,12 +147,12 @@ namespace Frontier.Entities.Ai
                 evaluateValue += CalcurateEvaluateAttack( ownerParams.CharacterParam, chara.Params.CharacterParam );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまりターゲットが存在するタイルの中でも、近ければ近いものほど評価値を大きくするため)
-                if( !MovePathHandler.FindMovePath( ownerParams.TmpParam.gridIndex, destGridIndex, ownerParams.CharacterParam.jumpForce, in ownerTileCosts ) )
+                if( !_owner.ActionRangeCtrl.FindMovePath( ownerParams.TmpParam.gridIndex, destGridIndex, ownerParams.CharacterParam.jumpForce, in ownerTileCosts ) )
                 {
                     Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;
                 }
-                var path        = MovePathHandler.ProposedMovePath.ToList();
+                var path        = _owner.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.ToList();
                 int totalCost   = path[^1].MoveCost;    // ^1は最後の要素のインデックス(C#8.0以降から使用可能)
                 evaluateValue   *= 1f / totalCost;
 
@@ -162,8 +161,8 @@ namespace Frontier.Entities.Ai
             }
 
             // 得られたルートのパスをキャラクターの移動レンジ分に調整する
-            MovePathHandler.AdjustPathToRangeAndSet( ownerParams.CharacterParam.moveRange, ownerParams.CharacterParam.jumpForce, in maxEvaluateRoute.path );
-            _destinationTileIndex = MovePathHandler.ProposedMovePath[^1].TileIndex;
+            _owner.ActionRangeCtrl.MovePathHdlr.AdjustPathToRangeAndSet( ownerParams.CharacterParam.moveRange, ownerParams.CharacterParam.jumpForce, in maxEvaluateRoute.path );
+            _destinationTileIndex = _owner.ActionRangeCtrl.MovePathHdlr.ProposedMovePath[^1].TileIndex;
         }
     }
 }

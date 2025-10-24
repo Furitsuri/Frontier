@@ -2,7 +2,7 @@
 using Frontier.Stage;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PlSelectTileState : PlPhaseStateBase
     {
@@ -48,12 +48,11 @@ namespace Frontier
                 return true;
             }
 
-            TileInformation info;
-            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
-            if( info.CharaKey.IsValid() )
+            TileDynamicData tileData = _stageCtrl.TileDataHdlr().GetCurrentTileDatas().Item2;
+            if( tileData.CharaKey.IsValid() )
             {
                 // Confirmアイコンの文字列を更新
-                _confirmStrWrapper.Explanation = _confirmStrings[( int ) info.CharaKey.CharacterTag];
+                _confirmStrWrapper.Explanation = _confirmStrings[( int ) tileData.CharaKey.CharacterTag];
             }
 
             return ( 0 <= TransitIndex );

@@ -1,4 +1,4 @@
-using Frontier.Combat.Skill;
+ï»¿using Frontier.Combat.Skill;
 using Frontier.DebugTools.StageEditor;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,58 +8,62 @@ namespace Frontier.Stage
 {
     public sealed class StageFileLoader : MonoBehaviour
     {
-        [SerializeField]
-        private List<string> _stageNames;
+        [SerializeField] private List<string> _stageNames;
 
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
 
+        private GameObject[] _tileBhvPrefabs;
         private GameObject[] _tilePrefabs;
 
         /// <summary>
-        /// ‰Šú‰»‚µ‚Ü‚·
+        /// åˆæœŸåŒ–ã—ã¾ã™
         /// </summary>
-        /// <param name="tilePregabs">ƒXƒe[ƒW‚Ìƒ^ƒCƒ‹‚ğ”z’u‚·‚éÛ‚ÉQÆ‚·‚éƒ^ƒCƒ‹ƒf[ƒ^‚ÌƒvƒŒƒnƒuŒQ</param>
-        public void Init( GameObject[] tilePregabs )
+        /// <param name="tilePregabs">ã‚¹ãƒ†ãƒ¼ã‚¸ã®ã‚¿ã‚¤ãƒ«ã‚’é…ç½®ã™ã‚‹éš›ã«å‚ç…§ã™ã‚‹ã‚¿ã‚¤ãƒ«ãƒ‡ãƒ¼ã‚¿ã®ãƒ—ãƒ¬ãƒãƒ–ç¾¤</param>
+        public void Init( GameObject[] tilePregabs, GameObject[] tileBhvPrefabs )
         {
             NullCheck.AssertNotNull( _stageDataProvider , nameof( _stageDataProvider ) );
             NullCheck.AssertNotNull( _hierarchyBld , nameof( _hierarchyBld ) );
 
+            _tileBhvPrefabs = tileBhvPrefabs;
             _tilePrefabs = tilePregabs;
         }
 
         /// <summary>
-        /// ƒXƒe[ƒWƒf[ƒ^‚ğƒtƒ@ƒCƒ‹–¼‚ğw’è‚·‚é‚±‚Æ‚Å“Ç‚İ‚İ‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ•ã‚¡ã‚¤ãƒ«åã‚’æŒ‡å®šã™ã‚‹ã“ã¨ã§èª­ã¿è¾¼ã¿ã¾ã™
         /// </summary>
-        /// <param name="fileName">w’è‚·‚éƒtƒ@ƒCƒ‹–¼</param>
-        /// <returns>“Ç‚Ì¬”Û</returns>
+        /// <param name="fileName">æŒ‡å®šã™ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«å</param>
+        /// <returns>èª­è¾¼ã®æˆå¦</returns>
         public bool Load( string fileName )
         {
-            var data = StageDataSerializer.Load(fileName);
-            if ( data == null ) { return false; }
+            var loadData = StageDataSerializer.Load(fileName);
+            if ( loadData == null ) { return false; }
 
-            // Šù‘¶‚ÌƒXƒe[ƒWƒf[ƒ^‚ª‘¶İ‚·‚éê‡‚Í”jŠü
+            // æ—¢å­˜ã®ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯ç ´æ£„
             if ( null != _stageDataProvider.CurrentData )
             {
                 _stageDataProvider.CurrentData.Dispose();
             }
-            // ‘¶İ‚µ‚È‚¢ê‡‚Íì¬
+            // å­˜åœ¨ã—ãªã„å ´åˆã¯ä½œæˆ
             else
             {
                 _stageDataProvider.CurrentData = _hierarchyBld.InstantiateWithDiContainer<StageData>( false );
             }
 
-            var row = data.GridRowNum;
-            var col = data.GridColumnNum;
-            _stageDataProvider.CurrentData.Init( row, col ); // V‚µ‚¢ƒXƒe[ƒWƒf[ƒ^‚ğ‰Šú‰»
+            var row = loadData.TileRowNum;
+            var col = loadData.TileColNum;
+            _stageDataProvider.CurrentData.Init( row, col ); // æ–°ã—ã„ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚’åˆæœŸåŒ–
 
             for ( int x = 0; x < col; x++ )
             {
                 for ( int y = 0; y < row; y++ )
                 {
-                    var srcTile = data.GetTile(x, y);
-                    _stageDataProvider.CurrentData.SetTile( x, y, _hierarchyBld.InstantiateWithDiContainer<StageTileData>( false ) );
-                    _stageDataProvider.CurrentData.GetTile( x, y ).Init( x, y, srcTile.Height, srcTile.Type, _tilePrefabs );
+                    var stgData = _stageDataProvider.CurrentData;
+                    var loadStaticData = loadData.GetStaticData( x, y );
+                    stgData.SetStaticData( x, y, _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false ) );
+                    stgData.GetStaticData( x, y ).Init( x, y, loadStaticData.Height, loadStaticData.TileType );
+                    stgData.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( _tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
+                    stgData.GetTile( x, y ).Init( x, y, loadStaticData.Height, loadStaticData.TileType );
                 }
             }
 
@@ -67,10 +71,10 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// ƒXƒe[ƒWƒf[ƒ^‚ğƒtƒ@ƒCƒ‹–¼”z—ñ‚ÉƒCƒ“ƒfƒbƒNƒX‚ğw’è‚·‚éŒ`‚Å“Ç‚İ‚Ü‚·
+        /// ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ•ã‚¡ã‚¤ãƒ«åé…åˆ—ã«ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’æŒ‡å®šã™ã‚‹å½¢ã§èª­è¾¼ã¿ã¾ã™
         /// </summary>
-        /// <param name="stageNameIdx">ƒXƒe[ƒW–¼”z—ñ‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX’l</param>
-        /// <returns>“Ç‚Ì¬”Û</returns>
+        /// <param name="stageNameIdx">ã‚¹ãƒ†ãƒ¼ã‚¸åé…åˆ—ã¸ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤</param>
+        /// <returns>èª­è¾¼ã®æˆå¦</returns>
         public bool Load( int stageNameIdx )
         {
             return Load( _stageNames[stageNameIdx] );

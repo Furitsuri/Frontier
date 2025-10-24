@@ -7,7 +7,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PlMoveState : PlPhaseStateBase
     {
@@ -20,41 +20,31 @@ namespace Frontier
 
         const int TransitAttackStateValue   = 0;
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
-        private int _departGridIndex        = -1;
+        private int _departTileIndex        = -1;
 
         override public void Init()
         {
             base.Init();
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK ) )
+            if( _plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
             }
             else { _phase = PlMovePhase.PL_MOVE; }
 
-            _departGridIndex = _plOwner.PrevMoveInformaiton.tmpParam.gridIndex;
+            _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.gridIndex;
 
-            _stageCtrl.ApplyAllTileInfoFromHeld();
+            _stageCtrl.ApplyAllTileDynamicDataFromHeld();
             _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
-            bool isAttackable   = !_plOwner.Params.TmpParam.IsEndCommand( Command.COMMAND_TAG.ATTACK );
-            var param           = _plOwner.Params.CharacterParam;
-            float tileHeight    = _stageCtrl.GetTileData( _departGridIndex ).Height;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterMoveableTiles( _departGridIndex, param.moveRange, param.attackRange, param.jumpForce, tileHeight, _plOwner.TileCostTable, _plOwner.CharaKey, isAttackable );
-            _stageCtrl.DrawAllTileInformationMeshes();
-
-            // SetUpCandidatePathIndexsで用いる条件式
-            Func<int, object[], bool> condition = ( index, args ) =>
-            {
-                var tileInfo = _stageCtrl.GetTileInfo( index );
-                bool ownerExist = ( tileInfo.CharaKey == _plOwner.CharaKey );
-                return ( 0 <= tileInfo.estimatedMoveRange || ownerExist );
-            };
-
-            _plOwner.GetAi().MovePathHandler.SetUpCandidatePathIndexs( true, condition );  // 移動候補となるタイル情報を準備
+            int atkRange            = !_plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _plOwner.Params.CharacterParam.attackRange : 0;
+            var param               = _plOwner.Params.CharacterParam;
+            float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
+            _plOwner.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
+            _plOwner.ActionRangeCtrl.DrawActionableRange();
         }
 
         override public bool Update()
@@ -86,7 +76,7 @@ namespace Frontier
                     // 保険として、終了のタイミングで更新し直す
                     _plOwner.Params.TmpParam.gridIndex = _stageCtrl.GetCurrentGridIndex();
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _plOwner.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.MOVE, true );
+                    _plOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
                     Back();     // コマンド選択に戻る
 
                     return true;
@@ -103,7 +93,7 @@ namespace Frontier
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
             {
-                _stageCtrl.TileInfoDataHdlr().UpdateTileInfo(); // ステージグリッド上のキャラ情報を更新
+                _stageCtrl.TileDataHdlr().UpdateTileInfo(); // ステージグリッド上のキャラ情報を更新
                 _stageCtrl.ClearGridCursroBind();           // 操作対象データをリセット
             }
 
@@ -118,9 +108,9 @@ namespace Frontier
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM, "DECISION", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL, "BACK", CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
              );
         }
 
@@ -145,19 +135,10 @@ namespace Frontier
             if( PlMovePhase.PL_MOVE != _phase ) { return false; }     // 移動フェーズでない場合は終了
 
             // 移動不可の地点であっても、敵対勢力が存在しており自身の攻撃レンジ以内の場合にはtrueを返す
-            TileInformation info;
-            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
-            if( info.estimatedMoveRange < 0 )
-            {
-                if( CanAttackOnMove( in info ) ) { return true; }
-                else { return false; }  // 単純な移動不可地点であれば不可
-            }
-            else
-            {
-                if( info.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER ) { return false; }    // 味方がいる場合は移動不可
-            }
-
-            return true;
+            int currentIndex = _stageCtrl.GetCurrentGridIndex();
+            if( CanAttackOnMove( _plOwner.ActionRangeCtrl.ActionableTileMap.GetAttackableTile( currentIndex ) ) ) { return true; }
+            // それ以外は留まることが可能かを確認
+            else { return _plOwner.ActionRangeCtrl.MovePathHdlr.CanStandOnTile( _plOwner.ActionRangeCtrl.ActionableTileMap.GetMoveableTile( currentIndex ) ); }
         }
 
         /// <summary>
@@ -193,25 +174,25 @@ namespace Frontier
         {
             if( !isInput ) { return false; }
 
-            TileInformation info;
-            var curGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _stageCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
+            var currentIndex            = _stageCtrl.GetCurrentGridIndex();
+            TileDynamicData tileData    = _plOwner.ActionRangeCtrl.ActionableTileMap.GetAttackableTile( currentIndex );
 
             // 出発地点と同一グリッドであれば戻る
-            if( curGridIndex == _departGridIndex )
+            if( currentIndex == _departTileIndex )
             {
                 Back();
+
+                return true;
             }
             // 攻撃可能なキャラクターが存在している場合は攻撃へ遷移
-            else if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+            else if( null != tileData && Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 TransitAttackOnMoveState();
+
+                return true;
             }
-            // キャラクターが存在していないことを確認
-            else if( !info.CharaKey.IsValid() )
-            {
-                _phase = PlMovePhase.PL_MOVE_RESERVE_END;
-            }
+
+            _phase = PlMovePhase.PL_MOVE_RESERVE_END;
 
             return true;
         }
@@ -249,7 +230,7 @@ namespace Frontier
         {
             int departingTileIndex      = _plOwner.Params.TmpParam.gridIndex;
             int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
-            MovePathHandler pathHdlr    = _plOwner.GetAi().MovePathHandler;
+            MovePathHandler pathHdlr    = _plOwner.ActionRangeCtrl.MovePathHdlr;
             bool isEndPathTrace         = pathHdlr.IsEndPathTrace();
 
             // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
@@ -258,7 +239,7 @@ namespace Frontier
                 departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
             }
 
-            pathHdlr.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, _plOwner.TileCostTable, isEndPathTrace );
+            _plOwner.ActionRangeCtrl.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, _plOwner.TileCostTable, isEndPathTrace );
         }
 
         /// <summary>
@@ -275,9 +256,11 @@ namespace Frontier
         /// </summary>
         /// <param name="info">グリッド情報</param>
         /// <returns>直接遷移の可否</returns>
-        private bool CanAttackOnMove( in TileInformation info )
+        private bool CanAttackOnMove( in TileDynamicData tileData )
         {
-            if( !Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) return false;
+            if( null == tileData ) { return false; }
+
+            if( !Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
             (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.Params.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );

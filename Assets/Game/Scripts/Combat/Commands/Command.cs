@@ -8,15 +8,6 @@ namespace Frontier.Combat
     /// </summary>
     public class Command
     {
-        public enum COMMAND_TAG
-        {
-            MOVE = 0,
-            ATTACK,
-            WAIT,
-
-            NUM,
-        }
-
         static public bool IsExecutableCommandBase(Character character)
         {
             if( character.Params.TmpParam.IsEndAction() ) { return false; }
@@ -42,11 +33,21 @@ namespace Frontier.Combat
             }
 
             // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-            stageCtrl.TileInfoDataHdlr().BeginRegisterAttackableTiles( tmpParam.GetCurrentGridIndex(), charaParam.attackRange, charaParam.characterTag, true );
-            bool isExecutable = stageCtrl.TileInfoDataHdlr().CorrectAttackableTileIndexs( charaParam.characterTag );
+
+            int dprtTileIndex   = character.Params.TmpParam.gridIndex;
+            character.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            bool isExecutable = false;
+            foreach( var data in character.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
+            {
+                if( Methods.CheckBitFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                {
+                    isExecutable = true;
+                    break;
+                }
+            }
 
 			// 実行不可である場合は登録した攻撃情報を全てクリア
-			if( !isExecutable ) { stageCtrl.TileInfoDataHdlr().ClearAttackableInformation(); }
+			if( !isExecutable ) { stageCtrl.TileDataHdlr().ClearAttackableInformation(); }
 
             return isExecutable;
         }

@@ -30,13 +30,14 @@ namespace Frontier.Entities
         private readonly TimeScale _timeScale   = new TimeScale();
         private ICombatAnimationSequence _combatAnimSeq;
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
-        private List<Command.COMMAND_TAG> _executableCommands                               = new List<Command.COMMAND_TAG>();
+        private List<COMMAND_TAG> _executableCommands                               = new List<COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
         protected bool _isPrevMoving                = false;
         protected BaseAi _baseAi                    = null;                         // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
         protected TransformHandler _transformHdlr   = null;                         // キャラクターのTransform操作を行うクラス
         protected ThinkingType _thikType                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                   = PARRY_PHASE.NONE;
+        protected ActionRangeController _actionRangeCtrl    = null;                 // 行動範囲管理クラス
         protected Character _opponent                       = null;                 // 戦闘時の対戦相手
         protected Bullet _bullet                            = null;                 // 矢などの弾
         protected SkillNotifierBase[] _skillNotifier        = null;                 // スキル使用通知
@@ -55,6 +56,7 @@ namespace Frontier.Entities
         public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
         public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
         public CharacterParameters Params => _params;                               // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
+        public ActionRangeController ActionRangeCtrl => _actionRangeCtrl;           // 行動範囲管理クラスの取得
         public BaseAi GetAi() => _baseAi;                                           // AIの取得
         public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
 
@@ -108,9 +110,15 @@ namespace Frontier.Entities
                 NullCheck.AssertNotNull( _transformHdlr, nameof( _transformHdlr ) );
             }
 
+            if( null == _actionRangeCtrl )
+            {
+                _actionRangeCtrl = _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false );
+                NullCheck.AssertNotNull( _actionRangeCtrl, nameof( _actionRangeCtrl ) );
+            }
+
             // キャラクターモデルのマテリアルが設定されているObjectを取得し、
             // Materialと初期のColor設定を保存
-            RegistMaterialsRecursively(this.transform, Constants.OBJECT_TAG_NAME_CHARA_SKIN_MESH);
+            RegistMaterialsRecursively( this.transform, Constants.OBJECT_TAG_NAME_CHARA_SKIN_MESH );
         }
 
         void Update()
@@ -119,7 +127,7 @@ namespace Frontier.Entities
 
             // 移動と攻撃が終了していれば、行動不可に遷移
             var endCommand = _params.TmpParam.isEndCommand;
-            if (endCommand[(int)Command.COMMAND_TAG.MOVE] && endCommand[(int)Command.COMMAND_TAG.ATTACK])
+            if (endCommand[(int)COMMAND_TAG.MOVE] && endCommand[(int)COMMAND_TAG.ATTACK])
             {
                 BeImpossibleAction();
             }
@@ -194,6 +202,7 @@ namespace Frontier.Entities
             _isPrevMoving = false;
 
             _params.Init();
+            _actionRangeCtrl.Init( this );
             _transformHdlr.Init( this.transform );
 
             ResetElapsedTime();
@@ -248,17 +257,16 @@ namespace Frontier.Entities
         /// <returns>移動が終了したか</returns>
         virtual public bool UpdateMovePath( float moveSpeedRate = 1.0f )
         {
-            var pathHdlr = _baseAi.MovePathHandler;
+            var pathHdlr = _actionRangeCtrl.MovePathHdlr;
 
             // 移動ルートの最終インデックスに到達している場合は、目標タイルに到達しているため終了
             if( pathHdlr.IsEndPathTrace() ) { return true; }
 
-            bool toggleAnimation = false;
-            var focusedTileData = pathHdlr.GetFocusedTileData();
-            var focusedTileInfo = pathHdlr.GetFocusedTileInformation();
-            var focusedTilePos = focusedTileInfo.charaStandPos;
-            Vector3 prevDirXZ = ( focusedTilePos - _transformHdlr.GetPreviousPosition() ).XZ().normalized;
-            Vector3 focusDirXZ = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+            bool toggleAnimation    = false;
+            var focusedTileData     = pathHdlr.GetFocusedTileStaticData();
+            var focusedTilePos      = focusedTileData.CharaStandPos;
+            Vector3 prevDirXZ       = ( focusedTilePos - _transformHdlr.GetPreviousPosition() ).XZ().normalized;
+            Vector3 focusDirXZ      = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
             Action<float, float, Vector3, Vector3> jumpAction = ( float dprtHeight, float destHeight, Vector3 dprtPos, Vector3 destPos ) =>
             {
                 // 高低差が一定以上ある場合はジャンプ動作を開始
@@ -286,10 +294,9 @@ namespace Frontier.Entities
                 // まだ移動が続く場合は次の目標タイルを目指して速度と向きを設定
                 else
                 {
-                    var nextTileData = pathHdlr.GetFocusedTileData();
-                    var nextTileInfo = pathHdlr.GetFocusedTileInformation();
-                    var nextTilePos = nextTileInfo.charaStandPos;
-                    Vector3 nextDirXZ = ( nextTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+                    var nextTileData    = pathHdlr.GetFocusedTileStaticData();
+                    var nextTilePos     = nextTileData.CharaStandPos;
+                    Vector3 nextDirXZ   = ( nextTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
 
                     _transformHdlr.SetVelocityAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
                     _transformHdlr.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
@@ -302,14 +309,13 @@ namespace Frontier.Entities
                 // 移動開始の場合は速度と向きを設定
                 if( !_isPrevMoving )
                 {
-                    var currentTileData = _stageCtrl.GetTileData( Params.TmpParam.gridIndex );
-                    var currentTileInfo = _stageCtrl.GetTileInfo( Params.TmpParam.gridIndex );
+                    var currentTileData = _stageCtrl.GetTileStaticData( Params.TmpParam.gridIndex );
 
                     _transformHdlr.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
                     _transformHdlr.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
                     toggleAnimation = true;
 
-                    jumpAction( currentTileData.Height, focusedTileData.Height, currentTileInfo.charaStandPos, focusedTilePos );
+                    jumpAction( currentTileData.Height, focusedTileData.Height, currentTileData.CharaStandPos, focusedTilePos );
                 }
 
                 _isPrevMoving = true;
@@ -340,11 +346,10 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="gridIndex">マップグリッドのインデックス</param>
         /// <param name="dir">キャラクター角度</param>
-        public void SetPosition(int gridIndex, in Quaternion dir)
+        public void SetPosition(int tileIndex, in Quaternion dir)
         {
-            _params.TmpParam.SetCurrentGridIndex( gridIndex );
-            var info = _stageCtrl.GetTileInfo(gridIndex);
-            _transformHdlr.SetPosition( info.charaStandPos );
+            _params.TmpParam.SetCurrentGridIndex( tileIndex );
+            _transformHdlr.SetPosition( _stageCtrl.GetTileStaticData( tileIndex ).CharaStandPos );
             _transformHdlr.SetRotation( dir );
         }
 
@@ -382,9 +387,9 @@ namespace Frontier.Entities
         /// </summary>
         public void BeImpossibleAction()
         {
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            for (int i = 0; i < (int)COMMAND_TAG.NUM; ++i)
             {
-                _params.TmpParam.SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+                _params.TmpParam.SetEndCommandStatus((COMMAND_TAG)i, true);
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -416,6 +421,11 @@ namespace Frontier.Entities
         public void ApplyCostTable( int[] costTable )
         {
             _tileCostTable = costTable;
+        }
+
+        public void ClearAttackableRange()
+        {
+            _actionRangeCtrl.ClearAttackableRange();
         }
 
         /// <summary>
@@ -476,15 +486,15 @@ namespace Frontier.Entities
         /// 実行可能なコマンドを抽出します
         /// </summary>
         /// <param name="executableCommands">抽出先の引き数</param>
-        public void FetchExecutableCommand(out List<Command.COMMAND_TAG> executableCommands, in StageController stageCtrl)
+        public void FetchExecutableCommand(out List<COMMAND_TAG> executableCommands, in StageController stageCtrl)
         {
             _executableCommands.Clear();
 
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            for (int i = 0; i < (int)COMMAND_TAG.NUM; ++i)
             {
                 if (!_executableCommandTables[i](this, stageCtrl)) continue;
 
-                _executableCommands.Add((Command.COMMAND_TAG)i);
+                _executableCommands.Add((COMMAND_TAG)i);
             }
 
             executableCommands = _executableCommands;

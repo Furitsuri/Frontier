@@ -1,10 +1,8 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Zenject;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     /// <summary>
     /// 移動ステート中に直接攻撃へと遷移した際の攻撃選択ステートです
@@ -18,8 +16,8 @@ namespace Frontier
             Character targetChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
-            _stageCtrl.ClearGridCursroBind();                               // 念のためバインドを解除
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _plOwner );     // グリッドカーソル位置を元に戻す
+            _stageCtrl.ClearGridCursroBind();                          // 念のためバインドを解除
+            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );     // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _plOwner.Params.CharacterParam.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
@@ -30,18 +28,18 @@ namespace Frontier
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
             var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
-            _stageCtrl.DrawAllTileInformationMeshes();
+
+            _plOwner.ActionRangeCtrl.SetupAttackableRangeData( _curentGridIndex );
+            _attackCharacter.ActionRangeCtrl.DrawAttackableRange();
 
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if (_stageCtrl.TileInfoDataHdlr().CorrectAttackableTileIndexs(CHARACTER_TAG.PLAYER, targetChara))
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, targetChara ) )
             {
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
+                _uiSystem.BattleUi.ToggleAttackCursorP2E( true ); // アタックカーソルUI表示
             }
 
-            // 攻撃シーケンスを初期化
-            _attackSequence.Init();
+            _attackSequence.Init(); // 攻撃シーケンスを初期化
         }
 
         override public void ExitState()
@@ -85,7 +83,7 @@ namespace Frontier
             _targetCharacter.Params.SkillModifiedParam.Reset();
 
             // グリッドの状態を更新してグリッドの描画をクリア
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();
             _stageCtrl.ClearTileMeshDraw();
 
             // 選択グリッドを表示

@@ -1,4 +1,5 @@
-﻿using Frontier.Combat;
+﻿using Froniter.Entities;
+using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
 using Frontier.Stage;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static Constants;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Entities
 {
@@ -69,11 +71,11 @@ namespace Frontier.Entities
             // 移動コマンドだけが終了している場合のみ直前の状態に戻れるように
             // MEMO : コマンドが今後増えても問題ないようにfor文で判定しています
             bool isPossible = true;
-            for( int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i )
+            for( int i = 0; i < (int)COMMAND_TAG.NUM; ++i )
             {
-                if( i == (int)Command.COMMAND_TAG.MOVE )
+                if( i == (int)COMMAND_TAG.MOVE )
                 {
-                    if (!_params.TmpParam.IsEndCommand(Command.COMMAND_TAG.MOVE))
+                    if (!_params.TmpParam.IsEndCommand(COMMAND_TAG.MOVE))
                     {
                         isPossible = false;
                         break;
@@ -81,7 +83,7 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    if (_params.TmpParam.IsEndCommand((Command.COMMAND_TAG)i))
+                    if (_params.TmpParam.IsEndCommand((COMMAND_TAG)i))
                     {
                         isPossible = false;
                         break;
@@ -101,7 +103,6 @@ namespace Frontier.Entities
             _baseAi = _hierarchyBld.InstantiateWithDiContainer<AiBase>( false );
             NullCheck.AssertNotNull( _baseAi , nameof( _baseAi ) );
             _baseAi.Init( this );
-            _baseAi.MovePathHandler.Init( this );
         }
 
         /// <summary>

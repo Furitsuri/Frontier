@@ -3,7 +3,7 @@ using static Constants;
 
 namespace Frontier.Stage
 {
-    public class TileMesh : MonoBehaviour
+    public class GridLineMesh : MonoBehaviour, IDisposer
     {
         // TileMeshはTileBehaviorの子オブジェクトとして配置されるため、
         // TileBehaviorの座標を基準にしている。TileBehaviorの座標はグリッドの中心位置。

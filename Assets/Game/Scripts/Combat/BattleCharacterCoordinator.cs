@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,8 +65,8 @@ namespace Frontier.Battle
             };
 
             // 向きの値を設定
-            Quaternion[] rot = new Quaternion[(int)Constants.Direction.NUM_MAX];
-            for (int i = 0; i < (int)Constants.Direction.NUM_MAX; ++i)
+            Quaternion[] rot = new Quaternion[(int)Direction.NUM_MAX];
+            for (int i = 0; i < (int)Direction.NUM_MAX; ++i)
             {
                 rot[i] = Quaternion.AngleAxis(90 * i, Vector3.up);
             }
@@ -76,9 +77,9 @@ namespace Frontier.Battle
                 {
                     int gridIndex = chara.Params.CharacterParam.initGridIndex;                                  // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
                     chara.Params.TmpParam.SetCurrentGridIndex( gridIndex );                                     // ステージ上のグリッド位置の設定
-                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileInfo( gridIndex ).charaStandPos );   // プレイヤーの画面上の位置を設定
+                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos );   // プレイヤーの画面上の位置を設定
                     chara.GetTransformHandler.SetRotation( rot[(int)chara.Params.CharacterParam.initDir] );     // 向きを設定
-                    _stgCtrl.GetTileInfo( gridIndex ).SetExistCharacter( chara );                               // 対応するグリッドに立っているキャラクターを登録
+                    _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                               // 対応するグリッドに立っているキャラクターを登録
                 }
             }
         }
@@ -276,10 +277,9 @@ namespace Frontier.Battle
         /// <returns>選択しているグリッド上のキャラクター</returns>
         public Character GetSelectCharacter()
         {
-            Stage.TileInformation info;
-            _stgCtrl.TileInfoDataHdlr().FetchCurrentTileInfo( out info );
+            TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetCurrentTileDatas().Item2;
 
-            return GetCharacterFromDictionary( info.CharaKey );
+            return GetCharacterFromDictionary( tileData.CharaKey );
         }
 
         /// <summary>
@@ -291,9 +291,7 @@ namespace Frontier.Battle
         {
             List<Character> list = new List<Character>();
 
-            var baseGridInfo = _stgCtrl.GetTileInfo( baseChara.Params.TmpParam.gridIndex );
-            NullCheck.AssertNotNull( baseGridInfo, nameof(baseGridInfo) );
-            Vector3 basePos     = baseGridInfo.charaStandPos;
+            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.Params.TmpParam.gridIndex ).CharaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y = 0f;
 
@@ -301,13 +299,11 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    var targetGridInfo = _stgCtrl.GetTileInfo(c.Params.TmpParam.gridIndex);
-                    NullCheck.AssertNotNull(targetGridInfo, nameof( targetGridInfo ) );
-                    Vector3 targetPos = targetGridInfo.charaStandPos;
+                    Vector3 targetPos = _stgCtrl.GetTileStaticData( c.Params.TmpParam.gridIndex ).CharaStandPos;
 
-                    var direction = targetPos - basePos;
-                    direction.y = 0f;
-                    direction = direction.normalized;
+                    var direction   = targetPos - basePos;
+                    direction.y     = 0f;
+                    direction       = direction.normalized;
 
                     // 内積で向きが一致しているかを確認
                     float dot = Vector3.Dot(baseForward, direction);

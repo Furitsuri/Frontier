@@ -5,14 +5,14 @@
 /// </summary>
 public class PadInput : IInput
 {
-    public Constants.Direction GetDirectionalPressed()
+    public Direction GetDirectionalPressed()
     {
-        if (Input.GetButtonUp("Vertical"))          return Constants.Direction.FORWARD;
-        else if (Input.GetButtonUp("Horizontal"))   return Constants.Direction.LEFT;
-        else if (Input.GetButtonUp("Vertical"))     return Constants.Direction.BACK;
-        else if (Input.GetButtonUp("Horizontal"))   return Constants.Direction.RIGHT;
+        if ( Input.GetButtonUp("Vertical"))          return Direction.FORWARD;
+        else if (Input.GetButtonUp("Horizontal"))   return Direction.LEFT;
+        else if (Input.GetButtonUp("Vertical"))     return Direction.BACK;
+        else if (Input.GetButtonUp("Horizontal"))   return Direction.RIGHT;
 
-        return Constants.Direction.NONE;
+        return Direction.NONE;
     }
 
     public bool IsConfirmPressed()

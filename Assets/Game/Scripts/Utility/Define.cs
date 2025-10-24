@@ -2,48 +2,6 @@
 
 static public class Constants
 {
-    /// <summary>
-    /// ステージ上の進行方向
-    /// </summary>
-    public enum Direction
-    {
-        NONE = -1,
-
-        FORWARD,    // Z軸正方向
-        RIGHT,      // X軸正方向
-        BACK,       // Z軸負方向
-        LEFT,       // X軸負方向
-
-        NUM_MAX
-    }
-
-    /// <summary>
-    /// 各入力キーの定義
-    /// ゲーム中で使用する全てのキーをここで定義します
-    /// </summary>
-    public enum GuideIcon : int
-    {
-        ALL_CURSOR = 0,     // 全方向
-        VERTICAL_CURSOR,    // 縦方向
-        HORIZONTAL_CURSOR,  // 横方向
-        CONFIRM,            // 決定
-        CANCEL,             // 戻る
-        TOOL,               // ツール
-        INFO,               // 情報
-        OPT1,               // オプション1
-        OPT2,               // オプション2
-        SUB1,               // 入力サブ1
-        SUB2,               // 入力サブ2
-        SUB3,               // 入力サブ3
-        SUB4,               // 入力サブ4
-
-#if UNITY_EDITOR
-        DEBUG_MENU,         // デバッグメニュー
-#endif
-
-        NUM_MAX
-    }
-
     // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;
     // キャラクターが装備出来るスキルの最大数

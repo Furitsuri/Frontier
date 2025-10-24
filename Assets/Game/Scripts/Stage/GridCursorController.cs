@@ -53,7 +53,7 @@ namespace Frontier.Stage
         public void Up()
         {
             StartLerpMove();
-            Index += _stageDataProvider.CurrentData.GridColumnNum;
+            Index += _stageDataProvider.CurrentData.TileColNum;
             if ( _stageDataProvider.CurrentData.GetTileTotalNum() <= Index)
             {
                 Index = Index % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
@@ -66,7 +66,7 @@ namespace Frontier.Stage
         public void Down()
         {
             StartLerpMove();
-            Index -= _stageDataProvider.CurrentData.GridColumnNum;
+            Index -= _stageDataProvider.CurrentData.TileColNum;
             if (Index < 0)
             {
                 Index += _stageDataProvider.CurrentData.GetTileTotalNum();
@@ -80,9 +80,9 @@ namespace Frontier.Stage
         {
             StartLerpMove();
             Index++;
-            if (Index % _stageDataProvider.CurrentData.GridColumnNum == 0)
+            if (Index % _stageDataProvider.CurrentData.TileColNum == 0)
             {
-                Index -= _stageDataProvider.CurrentData.GridColumnNum;
+                Index -= _stageDataProvider.CurrentData.TileColNum;
             }
         }
 
@@ -93,9 +93,9 @@ namespace Frontier.Stage
         {
             StartLerpMove();
             Index--;
-            if ((Index + 1) % _stageDataProvider.CurrentData.GridColumnNum == 0)
+            if ((Index + 1) % _stageDataProvider.CurrentData.TileColNum == 0)
             {
-                Index += _stageDataProvider.CurrentData.GridColumnNum;
+                Index += _stageDataProvider.CurrentData.TileColNum;
             }
         }
 
@@ -162,12 +162,12 @@ namespace Frontier.Stage
 
         public int X()
         {
-            return Index % _stageDataProvider.CurrentData.GridColumnNum;
+            return Index % _stageDataProvider.CurrentData.TileColNum;
         }
 
         public int Y()
         {
-            return Index / _stageDataProvider.CurrentData.GridColumnNum;
+            return Index / _stageDataProvider.CurrentData.TileColNum;
         }
 
         public int GetAttackableTargetNum() { return _atkTargetNum; }
@@ -221,8 +221,6 @@ namespace Frontier.Stage
         {
             float halfSize = 0.5f * gridSize;
 
-            Vector3 tileScale = _stageDataProvider.CurrentData.GetTileData(Index).GetTileScale();
-
             Vector3[] linePoints = new Vector3[]
             {
                 new Vector3(-halfSize, GRID_CURSOR_OFFSET_Y, -halfSize) + centralPos,
@@ -251,7 +249,8 @@ namespace Frontier.Stage
         /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            return _stageDataProvider.CurrentData.GetTileInfo(Index).charaStandPos;
+            // return _stageDataProvider.CurrentData.GetTileInfo(Index).charaStandPos;
+            return _stageDataProvider.CurrentData.GetTileStaticData( Index ).CharaStandPos;
         }
     }
 }

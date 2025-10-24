@@ -20,8 +20,8 @@ namespace Frontier.Entities
 
         public void Awake()
         {
-            isEndCommand    = new bool[(int)Command.COMMAND_TAG.NUM];
-            isUseSkills     = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            isEndCommand = new bool[( int ) COMMAND_TAG.NUM];
+            isUseSkills = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Frontier.Entities
         /// </summary>
         public void Init()
         {
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            for( int i = 0; i < ( int ) COMMAND_TAG.NUM; ++i )
             {
                 isEndCommand[i] = false;
             }
@@ -47,8 +47,8 @@ namespace Frontier.Entities
         {
             TemporaryParameter copy = this;
 
-            copy.isEndCommand = (bool[])isEndCommand.Clone();
-            copy.isUseSkills = (bool[])isUseSkills.Clone();
+            copy.isEndCommand = ( bool[] ) isEndCommand.Clone();
+            copy.isUseSkills = ( bool[] ) isUseSkills.Clone();
 
             return copy;
         }
@@ -58,7 +58,7 @@ namespace Frontier.Entities
         /// </summary>
         public void ResetUseSkill()
         {
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 isUseSkills[i] = false;
             }
@@ -77,10 +77,10 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="single">単発攻撃の予測変動量</param>
         /// <param name="total">複数回攻撃の予測総変動量</param>
-        public void AssignExpectedHpChange(out int single, out int total)
+        public void AssignExpectedHpChange( out int single, out int total )
         {
-            single  = expectedHpChange;
-            total   = totalExpectedHpChange;
+            single = expectedHpChange;
+            total = totalExpectedHpChange;
         }
 
         /// <summary>
@@ -88,17 +88,17 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="single">単発攻撃における予測変動量</param>
         /// <param name="total">複数回攻撃における予測総変動量</param>
-        public void SetExpectedHpChange(int single, int total)
+        public void SetExpectedHpChange( int single, int total )
         {
-            expectedHpChange        = single;
-            totalExpectedHpChange   = total;
+            expectedHpChange = single;
+            totalExpectedHpChange = total;
         }
 
         /// <summary>
         /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を設定します
         /// </summary>
         /// <param name="index">設定するインデックス値</param>
-        public void SetCurrentGridIndex(int index)
+        public void SetCurrentGridIndex( int index )
         {
             gridIndex = index;
         }
@@ -108,9 +108,9 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="isEnd">設定する終了状態のOnまたはOff</param>
         /// <param name="cmdTag">設定対象のコマンドタグ</param>
-        public void SetEndCommandStatus(Command.COMMAND_TAG cmdTag, bool isEnd)
+        public void SetEndCommandStatus( COMMAND_TAG cmdTag, bool isEnd )
         {
-            isEndCommand[(int)cmdTag] = isEnd;
+            isEndCommand[( int ) cmdTag] = isEnd;
         }
 
         /// <summary>
@@ -118,9 +118,9 @@ namespace Frontier.Entities
         /// </summary>
         public void EndAction()
         {
-            for (int i = 0; i < (int)Command.COMMAND_TAG.NUM; ++i)
+            for( int i = 0; i < ( int ) COMMAND_TAG.NUM; ++i )
             {
-                SetEndCommandStatus((Command.COMMAND_TAG)i, true);
+                SetEndCommandStatus( ( COMMAND_TAG ) i, true );
             }
         }
 
@@ -138,9 +138,9 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="cmdTag">指定するコマンドタグ</param>
         /// <returns>指定のコマンドが終了しているか否か</returns>
-        public bool IsEndCommand(Command.COMMAND_TAG cmdTag)
+        public bool IsEndCommand( COMMAND_TAG cmdTag )
         {
-            return isEndCommand[(int)cmdTag];
+            return isEndCommand[( int ) cmdTag];
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Frontier.Entities
         /// <returns>行動が終了しているか</returns>
         public bool IsEndAction()
         {
-            return IsEndCommand(Command.COMMAND_TAG.WAIT);
+            return IsEndCommand( COMMAND_TAG.WAIT );
         }
     }
 }

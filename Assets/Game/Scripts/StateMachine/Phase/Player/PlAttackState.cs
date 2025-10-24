@@ -1,10 +1,10 @@
 ﻿using Frontier.Combat;
-using Frontier.Stage;
-using Frontier.Entities;
 using Frontier.Combat.Skill;
+using Frontier.Entities;
+using Frontier.Stage;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PlAttackState : PlPhaseStateBase
     {
@@ -34,23 +34,23 @@ namespace Frontier
         {
             base.Init();
 
-            _playerSkillNames   = _plOwner.Params.CharacterParam.GetEquipSkillNames();
-            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
-            _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
-            _targetCharacter    = null;
+            _playerSkillNames = _plOwner.Params.CharacterParam.GetEquipSkillNames();
+            _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
+            _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
+            _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
+            _targetCharacter = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
-            var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
-            _stageCtrl.DrawAllTileInformationMeshes();
+            int dprtTileIndex = _attackCharacter.Params.TmpParam.gridIndex;
+            _attackCharacter.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            _attackCharacter.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if (_stageCtrl.TileInfoDataHdlr().CorrectAttackableTileIndexs(CHARACTER_TAG.PLAYER, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY )))
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY ) ) )
             {
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter);  // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.ToggleAttackCursorP2E(true); // アタックカーソルUI表示
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
+                _uiSystem.BattleUi.ToggleAttackCursorP2E( true ); // アタックカーソルUI表示
             }
 
             // 攻撃シーケンスを初期化
@@ -80,10 +80,10 @@ namespace Frontier
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
-                        var targetGridInfo = _stageCtrl.GetTileInfo(_targetCharacter.Params.TmpParam.GetCurrentGridIndex());
-                        _attackCharacter.GetTransformHandler.RotateToPosition(targetGridInfo.charaStandPos );
-                        var attackerGridInfo = _stageCtrl.GetTileInfo(_attackCharacter.Params.TmpParam.GetCurrentGridIndex());
-                        _targetCharacter.GetTransformHandler.RotateToPosition(attackerGridInfo.charaStandPos);
+                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.Params.TmpParam.GetCurrentGridIndex() );
+                        _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
+                        var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.Params.TmpParam.GetCurrentGridIndex() );
+                        _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
                     }
 
                     // ダメージ予測表示UIを表示
@@ -106,7 +106,7 @@ namespace Frontier
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -130,10 +130,6 @@ namespace Frontier
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
 
-            // 予測ダメージをリセット
-            _attackCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
-            _targetCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
-
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
 
@@ -149,14 +145,22 @@ namespace Frontier
                 _uiSystem.BattleUi.GetEnemyParamSkillBox(i).SetUseable(true);
             }
 
-            // 使用スキルコスト見積もりをリセット
-            _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-            _attackCharacter.Params.SkillModifiedParam.Reset();
-            _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-            _targetCharacter.Params.SkillModifiedParam.Reset();
+            // 予測ダメージと使用スキルコスト見積もりをリセット
+            if( null != _attackCharacter )
+            {
+                _attackCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
+                _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
+                _attackCharacter.Params.SkillModifiedParam.Reset();
+            }
+            if( null != _targetCharacter )
+            {
+                _targetCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
+                _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
+                _targetCharacter.Params.SkillModifiedParam.Reset();
+            }
 
             // グリッドの状態を更新してグリッドの描画をクリア
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();
             _stageCtrl.ClearTileMeshDraw();
 
             // 選択グリッドを表示
@@ -274,7 +278,7 @@ namespace Frontier
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection(Constants.Direction dir)
+        override protected bool AcceptDirection(Direction dir)
         {
             if (_stageCtrl.OperateTargetSelect(dir))
             {

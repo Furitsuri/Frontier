@@ -63,6 +63,7 @@ public class StageEditorHierarchyBuilder : HierarchyBuilderBase
             "Camera" => _cameraObj,
             "Stage" => original switch
             {
+                Tile => _stageObjGrp._tileObj,
                 TileBehaviour => _stageObjGrp._tileObj,
                 Player => _stageObjGrp._gimickObj,
                 _ => this.gameObject

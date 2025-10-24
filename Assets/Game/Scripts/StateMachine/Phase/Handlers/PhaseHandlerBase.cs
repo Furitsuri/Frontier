@@ -3,7 +3,7 @@ using Frontier.Battle;
 using Zenject;
 using System.Collections;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PhaseHandlerBase : Tree<PhaseStateBase>
     {
@@ -35,7 +35,7 @@ namespace Frontier
             _isFirstUpdate = true;
         }
 
-        virtual public bool Update()
+        virtual public void Update()
         {
             if (_isInitReserved)
             {
@@ -43,36 +43,30 @@ namespace Frontier
                 _isInitReserved = false;
             }
 
-            // 現在実行中のステートを更新
-            if (CurrentNode.Update())
-            {
-                if (CurrentNode.IsBack() && CurrentNode.Parent == null)
-                {
-                    CurrentNode.ExitState();
-
-                    return true;
-                }
-            }
-
-            return false;
+            CurrentNode.Update();   // 現在実行中のステートを更新
         }
 
-        virtual public void LateUpdate()
+        virtual public bool LateUpdate()
         {
             // ステートの遷移を監視
             int transitIndex = CurrentNode.TransitIndex;
-            if (0 <= transitIndex)
+            if( 0 <= transitIndex )
             {
                 CurrentNode.ExitState();
                 CurrentNode = CurrentNode.GetChildren<PhaseStateBase>( transitIndex );
                 _isInitReserved = true; // 初期化を予約します
             }
-            else if (CurrentNode.IsBack())
+            else if( CurrentNode.IsBack() )
             {
                 CurrentNode.ExitState();
+
+                if( null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase ) { return true; }
+
                 CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
                 _isInitReserved = true;
             }
+
+            return false;
         }
 
         virtual public void Run()

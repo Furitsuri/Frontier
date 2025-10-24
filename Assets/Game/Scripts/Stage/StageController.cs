@@ -1,8 +1,10 @@
-﻿using Frontier.Battle;
+﻿using Froniter.Entities;
+using Frontier.Battle;
 using Frontier.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Xsl;
 using UnityEditor;
 using UnityEngine;
@@ -31,6 +33,7 @@ namespace Frontier.Stage
         [SerializeField] private GameObject stageFileLoaderPrefab;
         [SerializeField] private GameObject _gridMeshObject;
         [SerializeField] private GameObject _gridCursorCtrlObject;
+        [SerializeField] private GameObject[] _tileBhvPrefabs;
         [SerializeField] private GameObject[] _tilePrefabs;
 
         [SerializeField] public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
@@ -39,14 +42,13 @@ namespace Frontier.Stage
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         public bool back = true;
-        private BattleRoutineController _btlRtnCtrl;
         private GridCursorController _gridCursorCtrl;
         private StageFileLoader _stageFileLoader;
-        private TileInfoDataHandler _tileInfoDataHdlr;
-        private Footprint _footprint;
-        private List<GridMesh> _tileMeshes;
+        private TileDataHandler _tileDataHdlr;
+        private List<TileMesh> _tileMeshes;
+		private Footprint _footprint;
 
-        public TileInfoDataHandler TileInfoDataHdlr() => _tileInfoDataHdlr;
+		public TileDataHandler TileDataHdlr() => _tileDataHdlr;
 
         void Awake()
         {
@@ -60,13 +62,13 @@ namespace Frontier.Stage
                 NullCheck.AssertNotNull( _stageFileLoader, nameof( _stageFileLoader ) );
             }
 
-            if( null == _tileInfoDataHdlr )
+            if( null == _tileDataHdlr )
             {
-                _tileInfoDataHdlr = _hierarchyBld.InstantiateWithDiContainer<TileInfoDataHandler>( false );
-                NullCheck.AssertNotNull( _tileInfoDataHdlr, nameof( _tileInfoDataHdlr ) );
+                _tileDataHdlr = _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false );
+                NullCheck.AssertNotNull( _tileDataHdlr, nameof( _tileDataHdlr ) );
             }
 
-            _tileMeshes              = new List<GridMesh>();
+            _tileMeshes = new List<TileMesh>();
         }
 
         #region PUBLIC_METHOD
@@ -77,74 +79,105 @@ namespace Frontier.Stage
         /// <param name="btlRtnCtrl">バトルマネージャ</param>
         public void Init( BattleRoutineController btlRtnCtrl )
         {
-            _btlRtnCtrl = btlRtnCtrl;
-
-            _stageFileLoader.Init( _tilePrefabs );
+            _stageFileLoader.Init( _tilePrefabs, _tileBhvPrefabs );
             _stageFileLoader.Load( deafultLoadStageIndex );
         }
 
         /// <summary>
         /// 全てのタイル情報を一時保存します
         /// </summary>
-        public void HoldAllTileInfo()
+        public void HoldAllTileDynamicData()
         {
-            for( int i = 0; i < _stageDataProvider.CurrentData.TileDatas.Length; ++i )
+            for( int i = 0; i < _stageDataProvider.CurrentData.Tiles.Length; ++i )
             {
-                _stageDataProvider.CurrentData.GetTileData( i ).HoldCurrentTileInfo();
+                _stageDataProvider.CurrentData.GetTile( i ).HoldCurrentDynamicData();
             }
         }
 
         /// <summary>
         /// 全てのタイルに対し、一時保存中のタイル情報を、現在のタイル情報に適応させます
         /// </summary>
-        public void ApplyAllTileInfoFromHeld()
+        public void ApplyAllTileDynamicDataFromHeld()
         {
-            for( int i = 0; i < _stageDataProvider.CurrentData.TileDatas.Length; ++i )
+            for( int i = 0; i < _stageDataProvider.CurrentData.Tiles.Length; ++i )
             {
-                _stageDataProvider.CurrentData.GetTileData( i ).ApplyHeldTileInfo();
+                _stageDataProvider.CurrentData.GetTile( i ).ApplyHeldDynamicData();
             }
         }
 
         /// <summary>
-        /// 選択グリッドを指定のキャラクターのグリッドに合わせます
+        /// 選択グリッドを指定のキャラクターのタイルに合わせます
         /// </summary>
         /// <param name="character">指定キャラクター</param>
-        public void ApplyCurrentGrid2CharacterGrid( Character character )
+        public void ApplyCurrentGrid2CharacterTile( Character character )
         {
             _gridCursorCtrl.Index = character.Params.TmpParam.GetCurrentGridIndex();
         }
 
         /// <summary>
-        /// 全てのタイルの情報メッシュを描画します
+        /// 
         /// </summary>
-        public void DrawAllTileInformationMeshes()
+        /// <param name="actionableTileMap"></param>
+        public void DrawAttackableRange( ActionableTileMap actionableTileMap )
         {
             int count = 0;
 
-            // グリッドの状態をメッシュで描画
-            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
+            foreach( var data in actionableTileMap.AttackableTileMap )
             {
-                var info = _stageDataProvider.CurrentData.GetTileInfo( i );
-
                 // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
-                ( MeshType meshType, bool condition )[] meshTypeAndConditions = new ( MeshType, bool )[]
+                (MeshType meshType, bool condition)[] meshTypeAndConditions = new (MeshType, bool)[]
                 {
-                    ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(info.flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
-                    ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(info.flag, TileBitFlag.REACHABLE_ATTACK) ),
-                    ( MeshType.MOVE,                    (0 <= info.estimatedMoveRange) ),
+                    ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
+                    ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(data.Value.Flag, TileBitFlag.REACHABLE_ATTACK) ),
                     // 攻撃可能なタイルは移動可能タイルとほぼ重複するため、優先度が最も低くなるようにする
-                    ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(info.flag, TileBitFlag.ATTACKABLE) ),
+                    ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(data.Value.Flag, TileBitFlag.ATTACKABLE) ),
                 };
 
                 for( int j = 0; j < meshTypeAndConditions.Length; ++j )
                 {
                     if( meshTypeAndConditions[j].condition )
                     {
-                        var gridMesh = _hierarchyBld.CreateComponentAndOrganize<GridMesh>( _gridMeshObject, true );
+                        var gridMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _gridMeshObject, true );
                         NullCheck.AssertNotNull( gridMesh, nameof( gridMesh ) );
 
                         _tileMeshes.Add( gridMesh );
-                        _tileMeshes[count++].DrawTileMesh( info.charaStandPos, TILE_SIZE, TileColors.Colors[( int )  meshTypeAndConditions[j].meshType ] );
+                        _tileMeshes[count++].DrawTileMesh( _stageDataProvider.CurrentData.GetTileStaticData( data.Key ).CharaStandPos, TILE_SIZE, TileColors.Colors[( int ) meshTypeAndConditions[j].meshType] );
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="actionableTileMap"></param>
+        public void DrawActionableRange( ActionableTileMap actionableTileMap )
+        {
+            int count = 0;
+
+            foreach( var data in actionableTileMap.AttackableTileMap )
+            {
+                // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
+                (MeshType meshType, bool condition)[] meshTypeAndConditions = new (MeshType, bool)[]
+                {
+                    ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
+                    ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(data.Value.Flag, TileBitFlag.REACHABLE_ATTACK) ),
+                    ( MeshType.MOVE,                    (0 <= data.Value.EstimatedMoveRange) ),
+                    // 攻撃可能なタイルは移動可能タイルとほぼ重複するため、優先度が最も低くなるようにする
+                    ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(data.Value.Flag, TileBitFlag.ATTACKABLE) ),
+                };
+
+                for( int j = 0; j < meshTypeAndConditions.Length; ++j )
+                {
+                    if( meshTypeAndConditions[j].condition )
+                    {
+                        var gridMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _gridMeshObject, true );
+                        NullCheck.AssertNotNull( gridMesh, nameof( gridMesh ) );
+
+                        _tileMeshes.Add( gridMesh );
+                        _tileMeshes[count++].DrawTileMesh( _stageDataProvider.CurrentData.GetTileStaticData(data.Key).CharaStandPos, TILE_SIZE, TileColors.Colors[( int ) meshTypeAndConditions[j].meshType] );
 
                         break;
                     }
@@ -217,12 +250,12 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="direction">グリッドの移動方向</param>
         /// /// <returns>グリッド移動の有無</returns>
-        public bool OperateGridCursorController( Constants.Direction direction )
+        public bool OperateGridCursorController( Direction direction )
         {
-            if( direction == Constants.Direction.FORWARD )  { _gridCursorCtrl.Up();     return true; }
-            if( direction == Constants.Direction.BACK )     { _gridCursorCtrl.Down();   return true; }
-            if( direction == Constants.Direction.LEFT )     { _gridCursorCtrl.Left();   return true; }
-            if( direction == Constants.Direction.RIGHT )    { _gridCursorCtrl.Right();  return true; }
+            if( direction == Direction.FORWARD )  { _gridCursorCtrl.Up();     return true; }
+            if( direction == Direction.BACK )     { _gridCursorCtrl.Down();   return true; }
+            if( direction == Direction.LEFT )     { _gridCursorCtrl.Left();   return true; }
+            if( direction == Direction.RIGHT )    { _gridCursorCtrl.Right();  return true; }
 
             return false;
         }
@@ -232,10 +265,10 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="direction">グリッドの移動方向</param>
         /// <returns>グリッド移動の有無</returns>
-        public bool OperateTargetSelect( Constants.Direction direction )
+        public bool OperateTargetSelect( Direction direction )
         {
-            if( direction == Constants.Direction.FORWARD || direction == Constants.Direction.LEFT ) { _gridCursorCtrl.TransitPrevTarget(); return true; }
-            if( direction == Constants.Direction.BACK || direction == Constants.Direction.RIGHT ) { _gridCursorCtrl.TransitNextTarget(); return true; }
+            if( direction == Direction.FORWARD || direction == Direction.LEFT ) { _gridCursorCtrl.TransitPrevTarget(); return true; }
+            if( direction == Direction.BACK || direction == Direction.RIGHT ) { _gridCursorCtrl.TransitNextTarget(); return true; }
 
             return false;
         }
@@ -286,7 +319,7 @@ namespace Frontier.Stage
         /// <returns>縦軸と横軸のグリッド数</returns>
         public (int, int) GetGridNumsXZ()
         {
-            return (_stageDataProvider.CurrentData.GridRowNum, _stageDataProvider.CurrentData.GridColumnNum);
+            return (_stageDataProvider.CurrentData.TileRowNum, _stageDataProvider.CurrentData.TileColNum);
         }
 
         /// <summary>
@@ -298,7 +331,7 @@ namespace Frontier.Stage
         public (int, int) CalcurateRanges( int gridIdxA, int gridIdxB )
         {
             int range = Math.Abs( gridIdxA - gridIdxB );
-            int colNum = _stageDataProvider.CurrentData.GridColumnNum;
+            int colNum = _stageDataProvider.CurrentData.TileColNum;
 
             return (range % colNum, range / colNum);
         }
@@ -332,19 +365,14 @@ namespace Frontier.Stage
             return _gridCursorCtrl.BindCharacter;
         }
 
-        public StageTileData GetTileData( int index )
+        public TileStaticData GetTileStaticData( int index )
         {
-            return _stageDataProvider.CurrentData.GetTileData( index );
+            return _stageDataProvider.CurrentData.GetTile( index ).StaticData();
         }
 
-        /// <summary>
-        /// 指定インデックスのグリッド情報を取得します
-        /// </summary>
-        /// <param name="index">指定するインデックス値</param>
-        /// <returns>指定インデックスのグリッド情報</returns>
-        public ref TileInformation GetTileInfo( int index )
+        public TileDynamicData GetTileDynamicData( int index )
         {
-            return ref _stageDataProvider.CurrentData.GetTileData( index ).GetTileInfo();
+            return _stageDataProvider.CurrentData.GetTile( index ).DynamicData();
         }
 
         /// <summary>
@@ -352,21 +380,22 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="departGridIndex">出発地グリッドのインデックス</param>
         /// <param name="destGridIndex">目的地グリッドのインデックス</param>
-        public List<WaypointInformation> ExtractShortestPath( int departGridIndex, int destGridIndex, int ownerJumpForce, in int[] ownerTileCosts, in List<int> candidatePathIndexs )
+        public List<WaypointInformation> ExtractShortestPath( int departGridIndex, int destGridIndex, int ownerJumpForce, in int[] ownerTileCosts, Dictionary<int, TileDynamicData> movaableTileMap )
         {
             if( departGridIndex == destGridIndex ) { return null; } // 出発地と目的地が同じ場合は経路なし
 
-            Dijkstra dijkstra   = new Dijkstra( candidatePathIndexs.Count );
+            List<int> candidataPathIndexs = movaableTileMap.Keys.ToList();
+            Dijkstra dijkstra   = new Dijkstra( candidataPathIndexs.Count );
             StageData stageData = _stageDataProvider.CurrentData;
-            int colNum          = stageData.GridColumnNum;
+            int colNum          = stageData.TileColNum;
 
             // 出発グリッドからのインデックスの差を取得
-            for( int i = 0; i + 1 < candidatePathIndexs.Count; ++i )
+            for( int i = 0; i + 1 < candidataPathIndexs.Count; ++i )
             {
-                for( int j = i + 1; j < candidatePathIndexs.Count; ++j )
+                for( int j = i + 1; j < candidataPathIndexs.Count; ++j )
                 {
-                    (int i2jCost, bool passablei2j ) = _tileInfoDataHdlr.CalcurateTileCost( candidatePathIndexs[i], candidatePathIndexs[j], ownerJumpForce, in ownerTileCosts );
-                    (int j2iCost, bool passablej2i ) = _tileInfoDataHdlr.CalcurateTileCost( candidatePathIndexs[j], candidatePathIndexs[i], ownerJumpForce, in ownerTileCosts );
+                    (int i2jCost, bool passablei2j ) = _tileDataHdlr.CalcurateTileCost( candidataPathIndexs[i], candidataPathIndexs[j], ownerJumpForce, in ownerTileCosts );
+                    (int j2iCost, bool passablej2i ) = _tileDataHdlr.CalcurateTileCost( candidataPathIndexs[j], candidataPathIndexs[i], ownerJumpForce, in ownerTileCosts );
 
                     // 移動可能な隣接タイル情報をダイクストラに入れる
                     if( passablei2j )
@@ -381,7 +410,7 @@ namespace Frontier.Stage
             }
 
             // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
-            return dijkstra.GetMinRoute( candidatePathIndexs.IndexOf( departGridIndex ), candidatePathIndexs.IndexOf( destGridIndex ), candidatePathIndexs );
+            return dijkstra.GetMinRoute( candidataPathIndexs.IndexOf( departGridIndex ), candidataPathIndexs.IndexOf( destGridIndex ), candidataPathIndexs );
         }
 
         /// <summary>
@@ -402,10 +431,9 @@ namespace Frontier.Stage
         {
             _gridCursorCtrl.Index = _footprint.gridIndex;
             character.Params.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
-            TileInformation info;
-            _tileInfoDataHdlr.FetchCurrentTileInfo( out info );
-            character.transform.position = info.charaStandPos;
-            character.transform.rotation = _footprint.rotation;
+            TileStaticData tileData         = _tileDataHdlr.GetCurrentTileDatas().Item1;
+            character.transform.position    = tileData.CharaStandPos;
+            character.transform.rotation    = _footprint.rotation;
         }
 
         /// <summary>
@@ -416,9 +444,9 @@ namespace Frontier.Stage
         /// <returns>グリッド長</returns>
         public float CalcurateGridLength( int fromIndex, int toIndex )
         {
-            var from = _stageDataProvider.CurrentData.GetTileInfo( fromIndex ).charaStandPos;
-            var to = _stageDataProvider.CurrentData.GetTileInfo( toIndex ).charaStandPos;
-            var gridLength = ( from - to ).magnitude / TILE_SIZE;
+            var from        = _stageDataProvider.CurrentData.GetTileStaticData( fromIndex ).CharaStandPos;
+            var to          = _stageDataProvider.CurrentData.GetTileStaticData( toIndex ).CharaStandPos;
+            var gridLength  = ( from - to ).magnitude / TILE_SIZE;
 
             return gridLength;
         }
@@ -469,8 +497,8 @@ namespace Frontier.Stage
 
                 // ステージ情報からサイズを決める際はサイズ編集を不可にする
                 EditorGUI.BeginDisabledGroup(script.isAdjustStageScale);
-                script._stageDataProvider.CurrentData.SetGridRowNum( EditorGUILayout.IntField("X方向グリッド数", script._stageDataProvider.CurrentData.GridRowNum) );
-                script._stageDataProvider.CurrentData.SetGridColumnNum( EditorGUILayout.IntField("Z方向グリッド数", script._stageDataProvider.CurrentData.GridColumnNum) );
+                script._stageDataProvider.CurrentData.SetTileRowNum( EditorGUILayout.IntField("X方向グリッド数", script._stageDataProvider.CurrentData.TileRowNum) );
+                script._stageDataProvider.CurrentData.SetTileColNum( EditorGUILayout.IntField("Z方向グリッド数", script._stageDataProvider.CurrentData.TileColNum) );
                 EditorGUI.EndDisabledGroup();
 
                 base.OnInspectorGUI();

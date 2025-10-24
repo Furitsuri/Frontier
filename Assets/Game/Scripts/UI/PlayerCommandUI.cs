@@ -1,5 +1,5 @@
 ﻿using Frontier.Combat;
-using Frontier.Entities;
+using Frontier.StateMachine;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -43,14 +43,14 @@ namespace Frontier
         /// </summary>
         void InitCommandStrings()
         {
-            _commandStrings = new string[(int)Command.COMMAND_TAG.NUM]
+            _commandStrings = new string[(int)COMMAND_TAG.NUM]
             {
                 "MOVE",
                 "ATTACK",
                 "WAIT"
             };
 
-            Debug.Assert( _commandStrings.Length == (int)Command.COMMAND_TAG.NUM );
+            Debug.Assert( _commandStrings.Length == (int)COMMAND_TAG.NUM );
         }
 
         // Update is called once per frame
@@ -90,7 +90,7 @@ namespace Frontier
         /// プレイヤーコマンドのスクリプトを登録します
         /// </summary>
         /// <param name="script">プレイヤーコマンドのスクリプト</param>
-        public void RegistPLCommandScript(Frontier.PlSelectCommandState script)
+        public void RegistPLCommandScript( PlSelectCommandState script)
         {
             _PlSelectScript = script;
         }
@@ -99,7 +99,7 @@ namespace Frontier
         /// 実行可能なコマンドをコマンドリストUIに設定します
         /// </summary>
         /// <param name="executableCommands">実行可能なコマンドリスト</param>
-        public void SetExecutableCommandList( in List<Command.COMMAND_TAG> executableCommands )
+        public void SetExecutableCommandList( in List<COMMAND_TAG> executableCommands )
         {
             float fontSize = 0;
 

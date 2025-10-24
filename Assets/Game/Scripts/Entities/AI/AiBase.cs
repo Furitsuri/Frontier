@@ -24,15 +24,15 @@ namespace Frontier.Entities.Ai
         [Inject] protected StageController _stageCtrl               = null;
         [Inject] protected IStageDataProvider _stageDataProvider    = null;
 
-        protected bool _isDetermined                = false;                            // 既に移動対象や攻撃対象を決定しているか 
+        
+        
         protected int _destinationTileIndex         = -1;                               // 移動目標グリッドのインデックス値
         protected float[] _gridEvaluationValues     = null;                             // 各グリッドの評価値
+        protected bool _isDetermined                = false;                            // 既に移動対象や攻撃対象を決定しているか
+        protected Character _owner                  = null;
         protected Character _targetCharacter        = null;                             // 攻撃対象のキャラクター
-        protected MovePathHandler _movePathHandler  = null;                             // 移動経路のパス決定・移動時に使用
         protected List<TargetCandidateInfo> _targetChandidateInfos  = null;             // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
-        protected List<(int routeIndex, int routeCost, Vector3 tilePosition)> _proposedMovePath;     // 進行経路( TODO : 恐らく不要。確認次第削除 )
 
-        override public MovePathHandler MovePathHandler => _movePathHandler;
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
         virtual protected float ENABLE_DEFEAT_VALUE { get; } = 0;
@@ -82,15 +82,15 @@ namespace Frontier.Entities.Ai
         /// <param name="opponentCharaIndexs">抜き出しに使用するリスト</param>
         protected void ExtractAttackabkeOpponentIndexs( int baseIndex, CHARACTER_TAG ownerTag, out List<CharacterKey> opponentCharaIndexs )
         {
-            (int GridRowNum, int GridColumnNum) = _stageCtrl.GetGridNumsXZ();
+            (int TileRowNum, int TileColNum) = _stageCtrl.GetGridNumsXZ();
 
             // 十字方向の判定関数とインデックスをタプルに詰め込む
             (Func<bool> lambda, int index)[] tuples = new (Func<bool>, int)[]
             {
-                (() => baseIndex % GridColumnNum != 0,                       baseIndex - 1),
-                (() => (baseIndex + 1) % GridColumnNum != 0,                 baseIndex + 1),
-                (() => 0 <= (baseIndex - GridColumnNum),                     baseIndex - GridColumnNum),
-                (() => (baseIndex + GridColumnNum) < _stageDataProvider.CurrentData.GetTileTotalNum(), baseIndex + GridColumnNum)
+                (() => baseIndex % TileColNum != 0,                       baseIndex - 1),
+                (() => (baseIndex + 1) % TileColNum != 0,                 baseIndex + 1),
+                (() => 0 <= (baseIndex - TileColNum),                     baseIndex - TileColNum),
+                (() => (baseIndex + TileColNum) < _stageDataProvider.CurrentData.GetTileTotalNum(), baseIndex + TileColNum)
             };
 
             opponentCharaIndexs = new List<CharacterKey>( tuples.Length );
@@ -100,10 +100,10 @@ namespace Frontier.Entities.Ai
                 if( tuple.lambda() )
                 {
                     // 敵対勢力(攻撃可能)であることを確認した上でリストに追加
-                    var tileInfo = _stageCtrl.GetTileInfo( tuple.index );
-                    if( Character.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileInfo.CharaKey.CharacterTag ) )
+                    var tileData = _stageCtrl.GetTileDynamicData( tuple.index );
+                    if( Character.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileData.CharaKey.CharacterTag ) )
                     {
-                        opponentCharaIndexs.Add( tileInfo.CharaKey );
+                        opponentCharaIndexs.Add( tileData.CharaKey );
                     }
                 }
             }
@@ -143,24 +143,13 @@ namespace Frontier.Entities.Ai
         virtual protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts ) { }
 
         /// <summary>
-        /// いずれかのターゲットに攻撃可能なグリッドの評価値を返します
-        /// </summary>
-        /// <param name="info">指定グリッド情報</param>
-        /// <returns>評価値</returns>
-        virtual protected float GetEvaluateEnableTargetAttackBase( in TileInformation info ) { return ATTACKABLE_VALUE; }
-
-        virtual protected float GetEvaluateEnableDefeat( in TileInformation info ) { return ENABLE_DEFEAT_VALUE; }
-
-        /// <summary>
         /// 初期化します
         /// </summary>
         override public void Init( Character owner )
         {
+            _owner                  = owner;
             _gridEvaluationValues   = new float[_stageDataProvider.CurrentData.GetTileTotalNum()];
             _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
-            _movePathHandler        = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false );
-
-            _movePathHandler.Init(owner);
         }
 
         /// <summary>
@@ -196,15 +185,6 @@ namespace Frontier.Entities.Ai
         override public Character GetTargetCharacter()
         {
             return _targetCharacter;
-        }
-
-        /// <summary>
-        /// 進行予定の移動ルートを取得します
-        /// </summary>
-        /// <returns>進行予定の移動ルート情報</returns>
-        override public List<(int routeIndex, int routeCost, Vector3 tilePosition)> GetProposedMovePath()
-        {
-            return _proposedMovePath;
         }
     }
 }

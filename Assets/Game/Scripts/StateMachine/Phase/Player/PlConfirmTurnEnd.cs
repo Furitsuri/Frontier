@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     /// <summary>
     /// プレイヤーターン終了確認の選択画面

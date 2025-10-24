@@ -5,7 +5,7 @@ using UnityEngine;
 using Frontier.Combat.Skill;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class EmAttackState : PhaseStateBase
     {
@@ -33,27 +33,26 @@ namespace Frontier
             Debug.Assert(_attackCharacter != null);
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            var param = _attackCharacter.Params.CharacterParam;
-            _stageCtrl.TileInfoDataHdlr().BeginRegisterAttackableTiles( _curentGridIndex, param.attackRange, param.characterTag, true );
-            _stageCtrl.DrawAllTileInformationMeshes();
+            _attackCharacter.ActionRangeCtrl.SetupAttackableRangeData( _attackCharacter.Params.TmpParam.gridIndex );
+            _attackCharacter.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
-            if( _stageCtrl.TileInfoDataHdlr().CorrectAttackableTileIndexs( CHARACTER_TAG.ENEMY, _attackCharacter.GetAi().GetTargetCharacter() ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, _attackCharacter.GetAi().GetTargetCharacter() ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
 				_uiSystem.BattleUi.ToggleAttackCursorE2P( true );                           // アタックカーソルUI表示
 			}
 
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid(_attackCharacter);
+            _stageCtrl.ApplyCurrentGrid2CharacterTile(_attackCharacter);
 
             _playerSkillNames = _targetCharacter.Params.CharacterParam.GetEquipSkillNames();
 
             // 攻撃者の向きを設定
-            var targetGridInfo = _stageCtrl.GetTileInfo( _targetCharacter.Params.TmpParam.GetCurrentGridIndex() );
-            _attackCharacter.GetTransformHandler.RotateToPosition( targetGridInfo.charaStandPos );
-            var attackerGridInfo = _stageCtrl.GetTileInfo( _attackCharacter.Params.TmpParam.GetCurrentGridIndex() );
-            _targetCharacter.GetTransformHandler.RotateToPosition( attackerGridInfo.charaStandPos );
+            var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.Params.TmpParam.GetCurrentGridIndex() );
+            _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
+            var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.Params.TmpParam.GetCurrentGridIndex() );
+            _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
 
             // 攻撃シーケンスを初期化
             _attackSequence.Init();
@@ -91,7 +90,7 @@ namespace Frontier
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( Command.COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -137,7 +136,7 @@ namespace Frontier
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
             // グリッド状態の描画をクリア
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();
             _stageCtrl.ClearTileMeshDraw();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、

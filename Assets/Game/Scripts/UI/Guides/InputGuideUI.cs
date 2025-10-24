@@ -16,7 +16,7 @@ public class InputGuideUI : MonoBehaviour
     public struct InputGuide
     {
         // キーアイコン
-        public Constants.GuideIcon[] _icons;
+        public GuideIcon[] _icons;
         // アイコンに対する説明文
         public InputCodeStringWrapper _explWrapper;
 
@@ -25,7 +25,7 @@ public class InputGuideUI : MonoBehaviour
         /// </summary>
         /// <param name="icon">ガイドスプライトのアイコンタイプ</param>
         /// <param name="explanation">キーに対する説明文</param>
-        public InputGuide(Constants.GuideIcon[] icons, InputCodeStringWrapper explWrapper )
+        public InputGuide(GuideIcon[] icons, InputCodeStringWrapper explWrapper )
         {
             _icons          = icons;
             _explWrapper    = explWrapper;

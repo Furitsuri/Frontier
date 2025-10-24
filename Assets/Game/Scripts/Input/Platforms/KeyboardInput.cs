@@ -5,15 +5,15 @@
 /// </summary>
 public class KeyboardInput : IInput
 {
-    public Constants.Direction GetDirectionalPressed()
+    public Direction GetDirectionalPressed()
     {
 
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))           return Constants.Direction.FORWARD;
-        else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))    return Constants.Direction.LEFT;
-        else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))    return Constants.Direction.BACK;
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))   return Constants.Direction.RIGHT;
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))           return Direction.FORWARD;
+        else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))    return Direction.LEFT;
+        else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))    return Direction.BACK;
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))   return Direction.RIGHT;
 
-        return Constants.Direction.NONE;
+        return Direction.NONE;
     }
 
     public bool IsConfirmPressed()

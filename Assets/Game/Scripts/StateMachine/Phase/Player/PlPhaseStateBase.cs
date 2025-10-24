@@ -5,7 +5,7 @@ using Frontier.Entities;
 using UnityEngine;
 using Zenject;
 
-namespace Frontier
+namespace Frontier.StateMachine
 {
     public class PlPhaseStateBase : PhaseStateBase
     {
@@ -21,8 +21,8 @@ namespace Frontier
             if ( _plOwner == null ) { return; }
 
             _plOwner.RewindToPreviousState();
-            _stageCtrl.TileInfoDataHdlr().UpdateTileInfo();    // グリッド情報を更新
-            _stageCtrl.ApplyCurrentGrid2CharacterGrid( _plOwner );
+            _stageCtrl.TileDataHdlr().UpdateTileInfo();    // グリッド情報を更新
+            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
         }
 
         override public void Init()

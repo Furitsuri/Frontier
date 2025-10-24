@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 
-public class AcceptDirectionInput : IAcceptInputBase, IAcceptGenericInput<Constants.Direction>
+public class AcceptDirectionInput : IAcceptInputBase, IAcceptGenericInput<Direction>
 {
-    public delegate bool AcceptDirectionInputCallback(Constants.Direction input);
+    public delegate bool AcceptDirectionInputCallback(Direction input);
 
     private AcceptDirectionInputCallback _callback;
 
@@ -11,18 +11,18 @@ public class AcceptDirectionInput : IAcceptInputBase, IAcceptGenericInput<Consta
         _callback = callback;
     }
 
-    public bool AcceptGenericInput(Constants.Direction input)
+    public bool AcceptGenericInput(Direction input)
     {
         return _callback(input);
     }
 
     bool IAcceptInputBase.Accept(object obj)
     {
-        Constants.Direction? value = obj as Constants.Direction?;
+        Direction? value = obj as Direction?;
 
         if ( value == null )
         {
-            Debug.Assert( false,  "Argument is not of type Constants.Direction." );
+            Debug.Assert( false,  "Argument is not of type Direction." );
 
             return false;
         }
