@@ -19,32 +19,30 @@ namespace Frontier.StateMachine
 
             base.Init();
 
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();    // ステージグリッド上のキャラ情報を更新
-
-            _enemyEnumerator    = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY).GetEnumerator();
-            _currentEnemy       = null;
+            _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).GetEnumerator();
+            _currentEnemy = null;
 
             // 行動済みでないキャラクターを選択する
-            while (_enemyEnumerator.MoveNext())
+            while( _enemyEnumerator.MoveNext() )
             {
                 _currentEnemy = _enemyEnumerator.Current as Enemy;
-                if (ShouldTransitionToNextCharacter(_currentEnemy))
+                if( ShouldTransitionToNextCharacter( _currentEnemy ) )
                 {
                     continue;
                 }
 
                 isExist = true;
 
-                _stageCtrl.ApplyCurrentGrid2CharacterTile(_currentEnemy);   // 選択グリッドを合わせる
+                _stageCtrl.ApplyCurrentGrid2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
 
-                if(!_currentEnemy.GetAi().IsDetermined())
+                if( !_currentEnemy.GetAi().IsDetermined() )
                 {
                     (_isValidDestination, _isValidTarget) = _currentEnemy.DetermineDestinationAndTargetWithAI();
                 }
 
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
                 // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
-                if( !_isValidTarget)
+                if( !_isValidTarget )
                 {
                     _currentEnemy.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                 }
@@ -52,7 +50,7 @@ namespace Frontier.StateMachine
                 break;
             }
 
-            if (!isExist)
+            if( !isExist )
             {
                 Back();
             }
@@ -70,17 +68,17 @@ namespace Frontier.StateMachine
             // _currentEnemy.FetchDestinationAndTarget( out gridIndex, out targetCharacter );
 
             // 移動行動に遷移するか
-            if ( ShouldTransitionToMove( _currentEnemy ) )
+            if( ShouldTransitionToMove( _currentEnemy ) )
             {
-                TransitIndex = (int)COMMAND_TAG.MOVE;
+                TransitIndex = ( int ) COMMAND_TAG.MOVE;
 
                 return true;
             }
 
             // 攻撃行動に遷移するか
-            if ( ShouldTransitionToAttack( _currentEnemy ) )
+            if( ShouldTransitionToAttack( _currentEnemy ) )
             {
-                TransitIndex = (int)COMMAND_TAG.ATTACK;
+                TransitIndex = ( int ) COMMAND_TAG.ATTACK;
 
                 return true;
             }
@@ -95,9 +93,9 @@ namespace Frontier.StateMachine
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToMove( Enemy em )
         {
-            if (!_isValidDestination) return false;
+            if( !_isValidDestination ) return false;
 
-            if ( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
+            if( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
@@ -109,9 +107,9 @@ namespace Frontier.StateMachine
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToAttack( Enemy em )
         {
-            if ( !_isValidTarget ) return false;
+            if( !_isValidTarget ) return false;
 
-            if ( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
+            if( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
 
             return true;
         }
@@ -123,13 +121,13 @@ namespace Frontier.StateMachine
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if ( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
                 em.Params.TmpParam.EndAction();
                 return true;
             }
 
-            if ( em.Params.TmpParam.IsEndAction() ) return true;
+            if( em.Params.TmpParam.IsEndAction() ) return true;
 
             return false;
         }

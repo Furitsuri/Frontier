@@ -25,9 +25,6 @@ namespace Frontier.StateMachine
                 // アクションゲージの回復
                 _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.PLAYER );
             }
-
-            // フェーズアニメーションの開始
-            // StartPhaseAnim();
         }
 
         /// <summary>
@@ -35,20 +32,6 @@ namespace Frontier.StateMachine
         /// </summary>
         override public void Update()
         {
-            /*
-            if( _isFirstUpdate )
-            {
-                _isFirstUpdate = false;
-
-                return;
-            }
-            // フェーズアニメーション中は操作無効
-            if( _btlUi.IsPlayingPhaseUI() )
-            {
-                return;
-            }
-            */
-
             base.Update();
         }
 

@@ -35,8 +35,6 @@ namespace Frontier.StateMachine
             else { _phase = PlMovePhase.PL_MOVE; }
 
             _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.gridIndex;
-
-            _stageCtrl.ApplyAllTileDynamicDataFromHeld();
             _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
@@ -73,8 +71,6 @@ namespace Frontier.StateMachine
                     break;
 
                 case PlMovePhase.PL_MOVE_END:
-                    // 保険として、終了のタイミングで更新し直す
-                    _plOwner.Params.TmpParam.gridIndex = _stageCtrl.GetCurrentGridIndex();
                     // 移動したキャラクターの移動コマンドを選択不可にする
                     _plOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
                     Back();     // コマンド選択に戻る
@@ -93,7 +89,6 @@ namespace Frontier.StateMachine
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
             {
-                _stageCtrl.TileDataHdlr().UpdateTileInfo(); // ステージグリッド上のキャラ情報を更新
                 _stageCtrl.ClearGridCursroBind();           // 操作対象データをリセット
             }
 

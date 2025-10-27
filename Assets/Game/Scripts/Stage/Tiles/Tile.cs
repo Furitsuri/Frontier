@@ -15,10 +15,9 @@ namespace Frontier.Stage
         private TileStaticData _tileStaticData      = null;
         private TileDynamicData _tileDynamicData    = null;
         private GridLineMesh _gridLineMesh          = null; // 各タイルの縁を示すグリッド線
+        private TileDynamicData _baseDynamicData    = null;
         private ListPool<TileMesh> _tileMeshes      = new ListPool<TileMesh>();
         private MeshRenderer _renderer;
-        private TileDynamicData _baseDynamicData    = null;
-        private TileDynamicData _holdDynamicData    = null;
 
         public TileStaticData StaticData() => _tileStaticData;
         public TileDynamicData DynamicData() => _tileDynamicData;
@@ -44,14 +43,9 @@ namespace Frontier.Stage
             {
                 _baseDynamicData = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
             }
-            if( null == _holdDynamicData )
-            {  
-                _holdDynamicData = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
-            }
 
             _renderer = GetComponent<MeshRenderer>();
-            // タイルのデフォルトスケールを設定
-            transform.localScale = TileMaterialLibrary.GetDefaultTileScale();
+            transform.localScale = TileMaterialLibrary.GetDefaultTileScale();   // タイルのデフォルトスケールを設定
         }
 
         public void Init( int x, int y, float height, TileType type )
@@ -59,7 +53,6 @@ namespace Frontier.Stage
             _tileStaticData.Init( x, y, height, type );
             _tileDynamicData.Init();
             _baseDynamicData.Init();
-            _holdDynamicData.Init();
             _tileMeshes.Clear();
 
             Vector3 position = new Vector3(
@@ -93,20 +86,7 @@ namespace Frontier.Stage
         /// </summary>
         public void ApplyBaseTileDynamicData()
         {
-            _tileDynamicData = _baseDynamicData.DeepClone();
-        }
-
-        /// <summary>
-        /// 現在のタイル情報を一時保存します
-        /// </summary>
-        public void HoldCurrentDynamicData()
-        {
-            _holdDynamicData = _tileDynamicData.DeepClone();
-        }
-
-        public void ApplyHeldDynamicData()
-        {
-            _tileDynamicData = _holdDynamicData.DeepClone();
+            _baseDynamicData.CopyTo( _tileDynamicData );
         }
 
         public Vector3 GetScale()

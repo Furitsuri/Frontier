@@ -21,7 +21,7 @@ namespace Frontier.StateMachine
             if ( _plOwner == null ) { return; }
 
             _plOwner.RewindToPreviousState();
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();    // グリッド情報を更新
+            _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();    // グリッド情報を更新
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
         }
 
