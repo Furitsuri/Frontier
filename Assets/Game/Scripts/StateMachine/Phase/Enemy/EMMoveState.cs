@@ -16,8 +16,8 @@ namespace Frontier.StateMachine
             EM_MOVE_END,
         }
 
-        private EmMovePhase _Phase      = EmMovePhase.EM_MOVE_WAIT;
-        private float _moveWaitTimer    = 0f;
+        private EmMovePhase _Phase = EmMovePhase.EM_MOVE_WAIT;
+        private float _moveWaitTimer = 0f;
         private Enemy _emOwner;
 
         /// <summary>
@@ -34,8 +34,8 @@ namespace Frontier.StateMachine
 
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
             _emOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
-            Debug.Assert(_emOwner != null);
-            var param           = _emOwner.Params.CharacterParam;
+            Debug.Assert( _emOwner != null );
+            var param = _emOwner.Params.CharacterParam;
 
             // 移動目標地点が、現在地点であった場合は即時終了
             if( _emOwner.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
@@ -53,7 +53,7 @@ namespace Frontier.StateMachine
 
         override public bool Update()
         {
-            switch (_Phase)
+            switch( _Phase )
             {
                 case EmMovePhase.EM_MOVE_WAIT:
                     _moveWaitTimer += DeltaTimeProvider.DeltaTime;
@@ -71,7 +71,7 @@ namespace Frontier.StateMachine
                     }
                     break;
                 case EmMovePhase.EM_MOVE_END:
-                    _emOwner.Params.TmpParam.SetEndCommandStatus(COMMAND_TAG.MOVE, true);   // 移動したキャラクターの移動コマンドを選択不可にする
+                    _emOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );   // 移動したキャラクターの移動コマンドを選択不可にする
                     Back(); // コマンド選択に戻る
 
                     return true;
@@ -82,9 +82,8 @@ namespace Frontier.StateMachine
 
         override public void ExitState()
         {
-            _stageCtrl.ApplyCurrentGrid2CharacterTile(_emOwner);    // 敵の位置に選択グリッドを合わせる
-            _stageCtrl.SetGridCursorControllerActive(true);         // 選択グリッドを表示
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();             // ステージグリッド上のキャラ情報を更新
+            _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );    // 敵の位置に選択グリッドを合わせる
+            _stageCtrl.SetGridCursorControllerActive( true );         // 選択グリッドを表示
             _stageCtrl.ClearTileMeshDraw();                         // グリッド状態の描画をクリア
 
             base.ExitState();

@@ -84,28 +84,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 全てのタイル情報を一時保存します
-        /// </summary>
-        public void HoldAllTileDynamicData()
-        {
-            for( int i = 0; i < _stageDataProvider.CurrentData.Tiles.Length; ++i )
-            {
-                _stageDataProvider.CurrentData.GetTile( i ).HoldCurrentDynamicData();
-            }
-        }
-
-        /// <summary>
-        /// 全てのタイルに対し、一時保存中のタイル情報を、現在のタイル情報に適応させます
-        /// </summary>
-        public void ApplyAllTileDynamicDataFromHeld()
-        {
-            for( int i = 0; i < _stageDataProvider.CurrentData.Tiles.Length; ++i )
-            {
-                _stageDataProvider.CurrentData.GetTile( i ).ApplyHeldDynamicData();
-            }
-        }
-
-        /// <summary>
         /// 選択グリッドを指定のキャラクターのタイルに合わせます
         /// </summary>
         /// <param name="character">指定キャラクター</param>

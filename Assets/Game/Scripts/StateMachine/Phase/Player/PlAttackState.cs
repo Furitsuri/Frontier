@@ -59,18 +59,18 @@ namespace Frontier.StateMachine
 
         override public bool Update()
         {
-            if (base.Update())
+            if( base.Update() )
             {
                 return true;
             }
 
             // 攻撃可能状態でなければ何もしない
-            if (_stageCtrl.GetGridCursorControllerState() != GridCursorState.ATTACK)
+            if( _stageCtrl.GetGridCursorControllerState() != GridCursorState.ATTACK )
             {
                 return false;
             }
 
-            switch (_phase)
+            switch( _phase )
             {
                 case PlAttackPhase.PL_ATTACK_SELECT_GRID:
                     // グリッド上のキャラクターを取得
@@ -87,18 +87,18 @@ namespace Frontier.StateMachine
                     }
 
                     // ダメージ予測表示UIを表示
-                    _uiSystem.BattleUi.ToggleBattleExpect(true);
+                    _uiSystem.BattleUi.ToggleBattleExpect( true );
 
                     // 使用スキルを選択する
-                    _attackCharacter.SelectUseSkills(SituationType.ATTACK);
-                    _targetCharacter.SelectUseSkills(SituationType.DEFENCE);
+                    _attackCharacter.SelectUseSkills( SituationType.ATTACK );
+                    _targetCharacter.SelectUseSkills( SituationType.DEFENCE );
 
                     // 予測ダメージを適応する
-                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(_attackCharacter, _targetCharacter);
+                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
 
                     break;
                 case PlAttackPhase.PL_ATTACK_EXECUTE:
-                    if (_attackSequence.Update())
+                    if( _attackSequence.Update() )
                     {
                         _phase = PlAttackPhase.PL_ATTACK_END;
                     }
@@ -131,18 +131,18 @@ namespace Frontier.StateMachine
             _stageCtrl.ClearGridCursroBind();
 
             // アタックカーソルUI非表示
-            _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
+            _uiSystem.BattleUi.ToggleAttackCursorP2E( false );
 
             // ダメージ予測表示UIを非表示
-            _uiSystem.BattleUi.ToggleBattleExpect(false);
+            _uiSystem.BattleUi.ToggleBattleExpect( false );
 
             // 使用スキルの点滅を非表示
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetFlickEnabled(false);
-                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).SetUseable(true);
-                _uiSystem.BattleUi.GetEnemyParamSkillBox(i).SetFlickEnabled(false);
-                _uiSystem.BattleUi.GetEnemyParamSkillBox(i).SetUseable(true);
+                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
+                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUseable( true );
+                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
+                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetUseable( true );
             }
 
             // 予測ダメージと使用スキルコスト見積もりをリセット
@@ -159,12 +159,8 @@ namespace Frontier.StateMachine
                 _targetCharacter.Params.SkillModifiedParam.Reset();
             }
 
-            // グリッドの状態を更新してグリッドの描画をクリア
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();
-            _stageCtrl.ClearTileMeshDraw();
-
-            // 選択グリッドを表示
-            _stageCtrl.SetGridCursorControllerActive(true);
+            _stageCtrl.ClearTileMeshDraw();                 // グリッドの描画をクリア
+            _stageCtrl.SetGridCursorControllerActive( true ); // 選択グリッドを表示
 
             base.ExitState();
         }
@@ -178,13 +174,13 @@ namespace Frontier.StateMachine
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "TARGET SELECT",  CanAcceptDirection, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "CONFIRM",           CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "BACK",               CanAcceptCancel, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode),
-               (GuideIcon.SUB1, _playerSkillNames[0],   CanAcceptSub1, new AcceptBooleanInput(AcceptSub1), 0.0f, hashCode),
-               (GuideIcon.SUB2, _playerSkillNames[1],   CanAcceptSub2, new AcceptBooleanInput(AcceptSub2), 0.0f, hashCode),
-               (GuideIcon.SUB3, _playerSkillNames[2],   CanAcceptSub3, new AcceptBooleanInput(AcceptSub3), 0.0f, hashCode),
-               (GuideIcon.SUB4, _playerSkillNames[3],   CanAcceptSub4, new AcceptBooleanInput(AcceptSub4), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR, "TARGET SELECT", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptBooleanInput( AcceptSub1 ), 0.0f, hashCode),
+               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptBooleanInput( AcceptSub2 ), 0.0f, hashCode),
+               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput( AcceptSub3 ), 0.0f, hashCode),
+               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput( AcceptSub4 ), 0.0f, hashCode)
             );
         }
 
@@ -204,9 +200,9 @@ namespace Frontier.StateMachine
         /// <returns>方向入力の受付可否</returns>
         override protected bool CanAcceptDirection()
         {
-            if ( !CanAcceptDefault() )                              { return false; }
-            if ( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase )    { return false; }   // 攻撃対象選択フェーズでない場合は終了
-            if ( _stageCtrl.GetAttackabkeTargetNum() <= 1 )         { return false; }   // 攻撃可能な標的数が1より大きくなければ終了
+            if( !CanAcceptDefault() ) { return false; }
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
+            if( _stageCtrl.GetAttackabkeTargetNum() <= 1 ) { return false; }   // 攻撃可能な標的数が1より大きくなければ終了
 
             return true;
         }
@@ -217,8 +213,8 @@ namespace Frontier.StateMachine
         /// <returns>決定入力の受付可否</returns>
         override protected bool CanAcceptConfirm()
         {
-            if ( !CanAcceptDefault() ) { return false; }
-            if ( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
+            if( !CanAcceptDefault() ) { return false; }
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
 
             return true;
         }
@@ -239,38 +235,38 @@ namespace Frontier.StateMachine
         /// <returns>サブ1の入力の受付可否</returns>
         override protected bool CanAcceptSub1()
         {
-            if (!CanAcceptConfirm()) return false;
+            if( !CanAcceptConfirm() ) return false;
 
-            if (_playerSkillNames[0].Length <= 0 ) return false;
+            if( _playerSkillNames[0].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill(0, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill( 0, SituationType.ATTACK );
         }
 
         override protected bool CanAcceptSub2()
         {
-            if (!CanAcceptConfirm()) return false;
+            if( !CanAcceptConfirm() ) return false;
 
-            if (_playerSkillNames[1].Length <= 0) return false;
+            if( _playerSkillNames[1].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill(1, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill( 1, SituationType.ATTACK );
         }
 
         override protected bool CanAcceptSub3()
         {
-            if (!CanAcceptConfirm()) return false;
+            if( !CanAcceptConfirm() ) return false;
 
-            if (_playerSkillNames[2].Length <= 0) return false;
+            if( _playerSkillNames[2].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill(2, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill( 2, SituationType.ATTACK );
         }
 
         override protected bool CanAcceptSub4()
         {
-            if (!CanAcceptConfirm()) return false;
+            if( !CanAcceptConfirm() ) return false;
 
-            if (_playerSkillNames[3].Length <= 0) return false;
+            if( _playerSkillNames[3].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill(3, SituationType.ATTACK);
+            return _plOwner.CanToggleEquipSkill( 3, SituationType.ATTACK );
         }
 
         /// <summary>
@@ -278,9 +274,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection(Direction dir)
+        override protected bool AcceptDirection( Direction dir )
         {
-            if (_stageCtrl.OperateTargetSelect(dir))
+            if( _stageCtrl.OperateTargetSelect( dir ) )
             {
                 return true;
             }
@@ -298,26 +294,26 @@ namespace Frontier.StateMachine
             if( !isInput ) return false;
 
             // 選択したキャラクターが敵である場合は攻撃開始
-            if (_targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY)
+            if( _targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY )
             {
                 // キャラクターのアクションゲージを消費
                 _attackCharacter.ConsumeActionGauge();
                 _targetCharacter.ConsumeActionGauge();
 
                 // 選択グリッドを一時非表示
-                _stageCtrl.SetGridCursorControllerActive(false);
+                _stageCtrl.SetGridCursorControllerActive( false );
 
                 // アタックカーソルUI非表示
-                _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
+                _uiSystem.BattleUi.ToggleAttackCursorP2E( false );
 
                 // ダメージ予測表示UIを非表示
-                _uiSystem.BattleUi.ToggleBattleExpect(false);
+                _uiSystem.BattleUi.ToggleBattleExpect( false );
 
                 // グリッド状態の描画をクリア
                 _stageCtrl.ClearTileMeshDraw();
 
                 // 攻撃シーケンスの開始
-                _attackSequence.StartSequence(_attackCharacter, _targetCharacter);
+                _attackSequence.StartSequence( _attackCharacter, _targetCharacter );
 
                 _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
 
@@ -327,32 +323,32 @@ namespace Frontier.StateMachine
             return false;
         }
 
-        override protected bool AcceptSub1(bool isInput)
+        override protected bool AcceptSub1( bool isInput )
         {
-            if ( !isInput ) return false;
+            if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks(0);
+            return _plOwner.ToggleUseSkillks( 0 );
         }
 
-        override protected bool AcceptSub2(bool isInput)
+        override protected bool AcceptSub2( bool isInput )
         {
-            if ( !isInput ) return false;
+            if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks(1);
+            return _plOwner.ToggleUseSkillks( 1 );
         }
 
-        override protected bool AcceptSub3(bool isInput)
+        override protected bool AcceptSub3( bool isInput )
         {
-            if ( !isInput ) return false;
+            if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks(2);
+            return _plOwner.ToggleUseSkillks( 2 );
         }
 
-        override protected bool AcceptSub4(bool isInput)
+        override protected bool AcceptSub4( bool isInput )
         {
-            if ( !isInput ) return false;
+            if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks(3);
+            return _plOwner.ToggleUseSkillks( 3 );
         }
     }
 }

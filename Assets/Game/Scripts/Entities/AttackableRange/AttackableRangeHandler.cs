@@ -96,31 +96,5 @@ namespace Frontier.Entities
             }
             _attackableTileMeshes.Clear();
         }
-
-        /* TODO : 必要ないと確定したら削除
-        public List<int> ExtractAttackableTiles( in CharacterParameters cParams, in int[] tileCostTable, in CharacterKey charaKey )
-        {
-            List<int> attackableTileIndexs = new List<int>();
-
-            var param           = cParams.CharacterParam;
-            int tileIndex       = cParams.TmpParam.gridIndex;
-            float tileHeight    = _stageCtrl.GetTileData( tileIndex ).Height;
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();
-            _stageCtrl.TileDataHdlr().BeginRegisterMoveableTiles( tileIndex, param.moveRange, param.attackRange, param.jumpForce, tileHeight, tileCostTable, charaKey, true );
-
-            for( int i = 0; i < _stageCtrl.GetTileTotalNum(); ++i )
-            {
-                var info = _stageCtrl.GetTileInfo( i );
-                if( Methods.CheckBitFlag( info.flag, TileBitFlag.ATTACKABLE ) )
-                {
-                    attackableTileIndexs.Add( i );
-                }
-            }
-
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();
-
-            return attackableTileIndexs;
-        }
-        */
     }
 }

@@ -67,5 +67,12 @@ namespace Frontier.Stage
 
             return retData;
         }
+
+        public void CopyTo( TileDynamicData target )
+        {
+            target.EstimatedMoveRange  = this.EstimatedMoveRange;
+            target.CharaKey            = this.CharaKey;
+            target.Flag                = this.Flag;
+        }
     }
 }

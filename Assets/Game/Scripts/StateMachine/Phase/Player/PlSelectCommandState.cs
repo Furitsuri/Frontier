@@ -62,13 +62,13 @@ namespace Frontier.StateMachine
                 return true;
             }
 
+            // IsBackの判定を行うため、base.Updateは最後に呼び出す
             if( base.Update() )
             {
                 // コマンドのうち、移動のみが終了している場合は移動前の状態に戻れるように          
                 if( _plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && !_plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
                 {
                     _stageCtrl.FollowFootprint( _plOwner );
-                    _stageCtrl.TileDataHdlr().UpdateTileInfo();
                     _plOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, false );
                 }
 
@@ -90,7 +90,6 @@ namespace Frontier.StateMachine
             {
                 _plOwner.HoldBeforeMoveInfo();
                 _stageCtrl.HoldFootprint( _plOwner );  // キャラクターの現在の位置情報を保持
-                _stageCtrl.HoldAllTileDynamicData();          // 移動中直接攻撃時にキャンセルした際の処理に対応するため、現在のタイル情報を保持
             }
 
             _uiSystem.BattleUi.TogglePLCommand( false );  // UIを非表示

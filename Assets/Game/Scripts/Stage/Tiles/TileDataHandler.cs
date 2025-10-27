@@ -27,9 +27,9 @@ namespace Frontier.Stage
         /// <summary>
         /// タイル情報を更新します
         /// </summary>
-        public void UpdateTileInfo()
+        public void UpdateTileDynamicDatas()
         {
-            ResetTileInfo();    // 一度全てのタイル情報を元に戻す
+            ResetTileDynamicDatas();    // 一度全てのタイル情報を元に戻す
 
             for( int i = 0; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
@@ -284,7 +284,7 @@ namespace Frontier.Stage
         /// <summary>
         /// タイル情報を基の状態に戻します
         /// </summary>
-        private void ResetTileInfo()
+        private void ResetTileDynamicDatas()
         {
             for( int i = 0; i < _stageDataProvider.CurrentData.Tiles.Length; ++i )
             {

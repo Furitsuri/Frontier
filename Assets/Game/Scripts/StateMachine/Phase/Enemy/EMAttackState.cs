@@ -136,7 +136,6 @@ namespace Frontier.StateMachine
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
             // グリッド状態の描画をクリア
-            _stageCtrl.TileDataHdlr().UpdateTileInfo();
             _stageCtrl.ClearTileMeshDraw();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、

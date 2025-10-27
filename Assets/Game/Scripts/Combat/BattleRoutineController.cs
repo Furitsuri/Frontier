@@ -164,11 +164,11 @@ namespace Frontier.Battle
             }
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
-            _stgCtrl.TileDataHdlr().UpdateTileInfo();               // タイル情報を更新
+            _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
             _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN]; // PLAYERターンから開始(MEMO : ステージによって変更する場合はステージ読込処理から変更出来るように修正)
-            _btlFileLoader.LoadCameraParams(_battleCameraCtrl);          // ファイル読込マネージャにカメラパラメータをロードさせる
-            _btlFileLoader.LoadSkillsData();                             // スキルデータの読込
+            _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
+            _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
 
         override public void UpdateRoutine()
@@ -194,8 +194,8 @@ namespace Frontier.Battle
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
 
-            // TEST : _transitNextPhase = _currentPhaseHdlr.Update(); // フェーズマネージャを更新
             _currentPhaseHdlr.Update();
+            _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();
         }
 
         override public void LateUpdateRoutine()
@@ -220,25 +220,6 @@ namespace Frontier.Battle
                 _currentPhaseHdlr = _phaseHdlrs[_phaseHandlerIndex];
                 _currentPhaseHdlr.Run();
             }
-
-            /* TEST
-            // フェーズ移動の正否
-            if (!_transitNextPhase)
-            {
-                _currentPhaseHdlr.LateUpdate();
-            }
-            else
-            {
-                // 一時パラメータをリセット
-                _btlCharaCdr.ResetTmpParamAllCharacter();
-
-                // 次のハンドラーに切り替える
-                _phaseHandlerIndex  = (_phaseHandlerIndex + 1) % (int)TurnType.NUM;
-                _currentPhaseHdlr.Exit();
-                _currentPhaseHdlr   = _phaseHdlrs[_phaseHandlerIndex];
-                _currentPhaseHdlr.Run();
-            }
-            */
         }
 
         /// <summary>
