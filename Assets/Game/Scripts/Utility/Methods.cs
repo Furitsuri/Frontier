@@ -144,12 +144,12 @@ static public class Methods
     }
 
     /// <summary>
-    /// 
+    /// 指定の配列内の全ての要素が条件を満たすかをチェックします
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="array"></param>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">指定配列の型</typeparam>
+    /// <param name="array">指定配列</param>
+    /// <param name="predicate">条件</param>
+    /// <returns>指定の条件全てを満たしているか</returns>
     static public bool AllMatch<T>( T[] array, Func<T, bool> predicate )
     {
         if ( array == null || predicate == null ) return false;

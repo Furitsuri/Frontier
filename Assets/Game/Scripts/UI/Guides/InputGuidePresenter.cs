@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using Zenject.ReflectionBaking.Mono.Cecil.Cil;
+using static InputCode;
 
 /// <summary>
 /// 入力ガイド関連の表示制御を行います
@@ -18,11 +20,11 @@ public sealed class InputGuidePresenter : MonoBehaviour
         FADE,
     }
 
-    [Header("ガイドUIのプレハブ")]
+    [Header( "ガイドUIのプレハブ" )]
     [SerializeField]
     public GameObject GuideUIPrefab;
 
-    [Header("背景リサイズ開始から終了までの時間")]
+    [Header( "背景リサイズ開始から終了までの時間" )]
     [SerializeField]
     public float ResizeTime = 0.33f;
 
@@ -90,7 +92,7 @@ public sealed class InputGuidePresenter : MonoBehaviour
         };
 
     [Inject]
-    public void Construct(HierarchyBuilderBase hierarchyBld)
+    public void Construct( HierarchyBuilderBase hierarchyBld )
     {
         _hierarchyBld = hierarchyBld;
     }
@@ -106,19 +108,19 @@ public sealed class InputGuidePresenter : MonoBehaviour
     /// 初期化します
     /// </summary>
     /// <param name="inputCodes">入力可能となる情報</param>
-    public void Init(InputCode[] inputCodes)
+    public void Init( InputCode[] inputCodes )
     {
-        _inputCodes = Array.AsReadOnly(inputCodes);
+        _inputCodes = Array.AsReadOnly( inputCodes );
 
-        Debug.Assert(spriteTailNoString.Length == (int)GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。");
+        Debug.Assert( spriteTailNoString.Length == ( int ) GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。" );
 
-        _guideUiArrray  = new InputGuideUI[(int)GuideIcon.NUM_MAX];
-        _rectTransform  = GetComponent<RectTransform>();
-        _layoutGrp      = GetComponent<HorizontalLayoutGroup>();
+        _guideUiArrray = new InputGuideUI[( int ) GuideIcon.NUM_MAX];
+        _rectTransform = GetComponent<RectTransform>();
+        _layoutGrp = GetComponent<HorizontalLayoutGroup>();
 
-        NullCheck.AssertNotNull(_hierarchyBld, nameof( _hierarchyBld ) );
-        NullCheck.AssertNotNull(_rectTransform, nameof( _rectTransform ) );
-        NullCheck.AssertNotNull(_layoutGrp, nameof( _layoutGrp ) );
+        NullCheck.AssertNotNull( _hierarchyBld, nameof( _hierarchyBld ) );
+        NullCheck.AssertNotNull( _rectTransform, nameof( _rectTransform ) );
+        NullCheck.AssertNotNull( _layoutGrp, nameof( _layoutGrp ) );
 
         LoadSprites();
 
@@ -130,22 +132,22 @@ public sealed class InputGuidePresenter : MonoBehaviour
     /// </summary>
     public void RegisterInputGuides()
     {
-        for (int i = 0; i < _inputCodes.Count; ++i)
+        for( int i = 0; i < _inputCodes.Count; ++i )
         {
             var code = _inputCodes[i];
 
             _guideUiArrray[i].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
+            _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
         }
 
-        // フェード状態の遷移
-        TransitFadeMode();
+        TransitFadeMode();  // フェード状態の遷移
     }
 
     /// <summary>
     /// 描画優先度の値を設定します
     /// </summary>
     /// <param name="order">優先度値</param>
-    public void SetSortingOrder(int order)
+    public void SetSortingOrder( int order )
     {
         _sortingOrder = order;
     }
@@ -155,17 +157,17 @@ public sealed class InputGuidePresenter : MonoBehaviour
     /// </summary>
     private void InitGuideUi()
     {
-        for (int i = 0; i < _inputCodes.Count; ++i)
+        for( int i = 0; i < _inputCodes.Count; ++i )
         {
             var code = _inputCodes[i];
-            InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>(GuideUIPrefab, gameObject, true);
-            if (guideUi == null) continue;
+            InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( GuideUIPrefab, gameObject, true );
+            if( guideUi == null ) continue;
 
-            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide(code.Icons, code.Explanation );
-            guideUi.Register(_sprites, guide);
+            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide( code.Icons, code.Explanation );
+            guideUi.Register( _sprites, guide );
             _guideUiArrray[i] = guideUi;
-            _guideUiArrray[i].gameObject.SetActive( !Methods.AllMatch( code.EnableCbs, arg => ( arg == null || !arg() ) ) );
-            _guideUiArrray[i].SetSpriteSortingOrder(_sortingOrder);
+            _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
+            _guideUiArrray[i].SetSpriteSortingOrder( _sortingOrder );
         }
     }
 
@@ -177,19 +179,19 @@ public sealed class InputGuidePresenter : MonoBehaviour
     {
         var completeUpdate = false;
 
-        switch (_fadeMode)
+        switch( _fadeMode )
         {
             case FadeMode.FADE:
                 _fadeTime += DeltaTimeProvider.DeltaTime;
-                _currentBackGroundWidth = Mathf.Lerp(_prevTransitBackGroundWidth, _targetBackGroundWidth, _fadeTime / ResizeTime);
+                _currentBackGroundWidth = Mathf.Lerp( _prevTransitBackGroundWidth, _targetBackGroundWidth, _fadeTime / ResizeTime );
 
-                if (Mathf.Abs(_targetBackGroundWidth - _currentBackGroundWidth) < Mathf.Epsilon)
+                if( Mathf.Abs( _targetBackGroundWidth - _currentBackGroundWidth ) < Mathf.Epsilon )
                 {
                     _currentBackGroundWidth = _targetBackGroundWidth;
                     completeUpdate = true;
                 }
 
-                _rectTransform.sizeDelta = new Vector2(_currentBackGroundWidth, _rectTransform.sizeDelta.y);
+                _rectTransform.sizeDelta = new Vector2( _currentBackGroundWidth, _rectTransform.sizeDelta.y );
 
                 break;
 
@@ -213,25 +215,25 @@ public sealed class InputGuidePresenter : MonoBehaviour
     {
         bool isToggled = false;
 
-        for (int i = 0; i < _inputCodes.Count; ++i)
+        for( int i = 0; i < _inputCodes.Count; ++i )
         {
-            bool isActive   = false;
-            var code        = _inputCodes[i];
-            var guideUi     = _guideUiArrray[i];
+            bool isActive = false;
+            var code = _inputCodes[i];
+            var guideUi = _guideUiArrray[i];
 
-            if ( code.EnableCbs != null )
+            if( code.EnableCbs != null )
             {
                 // キーの有効判定コールバックの返り値次第で対応するガイドアイコンについても表示を切り替える
-                for ( int j = 0; j < code.EnableCbs.Length; ++j )
+                for( int j = 0; j < code.EnableCbs.Length; ++j )
                 {
                     bool isEnable = ( code.EnableCbs[j] != null && code.EnableCbs[j]() );
-                    if ( !isToggled )
+                    if( !isToggled )
                     {
                         isToggled = ( isEnable != guideUi.GetSpriteRendererActive( j ) );
                     }
                     guideUi.SetSpriteRendererActive( j, isEnable );
 
-                    if ( isEnable ) { isActive = true; }
+                    if( isEnable ) { isActive = true; }
                 }
             }
 
@@ -239,37 +241,10 @@ public sealed class InputGuidePresenter : MonoBehaviour
         }
 
         // アクティブ状態が切替られたガイド項目があるため、フェード処理を行う
-        if ( isToggled )
+        if( isToggled )
         {
             TransitFadeMode();
         }
-    }
-
-    /// <summary>
-    /// 入力ガイドバーの背景の幅を更新します
-    /// </summary>
-    /// <returns>更新後のガイドバーの幅</returns>
-    private float CalcurateBackGroundWidth()
-    {
-        // レイアウトの更新を行ってから計算する
-        Canvas.ForceUpdateCanvases();
-
-        // レイアウトグループの設定を反映
-        var taregtWidth = _layoutGrp.padding.left + _layoutGrp.padding.right + _layoutGrp.spacing * (EvaluateActiveGuideUiCount() - 1);
-
-        // ガイドUIのそれぞれの幅を加算
-        foreach (var guideUi in _guideUiArrray)
-        {
-            // アクティブなオブジェクトのみを判定
-            if ( !guideUi.gameObject.activeSelf ) continue;
-
-            var inputGuideUiRectTransform = guideUi.gameObject.GetComponent<RectTransform>();
-            Debug.Assert(inputGuideUiRectTransform != null, "GetComponent of \"RectTransform of InputGuideUI\" failed.");
-
-            taregtWidth += inputGuideUiRectTransform.sizeDelta.x;
-        }
-
-        return taregtWidth;
     }
 
     /// <summary>
@@ -278,7 +253,7 @@ public sealed class InputGuidePresenter : MonoBehaviour
     private void TransitFadeMode()
     {
         _fadeMode = FadeMode.FADE;
-        // ガイドの登録に合わせ、ガイドを納める背景の幅を求める
+        // 現在のガイドの登録内容に合わせ、ガイドを納める背景の幅を求める
         _targetBackGroundWidth = CalcurateBackGroundWidth();
         // フェード前の背景の幅を保存
         _prevTransitBackGroundWidth = _rectTransform.sizeDelta.x;
@@ -289,28 +264,49 @@ public sealed class InputGuidePresenter : MonoBehaviour
     /// </summary>
     private void LoadSprites()
     {
-        _sprites = new Sprite[(int)GuideIcon.NUM_MAX];
+        _sprites = new Sprite[( int ) GuideIcon.NUM_MAX];
 
         // ガイドスプライトの読み込みを行い、アサインする
-        Sprite[] guideSprites = Resources.LoadAll<Sprite>(Constants.GUIDE_SPRITE_FOLDER_PASS + Constants.GUIDE_SPRITE_FILE_NAME);
-        for (int i = 0; i < (int)GuideIcon.NUM_MAX; ++i)
+        Sprite[] guideSprites = Resources.LoadAll<Sprite>( Constants.GUIDE_SPRITE_FOLDER_PASS + Constants.GUIDE_SPRITE_FILE_NAME );
+        for( int i = 0; i < ( int ) GuideIcon.NUM_MAX; ++i )
         {
             string fileName = Constants.GUIDE_SPRITE_FILE_NAME + spriteTailNoString[i];
 
-            foreach (Sprite sprite in guideSprites)
+            foreach( Sprite sprite in guideSprites )
             {
-                if (sprite.name == fileName)
+                if( sprite.name == fileName )
                 {
                     _sprites[i] = sprite;
                     break;
                 }
             }
 
-            if (_sprites[i] == null)
+            if( _sprites[i] == null )
             {
-                LogHelper.LogError("File Not Found : " + fileName);
+                LogHelper.LogError( "File Not Found : " + fileName );
             }
         }
+    }
+
+    /// <summary>
+    /// 全ての入力ガイドUIを無効にします
+    /// </summary>
+    private void ClearInputGuideUi()
+    {
+        foreach( var guideUi in _guideUiArrray )
+        {
+            guideUi.gameObject.SetActive( false );
+        }
+    }
+
+    /// <summary>
+    /// ガイドUIをアクティブにするか判定します
+    /// </summary>
+    /// <param name="enableCbs"></param>
+    /// <returns></returns>
+    private bool IsActiveGuideUi( EnableCallback[] enableCbs )
+    {
+        return enableCbs != null && !Methods.AllMatch( enableCbs, arg => ( !arg() ) );
     }
 
     /// <summary>
@@ -323,20 +319,39 @@ public sealed class InputGuidePresenter : MonoBehaviour
 
         foreach( var guide in _guideUiArrray )
         {
-            if (guide.gameObject.activeSelf) ++count;
+            if( guide.gameObject.activeSelf )
+            {
+                ++count;
+            }
         }
 
         return count;
     }
 
     /// <summary>
-    /// 全ての入力ガイドUIを無効にします
+    /// 入力ガイドバーの背景の幅を更新します
     /// </summary>
-    private void ClearInputGuideUi()
+    /// <returns>更新後のガイドバーの幅</returns>
+    private float CalcurateBackGroundWidth()
     {
-        foreach ( var guideUi in _guideUiArrray )
+        // レイアウトの更新を行ってから計算する
+        Canvas.ForceUpdateCanvases();
+
+        // レイアウトグループの設定を反映
+        var taregtWidth = _layoutGrp.padding.left + _layoutGrp.padding.right + _layoutGrp.spacing * ( EvaluateActiveGuideUiCount() - 1 );
+
+        // ガイドUIのそれぞれの幅を加算
+        foreach( var guideUi in _guideUiArrray )
         {
-            guideUi.gameObject.SetActive(false);
+            // アクティブなオブジェクトのみを判定
+            if( !guideUi.gameObject.activeSelf ) { continue; }
+
+            var inputGuideUiRectTransform = guideUi.gameObject.GetComponent<RectTransform>();
+            Debug.Assert( inputGuideUiRectTransform != null, "GetComponent of \"RectTransform of InputGuideUI\" failed." );
+
+            taregtWidth += inputGuideUiRectTransform.sizeDelta.x;
         }
+
+        return taregtWidth;
     }
 }

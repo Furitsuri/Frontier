@@ -91,7 +91,7 @@ namespace Frontier.Entities
         public void ToggleAttackableRangeDisplay( in Color color )
         {
             // _attackableRangeHandler内のActionableTileDatasが空の場合は、取得したものを渡す
-            if( null == _attackableRangeHandler.ActionableTileMap )
+            if( null == _attackableRangeHandler.ActionableTileMap || _attackableRangeHandler.ActionableTileMap.IsEmpty() )
             {
                 int dprtTileIndex   = _owner.Params.TmpParam.gridIndex;
                 var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
