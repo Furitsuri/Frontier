@@ -45,17 +45,9 @@ namespace Froniter.Entities
             return _attackableTileMap[index];
         }
 
-        /*
-        public int TileIndex;               // タイルのインデックス
-        public TileStaticData TileSData;
-        public TileDynamicData TileDData;    // タイルの情報
-
-        public ActionableTileData( int tileIndex, in TileStaticData tileSData, in TileDynamicData tileDData )
+        public bool IsEmpty()
         {
-            TileIndex = tileIndex;
-            TileSData = tileSData;
-            TileDData = tileDData;
+            return _moveableTileMap.Count <= 0 && _attackableTileMap.Count <= 0;
         }
-        */
     }
 }
