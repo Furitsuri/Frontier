@@ -3,6 +3,8 @@ using Froniter.Registries;
 using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 using Zenject;
@@ -21,20 +23,13 @@ namespace Frontier.Entities
 
         private bool _isDisplayAttackableRange                  = false;
         private Character _owner                                = null;
-        private ActionableTileMap _actionableTileMap            = null;
         private List<TileMesh> _attackableTileMeshes            = new List<TileMesh>();
+        private ReadOnlyReference<ActionableTileMap> _readOnlyActionableTileMap;
 
-        public ActionableTileMap ActionableTileMap { get { return _actionableTileMap; } }
-        public void Init( Character owner )
+        public void Init( Character owner, ActionableTileMap actionableTileMap )
         {
-            _owner                  = owner;
-
-            if( null == _actionableTileMap )
-            {
-                _actionableTileMap = _hierarchyBld.InstantiateWithDiContainer<ActionableTileMap>( false );
-                NullCheck.AssertNotNull( _actionableTileMap, "_actionableTileMap" );
-            }
-            _actionableTileMap.Init();
+            _owner                      = owner;
+            _readOnlyActionableTileMap  = new ReadOnlyReference<ActionableTileMap>( actionableTileMap );
         }
 
         /// <summary>
@@ -53,13 +48,8 @@ namespace Frontier.Entities
             }
             else
             {
-                DrawTileMashes( _actionableTileMap, in color );
+                DrawTileMashes( _readOnlyActionableTileMap.Value, in color );
             }
-        }
-
-        public void SetActionableTileDatas( ActionableTileMap actionableTileMap )
-        {
-            _actionableTileMap = actionableTileMap;
         }
 
         /// <summary>
