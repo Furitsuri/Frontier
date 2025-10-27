@@ -45,7 +45,7 @@ namespace Frontier.Entities
 
             _actionableTileMap.Init();
             _movePathHandler.Init( owner );
-            _attackableRangeHandler.Init( owner );
+            _attackableRangeHandler.Init( owner, _actionableTileMap );
         }
 
         public void SetupActionableRangeData( int dprtTileIdx, float dprtTileHeight )
@@ -84,19 +84,18 @@ namespace Frontier.Entities
 
         public void ClearAttackableRange()
         {
-            _attackableRangeHandler.SetActionableTileDatas( null );
+            // _attackableRangeHandler.SetActionableTileDatas( null );
             _attackableRangeHandler.UnsetAttackableRangeDisplay();
         }
 
         public void ToggleAttackableRangeDisplay( in Color color )
         {
-            // _attackableRangeHandler内のActionableTileDatasが空の場合は、取得したものを渡す
-            if( null == _attackableRangeHandler.ActionableTileMap || _attackableRangeHandler.ActionableTileMap.IsEmpty() )
+            // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
+            if( _actionableTileMap.IsEmpty() )
             {
                 int dprtTileIndex   = _owner.Params.TmpParam.gridIndex;
                 var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
                 SetupActionableRangeData( dprtTileIndex, data.Height );
-                _attackableRangeHandler.SetActionableTileDatas( _actionableTileMap );
             }
 
             _attackableRangeHandler.ToggleAttackableRangeDisplay( color );
