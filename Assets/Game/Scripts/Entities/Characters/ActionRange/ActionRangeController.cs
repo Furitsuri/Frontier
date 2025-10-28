@@ -84,7 +84,6 @@ namespace Frontier.Entities
 
         public void ClearAttackableRange()
         {
-            // _attackableRangeHandler.SetActionableTileDatas( null );
             _attackableRangeHandler.UnsetAttackableRangeDisplay();
         }
 

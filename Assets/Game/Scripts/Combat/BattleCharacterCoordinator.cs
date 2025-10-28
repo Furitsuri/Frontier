@@ -129,6 +129,21 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// プレイヤー以外のキャラクターの攻撃可能範囲表示をクリアします
+        /// </summary>
+        public void ClearAttackableRangeDisplayNonPlayer()
+        {
+            foreach( var enemy in GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
+            {
+                enemy.ClearAttackableRange();
+            }
+            foreach( var other in GetCharacterEnumerable( CHARACTER_TAG.OTHER ) )
+            {
+                other.ClearAttackableRange();
+            }
+        }
+
+        /// <summary>
         /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
         /// </summary>
         /// <param name="key">ハッシュキー</param>

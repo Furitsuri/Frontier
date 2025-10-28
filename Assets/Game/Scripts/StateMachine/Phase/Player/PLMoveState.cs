@@ -83,8 +83,9 @@ namespace Frontier.StateMachine
 
         override public void ExitState()
         {
-            _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
-            _stageCtrl.ClearTileMeshDraw();                     // グリッド状態の描画をクリア
+            _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
+            _stageCtrl.ClearTileMeshDraw();                                 // グリッド状態の描画をクリア
+            _btlRtnCtrl.BtlCharaCdr.ClearAttackableRangeDisplayNonPlayer(); // プレイヤー以外の攻撃範囲表示をすべてクリア
 
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
