@@ -37,15 +37,7 @@ namespace Frontier.StateMachine
 
         override public void Exit()
         {
-            // 攻撃範囲表示をすべてクリア
-            foreach( var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
-            {
-                enemy.ClearAttackableRange();
-            }
-            foreach( var other in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ) )
-            {
-                other.ClearAttackableRange();
-            }
+            _btlRtnCtrl.BtlCharaCdr.ClearAttackableRangeDisplayNonPlayer(); // プレイヤー以外の攻撃範囲表示をすべてクリア
 
             base.Exit();
         }
