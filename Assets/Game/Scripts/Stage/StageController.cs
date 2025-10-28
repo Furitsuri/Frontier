@@ -3,6 +3,7 @@ using Frontier.Battle;
 using Frontier.Entities;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml.Xsl;
@@ -98,8 +99,6 @@ namespace Frontier.Stage
         /// <param name="actionableTileMap"></param>
         public void DrawAttackableRange( ActionableTileMap actionableTileMap )
         {
-            int count = 0;
-
             foreach( var data in actionableTileMap.AttackableTileMap )
             {
                 // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
@@ -115,11 +114,11 @@ namespace Frontier.Stage
                 {
                     if( meshTypeAndConditions[j].condition )
                     {
-                        var gridMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _gridMeshObject, true );
-                        NullCheck.AssertNotNull( gridMesh, nameof( gridMesh ) );
+                        var tileMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _gridMeshObject, true );
+                        NullCheck.AssertNotNull( tileMesh, nameof( tileMesh ) );
 
-                        _tileMeshes.Add( gridMesh );
-                        _tileMeshes[count++].DrawTileMesh( _stageDataProvider.CurrentData.GetTileStaticData( data.Key ).CharaStandPos, TILE_SIZE, TileColors.Colors[( int ) meshTypeAndConditions[j].meshType] );
+                        var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                        tile.DrawTileMesh( tileMesh, TileColors.Colors[( int ) meshTypeAndConditions[j].meshType] );
 
                         break;
                     }
@@ -133,8 +132,6 @@ namespace Frontier.Stage
         /// <param name="actionableTileMap"></param>
         public void DrawActionableRange( ActionableTileMap actionableTileMap )
         {
-            int count = 0;
-
             foreach( var data in actionableTileMap.AttackableTileMap )
             {
                 // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
@@ -151,11 +148,11 @@ namespace Frontier.Stage
                 {
                     if( meshTypeAndConditions[j].condition )
                     {
-                        var gridMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _gridMeshObject, true );
-                        NullCheck.AssertNotNull( gridMesh, nameof( gridMesh ) );
+                        var tileMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _gridMeshObject, true );
+                        NullCheck.AssertNotNull( tileMesh, nameof( tileMesh ) );
 
-                        _tileMeshes.Add( gridMesh );
-                        _tileMeshes[count++].DrawTileMesh( _stageDataProvider.CurrentData.GetTileStaticData(data.Key).CharaStandPos, TILE_SIZE, TileColors.Colors[( int ) meshTypeAndConditions[j].meshType] );
+                        var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                        tile.DrawTileMesh( tileMesh, TileColors.Colors[( int ) meshTypeAndConditions[j].meshType] );
 
                         break;
                     }
@@ -168,12 +165,10 @@ namespace Frontier.Stage
         /// </summary>
         public void ClearTileMeshDraw()
         {
-            foreach( var grid in _tileMeshes )
+            foreach( var tile in _stageDataProvider.CurrentData.Tiles )
             {
-                grid.ClearDraw();
-                grid.Remove();
+                tile.ClearTileMeshes();
             }
-            _tileMeshes.Clear();
         }
 
         /// <summary>

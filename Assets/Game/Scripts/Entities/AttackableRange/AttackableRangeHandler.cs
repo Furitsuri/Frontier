@@ -1,10 +1,12 @@
 ﻿using Froniter.Entities;
 using Froniter.Registries;
 using Frontier.Stage;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using Zenject;
@@ -17,13 +19,12 @@ namespace Frontier.Entities
     /// </summary>
     public class AttackableRangeHandler
     {
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private StageController _stageCtrl         = null;
-        [Inject] protected PrefabRegistry _prefabReg        = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        [Inject] private PrefabRegistry _prefabReg              = null;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
 
         private bool _isDisplayAttackableRange                  = false;
         private Character _owner                                = null;
-        private List<TileMesh> _attackableTileMeshes            = new List<TileMesh>();
         private ReadOnlyReference<ActionableTileMap> _readOnlyActionableTileMap;
 
         public void Init( Character owner, ActionableTileMap actionableTileMap )
@@ -38,7 +39,7 @@ namespace Frontier.Entities
         /// <param name="cParams"></param>
         /// <param name="tileCostTable"></param>
         /// <param name="color"></param>
-        public void ToggleAttackableRangeDisplay( in Color color )
+        public void ToggleAttackableRangeDisplay( in UnityEngine.Color color )
         {
             _isDisplayAttackableRange = !_isDisplayAttackableRange;
 
@@ -48,7 +49,7 @@ namespace Frontier.Entities
             }
             else
             {
-                DrawTileMashes( _readOnlyActionableTileMap.Value, in color );
+                DrawTileMashes( in color );
             }
         }
 
@@ -62,29 +63,26 @@ namespace Frontier.Entities
             ClearTileMeshes();
         }
 
-        public void DrawTileMashes( ActionableTileMap actionableTileMap, in Color color )
+        public void DrawTileMashes( in UnityEngine.Color color )
         {
-            int count = 0;
-            foreach( var data in actionableTileMap.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
             {
-                var tileSData = _stageCtrl.GetTileStaticData( data.Key );
-                NullCheck.AssertNotNull( tileSData, nameof( tileSData ) );
                 var tileMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true );
                 NullCheck.AssertNotNull( tileMesh, nameof( tileMesh ) );
 
-                _attackableTileMeshes.Add( tileMesh );
-                _attackableTileMeshes[count++].DrawTileMesh( tileSData.CharaStandPos, TILE_SIZE, color );
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                tile.DrawTileMesh( tileMesh, color );
             }
         }
 
         public void ClearTileMeshes()
         {
-            foreach( var tile in _attackableTileMeshes )
+            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
             {
-                tile.ClearDraw();
-                tile.Remove();
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                NullCheck.AssertNotNull( tile, nameof( tile ) );
+                tile.ClearTileMeshes();
             }
-            _attackableTileMeshes.Clear();
         }
     }
 }

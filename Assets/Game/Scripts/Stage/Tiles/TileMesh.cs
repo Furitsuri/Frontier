@@ -24,16 +24,16 @@ namespace Frontier.Stage
         /// <param name="position">メッシュを描画する座標の中心点</param>
         /// <param name="tileSize">グリッドのサイズ</param>
         /// <param name="meshType">メッシュタイプ</param>
-        public void DrawTileMesh( in Vector3 position, float tileSize, Color color )
+        public void DrawTileMesh( in Vector3 position, float collectedPosY, float tileSize, Color color )
         {
             var mesh        = new Mesh();
             float halfSize  = 0.5f * tileSize;
             // 頂点座標配列をメッシュにセット  
             mesh.SetVertices( new Vector3[] {
-                new Vector3 (position.x - halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z - halfSize),
-                new Vector3 (position.x - halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z + halfSize),
-                new Vector3 (position.x + halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z + halfSize),
-                new Vector3 (position.x + halfSize, position.y + Constants.ADD_GRID_POS_Y, position.z - halfSize),
+                new Vector3 (position.x - halfSize, position.y + collectedPosY, position.z - halfSize),
+                new Vector3 (position.x - halfSize, position.y + collectedPosY, position.z + halfSize),
+                new Vector3 (position.x + halfSize, position.y + collectedPosY, position.z + halfSize),
+                new Vector3 (position.x + halfSize, position.y + collectedPosY, position.z - halfSize),
             } );
 
             // インデックス配列をメッシュにセット  
