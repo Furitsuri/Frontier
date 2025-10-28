@@ -115,6 +115,8 @@ namespace Frontier.StateMachine
 
         virtual protected bool CanAcceptOptional() { return false; }
 
+        virtual protected bool CanAcceptTool() { return false; }
+
         virtual protected bool CanAcceptSub1() { return false; }
 
         virtual protected bool CanAcceptSub2() { return false; }
@@ -150,6 +152,8 @@ namespace Frontier.StateMachine
         /// <param name="isOptional">オプション入力</param>
         /// <returns>入力実行の有無</returns>
         virtual protected bool AcceptOptional(bool isOptional) { return false; }
+
+        virtual protected bool AcceptTool( bool isInput ) { return false; }
 
         virtual protected bool AcceptSub1( bool isInput ) { return false; }
 

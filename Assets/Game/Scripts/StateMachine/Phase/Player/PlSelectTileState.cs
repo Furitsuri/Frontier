@@ -23,7 +23,7 @@ namespace Frontier.StateMachine
             base.Init();
 
             // グリッド選択を有効化
-            _stageCtrl.SetGridCursorControllerActive(true);
+            _stageCtrl.SetGridCursorControllerActive( true );
 
             // Confirmアイコンの文字列を設定
             _confirmStrings = new string[( int ) CHARACTER_TAG.NUM]
@@ -66,9 +66,10 @@ namespace Frontier.StateMachine
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "MOVE",             CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      _confirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.OPT2,         "TURN END",         CanAcceptDefault, new AcceptBooleanInput(AcceptOptional), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, _confirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.TOOL, "TOGGLE DANGER RANGE DISP", CanAcceptDefault, new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
+               (GuideIcon.OPT2, "TURN END", CanAcceptDefault, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
         }
 
@@ -78,7 +79,7 @@ namespace Frontier.StateMachine
         /// <returns>コマンド選択が可能か</returns>
         override protected bool CanAcceptConfirm()
         {
-            if (0 <= TransitIndex)
+            if( 0 <= TransitIndex )
             {
                 return false;
             }
@@ -103,7 +104,7 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection(Direction dir)
+        override protected bool AcceptDirection( Direction dir )
         {
             return _stageCtrl.OperateGridCursorController( dir );
         }
@@ -113,9 +114,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptConfirm(bool isInput)
+        override protected bool AcceptConfirm( bool isInput )
         {
-            if (!isInput) return false;
+            if( !isInput ) return false;
 
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null == character ) { return false; }
@@ -144,11 +145,27 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isOptional">オプション入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptOptional(bool isOptional)
+        override protected bool AcceptOptional( bool isOptional )
         {
-            if (!isOptional) return false;
+            if( !isOptional ) return false;
 
-            TransitIndex = (int)TransitTag.TURN_END;
+            TransitIndex = ( int ) TransitTag.TURN_END;
+
+            return true;
+        }
+
+        override protected bool AcceptTool( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            foreach( Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
+            {
+                enemy.ToggleAttackableRangeDisplay();
+            }
+            foreach( Other other in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ) )
+            {
+                other.ToggleAttackableRangeDisplay();
+            }
 
             return true;
         }
