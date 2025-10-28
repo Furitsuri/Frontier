@@ -32,8 +32,8 @@ static public class Constants
     public const float TILE_MIN_THICKNESS   = 0.01f;
     // タイルの高さの最大値
     public const float TILE_MAX_HEIGHT      = 5.0f;
-    // グリッドのY座標に加算する補正値
-    public const float ADD_GRID_POS_Y       = 0.02f;
+    // タイルのY座標に加算する補正値
+    public const float ADD_TILE_POS_Y       = 0.1f;
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
     // キャラクターの移動速度

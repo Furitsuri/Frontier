@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Pool;
 using Zenject;
 using static Constants;
 
@@ -16,7 +17,7 @@ namespace Frontier.Stage
         private TileDynamicData _tileDynamicData    = null;
         private GridLineMesh _gridLineMesh          = null; // 各タイルの縁を示すグリッド線
         private TileDynamicData _baseDynamicData    = null;
-        private ListPool<TileMesh> _tileMeshes      = new ListPool<TileMesh>();
+        private List<TileMesh> _tileMeshes;
         private MeshRenderer _renderer;
 
         public TileStaticData StaticData() => _tileStaticData;
@@ -44,8 +45,9 @@ namespace Frontier.Stage
                 _baseDynamicData = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
             }
 
-            _renderer = GetComponent<MeshRenderer>();
-            transform.localScale = TileMaterialLibrary.GetDefaultTileScale();   // タイルのデフォルトスケールを設定
+            _tileMeshes             = UnityEngine.Pool.ListPool<TileMesh>.Get();
+            _renderer               = GetComponent<MeshRenderer>();
+            transform.localScale    = TileMaterialLibrary.GetDefaultTileScale();   // タイルのデフォルトスケールを設定
         }
 
         public void Init( int x, int y, float height, TileType type )
@@ -70,7 +72,9 @@ namespace Frontier.Stage
         public void Dispose()
         {
             _gridLineMesh?.Dispose();
-            _tileMeshes.Clear();
+            ClearTileMeshes();
+            UnityEngine.Pool.ListPool<TileMesh>.Release( _tileMeshes );
+            _tileMeshes = null;
 
             if( _renderer != null )
             {
@@ -89,13 +93,29 @@ namespace Frontier.Stage
             _baseDynamicData.CopyTo( _tileDynamicData );
         }
 
+        public void DrawTileMesh( TileMesh tileMesh, Color color )
+        {
+            tileMesh.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( _tileMeshes.Count + 1 ), TILE_SIZE, color );
+            _tileMeshes.Add( tileMesh );
+        }
+
+        public void ClearTileMeshes()
+        {
+            foreach( var tile in _tileMeshes )
+            {
+                tile.ClearDraw();
+                tile.Remove();
+            }
+            _tileMeshes.Clear();
+        }
+
         public Vector3 GetScale()
         {
             return transform.localScale;
         }
 
         /// <summary>
-        /// 
+        /// タイルのグリッド線メッシュを生成します
         /// </summary>
         /// <param name="tileBhv"></param>
         /// <returns></returns>

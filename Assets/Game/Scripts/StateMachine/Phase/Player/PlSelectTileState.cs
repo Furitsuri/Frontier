@@ -100,7 +100,7 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// 方向入力を受け取った際の処理を行います
+        /// 方向入力を受け取り、選択グリッドを操作します
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
@@ -110,13 +110,13 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// 決定入力を受けた際の処理を行います
+        /// 決定入力を受けた際の各種処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptConfirm( bool isInput )
         {
-            if( !isInput ) return false;
+            if( !isInput ) { return false; }
 
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null == character ) { return false; }
@@ -141,9 +141,9 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// オプション入力を受けた際の処理を行います
+        /// OPTION入力を受けた際にターン終了へ遷移させます
         /// </summary>
-        /// <param name="isOptional">オプション入力</param>
+        /// <param name="isOptional"></param>
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptOptional( bool isOptional )
         {
@@ -154,6 +154,11 @@ namespace Frontier.StateMachine
             return true;
         }
 
+        /// <summary>
+        /// TOOL入力を受けた際に敵・その他キャラクターの攻撃可能範囲表示を切り替えます
+        /// </summary>
+        /// <param name="isInput"></param>
+        /// <returns></returns>
         override protected bool AcceptTool( bool isInput )
         {
             if( !isInput ) { return false; }

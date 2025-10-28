@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using UnityEngine;
 
 /// <summary>
@@ -6,12 +7,13 @@ using UnityEngine;
 /// </summary>
 static public class NullCheck
 {
-    static public void AssertNotNull(object obj, string paramName)
+    [Conditional( "UNITY_EDITOR" )]
+    static public void AssertNotNull( object obj, string paramName )
     {
-        if (obj == null)
+        if( obj == null )
         {
-            Debug.Assert(false, $"{paramName} should not be null.");
-            throw new ArgumentNullException(paramName);
+            UnityEngine.Debug.Assert( false, $"{paramName} should not be null." );
+            throw new ArgumentNullException( paramName );
         }
     }
 }
