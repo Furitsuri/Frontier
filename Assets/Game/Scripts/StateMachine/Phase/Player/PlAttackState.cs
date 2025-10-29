@@ -159,8 +159,8 @@ namespace Frontier.StateMachine
                 _targetCharacter.Params.SkillModifiedParam.Reset();
             }
 
-            _stageCtrl.ClearTileMeshDraw();                 // グリッドの描画をクリア
-            _stageCtrl.SetGridCursorControllerActive( true ); // 選択グリッドを表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
+            _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
 
             base.ExitState();
         }
@@ -309,8 +309,7 @@ namespace Frontier.StateMachine
                 // ダメージ予測表示UIを非表示
                 _uiSystem.BattleUi.ToggleBattleExpect( false );
 
-                // グリッド状態の描画をクリア
-                _stageCtrl.ClearTileMeshDraw();
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
 
                 // 攻撃シーケンスの開始
                 _attackSequence.StartSequence( _attackCharacter, _targetCharacter );

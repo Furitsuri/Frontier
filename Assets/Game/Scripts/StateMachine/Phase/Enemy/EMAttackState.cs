@@ -135,8 +135,7 @@ namespace Frontier.StateMachine
             _attackCharacter.Params.SkillModifiedParam.Reset();
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
-            // グリッド状態の描画をクリア
-            _stageCtrl.ClearTileMeshDraw();
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、
             //   その後プレイヤーに選択グリッドが移るという状況になります。
@@ -242,8 +241,7 @@ namespace Frontier.StateMachine
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect(false);
 
-            // グリッド状態の描画をクリア
-            _stageCtrl.ClearTileMeshDraw();
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
 
             // 攻撃シーケンスの開始
             _attackSequence.StartSequence(_attackCharacter, _targetCharacter);

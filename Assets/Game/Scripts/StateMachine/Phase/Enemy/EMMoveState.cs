@@ -82,9 +82,9 @@ namespace Frontier.StateMachine
 
         override public void ExitState()
         {
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );    // 敵の位置に選択グリッドを合わせる
-            _stageCtrl.SetGridCursorControllerActive( true );         // 選択グリッドを表示
-            _stageCtrl.ClearTileMeshDraw();                         // グリッド状態の描画をクリア
+            _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );  // 敵の位置に選択グリッドを合わせる
+            _stageCtrl.SetGridCursorControllerActive( true );       // 選択グリッドを表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();           // タイルメッシュの描画をすべてクリア
 
             base.ExitState();
         }

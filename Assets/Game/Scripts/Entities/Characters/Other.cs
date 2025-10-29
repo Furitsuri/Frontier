@@ -13,5 +13,10 @@ namespace Frontier.Entities
         {
             _actionRangeCtrl.ToggleAttackableRangeDisplay( in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
         }
+
+        override public void SetAttackableRangeDisplay( bool isShow )
+        {
+            _actionRangeCtrl.SetAttackableRangeDisplay( isShow, in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
+        }
     }
 }

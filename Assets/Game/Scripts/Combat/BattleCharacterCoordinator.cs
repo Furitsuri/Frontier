@@ -129,17 +129,13 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// プレイヤー以外のキャラクターの攻撃可能範囲表示をクリアします
+        /// すべてのキャラクターのタイルメッシュをクリアします
         /// </summary>
-        public void ClearAttackableRangeDisplayNonPlayer()
+        public void ClearAllTileMeshes()
         {
-            foreach( var enemy in GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
+            foreach( var character in _allCharacters )
             {
-                enemy.ClearAttackableRange();
-            }
-            foreach( var other in GetCharacterEnumerable( CHARACTER_TAG.OTHER ) )
-            {
-                other.ClearAttackableRange();
+                character.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
             }
         }
 

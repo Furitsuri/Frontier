@@ -342,19 +342,11 @@ namespace Frontier
         {
             _stageCtrl.ToggleMeshDisplay(false); // メッシュ及びattakerとtarget以外のキャラクターを非表示に
 
-            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
+            foreach (var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
             {
-                if (player != attacker && player != target)
+                if (chara != attacker && chara != target)
                 {
-                    player.gameObject.SetActive(false);
-                }
-            }
-
-            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY))
-            {
-                if (enemy != attacker && enemy != target)
-                {
-                    enemy.gameObject.SetActive(false);
+                    chara.gameObject.SetActive(false);
                 }
             }
 
@@ -408,14 +400,9 @@ namespace Frontier
             // 非表示にしていたものを表示
             _stageCtrl.ToggleMeshDisplay(true);
 
-            foreach (var player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER))
+            foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
             {
-                player.gameObject.SetActive(true);
-            }
-
-            foreach (var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.ENEMY))
-            {
-                enemy.gameObject.SetActive(true);
+                chara.gameObject.SetActive( true );
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
