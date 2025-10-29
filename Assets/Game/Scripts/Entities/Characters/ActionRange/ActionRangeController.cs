@@ -15,13 +15,14 @@ namespace Frontier.Entities
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private StageController _stageCtrl         = null;
 
-        private Character _owner                                = null;
-        private ActionableTileMap _actionableTileMap            = null;
-        private MovePathHandler _movePathHandler                = null;
-        private AttackableRangeHandler _attackableRangeHandler  = null;
+        private Character _owner                            = null;
+        private ActionableTileMap _actionableTileMap        = null;
+        private MovePathHandler _movePathHandler            = null;
+        private ActionableRangeRenderer _actionableRangeRdr = null;
 
         public ActionableTileMap ActionableTileMap => _actionableTileMap;
         public MovePathHandler MovePathHdlr => _movePathHandler;
+        public ActionableRangeRenderer ActionableRangeRdr => _actionableRangeRdr;
 
         public void Init( Character owner )
         {
@@ -37,15 +38,15 @@ namespace Frontier.Entities
                 _movePathHandler = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false );
                 NullCheck.AssertNotNull( _movePathHandler, nameof( _movePathHandler ) );
             }
-            if( null == _attackableRangeHandler )
+            if( null == _actionableRangeRdr )
             {
-                _attackableRangeHandler = _hierarchyBld.InstantiateWithDiContainer<AttackableRangeHandler>( false );
-                NullCheck.AssertNotNull( _attackableRangeHandler, nameof( _attackableRangeHandler ) );
+                _actionableRangeRdr = _hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false );
+                NullCheck.AssertNotNull( _actionableRangeRdr, nameof( _actionableRangeRdr ) );
             }
 
             _actionableTileMap.Init();
             _movePathHandler.Init( owner );
-            _attackableRangeHandler.Init( owner, _actionableTileMap );
+            _actionableRangeRdr.Init( owner, _actionableTileMap );
         }
 
         public void SetupActionableRangeData( int dprtTileIdx, float dprtTileHeight )
@@ -82,11 +83,6 @@ namespace Frontier.Entities
             _stageCtrl.TileDataHdlr().ExtractMoveableRangeDataFilterByCondition( ref _actionableTileMap, setup, condition, args );
         }
 
-        public void ClearAttackableRange()
-        {
-            _attackableRangeHandler.UnsetAttackableRangeDisplay();
-        }
-
         public void ToggleAttackableRangeDisplay( in Color color )
         {
             // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
@@ -97,17 +93,42 @@ namespace Frontier.Entities
                 SetupActionableRangeData( dprtTileIndex, data.Height );
             }
 
-            _attackableRangeHandler.ToggleAttackableRangeDisplay( color );
+            _actionableRangeRdr.SetAttackableRangeDisplay( !_actionableRangeRdr.IsShowingAttackableRange, color );
+        }
+
+        public void SetAttackableRangeDisplay( bool isShow, in Color color )
+        {
+            // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
+            if( _actionableTileMap.IsEmpty() )
+            {
+                int dprtTileIndex   = _owner.Params.TmpParam.gridIndex;
+                var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
+                SetupActionableRangeData( dprtTileIndex, data.Height );
+            }
+
+            _actionableRangeRdr.SetAttackableRangeDisplay( isShow, color );
         }
 
         public void DrawAttackableRange()
         {
-            _stageCtrl.DrawAttackableRange( _actionableTileMap );
+            // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
+            _actionableRangeRdr.DrawActionableRange( _actionableTileMap, tileData => new (MeshType, bool)[]
+            {
+                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
+                ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
+                ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) ),
+            } );
         }
 
         public void DrawActionableRange()
         {
-            _stageCtrl.DrawActionableRange( _actionableTileMap );
+            _actionableRangeRdr.DrawActionableRange( _actionableTileMap, tileData => new (MeshType, bool)[]
+            {
+                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
+                ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
+                ( MeshType.MOVE,                    0 <= tileData.EstimatedMoveRange ),
+                ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) ),
+            } );
         }
 
         public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )

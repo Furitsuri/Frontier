@@ -82,7 +82,7 @@ namespace Frontier.StateMachine
             _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
             _targetCharacter.Params.SkillModifiedParam.Reset();
 
-            _stageCtrl.ClearTileMeshDraw();                     // グリッドの描画をクリア
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
 
             base.ExitState();

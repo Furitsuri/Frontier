@@ -26,8 +26,7 @@ public class Dijkstra
     /// <param name="a">接続元の頂点</param>
     /// <param name="b">接続先の頂点</param>
     /// <param name="cost">コスト</param>
-    public void Add(int a, int b, int cost = 1)
-            => _graph[a].Add(new Edge(a, b, cost));
+    public void Add(int a, int b, int cost = 1) => _graph[a].Add(new Edge(a, b, cost));
 
     public List<WaypointInformation> GetMinRoute( int startIndex, int goalIndex, in List<int> pathList)
     {

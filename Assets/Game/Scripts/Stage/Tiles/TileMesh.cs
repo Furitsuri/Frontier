@@ -9,22 +9,26 @@ namespace Frontier.Stage
     [RequireComponent(typeof(MeshRenderer))]
     public class TileMesh : MonoBehaviour
     {
-        MeshFilter meshFilter;
-        MeshRenderer meshRenderer;
+        private MeshFilter _meshFilter;
+        private MeshRenderer _meshRenderer;
+        private CharacterKey _ownerKey;
+
+        public CharacterKey OwnerKey => _ownerKey;
 
         void Awake()
         {
-            meshFilter      = GetComponent<MeshFilter>();
-            meshRenderer    = GetComponent<MeshRenderer>();
+            _meshFilter      = GetComponent<MeshFilter>();
+            _meshRenderer    = GetComponent<MeshRenderer>();
         }
 
         /// <summary>
-        /// グリッドのメッシュを描画します
+        /// タイルメッシュを描画します
         /// </summary>
-        /// <param name="position">メッシュを描画する座標の中心点</param>
-        /// <param name="tileSize">グリッドのサイズ</param>
-        /// <param name="meshType">メッシュタイプ</param>
-        public void DrawTileMesh( in Vector3 position, float collectedPosY, float tileSize, Color color )
+        /// <param name="position"></param>
+        /// <param name="collectedPosY"></param>
+        /// <param name="tileSize"></param>
+        /// <param name="color"></param>
+        public void DrawTileMesh( in Vector3 position, float collectedPosY, float tileSize, in Color color, in CharacterKey ownerKey )
         {
             var mesh        = new Mesh();
             float halfSize  = 0.5f * tileSize;
@@ -41,8 +45,9 @@ namespace Frontier.Stage
             { 0, 1, 2, 0, 2, 3}, 0
             );
 
-            meshRenderer.material.color = color;
-            meshFilter.sharedMesh       = mesh;  // MeshFilterを通してメッシュをMeshRendererにセット  
+            _meshRenderer.material.color    = color;
+            _meshFilter.sharedMesh          = mesh;  // MeshFilterを通してメッシュをMeshRendererにセット  
+            _ownerKey                       = ownerKey;
         }
 
         /// <summary>
@@ -50,7 +55,7 @@ namespace Frontier.Stage
         /// </summary>
         public void ClearDraw()
         {
-            meshFilter.sharedMesh = null;
+            _meshFilter.sharedMesh = null;
         }
 
         /// <summary>
@@ -60,6 +65,11 @@ namespace Frontier.Stage
         {
             Destroy(gameObject);
             Destroy(this);
+        }
+
+        public Color GetColor()
+        {
+            return _meshRenderer.material.color;
         }
     }
 }

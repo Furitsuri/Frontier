@@ -12,8 +12,11 @@ namespace Frontier.StateMachine
             TURN_END,
         }
 
-        private InputCodeStringWrapper _confirmStrWrapper;
-        private string[] _confirmStrings;
+        private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
+        private string[] _inputConfirmStrings;
+        private string[] _inputToolStrings;
+        private InputCodeStringWrapper _inputConfirmStrWrapper;
+        private InputCodeStringWrapper _inputToolStrWrapper;
 
         /// <summary>
         /// 遷移先を示すタグ
@@ -22,17 +25,25 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
-            // グリッド選択を有効化
-            _stageCtrl.SetGridCursorControllerActive( true );
+            _isShowingAllDangerRange　= false;
+            _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
 
             // Confirmアイコンの文字列を設定
-            _confirmStrings = new string[( int ) CHARACTER_TAG.NUM]
+            _inputConfirmStrings = new string[( int ) CHARACTER_TAG.NUM]
             {
-                "COMMAND",      // PLAYER
-                "SHOW RANGE",   // ENEMY
-                "SHOW RANGE",   // OTHER
+                "COMMAND",          // PLAYER
+                "TOGGLE RANGE",     // ENEMY
+                "TOGGLE RANGE",     // OTHER
             };
-            _confirmStrWrapper = new InputCodeStringWrapper( _confirmStrings[0] );
+            // TOOLアイコンの文字列を設定
+            _inputToolStrings = new string[]
+            {
+                "SHOW DANGER RANGE", // 危険領域表示
+                "HIDE DANGER RANGE", // 危険領域非表示
+            };
+
+            _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
+            _inputToolStrWrapper    = new InputCodeStringWrapper( _inputToolStrings[0] );
         }
 
         override public bool Update()
@@ -52,8 +63,11 @@ namespace Frontier.StateMachine
             if( tileData.CharaKey.IsValid() )
             {
                 // Confirmアイコンの文字列を更新
-                _confirmStrWrapper.Explanation = _confirmStrings[( int ) tileData.CharaKey.CharacterTag];
+                _inputConfirmStrWrapper.Explanation = _inputConfirmStrings[( int ) tileData.CharaKey.CharacterTag];
             }
+
+            // TOOLアイコンの文字列を更新
+            _inputToolStrWrapper.Explanation = _isShowingAllDangerRange ? _inputToolStrings[1] : _inputToolStrings[0];
 
             return ( 0 <= TransitIndex );
         }
@@ -67,8 +81,8 @@ namespace Frontier.StateMachine
 
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, _confirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.TOOL, "TOGGLE DANGER RANGE DISP", CanAcceptDefault, new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
+               (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.OPT2, "TURN END", CanAcceptDefault, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
         }
@@ -135,6 +149,19 @@ namespace Frontier.StateMachine
                 if( null == npc ) { return false; }
 
                 npc.ToggleAttackableRangeDisplay(); // 攻撃範囲表示を切り替える
+
+                // 全ての敵及び第三勢力の攻撃範囲表示状態を確認し、全てが_isShowingAllDangerRangeの値と異なっている場合は、全危険範囲表示状態を切り替える
+                bool isAllMismatch = true;
+                foreach( Npc npcChara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
+                {
+                    if( _isShowingAllDangerRange == npcChara.ActionRangeCtrl.ActionableRangeRdr.IsShowingAttackableRange )
+                    {
+                        isAllMismatch = false;
+                        break;
+                    }
+                }
+
+                if( isAllMismatch ) { _isShowingAllDangerRange = !_isShowingAllDangerRange; }
             }
 
             return true;
@@ -163,13 +190,11 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            foreach( Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
+            _isShowingAllDangerRange = !_isShowingAllDangerRange;
+
+            foreach( Npc npcChara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
             {
-                enemy.ToggleAttackableRangeDisplay();
-            }
-            foreach( Other other in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ) )
-            {
-                other.ToggleAttackableRangeDisplay();
+                npcChara.SetAttackableRangeDisplay( _isShowingAllDangerRange );
             }
 
             return true;

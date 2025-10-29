@@ -93,20 +93,43 @@ namespace Frontier.Stage
             _baseDynamicData.CopyTo( _tileDynamicData );
         }
 
-        public void DrawTileMesh( TileMesh tileMesh, Color color )
+        public void ClearTileMesh( CharacterKey ownerKey )
         {
-            tileMesh.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( _tileMeshes.Count + 1 ), TILE_SIZE, color );
-            _tileMeshes.Add( tileMesh );
+            foreach( var tileMesh in _tileMeshes )
+            {
+                if( tileMesh.OwnerKey.Equals( ownerKey ) )
+                {
+                    tileMesh.ClearDraw();
+                    tileMesh.Remove();
+                    _tileMeshes.Remove( tileMesh );
+
+                    ReDrawTileMeshes(); // タイルメッシュのY座標を再設定して描画するため、再描画を行う
+
+                    return;
+                }
+            }
         }
 
+        /// <summary>
+        /// タイルに登録されているタイルメッシュを全て削除します
+        /// </summary>
         public void ClearTileMeshes()
         {
-            foreach( var tile in _tileMeshes )
+            foreach( var tileMesh in _tileMeshes )
             {
-                tile.ClearDraw();
-                tile.Remove();
+                tileMesh.ClearDraw();
+                tileMesh.Remove();
             }
             _tileMeshes.Clear();
+        }
+
+        public int DrawTileMesh( TileMesh tileMesh, in Color color, CharacterKey ownerKey )
+        {
+            int count = _tileMeshes.Count;
+            _tileMeshes.Add( tileMesh );
+            tileMesh.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( count + 1 ), TILE_SIZE, in color, ownerKey );
+            
+            return count;
         }
 
         public Vector3 GetScale()
@@ -149,6 +172,18 @@ namespace Frontier.Stage
             ret.Init( colIndex, rowIndex, this._tileStaticData.Height, this._tileStaticData.TileType );
 
             return ret;
+        }
+
+        /// <summary>
+        /// タイルメッシュを再描画します
+        /// </summary>
+        private void ReDrawTileMeshes()
+        {
+            for( int i = 0; i < _tileMeshes.Count; i++ )
+            {
+                _tileMeshes[i].ClearDraw();
+                _tileMeshes[i].DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( i + 1 ), TILE_SIZE, _tileMeshes[i].GetColor(), _tileMeshes[i].OwnerKey );
+            }
         }
     }
 }

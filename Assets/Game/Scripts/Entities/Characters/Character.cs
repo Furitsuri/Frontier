@@ -423,11 +423,6 @@ namespace Frontier.Entities
             _tileCostTable = costTable;
         }
 
-        public void ClearAttackableRange()
-        {
-            _actionRangeCtrl.ClearAttackableRange();
-        }
-
         /// <summary>
         /// 指定のスキルの使用状態が切替可能かを判定します
         /// </summary>
