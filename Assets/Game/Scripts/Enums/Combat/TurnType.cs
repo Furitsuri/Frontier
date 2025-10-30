@@ -7,6 +7,7 @@
     {
         PLAYER_TURN = 0,
         ENEMY_TURN,
+        OTHER_TURN,
 
         NUM
     }

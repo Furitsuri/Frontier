@@ -37,13 +37,6 @@ namespace Frontier.StateMachine
         /// </summary>
         override public void Update()
         {
-            if( _isFirstUpdate )
-            {
-                _isFirstUpdate = false;
-
-                return;
-            }
-
             // フェーズアニメーション中は操作無効
             if( _btlUi.IsPlayingPhaseUI() )
             {

@@ -150,4 +150,13 @@ public class InputFacade
             _inputCodes[i].ResetIntervalTime();
         }
     }
+
+    /// <summary>
+    /// 常時入力受付可能を示します
+    /// </summary>
+    /// <returns></returns>
+    static public bool CanBeAcceptAlways()
+    {
+        return true;
+    }
 }

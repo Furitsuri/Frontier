@@ -1,16 +1,26 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Combat.Skill;
+using Frontier.CombatPreparation;
 using Frontier.Entities;
-using System.Collections;
-using UnityEngine;
-using Zenject;
+using Frontier.Stage;
 using Frontier.StateMachine;
 using System;
-using Frontier.Combat.Skill;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Zenject;
 
 namespace Frontier.Battle
 {
     public class BattleRoutineController : FocusRoutineBase
     {
+        private enum BattlePhaseType
+        {
+            Placement,
+            Player,
+            Enemy,
+            Other
+        }
+
         [Header("スキルコントローラオブジェクト")]
         [SerializeField]
         private GameObject _skillCtrlObject;
@@ -23,16 +33,15 @@ namespace Frontier.Battle
         [Inject] private StageController _stgCtrl            = null;
         [Inject] private BattleUISystem _btlUi               = null;
 
+        private int _currentStageIndex = 0;
         private BattlePhase _phase;
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = null;
-        private PhaseHandlerBase _currentPhaseHdlr              = null;
-        private PhaseHandlerBase[] _phaseHdlrs                  = new PhaseHandlerBase[((int)TurnType.NUM)];
+        private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
+        private BattlePhaseType _currentPhase;
         
-        private int _phaseHandlerIndex = 0;
-        private int _currentStageIndex = 0;
         // 現在選択中のキャラクターインデックス
         public CharacterKey SelectCharacterInfo { get; private set; } = new CharacterKey(CHARACTER_TAG.NONE, -1);
         public BattleUISystem BtlUi => _btlUi;
@@ -70,15 +79,13 @@ namespace Frontier.Battle
                 SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
             }
 
-            Func<PhaseHandlerBase>[] phaseHdlrFactorys = new Func<PhaseHandlerBase>[]
+            _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
             {
-                () => _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false),
-                () => _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false),
+                { BattlePhaseType.Placement, _hierarchyBld.InstantiateWithDiContainer<PlacementPhaseHandler>(false) },
+                { BattlePhaseType.Player,    _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
+                { BattlePhaseType.Enemy,     _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
+                { BattlePhaseType.Other,     _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
             };
-            for( int i = 0; i < _phaseHdlrs.Length; ++i )
-            {
-                if( _phaseHdlrs[i] == null ) _phaseHdlrs[i] = phaseHdlrFactorys[i]();
-            }
         }
 
         public IEnumerator Battle()
@@ -140,6 +147,38 @@ namespace Frontier.Battle
             return this;
         }
 
+        /// <summary>
+        /// 次のフェーズへの移行先を取得します
+        /// </summary>
+        /// <param name="current"></param>
+        /// <returns></returns>
+        private BattlePhaseType GetNextPhase( BattlePhaseType current )
+        {
+            if( current == BattlePhaseType.Placement )
+                return BattlePhaseType.Player; // 配置が終わったら通常ループに移行
+
+            // 第三勢力キャラクターが存在する場合は、第三勢力キャラクターのフェイズを追加
+            if( 0 < _btlCharaCdr.GetCharacterCount( CHARACTER_TAG.OTHER ) )
+            {
+                return current switch
+                {
+                    BattlePhaseType.Player => BattlePhaseType.Enemy,
+                    BattlePhaseType.Enemy => BattlePhaseType.Other,
+                    BattlePhaseType.Other => BattlePhaseType.Player,
+                    _ => BattlePhaseType.Player
+                };
+            }
+            else
+            {
+                return current switch
+                {
+                    BattlePhaseType.Player => BattlePhaseType.Enemy,
+                    BattlePhaseType.Enemy => BattlePhaseType.Player,
+                    _ => BattlePhaseType.Player
+                };
+            }
+        }
+
         // =========================================================
         // IFocusRoutineの実装
         // =========================================================
@@ -152,7 +191,7 @@ namespace Frontier.Battle
         {
             base.Init();
 
-            _stgCtrl.Init(this);
+            _stgCtrl.Init();
             _btlCharaCdr.Init();
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
@@ -166,7 +205,7 @@ namespace Frontier.Battle
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
-            _currentPhaseHdlr = _phaseHdlrs[(int)TurnType.PLAYER_TURN]; // PLAYERターンから開始(MEMO : ステージによって変更する場合はステージ読込処理から変更出来るように修正)
+            _currentPhase = BattlePhaseType.Player;                  // 初期フェイズを設定
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
@@ -185,7 +224,7 @@ namespace Frontier.Battle
                 }
             }
 
-            // 現在のグリッド上に存在するキャラクター情報を更新
+            // 現在選択しているタイル上に存在するキャラクター情報を更新
             ( var tileSData, var tileDData ) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor(tileSData.CharaStandPos);
 
@@ -194,8 +233,9 @@ namespace Frontier.Battle
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
 
-            _currentPhaseHdlr.Update();
-            _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();
+            _phaseHandlers[_currentPhase].Update();
+
+            _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();   // タイル情報を更新
         }
 
         override public void LateUpdateRoutine()
@@ -209,16 +249,16 @@ namespace Frontier.Battle
             // 勝利、全滅チェックを行う
             if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }
 
-            if( _currentPhaseHdlr.LateUpdate() )
+            var handler = _phaseHandlers[_currentPhase];
+            if( handler.LateUpdate() )
             {
                 // 一時パラメータをリセット
                 _btlCharaCdr.ResetTmpParamAllCharacter();
 
                 // 次のハンドラーに切り替える
-                _phaseHandlerIndex = ( _phaseHandlerIndex + 1 ) % ( int ) TurnType.NUM;
-                _currentPhaseHdlr.Exit();
-                _currentPhaseHdlr = _phaseHdlrs[_phaseHandlerIndex];
-                _currentPhaseHdlr.Run();
+                handler.Exit();
+                _currentPhase = GetNextPhase( _currentPhase );
+                _phaseHandlers[_currentPhase].Run();
             }
         }
 
@@ -230,7 +270,7 @@ namespace Frontier.Battle
         {
             base.Run();
 
-            _currentPhaseHdlr.Run();
+            _phaseHandlers[_currentPhase].Run();
         }
 
         /// <summary>
@@ -241,7 +281,7 @@ namespace Frontier.Battle
         {
             base.Restart();
 
-            _currentPhaseHdlr.Restart();
+            _phaseHandlers[_currentPhase].Restart();
         }
 
         /// <summary>
@@ -252,7 +292,7 @@ namespace Frontier.Battle
         {
             base.Pause();
 
-            _currentPhaseHdlr.Pause();
+            _phaseHandlers[_currentPhase].Pause();
         }
 
         /// <summary>
@@ -263,7 +303,7 @@ namespace Frontier.Battle
         {
             base.Exit();
 
-            _currentPhaseHdlr.Exit();
+            _phaseHandlers[_currentPhase].Exit();
         }
 
         override public int GetPriority() { return (int)FocusRoutinePriority.BATTLE; }

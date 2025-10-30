@@ -11,7 +11,8 @@ using Unity.VisualScripting;
 
 public class TutorialHandler : BaseHandlerExtendedFocusRoutine
 {
-    private InputFacade _inputFcd           = null;
+    [Inject] private InputFacade _inputFcd  = null;
+
     private TutorialPresenter _tutorialView = null;
     private TutorialFileLoader _tutorialLdr = null;
     private int _currentPageIndex           = 0;
@@ -20,12 +21,6 @@ public class TutorialHandler : BaseHandlerExtendedFocusRoutine
     private ReadOnlyCollection<TutorialData> _tutorialDatas = null;
     // 参照しているチュートリアルデータの内容
     private ReadOnlyCollection<TutorialElement> _displayContents = null;
-
-    [Inject]
-    public void Construct( InputFacade inputFcd )
-    {
-        _inputFcd       = inputFcd;
-    }
 
     /// <summary>
     /// 初期化します

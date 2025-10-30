@@ -355,13 +355,13 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="tag">指定するキャラクターのタグ</param>
         /// <returns>指定タグの総ユニット数</returns>
-        public int GetCharacterCount(CHARACTER_TAG tag)
+        public int GetCharacterCount( CHARACTER_TAG tag )
         {
-            switch (tag)
+            switch( tag )
             {
-                case CHARACTER_TAG.PLAYER:    return _players.Count;
-                case CHARACTER_TAG.ENEMY:     return _enemies.Count;
-                case CHARACTER_TAG.OTHER:     return _others.Count;
+                case CHARACTER_TAG.PLAYER: return _players.Count;
+                case CHARACTER_TAG.ENEMY: return _enemies.Count;
+                case CHARACTER_TAG.OTHER: return _others.Count;
                 default: return -1;
             }
         }
