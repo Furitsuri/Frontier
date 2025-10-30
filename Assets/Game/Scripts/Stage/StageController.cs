@@ -77,8 +77,7 @@ namespace Frontier.Stage
         /// <summary>
         /// 初期化を行います
         /// </summary>
-        /// <param name="btlRtnCtrl">バトルマネージャ</param>
-        public void Init( BattleRoutineController btlRtnCtrl )
+        public void Init()
         {
             _stageFileLoader.Init( _tilePrefabs, _tileBhvPrefabs );
             _stageFileLoader.Load( deafultLoadStageIndex );

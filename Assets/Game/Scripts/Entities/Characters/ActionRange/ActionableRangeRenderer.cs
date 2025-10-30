@@ -49,7 +49,7 @@ namespace Frontier.Entities
 
             if( _isShowingAttackableRange )
             {
-                DrawTileMashes( in color );
+                DrawAttackableRange( in color );
             }
             else
             {
@@ -61,7 +61,7 @@ namespace Frontier.Entities
         /// 攻撃可能領域を描画します
         /// </summary>
         /// <param name="color"></param>
-        public void DrawTileMashes( in UnityEngine.Color color )
+        public void DrawAttackableRange( in UnityEngine.Color color )
         {
             foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
             {
@@ -106,6 +106,12 @@ namespace Frontier.Entities
         public void ClearTileMeshes()
         {
             foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
+            {
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                NullCheck.AssertNotNull( tile, nameof( tile ) );
+                tile.ClearTileMesh( _owner.CharaKey );
+            }
+            foreach( var data in _readOnlyActionableTileMap.Value.MoveableTileMap )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
