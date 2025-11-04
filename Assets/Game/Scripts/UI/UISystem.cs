@@ -1,18 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Frontier
+namespace Frontier.UI
 {
     public class UISystem : MonoBehaviour, IUiSystem
     {
-        private GeneralUISystem _generarlUi = null;
-        private BattleUISystem _battleUi    = null;
+        private GeneralUISystem _generarlUi     = null;
+        private DeployUISystem _placementUi  = null;
+        private BattleUISystem _battleUi        = null;
 #if UNITY_EDITOR
-        private DebugUISystem _debugUi      = null;
+        private DebugUISystem _debugUi          = null;
 #endif // UNITY_EDITOR
 
         public GeneralUISystem GeneralUi => _generarlUi;
+        public DeployUISystem DeployUi => _placementUi;
         public BattleUISystem BattleUi => _battleUi;
 #if UNITY_EDITOR
         public DebugUISystem DebugUi => _debugUi;
@@ -24,6 +24,7 @@ namespace Frontier
         enum ChildIndex
         {
             General = 0,
+            Placement,
             Battle,
 #if UNITY_EDITOR
             Debug,
@@ -38,27 +39,34 @@ namespace Frontier
 
         public void InitializeUiSystem()
         {
-            Transform childGeneralUI = transform.GetChild((int)ChildIndex.General);
-            if (childGeneralUI != null)
+            Transform childGeneralUI = transform.GetChild( ( int ) ChildIndex.General );
+            if( childGeneralUI != null )
             {
                 _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
             }
-            Debug.Assert(_generarlUi != null);
+            NullCheck.AssertNotNull( _generarlUi, nameof( _generarlUi ) );
 
-            Transform childBattleUI = transform.GetChild((int)ChildIndex.Battle);
-            if (childBattleUI != null)
+            Transform childPlacementUI = transform.GetChild( ( int ) ChildIndex.Placement );
+            if( childPlacementUI != null )
+            {
+                _placementUi = childPlacementUI.GetComponent<DeployUISystem>();
+            }
+            NullCheck.AssertNotNull( _placementUi, nameof( _placementUi ) );
+
+            Transform childBattleUI = transform.GetChild( ( int ) ChildIndex.Battle );
+            if( childBattleUI != null )
             {
                 _battleUi = childBattleUI.GetComponent<BattleUISystem>();
             }
-            Debug.Assert(_battleUi != null);
+            NullCheck.AssertNotNull( _battleUi, nameof( _battleUi ) );
 
 #if UNITY_EDITOR
-            Transform childDebugUI = transform.GetChild((int)ChildIndex.Debug);
-            if (childDebugUI != null)
+            Transform childDebugUI = transform.GetChild( ( int ) ChildIndex.Debug );
+            if( childDebugUI != null )
             {
                 _debugUi = childDebugUI.GetComponent<DebugUISystem>();
             }
-            Debug.Assert(_debugUi != null);
+            NullCheck.AssertNotNull( _debugUi, nameof( _debugUi ) );
 #endif // UNITY_EDITOR
         }
     }

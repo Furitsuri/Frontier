@@ -81,7 +81,7 @@ namespace Frontier.Battle
 
             _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
             {
-                { BattlePhaseType.Placement, _hierarchyBld.InstantiateWithDiContainer<PlacementPhaseHandler>(false) },
+                { BattlePhaseType.Placement, _hierarchyBld.InstantiateWithDiContainer<DeployPhaseHandler>(false) },
                 { BattlePhaseType.Player,    _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
                 { BattlePhaseType.Enemy,     _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
                 { BattlePhaseType.Other,     _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
@@ -205,7 +205,7 @@ namespace Frontier.Battle
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
-            _currentPhase = BattlePhaseType.Player;                  // 初期フェイズを設定
+            _currentPhase = BattlePhaseType.Placement;                  // 初期フェイズを設定
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
@@ -215,23 +215,23 @@ namespace Frontier.Battle
             base.UpdateRoutine();
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
-            if (!Methods.IsDebugScene())
+            if( !Methods.IsDebugScene() )
 #endif
             {
-                if (GameMain.instance.IsInvoking())
+                if( GameMain.instance.IsInvoking() )
                 {
                     return;
                 }
             }
 
             // 現在選択しているタイル上に存在するキャラクター情報を更新
-            ( var tileSData, var tileDData ) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
-            _battleCameraCtrl.SetLookAtBasedOnSelectCursor(tileSData.CharaStandPos);
+            (var tileSData, var tileDData) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
+            _battleCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
             SelectCharacterInfo = tileDData.CharaKey;
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if (_btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled) return;
+            if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) return;
 
             _phaseHandlers[_currentPhase].Update();
 
@@ -242,9 +242,8 @@ namespace Frontier.Battle
         {
             base.LateUpdateRoutine();
 
-            if( _btlUi.StageClear.isActiveAndEnabled ) { return; }
-
-            if( _btlUi.GameOver.isActiveAndEnabled ) { return; }
+            if( _btlUi.StageClear.isActiveAndEnabled ) { return; }  // ステージクリア時のUIアニメーションが再生されている場合は終了
+            if( _btlUi.GameOver.isActiveAndEnabled ) { return; }    // ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
 
             // 勝利、全滅チェックを行う
             if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }

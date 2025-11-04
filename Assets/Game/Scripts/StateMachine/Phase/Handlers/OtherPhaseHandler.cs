@@ -26,18 +26,6 @@ namespace Frontier.StateMachine
             }
             // アクションゲージの回復
             _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.OTHER );
-
-            // フェーズアニメーションの開始
-            StartPhaseAnim();
-        }
-
-        /// <summary>
-        /// フェーズアニメーションを再生します
-        /// </summary>
-        override protected void StartPhaseAnim()
-        {
-            _btlUi.TogglePhaseUI( true, TurnType.OTHER_TURN );
-            _btlUi.StartAnimPhaseUI();
         }
     }
 }

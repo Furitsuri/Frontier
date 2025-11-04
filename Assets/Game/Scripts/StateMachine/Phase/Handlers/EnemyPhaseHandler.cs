@@ -27,9 +27,6 @@ namespace Frontier.StateMachine
             }
             // アクションゲージの回復
             _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.ENEMY );
-
-            // フェーズアニメーションの開始
-            StartPhaseAnim();
         }
 
         /// <summary>
@@ -37,12 +34,6 @@ namespace Frontier.StateMachine
         /// </summary>
         override public void Update()
         {
-            // フェーズアニメーション中は操作無効
-            if( _btlUi.IsPlayingPhaseUI() )
-            {
-                return;
-            }
-
             base.Update();
         }
 
@@ -70,15 +61,6 @@ namespace Frontier.StateMachine
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
 
             CurrentNode = RootNode;
-        }
-
-        /// <summary>
-        /// フェーズアニメーションを再生します
-        /// </summary>
-        override protected void StartPhaseAnim()
-        {
-            _btlUi.TogglePhaseUI( true, TurnType.ENEMY_TURN );
-            _btlUi.StartAnimPhaseUI();
         }
     }
 }

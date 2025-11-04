@@ -9,7 +9,7 @@
         {
             base.Init();
 
-            // _uiSystem.PlacementUi.SetActiveConfirmCompleted( true );
+            // _uiSystem.DeployUi.SetActiveConfirmUis( true );
         }
 
         override public bool Update()
@@ -24,7 +24,7 @@
 
         override public void ExitState()
         {
-            // _uiSystem.PlacementUi.SetActiveConfirmCompleted( false );
+            // _uiSystem.DeployUi.SetActiveConfirmUis( false );
 
             base.ExitState();
         }
@@ -47,7 +47,7 @@
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        override protected bool AcceptCancel( bool isInput )
         {
             if( !isInput ) return false;
 

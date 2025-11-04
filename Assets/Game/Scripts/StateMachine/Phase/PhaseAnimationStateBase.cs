@@ -36,7 +36,7 @@ namespace Frontier.StateMachine
                 return false;
             }
 
-            // フェーズアニメーションが終了すれば自動的にPlSelectTileへ遷移
+            // フェーズアニメーションが終了すれば自動的にSelectTileへ遷移
             TransitIndex = ( int ) TRANSIT_TAG.SELECT_TILE;
 
             return base.Update();

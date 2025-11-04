@@ -1,14 +1,16 @@
 ﻿using Frontier.Entities;
+using Frontier.StateMachine;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Froniter.StateMachine
 {
     /// <summary>
-    /// プレイヤーターン終了確認の選択画面
+    /// 配置フェーズ：配置確定終了状態
     /// </summary>
-    public class PlConfirmTurnEnd : PlPhaseStateBase
+    public class PlacementConfirmCompleted : PhaseStateBase
     {
         private enum ConfirmTag
         {
@@ -25,33 +27,33 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
-            _cmdIdxVal = new CommandList.CommandIndexedValue(1, 1);
+            _cmdIdxVal = new CommandList.CommandIndexedValue( 1, 1 );
 
-            List<int> commandIndexs = new List<int>((int)ConfirmTag.NUM);
-            for (int i = 0; i < (int)ConfirmTag.NUM; ++i)
+            List<int> commandIndexs = new List<int>( ( int ) ConfirmTag.NUM );
+            for( int i = 0; i < ( int ) ConfirmTag.NUM; ++i )
             {
-                commandIndexs.Add(i);
+                commandIndexs.Add( i );
             }
-            _commandList.Init(ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal);
+            _commandList.Init( ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal );
 
-            _uiSystem.BattleUi.ToggleConfirmTurnEnd(true);
+            _uiSystem.DeployUi.SetActiveConfirmUis( true );
         }
 
         override public bool Update()
         {
-            if (base.Update())
+            if( base.Update() )
             {
                 return true;
             }
 
-            _uiSystem.BattleUi.ApplyTextColor2ConfirmTurnEndUI(_commandList.GetCurrentValue());
+            _uiSystem.DeployUi.ApplyTextColor2ConfirmCompleted( _commandList.GetCurrentValue() );
 
             return IsBack();
         }
 
         override public void ExitState()
         {
-            _uiSystem.BattleUi.ToggleConfirmTurnEnd(false);
+            _uiSystem.DeployUi.SetActiveConfirmUis( false );
 
             base.ExitState();
         }
@@ -65,9 +67,9 @@ namespace Frontier.StateMachine
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.HORIZONTAL_CURSOR,    "Select",   CanAcceptDefault, new AcceptDirectionInput(AcceptDirection), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,              "Confirm",  CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode),
-               (GuideIcon.CANCEL,               "Back",     CanAcceptDefault, new AcceptBooleanInput(AcceptCancel), 0.0f, hashCode)
+               (GuideIcon.HORIZONTAL_CURSOR, "Select", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
             );
         }
 
@@ -78,7 +80,7 @@ namespace Frontier.StateMachine
         /// <returns>入力によってリストカーソルの位置が更新されたか</returns>
         override protected bool AcceptDirection( Direction dir )
         {
-            return _commandList.OperateListCursor(dir);
+            return _commandList.OperateListCursor( dir );
         }
 
         /// <summary>
@@ -90,10 +92,10 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) return false;
 
-            if (_commandList.GetCurrentValue() == (int)ConfirmTag.YES)
+            // 配置完了を確定させて配置フェーズを終了する
+            if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {
-                // 全てのキャラクターを待機済みに設定して敵のフェーズに移行させる
-                _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction(CHARACTER_TAG.PLAYER);
+                _isEndedPhase = true;
             }
 
             Back();

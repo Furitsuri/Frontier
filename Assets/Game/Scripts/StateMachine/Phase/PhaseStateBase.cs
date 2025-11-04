@@ -7,22 +7,14 @@ namespace Frontier.StateMachine
 {
     public class PhaseStateBase : StateBase
     {
-        protected HierarchyBuilderBase _hierarchyBld    = null;
-        protected BattleRoutineController _btlRtnCtrl   = null;
-        protected StageController _stageCtrl            = null;
-        protected IUiSystem _uiSystem                   = null;
-        private TutorialFacade _tutorialFcd             = null;
+        [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
+        [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
+        [Inject] protected StageController _stageCtrl           = null;
+        [Inject] protected TutorialFacade _tutorialFcd          = null;
+        [Inject] protected IUiSystem _uiSystem                  = null;
 
-        [Inject]
-        public void Construct( HierarchyBuilderBase hierarchyBld, InputFacade inputFcd, BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem, TutorialFacade tutorialFcd )
-        {
-            _hierarchyBld   = hierarchyBld;
-            _inputFcd       = inputFcd;
-            _btlRtnCtrl     = btlRtnCtrl;
-            _stageCtrl      = stgCtrl;
-            _uiSystem       = uiSystem;
-            _tutorialFcd    = tutorialFcd;
-        }
+        protected bool _isEndedPhase = false;
+        public bool IsEndedPhase { get { return _isEndedPhase; } }
 
         /// <summary>
         /// 死亡したキャラクターの存在を通知します
@@ -108,21 +100,14 @@ namespace Frontier.StateMachine
         }
 
         virtual protected bool CanAcceptDirection() { return false; }
-
         virtual protected bool CanAcceptConfirm() { return false; }
-
         virtual protected bool CanAcceptCancel() { return false; }
-
         virtual protected bool CanAcceptOptional() { return false; }
-
         virtual protected bool CanAcceptTool() { return false; }
-
+        virtual protected bool CanAcceptInfo() { return false; }
         virtual protected bool CanAcceptSub1() { return false; }
-
         virtual protected bool CanAcceptSub2() { return false; }
-
         virtual protected bool CanAcceptSub3() { return false; }
-
         virtual protected bool CanAcceptSub4() { return false; }
 
         /// <summary>
@@ -154,6 +139,8 @@ namespace Frontier.StateMachine
         virtual protected bool AcceptOptional(bool isOptional) { return false; }
 
         virtual protected bool AcceptTool( bool isInput ) { return false; }
+
+        virtual protected bool AcceptInfo( bool isInput ) { return false; }
 
         virtual protected bool AcceptSub1( bool isInput ) { return false; }
 
