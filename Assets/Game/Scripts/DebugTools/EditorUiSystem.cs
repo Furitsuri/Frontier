@@ -2,15 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Frontier.UI;
 
 public class EditorUiSystem : MonoBehaviour, IUiSystem
 {
     private GeneralUISystem _generarlUi = null;
 #if UNITY_EDITOR
-    private DebugUISystem _debugUi      = null;
+    private DebugUISystem _debugUi = null;
 #endif // UNITY_EDITOR
 
     public GeneralUISystem GeneralUi => _generarlUi;
+    public DeployUISystem DeployUi => null; // DeployUISystem is not defined in this context, returning null
     public BattleUISystem BattleUi => null; // BattleUISystem is not defined in this context, returning null
 #if UNITY_EDITOR
     public DebugUISystem DebugUi => _debugUi;
@@ -35,20 +37,20 @@ public class EditorUiSystem : MonoBehaviour, IUiSystem
 
     public void InitializeUiSystem()
     {
-        Transform childGeneralUI = transform.GetChild((int)ChildIndex.General);
-        if (childGeneralUI != null)
+        Transform childGeneralUI = transform.GetChild( ( int ) ChildIndex.General );
+        if( childGeneralUI != null )
         {
             _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
         }
-        Debug.Assert(_generarlUi != null);
+        Debug.Assert( _generarlUi != null );
 
 #if UNITY_EDITOR
-        Transform childDebugUI = transform.GetChild((int)ChildIndex.Debug);
-        if (childDebugUI != null)
+        Transform childDebugUI = transform.GetChild( ( int ) ChildIndex.Debug );
+        if( childDebugUI != null )
         {
             _debugUi = childDebugUI.GetComponent<DebugUISystem>();
         }
-        Debug.Assert(_debugUi != null);
+        Debug.Assert( _debugUi != null );
 #endif // UNITY_EDITOR
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Frontier.Stage;
+using Frontier.UI;
 using Frontier.Battle;
 using Frontier.Combat.Skill;
 using Frontier.DebugTools.DebugMenu;

@@ -7,7 +7,7 @@ public class StateBase : TreeNode<StateBase>
     public int TransitIndex { get; protected set; } = -1;
 
     protected bool _isBack = false;
-    protected InputFacade _inputFcd = null;
+    [Inject] protected InputFacade _inputFcd = null;
 
     /// <summary>
     /// 初期化します

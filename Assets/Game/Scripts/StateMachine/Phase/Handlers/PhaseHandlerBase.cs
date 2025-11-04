@@ -1,7 +1,8 @@
-﻿using Frontier.Stage;
-using Frontier.Battle;
-using Zenject;
+﻿using Frontier.Battle;
+using Frontier.Stage;
+using Frontier.UI;
 using System.Collections;
+using Zenject;
 
 namespace Frontier.StateMachine
 {
@@ -13,7 +14,8 @@ namespace Frontier.StateMachine
         protected BattleRoutineController _btlRtnCtrl   = null;
         protected StageController _stgCtrl              = null;
         protected BattleUISystem _btlUi                 = null;
-        
+        [Inject] protected IUiSystem _uiSystem          = null;
+
         [Inject]
         public void Construct( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl)
         {
@@ -60,7 +62,9 @@ namespace Frontier.StateMachine
             {
                 CurrentNode.ExitState();
 
-                if( null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase ) { return true; }
+                // CurrentNodeがフェーズ終了通知を発行しているか、
+                // 親がフェーズアニメーションステート、または親が存在しない場合はフェーズ遷移完了とみなす
+                if( CurrentNode.IsEndedPhase || null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase ) { return true; }
 
                 CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
                 _isInitReserved = true;
@@ -92,13 +96,6 @@ namespace Frontier.StateMachine
         {
             // ステートの終了
             CurrentNode.ExitState();
-        }
-
-        /// <summary>
-        /// フェーズアニメーションを再生します
-        /// </summary>
-        virtual protected void StartPhaseAnim()
-        {
         }
     }
 }

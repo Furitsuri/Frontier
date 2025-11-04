@@ -61,38 +61,43 @@ namespace Frontier.StateMachine
              *              ｜
              *              └─ PlSelectTileState
              *                      ｜
+             *                      ├─ CharacterStatusViewState
+             *                      ｜
              *                      ├─ PlConfrimTurnEnd
              *                      ｜
              *                      └─ PlSelectCommandState
-             *                                   ├───────── PlMoveState
-             *                                   ｜                       ｜
-             *                                   ├─ PlAttackState       └─ PlAttackOnMoveState
              *                                   ｜
-             *                                   └─ PlWaitState
+             *                                   ├─ PlWaitState
+             *                                   ｜                       
+             *                                   ├───────────────────── PlAttackState
+             *                                   ｜                                                ｜
+             *                                   └─ PlMoveState                                  └─ CharacterStatusViewState
+             *                                            ｜
+             *                                            ├─ CharacterStatusViewState
+             *                                            ｜
+             *                                            └─ PlAttackOnMoveState
+             *                                   
              */
+
+            // MEMO : キャラクターステータス表示状態は、各所から遷移可能にするため、複数個所に配置しています。
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PlPhaseStateAnimation>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectTileState>( false ) );
             // Children[0]はPlSelectTileState
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlWaitState>( false ) );
-            // Children[0].Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)。
+            // Children[0].Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)
             RootNode.Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>( false ) );
+            RootNode.Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateを追加
+            RootNode.Children[0].Children[0].Children[1].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
 
             CurrentNode = RootNode;
-        }
-
-        /// <summary>
-        /// フェーズアニメーションを再生します
-        /// </summary>
-        override protected void StartPhaseAnim()
-        {
-            _btlUi.TogglePhaseUI( true, TurnType.PLAYER_TURN );
-            _btlUi.StartAnimPhaseUI();
         }
     }
 }

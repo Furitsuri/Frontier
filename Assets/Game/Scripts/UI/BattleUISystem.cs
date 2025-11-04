@@ -162,7 +162,7 @@ namespace Frontier
             ConfirmTurnEnd.gameObject.SetActive(isActive);
         }
 
-        public void ApplyTestColor2ConfirmTurnEndUI(int selectIndex)
+        public void ApplyTextColor2ConfirmTurnEndUI(int selectIndex)
         {
             ConfirmTurnEnd.ApplyTextColor(selectIndex);
         }

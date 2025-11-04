@@ -8,90 +8,90 @@ namespace Frontier
 {
     public class CharacterParameterPresenter : MonoBehaviour
     {
-        [Header("LeftWindowParam")]
+        [Header( "LeftWindowParam" )]
         public CharacterParameterUI PlayerParameter;        // 左側表示のパラメータUIウィンドウ
 
-        [Header("RightWindowParam")]
+        [Header( "RightWindowParam" )]
         public CharacterParameterUI EnemyParameter;         // 右側表示のパラメータUIウィンドウ
 
-        [Header("ParameterAttackDirection")]
+        [Header( "ParameterAttackDirection" )]
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
-        private IUiSystem _uiSystem                 = null;
+        private IUiSystem _uiSystem = null;
         private BattleRoutineController _btlRtnCtrl = null;
-        private StageController _stgCtrl            = null;
-        private Character _prevCharacter            = null;
+        private StageController _stgCtrl = null;
+        private Character _prevCharacter = null;
 
         [Inject]
         public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem )
         {
             _btlRtnCtrl = btlRtnCtrl;
-            _stgCtrl    = stgCtrl;
-            _uiSystem   = uiSystem;
+            _stgCtrl = stgCtrl;
+            _uiSystem = uiSystem;
         }
 
         void Start()
         {
-            PlayerParameter.gameObject.SetActive(false);
-            EnemyParameter.gameObject.SetActive(false);
+            PlayerParameter.gameObject.SetActive( false );
+            EnemyParameter.gameObject.SetActive( false );
         }
 
         // Update is called once per frame
         void Update()
         {
-            Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary(_btlRtnCtrl.SelectCharacterInfo);
+            Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( _btlRtnCtrl.SelectCharacterInfo );
 
             var bindCharacter = _stgCtrl.GetBindCharacterFromGridCursor();
 
-            switch (_stgCtrl.GetGridCursorControllerState())
+            switch( _stgCtrl.GetGridCursorControllerState() )
             {
                 case GridCursorState.ATTACK: // 攻撃対象選択時
-                    Debug.Assert(bindCharacter != null);
+                    Debug.Assert( bindCharacter != null );
 
-                    _uiSystem.BattleUi.TogglePlayerParameter(true);
-                    _uiSystem.BattleUi.ToggleEnemyParameter(true);
+                    _uiSystem.BattleUi.TogglePlayerParameter( true );
+                    _uiSystem.BattleUi.ToggleEnemyParameter( true );
 
                     // 画面構成は以下の通り
                     //   左        右
                     // PLAYER 対 ENEMY
                     // OTHER  対 ENEMY
                     // PLAYER 対 OTHER
-                    if (bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY)
+                    if( bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY )
                     {
-                        PlayerParameter.SetDisplayCharacter(bindCharacter);
-                        EnemyParameter.SetDisplayCharacter(selectCharacter);
+                        PlayerParameter.SetDisplayCharacter( bindCharacter );
+                        EnemyParameter.SetDisplayCharacter( selectCharacter );
                     }
                     else
                     {
-                        PlayerParameter.SetDisplayCharacter(selectCharacter);
-                        EnemyParameter.SetDisplayCharacter(bindCharacter);
+                        PlayerParameter.SetDisplayCharacter( selectCharacter );
+                        EnemyParameter.SetDisplayCharacter( bindCharacter );
                     }
                     break;
-                
-                case GridCursorState.MOVE:   // 移動候補選択時
-                    Debug.Assert(bindCharacter != null);
 
-                    PlayerParameter.SetDisplayCharacter(bindCharacter);
-                    if (selectCharacter != null && selectCharacter != bindCharacter) EnemyParameter.SetDisplayCharacter(selectCharacter);
-                    _uiSystem.BattleUi.ToggleEnemyParameter(selectCharacter != null && selectCharacter != bindCharacter);
+                case GridCursorState.MOVE:   // 移動候補選択時
+                    Debug.Assert( bindCharacter != null );
+
+                    PlayerParameter.SetDisplayCharacter( bindCharacter );
+                    if( selectCharacter != null && selectCharacter != bindCharacter ) EnemyParameter.SetDisplayCharacter( selectCharacter );
+                    _uiSystem.BattleUi.ToggleEnemyParameter( selectCharacter != null && selectCharacter != bindCharacter );
 
                     break;
 
                 default:
                     // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
-                    _uiSystem.BattleUi.TogglePlayerParameter(selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER);
-                    _uiSystem.BattleUi.ToggleEnemyParameter(selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY);
+                    _uiSystem.BattleUi.TogglePlayerParameter( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER );
+                    _uiSystem.BattleUi.ToggleEnemyParameter( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY );
 
                     // パラメータ表示を更新
-                    if (selectCharacter != null)
+                    if( selectCharacter != null )
                     {
-                        if (selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER)
+                        if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
                         {
-                            PlayerParameter.SetDisplayCharacter(selectCharacter);
+                            PlayerParameter.SetDisplayCharacter( selectCharacter );
                         }
                         else
                         {
-                            EnemyParameter.SetDisplayCharacter(selectCharacter);
+                            EnemyParameter.SetDisplayCharacter( selectCharacter );
                         }
                     }
 
@@ -99,15 +99,15 @@ namespace Frontier
             }
 
             // 前フレームで選択したキャラクターと現在選択しているキャラクターが異なる場合はカメラレイヤーを元に戻す
-            if (_prevCharacter != null && _prevCharacter != selectCharacter)
+            if( _prevCharacter != null && _prevCharacter != selectCharacter )
             {
-                _prevCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_CHARACTER));
+                _prevCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_CHARACTER ) );
             }
 
             // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if (selectCharacter != null && _prevCharacter != selectCharacter)
+            if( selectCharacter != null && _prevCharacter != selectCharacter )
             {
-                selectCharacter.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_LEFT_PARAM_WINDOW));
+                selectCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_LEFT_PARAM_WINDOW ) );
             }
 
             _prevCharacter = selectCharacter;
@@ -127,7 +127,7 @@ namespace Frontier
         /// </summary>
         public void ShowDirection()
         {
-            AttackDirection.gameObject.SetActive(true);
+            AttackDirection.gameObject.SetActive( true );
         }
     }
 }

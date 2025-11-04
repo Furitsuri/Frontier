@@ -1,12 +1,10 @@
 ﻿using Frontier;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
+using Frontier.UI;
 
 public interface IUiSystem
 {
     public GeneralUISystem GeneralUi { get; }
+    public DeployUISystem DeployUi { get; }
     public BattleUISystem BattleUi { get; }
 #if UNITY_EDITOR
     public DebugUISystem DebugUi { get; }
