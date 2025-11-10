@@ -16,12 +16,13 @@ namespace Frontier.Battle
         [Inject] HierarchyBuilderBase _hierarchyBld = null;
         [Inject] Stage.StageController _stgCtrl     = null;
 
-        private List<Player> _players               = new List<Player>(Constants.CHARACTER_MAX_NUM);
-        private List<Enemy> _enemies                = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
-        private List<Other> _others                 = new List<Other>(Constants.CHARACTER_MAX_NUM);
-        private List<Character> _allCharacters      = new List<Character>();
+        private List<Player> _candidatePlayers          = new List<Player>(Constants.CHARACTER_MAX_NUM);   // ステージ配置候補プレイヤーリスト
+        private List<Player> _players                   = new List<Player>(Constants.CHARACTER_MAX_NUM);
+        private List<Enemy> _enemies                    = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
+        private List<Other> _others                     = new List<Other>(Constants.CHARACTER_MAX_NUM);
+        private List<Character> _allCharacters          = new List<Character>();
         private Dictionary<CHARACTER_TAG, IEnumerable<Character>> _characterGroups;
-        private CharacterDictionary _characterDict  = null;
+        private CharacterDictionary _characterDict      = null;
         private CharacterKey _diedCharacterKey;
         private CharacterKey _battleBossCharacterKey;
         private CharacterKey _escortTargetCharacterKey;
@@ -88,23 +89,53 @@ namespace Frontier.Battle
         /// キャラクターをリストとハッシュに登録します
         /// </summary>
         /// <param name="chara">登録対象のキャラクター</param>
-        public void AddCharacterToList( Character chara )
+        public void loadCharacterToList( Character chara )
         {
-            var param = chara.Params.CharacterParam;
-            CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
-
             Action<Character>[] addActionsByType = new Action<Character>[]
             {
-                c => _players.Add(c as Player), // PLAYER
-                c => _enemies.Add(c as Enemy),  // ENEMY
-                c => _others.Add(c as Other)    // OTHER
+                // ステージ配置候補のPLAYER
+                c => _candidatePlayers.Add(c as Player),
+                // ENEMY
+                c =>
+                {
+                    var param = chara.Params.CharacterParam;
+                    CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+                    _enemies.Add(c as Enemy);
+                    _allCharacters.Add( chara );
+                    _characterDict.Add( in charaKey, chara );
+                },
+                // OTHER
+                c =>
+                {
+                    var param = chara.Params.CharacterParam;
+                    CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+                    _others.Add(c as Other);
+                    _allCharacters.Add( chara );
+                    _characterDict.Add( in charaKey, chara );
+                }
             };
 
             Debug.Assert( addActionsByType.Length == ( int ) CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。" );
 
             addActionsByType[( int ) chara.Params.CharacterParam.characterTag]( chara );
-            _allCharacters.Add( chara );
-            _characterDict.Add( in charaKey, chara );
+            
+        }
+
+        /// <summary>
+        /// 配置されたキャラクターを登録します
+        /// </summary>
+        /// <param name="characters"></param>
+        public void RegisterBattlePlayers( List<Character> characters )
+        {
+            _players.Clear();
+
+            foreach ( Character character in characters ) {
+                var param = character.Params.CharacterParam;
+                CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+                _players.Add( character as Player );
+                _characterDict.Add( in charaKey, character );
+                _allCharacters.Add( character );
+            }
         }
 
         /// <summary>
@@ -147,6 +178,18 @@ namespace Frontier.Battle
         public Character GetCharacterFromDictionary( in CharacterKey key )
         {
             return _characterDict.Get( key );
+        }
+
+        /// <summary>
+        /// 配置候補プレイヤーをリストから順番に取得します
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Player> GetCandidatePlayerEnumerable()
+        {
+            foreach( var player in _candidatePlayers )
+            {
+                yield return player;
+            }
         }
 
         /// <summary>

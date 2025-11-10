@@ -181,7 +181,7 @@ namespace Frontier
                         npc.SetThinkType((ThinkingType)param.ThinkType);
                     }
 
-                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(chara);
+                    _btlRtnCtrl.BtlCharaCdr.loadCharacterToList(chara);
 
                 }
             }
@@ -253,7 +253,7 @@ namespace Frontier
                 player.Init();
                 player.Params.CharacterParam = param;
 
-                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(player);
+                _btlRtnCtrl.BtlCharaCdr.loadCharacterToList(player);
             }
             else
             {
@@ -263,7 +263,7 @@ namespace Frontier
                 enemy.Init();
                 enemy.Params.CharacterParam = param;
 
-                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList(enemy);
+                _btlRtnCtrl.BtlCharaCdr.loadCharacterToList(enemy);
             }
         }
 #endif  // DEVELOPMENT_BUILD || UNITY_EDITOR

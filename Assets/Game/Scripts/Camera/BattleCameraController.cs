@@ -157,33 +157,33 @@ namespace Frontier
         /// </summary>
         private void UpdateAttackSequenceCamera()
         {
-            switch (_atkCameraPhase)
+            switch( _atkCameraPhase )
             {
                 case AttackSequenceCameraPhase.START:
                     {
-                        _fadeElapsedTime                = Mathf.Clamp(_fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration);
-                        var fadeRate                    = _fadeElapsedTime / _fadeDuration;
-                        var destCameraPos               = _cameraBaseTransform.position + _cameraOffset;
-                        _mainCamera.transform.position  = Vector3.Lerp(_followingPosition, destCameraPos, fadeRate);
-                        _mainCamera.transform.LookAt(_lookAtPosition);
+                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
+                        var fadeRate = _fadeElapsedTime / _fadeDuration;
+                        var destCameraPos = _cameraBaseTransform.position + _cameraOffset;
+                        _mainCamera.transform.position = Vector3.Lerp( _followingPosition, destCameraPos, fadeRate );
+                        _mainCamera.transform.LookAt( _lookAtPosition );
 
                         // 指定レートを上回った際はモザイク処理を施す
-                        if (_mosaicStartFadeRate <= fadeRate)
+                        if( _mosaicStartFadeRate <= fadeRate )
                         {
-                            _mosaicEffectScript.ToggleEnable(true);
+                            _mosaicEffectScript.ToggleEnable( true );
 
                             // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
-                            var blockSizeRate = 1.0f - Mathf.Clamp01(_mosaicBlockSizeMaxRate) * (fadeRate - _mosaicStartFadeRate) / (1f - _mosaicStartFadeRate);
-                            _mosaicEffectScript.UpdateBlockSizeByRate(blockSizeRate);
+                            var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( fadeRate - _mosaicStartFadeRate ) / ( 1f - _mosaicStartFadeRate );
+                            _mosaicEffectScript.UpdateBlockSizeByRate( blockSizeRate );
                         }
 
-                        if (_fadeDuration <= _fadeElapsedTime)
+                        if( _fadeDuration <= _fadeElapsedTime )
                         {
-                            _mosaicEffectScript.ToggleEnable(false);
+                            _mosaicEffectScript.ToggleEnable( false );
                             _mosaicEffectScript.ResetBlockSize();
                             // パラメータを表示
-                            _uiSystem.BattleUi.TogglePlayerParameter(true);
-                            _uiSystem.BattleUi.ToggleEnemyParameter(true);
+                            _uiSystem.BattleUi.TogglePlayerParameter( true );
+                            _uiSystem.BattleUi.ToggleEnemyParameter( true );
                             // 戦闘フィールドに移行
                             _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
                         }
@@ -192,46 +192,46 @@ namespace Frontier
 
                 case AttackSequenceCameraPhase.BATTLE_FIELD:
                     {
-                        if (_cameraBaseTransform == null || _lookAtTransform == null)
+                        if( _cameraBaseTransform == null || _lookAtTransform == null )
                         {
-                            Debug.Assert(false);
+                            Debug.Assert( false );
                             return;
                         }
 
-                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _atkCameraLerpDuration);
+                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _atkCameraLerpDuration );
                         var lerpRate = _fadeElapsedTime / _atkCameraLerpDuration;
                         var nextCameraPosition = _cameraBaseTransform.position + _cameraOffset;
-                        _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, nextCameraPosition, lerpRate);
-                        _lookAtPosition = Vector3.Lerp(_prevLookAtPosition, _lookAtTransform.position, lerpRate);
-                        _mainCamera.transform.LookAt(_lookAtPosition);
+                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, nextCameraPosition, lerpRate );
+                        _lookAtPosition = Vector3.Lerp( _prevLookAtPosition, _lookAtTransform.position, lerpRate );
+                        _mainCamera.transform.LookAt( _lookAtPosition );
                     }
                     break;
 
                 case AttackSequenceCameraPhase.END:
                     {
-                        _fadeElapsedTime = Mathf.Clamp(_fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration);
+                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
                         var fadeRate = _fadeElapsedTime / _fadeDuration;
-                        _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, fadeRate);
-                        _mainCamera.transform.LookAt(_lookAtPosition);
+                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, fadeRate );
+                        _mainCamera.transform.LookAt( _lookAtPosition );
                         // STARTの反対の処理
-                        if (fadeRate < 1f - _mosaicStartFadeRate)
+                        if( fadeRate < 1f - _mosaicStartFadeRate )
                         {
-                            _mosaicEffectScript.ToggleEnable(true);
+                            _mosaicEffectScript.ToggleEnable( true );
 
                             // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
-                            var blockSizeRate = 1.0f - Mathf.Clamp01(_mosaicBlockSizeMaxRate) * (1f - (fadeRate / (1f - _mosaicStartFadeRate)));
-                            _mosaicEffectScript.UpdateBlockSizeByRate(blockSizeRate);
+                            var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( 1f - ( fadeRate / ( 1f - _mosaicStartFadeRate ) ) );
+                            _mosaicEffectScript.UpdateBlockSizeByRate( blockSizeRate );
                         }
 
-                        if (_fadeDuration <= _fadeElapsedTime)
+                        if( _fadeDuration <= _fadeElapsedTime )
                         {
-                            _mosaicEffectScript.ToggleEnable(false);
+                            _mosaicEffectScript.ToggleEnable( false );
                             _mosaicEffectScript.ResetBlockSize();
-                            _uiSystem.BattleUi.TogglePlayerParameter(true);
-                            _uiSystem.BattleUi.ToggleEnemyParameter(true);
+                            _uiSystem.BattleUi.TogglePlayerParameter( true );
+                            _uiSystem.BattleUi.ToggleEnemyParameter( true );
 
                             _mainCamera.transform.position = _followingPosition;
-                            _mainCamera.transform.LookAt(_lookAtPosition);
+                            _mainCamera.transform.LookAt( _lookAtPosition );
 
                             _mode = CameraMode.FOLLOWING;
                         }

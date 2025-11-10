@@ -12,7 +12,7 @@ public class EditorUiSystem : MonoBehaviour, IUiSystem
 #endif // UNITY_EDITOR
 
     public GeneralUISystem GeneralUi => _generarlUi;
-    public DeployUISystem DeployUi => null; // DeployUISystem is not defined in this context, returning null
+    public DeploymentUISystem DeployUi => null; // DeploymentUISystem is not defined in this context, returning null
     public BattleUISystem BattleUi => null; // BattleUISystem is not defined in this context, returning null
 #if UNITY_EDITOR
     public DebugUISystem DebugUi => _debugUi;

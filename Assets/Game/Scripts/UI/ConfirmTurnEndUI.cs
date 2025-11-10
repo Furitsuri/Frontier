@@ -9,6 +9,11 @@ namespace Frontier
     {
         public TextMeshProUGUI[] _confirmTMPTexts;
 
+        void Awake()
+        {
+            gameObject.SetActive(false);
+        }
+
         /// <summary>
         /// 選択しているインデックスに該当する文字色を変更します
         /// </summary>

@@ -2,6 +2,7 @@
 
 static public class Constants
 {
+    public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 3;
     // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;
     // キャラクターが装備出来るスキルの最大数
@@ -80,6 +81,7 @@ static public class Constants
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
     public const string LAYER_NAME_CHARACTER                = "Character";
+    public const string LAYER_NAME_DEPLOY                   = "Deploy";
     public const string LAYER_NAME_LEFT_PARAM_WINDOW        = "ParamRenderLeft";
     public const string LAYER_NAME_RIGHT_PARAM_WINDOW       = "ParamRenderRight";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";

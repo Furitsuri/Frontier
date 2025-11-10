@@ -12,7 +12,7 @@ namespace Frontier
 {
     public class CharacterParameterUI : MonoBehaviour
     {
-        public enum SIDE
+        private enum SIDE
         {
             LEFT = 0,
             RIGHT
@@ -75,37 +75,37 @@ namespace Frontier
 
         void Start()
         {
-            Debug.Assert(_hierarchyBld != null, "HierarchyBuilderBaseのインスタンスが生成されていません。Injectの設定を確認してください。");
+            Debug.Assert( _hierarchyBld != null, "HierarchyBuilderBaseのインスタンスが生成されていません。Injectの設定を確認してください。" );
 
-            _targetTexture = new RenderTexture((int)TargetImage.rectTransform.rect.width * 2, (int)TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32);
+            _targetTexture = new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 );
             TargetImage.texture = _targetTexture;
-            _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>(true, "CharaParamCamera");
+            _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>( true, "CharaParamCamera" );
             _camera.enabled = false;
             _camera.clearFlags = CameraClearFlags.SolidColor;
-            _camera.backgroundColor = new Color(0, 0, 0, 0);
+            _camera.backgroundColor = new Color( 0, 0, 0, 0 );
             _camera.targetTexture = _targetTexture;
-            _camera.cullingMask = 1 << LayerMask.NameToLayer(_layerNames[(int)_side]);
-            _camera.gameObject.name = "CharaParamCamera_" + (_side == SIDE.LEFT ? "PL" : "EM");
+            _camera.cullingMask = 1 << LayerMask.NameToLayer( _layerNames[( int ) _side] );
+            _camera.gameObject.name = "CharaParamCamera_" + ( _side == SIDE.LEFT ? "PL" : "EM" );
 
-            _actGaugeElems = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
+            _actGaugeElems = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
 
-            for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
-                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>(ActGaugeElemImage.gameObject, true);
+                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
                 // var elem = Instantiate(ActGaugeElemImage);
-                _actGaugeElems.Add(elem);
-                elem.gameObject.SetActive(false);
-                elem.transform.SetParent(PanelTransform, false);
+                _actGaugeElems.Add( elem );
+                elem.gameObject.SetActive( false );
+                elem.transform.SetParent( PanelTransform, false );
             }
         }
 
         // Update is called once per frame
         void Update()
         {
-            Debug.Assert(_character != null);   // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
+            Debug.Assert( _character != null );   // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
 
-            UpdateParamRender(_character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam);  // パラメータ表示を反映
-            UpdateCameraRender(_character, _character.Params.CameraParam);  // カメラ描画を反映
+            UpdateParamRender( _character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam );  // パラメータ表示を反映
+            UpdateCameraRender( _character, _character.Params.CameraParam );  // カメラ描画を反映
         }
 
         /// <summary>
@@ -113,27 +113,27 @@ namespace Frontier
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateParamRender(Character selectCharacter, in CharacterParameter param, in SkillModifiedParameter skillParam)
+        void UpdateParamRender( Character selectCharacter, in CharacterParameter param, in SkillModifiedParameter skillParam )
         {
-            Debug.Assert(param.consumptionActionGauge <= param.curActionGauge);
+            Debug.Assert( param.consumptionActionGauge <= param.curActionGauge );
 
-            TMPMaxHPValue.text          = $"{param.MaxHP}";
-            TMPCurHPValue.text          = $"{param.CurHP}";
-            TMPAtkValue.text            = $"{param.Atk}";
-            TMPDefValue.text            = $"{param.Def}";
-            TMPAtkNumValue.text         = $"x {skillParam.AtkNum}";
-            TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
-            TMPAtkNumValue.gameObject.SetActive(1 < skillParam.AtkNum);
+            TMPMaxHPValue.text = $"{param.MaxHP}";
+            TMPCurHPValue.text = $"{param.CurHP}";
+            TMPAtkValue.text = $"{param.Atk}";
+            TMPDefValue.text = $"{param.Def}";
+            TMPAtkNumValue.text = $"x {skillParam.AtkNum}";
+            TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
+            TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
             selectCharacter.Params.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
 
-            totalHpChange = Mathf.Clamp(totalHpChange, -param.CurHP, param.MaxHP - param.CurHP);
-            if (0 < totalHpChange)
+            totalHpChange = Mathf.Clamp( totalHpChange, -param.CurHP, param.MaxHP - param.CurHP );
+            if( 0 < totalHpChange )
             {
                 TMPDiffHPValue.text = $"+{totalHpChange}";
             }
-            else if (totalHpChange < 0)
+            else if( totalHpChange < 0 )
             {
                 TMPDiffHPValue.text = $"{totalHpChange}";
             }
@@ -144,27 +144,27 @@ namespace Frontier
             }
 
             // テキストの色を反映
-            ApplyTextColor(totalHpChange);
+            ApplyTextColor( totalHpChange );
 
             // アクションゲージの表示
-            for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
                 var elem = _actGaugeElems[i];
 
-                if (i <= param.maxActionGauge - 1)
+                if( i <= param.maxActionGauge - 1 )
                 {
-                    elem.gameObject.SetActive(true);
+                    elem.gameObject.SetActive( true );
 
-                    if (i <= param.curActionGauge - 1)
+                    if( i <= param.curActionGauge - 1 )
                     {
                         elem.color = Color.green;
 
                         // アクションゲージ使用時は点滅させる
-                        if ((param.curActionGauge - param.consumptionActionGauge) <= i)
+                        if( ( param.curActionGauge - param.consumptionActionGauge ) <= i )
                         {
                             _blinkingElapsedTime += DeltaTimeProvider.DeltaTime;
-                            _alpha = Mathf.PingPong(_blinkingElapsedTime / BlinkingDuration, 1.0f);
-                            elem.color = new Color(0, 1, 0, _alpha);
+                            _alpha = Mathf.PingPong( _blinkingElapsedTime / BlinkingDuration, 1.0f );
+                            elem.color = new Color( 0, 1, 0, _alpha );
                         }
                     }
                     else
@@ -174,24 +174,24 @@ namespace Frontier
                 }
                 else
                 {
-                    elem.gameObject.SetActive(false);
+                    elem.gameObject.SetActive( false );
                 }
             }
 
             // スキルボックスの表示
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if (param.IsValidSkill(i))
+                if( param.IsValidSkill( i ) )
                 {
-                    SkillBoxes[i].gameObject.SetActive(true);
-                    string skillName = SkillsData.data[(int)param.equipSkills[i]].Name;
-                    var type = SkillsData.data[(int)param.equipSkills[i]].Type;
-                    SkillBoxes[i].SetSkillName(skillName, type);
-                    SkillBoxes[i].ShowSkillCostImage(SkillsData.data[(int)param.equipSkills[i]].Cost);
+                    SkillBoxes[i].gameObject.SetActive( true );
+                    string skillName = SkillsData.data[( int ) param.equipSkills[i]].Name;
+                    var type = SkillsData.data[( int ) param.equipSkills[i]].Type;
+                    SkillBoxes[i].SetSkillName( skillName, type );
+                    SkillBoxes[i].ShowSkillCostImage( SkillsData.data[( int ) param.equipSkills[i]].Cost );
                 }
                 else
                 {
-                    SkillBoxes[i].gameObject.SetActive(false);
+                    SkillBoxes[i].gameObject.SetActive( false );
                 }
             }
         }
@@ -200,13 +200,13 @@ namespace Frontier
         /// テキストの色を反映します
         /// </summary>
         /// <param name="changeHP">HPの変動量</param>
-        void ApplyTextColor(int changeHP)
+        void ApplyTextColor( int changeHP )
         {
-            if (changeHP < 0)
+            if( changeHP < 0 )
             {
                 TMPDiffHPValue.color = Color.red;
             }
-            else if (0 < changeHP)
+            else if( 0 < changeHP )
             {
                 TMPDiffHPValue.color = Color.green;
             }
@@ -217,12 +217,12 @@ namespace Frontier
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateCameraRender(Character selectCharacter, in CameraParameter camParam)
+        void UpdateCameraRender( Character selectCharacter, in CameraParameter camParam )
         {
-            Transform playerTransform = selectCharacter.transform;
-            Vector3 add = Quaternion.AngleAxis(_camareAngleY, Vector3.up) * playerTransform.forward * camParam.UICameraLengthZ;
-            _camera.transform.position = playerTransform.position + add + Vector3.up * camParam.UICameraLengthY;
-            _camera.transform.LookAt(playerTransform.position + Vector3.up * camParam.UICameraLookAtCorrectY);
+            Transform characterTransform = selectCharacter.transform;
+            Vector3 add = Quaternion.AngleAxis( _camareAngleY, Vector3.up ) * characterTransform.forward * camParam.UICameraLengthZ;
+            _camera.transform.position = characterTransform.position + add + Vector3.up * camParam.UICameraLengthY;
+            _camera.transform.LookAt( characterTransform.position + Vector3.up * camParam.UICameraLookAtCorrectY );
             _camera.Render();
         }
 
@@ -231,12 +231,12 @@ namespace Frontier
         /// </summary>
         public void Init()
         {
-            for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
-                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>(ActGaugeElemImage.gameObject, true);
-                _actGaugeElems.Add(elem);
-                elem.gameObject.SetActive(false);
-                elem.transform.SetParent(PanelTransform, false);
+                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
+                _actGaugeElems.Add( elem );
+                elem.gameObject.SetActive( false );
+                elem.transform.SetParent( PanelTransform, false );
             }
         }
 
@@ -254,9 +254,9 @@ namespace Frontier
         /// </summary>
         /// <param name="index"></param>
         /// <returns>指定値</returns>
-        public SkillBoxUI GetSkillBox(int index)
+        public SkillBoxUI GetSkillBox( int index )
         {
-            Debug.Assert(0 <= index && index < Constants.EQUIPABLE_SKILL_MAX_NUM);
+            Debug.Assert( 0 <= index && index < Constants.EQUIPABLE_SKILL_MAX_NUM );
 
             return SkillBoxes[index];
         }
@@ -265,17 +265,17 @@ namespace Frontier
         /// 表示するキャラクターを設定します
         /// </summary>
         /// <param name="character">表示キャラクター</param>
-        public void SetDisplayCharacter(Character character)
+        public void SetDisplayCharacter( Character character )
         {
             _character = character;
 
             // パラメータ画面表示用にキャラクターのレイヤーを変更
-            _character.gameObject.SetLayerRecursively(LayerMask.NameToLayer(_layerNames[(int)_side]));
+            _character.gameObject.SetLayerRecursively( LayerMask.NameToLayer( _layerNames[( int ) _side] ) );
         }
 
         public void ClearDisplayCharacter()
         {
-            _character.gameObject.SetLayerRecursively(LayerMask.NameToLayer(Constants.LAYER_NAME_CHARACTER));
+            _character.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_CHARACTER ) );
         }
     }
 }

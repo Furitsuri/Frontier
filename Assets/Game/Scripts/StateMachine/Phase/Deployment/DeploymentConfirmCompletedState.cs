@@ -10,7 +10,7 @@ namespace Froniter.StateMachine
     /// <summary>
     /// 配置フェーズ：配置確定終了状態
     /// </summary>
-    public class PlacementConfirmCompleted : PhaseStateBase
+    public class DeploymentConfirmCompletedState : DeploymentPhaseStateBase
     {
         private enum ConfirmTag
         {
@@ -36,7 +36,7 @@ namespace Froniter.StateMachine
             }
             _commandList.Init( ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal );
 
-            _uiSystem.DeployUi.SetActiveConfirmUis( true );
+            _presenter.SetActiveConfirmUis( true );
         }
 
         override public bool Update()
@@ -46,14 +46,14 @@ namespace Froniter.StateMachine
                 return true;
             }
 
-            _uiSystem.DeployUi.ApplyTextColor2ConfirmCompleted( _commandList.GetCurrentValue() );
+            _presenter.ApplyTextColor2ConfirmCompleted( _commandList.GetCurrentValue() );
 
             return IsBack();
         }
 
         override public void ExitState()
         {
-            _uiSystem.DeployUi.SetActiveConfirmUis( false );
+            _presenter.SetActiveConfirmUis( false );
 
             base.ExitState();
         }
