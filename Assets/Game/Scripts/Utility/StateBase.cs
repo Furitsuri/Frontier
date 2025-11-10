@@ -1,4 +1,6 @@
 ﻿using Frontier.DebugTools;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -57,6 +59,19 @@ public class StateBase : TreeNode<StateBase>
         }
 
         return retChildren;
+    }
+
+    /// <summary>
+    /// 子のステートノードの列挙を取得します
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> GetChildNodeEnumerable<T>() where T : StateBase
+    {
+        foreach (var child in Children)
+        {
+            yield return child as T;
+        }
     }
 
     /// <summary>

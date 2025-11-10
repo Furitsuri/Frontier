@@ -354,6 +354,24 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// モデルのエミッションを有効/無効にしてモデルを通常表示/発光表示に切り替えます
+        /// </summary>
+        /// <param name="isEnable"></param>
+        public void SetMaterialEmission( bool isEnable )
+        {
+            var renderers = GetComponentsInChildren<Renderer>();
+
+            foreach( var r in renderers )
+            {
+                if( isEnable )
+                    r.material.EnableKeyword( "_EMISSION" );
+                else
+                    r.material.DisableKeyword( "_EMISSION" );
+            }
+
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="type"></param>

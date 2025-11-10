@@ -5,14 +5,14 @@ namespace Frontier.UI
     public class UISystem : MonoBehaviour, IUiSystem
     {
         private GeneralUISystem _generarlUi     = null;
-        private DeployUISystem _placementUi  = null;
+        private DeploymentUISystem _placementUi  = null;
         private BattleUISystem _battleUi        = null;
 #if UNITY_EDITOR
         private DebugUISystem _debugUi          = null;
 #endif // UNITY_EDITOR
 
         public GeneralUISystem GeneralUi => _generarlUi;
-        public DeployUISystem DeployUi => _placementUi;
+        public DeploymentUISystem DeployUi => _placementUi;
         public BattleUISystem BattleUi => _battleUi;
 #if UNITY_EDITOR
         public DebugUISystem DebugUi => _debugUi;
@@ -49,7 +49,7 @@ namespace Frontier.UI
             Transform childPlacementUI = transform.GetChild( ( int ) ChildIndex.Placement );
             if( childPlacementUI != null )
             {
-                _placementUi = childPlacementUI.GetComponent<DeployUISystem>();
+                _placementUi = childPlacementUI.GetComponent<DeploymentUISystem>();
             }
             NullCheck.AssertNotNull( _placementUi, nameof( _placementUi ) );
 

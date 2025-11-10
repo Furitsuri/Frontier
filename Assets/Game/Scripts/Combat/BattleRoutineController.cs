@@ -81,7 +81,7 @@ namespace Frontier.Battle
 
             _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
             {
-                { BattlePhaseType.Placement, _hierarchyBld.InstantiateWithDiContainer<DeployPhaseHandler>(false) },
+                { BattlePhaseType.Placement, _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
                 { BattlePhaseType.Player,    _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
                 { BattlePhaseType.Enemy,     _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
                 { BattlePhaseType.Other,     _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
@@ -155,7 +155,12 @@ namespace Frontier.Battle
         private BattlePhaseType GetNextPhase( BattlePhaseType current )
         {
             if( current == BattlePhaseType.Placement )
+            {
+                var deploymentCharas = ( _phaseHandlers[BattlePhaseType.Placement] as DeploymentPhaseHandler ).GetDeploymentCharasters();
+                _btlCharaCdr.RegisterBattlePlayers( deploymentCharas );
+
                 return BattlePhaseType.Player; // 配置が終わったら通常ループに移行
+            }
 
             // 第三勢力キャラクターが存在する場合は、第三勢力キャラクターのフェイズを追加
             if( 0 < _btlCharaCdr.GetCharacterCount( CHARACTER_TAG.OTHER ) )

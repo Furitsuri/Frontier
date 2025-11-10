@@ -140,6 +140,29 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// キャラクターの位置及び向きを保持します
+        /// </summary>
+        /// <param name="footprint">保持する値</param>
+        public void HoldFootprint( Character chara )
+        {
+            _footprint.gridIndex = chara.Params.TmpParam.gridIndex;
+            _footprint.rotation = chara.transform.rotation;
+        }
+
+        /// <summary>
+        /// 保持していた位置及び向きを指定のキャラクターに設定します
+        /// </summary>
+        /// <param name="character">指定するキャラクター</param>
+        public void FollowFootprint( Character character )
+        {
+            _gridCursorCtrl.Index = _footprint.gridIndex;
+            character.Params.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
+            TileStaticData tileData = _tileDataHdlr.GetCurrentTileDatas().Item1;
+            character.transform.position = tileData.CharaStandPos;
+            character.transform.rotation = _footprint.rotation;
+        }
+
+        /// <summary>
         /// 指定方向にグリッドを移動させます
         /// </summary>
         /// <param name="direction">グリッドの移動方向</param>
@@ -241,6 +264,12 @@ namespace Frontier.Stage
             return retCentralPos;
         }
 
+        public Vector3 GetCurrentGridPosition()
+        {
+            TileStaticData tileData = _stageDataProvider.CurrentData.GetTileStaticData( _gridCursorCtrl.Index );
+            return tileData.CharaStandPos;
+        }
+
         /// <summary>
         /// グリッドカーソルの状態を取得します
         /// </summary>
@@ -305,29 +334,6 @@ namespace Frontier.Stage
 
             // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
             return dijkstra.GetMinRoute( candidataPathIndexs.IndexOf( departGridIndex ), candidataPathIndexs.IndexOf( destGridIndex ), candidataPathIndexs );
-        }
-
-        /// <summary>
-        /// キャラクターの位置及び向きを保持します
-        /// </summary>
-        /// <param name="footprint">保持する値</param>
-        public void HoldFootprint( Character chara )
-        {
-            _footprint.gridIndex = chara.Params.TmpParam.gridIndex;
-            _footprint.rotation = chara.transform.rotation;
-        }
-
-        /// <summary>
-        /// 保持していた位置及び向きを指定のキャラクターに設定します
-        /// </summary>
-        /// <param name="character">指定するキャラクター</param>
-        public void FollowFootprint( Character character )
-        {
-            _gridCursorCtrl.Index = _footprint.gridIndex;
-            character.Params.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
-            TileStaticData tileData         = _tileDataHdlr.GetCurrentTileDatas().Item1;
-            character.transform.position    = tileData.CharaStandPos;
-            character.transform.rotation    = _footprint.rotation;
         }
 
         /// <summary>

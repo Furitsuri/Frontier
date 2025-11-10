@@ -1,8 +1,10 @@
-﻿using Frontier.Entities;
+﻿using Froniter.StateMachine;
+using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.StateMachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static Constants;
 using static InputCode;
@@ -10,14 +12,47 @@ using static InputCode;
 namespace Frontier.StateMachine
 {
     /// <summary>
-    /// 配置フェーズ：タイル選択状態
+    /// キャラクターの選択・配置と、配置先のタイル選択の両方を担います
     /// </summary>
-    public class PlacementSelectTile : PhaseStateBase
+    public class DeploymentRootState : DeploymentPhaseStateBase
     {
+        private int _focusCharacterIndex                        = 0;     // フォーカス中のキャラクターインデックス
+        private Character _focusCharacter                       = null;  // フォーカス中のキャラクター
+        private List<DeploymentCandidate> _deploymentCandidates = new List<DeploymentCandidate>();  // 配置可能なキャラクターリスト
+        private List<Character> _deploymentCharacters           = null;  // 配置するキャラクターリスト
+
         private enum TransitTag
         {
             CHARACTER_STATUS = 0,
             CONFIRM_COMPLETED,
+        }
+
+        /// <summary>
+        /// DeploymentPhaseHandlerから配置キャラクターリストを受け取ります
+        /// 以後こちらのクラスで管理し、結果のみをHandlerに返す形とします
+        /// </summary>
+        /// <param name="candidateCharas"></param>
+        /// <param name="deploymentCharas"></param>
+        public void SetupDeploynmentCharacterLists( ref List<Character> refDeploymentCharas )
+        {
+            _deploymentCharacters   = refDeploymentCharas;
+
+            _deploymentCandidates.Clear();
+            _deploymentCharacters.Clear();
+
+            int count = 0;
+            foreach( var player in _btlRtnCtrl.BtlCharaCdr.GetCandidatePlayerEnumerable() )
+            {
+                _deploymentCandidates.Add( new DeploymentCandidate( player ) );
+                _deploymentCandidates.Last().InitCharacterPosition( new Vector3( 500f * count++, 1000f, 0f ) ); // 画面外に配置しておく
+            }
+
+            _focusCharacter = _deploymentCandidates[_focusCharacterIndex].Character;  // 最初のキャラクターにフォーカスを当てておく
+
+            // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
+            _presenter.AssignDeploymentCandidates( _deploymentCandidates.AsReadOnly() );
+            // 最初のキャラクターにフォーカスを当てておく
+            _presenter.SetFocusCharacters( 0 );
         }
 
         /// <summary>
@@ -27,7 +62,10 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
+            _focusCharacterIndex = 0;
+
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
+            _presenter.SetActiveCharacterSelectUis( true );     // キャラクター選択画面の表示を有効化
         }
 
         override public bool Update()
@@ -92,7 +130,13 @@ namespace Frontier.StateMachine
         /// <returns></returns>
         override protected bool AcceptConfirm( bool isInput )
         {
-            if( !isInput ) return false;
+            if( !isInput ) { return false; }
+
+            _focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
+            _focusCharacter.Params.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
+
+            _deploymentCharacters.Add( _focusCharacter );       // 配置キャラクターリストに追加
+            _presenter.RefreshDeploymentCandidateEmission();    // 配置候補キャラクターリスト表示を更新
 
             return true;
         }
@@ -104,7 +148,7 @@ namespace Frontier.StateMachine
         /// <returns></returns>
         override protected bool AcceptInfo( bool isInput )
         {
-            if( !isInput ) return false;
+            if( !isInput ) { return false; }
 
             TransitIndex = ( int ) TransitTag.CHARACTER_STATUS;
 
@@ -118,7 +162,18 @@ namespace Frontier.StateMachine
         /// <returns></returns>
         override protected bool AcceptSub1( bool isInput )
         {
-            if( !isInput ) return false;
+            if( !isInput ) { return false; }
+
+            _presenter.ClearFocusCharacter();
+
+            if( --_focusCharacterIndex < 0 )
+            {
+                _focusCharacterIndex = _deploymentCandidates.Count - 1;
+            }
+
+            _focusCharacter = _deploymentCandidates[_focusCharacterIndex].Character;
+
+            _presenter.SetFocusCharacters( _focusCharacterIndex );
 
             return true;
         }
@@ -130,7 +185,18 @@ namespace Frontier.StateMachine
         /// <returns></returns>
         override protected bool AcceptSub2( bool isInput )
         {
-            if( !isInput ) return false;
+            if( !isInput ) { return false; }
+
+            _presenter.ClearFocusCharacter();
+
+            if( ++_focusCharacterIndex >= _deploymentCandidates.Count )
+            {
+                _focusCharacterIndex = 0;
+            }
+
+            _focusCharacter = _deploymentCandidates[_focusCharacterIndex].Character;
+
+            _presenter.SetFocusCharacters( _focusCharacterIndex );
 
             return true;
         }
@@ -142,7 +208,7 @@ namespace Frontier.StateMachine
         /// <returns></returns>
         override protected bool AcceptOptional( bool isOptional )
         {
-            if( !isOptional ) return false;
+            if( !isOptional ) { return false; }
 
             TransitIndex = ( int ) TransitTag.CONFIRM_COMPLETED;
 
