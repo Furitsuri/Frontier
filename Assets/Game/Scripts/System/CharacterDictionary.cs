@@ -20,6 +20,11 @@ namespace Frontier
             dict.Remove( key );
         }
 
+        public bool IsContains( in CharacterKey key )
+        {
+            return dict.ContainsKey( key );
+        }
+
         public Character Get( in CharacterKey key )
         {
             if( !key.IsValid() ) { return null; }

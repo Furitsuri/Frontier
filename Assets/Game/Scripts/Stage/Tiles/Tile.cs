@@ -93,6 +93,16 @@ namespace Frontier.Stage
             _baseDynamicData.CopyTo( _tileDynamicData );
         }
 
+        public void SetUndeployableColor()
+        {
+            _renderer.material.color = new Color( 0.5f, 0.5f, 0.5f, 1f );
+        }
+
+        public void ClearUndeployableColor()
+        {
+            _renderer.material.color = Color.white;
+        }
+
         public void ClearTileMesh( CharacterKey ownerKey )
         {
             foreach( var tileMesh in _tileMeshes )
@@ -127,7 +137,7 @@ namespace Frontier.Stage
         {
             int count = _tileMeshes.Count;
             _tileMeshes.Add( tileMesh );
-            tileMesh.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( count + 1 ), TILE_SIZE, in color, ownerKey );
+            tileMesh.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( count + 1 ), in color, ownerKey );
             
             return count;
         }
@@ -182,7 +192,7 @@ namespace Frontier.Stage
             for( int i = 0; i < _tileMeshes.Count; i++ )
             {
                 _tileMeshes[i].ClearDraw();
-                _tileMeshes[i].DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( i + 1 ), TILE_SIZE, _tileMeshes[i].GetColor(), _tileMeshes[i].OwnerKey );
+                _tileMeshes[i].DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( i + 1 ), _tileMeshes[i].GetColor(), _tileMeshes[i].OwnerKey );
             }
         }
     }

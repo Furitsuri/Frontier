@@ -2,7 +2,8 @@
 
 static public class Constants
 {
-    public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 3;
+    // 必ず奇数とすること
+    public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
     // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;
     // キャラクターが装備出来るスキルの最大数
@@ -37,6 +38,8 @@ static public class Constants
     public const float ADD_TILE_POS_Y       = 0.1f;
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
+    // 配置フェーズにおいて表示するキャラクター画像のX座標オフセット値
+    public const float DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X = 180f;
     // キャラクターの移動速度
     public const float CHARACTER_MOVE_SPEED = 6.5f;
     // キャラクターの高速移動時の移動速度レート
@@ -81,7 +84,7 @@ static public class Constants
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
     public const string LAYER_NAME_CHARACTER                = "Character";
-    public const string LAYER_NAME_DEPLOY                   = "Deploy";
+    public const string LAYER_NAME_DEPLOY                   = "DeploymentCharacter";
     public const string LAYER_NAME_LEFT_PARAM_WINDOW        = "ParamRenderLeft";
     public const string LAYER_NAME_RIGHT_PARAM_WINDOW       = "ParamRenderRight";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";

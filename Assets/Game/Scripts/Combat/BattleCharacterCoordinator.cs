@@ -121,21 +121,13 @@ namespace Frontier.Battle
             
         }
 
-        /// <summary>
-        /// 配置されたキャラクターを登録します
-        /// </summary>
-        /// <param name="characters"></param>
-        public void RegisterBattlePlayers( List<Character> characters )
+        public void AddPlayerToList( Character pl )
         {
-            _players.Clear();
-
-            foreach ( Character character in characters ) {
-                var param = character.Params.CharacterParam;
-                CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
-                _players.Add( character as Player );
-                _characterDict.Add( in charaKey, character );
-                _allCharacters.Add( character );
-            }
+            var param = pl.Params.CharacterParam;
+            CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+            _players.Add( pl as Player );
+            _characterDict.Add( in charaKey, pl );
+            _allCharacters.Add( pl );
         }
 
         /// <summary>
@@ -171,16 +163,6 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
-        /// </summary>
-        /// <param name="key">ハッシュキー</param>
-        /// <returns>指定のキーに対応するキャラクター</returns>
-        public Character GetCharacterFromDictionary( in CharacterKey key )
-        {
-            return _characterDict.Get( key );
-        }
-
-        /// <summary>
         /// 配置候補プレイヤーをリストから順番に取得します
         /// </summary>
         /// <returns></returns>
@@ -205,6 +187,11 @@ namespace Frontier.Battle
                     yield return character;
                 }
             }
+        }
+
+        public bool IsContains( in CharacterKey charaKey )
+        {
+            return _characterDict.IsContains( charaKey );
         }
 
         /// <summary>
@@ -323,6 +310,20 @@ namespace Frontier.Battle
                 }
             }
             return isAnnihilated;
+        }
+
+        /// <summary>
+        /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
+        /// </summary>
+        /// <param name="key">ハッシュキー</param>
+        /// <returns>指定のキーに対応するキャラクター</returns>
+        public Character GetCharacterFromDictionary( in CharacterKey key )
+        {
+            if( IsContains( key ) )
+            {
+                return _characterDict.Get( key );
+            }
+            else { return null; }
         }
 
         /// <summary>

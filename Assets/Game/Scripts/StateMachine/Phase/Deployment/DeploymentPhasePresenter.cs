@@ -1,19 +1,30 @@
 ﻿using Froniter.StateMachine;
 using Frontier.Entities;
 using Frontier.UI;
-using System.Collections;
+using UnityEngine.UI;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Zenject;
 using static Constants;
 
+
 public class DeploymentPhasePresenter
 {
-    [Inject] IUiSystem uiSystem                 = null;
+    public enum SlideDirection
+    {
+        LEFT = 0,
+        RIGHT,
+    }
 
+    [Inject] private IUiSystem uiSystem                 = null;
+
+    private bool _isSlideAnimationPlaying = false;
+    private SlideDirection _slideDirection;
     private DeploymentUISystem _deployUiSystem = null;
-    private Character[] _focusCharacters = new Character[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    private DeploymentCandidate[] _focuseDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
     private ReadOnlyCollection<DeploymentCandidate> _refDeploymentCandidates;
+    private Action<SlideDirection> _onCompletedeSlideAnimation;
 
     public void Init()
     {
@@ -23,11 +34,17 @@ public class DeploymentPhasePresenter
 
     public void Update()
     {
+        if( _isSlideAnimationPlaying )
+        {
+            _isSlideAnimationPlaying = !_deployUiSystem.CharacterSelectUi.UpdateSlideAnimation();
+            if( !_isSlideAnimationPlaying ) { 
+                _onCompletedeSlideAnimation?.Invoke( _slideDirection );
+            }
+        }
     }
 
     public void Exit()
     {
-        ResetDeploymentCandidateEmission(); // 配置可能キャラクターのマテリアルエミッションを元に戻す
         _refDeploymentCandidates = null;    // 参照をクリアしておく
 
         _deployUiSystem.Exit();
@@ -39,21 +56,22 @@ public class DeploymentPhasePresenter
     /// <param name="focusCharaIndex"></param>
     public void SetFocusCharacters( int focusCharaIndex )
     {
-        int arrayLength     = _focusCharacters.Length;  // 奇数前提であることに注意
+        int arrayLength     = _focuseDeployments.Length;  // 奇数前提であることに注意
         int centralIndex    = arrayLength / 2;
         int candidateCount  = _refDeploymentCandidates.Count;
 
         // 中央のインデックスを基準に、左右に配置するキャラクターを決定していく
         // 配列の端を超えた場合はループさせる
-        for( int i = 0; i < _focusCharacters.Length; ++i )
+        for( int i = 0; i < _focuseDeployments.Length; ++i )
         {
-            int targetIndex     = focusCharaIndex + ( i - centralIndex );
-            targetIndex         = ( targetIndex % candidateCount + candidateCount ) % candidateCount;
-
-            _focusCharacters[i] = _refDeploymentCandidates[targetIndex].Character;
+            // 「中央」を中心に左右に割り当てる（不足分はループする）
+            int offset = ( i - centralIndex + candidateCount ) % candidateCount;
+            int targetIndex = ( focusCharaIndex + offset ) % candidateCount;
+            
+            _focuseDeployments[i] = _refDeploymentCandidates[targetIndex];
         }
 
-        _deployUiSystem.CharacterSelectUi.AssignSelectCharacter( _focusCharacters );
+        _deployUiSystem.CharacterSelectUi.AssignSelectCandidates( ref _focuseDeployments );
     }
 
     public void ClearFocusCharacter()
@@ -91,6 +109,11 @@ public class DeploymentPhasePresenter
         _deployUiSystem.ConfirmCompleted.gameObject.SetActive( isActive );
     }
 
+    public void ResetDeploymentCharacterDispPosition()
+    {
+        _deployUiSystem.CharacterSelectUi.ResetDeploymentCharacterDispPositions();
+    }
+
     /// <summary>
     /// 配置完了確認UIのテキストカラーの選択・非選択状態を適用します
     /// </summary>
@@ -100,19 +123,22 @@ public class DeploymentPhasePresenter
         _deployUiSystem.ConfirmCompleted.ApplyTextColor( selectIndex );
     }
 
-    public void RefreshDeploymentCandidateEmission()
+    public void SlideAnimationDeploymentCharacterDisplay( SlideDirection direction, Action<DeploymentPhasePresenter.SlideDirection> onCompleted )
     {
-        foreach( var candidate in _refDeploymentCandidates )
-        {
-            candidate.Character.SetMaterialEmission( !candidate.IsDeployed );
-        }
+        _isSlideAnimationPlaying    = true;
+        _slideDirection             = direction;
+        _onCompletedeSlideAnimation = onCompleted;
+
+        _deployUiSystem.CharacterSelectUi.StartSlideAnimation( direction );
     }
 
-    private void ResetDeploymentCandidateEmission()
+    public bool IsSlideAnimationPlaying()
     {
-        foreach( var candidate in _refDeploymentCandidates )
-        {
-            candidate.Character.SetMaterialEmission( true );
-        }
-    }   
+        return _isSlideAnimationPlaying;
+    }
+
+    public ( float, float ) GetDeploymentCharacterDisplaySize()
+    {
+        return _deployUiSystem.CharacterSelectUi.GetDeploymentCharacterDisplaySize();
+    }
 }

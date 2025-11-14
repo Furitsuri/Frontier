@@ -4,8 +4,11 @@ using Frontier.Stage;
 using Frontier.StateMachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using Zenject;
 using static Constants;
 using static InputCode;
 
@@ -16,10 +19,13 @@ namespace Frontier.StateMachine
     /// </summary>
     public class DeploymentRootState : DeploymentPhaseStateBase
     {
+        [Inject] private IStageDataProvider _stageDataProvider = null;
+
         private int _focusCharacterIndex                        = 0;     // フォーカス中のキャラクターインデックス
-        private Character _focusCharacter                       = null;  // フォーカス中のキャラクター
+        private EntitySnapshot _entitySnapshot                  = null;  // UI表示用のキャラクターのスナップショット
         private List<DeploymentCandidate> _deploymentCandidates = new List<DeploymentCandidate>();  // 配置可能なキャラクターリスト
-        private List<Character> _deploymentCharacters           = null;  // 配置するキャラクターリスト
+        private List<DeployableTileData> _deployableTiles       = new List<DeployableTileData>();
+        private List<int> _deployableTileIndexs                 = new List<int>();
 
         private enum TransitTag
         {
@@ -27,32 +33,64 @@ namespace Frontier.StateMachine
             CONFIRM_COMPLETED,
         }
 
-        /// <summary>
-        /// DeploymentPhaseHandlerから配置キャラクターリストを受け取ります
-        /// 以後こちらのクラスで管理し、結果のみをHandlerに返す形とします
-        /// </summary>
-        /// <param name="candidateCharas"></param>
-        /// <param name="deploymentCharas"></param>
-        public void SetupDeploynmentCharacterLists( ref List<Character> refDeploymentCharas )
+        private void InitDeploymentCandidates()
         {
-            _deploymentCharacters   = refDeploymentCharas;
-
             _deploymentCandidates.Clear();
-            _deploymentCharacters.Clear();
 
             int count = 0;
             foreach( var player in _btlRtnCtrl.BtlCharaCdr.GetCandidatePlayerEnumerable() )
             {
-                _deploymentCandidates.Add( new DeploymentCandidate( player ) );
-                _deploymentCandidates.Last().InitCharacterPosition( new Vector3( 500f * count++, 1000f, 0f ) ); // 画面外に配置しておく
+                player.GetTransformHandler.SetPosition( new Vector3( 500f * count++, 1000f, 0f ) ); // 画面外に配置しておく
+
+                // UI表示用に各キャラクターのスナップショットを保存
+                Texture2D candidateSnapshot;
+                _entitySnapshot.CaptureCharacter( player, out candidateSnapshot );
+
+                DeploymentCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<DeploymentCandidate>( false );
+                candidate.Init( player, candidateSnapshot );
+                _deploymentCandidates.Add( candidate );
+            }
+        }
+
+        private void SetupDeployableTiles()
+        {
+            _deployableTileIndexs.Clear();
+
+            // TODO : _deployableTileIndexsの読込
+            _deployableTileIndexs.Add( 4 );
+            _deployableTileIndexs.Add( 5 );
+            _deployableTileIndexs.Add( 6 );
+
+            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
+            {
+                var deployableTileData = _hierarchyBld.InstantiateWithDiContainer<DeployableTileData>( false );
+                deployableTileData.Init( _deployableTileIndexs.Contains( i ), _stageDataProvider.CurrentData.GetTile( i ) );
+                _deployableTiles.Add( deployableTileData );
+            }
+        }
+
+
+        private void OnCompleteSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
+        {
+            _presenter.ClearFocusCharacter();
+
+            if ( direction == DeploymentPhasePresenter.SlideDirection.LEFT )
+            {
+                if( --_focusCharacterIndex < 0 )
+                {
+                    _focusCharacterIndex = _deploymentCandidates.Count - 1;
+                }
+            }
+            else
+            {
+                if( ++_focusCharacterIndex >= _deploymentCandidates.Count )
+                {
+                    _focusCharacterIndex = 0;
+                }
             }
 
-            _focusCharacter = _deploymentCandidates[_focusCharacterIndex].Character;  // 最初のキャラクターにフォーカスを当てておく
-
-            // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
-            _presenter.AssignDeploymentCandidates( _deploymentCandidates.AsReadOnly() );
-            // 最初のキャラクターにフォーカスを当てておく
-            _presenter.SetFocusCharacters( 0 );
+            _presenter.SetFocusCharacters( _focusCharacterIndex );
+            _presenter.ResetDeploymentCharacterDispPosition();
         }
 
         /// <summary>
@@ -62,10 +100,22 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
+            _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
+            NullCheck.AssertNotNull( _entitySnapshot, "_entitySnapshot" );
+            var size = _presenter.GetDeploymentCharacterDisplaySize();
+            _entitySnapshot.Init( size.Item1, size.Item2 );
+
             _focusCharacterIndex = 0;
 
+            InitDeploymentCandidates();
+
+            SetupDeployableTiles(); // 配置可能タイルデータをセット
+
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
-            _presenter.SetActiveCharacterSelectUis( true );     // キャラクター選択画面の表示を有効化
+            
+            _presenter.SetActiveCharacterSelectUis( true );                                 // キャラクター選択画面の表示を有効化
+            _presenter.AssignDeploymentCandidates( _deploymentCandidates.AsReadOnly() );    // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
+            _presenter.SetFocusCharacters( _focusCharacterIndex );                          // 最初のキャラクターにフォーカスを当てておく
         }
 
         override public bool Update()
@@ -74,6 +124,16 @@ namespace Frontier.StateMachine
             // if( base.Update() ) { return true; }
 
             return ( 0 <= TransitIndex );
+        }
+
+        override public void ExitState()
+        {
+            base.ExitState();
+
+            foreach( var deployableTile in _deployableTiles )
+            {
+                deployableTile.Dispose();
+            }
         }
 
         /// <summary>
@@ -85,11 +145,19 @@ namespace Frontier.StateMachine
 
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "PLACE CHARACTER", CanAcceptDefault, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CONFIRM, "PLACE CHARACTER", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptDefault, CanAcceptDefault }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub1 ) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub2 ) }, 0.0f, hashCode),
                (GuideIcon.OPT2, "COMPLETE", CanAcceptOptional, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
+        }
+
+        protected override bool CanAcceptConfirm()
+        {
+            // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
+            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
+            return true;
         }
 
         /// <summary>
@@ -101,6 +169,25 @@ namespace Frontier.StateMachine
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null == character ) { return false; }
 
+            // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
+            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
+            return true;
+        }
+
+        override protected bool CanAcceptSub1()
+        {
+            // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
+            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
+            return true;
+        }
+
+        override protected bool CanAcceptSub2()
+        {
+            // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
+            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
             return true;
         }
 
@@ -110,6 +197,9 @@ namespace Frontier.StateMachine
         /// <returns></returns>
         override protected bool CanAcceptOptional()
         {
+            // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
+            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
             return true;
         }
 
@@ -132,11 +222,36 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            _focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
-            _focusCharacter.Params.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
+            // 配置不可のタイルを選択している場合は終了
+            int currentGridIndex = _stageCtrl.GetCurrentGridIndex();
+            if( !_deployableTiles[currentGridIndex].IsDeployable ) { return false; }
 
-            _deploymentCharacters.Add( _focusCharacter );       // 配置キャラクターリストに追加
-            _presenter.RefreshDeploymentCandidateEmission();    // 配置候補キャラクターリスト表示を更新
+            // 既にキャラクターが配置されているタイルに配置する場合は、そのキャラクターを配置済みリストから削除
+            var charaOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null != charaOnSelectTile && charaOnSelectTile.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER )
+            {
+                // 配置済みフラグをOFFに
+                _deploymentCandidates.Find( c => c.Character.CharaKey == charaOnSelectTile.CharaKey ).IsDeployed = false;
+                // キャラクター管理リストから削除
+                _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey );
+                // 見えない位置に退避
+                charaOnSelectTile.Params.TmpParam.gridIndex = -1;
+                charaOnSelectTile.GetTransformHandler.SetPosition( new Vector3( 0f, 500f, 0f ) );
+            }
+
+            var candidate = _deploymentCandidates[_focusCharacterIndex];
+            candidate.IsDeployed = true;
+            var focusCharacter = candidate.Character;
+            focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
+            focusCharacter.Params.TmpParam.SetCurrentGridIndex( currentGridIndex );
+
+            // リストに挿入されていない場合は挿入
+            if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.CharaKey ) )
+            {
+                _btlRtnCtrl.BtlCharaCdr.AddPlayerToList( focusCharacter );
+            }
+            
+            // TODO ; 配置済みを示すために、キャラのTexture2Dを暗転
 
             return true;
         }
@@ -164,16 +279,7 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            _presenter.ClearFocusCharacter();
-
-            if( --_focusCharacterIndex < 0 )
-            {
-                _focusCharacterIndex = _deploymentCandidates.Count - 1;
-            }
-
-            _focusCharacter = _deploymentCandidates[_focusCharacterIndex].Character;
-
-            _presenter.SetFocusCharacters( _focusCharacterIndex );
+            _presenter.SlideAnimationDeploymentCharacterDisplay( DeploymentPhasePresenter.SlideDirection.LEFT, OnCompleteSlideAnimation );
 
             return true;
         }
@@ -187,16 +293,7 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            _presenter.ClearFocusCharacter();
-
-            if( ++_focusCharacterIndex >= _deploymentCandidates.Count )
-            {
-                _focusCharacterIndex = 0;
-            }
-
-            _focusCharacter = _deploymentCandidates[_focusCharacterIndex].Character;
-
-            _presenter.SetFocusCharacters( _focusCharacterIndex );
+            _presenter.SlideAnimationDeploymentCharacterDisplay( DeploymentPhasePresenter.SlideDirection.RIGHT, OnCompleteSlideAnimation );
 
             return true;
         }
