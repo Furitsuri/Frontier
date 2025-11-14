@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static Constants;
 
 namespace Frontier.Stage
 {
@@ -28,10 +29,10 @@ namespace Frontier.Stage
         /// <param name="collectedPosY"></param>
         /// <param name="tileSize"></param>
         /// <param name="color"></param>
-        public void DrawTileMesh( in Vector3 position, float collectedPosY, float tileSize, in Color color, in CharacterKey ownerKey )
+        public void DrawTileMesh( in Vector3 position, float collectedPosY, in Color color, in CharacterKey ownerKey )
         {
             var mesh        = new Mesh();
-            float halfSize  = 0.5f * tileSize;
+            float halfSize  = 0.5f * TILE_SIZE;
             // 頂点座標配列をメッシュにセット  
             mesh.SetVertices( new Vector3[] {
                 new Vector3 (position.x - halfSize, position.y + collectedPosY, position.z - halfSize),

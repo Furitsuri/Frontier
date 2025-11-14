@@ -43,7 +43,7 @@ namespace Frontier.Battle
         private BattlePhaseType _currentPhase;
         
         // 現在選択中のキャラクターインデックス
-        public CharacterKey SelectCharacterInfo { get; private set; } = new CharacterKey(CHARACTER_TAG.NONE, -1);
+        public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey(CHARACTER_TAG.NONE, -1);
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
@@ -156,9 +156,6 @@ namespace Frontier.Battle
         {
             if( current == BattlePhaseType.Placement )
             {
-                var deploymentCharas = ( _phaseHandlers[BattlePhaseType.Placement] as DeploymentPhaseHandler ).GetDeploymentCharasters();
-                _btlCharaCdr.RegisterBattlePlayers( deploymentCharas );
-
                 return BattlePhaseType.Player; // 配置が終わったら通常ループに移行
             }
 
@@ -233,7 +230,7 @@ namespace Frontier.Battle
             (var tileSData, var tileDData) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
-            SelectCharacterInfo = tileDData.CharaKey;
+            SelectCharacterKey = tileDData.CharaKey;
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) return;

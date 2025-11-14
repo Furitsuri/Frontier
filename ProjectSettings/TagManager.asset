@@ -14,14 +14,14 @@ TagManager:
   - UI
   - ParamRenderLeft
   - ParamRenderRight
-  - Deploy
+  - 
   - 
   - PostProcessing
-  - 
-  - 
-  - 
-  - 
-  - 
+  - DeploymentCharaDisp_0(Clone)
+  - DeploymentCharaDisp_1(Clone)
+  - DeploymentCharaDisp_2(Clone)
+  - DeploymentCharaDisp_3(Clone)
+  - DeploymentCharaDisp_4(Clone)
   - 
   - 
   - 

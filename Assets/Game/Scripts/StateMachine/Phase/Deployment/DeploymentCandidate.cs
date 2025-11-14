@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Frontier.Entities;
+using Zenject;
 
 namespace Froniter.StateMachine
 {
@@ -10,18 +12,17 @@ namespace Froniter.StateMachine
     /// </summary>
     public class DeploymentCandidate
     {
-        public Character Character { get; }
+        private Character _character;
+        private Texture2D _candidateImg;
         public bool IsDeployed { get; set; }
+        public Character Character => _character;
+        public Texture2D CandidateImg => _candidateImg;
 
-        public DeploymentCandidate( Character character )
+        public void Init( Character character, Texture2D img )
         {
-            Character = character;
-            IsDeployed = false;
-        }
-
-        public void InitCharacterPosition( in Vector3 position )
-        {
-            Character.GetTransformHandler.SetPosition( position );
+            _character      = character;
+            _candidateImg   = img;
+            IsDeployed      = false;
         }
     }
 }

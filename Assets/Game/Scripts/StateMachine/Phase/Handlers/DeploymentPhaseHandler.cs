@@ -8,13 +8,7 @@ namespace Frontier.StateMachine
 {
     public sealed class DeploymentPhaseHandler : PhaseHandlerBase
     {
-        private List<Character> _deploymentCharacters           = new List<Character>();  // 配置するキャラクターリスト
         private DeploymentPhasePresenter _presenter;
-
-        public List<Character> GetDeploymentCharasters()
-        {
-            return _deploymentCharacters;
-        }
 
         override public void Init()
         {
@@ -28,7 +22,6 @@ namespace Frontier.StateMachine
             if( drs != null )
             {
                 AssignPresenterToNodes( drs, _presenter );
-                drs.SetupDeploynmentCharacterLists( ref _deploymentCharacters );
             }
 
             // TODO : 配置出来るタイル以外はそのことを示す表示にする処理

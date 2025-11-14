@@ -1,9 +1,10 @@
-﻿using Frontier.Entities;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using Froniter.StateMachine;
 using static Constants;
 using static Frontier.CharacterParameterUI;
 
@@ -11,49 +12,79 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
 {
     [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-    [SerializeField] private RawImage[] TargetImages = new RawImage[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    [SerializeField] private DeploymentCharacterDisplay _deploymentCharacterDisplayPrefab;
 
-    private CharacterCamera[] _charaCameras = new CharacterCamera[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    private DeploymentCharacterDisplay[] _deploymentCharacterDisplays = new DeploymentCharacterDisplay[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
 
-    private void Awake()
+    void Awake()
     {
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            _charaCameras[i] = _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false );
-            NullCheck.AssertNotNull( _charaCameras[i], "_charaCamera" );
+            // ここで設定しているオブジェクト名が、DeploymentCharacterDisplay内のCameraのレイヤー設定にも用いられることに注意。
+            // 詳しくはInspectorのLayers内の各User Layerを確認してください。
+            _deploymentCharacterDisplays[i] = _hierarchyBld.CreateComponentNestedParentWithDiContainer<DeploymentCharacterDisplay>( _deploymentCharacterDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i );
+            NullCheck.AssertNotNull( _deploymentCharacterDisplays[i], "_deploymentCharacterDisplay" + i );
+            _deploymentCharacterDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
+        }
+    }
+
+    void Start()
+    {
+        int centralIndex = DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2;
+
+        for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
+        {
+            float imagePosX = DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X * ( i - centralIndex );
+            _deploymentCharacterDisplays[i].InitAnchoredPosition( imagePosX );
         }
 
         gameObject.SetActive( false );
     }
 
-    void Start()
+    void Update()
     {
+    }
+
+    public bool UpdateSlideAnimation()
+    {
+        bool isCompleted = true;
+
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            _charaCameras[i].Init( "CharaParamCamera_Deploy", LAYER_NAME_DEPLOY, ref TargetImages[i] );
+            if( !_deploymentCharacterDisplays[i].UpdateSlide() )
+            {
+                isCompleted = false;
+            }
+        }
+
+        return isCompleted;
+    }
+
+    public void StartSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
+    {
+        Vector2 SlideGoalPos = ( direction == DeploymentPhasePresenter.SlideDirection.LEFT ) ? 
+            new Vector2( DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X, 0f ) :
+            new Vector2( -DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X, 0f );
+
+        for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
+        {
+            _deploymentCharacterDisplays[i].StartSlide( SlideGoalPos );
         }
     }
 
-    private void Update()
+    public void ResetDeploymentCharacterDispPositions()
     {
-        CameraParameter camParam = new CameraParameter(
-            new Vector3( 0.0f, 1.5f, 0.5f ),
-            1.0f,
-            1.5f,
-            1.0f
-        );
-
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            _charaCameras[i].Update( in camParam );
+            _deploymentCharacterDisplays[i].ResetAnchoredPosition();
         }
     }
 
-    public void AssignSelectCharacter( Character[] selectCharacters )
+    public void AssignSelectCandidates( ref DeploymentCandidate[] selectCandidates )
     {
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            _charaCameras[i].SetDisplayCharacter( selectCharacters[i], LAYER_NAME_DEPLOY );
+            _deploymentCharacterDisplays[i].AssignSelectCandidate( ref selectCandidates[i] );
         }
     }
 
@@ -61,7 +92,15 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
     {
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            _charaCameras[i].ClearDisplayCharacter();
+            _deploymentCharacterDisplays[i].ClearSelectCharacter();
         }
+    }
+
+    public (float, float) GetDeploymentCharacterDisplaySize()
+    {
+        var rect = _deploymentCharacterDisplayPrefab.GetComponent<RectTransform>();
+        NullCheck.AssertNotNull( rect, "_deploymentCharacterDisplayPrefab->rectTransform" );
+
+        return (rect.rect.width, rect.rect.height);
     }
 }
