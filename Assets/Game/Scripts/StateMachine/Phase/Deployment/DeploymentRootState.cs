@@ -154,8 +154,11 @@ namespace Frontier.StateMachine
 
         protected override bool CanAcceptConfirm()
         {
-            // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
+            // キャラクター選択UIのスライドアニメーションが再生中であれば入力不可
             if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
+            // 配置不可のタイルを選択している場合は入力不可
+            if( !_deployableTiles[_stageCtrl.GetCurrentGridIndex()].IsDeployable ) { return false; }
 
             return true;
         }
@@ -222,10 +225,6 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            // 配置不可のタイルを選択している場合は終了
-            int currentGridIndex = _stageCtrl.GetCurrentGridIndex();
-            if( !_deployableTiles[currentGridIndex].IsDeployable ) { return false; }
-
             // 既にキャラクターが配置されているタイルに配置する場合は、そのキャラクターを配置済みリストから削除
             var charaOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null != charaOnSelectTile && charaOnSelectTile.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER )
@@ -243,7 +242,7 @@ namespace Frontier.StateMachine
             candidate.IsDeployed = true;
             var focusCharacter = candidate.Character;
             focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
-            focusCharacter.Params.TmpParam.SetCurrentGridIndex( currentGridIndex );
+            focusCharacter.Params.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
 
             // リストに挿入されていない場合は挿入
             if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.CharaKey ) )

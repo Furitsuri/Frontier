@@ -3,10 +3,10 @@ using Frontier.Entities;
 using Frontier.UI;
 using UnityEngine.UI;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Zenject;
 using static Constants;
+using UnityEngine;
 
 
 public class DeploymentPhasePresenter
@@ -17,12 +17,12 @@ public class DeploymentPhasePresenter
         RIGHT,
     }
 
-    [Inject] private IUiSystem uiSystem                 = null;
+    [Inject] private IUiSystem uiSystem = null;
 
     private bool _isSlideAnimationPlaying = false;
     private SlideDirection _slideDirection;
     private DeploymentUISystem _deployUiSystem = null;
-    private DeploymentCandidate[] _focuseDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    private DeploymentCandidate[] _focusDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
     private ReadOnlyCollection<DeploymentCandidate> _refDeploymentCandidates;
     private Action<SlideDirection> _onCompletedeSlideAnimation;
 
@@ -41,6 +41,10 @@ public class DeploymentPhasePresenter
                 _onCompletedeSlideAnimation?.Invoke( _slideDirection );
             }
         }
+
+        Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
+        var showParamCharacter = _focusDeployments[_focusDeployments.Length / 2];
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( showParamCharacter.Character );
     }
 
     public void Exit()
@@ -56,22 +60,22 @@ public class DeploymentPhasePresenter
     /// <param name="focusCharaIndex"></param>
     public void SetFocusCharacters( int focusCharaIndex )
     {
-        int arrayLength     = _focuseDeployments.Length;  // 奇数前提であることに注意
+        int arrayLength     = _focusDeployments.Length;  // 奇数前提であることに注意
         int centralIndex    = arrayLength / 2;
         int candidateCount  = _refDeploymentCandidates.Count;
 
         // 中央のインデックスを基準に、左右に配置するキャラクターを決定していく
         // 配列の端を超えた場合はループさせる
-        for( int i = 0; i < _focuseDeployments.Length; ++i )
+        for( int i = 0; i < _focusDeployments.Length; ++i )
         {
             // 「中央」を中心に左右に割り当てる（不足分はループする）
             int offset = ( i - centralIndex + candidateCount ) % candidateCount;
             int targetIndex = ( focusCharaIndex + offset ) % candidateCount;
             
-            _focuseDeployments[i] = _refDeploymentCandidates[targetIndex];
+            _focusDeployments[i] = _refDeploymentCandidates[targetIndex];
         }
 
-        _deployUiSystem.CharacterSelectUi.AssignSelectCandidates( ref _focuseDeployments );
+        _deployUiSystem.CharacterSelectUi.AssignSelectCandidates( ref _focusDeployments );
     }
 
     public void ClearFocusCharacter()
@@ -94,7 +98,7 @@ public class DeploymentPhasePresenter
     /// <param name="isActive"></param>
     public void SetActiveCharacterSelectUis( bool isActive )
     {
-        _deployUiSystem.CharacterSelectUi.gameObject.SetActive( isActive );
+        _deployUiSystem.CharacterSelectUi.SetActive( isActive );
     }
 
     /// <summary>
@@ -104,7 +108,7 @@ public class DeploymentPhasePresenter
     public void SetActiveConfirmUis( bool isActive )
     {
         _deployUiSystem.DeployMessage.SetActive( !isActive );   // 配置メッセージはConfirmUIが表示されている間は非表示にする
-        _deployUiSystem.CharacterSelectUi.gameObject.SetActive( !isActive );
+        _deployUiSystem.CharacterSelectUi.SetActive( !isActive );
 
         _deployUiSystem.ConfirmCompleted.gameObject.SetActive( isActive );
     }

@@ -13,14 +13,6 @@ namespace Frontier.Battle
 {
     public class BattleRoutineController : FocusRoutineBase
     {
-        private enum BattlePhaseType
-        {
-            Placement,
-            Player,
-            Enemy,
-            Other
-        }
-
         [Header("スキルコントローラオブジェクト")]
         [SerializeField]
         private GameObject _skillCtrlObject;
@@ -47,6 +39,7 @@ namespace Frontier.Battle
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
+        public BattlePhaseType CurrentBattlePhaseType => _currentPhase;
 
         void Awake()
         {

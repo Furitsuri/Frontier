@@ -17,18 +17,11 @@ namespace Frontier
         [Header( "ParameterAttackDirection" )]
         public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
-        private IUiSystem _uiSystem = null;
-        private BattleRoutineController _btlRtnCtrl = null;
-        private StageController _stgCtrl = null;
-        private Character _prevCharacter = null;
+        [Inject] private IUiSystem _uiSystem                    = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl    = null;
+        [Inject] private StageController _stgCtrl               = null;
 
-        [Inject]
-        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, IUiSystem uiSystem )
-        {
-            _btlRtnCtrl = btlRtnCtrl;
-            _stgCtrl = stgCtrl;
-            _uiSystem = uiSystem;
-        }
+        private Character _prevCharacter = null;
 
         void Start()
         {
@@ -84,14 +77,24 @@ namespace Frontier
 
                     // パラメータ表示を更新
                     if( selectCharacter != null )
-                    {
-                        if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
-                        {
-                            PlayerParameter.SetDisplayCharacter( selectCharacter );
-                        }
-                        else
+                    {   
+                        /*
+                        // 配置フェーズでは常に敵側(右側)に表示
+                        if( _btlRtnCtrl.CurrentBattlePhaseType == BattlePhaseType.Placement )
                         {
                             EnemyParameter.SetDisplayCharacter( selectCharacter );
+                        }
+                        else
+                        */
+                        {
+                            if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+                            {
+                                PlayerParameter.SetDisplayCharacter( selectCharacter );
+                            }
+                            else
+                            {
+                                EnemyParameter.SetDisplayCharacter( selectCharacter );
+                            }
                         }
                     }
 
