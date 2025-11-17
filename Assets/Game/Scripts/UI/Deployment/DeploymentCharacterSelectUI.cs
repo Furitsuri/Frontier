@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using Froniter.StateMachine;
+using Frontier;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-using Froniter.StateMachine;
 using static Constants;
 using static Frontier.CharacterParameterUI;
 
@@ -12,9 +13,15 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
 {
     [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
+    [Header( "配置候補キャラクター表示洋プレハブ" )]
     [SerializeField] private DeploymentCharacterDisplay _deploymentCharacterDisplayPrefab;
 
+    [Header( "キャラクターパタメータ表示UI" )]
+    [SerializeField] private CharacterParameterUI _focusCharaParamUI;
+
     private DeploymentCharacterDisplay[] _deploymentCharacterDisplays = new DeploymentCharacterDisplay[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+
+    public CharacterParameterUI FocusCharaParamUI => _focusCharaParamUI;
 
     void Awake()
     {
@@ -39,6 +46,7 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
         }
 
         gameObject.SetActive( false );
+        _focusCharaParamUI.gameObject.SetActive( false );
     }
 
     void Update()
@@ -58,6 +66,12 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
         }
 
         return isCompleted;
+    }
+
+    public void SetActive( bool isActive )
+    {
+        gameObject.SetActive( isActive );
+        _focusCharaParamUI.gameObject.SetActive( isActive );
     }
 
     public void StartSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
