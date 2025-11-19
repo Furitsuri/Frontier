@@ -3,6 +3,7 @@ using Frontier.Battle;
 using Frontier.Entities;
 using UnityEngine;
 using Zenject;
+using static Constants;
 
 namespace Frontier
 {
@@ -21,7 +22,7 @@ namespace Frontier
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
         [Inject] private StageController _stgCtrl               = null;
 
-        private Character _prevCharacter = null;
+        private Character _prevSelectCharacter = null;
 
         void Start()
         {
@@ -51,21 +52,24 @@ namespace Frontier
                     // PLAYER 対 OTHER
                     if( bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY )
                     {
-                        PlayerParameter.SetDisplayCharacter( bindCharacter );
-                        EnemyParameter.SetDisplayCharacter( selectCharacter );
+                        PlayerParameter.SetDisplayCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
+                        EnemyParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     else
                     {
-                        PlayerParameter.SetDisplayCharacter( selectCharacter );
-                        EnemyParameter.SetDisplayCharacter( bindCharacter );
+                        PlayerParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                        EnemyParameter.SetDisplayCharacter( bindCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     break;
 
                 case GridCursorState.MOVE:   // 移動候補選択時
                     Debug.Assert( bindCharacter != null );
 
-                    PlayerParameter.SetDisplayCharacter( bindCharacter );
-                    if( selectCharacter != null && selectCharacter != bindCharacter ) EnemyParameter.SetDisplayCharacter( selectCharacter );
+                    PlayerParameter.SetDisplayCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
+                    if( selectCharacter != null && selectCharacter != bindCharacter )
+                    {
+                        EnemyParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                    }
                     _uiSystem.BattleUi.ToggleEnemyParameter( selectCharacter != null && selectCharacter != bindCharacter );
 
                     break;
@@ -78,23 +82,13 @@ namespace Frontier
                     // パラメータ表示を更新
                     if( selectCharacter != null )
                     {   
-                        /*
-                        // 配置フェーズでは常に敵側(右側)に表示
-                        if( _btlRtnCtrl.CurrentBattlePhaseType == BattlePhaseType.Placement )
+                        if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
                         {
-                            EnemyParameter.SetDisplayCharacter( selectCharacter );
+                            PlayerParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
                         }
                         else
-                        */
                         {
-                            if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
-                            {
-                                PlayerParameter.SetDisplayCharacter( selectCharacter );
-                            }
-                            else
-                            {
-                                EnemyParameter.SetDisplayCharacter( selectCharacter );
-                            }
+                            EnemyParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                         }
                     }
 
@@ -102,18 +96,18 @@ namespace Frontier
             }
 
             // 前フレームで選択したキャラクターと現在選択しているキャラクターが異なる場合はカメラレイヤーを元に戻す
-            if( _prevCharacter != null && _prevCharacter != selectCharacter )
+            if( _prevSelectCharacter != null && _prevSelectCharacter != selectCharacter )
             {
-                _prevCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_CHARACTER ) );
+                _prevSelectCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
             }
 
             // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if( selectCharacter != null && _prevCharacter != selectCharacter )
+            if( selectCharacter != null && _prevSelectCharacter != selectCharacter )
             {
-                selectCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_LEFT_PARAM_WINDOW ) );
+                selectCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_PLAYER );
             }
 
-            _prevCharacter = selectCharacter;
+            _prevSelectCharacter = selectCharacter;
         }
 
         /// <summary>

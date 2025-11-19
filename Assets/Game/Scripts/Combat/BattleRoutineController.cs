@@ -39,7 +39,6 @@ namespace Frontier.Battle
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
-        public BattlePhaseType CurrentBattlePhaseType => _currentPhase;
 
         void Awake()
         {
@@ -149,7 +148,8 @@ namespace Frontier.Battle
         {
             if( current == BattlePhaseType.Placement )
             {
-                return BattlePhaseType.Player; // 配置が終わったら通常ループに移行
+                _btlUi.gameObject.SetActive( true );    // 戦闘用UIの表示をON
+                return BattlePhaseType.Player;          // 配置が終わったら通常ループに移行
             }
 
             // 第三勢力キャラクターが存在する場合は、第三勢力キャラクターのフェイズを追加
@@ -200,7 +200,8 @@ namespace Frontier.Battle
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
-            _currentPhase = BattlePhaseType.Placement;                  // 初期フェイズを設定
+            _currentPhase = BattlePhaseType.Placement;                  // 初期フェイズを設定(配置フェーズ)
+            _btlUi.gameObject.SetActive( false );                       // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }

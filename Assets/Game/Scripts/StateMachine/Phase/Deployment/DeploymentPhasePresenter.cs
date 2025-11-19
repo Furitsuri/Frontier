@@ -1,12 +1,12 @@
 ﻿using Froniter.StateMachine;
+using Frontier.Battle;
 using Frontier.Entities;
 using Frontier.UI;
-using UnityEngine.UI;
 using System;
 using System.Collections.ObjectModel;
+using UnityEngine;
 using Zenject;
 using static Constants;
-using UnityEngine;
 
 
 public class DeploymentPhasePresenter
@@ -18,9 +18,11 @@ public class DeploymentPhasePresenter
     }
 
     [Inject] private IUiSystem uiSystem = null;
+    [Inject] protected BattleRoutineController _btlRtnCtrl = null;
 
     private bool _isSlideAnimationPlaying = false;
     private SlideDirection _slideDirection;
+    private Character _prevSelectCharacter = null;
     private DeploymentUISystem _deployUiSystem = null;
     private DeploymentCandidate[] _focusDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
     private ReadOnlyCollection<DeploymentCandidate> _refDeploymentCandidates;
@@ -34,6 +36,24 @@ public class DeploymentPhasePresenter
 
     public void Update()
     {
+        // フォーカス中のキャラクターのパラメータの表示
+        Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
+        int index = _focusDeployments.Length / 2;
+        var showParamCharaOnDeployment = _focusDeployments[index].Character;
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( showParamCharaOnDeployment, LAYER_MASK_INDEX_DEPLOYMENT );
+
+        // グリッドカーソルが現在選択中のキャラクターを取得
+        var gridCursorSelectChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+
+        // タイル上のキャラクターのパラメータは、フォーカス中の配置候補キャラクター以外であれば表示
+        bool isActiveOnSelectCharaParam = ( null != gridCursorSelectChara && gridCursorSelectChara != showParamCharaOnDeployment );
+        _deployUiSystem.GridCursorSelectCharaParam.gameObject.SetActive( isActiveOnSelectCharaParam );
+        if( null != gridCursorSelectChara /* && _prevSelectCharacter != gridCursorSelectChara */ )
+        {
+            _deployUiSystem.GridCursorSelectCharaParam.SetDisplayCharacter( gridCursorSelectChara, LAYER_MASK_INDEX_DEPLOYMENT );
+        }
+
+        // キャラクター選択UIのスライドアニメーションの更新
         if( _isSlideAnimationPlaying )
         {
             _isSlideAnimationPlaying = !_deployUiSystem.CharacterSelectUi.UpdateSlideAnimation();
@@ -42,9 +62,7 @@ public class DeploymentPhasePresenter
             }
         }
 
-        Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
-        var showParamCharacter = _focusDeployments[_focusDeployments.Length / 2];
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( showParamCharacter.Character );
+        _prevSelectCharacter = gridCursorSelectChara;
     }
 
     public void Exit()
@@ -133,6 +151,7 @@ public class DeploymentPhasePresenter
         _slideDirection             = direction;
         _onCompletedeSlideAnimation = onCompleted;
 
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.ClearDisplayCharacter();    // 現在表示中のキャラクターの表示情報をクリア
         _deployUiSystem.CharacterSelectUi.StartSlideAnimation( direction );
     }
 

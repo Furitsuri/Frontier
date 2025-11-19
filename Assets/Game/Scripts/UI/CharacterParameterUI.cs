@@ -18,50 +18,23 @@ namespace Frontier
             RIGHT
         }
 
-        [SerializeField]
-        private SIDE _side;
-
-        [SerializeField]
-        private float _camareAngleY;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPMaxHPValue;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPCurHPValue;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPAtkValue;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPDefValue;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPAtkNumValue;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPDiffHPValue;
-
-        [SerializeField]
-        private TextMeshProUGUI TMPActRecoveryValue;
-
-        [SerializeField]
-        private RawImage TargetImage;
-
-        [SerializeField]
-        private RectTransform PanelTransform;
-
-        [SerializeField]
-        private RawImage ActGaugeElemImage;
-
-        [SerializeField]
-        private SkillBoxUI[] SkillBoxes;
-
-        [SerializeField]
-        private float BlinkingDuration;
-
-        [Inject]
-        private HierarchyBuilderBase _hierarchyBld = null;
+        [SerializeField] private SIDE _side;
+        [SerializeField] private int _layerMaskIndex = 0;
+        [SerializeField] private float _camareAngleY;
+        [SerializeField] private float BlinkingDuration;
+        [SerializeField] private TextMeshProUGUI TMPMaxHPValue;
+        [SerializeField] private TextMeshProUGUI TMPCurHPValue;
+        [SerializeField] private TextMeshProUGUI TMPAtkValue;
+        [SerializeField] private TextMeshProUGUI TMPDefValue;
+        [SerializeField] private TextMeshProUGUI TMPAtkNumValue;
+        [SerializeField] private TextMeshProUGUI TMPDiffHPValue;
+        [SerializeField] private TextMeshProUGUI TMPActRecoveryValue;
+        [SerializeField] private RawImage TargetImage;
+        [SerializeField] private RawImage ActGaugeElemImage;
+        [SerializeField] private RectTransform PanelTransform;
+        [SerializeField] private SkillBoxUI[] SkillBoxes;
+        
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private Character _character;
         private Camera _camera;
@@ -69,14 +42,12 @@ namespace Frontier
         private List<RawImage> _actGaugeElems;
         private float _alpha;
         private float _blinkingElapsedTime;
-        // 左右のパラメータウィンドウでカメラのレイヤー名を分ける
-        // 同じレイヤー名にすると、左右のウィンドウで表示するキャラクター同士が接近した際に、互いのカメラに映り込んでしまう
-        private string[] _layerNames = new string[] { Constants.LAYER_NAME_LEFT_PARAM_WINDOW, Constants.LAYER_NAME_RIGHT_PARAM_WINDOW };
 
         void Start()
         {
             Debug.Assert( _hierarchyBld != null, "HierarchyBuilderBaseのインスタンスが生成されていません。Injectの設定を確認してください。" );
 
+            var layerToName = LayerMask.LayerToName( _layerMaskIndex );
             _targetTexture = new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 );
             TargetImage.texture = _targetTexture;
             _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>( true, "CharaParamCamera" );
@@ -84,15 +55,14 @@ namespace Frontier
             _camera.clearFlags = CameraClearFlags.SolidColor;
             _camera.backgroundColor = new Color( 0, 0, 0, 0 );
             _camera.targetTexture = _targetTexture;
-            _camera.cullingMask = 1 << LayerMask.NameToLayer( _layerNames[( int ) _side] );
-            _camera.gameObject.name = "CharaParamCamera_" + ( _side == SIDE.LEFT ? "PL" : "EM" );
+            _camera.cullingMask = 1 << LayerMask.NameToLayer( layerToName );
+            _camera.gameObject.name = "CharaParamCamera_" + layerToName;
 
             _actGaugeElems = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
 
             for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
                 var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
-                // var elem = Instantiate(ActGaugeElemImage);
                 _actGaugeElems.Add( elem );
                 elem.gameObject.SetActive( false );
                 elem.transform.SetParent( PanelTransform, false );
@@ -117,12 +87,12 @@ namespace Frontier
         {
             Debug.Assert( param.consumptionActionGauge <= param.curActionGauge );
 
-            TMPMaxHPValue.text = $"{param.MaxHP}";
-            TMPCurHPValue.text = $"{param.CurHP}";
-            TMPAtkValue.text = $"{param.Atk}";
-            TMPDefValue.text = $"{param.Def}";
-            TMPAtkNumValue.text = $"x {skillParam.AtkNum}";
-            TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
+            TMPMaxHPValue.text          = $"{param.MaxHP}";
+            TMPCurHPValue.text          = $"{param.CurHP}";
+            TMPAtkValue.text            = $"{param.Atk}";
+            TMPDefValue.text            = $"{param.Def}";
+            TMPAtkNumValue.text         = $"x {skillParam.AtkNum}";
+            TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
@@ -265,17 +235,28 @@ namespace Frontier
         /// 表示するキャラクターを設定します
         /// </summary>
         /// <param name="character">表示キャラクター</param>
-        public void SetDisplayCharacter( Character character )
+        public void SetDisplayCharacter( Character character, int layerMaskIndex )
         {
+            // 以前ディスプレイに設定していたキャラクターのレイヤーマスクを元に戻す
+            if( null != _character )
+            {
+                _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+            }
+
             _character = character;
 
             // パラメータ画面表示用にキャラクターのレイヤーを変更
-            _character.gameObject.SetLayerRecursively( LayerMask.NameToLayer( _layerNames[( int ) _side] ) );
+            _character.gameObject.SetLayerRecursively( layerMaskIndex );
         }
 
+        /// <summary>
+        /// キャラクターのレイヤーマスクを元に戻します
+        /// </summary>
         public void ClearDisplayCharacter()
         {
-            _character.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_CHARACTER ) );
+            if( null == _character ) { return; }
+
+            _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
         }
     }
 }

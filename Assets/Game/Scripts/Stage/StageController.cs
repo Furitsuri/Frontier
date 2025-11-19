@@ -110,7 +110,7 @@ namespace Frontier.Stage
         {
             if( _gridCursorCtrl.BindCharacter != null )
             {
-                _gridCursorCtrl.BindCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_CHARACTER ) );
+                _gridCursorCtrl.BindCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
             }
 
             _gridCursorCtrl.GridState = GridCursorState.NONE;

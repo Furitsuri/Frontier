@@ -14,6 +14,14 @@ static public class Constants
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
     // 経路探索におけるルートインデックス最大保持数
     public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 255;
+    // キャラクターカメラのデフォルトのレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_CHARACTER     = 3;
+    // 配置フェーズにおけるキャラクターカメラのレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_DEPLOYMENT    = 6;
+    // 戦闘フェーズにおけるプレイヤーカメラのレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_PLAYER        = 7;
+    // 戦闘フェーズにおけるエネミーカメラのレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_ENEMY         = 8;
     // ステージに設定可能なタイルの最小数(横軸)
     public const int TILE_ROW_MIN_NUM       = 5;
     // ステージに設定可能なタイルの最小数(縦軸)
@@ -83,10 +91,6 @@ static public class Constants
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
 
-    public const string LAYER_NAME_CHARACTER                = "Character";
-    public const string LAYER_NAME_DEPLOY                   = "DeploymentCharacter";
-    public const string LAYER_NAME_LEFT_PARAM_WINDOW        = "ParamRenderLeft";
-    public const string LAYER_NAME_RIGHT_PARAM_WINDOW       = "ParamRenderRight";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
     public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";
     public const string TILE_MATERIALS_FOLDER_PASS          = "Materials/Tile/";

@@ -179,11 +179,11 @@ public class HierarchyBuilderBase : MonoBehaviour
     /// <returns>作成したコンポーネント</returns>
     public T CreateComponentNestedParentWithDiContainer<T>(GameObject gameObject, GameObject parentObject, bool initActive, bool isBind, string objectName) where T : Behaviour
     {
-        gameObject.name = objectName;
         T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
         NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
 
         generateCpt.transform.SetParent(parentObject.transform, false);
+        generateCpt.gameObject.name = objectName;
 
         return generateCpt;
     }
