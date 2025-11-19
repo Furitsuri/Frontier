@@ -36,14 +36,14 @@ public class CharacterCamera
         _camera.Render();
     }
 
-    public void SetDisplayCharacter( Character character, string layerName )
+    public void SetDisplayCharacter( Character character, int layerMaskIndex )
     {
         _dispCharacter = character;
-        _dispCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( layerName ) );    // 配置用にキャラクターのレイヤーを変更
+        _dispCharacter.gameObject.SetLayerRecursively( layerMaskIndex );    // 配置用にキャラクターのレイヤーを変更
     }
 
     public void ClearDisplayCharacter()
     {
-        _dispCharacter.gameObject.SetLayerRecursively( LayerMask.NameToLayer( Constants.LAYER_NAME_CHARACTER ) );
+        _dispCharacter.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
     }
 }

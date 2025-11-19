@@ -10,14 +10,17 @@ namespace Frontier.UI
     /// </summary>
     public class DeploymentUISystem : MonoBehaviour
     {
-        [Header( "DeployMessage" )]
-        public GameObject DeployMessage;                // 配置メッセージ
+        [Header( "キャラクターの配置指示メッセージUI" )]
+        public GameObject DeployMessage;
 
-        [Header( "CharacterSelect" )]
-        public DeploymentCharacterSelectUI CharacterSelectUi; // キャラクター選択UI
+        [Header( "配置キャラクター選択UI" )]
+        public DeploymentCharacterSelectUI CharacterSelectUi;
 
-        [Header( "ConfirmCompleted" )]
-        public ConfirmTurnEndUI ConfirmCompleted;       // 配置完了確認UI
+        [Header( "配置完了確認用UI" )]
+        public ConfirmTurnEndUI ConfirmCompleted;
+
+        [Header( "グリッドカーソルが選択中のキャラクターのパラメータUI" )]
+        public CharacterParameterUI GridCursorSelectCharaParam;
 
         public void Init()
         {
@@ -26,6 +29,7 @@ namespace Frontier.UI
             DeployMessage.SetActive( true );
             CharacterSelectUi.gameObject.SetActive( true );
             ConfirmCompleted.gameObject.SetActive( false );
+            GridCursorSelectCharaParam.gameObject.SetActive( false );
         }
 
         public void Exit()
@@ -35,6 +39,7 @@ namespace Frontier.UI
             DeployMessage.SetActive( false );
             CharacterSelectUi.gameObject.SetActive( false );
             ConfirmCompleted.gameObject.SetActive( false );
+            GridCursorSelectCharaParam.gameObject.SetActive( false );
         }
     }
 }

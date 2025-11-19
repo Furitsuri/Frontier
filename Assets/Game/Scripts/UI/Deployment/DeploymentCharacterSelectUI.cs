@@ -27,10 +27,8 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
     {
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            // ここで設定しているオブジェクト名が、DeploymentCharacterDisplay内のCameraのレイヤー設定にも用いられることに注意。
-            // 詳しくはInspectorのLayers内の各User Layerを確認してください。
             _deploymentCharacterDisplays[i] = _hierarchyBld.CreateComponentNestedParentWithDiContainer<DeploymentCharacterDisplay>( _deploymentCharacterDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i );
-            NullCheck.AssertNotNull( _deploymentCharacterDisplays[i], "_deploymentCharacterDisplay" + i );
+            NullCheck.AssertNotNull( _deploymentCharacterDisplays[i], "DeploymentCharaDisp_" + i );
             _deploymentCharacterDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
         }
     }
