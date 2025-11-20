@@ -22,7 +22,7 @@ public class DeploymentPhasePresenter
 
     private bool _isSlideAnimationPlaying = false;
     private SlideDirection _slideDirection;
-    private Character _prevSelectCharacter = null;
+    private Character _currentGridSelectCharacter = null;
     private DeploymentUISystem _deployUiSystem = null;
     private DeploymentCandidate[] _focusDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
     private ReadOnlyCollection<DeploymentCandidate> _refDeploymentCandidates;
@@ -36,33 +36,9 @@ public class DeploymentPhasePresenter
 
     public void Update()
     {
-        // フォーカス中のキャラクターのパラメータの表示
-        Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
-        int index = _focusDeployments.Length / 2;
-        var showParamCharaOnDeployment = _focusDeployments[index].Character;
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( showParamCharaOnDeployment, LAYER_MASK_INDEX_DEPLOYMENT );
+        UpdateSlideAnimation();
 
-        // グリッドカーソルが現在選択中のキャラクターを取得
-        var gridCursorSelectChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-
-        // タイル上のキャラクターのパラメータは、フォーカス中の配置候補キャラクター以外であれば表示
-        bool isActiveOnSelectCharaParam = ( null != gridCursorSelectChara && gridCursorSelectChara != showParamCharaOnDeployment );
-        _deployUiSystem.GridCursorSelectCharaParam.gameObject.SetActive( isActiveOnSelectCharaParam );
-        if( null != gridCursorSelectChara /* && _prevSelectCharacter != gridCursorSelectChara */ )
-        {
-            _deployUiSystem.GridCursorSelectCharaParam.SetDisplayCharacter( gridCursorSelectChara, LAYER_MASK_INDEX_DEPLOYMENT );
-        }
-
-        // キャラクター選択UIのスライドアニメーションの更新
-        if( _isSlideAnimationPlaying )
-        {
-            _isSlideAnimationPlaying = !_deployUiSystem.CharacterSelectUi.UpdateSlideAnimation();
-            if( !_isSlideAnimationPlaying ) { 
-                _onCompletedeSlideAnimation?.Invoke( _slideDirection );
-            }
-        }
-
-        _prevSelectCharacter = gridCursorSelectChara;
+        // _prevSelectCharacter = gridCursorSelectChara;
     }
 
     public void Exit()
@@ -136,6 +112,35 @@ public class DeploymentPhasePresenter
         _deployUiSystem.CharacterSelectUi.ResetDeploymentCharacterDispPositions();
     }
 
+    public void RefreshGridCursorSelectCharacter()
+    {
+        // グリッドカーソルが現在選択中のキャラクターを取得
+        _currentGridSelectCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+
+        // タイル上のキャラクターのパラメータは、フォーカス中の配置候補キャラクター以外であれば表示
+        bool isActiveOnSelectCharaParam = ( null != _currentGridSelectCharacter && _currentGridSelectCharacter != _focusDeployments[_focusDeployments.Length / 2].Character );
+        _deployUiSystem.GridCursorSelectCharaParam.gameObject.SetActive( isActiveOnSelectCharaParam );
+        if( !isActiveOnSelectCharaParam ) { return; }
+
+        if( null != _currentGridSelectCharacter /* && _prevSelectCharacter != gridCursorSelectChara */ )
+        {
+            _deployUiSystem.GridCursorSelectCharaParam.SetDisplayCharacter( _currentGridSelectCharacter, LAYER_MASK_INDEX_DEPLOYMENT_GRID );
+        }
+
+        // 配置候補UI内でフォーカス中のキャラクターも更新
+        // MEMO : RefreshFocusDeploymentCharacter()を呼んでしまうと無限ループに陥るため注意
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+    }
+
+    public void RefreshFocusDeploymentCharacter()
+    {
+        // フォーカス中のキャラクターのパラメータの表示
+        Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+
+        RefreshGridCursorSelectCharacter();
+    }
+
     /// <summary>
     /// 配置完了確認UIのテキストカラーの選択・非選択状態を適用します
     /// </summary>
@@ -163,5 +168,20 @@ public class DeploymentPhasePresenter
     public ( float, float ) GetDeploymentCharacterDisplaySize()
     {
         return _deployUiSystem.CharacterSelectUi.GetDeploymentCharacterDisplaySize();
+    }
+
+    /// <summary>
+    /// キャラクター選択UIのスライドアニメーションの更新
+    /// </summary>
+    private void UpdateSlideAnimation()
+    {
+        if( _isSlideAnimationPlaying )
+        {
+            _isSlideAnimationPlaying = !_deployUiSystem.CharacterSelectUi.UpdateSlideAnimation();
+            if( !_isSlideAnimationPlaying )
+            {
+                _onCompletedeSlideAnimation?.Invoke( _slideDirection );
+            }
+        }
     }
 }

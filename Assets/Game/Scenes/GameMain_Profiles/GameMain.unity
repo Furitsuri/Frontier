@@ -316,8 +316,8 @@ RectTransform:
   - {fileID: 1075831346}
   - {fileID: 1275179}
   - {fileID: 1219046205}
-  - {fileID: 444442605}
   - {fileID: 1738820741}
+  - {fileID: 444442605}
   m_Father: {fileID: 3764484913681331009}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1094,7 +1094,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5626079772233172074, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
       propertyPath: _layerMaskIndex
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5626079772233172074, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
       propertyPath: _cameraLayeredName
@@ -16038,7 +16038,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2931209788742425695, guid: 4614e94ff31379e4ba34f5e1d2da25b9, type: 3}
       propertyPath: _layerMaskIndex
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2931209788742425695, guid: 4614e94ff31379e4ba34f5e1d2da25b9, type: 3}
       propertyPath: _cameraLayeredName
@@ -16054,7 +16054,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8854747419873739797, guid: 4614e94ff31379e4ba34f5e1d2da25b9, type: 3}
       propertyPath: _layerMaskIndex
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 8854747419873739797, guid: 4614e94ff31379e4ba34f5e1d2da25b9, type: 3}
       propertyPath: _cameraLayeredName

@@ -16,12 +16,14 @@ static public class Constants
     public const int DIJKSTRA_ROUTE_INDEXS_MAX_NUM = 255;
     // キャラクターカメラのデフォルトのレイヤーマスク番号
     public const int LAYER_MASK_INDEX_CHARACTER     = 3;
-    // 配置フェーズにおけるキャラクターカメラのレイヤーマスク番号
-    public const int LAYER_MASK_INDEX_DEPLOYMENT    = 6;
+    // 配置フェーズにおいて、グリッドカーソルで選択したキャラクターカメラのレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_DEPLOYMENT_GRID   = 6;
+    // 配置フェーズにおいて、配置候補をでフォーカスしたキャラクターカメラのレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_DEPLOYMENT_FOCUS  = 7;
     // 戦闘フェーズにおけるプレイヤーカメラのレイヤーマスク番号
-    public const int LAYER_MASK_INDEX_PLAYER        = 7;
+    public const int LAYER_MASK_INDEX_PLAYER            = 8;
     // 戦闘フェーズにおけるエネミーカメラのレイヤーマスク番号
-    public const int LAYER_MASK_INDEX_ENEMY         = 8;
+    public const int LAYER_MASK_INDEX_ENEMY             = 9;
     // ステージに設定可能なタイルの最小数(横軸)
     public const int TILE_ROW_MIN_NUM       = 5;
     // ステージに設定可能なタイルの最小数(縦軸)
