@@ -12,10 +12,10 @@ TagManager:
   - Character
   - Water
   - UI
-  - ParamRenderDeployment
+  - ParamRenderDeploymentGrid
+  - ParamRenderDeploymentFocus
   - ParamRenderPlayer
   - ParamRenderEnemy
-  - 
   - PostProcessing
   - 
   - 

@@ -90,6 +90,7 @@ namespace Frontier.StateMachine
             }
 
             _presenter.SetFocusCharacters( _focusCharacterIndex );
+            _presenter.RefreshFocusDeploymentCharacter();
             _presenter.ResetDeploymentCharacterDispPosition();
         }
 
@@ -116,6 +117,8 @@ namespace Frontier.StateMachine
             _presenter.SetActiveCharacterSelectUis( true );                                 // キャラクター選択画面の表示を有効化
             _presenter.AssignDeploymentCandidates( _deploymentCandidates.AsReadOnly() );    // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
             _presenter.SetFocusCharacters( _focusCharacterIndex );                          // 最初のキャラクターにフォーカスを当てておく
+            _presenter.RefreshGridCursorSelectCharacter();
+            _presenter.RefreshFocusDeploymentCharacter();
         }
 
         override public bool Update()
@@ -213,7 +216,11 @@ namespace Frontier.StateMachine
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptDirection( Direction dir )
         {
-            return _stageCtrl.OperateGridCursorController( dir );
+            bool isOperated = _stageCtrl.OperateGridCursorController( dir );
+
+            if( isOperated ) { _presenter.RefreshGridCursorSelectCharacter(); }
+
+            return isOperated;
         }
 
         /// <summary>
