@@ -10,14 +10,8 @@ using Zenject;
 
 public class EditorHandlerBase : Tree<EditorStateBase>
 {
+    [Inject] protected HierarchyBuilderBase _hierarchyBld = null;
     protected bool _isInitReserved = false;
-    protected HierarchyBuilderBase _hierarchyBld = null;
-
-    [Inject]
-    public void Construct(HierarchyBuilderBase hierarchyBld)
-    {
-        _hierarchyBld = hierarchyBld;
-    }
 
     virtual public void Init()
     {

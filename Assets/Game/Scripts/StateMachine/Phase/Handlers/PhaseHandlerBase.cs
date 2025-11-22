@@ -8,22 +8,13 @@ namespace Frontier.StateMachine
 {
     public class PhaseHandlerBase : Tree<PhaseStateBase>
     {
-        protected bool _isInitReserved = false;
-        protected bool _isFirstUpdate = false;
-        protected HierarchyBuilderBase _hierarchyBld = null;
-        protected BattleRoutineController _btlRtnCtrl = null;
-        protected StageController _stgCtrl = null;
-        protected BattleUISystem _btlUi = null;
-        [Inject] protected IUiSystem _uiSystem = null;
+        [Inject] protected IUiSystem _uiSystem                  = null;
+        [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
+        [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
+        [Inject] protected StageController _stgCtrl             = null;
+        [Inject] protected BattleUISystem _btlUi                = null;
 
-        [Inject]
-        public void Construct( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl )
-        {
-            _hierarchyBld = hierarchyBld;
-            _btlRtnCtrl = btlRtnCtrl;
-            _btlUi = btlUi;
-            _stgCtrl = stgCtrl;
-        }
+        protected bool _isFirstUpdate = false;
 
         /// <summary>
         /// 初期化します
@@ -31,26 +22,13 @@ namespace Frontier.StateMachine
         /// </summary>
         virtual public void Init()
         {
-            // 遷移木の作成
-            CreateTree();
+            CreateTree();   // 遷移木の作成
 
             _isFirstUpdate = true;
         }
 
         virtual public void Update()
         {
-            /*
-            if( _isInitReserved )
-            {
-                CurrentNode.RunState();
-                _isInitReserved = false;
-            }
-            else
-            {
-                CurrentNode.RestartState();
-            }
-            */
-
             CurrentNode.Update();   // 現在実行中のステートを更新
         }
 
@@ -62,9 +40,8 @@ namespace Frontier.StateMachine
             {
                 if( CurrentNode.IsExitReserved ) { CurrentNode.ExitState(); }   // 終了
                 else { CurrentNode.PauseState(); }                              // 中断
-                
+
                 CurrentNode = CurrentNode.GetChildren<PhaseStateBase>( transitIndex );
-                // _isInitReserved = true; // 初期化を予約します
                 CurrentNode.RunState();
             }
             else if( CurrentNode.IsBack() )
@@ -79,15 +56,10 @@ namespace Frontier.StateMachine
 
                 CurrentNode.ExitState();
                 CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
-                // if( CurrentNode.IsExitReserved ) { _isInitReserved = true; } // 以前のノードがExitしていた場合は初期化
-                if( CurrentNode.IsExitReserved )
-                {
-                    CurrentNode.RunState();
-                }
-                else
-                {
-                    CurrentNode.RestartState();
-                }
+
+                // Exit処理が行われたノードはRunを実行。それ以外はPause処理が行われたためRestartを実行
+                if( CurrentNode.IsExitReserved ) { CurrentNode.RunState(); }
+                else { CurrentNode.RestartState(); }
             }
 
             return false;
@@ -95,21 +67,18 @@ namespace Frontier.StateMachine
 
         virtual public void Run()
         {
-            // ステートの開始
             Init();
-            CurrentNode.RunState();
+            CurrentNode.RunState();     // ステートの開始
         }
 
         virtual public void Restart()
         {
-            // ステートの再開
-            CurrentNode.RestartState();
+            CurrentNode.RestartState(); // ステートの再開
         }
 
         virtual public void Pause()
         {
-            // ステートの一時停止
-            CurrentNode.PauseState();
+            CurrentNode.PauseState();   // ステートの一時停止
         }
 
         virtual public void Exit()

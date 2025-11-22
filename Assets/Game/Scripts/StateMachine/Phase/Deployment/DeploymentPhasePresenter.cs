@@ -98,10 +98,8 @@ public class DeploymentPhasePresenter
     /// <param name="isActive"></param>
     public void SetActiveConfirmUis( bool isActive )
     {
-        _deployUiSystem.DeployMessage.SetActive( !isActive );   // 配置メッセージはConfirmUIが表示されている間は非表示にする
-        _deployUiSystem.CharacterSelectUi.SetActive( !isActive );
-
-        _deployUiSystem.ConfirmCompleted.gameObject.SetActive( isActive );
+        _deployUiSystem.CharacterSelectUi.SetActive( !isActive );           // 配置キャラクター選択UIの表示を切替
+        _deployUiSystem.ConfirmCompleted.gameObject.SetActive( isActive );  // 配置完了確認UIの表示を切替
     }
 
     public void ResetDeploymentCharacterDispPosition()
