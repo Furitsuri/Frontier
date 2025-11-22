@@ -38,6 +38,11 @@ public class DeploymentCharacterDisplay : MonoBehaviour
         UpdateIsDisplayed();
     }
 
+    public void Init()
+    {
+
+    }
+
     public void InitAnchoredPosition( float posX )
     {
         _rectTransform.anchoredPosition = new Vector2( posX, 0f );

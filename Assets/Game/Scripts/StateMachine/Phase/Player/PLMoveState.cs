@@ -215,7 +215,7 @@ namespace Frontier.StateMachine
         /// </summary>
         private void TransitAttackOnMoveState()
         {
-            TransitIndex = TransitAttackStateValue;
+            TransitStateWithExit( TransitAttackStateValue );
         }
 
         /// <summary>

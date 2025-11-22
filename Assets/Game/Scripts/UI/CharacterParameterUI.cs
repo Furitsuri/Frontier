@@ -12,13 +12,8 @@ namespace Frontier
 {
     public class CharacterParameterUI : MonoBehaviour
     {
-        private enum SIDE
-        {
-            LEFT = 0,
-            RIGHT
-        }
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        [SerializeField] private SIDE _side;
         [SerializeField] private int _layerMaskIndex = 0;
         [SerializeField] private float _camareAngleY;
         [SerializeField] private float BlinkingDuration;
@@ -33,40 +28,20 @@ namespace Frontier
         [SerializeField] private RawImage ActGaugeElemImage;
         [SerializeField] private RectTransform PanelTransform;
         [SerializeField] private SkillBoxUI[] SkillBoxes;
-        
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private Character _character;
-        private Camera _camera;
+        private CharacterCamera _characterCamera;
         private RenderTexture _targetTexture;
-        private List<RawImage> _actGaugeElems;
+        private List<RawImage> _actGaugeElems = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
         private float _alpha;
         private float _blinkingElapsedTime;
 
-        void Start()
+        void Awake()
         {
-            Debug.Assert( _hierarchyBld != null, "HierarchyBuilderBaseのインスタンスが生成されていません。Injectの設定を確認してください。" );
-
-            var layerToName = LayerMask.LayerToName( _layerMaskIndex );
             _targetTexture = new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 );
-            TargetImage.texture = _targetTexture;
-            _camera = _hierarchyBld.CreateComponentAndOrganize<Camera>( true, "CharaParamCamera" );
-            _camera.enabled = false;
-            _camera.clearFlags = CameraClearFlags.SolidColor;
-            _camera.backgroundColor = new Color( 0, 0, 0, 0 );
-            _camera.targetTexture = _targetTexture;
-            _camera.cullingMask = 1 << LayerMask.NameToLayer( layerToName );
-            _camera.gameObject.name = "CharaParamCamera_" + layerToName;
 
-            _actGaugeElems = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
-
-            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
-            {
-                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
-                _actGaugeElems.Add( elem );
-                elem.gameObject.SetActive( false );
-                elem.transform.SetParent( PanelTransform, false );
-            }
+            _characterCamera = _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false );
+            NullCheck.AssertNotNull( _characterCamera, "_characterCamera" );
         }
 
         // Update is called once per frame
@@ -74,8 +49,9 @@ namespace Frontier
         {
             Debug.Assert( _character != null );   // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
 
+            _characterCamera.Update( _character.Params.CameraParam );
+
             UpdateParamRender( _character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam );  // パラメータ表示を反映
-            UpdateCameraRender( _character, _character.Params.CameraParam );  // カメラ描画を反映
         }
 
         /// <summary>
@@ -183,24 +159,15 @@ namespace Frontier
         }
 
         /// <summary>
-        /// パラメータUIに表示するキャラクターのカメラ描画を更新します
-        /// </summary>
-        /// <param name="selectCharacter">選択しているキャラクター</param>
-        /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateCameraRender( Character selectCharacter, in CameraParameter camParam )
-        {
-            Transform characterTransform = selectCharacter.transform;
-            Vector3 add = Quaternion.AngleAxis( _camareAngleY, Vector3.up ) * characterTransform.forward * camParam.UICameraLengthZ;
-            _camera.transform.position = characterTransform.position + add + Vector3.up * camParam.UICameraLengthY;
-            _camera.transform.LookAt( characterTransform.position + Vector3.up * camParam.UICameraLookAtCorrectY );
-            _camera.Render();
-        }
-
-        /// <summary>
         /// 初期化します
         /// </summary>
         public void Init()
         {
+            var layerToName     = LayerMask.LayerToName( _layerMaskIndex );
+            TargetImage.texture = _targetTexture;
+
+            _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, ref TargetImage );
+
             for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
                 var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
@@ -235,7 +202,7 @@ namespace Frontier
         /// 表示するキャラクターを設定します
         /// </summary>
         /// <param name="character">表示キャラクター</param>
-        public void SetDisplayCharacter( Character character, int layerMaskIndex )
+        public void AssignCharacter( Character character, int layerMaskIndex )
         {
             // 以前ディスプレイに設定していたキャラクターのレイヤーマスクを元に戻す
             if( null != _character )
@@ -245,18 +212,7 @@ namespace Frontier
 
             _character = character;
 
-            // パラメータ画面表示用にキャラクターのレイヤーを変更
-            _character.gameObject.SetLayerRecursively( layerMaskIndex );
-        }
-
-        /// <summary>
-        /// キャラクターのレイヤーマスクを元に戻します
-        /// </summary>
-        public void ClearDisplayCharacter()
-        {
-            if( null == _character ) { return; }
-
-            _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+            _characterCamera.AssignCharacter( character, layerMaskIndex );
         }
     }
 }

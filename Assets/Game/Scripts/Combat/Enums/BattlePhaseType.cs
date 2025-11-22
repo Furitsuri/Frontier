@@ -2,7 +2,7 @@
 {
     public enum BattlePhaseType
     {
-        Placement,
+        Deployment,
         Player,
         Enemy,
         Other

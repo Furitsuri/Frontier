@@ -8,7 +8,6 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-
 public class DeploymentPhasePresenter
 {
     public enum SlideDirection
@@ -37,8 +36,6 @@ public class DeploymentPhasePresenter
     public void Update()
     {
         UpdateSlideAnimation();
-
-        // _prevSelectCharacter = gridCursorSelectChara;
     }
 
     public void Exit()
@@ -122,21 +119,21 @@ public class DeploymentPhasePresenter
         _deployUiSystem.GridCursorSelectCharaParam.gameObject.SetActive( isActiveOnSelectCharaParam );
         if( !isActiveOnSelectCharaParam ) { return; }
 
-        if( null != _currentGridSelectCharacter /* && _prevSelectCharacter != gridCursorSelectChara */ )
+        if( null != _currentGridSelectCharacter )
         {
-            _deployUiSystem.GridCursorSelectCharaParam.SetDisplayCharacter( _currentGridSelectCharacter, LAYER_MASK_INDEX_DEPLOYMENT_GRID );
+            _deployUiSystem.GridCursorSelectCharaParam.AssignCharacter( _currentGridSelectCharacter, LAYER_MASK_INDEX_DEPLOYMENT_GRID );
         }
 
         // 配置候補UI内でフォーカス中のキャラクターも更新
         // MEMO : RefreshFocusDeploymentCharacter()を呼んでしまうと無限ループに陥るため注意
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
     }
 
     public void RefreshFocusDeploymentCharacter()
     {
         // フォーカス中のキャラクターのパラメータの表示
         Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.SetDisplayCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
 
         RefreshGridCursorSelectCharacter();
     }
@@ -156,7 +153,6 @@ public class DeploymentPhasePresenter
         _slideDirection             = direction;
         _onCompletedeSlideAnimation = onCompleted;
 
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.ClearDisplayCharacter();    // 現在表示中のキャラクターの表示情報をクリア
         _deployUiSystem.CharacterSelectUi.StartSlideAnimation( direction );
     }
 

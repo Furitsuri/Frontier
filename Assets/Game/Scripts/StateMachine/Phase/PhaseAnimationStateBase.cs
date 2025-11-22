@@ -37,7 +37,7 @@ namespace Frontier.StateMachine
             }
 
             // フェーズアニメーションが終了すれば自動的にSelectTileへ遷移
-            TransitIndex = ( int ) TRANSIT_TAG.SELECT_TILE;
+            TransitStateWithExit( ( int ) TRANSIT_TAG.SELECT_TILE );
 
             return base.Update();
         }

@@ -73,7 +73,7 @@ namespace Frontier.Battle
 
             _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
             {
-                { BattlePhaseType.Placement, _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
+                { BattlePhaseType.Deployment, _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
                 { BattlePhaseType.Player,    _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
                 { BattlePhaseType.Enemy,     _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
                 { BattlePhaseType.Other,     _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
@@ -146,7 +146,7 @@ namespace Frontier.Battle
         /// <returns></returns>
         private BattlePhaseType GetNextPhase( BattlePhaseType current )
         {
-            if( current == BattlePhaseType.Placement )
+            if( current == BattlePhaseType.Deployment )
             {
                 _btlUi.gameObject.SetActive( true );    // 戦闘用UIの表示をON
                 return BattlePhaseType.Player;          // 配置が終わったら通常ループに移行
@@ -200,7 +200,7 @@ namespace Frontier.Battle
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
-            _currentPhase = BattlePhaseType.Placement;                  // 初期フェイズを設定(配置フェーズ)
+            _currentPhase = BattlePhaseType.Deployment;                  // 初期フェイズを設定(配置フェーズ)
             _btlUi.gameObject.SetActive( false );                       // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
