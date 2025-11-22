@@ -70,7 +70,7 @@ namespace Frontier.StateMachine
             // 移動行動に遷移するか
             if( ShouldTransitionToMove( _currentEnemy ) )
             {
-                TransitIndex = ( int ) COMMAND_TAG.MOVE;
+                TransitStateWithExit( ( int ) COMMAND_TAG.MOVE );
 
                 return true;
             }
@@ -78,7 +78,7 @@ namespace Frontier.StateMachine
             // 攻撃行動に遷移するか
             if( ShouldTransitionToAttack( _currentEnemy ) )
             {
-                TransitIndex = ( int ) COMMAND_TAG.ATTACK;
+                TransitStateWithExit( ( int ) COMMAND_TAG.ATTACK );
 
                 return true;
             }

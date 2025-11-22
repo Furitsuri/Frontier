@@ -38,8 +38,6 @@ namespace Frontier.StateMachine
 
         override public void Exit()
         {
-            // TODO : 味方の配置内容を確定させる処理
-
             _presenter.Exit();
 
             base.Exit();

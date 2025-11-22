@@ -11,9 +11,10 @@ namespace Frontier
 {
     public class BattleUISystem : MonoBehaviour
     {
+        [Inject] private CombatSkillEventController _combatSkillCtrl = null;
+
         [Header("表示キャンバス")]
-        [SerializeField]
-        private Canvas _canvas;
+        [SerializeField] private Canvas _canvas;
 
         [Header("CharacterParameter")]
         public CharacterParameterPresenter ParameterView;    // キャラクターパラメータ表示
@@ -36,25 +37,25 @@ namespace Frontier
         [Header("GameOver")]
         public GameOverUI GameOver;                     // ゲームオーバー画面
 
-        private CombatSkillEventController _combatSkillCtrl;
+        
         private RectTransform _rectTransform;                   // BattleUIのRectTransform
         private Camera _uiCamera;                               // UI表示用のカメラ
 
-        [Inject]
-        public void Construct(CombatSkillEventController combatSkillCtrl)
+        void Awake()
         {
-            _combatSkillCtrl = combatSkillCtrl;
+            _rectTransform = GetComponent<RectTransform>();
+            NullCheck.AssertNotNull( _rectTransform , "_rectTransform" );
+
+            var cameraObject = GameObject.Find( "UI_Camera" );
+            _uiCamera = cameraObject.GetComponent<Camera>();
+            NullCheck.AssertNotNull( _uiCamera, "_uiCamera" );
+
+            DamageValue.Init( _rectTransform, _uiCamera );
         }
 
-            void Awake()
+        private void Start()
         {
-            _rectTransform      = GetComponent<RectTransform>();
-            var cameraObject    = GameObject.Find("UI_Camera");
-            _uiCamera           = cameraObject.GetComponent<Camera>();
-
-            DamageValue.Init(_rectTransform, _uiCamera);
-
-            Debug.Assert(cameraObject != null);
+            ParameterView.Init();
         }
 
         public void TogglePlayerParameter(bool isActive)

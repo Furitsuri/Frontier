@@ -185,7 +185,7 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
-            TransitIndex = (int)TransitTag.Load;
+            TransitState( ( int ) TransitTag.Load );
 
             return true;
         }
@@ -204,7 +204,7 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
-            TransitIndex = (int)TransitTag.Save;
+            TransitState( ( int ) TransitTag.Save );
 
             return true;
         }

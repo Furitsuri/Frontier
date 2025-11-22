@@ -8,21 +8,21 @@ namespace Frontier.StateMachine
 {
     public class PhaseHandlerBase : Tree<PhaseStateBase>
     {
-        protected bool _isInitReserved                  = false;
-        protected bool _isFirstUpdate                   = false;
-        protected HierarchyBuilderBase _hierarchyBld    = null;
-        protected BattleRoutineController _btlRtnCtrl   = null;
-        protected StageController _stgCtrl              = null;
-        protected BattleUISystem _btlUi                 = null;
-        [Inject] protected IUiSystem _uiSystem          = null;
+        protected bool _isInitReserved = false;
+        protected bool _isFirstUpdate = false;
+        protected HierarchyBuilderBase _hierarchyBld = null;
+        protected BattleRoutineController _btlRtnCtrl = null;
+        protected StageController _stgCtrl = null;
+        protected BattleUISystem _btlUi = null;
+        [Inject] protected IUiSystem _uiSystem = null;
 
         [Inject]
-        public void Construct( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl)
+        public void Construct( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, BattleUISystem btlUi, StageController stgCtrl )
         {
-            _hierarchyBld   = hierarchyBld;
-            _btlRtnCtrl     = btlRtnCtrl;
-            _btlUi          = btlUi;
-            _stgCtrl        = stgCtrl;
+            _hierarchyBld = hierarchyBld;
+            _btlRtnCtrl = btlRtnCtrl;
+            _btlUi = btlUi;
+            _stgCtrl = stgCtrl;
         }
 
         /// <summary>
@@ -39,11 +39,17 @@ namespace Frontier.StateMachine
 
         virtual public void Update()
         {
-            if (_isInitReserved)
+            /*
+            if( _isInitReserved )
             {
                 CurrentNode.RunState();
                 _isInitReserved = false;
             }
+            else
+            {
+                CurrentNode.RestartState();
+            }
+            */
 
             CurrentNode.Update();   // 現在実行中のステートを更新
         }
@@ -54,20 +60,34 @@ namespace Frontier.StateMachine
             int transitIndex = CurrentNode.TransitIndex;
             if( 0 <= transitIndex )
             {
-                CurrentNode.ExitState();
+                if( CurrentNode.IsExitReserved ) { CurrentNode.ExitState(); }   // 終了
+                else { CurrentNode.PauseState(); }                              // 中断
+                
                 CurrentNode = CurrentNode.GetChildren<PhaseStateBase>( transitIndex );
-                _isInitReserved = true; // 初期化を予約します
+                // _isInitReserved = true; // 初期化を予約します
+                CurrentNode.RunState();
             }
             else if( CurrentNode.IsBack() )
             {
-                CurrentNode.ExitState();
-
                 // CurrentNodeがフェーズ終了通知を発行しているか、
                 // 親がフェーズアニメーションステート、または親が存在しない場合はフェーズ遷移完了とみなす
-                if( CurrentNode.IsEndedPhase || null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase ) { return true; }
+                if( CurrentNode.IsEndedPhase || null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase )
+                {
+                    CurrentNode.ExitState();
+                    return true;
+                }
 
+                CurrentNode.ExitState();
                 CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
-                _isInitReserved = true;
+                // if( CurrentNode.IsExitReserved ) { _isInitReserved = true; } // 以前のノードがExitしていた場合は初期化
+                if( CurrentNode.IsExitReserved )
+                {
+                    CurrentNode.RunState();
+                }
+                else
+                {
+                    CurrentNode.RestartState();
+                }
             }
 
             return false;
@@ -94,8 +114,16 @@ namespace Frontier.StateMachine
 
         virtual public void Exit()
         {
-            // ステートの終了
-            CurrentNode.ExitState();
+            while( CurrentNode != null )
+            {
+                // Exit処理が行われていなかったノードをすべて終了させる
+                if( !CurrentNode.IsExitReserved )
+                {
+                    CurrentNode.ExitState();
+                }
+
+                CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
+            }
         }
     }
 }

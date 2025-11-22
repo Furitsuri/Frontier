@@ -138,9 +138,9 @@ namespace Frontier.StateMachine
         /// /// <returns>決定入力の有無</returns>
         override protected bool AcceptConfirm( bool isInput )
         {
-            if( !isInput ) return false;
+            if( !isInput ) { return false; }
 
-            TransitIndex = GetCommandValue();
+            TransitStateWithExit( GetCommandValue() );
 
             return true;
         }

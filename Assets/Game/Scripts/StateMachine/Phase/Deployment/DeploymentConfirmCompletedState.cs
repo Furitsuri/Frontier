@@ -102,5 +102,14 @@ namespace Froniter.StateMachine
 
             return true;
         }
+
+        protected override bool AcceptCancel( bool isCancel )
+        {
+            if( !isCancel ) { return false; }
+
+            Back();
+
+            return true;
+        }
     }
 }

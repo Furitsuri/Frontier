@@ -205,6 +205,8 @@ namespace Frontier.StateMachine
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
             if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+            // 遷移には配置キャラクターが1体以上存在している必要がある
+            if( _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.PLAYER ) <= 0 ) { return false; }
 
             return true;
         }
@@ -256,8 +258,6 @@ namespace Frontier.StateMachine
             {
                 _btlRtnCtrl.BtlCharaCdr.AddPlayerToList( focusCharacter );
             }
-            
-            // TODO ; 配置済みを示すために、キャラのTexture2Dを暗転
 
             return true;
         }
@@ -271,7 +271,7 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            TransitIndex = ( int ) TransitTag.CHARACTER_STATUS;
+            TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return true;
         }
@@ -313,7 +313,7 @@ namespace Frontier.StateMachine
         {
             if( !isOptional ) { return false; }
 
-            TransitIndex = ( int ) TransitTag.CONFIRM_COMPLETED;
+            TransitState( ( int ) TransitTag.CONFIRM_COMPLETED );
 
             return true;
         }

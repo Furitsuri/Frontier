@@ -1,5 +1,6 @@
 ﻿using Frontier.Battle;
 using Frontier.Stage;
+using Frontier.StateMachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -86,8 +87,16 @@ public class EditorHandlerBase : Tree<EditorStateBase>
 
     virtual public void Exit()
     {
-        // ステートの終了
-        CurrentNode.ExitState();
+        while( CurrentNode != null )
+        {
+            // Exit処理が行われていなかったノードをすべて終了させる
+            if( !CurrentNode.IsExitReserved )
+            {
+                CurrentNode.ExitState();
+            }
+
+            CurrentNode = CurrentNode.GetParent<EditorStateBase>();
+        }
     }
 
     /// <summary>

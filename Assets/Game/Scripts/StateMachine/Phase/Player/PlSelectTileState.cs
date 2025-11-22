@@ -138,7 +138,7 @@ namespace Frontier.StateMachine
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
             if( character.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
             {
-                TransitIndex = ( int ) TransitTag.CHARACTER_COMMAND;
+                TransitStateWithExit( ( int ) TransitTag.CHARACTER_COMMAND );
                 // コマンドを開くことをチュートリアルへ通知
                 TutorialFacade.Notify( TutorialFacade.TriggerType.OpenBattleCommand );
             }
@@ -176,7 +176,7 @@ namespace Frontier.StateMachine
         {
             if( !isOptional ) return false;
 
-            TransitIndex = ( int ) TransitTag.TURN_END;
+            TransitState( ( int ) TransitTag.TURN_END );
 
             return true;
         }

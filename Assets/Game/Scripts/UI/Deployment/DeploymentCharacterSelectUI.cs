@@ -1,10 +1,6 @@
 ﻿using Froniter.StateMachine;
 using Frontier;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.UI;
 using Zenject;
 using static Constants;
 using static Frontier.CharacterParameterUI;
@@ -33,9 +29,15 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
         }
     }
 
-    void Start()
+    void Update()
+    {
+    }
+
+    public void Init()
     {
         int centralIndex = DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2;
+
+        _focusCharaParamUI.Init();
 
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
@@ -45,10 +47,6 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
 
         gameObject.SetActive( false );
         _focusCharaParamUI.gameObject.SetActive( false );
-    }
-
-    void Update()
-    {
     }
 
     public bool UpdateSlideAnimation()

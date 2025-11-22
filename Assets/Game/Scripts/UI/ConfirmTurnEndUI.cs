@@ -9,9 +9,9 @@ namespace Frontier
     {
         public TextMeshProUGUI[] _confirmTMPTexts;
 
-        void Awake()
+        public void Init()
         {
-            gameObject.SetActive(false);
+
         }
 
         /// <summary>

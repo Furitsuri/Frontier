@@ -52,23 +52,23 @@ namespace Frontier
                     // PLAYER 対 OTHER
                     if( bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY )
                     {
-                        PlayerParameter.SetDisplayCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
-                        EnemyParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                        PlayerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
+                        EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     else
                     {
-                        PlayerParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
-                        EnemyParameter.SetDisplayCharacter( bindCharacter, LAYER_MASK_INDEX_ENEMY );
+                        PlayerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                        EnemyParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     break;
 
                 case GridCursorState.MOVE:   // 移動候補選択時
                     Debug.Assert( bindCharacter != null );
 
-                    PlayerParameter.SetDisplayCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
+                    PlayerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
                     if( selectCharacter != null && selectCharacter != bindCharacter )
                     {
-                        EnemyParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                        EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     _uiSystem.BattleUi.ToggleEnemyParameter( selectCharacter != null && selectCharacter != bindCharacter );
 
@@ -84,11 +84,11 @@ namespace Frontier
                     {   
                         if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
                         {
-                            PlayerParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                            PlayerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
                         }
                         else
                         {
-                            EnemyParameter.SetDisplayCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                            EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                         }
                     }
 

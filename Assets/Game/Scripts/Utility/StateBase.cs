@@ -6,18 +6,22 @@ using Zenject;
 
 public class StateBase : TreeNode<StateBase>
 {
-    public int TransitIndex { get; protected set; } = -1;
-
-    protected bool _isBack = false;
     [Inject] protected InputFacade _inputFcd = null;
+
+    public bool IsExitReserved { get; private set; } = false;
+    private int _transitIndex = -1;
+    protected bool _isBack = false;
+
+    public int TransitIndex => _transitIndex;
 
     /// <summary>
     /// 初期化します
     /// </summary>
     virtual public void Init()
     {
-        TransitIndex = -1;
-        _isBack = false;
+        IsExitReserved  = false;
+        _transitIndex   = -1;
+        _isBack         = false;
     }
 
     /// <summary>
@@ -26,15 +30,7 @@ public class StateBase : TreeNode<StateBase>
     /// <returns>親のステートノード</returns>
     public T GetParent<T>() where T : StateBase
     {
-        var retParent = Parent as T;
-
-        if (retParent == null)
-        {
-            Debug.LogError($"Parent is not of type {typeof(T).Name}");
-            return null;
-        }
-
-        return retParent;
+        return Parent as T;
     }
 
     /// <summary>
@@ -88,14 +84,16 @@ public class StateBase : TreeNode<StateBase>
     /// </summary>
     virtual public void RunState()
     {
-        // ステートの初期化を行う
-        Init();
+        Init(); // ステートの初期化を行う
     }
 
     /// <summary>
     /// 現在のステートを再開します
     /// </summary>
-    virtual public void RestartState() { }
+    virtual public void RestartState()
+    {
+        _transitIndex = -1;
+    }
 
     /// <summary>
     /// 現在のステートを中断します
@@ -114,6 +112,18 @@ public class StateBase : TreeNode<StateBase>
     virtual public bool IsBack()
     {
         return _isBack;
+    }
+
+    protected void TransitState( int transitIdx )
+    {
+        _transitIndex = transitIdx;
+    }
+
+    protected void TransitStateWithExit( int transitIdx )
+    {
+        TransitState( transitIdx );
+
+        IsExitReserved = true;
     }
 
     /// <summary>

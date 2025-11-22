@@ -13,7 +13,7 @@ public class CharacterCamera
     private Character _dispCharacter;   // 表示中のキャラクター  
     private float _angleY = 30.0f;
 
-    public void Init( string cameraName, string layerName, ref RawImage refTargetImage )
+    public void Init( string cameraName, int layerIndex, ref RawImage refTargetImage )
     {
         _refTargetImage         = refTargetImage;
         _targetTexture          = new RenderTexture( ( int ) _refTargetImage.rectTransform.rect.width * 2, ( int ) _refTargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 );
@@ -23,7 +23,7 @@ public class CharacterCamera
         _camera.clearFlags      = CameraClearFlags.SolidColor;
         _camera.backgroundColor = new Color( 0, 0, 0, 0 );
         _camera.targetTexture   = _targetTexture;
-        _camera.cullingMask     = 1 << LayerMask.NameToLayer( layerName );
+        _camera.cullingMask     = 1 << layerIndex;
         _camera.gameObject.name = "Camera_" + cameraName;
     }
 
@@ -36,14 +36,9 @@ public class CharacterCamera
         _camera.Render();
     }
 
-    public void SetDisplayCharacter( Character character, int layerMaskIndex )
+    public void AssignCharacter( Character character, int layerMaskIndex )
     {
         _dispCharacter = character;
         _dispCharacter.gameObject.SetLayerRecursively( layerMaskIndex );    // 配置用にキャラクターのレイヤーを変更
-    }
-
-    public void ClearDisplayCharacter()
-    {
-        _dispCharacter.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
     }
 }
