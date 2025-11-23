@@ -50,9 +50,9 @@ namespace Frontier.Stage
             transform.localScale    = TileMaterialLibrary.GetDefaultTileScale();   // タイルのデフォルトスケールを設定
         }
 
-        public void Init( int x, int y, float height, TileType type )
+        public void Init( int x, int y, bool isDeployable, float height, TileType type )
         {
-            _tileStaticData.Init( x, y, height, type );
+            _tileStaticData.Init( x, y, isDeployable, height, type );
             _tileDynamicData.Init();
             _baseDynamicData.Init();
             _tileMeshes.Clear();
@@ -67,6 +67,8 @@ namespace Frontier.Stage
             transform.localScale    = new Vector3( TILE_SIZE, height + TILE_MIN_THICKNESS, TILE_SIZE );
             transform.rotation      = Quaternion.identity;
             _renderer.material      = TileMaterialLibrary.GetMaterial( type );
+
+            ApplyDeployableColor();
         }
 
         public void Dispose()
@@ -86,6 +88,15 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// タイルの色で配置可否を示すようにマテリアルの色を変更します
+        /// </summary>
+        public void ApplyDeployableColor()
+        {
+            if( StaticData().IsDeployable ) { _renderer.material.color = Color.white; }
+            else { _renderer.material.color = new Color( 0.5f, 0.5f, 0.5f, 1f ); }
+        }
+
+        /// <summary>
         /// 初期状態のタイル情報を、現在のタイル情報に適応させます
         /// </summary>
         public void ApplyBaseTileDynamicData()
@@ -93,11 +104,9 @@ namespace Frontier.Stage
             _baseDynamicData.CopyTo( _tileDynamicData );
         }
 
-        public void SetUndeployableColor()
-        {
-            _renderer.material.color = new Color( 0.5f, 0.5f, 0.5f, 1f );
-        }
-
+        /// <summary>
+        /// 配置可否を示すタイルの色を元に戻します
+        /// </summary>
         public void ClearUndeployableColor()
         {
             _renderer.material.color = Color.white;
@@ -179,7 +188,7 @@ namespace Frontier.Stage
         public Tile Clone( int colIndex, int rowIndex, GameObject[] prefabs )
         {
             var ret = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( prefabs[0], true, false, $"Tile_X{colIndex}_Y{rowIndex}" );
-            ret.Init( colIndex, rowIndex, this._tileStaticData.Height, this._tileStaticData.TileType );
+            ret.Init( colIndex, rowIndex, this._tileStaticData.IsDeployable, this._tileStaticData.Height, this._tileStaticData.TileType );
 
             return ret;
         }

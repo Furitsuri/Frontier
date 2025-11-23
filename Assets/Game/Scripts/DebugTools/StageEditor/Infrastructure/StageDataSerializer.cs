@@ -16,34 +16,34 @@ namespace Frontier.DebugTools.StageEditor
     /// </remarks>
     static public class StageDataSerializer
     {
-        private static string FolderPath => Path.Combine(Application.persistentDataPath, "StageData");
+        private static string FolderPath => Path.Combine( Application.persistentDataPath, "StageData" );
 
-        static public bool Save(StageData data, string fileName)
+        static public bool Save( StageData data, string fileName )
         {
             try
             {
-                Directory.CreateDirectory(FolderPath);
-                string json = JsonUtility.ToJson(data, true);
-                File.WriteAllText(Path.Combine(FolderPath, $"{fileName}.json"), json);
+                Directory.CreateDirectory( FolderPath );
+                string json = JsonUtility.ToJson( data, true );
+                File.WriteAllText( Path.Combine( FolderPath, $"{fileName}.json" ), json );
 
-                Debug.Log(JsonUtility.ToJson(data, true));
+                Debug.Log( JsonUtility.ToJson( data, true ) );
 
                 return true; // 成功
             }
-            catch (Exception e)
+            catch( Exception e )
             {
-                Debug.LogError($"ステージデータの保存に失敗しました: {e.Message}");
+                Debug.LogError( $"ステージデータの保存に失敗しました: {e.Message}" );
                 return false; // 失敗
             }
         }
 
 
-        static public StageData Load(string fileName)
+        static public StageData Load( string fileName )
         {
-            string path = Path.Combine(FolderPath, $"{fileName}.json");
-            if (!File.Exists(path)) return null;
-            string json = File.ReadAllText(path);
-            return JsonUtility.FromJson<StageData>(json);
+            string path = Path.Combine( FolderPath, $"{fileName}.json" );
+            if( !File.Exists( path ) ) return null;
+            string json = File.ReadAllText( path );
+            return JsonUtility.FromJson<StageData>( json );
         }
     }
 }

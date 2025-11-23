@@ -1,8 +1,6 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
-using Frontier.Stage;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -145,6 +143,17 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// タイルの配置不可色を消去します
+        /// </summary>
+        public void ClearUndeployableColorOfTiles()
+        {
+            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
+            {
+                _stageDataProvider.CurrentData.Tiles[i].ClearUndeployableColor();
+            }
+        }
+
+        /// <summary>
         /// 攻撃可能情報を消去します
         /// </summary>
         public void ClearAttackableInformation()
@@ -211,19 +220,6 @@ namespace Frontier.Stage
                             break;
                         }
                     }
-                    /*
-                    int count = 0;
-                    foreach( var tileDData in owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
-                    {
-                        if( target.CharaKey == tileDData.Value.CharaKey )
-                        {
-                            _gridCursorCtrl.SetAtkTargetIndex( count );
-                            break;
-                        }
-
-                        count++;
-                    }
-                    */
                 }
                 // 定められていない場合は先頭を指定する
                 else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }

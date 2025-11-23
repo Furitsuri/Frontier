@@ -901,6 +901,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _notifyImage: {fileID: 1560009155}
+  _editParamImage: {fileID: 1796558516}
   _editParams:
   - {fileID: 60876113}
   - {fileID: 1726533936}
@@ -1896,6 +1897,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _notifyImage: {fileID: 0}
+  _editParamImage: {fileID: 0}
   _editParams: []
   _editModeTextMesh: {fileID: 0}
   _firstParamTextMesh: []

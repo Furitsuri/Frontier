@@ -6,7 +6,7 @@
 
         EDIT_TILE,
         EDIT_TILE_COUNT,
-        EDIT_CHARACTER_INITIAL_POS,
+        EDIT_CHARACTER_DEPLOYMENT_TILE,
 
         NUM
     }

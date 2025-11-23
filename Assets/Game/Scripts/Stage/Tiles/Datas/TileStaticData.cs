@@ -7,6 +7,7 @@ namespace Frontier.Stage
     [Serializable]
     public class TileStaticData
     {
+        [SerializeField] public bool IsDeployable;      // 配備可能かどうか 
         [SerializeField] public float Height;           // 高さ
         [SerializeField] public int MoveResist;         // 移動阻害値
         [SerializeField] public Vector3 CharaStandPos;  // キャラクターの立ち位置座標
@@ -15,8 +16,9 @@ namespace Frontier.Stage
         /// <summary>
         /// 初期化します
         /// </summary>
-        public void Init( int x, int y, float height, TileType tileType )
+        public void Init( int x, int y, bool isDeployable, float height, TileType tileType )
         {
+            IsDeployable            = isDeployable;
             Height                  = height;
             MoveResist              = -1;
             float charaPosCorrext   = 0.5f * TILE_SIZE;                     // グリッド位置からキャラの立ち位置への補正値

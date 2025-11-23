@@ -8,23 +8,18 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditBase
     {
-        protected GridCursorController _gridCursorCtrl        = null;
-        protected StageEditorController.StageEditRefParams _refParams  = null;
+        [Inject] protected GridCursorController _gridCursorCtrl        = null;
+        [Inject] protected StageEditorController.StageEditRefParams _refParams  = null;
 
         protected Action<int, int> PlaceTileCallback;
         protected Action<int, int> ResizeTileGridCallback;
+        protected Action<int, int> ToggleDeployableCallback;
 
-        [Inject]
-        private void Construct( GridCursorController gridCursorCtrl, StageEditorController.StageEditRefParams refParams )
+        virtual public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb, Action<int, int> toggleDeployableCb )
         {
-            _gridCursorCtrl = gridCursorCtrl;
-            _refParams      = refParams;
-        }
-
-        virtual public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb )
-        {
-            PlaceTileCallback       = placeTileCb;
-            ResizeTileGridCallback  = resizeTileGridCb;
+            PlaceTileCallback           = placeTileCb;
+            ResizeTileGridCallback      = resizeTileGridCb;
+            ToggleDeployableCallback    = toggleDeployableCb;
         }
 
         virtual public void Update()
