@@ -10,9 +10,9 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditTileInformation : StageEditorEditBase
     {
-        override public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb )
+        override public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb, Action<int, int> toggleDeployableCb )
         {
-            base.Init( placeTileCb, resizeTileGridCb );
+            base.Init( placeTileCb, resizeTileGridCb, toggleDeployableCb );
         }
 
         override public void Update()

@@ -67,9 +67,9 @@ namespace Frontier.DebugTools.StageEditor
             data.GetTile( x, y ).Dispose();
             data.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
             var staticData = _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false );
-            staticData.Init( x, y, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
+            staticData.Init( x, y, false, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
             data.SetStaticData( x, y, staticData );
-            data.GetTile( x, y ).Init( x, y, staticData.Height, staticData.TileType );
+            data.GetTile( x, y ).Init( x, y, false, staticData.Height, staticData.TileType );
         }
 
         /// <summary>
@@ -117,6 +117,15 @@ namespace Frontier.DebugTools.StageEditor
             _stageDataProvider.CurrentData = resizeStageData;      // 作成したデータを保持
 
             _gridCursorCtrl.Init( 0 );  // グリッドカーソル位置を初期化
+        }
+
+        private void ToggleDeployable( int x, int y )
+        {
+            var data = _stageDataProvider.CurrentData;
+
+            data.GetStaticData( x, y ).IsDeployable = !data.GetStaticData( x, y ).IsDeployable;
+            data.GetTile( x, y ).StaticData().IsDeployable = data.GetStaticData( x, y ).IsDeployable;
+            data.GetTile( x, y ).ApplyDeployableColor();
         }
 
         /// <summary>
@@ -173,7 +182,7 @@ namespace Frontier.DebugTools.StageEditor
             var nextMode    = Math.Clamp( ( int )_editMode + add, 0, (int)StageEditMode.NUM - 1 );
             _editMode       = ( StageEditMode )nextMode;
 
-            _stageEditorView.SwitchEditParamView( nextMode );   // モードに応じたパラメータを表示
+            _stageEditorView.SwitchEditParamView( _editMode );   // モードに応じたパラメータを表示
 
             return _editMode;
         }
@@ -229,7 +238,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _stageFileLoader.Init( tilePrefabs, tileBhvPrefabs );
 
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
 
 

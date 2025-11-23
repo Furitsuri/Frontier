@@ -26,7 +26,6 @@ namespace Frontier.Battle
         [Inject] private BattleUISystem _btlUi               = null;
 
         private int _currentStageIndex = 0;
-        private BattlePhase _phase;
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
@@ -86,30 +85,12 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// ステージグリッドスクリプトを登録します
-        /// </summary>
-        /// <param name="script">登録するスクリプト</param>
-        public void registStageController(Stage.StageController script)
-        {
-            _stgCtrl = script;
-        }
-
-        /// <summary>
         /// 戦闘カメラコントローラを取得します
         /// </summary>
         /// <returns>戦闘カメラコントローラ</returns>
         public BattleCameraController GetCameraController()
         {
             return _battleCameraCtrl;
-        }
-
-        /// <summary>
-        /// 終了状態かどうかを判定します
-        /// </summary>
-        /// <returns>true : 終了</returns>
-        public bool IsEnd()
-        {
-            return _phase == BattlePhase.BATTLE_END;
         }
 
         /// <summary>
@@ -131,15 +112,6 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// MonoBehaviorを取得します
-        /// </summary>
-        /// <returns>このクラス自身</returns>
-        public MonoBehaviour GetUnderlyingBehaviour()
-        {
-            return this;
-        }
-
-        /// <summary>
         /// 次のフェーズへの移行先を取得します
         /// </summary>
         /// <param name="current"></param>
@@ -148,7 +120,9 @@ namespace Frontier.Battle
         {
             if( current == BattlePhaseType.Deployment )
             {
-                _btlUi.gameObject.SetActive( true );    // 戦闘用UIの表示をON
+                _btlUi.gameObject.SetActive( true );                        // 戦闘用UIの表示をON
+                _stgCtrl.TileDataHdlr().ClearUndeployableColorOfTiles();    // 配置不可タイルの色をクリア
+
                 return BattlePhaseType.Player;          // 配置が終わったら通常ループに移行
             }
 
@@ -191,16 +165,15 @@ namespace Frontier.Battle
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
-            if (!Methods.IsDebugScene())
+            if( !Methods.IsDebugScene() )
 #endif
             {
-                _btlFileLoader.CharacterLoad(_currentStageIndex);
+                _btlFileLoader.CharacterLoad( _currentStageIndex );
             }
 
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
-            _phase = BattlePhase.BATTLE_START;                          // 初期フェイズを設定
-            _currentPhase = BattlePhaseType.Deployment;                  // 初期フェイズを設定(配置フェーズ)
+            _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _btlUi.gameObject.SetActive( false );                       // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込

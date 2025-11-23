@@ -61,9 +61,9 @@ namespace Frontier.Stage
                     var stgData = _stageDataProvider.CurrentData;
                     var loadStaticData = loadData.GetStaticData( x, y );
                     stgData.SetStaticData( x, y, _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false ) );
-                    stgData.GetStaticData( x, y ).Init( x, y, loadStaticData.Height, loadStaticData.TileType );
+                    stgData.GetStaticData( x, y ).Init( x, y, loadStaticData.IsDeployable, loadStaticData.Height, loadStaticData.TileType );
                     stgData.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( _tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
-                    stgData.GetTile( x, y ).Init( x, y, loadStaticData.Height, loadStaticData.TileType );
+                    stgData.GetTile( x, y ).Init( x, y, loadStaticData.IsDeployable, loadStaticData.Height, loadStaticData.TileType );
                 }
             }
 

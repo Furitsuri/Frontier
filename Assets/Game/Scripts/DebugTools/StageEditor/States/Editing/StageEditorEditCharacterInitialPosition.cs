@@ -6,6 +6,21 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditCharacterInitialPosition : StageEditorEditBase
     {
+        /// <summary>
+        /// タイルの配置可否情報を切り替えます
+        /// </summary>
+        /// <param name="isInput"></param>
+        /// <returns></returns>
+        override public bool AcceptConfirm( bool isInput )
+        {
+            if( isInput )
+            {
+                ToggleDeployableCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
 
+                return true;
+            }
+
+            return false;
+        }
     }
 }

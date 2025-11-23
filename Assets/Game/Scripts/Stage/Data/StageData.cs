@@ -38,7 +38,7 @@ namespace Frontier.Stage
                 for( int y = 0; y < _tileRowNum; y++ )
                 {
                     _tiles[x + ( y * _tileColNum )] = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" );
-                    _tiles[x + ( y * _tileColNum )].Init( x, y, 0f, TileType.None );
+                    _tiles[x + ( y * _tileColNum )].Init( x, y, false, 0f, TileType.None );
                 }
             }
         }

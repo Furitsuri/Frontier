@@ -24,8 +24,6 @@ namespace Frontier.StateMachine
         private int _focusCharacterIndex                        = 0;     // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot                  = null;  // UI表示用のキャラクターのスナップショット
         private List<DeploymentCandidate> _deploymentCandidates = new List<DeploymentCandidate>();  // 配置可能なキャラクターリスト
-        private List<DeployableTileData> _deployableTiles       = new List<DeployableTileData>();
-        private List<int> _deployableTileIndexs                 = new List<int>();
 
         private enum TransitTag
         {
@@ -51,24 +49,6 @@ namespace Frontier.StateMachine
                 _deploymentCandidates.Add( candidate );
             }
         }
-
-        private void SetupDeployableTiles()
-        {
-            _deployableTileIndexs.Clear();
-
-            // TODO : _deployableTileIndexsの読込
-            _deployableTileIndexs.Add( 4 );
-            _deployableTileIndexs.Add( 5 );
-            _deployableTileIndexs.Add( 6 );
-
-            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
-            {
-                var deployableTileData = _hierarchyBld.InstantiateWithDiContainer<DeployableTileData>( false );
-                deployableTileData.Init( _deployableTileIndexs.Contains( i ), _stageDataProvider.CurrentData.GetTile( i ) );
-                _deployableTiles.Add( deployableTileData );
-            }
-        }
-
 
         private void OnCompleteSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
         {
@@ -110,8 +90,6 @@ namespace Frontier.StateMachine
 
             InitDeploymentCandidates();
 
-            SetupDeployableTiles(); // 配置可能タイルデータをセット
-
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
             
             _presenter.SetActiveCharacterSelectUis( true );                                 // キャラクター選択画面の表示を有効化
@@ -132,11 +110,6 @@ namespace Frontier.StateMachine
         override public void ExitState()
         {
             base.ExitState();
-
-            foreach( var deployableTile in _deployableTiles )
-            {
-                deployableTile.Dispose();
-            }
         }
 
         /// <summary>
@@ -159,9 +132,8 @@ namespace Frontier.StateMachine
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力不可
             if( _presenter.IsSlideAnimationPlaying() ) { return false; }
-
             // 配置不可のタイルを選択している場合は入力不可
-            if( !_deployableTiles[_stageCtrl.GetCurrentGridIndex()].IsDeployable ) { return false; }
+            if( !_stageDataProvider.CurrentData.GetTile( _stageCtrl.GetCurrentGridIndex() ).StaticData().IsDeployable ) { return false; }
 
             return true;
         }

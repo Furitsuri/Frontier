@@ -22,6 +22,7 @@ namespace Frontier.DebugTools.StageEditor
 
         private Action<int, int> PlaceTileCallback;
         private Action<int, int> ResizeTileGridCallback;
+        private Action<int, int> ToggleDeployableCallback;
         private Func<string, bool> LoadStageCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
@@ -38,13 +39,14 @@ namespace Frontier.DebugTools.StageEditor
         public GameObject[] tilePrefabs;
         private string _editFileName = "test_stage"; // 編集するステージファイル名
 
-        public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
-            PlaceTileCallback       = placeTileCb;
-            ResizeTileGridCallback  = risizeTileGridCb;
-            LoadStageCallback       = loadStageCb;
-            ChangeEditModeCallback  = changeEditModeCb;
-            _editMode               = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
+            PlaceTileCallback           = placeTileCb;
+            ResizeTileGridCallback      = risizeTileGridCb;
+            ToggleDeployableCallback    = toggleDeployableCb;
+            LoadStageCallback           = loadStageCb;
+            ChangeEditModeCallback      = changeEditModeCb;
+            _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
 
         override public void Init()
@@ -52,7 +54,7 @@ namespace Frontier.DebugTools.StageEditor
             base.Init();
 
             // エディットモード毎に編集出来る内容を切り替えるため、各エディットクラスを配列内に挿入
-            _editClasses = new StageEditorEditBase[ (int)StageEditMode.NUM ]
+            _editClasses = new StageEditorEditBase[( int ) StageEditMode.NUM]
             {
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditTileInformation>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
@@ -60,7 +62,7 @@ namespace Frontier.DebugTools.StageEditor
             };
 
             _currentEdit = _editClasses[(int)_editMode];
-            _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback );
+            _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback );
 
             int hashCode = GetInputCodeHash();
 
@@ -144,7 +146,7 @@ namespace Frontier.DebugTools.StageEditor
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback );
+                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback );
                 return true;
             }
 
@@ -164,7 +166,7 @@ namespace Frontier.DebugTools.StageEditor
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback );
+                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback );
                 return true;
             }
 
@@ -176,11 +178,11 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptOptional1(bool isInput)
+        override protected bool AcceptOptional1( bool isInput )
         {
-            if (!isInput) return false;
+            if( !isInput ) return false;
 
-            if (!LoadStageCallback(_editFileName))
+            if( !LoadStageCallback( _editFileName ) )
             {
                 return false;
             }
