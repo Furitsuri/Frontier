@@ -64,12 +64,13 @@ namespace Frontier.DebugTools.StageEditor
         {
             var data = _stageDataProvider.CurrentData;
 
+            bool isDeployable = data.GetStaticData( x, y ).IsDeployable;
             data.GetTile( x, y ).Dispose();
             data.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
             var staticData = _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false );
-            staticData.Init( x, y, false, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
+            staticData.Init( x, y, isDeployable, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
             data.SetStaticData( x, y, staticData );
-            data.GetTile( x, y ).Init( x, y, false, staticData.Height, staticData.TileType );
+            data.GetTile( x, y ).Init( x, y, staticData.IsDeployable, staticData.Height, staticData.TileType );
         }
 
         /// <summary>
@@ -119,6 +120,11 @@ namespace Frontier.DebugTools.StageEditor
             _gridCursorCtrl.Init( 0 );  // グリッドカーソル位置を初期化
         }
 
+        /// <summary>
+        /// 指定された位置のタイルの配置可能状態を切り替えます
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         private void ToggleDeployable( int x, int y )
         {
             var data = _stageDataProvider.CurrentData;

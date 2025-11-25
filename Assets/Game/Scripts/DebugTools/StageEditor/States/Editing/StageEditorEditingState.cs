@@ -58,7 +58,7 @@ namespace Frontier.DebugTools.StageEditor
             {
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditTileInformation>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
-                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditCharacterInitialPosition>(false)
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false)
             };
 
             _currentEdit = _editClasses[(int)_editMode];
