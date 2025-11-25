@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Frontier.DebugTools.StageEditor
 {
-    public class StageEditorEditCharacterInitialPosition : StageEditorEditBase
+    public class StageEditorEditDeployableTile : StageEditorEditBase
     {
         /// <summary>
         /// タイルの配置可否情報を切り替えます

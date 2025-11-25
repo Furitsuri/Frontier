@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -8,6 +6,7 @@ namespace Frontier.Stage
 {
     /// <summary>
     /// ステージ上のグリッド数などのデータ
+    /// [SerializeField]属性のインスタンスが、ステージエディター上で編集対象となるデータです
     /// </summary>
     [System.Serializable]
     public class StageData
@@ -16,9 +15,9 @@ namespace Frontier.Stage
         [SerializeField] private int _tileColNum;                           // タイルの列数
         [SerializeField] private TileStaticData[] _tileStaticDatas = null;  // タイルの静的データ(_tilesを生成する際に用いる)
 
-        private Tile[] _tiles = null;           // タイル
-
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
+        private Tile[] _tiles = null;           // タイル
 
         public int TileRowNum => _tileRowNum;
         public int TileColNum => _tileColNum;
