@@ -22,6 +22,8 @@ namespace Frontier.DebugTools.StageEditor
         {
             try
             {
+                data.SetupSaveData(); // 保存用データのセットアップ
+
                 Directory.CreateDirectory( FolderPath );
                 string json = JsonUtility.ToJson( data, true );
                 File.WriteAllText( Path.Combine( FolderPath, $"{fileName}.json" ), json );

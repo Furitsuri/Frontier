@@ -36,11 +36,11 @@ namespace Frontier.Stage
         /// <returns>読込の成否</returns>
         public bool Load( string fileName )
         {
-            var loadData = StageDataSerializer.Load(fileName);
-            if ( loadData == null ) { return false; }
+            var loadData = StageDataSerializer.Load( fileName );
+            if( loadData == null ) { return false; }
 
             // 既存のステージデータが存在する場合は破棄
-            if ( null != _stageDataProvider.CurrentData )
+            if( null != _stageDataProvider.CurrentData )
             {
                 _stageDataProvider.CurrentData.Dispose();
             }
@@ -54,16 +54,14 @@ namespace Frontier.Stage
             var col = loadData.TileColNum;
             _stageDataProvider.CurrentData.Init( row, col ); // 新しいステージデータを初期化
 
-            for ( int x = 0; x < col; x++ )
+            for( int x = 0; x < col; x++ )
             {
-                for ( int y = 0; y < row; y++ )
+                for( int y = 0; y < row; y++ )
                 {
-                    var stgData = _stageDataProvider.CurrentData;
-                    var loadStaticData = loadData.GetStaticData( x, y );
-                    stgData.SetStaticData( x, y, _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false ) );
-                    stgData.GetStaticData( x, y ).Init( x, y, loadStaticData.IsDeployable, loadStaticData.Height, loadStaticData.TileType );
+                    var stgData     = _stageDataProvider.CurrentData;
+                    var saveData    = loadData.GetSaveData( x, y );
                     stgData.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( _tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
-                    stgData.GetTile( x, y ).Init( x, y, loadStaticData.IsDeployable, loadStaticData.Height, loadStaticData.TileType );
+                    stgData.GetTile( x, y ).Init( x, y, saveData.IsDeployable, saveData.Height, saveData.TileType );
                 }
             }
 

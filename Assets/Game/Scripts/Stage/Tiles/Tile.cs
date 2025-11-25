@@ -194,6 +194,20 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 保持しているデータをタイルのセーブデータに加工して返します
+        /// </summary>
+        /// <returns></returns>
+        public TileSaveData ToSaveData()
+        {
+            return new TileSaveData
+            {
+                IsDeployable    = _tileStaticData.IsDeployable,
+                Height          = _tileStaticData.Height,
+                TileType        = _tileStaticData.TileType
+            };
+        }
+
+        /// <summary>
         /// タイルメッシュを再描画します
         /// </summary>
         private void ReDrawTileMeshes()

@@ -64,13 +64,10 @@ namespace Frontier.DebugTools.StageEditor
         {
             var data = _stageDataProvider.CurrentData;
 
-            bool isDeployable = data.GetStaticData( x, y ).IsDeployable;
+            bool isDeployable   = data.GetTile( x, y ).StaticData().IsDeployable;   // 以前の配置可能状態を取得
             data.GetTile( x, y ).Dispose();
             data.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
-            var staticData = _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false );
-            staticData.Init( x, y, isDeployable, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
-            data.SetStaticData( x, y, staticData );
-            data.GetTile( x, y ).Init( x, y, staticData.IsDeployable, staticData.Height, staticData.TileType );
+            data.GetTile( x, y ).Init( x, y, isDeployable, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
         }
 
         /// <summary>
@@ -129,8 +126,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             var data = _stageDataProvider.CurrentData;
 
-            data.GetStaticData( x, y ).IsDeployable = !data.GetStaticData( x, y ).IsDeployable;
-            data.GetTile( x, y ).StaticData().IsDeployable = data.GetStaticData( x, y ).IsDeployable;
+            data.GetTile( x, y ).StaticData().IsDeployable = !data.GetTile( x, y ).StaticData().IsDeployable;
             data.GetTile( x, y ).ApplyDeployableColor();
         }
 

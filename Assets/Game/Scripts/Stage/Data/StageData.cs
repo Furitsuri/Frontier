@@ -13,7 +13,9 @@ namespace Frontier.Stage
     {
         [SerializeField] private int _tileRowNum;                           // タイルの行数
         [SerializeField] private int _tileColNum;                           // タイルの列数
-        [SerializeField] private TileStaticData[] _tileStaticDatas = null;  // タイルの静的データ(_tilesを生成する際に用いる)
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        [SerializeField] private TileSaveData[] _tileSaveDatas = null;      // タイル内データのうち保存する必要のあるデータ
+#endif // DEVELOPMENT_BUILD || UNITY_EDITOR
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -26,8 +28,11 @@ namespace Frontier.Stage
         {
             _tileRowNum         = tileRowNum;
             _tileColNum         = tileColumnNum;
-            _tileStaticDatas    = new TileStaticData[_tileRowNum * _tileColNum];
             _tiles              = new Tile[_tileRowNum * _tileColNum];
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            _tileSaveDatas = new TileSaveData[_tileRowNum * _tileColNum];
+#endif // DEVELOPMENT_BUILD || UNITY_EDITOR
         }
 
         public void CreateDefaultTiles( GameObject[] tilePrefabs )
@@ -53,21 +58,33 @@ namespace Frontier.Stage
 
                 _tiles = null;
             }
-            if( _tileStaticDatas != null )
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            if( _tileSaveDatas != null )
             {
-                foreach( var staticData in _tileStaticDatas )
+                foreach( var saveData in _tileSaveDatas )
                 {
-                    Methods.Dispose( staticData );
+                    Methods.Dispose( saveData );
                 }
 
-                _tileStaticDatas = null;
+                _tileSaveDatas = null;
+            }
+#endif // DEVELOPMENT_BUILD || UNITY_EDITOR
+        }
+
+        /// <summary>
+        /// セーブ用データをセットアップします
+        /// </summary>
+        public void SetupSaveData()
+        {
+            for( int i = 0; i < GetTileTotalNum(); ++i )
+            {
+                _tileSaveDatas[i] = _tiles[i].ToSaveData();
             }
         }
 
         public float WidthX() { return TILE_SIZE * _tileColNum; }
         public float WidthZ() { return TILE_SIZE * _tileRowNum; }
         public int GetTileTotalNum() { return _tileRowNum * _tileColNum; }
-        public TileStaticData GetStaticData( int x, int y ) => _tileStaticDatas[x + ( y * _tileColNum )];
         public Tile GetTile( int index ) => _tiles[index];
         public Tile GetTile( int x, int y ) => _tiles[x + ( y * _tileColNum )];
         public Tile[] Tiles => _tiles;
@@ -101,7 +118,10 @@ namespace Frontier.Stage
             return retDatas;
         }
 
-        public void SetStaticData( int x, int y, TileStaticData staticData ) { _tileStaticDatas[x + ( y * _tileColNum )] = staticData; }
         public void SetTile( int x, int y, Tile tile ) => _tiles[x + ( y * _tileColNum )] = tile;
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        public TileSaveData GetSaveData( int x, int y ) => _tileSaveDatas[x + ( y * _tileColNum )];
+#endif // DEVELOPMENT_BUILD || UNITY_EDITOR
     }
 }
