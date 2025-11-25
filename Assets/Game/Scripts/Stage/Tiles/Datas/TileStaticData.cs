@@ -4,14 +4,13 @@ using static Constants;
 
 namespace Frontier.Stage
 {
-    [Serializable]
     public class TileStaticData
     {
-        [SerializeField] public bool IsDeployable;      // 配備可能かどうか 
-        [SerializeField] public float Height;           // 高さ
-        [SerializeField] public int MoveResist;         // 移動阻害値
-        [SerializeField] public Vector3 CharaStandPos;  // キャラクターの立ち位置座標
-        [SerializeField] public TileType TileType;      // タイプ(芝生、砂漠、荒野など)
+        public bool IsDeployable;      // 配備可能かどうか 
+        public float Height;           // 高さ
+        public int MoveResist;         // 移動阻害値
+        public Vector3 CharaStandPos;  // キャラクターの立ち位置座標
+        public TileType TileType;      // タイプ(芝生、砂漠、荒野など)
 
         /// <summary>
         /// 初期化します
