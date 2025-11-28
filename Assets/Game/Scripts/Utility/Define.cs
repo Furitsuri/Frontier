@@ -68,6 +68,10 @@ static public class Constants
     public const float JUMP_NEGATIVE_Y_VELOCITY = 3f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
+    public const float STAGE_EDITOR_CONFIRM_WIN_WIDTH   = 400f;
+    public const float STAGE_EDITOR_CONFIRM_WIN_HEIGHT  = 280f;
+    public const float STAGE_EDITOR_NOTIFY_WIN_WIDTH    = 400f;
+    public const float STAGE_EDITOR_NOTIFY_WIN_HEIGHT   = 180f;
     // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
     // 攻撃時に相手に近接するまでの時間

@@ -20,15 +20,13 @@ namespace Frontier.DebugTools.StageEditor
             Load,
         }
 
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        [Inject] private GridCursorController _gridCursorCtrl   = null;
+
         private Action<int, int> PlaceTileCallback;
         private Action<int, int> ResizeTileGridCallback;
         private Action<int, int> ToggleDeployableCallback;
-        private Func<string, bool> LoadStageCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
-
-        [Inject] private IStageDataProvider _stageDataProvider  = null;
-        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
-        [Inject] private GridCursorController _gridCursorCtrl   = null;
 
         private StageEditorEditBase _currentEdit            = null;
         private StageEditorEditBase[] _editClasses          = null;
@@ -37,14 +35,12 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditMode _editMode                     = StageEditMode.NONE;
 
         public GameObject[] tilePrefabs;
-        private string _editFileName = "test_stage"; // 編集するステージファイル名
 
-        public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
             ToggleDeployableCallback    = toggleDeployableCb;
-            LoadStageCallback           = loadStageCb;
             ChangeEditModeCallback      = changeEditModeCb;
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
@@ -182,11 +178,6 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !isInput ) return false;
 
-            if( !LoadStageCallback( _editFileName ) )
-            {
-                return false;
-            }
-
             TransitState( ( int ) TransitTag.Load );
 
             return true;
@@ -199,12 +190,7 @@ namespace Frontier.DebugTools.StageEditor
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptOptional2(bool isInput)
         {
-            if (!isInput) return false;
-
-            if (!StageDataSerializer.Save(_stageDataProvider.CurrentData, _editFileName))
-            {
-                return false;
-            }
+            if( !isInput ) { return false; }
 
             TransitState( ( int ) TransitTag.Save );
 

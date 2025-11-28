@@ -9,23 +9,17 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorPresenter : MonoBehaviour
     {
-        [SerializeField] private GameObject _notifyImage;           // 通知用画像オブジェクト
+        [SerializeField] private GameObject _notifyImage;                   // 通知用画像オブジェクト
         [SerializeField] private GameObject _editParamImage;
-        [SerializeField] private GameObject[] _editParams;          // エディット用のパラメータ群
+        [SerializeField] private GameObject[] _editParams;                  // エディット用のパラメータ群
+        [SerializeField] private ConfirmUI _confirmSaveLoadUI;              // 保存・読込確認用UI
         [SerializeField] private TextMeshProUGUI _editModeTextMesh;
         [SerializeField] private TextMeshProUGUI[] _firstParamTextMesh;
         [SerializeField] private TextMeshProUGUI[] _secondParamTextMesh;
 
         public void Init()
         {
-        }
-
-        /// <summary>
-        /// 通知ビューの表示/非表示を切り替えます。
-        /// </summary>
-        public void ToggleNotifyView()
-        {
-            _notifyImage.SetActive( !_notifyImage.activeSelf );
+            _confirmSaveLoadUI.Init();
         }
 
         /// <summary>
@@ -50,12 +44,21 @@ namespace Frontier.DebugTools.StageEditor
         /// 通知ビューに表示するテキストを設定します。
         /// </summary>
         /// <param name="word">表示テキスト</param>
-        public void SetNotifyWord( string word )
+        public void SetMessageWord( string word )
         {
-            if ( _notifyImage != null )
+            if ( _confirmSaveLoadUI != null )
             {
-                _notifyImage.GetComponentInChildren<TextMeshProUGUI>().text = word;
+                _confirmSaveLoadUI.SetMessageText( word );
             }
+        }
+
+        /// <summary>
+        /// 確認ウィンドウのサイズを更新します。
+        /// </summary>
+        /// <param name="newSize"></param>
+        public void RefreshConfirmWindowSize( in Vector2 newSize )
+        {
+            _confirmSaveLoadUI.GetComponent<RectTransform>().sizeDelta = newSize;
         }
 
         /// <summary>
@@ -63,7 +66,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="type">タイプ</param>
         /// <param name="height">高さ</param>
-        public void UpdateText( StageEditMode mode, StageEditRefParams refParams )
+        public void UpdateModeText( StageEditMode mode, StageEditRefParams refParams )
         {
             string[] firstParamText = new string[( int ) StageEditMode.NUM]
             {
@@ -86,6 +89,11 @@ namespace Frontier.DebugTools.StageEditor
 
             _firstParamTextMesh[( int ) mode].text  = firstParamText[( int ) mode];
             _secondParamTextMesh[( int ) mode].text = secondParamText[( int ) mode];
+        }
+
+        public ConfirmUI GetConfirmSaveLoadUI()
+        {
+            return _confirmSaveLoadUI;
         }
     }
 }

@@ -4312,6 +4312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _notifyImage: {fileID: 0}
+  _editParamImage: {fileID: 0}
   _editParams: []
   _editModeTextMesh: {fileID: 0}
   _firstParamTextMesh: []
@@ -21196,21 +21197,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1100, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &4764275821204993183
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6171524841852902558}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2e1df25d79b6a94ca77b86734ca4526, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _confirmTMPTexts:
-  - {fileID: 8781297353263847540}
-  - {fileID: 8142866659258034117}
 --- !u!224 &4871445013644483994
 RectTransform:
   m_ObjectHideFlags: 0
@@ -21608,7 +21594,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 914895511819813958}
-  - component: {fileID: 4764275821204993183}
+  - component: {fileID: 6171524841852902559}
   m_Layer: 5
   m_Name: ConfirmTurnEndUI
   m_TagString: Untagged
@@ -21616,6 +21602,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+--- !u!114 &6171524841852902559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6171524841852902558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7451587a7b82b9e4f913c1746181a625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _confirmTMPTexts:
+  - {fileID: 8781297353263847540}
+  - {fileID: 8142866659258034117}
 --- !u!1 &6202349122493433953
 GameObject:
   m_ObjectHideFlags: 0
@@ -21649,7 +21650,7 @@ MonoBehaviour:
   _canvas: {fileID: 4432964870290022595}
   ParameterView: {fileID: 9086784654231273173}
   PlCommandWindow: {fileID: 4581502711679434753}
-  ConfirmTurnEnd: {fileID: 4764275821204993183}
+  ConfirmTurnEnd: {fileID: 6171524841852902559}
   DamageValue: {fileID: 1401124153645319502}
   Phase: {fileID: 474454664147823673}
   StageClear: {fileID: 7764852427783837538}

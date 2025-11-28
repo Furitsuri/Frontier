@@ -46,6 +46,7 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private InputFacade _inputFcd                  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         
+        private string _editFileName = "test_stage"; // 編集するステージファイル名
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorPresenter _stageEditorView   = null;
@@ -190,11 +191,26 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         /// <summary>
+        /// 現在のステージデータを保存します
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private bool SaveStage( string fileName )
+        {
+            if( !StageDataSerializer.Save( _stageDataProvider.CurrentData, fileName ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// ステージを読み込みます
         /// </summary>
         /// <param name="fileName">読み込むステージのファイル名</param>
         /// <returns>読込の成否</returns>
-        private bool LoadStage(string fileName)
+        private bool LoadStage( string fileName )
         {
             _stageFileLoader.Load( fileName );
             _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
@@ -240,7 +256,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _stageFileLoader.Init( tilePrefabs, tileBhvPrefabs );
 
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
 
 
@@ -253,7 +269,7 @@ namespace Frontier.DebugTools.StageEditor
 
             UpdateCamera( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
             UpdateTileVisual( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
-            _stageEditorView.UpdateText( _editMode, _refParams );
+            _stageEditorView.UpdateModeText( _editMode, _refParams );
         }
 
         override public void LateUpdateRoutine()

@@ -7,11 +7,7 @@ using Zenject;
 
 public class EditorStateBase : StateBase
 {
-    [Inject]
-    public void Construct(InputFacade inputFcd)
-    {
-        _inputFcd = inputFcd;
-    }
+    [Inject] protected IUiSystem _uiSystem = null;
 
     /// <summary>
     /// 入力コードのハッシュ値を取得します
@@ -55,7 +51,7 @@ public class EditorStateBase : StateBase
     override public void ExitState()
     {
         base.ExitState();
-        UnregisterInputCodes(Hash.GetStableHash(GetType().Name));
+        UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
     }
 
     /// <summary>

@@ -7,11 +7,11 @@ namespace Frontier.StateMachine
 {
     public class PhaseStateBase : StateBase
     {
+        [Inject] protected IUiSystem _uiSystem                  = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
         [Inject] protected StageController _stageCtrl           = null;
         [Inject] protected TutorialFacade _tutorialFcd          = null;
-        [Inject] protected IUiSystem _uiSystem                  = null;
 
         protected bool _isEndedPhase = false;
         public bool IsEndedPhase { get { return _isEndedPhase; } }
@@ -59,7 +59,7 @@ namespace Frontier.StateMachine
         override public void PauseState()
         {
             base.PauseState();
-            UnregisterInputCodes(Hash.GetStableHash(GetType().Name));
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
         }
 
         /// <summary>
