@@ -22,8 +22,13 @@ namespace Frontier
         [Header("PlayerCommand")]
         public PlayerCommandUI PlCommandWindow;         // プレイヤーの選択コマンドUI
 
+        /*
         [Header("ConfirmTurnEnd")]
         public ConfirmTurnEndUI ConfirmTurnEnd;         // ターン終了確認UI
+        */
+
+        [Header( "ConfirmTurnEndUI" )]
+        public ConfirmUI ConfirmTurnEnd;                // ターン終了確認UI
 
         [Header("DamageUI")]
         public DamageUI DamageValue;                    // ダメージ表記
@@ -92,6 +97,11 @@ namespace Frontier
         public void ToggleDamageUI(bool isActive)
         {
             DamageValue.gameObject.SetActive(isActive);
+        }
+
+        public ConfirmUI GetConfirmTurnEndUI()
+        {
+            return ConfirmTurnEnd;
         }
 
         public SkillBoxUI GetPlayerParamSkillBox( int index )

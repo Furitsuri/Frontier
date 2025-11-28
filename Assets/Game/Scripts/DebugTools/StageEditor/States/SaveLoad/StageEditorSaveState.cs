@@ -4,7 +4,8 @@
     {
         override public void Init()
         {
-            SetWordCallback("Save Completed!");
+            _confirmMessage[( int ) State.CONFIRM]  = "SAVE THIS STAGE?";
+            _confirmMessage[( int ) State.NOTIFY]   = "STAGE SAVED";
 
             base.Init();
         }

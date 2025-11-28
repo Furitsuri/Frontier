@@ -12,17 +12,19 @@ namespace Frontier.DebugTools.StageEditor
         private Action<int, int> PlaceTileCallback;
         private Action<int, int> ResizeTileGridCallback;
         private Action<int, int> ToggleDeployableCallback;
+        private Func<string, bool> SaveStageCallback;
         private Func<string, bool> LoadStageCallback;
         private Func< int, StageEditMode > ChangeEditModeCallback;
 
         private StageEditorPresenter _stageEditorView   = null;
 
-        public void Init(StageEditorPresenter stageEditorView, Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void Init( StageEditorPresenter stageEditorView, Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
             _stageEditorView            = stageEditorView;
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
             ToggleDeployableCallback    = toggleDeployableCb;
+            SaveStageCallback           = saveStageCb;
             LoadStageCallback           = loadStageCb;
             ChangeEditModeCallback      = changeEditModeCb;
 
@@ -31,14 +33,25 @@ namespace Frontier.DebugTools.StageEditor
 
         override protected void CreateTree()
         {
-            StageEditorEditingState stageEditorEditingState = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditingState>(false);
-            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback, LoadStageCallback, ChangeEditModeCallback);
+            /*
+             *  親子図
+             * 
+             *      StageEditorEditingState
+             *                ｜
+             *                ├─ StageEditorSaveState
+             *                ｜
+             *                └─ StageEditorLoadState
+             *                                   
+             */
 
-            StageEditorSaveState stageEditorSaveState = _hierarchyBld.InstantiateWithDiContainer<StageEditorSaveState>(false);
-            stageEditorSaveState.SetCallbacks( _stageEditorView.ToggleNotifyView, _stageEditorView.SetNotifyWord );
+            var stageEditorEditingState = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditingState>(false);
+            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback, ChangeEditModeCallback);
 
-            StageEditorLoadState stageEditorLoadState = _hierarchyBld.InstantiateWithDiContainer<StageEditorLoadState>(false);
-            stageEditorLoadState.SetCallbacks(_stageEditorView.ToggleNotifyView, _stageEditorView.SetNotifyWord);
+            var stageEditorSaveState = _hierarchyBld.InstantiateWithDiContainer<StageEditorSaveState>(false);
+            stageEditorSaveState.SetCallbacks( SaveStageCallback, _stageEditorView.SetMessageWord );
+
+            var stageEditorLoadState = _hierarchyBld.InstantiateWithDiContainer<StageEditorLoadState>(false);
+            stageEditorLoadState.SetCallbacks( LoadStageCallback, _stageEditorView.SetMessageWord);
 
             // 遷移木の作成
             RootNode = stageEditorEditingState;

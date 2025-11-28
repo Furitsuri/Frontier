@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Frontier.DebugTools.StageEditor;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,32 +7,63 @@ using static Constants;
 
 namespace Frontier.DebugTools
 {
-    public class StageEditorSaveLoadState : EditorStateBase
+    public class StageEditorSaveLoadState : ConfirmStateBaseEditor
     {
-        protected Action ToggleViewCallback;
-        protected Action<string> SetWordCallback;
-
-        override public void RunState()
+        protected enum State
         {
-            base.RunState();
+            NONE = -1,
+            CONFIRM,
+            NOTIFY,
 
-            ToggleViewCallback();
+            NUM,
         }
 
-        override public void ExitState()
-        {
-            ToggleViewCallback();
+        protected string[] _confirmMessage = new string[( int ) State.NUM];
+        private State _currentState;
+        private Vector2 _confirmWinSize = new Vector2( STAGE_EDITOR_CONFIRM_WIN_WIDTH, STAGE_EDITOR_CONFIRM_WIN_HEIGHT );
+        private Vector2 _NotifyWinSize  = new Vector2( STAGE_EDITOR_NOTIFY_WIN_WIDTH, STAGE_EDITOR_NOTIFY_WIN_HEIGHT );
+        private Func<string, bool> SaveLoadStageCallback;
+        private Action<string> SetMessageCallback;
 
-            base.ExitState();
+        public void SetCallbacks( Func<string, bool> saveloadStageCb, Action<string> setMsgCallback )
+        {
+            SaveLoadStageCallback   = saveloadStageCb;
+            SetMessageCallback      = setMsgCallback;
         }
 
-        override public void RegisterInputCodes()
+        private void ToggleConfirmState()
         {
-            int hashCode = GetInputCodeHash();
+            _currentState = State.CONFIRM;
+            SetMessageCallback( _confirmMessage[( int ) State.CONFIRM] );   // メッセージを確認中に設定
+            _uiSystem.DebugUi.StageEditorView.RefreshConfirmWindowSize( _confirmWinSize );
+        }
 
-            _inputFcd.RegisterInputCodes(
-                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptDefault, new AcceptBooleanInput(AcceptConfirm), 0.0f, hashCode)
-            );
+        private void ToggleNotifyState()
+        {
+            _currentState = State.NOTIFY;
+            _confirmUi.SetActiveAlternativeText( false );                   // 選択肢テキストを非表示に設定
+            SetMessageCallback( _confirmMessage[( int ) State.NOTIFY] );    // メッセージを通知中に設定
+            _uiSystem.DebugUi.StageEditorView.RefreshConfirmWindowSize( _NotifyWinSize );
+        }
+
+        override public void Init()
+        {
+            ToggleConfirmState();
+
+            base.Init();
+        }
+
+        override protected bool CanAcceptDirection()
+        {
+            // 現在のステートが確認中でない場合は入力を受け付けない
+            if( State.CONFIRM != _currentState ) { return false; }
+
+            return true;
+        }
+
+        protected override bool AcceptDirection( Direction dir )
+        {
+            return _commandList.OperateListCursor( dir );
         }
 
         /// <summary>
@@ -39,19 +71,41 @@ namespace Frontier.DebugTools
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptConfirm(bool isInput)
+        override protected bool AcceptConfirm( bool isInput )
         {
-            if (!isInput) return false;
+            if( !isInput ) { return false; }
 
-            Back();
+            // 現在のステートに応じた処理を行う
+            switch( _currentState )
+            {
+                case State.CONFIRM:
+                    {
+                        if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
+                        {
+                            if( !SaveLoadStageCallback( "test_stage" ) ) { return false; }
+
+                            ToggleNotifyState();
+                        }
+                        else { Back(); }
+                    }
+                    break;
+                case State.NOTIFY:
+                    {
+                        Back();
+                    }
+                    break;
+            }
 
             return true;
         }
 
-        public void SetCallbacks(Action toggleViewCallback, Action<string> setWordCallback)
+        protected override bool AcceptCancel( bool isCancel )
         {
-            ToggleViewCallback  = toggleViewCallback;
-            SetWordCallback     = setWordCallback;
+            if( !isCancel ) { return false; }
+
+            Back();
+
+            return true;
         }
     }
 }

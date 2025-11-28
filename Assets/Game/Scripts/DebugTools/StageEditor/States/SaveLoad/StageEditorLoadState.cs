@@ -4,7 +4,8 @@
     {
         override public void Init()
         {
-            SetWordCallback("Load Completed!");
+            _confirmMessage[( int ) State.CONFIRM]  = "LOAD STAGE?";
+            _confirmMessage[( int ) State.NOTIFY]   = "STAGE LOADED";
 
             base.Init();
         }
