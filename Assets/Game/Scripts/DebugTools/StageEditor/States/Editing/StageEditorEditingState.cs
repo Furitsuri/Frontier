@@ -18,6 +18,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             Save = 0,
             Load,
+            EditFileName,
         }
 
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
@@ -95,7 +96,8 @@ namespace Frontier.DebugTools.StageEditor
                 (GuideIcon.OPT1, "LOAD",            CanAcceptInputAlways, new AcceptBooleanInput( AcceptOptional1 ), 0.0f, hashCode),
                 (GuideIcon.OPT2, "SAVE",            CanAcceptInputAlways, new AcceptBooleanInput( AcceptOptional2 ), 0.0f, hashCode),
                 _sub1sub2InputCode[(int)_editMode]?.Clone(),    // _sub1sub2InputCode[(int)_editMode]がnullの場合は、そのままnullを渡す
-                _sub3sub4InputCode[(int)_editMode]?.Clone()
+                _sub3sub4InputCode[(int)_editMode]?.Clone(),
+                (GuideIcon.DEBUG_MENU, "FILE NAME", CanAcceptInputAlways, new AcceptBooleanInput( AcceptDebugTransition ), 0.0f, hashCode)
             );
         }
 
@@ -197,13 +199,23 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
-        override protected bool AcceptSub1(bool isInput ) { return _currentEdit.AcceptSub1( isInput ); }
+        override protected bool AcceptSub1( bool isInput ) { return _currentEdit.AcceptSub1( isInput ); }
+        override protected bool AcceptSub2( bool isInput ) { return _currentEdit.AcceptSub2( isInput ); }
+        override protected bool AcceptSub3( bool isInput ) { return _currentEdit.AcceptSub3( isInput ); }
+        override protected bool AcceptSub4( bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
 
-        override protected bool AcceptSub2(bool isInput ) { return _currentEdit.AcceptSub2( isInput ); }
+        /// <summary>
+        /// ファイルネーム編集へ遷移させます
+        /// </summary>
+        /// <param name="isInput"></param>
+        /// <returns></returns>
+        override protected bool AcceptDebugTransition( bool isInput )
+        {
+            if( !isInput ) { return false; }
 
-        override protected bool AcceptSub3(bool isInput ) { return _currentEdit.AcceptSub3( isInput ); }
-
-        override protected bool AcceptSub4(bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
+            TransitState( ( int ) TransitTag.EditFileName );
+            return true;
+        }
     }
 }
 

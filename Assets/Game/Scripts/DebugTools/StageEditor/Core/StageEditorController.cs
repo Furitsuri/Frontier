@@ -1,6 +1,8 @@
 ﻿using Frontier.Stage;
 using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 #if UNITY_EDITOR
@@ -45,8 +47,8 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private InputFacade _inputFcd                  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
-        
-        private string _editFileName = "test_stage"; // 編集するステージファイル名
+
+        private Holder<string> _editFileName = new Holder<string>( "test_stage" );  // 編集するステージファイル名
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorPresenter _stageEditorView   = null;
@@ -254,11 +256,12 @@ namespace Frontier.DebugTools.StageEditor
 
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
+            _stageEditorView.Init( _editFileName );
+
             _stageFileLoader.Init( tilePrefabs, tileBhvPrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
-
 
             _mainCamera = Camera.main;
         }

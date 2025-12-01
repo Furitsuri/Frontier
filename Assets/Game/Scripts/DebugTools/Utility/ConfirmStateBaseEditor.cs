@@ -37,7 +37,6 @@ public class ConfirmStateBaseEditor : EditorStateBase
 
         _confirmUi = _uiSystem.DebugUi.StageEditorView.GetConfirmSaveLoadUI();
         _confirmUi.gameObject.SetActive( true );
-        _confirmUi.Init();
     }
 
     override public bool Update()
@@ -59,9 +58,6 @@ public class ConfirmStateBaseEditor : EditorStateBase
         base.ExitState();
     }
 
-    /// <summary>
-    /// 入力コードを登録します
-    /// </summary>
     override public void RegisterInputCodes()
     {
         int hashCode = GetInputCodeHash();

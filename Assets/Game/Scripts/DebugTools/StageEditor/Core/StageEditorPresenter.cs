@@ -1,4 +1,5 @@
 ﻿using Frontier.Stage;
+using System;
 using TMPro;
 using UnityEngine;
 using static Frontier.DebugTools.StageEditor.StageEditorController;
@@ -9,17 +10,23 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorPresenter : MonoBehaviour
     {
-        [SerializeField] private GameObject _notifyImage;                   // 通知用画像オブジェクト
         [SerializeField] private GameObject _editParamImage;
         [SerializeField] private GameObject[] _editParams;                  // エディット用のパラメータ群
         [SerializeField] private ConfirmUI _confirmSaveLoadUI;              // 保存・読込確認用UI
+        [SerializeField] private StageEditorEditFileNameUI _editFileNameUI; // ファイル名編集用UI
+        [SerializeField] private TextMeshProUGUI _fileNameTextMesh;
         [SerializeField] private TextMeshProUGUI _editModeTextMesh;
         [SerializeField] private TextMeshProUGUI[] _firstParamTextMesh;
         [SerializeField] private TextMeshProUGUI[] _secondParamTextMesh;
 
-        public void Init()
+        private Holder<string> _holdEditFileName;
+
+        public void Init( Holder<string> editFileName )
         {
+            _holdEditFileName = editFileName;
+
             _confirmSaveLoadUI.Init();
+            _editFileNameUI.Init();
         }
 
         /// <summary>
@@ -61,6 +68,30 @@ namespace Frontier.DebugTools.StageEditor
             _confirmSaveLoadUI.GetComponent<RectTransform>().sizeDelta = newSize;
         }
 
+        public void OpenEditFileName( Action act )
+        {
+            _fileNameTextMesh.gameObject.SetActive( false );
+
+            _editFileNameUI.Open( (filename) => 
+            {
+                _holdEditFileName.Value = filename;
+                RefreshFileName();
+                act?.Invoke();
+            } );
+        }
+
+        public void ExitEditFileName()
+        {
+            _editFileNameUI.gameObject.SetActive( false );
+            _fileNameTextMesh.gameObject.SetActive( true );
+        }
+
+        public void RefreshFileName()
+        {
+             _fileNameTextMesh.text = _holdEditFileName.Value;
+            _fileNameTextMesh.gameObject.SetActive( true );
+        }
+
         /// <summary>
         /// エディット可能パラメータのテキストを更新します。
         /// </summary>
@@ -89,6 +120,11 @@ namespace Frontier.DebugTools.StageEditor
 
             _firstParamTextMesh[( int ) mode].text  = firstParamText[( int ) mode];
             _secondParamTextMesh[( int ) mode].text = secondParamText[( int ) mode];
+        }
+
+        public bool IsFileNameInputFieldFocused()
+        {
+            return _editFileNameUI.IsInputFieldFocused();
         }
 
         public ConfirmUI GetConfirmSaveLoadUI()
