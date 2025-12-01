@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Zenject;
-using static Constants;
+
+#if UNITY_EDITOR
 
 namespace Frontier.DebugTools.StageEditor
 {
@@ -53,11 +50,16 @@ namespace Frontier.DebugTools.StageEditor
             var stageEditorLoadState = _hierarchyBld.InstantiateWithDiContainer<StageEditorLoadState>(false);
             stageEditorLoadState.SetCallbacks( LoadStageCallback, _stageEditorView.SetMessageWord);
 
+            var stageEditorEditFileNameState = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditFileNameState>( false );
+
             // 遷移木の作成
             RootNode = stageEditorEditingState;
             RootNode.AddChild(stageEditorSaveState);
             RootNode.AddChild(stageEditorLoadState);
+            RootNode.AddChild(stageEditorEditFileNameState);
             CurrentNode = RootNode;
         }
     }
 }
+
+#endif // UNITY_EDITOR

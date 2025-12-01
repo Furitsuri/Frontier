@@ -126,14 +126,16 @@ public class InputFacade
             ( new GuideIcon[]{ GuideIcon.HORIZONTAL_CURSOR },  "", null, null, 0.0f, -1),
             ( new GuideIcon[]{ GuideIcon.CONFIRM },            "", null, null, 0.0f, -1),
             ( new GuideIcon[]{ GuideIcon.CANCEL },             "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.TOOL},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.INFO},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.OPT1},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.OPT2},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB1},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB2},                "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB3},                "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.TOOL },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.INFO },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.OPT1 },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.OPT2 },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB1 },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB2 },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.SUB3 },               "", null, null, 0.0f, -1),
             ( new GuideIcon[]{ GuideIcon.SUB4 },               "", null, null, 0.0f, -1),
+            // ( new GuideIcon[]{ GuideIcon.SUB5 },               "", null, null, 0.0f, -1),
+            // ( new GuideIcon[]{ GuideIcon.SUB6 },               "", null, null, 0.0f, -1),
 #if UNITY_EDITOR
             ( new GuideIcon[]{ GuideIcon.DEBUG_MENU },         "", null, null, 0.0f, -1)
 #endif  // UNITY_EDITOR
