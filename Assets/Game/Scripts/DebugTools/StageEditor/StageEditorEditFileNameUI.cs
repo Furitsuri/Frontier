@@ -13,7 +13,7 @@ public class StageEditorEditFileNameUI : MonoBehaviour
         gameObject.SetActive( false );
     }
 
-    public void Open( System.Action< string > onComplete )
+    public void Open( Action< string > onEnter, Action OnComplete )
     {
         gameObject.SetActive( true );
         inputField.text = "";
@@ -23,7 +23,12 @@ public class StageEditorEditFileNameUI : MonoBehaviour
         inputField.onEndEdit.RemoveAllListeners();
         inputField.onEndEdit.AddListener( ( text ) =>
         {
-            onComplete?.Invoke( text );
+            if( Input.GetKeyDown( KeyCode.Return ) || Input.GetKeyDown( KeyCode.KeypadEnter ) )
+            {
+                onEnter?.Invoke( text );
+            }
+
+            OnComplete?.Invoke();
             gameObject.SetActive( false );
         } );
     }
@@ -32,6 +37,8 @@ public class StageEditorEditFileNameUI : MonoBehaviour
     {
         return inputField.isFocused;
     }
+
+    private void OnEndEdit( string text ) { }
 
     private IEnumerator FocusInputField()
     {

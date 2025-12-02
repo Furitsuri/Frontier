@@ -14,6 +14,7 @@ namespace Frontier.DebugTools.StageEditor
         [SerializeField] private GameObject[] _editParams;                  // エディット用のパラメータ群
         [SerializeField] private ConfirmUI _confirmSaveLoadUI;              // 保存・読込確認用UI
         [SerializeField] private StageEditorEditFileNameUI _editFileNameUI; // ファイル名編集用UI
+        [SerializeField] private FileSuggestor _fileNameSuggestor;
         [SerializeField] private TextMeshProUGUI _fileNameTextMesh;
         [SerializeField] private TextMeshProUGUI _editModeTextMesh;
         [SerializeField] private TextMeshProUGUI[] _firstParamTextMesh;
@@ -68,27 +69,25 @@ namespace Frontier.DebugTools.StageEditor
             _confirmSaveLoadUI.GetComponent<RectTransform>().sizeDelta = newSize;
         }
 
-        public void OpenEditFileName( Action act )
+        public void OpenEditFileName( Action OnComplete )
         {
             _fileNameTextMesh.gameObject.SetActive( false );
+            _fileNameSuggestor.StartSuggest();
 
-            _editFileNameUI.Open( (filename) => 
-            {
-                _holdEditFileName.Value = filename;
-                RefreshFileName();
-                act?.Invoke();
-            } );
+            _editFileNameUI.Open(
+                ( filename ) => 
+                {
+                    _fileNameTextMesh.text =_holdEditFileName.Value = filename;
+                },
+                () =>
+                {
+                    OnComplete?.Invoke();
+                }
+            );
         }
 
-        public void ExitEditFileName()
+        public void CloseEditFileName()
         {
-            _editFileNameUI.gameObject.SetActive( false );
-            _fileNameTextMesh.gameObject.SetActive( true );
-        }
-
-        public void RefreshFileName()
-        {
-             _fileNameTextMesh.text = _holdEditFileName.Value;
             _fileNameTextMesh.gameObject.SetActive( true );
         }
 
