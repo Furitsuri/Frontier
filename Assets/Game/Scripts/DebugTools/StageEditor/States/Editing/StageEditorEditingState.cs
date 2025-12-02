@@ -29,11 +29,11 @@ namespace Frontier.DebugTools.StageEditor
         private Action<int, int> ToggleDeployableCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
-        private StageEditorEditBase _currentEdit            = null;
-        private StageEditorEditBase[] _editClasses          = null;
-        private InputCode[] _sub1sub2InputCode              = null;
-        private InputCode[] _sub3sub4InputCode              = null;
-        private StageEditMode _editMode                     = StageEditMode.NONE;
+        private StageEditorEditBase _currentEdit    = null;
+        private StageEditorEditBase[] _editClasses  = null;
+        private InputCode[] _sub1sub2InputCode      = null;
+        private InputCode[] _sub3sub4InputCode      = null;
+        private StageEditMode _editMode             = StageEditMode.NONE;
 
         public GameObject[] tilePrefabs;
 
