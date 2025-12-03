@@ -21,6 +21,7 @@ public class StageEditorEditFileNameUI : MonoBehaviour
         StartCoroutine( FocusInputField() );
 
         inputField.onEndEdit.RemoveAllListeners();
+
         inputField.onEndEdit.AddListener( ( text ) =>
         {
             if( Input.GetKeyDown( KeyCode.Return ) || Input.GetKeyDown( KeyCode.KeypadEnter ) )
@@ -33,12 +34,10 @@ public class StageEditorEditFileNameUI : MonoBehaviour
         } );
     }
 
-    public bool IsInputFieldFocused()
+    public void SetInputFiledText( string text )
     {
-        return inputField.isFocused;
+        inputField.text = text;
     }
-
-    private void OnEndEdit( string text ) { }
 
     private IEnumerator FocusInputField()
     {

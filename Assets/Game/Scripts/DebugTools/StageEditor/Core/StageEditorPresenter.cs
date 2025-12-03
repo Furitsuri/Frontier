@@ -1,5 +1,6 @@
 ﻿using Frontier.Stage;
 using System;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using static Frontier.DebugTools.StageEditor.StageEditorController;
@@ -28,6 +29,20 @@ namespace Frontier.DebugTools.StageEditor
 
             _confirmSaveLoadUI.Init();
             _editFileNameUI.Init();
+            _fileNameSuggestor.Init( () =>
+            {
+                // タブキーが押された場合、候補の最上位を入力フィールドにセットする
+                var topMostSuggestion = _fileNameSuggestor.GetTopMostSuggestion();
+                if( topMostSuggestion != null )
+                {
+                    var tmp = topMostSuggestion.GetComponentInChildren<TextMeshProUGUI>();
+                    if( null != tmp )
+                    {
+                        // 拡張子を削除した文字列を入力中のInputFieldに代入
+                        _editFileNameUI.SetInputFiledText( Path.GetFileNameWithoutExtension( tmp.text ) );
+                    }
+                }
+            } );
         }
 
         /// <summary>
@@ -82,6 +97,7 @@ namespace Frontier.DebugTools.StageEditor
                 () =>
                 {
                     OnComplete?.Invoke();
+                    _fileNameSuggestor.EndSuggest();
                 }
             );
         }
@@ -121,9 +137,9 @@ namespace Frontier.DebugTools.StageEditor
             _secondParamTextMesh[( int ) mode].text = secondParamText[( int ) mode];
         }
 
-        public bool IsFileNameInputFieldFocused()
+        public bool HasSuggestions()
         {
-            return _editFileNameUI.IsInputFieldFocused();
+            return _fileNameSuggestor.GetTopMostSuggestion() != null;
         }
 
         public ConfirmUI GetConfirmSaveLoadUI()

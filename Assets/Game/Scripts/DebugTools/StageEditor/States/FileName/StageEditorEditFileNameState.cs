@@ -28,20 +28,16 @@ namespace Frontier.DebugTools.StageEditor
         {
             int hashCode = GetInputCodeHash();
 
-            // 入力ガイドを登録
+            // 入力ガイドを登録(InputField側で処理が行われるため、基本的に入力を受け取っても何もしない。ガイド表示のみ)
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.CANCEL, "Back", CanAcceptInputAlways, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
+                ( GuideIcon.CONFIRM, "Choose Candidate", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode ),
+                ( GuideIcon.CANCEL, "Back", CanAcceptInputAlways, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode )
             );
         }
 
-        /// <summary>
-        /// キャンセル入力をした際、InputField側で処理が行われるため、ステート側ではキャンセルを受け付けない
-        /// </summary>
-        /// <param name="isCancel"></param>
-        /// <returns></returns>
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool CanAcceptConfirm()
         {
-            return false;
+            return _uiSystem.DebugUi.StageEditorView.HasSuggestions();
         }
     }
 }

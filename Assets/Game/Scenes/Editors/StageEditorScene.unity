@@ -5724,7 +5724,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fileInputField: {fileID: 451333498}
   suggestionParent: {fileID: 966501229}
-  suggestionItemPrefab: {fileID: 8053280549060211897, guid: efdc0bf9b7a6bcb4090c3c8ea0953cdd, type: 3}
+  suggestionItemPrefab: {fileID: 3494115643107196703, guid: efdc0bf9b7a6bcb4090c3c8ea0953cdd, type: 3}
   targetDirectory: C:/Users/tssm4/AppData/LocalLow/DefaultCompany/FRONTIER/StageData
 --- !u!1 &1924273457
 GameObject:
