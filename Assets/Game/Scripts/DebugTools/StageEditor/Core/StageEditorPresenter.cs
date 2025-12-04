@@ -89,7 +89,7 @@ namespace Frontier.DebugTools.StageEditor
             _fileNameTextMesh.gameObject.SetActive( false );
             _fileNameSuggestor.StartSuggest();
 
-            _editFileNameUI.Open(
+            _editFileNameUI.Open( _fileNameTextMesh.text,
                 ( filename ) => 
                 {
                     _fileNameTextMesh.text =_holdEditFileName.Value = filename;

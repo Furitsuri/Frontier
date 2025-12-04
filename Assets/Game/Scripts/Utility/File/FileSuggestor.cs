@@ -4,6 +4,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent( typeof( Image ) )]
+[RequireComponent( typeof( ScrollRect ) )]
 public class FileSuggestor : MonoBehaviour
 {
     [SerializeField] private TMP_InputField fileInputField;
@@ -64,7 +66,7 @@ public class FileSuggestor : MonoBehaviour
 
         foreach( var path in files )
         {
-            string fileName = Path.GetFileName( path );
+            string fileName = Path.GetFileNameWithoutExtension( path );
 
             // 入力に合致したファイルのみ表示
             if( !fileName.ToLower().Contains( text.ToLower() ) ) { continue; }
