@@ -59,8 +59,11 @@ public class FileSuggestor : MonoBehaviour
         // 既存の候補をクリア
         DestroyTextMeshChild();
 
-        if( string.IsNullOrEmpty( text ) ) { return; }
-        if( !Directory.Exists( targetDirectory ) ) { return; }
+        if( string.IsNullOrEmpty( text ) || !Directory.Exists( targetDirectory ) )
+        {
+            gameObject.SetActive( false );
+            return;
+        }
 
         var files = Directory.GetFiles( targetDirectory );
 
@@ -77,8 +80,8 @@ public class FileSuggestor : MonoBehaviour
             tmp.text = fileName;
         }
 
-        gameObject.SetActive( true );
         _textMeshChilds = GetTextMeshChildArray();  // 子の配列を更新
+        gameObject.SetActive( _textMeshChilds.Length != 0 );
     }
 
     private void DestroyTextMeshChild()
