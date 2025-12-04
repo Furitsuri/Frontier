@@ -6,6 +6,7 @@
         {
             _confirmMessage[( int ) State.CONFIRM]  = "LOAD STAGE?";
             _confirmMessage[( int ) State.NOTIFY]   = "STAGE LOADED";
+            _failedMessage                          = "FAILED TO LOAD STAGE";
 
             base.Init();
         }
