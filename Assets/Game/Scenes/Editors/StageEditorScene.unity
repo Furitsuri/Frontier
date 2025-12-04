@@ -1334,7 +1334,6 @@ RectTransform:
   - {fileID: 582234061}
   - {fileID: 360335954}
   - {fileID: 1236171424}
-  - {fileID: 1923390477}
   m_Father: {fileID: 1283366630}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1360,7 +1359,7 @@ MonoBehaviour:
   - {fileID: 1726533936}
   _confirmSaveLoadUI: {fileID: 360335955}
   _editFileNameUI: {fileID: 1236171427}
-  _fileNameSuggestor: {fileID: 1923390478}
+  _fileNameSuggestor: {fileID: 966501233}
   _fileNameTextMesh: {fileID: 1047978473}
   _editModeTextMesh: {fileID: 1316734434}
   _firstParamTextMesh:
@@ -3235,6 +3234,7 @@ GameObject:
   - component: {fileID: 966501232}
   - component: {fileID: 966501231}
   - component: {fileID: 966501230}
+  - component: {fileID: 966501233}
   m_Layer: 5
   m_Name: Suggestion
   m_TagString: Untagged
@@ -3332,6 +3332,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 966501228}
   m_CullTransparentMesh: 1
+--- !u!114 &966501233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966501228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f00837a370ceb7841beec90cc6ea070b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fileInputField: {fileID: 451333498}
+  suggestionParent: {fileID: 966501229}
+  suggestionItemPrefab: {fileID: 3494115643107196703, guid: efdc0bf9b7a6bcb4090c3c8ea0953cdd, type: 3}
+  targetDirectory: C:/Users/tssm4/AppData/LocalLow/DefaultCompany/FRONTIER/StageData
 --- !u!1 &1047978470
 GameObject:
   m_ObjectHideFlags: 0
@@ -5674,58 +5690,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1905364431}
   m_CullTransparentMesh: 1
---- !u!1 &1923390476
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1923390477}
-  - component: {fileID: 1923390478}
-  m_Layer: 5
-  m_Name: FileSuggestor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1923390477
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1923390476}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 380798960}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1923390478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1923390476}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f00837a370ceb7841beec90cc6ea070b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fileInputField: {fileID: 451333498}
-  suggestionParent: {fileID: 966501229}
-  suggestionItemPrefab: {fileID: 3494115643107196703, guid: efdc0bf9b7a6bcb4090c3c8ea0953cdd, type: 3}
-  targetDirectory: C:/Users/tssm4/AppData/LocalLow/DefaultCompany/FRONTIER/StageData
 --- !u!1 &1924273457
 GameObject:
   m_ObjectHideFlags: 0

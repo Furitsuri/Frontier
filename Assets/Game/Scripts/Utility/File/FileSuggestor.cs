@@ -7,17 +7,11 @@ using UnityEngine.UI;
 public class FileSuggestor : MonoBehaviour
 {
     [SerializeField] private TMP_InputField fileInputField;
-    [SerializeField] private Transform suggestionParent;  // ScrollView Content
     [SerializeField] private GameObject suggestionItemPrefab;
     [SerializeField] private string targetDirectory = "C:/Users/tssm4/AppData/LocalLow/DefaultCompany/FRONTIER/StageData";
 
-    private int _defaultChildCount = 0;
+    private GameObject[] _textMeshChilds = null;
     private Action OnPressedTabAction = null;
-
-    private void Awake()
-    {
-        _defaultChildCount = suggestionParent.childCount;
-    }
 
     void Update()
     {
@@ -36,7 +30,7 @@ public class FileSuggestor : MonoBehaviour
 
     public void StartSuggest()
     {
-        gameObject.SetActive( true );
+        _textMeshChilds = GetTextMeshChildArray();
 
         fileInputField.onValueChanged.AddListener( OnTextChanged );
     }
@@ -54,10 +48,8 @@ public class FileSuggestor : MonoBehaviour
     /// <returns></returns>
     public GameObject GetTopMostSuggestion()
     {
-        GameObject[] textMeshChilds = GetTextMeshChildArray();
-
-        if( textMeshChilds.Length == 0 ) { return null; }
-        return textMeshChilds[0];
+        if( _textMeshChilds.Length == 0 ) { return null; }
+        return _textMeshChilds[0];
     }
 
     private void OnTextChanged( string text )
@@ -77,19 +69,23 @@ public class FileSuggestor : MonoBehaviour
             // 入力に合致したファイルのみ表示
             if( !fileName.ToLower().Contains( text.ToLower() ) ) { continue; }
 
-            var item = Instantiate( suggestionItemPrefab, suggestionParent );
+            var item = Instantiate( suggestionItemPrefab, this.transform );
             item.gameObject.SetActive( true );
             var tmp = item.GetComponentInChildren<TextMeshProUGUI>();
             tmp.text = fileName;
         }
+
+        gameObject.SetActive( true );
+        _textMeshChilds = GetTextMeshChildArray();  // 子の配列を更新
     }
 
     private void DestroyTextMeshChild()
     {
-        foreach( Transform child in suggestionParent )
+        foreach( Transform child in this.transform )
         {
             if( null != child.GetComponentInChildren<TextMeshProUGUI>() )
             {
+                child.transform.SetParent( null );  // Destroyは即時に実行されないため、親子関係を明示的にここで切り離す
                 Destroy( child.gameObject );
             }
         }
@@ -98,7 +94,7 @@ public class FileSuggestor : MonoBehaviour
     private GameObject[] GetTextMeshChildArray()
     {
         var list = new System.Collections.Generic.List<GameObject>();
-        foreach( Transform child in suggestionParent )
+        foreach( Transform child in this.transform )
         {
             if( null != child.GetComponentInChildren<TextMeshProUGUI>() )
             {
