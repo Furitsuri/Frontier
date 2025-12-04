@@ -13,10 +13,10 @@ public class StageEditorEditFileNameUI : MonoBehaviour
         gameObject.SetActive( false );
     }
 
-    public void Open( Action< string > onEnter, Action OnComplete )
+    public void Open( string originalText, Action< string > onEnter, Action OnComplete )
     {
         gameObject.SetActive( true );
-        inputField.text = "";
+        inputField.text = originalText;
 
         StartCoroutine( FocusInputField() );
 
