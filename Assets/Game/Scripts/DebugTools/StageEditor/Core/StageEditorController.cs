@@ -48,7 +48,8 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private InputFacade _inputFcd                  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
 
-        private Holder<string> _editFileName = new Holder<string>( "test_stage" );  // 編集するステージファイル名
+        public Holder<string> EditFileName { get; private set;} = null;
+
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorPresenter _stageEditorView   = null;
@@ -248,6 +249,11 @@ namespace Frontier.DebugTools.StageEditor
                 _refParams = _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true );
             }
 
+            if( null == EditFileName )
+            {
+                EditFileName = new Holder<string>( "NewStage" );
+            }
+
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
@@ -256,8 +262,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
-            _stageEditorView.Init( _editFileName );
-
+            _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs, tileBhvPrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );

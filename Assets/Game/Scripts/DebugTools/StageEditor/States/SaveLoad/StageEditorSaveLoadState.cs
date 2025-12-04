@@ -4,11 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Constants;
+using Zenject;
 
 namespace Frontier.DebugTools
 {
     public class StageEditorSaveLoadState : ConfirmStateBaseEditor
     {
+        [Inject] private readonly StageEditorController _stgEditorCtrl = null;
+
         protected enum State
         {
             NONE = -1,
@@ -82,7 +85,7 @@ namespace Frontier.DebugTools
                     {
                         if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
                         {
-                            if( !SaveLoadStageCallback( "test_stage" ) ) { return false; }
+                            if( !SaveLoadStageCallback( _stgEditorCtrl.EditFileName.Value ) ) { return false; }
 
                             ToggleNotifyState();
                         }

@@ -11,15 +11,11 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] protected GridCursorController _gridCursorCtrl        = null;
         [Inject] protected StageEditorController.StageEditRefParams _refParams  = null;
 
-        protected Action<int, int> PlaceTileCallback;
-        protected Action<int, int> ResizeTileGridCallback;
-        protected Action<int, int> ToggleDeployableCallback;
+        protected Action<int, int> OwnCallback;
 
-        virtual public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb, Action<int, int> toggleDeployableCb )
+        virtual public void Init( Action<int, int> callback )
         {
-            PlaceTileCallback           = placeTileCb;
-            ResizeTileGridCallback      = resizeTileGridCb;
-            ToggleDeployableCallback    = toggleDeployableCb;
+            OwnCallback = callback;
         }
 
         virtual public void Update()
