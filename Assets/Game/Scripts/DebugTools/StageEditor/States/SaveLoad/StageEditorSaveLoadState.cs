@@ -22,6 +22,7 @@ namespace Frontier.DebugTools
         }
 
         protected string[] _confirmMessage = new string[( int ) State.NUM];
+        protected string _failedMessage;
         private State _currentState;
         private Vector2 _confirmWinSize = new Vector2( STAGE_EDITOR_CONFIRM_WIN_WIDTH, STAGE_EDITOR_CONFIRM_WIN_HEIGHT );
         private Vector2 _NotifyWinSize  = new Vector2( STAGE_EDITOR_NOTIFY_WIN_WIDTH, STAGE_EDITOR_NOTIFY_WIN_HEIGHT );
@@ -41,11 +42,11 @@ namespace Frontier.DebugTools
             _uiSystem.DebugUi.StageEditorView.RefreshConfirmWindowSize( _confirmWinSize );
         }
 
-        private void ToggleNotifyState()
+        private void ToggleNotifyState( bool isSucceeded )
         {
             _currentState = State.NOTIFY;
-            _confirmUi.SetActiveAlternativeText( false );                   // 選択肢テキストを非表示に設定
-            SetMessageCallback( _confirmMessage[( int ) State.NOTIFY] );    // メッセージを通知中に設定
+            _confirmUi.SetActiveAlternativeText( false );                                                   // 選択肢テキストを非表示に設定
+            SetMessageCallback( isSucceeded ? _confirmMessage[( int ) State.NOTIFY] : _failedMessage );     // 通知メッセージを設定
             _uiSystem.DebugUi.StageEditorView.RefreshConfirmWindowSize( _NotifyWinSize );
         }
 
@@ -85,9 +86,7 @@ namespace Frontier.DebugTools
                     {
                         if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
                         {
-                            if( !SaveLoadStageCallback( _stgEditorCtrl.EditFileName.Value ) ) { return false; }
-
-                            ToggleNotifyState();
+                            ToggleNotifyState( SaveLoadStageCallback( _stgEditorCtrl.EditFileName.Value ) );
                         }
                         else { Back(); }
                     }

@@ -215,10 +215,14 @@ namespace Frontier.DebugTools.StageEditor
         /// <returns>読込の成否</returns>
         private bool LoadStage( string fileName )
         {
-            _stageFileLoader.Load( fileName );
-            _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
+            if( _stageFileLoader.Load( fileName ) )
+            {
+                _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
 
-            return true;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
