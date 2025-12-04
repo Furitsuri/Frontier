@@ -10,9 +10,9 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditTileInformation : StageEditorEditBase
     {
-        override public void Init( Action<int, int> placeTileCb, Action<int, int> resizeTileGridCb, Action<int, int> toggleDeployableCb )
+        override public void Init( Action<int, int> callback )
         {
-            base.Init( placeTileCb, resizeTileGridCb, toggleDeployableCb );
+            base.Init( callback );
         }
 
         override public void Update()
@@ -31,7 +31,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( isInput )
             {
-                PlaceTileCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
+                OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
 
                 return true;
             }

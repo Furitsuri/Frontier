@@ -31,6 +31,7 @@ namespace Frontier.DebugTools.StageEditor
 
         private StageEditorEditBase _currentEdit    = null;
         private StageEditorEditBase[] _editClasses  = null;
+        private Action<int, int>[]  _editCallbacks  = null;
         private InputCode[] _sub1sub2InputCode      = null;
         private InputCode[] _sub3sub4InputCode      = null;
         private StageEditMode _editMode             = StageEditMode.NONE;
@@ -58,8 +59,15 @@ namespace Frontier.DebugTools.StageEditor
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false)
             };
 
+            _editCallbacks = new Action<int, int>[( int ) StageEditMode.NUM]
+            {
+                PlaceTileCallback,
+                ResizeTileGridCallback,
+                ToggleDeployableCallback
+            };
+
             _currentEdit = _editClasses[(int)_editMode];
-            _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback );
+            _currentEdit.Init( _editCallbacks[( int ) _editMode] );
 
             int hashCode = GetInputCodeHash();
 
@@ -132,9 +140,9 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         /// <summary>
-        /// ツール画面入力を受け取った際の処理を行います
+        /// エディットモードを一つ前のモードに変更します
         /// </summary>
-        /// <param name="isInput">ツール画面入力</param>
+        /// <param name="isInput"></param>
         /// <returns>入力実行の有無</returns>
         override protected bool AcceptTool( bool isInput )
         {
@@ -144,7 +152,7 @@ namespace Frontier.DebugTools.StageEditor
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback );
+                _currentEdit.Init( _editCallbacks[( int )_editMode] );
                 return true;
             }
 
@@ -152,7 +160,7 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         /// <summary>
-        /// 情報画面入力を受け取った際の処理を行います
+        /// エディットモードを一つ後ろのモードに変更します
         /// </summary>
         /// <param name="isInput">情報画面入力</param>
         /// <returns>入力実行の有無</returns>
@@ -164,7 +172,7 @@ namespace Frontier.DebugTools.StageEditor
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback );
+                _currentEdit.Init( _editCallbacks[( int ) _editMode] );
                 return true;
             }
 

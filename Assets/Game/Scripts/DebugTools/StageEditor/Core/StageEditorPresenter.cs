@@ -25,8 +25,6 @@ namespace Frontier.DebugTools.StageEditor
 
         public void Init( Holder<string> editFileName )
         {
-            _holdEditFileName = editFileName;
-
             _confirmSaveLoadUI.Init();
             _editFileNameUI.Init();
             _fileNameSuggestor.Init( () =>
@@ -43,6 +41,9 @@ namespace Frontier.DebugTools.StageEditor
                     }
                 }
             } );
+
+            _holdEditFileName = editFileName;
+            _fileNameTextMesh.text = _holdEditFileName.Value;
         }
 
         /// <summary>

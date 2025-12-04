@@ -15,7 +15,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( isInput )
             {
-                ToggleDeployableCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
+                OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
 
                 return true;
             }
