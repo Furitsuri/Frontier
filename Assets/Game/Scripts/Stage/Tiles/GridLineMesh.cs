@@ -5,8 +5,6 @@ namespace Frontier.Stage
 {
     public class GridLineMesh : MonoBehaviour, IDisposer
     {
-        // TileMeshはTileBehaviorの子オブジェクトとして配置されるため、
-        // TileBehaviorの座標を基準にしている。TileBehaviorの座標はグリッドの中心位置。
         private Vector3 _tilePos = Vector3.zero;
         private Mesh _mesh;
         private MeshFilter _meshFilter;
@@ -86,7 +84,7 @@ namespace Frontier.Stage
             }
             
             // XY平面上の線分の頂点
-            startPosition   = new Vector2(_tilePos.x - 0.5f * TILE_SIZE, _tilePos.y - TILE_SIZE);    // タイル位置はTileBehaviourの位置を基準にしており、スケーリングによって高さは自動的に変化するためこの値
+            startPosition   = new Vector2(_tilePos.x - 0.5f * TILE_SIZE, _tilePos.y - TILE_SIZE);
             endPosition     = new Vector2(_tilePos.x + 0.5f * TILE_SIZE, _tilePos.y);
             for (int i = 0; count < resolution; ++i, count = 4 * i + (int)(0.5f * resolution))
             {

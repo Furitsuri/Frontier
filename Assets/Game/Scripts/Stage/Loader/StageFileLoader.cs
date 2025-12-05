@@ -13,19 +13,17 @@ namespace Frontier.Stage
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
 
-        private GameObject[] _tileBhvPrefabs;
         private GameObject[] _tilePrefabs;
 
         /// <summary>
         /// 初期化します
         /// </summary>
         /// <param name="tilePregabs">ステージのタイルを配置する際に参照するタイルデータのプレハブ群</param>
-        public void Init( GameObject[] tilePregabs, GameObject[] tileBhvPrefabs )
+        public void Init( GameObject[] tilePregabs )
         {
             NullCheck.AssertNotNull( _stageDataProvider , nameof( _stageDataProvider ) );
             NullCheck.AssertNotNull( _hierarchyBld , nameof( _hierarchyBld ) );
 
-            _tileBhvPrefabs = tileBhvPrefabs;
             _tilePrefabs = tilePregabs;
         }
 

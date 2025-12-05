@@ -35,8 +35,6 @@ namespace Frontier.DebugTools.StageEditor
 
         [Header("Prefabs")]
         [SerializeField]
-        public GameObject[] tileBhvPrefabs;
-        [SerializeField]
         public GameObject[] tilePrefabs;
         [SerializeField]
         public GameObject cursorPrefab;
@@ -267,7 +265,7 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
             _stageEditorView.Init( EditFileName );
-            _stageFileLoader.Init( tilePrefabs, tileBhvPrefabs );
+            _stageFileLoader.Init( tilePrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
