@@ -34,7 +34,6 @@ namespace Frontier.Stage
         [SerializeField] private GameObject stageFileLoaderPrefab;
         [SerializeField] private GameObject _gridMeshObject;
         [SerializeField] private GameObject _gridCursorCtrlObject;
-        [SerializeField] private GameObject[] _tileBhvPrefabs;
         [SerializeField] private GameObject[] _tilePrefabs;
 
         [SerializeField] public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
@@ -79,7 +78,7 @@ namespace Frontier.Stage
         /// </summary>
         public void Init()
         {
-            _stageFileLoader.Init( _tilePrefabs, _tileBhvPrefabs );
+            _stageFileLoader.Init( _tilePrefabs );
             _stageFileLoader.Load( deafultLoadStageIndex );
         }
 
