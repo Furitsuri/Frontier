@@ -50,10 +50,10 @@ namespace Frontier
         [SerializeField]
         public string RangedAtkCameraParamFilePath;
 
-        private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl = null;
 
-        // バトルマネージャ
-        private BattleRoutineController _btlRtnCtrl;
+        private EntitySnapshot _entitySnapshot = null;  // ステータスUI表示用のキャラクターのスナップショット
 
         [System.Serializable]
         public struct CharacterParamData
@@ -115,16 +115,15 @@ namespace Frontier
             public List<BattleCameraController.CameraParamData[]> CameraParams;
         }
 
-        /// <summary>
-        /// Diコンテナから引数を注入します
-        /// </summary>
-        /// <param name="btlRtnCtrl"></param>
-        /// <param name="hierarchyBld"></param>
-        [Inject]
-        void Construct(BattleRoutineController btlRtnCtrl, HierarchyBuilderBase hierarchyBld)
+        void Awake()
         {
-            _btlRtnCtrl     = btlRtnCtrl;
-            _hierarchyBld   = hierarchyBld;
+            if( null == _entitySnapshot )
+            {
+                _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
+            }
+            NullCheck.AssertNotNull( _entitySnapshot, nameof( _entitySnapshot ) );
+
+            _entitySnapshot.Init( 100, 100 );
         }
 
         /// <summary>
@@ -175,7 +174,12 @@ namespace Frontier
                     chara.Params.CharacterParam.Apply( param ); // ファイルから読み込んだパラメータを設定
                     chara.CharaKey = new CharacterKey( (CHARACTER_TAG)param.CharacterTag, param.CharacterIndex );
 
-                    if ( !chara.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER) )
+                    // UI表示用に各キャラクターのスナップショットを保存
+                    Texture2D snapshot;
+                    _entitySnapshot.CaptureCharacter( chara, out snapshot );
+                    chara.Snapshot = snapshot;
+
+                    if ( !chara.Params.CharacterParam.IsMatchCharacterTag( CHARACTER_TAG.PLAYER ) )
                     {
                         var npc = chara as Npc;
                         npc.SetThinkType((ThinkingType)param.ThinkType);

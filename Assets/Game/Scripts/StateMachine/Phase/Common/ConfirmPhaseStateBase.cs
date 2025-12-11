@@ -9,7 +9,7 @@ namespace Frontier.StateMachine
     /// <summary>
     /// 二者択一項目の確認画面の基底クラス
     /// </summary>
-    public class ConfirmStateBasePhase : PhaseStateBase
+    public class ConfirmPhaseStateBase : PhaseStateBase
     {
         protected enum ConfirmTag
         {

@@ -96,6 +96,10 @@ static public class Constants
     public const float GUIDE_TEXT_MAX_SIZE              = 20f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
+    // キャラクターのスナップショット撮影時の位置
+    public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_X = 0f;
+    public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Y = 1000f;
+    public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Z = 0f;
 
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
     public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";

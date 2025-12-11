@@ -14,7 +14,13 @@ namespace Frontier.StateMachine
         [Inject] protected TutorialFacade _tutorialFcd          = null;
 
         protected bool _isEndedPhase = false;
+        protected PhaseHandlerBase Handler { get; private set; }
         public bool IsEndedPhase { get { return _isEndedPhase; } }
+
+        public void AssignHandler( PhaseHandlerBase handler )
+        {
+            Handler = handler;
+        }
 
         /// <summary>
         /// 死亡したキャラクターの存在を通知します
@@ -35,44 +41,14 @@ namespace Frontier.StateMachine
             return Hash.GetStableHash(GetType().Name);
         }
 
-        /// <summary>
-        /// 現在のステートを実行します
-        /// </summary>
-        override public void RunState()
+        /* TODO : 方法を考える
+        virtual public void Init( PhaseHandlerBase handler )
         {
-            base.RunState();
-            RegisterInputCodes();
-        }
+            base.Init();
 
-        /// <summary>
-        /// 現在のステートを再開します
-        /// </summary>
-        override public void RestartState()
-        {
-            base.RestartState();
-            RegisterInputCodes();
+            Handler = handler;
         }
-
-        /// <summary>
-        /// 現在のステートを中断します
-        /// </summary>
-        override public void PauseState()
-        {
-            base.PauseState();
-            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
-        }
-
-        /// <summary>
-        /// 現在のステートから退避します
-        /// </summary>
-        override public void ExitState()
-        {
-            base.ExitState();
-            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
-
-            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
-            _tutorialFcd.TryShowTutorial();
-        }
+        */
 
         /// <summary>
         /// 入力コードを登録します
@@ -122,5 +98,44 @@ namespace Frontier.StateMachine
         virtual protected bool AcceptSub2(bool isInput) { return false; }
         virtual protected bool AcceptSub3(bool isInput) { return false; }
         virtual protected bool AcceptSub4(bool isInput) { return false; }
+
+        /// <summary>
+        /// 現在のステートを実行します
+        /// </summary>
+        override public void RunState()
+        {
+            base.RunState();
+            RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// 現在のステートを再開します
+        /// </summary>
+        override public void RestartState()
+        {
+            base.RestartState();
+            RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// 現在のステートを中断します
+        /// </summary>
+        override public void PauseState()
+        {
+            base.PauseState();
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
+        }
+
+        /// <summary>
+        /// 現在のステートから退避します
+        /// </summary>
+        override public void ExitState()
+        {
+            base.ExitState();
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
+
+            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
+            _tutorialFcd.TryShowTutorial();
+        }
     }
 }

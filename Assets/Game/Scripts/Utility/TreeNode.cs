@@ -10,13 +10,13 @@ public abstract class TreeNode
 
 public class TreeNode<T> : TreeNode where T : TreeNode<T>
 {
+    public new List<T> Children => base.Children.Cast<T>().ToList();
+
     public new T Parent
     {
         get => base.Parent as T;
         protected set => base.Parent = value;
     }
-
-    public new List<T> Children => base.Children.Cast<T>().ToList();
 
     public void AddChild(T child)
     {

@@ -8,7 +8,7 @@ namespace Frontier.StateMachine
     /// <summary>
     /// プレイヤーターン終了確認の選択画面
     /// </summary>
-    public class PlConfirmTurnEnd : ConfirmStateBasePhase
+    public class PlConfirmTurnEnd : ConfirmPhaseStateBase
     {
         /// <summary>
         /// 方向入力を受け取り、コマンドリストを操作させます

@@ -49,6 +49,7 @@ namespace Frontier.Entities
         public bool IsAttacked { get; set; } = false;
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public CharacterKey CharaKey { get; set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );    // キャラクターのハッシュキー
+        public Texture2D Snapshot { get; set; } = null;                             // キャラクターのスナップショット画像
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
         public int[] TileCostTable => _tileCostTable;                               // タイル移動コストテーブルの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;

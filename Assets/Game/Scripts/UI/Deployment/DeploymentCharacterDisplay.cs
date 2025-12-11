@@ -85,6 +85,6 @@ public class DeploymentCharacterDisplay : MonoBehaviour
     {
         _backGround.color = _candidate.IsDeployed
         ? new Color( 0.5f, 0.5f, 0.5f, 1f ) // 暗くする
-        : Color.white;                      // 元にも戻す
+        : Color.white;                      // 元に戻す
     }
 }

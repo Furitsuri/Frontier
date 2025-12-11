@@ -17,7 +17,7 @@ namespace Frontier.UI
         public DeploymentCharacterSelectUI CharacterSelectUi;
 
         [Header( "配置完了確認用UI" )]
-        public ConfirmTurnEndUI ConfirmCompleted;
+        public ConfirmUI ConfirmCompleted;
 
         [Header( "グリッドカーソルが選択中のキャラクターのパラメータUI" )]
         public CharacterParameterUI GridCursorSelectCharaParam;

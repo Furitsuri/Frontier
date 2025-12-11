@@ -18,9 +18,67 @@ namespace Frontier.StateMachine
             PL_MOVE_END,
         }
 
-        const int TransitAttackStateValue   = 0;
+        private enum TransitTag
+        {
+            ATTACK_ON_MOVE = 0,
+            CHARACTER_STATUS,
+        }
+
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
+
+        /// <summary>
+        /// 移動中攻撃に遷移します
+        /// </summary>
+        private void TransitAttackOnMoveState()
+        {
+            TransitStateWithExit( ( int ) TransitTag.ATTACK_ON_MOVE );
+        }
+
+        /// <summary>
+        /// 移動するパスを作成します
+        /// </summary>
+        private void SetupMovePath()
+        {
+            int departingTileIndex = _plOwner.Params.TmpParam.gridIndex;
+            int destinationTileIndex = _stageCtrl.GetCurrentGridIndex();
+            MovePathHandler pathHdlr = _plOwner.ActionRangeCtrl.MovePathHdlr;
+            bool isEndPathTrace = pathHdlr.IsEndPathTrace();
+
+            // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
+            if( !isEndPathTrace )
+            {
+                departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
+            }
+
+            _plOwner.ActionRangeCtrl.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, _plOwner.TileCostTable, isEndPathTrace );
+        }
+
+        /// <summary>
+        /// 移動中攻撃に遷移しているかどうかを取得します
+        /// </summary>
+        /// <returns>遷移の有無</returns>
+        private bool IsTransitAttackOnMoveState()
+        {
+            return ( ( int ) TransitTag.ATTACK_ON_MOVE == TransitIndex );
+        }
+
+        /// <summary>
+        /// 移動中(現在のステート中)に攻撃へと直接遷移出来るか否かを取得します
+        /// </summary>
+        /// <param name="info">グリッド情報</param>
+        /// <returns>直接遷移の可否</returns>
+        private bool CanAttackOnMove( in TileDynamicData tileData )
+        {
+            if( null == tileData ) { return false; }
+
+            if( !Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
+
+            // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
+            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.Params.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
+
+            return ranges.Item1 + ranges.Item2 <= _plOwner.Params.CharacterParam.attackRange;
+        }
 
         override public void Init()
         {
@@ -105,6 +163,7 @@ namespace Frontier.StateMachine
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                 (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.INFO,        "STATUS",   CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
                 (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
              );
         }
@@ -151,6 +210,25 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
+        /// グリッド上に移動中のキャラクター以外が選択されている場合は、ステータス画面への遷移を受け付けます
+        /// </summary>
+        /// <returns></returns>
+        override protected bool CanAcceptInfo()
+        {
+            if( !CanAcceptDefault() ) { return false; }
+            // 移動フェーズでない場合は不可
+            if( PlMovePhase.PL_MOVE != _phase ) { return false; }
+            // 自身以外のキャラクターが選択されていない場合は不可
+            if( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() == null ||
+                _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() == _plOwner )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// 方向入力を受け取り、キャラクターを操作します
         /// </summary>
         /// <param name="dir">方向入力</param>
@@ -161,7 +239,7 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// 決定入力を受けた際の処理を行います
+        /// 決定入力を受けた際は選択した地点に移動するか、選択した場でそのまま攻撃へ遷移します
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>決定入力実行の有無</returns>
@@ -193,7 +271,7 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// キャンセル入力を受けた際の処理を行います
+        /// キャンセル入力を受けた際は巻き戻し処理を行います
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>キャンセル入力実行の有無</returns>
@@ -201,8 +279,7 @@ namespace Frontier.StateMachine
         {
             if( base.AcceptCancel( isCancel ) )
             {
-                // 巻き戻しを行う
-                Rewind();
+                Rewind();   // 巻き戻しを行う
 
                 return true;
             }
@@ -211,56 +288,17 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// 移動中攻撃に遷移します
+        /// 選択しているキャラクターのステータス画面へ遷移します
         /// </summary>
-        private void TransitAttackOnMoveState()
+        /// <param name="isInput"></param>
+        /// <returns></returns>
+        protected override bool AcceptInfo( bool isInput )
         {
-            TransitStateWithExit( TransitAttackStateValue );
-        }
+            if( !isInput ) { return false; }
 
-        /// <summary>
-        /// 移動するパスを作成します
-        /// </summary>
-        private void SetupMovePath()
-        {
-            int departingTileIndex      = _plOwner.Params.TmpParam.gridIndex;
-            int destinationTileIndex    = _stageCtrl.GetCurrentGridIndex();
-            MovePathHandler pathHdlr    = _plOwner.ActionRangeCtrl.MovePathHdlr;
-            bool isEndPathTrace         = pathHdlr.IsEndPathTrace();
+            TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
-            // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
-            if( !isEndPathTrace )
-            {
-                departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
-            }
-
-            _plOwner.ActionRangeCtrl.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.Params.CharacterParam.jumpForce, _plOwner.TileCostTable, isEndPathTrace );
-        }
-
-        /// <summary>
-        /// 移動中攻撃に遷移しているかどうかを取得します
-        /// </summary>
-        /// <returns>遷移の有無</returns>
-        private bool IsTransitAttackOnMoveState()
-        {
-            return ( TransitIndex == TransitAttackStateValue );
-        }
-
-        /// <summary>
-        /// 移動中(現在のステート中)に攻撃へと直接遷移出来るか否かを取得します
-        /// </summary>
-        /// <param name="info">グリッド情報</param>
-        /// <returns>直接遷移の可否</returns>
-        private bool CanAttackOnMove( in TileDynamicData tileData )
-        {
-            if( null == tileData ) { return false; }
-
-            if( !Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
-
-            // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
-            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.Params.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
-
-            return ranges.Item1 + ranges.Item2 <= _plOwner.Params.CharacterParam.attackRange;
+            return true;
         }
     }
 }

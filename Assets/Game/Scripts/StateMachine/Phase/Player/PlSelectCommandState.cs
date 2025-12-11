@@ -31,7 +31,7 @@ namespace Frontier.StateMachine
 
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript( this );
             _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
-            _uiSystem.BattleUi.TogglePLCommand( true );
+            _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Frontier.StateMachine
                 _stageCtrl.HoldFootprint( _plOwner );  // キャラクターの現在の位置情報を保持
             }
 
-            _uiSystem.BattleUi.TogglePLCommand( false );  // UIを非表示
+            _uiSystem.BattleUi.SetPlayerCommandActive( false );  // UIを非表示
 
             base.ExitState();
         }

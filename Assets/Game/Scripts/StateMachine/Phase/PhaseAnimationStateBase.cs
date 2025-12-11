@@ -1,4 +1,4 @@
-﻿using Frontier.Battle;
+﻿using Frontier.UI;
 using Zenject;
 
 namespace Frontier.StateMachine

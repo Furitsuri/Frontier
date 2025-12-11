@@ -42,8 +42,8 @@ namespace Frontier
                 case GridCursorState.ATTACK: // 攻撃対象選択時
                     Debug.Assert( bindCharacter != null );
 
-                    _uiSystem.BattleUi.TogglePlayerParameter( true );
-                    _uiSystem.BattleUi.ToggleEnemyParameter( true );
+                    _uiSystem.BattleUi.SetPlayerParameterActive( true );
+                    _uiSystem.BattleUi.SetEnemyParameterActive( true );
 
                     // 画面構成は以下の通り
                     //   左        右
@@ -70,14 +70,14 @@ namespace Frontier
                     {
                         EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
-                    _uiSystem.BattleUi.ToggleEnemyParameter( selectCharacter != null && selectCharacter != bindCharacter );
+                    _uiSystem.BattleUi.SetEnemyParameterActive( selectCharacter != null && selectCharacter != bindCharacter );
 
                     break;
 
                 default:
                     // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
-                    _uiSystem.BattleUi.TogglePlayerParameter( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER );
-                    _uiSystem.BattleUi.ToggleEnemyParameter( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY );
+                    _uiSystem.BattleUi.SetPlayerParameterActive( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER );
+                    _uiSystem.BattleUi.SetEnemyParameterActive( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY );
 
                     // パラメータ表示を更新
                     if( selectCharacter != null )

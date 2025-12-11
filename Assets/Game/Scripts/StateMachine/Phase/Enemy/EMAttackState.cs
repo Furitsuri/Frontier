@@ -40,7 +40,7 @@ namespace Frontier.StateMachine
             if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, _attackCharacter.GetAi().GetTargetCharacter() ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
-				_uiSystem.BattleUi.ToggleAttackCursorE2P( true );                           // アタックカーソルUI表示
+				_uiSystem.BattleUi.SetAttackCursorE2PActive( true );                           // アタックカーソルUI表示
 			}
 
             _targetCharacter = _attackCharacter.GetAi().GetTargetCharacter();
@@ -119,7 +119,7 @@ namespace Frontier.StateMachine
             _targetCharacter.Params.TmpParam.SetExpectedHpChange(0, 0);
 
             // アタックカーソルUI非表示
-            _uiSystem.BattleUi.ToggleAttackCursorP2E(false);
+            _uiSystem.BattleUi.SetAttackCursorP2EActive(false);
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect(false);
             // 使用スキルの点滅を非表示
@@ -236,7 +236,7 @@ namespace Frontier.StateMachine
             _stageCtrl.SetGridCursorControllerActive(false);
 
             // アタックカーソルUI非表示
-            _uiSystem.BattleUi.ToggleAttackCursorE2P(false);
+            _uiSystem.BattleUi.SetAttackCursorE2PActive(false);
 
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect(false);
