@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Frontier.Combat;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using Frontier.Combat.Skill;
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Frontier.UI;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier
@@ -9,7 +10,13 @@ namespace Frontier
         public InputGuidePresenter InputGuideView;  // 入力ガイド表示
 
         [Header("TutorialPresenter")]
-        public TutorialPresenter TutorialView;  // チュートリアル表示
+        public TutorialPresenter TutorialView;      // チュートリアル表示
+
+        [Header( "CharacterStatuts" )]
+        public StatusUI CharacterStatusView;        // キャラクターステータスUI
+
+        [Header("ToolTip")]
+        public TooltipUI ToolTipView;               // ツールチップUI
 
         void Awake()
         {

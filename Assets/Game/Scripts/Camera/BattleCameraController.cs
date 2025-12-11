@@ -182,8 +182,8 @@ namespace Frontier
                             _mosaicEffectScript.ToggleEnable( false );
                             _mosaicEffectScript.ResetBlockSize();
                             // パラメータを表示
-                            _uiSystem.BattleUi.TogglePlayerParameter( true );
-                            _uiSystem.BattleUi.ToggleEnemyParameter( true );
+                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
+                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
                             // 戦闘フィールドに移行
                             _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
                         }
@@ -227,8 +227,8 @@ namespace Frontier
                         {
                             _mosaicEffectScript.ToggleEnable( false );
                             _mosaicEffectScript.ResetBlockSize();
-                            _uiSystem.BattleUi.TogglePlayerParameter( true );
-                            _uiSystem.BattleUi.ToggleEnemyParameter( true );
+                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
+                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
 
                             _mainCamera.transform.position = _followingPosition;
                             _mainCamera.transform.LookAt( _lookAtPosition );
@@ -316,8 +316,8 @@ namespace Frontier
             _cameraOffset = Methods.RotateVector(_cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward) * _length + _characterCameraOffset;
 
             // 一度パラメータを非表示
-            _uiSystem.BattleUi.TogglePlayerParameter(false);
-            _uiSystem.BattleUi.ToggleEnemyParameter(false);
+            _uiSystem.BattleUi.SetPlayerParameterActive(false);
+            _uiSystem.BattleUi.SetEnemyParameterActive(false);
         }
 
         /// <summary>

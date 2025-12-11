@@ -17,6 +17,7 @@ namespace Frontier.Entities
     {
         public CHARACTER_TAG characterTag;  // キャラクタータグ
         public int characterIndex;          // キャラクター番号
+        public int Level;                   // レベル
         public int MaxHP;                   // 最大HP
         public int CurHP;                   // 現在HP
         public int Atk;                     // 攻撃力

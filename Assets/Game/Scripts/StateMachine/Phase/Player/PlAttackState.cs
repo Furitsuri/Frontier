@@ -15,6 +15,11 @@ namespace Frontier.StateMachine
             PL_ATTACK_END,
         }
 
+        private enum TransitTag
+        {
+            CHARACTER_STATUS = 0,
+        }
+
         protected PlAttackPhase _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
         protected int _curentGridIndex = -1;
         protected string[] _playerSkillNames = null;
@@ -50,7 +55,7 @@ namespace Frontier.StateMachine
             if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY ) ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.ToggleAttackCursorP2E( true ); // アタックカーソルUI表示
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( true ); // アタックカーソルUI表示
             }
 
             // 攻撃シーケンスを初期化
@@ -131,7 +136,7 @@ namespace Frontier.StateMachine
             _stageCtrl.ClearGridCursroBind();
 
             // アタックカーソルUI非表示
-            _uiSystem.BattleUi.ToggleAttackCursorP2E( false );
+            _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
 
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect( false );
@@ -174,13 +179,14 @@ namespace Frontier.StateMachine
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "TARGET SELECT", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptBooleanInput( AcceptSub1 ), 0.0f, hashCode),
-               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptBooleanInput( AcceptSub2 ), 0.0f, hashCode),
-               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput( AcceptSub3 ), 0.0f, hashCode),
-               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput( AcceptSub4 ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "TARGET SELECT", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      "CONFIRM", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,       "BACK", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "INFO", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.SUB1,         _playerSkillNames[0], CanAcceptSub1, new AcceptBooleanInput( AcceptSub1 ), 0.0f, hashCode),
+               (GuideIcon.SUB2,         _playerSkillNames[1], CanAcceptSub2, new AcceptBooleanInput( AcceptSub2 ), 0.0f, hashCode),
+               (GuideIcon.SUB3,         _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput( AcceptSub3 ), 0.0f, hashCode),
+               (GuideIcon.SUB4,         _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput( AcceptSub4 ), 0.0f, hashCode)
             );
         }
 
@@ -227,6 +233,17 @@ namespace Frontier.StateMachine
         {
             // Confirmと同一
             return CanAcceptConfirm();
+        }
+
+        /// <summary>
+        /// PL_ATTACK_SELECT_GRID時のみ、相手のステータス情報を表示可能とします
+        /// </summary>
+        /// <returns></returns>
+        override protected bool CanAcceptInfo()
+        {
+            if( !CanAcceptDefault() ) { return false; }
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
+            return true;
         }
 
         /// <summary>
@@ -304,7 +321,7 @@ namespace Frontier.StateMachine
                 _stageCtrl.SetGridCursorControllerActive( false );
 
                 // アタックカーソルUI非表示
-                _uiSystem.BattleUi.ToggleAttackCursorP2E( false );
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
 
                 // ダメージ予測表示UIを非表示
                 _uiSystem.BattleUi.ToggleBattleExpect( false );
@@ -318,6 +335,15 @@ namespace Frontier.StateMachine
 
                 return true;
             }
+
+            return false;
+        }
+
+        protected override bool AcceptInfo( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return false;
         }

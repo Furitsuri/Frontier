@@ -1,13 +1,8 @@
 ﻿using Froniter.StateMachine;
 using Frontier.Entities;
 using Frontier.Stage;
-using Frontier.StateMachine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 using Zenject;
 using static Constants;
 using static InputCode;
@@ -35,10 +30,9 @@ namespace Frontier.StateMachine
         {
             _deploymentCandidates.Clear();
 
-            int count = 0;
             foreach( var player in _btlRtnCtrl.BtlCharaCdr.GetCandidatePlayerEnumerable() )
             {
-                player.GetTransformHandler.SetPosition( new Vector3( 500f * count++, 1000f, 0f ) ); // 画面外に配置しておく
+                player.gameObject.SetActive( false );
 
                 // UI表示用に各キャラクターのスナップショットを保存
                 Texture2D candidateSnapshot;
@@ -81,7 +75,10 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
-            _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
+            if( null == _entitySnapshot )
+            {
+                _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
+            }
             NullCheck.AssertNotNull( _entitySnapshot, "_entitySnapshot" );
             var size = _presenter.GetDeploymentCharacterDisplaySize();
             _entitySnapshot.Init( size.Item1, size.Item2 );
@@ -222,6 +219,7 @@ namespace Frontier.StateMachine
             var candidate = _deploymentCandidates[_focusCharacterIndex];
             candidate.IsDeployed = true;
             var focusCharacter = candidate.Character;
+            focusCharacter.gameObject.SetActive( true );
             focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
             focusCharacter.Params.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
 
@@ -242,6 +240,8 @@ namespace Frontier.StateMachine
         override protected bool AcceptInfo( bool isInput )
         {
             if( !isInput ) { return false; }
+
+            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

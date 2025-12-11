@@ -3,6 +3,7 @@ using Frontier.CombatPreparation;
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.StateMachine;
+using Frontier.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -72,10 +73,10 @@ namespace Frontier.Battle
 
             _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
             {
-                { BattlePhaseType.Deployment, _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
-                { BattlePhaseType.Player,    _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
-                { BattlePhaseType.Enemy,     _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
-                { BattlePhaseType.Other,     _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
+                { BattlePhaseType.Deployment,   _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
+                { BattlePhaseType.Player,       _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
+                { BattlePhaseType.Enemy,        _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
+                { BattlePhaseType.Other,        _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
             };
         }
 

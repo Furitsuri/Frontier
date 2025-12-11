@@ -36,7 +36,7 @@ namespace Frontier.StateMachine
             if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, targetChara ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.ToggleAttackCursorP2E( true ); // アタックカーソルUI表示
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( true ); // アタックカーソルUI表示
             }
 
             _attackSequence.Init(); // 攻撃シーケンスを初期化
@@ -62,7 +62,7 @@ namespace Frontier.StateMachine
             _targetCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
 
             // アタックカーソルUI非表示
-            _uiSystem.BattleUi.ToggleAttackCursorP2E( false );
+            _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
 
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect( false );

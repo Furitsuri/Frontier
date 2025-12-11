@@ -1,5 +1,7 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
+using System;
+using Zenject;
 using static Constants;
 
 namespace Frontier.StateMachine
@@ -9,6 +11,7 @@ namespace Frontier.StateMachine
         private enum TransitTag
         {
             CHARACTER_COMMAND = 0,
+            CHARACTER_STATUS,
             TURN_END,
         }
 
@@ -83,6 +86,7 @@ namespace Frontier.StateMachine
                (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
+               (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
                (GuideIcon.OPT2, "TURN END", CanAcceptDefault, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
         }
@@ -111,6 +115,15 @@ namespace Frontier.StateMachine
             {
                 return true;
             }
+        }
+
+        /// <summary>
+        /// グリッド上にキャラクターが存在していればステータス画面に遷移可能と判定します
+        /// </summary>
+        /// <returns></returns>
+        override protected bool CanAcceptInfo()
+        {
+            return null != _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
         }
 
         /// <summary>
@@ -196,6 +209,22 @@ namespace Frontier.StateMachine
             {
                 npcChara.SetAttackableRangeDisplay( _isShowingAllDangerRange );
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// グリッド上のキャラクターのステータス画面を開きます
+        /// </summary>
+        /// <param name="isInput"></param>
+        /// <returns></returns>
+        override protected bool AcceptInfo( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+
+            TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return true;
         }

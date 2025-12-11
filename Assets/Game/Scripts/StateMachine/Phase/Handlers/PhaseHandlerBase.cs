@@ -14,7 +14,24 @@ namespace Frontier.StateMachine
         [Inject] protected StageController _stgCtrl             = null;
         [Inject] protected BattleUISystem _btlUi                = null;
 
+        private object _transitionContext;    // State間で受け渡すコンテキスト情報
         protected bool _isFirstUpdate = false;
+
+        public void ReceiveContext( object context )
+        {
+            _transitionContext = context;
+        }
+
+        public void SendContext( out object receieve )
+        {
+            receieve = _transitionContext;
+            _transitionContext = null;   // 受け渡し後はクリア
+        }
+
+        private void AssignHandler( PhaseStateBase state )
+        {
+            state.AssignHandler( this );
+        }
 
         /// <summary>
         /// 初期化します
@@ -23,6 +40,8 @@ namespace Frontier.StateMachine
         virtual public void Init()
         {
             CreateTree();   // 遷移木の作成
+
+            Traverse( RootNode, AssignHandler );    // 各ステートにハンドラを割り当てる
 
             _isFirstUpdate = true;
         }
