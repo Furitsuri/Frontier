@@ -159,9 +159,11 @@ public class DeploymentPhasePresenter
         return _isSlideAnimationPlaying;
     }
 
-    public ( float, float ) GetDeploymentCharacterDisplaySize()
+    public ( int, int ) GetDeploymentCharacterDisplaySize()
     {
-        return _deployUiSystem.CharacterSelectUi.GetDeploymentCharacterDisplaySize();
+        var size = _deployUiSystem.CharacterSelectUi.GetDeploymentCharacterDisplaySize();
+
+        return ( (int)size.Item1, ( int ) size.Item2 );
     }
 
     /// <summary>

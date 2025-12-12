@@ -22,7 +22,7 @@ namespace Frontier
         /// キャラクターのタイムスケールを更新します
         /// </summary>
         /// <param name="timeScale">スケール値</param>
-        public void UpdateTimeScale(float timeScale)
+        public void UpdateTimeScale( float timeScale )
         {
             _animator.speed = timeScale;
         }
@@ -31,9 +31,9 @@ namespace Frontier
         /// アニメーションを再生します
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
-        public void SetAnimator(AnimDatas.AnimeConditionsTag animTag)
+        public void SetAnimator( AnimDatas.AnimeConditionsTag animTag )
         {
-            _animator.SetTrigger(AnimDatas.AnimNameHashList[(int)animTag]);
+            _animator.SetTrigger( AnimDatas.AnimNameHashList[( int ) animTag] );
         }
 
         /// <summary>
@@ -41,9 +41,49 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <param name="b">トリガーアニメーションに対して使用</param>
-        public void SetAnimator(AnimDatas.AnimeConditionsTag animTag, bool b)
+        public void SetAnimator( AnimDatas.AnimeConditionsTag animTag, bool b )
         {
-            _animator.SetBool(AnimDatas.AnimNameHashList[(int)animTag], b);
+            _animator.SetBool( AnimDatas.AnimNameHashList[( int ) animTag], b );
+        }
+
+        /// <summary>
+        /// 現在再生中のアニメーションを再開します
+        /// </summary>
+        public void RestartAnimator()
+        {
+            _animator.enabled = true;
+        }
+
+        /// <summary>
+        /// 現在再生中のアニメーションを先頭にスナップします
+        /// </summary>
+        public void SnapToCurrentAnimationToStart( AnimDatas.AnimeConditionsTag animTag )
+        {
+            if( animTag == AnimDatas.AnimeConditionsTag.NONE )
+            {
+                int hash;
+                if( _animator.IsInTransition( 0 ) )
+                {
+                    // 遷移中なら遷移先
+                    hash = _animator.GetNextAnimatorStateInfo( 0 ).fullPathHash;
+                }
+                else
+                {
+                    // 通常時なら現在
+                    hash = _animator.GetCurrentAnimatorStateInfo( 0 ).fullPathHash;
+                }
+
+                _animator.Play( hash, 0, 0f );
+            }
+            else
+            {
+                _animator.Play( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag], 0, 0f );
+            }
+
+            // 強制反映
+            _animator.Update( Time.deltaTime );
+
+            _animator.enabled = false;
         }
 
         /// <summary>
@@ -51,12 +91,12 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 再生中, false : 再生していない</returns>
-        public bool IsPlayingAnimationOnConditionTag(AnimDatas.AnimeConditionsTag animTag)
+        public bool IsPlayingAnimationOnConditionTag( AnimDatas.AnimeConditionsTag animTag )
         {
-            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
-            if (stateInfo.IsName(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]) && stateInfo.normalizedTime < 1f)
+            if( stateInfo.IsName( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag] ) && stateInfo.normalizedTime < 1f )
             {
                 return true;
             }
@@ -66,10 +106,10 @@ namespace Frontier
 
         public bool IsEndCurrentAnimation()
         {
-            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
-            if (1f <= stateInfo.normalizedTime)
+            if( 1f <= stateInfo.normalizedTime )
             {
                 return true;
             }
@@ -82,12 +122,12 @@ namespace Frontier
         /// </summary>
         /// <param name="animTag">アニメーションタグ</param>
         /// <returns>true : 終了, false : 未終了</returns>
-        public bool IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag animTag)
+        public bool IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag animTag )
         {
-            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
-            if (stateInfo.IsName(AnimDatas.ANIME_CONDITIONS_NAMES[(int)animTag]) && 1f <= stateInfo.normalizedTime)
+            if( stateInfo.IsName( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag] ) && 1f <= stateInfo.normalizedTime )
             {
                 return true;
             }
@@ -99,12 +139,12 @@ namespace Frontier
         /// 現在のアニメーションが終了したかを判定します
         /// </summary>
         /// <returns>true : 終了, false : 未終了</returns>
-        public bool IsEndAnimationOnStateName(string stateName)
+        public bool IsEndAnimationOnStateName( string stateName )
         {
-            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
-            if (stateInfo.IsName(stateName) && 1f <= stateInfo.normalizedTime)
+            if( stateInfo.IsName( stateName ) && 1f <= stateInfo.normalizedTime )
             {
                 return true;
             }

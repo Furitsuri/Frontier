@@ -30,6 +30,7 @@ namespace Frontier.Presenter
 
         public void CloseCharacterStatus()
         {
+            _tooltipUi.gameObject.SetActive ( false );
             _statusUi.gameObject.SetActive( false );
         }
 

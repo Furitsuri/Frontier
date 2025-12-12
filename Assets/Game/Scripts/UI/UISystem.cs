@@ -43,30 +43,30 @@ namespace Frontier.UI
             if( childGeneralUI != null )
             {
                 _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
+                NullCheck.AssertNotNull( _generarlUi, nameof( _generarlUi ) );
             }
-            NullCheck.AssertNotNull( _generarlUi, nameof( _generarlUi ) );
 
             Transform childPlacementUI = transform.GetChild( ( int ) ChildIndex.Placement );
             if( childPlacementUI != null )
             {
                 _placementUi = childPlacementUI.GetComponent<DeploymentUISystem>();
+                NullCheck.AssertNotNull( _placementUi, nameof( _placementUi ) );
             }
-            NullCheck.AssertNotNull( _placementUi, nameof( _placementUi ) );
 
             Transform childBattleUI = transform.GetChild( ( int ) ChildIndex.Battle );
             if( childBattleUI != null )
             {
                 _battleUi = childBattleUI.GetComponent<BattleUISystem>();
+                NullCheck.AssertNotNull( _battleUi, nameof( _battleUi ) );
             }
-            NullCheck.AssertNotNull( _battleUi, nameof( _battleUi ) );
 
 #if UNITY_EDITOR
             Transform childDebugUI = transform.GetChild( ( int ) ChildIndex.Debug );
             if( childDebugUI != null )
             {
                 _debugUi = childDebugUI.GetComponent<DebugUISystem>();
+                NullCheck.AssertNotNull( _debugUi, nameof( _debugUi ) );
             }
-            NullCheck.AssertNotNull( _debugUi, nameof( _debugUi ) );
 #endif // UNITY_EDITOR
         }
     }

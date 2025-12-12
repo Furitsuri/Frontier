@@ -21,20 +21,20 @@ public sealed class InputGuidePresenter : MonoBehaviour
     }
 
     [Header( "ガイドUIのプレハブ" )]
-    [SerializeField]
-    public GameObject GuideUIPrefab;
+    [SerializeField] public GameObject GuideUIPrefab;
 
     [Header( "背景リサイズ開始から終了までの時間" )]
-    [SerializeField]
-    public float ResizeTime = 0.33f;
+    [SerializeField] public float ResizeTime = 0.33f;
 
-    // オブジェクト・コンポーネント作成クラス
-    private HierarchyBuilderBase _hierarchyBld = null;
+    [Header( "ガイドアイコンの描画優先度" )]
+    [SerializeField] private int _sortingOrder = 0;
+
+    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
     // キーガイドバーの入出状態
     private FadeMode _fadeMode = FadeMode.NEUTRAL;
     // 描画優先度
-    private int _sortingOrder = 0;
+    
     // 現在の背景の幅
     private float _currentBackGroundWidth = 0f;
     // ガイドが遷移する以前の背景の幅
@@ -89,13 +89,7 @@ public sealed class InputGuidePresenter : MonoBehaviour
             "_140",     // DEBUG
 #else
 #endif
-        };
-
-    [Inject]
-    public void Construct( HierarchyBuilderBase hierarchyBld )
-    {
-        _hierarchyBld = hierarchyBld;
-    }
+    };
 
     // Update is called once per frame
     void Update()
@@ -141,15 +135,6 @@ public sealed class InputGuidePresenter : MonoBehaviour
         }
 
         TransitFadeMode();  // フェード状態の遷移
-    }
-
-    /// <summary>
-    /// 描画優先度の値を設定します
-    /// </summary>
-    /// <param name="order">優先度値</param>
-    public void SetSortingOrder( int order )
-    {
-        _sortingOrder = order;
     }
 
     /// <summary>
