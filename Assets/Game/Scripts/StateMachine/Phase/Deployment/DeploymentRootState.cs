@@ -29,9 +29,12 @@ namespace Frontier.StateMachine
         {
             _deploymentCandidates.Clear();
 
+            int count = 0;
             foreach( var player in _btlRtnCtrl.BtlCharaCdr.GetCandidatePlayerEnumerable() )
             {
                 player.gameObject.SetActive( false );
+                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * count, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
+                player.GetTransformHandler.SetPosition( reservePos );
 
                 // UI表示用に各キャラクターのスナップショットを撮影
                 var size = _presenter.GetDeploymentCharacterDisplaySize();
@@ -41,6 +44,8 @@ namespace Frontier.StateMachine
                 DeploymentCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<DeploymentCandidate>( false );
                 candidate.Init( player, candidateSnapshot );
                 _deploymentCandidates.Add( candidate );
+
+                ++count;
             }
         }
 

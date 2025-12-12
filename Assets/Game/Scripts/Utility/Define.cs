@@ -48,6 +48,10 @@ static public class Constants
     public const float ADD_TILE_POS_Y       = 0.1f;
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
+    // 配置フェーズにおけるキャラクターの配置前座標
+    public const float DEPLOYMENT_CHARACTER_SPACING_X   = 50f;
+    public const float DEPLOYMENT_CHARACTER_OFFSET_Y    = 0f;
+    public const float DEPLOYMENT_CHARACTER_OFFSET_Z    = -1000f;
     // 配置フェーズにおいて表示するキャラクター画像のX座標オフセット値
     public const float DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X = 180f;
     // キャラクターの移動速度
