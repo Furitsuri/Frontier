@@ -163,8 +163,8 @@ namespace Frontier
         /// </summary>
         public void Init()
         {
-            var layerToName     = LayerMask.LayerToName( _layerMaskIndex );
-            TargetImage.texture = _targetTexture;
+            var layerToName         = LayerMask.LayerToName( _layerMaskIndex );
+            TargetImage.texture     = _targetTexture;
 
             _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, ref TargetImage );
 
@@ -212,6 +212,7 @@ namespace Frontier
 
             _character = character;
 
+            _character.gameObject.SetActive( true );
             _characterCamera.AssignCharacter( character, layerMaskIndex );
         }
     }
