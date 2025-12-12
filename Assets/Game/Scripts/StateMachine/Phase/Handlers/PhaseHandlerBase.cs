@@ -12,10 +12,10 @@ namespace Frontier.StateMachine
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
         [Inject] protected StageController _stgCtrl             = null;
-        [Inject] protected BattleUISystem _btlUi                = null;
-
+        
         private object _transitionContext;    // State間で受け渡すコンテキスト情報
         protected bool _isFirstUpdate = false;
+        protected BattleUISystem _btlUi = null;
 
         public void ReceiveContext( object context )
         {
@@ -44,6 +44,7 @@ namespace Frontier.StateMachine
             Traverse( RootNode, AssignHandler );    // 各ステートにハンドラを割り当てる
 
             _isFirstUpdate = true;
+            _btlUi = _uiSystem.BattleUi;
         }
 
         virtual public void Update()

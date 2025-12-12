@@ -17,7 +17,6 @@ namespace Frontier.StateMachine
         [Inject] private IStageDataProvider _stageDataProvider = null;
 
         private int _focusCharacterIndex                        = 0;     // フォーカス中のキャラクターインデックス
-        private EntitySnapshot _entitySnapshot                  = null;  // UI表示用のキャラクターのスナップショット
         private List<DeploymentCandidate> _deploymentCandidates = new List<DeploymentCandidate>();  // 配置可能なキャラクターリスト
 
         private enum TransitTag
@@ -34,10 +33,11 @@ namespace Frontier.StateMachine
             {
                 player.gameObject.SetActive( false );
 
-                // UI表示用に各キャラクターのスナップショットを保存
-                Texture2D candidateSnapshot;
-                _entitySnapshot.CaptureCharacter( player, out candidateSnapshot );
+                // UI表示用に各キャラクターのスナップショットを撮影
+                var size = _presenter.GetDeploymentCharacterDisplaySize();
+                Texture2D candidateSnapshot = _btlRtnCtrl.TakeCharacterSnapshot( size.Item1, size.Item2, player, false );
 
+                // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
                 DeploymentCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<DeploymentCandidate>( false );
                 candidate.Init( player, candidateSnapshot );
                 _deploymentCandidates.Add( candidate );
@@ -74,14 +74,6 @@ namespace Frontier.StateMachine
         override public void Init()
         {
             base.Init();
-
-            if( null == _entitySnapshot )
-            {
-                _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
-            }
-            NullCheck.AssertNotNull( _entitySnapshot, "_entitySnapshot" );
-            var size = _presenter.GetDeploymentCharacterDisplaySize();
-            _entitySnapshot.Init( size.Item1, size.Item2 );
 
             _focusCharacterIndex = 0;
 

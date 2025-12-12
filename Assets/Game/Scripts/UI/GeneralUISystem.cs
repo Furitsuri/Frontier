@@ -25,11 +25,6 @@ namespace Frontier
             {
                 LogHelper.LogError("Canvas component is missing on GeneralUISystem GameObject.");
             }
-            else
-            {
-                var sortingOrder = canvas.sortingOrder;
-                InputGuideView.SetSortingOrder(sortingOrder);
-            }
         }
     }
 }

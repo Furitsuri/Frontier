@@ -14,7 +14,7 @@ namespace Frontier.Battle
     public class BattleCharacterCoordinator
     {
         [Inject] HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] Stage.StageController _stgCtrl     = null;
+        [Inject] StageController _stgCtrl     = null;
 
         private List<Player> _candidatePlayers          = new List<Player>(Constants.CHARACTER_MAX_NUM);   // ステージ配置候補プレイヤーリスト
         private List<Player> _players                   = new List<Player>(Constants.CHARACTER_MAX_NUM);

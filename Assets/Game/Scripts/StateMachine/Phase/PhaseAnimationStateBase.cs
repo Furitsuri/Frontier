@@ -13,7 +13,7 @@ namespace Frontier.StateMachine
             NUM,
         }
 
-        [Inject] protected BattleUISystem _btlUi = null;
+        protected BattleUISystem _btlUi = null;
 
         /// <summary>
         /// フェーズアニメーションを再生します
@@ -25,6 +25,8 @@ namespace Frontier.StateMachine
 
         override public void Init()
         {
+            _btlUi = _uiSystem.BattleUi;
+
             StartPhaseAnim();   // フェーズアニメーションの開始
         }
 

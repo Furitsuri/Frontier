@@ -94,7 +94,7 @@ namespace Frontier.Entities
             IsDeclaredDead              = false;
             _params.Awake();
 
-            AnimCtrl.Init(GetComponent<Animator>());
+            AnimCtrl.Init( GetComponent<Animator>() );
 
             _skillNotifier = new SkillNotifierBase[Constants.EQUIPABLE_SKILL_MAX_NUM];
 
@@ -210,6 +210,8 @@ namespace Frontier.Entities
             _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );     // 戦闘時間管理クラスに自身の時間管理クラスを登録
             InitSkillNotifier();                                // スキルの通知クラスを初期化
             ApplyCostTable( TileCostTables.defaultCostTable );  // タイル移動コストテーブルを初期化
+
+            Snapshot = _btlRtnCtrl.TakeCharacterStatusSnapshot( this, true );    // キャラクターのステータス画面用のスナップショットを撮影して取得
         }
 
         /// <summary>

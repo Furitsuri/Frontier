@@ -12,6 +12,8 @@ namespace Frontier
         /// </summary>
         public enum AnimeConditionsTag
         {
+            NONE = -1,
+
             WAIT = 0,
             MOVE,
             SINGLE_ATTACK,

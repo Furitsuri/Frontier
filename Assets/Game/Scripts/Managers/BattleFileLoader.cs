@@ -9,51 +9,41 @@ using Newtonsoft.Json;
 using Frontier.Stage;
 using Zenject;
 using Frontier.Combat.Skill;
+using UnityEngine.UI;
 
 namespace Frontier
 {
     public class BattleFileLoader : MonoBehaviour
     {
         [Header("各味方キャラクターのプレハブ")]
-        [SerializeField]
-        public GameObject[] PlayersPrefab;
+        [SerializeField] public GameObject[] PlayersPrefab;
 
         [Header("各敵キャラクターのプレハブ")]
-        [SerializeField]
-        public GameObject[] EnemiesPrefab;
+        [SerializeField] public GameObject[] EnemiesPrefab;
 
         [Header("各第三勢力キャラクターのプレハブ")]
-        [SerializeField]
-        public GameObject[] OthersPrefab;
+        [SerializeField] public GameObject[] OthersPrefab;
 
         [Header("各味方キャラクターのパラメータ参照先")]
-        [SerializeField]
-        public string[] PlayerParamFilePath;
+        [SerializeField] public string[] PlayerParamFilePath;
 
         [Header("各敵キャラクターのパラメータ参照先")]
-        [SerializeField]
-        public string[] EnemyParamFilePath;
+        [SerializeField] public string[] EnemyParamFilePath;
 
         [Header("各第三軍勢キャラクターのパラメータ参照先")]
-        [SerializeField]
-        public string[] OtherParamFilePath;
+        [SerializeField] public string[] OtherParamFilePath;
 
         [Header("各スキルデータのパラメータ参照先")]
-        [SerializeField]
-        public string SkillDataFilePath;
+        [SerializeField] public string SkillDataFilePath;
 
         [Header("近接攻撃時のカメラパラメータの参照先")]
-        [SerializeField]
-        public string CloseAtkCameraParamFilePath;
+        [SerializeField] public string CloseAtkCameraParamFilePath;
 
         [Header("遠隔攻撃時のカメラパラメータの参照先")]
-        [SerializeField]
-        public string RangedAtkCameraParamFilePath;
+        [SerializeField] public string RangedAtkCameraParamFilePath;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
         [Inject] private BattleRoutineController _btlRtnCtrl = null;
-
-        private EntitySnapshot _entitySnapshot = null;  // ステータスUI表示用のキャラクターのスナップショット
 
         [System.Serializable]
         public struct CharacterParamData
@@ -115,17 +105,6 @@ namespace Frontier
             public List<BattleCameraController.CameraParamData[]> CameraParams;
         }
 
-        void Awake()
-        {
-            if( null == _entitySnapshot )
-            {
-                _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
-            }
-            NullCheck.AssertNotNull( _entitySnapshot, nameof( _entitySnapshot ) );
-
-            _entitySnapshot.Init( 100, 100 );
-        }
-
         /// <summary>
         /// 該当ステージの全キャラクター情報をロードし、バトルマネージャ上に設置します
         /// </summary>
@@ -173,11 +152,6 @@ namespace Frontier
 
                     chara.Params.CharacterParam.Apply( param ); // ファイルから読み込んだパラメータを設定
                     chara.CharaKey = new CharacterKey( (CHARACTER_TAG)param.CharacterTag, param.CharacterIndex );
-
-                    // UI表示用に各キャラクターのスナップショットを保存
-                    Texture2D snapshot;
-                    _entitySnapshot.CaptureCharacter( chara, out snapshot );
-                    chara.Snapshot = snapshot;
 
                     if ( !chara.Params.CharacterParam.IsMatchCharacterTag( CHARACTER_TAG.PLAYER ) )
                     {

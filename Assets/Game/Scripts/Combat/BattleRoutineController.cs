@@ -15,26 +15,25 @@ namespace Frontier.Battle
     public class BattleRoutineController : FocusRoutineBase
     {
         [Header("スキルコントローラオブジェクト")]
-        [SerializeField]
-        private GameObject _skillCtrlObject;
+        [SerializeField] private GameObject _skillCtrlObject;
 
         [Header("戦闘ファイル読込オブジェクト")]
-        [SerializeField]
-        private GameObject _btlFileLoadObject;
+        [SerializeField] private GameObject _btlFileLoadObject;
 
-        [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
-        [Inject] private StageController _stgCtrl            = null;
-        [Inject] private BattleUISystem _btlUi               = null;
+        [Inject] private IUiSystem _uiSystem                = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private StageController _stgCtrl           = null;
 
         private int _currentStageIndex = 0;
+        private BattlePhaseType _currentPhase;
         private BattleFileLoader _btlFileLoader                 = null;
         private BattleCameraController _battleCameraCtrl        = null;
         private BattleCharacterCoordinator _btlCharaCdr         = null;
         private BattleTimeScaleController _battleTimeScaleCtrl  = null;
+        private BattleUISystem _btlUi                           = null;
+        private EntitySnapshot _entitySnapshot                  = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
-        private BattlePhaseType _currentPhase;
         
-        // 現在選択中のキャラクターインデックス
         public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey(CHARACTER_TAG.NONE, -1);
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
@@ -64,6 +63,12 @@ namespace Frontier.Battle
             {
                 _battleTimeScaleCtrl = _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>(false);
                 NullCheck.AssertNotNull( _battleTimeScaleCtrl, nameof( _battleTimeScaleCtrl ) );
+            }
+
+            if( null == _entitySnapshot )
+            {
+                _entitySnapshot = _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false );
+                NullCheck.AssertNotNull( _entitySnapshot, nameof( _entitySnapshot ) );
             }
 
             if ( SkillsData.skillNotifierFactory == null )
@@ -110,6 +115,20 @@ namespace Frontier.Battle
         {
             _btlUi.ToggleGameOverUI(true);
             _btlUi.StartGameOverAnim();
+        }
+
+        public Texture2D TakeCharacterStatusSnapshot( Character chara, bool isSnapAnim )
+        {
+            var textureSize = _uiSystem.GeneralUi.CharacterStatusView.GetSnapshotRectSize();
+            return TakeCharacterSnapshot( ( int ) textureSize.Item1, ( int ) textureSize.Item2, chara, isSnapAnim );
+        }
+
+        public Texture2D TakeCharacterSnapshot( int width, int height, Character chara, bool isSnapAnim )
+        {
+            Texture2D snapshot;
+            _entitySnapshot.CaptureCharacter( width, height, chara, out snapshot, isSnapAnim, AnimDatas.AnimeConditionsTag.WAIT );
+
+            return snapshot;
         }
 
         /// <summary>
@@ -161,8 +180,11 @@ namespace Frontier.Battle
         {
             base.Init();
 
+            _btlUi = _uiSystem.BattleUi;
+
             _stgCtrl.Init();
             _btlCharaCdr.Init();
+            _entitySnapshot.Init();
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
