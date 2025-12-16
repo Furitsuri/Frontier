@@ -46,16 +46,17 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private InputFacade _inputFcd                  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
 
-        public Holder<string> EditFileName { get; private set;} = null;
-
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorPresenter _stageEditorView   = null;
         private StageFileLoader _stageFileLoader        = null;
         private GridCursorController _gridCursorCtrl    = null;
         private StageEditRefParams _refParams           = null;
+        private Holder<string> _editFileName            = null;
         private StageEditMode _editMode                 = StageEditMode.EDIT_TILE;
         private Vector3 offset                          = new Vector3(0, 5, -5);    // ターゲットからの相対位置
+
+        public Holder<string> EditFileName => _editFileName;
 
         /// <summary>
         /// 指定された位置にタイルを設置します
@@ -165,19 +166,6 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         /// <summary>
-        /// グリッドカーソルを作成します
-        /// </summary>
-        /// <returns>作成したグリッドカーソル</returns>
-        private GridCursorController CreateCursor()
-        {
-            GridCursorController gridCursorCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>(cursorPrefab, true, true, "GridCursorController");
-            NullCheck.AssertNotNull( gridCursorCtrl, nameof(gridCursorCtrl) );
-            gridCursorCtrl.Init( 0 );
-
-            return gridCursorCtrl;
-        }
-
-        /// <summary>
         /// エディットモードを変更します
         /// </summary>
         /// <param name="add">モードの変更に加算する値</param>
@@ -228,40 +216,18 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         override public void Init()
         {
-            if ( null == _stageEditorView )
-            {
-                _stageEditorView = _uiSystem.DebugUi.StageEditorView;
-                NullCheck.AssertNotNull( _stageEditorView, nameof( _stageEditorView ) );
-            }
-
-            if ( null == _stageEditorHandler )
-            {
-                _stageEditorHandler = _hierarchyBld.InstantiateWithDiContainer<StageEditorHandler>( false );
-                NullCheck.AssertNotNull( _stageEditorHandler, nameof( _stageEditorHandler ) );
-            }
-
-            if ( null == _stageFileLoader )
-            {
-                _stageFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" );
-                NullCheck.AssertNotNull( _stageFileLoader, nameof( _stageFileLoader ) );
-            }
-
-            if ( null == _refParams )
-            {
-                _refParams = _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true );
-            }
-
-            if( null == EditFileName )
-            {
-                EditFileName = new Holder<string>( "NewStage" );
-            }
+            LazyInject.GetOrCreate( ref _stageEditorView, () => _uiSystem.DebugUi.StageEditorView );
+            LazyInject.GetOrCreate( ref _stageEditorHandler, () => _hierarchyBld.InstantiateWithDiContainer<StageEditorHandler>( false ) );
+            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" ) );
+            LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
+            LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( cursorPrefab, true, true, "GridCursorController" ) );
 
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
+            _gridCursorCtrl.Init( 0 );
 
             _stageDataProvider.CurrentData  = CreateDefaultStage(); // プロバイダーに登録
-            _gridCursorCtrl                 = CreateCursor();
-
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
             _stageEditorView.Init( EditFileName );

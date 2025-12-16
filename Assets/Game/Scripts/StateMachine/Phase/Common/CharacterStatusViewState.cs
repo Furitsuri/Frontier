@@ -35,11 +35,8 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
-            if( null == _statusPresenter )
-            {
-                _statusPresenter = _hierarchyBld.InstantiateWithDiContainer<StatusPresenter>( false );
-                NullCheck.AssertNotNull( _statusPresenter, nameof( _statusPresenter ) );
-            }
+            LazyInject.GetOrCreate( ref _statusPresenter, () => _hierarchyBld.InstantiateWithDiContainer<StatusPresenter>( false ) );
+
             _statusPresenter.Init();
 
             // INFOアイコンの文字列を設定

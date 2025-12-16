@@ -23,8 +23,8 @@ namespace Frontier.DebugTools.DebugMenu
 
             _debugUi.SetActive(false); // 初期状態では非表示
 
-            presenter.Init();
-            handler.Init(presenter, ToggleDebugCallback, canAcceptCb, acceptInputCb);
+            _presenter.Init();
+            _handler.Init( _presenter, ToggleDebugCallback, canAcceptCb, acceptInputCb );
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Frontier.DebugTools.DebugMenu
         /// </summary>
         public void OpenDebugMenu()
         {
-            handler.ScheduleRun();
+            _handler.ScheduleRun();
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Frontier.DebugTools.DebugMenu
         /// <returns>ハンドラ</returns>
         public IFocusRoutine GetFocusRoutine()
         {
-            return handler;
+            return _handler;
         }
     }
 }

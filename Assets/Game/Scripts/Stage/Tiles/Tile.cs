@@ -25,25 +25,10 @@ namespace Frontier.Stage
 
         private void Awake()
         {
-            if( null == _gridLineMesh )
-            {
-                _gridLineMesh = CreateGridLineMesh( this );
-                NullCheck.AssertNotNull( _gridLineMesh, "_gridLineMesh" );
-            }
-            if( null == _tileStaticData )
-            {
-                _tileStaticData = _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false );
-                NullCheck.AssertNotNull( _tileStaticData, "_tileStaticData" );
-            }
-            if( null == _tileDynamicData )
-            {
-                _tileDynamicData = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
-                NullCheck.AssertNotNull( _tileDynamicData, "_tileDynamicData" );
-            }
-            if( null == _baseDynamicData )
-            {
-                _baseDynamicData = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
-            }
+            LazyInject.GetOrCreate( ref _gridLineMesh, () => CreateGridLineMesh( this ) );
+            LazyInject.GetOrCreate( ref _tileStaticData, () => _hierarchyBld.InstantiateWithDiContainer<TileStaticData>( false ) );
+            LazyInject.GetOrCreate( ref _tileDynamicData, () => _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false ) );
+            LazyInject.GetOrCreate( ref _baseDynamicData, () => _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false ) );
 
             _tileMeshes             = UnityEngine.Pool.ListPool<TileMesh>.Get();
             _renderer               = GetComponent<MeshRenderer>();

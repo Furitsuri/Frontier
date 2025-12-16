@@ -32,8 +32,7 @@ namespace Frontier.DebugTools.DebugMenu
         /// </summary>
         override public void Init()
         {
-            _verticalLayoutGroup = DebugMenuList.GetComponent<VerticalLayoutGroup>();
-            NullCheck.AssertNotNull(_verticalLayoutGroup, nameof(_verticalLayoutGroup));
+            LazyInject.GetOrCreate( ref _verticalLayoutGroup, () => DebugMenuList.GetComponent<VerticalLayoutGroup>() );
 
             InitDebugMenuList();
 

@@ -46,11 +46,7 @@ namespace Frontier.Battle
                 { CHARACTER_TAG.OTHER,  _others }
             };
 
-            if( _characterDict == null )
-            {
-                _characterDict = _hierarchyBld.InstantiateWithDiContainer<CharacterDictionary>( false );
-                NullCheck.AssertNotNull( _characterDict, nameof( _characterDict ) );
-            }
+            LazyInject.GetOrCreate( ref _characterDict, () => _hierarchyBld.InstantiateWithDiContainer<CharacterDictionary>( false ) );
         }
 
         /// <summary>

@@ -10,8 +10,6 @@ namespace Frontier.DebugTools
 {
     public class StageEditorSaveLoadState : ConfirmStateBaseEditor
     {
-        [Inject] private readonly StageEditorController _stgEditorCtrl = null;
-
         protected enum State
         {
             NONE = -1,
@@ -20,6 +18,8 @@ namespace Frontier.DebugTools
 
             NUM,
         }
+
+        [Inject] private readonly StageEditorController _stgEditorCtrl = null;
 
         protected string[] _confirmMessage = new string[( int ) State.NUM];
         protected string _failedMessage;

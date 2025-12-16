@@ -42,12 +42,8 @@ namespace Frontier.UI
 
         void Awake()
         {
-            _rectTransform = GetComponent<RectTransform>();
-            NullCheck.AssertNotNull( _rectTransform, "_rectTransform" );
-
-            var cameraObject = GameObject.Find( "UI_Camera" );
-            _uiCamera = cameraObject.GetComponent<Camera>();
-            NullCheck.AssertNotNull( _uiCamera, "_uiCamera" );
+            LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
+            LazyInject.GetOrCreate( ref _uiCamera, () => GameObject.Find( "UI_Camera" ).GetComponent<Camera>() );
 
             DamageValue.Init( _rectTransform, _uiCamera );
         }

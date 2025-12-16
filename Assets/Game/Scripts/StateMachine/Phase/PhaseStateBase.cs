@@ -41,15 +41,6 @@ namespace Frontier.StateMachine
             return Hash.GetStableHash(GetType().Name);
         }
 
-        /* TODO : 方法を考える
-        virtual public void Init( PhaseHandlerBase handler )
-        {
-            base.Init();
-
-            Handler = handler;
-        }
-        */
-
         /// <summary>
         /// 入力コードを登録します
         /// </summary>

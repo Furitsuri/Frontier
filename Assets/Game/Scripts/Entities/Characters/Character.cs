@@ -105,17 +105,8 @@ namespace Frontier.Entities
                 () => _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false)
             };
 
-            if( null == _transformHdlr )
-            {
-                _transformHdlr = _hierarchyBld.InstantiateWithDiContainer<TransformHandler>( false );
-                NullCheck.AssertNotNull( _transformHdlr, nameof( _transformHdlr ) );
-            }
-
-            if( null == _actionRangeCtrl )
-            {
-                _actionRangeCtrl = _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false );
-                NullCheck.AssertNotNull( _actionRangeCtrl, nameof( _actionRangeCtrl ) );
-            }
+            LazyInject.GetOrCreate( ref _transformHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TransformHandler>( false ) );
+            LazyInject.GetOrCreate( ref _actionRangeCtrl, () => _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false ) );
 
             // キャラクターモデルのマテリアルが設定されているObjectを取得し、
             // Materialと初期のColor設定を保存
