@@ -35,16 +35,12 @@ public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler,
     {
         // base.Init()は呼び出さない
 
-        if (presenter == null)
-        {
-            presenter = _uiSystem.GeneralUi.TutorialView;
-            NullCheck.AssertNotNull(presenter, nameof( presenter ) );
-        }
+        LazyInject.GetOrCreate( ref _presenter, () => _uiSystem.GeneralUi.TutorialView );
 
         _saveData = _saveHdlr.Load();
 
-        handler.Init( presenter );
-        presenter.Init();
+        _handler.Init( _presenter );
+        _presenter.Init();
     }
 
     /// <summary>
@@ -57,11 +53,11 @@ public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler,
             if (_saveData._shownTriggers.Contains(trigger)) continue;
 
             // チュートリアルを表示
-            if( handler.ShowTutorial(trigger) )
+            if( _handler.ShowTutorial( trigger ) )
             {
                 // 表示済みのトリガータイプに追加、保存
-                _saveData._shownTriggers.Add(trigger);
-                _saveHdlr.Save(_saveData);
+                _saveData._shownTriggers.Add( trigger );
+                _saveHdlr.Save( _saveData );
             }
         }
     }
@@ -93,6 +89,6 @@ public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler,
     /// <returns>ハンドラ</returns>
     public IFocusRoutine GetFocusRoutine()
     {
-        return handler;
+        return _handler;
     }
 }

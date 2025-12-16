@@ -28,21 +28,9 @@ namespace Frontier.Entities
         {
             _owner = owner;
 
-            if( null == _actionableTileMap )
-            {
-                _actionableTileMap = _hierarchyBld.InstantiateWithDiContainer<ActionableTileMap>( false );
-                NullCheck.AssertNotNull( _actionableTileMap, nameof( _actionableTileMap ) );
-            }
-            if( null == _movePathHandler )
-            {
-                _movePathHandler = _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false );
-                NullCheck.AssertNotNull( _movePathHandler, nameof( _movePathHandler ) );
-            }
-            if( null == _actionableRangeRdr )
-            {
-                _actionableRangeRdr = _hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false );
-                NullCheck.AssertNotNull( _actionableRangeRdr, nameof( _actionableRangeRdr ) );
-            }
+            LazyInject.GetOrCreate( ref _actionableTileMap, () => _hierarchyBld.InstantiateWithDiContainer<ActionableTileMap>( false ) );
+            LazyInject.GetOrCreate( ref _movePathHandler, () => _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
+            LazyInject.GetOrCreate( ref _actionableRangeRdr, () => _hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
 
             _actionableTileMap.Init();
             _movePathHandler.Init( owner );

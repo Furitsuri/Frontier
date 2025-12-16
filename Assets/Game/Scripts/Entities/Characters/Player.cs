@@ -100,8 +100,9 @@ namespace Frontier.Entities
         override public void Init()
         {
             base.Init();
-            _baseAi = _hierarchyBld.InstantiateWithDiContainer<AiBase>( false );
-            NullCheck.AssertNotNull( _baseAi , nameof( _baseAi ) );
+
+            LazyInject.GetOrCreate( ref _baseAi, () => _hierarchyBld.InstantiateWithDiContainer<AiBase>( false ) );
+
             _baseAi.Init( this );
         }
 

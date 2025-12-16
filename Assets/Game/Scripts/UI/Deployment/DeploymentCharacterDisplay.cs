@@ -22,11 +22,8 @@ public class DeploymentCharacterDisplay : MonoBehaviour
 
     void Awake()
     {
-        _rectTransform = GetComponent<RectTransform>();
-        NullCheck.AssertNotNull( _rectTransform, "_rectTransform" );
-
-        _backGround = GetComponent<RawImage>();
-        NullCheck.AssertNotNull( _backGround, "_backGround" );
+        LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
+        LazyInject.GetOrCreate( ref _backGround, () => GetComponent<RawImage>() );
 
         _candidate = null;
     }

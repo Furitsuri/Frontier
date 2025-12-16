@@ -108,13 +108,9 @@ public sealed class InputGuidePresenter : MonoBehaviour
 
         Debug.Assert( spriteTailNoString.Length == ( int ) GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。" );
 
-        _guideUiArrray = new InputGuideUI[( int ) GuideIcon.NUM_MAX];
-        _rectTransform = GetComponent<RectTransform>();
-        _layoutGrp = GetComponent<HorizontalLayoutGroup>();
-
-        NullCheck.AssertNotNull( _hierarchyBld, nameof( _hierarchyBld ) );
-        NullCheck.AssertNotNull( _rectTransform, nameof( _rectTransform ) );
-        NullCheck.AssertNotNull( _layoutGrp, nameof( _layoutGrp ) );
+        LazyInject.GetOrCreate( ref _guideUiArrray, () => new InputGuideUI[( int ) GuideIcon.NUM_MAX] );
+        LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
+        LazyInject.GetOrCreate( ref _layoutGrp, () => GetComponent<HorizontalLayoutGroup>() );
 
         LoadSprites();
 

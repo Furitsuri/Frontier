@@ -14,8 +14,8 @@ namespace Frontier.StateMachine
         {
             base.Init();
 
-            _presenter = _hierarchyBld.InstantiateWithDiContainer<DeploymentPhasePresenter>( true );
-            NullCheck.AssertNotNull( _presenter, "_presenter" );
+            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<DeploymentPhasePresenter>( true ) );
+
             _presenter.Init();
 
             var drs = RootNode as DeploymentRootState;

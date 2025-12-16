@@ -23,8 +23,8 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
     {
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
         {
-            _deploymentCharacterDisplays[i] = _hierarchyBld.CreateComponentNestedParentWithDiContainer<DeploymentCharacterDisplay>( _deploymentCharacterDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i );
-            NullCheck.AssertNotNull( _deploymentCharacterDisplays[i], "DeploymentCharaDisp_" + i );
+            LazyInject.GetOrCreate( ref _deploymentCharacterDisplays[i], () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<DeploymentCharacterDisplay>( _deploymentCharacterDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i ) );
+
             _deploymentCharacterDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
         }
     }

@@ -4,12 +4,12 @@ public abstract class BaseFacadeWithFocusRoutineHandler<TH, TP>
     where TH : BaseHandlerExtendedFocusRoutine
     where TP : BasePresenter
 {
-    [Inject] protected TH handler;
-    [Inject] protected TP presenter;
+    [Inject] protected TH _handler;
+    [Inject] protected TP _presenter;
 
     virtual public void Init()
     {
-        handler.Init();
-        presenter.Init();
+        _handler.Init();
+        _presenter.Init();
     }
 }

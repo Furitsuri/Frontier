@@ -22,17 +22,8 @@ public class InputFacade
         // 入力コード情報を全て初期化
         InitInputCodes();
 
-        if (_inputHdlr == null)
-        {
-            _inputHdlr = _hierarchyBld.CreateComponentAndOrganize<InputHandler>(true, "InputHandler");
-            NullCheck.AssertNotNull( _inputHdlr , nameof( _inputHdlr ) );
-        }
-
-        if( _inputGuideView == null )
-        {
-            _inputGuideView = _uiSystem.GeneralUi.InputGuideView;
-            NullCheck.AssertNotNull(_inputGuideView, nameof( _inputGuideView ) );
-        }
+        LazyInject.GetOrCreate( ref _inputHdlr, () => _hierarchyBld.CreateComponentAndOrganize<InputHandler>( true, "InputHandler" ) );
+        LazyInject.GetOrCreate( ref _inputGuideView, () => _uiSystem.GeneralUi.InputGuideView );
 
         // 入力コード情報を受け渡す
         _inputHdlr.Init(_inputGuideView, _inputCodes);

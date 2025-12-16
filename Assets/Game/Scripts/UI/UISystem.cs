@@ -39,34 +39,12 @@ namespace Frontier.UI
 
         public void InitializeUiSystem()
         {
-            Transform childGeneralUI = transform.GetChild( ( int ) ChildIndex.General );
-            if( childGeneralUI != null )
-            {
-                _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
-                NullCheck.AssertNotNull( _generarlUi, nameof( _generarlUi ) );
-            }
-
-            Transform childPlacementUI = transform.GetChild( ( int ) ChildIndex.Placement );
-            if( childPlacementUI != null )
-            {
-                _placementUi = childPlacementUI.GetComponent<DeploymentUISystem>();
-                NullCheck.AssertNotNull( _placementUi, nameof( _placementUi ) );
-            }
-
-            Transform childBattleUI = transform.GetChild( ( int ) ChildIndex.Battle );
-            if( childBattleUI != null )
-            {
-                _battleUi = childBattleUI.GetComponent<BattleUISystem>();
-                NullCheck.AssertNotNull( _battleUi, nameof( _battleUi ) );
-            }
+            LazyInject.GetOrCreate( ref _generarlUi, () => transform.GetChild( ( int ) ChildIndex.General ).GetComponent<GeneralUISystem>() );
+            LazyInject.GetOrCreate( ref _placementUi, () => transform.GetChild( ( int ) ChildIndex.Placement ).GetComponent<DeploymentUISystem>() );
+            LazyInject.GetOrCreate( ref _battleUi, () => transform.GetChild( ( int ) ChildIndex.Battle ).GetComponent<BattleUISystem>() );
 
 #if UNITY_EDITOR
-            Transform childDebugUI = transform.GetChild( ( int ) ChildIndex.Debug );
-            if( childDebugUI != null )
-            {
-                _debugUi = childDebugUI.GetComponent<DebugUISystem>();
-                NullCheck.AssertNotNull( _debugUi, nameof( _debugUi ) );
-            }
+            LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
 #endif // UNITY_EDITOR
         }
     }

@@ -86,16 +86,8 @@ namespace Frontier
             }
 
 #if UNITY_EDITOR
-            if (_debugMenuFcd == null)
-            {
-                _debugMenuFcd = _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>(false);
-                NullCheck.AssertNotNull( _debugMenuFcd, nameof( _debugMenuFcd ) );
-            }
-            if( _debugEditorMonoDrv == null )
-            {
-                _debugEditorMonoDrv = _diContainer.Resolve<DebugEditorMonoDriver>();
-                NullCheck.AssertNotNull( _debugEditorMonoDrv, nameof( _debugEditorMonoDrv ) );
-            }
+            LazyInject.GetOrCreate( ref _debugMenuFcd, () => _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>( false ) );
+            LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
 #endif // UNITY_EDITOR
         }
 

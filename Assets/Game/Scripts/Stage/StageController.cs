@@ -54,19 +54,11 @@ namespace Frontier.Stage
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            _gridCursorCtrl = CreateCursor();
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _gridCursorCtrlObject, true, true, "GridCursorController" ) );
+            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" ) );
+            LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
 
-            if( null == _stageFileLoader )
-            {
-                _stageFileLoader = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" );
-                NullCheck.AssertNotNull( _stageFileLoader, nameof( _stageFileLoader ) );
-            }
-
-            if( null == _tileDataHdlr )
-            {
-                _tileDataHdlr = _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false );
-                NullCheck.AssertNotNull( _tileDataHdlr, nameof( _tileDataHdlr ) );
-            }
+            _gridCursorCtrl.Init( 0 );
 
             _tileMeshes = new List<TileMesh>();
         }
@@ -353,19 +345,6 @@ namespace Frontier.Stage
         #endregion // PUBLIC_METHOD
 
         #region PRIVATE_METHOD
-
-        /// <summary>
-        /// グリッドカーソルを作成します
-        /// </summary>
-        /// <returns>作成したグリッドカーソル</returns>
-        private GridCursorController CreateCursor()
-        {
-            GridCursorController gridCursorCtrl = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _gridCursorCtrlObject, true, true, "GridCursorController" );
-            NullCheck.AssertNotNull( gridCursorCtrl, nameof( gridCursorCtrl ) );
-            gridCursorCtrl.Init( 0 );
-
-            return gridCursorCtrl;
-        }
 
         /// <summary>
         /// 頂点配列データをすべて指定の方向へ回転移動させます
