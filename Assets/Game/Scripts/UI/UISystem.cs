@@ -46,6 +46,8 @@ namespace Frontier.UI
 #if UNITY_EDITOR
             LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
 #endif // UNITY_EDITOR
+
+            GeneralUi.Setup();
         }
     }
 }

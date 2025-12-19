@@ -7,31 +7,23 @@ using System.Collections.Generic;
 using Frontier;
 using Zenject;
 
-public class TutorialPresenter : BasePresenter
+public class TutorialPresenter : BasePresenter, IUiMonoBehaviour
 {
-    [SerializeField]
-    private TextMeshProUGUI _headline;
-    [SerializeField]
-    private TextMeshProUGUI _explain;
-    [SerializeField]
-    private TextMeshProUGUI _pageNumberL;
-    [SerializeField]
-    private TextMeshProUGUI _pageNumberR;
-    [SerializeField]
-    private Image _image;
-    [SerializeField]
-    private Image _nextArrowImg;
+    [SerializeField] private TextMeshProUGUI _headline;
+    [SerializeField] private TextMeshProUGUI _explain;
+    [SerializeField] private TextMeshProUGUI _pageNumberL;
+    [SerializeField] private TextMeshProUGUI _pageNumberR;
+    [SerializeField] private Image _image;
+    [SerializeField] private Image _nextArrowImg;
+
+    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
     private Image _prevArrowImg;
+    private ReadOnlyCollection<TutorialElement> _displayContents;   // 表示内容の参照データ
 
-    private HierarchyBuilderBase _hierarchyBld = null;
-
-    // 表示内容の参照データ
-    private ReadOnlyCollection<TutorialElement> _displayContents;
-
-    [Inject]
-    public void Construct(HierarchyBuilderBase hierarchyBld)
+    public void Setup()
     {
-        _hierarchyBld = hierarchyBld;
+
     }
 
     /// <summary>
@@ -42,7 +34,7 @@ public class TutorialPresenter : BasePresenter
         base.Init();
 
         // 初期状態では非表示にする
-        gameObject.SetActive(false);
+        gameObject.SetActive( false );
 
         // 前ページ用Imageを生成し、向き、位置を初期化
         InitPrevArrowImage();

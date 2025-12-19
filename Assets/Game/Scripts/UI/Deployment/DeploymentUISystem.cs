@@ -25,6 +25,7 @@ namespace Frontier.UI
         public void Init()
         {
             gameObject.SetActive( true );
+            GridCursorSelectCharaParam.Setup();
 
             CharacterSelectUi.Init();
             ConfirmCompleted.Init();

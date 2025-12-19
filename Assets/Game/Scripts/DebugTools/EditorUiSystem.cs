@@ -37,20 +37,11 @@ public class EditorUiSystem : MonoBehaviour, IUiSystem
 
     public void InitializeUiSystem()
     {
-        Transform childGeneralUI = transform.GetChild( ( int ) ChildIndex.General );
-        if( childGeneralUI != null )
-        {
-            _generarlUi = childGeneralUI.GetComponent<GeneralUISystem>();
-        }
-        Debug.Assert( _generarlUi != null );
-
+        LazyInject.GetOrCreate( ref _generarlUi, () => transform.GetChild( ( int ) ChildIndex.General ).GetComponent<GeneralUISystem>() );
 #if UNITY_EDITOR
-        Transform childDebugUI = transform.GetChild( ( int ) ChildIndex.Debug );
-        if( childDebugUI != null )
-        {
-            _debugUi = childDebugUI.GetComponent<DebugUISystem>();
-        }
-        Debug.Assert( _debugUi != null );
+        LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
+
+        _generarlUi.Setup();
 #endif // UNITY_EDITOR
     }
 }

@@ -10,13 +10,13 @@ namespace Frontier
     public class CharacterParameterPresenter : MonoBehaviour
     {
         [Header( "LeftWindowParam" )]
-        public CharacterParameterUI PlayerParameter;        // 左側表示のパラメータUIウィンドウ
+        [SerializeField] private CharacterParameterUI _playerParameter;        // 左側表示のパラメータUIウィンドウ
 
         [Header( "RightWindowParam" )]
-        public CharacterParameterUI EnemyParameter;         // 右側表示のパラメータUIウィンドウ
+        [SerializeField] private CharacterParameterUI _enemyParameter;         // 右側表示のパラメータUIウィンドウ
 
-        [Header( "ParameterAttackDirection" )]
-        public ParameterAttackDirectionUI AttackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
+        [Header( "Parameter_attackDirection" )]
+        [SerializeField] private ParameterAttackDirectionUI _attackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
         [Inject] private IUiSystem _uiSystem                    = null;
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
@@ -24,10 +24,14 @@ namespace Frontier
 
         private Character _prevSelectCharacter = null;
 
-        void Start()
+        public CharacterParameterUI PlayerParameter => _playerParameter;
+        public CharacterParameterUI EnemyParameter => _enemyParameter;
+        public ParameterAttackDirectionUI AttackDirection => _attackDirection;
+
+        void Awake()
         {
-            PlayerParameter.gameObject.SetActive( false );
-            EnemyParameter.gameObject.SetActive( false );
+            _playerParameter.gameObject.SetActive( false );
+            _enemyParameter.gameObject.SetActive( false );
         }
 
         // Update is called once per frame
@@ -52,23 +56,23 @@ namespace Frontier
                     // PLAYER 対 OTHER
                     if( bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY )
                     {
-                        PlayerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
-                        EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                        _playerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
+                        _enemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     else
                     {
-                        PlayerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
-                        EnemyParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_ENEMY );
+                        _playerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                        _enemyParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     break;
 
                 case GridCursorState.MOVE:   // 移動候補選択時
                     Debug.Assert( bindCharacter != null );
 
-                    PlayerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
+                    _playerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
                     if( selectCharacter != null && selectCharacter != bindCharacter )
                     {
-                        EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                        _enemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     _uiSystem.BattleUi.SetEnemyParameterActive( selectCharacter != null && selectCharacter != bindCharacter );
 
@@ -84,11 +88,11 @@ namespace Frontier
                     {   
                         if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
                         {
-                            PlayerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                            _playerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
                         }
                         else
                         {
-                            EnemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                            _enemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
                         }
                     }
 
@@ -115,8 +119,11 @@ namespace Frontier
         /// </summary>
         public void Init()
         {
-            PlayerParameter.Init();
-            EnemyParameter.Init();
+            _playerParameter.Setup();
+            _enemyParameter.Setup();
+
+            _playerParameter.Init();
+            _enemyParameter.Init();
         }
 
         /// <summary>
@@ -124,7 +131,7 @@ namespace Frontier
         /// </summary>
         public void ShowDirection()
         {
-            AttackDirection.gameObject.SetActive( true );
+            _attackDirection.gameObject.SetActive( true );
         }
     }
 }

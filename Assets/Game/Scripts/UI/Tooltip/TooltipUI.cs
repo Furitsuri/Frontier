@@ -3,9 +3,19 @@ using UnityEngine;
 
 namespace Frontier.UI
 {
-    public class TooltipUI : MonoBehaviour
+    public class TooltipUI : MonoBehaviour, IUiMonoBehaviour
     {
         [SerializeField] TextMeshProUGUI _explanation;
+
+        public void Setup()
+        {
+
+        }
+
+        void Awake()
+        {
+            gameObject.SetActive( false );
+        }
 
         public void SetText( string text )
         {

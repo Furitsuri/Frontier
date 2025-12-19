@@ -7,13 +7,13 @@ using static Frontier.CharacterParameterUI;
 
 public class DeploymentCharacterSelectUI : MonoBehaviour
 {
-    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-
     [Header( "配置候補キャラクター表示洋プレハブ" )]
     [SerializeField] private DeploymentCharacterDisplay _deploymentCharacterDisplayPrefab;
 
     [Header( "キャラクターパタメータ表示UI" )]
     [SerializeField] private CharacterParameterUI _focusCharaParamUI;
+
+    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
     private DeploymentCharacterDisplay[] _deploymentCharacterDisplays = new DeploymentCharacterDisplay[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
 
@@ -37,6 +37,7 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
     {
         int centralIndex = DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2;
 
+        _focusCharaParamUI.Setup();
         _focusCharaParamUI.Init();
 
         for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
