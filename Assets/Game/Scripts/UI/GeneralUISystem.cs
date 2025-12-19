@@ -6,25 +6,34 @@ namespace Frontier
 {
     public class GeneralUISystem : MonoBehaviour
     {
-        [Header("InputGuidePresenter")]
+        [Header( "InputGuidePresenter" )]
         public InputGuidePresenter InputGuideView;  // 入力ガイド表示
 
-        [Header("TutorialPresenter")]
+        [Header( "TutorialPresenter" )]
         public TutorialPresenter TutorialView;      // チュートリアル表示
 
         [Header( "CharacterStatuts" )]
         public StatusUI CharacterStatusView;        // キャラクターステータスUI
 
-        [Header("ToolTip")]
+        [Header( "ToolTip" )]
         public TooltipUI ToolTipView;               // ツールチップUI
 
         void Awake()
         {
-            var canvas = GetComponent<Canvas>();
-            if (canvas == null)
+            if( null == GetComponent<Canvas>() )
             {
-                LogHelper.LogError("Canvas component is missing on GeneralUISystem GameObject.");
+                LogHelper.LogError( "Canvas component is missing on GeneralUISystem GameObject." );
             }
+
+            TutorialView.Init();
+        }
+
+        public void Setup()
+        {
+            InputGuideView.Setup();
+            TutorialView.Setup();
+            CharacterStatusView.Setup();
+            ToolTipView.Setup();
         }
     }
 }

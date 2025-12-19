@@ -3,13 +3,12 @@ using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-using Zenject.ReflectionBaking.Mono.Cecil.Cil;
 using static InputCode;
 
 /// <summary>
 /// 入力ガイド関連の表示制御を行います
 /// </summary>using System.Collections.ObjectModel;
-public sealed class InputGuidePresenter : MonoBehaviour
+public sealed class InputGuidePresenter : MonoBehaviour, IUiMonoBehaviour
 {
     /// <summary>
     /// フェード中の各モード
@@ -33,8 +32,6 @@ public sealed class InputGuidePresenter : MonoBehaviour
 
     // キーガイドバーの入出状態
     private FadeMode _fadeMode = FadeMode.NEUTRAL;
-    // 描画優先度
-    
     // 現在の背景の幅
     private float _currentBackGroundWidth = 0f;
     // ガイドが遷移する以前の背景の幅
@@ -91,7 +88,16 @@ public sealed class InputGuidePresenter : MonoBehaviour
 #endif
     };
 
-    // Update is called once per frame
+    public void Setup()
+    {
+
+    }
+
+    void Awake()
+    {
+        gameObject.SetActive( true );
+    }
+
     void Update()
     {
         UpdateFadeUI();

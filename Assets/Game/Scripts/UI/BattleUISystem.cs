@@ -46,11 +46,12 @@ namespace Frontier.UI
             LazyInject.GetOrCreate( ref _uiCamera, () => GameObject.Find( "UI_Camera" ).GetComponent<Camera>() );
 
             DamageValue.Init( _rectTransform, _uiCamera );
+            ParameterView.Init();
         }
 
         private void Start()
         {
-            ParameterView.Init();
+            // ParameterView.Init();
         }
 
         public void SetPlayerParameterActive( bool isActive )

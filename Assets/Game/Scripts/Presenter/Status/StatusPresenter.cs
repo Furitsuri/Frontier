@@ -24,8 +24,8 @@ namespace Frontier.Presenter
 
         public void OpenCharacterStatus( Character chara )
         {
-            _statusUi.AssignCharacter( chara );
             _statusUi.gameObject.SetActive( true );
+            _statusUi.AssignCharacter( chara );
         }
 
         public void CloseCharacterStatus()

@@ -5,7 +5,7 @@ using Frontier.Entities;
 
 namespace Frontier.UI
 {
-    public class StatusUI : MonoBehaviour
+    public class StatusUI : MonoBehaviour, IUiMonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI TMPLevelValue;
         [SerializeField] private TextMeshProUGUI TMPHPValue;
@@ -15,6 +15,15 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI TMPAttackValue;
         [SerializeField] private TextMeshProUGUI TMPDeffenceValue;
         [SerializeField] private RawImage _characterSnapshot = null;
+        [SerializeField] private SkillBoxUI[] SkillBoxes;
+
+        public void Setup()
+        {
+            foreach( var item in SkillBoxes )
+            {
+                item.Setup();
+            }
+        }
 
         public void AssignCharacter( Character chara )
         {
@@ -29,6 +38,12 @@ namespace Frontier.UI
             TMPDeffenceValue.text   = charaParam.Def.ToString();
 
             _characterSnapshot.texture = chara.Snapshot;
+
+            // スキルボックスUIの表示
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                SkillBoxes[i].ApplySkill( chara, i );
+            }
         }
 
         public ( float, float ) GetSnapshotRectSize()

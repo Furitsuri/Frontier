@@ -5,71 +5,68 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Frontier.Combat.Skill;
+using Frontier.Entities;
 
 namespace Frontier
 {
-    public class SkillBoxUI : MonoBehaviour
+    public class SkillBoxUI : MonoBehaviour, IUiMonoBehaviour
     {
-        [SerializeField]
-        private TextMeshProUGUI TMPSkillName;
-
-        [SerializeField]
-        private RectTransform PanelTransform;
-
-        [SerializeField]
-        private RawImage ActGaugeElemImage;
-
-        [SerializeField]
-        private UnityEngine.UI.Image CurtainImage;
+        [SerializeField] private TextMeshProUGUI TMPSkillName;
+        [SerializeField] private RectTransform PanelTransform;
+        [SerializeField] private RawImage ActGaugeElemImage;
+        [SerializeField] private Image CurtainImage;
 
         private ColorFlicker<ImageColorAdapter> _imageFlicker;
         private List<RawImage> _actGaugeElems;
-        private UnityEngine.UI.Image _uiImage;
+        private Image _uiImage;
         private Color _initialColor;
 
-        private void Start()
+        public void Setup()
         {
-            _actGaugeElems  = new List<RawImage>(Constants.ACTION_GAUGE_MAX);
-            _uiImage        = GetComponent<UnityEngine.UI.Image>();
-            _imageFlicker   = new ColorFlicker<ImageColorAdapter>(new ImageColorAdapter(_uiImage));
-            _initialColor   = _uiImage.color;
+            LazyInject.GetOrCreate( ref _actGaugeElems, () => new List<RawImage>( Constants.ACTION_GAUGE_MAX ) );
+            LazyInject.GetOrCreate( ref _uiImage, () => GetComponent<Image>() );
+            LazyInject.GetOrCreate( ref _imageFlicker, () => new ColorFlicker<ImageColorAdapter>( new ImageColorAdapter( _uiImage ) ) );
 
-            for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
+            _initialColor = _uiImage.color;
+
+            if( 0 < _actGaugeElems.Count ) { return; }
+
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
-                var elem = Instantiate(ActGaugeElemImage);
-                _actGaugeElems.Add(elem);
-                elem.gameObject.SetActive(false);
-                elem.transform.SetParent(PanelTransform, false);
+                var elem = Instantiate( ActGaugeElemImage );
+                _actGaugeElems.Add( elem );
+                elem.gameObject.SetActive( false );
+                elem.transform.SetParent( PanelTransform, false );
             }
         }
 
-        private void Update()
+        void Update()
         {
             _imageFlicker.UpdateFlick();
         }
 
-        /// <summary>
-        /// スキル名テキストを設定します
-        /// </summary>
-        /// <param name="name">設定するスキル名</param>
-        public void SetSkillName(string name, SituationType type)
+        public void ApplySkill( Character chara, int index )
         {
-            Color[] typeColor = new Color[(int)SituationType.TYPE_NUM] { Color.red, new Color(0.1f, 0.6f, 1.0f), Color.yellow };
+            bool isValid = chara.Params.CharacterParam.IsValidSkill( index );
+            gameObject.SetActive( isValid );
+            if( !isValid ) { return; }
 
-            TMPSkillName.text = name.Replace("_", Environment.NewLine);
-            TMPSkillName.color = typeColor[(int)type];
+            string skillName    = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Name;
+            var type            = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Type;
+            SetSkillName( skillName, type );
+            ShowSkillCostImage( SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Cost );
         }
 
         /// <summary>
         /// 拝啓イメージのカラーをフリックするか否かを設定します
         /// </summary>
         /// <param name="enabled">フリックのON・OFF</param>
-        public void SetFlickEnabled(bool enabled)
+        public void SetFlickEnabled( bool enabled )
         {
-            _imageFlicker.setEnabled(enabled);
+            _imageFlicker.setEnabled( enabled );
 
             // 選択から外された場合は色を元に戻す
-            if (!enabled)
+            if( !enabled )
             {
                 _uiImage.color = _initialColor;
             }
@@ -79,15 +76,15 @@ namespace Frontier
         /// スキル使用の可否を示します
         /// </summary>
         /// <param name="useable">使用の可否</param>
-        public void SetUseable(bool useable)
+        public void SetUseable( bool useable )
         {
-            if (useable)
+            if( useable )
             {
-                CurtainImage.color = new Color(0, 0, 0, 0);
+                CurtainImage.color = new Color( 0, 0, 0, 0 );
             }
             else
             {
-                CurtainImage.color = new Color(0, 0, 0, 0.75f);
+                CurtainImage.color = new Color( 0, 0, 0, 0.75f );
             }
         }
 
@@ -100,17 +97,29 @@ namespace Frontier
         }
 
         /// <summary>
+        /// スキル名テキストを設定します
+        /// </summary>
+        /// <param name="name">設定するスキル名</param>
+        private void SetSkillName( string name, SituationType type )
+        {
+            Color[] typeColor = new Color[( int ) SituationType.TYPE_NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
+
+            TMPSkillName.text = name.Replace( "_", Environment.NewLine );
+            TMPSkillName.color = typeColor[( int ) type];
+        }
+
+        /// <summary>
         /// スキルのコストをUIで表示します
         /// </summary>
         /// <param name="cost">スキルコスト</param>
-        public void ShowSkillCostImage(int cost)
+        private void ShowSkillCostImage( int cost )
         {
             // アクションゲージの表示
-            for (int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i)
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
                 var elem = _actGaugeElems[i];
 
-                elem.gameObject.SetActive(i < cost);
+                elem.gameObject.SetActive( i < cost );
                 elem.color = Color.green;
             }
         }

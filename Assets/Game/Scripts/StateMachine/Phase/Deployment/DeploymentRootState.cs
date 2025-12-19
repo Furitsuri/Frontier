@@ -125,7 +125,7 @@ namespace Frontier.StateMachine
         protected override bool CanAcceptConfirm()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力不可
-            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+            // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
             // 配置不可のタイルを選択している場合は入力不可
             if( !_stageDataProvider.CurrentData.GetTile( _stageCtrl.GetCurrentGridIndex() ).StaticData().IsDeployable ) { return false; }
 
@@ -142,7 +142,7 @@ namespace Frontier.StateMachine
             if( null == character ) { return false; }
 
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
-            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+            // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
 
             return true;
         }
@@ -150,7 +150,7 @@ namespace Frontier.StateMachine
         override protected bool CanAcceptSub1()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
-            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+            // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
 
             return true;
         }
@@ -158,7 +158,7 @@ namespace Frontier.StateMachine
         override protected bool CanAcceptSub2()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
-            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+            // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
 
             return true;
         }
@@ -170,7 +170,7 @@ namespace Frontier.StateMachine
         override protected bool CanAcceptOptional()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
-            if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+            // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
             // 遷移には配置キャラクターが1体以上存在している必要がある
             if( _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.PLAYER ) <= 0 ) { return false; }
 

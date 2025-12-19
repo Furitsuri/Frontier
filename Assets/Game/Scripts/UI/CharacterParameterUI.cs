@@ -10,7 +10,7 @@ using Frontier.Combat.Skill;
 
 namespace Frontier
 {
-    public class CharacterParameterUI : MonoBehaviour
+    public class CharacterParameterUI : MonoBehaviour, IUiMonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -36,10 +36,28 @@ namespace Frontier
         private float _alpha;
         private float _blinkingElapsedTime;
 
-        void Awake()
+        public void Setup()
         {
             LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
             LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
+
+            foreach( var item in SkillBoxes )
+            {
+                item.Setup();
+            }
+        }
+
+        void Awake()
+        {
+            /*
+            LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
+            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
+
+            foreach( var item in SkillBoxes )
+            {
+                item.Setup();
+            }
+            */
         }
 
         // Update is called once per frame
@@ -122,21 +140,10 @@ namespace Frontier
                 }
             }
 
-            // スキルボックスの表示
+            // スキルボックスUIの表示
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( param.IsValidSkill( i ) )
-                {
-                    SkillBoxes[i].gameObject.SetActive( true );
-                    string skillName = SkillsData.data[( int ) param.equipSkills[i]].Name;
-                    var type = SkillsData.data[( int ) param.equipSkills[i]].Type;
-                    SkillBoxes[i].SetSkillName( skillName, type );
-                    SkillBoxes[i].ShowSkillCostImage( SkillsData.data[( int ) param.equipSkills[i]].Cost );
-                }
-                else
-                {
-                    SkillBoxes[i].gameObject.SetActive( false );
-                }
+                SkillBoxes[i].ApplySkill( selectCharacter, i );
             }
         }
 
