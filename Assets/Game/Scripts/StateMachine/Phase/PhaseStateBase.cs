@@ -1,7 +1,7 @@
-﻿using Frontier.Stage;
-using Frontier.Battle;
+﻿using Frontier.Battle;
+using Frontier.Stage;
+using Frontier.Tutorial;
 using Zenject;
-using static Constants;
 
 namespace Frontier.StateMachine
 {

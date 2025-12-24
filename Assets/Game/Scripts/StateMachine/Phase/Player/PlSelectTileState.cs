@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
+using Frontier.Tutorial;
 using System;
 using Zenject;
 using static Constants;
@@ -153,7 +154,7 @@ namespace Frontier.StateMachine
             {
                 TransitStateWithExit( ( int ) TransitTag.CHARACTER_COMMAND );
                 // コマンドを開くことをチュートリアルへ通知
-                TutorialFacade.Notify( TutorialFacade.TriggerType.OpenBattleCommand );
+                TutorialFacade.Notify( TriggerType.OpenBattleCommand );
             }
             // 敵キャラクター、その他のキャラクターの場合、攻撃範囲表示を行う
             else

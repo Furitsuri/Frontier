@@ -4,91 +4,78 @@ using UnityEngine;
 using Frontier;
 using Zenject;
 
-public class TutorialFacade : BaseFacadeWithFocusRoutineHandler<TutorialHandler, TutorialPresenter>
+namespace Frontier.Tutorial
 {
-    public enum TriggerType
+    public class TutorialFacade
     {
-        OpenBattleCommand,
-        LearnParrySkill,
-        StartTutorialBattle,
-        // 他にも条件が増えていく
-    }
+        [Inject] private ISaveHandler<TutorialSaveData> _saveHdlr = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private TutorialHandler _handler = null;
 
-    private IUiSystem _uiSystem                                 = null;
-    private ISaveHandler<TutorialSaveData> _saveHdlr            = null;
-    private static readonly List<TriggerType> _pendingTriggers  = new();
+        private static readonly List<TriggerType> _pendingTriggers = new();
+        private TutorialSaveData _saveData = null;  // 表示済みのトリガータイプ
+        private TutorialPresenter _presenter = null;
 
-    // 表示済みのトリガータイプ
-    private TutorialSaveData _saveData = null;
-
-    [Inject]
-    public void Construct(IUiSystem uiSystem, TutorialHandler tutorialHdlr, ISaveHandler<TutorialSaveData> saveHandler)
-    {
-        _uiSystem       = uiSystem;
-        _saveHdlr       = saveHandler;
-    }
-
-    /// <summary>
-    /// 初期化します
-    /// </summary>
-    override public void Init()
-    {
-        // base.Init()は呼び出さない
-
-        LazyInject.GetOrCreate( ref _presenter, () => _uiSystem.GeneralUi.TutorialView );
-
-        _saveData = _saveHdlr.Load();
-
-        _handler.Init( _presenter );
-        _presenter.Init();
-    }
-
-    /// <summary>
-    /// チュートリアルの表示を試行します
-    /// </summary>
-    public void TryShowTutorial()
-    {
-        foreach (var trigger in _pendingTriggers)
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        public void Init()
         {
-            if (_saveData._shownTriggers.Contains(trigger)) continue;
+            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<TutorialPresenter>( false ) );
 
-            // チュートリアルを表示
-            if( _handler.ShowTutorial( trigger ) )
+            _saveData = _saveHdlr.Load();
+
+            _handler.Init( _presenter );
+            _presenter.Init();
+        }
+
+        /// <summary>
+        /// チュートリアルの表示を試行します
+        /// </summary>
+        public void TryShowTutorial()
+        {
+            foreach( var trigger in _pendingTriggers )
             {
-                // 表示済みのトリガータイプに追加、保存
-                _saveData._shownTriggers.Add( trigger );
-                _saveHdlr.Save( _saveData );
+                if( _saveData._shownTriggers.Contains( trigger ) ) continue;
+
+                // チュートリアルを表示
+                if( _handler.ShowTutorial( trigger ) )
+                {
+                    // 表示済みのトリガータイプに追加、保存
+                    _saveData._shownTriggers.Add( trigger );
+                    _saveHdlr.Save( _saveData );
+                }
             }
         }
-    }
 
-    /// <summary>
-    /// チュートリアルのトリガーを通知します
-    /// 通知されたトリガーは、チュートリアル表示処理の際に使用されます
-    /// </summary>
-    /// <param name="type">通知するトリガータイプ</param>
-    static public void Notify(TriggerType type)
-    {
-        if (!_pendingTriggers.Contains(type))
+        /// <summary>
+        /// チュートリアルのトリガーを通知します
+        /// 通知されたトリガーは、チュートリアル表示処理の際に使用されます
+        /// </summary>
+        /// <param name="type">通知するトリガータイプ</param>
+        static public void Notify( TriggerType type )
         {
-            _pendingTriggers.Add(type);
+            if( !_pendingTriggers.Contains( type ) )
+            {
+                _pendingTriggers.Add( type );
+            }
         }
-    }
 
-    /// <summary>
-    /// 通知済みのトリガーをクリアします
-    /// </summary>
-    static public void Clear()
-    {
-        _pendingTriggers.Clear();
-    }
+        /// <summary>
+        /// 通知済みのトリガーをクリアします
+        /// </summary>
+        static public void Clear()
+        {
+            _pendingTriggers.Clear();
+        }
 
-    /// <summary>
-    /// チュートリアルの処理を行うハンドラを取得します
-    /// </summary>
-    /// <returns>ハンドラ</returns>
-    public IFocusRoutine GetFocusRoutine()
-    {
-        return _handler;
+        /// <summary>
+        /// チュートリアルの処理を行うハンドラを取得します
+        /// </summary>
+        /// <returns>ハンドラ</returns>
+        public IFocusRoutine GetFocusRoutine()
+        {
+            return _handler;
+        }
     }
 }

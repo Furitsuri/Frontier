@@ -9,8 +9,8 @@ namespace Frontier
         [Header( "InputGuidePresenter" )]
         public InputGuidePresenter InputGuideView;  // 入力ガイド表示
 
-        [Header( "TutorialPresenter" )]
-        public TutorialPresenter TutorialView;      // チュートリアル表示
+        [Header( "Tutorial" )]
+        public TutorialUI TutorialView;             // チュートリアルUI
 
         [Header( "CharacterStatuts" )]
         public StatusUI CharacterStatusView;        // キャラクターステータスUI
@@ -24,8 +24,6 @@ namespace Frontier
             {
                 LogHelper.LogError( "Canvas component is missing on GeneralUISystem GameObject." );
             }
-
-            TutorialView.Init();
         }
 
         public void Setup()

@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using UnityEngine;
+using Frontier.Tutorial;
 
 public class TutorialSaveHandler : ISaveHandler<TutorialSaveData>
 {

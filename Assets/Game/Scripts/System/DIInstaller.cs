@@ -5,6 +5,7 @@ using Frontier.Combat.Skill;
 using Frontier.DebugTools.DebugMenu;
 using Zenject;
 using Froniter.Registries;
+using Frontier.Tutorial;
 
 namespace Frontier
 {
@@ -28,7 +29,6 @@ namespace Frontier
             Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
-            Container.Bind<TutorialPresenter>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();

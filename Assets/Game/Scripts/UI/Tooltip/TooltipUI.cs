@@ -3,14 +3,9 @@ using UnityEngine;
 
 namespace Frontier.UI
 {
-    public class TooltipUI : MonoBehaviour, IUiMonoBehaviour
+    public class TooltipUI : UiMonoBehaviour
     {
         [SerializeField] TextMeshProUGUI _explanation;
-
-        public void Setup()
-        {
-
-        }
 
         void Awake()
         {
@@ -26,6 +21,11 @@ namespace Frontier.UI
         {
             RectTransform rectTransform = GetComponent<RectTransform>();
             rectTransform.anchoredPosition = pos;
+        }
+
+        override public void Setup()
+        {
+
         }
     }
 }

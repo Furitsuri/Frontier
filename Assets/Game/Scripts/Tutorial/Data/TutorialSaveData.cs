@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class TutorialSaveData
+namespace Frontier.Tutorial
 {
-    public List<TutorialFacade.TriggerType> _shownTriggers = new();
+    [Serializable]
+    public class TutorialSaveData
+    {
+        public List<TriggerType> _shownTriggers = new();
+    }
 }
