@@ -10,7 +10,7 @@ using Frontier.Combat.Skill;
 
 namespace Frontier
 {
-    public class CharacterParameterUI : MonoBehaviour, IUiMonoBehaviour
+    public class CharacterParameterUI : UiMonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -36,30 +36,6 @@ namespace Frontier
         private float _alpha;
         private float _blinkingElapsedTime;
 
-        public void Setup()
-        {
-            LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
-            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
-
-            foreach( var item in SkillBoxes )
-            {
-                item.Setup();
-            }
-        }
-
-        void Awake()
-        {
-            /*
-            LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
-            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
-
-            foreach( var item in SkillBoxes )
-            {
-                item.Setup();
-            }
-            */
-        }
-
         // Update is called once per frame
         void Update()
         {
@@ -71,20 +47,78 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 初期化します
+        /// </summary>
+        public void Init()
+        {
+            var layerToName         = LayerMask.LayerToName( _layerMaskIndex );
+            TargetImage.texture     = _targetTexture;
+
+            _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, ref TargetImage );
+
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            {
+                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
+                _actGaugeElems.Add( elem );
+                elem.gameObject.SetActive( false );
+                elem.transform.SetParent( PanelTransform, false );
+            }
+        }
+
+        /// <summary>
+        /// 差分HP用テキストを返します
+        /// </summary>
+        /// <returns>差分HP用テキスト</returns>
+        public TextMeshProUGUI GetDiffHPText()
+        {
+            return TMPDiffHPValue;
+        }
+
+        /// <summary>
+        /// 指定のスキルボックスUIを取得します
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns>指定値</returns>
+        public SkillBoxUI GetSkillBox( int index )
+        {
+            Debug.Assert( 0 <= index && index < Constants.EQUIPABLE_SKILL_MAX_NUM );
+
+            return SkillBoxes[index];
+        }
+
+        /// <summary>
+        /// 表示するキャラクターを設定します
+        /// </summary>
+        /// <param name="character">表示キャラクター</param>
+        public void AssignCharacter( Character character, int layerMaskIndex )
+        {
+            // 以前ディスプレイに設定していたキャラクターのレイヤーマスクを元に戻す
+            if( null != _character )
+            {
+                _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+            }
+
+            _character = character;
+
+            _character.gameObject.SetActive( true );
+            _characterCamera.AssignCharacter( character, layerMaskIndex );
+        }
+
+        /// <summary>
         /// パラメータUIに表示するキャラクターのパラメータを更新します
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        void UpdateParamRender( Character selectCharacter, in CharacterParameter param, in SkillModifiedParameter skillParam )
+        private void UpdateParamRender( Character selectCharacter, in CharacterParameter param, in SkillModifiedParameter skillParam )
         {
             Debug.Assert( param.consumptionActionGauge <= param.curActionGauge );
 
-            TMPMaxHPValue.text          = $"{param.MaxHP}";
-            TMPCurHPValue.text          = $"{param.CurHP}";
-            TMPAtkValue.text            = $"{param.Atk}";
-            TMPDefValue.text            = $"{param.Def}";
-            TMPAtkNumValue.text         = $"x {skillParam.AtkNum}";
-            TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
+            TMPMaxHPValue.text = $"{param.MaxHP}";
+            TMPCurHPValue.text = $"{param.CurHP}";
+            TMPAtkValue.text = $"{param.Atk}";
+            TMPDefValue.text = $"{param.Def}";
+            TMPAtkNumValue.text = $"x {skillParam.AtkNum}";
+            TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
@@ -151,7 +185,7 @@ namespace Frontier
         /// テキストの色を反映します
         /// </summary>
         /// <param name="changeHP">HPの変動量</param>
-        void ApplyTextColor( int changeHP )
+        private void ApplyTextColor( int changeHP )
         {
             if( changeHP < 0 )
             {
@@ -163,62 +197,15 @@ namespace Frontier
             }
         }
 
-        /// <summary>
-        /// 初期化します
-        /// </summary>
-        public void Init()
+        override public void Setup()
         {
-            var layerToName         = LayerMask.LayerToName( _layerMaskIndex );
-            TargetImage.texture     = _targetTexture;
+            LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
+            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
 
-            _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, ref TargetImage );
-
-            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            foreach( var item in SkillBoxes )
             {
-                var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( ActGaugeElemImage.gameObject, true );
-                _actGaugeElems.Add( elem );
-                elem.gameObject.SetActive( false );
-                elem.transform.SetParent( PanelTransform, false );
+                item.Setup();
             }
-        }
-
-        /// <summary>
-        /// 差分HP用テキストを返します
-        /// </summary>
-        /// <returns>差分HP用テキスト</returns>
-        public TextMeshProUGUI GetDiffHPText()
-        {
-            return TMPDiffHPValue;
-        }
-
-        /// <summary>
-        /// 指定のスキルボックスUIを取得します
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns>指定値</returns>
-        public SkillBoxUI GetSkillBox( int index )
-        {
-            Debug.Assert( 0 <= index && index < Constants.EQUIPABLE_SKILL_MAX_NUM );
-
-            return SkillBoxes[index];
-        }
-
-        /// <summary>
-        /// 表示するキャラクターを設定します
-        /// </summary>
-        /// <param name="character">表示キャラクター</param>
-        public void AssignCharacter( Character character, int layerMaskIndex )
-        {
-            // 以前ディスプレイに設定していたキャラクターのレイヤーマスクを元に戻す
-            if( null != _character )
-            {
-                _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
-            }
-
-            _character = character;
-
-            _character.gameObject.SetActive( true );
-            _characterCamera.AssignCharacter( character, layerMaskIndex );
         }
     }
 }

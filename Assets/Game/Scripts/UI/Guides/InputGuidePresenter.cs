@@ -8,7 +8,7 @@ using static InputCode;
 /// <summary>
 /// 入力ガイド関連の表示制御を行います
 /// </summary>using System.Collections.ObjectModel;
-public sealed class InputGuidePresenter : MonoBehaviour, IUiMonoBehaviour
+public sealed class InputGuidePresenter : UiMonoBehaviour
 {
     /// <summary>
     /// フェード中の各モード
@@ -87,11 +87,6 @@ public sealed class InputGuidePresenter : MonoBehaviour, IUiMonoBehaviour
 #else
 #endif
     };
-
-    public void Setup()
-    {
-
-    }
 
     void Awake()
     {
@@ -340,5 +335,10 @@ public sealed class InputGuidePresenter : MonoBehaviour, IUiMonoBehaviour
         }
 
         return taregtWidth;
+    }
+
+    override public void Setup()
+    {
+
     }
 }

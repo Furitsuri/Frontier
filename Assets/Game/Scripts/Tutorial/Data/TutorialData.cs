@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Frontier.Tutorial;
 
 [CreateAssetMenu(fileName = "TutorialData", menuName = "ScriptableObjects/Tutorial/TutorialData")]
 public class TutorialData : ScriptableObject
 {
     [SerializeField]
-    private TutorialFacade.TriggerType _triggerType; // チュートリアルのトリガータイプ
+    private TriggerType _triggerType; // チュートリアルのトリガータイプ
 
     [SerializeField]
     private string _title;         // チュートリアルのタイトル
@@ -16,7 +17,7 @@ public class TutorialData : ScriptableObject
     [SerializeField]
     private List<TutorialElement> _tutorialElements = new List<TutorialElement>();
 
-    public TutorialFacade.TriggerType TriggerType => _triggerType;
+    public TriggerType TriggerType => _triggerType;
 
     public int GetFlagBitIdx => flagBitIndex;
 

@@ -2303,7 +2303,7 @@ GameObject:
   - component: {fileID: 692026474}
   - component: {fileID: 692026476}
   - component: {fileID: 692026475}
-  - component: {fileID: 692026477}
+  - component: {fileID: 692026478}
   m_Layer: 5
   m_Name: Tutorial
   m_TagString: Untagged
@@ -2374,7 +2374,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 692026473}
   m_CullTransparentMesh: 1
---- !u!114 &692026477
+--- !u!114 &692026478
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2383,7 +2383,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 692026473}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93dca7037bbd9884d9bba0b869b58a72, type: 3}
+  m_Script: {fileID: 11500000, guid: 18a14437c6ca31d4a919451a93302a57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _headline: {fileID: 658655938}
@@ -8224,7 +8224,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   InputGuideView: {fileID: 1254619100373493866}
-  TutorialView: {fileID: 692026477}
+  TutorialView: {fileID: 692026478}
   CharacterStatusView: {fileID: 1567326097}
   ToolTipView: {fileID: 424975150}
 --- !u!224 &731704465985593903

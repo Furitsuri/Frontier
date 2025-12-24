@@ -9,7 +9,7 @@ using Frontier.Entities;
 
 namespace Frontier
 {
-    public class SkillBoxUI : MonoBehaviour, IUiMonoBehaviour
+    public class SkillBoxUI : UiMonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI TMPSkillName;
         [SerializeField] private RectTransform PanelTransform;
@@ -20,25 +20,6 @@ namespace Frontier
         private List<RawImage> _actGaugeElems;
         private Image _uiImage;
         private Color _initialColor;
-
-        public void Setup()
-        {
-            LazyInject.GetOrCreate( ref _actGaugeElems, () => new List<RawImage>( Constants.ACTION_GAUGE_MAX ) );
-            LazyInject.GetOrCreate( ref _uiImage, () => GetComponent<Image>() );
-            LazyInject.GetOrCreate( ref _imageFlicker, () => new ColorFlicker<ImageColorAdapter>( new ImageColorAdapter( _uiImage ) ) );
-
-            _initialColor = _uiImage.color;
-
-            if( 0 < _actGaugeElems.Count ) { return; }
-
-            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
-            {
-                var elem = Instantiate( ActGaugeElemImage );
-                _actGaugeElems.Add( elem );
-                elem.gameObject.SetActive( false );
-                elem.transform.SetParent( PanelTransform, false );
-            }
-        }
 
         void Update()
         {
@@ -121,6 +102,25 @@ namespace Frontier
 
                 elem.gameObject.SetActive( i < cost );
                 elem.color = Color.green;
+            }
+        }
+
+        override public void Setup()
+        {
+            LazyInject.GetOrCreate( ref _actGaugeElems, () => new List<RawImage>( Constants.ACTION_GAUGE_MAX ) );
+            LazyInject.GetOrCreate( ref _uiImage, () => GetComponent<Image>() );
+            LazyInject.GetOrCreate( ref _imageFlicker, () => new ColorFlicker<ImageColorAdapter>( new ImageColorAdapter( _uiImage ) ) );
+
+            _initialColor = _uiImage.color;
+
+            if( 0 < _actGaugeElems.Count ) { return; }
+
+            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            {
+                var elem = Instantiate( ActGaugeElemImage );
+                _actGaugeElems.Add( elem );
+                elem.gameObject.SetActive( false );
+                elem.transform.SetParent( PanelTransform, false );
             }
         }
     }
