@@ -8,7 +8,7 @@ using UnityEngine;
 /// ガイドはスプライトと説明文で構成されており、ガイド自体の登録や描画幅などを決定します。
 /// ガイド自体の座標はスクリプトからではなくInputGuidePresenterのInspectorでHorizontal Layout Groupを用いて設定しています。
 /// </summary>
-public class InputGuideUI : MonoBehaviour
+public class InputGuideUI : UiMonoBehaviour
 {
     /// <summary>
     /// キーのアイコンとその説明文の構造体
@@ -59,24 +59,6 @@ public class InputGuideUI : MonoBehaviour
     private RectTransform _rectTransform;
     // 子のオブジェクト
     private GameObject[] _childrenObjects;
-
-    void Awake()
-    {
-        // 子のオブジェクトを取得
-        _childrenObjects = new GameObject[(int)ChildIndex.NUM];
-        for (int i = 0; i < (int)ChildIndex.NUM; ++i)
-        {
-            Transform childTransform = transform.GetChild(i);
-
-            Debug.Assert(childTransform != null, $"Not Found : Child of \"{Enum.GetValues(typeof(ChildIndex)).GetValue(i).ToString()}\".");
-
-            _childrenObjects[i] = childTransform.gameObject;
-        }
-
-        _rectTransform = gameObject.GetComponent<RectTransform>();
-
-        Debug.Assert(_rectTransform != null, "GetComponent of \"RectTransform\" failed.");
-    }
 
     void Update()
     {
@@ -180,5 +162,25 @@ public class InputGuideUI : MonoBehaviour
 
         var guideWidth = textPosX + textRectTransform.sizeDelta.x;
         _rectTransform.sizeDelta = new Vector2(guideWidth, _rectTransform.sizeDelta.y);
+    }
+
+    public override void Setup()
+    {
+        base.Setup();
+
+        // 子のオブジェクトを取得
+        _childrenObjects = new GameObject[( int ) ChildIndex.NUM];
+        for( int i = 0; i < ( int ) ChildIndex.NUM; ++i )
+        {
+            Transform childTransform = transform.GetChild( i );
+
+            Debug.Assert( childTransform != null, $"Not Found : Child of \"{Enum.GetValues( typeof( ChildIndex ) ).GetValue( i ).ToString()}\"." );
+
+            _childrenObjects[i] = childTransform.gameObject;
+        }
+
+        _rectTransform = gameObject.GetComponent<RectTransform>();
+
+        Debug.Assert( _rectTransform != null, "GetComponent of \"RectTransform\" failed." );
     }
 }

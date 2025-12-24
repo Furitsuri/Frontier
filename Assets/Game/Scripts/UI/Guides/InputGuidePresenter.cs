@@ -20,10 +20,10 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
     }
 
     [Header( "ガイドUIのプレハブ" )]
-    [SerializeField] public GameObject GuideUIPrefab;
+    [SerializeField] private GameObject GuideUIPrefab;
 
     [Header( "背景リサイズ開始から終了までの時間" )]
-    [SerializeField] public float ResizeTime = 0.33f;
+    [SerializeField] private float ResizeTime = 0.33f;
 
     [Header( "ガイドアイコンの描画優先度" )]
     [SerializeField] private int _sortingOrder = 0;
@@ -142,8 +142,10 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
         for( int i = 0; i < _inputCodes.Count; ++i )
         {
             var code = _inputCodes[i];
+
             InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( GuideUIPrefab, gameObject, true );
-            if( guideUi == null ) continue;
+            if( guideUi == null ) { continue; }
+            guideUi.Setup();
 
             InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide( code.Icons, code.Explanation );
             guideUi.Register( _sprites, guide );
