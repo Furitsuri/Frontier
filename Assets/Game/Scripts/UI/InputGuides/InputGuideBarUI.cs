@@ -28,11 +28,6 @@ public class InputGuideBarUI : UiMonoBehaviour
     public HorizontalLayoutGroup LayoutGroup => _layoutGrp;
     public GameObject GuideUIPrefab => _guideUIPrefab;
 
-    public void Init()
-    {
-        gameObject.SetActive( true );
-    }
-
     public void SetWidth( float nextWidth )
     {
         _rectTransform.sizeDelta = new Vector2( nextWidth, _rectTransform.sizeDelta.y );

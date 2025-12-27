@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using UnityEngine;
-using UnityEngine.UI;
 using Zenject;
-
-
 using static InputCode;
 
 /// <summary>
@@ -29,8 +26,6 @@ public sealed class InputGuidePresenter
     private float _prevFadeGuideBarWidth    = 0f;               // ガイドが遷移する以前の背景の幅
     private float _targetGuideBarWidth      = 0f;               // 更新する際に目標とする背景の幅
     private float _fadeTime                 = 0f;               // 現在の時間
-
-    
     private Sprite[] _sprites;                                  // ガイド上に表示可能なスプライト群
     private InputGuideBarUI _inputGuideBar = null;              // ガイドバーUI
     private InputGuideUI[] _guideUiArrray;                      // 表示するガイドUIの配列
@@ -85,7 +80,6 @@ public sealed class InputGuidePresenter
 
         _inputCodes = Array.AsReadOnly( inputCodes );
         _inputGuideBar.Setup();
-        _inputGuideBar.Init();
         LoadSprites();
         InitGuideUi();
     }
@@ -110,6 +104,7 @@ public sealed class InputGuidePresenter
         }
 
         TransitFadeMode();  // フェード状態の遷移
+        _inputGuideBar.gameObject.SetActive( EvaluateActiveGuideUiCount() > 0 ); // ガイドUIが1つでもあればガイドバーを表示
     }
 
     /// <summary>
