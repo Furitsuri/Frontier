@@ -28,10 +28,10 @@ namespace Frontier
 
         public void Setup()
         {
-            InputGuideView.Setup();
-            TutorialView.Setup();
-            CharacterStatusView.Setup();
-            ToolTipView.Setup();
+            InputGuideView?.Setup();
+            TutorialView?.Setup();
+            CharacterStatusView?.Setup();
+            ToolTipView?.Setup();
         }
     }
 }
