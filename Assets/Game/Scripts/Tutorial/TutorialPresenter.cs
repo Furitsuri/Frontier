@@ -17,9 +17,7 @@ public class TutorialPresenter
     public void Init()
     {
         _tutorialUI = _uiSystem.GeneralUi.TutorialView;
-
-        // 初期状態では非表示にする
-        _tutorialUI.gameObject.SetActive( false );
+        _tutorialUI.Setup();
 
         // 前ページ用Imageを生成し、向き、位置を初期化
         _tutorialUI.AssiginPrevArrowImage( ( originalObj, parentObj ) =>

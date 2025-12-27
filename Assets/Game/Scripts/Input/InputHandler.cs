@@ -11,32 +11,27 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     private enum InputSource
     {
-        None        = -1,
+        None = -1,
         Keyboard,
         GamePad,
         TouchPanel,
     }
 
-    // 入力元デバイス
-    private InputSource _inputSource          = InputSource.None;
-    // 入力インターフェース
-    private IInput _iInput                      = null;
-    // 入力ガイド表示
-    private InputGuidePresenter _inputGuideView = null;
-    // InputFacade内のInputCodeの参照値
-    private ReadOnlyCollection<InputCode> _inputCodes;
-    // ガイドアイコン毎に対応した入力関数
-    private IGetInputBase[] _inputForIcons;
+    private InputSource _inputSource = InputSource.None;    // 入力元デバイス
+    private IInput _iInput = null;                          // 入力インターフェース
+    private IGetInputBase[] _inputForIcons;                 // ガイドアイコン毎に対応した入力関数
+    private InputGuidePresenter _inputGuideView = null;     // 入力ガイド表示
+    private ReadOnlyCollection<InputCode> _inputCodes;      // InputFacade内のInputCodeの参照値
 
     /// <summary>
     /// 初期化します
     /// </summary>
     /// <param name="inputGuidePresenter">入力ガイド表示クラス</param>
     /// <param name="inputCodes">入力情報コード</param>
-    public void Init(InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes)
+    public void Init( InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes )
     {
         _inputGuideView = inputGuidePresenter;
-        _inputCodes     = Array.AsReadOnly(inputCodes);
+        _inputCodes = Array.AsReadOnly( inputCodes );
 
         InitializeInputSource();
         InitializeInputForGuideIcon();
@@ -46,7 +41,7 @@ public class InputHandler : MonoBehaviour
     /// 入力デバイスを切り替えます
     /// </summary>
     /// <param name="iInput">切替先の入力デバイス</param>
-    private void SwitchInputDevice(IInput iInput)
+    private void SwitchInputDevice( IInput iInput )
     {
         _iInput = iInput;
     }
@@ -56,6 +51,8 @@ public class InputHandler : MonoBehaviour
     {
         UpdateInputDevice();
         UpdateInputCodes();
+
+        _inputGuideView.Update();
     }
 
     /// <summary>
@@ -63,22 +60,22 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     private void InitializeInputForGuideIcon()
     {
-        _inputForIcons                                    = new IGetInputBase[(int)GuideIcon.NUM_MAX];
-        _inputForIcons[(int)GuideIcon.ALL_CURSOR]         = new GetDirectionalInput(_iInput.GetDirectionalPressed);
-        _inputForIcons[(int)GuideIcon.VERTICAL_CURSOR]    = new GetDirectionalInput(_iInput.GetDirectionalPressed);
-        _inputForIcons[(int)GuideIcon.HORIZONTAL_CURSOR]  = new GetDirectionalInput(_iInput.GetDirectionalPressed);
-        _inputForIcons[(int)GuideIcon.CONFIRM]            = new GetBooleanInput(_iInput.IsConfirmPressed);
-        _inputForIcons[(int)GuideIcon.CANCEL]             = new GetBooleanInput(_iInput.IsCancelPressed);
-        _inputForIcons[(int)GuideIcon.TOOL]               = new GetBooleanInput(_iInput.IsToolPressed);
-        _inputForIcons[(int)GuideIcon.INFO]               = new GetBooleanInput(_iInput.IsInfoPressed);
-        _inputForIcons[(int)GuideIcon.OPT1]               = new GetBooleanInput(_iInput.IsOptions1Pressed);
-        _inputForIcons[(int)GuideIcon.OPT2]               = new GetBooleanInput(_iInput.IsOptions2Pressed);
-        _inputForIcons[(int)GuideIcon.SUB1]               = new GetBooleanInput(_iInput.IsSub1Pressed);
-        _inputForIcons[(int)GuideIcon.SUB2]               = new GetBooleanInput(_iInput.IsSub2Pressed);
-        _inputForIcons[(int)GuideIcon.SUB3]               = new GetBooleanInput(_iInput.IsSub3Pressed);
-        _inputForIcons[(int)GuideIcon.SUB4]               = new GetBooleanInput(_iInput.IsSub4Pressed);
+        _inputForIcons = new IGetInputBase[( int ) GuideIcon.NUM_MAX];
+        _inputForIcons[( int ) GuideIcon.ALL_CURSOR] = new GetDirectionalInput( _iInput.GetDirectionalPressed );
+        _inputForIcons[( int ) GuideIcon.VERTICAL_CURSOR] = new GetDirectionalInput( _iInput.GetDirectionalPressed );
+        _inputForIcons[( int ) GuideIcon.HORIZONTAL_CURSOR] = new GetDirectionalInput( _iInput.GetDirectionalPressed );
+        _inputForIcons[( int ) GuideIcon.CONFIRM] = new GetBooleanInput( _iInput.IsConfirmPressed );
+        _inputForIcons[( int ) GuideIcon.CANCEL] = new GetBooleanInput( _iInput.IsCancelPressed );
+        _inputForIcons[( int ) GuideIcon.TOOL] = new GetBooleanInput( _iInput.IsToolPressed );
+        _inputForIcons[( int ) GuideIcon.INFO] = new GetBooleanInput( _iInput.IsInfoPressed );
+        _inputForIcons[( int ) GuideIcon.OPT1] = new GetBooleanInput( _iInput.IsOptions1Pressed );
+        _inputForIcons[( int ) GuideIcon.OPT2] = new GetBooleanInput( _iInput.IsOptions2Pressed );
+        _inputForIcons[( int ) GuideIcon.SUB1] = new GetBooleanInput( _iInput.IsSub1Pressed );
+        _inputForIcons[( int ) GuideIcon.SUB2] = new GetBooleanInput( _iInput.IsSub2Pressed );
+        _inputForIcons[( int ) GuideIcon.SUB3] = new GetBooleanInput( _iInput.IsSub3Pressed );
+        _inputForIcons[( int ) GuideIcon.SUB4] = new GetBooleanInput( _iInput.IsSub4Pressed );
 #if UNITY_EDITOR
-        _inputForIcons[(int)GuideIcon.DEBUG_MENU]         = new GetBooleanInput(_iInput.IsDebugMenuPressed);
+        _inputForIcons[( int ) GuideIcon.DEBUG_MENU] = new GetBooleanInput( _iInput.IsDebugMenuPressed );
 #endif  // UNITY_EDITOR
     }
 
@@ -123,23 +120,23 @@ public class InputHandler : MonoBehaviour
         {
             _inputSource = InputSource.Keyboard;
             _iInput = new KeyboardInput();
-            SwitchInputDevice(_iInput);
+            SwitchInputDevice( _iInput );
         }
-        else if ( _inputSource != InputSource.GamePad &&
+        else if( _inputSource != InputSource.GamePad &&
             Gamepad.current != null &&
             Gamepad.current.buttonSouth.wasPressedThisFrame )
         {
             _inputSource = InputSource.GamePad;
             _iInput = new PadInput();
-            SwitchInputDevice(_iInput);
+            SwitchInputDevice( _iInput );
         }
         else if( _inputSource != InputSource.TouchPanel &&
             Touchscreen.current != null &&
             Touchscreen.current.primaryTouch.press.isPressed )
         {
             _inputSource = InputSource.TouchPanel;
-            _iInput= new TouchInput();
-            SwitchInputDevice(_iInput);
+            _iInput = new TouchInput();
+            SwitchInputDevice( _iInput );
         }
     }
 
@@ -152,15 +149,15 @@ public class InputHandler : MonoBehaviour
         foreach( var code in _inputCodes )
         {
             // 有効判定コールバックが登録されていない or インターバル時間が過ぎていない場合は無効
-            if ( code.EnableCbs == null || !code.IsIntervalTimePassed() ) { continue; }
+            if( code.EnableCbs == null || !code.IsIntervalTimePassed() ) { continue; }
 
             for( int i = 0; i < code.Icons.Length; ++i )
             {
                 bool enable = ( code.EnableCbs[i] != null && code.EnableCbs[i]() );
-                if ( !enable ) { continue; }
+                if( !enable ) { continue; }
 
-                var input = _inputForIcons[(int)code.Icons[i]].GetInput();
-                if ( code.ExecuteAcceptInputCallback( input, i ) ) { break; }   // 入力があった場合は必ずブレークする
+                var input = _inputForIcons[( int ) code.Icons[i]].GetInput();
+                if( code.ExecuteAcceptInputCallback( input, i ) ) { break; }   // 入力があった場合は必ずブレークする
             }
         }
     }

@@ -3,12 +3,14 @@ using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+
+
 using static InputCode;
 
 /// <summary>
 /// 入力ガイド関連の表示制御を行います
-/// </summary>using System.Collections.ObjectModel;
-public sealed class InputGuidePresenter : UiMonoBehaviour
+/// </summary>
+public sealed class InputGuidePresenter
 {
     /// <summary>
     /// フェード中の各モード
@@ -19,39 +21,21 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
         FADE,
     }
 
-    [Header( "ガイドUIのプレハブ" )]
-    [SerializeField] private GameObject GuideUIPrefab;
-
-    [Header( "背景リサイズ開始から終了までの時間" )]
-    [SerializeField] private float ResizeTime = 0.33f;
-
-    [Header( "ガイドアイコンの描画優先度" )]
-    [SerializeField] private int _sortingOrder = 0;
-
+    [Inject] private IUiSystem _uiSystem                = null;
     [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-    // キーガイドバーの入出状態
-    private FadeMode _fadeMode = FadeMode.NEUTRAL;
-    // 現在の背景の幅
-    private float _currentBackGroundWidth = 0f;
-    // ガイドが遷移する以前の背景の幅
-    private float _prevTransitBackGroundWidth = 0f;
-    // 更新する際に目標とする背景の幅
-    private float _targetBackGroundWidth = 0f;
-    // 現在の時間
-    private float _fadeTime = 0f;
-    // ガイド上に表示可能なスプライト群
-    private Sprite[] _sprites;
-    // 背景に該当するTransform
-    private RectTransform _rectTransform;
-    // ガイドの位置調整に用いるレイアウトグループ
-    private HorizontalLayoutGroup _layoutGrp;
-    // 表示するガイドUIの配列
-    private InputGuideUI[] _guideUiArrray;
-    // InputFacadeで管理している入力コード情報の参照
-    private ReadOnlyCollection<InputCode> _inputCodes;
-    // 各スプライトファイル名の末尾の番号
-    private static readonly string[] spriteTailNoString =
+    private FadeMode _fadeMode              = FadeMode.NEUTRAL; // キーガイドバーの入出状態
+    private float _currentGuideBarWidth     = 0f;               // 現在の背景の幅
+    private float _prevFadeGuideBarWidth    = 0f;               // ガイドが遷移する以前の背景の幅
+    private float _targetGuideBarWidth      = 0f;               // 更新する際に目標とする背景の幅
+    private float _fadeTime                 = 0f;               // 現在の時間
+
+    
+    private Sprite[] _sprites;                                  // ガイド上に表示可能なスプライト群
+    private InputGuideBarUI _inputGuideBar = null;              // ガイドバーUI
+    private InputGuideUI[] _guideUiArrray;                      // 表示するガイドUIの配列
+    private ReadOnlyCollection<InputCode> _inputCodes;          // InputFacadeで管理している入力コード情報の参照
+    private static readonly string[] spriteTailNoString =       // 各スプライトファイル名の末尾の番号
     // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
     {
 #if UNITY_EDITOR
@@ -88,34 +72,28 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
 #endif
     };
 
-    void Awake()
-    {
-        gameObject.SetActive( true );
-    }
-
-    void Update()
-    {
-        UpdateFadeUI();
-        UpdateActiveGuideUi();
-    }
-
     /// <summary>
     /// 初期化します
     /// </summary>
     /// <param name="inputCodes">入力可能となる情報</param>
     public void Init( InputCode[] inputCodes )
     {
-        _inputCodes = Array.AsReadOnly( inputCodes );
-
         Debug.Assert( spriteTailNoString.Length == ( int ) GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。" );
 
+        LazyInject.GetOrCreate( ref _inputGuideBar, () => _uiSystem.GeneralUi.InputGuideView );
         LazyInject.GetOrCreate( ref _guideUiArrray, () => new InputGuideUI[( int ) GuideIcon.NUM_MAX] );
-        LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
-        LazyInject.GetOrCreate( ref _layoutGrp, () => GetComponent<HorizontalLayoutGroup>() );
 
+        _inputCodes = Array.AsReadOnly( inputCodes );
+        _inputGuideBar.Setup();
+        _inputGuideBar.Init();
         LoadSprites();
-
         InitGuideUi();
+    }
+
+    public void Update()
+    {
+        UpdateFadeUI();
+        UpdateActiveGuideUi();
     }
 
     /// <summary>
@@ -143,15 +121,16 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
         {
             var code = _inputCodes[i];
 
-            InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( GuideUIPrefab, gameObject, true );
+            InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( _inputGuideBar.GuideUIPrefab, _inputGuideBar.gameObject, true );
             if( guideUi == null ) { continue; }
             guideUi.Setup();
 
             InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide( code.Icons, code.Explanation );
             guideUi.Register( _sprites, guide );
+
             _guideUiArrray[i] = guideUi;
             _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
-            _guideUiArrray[i].SetSpriteSortingOrder( _sortingOrder );
+            _guideUiArrray[i].SetSpriteSortingOrder( _inputGuideBar.SortingOrder );
         }
     }
 
@@ -167,15 +146,15 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
         {
             case FadeMode.FADE:
                 _fadeTime += DeltaTimeProvider.DeltaTime;
-                _currentBackGroundWidth = Mathf.Lerp( _prevTransitBackGroundWidth, _targetBackGroundWidth, _fadeTime / ResizeTime );
+                _currentGuideBarWidth = Mathf.Lerp( _prevFadeGuideBarWidth, _targetGuideBarWidth, _fadeTime / _inputGuideBar.ResizeTime );
 
-                if( Mathf.Abs( _targetBackGroundWidth - _currentBackGroundWidth ) < Mathf.Epsilon )
+                if( Mathf.Abs( _targetGuideBarWidth - _currentGuideBarWidth ) < Mathf.Epsilon )
                 {
-                    _currentBackGroundWidth = _targetBackGroundWidth;
+                    _currentGuideBarWidth = _targetGuideBarWidth;
                     completeUpdate = true;
                 }
 
-                _rectTransform.sizeDelta = new Vector2( _currentBackGroundWidth, _rectTransform.sizeDelta.y );
+                _inputGuideBar.SetWidth( _currentGuideBarWidth );
 
                 break;
 
@@ -186,7 +165,7 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
 
         if( completeUpdate )
         {
-            _prevTransitBackGroundWidth = _targetBackGroundWidth;
+            _prevFadeGuideBarWidth = _targetGuideBarWidth;
             _fadeMode = FadeMode.NEUTRAL;
             _fadeTime = 0f;
         }
@@ -201,9 +180,9 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
 
         for( int i = 0; i < _inputCodes.Count; ++i )
         {
-            bool isActive = false;
-            var code = _inputCodes[i];
-            var guideUi = _guideUiArrray[i];
+            bool isActive   = false;
+            var code        = _inputCodes[i];
+            var guideUi     = _guideUiArrray[i];
 
             if( code.EnableCbs != null )
             {
@@ -237,10 +216,9 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
     private void TransitFadeMode()
     {
         _fadeMode = FadeMode.FADE;
-        // 現在のガイドの登録内容に合わせ、ガイドを納める背景の幅を求める
-        _targetBackGroundWidth = CalcurateBackGroundWidth();
-        // フェード前の背景の幅を保存
-        _prevTransitBackGroundWidth = _rectTransform.sizeDelta.x;
+        
+        _targetGuideBarWidth    = CalcurateGuideBarWidth();     // 現在のガイドの登録内容に合わせ、ガイドを納める背景の幅を求める
+        _prevFadeGuideBarWidth  = _inputGuideBar.GetWidth();    // フェード前の背景の幅を保存
     }
 
     /// <summary>
@@ -316,13 +294,13 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
     /// 入力ガイドバーの背景の幅を更新します
     /// </summary>
     /// <returns>更新後のガイドバーの幅</returns>
-    private float CalcurateBackGroundWidth()
+    private float CalcurateGuideBarWidth()
     {
         // レイアウトの更新を行ってから計算する
         Canvas.ForceUpdateCanvases();
 
         // レイアウトグループの設定を反映
-        var taregtWidth = _layoutGrp.padding.left + _layoutGrp.padding.right + _layoutGrp.spacing * ( EvaluateActiveGuideUiCount() - 1 );
+        var taregtWidth = _inputGuideBar.LayoutGroup.padding.left + _inputGuideBar.LayoutGroup.padding.right + _inputGuideBar.LayoutGroup.spacing * ( EvaluateActiveGuideUiCount() - 1 );
 
         // ガイドUIのそれぞれの幅を加算
         foreach( var guideUi in _guideUiArrray )
@@ -337,10 +315,5 @@ public sealed class InputGuidePresenter : UiMonoBehaviour
         }
 
         return taregtWidth;
-    }
-
-    override public void Setup()
-    {
-
     }
 }

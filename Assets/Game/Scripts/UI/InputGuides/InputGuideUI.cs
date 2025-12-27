@@ -15,20 +15,18 @@ public class InputGuideUI : UiMonoBehaviour
     /// </summary>
     public struct InputGuide
     {
-        // キーアイコン
-        public GuideIcon[] _icons;
-        // アイコンに対する説明文
-        public InputCodeStringWrapper _explWrapper;
+        public GuideIcon[] _icons;                  // キーアイコン
+        public InputCodeStringWrapper _explWrapper; // アイコンに対する説明文
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="icon">ガイドスプライトのアイコンタイプ</param>
         /// <param name="explanation">キーに対する説明文</param>
-        public InputGuide(GuideIcon[] icons, InputCodeStringWrapper explWrapper )
+        public InputGuide( GuideIcon[] icons, InputCodeStringWrapper explWrapper )
         {
-            _icons          = icons;
-            _explWrapper    = explWrapper;
+            _icons = icons;
+            _explWrapper = explWrapper;
         }
     }
 
@@ -45,20 +43,15 @@ public class InputGuideUI : UiMonoBehaviour
         NUM,
     }
 
-    [SerializeField]
-    [Header("ガイドUIスプライト")]
-    private List<SpriteRenderer> GuideSpriteRenderers = new List<SpriteRenderer>();
+    [Header( "ガイドUIスプライト" )]
+    [SerializeField] private List<SpriteRenderer> GuideSpriteRenderers = new List<SpriteRenderer>();
 
-    [SerializeField]
-    [Header("説明テキスト")]
-    private TextMeshProUGUI GuideExplanation;
+    [Header( "説明テキスト" )]
+    [SerializeField] private TextMeshProUGUI GuideExplanation;
 
-    // 値保持
-    public InputGuide InputGuideValue { get; private set; } 
-    // 入力ガイドの枠UI
-    private RectTransform _rectTransform;
-    // 子のオブジェクト
-    private GameObject[] _childrenObjects;
+    public InputGuide InputGuideValue { get; private set; }     // 値保持
+    private RectTransform _rectTransform;                       // 入力ガイドの枠UI
+    private GameObject[] _childrenObjects;                      // 子のオブジェクト
 
     void Update()
     {
@@ -70,26 +63,26 @@ public class InputGuideUI : UiMonoBehaviour
     /// <param name="sprites">参照するスプライト配列</param>
     /// <param name="guide">このUIに設定するガイド情報</param>
     /// </summary>
-    public void Register(Sprite[] sprites, InputGuide guide)
+    public void Register( Sprite[] sprites, InputGuide guide )
     {
         InputGuideValue = guide;
-        for( int i = 0; i < InputGuideValue._icons.Length; ++i)
+        for( int i = 0; i < InputGuideValue._icons.Length; ++i )
         {
             // プレハブ上ではGuideSpriteRendererに対して1つのスプライトしか設定していないため、必要に応じてListに要素を加算する
-            if(GuideSpriteRenderers.Count <= i)
+            if( GuideSpriteRenderers.Count <= i )
             {
-                SpriteRenderer newSpriteRenderer = Instantiate(GuideSpriteRenderers[0]);
-                newSpriteRenderer.transform.SetParent(this.gameObject.transform, false);
-                newSpriteRenderer.transform.SetSiblingIndex(i);
+                SpriteRenderer newSpriteRenderer = Instantiate( GuideSpriteRenderers[0] );
+                newSpriteRenderer.transform.SetParent( this.gameObject.transform, false );
+                newSpriteRenderer.transform.SetSiblingIndex( i );
 
-                GuideSpriteRenderers.Add(newSpriteRenderer);
+                GuideSpriteRenderers.Add( newSpriteRenderer );
             }
-            GuideSpriteRenderers[i].sprite = sprites[(int)InputGuideValue._icons[i]];
+            GuideSpriteRenderers[i].sprite = sprites[( int ) InputGuideValue._icons[i]];
         }
-        GuideExplanation.text       = InputGuideValue._explWrapper.Explanation;
+        GuideExplanation.text = InputGuideValue._explWrapper.Explanation;
 
         // Z軸の位置を0に設定, スケール値を1に設定
-        transform.localPosition     = new Vector3(transform.localPosition.x, transform.localPosition.y, 0f);
+        transform.localPosition     = new Vector3( transform.localPosition.x, transform.localPosition.y, 0f );
         _rectTransform.localScale   = Vector3.one;
 
         InitTextMeshSetting();  // 説明文の文字の大きさなどの設定を初期化
@@ -100,17 +93,18 @@ public class InputGuideUI : UiMonoBehaviour
     /// スプライトの描画優先度を設定します
     /// </summary>
     /// <param name="order">優先度値</param>
-    public void SetSpriteSortingOrder(int order)
-    {   if (GuideSpriteRenderers != null)
+    public void SetSpriteSortingOrder( int order )
+    {
+        if( GuideSpriteRenderers != null )
         {
-            for (int i = 0; i < GuideSpriteRenderers.Count; ++i)
+            for( int i = 0; i < GuideSpriteRenderers.Count; ++i )
             {
                 GuideSpriteRenderers[i].sortingOrder = order;
             }
         }
         else
         {
-            Debug.LogError("GuideSpriteRenderer is not assigned in InputGuideUI.");
+            Debug.LogError( "GuideSpriteRenderer is not assigned in InputGuideUI." );
         }
     }
 
@@ -139,11 +133,11 @@ public class InputGuideUI : UiMonoBehaviour
     /// </summary>
     private void InitTextMeshSetting()
     {
-        GuideExplanation.enableAutoSizing   = true;
-        GuideExplanation.fontSizeMin        = Constants.GUIDE_TEXT_MIN_SIZE;
-        GuideExplanation.fontSizeMax        = Constants.GUIDE_TEXT_MAX_SIZE;
+        GuideExplanation.enableAutoSizing = true;
+        GuideExplanation.fontSizeMin = Constants.GUIDE_TEXT_MIN_SIZE;
+        GuideExplanation.fontSizeMax = Constants.GUIDE_TEXT_MAX_SIZE;
         GuideExplanation.enableWordWrapping = true;
-        GuideExplanation.overflowMode       = TextOverflowModes.Truncate;
+        GuideExplanation.overflowMode = TextOverflowModes.Truncate;
     }
 
     /// <summary>
@@ -151,17 +145,17 @@ public class InputGuideUI : UiMonoBehaviour
     /// </summary>
     private void AdjustWidth()
     {
-        var spriteRectTransform = _childrenObjects[(int)ChildIndex.SPRITE].GetComponent<RectTransform>();
-        Debug.Assert(spriteRectTransform != null, "GetComponent of \"RectTransform in sprite\" failed.");
+        var spriteRectTransform = _childrenObjects[( int ) ChildIndex.SPRITE].GetComponent<RectTransform>();
+        Debug.Assert( spriteRectTransform != null, "GetComponent of \"RectTransform in sprite\" failed." );
         var textPosX = spriteRectTransform.anchoredPosition.x + 0.5f * spriteRectTransform.rect.width * spriteRectTransform.localScale.x + Constants.SPRITE_TEXT_SPACING_ON_KEY_GUIDE;
 
-        var textRectTransform = _childrenObjects[(int)ChildIndex.TEXT].GetComponent<RectTransform>();
-        Debug.Assert(textRectTransform != null, "GetComponent of \"RectTransform in text\" failed.");
-        textRectTransform.anchoredPosition = new Vector2(textPosX, 0);
-        textRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, GuideExplanation.preferredWidth);
+        var textRectTransform = _childrenObjects[( int ) ChildIndex.TEXT].GetComponent<RectTransform>();
+        Debug.Assert( textRectTransform != null, "GetComponent of \"RectTransform in text\" failed." );
+        textRectTransform.anchoredPosition = new Vector2( textPosX, 0 );
+        textRectTransform.SetSizeWithCurrentAnchors( RectTransform.Axis.Horizontal, GuideExplanation.preferredWidth );
 
         var guideWidth = textPosX + textRectTransform.sizeDelta.x;
-        _rectTransform.sizeDelta = new Vector2(guideWidth, _rectTransform.sizeDelta.y);
+        _rectTransform.sizeDelta = new Vector2( guideWidth, _rectTransform.sizeDelta.y );
     }
 
     public override void Setup()
