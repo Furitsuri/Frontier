@@ -5,7 +5,7 @@ using Zenject;
 using static Constants;
 using static Frontier.CharacterParameterUI;
 
-public class DeploymentCharacterSelectUI : MonoBehaviour
+public class DeploymentCharacterSelectUI : UiMonoBehaviour
 {
     [Header( "配置候補キャラクター表示洋プレハブ" )]
     [SerializeField] private DeploymentCharacterDisplay _deploymentCharacterDisplayPrefab;
@@ -18,20 +18,6 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
     private DeploymentCharacterDisplay[] _deploymentCharacterDisplays = new DeploymentCharacterDisplay[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
 
     public CharacterParameterUI FocusCharaParamUI => _focusCharaParamUI;
-
-    void Awake()
-    {
-        for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
-        {
-            LazyInject.GetOrCreate( ref _deploymentCharacterDisplays[i], () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<DeploymentCharacterDisplay>( _deploymentCharacterDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i ) );
-
-            _deploymentCharacterDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
-        }
-    }
-
-    void Update()
-    {
-    }
 
     public void Init()
     {
@@ -113,5 +99,17 @@ public class DeploymentCharacterSelectUI : MonoBehaviour
         NullCheck.AssertNotNull( rect, "_deploymentCharacterDisplayPrefab->rectTransform" );
 
         return (rect.rect.width, rect.rect.height);
+    }
+
+    public override void Setup()
+    {
+        base.Setup();
+
+        for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
+        {
+            LazyInject.GetOrCreate( ref _deploymentCharacterDisplays[i], () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<DeploymentCharacterDisplay>( _deploymentCharacterDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i ) );
+
+            _deploymentCharacterDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
+        }
     }
 }

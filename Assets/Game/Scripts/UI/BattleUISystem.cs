@@ -49,9 +49,14 @@ namespace Frontier.UI
             ParameterView.Init();
         }
 
-        private void Start()
+        public void Setup()
         {
-            // ParameterView.Init();
+            PlCommandWindow?.Setup();
+            ConfirmTurnEnd?.Setup();
+            DamageValue?.Setup();
+            Phase?.Setup();
+            StageClear?.Setup();
+            GameOver?.Setup();
         }
 
         public void SetPlayerParameterActive( bool isActive )

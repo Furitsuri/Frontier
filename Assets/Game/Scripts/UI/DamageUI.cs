@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class DamageUI : MonoBehaviour
+public class DamageUI : UiMonoBehaviour
 {
     private RectTransform _btlUiRectTransform;
     private Camera _btlUiCamera;
