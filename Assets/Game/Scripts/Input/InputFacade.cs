@@ -4,11 +4,10 @@ using static Constants;
 
 public class InputFacade
 {
-    [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
-    [Inject] private IUiSystem _uiSystem                 = null;
+    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
     private InputGuidePresenter _inputGuideView = null;
-    private InputHandler _inputHdlr             = null;
+    private InputHandler _inputHdlr = null;
     private InputCode[] _inputCodes;
 
     /// <summary>
@@ -20,11 +19,11 @@ public class InputFacade
         InitInputCodes();
 
         LazyInject.GetOrCreate( ref _inputHdlr, () => _hierarchyBld.CreateComponentAndOrganize<InputHandler>( true, "InputHandler" ) );
-        LazyInject.GetOrCreate( ref _inputGuideView, () => _uiSystem.GeneralUi.InputGuideView );
+        LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
 
         // 入力コード情報を受け渡す
-        _inputHdlr.Init(_inputGuideView, _inputCodes);
-        _inputGuideView.Init(_inputCodes);
+        _inputHdlr.Init( _inputGuideView, _inputCodes );
+        _inputGuideView.Init( _inputCodes );
     }
 
     /// <summary>
@@ -33,12 +32,12 @@ public class InputFacade
     /// </summary>
     public void UnregisterInputCodes()
     {
-        for ( int i = 0; i < (int)GuideIcon.NUM_MAX; ++i)
+        for( int i = 0; i < ( int ) GuideIcon.NUM_MAX; ++i )
         {
-            _inputCodes[i].Explanation      = new InputCodeStringWrapper("");
-            _inputCodes[i].EnableCbs        = null;
+            _inputCodes[i].Explanation = new InputCodeStringWrapper( "" );
+            _inputCodes[i].EnableCbs = null;
             _inputCodes[i].ResetIntervalTime();
-            _inputCodes[i].SetInputLastTime(0.0f);
+            _inputCodes[i].SetInputLastTime( 0.0f );
             _inputCodes[i].RegisterClassHashCode = 0;
         }
     }
@@ -49,14 +48,14 @@ public class InputFacade
     /// <param name="hashCode">ハッシュ値</param>
     public void UnregisterInputCodes( int hashCode )
     {
-        for ( int i = 0; i < (int)GuideIcon.NUM_MAX; ++i)
+        for( int i = 0; i < ( int ) GuideIcon.NUM_MAX; ++i )
         {
-            if (_inputCodes[i].RegisterClassHashCode == hashCode)
+            if( _inputCodes[i].RegisterClassHashCode == hashCode )
             {
-                _inputCodes[i].Explanation      = new InputCodeStringWrapper( "" );
-                _inputCodes[i].EnableCbs        = null;
+                _inputCodes[i].Explanation = new InputCodeStringWrapper( "" );
+                _inputCodes[i].EnableCbs = null;
                 _inputCodes[i].ResetIntervalTime();
-                _inputCodes[i].SetInputLastTime(0.0f);
+                _inputCodes[i].SetInputLastTime( 0.0f );
             }
         }
     }
@@ -69,19 +68,19 @@ public class InputFacade
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
     public void RegisterInputCodes( params InputCode[] args )
     {
-        foreach ( var arg in args )
+        foreach( var arg in args )
         {
-            if ( arg == null ) { continue; }
+            if( arg == null ) { continue; }
 
             // _inputCodesが未登録であれば登録する
             // 1つのコードに複数アイコンを登録する場合は、先頭に指定しているアイコンを基準にする
-            if (_inputCodes[(int)arg.Icons.First()].IsUnRegistererd())
+            if( _inputCodes[( int ) arg.Icons.First()].IsUnRegistererd() )
             {
-                _inputCodes[(int)arg.Icons.First()] = arg;
+                _inputCodes[( int ) arg.Icons.First()] = arg;
             }
             else
             {
-                LogHelper.LogError($"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}");
+                LogHelper.LogError( $"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}" );
             }
         }
 
@@ -95,7 +94,7 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void ReRegisterInputCodes<T>(InputCode[] args)
+    public void ReRegisterInputCodes<T>( InputCode[] args )
     {
         UnregisterInputCodes();
 
@@ -107,7 +106,7 @@ public class InputFacade
     /// </summary>
     private void InitInputCodes()
     {
-        _inputCodes = new InputCode[(int)GuideIcon.NUM_MAX]
+        _inputCodes = new InputCode[( int ) GuideIcon.NUM_MAX]
         {
             ( new GuideIcon[]{ GuideIcon.ALL_CURSOR },         "", null, null, 0.0f, -1),
             ( new GuideIcon[]{ GuideIcon.VERTICAL_CURSOR },    "", null, null, 0.0f, -1),
@@ -135,7 +134,7 @@ public class InputFacade
     /// </summary>
     private void ResetIntervalTimeOnInputCodes()
     {
-        for (int i = 0; i < _inputCodes.Length; ++i)
+        for( int i = 0; i < _inputCodes.Length; ++i )
         {
             _inputCodes[i].ResetIntervalTime();
         }

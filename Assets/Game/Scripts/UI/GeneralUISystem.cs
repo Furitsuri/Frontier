@@ -7,7 +7,7 @@ namespace Frontier
     public class GeneralUISystem : MonoBehaviour
     {
         [Header( "InputGuide" )]
-        public InputGuidePresenter InputGuideView;  // 入力ガイド表示
+        public InputGuideBarUI InputGuideView;     // 入力ガイド表示
 
         [Header( "Tutorial" )]
         public TutorialUI TutorialView;             // チュートリアルUI
