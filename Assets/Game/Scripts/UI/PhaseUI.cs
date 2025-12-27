@@ -3,22 +3,17 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class PhaseUI : MonoBehaviour
+public class PhaseUI : UiMonoBehaviour
 {
     private Animator _animator;
     public TextMeshProUGUI[] PhaseText;
-
-    private void Awake()
-    {
-        _animator = GetComponent<Animator>();
-    }
 
     /// <summary>
     /// 横切りアニメーションを開始します
     /// </summary>
     public void StartAnim()
     {
-        _animator.SetTrigger("Crossing");
+        _animator.SetTrigger( "Crossing" );
     }
 
     /// <summary>
@@ -27,7 +22,7 @@ public class PhaseUI : MonoBehaviour
     /// <returns>再生されているか否か</returns>
     public bool IsPlayingAnim()
     {
-        var info = _animator.GetCurrentAnimatorStateInfo(0);
+        var info = _animator.GetCurrentAnimatorStateInfo( 0 );
         if( 0f < info.length && info.normalizedTime < 1f )
         {
             return true;
@@ -42,10 +37,17 @@ public class PhaseUI : MonoBehaviour
     /// </summary>
     public void Toggle()
     {
-        gameObject.SetActive(false);
-        foreach (TextMeshProUGUI text in PhaseText)
+        gameObject.SetActive( false );
+        foreach( TextMeshProUGUI text in PhaseText )
         {
-            text.gameObject.SetActive(false);
+            text.gameObject.SetActive( false );
         }
+    }
+
+    public override void Setup()
+    {
+        base.Setup();
+
+        LazyInject.GetOrCreate( ref _animator, () => GetComponent<Animator>() );
     }
 }

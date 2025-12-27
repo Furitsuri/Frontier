@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StageClearUI : MonoBehaviour
+public class StageClearUI : UiMonoBehaviour
 {
     private Animator _animator;
-
-    private void Awake()
-    {
-        _animator = GetComponent<Animator>();
-    }
 
     /// <summary>
     /// 拡大アニメーションを開始します
@@ -17,5 +12,12 @@ public class StageClearUI : MonoBehaviour
     public void StartAnim()
     {
         _animator.SetTrigger("Enlarge");
+    }
+
+    override public void Setup()
+    {
+        base.Setup();
+
+        LazyInject.GetOrCreate(ref _animator, () => GetComponent<Animator>());
     }
 }

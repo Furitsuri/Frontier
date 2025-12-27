@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameOverUI : MonoBehaviour
+public class GameOverUI : UiMonoBehaviour
 {
     private Animator _animator;
-
-    private void Awake()
-    {
-        _animator = GetComponent<Animator>();
-    }
 
     /// <summary>
     /// 落下アニメーションを開始します
@@ -17,5 +12,12 @@ public class GameOverUI : MonoBehaviour
     public void StartAnim()
     {
         _animator.SetTrigger("Fall");
+    }
+
+    override public void Setup()
+    {
+        base.Setup();
+
+        LazyInject.GetOrCreate(ref _animator, () => GetComponent<Animator>());
     }
 }

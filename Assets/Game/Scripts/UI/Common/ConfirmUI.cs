@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Frontier
 {
-    public class ConfirmUI : MonoBehaviour
+    public class ConfirmUI : UiMonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _messageText;
         [SerializeField] private TextMeshProUGUI[] _confirmTMPTexts;

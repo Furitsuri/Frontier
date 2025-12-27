@@ -4,14 +4,14 @@ namespace Frontier.UI
 {
     public class UISystem : MonoBehaviour, IUiSystem
     {
-        private GeneralUISystem _generarlUi     = null;
-        private DeploymentUISystem _placementUi  = null;
+        private GeneralUISystem _generalUi      = null;
+        private DeploymentUISystem _placementUi = null;
         private BattleUISystem _battleUi        = null;
 #if UNITY_EDITOR
         private DebugUISystem _debugUi          = null;
 #endif // UNITY_EDITOR
 
-        public GeneralUISystem GeneralUi => _generarlUi;
+        public GeneralUISystem GeneralUi => _generalUi;
         public DeploymentUISystem DeployUi => _placementUi;
         public BattleUISystem BattleUi => _battleUi;
 #if UNITY_EDITOR
@@ -39,7 +39,7 @@ namespace Frontier.UI
 
         public void InitializeUiSystem()
         {
-            LazyInject.GetOrCreate( ref _generarlUi, () => transform.GetChild( ( int ) ChildIndex.General ).GetComponent<GeneralUISystem>() );
+            LazyInject.GetOrCreate( ref _generalUi, () => transform.GetChild( ( int ) ChildIndex.General ).GetComponent<GeneralUISystem>() );
             LazyInject.GetOrCreate( ref _placementUi, () => transform.GetChild( ( int ) ChildIndex.Placement ).GetComponent<DeploymentUISystem>() );
             LazyInject.GetOrCreate( ref _battleUi, () => transform.GetChild( ( int ) ChildIndex.Battle ).GetComponent<BattleUISystem>() );
 
@@ -47,7 +47,9 @@ namespace Frontier.UI
             LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
 #endif // UNITY_EDITOR
 
-            GeneralUi.Setup();
+            _generalUi?.Setup();
+            _placementUi?.Setup();
+            _battleUi?.Setup();
         }
     }
 }

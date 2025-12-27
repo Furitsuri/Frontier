@@ -46,5 +46,12 @@ namespace Frontier.UI
             ConfirmCompleted.gameObject.SetActive( false );
             GridCursorSelectCharaParam.gameObject.SetActive( false );
         }
+
+        public void Setup()
+        {
+            CharacterSelectUi?.Setup();
+            ConfirmCompleted?.Setup();
+            GridCursorSelectCharaParam?.Setup();
+        }
     }
 }
