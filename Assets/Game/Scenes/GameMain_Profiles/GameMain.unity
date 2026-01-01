@@ -25260,7 +25260,7 @@ GameObject:
   - component: {fileID: 5755778100707986921}
   - component: {fileID: 9086784654231273173}
   m_Layer: 5
-  m_Name: ParameterPresenter
+  m_Name: BattleParameterUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

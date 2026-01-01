@@ -17,7 +17,7 @@ namespace Frontier.UI
         [SerializeField] private Canvas _canvas;
 
         [Header( "CharacterParameter" )]
-        public CharacterParameterPresenter ParameterView;   // キャラクターパラメータ表示
+        public BattleParameterUI ParameterView;   // キャラクターパラメータ表示
 
         [Header( "PlayerCommand" )]
         public PlayerCommandUI PlCommandWindow;             // プレイヤーの選択コマンドUI

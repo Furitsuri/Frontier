@@ -7,7 +7,7 @@ using static Constants;
 
 namespace Frontier.UI
 {
-    public class CharacterParameterPresenter : UiMonoBehaviour
+    public class BattleParameterUI : UiMonoBehaviour
     {
         [Header( "LeftWindowParam" )]
         [SerializeField] private CharacterParameterUI _playerParameter;        // 左側表示のパラメータUIウィンドウ
