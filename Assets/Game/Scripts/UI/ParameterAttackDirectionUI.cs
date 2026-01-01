@@ -1,8 +1,17 @@
 ﻿using TMPro;
-using UnityEngine;
 
-public class ParameterAttackDirectionUI : MonoBehaviour
+namespace Frontier.UI
 {
-    public TextMeshProUGUI attackCursorP2E;
-    public TextMeshProUGUI attackCursorE2P;
+    public class ParameterAttackDirectionUI : UiMonoBehaviour
+    {
+        public TextMeshProUGUI attackCursorP2E;
+        public TextMeshProUGUI attackCursorE2P;
+
+        override public void Setup()
+        {
+            // base.Setup(); // ※ 親クラスのSetupは呼ばない
+
+            gameObject.SetActive( true );
+        }
+    }
 }

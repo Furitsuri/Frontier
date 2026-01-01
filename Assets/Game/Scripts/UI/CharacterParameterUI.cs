@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Zenject;
 using Frontier.Combat.Skill;
 
-namespace Frontier
+namespace Frontier.UI
 {
     public class CharacterParameterUI : UiMonoBehaviour
     {
