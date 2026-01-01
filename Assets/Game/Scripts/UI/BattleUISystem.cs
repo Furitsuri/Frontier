@@ -40,23 +40,20 @@ namespace Frontier.UI
         private RectTransform _rectTransform;               // BattleUIのRectTransform
         private Camera _uiCamera;                           // UI表示用のカメラ
 
-        void Awake()
+        public void Setup()
         {
             LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
             LazyInject.GetOrCreate( ref _uiCamera, () => GameObject.Find( "UI_Camera" ).GetComponent<Camera>() );
 
-            DamageValue.Init( _rectTransform, _uiCamera );
-            ParameterView.Init();
-        }
-
-        public void Setup()
-        {
+            ParameterView?.Setup();
             PlCommandWindow?.Setup();
             ConfirmTurnEnd?.Setup();
             DamageValue?.Setup();
             Phase?.Setup();
             StageClear?.Setup();
             GameOver?.Setup();
+
+            DamageValue.Init( _rectTransform, _uiCamera );
         }
 
         public void SetPlayerParameterActive( bool isActive )

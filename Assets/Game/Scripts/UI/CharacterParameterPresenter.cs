@@ -5,9 +5,9 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.UI
 {
-    public class CharacterParameterPresenter : MonoBehaviour
+    public class CharacterParameterPresenter : UiMonoBehaviour
     {
         [Header( "LeftWindowParam" )]
         [SerializeField] private CharacterParameterUI _playerParameter;        // 左側表示のパラメータUIウィンドウ
@@ -27,12 +27,6 @@ namespace Frontier
         public CharacterParameterUI PlayerParameter => _playerParameter;
         public CharacterParameterUI EnemyParameter => _enemyParameter;
         public ParameterAttackDirectionUI AttackDirection => _attackDirection;
-
-        void Awake()
-        {
-            _playerParameter.gameObject.SetActive( false );
-            _enemyParameter.gameObject.SetActive( false );
-        }
 
         // Update is called once per frame
         void Update()
@@ -114,24 +108,17 @@ namespace Frontier
             _prevSelectCharacter = selectCharacter;
         }
 
-        /// <summary>
-        /// 初期化します
-        /// </summary>
-        public void Init()
+        override public void Setup()
         {
             _playerParameter.Setup();
             _enemyParameter.Setup();
+            _attackDirection.Setup();
 
             _playerParameter.Init();
             _enemyParameter.Init();
-        }
 
-        /// <summary>
-        /// 攻撃の元から対象を示すUIを表示します
-        /// </summary>
-        public void ShowDirection()
-        {
-            _attackDirection.gameObject.SetActive( true );
+            _playerParameter.gameObject.SetActive( false );
+            _enemyParameter.gameObject.SetActive( false );
         }
     }
 }
