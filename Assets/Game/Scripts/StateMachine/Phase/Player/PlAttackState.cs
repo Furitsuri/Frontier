@@ -85,6 +85,11 @@ namespace Frontier.StateMachine
                     // 選択キャラクターが更新された場合は向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
+                        if( null != prevTargetCharacter )
+                        {
+                            prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
+                        }
+
                         var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.Params.TmpParam.GetCurrentGridIndex() );
                         _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
                         var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.Params.TmpParam.GetCurrentGridIndex() );
@@ -337,6 +342,19 @@ namespace Frontier.StateMachine
             }
 
             return false;
+        }
+
+        override protected bool AcceptCancel( bool isCancel )
+        {
+            if( !isCancel ) { return false; }
+
+            // 攻撃対象キャラクターの向きをリセット
+            if( null != _targetCharacter )
+            {
+                _targetCharacter.GetTransformHandler.ResetRotationOrder();
+            }
+
+            return base.AcceptCancel( isCancel );
         }
 
         protected override bool AcceptInfo( bool isInput )

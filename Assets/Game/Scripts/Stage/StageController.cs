@@ -149,8 +149,8 @@ namespace Frontier.Stage
             _gridCursorCtrl.Index = _footprint.gridIndex;
             character.Params.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
             TileStaticData tileData = _tileDataHdlr.GetCurrentTileDatas().Item1;
-            character.transform.position = tileData.CharaStandPos;
-            character.transform.rotation = _footprint.rotation;
+            character.GetTransformHandler.SetPosition( tileData.CharaStandPos );
+            character.GetTransformHandler.SetRotation( _footprint.rotation );
         }
 
         /// <summary>
