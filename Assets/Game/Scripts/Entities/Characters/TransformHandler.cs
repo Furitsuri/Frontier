@@ -6,11 +6,12 @@ using static Constants;
 public class TransformHandler
 {
     private Transform _transform;
-    private Vector3 _velocity;                    // 速度
-    private Vector3 _accel;                       // 加速度
-    private Vector3 _prevPosition;                // 1フレーム前の位置
-    private Quaternion _prevRotation;             // 1フレーム前の回転
-    private Quaternion? _orderdRotation = null;   // 指示されている回転量(nullは指示がないことを示す)
+    private Vector3 _velocity;                              // 速度
+    private Vector3 _accel;                                 // 加速度
+    private Vector3 _prevPosition;                          // 1フレーム前の位置
+    private Quaternion _prevRotation;                       // 1フレーム前の回転
+    private Quaternion? _orderdRotation         = null;     // 指示されている回転量(nullは指示がないことを示す)
+    private Quaternion? _beforeOrderdRotation   = null;     // 指示される前の回転量(nullは指示がないことを示す)
 
     public void Init( Transform transform )
     {
@@ -110,6 +111,12 @@ public class TransformHandler
         return _prevRotation;
     }
 
+    public void OrderRotate( in Quaternion rotation )
+    {
+        _orderdRotation         = rotation;
+        _beforeOrderdRotation   = _transform.rotation;  // 命令発行前の回転を保存
+    }
+
     /// <summary>
     /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
     /// </summary>
@@ -117,7 +124,16 @@ public class TransformHandler
     public void RotateToPosition( in Vector3 targetPos )
     {
         var directionXZ = ( targetPos - _transform.position ).XZ();
-        _orderdRotation = Quaternion.LookRotation( directionXZ );
+        OrderRotate( Quaternion.LookRotation( directionXZ ) );
+    }
+
+    public void ResetRotationOrder()
+    {
+        if( null != _beforeOrderdRotation )
+        {
+            _orderdRotation         = _beforeOrderdRotation;
+            _beforeOrderdRotation   = null;
+        }
     }
 
     public void StartJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )

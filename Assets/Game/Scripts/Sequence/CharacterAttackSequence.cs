@@ -25,37 +25,37 @@ namespace Frontier
             END
         }
 
-        delegate bool UpdateAttack(in Vector3 arg1, in Vector3 arg2);
+        delegate bool UpdateAttack( in Vector3 arg1, in Vector3 arg2 );
 
         private Phase _phase;
-        private float _elapsedTime                  = 0f;
-        private bool _counterConditions             = false;
+        private float _elapsedTime = 0f;
+        private bool _counterConditions = false;
         private BattleRoutineController _btlRtnCtrl = null;
-        private BattleCameraController _btlCamCtrl  = null;
-        private StageController _stageCtrl          = null;
-        private IUiSystem _uiSystem                 = null;
-        private Character _attackCharacter          = null;
-        private Character _targetCharacter          = null;
-        private Character _diedCharacter            = null;
+        private BattleCameraController _btlCamCtrl = null;
+        private StageController _stageCtrl = null;
+        private IUiSystem _uiSystem = null;
+        private Character _attackCharacter = null;
+        private Character _targetCharacter = null;
+        private Character _diedCharacter = null;
         // Transformは遅いためキャッシュ
-        private Transform _atkCharaTransform = null;
-        private Transform _tgtCharaTransform = null;
+        private TransformHandler _atkCharaTransform = null;
+        private TransformHandler _tgtCharaTransform = null;
         private Vector3 _departure = Vector3.zero;
         private Vector3 _destination = Vector3.zero;
         private Quaternion _atkCharaInitialRot = Quaternion.identity;
         private Quaternion _tgtCharaInitialRot = Quaternion.identity;
-        private UpdateAttack _updateAttackerAttack  = null;
-        private UpdateAttack _updateTargetAttack    = null;
+        private UpdateAttack _updateAttackerAttack = null;
+        private UpdateAttack _updateTargetAttack = null;
         private CombatSkillEventController _combatSkillCtrl = null;
-        private ParrySkillNotifier _parryNotifier   = null;
+        private ParrySkillNotifier _parryNotifier = null;
 
         [Inject]
-        public void Construct(BattleRoutineController btlRtnCtrl, StageController stgCtrl, CombatSkillEventController combatSkillCtrl, IUiSystem uiSystem)
+        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, CombatSkillEventController combatSkillCtrl, IUiSystem uiSystem )
         {
-            _btlRtnCtrl         = btlRtnCtrl;
-            _stageCtrl          = stgCtrl;
-            _combatSkillCtrl    = combatSkillCtrl;
-            _uiSystem           = uiSystem;
+            _btlRtnCtrl = btlRtnCtrl;
+            _stageCtrl = stgCtrl;
+            _combatSkillCtrl = combatSkillCtrl;
+            _uiSystem = uiSystem;
         }
 
         /// <summary>
@@ -63,10 +63,10 @@ namespace Frontier
         /// </summary>
         public void Init()
         {
-            _btlCamCtrl         = _btlRtnCtrl.GetCameraController();
-            _diedCharacter      = null;
-            _elapsedTime        = 0f;
-            _phase              = Phase.START;
+            _btlCamCtrl     = _btlRtnCtrl.GetCameraController();
+            _diedCharacter  = null;
+            _elapsedTime    = 0f;
+            _phase          = Phase.START;
         }
 
         /// <summary>
@@ -74,31 +74,31 @@ namespace Frontier
         /// </summary>
         /// <param name="attackChara">攻撃キャラクター</param>
         /// <param name="targetChara">被攻撃キャラクター</param>
-        public void StartSequence(Character attackChara, Character targetChara)
+        public void StartSequence( Character attackChara, Character targetChara )
         {
-            _attackCharacter    = attackChara;
-            _targetCharacter    = targetChara;
-            _atkCharaTransform  = _attackCharacter.transform;
-            _tgtCharaTransform  = _targetCharacter.transform;
-            _atkCharaInitialRot = _atkCharaTransform.rotation;
-            _tgtCharaInitialRot = _tgtCharaTransform.rotation;
+            _attackCharacter = attackChara;
+            _targetCharacter = targetChara;
+            _atkCharaTransform = _attackCharacter.GetTransformHandler;
+            _tgtCharaTransform = _targetCharacter.GetTransformHandler;
+            _atkCharaInitialRot = _atkCharaTransform.GetRotation();
+            _tgtCharaInitialRot = _tgtCharaTransform.GetRotation();
 
             // 対戦相手として設定
-            _attackCharacter.SetOpponentCharacter(_targetCharacter);
-            _targetCharacter.SetOpponentCharacter(_attackCharacter);
+            _attackCharacter.SetOpponentCharacter( _targetCharacter );
+            _targetCharacter.SetOpponentCharacter( _attackCharacter );
 
-            _counterConditions = ( 0 <= _targetCharacter.GetUsingSkillSlotIndexById(ID.SKILL_COUNTER) ); // カウンター条件の設定
+            _counterConditions = ( 0 <= _targetCharacter.GetUsingSkillSlotIndexById( ID.SKILL_COUNTER ) ); // カウンター条件の設定
 
             // 攻撃更新処理の条件別設定
-            if (_counterConditions && _attackCharacter.GetBullet() != null) _counterConditions = _targetCharacter.GetBullet() != null;
+            if( _counterConditions && _attackCharacter.GetBullet() != null ) _counterConditions = _targetCharacter.GetBullet() != null;
             // キャラクターの攻撃タイプによって動作するアニメーションを変更する
-            _attackCharacter.RegisterCombatAnimation(_attackCharacter.GetBullet() == null ? COMBAT_ANIMATION_TYPE.CLOSED : COMBAT_ANIMATION_TYPE.RANGED);
+            _attackCharacter.RegisterCombatAnimation( _attackCharacter.GetBullet() == null ? COMBAT_ANIMATION_TYPE.CLOSED : COMBAT_ANIMATION_TYPE.RANGED );
             _updateAttackerAttack = _attackCharacter.CombatAnimSeq.UpdateSequence;
-            _targetCharacter.RegisterCombatAnimation(_targetCharacter.GetBullet() == null ? COMBAT_ANIMATION_TYPE.CLOSED : COMBAT_ANIMATION_TYPE.RANGED);
+            _targetCharacter.RegisterCombatAnimation( _targetCharacter.GetBullet() == null ? COMBAT_ANIMATION_TYPE.CLOSED : COMBAT_ANIMATION_TYPE.RANGED );
             _updateTargetAttack = _targetCharacter.CombatAnimSeq.UpdateSequence;
 
             // 攻撃シーケンスの開始
-            _btlCamCtrl.StartAttackSequenceMode(_attackCharacter, _targetCharacter);
+            _btlCamCtrl.StartAttackSequenceMode( _attackCharacter, _targetCharacter );
         }
 
         /// <summary>
@@ -107,41 +107,41 @@ namespace Frontier
         /// <returns>処理の終了</returns>
         public bool Update()
         {
-            switch (_phase)
+            switch( _phase )
             {
                 case Phase.START:
                     // START_ROTATION_TIMEが経過するまで向きを変更します
                     _elapsedTime += DeltaTimeProvider.DeltaTime;
-                    float t = Mathf.Clamp01(_elapsedTime / Constants.ATTACK_ROTATIION_TIME);
-                    t = Mathf.SmoothStep(0f, 1f, t);
+                    float t = Mathf.Clamp01( _elapsedTime / Constants.ATTACK_ROTATIION_TIME );
+                    t = Mathf.SmoothStep( 0f, 1f, t );
 
-                    Quaternion destAttackerRot  = Quaternion.LookRotation(_tgtCharaTransform.position - _atkCharaTransform.position);
-                    Quaternion destTargetRot    = Quaternion.LookRotation(_atkCharaTransform.position - _tgtCharaTransform.position);
-                    _atkCharaTransform.rotation = Quaternion.Lerp(_atkCharaInitialRot, destAttackerRot, t);
-                    _tgtCharaTransform.rotation = Quaternion.Lerp(_tgtCharaInitialRot, destTargetRot, t);
+                    Quaternion destAttackerRot  = Quaternion.LookRotation( _tgtCharaTransform.GetPosition() - _atkCharaTransform.GetPosition() );
+                    Quaternion destTargetRot    = Quaternion.LookRotation( _atkCharaTransform.GetPosition() - _tgtCharaTransform.GetPosition() );
+                    _atkCharaTransform.SetRotation( Quaternion.Lerp( _atkCharaInitialRot, destAttackerRot, t ) );
+                    _tgtCharaTransform.SetRotation( Quaternion.Lerp( _tgtCharaInitialRot, destTargetRot, t ) );
 
-                    if (_btlCamCtrl.IsFadeAttack())
+                    if( _btlCamCtrl.IsFadeAttack() )
                     {
                         _elapsedTime = 0f;
 
-                        TransitBattleField(_attackCharacter, _targetCharacter);
+                        TransitBattleField( _attackCharacter, _targetCharacter );
 
                         _phase = Phase.WAIT_ATTACK;
                     }
                     break;
                 case Phase.WAIT_ATTACK:
-                    if (Constants.ATTACK_SEQUENCE_WAIT_ATTACK_TIME < (_elapsedTime += DeltaTimeProvider.DeltaTime))
+                    if( Constants.ATTACK_SEQUENCE_WAIT_ATTACK_TIME < ( _elapsedTime += DeltaTimeProvider.DeltaTime ) )
                     {
                         _elapsedTime = 0f;
-                        StartAttack(_attackCharacter, _targetCharacter);
-                        int parryIdx = _targetCharacter.GetUsingSkillSlotIndexById(ID.SKILL_PARRY );
+                        StartAttack( _attackCharacter, _targetCharacter );
+                        int parryIdx = _targetCharacter.GetUsingSkillSlotIndexById( ID.SKILL_PARRY );
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if ( 0 <= parryIdx )
+                        if( 0 <= parryIdx )
                         {
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
-                            _parryNotifier = _targetCharacter.SkillNotifier(parryIdx) as ParrySkillNotifier;
+                            _parryNotifier = _targetCharacter.SkillNotifier( parryIdx ) as ParrySkillNotifier;
                             NullCheck.AssertNotNull( _parryNotifier, nameof( _parryNotifier ) );
                             _phase = Phase.WAIT_PARRY_RESULT;
                         }
@@ -150,27 +150,27 @@ namespace Frontier
                     }
                     break;
                 case Phase.ATTACK:
-                    if (_updateAttackerAttack(_departure, _destination))
+                    if( _updateAttackerAttack( _departure, _destination ) )
                     {
                         // カメラ対象とカメラパラメータを変更
-                        _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
+                        _btlCamCtrl.TransitNextPhaseCameraParam( null, _targetCharacter.transform );
                         // ダメージUIを非表示
-                        _uiSystem.BattleUi.ToggleDamageUI(false);
+                        _uiSystem.BattleUi.ToggleDamageUI( false );
 
                         // ガードスキルを使用時はガードモーションを戻す
-                        int guardSkillIdx = _targetCharacter.GetUsingSkillSlotIndexById(ID.SKILL_GUARD);
-                        if ( 0 <= guardSkillIdx ) { _targetCharacter.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, false ); }
+                        int guardSkillIdx = _targetCharacter.GetUsingSkillSlotIndexById( ID.SKILL_GUARD );
+                        if( 0 <= guardSkillIdx ) { _targetCharacter.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, false ); }
 
                         // 対象が死亡している場合は死亡処理へ
-                        if (_targetCharacter.Params.CharacterParam.IsDead())
+                        if( _targetCharacter.Params.CharacterParam.IsDead() )
                         {
                             _diedCharacter = _targetCharacter;
                             _phase = Phase.DIE;
                         }
                         // カウンタースキルが登録されている場合はカウンター処理へ
-                        else if (_counterConditions)
+                        else if( _counterConditions )
                         {
-                            StartCounter(_attackCharacter, _targetCharacter);
+                            StartCounter( _attackCharacter, _targetCharacter );
 
                             _phase = Phase.COUNTER;
                         }
@@ -184,39 +184,39 @@ namespace Frontier
                     // パリィイベント開始まで更新
                     // 攻撃側キャラクターの攻撃モーションからパリィ開始メソッドが呼ばれるため、
                     // 開始されない(parryCtrl.IsActiveがfalse)まま、攻撃更新が行われることは想定外
-                    if (_updateAttackerAttack(_departure, _destination))
+                    if( _updateAttackerAttack( _departure, _destination ) )
                     {
-                        Debug.Assert(false);
+                        Debug.Assert( false );
                         _phase = Phase.ATTACK;
                     }
 
                     ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
-                    if ( !parrySkillHdlr.IsMatchResult( JudgeResult.NONE ) )
+                    if( !parrySkillHdlr.IsMatchResult( JudgeResult.NONE ) )
                     {
                         // パリィ結果が出た場合はパリィスキルハンドラを登録解除
                         _combatSkillCtrl.Unregister<ParrySkillHandler>();
 
                         // パリィ失敗の場合は通常の攻撃フェーズへ移行(失敗時の被ダメージ倍率はParryControler側がパリィ判定時に処理)
-                        if ( parrySkillHdlr.IsMatchResult( JudgeResult.FAILED ) )
+                        if( parrySkillHdlr.IsMatchResult( JudgeResult.FAILED ) )
                         {
                             _phase = Phase.ATTACK;
                         }
                         else
                         {
                             // パリィ用更新に切り替えます
-                            ToggleParryUpdate(_attackCharacter, _targetCharacter);
+                            ToggleParryUpdate( _attackCharacter, _targetCharacter );
 
                             _phase = Phase.EXEC_PARRY;
                         }
                     }
                     break;
                 case Phase.EXEC_PARRY:
-                    if (_updateTargetAttack(_departure, _destination))
+                    if( _updateTargetAttack( _departure, _destination ) )
                     {
                         // カメラ対象とカメラパラメータを変更
-                        _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);
+                        _btlCamCtrl.TransitNextPhaseCameraParam( null, _targetCharacter.transform );
 
-                        if (_attackCharacter.Params.CharacterParam.IsDead())
+                        if( _attackCharacter.Params.CharacterParam.IsDead() )
                         {
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
@@ -224,55 +224,63 @@ namespace Frontier
                         else
                         {
                             // ダメージUIを非表示
-                            _uiSystem.BattleUi.ToggleDamageUI(false);
+                            _uiSystem.BattleUi.ToggleDamageUI( false );
 
                             _phase = Phase.WAIT_END;
                         }
                     }
                     break;
                 case Phase.COUNTER:
-                    if (_updateTargetAttack(_departure, _destination))
+                    if( _updateTargetAttack( _departure, _destination ) )
                     {
-                        _btlCamCtrl.TransitNextPhaseCameraParam(null, _targetCharacter.transform);  // カメラ対象とカメラパラメータを変更
+                        _btlCamCtrl.TransitNextPhaseCameraParam( null, _targetCharacter.transform );  // カメラ対象とカメラパラメータを変更
 
-                        if (_attackCharacter.Params.CharacterParam.IsDead())
+                        if( _attackCharacter.Params.CharacterParam.IsDead() )
                         {
                             _diedCharacter = _attackCharacter;
                             _phase = Phase.DIE;
                         }
                         else
                         {
-                            _uiSystem.BattleUi.ToggleDamageUI(false);   // ダメージUIを非表示
+                            _uiSystem.BattleUi.ToggleDamageUI( false );   // ダメージUIを非表示
 
                             _phase = Phase.WAIT_END;
                         }
                     }
                     break;
                 case Phase.DIE:
-                    if (_targetCharacter.AnimCtrl.IsEndAnimationOnConditionTag(AnimDatas.AnimeConditionsTag.DIE))
+                    if( _targetCharacter.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DIE ) )
                     {
                         _phase = Phase.WAIT_END;
                     }
                     break;
                 case Phase.WAIT_END:
-                    if (Constants.ATTACK_SEQUENCE_WAIT_END_TIME < (_elapsedTime += DeltaTimeProvider.DeltaTime))
+                    if( Constants.ATTACK_SEQUENCE_WAIT_END_TIME < ( _elapsedTime += DeltaTimeProvider.DeltaTime ) )
                     {
                         _elapsedTime = 0f;
 
-                        TransitStageField(_attackCharacter, _targetCharacter);  // バトルフィールドからステージフィールドに遷移
+                        TransitStageField( _attackCharacter, _targetCharacter );  // バトルフィールドからステージフィールドに遷移
 
                         // 攻撃シーケンス用カメラを終了
-                        _btlCamCtrl.EndAttackSequenceMode(_attackCharacter);
+                        _btlCamCtrl.EndAttackSequenceMode( _attackCharacter );
 
                         _phase = Phase.END;
                     }
                     break;
                 case Phase.END:
-                    if (_btlCamCtrl.IsFadeEnd())
+                    if( _btlCamCtrl.IsFadeEnd() )
                     {
                         // 対戦相手設定をリセット
-                        _attackCharacter.ResetOnEndOfAttackSequence();
-                        _targetCharacter.ResetOnEndOfAttackSequence();
+                        if( null != _attackCharacter )
+                        {
+                            _attackCharacter.ResetOnEndOfAttackSequence();
+                            _attackCharacter.GetTransformHandler.ResetRotationOrder();
+                        }
+                        if( null != _targetCharacter )
+                        {
+                            _targetCharacter.ResetOnEndOfAttackSequence();
+                            _targetCharacter.GetTransformHandler.ResetRotationOrder();
+                        }
 
                         return true;
                     }
@@ -293,18 +301,18 @@ namespace Frontier
         /// </summary>
         /// <param name="attacker">攻撃キャラクター</param>
         /// <param name="target">被攻撃キャラクター</param>
-        private void StartAttack(Character attacker, Character target)
+        private void StartAttack( Character attacker, Character target )
         {
             // キャラクターの攻撃タイプによって動作するアニメーションを変更する
-            _departure      = attacker.transform.position;
-            _destination    = target.transform.position + target.transform.forward;
+            _departure = attacker.transform.position;
+            _destination = target.transform.position + target.transform.forward;
             attacker.CombatAnimSeq.StartSequence();
 
             // 攻撃受け手用の設定をセット
             target.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if ( 0 <= target.GetUsingSkillSlotIndexById( ID.SKILL_GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
+            if( 0 <= target.GetUsingSkillSlotIndexById( ID.SKILL_GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
         }
 
         /// <summary>
@@ -312,13 +320,13 @@ namespace Frontier
         /// </summary>
         /// <param name="attacker">攻撃キャラクター</param>
         /// <param name="target">被攻撃キャラクター</param>
-        private void StartCounter(Character attacker, Character target)
+        private void StartCounter( Character attacker, Character target )
         {
             // ダメージ予測をセット
-            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect(target, attacker);
+            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( target, attacker );
 
             // 攻撃キャラと被攻撃キャラを入れ替えて開始
-            StartAttack(target, attacker);
+            StartAttack( target, attacker );
         }
 
         /// <summary>
@@ -326,11 +334,11 @@ namespace Frontier
         /// </summary>
         /// <param name="attacker">攻撃キャラクター</param>
         /// <param name="target">被攻撃キャラクター</param>
-        private void ToggleParryUpdate(Character attacker, Character target)
+        private void ToggleParryUpdate( Character attacker, Character target )
         {
             // 更新用関数を切り替え
-            _updateAttackerAttack   = (in Vector3 arg1, in Vector3 arg2) => false;  // 攻撃側は何もしない
-            _updateTargetAttack     = _targetCharacter.CombatAnimSeq.UpdateSequence;
+            _updateAttackerAttack = ( in Vector3 arg1, in Vector3 arg2 ) => false;  // 攻撃側は何もしない
+            _updateTargetAttack = _targetCharacter.CombatAnimSeq.UpdateSequence;
         }
 
         /// <summary>
@@ -338,36 +346,36 @@ namespace Frontier
         /// </summary>
         /// <param name="attacker">攻撃キャラクター</param>
         /// <param name="target">被攻撃キャラクター</param>
-        private void TransitBattleField(Character attacker, Character target)
+        private void TransitBattleField( Character attacker, Character target )
         {
-            _stageCtrl.ToggleMeshDisplay(false); // メッシュ及びattakerとtarget以外のキャラクターを非表示に
+            _stageCtrl.ToggleMeshDisplay( false ); // メッシュ及びattakerとtarget以外のキャラクターを非表示に
 
-            foreach (var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable(CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
+            foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
             {
-                if (chara != attacker && chara != target)
+                if( chara != attacker && chara != target )
                 {
-                    chara.gameObject.SetActive(false);
+                    chara.gameObject.SetActive( false );
                 }
             }
 
             var centralPos = _stageCtrl.GetCentralPos(); // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
 
             // 味方と敵対側で分別
-            Character ally      = null;
-            Character opponent  = null;
-            if (attacker.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
+            Character ally = null;
+            Character opponent = null;
+            if( attacker.Params.CharacterParam.IsMatchCharacterTag( CHARACTER_TAG.PLAYER ) )
             {
                 ally = attacker;
                 opponent = target;
             }
             else
             {
-                if (target.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.PLAYER))
+                if( target.Params.CharacterParam.IsMatchCharacterTag( CHARACTER_TAG.PLAYER ) )
                 {
                     ally = target;
                     opponent = attacker;
                 }
-                else if (target.Params.CharacterParam.IsMatchCharacterTag(CHARACTER_TAG.OTHER))
+                else if( target.Params.CharacterParam.IsMatchCharacterTag( CHARACTER_TAG.OTHER ) )
                 {
                     ally = target;
                     opponent = attacker;
@@ -380,12 +388,12 @@ namespace Frontier
             }
 
             // 味方は奥行手前側、敵は奥行奥側の立ち位置とする
-            Transform allyTransform     = ally.transform;
+            Transform allyTransform = ally.transform;
             Transform opponentTransform = opponent.transform;
-            allyTransform.position      = centralPos + new Vector3(0f, 0f, -_stageCtrl.BattlePosLengthFromCentral);
-            opponentTransform.position  = centralPos + new Vector3(0f, 0f, _stageCtrl.BattlePosLengthFromCentral);
-            allyTransform.rotation      = Quaternion.LookRotation(centralPos - allyTransform.position);
-            opponentTransform.rotation  = Quaternion.LookRotation(centralPos - opponentTransform.position);
+            allyTransform.position = centralPos + new Vector3( 0f, 0f, -_stageCtrl.BattlePosLengthFromCentral );
+            opponentTransform.position = centralPos + new Vector3( 0f, 0f, _stageCtrl.BattlePosLengthFromCentral );
+            allyTransform.rotation = Quaternion.LookRotation( centralPos - allyTransform.position );
+            opponentTransform.rotation = Quaternion.LookRotation( centralPos - opponentTransform.position );
             // カメラパラメータを戦闘フィールド用に設定
             _btlCamCtrl.AdaptBattleFieldSetting();
         }
@@ -395,10 +403,10 @@ namespace Frontier
         /// </summary>
         /// <param name="attacker">攻撃キャラクター</param>
         /// <param name="target">被攻撃キャラクター</param>
-        private void TransitStageField(Character attacker, Character target)
+        private void TransitStageField( Character attacker, Character target )
         {
             // 非表示にしていたものを表示
-            _stageCtrl.ToggleMeshDisplay(true);
+            _stageCtrl.ToggleMeshDisplay( true );
 
             foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
             {
@@ -406,10 +414,10 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var tileData = _stageCtrl.GetTileStaticData(attacker.Params.TmpParam.GetCurrentGridIndex());
+            var tileData = _stageCtrl.GetTileStaticData( attacker.Params.TmpParam.GetCurrentGridIndex() );
             _attackCharacter.transform.position = tileData.CharaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            tileData = _stageCtrl.GetTileStaticData(target.Params.TmpParam.GetCurrentGridIndex());
+            tileData = _stageCtrl.GetTileStaticData( target.Params.TmpParam.GetCurrentGridIndex() );
             _targetCharacter.transform.position = tileData.CharaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
         }
