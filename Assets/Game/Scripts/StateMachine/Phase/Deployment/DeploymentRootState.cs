@@ -4,6 +4,7 @@ using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using Zenject.SpaceFighter;
 using static Constants;
 using static InputCode;
 
@@ -29,11 +30,10 @@ namespace Frontier.StateMachine
         {
             _deploymentCandidates.Clear();
 
-            int count = 0;
             foreach( var player in _btlRtnCtrl.BtlCharaCdr.GetCandidatePlayerEnumerable() )
             {
                 player.gameObject.SetActive( false );
-                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * count, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
+                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * player.Params.CharacterParam.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
                 player.GetTransformHandler.SetPosition( reservePos );
 
                 // UI表示用に各キャラクターのスナップショットを撮影
@@ -44,9 +44,28 @@ namespace Frontier.StateMachine
                 DeploymentCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<DeploymentCandidate>( false );
                 candidate.Init( player, candidateSnapshot );
                 _deploymentCandidates.Add( candidate );
-
-                ++count;
             }
+        }
+
+        private bool UndoDeploymentCandidates()
+        {
+            // 既にキャラクターが配置されているタイルに配置する場合は、そのキャラクターを配置済みリストから削除
+            var charaOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null != charaOnSelectTile && charaOnSelectTile.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER )
+            {
+                // 配置済みフラグをOFFに
+                _deploymentCandidates.Find( c => c.Character.CharaKey == charaOnSelectTile.CharaKey ).IsDeployed = false;
+                // キャラクター管理リストから削除
+                _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey );
+                // 見えない位置に退避
+                charaOnSelectTile.Params.TmpParam.gridIndex = -1;
+                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * charaOnSelectTile.Params.CharacterParam.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
+                charaOnSelectTile.GetTransformHandler.SetPosition( reservePos );
+
+                return true;
+            }
+
+            return false;
         }
 
         private void OnCompleteSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
@@ -114,20 +133,44 @@ namespace Frontier.StateMachine
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "PLACE CHARACTER", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.ALL_CURSOR,   "MOVE", CanAcceptDefault,               new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      "PLACE CHARACTER", CanAcceptConfirm,    new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,       "UNDO PLACE", CanAcceptCancel,          new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "STATUS", CanAcceptInfo,                new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub2 ) }, 0.0f, hashCode),
-               (GuideIcon.OPT2, "COMPLETE", CanAcceptOptional, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.OPT2,         "COMPLETE", CanAcceptOptional,          new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
         }
 
-        protected override bool CanAcceptConfirm()
+        override protected bool CanAcceptConfirm()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力不可
             // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
+
             // 配置不可のタイルを選択している場合は入力不可
-            if( !_stageDataProvider.CurrentData.GetTile( _stageCtrl.GetCurrentGridIndex() ).StaticData().IsDeployable ) { return false; }
+            if( !_stageDataProvider.CurrentData.GetTile( _stageCtrl.GetCurrentGridIndex() ).StaticData().IsDeployable )
+            {
+                return false;
+            }
+
+            // タイル上に同じキャラクターが配置されている場合は入力不可
+            Character characterOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null != characterOnSelectTile && characterOnSelectTile.CharaKey == _deploymentCandidates[_focusCharacterIndex].Character.CharaKey )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        override protected bool CanAcceptCancel()
+        {
+            // タイル上にキャラクターが配置されていなければ入力不可
+            Character characterOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null == characterOnSelectTile || characterOnSelectTile.CharaKey.CharacterTag != CHARACTER_TAG.PLAYER )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -200,18 +243,7 @@ namespace Frontier.StateMachine
         {
             if( !isInput ) { return false; }
 
-            // 既にキャラクターが配置されているタイルに配置する場合は、そのキャラクターを配置済みリストから削除
-            var charaOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if( null != charaOnSelectTile && charaOnSelectTile.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER )
-            {
-                // 配置済みフラグをOFFに
-                _deploymentCandidates.Find( c => c.Character.CharaKey == charaOnSelectTile.CharaKey ).IsDeployed = false;
-                // キャラクター管理リストから削除
-                _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey );
-                // 見えない位置に退避
-                charaOnSelectTile.Params.TmpParam.gridIndex = -1;
-                charaOnSelectTile.GetTransformHandler.SetPosition( new Vector3( 0f, 500f, 0f ) );
-            }
+            UndoDeploymentCandidates();
 
             var candidate = _deploymentCandidates[_focusCharacterIndex];
             candidate.IsDeployed = true;
@@ -220,6 +252,8 @@ namespace Frontier.StateMachine
             focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
             focusCharacter.Params.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
 
+            _presenter.RefreshGridCursorSelectCharacter();
+
             // リストに挿入されていない場合は挿入
             if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.CharaKey ) )
             {
@@ -227,6 +261,24 @@ namespace Frontier.StateMachine
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// タイル上に既に配置されているキャラクターを配置前の状態に戻します
+        /// </summary>
+        /// <param name="isCancel"></param>
+        /// <returns></returns>
+        override protected bool AcceptCancel( bool isCancel )
+        {
+            if( !isCancel ) { return false; }
+
+            if( UndoDeploymentCandidates() )
+            {
+                _presenter.RefreshGridCursorSelectCharacter();
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
