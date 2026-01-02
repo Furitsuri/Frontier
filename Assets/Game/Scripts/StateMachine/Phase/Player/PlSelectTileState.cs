@@ -162,7 +162,7 @@ namespace Frontier.StateMachine
                 Npc npc = character as Npc;
                 if( null == npc ) { return false; }
 
-                npc.ToggleAttackableRangeDisplay(); // 攻撃範囲表示を切り替える
+                npc.ToggleDisplayDangerRange(); // 攻撃範囲表示を切り替える
 
                 // 全ての敵及び第三勢力の攻撃範囲表示状態を確認し、全てが_isShowingAllDangerRangeの値と異なっている場合は、全危険範囲表示状態を切り替える
                 bool isAllMismatch = true;
@@ -208,7 +208,7 @@ namespace Frontier.StateMachine
 
             foreach( Npc npcChara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
             {
-                npcChara.SetAttackableRangeDisplay( _isShowingAllDangerRange );
+                npcChara.SetDisplayDangerRange( _isShowingAllDangerRange );
             }
 
             return true;

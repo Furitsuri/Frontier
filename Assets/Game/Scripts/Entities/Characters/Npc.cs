@@ -12,7 +12,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 攻撃可能範囲の表示・非表示を切り替えます
         /// </summary>
-        virtual public void ToggleAttackableRangeDisplay()
+        virtual public void ToggleDisplayDangerRange()
         {
         }
 
@@ -20,7 +20,7 @@ namespace Frontier.Entities
         /// 攻撃可能範囲の表示・非表示を設定します
         /// </summary>
         /// <param name="isShow"></param>
-        virtual public void SetAttackableRangeDisplay( bool isShow )
+        virtual public void SetDisplayDangerRange( bool isShow )
         {
         }
 

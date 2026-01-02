@@ -9,14 +9,14 @@ namespace Frontier.Entities
     // 仕様変更があれば処理を追加する
     public class Other : Enemy
     {
-        override public void ToggleAttackableRangeDisplay()
+        override public void ToggleDisplayDangerRange()
         {
-            _actionRangeCtrl.ToggleAttackableRangeDisplay( in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
+            _actionRangeCtrl.ToggleDisplayDangerRange( in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
         }
 
-        override public void SetAttackableRangeDisplay( bool isShow )
+        override public void SetDisplayDangerRange( bool isShow )
         {
-            _actionRangeCtrl.SetAttackableRangeDisplay( isShow, in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
+            _actionRangeCtrl.SetDisplayDangerRange( isShow, in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
         }
     }
 }

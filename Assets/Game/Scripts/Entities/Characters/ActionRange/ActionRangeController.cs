@@ -71,7 +71,7 @@ namespace Frontier.Entities
             _stageCtrl.TileDataHdlr().ExtractMoveableRangeDataFilterByCondition( ref _actionableTileMap, setup, condition, args );
         }
 
-        public void ToggleAttackableRangeDisplay( in Color color )
+        public void ToggleDisplayDangerRange( in Color color )
         {
             // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
             if( _actionableTileMap.IsEmpty() )
@@ -81,10 +81,10 @@ namespace Frontier.Entities
                 SetupActionableRangeData( dprtTileIndex, data.Height );
             }
 
-            _actionableRangeRdr.SetAttackableRangeDisplay( !_actionableRangeRdr.IsShowingAttackableRange, color );
+            _actionableRangeRdr.SetDisplayDangerRange( !_actionableRangeRdr.IsShowingAttackableRange, color );
         }
 
-        public void SetAttackableRangeDisplay( bool isShow, in Color color )
+        public void SetDisplayDangerRange( bool isShow, in Color color )
         {
             // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
             if( _actionableTileMap.IsEmpty() )
@@ -94,29 +94,32 @@ namespace Frontier.Entities
                 SetupActionableRangeData( dprtTileIndex, data.Height );
             }
 
-            _actionableRangeRdr.SetAttackableRangeDisplay( isShow, color );
+            _actionableRangeRdr.SetDisplayDangerRange( isShow, color );
+        }
+
+        public void DrawMoveableRange()
+        {
+            _actionableRangeRdr.DrawMoveableRange( tileData => new (MeshType, bool)[]
+            {
+                ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
+                ( MeshType.MOVE,                    0 <= tileData.EstimatedMoveRange ),
+            } );
         }
 
         public void DrawAttackableRange()
         {
             // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
-            _actionableRangeRdr.DrawActionableRange( _actionableTileMap, tileData => new (MeshType, bool)[]
+            _actionableRangeRdr.DrawAttackableRange( tileData => new (MeshType, bool)[]
             {
-                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
-                ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
-                ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) ),
+                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) && tileData.EstimatedMoveRange < 0 ),
+                ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) && tileData.EstimatedMoveRange < 0 ),
             } );
         }
 
         public void DrawActionableRange()
         {
-            _actionableRangeRdr.DrawActionableRange( _actionableTileMap, tileData => new (MeshType, bool)[]
-            {
-                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) ),
-                ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
-                ( MeshType.MOVE,                    0 <= tileData.EstimatedMoveRange ),
-                ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) ),
-            } );
+            DrawMoveableRange();
+            DrawAttackableRange();
         }
 
         public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )
