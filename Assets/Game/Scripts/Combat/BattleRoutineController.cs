@@ -1,5 +1,4 @@
 ﻿using Frontier.Combat.Skill;
-using Frontier.CombatPreparation;
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.StateMachine;

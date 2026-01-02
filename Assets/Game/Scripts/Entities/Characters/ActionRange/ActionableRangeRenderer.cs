@@ -41,7 +41,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="isShow"></param>
         /// <param name="color"></param>
-        public void SetAttackableRangeDisplay( bool isShow, in UnityEngine.Color color )
+        public void SetDisplayDangerRange( bool isShow, in UnityEngine.Color color )
         {
             if( isShow == _isShowingAttackableRange ) { return; }
 
@@ -49,7 +49,7 @@ namespace Frontier.Entities
 
             if( _isShowingAttackableRange )
             {
-                DrawAttackableRange( in color );
+                DrawDangerRange( in color );
             }
             else
             {
@@ -58,41 +58,50 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 攻撃可能領域を描画します
+        /// 移動可能領域を描画します
         /// </summary>
-        /// <param name="color"></param>
-        public void DrawAttackableRange( in UnityEngine.Color color )
+        /// <param name="conditionBuilder"></param>
+        public void DrawMoveableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileMap.Value.MoveableTileMap )
             {
-                var tileMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true );
-                NullCheck.AssertNotNull( tileMesh, nameof( tileMesh ) );
+                var meshTypeAndConditions = conditionBuilder( data.Value );
 
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in color, _owner.CharaKey );
+                for( int i = 0; i < meshTypeAndConditions.Length; ++i )
+                {
+                    if( meshTypeAndConditions[i].condition )
+                    {
+                        TileMesh tileMesh = null;
+                        LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
+
+                        var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.CharaKey );
+
+                        break;
+                    }
+                }
             }
         }
 
         /// <summary>
         /// アクション可能領域を描画します
         /// </summary>
-        /// <param name="actionableTileMap"></param>
         /// <param name="conditionBuilder"></param>
-        public void DrawActionableRange( ActionableTileMap actionableTileMap, Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
+        public void DrawAttackableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            foreach( var data in actionableTileMap.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
 
-                for( int j = 0; j < meshTypeAndConditions.Length; ++j )
+                for( int i = 0; i < meshTypeAndConditions.Length; ++i )
                 {
-                    if( meshTypeAndConditions[j].condition )
+                    if( meshTypeAndConditions[i].condition )
                     {
-                        var tileMesh = _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true );
-                        NullCheck.AssertNotNull( tileMesh, nameof( tileMesh ) );
+                        TileMesh tileMesh = null;
+                        LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[j].meshType], _owner.CharaKey );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.CharaKey );
 
                         break;
                     }
@@ -119,6 +128,22 @@ namespace Frontier.Entities
             }
 
             _isShowingAttackableRange = false;
+        }
+
+        /// <summary>
+        /// 危険領域を描画します
+        /// </summary>
+        /// <param name="color"></param>
+        private void DrawDangerRange( in UnityEngine.Color color )
+        {
+            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
+            {
+                TileMesh tileMesh = null;
+                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
+
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                tile.DrawTileMesh( tileMesh, in color, _owner.CharaKey );
+            }
         }
     }
 }
