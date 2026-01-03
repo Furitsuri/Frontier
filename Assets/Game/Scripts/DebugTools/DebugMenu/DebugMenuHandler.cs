@@ -11,7 +11,7 @@ namespace Frontier.DebugTools.DebugMenu
     public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
     {
         private InputFacade _inputFcd = null;
-        private DebugMenuPresenter _debugMenuView = null;
+        private DebugMenuUI _debugMenuView = null;
         private IDebugLauncher[] _debugLhr = null;
         // 選択中のメニューインデックス
         private int _currentMenuIndex = 0;
@@ -35,7 +35,7 @@ namespace Frontier.DebugTools.DebugMenu
         /// <summary>
         /// 初期化します
         /// </summary>
-        public void Init(DebugMenuPresenter debugMenuView, ToggleDebugCallback cb, InputCode.EnableCallback canAcceptCb, AcceptBooleanInput.AcceptBooleanInputCallback acceptInputCb)
+        public void Init(DebugMenuUI debugMenuView, ToggleDebugCallback cb, InputCode.EnableCallback canAcceptCb, AcceptBooleanInput.AcceptBooleanInputCallback acceptInputCb)
         {
             base.Init();
 

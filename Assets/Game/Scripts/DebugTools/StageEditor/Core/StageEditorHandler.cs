@@ -13,9 +13,9 @@ namespace Frontier.DebugTools.StageEditor
         private Func<string, bool> LoadStageCallback;
         private Func< int, StageEditMode > ChangeEditModeCallback;
 
-        private StageEditorPresenter _stageEditorView   = null;
+        private StageEditorUI _stageEditorView   = null;
 
-        public void Init( StageEditorPresenter stageEditorView, Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void Init( StageEditorUI stageEditorView, Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
             _stageEditorView            = stageEditorView;
             PlaceTileCallback           = placeTileCb;

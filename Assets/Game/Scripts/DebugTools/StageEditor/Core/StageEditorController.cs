@@ -48,7 +48,7 @@ namespace Frontier.DebugTools.StageEditor
 
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
-        private StageEditorPresenter _stageEditorView   = null;
+        private StageEditorUI _stageEditorView   = null;
         private StageFileLoader _stageFileLoader        = null;
         private GridCursorController _gridCursorCtrl    = null;
         private StageEditRefParams _refParams           = null;

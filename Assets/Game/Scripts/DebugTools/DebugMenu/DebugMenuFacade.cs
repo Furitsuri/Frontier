@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace Frontier.DebugTools.DebugMenu
 {
-    public class DebugMenuFacade : BaseFacadeWithFocusRoutineHandler<DebugMenuHandler, DebugMenuPresenter>
+    public class DebugMenuFacade
     {
+        DebugMenuHandler _handler = null;
+        DebugMenuUI _presenter = null;
+
         private GameObject _debugUi = null;
 
         /// <summary>
@@ -23,7 +26,7 @@ namespace Frontier.DebugTools.DebugMenu
 
             _debugUi.SetActive(false); // 初期状態では非表示
 
-            _presenter.Init();
+            _presenter.Setup();
             _handler.Init( _presenter, ToggleDebugCallback, canAcceptCb, acceptInputCb );
         }
 
