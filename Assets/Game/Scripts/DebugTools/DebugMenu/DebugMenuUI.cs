@@ -1,7 +1,4 @@
-﻿using Frontier;
-using System.Collections;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using TMPro;
 using UnityEngine;
@@ -28,44 +25,18 @@ namespace Frontier.DebugTools.DebugMenu
         }
 
         /// <summary>
-        /// メニューカーソルを更新します
-        /// </summary>
-        public void UpdateMenuCursor(int index)
-        {
-            // 選択中のメニューのテキストを強調表示
-            for (int i = 0; i < _menuTexts.Count; ++i)
-            {
-                if (i == index)
-                {
-                    _menuTexts[i].color = Color.yellow;
-                }
-                else
-                {
-                    _menuTexts[i].color = Color.white;
-                }
-            }
-        }
-
-        /// <summary>
-        /// デバッグメニューの表示/非表示を切り替えます
-        /// </summary>
-        public void ToggleMenuVisibility()
-        {
-            gameObject.SetActive(!gameObject.activeSelf);
-        }
-
-        /// <summary>
         /// デバッグのメニューリストを初期化します
         /// </summary>
         private void InitDebugMenuList()
         {
             _menuTexts.Clear();
 
-            for (int i = 0; i < (int)DebugMainMenuTag.MAX; ++i)
+            for( int i = 0; i < ( int ) DebugMainMenuTag.MAX; ++i )
             {
-                TextMeshProUGUI textUGUI = _hierarchyBld.CreateComponentWithNestedParent<TextMeshProUGUI>(DebugMenuElement, DebugMenuList, true);
-                textUGUI.text = ((DebugMainMenuTag)i).ToString().Replace('_', ' ');    // アンダースコアをスペースに置き換え
-                _menuTexts.Add(textUGUI);
+                TextMeshProUGUI textUGUI = null;
+                LazyInject.GetOrCreate( ref textUGUI, () => _hierarchyBld.CreateComponentWithNestedParent<TextMeshProUGUI>( DebugMenuElement, DebugMenuList, true ) );
+                textUGUI.text = ( ( DebugMainMenuTag ) i ).ToString().Replace( '_', ' ' );    // アンダースコアをスペースに置き換え
+                _menuTexts.Add( textUGUI );
             }
         }
 
