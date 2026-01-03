@@ -25,15 +25,17 @@ namespace Frontier
             END
         }
 
+        [Inject] private IUiSystem _uiSystem = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl = null;
+        [Inject] private CombatSkillEventController _combatSkillCtrl = null;
+        [Inject] private StageController _stageCtrl = null;
+
         delegate bool UpdateAttack( in Vector3 arg1, in Vector3 arg2 );
 
         private Phase _phase;
         private float _elapsedTime = 0f;
         private bool _counterConditions = false;
-        private BattleRoutineController _btlRtnCtrl = null;
         private BattleCameraController _btlCamCtrl = null;
-        private StageController _stageCtrl = null;
-        private IUiSystem _uiSystem = null;
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
         private Character _diedCharacter = null;
@@ -46,21 +48,8 @@ namespace Frontier
         private Quaternion _tgtCharaInitialRot = Quaternion.identity;
         private UpdateAttack _updateAttackerAttack = null;
         private UpdateAttack _updateTargetAttack = null;
-        private CombatSkillEventController _combatSkillCtrl = null;
         private ParrySkillNotifier _parryNotifier = null;
 
-        [Inject]
-        public void Construct( BattleRoutineController btlRtnCtrl, StageController stgCtrl, CombatSkillEventController combatSkillCtrl, IUiSystem uiSystem )
-        {
-            _btlRtnCtrl = btlRtnCtrl;
-            _stageCtrl = stgCtrl;
-            _combatSkillCtrl = combatSkillCtrl;
-            _uiSystem = uiSystem;
-        }
-
-        /// <summary>
-        /// 初期化します
-        /// </summary>
         public void Init()
         {
             _btlCamCtrl     = _btlRtnCtrl.GetCameraController();

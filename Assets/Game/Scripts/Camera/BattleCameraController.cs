@@ -45,23 +45,14 @@ namespace Frontier
             public float Yaw;
         }
 
-        [SerializeField]
-        private float _offsetLength;
+        [SerializeField] private float _offsetLength;
+        [SerializeField] private float _followDuration = 1f;
+        [SerializeField] private float _fadeDuration = 0.4f;
+        [SerializeField] private float _atkCameraLerpDuration = 0.2f;
+        [SerializeField] private float _mosaicStartFadeRate = 0.0f;
+        [SerializeField] private float _mosaicBlockSizeMaxRate = 0.5f;
 
-        [SerializeField]
-        private float _followDuration = 1f;
-
-        [SerializeField]
-        private float _fadeDuration = 0.4f;
-
-        [SerializeField]
-        private float _atkCameraLerpDuration = 0.2f;
-
-        [SerializeField]
-        private float _mosaicStartFadeRate = 0.0f;
-
-        [SerializeField]
-        private float _mosaicBlockSizeMaxRate = 0.5f;
+        [Inject] private IUiSystem _uiSystem = null;
 
         private CameraMode _mode;
         private AttackSequenceCameraPhase _atkCameraPhase;
@@ -70,7 +61,7 @@ namespace Frontier
         private List<CameraParamData[]> _rangedAtkCameraParamDatas;
         private CameraParamData[] _currentCameraParamDatas;
         private CameraMosaicEffect _mosaicEffectScript;
-        private IUiSystem _uiSystem = null;
+        
         // カメラ座標の基点となるトランスフォーム
         private Transform _cameraBaseTransform;
         // カメラの被写体座標の基点となるトランスフォーム
@@ -97,12 +88,6 @@ namespace Frontier
         private float _roll                 = 0.0f;
         private float _pitch                = 0.0f;
         private float _yaw                  = 0.0f;
-
-        [Inject]
-        public void Construct( IUiSystem uiSystem )
-        {
-            _uiSystem = uiSystem;
-        }
 
         // Start is called before the first frame update
         override protected void OnStart()

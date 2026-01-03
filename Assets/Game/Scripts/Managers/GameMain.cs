@@ -22,27 +22,24 @@ namespace Frontier
             GAME_END,
         }
 
-        [SerializeField]
         [Header("UI")]
-        private IUiSystem _UISystem;
+        [SerializeField] private IUiSystem _UISystem;
 
-        [SerializeField]
         [Header("UIカメラのオブジェクト")]
-        private GameObject _UICameraObject;
+        [SerializeField] private GameObject _UICameraObject;
 
-        [SerializeField]
         [Header("各種マネージャのプロバイダオブジェクト")]
-        private GameObject _managerProvider;
+        [SerializeField] private GameObject _managerProvider;
 
-        [SerializeField]
         [Header("ステージ開始時に表示する時間(秒)")]
-        private float stageStartDelay = 2f;
+        [SerializeField] private float stageStartDelay = 2f;
+
+        [Inject] private DiContainer _diContainer           = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private InputFacade _inputFcd              = null;
+        [Inject] private TutorialFacade _tutorialFcd        = null;
 
         private GameObject _stageImage;
-        private DiContainer _diContainer;
-        private HierarchyBuilderBase _hierarchyBld;
-        private InputFacade _inputFcd;
-        private TutorialFacade _tutorialFcd;
         private GamePhase _Phase;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
@@ -50,15 +47,6 @@ namespace Frontier
 #endif // UNITY_EDITOR
 
         static public GameMain instance = null;
-
-        [Inject]
-        public void Construct( DiContainer diContainer,  InputFacade inputFcd, HierarchyBuilderBase hierarchyBld, TutorialFacade tutorialFcd )
-        {
-            _diContainer    = diContainer;
-            _inputFcd       = inputFcd;
-            _hierarchyBld   = hierarchyBld;
-            _tutorialFcd    = tutorialFcd;
-        }
 
         void Awake()
         {
