@@ -12,7 +12,7 @@ using Zenject;
 
 namespace Frontier.DebugTools.DebugMenu
 {
-    public class DebugMenuPresenter : BasePresenter
+    public class DebugMenuUI : UiMonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -25,18 +25,6 @@ namespace Frontier.DebugTools.DebugMenu
         public ReadOnlyCollection<TextMeshProUGUI> MenuTexts
         {
             get { return _menuTexts.AsReadOnly(); }
-        }
-
-        /// <summary>
-        /// 初期化します
-        /// </summary>
-        override public void Init()
-        {
-            LazyInject.GetOrCreate( ref _verticalLayoutGroup, () => DebugMenuList.GetComponent<VerticalLayoutGroup>() );
-
-            InitDebugMenuList();
-
-            gameObject.SetActive(false);    // 初期状態では無効にする
         }
 
         /// <summary>
@@ -79,6 +67,15 @@ namespace Frontier.DebugTools.DebugMenu
                 textUGUI.text = ((DebugMainMenuTag)i).ToString().Replace('_', ' ');    // アンダースコアをスペースに置き換え
                 _menuTexts.Add(textUGUI);
             }
+        }
+
+        override public void Setup()
+        {
+            LazyInject.GetOrCreate( ref _verticalLayoutGroup, () => DebugMenuList.GetComponent<VerticalLayoutGroup>() );
+
+            InitDebugMenuList();
+
+            gameObject.SetActive( false );    // 初期状態では無効にする
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Frontier
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuHandler >().FromComponentInHierarchy().AsCached();
-            Container.Bind<DebugMenuPresenter>().FromComponentInHierarchy().AsCached();
+            Container.Bind<DebugMenuUI>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
         }
 

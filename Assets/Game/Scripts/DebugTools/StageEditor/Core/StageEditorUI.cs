@@ -9,7 +9,7 @@ using static Frontier.DebugTools.StageEditor.StageEditorController;
 
 namespace Frontier.DebugTools.StageEditor
 {
-    public class StageEditorPresenter : MonoBehaviour
+    public class StageEditorUI : UiMonoBehaviour
     {
         [SerializeField] private GameObject _editParamImage;
         [SerializeField] private GameObject[] _editParams;                  // エディット用のパラメータ群

@@ -6,11 +6,11 @@ using Frontier.DebugTools.StageEditor;
 
 public class DebugUISystem : MonoBehaviour
 {
-    [Header("DebugMenuPresenter")]
-    public DebugMenuPresenter DebugMenuView;        // デバッグメニュー表示
+    [Header("DebugMenuUI")]
+    public DebugMenuUI DebugMenuView;        // デバッグメニュー表示
 
-    [Header("StageEditorPresenter")]
-    public StageEditorPresenter StageEditorView;    // ステージエディット機能表示
+    [Header("StageEditorUI")]
+    public StageEditorUI StageEditorView;    // ステージエディット機能表示
 }
 
 #endif // UNITY_EDITOR
