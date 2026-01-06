@@ -88,9 +88,9 @@ namespace Frontier.StateMachine
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR, "SELECT",               CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-                ( GuideIcon.CANCEL,     "BACK",                 CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode ),
-                ( GuideIcon.INFO,       _inputInfoStrWrapper,   CanAcceptDefault, new AcceptBooleanInput( AcceptInfo ),   0.0f, hashCode )
+                ( GuideIcon.VERTICAL_CURSOR,    "SELECT",               CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                ( GuideIcon.CANCEL,             "BACK",                 CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode ),
+                ( GuideIcon.INFO,               _inputInfoStrWrapper,   CanAcceptDefault, new AcceptBooleanInput( AcceptInfo ),   0.0f, hashCode )
             );
         }
 
@@ -105,9 +105,23 @@ namespace Frontier.StateMachine
 
         override protected bool AcceptDirection( Direction dir )
         {
-            // TODO : ツールチップUIの操作処理を実装
+            int addValue = 0;
 
-            return false;
+            switch( dir )
+            {
+                case Direction.FORWARD:
+                    addValue = -1;
+                    break;
+                case Direction.BACK:
+                    addValue = 1;
+                    break;
+                default:
+                    return false;
+            }
+
+            _statusPresenter.AddSelectCursorItemIndex( addValue );
+
+            return true;
         }
 
         /// <summary>

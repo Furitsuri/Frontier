@@ -9,7 +9,7 @@ namespace Frontier.DebugTools.DebugMenu
 {
     public class DebugMenuPresenter
     {
-        [Inject] private IUiSystem _uiSystem                = null;
+        [Inject] private IUiSystem _uiSystem = null;
 
         private DebugMenuUI _debugMenuUI;
 

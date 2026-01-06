@@ -33,5 +33,11 @@ namespace Frontier
             CharacterStatusView?.Setup();
             ToolTipView?.Setup();
         }
+
+        public Vector2 GetScreenSize()
+        {
+            RectTransform canvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
+            return canvasRect.sizeDelta;
+        }
     }
 }
