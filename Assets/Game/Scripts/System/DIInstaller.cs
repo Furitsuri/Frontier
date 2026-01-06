@@ -32,7 +32,7 @@ namespace Frontier
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
-            Container.Bind<DebugMenuHandler >().FromComponentInHierarchy().AsCached();
+            Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuUI>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
         }

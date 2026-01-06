@@ -7,25 +7,33 @@ namespace Frontier.UI
     {
         [SerializeField] TextMeshProUGUI _explanation;
 
-        void Awake()
-        {
-            gameObject.SetActive( false );
-        }
+        RectTransform _rectTransform = null;
 
         public void SetText( string text )
         {
             _explanation.text = text;
         }
 
-        public void SetPosirion( Vector2 pos )
+        public void SetPosition( Vector2 pos )
         {
-            RectTransform rectTransform = GetComponent<RectTransform>();
-            rectTransform.anchoredPosition = pos;
+            _rectTransform.anchoredPosition = pos;
+        }
+
+        public Vector2 GetSize()
+        {
+            return _rectTransform.sizeDelta;
+        }
+
+        public Vector2 GetPivot()
+        {
+            return _rectTransform.pivot;
         }
 
         override public void Setup()
         {
+            _rectTransform = GetComponent<RectTransform>();
 
+            gameObject.SetActive( false );
         }
     }
 }

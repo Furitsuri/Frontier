@@ -98,6 +98,9 @@ static public class Constants
     public const float OPTIONAL_INPUT_INTERVAL          = 0.0f;
     public const float GUIDE_TEXT_MIN_SIZE              = 10f;
     public const float GUIDE_TEXT_MAX_SIZE              = 20f;
+    // ツールチップウィンドウを表示する際に用いるスペース
+    public const float TOOLTIP_WINDOW_SPACE_X = 10f;
+    public const float TOOLTIP_WINDOW_SPACE_Y = 0f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
     // キャラクターのスナップショット撮影時の位置

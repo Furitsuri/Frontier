@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{D9313A3F-E718-A261-BC8D-B52E966C7ADB}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zenject", "Zenject.csproj", "{00144F1E-7C04-467C-2406-00DC8B87AE6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zenject-IntegrationTests", "Zenject-IntegrationTests.csproj", "{53F03806-C21D-FCAD-CE28-C81498E3BAED}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{D9313A3F-E718-A261-BC8D-B52E966C7ADB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniRx", "UniRx.csproj", "{F2A1416C-674B-8053-4F9B-782FF32E8A96}"
 EndProject
@@ -43,6 +43,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{00144F1E-7C04-467C-2406-00DC8B87AE6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{00144F1E-7C04-467C-2406-00DC8B87AE6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00144F1E-7C04-467C-2406-00DC8B87AE6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,10 +55,6 @@ Global
 		{53F03806-C21D-FCAD-CE28-C81498E3BAED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F03806-C21D-FCAD-CE28-C81498E3BAED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53F03806-C21D-FCAD-CE28-C81498E3BAED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9313A3F-E718-A261-BC8D-B52E966C7ADB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F2A1416C-674B-8053-4F9B-782FF32E8A96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F2A1416C-674B-8053-4F9B-782FF32E8A96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2A1416C-674B-8053-4F9B-782FF32E8A96}.Release|Any CPU.ActiveCfg = Release|Any CPU

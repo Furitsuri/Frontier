@@ -12,4 +12,9 @@ public class UiMonoBehaviour : MonoBehaviour
     {
         gameObject.SetActive( false );
     }
+
+    virtual public RectTransform GetRectTransform()
+    {
+        return this.GetComponent<RectTransform>();
+    }
 }
