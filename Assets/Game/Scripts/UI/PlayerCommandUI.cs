@@ -10,17 +10,16 @@ namespace Frontier
 {
     public class PlayerCommandUI : UiMonoBehaviour
     {
-        [SerializeField]
-        private GameObject _TMPCommandStringSample;
+        [SerializeField] private GameObject _TMPCommandStringSample;
+        [SerializeField] private CommandItem _commandItemSample;
 
-        [Inject]
-        private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        private List<TextMeshProUGUI> _commandTexts = new List<TextMeshProUGUI>();
+        private List<CommandItem> _commandItems = new List<CommandItem>();
         private RectTransform _commandUIBaseRectTransform;
         private VerticalLayoutGroup _cmdTextVerticalLayout;
         private PlSelectCommandState _PlSelectScript;
-        private string[] _commandStrings;
+        private string[] _commandTextKeys;
 
         /// <summary>
         /// コマンドの文字列を初期化します
@@ -28,14 +27,13 @@ namespace Frontier
         /// </summary>
         void InitCommandStrings()
         {
-            _commandStrings = new string[( int ) COMMAND_TAG.NUM]
+            _commandTextKeys = new string[( int ) COMMAND_TAG.NUM]
             {
-                "MOVE",
-                "ATTACK",
-                "WAIT"
+                "UI_CMD_MOVE",
+                "UI_CMD_ATTACK",
+                "UI_CMD_WAIT"
             };
-
-            Debug.Assert( _commandStrings.Length == ( int ) COMMAND_TAG.NUM );
+            Debug.Assert( _commandTextKeys.Length == ( int ) COMMAND_TAG.NUM );
         }
 
         // Update is called once per frame
@@ -50,13 +48,13 @@ namespace Frontier
         void UpdateSelectCommand()
         {
             // 一度全てを白色に設定
-            foreach( var text in _commandTexts )
+            foreach( var command in _commandItems )
             {
-                text.color = Color.white;
+                command.SetColor( Color.white );
             }
 
             // 選択項目を赤色に設定
-            _commandTexts[_PlSelectScript.GetCommandIndex()].color = Color.red;
+            _commandItems[_PlSelectScript.GetCommandIndex()].SetColor( Color.red );
         }
 
         /// <summary>
@@ -88,20 +86,22 @@ namespace Frontier
         {
             float fontSize = 0;
 
-            foreach( var cmdText in _commandTexts )
+            foreach( var command in _commandItems )
             {
-                Destroy( cmdText.gameObject );
+                Destroy( command.gameObject );
             }
-            _commandTexts.Clear();
+            _commandItems.Clear();
 
             // 実行可能なコマンドの文字列をリストに追加し、そのゲームオブジェクトを子として登録
             for( int i = 0; i < executableCommands.Count; ++i )
             {
-                TextMeshProUGUI commandString = _hierarchyBld.CreateComponentAndOrganize<TextMeshProUGUI>( _TMPCommandStringSample, true );
-                commandString.transform.SetParent( this.gameObject.transform, false );
-                commandString.SetText( _commandStrings[( int ) executableCommands[i]] );
-                _commandTexts.Add( commandString );
-                fontSize = commandString.fontSize;
+                CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "command_" + i );
+                commandItem.Setup();
+                commandItem.transform.SetParent( this.gameObject.transform, false );
+                commandItem.SetTextKey( _commandTextKeys[( int ) executableCommands[i]] );
+                _commandItems.Add( commandItem );
+
+                fontSize = commandItem.GetFontSize();
             }
 
             // 選択可能なコマンド数を用いてUIの下地の大きさを変更

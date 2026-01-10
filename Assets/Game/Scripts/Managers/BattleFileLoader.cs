@@ -79,6 +79,7 @@ namespace Frontier
             public float Param2;
             public float Param3;
             public float Param4;
+            public string ExplainTextKey;
         }
 
         [System.Serializable]
@@ -202,19 +203,22 @@ namespace Frontier
         /// </summary>
         /// <param name="data">適応先のスキルデータ</param>
         /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
-        private void ApplySkillsData(ref SkillsData.Data data, in FileSkillData fdata)
+        private void ApplySkillsData( ref SkillsData.Data data, in FileSkillData fdata )
         {
-            data.Name       = fdata.Name;
-            data.Cost       = fdata.Cost;
-            data.Type       = (SituationType)fdata.Type;
-            data.Duration   = fdata.Duration;
-            data.AddAtkMag  = fdata.AddAtkMag;
-            data.AddDefMag  = fdata.AddDefMag;
-            data.AddAtkNum  = fdata.AddAtkNum;
-            data.Param1     = fdata.Param1;
-            data.Param2     = fdata.Param2;
-            data.Param3     = fdata.Param3;
-            data.Param4     = fdata.Param4;
+            data.Name = fdata.Name;
+            data.Cost = fdata.Cost;
+            data.Type = ( SituationType ) fdata.Type;
+            data.Duration = fdata.Duration;
+            data.AddAtkMag = fdata.AddAtkMag;
+            data.AddDefMag = fdata.AddDefMag;
+            data.AddAtkNum = fdata.AddAtkNum;
+            data.Param1 = fdata.Param1;
+            data.Param2 = fdata.Param2;
+            data.Param3 = fdata.Param3;
+            data.Param4 = fdata.Param4;
+            data.ExplainTextKey = fdata.ExplainTextKey;
+            // TODO : nullアクセス防止の暫定対応。後で消すこと
+            if( null == data.ExplainTextKey ) { data.ExplainTextKey = ""; }
         }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR

@@ -1,7 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+/// <summary>
+/// UI用のMonoBehaviourの基底クラスです
+/// UIの初期化処理を共通化するために使用します
+/// (初期化はAwakeやStartではなく、このクラスのSetupメソッドで行うようにしてください)。
+/// </summary>
 public class UiMonoBehaviour : MonoBehaviour
 {
     /// <summary>
@@ -11,10 +14,5 @@ public class UiMonoBehaviour : MonoBehaviour
     virtual public void Setup()
     {
         gameObject.SetActive( false );
-    }
-
-    virtual public RectTransform GetRectTransform()
-    {
-        return this.GetComponent<RectTransform>();
     }
 }
