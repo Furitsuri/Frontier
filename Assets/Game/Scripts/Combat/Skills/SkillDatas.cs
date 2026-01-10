@@ -23,6 +23,7 @@ namespace Frontier.Combat.Skill
             public float Param2;
             public float Param3;
             public float Param4;
+            public string ExplainTextKey;
         }
 
         static public Data[] data                                       = new Data[(int)ID.SKILL_NUM];

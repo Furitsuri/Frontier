@@ -50,22 +50,22 @@ namespace Frontier.Presenter
         public void AddSelectCursorItemIndex( int addValue )
         {
             _selectedItemIndex += addValue;
-            int itemCount = _statusUi.GetStatusItemRectList().Count;
+            int itemCount = _statusUi.GetStatusItemList().Count;
 
             _selectedItemIndex = ( _selectedItemIndex + itemCount ) % itemCount;
 
-            var itemRectList = _statusUi.GetStatusItemRectList();
-            if( _selectedItemIndex < 0 || itemRectList.Count <= _selectedItemIndex )
+            var itemList = _statusUi.GetStatusItemList();
+            if( _selectedItemIndex < 0 || itemList.Count <= _selectedItemIndex )
             {
                 _statusUi.SetSelectCursorActive( false );
                 return;
             }
-            var itemRect = itemRectList[_selectedItemIndex];
-            _statusUi.SetSelectCursorRect( itemRect.anchoredPosition, itemRect.sizeDelta );
+            var item = itemList[_selectedItemIndex];
+            _statusUi.SetSelectCursorRect( item.GetRectTransform().anchoredPosition, item.GetRectTransform().sizeDelta );
 
             // ツールチップの位置とテキストを設定
-            SetToolTipPosition( itemRect.anchoredPosition, itemRect.sizeDelta, itemRect.pivot );
-            SetToolTipText( "aaa" );
+            SetToolTipPosition( item.GetRectTransform().anchoredPosition, item.GetRectTransform().sizeDelta, item.GetRectTransform().pivot );
+            SetToolTipText( item );
         }
 
         public bool IsToolTipActive()
@@ -102,8 +102,10 @@ namespace Frontier.Presenter
             _tooltipUi.SetPosition( new Vector2( posX, posY ) );
         }
 
-        private void SetToolTipText( string text )
+        private void SetToolTipText( ITooltipContent content )
         {
+            var text = content.GetTooltipText();
+
             _tooltipUi.SetText( text );
         }
     }

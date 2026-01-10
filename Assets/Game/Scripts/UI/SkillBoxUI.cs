@@ -9,13 +9,14 @@ using Frontier.Entities;
 
 namespace Frontier
 {
-    public class SkillBoxUI : UiMonoBehaviour
+    public sealed class SkillBoxUI : UIMonoBehaviourIncludingText, ITooltipContent
     {
         [SerializeField] private TextMeshProUGUI TMPSkillName;
         [SerializeField] private RectTransform PanelTransform;
         [SerializeField] private RawImage ActGaugeElemImage;
         [SerializeField] private Image CurtainImage;
 
+        private string _tooltipText;
         private ColorFlicker<ImageColorAdapter> _imageFlicker;
         private List<RawImage> _actGaugeElems;
         private Image _uiImage;
@@ -26,6 +27,11 @@ namespace Frontier
             _imageFlicker.UpdateFlick();
         }
 
+        /// <summary>
+        /// OnEnableでEnableRefreshText()を呼び出さないため、空実装にしています。
+        /// </summary>
+        void OnEnable() { }
+
         public void ApplySkill( Character chara, int index )
         {
             bool isValid = chara.Params.CharacterParam.IsValidSkill( index );
@@ -34,8 +40,12 @@ namespace Frontier
 
             string skillName    = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Name;
             var type            = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Type;
+            _textKey            = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].ExplainTextKey;
             SetSkillName( skillName, type );
+            SetTooltipText( _textKey );
             ShowSkillCostImage( SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Cost );
+
+            EnableRefreshText();
         }
 
         /// <summary>
@@ -123,5 +133,35 @@ namespace Frontier
                 elem.transform.SetParent( PanelTransform, false );
             }
         }
+
+        #region ITooltipContent implementation
+
+        public void SetTooltipText( string textKey )
+        {
+            _tooltipText = _localization.Get( textKey );
+        }
+
+        public string GetTooltipText()
+        {
+            return _tooltipText;
+        }
+
+        public RectTransform GetRectTransform()
+        {
+            return this.GetComponent<RectTransform>();
+        }
+
+        #endregion  // ITooltipContent implementation
+
+        #region ILocalizedText implementation
+
+        override public void RefreshText()
+        {
+            // スキル名はローカライズ対象外のため、何もしない
+
+            SetTooltipText( _textKey );
+        }
+
+        #endregion  // ILocalizedText implementation
     }
 }

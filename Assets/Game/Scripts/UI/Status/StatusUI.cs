@@ -19,7 +19,7 @@ namespace Frontier.UI
         [SerializeField] private Image _selectCursor            = null;
         [SerializeField] private SkillBoxUI[] SkillBoxes;
 
-        private List<RectTransform> _statusItemRectList = new List<RectTransform>();
+        private List<ITooltipContent> _statusItemList = new List<ITooltipContent>();
 
         public void AssignCharacter( Character chara )
         {
@@ -27,11 +27,11 @@ namespace Frontier.UI
 
             TMPLevel.SetValueText( charaParam.Level.ToString() );
             TMPHP.SetValueText( $"{charaParam.CurHP} / {charaParam.MaxHP}" );
-            TMPLevel.SetValueText( charaParam.moveRange.ToString() );
-            TMPLevel.SetValueText( charaParam.jumpForce.ToString() );
-            TMPLevel.SetValueText( charaParam.maxActionGauge.ToString() );
-            TMPLevel.SetValueText( charaParam.Atk.ToString() );
-            TMPLevel.SetValueText( charaParam.Def.ToString() );
+            TMPMove.SetValueText( charaParam.moveRange.ToString() );
+            TMPJump.SetValueText( charaParam.jumpForce.ToString() );
+            TMPAction.SetValueText( charaParam.maxActionGauge.ToString() );
+            TMPAttack.SetValueText( charaParam.Atk.ToString() );
+            TMPDeffence.SetValueText( charaParam.Def.ToString() );
 
             _characterSnapshot.texture = chara.Snapshot;
 
@@ -64,30 +64,30 @@ namespace Frontier.UI
             return ( _characterSnapshot.rectTransform.rect.width, _characterSnapshot.rectTransform.rect.height);
         }
 
-        public List<RectTransform> GetStatusItemRectList()
+        public List<ITooltipContent> GetStatusItemList()
         {
-            return _statusItemRectList;
+            return _statusItemList;
         }
 
         private void InitStatusItemRectList()
         {
-            _statusItemRectList.Clear();
-            _statusItemRectList.Add( TMPLevel.GetRectTransform() );
-            _statusItemRectList.Add( TMPHP.GetRectTransform() );
-            _statusItemRectList.Add( TMPMove.GetRectTransform() );
-            _statusItemRectList.Add( TMPJump.GetRectTransform() );
-            _statusItemRectList.Add( TMPAction.GetRectTransform() );
-            _statusItemRectList.Add( TMPAttack.GetRectTransform() );
-            _statusItemRectList.Add( TMPDeffence.GetRectTransform() );
+            _statusItemList.Clear();
+            _statusItemList.Add( TMPLevel );
+            _statusItemList.Add( TMPHP );
+            _statusItemList.Add( TMPMove );
+            _statusItemList.Add( TMPJump );
+            _statusItemList.Add( TMPAction );
+            _statusItemList.Add( TMPAttack );
+            _statusItemList.Add( TMPDeffence );
 
             foreach( var item in SkillBoxes )
             {
                 if( !item.gameObject.activeSelf ) { continue; }
-                _statusItemRectList.Add( item.GetRectTransform() );
+                _statusItemList.Add( item );
             }
 
             // カーソルの初期位置をリストの先頭の要素で初期化
-            SetSelectCursorRect( _statusItemRectList[0].anchoredPosition, _statusItemRectList[0].sizeDelta );
+            SetSelectCursorRect( _statusItemList[0].GetRectTransform().anchoredPosition, _statusItemList[0].GetRectTransform().sizeDelta );
         }
 
         override public void Setup()

@@ -18,6 +18,7 @@ namespace Frontier
         {
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
+            Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
             Container.Bind<ISaveHandler<TutorialSaveData>>().To<TutorialSaveHandler>().AsSingle();
             Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();
 

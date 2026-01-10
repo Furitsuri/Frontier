@@ -1290,7 +1290,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &424975147
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4016,6 +4016,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_ATTACK
   _valueText: {fileID: 456938673}
 --- !u!1 &1059934228
 GameObject:
@@ -4339,6 +4340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_JUMP
   _valueText: {fileID: 1424391605}
 --- !u!1 &1149514109
 GameObject:
@@ -4826,8 +4828,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -5215,6 +5217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_HP
   _valueText: {fileID: 1674014165}
 --- !u!1 &1359306009
 GameObject:
@@ -5858,6 +5861,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_ACTION
   _valueText: {fileID: 1149514111}
 --- !u!1 &1517827504
 GameObject:
@@ -6113,7 +6117,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1567326094
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7095,6 +7099,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_MOVE
   _valueText: {fileID: 308325164}
 --- !u!1 &1879254125
 GameObject:
@@ -7320,6 +7325,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_DEFFENCE
   _valueText: {fileID: 1573335436}
 --- !u!1 &1953084282
 GameObject:
@@ -8117,6 +8123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: UI_STATUS_LEVEL
   _valueText: {fileID: 506888048}
 --- !u!1 &5884739877339925
 GameObject:
@@ -24644,6 +24651,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _TMPCommandStringSample: {fileID: 266401905242192063, guid: 3552f470a7a210542a1bcc3008a0e03e, type: 3}
+  _commandItemSample: {fileID: 6776764930849067439, guid: afd0f561fe950084c80b4dfdc1fe93be, type: 3}
 --- !u!224 &4692032458678653961
 RectTransform:
   m_ObjectHideFlags: 0
