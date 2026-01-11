@@ -50,6 +50,8 @@ namespace Frontier
         {
             public int CharacterTag;
             public int CharacterIndex;
+            public string Name;
+            public int Level;
             public int MaxHP;
             public int Atk;
             public int Def;
@@ -145,10 +147,10 @@ namespace Frontier
 
                     // 弾オブジェクトが設定されていれば生成
                     // 使用時まで非アクティブにする
-                    if (chara.BulletObject != null)
+                    if( chara.BulletObject != null )
                     {
-                        Bullet bullet = _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>(chara.BulletObject, chara.gameObject, "Bullet", false, false);
-                        chara.SetBullet(bullet);
+                        Bullet bullet = _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>( chara.BulletObject, chara.gameObject, "Bullet", false, false );
+                        chara.SetBullet( bullet );
                     }
 
                     chara.Params.CharacterParam.Apply( param ); // ファイルから読み込んだパラメータを設定
@@ -160,8 +162,7 @@ namespace Frontier
                         npc.SetThinkType((ThinkingType)param.ThinkType);
                     }
 
-                    _btlRtnCtrl.BtlCharaCdr.loadCharacterToList(chara);
-
+                    _btlRtnCtrl.BtlCharaCdr.loadCharacterToList( chara );
                 }
             }
         }

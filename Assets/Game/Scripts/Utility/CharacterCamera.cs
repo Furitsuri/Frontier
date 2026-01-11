@@ -13,11 +13,12 @@ public class CharacterCamera
     private Character _dispCharacter;   // 表示中のキャラクター  
     private float _angleY = 30.0f;
 
-    public void Init( string cameraName, int layerIndex, ref RawImage refTargetImage )
+    public void Init( string cameraName, int layerIndex, float angleY, ref RawImage refTargetImage )
     {
         _refTargetImage         = refTargetImage;
         _targetTexture          = new RenderTexture( ( int ) _refTargetImage.rectTransform.rect.width * 2, ( int ) _refTargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 );
         _refTargetImage.texture = _targetTexture;
+        _angleY                 = angleY;
         _camera                 = _hierarchyBld.CreateComponentAndOrganize<Camera>( true, cameraName );
         _camera.enabled         = false;
         _camera.clearFlags      = CameraClearFlags.SolidColor;

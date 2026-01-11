@@ -15,7 +15,7 @@ namespace Frontier.UI
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         [SerializeField] private int _layerMaskIndex = 0;
-        [SerializeField] private float _camareAngleY;
+        [SerializeField] private float _cameraAngleY;
         [SerializeField] private float BlinkingDuration;
         [SerializeField] private TextMeshProUGUI TMPMaxHPValue;
         [SerializeField] private TextMeshProUGUI TMPCurHPValue;
@@ -54,7 +54,7 @@ namespace Frontier.UI
             var layerToName         = LayerMask.LayerToName( _layerMaskIndex );
             TargetImage.texture     = _targetTexture;
 
-            _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, ref TargetImage );
+            _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, _cameraAngleY, ref TargetImage );
 
             for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
