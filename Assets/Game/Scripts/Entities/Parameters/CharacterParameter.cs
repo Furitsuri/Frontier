@@ -17,6 +17,7 @@ namespace Frontier.Entities
     {
         public CHARACTER_TAG characterTag;  // キャラクタータグ
         public int characterIndex;          // キャラクター番号
+        public string Name;                 // キャラクター名
         public int Level;                   // レベル
         public int MaxHP;                   // 最大HP
         public int CurHP;                   // 現在HP
@@ -68,6 +69,8 @@ namespace Frontier.Entities
         {
             characterTag            = CHARACTER_TAG.NONE;
             characterIndex          = 0;
+            Name                    = "";
+            Level                   = 1;
             MaxHP                   = 0;
             CurHP                   = 0;
             Atk                     = 0;
@@ -87,10 +90,12 @@ namespace Frontier.Entities
         /// 外部からパラメータを適用させます
         /// </summary>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        public void Apply(in CharacterParamData fdata)
+        public void Apply( in CharacterParamData fdata )
         {
             this.characterTag           = (CHARACTER_TAG)fdata.CharacterTag;
             this.characterIndex         = fdata.CharacterIndex;
+            this.Name                   = fdata.Name;
+            this.Level                  = fdata.Level;
             this.CurHP                  = this.MaxHP = fdata.MaxHP;
             this.Atk                    = fdata.Atk;
             this.Def                    = fdata.Def;

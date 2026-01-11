@@ -1,13 +1,17 @@
-﻿using TMPro;
+﻿using Frontier.Entities;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Frontier.Entities;
-using System.Collections.Generic;
+using Zenject;
 
 namespace Frontier.UI
 {
     public class StatusUI : UiMonoBehaviour
     {
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
+        [SerializeField] private TextMeshProUGUI TMPName;
         [SerializeField] private StatusItem TMPLevel;
         [SerializeField] private StatusItem TMPHP;
         [SerializeField] private StatusItem TMPMove;
@@ -15,16 +19,31 @@ namespace Frontier.UI
         [SerializeField] private StatusItem TMPAction;
         [SerializeField] private StatusItem TMPAttack;
         [SerializeField] private StatusItem TMPDeffence;
-        [SerializeField] private RawImage _characterSnapshot    = null;
+        [SerializeField] private RawImage _characterCameraImage = null;
         [SerializeField] private Image _selectCursor            = null;
         [SerializeField] private SkillBoxUI[] SkillBoxes;
+        [SerializeField] private int _cameraAngleY              = 0;
+        [SerializeField] private float _cameraLengthY = 1.0f;
+        [SerializeField] private float _cameraLengthZ = 1.5f;
+        [SerializeField] private float _cameraLookAtCorrectY = 0.0f;
 
+        private CharacterCamera _characterCamera;
+        private RenderTexture _targetTexture;
         private List<ITooltipContent> _statusItemList = new List<ITooltipContent>();
+
+        private void Update()
+        {
+            if( _characterCamera != null )
+            {
+                _characterCamera.Update( new CameraParameter() { UICameraLengthY = _cameraLengthY, UICameraLengthZ = _cameraLengthZ, UICameraLookAtCorrectY = _cameraLookAtCorrectY } );
+            }
+        }
 
         public void AssignCharacter( Character chara )
         {
             var charaParam = chara.Params.CharacterParam;
 
+            TMPName.text = charaParam.Name;
             TMPLevel.SetValueText( charaParam.Level.ToString() );
             TMPHP.SetValueText( $"{charaParam.CurHP} / {charaParam.MaxHP}" );
             TMPMove.SetValueText( charaParam.moveRange.ToString() );
@@ -33,7 +52,10 @@ namespace Frontier.UI
             TMPAttack.SetValueText( charaParam.Atk.ToString() );
             TMPDeffence.SetValueText( charaParam.Def.ToString() );
 
-            _characterSnapshot.texture = chara.Snapshot;
+            // _characterCameraImage.texture = chara.Snapshot;
+            _characterCameraImage.texture = _targetTexture;
+            _characterCamera.Init( "StatusCamera", chara.gameObject.layer, _cameraAngleY, ref _characterCameraImage );
+            _characterCamera.AssignCharacter( chara, chara.gameObject.layer );
 
             // スキルボックスUIの表示
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
@@ -57,11 +79,11 @@ namespace Frontier.UI
 
         public ( float, float ) GetSnapshotRectSize()
         {
-            if( null == _characterSnapshot )
+            if( null == _characterCameraImage )
             {
                 return ( 0, 0 );
             }
-            return ( _characterSnapshot.rectTransform.rect.width, _characterSnapshot.rectTransform.rect.height);
+            return ( _characterCameraImage.rectTransform.rect.width, _characterCameraImage.rectTransform.rect.height);
         }
 
         public List<ITooltipContent> GetStatusItemList()
@@ -92,6 +114,9 @@ namespace Frontier.UI
 
         override public void Setup()
         {
+            LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) _characterCameraImage.rectTransform.rect.width * 2, ( int ) _characterCameraImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
+            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
+
             foreach( var item in SkillBoxes )
             {
                 item.Setup();
