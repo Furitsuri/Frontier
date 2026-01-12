@@ -13,12 +13,13 @@ namespace Frontier.Combat.Skill
         public struct Data
         {
             public string Name;
-            public int Cost;
-            public SituationType Type;
+            public int Cost;            // 使用コスト
+            public SituationType Type;  // 使用シチュエーションタイプ
+            public int Flags;           // スキルフラグ
             public int Duration;
-            public float AddAtkMag;
-            public float AddDefMag;
-            public int AddAtkNum;
+            public float AddAtkMag;     // 攻撃力倍率加算
+            public float AddDefMag;     // 防御力倍率加算
+            public int AddAtkNum;       // 攻撃回数加算
             public float Param1;
             public float Param2;
             public float Param3;
