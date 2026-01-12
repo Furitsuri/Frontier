@@ -2726,7 +2726,7 @@ GameObject:
   - component: {fileID: 716063693}
   - component: {fileID: 716063692}
   m_Layer: 5
-  m_Name: CharacterSnapshot
+  m_Name: CharacterImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6335,7 +6335,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72ad1c2f00a3f67428f6a68f97171b97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _layerMaskIndex: 8
   TMPName: {fileID: 39118671}
   TMPLevel: {fileID: 2139924833}
   TMPHP: {fileID: 1354315340}
@@ -6344,7 +6343,7 @@ MonoBehaviour:
   TMPAction: {fileID: 1501201558}
   TMPAttack: {fileID: 1031718390}
   TMPDeffence: {fileID: 1929465928}
-  _characterSnapshot: {fileID: 716063692}
+  _characterCameraImage: {fileID: 716063692}
   _selectCursor: {fileID: 1320767961}
   SkillBoxes:
   - {fileID: 870583503}

@@ -73,6 +73,7 @@ namespace Frontier
             public string Name;
             public int Cost;
             public int Type;
+            public int Flags;
             public int Duration;
             public float AddAtkMag;
             public float AddDefMag;
@@ -209,6 +210,7 @@ namespace Frontier
             data.Name = fdata.Name;
             data.Cost = fdata.Cost;
             data.Type = ( SituationType ) fdata.Type;
+            data.Flags = fdata.Flags;
             data.Duration = fdata.Duration;
             data.AddAtkMag = fdata.AddAtkMag;
             data.AddDefMag = fdata.AddDefMag;
