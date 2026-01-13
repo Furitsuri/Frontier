@@ -1,11 +1,7 @@
-﻿using Frontier.Entities;
-using Frontier.StateMachine;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using static Constants;
 
-namespace Froniter.StateMachine
+namespace Frontier.StateMachine
 {
     /// <summary>
     /// 配置フェーズ：配置確定終了状態

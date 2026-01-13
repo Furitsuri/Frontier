@@ -18,11 +18,7 @@ namespace Frontier.StateMachine
 
             _presenter.Init();
 
-            var drs = RootNode as DeploymentRootState;
-            if( drs != null )
-            {
-                AssignPresenterToNodes( drs, _presenter );
-            }
+            AssignPresenterToNodes( RootNode, _presenter );
 
             // TODO : 配置出来るタイル以外はそのことを示す表示にする処理
 
@@ -67,18 +63,6 @@ namespace Frontier.StateMachine
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<DeploymentConfirmCompletedState>( false ) );
 
             CurrentNode = RootNode;
-        }
-
-        private void AssignPresenterToNodes( DeploymentPhaseStateBase targetNode, DeploymentPhasePresenter presenter )
-        {
-            if( null == targetNode ) { return; }
-
-            targetNode.AssignPresenter( presenter );
-
-            foreach( var childNode in targetNode.GetChildNodeEnumerable<DeploymentPhaseStateBase>() )
-            {
-                AssignPresenterToNodes( childNode as DeploymentPhaseStateBase, presenter );
-            }
         }
     }
 }
