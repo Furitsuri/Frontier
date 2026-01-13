@@ -4,6 +4,7 @@ using Frontier.UI;
 public interface IUiSystem
 {
     public GeneralUISystem GeneralUi { get; }
+    public RecruitmentUISystem RecruitmentUi { get; }
     public DeploymentUISystem DeployUi { get; }
     public BattleUISystem BattleUi { get; }
 #if UNITY_EDITOR

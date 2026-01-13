@@ -1,4 +1,5 @@
 ﻿using Frontier.Battle;
+using Frontier.Recruitment;
 using Frontier.Stage;
 using Frontier.UI;
 using System.Collections;
@@ -31,6 +32,18 @@ namespace Frontier.StateMachine
         private void AssignHandler( PhaseStateBase state )
         {
             state.AssignHandler( this );
+        }
+
+        protected void AssignPresenterToNodes( PhaseStateBase targetNode, PhasePresenterBase presenter )
+        {
+            if( null == targetNode ) { return; }
+
+            targetNode.AssignPresenter( presenter );
+
+            foreach( var childNode in targetNode.GetChildNodeEnumerable<PhaseStateBase>() )
+            {
+                AssignPresenterToNodes( childNode, presenter );
+            }
         }
 
         /// <summary>

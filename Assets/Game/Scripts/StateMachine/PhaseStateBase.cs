@@ -1,4 +1,5 @@
 ﻿using Frontier.Battle;
+using Frontier.Recruitment;
 using Frontier.Stage;
 using Frontier.Tutorial;
 using Zenject;
@@ -40,6 +41,8 @@ namespace Frontier.StateMachine
         {
             return Hash.GetStableHash(GetType().Name);
         }
+
+        virtual public void AssignPresenter( PhasePresenterBase presenter ) { }
 
         /// <summary>
         /// 入力コードを登録します

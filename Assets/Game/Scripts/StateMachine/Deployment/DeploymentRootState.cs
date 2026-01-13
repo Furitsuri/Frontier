@@ -26,6 +26,9 @@ namespace Frontier.StateMachine
             CONFIRM_COMPLETED,
         }
 
+        /// <summary>
+        /// 配置可能なキャラクターリストを初期化します
+        /// </summary>
         private void InitDeploymentCandidates()
         {
             _deploymentCandidates.Clear();
@@ -47,6 +50,10 @@ namespace Frontier.StateMachine
             }
         }
 
+        /// <summary>
+        /// 配置済みキャラクターを配置前の状態に戻します
+        /// </summary>
+        /// <returns></returns>
         private bool UndoDeploymentCandidates()
         {
             // 既にキャラクターが配置されているタイルに配置する場合は、そのキャラクターを配置済みリストから削除
@@ -68,6 +75,10 @@ namespace Frontier.StateMachine
             return false;
         }
 
+        /// <summary>
+        /// スライドアニメーション完了時のコールバック
+        /// </summary>
+        /// <param name="direction"></param>
         private void OnCompleteSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
         {
             _presenter.ClearFocusCharacter();

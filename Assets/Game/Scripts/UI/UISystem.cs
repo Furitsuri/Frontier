@@ -4,15 +4,17 @@ namespace Frontier.UI
 {
     public class UISystem : MonoBehaviour, IUiSystem
     {
-        private GeneralUISystem _generalUi      = null;
-        private DeploymentUISystem _placementUi = null;
-        private BattleUISystem _battleUi        = null;
+        [SerializeField] private GeneralUISystem _generalUi         = null;
+        [SerializeField] private RecruitmentUISystem _recruitmentUi = null;
+        [SerializeField] private DeploymentUISystem _deploymentUi   = null;
+        [SerializeField] private BattleUISystem _battleUi           = null;
 #if UNITY_EDITOR
         private DebugUISystem _debugUi          = null;
 #endif // UNITY_EDITOR
 
         public GeneralUISystem GeneralUi => _generalUi;
-        public DeploymentUISystem DeployUi => _placementUi;
+        public RecruitmentUISystem RecruitmentUi => _recruitmentUi;
+        public DeploymentUISystem DeployUi => _deploymentUi;
         public BattleUISystem BattleUi => _battleUi;
 #if UNITY_EDITOR
         public DebugUISystem DebugUi => _debugUi;
@@ -24,7 +26,8 @@ namespace Frontier.UI
         enum ChildIndex
         {
             General = 0,
-            Placement,
+            Recruitment,
+            Deployment,
             Battle,
 #if UNITY_EDITOR
             Debug,
@@ -39,16 +42,13 @@ namespace Frontier.UI
 
         public void InitializeUiSystem()
         {
-            LazyInject.GetOrCreate( ref _generalUi, () => transform.GetChild( ( int ) ChildIndex.General ).GetComponent<GeneralUISystem>() );
-            LazyInject.GetOrCreate( ref _placementUi, () => transform.GetChild( ( int ) ChildIndex.Placement ).GetComponent<DeploymentUISystem>() );
-            LazyInject.GetOrCreate( ref _battleUi, () => transform.GetChild( ( int ) ChildIndex.Battle ).GetComponent<BattleUISystem>() );
-
 #if UNITY_EDITOR
             LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
 #endif // UNITY_EDITOR
 
             _generalUi?.Setup();
-            _placementUi?.Setup();
+            _recruitmentUi?.Setup();
+            _deploymentUi?.Setup();
             _battleUi?.Setup();
         }
     }

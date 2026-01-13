@@ -12,6 +12,7 @@ public class EditorUiSystem : MonoBehaviour, IUiSystem
 #endif // UNITY_EDITOR
 
     public GeneralUISystem GeneralUi => _generarlUi;
+    public RecruitmentUISystem RecruitmentUi => null; // RecruitmentUISystem is not defined in this context, returning null
     public DeploymentUISystem DeployUi => null; // DeploymentUISystem is not defined in this context, returning null
     public BattleUISystem BattleUi => null; // BattleUISystem is not defined in this context, returning null
 #if UNITY_EDITOR
@@ -40,8 +41,8 @@ public class EditorUiSystem : MonoBehaviour, IUiSystem
         LazyInject.GetOrCreate( ref _generarlUi, () => transform.GetChild( ( int ) ChildIndex.General ).GetComponent<GeneralUISystem>() );
 #if UNITY_EDITOR
         LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
+#endif // UNITY_EDITOR
 
         _generarlUi.Setup();
-#endif // UNITY_EDITOR
     }
 }

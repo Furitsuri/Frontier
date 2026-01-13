@@ -1,6 +1,7 @@
 ﻿using Froniter.StateMachine;
 using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.ObjectModel;
@@ -8,7 +9,7 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-public class DeploymentPhasePresenter
+public class DeploymentPhasePresenter : PhasePresenterBase
 {
     public enum SlideDirection
     {
@@ -16,7 +17,6 @@ public class DeploymentPhasePresenter
         RIGHT,
     }
 
-    [Inject] private IUiSystem uiSystem = null;
     [Inject] protected BattleRoutineController _btlRtnCtrl = null;
 
     private bool _isSlideAnimationPlaying = false;
@@ -29,7 +29,7 @@ public class DeploymentPhasePresenter
 
     public void Init()
     {
-        _deployUiSystem = uiSystem.DeployUi;
+        _deployUiSystem = _uiSystem.DeployUi;
         _deployUiSystem.Init();
     }
 
@@ -107,6 +107,9 @@ public class DeploymentPhasePresenter
         _deployUiSystem.CharacterSelectUi.ResetDeploymentCharacterDispPositions();
     }
 
+    /// <summary>
+    /// グリッドカーソルが選択中のキャラクター情報を更新します
+    /// </summary>
     public void RefreshGridCursorSelectCharacter()
     {
         // グリッドカーソルが現在選択中のキャラクターを取得
@@ -127,6 +130,9 @@ public class DeploymentPhasePresenter
         _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
     }
 
+    /// <summary>
+    /// フォーカス中の配置可能キャラクター情報を更新します
+    /// </summary>
     public void RefreshFocusDeploymentCharacter()
     {
         // フォーカス中のキャラクターのパラメータの表示
