@@ -22,6 +22,7 @@ namespace Frontier.Entities
         [Header("パラメータ群")]
         protected CharacterParameters _params;
 
+        [Inject] protected IUiSystem _uiSystem                               = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld                = null;
         [Inject] protected BattleRoutineController _btlRtnCtrl               = null;
         [Inject] protected CombatSkillEventController _combatSkillEventCtrl  = null;
@@ -49,7 +50,6 @@ namespace Frontier.Entities
         public bool IsAttacked { get; set; } = false;
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public CharacterKey CharaKey { get; set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );    // キャラクターのハッシュキー
-        public Texture2D Snapshot { get; set; } = null;                             // キャラクターのスナップショット画像
         public AnimationController AnimCtrl { get; } = new AnimationController();   // アニメーションコントローラの取得
         public int[] TileCostTable => _tileCostTable;                               // タイル移動コストテーブルの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
@@ -201,8 +201,6 @@ namespace Frontier.Entities
             _btlRtnCtrl.TimeScaleCtrl.Regist( _timeScale );     // 戦闘時間管理クラスに自身の時間管理クラスを登録
             InitSkillNotifier();                                // スキルの通知クラスを初期化
             ApplyCostTable( TileCostTables.defaultCostTable );  // タイル移動コストテーブルを初期化
-
-            Snapshot = _btlRtnCtrl.TakeCharacterStatusSnapshot( this, true );    // キャラクターのステータス画面用のスナップショットを撮影して取得
         }
 
         /// <summary>
@@ -371,7 +369,7 @@ namespace Frontier.Entities
 
             for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
             {
-                _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(i).StopFlick();
+                _uiSystem.BattleUi.GetPlayerParamSkillBox(i).StopFlick();
             }
         }
 
@@ -596,7 +594,7 @@ namespace Frontier.Entities
                 }
             }
 
-            _btlRtnCtrl.BtlUi.ShowDamageOnCharacter(_opponent); // ダメージUIを表示
+            _uiSystem.BattleUi.ShowDamageOnCharacter(_opponent); // ダメージUIを表示
         }
 
         /// <summary>
@@ -630,7 +628,7 @@ namespace Frontier.Entities
             }
 
             // ダメージUIを表示
-            _btlRtnCtrl.BtlUi.ShowDamageOnCharacter(_opponent);
+            _uiSystem.BattleUi.ShowDamageOnCharacter(_opponent);
         }
 
         /// <summary>

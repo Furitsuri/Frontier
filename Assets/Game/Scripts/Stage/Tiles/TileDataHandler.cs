@@ -18,7 +18,6 @@ namespace Frontier.Stage
         [Inject] private GridCursorController _gridCursorCtrl   = null;
 
         private List<int> _attackableTileIndexs = new List<int>();
-        
 
         #region PUBLIC_METHOD
 
