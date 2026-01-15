@@ -10,6 +10,7 @@ namespace Frontier.StateMachine
     public class EnemyPhaseHandler : PhaseHandlerBase
     {
         [Inject] protected BattleRoutineController _btlRtnCtrl = null;
+        [Inject] private BattleRoutinePresenter _presenter = null;
         [Inject] protected StageController _stgCtrl = null;
 
         /// <summary>
@@ -40,6 +41,8 @@ namespace Frontier.StateMachine
         public override void Update()
         {
             base.Update();
+
+            _presenter.Update();
         }
 
         override protected void CreateTree()

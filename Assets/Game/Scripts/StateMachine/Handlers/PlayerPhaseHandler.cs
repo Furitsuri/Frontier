@@ -12,6 +12,7 @@ namespace Frontier.StateMachine
     public class PlayerPhaseHandler : PhaseHandlerBase
     {
         [Inject] protected BattleRoutineController _btlRtnCtrl = null;
+        [Inject] private BattleRoutinePresenter _presenter = null;
         [Inject] protected StageController _stgCtrl = null;
 
         /// <summary>
@@ -37,6 +38,8 @@ namespace Frontier.StateMachine
         public override void Update()
         {
             base.Update();
+
+            _presenter.Update();
         }
 
         public override void Exit()

@@ -9,8 +9,7 @@ using static Constants;
 
 namespace Frontier.Stage
 {
-    [RequireComponent( typeof( MeshFilter ), typeof( MeshRenderer ) )]
-    public sealed class StageController : Controller
+    public sealed class StageController
     {
         /// <summary>
         /// キャラクターの位置を元に戻す際に使用します
@@ -21,16 +20,10 @@ namespace Frontier.Stage
             public Quaternion rotation;
         }
 
-        [Header( "デフォルトで読込むステージのインデックス値" )]
-        [SerializeField] private int deafultLoadStageIndex;
-
-        [SerializeField] public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
-
         [Inject] private IStageDataProvider _stageDataProvider = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private PrefabRegistry _prefabReg = null;
 
-        public bool back = true;
         private GridCursorController _gridCursorCtrl;
         private StageFileLoader _stageFileLoader;
         private TileDataHandler _tileDataHdlr;
@@ -39,7 +32,7 @@ namespace Frontier.Stage
 
 		public TileDataHandler TileDataHdlr() => _tileDataHdlr;
 
-        void Awake()
+        private void Setup()
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
@@ -59,8 +52,10 @@ namespace Frontier.Stage
         /// </summary>
         public void Init()
         {
+            Setup();
+
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
-            _stageFileLoader.Load( deafultLoadStageIndex );
+            _stageFileLoader.Load( 0 );
         }
 
         /// <summary>
@@ -112,11 +107,13 @@ namespace Frontier.Stage
         /// <param name="isDisplay">描画するか否か</param>
         public void ToggleMeshDisplay( bool isDisplay )
         {
+            /*
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
             if( meshRenderer != null )
             {
                 meshRenderer.enabled = isDisplay;
             }
+            */
         }
 
         /// <summary>
@@ -239,7 +236,7 @@ namespace Frontier.Stage
         /// <returns>ステージの中心位置</returns>
         public Vector3 GetCentralPos()
         {
-            Vector3 retCentralPos = transform.position + new Vector3( 0.5f * _stageDataProvider.CurrentData.WidthX(), 0f, 0.5f * _stageDataProvider.CurrentData.WidthZ() );
+            Vector3 retCentralPos = new Vector3( 0.5f * _stageDataProvider.CurrentData.WidthX(), 0f, 0.5f * _stageDataProvider.CurrentData.WidthZ() );
 
             return retCentralPos;
         }

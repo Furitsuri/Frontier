@@ -9,6 +9,7 @@ namespace Frontier.StateMachine
     public class OtherPhaseHandler : PhaseHandlerBase
     {
         [Inject] protected BattleRoutineController _btlRtnCtrl = null;
+        [Inject] private BattleRoutinePresenter _presenter = null;
         [Inject] protected StageController _stgCtrl = null;
 
         /// <summary>
@@ -31,6 +32,13 @@ namespace Frontier.StateMachine
             }
             // アクションゲージの回復
             _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.OTHER );
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            _presenter.Update();
         }
     }
 }

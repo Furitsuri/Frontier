@@ -21,7 +21,6 @@ namespace Frontier.Battle
         [Inject] private IUiSystem _uiSystem                = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private PrefabRegistry _prefabReg          = null;
-        [Inject] private StageController _stgCtrl           = null;
 
         private int _currentStageIndex = 0;
         private BattlePhaseType _currentPhase;
@@ -29,8 +28,10 @@ namespace Frontier.Battle
         private BattleCameraController _battleCameraCtrl = null;
         private BattleCharacterCoordinator _btlCharaCdr = null;
         private BattleTimeScaleController _battleTimeScaleCtrl = null;
+        private BattleRoutinePresenter _presenter = null;
         private BattleUISystem _btlUi = null;
         private EntitySnapshot _entitySnapshot = null;
+        private StageController _stgCtrl = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
 
         public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );
@@ -87,6 +88,8 @@ namespace Frontier.Battle
         private void Setup()
         {
             var btlCameraObj = GameObject.FindWithTag( "MainCamera" );
+            LazyInject.GetOrCreate( ref _stgCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
+            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
             LazyInject.GetOrCreate( ref _battleCameraCtrl, () => btlCameraObj.GetComponent<BattleCameraController>() );
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
@@ -174,7 +177,7 @@ namespace Frontier.Battle
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _btlUi.gameObject.SetActive( false );                       // 配置フェーズ移行前に戦闘用UIの表示をOFF
-            _btlFileLoader.LoadCameraParams( _battleCameraCtrl );         // ファイル読込マネージャにカメラパラメータをロードさせる
+            _btlFileLoader.LoadCameraParams( _battleCameraCtrl );       // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
 
@@ -197,7 +200,7 @@ namespace Frontier.Battle
             _btlUi.ParameterView.SetSelectedCharacter( _btlCharaCdr.GetSelectCharacter() );
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) return;
+            if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) { return; }
 
             _phaseHandlers[_currentPhase].Update();
 

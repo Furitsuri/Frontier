@@ -108,6 +108,8 @@ static public class Constants
     public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Y = 1000f;
     public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Z = 0f;
 
+    public const float COMBAT_POS_LENGTH_FROM_CENTER = 2.0f;
+
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
     public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";
     public const string TILE_MATERIALS_FOLDER_PASS          = "Materials/Tile/";
