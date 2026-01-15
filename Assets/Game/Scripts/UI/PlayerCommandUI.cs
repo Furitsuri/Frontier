@@ -108,7 +108,7 @@ namespace Frontier
             ResizeUIBaseRectTransform( fontSize, executableCommands.Count );
         }
 
-        override public void Setup()
+        public override void Setup()
         {
             base.Setup();
 

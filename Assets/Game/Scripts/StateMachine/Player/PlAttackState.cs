@@ -35,7 +35,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -62,7 +62,7 @@ namespace Frontier.StateMachine
             _attackSequence.Init();
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             if( base.Update() )
             {
@@ -126,7 +126,7 @@ namespace Frontier.StateMachine
             return false;
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
@@ -178,7 +178,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

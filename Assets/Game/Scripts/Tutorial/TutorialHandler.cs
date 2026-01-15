@@ -225,7 +225,7 @@ namespace Frontier.Tutorial
         // =========================================================
         #region IFocusRoutine Implementation
 
-        override public void Run()
+        public override void Run()
         {
             base.Run();
 
@@ -233,7 +233,7 @@ namespace Frontier.Tutorial
             RegistInputCodes();
         }
 
-        override public void Restart()
+        public override void Restart()
         {
             base.Restart();
 
@@ -245,7 +245,7 @@ namespace Frontier.Tutorial
         /// IFocusRoutineの実装です
         /// 処理を中断します
         /// </summary>
-        override public void Pause()
+        public override void Pause()
         {
             base.Pause();
 
@@ -257,7 +257,7 @@ namespace Frontier.Tutorial
         /// IFocusRoutineの実装です
         /// 処理を停止します
         /// </summary>
-        override public void Exit()
+        public override void Exit()
         {
             base.Exit();
 
@@ -269,7 +269,7 @@ namespace Frontier.Tutorial
             TutorialFacade.Clear();
         }
 
-        override public int GetPriority() { return ( int ) FocusRoutinePriority.TUTORIAL; }
+        public override int GetPriority() { return ( int ) FocusRoutinePriority.TUTORIAL; }
 
         #endregion
     }

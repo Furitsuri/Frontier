@@ -23,7 +23,7 @@ namespace Frontier.StateMachine
         protected CommandList.CommandIndexedValue _cmdIdxVal;
         protected ConfirmUI _confirmUi;
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -40,7 +40,7 @@ namespace Frontier.StateMachine
             _confirmUi.gameObject.SetActive( true );
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             if( base.Update() )
             {
@@ -52,7 +52,7 @@ namespace Frontier.StateMachine
             return IsBack();
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             _confirmUi.gameObject.SetActive( false );
 
@@ -62,7 +62,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

@@ -1,5 +1,5 @@
 ﻿using Frontier.Battle;
-using Frontier.Recruitment;
+using Frontier.FormTroop;
 using Frontier.Stage;
 using Frontier.Tutorial;
 using Zenject;
@@ -96,7 +96,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 現在のステートを実行します
         /// </summary>
-        override public void RunState()
+        public override void RunState()
         {
             base.RunState();
             RegisterInputCodes();
@@ -105,7 +105,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 現在のステートを再開します
         /// </summary>
-        override public void RestartState()
+        public override void RestartState()
         {
             base.RestartState();
             RegisterInputCodes();
@@ -114,7 +114,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 現在のステートを中断します
         /// </summary>
-        override public void PauseState()
+        public override void PauseState()
         {
             base.PauseState();
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
@@ -123,7 +123,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 現在のステートから退避します
         /// </summary>
-        override public void ExitState()
+        public override void ExitState()
         {
             base.ExitState();
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );

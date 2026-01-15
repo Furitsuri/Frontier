@@ -112,7 +112,7 @@ namespace Frontier.UI
             SetSelectCursorRect( _statusItemList[0].GetRectTransform().anchoredPosition, _statusItemList[0].GetRectTransform().sizeDelta );
         }
 
-        override public void Setup()
+        public override void Setup()
         {
             LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) _characterCameraImage.rectTransform.rect.width * 2, ( int ) _characterCameraImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
             LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );

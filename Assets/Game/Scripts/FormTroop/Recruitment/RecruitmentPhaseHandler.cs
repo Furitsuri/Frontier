@@ -1,12 +1,12 @@
 ﻿using Frontier.StateMachine;
 
-namespace Frontier.Recruitment
+namespace Frontier.FormTroop
 {
-    public sealed class RecruitmentPhaseHandler : PhaseHandlerBase
+    public class RecruitmentPhaseHandler : PhaseHandlerBase
     {
         private RecruitmentPhasePresenter _presenter = null;
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -17,18 +17,18 @@ namespace Frontier.Recruitment
             AssignPresenterToNodes( RootNode, _presenter );
         }
 
-        override public void Update()
+        public override void Exit()
+        {
+            base.Exit();
+
+            _presenter.Exit();
+        }
+
+        public override void Update()
         {
             base.Update();
 
             _presenter.Update();
-        }
-
-        override public void Exit()
-        {
-            _presenter.Exit();
-
-            base.Exit();
         }
 
         /// <summary>
@@ -49,7 +49,6 @@ namespace Frontier.Recruitment
              *              └─ RecruitmentConfirmCompletedState
              *              
              */
-
             RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitmentRootState>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitmentConfirmCompletedState>( false ) );

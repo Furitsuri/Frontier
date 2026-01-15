@@ -23,14 +23,14 @@ namespace Frontier.StateMachine
             _btlUi.StartAnimPhaseUI();
         }
 
-        override public void Init()
+        public override void Init()
         {
             _btlUi = _uiSystem.BattleUi;
 
             StartPhaseAnim();   // フェーズアニメーションの開始
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             // フェーズアニメーション中は操作無効
             if( _btlUi.IsPlayingPhaseUI() )

@@ -214,7 +214,7 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             LazyInject.GetOrCreate( ref _stageEditorView, () => _uiSystem.DebugUi.StageEditorView );
             LazyInject.GetOrCreate( ref _stageEditorHandler, () => _hierarchyBld.InstantiateWithDiContainer<StageEditorHandler>( false ) );
@@ -239,7 +239,7 @@ namespace Frontier.DebugTools.StageEditor
             _mainCamera = Camera.main;
         }
 
-        override public void UpdateRoutine()
+        public override void UpdateRoutine()
         {
             _stageEditorHandler.Update();
 
@@ -248,7 +248,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorView.UpdateModeText( _editMode, _refParams );
         }
 
-        override public void LateUpdateRoutine()
+        public override void LateUpdateRoutine()
         {
             _stageEditorHandler.LateUpdate();
         }

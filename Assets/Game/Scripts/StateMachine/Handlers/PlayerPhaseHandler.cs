@@ -1,5 +1,6 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Stage;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,13 @@ namespace Frontier.StateMachine
 {
     public class PlayerPhaseHandler : PhaseHandlerBase
     {
+        [Inject] protected BattleRoutineController _btlRtnCtrl = null;
+        [Inject] protected StageController _stgCtrl = null;
+
         /// <summary>
         /// 初期化を行います
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -30,12 +34,12 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 更新を行います
         /// </summary>
-        override public void Update()
+        public override void Update()
         {
             base.Update();
         }
 
-        override public void Exit()
+        public override void Exit()
         {
             // プレイヤー以外の攻撃範囲表示をすべてクリア
             foreach( var npc in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )

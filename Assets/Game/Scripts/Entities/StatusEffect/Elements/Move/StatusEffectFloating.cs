@@ -13,7 +13,7 @@ namespace Frontier.Entities
         /// <summary>
         /// キャラクターの各タイルの移動コストを浮遊状態用に変更する
         /// </summary>
-        override public void ApplyEffect()
+        public override void ApplyEffect()
         {
             _targetCharacter.ApplyCostTable( TileCostTables.floatingCostTable );
         }

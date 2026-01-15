@@ -6,7 +6,7 @@ namespace Frontier.Events
 {
     public class EventHandler : BaseHandlerExtendedFocusRoutine
     {
-        override public void Init()
+        public override void Init()
         {
             base.Init();
         }

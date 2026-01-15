@@ -1,15 +1,20 @@
-﻿using Frontier.Entities;
-using Frontier.Battle;
+﻿using Frontier.Battle;
+using Frontier.Entities;
+using Frontier.Stage;
 using System.Linq;
+using Zenject;
 
 namespace Frontier.StateMachine
 {
     public class OtherPhaseHandler : PhaseHandlerBase
     {
+        [Inject] protected BattleRoutineController _btlRtnCtrl = null;
+        [Inject] protected StageController _stgCtrl = null;
+
         /// <summary>
         /// 初期化を行います
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             // 目標座標や攻撃対象をリセット
             foreach( Other other in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ) )

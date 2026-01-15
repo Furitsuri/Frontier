@@ -11,7 +11,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override public bool AcceptConfirm( bool isInput )
+        public override bool AcceptConfirm( bool isInput )
         {
             if( isInput )
             {

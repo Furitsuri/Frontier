@@ -37,7 +37,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -54,7 +54,7 @@ namespace Frontier.StateMachine
         /// 更新します
         /// </summary>
         /// <returns>0以上の値のとき次の状態に遷移します</returns>
-        override public bool Update()
+        public override bool Update()
         {
             if( _plOwner.Params.TmpParam.IsEndAction() )
             {
@@ -81,7 +81,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 現在のステートから離脱します
         /// </summary>
-        override public void ExitState()
+        public override void ExitState()
         {
             // 移動コマンドを選択した場合は、この時点でのキャラクターの位置情報を保存する
             // ( PlMoveStateのInitなどで保存すると、『移動ステート中に敵を直接攻撃→攻撃をキャンセルして移動に戻る』とした場合に、
@@ -100,7 +100,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

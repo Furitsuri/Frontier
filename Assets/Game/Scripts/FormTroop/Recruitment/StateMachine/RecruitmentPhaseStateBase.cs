@@ -1,12 +1,12 @@
 ﻿using Frontier.StateMachine;
 
-namespace Frontier.Recruitment
+namespace Frontier.FormTroop
 {
     public class RecruitmentPhaseStateBase : PhaseStateBase
     {
         protected RecruitmentPhasePresenter _presenter = null;
 
-        override public void AssignPresenter( PhasePresenterBase presenter )
+        public override void AssignPresenter( PhasePresenterBase presenter )
         {
             _presenter = presenter as RecruitmentPhasePresenter;
         }

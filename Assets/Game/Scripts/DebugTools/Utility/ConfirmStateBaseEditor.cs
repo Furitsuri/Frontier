@@ -22,7 +22,7 @@ public class ConfirmStateBaseEditor : EditorStateBase
     protected CommandList.CommandIndexedValue _cmdIdxVal;
     protected Frontier.ConfirmUI _confirmUi;
 
-    override public void Init()
+    public override void Init()
     {
         base.Init();
 
@@ -39,7 +39,7 @@ public class ConfirmStateBaseEditor : EditorStateBase
         _confirmUi.gameObject.SetActive( true );
     }
 
-    override public bool Update()
+    public override bool Update()
     {
         if( base.Update() )
         {
@@ -51,14 +51,14 @@ public class ConfirmStateBaseEditor : EditorStateBase
         return IsBack();
     }
 
-    override public void ExitState()
+    public override void ExitState()
     {
         _confirmUi.gameObject.SetActive( false );
 
         base.ExitState();
     }
 
-    override public void RegisterInputCodes()
+    public override void RegisterInputCodes()
     {
         int hashCode = GetInputCodeHash();
 

@@ -19,10 +19,10 @@ namespace Frontier.UI
         [SerializeField] private ParameterAttackDirectionUI _attackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
         [Inject] private IUiSystem _uiSystem                    = null;
-        [Inject] private BattleRoutineController _btlRtnCtrl    = null;
         [Inject] private StageController _stgCtrl               = null;
 
-        private Character _prevSelectCharacter = null;
+        private Character _selectCharacter      = null;
+        private Character _prevSelectCharacter  = null;
 
         public CharacterParameterUI PlayerParameter => _playerParameter;
         public CharacterParameterUI EnemyParameter => _enemyParameter;
@@ -31,8 +31,6 @@ namespace Frontier.UI
         // Update is called once per frame
         void Update()
         {
-            Character selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( _btlRtnCtrl.SelectCharacterKey );
-
             var bindCharacter = _stgCtrl.GetBindCharacterFromGridCursor();
 
             switch( _stgCtrl.GetGridCursorControllerState() )
@@ -51,11 +49,11 @@ namespace Frontier.UI
                     if( bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY )
                     {
                         _playerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
-                        _enemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                        _enemyParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     else
                     {
-                        _playerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                        _playerParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_PLAYER );
                         _enemyParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
                     break;
@@ -64,29 +62,29 @@ namespace Frontier.UI
                     Debug.Assert( bindCharacter != null );
 
                     _playerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
-                    if( selectCharacter != null && selectCharacter != bindCharacter )
+                    if( _selectCharacter != null && _selectCharacter != bindCharacter )
                     {
-                        _enemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                        _enemyParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_ENEMY );
                     }
-                    _uiSystem.BattleUi.SetEnemyParameterActive( selectCharacter != null && selectCharacter != bindCharacter );
+                    _uiSystem.BattleUi.SetEnemyParameterActive( _selectCharacter != null && _selectCharacter != bindCharacter );
 
                     break;
 
                 default:
                     // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
-                    _uiSystem.BattleUi.SetPlayerParameterActive( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER );
-                    _uiSystem.BattleUi.SetEnemyParameterActive( selectCharacter != null && selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY );
+                    _uiSystem.BattleUi.SetPlayerParameterActive( _selectCharacter != null && _selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER );
+                    _uiSystem.BattleUi.SetEnemyParameterActive( _selectCharacter != null && _selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY );
 
                     // パラメータ表示を更新
-                    if( selectCharacter != null )
+                    if( _selectCharacter != null )
                     {   
-                        if( selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+                        if( _selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
                         {
-                            _playerParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_PLAYER );
+                            _playerParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_PLAYER );
                         }
                         else
                         {
-                            _enemyParameter.AssignCharacter( selectCharacter, LAYER_MASK_INDEX_ENEMY );
+                            _enemyParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_ENEMY );
                         }
                     }
 
@@ -94,21 +92,26 @@ namespace Frontier.UI
             }
 
             // 前フレームで選択したキャラクターと現在選択しているキャラクターが異なる場合はカメラレイヤーを元に戻す
-            if( _prevSelectCharacter != null && _prevSelectCharacter != selectCharacter )
+            if( _prevSelectCharacter != null && _prevSelectCharacter != _selectCharacter )
             {
                 _prevSelectCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
             }
 
             // 選択しているキャラクターのレイヤーをパラメータUI表示のために一時的に変更
-            if( selectCharacter != null && _prevSelectCharacter != selectCharacter )
+            if( _selectCharacter != null && _prevSelectCharacter != _selectCharacter )
             {
-                selectCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_PLAYER );
+                _selectCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_PLAYER );
             }
 
-            _prevSelectCharacter = selectCharacter;
+            _prevSelectCharacter = _selectCharacter;
         }
 
-        override public void Setup()
+        public void SetSelectedCharacter( Character selectCharacter )
+        {
+            _selectCharacter = selectCharacter;
+        }
+
+        public override void Setup()
         {
             _playerParameter.Setup();
             _enemyParameter.Setup();
@@ -120,5 +123,6 @@ namespace Frontier.UI
             _playerParameter.gameObject.SetActive( false );
             _enemyParameter.gameObject.SetActive( false );
         }
+
     }
 }

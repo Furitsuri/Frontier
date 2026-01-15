@@ -10,7 +10,7 @@ namespace Frontier.StateMachine
     {
         private DeploymentPhasePresenter _presenter;
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -25,14 +25,14 @@ namespace Frontier.StateMachine
             // TODO : 選択グリッドの設定
         }
 
-        override public void Update()
+        public override void Update()
         {
             base.Update();
 
             _presenter.Update();
         }
 
-        override public void Exit()
+        public override void Exit()
         {
             _presenter.Exit();
 

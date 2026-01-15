@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 public class Arrow : Bullet
 {
-    override public IEnumerator UpdateTransformCoroutine(UnityAction callback)
+    public override IEnumerator UpdateTransformCoroutine(UnityAction callback)
     {
         _isHit = false;
 

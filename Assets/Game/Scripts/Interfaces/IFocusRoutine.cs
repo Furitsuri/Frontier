@@ -1,19 +1,4 @@
 ﻿/// <summary>
-/// IFocusRoutineにおける現在の状態を表す列挙型です
-/// </summary>
-public enum FocusState
-{
-    NONE = -1,
-
-    RUN_SCHEDULED,
-    RUN,
-    PAUSE,
-    EXIT_SCHEDULED,
-    EXIT,
-    MAX
-}
-
-/// <summary>
 /// 指定のルーチンに対して優先度を設定した上で、優先度順に駆動させるためのインターフェースです
 /// </summary>
 public interface IFocusRoutine

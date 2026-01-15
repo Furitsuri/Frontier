@@ -13,34 +13,21 @@ namespace Frontier
 {
     public class GameMain : FocusRoutineController
     {
-        enum GamePhase
-        {
-            GAME_START = 0,
-            GAME_TITLE_MENU,
-            GAME_BATTLE,
-            GAME_END_SCENE,
-            GAME_END,
-        }
-
-        [Header("UI")]
-        [SerializeField] private IUiSystem _UISystem;
-
-        [Header("UIカメラのオブジェクト")]
+        [Header( "UIカメラのオブジェクト" )]
         [SerializeField] private GameObject _UICameraObject;
 
-        [Header("各種マネージャのプロバイダオブジェクト")]
+        [Header( "各種マネージャのプロバイダオブジェクト" )]
         [SerializeField] private GameObject _managerProvider;
 
-        [Header("ステージ開始時に表示する時間(秒)")]
+        [Header( "ステージ開始時に表示する時間(秒)" )]
         [SerializeField] private float stageStartDelay = 2f;
 
-        [Inject] private DiContainer _diContainer           = null;
+        [Inject] private DiContainer _diContainer = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private InputFacade _inputFcd              = null;
-        [Inject] private TutorialFacade _tutorialFcd        = null;
+        [Inject] private InputFacade _inputFcd = null;
+        [Inject] private TutorialFacade _tutorialFcd = null;
 
         private GameObject _stageImage;
-        private GamePhase _Phase;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
         private DebugEditorMonoDriver _debugEditorMonoDrv;
@@ -50,28 +37,28 @@ namespace Frontier
 
         void Awake()
         {
-            if (instance == null)
+            if( instance == null )
             {
                 instance = this;
             }
-            else if (instance != this)
+            else if( instance != this )
             {
-                Destroy(gameObject);
+                Destroy( gameObject );
             }
 
-            if (transform.parent != null)
+            if( transform.parent != null )
             {
-                transform.SetParent(null); // ルートに移動
+                transform.SetParent( null ); // ルートに移動
             }
 
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad( gameObject );
 
-            Debug.Assert(_hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。");
-            Debug.Assert(_inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。");
+            Debug.Assert( _hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。" );
+            Debug.Assert( _inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。" );
 
-            if (ManagerProvider.Instance == null)
+            if( ManagerProvider.Instance == null )
             {
-                _hierarchyBld.CreateComponentAndOrganize<ManagerProvider>(_managerProvider, true);
+                _hierarchyBld.CreateComponentAndOrganize<ManagerProvider>( _managerProvider, true );
             }
 
 #if UNITY_EDITOR
@@ -90,8 +77,6 @@ namespace Frontier
 
             base.Init();
             InitGame();
-
-            StartCoroutine(GameFlow());
         }
 
         void Update()
@@ -125,13 +110,11 @@ namespace Frontier
             ResgiterInputCodes();
 #endif // UNITY_EDITOR
 
-            _stageImage = GameObject.Find("StageLevelImage");
-            if (_stageImage != null)
+            _stageImage = GameObject.Find( "StageLevelImage" );
+            if( _stageImage != null )
             {
-                Invoke("StageLevelImage", stageStartDelay);
+                Invoke( "StageLevelImage", stageStartDelay );
             }
-
-            _Phase = GamePhase.GAME_START;
         }
 
         /// <summary>
@@ -140,55 +123,8 @@ namespace Frontier
         /// </summary>
         private void StageLevelImage()
         {
-            _stageImage.SetActive(false);
+            _stageImage.SetActive( false );
         }
-
-        private IEnumerator GameFlow()
-        {
-            while (_Phase != GamePhase.GAME_END)
-            {
-                yield return null;
-
-                switch (_Phase)
-                {
-                    case GamePhase.GAME_START:
-                        _Phase = GamePhase.GAME_TITLE_MENU;
-                        break;
-                    case GamePhase.GAME_TITLE_MENU:
-                        _Phase = GamePhase.GAME_BATTLE;
-                        break;
-                    case GamePhase.GAME_BATTLE:
-                        // StartCoroutine(_btlRtnCtrl.Battle());
-                        // Battleの終了を待つ
-                        // yield return new WaitUntil(() => _btlRtnCtrl.isEnd());
-
-                        _Phase = GamePhase.GAME_END_SCENE;
-                        break;
-                    case GamePhase.GAME_END_SCENE:
-                        _Phase = GamePhase.GAME_END;
-                        break;
-                    case GamePhase.GAME_END:
-                        break;
-                }
-            }
-        }
-
-        /*
-        /// <summary>
-        /// フォーカスルーチンを初期化します
-        /// </summary>
-        private void InitFocusRoutine()
-        {
-            _focusRtnCtrl.Init();
-#if UNITY_EDITOR
-            _focusRtnCtrl.Register(_debugEditorMonoDrv, (int)FocusRoutinePriority.DEBUG_EDITOR);
-            _focusRtnCtrl.Register(_debugMenuFcd.GetFocusRoutine(), _debugMenuFcd.GetFocusRoutine().GetPriority());
-#endif // UNITY_EDITOR
-            _focusRtnCtrl.Register(_tutorialFcd.GetFocusRoutine(), _tutorialFcd.GetFocusRoutine().GetPriority());
-            _focusRtnCtrl.Register(_btlRtnCtrl, _btlRtnCtrl.GetPriority());
-            _focusRtnCtrl.RunRoutineAndPauseOthers(FocusRoutinePriority.BATTLE);
-        }
-        */
 
 #if UNITY_EDITOR
         /// <summary>
@@ -197,9 +133,9 @@ namespace Frontier
         /// </summary>
         private void ResgiterInputCodes()
         {
-            int hashCode = Hash.GetStableHash(Constants.DEBUG_TRANSION_INPUT_HASH_STRING);
+            int hashCode = Hash.GetStableHash( Constants.DEBUG_TRANSION_INPUT_HASH_STRING );
 
-            _inputFcd.RegisterInputCodes((GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput(AcceptDebugTransition), 0.0f, hashCode));
+            _inputFcd.RegisterInputCodes( (GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput( AcceptDebugTransition ), 0.0f, hashCode) );
         }
 
         /// <summary>
@@ -216,7 +152,7 @@ namespace Frontier
         /// </summary>
         /// <param name="isDebugTranstion">デバッグメニューへの遷移入力</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptDebugTransition(bool isDebugTranstion)
+        private bool AcceptDebugTransition( bool isDebugTranstion )
         {
             if( !isDebugTranstion ) return false;
 

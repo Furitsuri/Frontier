@@ -4,7 +4,6 @@ using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using Zenject.SpaceFighter;
 using static Constants;
 using static InputCode;
 
@@ -103,10 +102,7 @@ namespace Frontier.StateMachine
             _presenter.ResetDeploymentCharacterDispPosition();
         }
 
-        /// <summary>
-        /// 遷移先を示すタグ
-        /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -123,7 +119,7 @@ namespace Frontier.StateMachine
             _presenter.RefreshFocusDeploymentCharacter();
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             // グリッド選択より遷移が戻ることはないため基底の更新は行わない
             // if( base.Update() ) { return true; }
@@ -131,15 +127,12 @@ namespace Frontier.StateMachine
             return ( 0 <= TransitIndex );
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             base.ExitState();
         }
 
-        /// <summary>
-        /// 入力コードを登録します
-        /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

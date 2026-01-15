@@ -4,7 +4,7 @@ namespace Frontier.Entities
 {
     public class Npc : Character
     {
-        override public void Init()
+        public override void Init()
         {
             base.Init();
         }
@@ -28,7 +28,7 @@ namespace Frontier.Entities
         /// 使用スキルを選択します
         /// </summary>
         /// <param name="type">攻撃、防御、常駐などのスキルタイプ</param>
-        override public void SelectUseSkills( SituationType type )
+        public override void SelectUseSkills( SituationType type )
         {
 
         }

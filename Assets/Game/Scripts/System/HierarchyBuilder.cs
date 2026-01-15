@@ -35,10 +35,6 @@ namespace Frontier
         private CharacterGroup _characterObjGrp;
 
         [SerializeField]
-        [Header("バトルオブジェクト")]
-        private GameObject _battleObj;
-
-        [SerializeField]
         [Header("コントローラオブジェクト")]
         private GameObject _controllerObj;
 
@@ -92,7 +88,6 @@ namespace Frontier
                 },
                 "Controller" => _controllerObj,
                 "Manager" => _managerObj,
-                "Battle" => _battleObj,
                 _ => this.gameObject
             } : this.gameObject;
         }

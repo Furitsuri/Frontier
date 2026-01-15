@@ -115,7 +115,7 @@ namespace Frontier
             }
         }
 
-        override public void Setup()
+        public override void Setup()
         {
             LazyInject.GetOrCreate( ref _actGaugeElems, () => new List<RawImage>( Constants.ACTION_GAUGE_MAX ) );
             LazyInject.GetOrCreate( ref _uiImage, () => GetComponent<Image>() );
@@ -155,7 +155,7 @@ namespace Frontier
 
         #region ILocalizedText implementation
 
-        override public void RefreshText()
+        public override void RefreshText()
         {
             // スキル名はローカライズ対象外のため、何もしない
 

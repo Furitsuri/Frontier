@@ -40,7 +40,7 @@ namespace Frontier.DebugTools.DebugMenu
             }
         }
 
-        override public void Setup()
+        public override void Setup()
         {
             LazyInject.GetOrCreate( ref _verticalLayoutGroup, () => DebugMenuList.GetComponent<VerticalLayoutGroup>() );
 

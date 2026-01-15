@@ -13,7 +13,7 @@ namespace Frontier.StateMachine
         bool _isValidDestination = false;
         bool _isValidTarget = false;
 
-        override public void Init()
+        public override void Init()
         {
             bool isExist = false;   // 行動可能なキャラクターが存在するか
 
@@ -56,7 +56,7 @@ namespace Frontier.StateMachine
             }
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             // TODO : FetchDestinationAndTargetのくだりが必要かもしれないけど、一旦コメントアウト
 

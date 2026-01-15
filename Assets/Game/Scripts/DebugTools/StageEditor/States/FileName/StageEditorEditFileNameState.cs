@@ -10,7 +10,7 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditFileNameState : EditorStateBase
     {
-        override public void Init()
+        public override void Init()
         {
             base.Init( );
 
@@ -24,7 +24,7 @@ namespace Frontier.DebugTools.StageEditor
             base.ExitState();
         }
 
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

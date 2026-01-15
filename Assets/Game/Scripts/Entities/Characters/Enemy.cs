@@ -27,7 +27,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
         }
@@ -36,7 +36,7 @@ namespace Frontier.Entities
         /// 思考タイプを設定します
         /// </summary>
         /// <param name="type">設定する思考タイプ</param>
-        override public void SetThinkType( ThinkingType type )
+        public override void SetThinkType( ThinkingType type )
         {
             _thikType = type;
 
@@ -52,12 +52,12 @@ namespace Frontier.Entities
             _baseAi.Init( this );
         }
 
-        override public void ToggleDisplayDangerRange()
+        public override void ToggleDisplayDangerRange()
         {
             _actionRangeCtrl.ToggleDisplayDangerRange( in TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
         }
 
-        override public void SetDisplayDangerRange( bool isShow )
+        public override void SetDisplayDangerRange( bool isShow )
         {
             _actionRangeCtrl.SetDisplayDangerRange( isShow, in TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
         }

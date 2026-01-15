@@ -31,7 +31,7 @@ namespace Frontier.StateMachine
             _statusPresenter.OpenCharacterStatus( _targetChara );
         }
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -49,7 +49,7 @@ namespace Frontier.StateMachine
             _inputInfoStrWrapper = new InputCodeStringWrapper( _inputInfoStrings[0] );
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             // INFOアイコンの文字列を更新
             _inputInfoStrWrapper.Explanation = _statusPresenter.IsToolTipActive() ? _inputInfoStrings[1] : _inputInfoStrings[0];
@@ -57,21 +57,21 @@ namespace Frontier.StateMachine
             return ( 0 <= TransitIndex );
         }
 
-        override public void RunState()
+        public override void RunState()
         {
             base.RunState();
 
             AssignCharacter();
         }
 
-        override public void RestartState()
+        public override void RestartState()
         {
             base.RestartState();
 
             AssignCharacter();
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             base.ExitState();
 
@@ -82,7 +82,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

@@ -1,9 +1,9 @@
-﻿using Frontier.Combat.Skill;
+﻿using Froniter.Registries;
+using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,55 +11,32 @@ using Zenject;
 
 namespace Frontier.Battle
 {
-    public class BattleRoutineController : FocusRoutineBase
+    public class BattleRoutineController : SubRoutineController
     {
-        [Header("スキルコントローラオブジェクト")]
+        /*
+        [Header( "スキルコントローラオブジェクト" )]
         [SerializeField] private GameObject _skillCtrlObject;
-
-        [Header("戦闘ファイル読込オブジェクト")]
-        [SerializeField] private GameObject _btlFileLoadObject;
+        */
 
         [Inject] private IUiSystem _uiSystem                = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private PrefabRegistry _prefabReg          = null;
         [Inject] private StageController _stgCtrl           = null;
 
         private int _currentStageIndex = 0;
         private BattlePhaseType _currentPhase;
-        private BattleFileLoader _btlFileLoader                 = null;
-        private BattleCameraController _battleCameraCtrl        = null;
-        private BattleCharacterCoordinator _btlCharaCdr         = null;
-        private BattleTimeScaleController _battleTimeScaleCtrl  = null;
-        private BattleUISystem _btlUi                           = null;
-        private EntitySnapshot _entitySnapshot                  = null;
+        private BattleFileLoader _btlFileLoader = null;
+        private BattleCameraController _battleCameraCtrl = null;
+        private BattleCharacterCoordinator _btlCharaCdr = null;
+        private BattleTimeScaleController _battleTimeScaleCtrl = null;
+        private BattleUISystem _btlUi = null;
+        private EntitySnapshot _entitySnapshot = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
-        
-        public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey(CHARACTER_TAG.NONE, -1);
+
+        public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );
         public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
-
-        void Awake()
-        {
-            var btlCameraObj = GameObject.FindWithTag("MainCamera");
-            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => btlCameraObj.GetComponent<BattleCameraController>() );
-            LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _btlFileLoadObject, true, false, typeof( BattleFileLoader ).Name ) );
-            LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
-            LazyInject.GetOrCreate( ref _battleTimeScaleCtrl, () => _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>( false ) );
-            LazyInject.GetOrCreate( ref _entitySnapshot, () => _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false ) );
-
-            if ( SkillsData.skillNotifierFactory == null )
-            {
-                SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
-            }
-
-            _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
-            {
-                { BattlePhaseType.Deployment,   _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
-                { BattlePhaseType.Player,       _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
-                { BattlePhaseType.Enemy,        _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
-                { BattlePhaseType.Other,        _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
-            };
-        }
 
         public IEnumerator Battle()
         {
@@ -80,7 +57,7 @@ namespace Frontier.Battle
         /// </summary>
         public void StartStageClearAnim()
         {
-            _btlUi.ToggleStageClearUI(true);
+            _btlUi.ToggleStageClearUI( true );
             _btlUi.StartStageClearAnim();
         }
 
@@ -89,7 +66,7 @@ namespace Frontier.Battle
         /// </summary>
         public void StartGameOverAnim()
         {
-            _btlUi.ToggleGameOverUI(true);
+            _btlUi.ToggleGameOverUI( true );
             _btlUi.StartGameOverAnim();
         }
 
@@ -105,6 +82,29 @@ namespace Frontier.Battle
             _entitySnapshot.CaptureCharacter( width, height, chara, out snapshot, isSnapAnim, AnimDatas.AnimeConditionsTag.WAIT );
 
             return snapshot;
+        }
+
+        private void Setup()
+        {
+            var btlCameraObj = GameObject.FindWithTag( "MainCamera" );
+            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => btlCameraObj.GetComponent<BattleCameraController>() );
+            LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
+            LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
+            LazyInject.GetOrCreate( ref _battleTimeScaleCtrl, () => _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>( false ) );
+            LazyInject.GetOrCreate( ref _entitySnapshot, () => _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false ) );
+
+            if( SkillsData.skillNotifierFactory == null )
+            {
+                SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
+            }
+
+            _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>
+            {
+                { BattlePhaseType.Deployment,   _hierarchyBld.InstantiateWithDiContainer<DeploymentPhaseHandler>(false) },
+                { BattlePhaseType.Player,       _hierarchyBld.InstantiateWithDiContainer<PlayerPhaseHandler>(false) },
+                { BattlePhaseType.Enemy,        _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
+                { BattlePhaseType.Other,        _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
+            };
         }
 
         /// <summary>
@@ -145,16 +145,16 @@ namespace Frontier.Battle
         }
 
         // =========================================================
-        // IFocusRoutineの実装
+        // SubRoutineControllerの実装
         // =========================================================
-        #region IFocusRoutine Implementation
+        #region SubRoutineController Implementation
 
         /// <summary>
         /// 各種パラメータを初期化させます
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
-            base.Init();
+            Setup();
 
             _btlUi = _uiSystem.BattleUi;
 
@@ -174,14 +174,12 @@ namespace Frontier.Battle
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _btlUi.gameObject.SetActive( false );                       // 配置フェーズ移行前に戦闘用UIの表示をOFF
-            _btlFileLoader.LoadCameraParams(_battleCameraCtrl);         // ファイル読込マネージャにカメラパラメータをロードさせる
+            _btlFileLoader.LoadCameraParams( _battleCameraCtrl );         // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
 
-        override public void UpdateRoutine()
+        public override void Update()
         {
-            base.UpdateRoutine();
-
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             if( !Methods.IsDebugScene() )
 #endif
@@ -196,7 +194,7 @@ namespace Frontier.Battle
             (var tileSData, var tileDData) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
-            SelectCharacterKey = tileDData.CharaKey;
+            _btlUi.ParameterView.SetSelectedCharacter( _btlCharaCdr.GetSelectCharacter() );
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) return;
@@ -206,15 +204,13 @@ namespace Frontier.Battle
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();   // タイル情報を更新
         }
 
-        override public void LateUpdateRoutine()
+        public override void LateUpdate()
         {
-            base.LateUpdateRoutine();
-
             if( _btlUi.StageClear.isActiveAndEnabled ) { return; }  // ステージクリア時のUIアニメーションが再生されている場合は終了
             if( _btlUi.GameOver.isActiveAndEnabled ) { return; }    // ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
 
             // 勝利、全滅チェックを行う
-            if (_btlCharaCdr.CheckVictoryOrDefeat(StartStageClearAnim, StartGameOverAnim)) { return; }
+            if( _btlCharaCdr.CheckVictoryOrDefeat( StartStageClearAnim, StartGameOverAnim ) ) { return; }
 
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )
@@ -229,52 +225,46 @@ namespace Frontier.Battle
             }
         }
 
+        public override void FixedUpdate() { }
+
         /// <summary>
-        /// IFocusRoutineの実装です
+        /// SubRoutineControllerの実装です
         /// クラス内の処理を駆動します
         /// </summary>
-        override public void Run()
+        public override void Run()
         {
-            base.Run();
+            Init();
 
             _phaseHandlers[_currentPhase].Run();
         }
 
         /// <summary>
-        /// IFocusRoutineの実装です
+        /// SubRoutineControllerの実装です
         /// 中断させていた処理を再始動します
         /// </summary>
-        override public void Restart()
+        public override void Restart()
         {
-            base.Restart();
-
             _phaseHandlers[_currentPhase].Restart();
         }
 
         /// <summary>
-        /// IFocusRoutineの実装です
+        /// SubRoutineControllerの実装です
         /// 処理を中断します
         /// </summary>
-        override public void Pause()
+        public override void Pause()
         {
-            base.Pause();
-
             _phaseHandlers[_currentPhase].Pause();
         }
 
         /// <summary>
-        /// IFocusRoutineの実装です
+        /// SubRoutineControllerの実装です
         /// 処理を停止します
         /// </summary>
-        override public void Exit()
+        public override void Exit()
         {
-            base.Exit();
-
             _phaseHandlers[_currentPhase].Exit();
         }
 
-        override public int GetPriority() { return (int)FocusRoutinePriority.BATTLE; }
-
-        #endregion // IFocusRoutine Implementation
+        #endregion // SubRoutineController Implementation
     }
 }

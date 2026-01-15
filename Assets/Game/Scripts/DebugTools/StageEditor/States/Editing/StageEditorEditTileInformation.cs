@@ -10,24 +10,24 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditTileInformation : StageEditorEditBase
     {
-        override public void Init( Action<int, int> callback )
+        public override void Init( Action<int, int> callback )
         {
             base.Init( callback );
         }
 
-        override public void Update()
+        public override void Update()
         {
             base.Update();
         }
 
-        override public bool CanAcceptConfirm() { return CanAcceptInputAlways(); }
-        override public bool CanAcceptCancel() { return false; }
-        override public bool CanAcceptSub1() { return false; }
-        override public bool CanAcceptSub2() { return false; }
-        override public bool CanAcceptSub3() { return 0f < _refParams.SelectedHeight; }
-        override public bool CanAcceptSub4() { return _refParams.SelectedHeight < TILE_MAX_HEIGHT; }
+        public override bool CanAcceptConfirm() { return CanAcceptInputAlways(); }
+        public override bool CanAcceptCancel() { return false; }
+        public override bool CanAcceptSub1() { return false; }
+        public override bool CanAcceptSub2() { return false; }
+        public override bool CanAcceptSub3() { return 0f < _refParams.SelectedHeight; }
+        public override bool CanAcceptSub4() { return _refParams.SelectedHeight < TILE_MAX_HEIGHT; }
 
-        override public bool AcceptConfirm( bool isInput )
+        public override bool AcceptConfirm( bool isInput )
         {
             if ( isInput )
             {
@@ -39,7 +39,7 @@ namespace Frontier.DebugTools.StageEditor
             return false;
         }
 
-        override public bool AcceptCancel( bool isCancel ) { return false; }
+        public override bool AcceptCancel( bool isCancel ) { return false; }
 
         /// <summary>
         /// タイルタイプの値をデクリメントします。
@@ -47,7 +47,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">入力の有無</param>
         /// <returns>入力受付の有無</returns>
-        override public bool AcceptSub1( bool isInput )
+        public override bool AcceptSub1( bool isInput )
         {
             if ( !isInput ) return false;
 
@@ -62,7 +62,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">入力の有無</param>
         /// <returns>入力受付の有無</returns>
-        override public bool AcceptSub2( bool isInput )
+        public override bool AcceptSub2( bool isInput )
         {
             if ( !isInput ) return false;
 
@@ -71,7 +71,7 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
-        override public bool AcceptSub3( bool isInput )
+        public override bool AcceptSub3( bool isInput )
         {
             if ( !isInput ) return false;
 
@@ -80,7 +80,7 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
-        override public bool AcceptSub4( bool isInput )
+        public override bool AcceptSub4( bool isInput )
         {
             if ( !isInput ) return false;
 

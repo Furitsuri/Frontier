@@ -25,7 +25,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 遷移先を示すタグ
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -50,7 +50,7 @@ namespace Frontier.StateMachine
             _inputToolStrWrapper    = new InputCodeStringWrapper( _inputToolStrings[0] );
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             // グリッド選択より遷移が戻ることはないため基底の更新は行わない
             // if( base.Update() ) { return true; }
@@ -79,7 +79,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

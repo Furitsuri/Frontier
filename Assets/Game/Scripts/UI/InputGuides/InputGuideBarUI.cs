@@ -38,7 +38,7 @@ public class InputGuideBarUI : UiMonoBehaviour
         return _rectTransform.sizeDelta.x;
     }
 
-    override public void Setup()
+    public override void Setup()
     {
         base.Setup();
 
