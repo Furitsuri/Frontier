@@ -1,11 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Frontier.Battle;
+using Frontier.Stage;
+using Zenject;
 
 namespace Frontier.StateMachine
 {
     public class DeploymentPhaseStateBase : PhaseStateBase
     {
+        [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
+        [Inject] protected StageController _stageCtrl           = null;
+
         protected DeploymentPhasePresenter _presenter = null;
 
         public override void AssignPresenter( PhasePresenterBase presenter )

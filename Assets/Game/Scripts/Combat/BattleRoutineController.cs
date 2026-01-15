@@ -31,7 +31,6 @@ namespace Frontier.Battle
         private StageController _stgCtrl = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
 
-        public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
 

@@ -8,7 +8,7 @@ using static Constants;
 
 namespace Frontier.Battle
 {
-    public class EmAttackState : PhaseStateBase
+    public class EmAttackState : UnitPhaseState
     {
         private enum EmAttackPhase
         {

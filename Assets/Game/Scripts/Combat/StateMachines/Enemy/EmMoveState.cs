@@ -6,7 +6,7 @@ using static Constants;
 
 namespace Frontier.Battle
 {
-    public class EmMoveState : PhaseStateBase
+    public class EmMoveState : UnitPhaseState
     {
         private enum EmMovePhase
         {
