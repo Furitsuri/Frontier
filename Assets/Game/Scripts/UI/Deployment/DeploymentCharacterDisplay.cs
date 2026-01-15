@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 using Frontier.Entities;
-using Froniter.StateMachine;
+using Frontier.StateMachine;
 using static Constants;
 
 public class DeploymentCharacterDisplay : MonoBehaviour

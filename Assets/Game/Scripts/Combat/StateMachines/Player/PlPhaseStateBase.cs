@@ -1,11 +1,7 @@
-﻿using Frontier;
-using Frontier.Battle;
-using Frontier.Stage;
-using Frontier.Entities;
-using UnityEngine;
-using Zenject;
+﻿using Frontier.Entities;
+using Frontier.StateMachine;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlPhaseStateBase : PhaseStateBase
     {

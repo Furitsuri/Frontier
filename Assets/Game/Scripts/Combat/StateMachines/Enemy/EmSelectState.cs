@@ -1,10 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.StateMachine;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class EmSelectState : PhaseStateBase
     {

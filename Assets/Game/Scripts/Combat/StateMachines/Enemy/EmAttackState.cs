@@ -1,11 +1,12 @@
 ﻿using Frontier.Combat;
 using Frontier.Stage;
+using Frontier.StateMachine;
 using Frontier.Entities;
 using UnityEngine;
 using Frontier.Combat.Skill;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class EmAttackState : PhaseStateBase
     {

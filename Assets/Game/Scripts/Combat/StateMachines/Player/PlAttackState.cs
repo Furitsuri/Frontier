@@ -4,7 +4,7 @@ using Frontier.Entities;
 using Frontier.Stage;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlAttackState : PlPhaseStateBase
     {

@@ -1,13 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
-using System;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlMoveState : PlPhaseStateBase
     {

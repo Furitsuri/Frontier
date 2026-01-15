@@ -1,4 +1,4 @@
-﻿using Froniter.Registries;
+﻿using Frontier.Registries;
 using Frontier.Entities;
 using System;
 using System.Collections.Generic;

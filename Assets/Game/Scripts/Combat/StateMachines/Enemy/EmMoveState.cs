@@ -1,11 +1,10 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
-using System;
-using System.Collections.Generic;
+using Frontier.StateMachine;
 using UnityEngine;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class EmMoveState : PhaseStateBase
     {

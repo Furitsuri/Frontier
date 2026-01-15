@@ -1,5 +1,5 @@
 ﻿using Frontier.Combat;
-using Frontier.StateMachine;
+using Frontier.Battle;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;

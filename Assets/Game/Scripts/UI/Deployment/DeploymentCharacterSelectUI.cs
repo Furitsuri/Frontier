@@ -1,4 +1,4 @@
-﻿using Froniter.StateMachine;
+﻿using Frontier.StateMachine;
 using UnityEngine;
 using Zenject;
 using static Constants;

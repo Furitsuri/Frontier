@@ -1,9 +1,6 @@
-﻿using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Frontier.StateMachine;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class EmWaitState : PhaseStateBase
     {

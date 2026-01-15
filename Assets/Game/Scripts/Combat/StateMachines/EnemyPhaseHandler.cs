@@ -1,21 +1,10 @@
-﻿using Frontier.Battle;
-using Frontier.Entities;
-using Frontier.Stage;
+﻿using Frontier.Entities;
 using System.Linq;
-using UnityEngine;
-using Zenject;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
-    public class EnemyPhaseHandler : PhaseHandlerBase
+    public class EnemyPhaseHandler : TroopPhaseHandler
     {
-        [Inject] protected BattleRoutineController _btlRtnCtrl = null;
-        [Inject] private BattleRoutinePresenter _presenter = null;
-        [Inject] protected StageController _stgCtrl = null;
-
-        /// <summary>
-        /// 初期化を行います
-        /// </summary>
         public override void Init()
         {
             // 目標座標や攻撃対象をリセット
