@@ -47,7 +47,7 @@ namespace Frontier.DebugTools.StageEditor
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -86,14 +86,14 @@ namespace Frontier.DebugTools.StageEditor
             };
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             _currentEdit.Update();
 
             return (0 <= TransitIndex);
         }
 
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

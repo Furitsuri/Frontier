@@ -80,7 +80,7 @@ namespace Frontier.StateMachine
             return ranges.Item1 + ranges.Item2 <= _plOwner.Params.CharacterParam.attackRange;
         }
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -103,7 +103,7 @@ namespace Frontier.StateMachine
             _plOwner.ActionRangeCtrl.DrawActionableRange();
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             if( base.Update() )
             {
@@ -139,7 +139,7 @@ namespace Frontier.StateMachine
             return ( 0 <= TransitIndex );
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
@@ -156,7 +156,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 入力コードを登録します
         /// </summary>
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

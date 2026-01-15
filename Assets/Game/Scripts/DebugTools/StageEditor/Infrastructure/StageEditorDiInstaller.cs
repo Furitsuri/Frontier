@@ -10,7 +10,7 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// DIコンテナのバインド対象を設定します
         /// </summary>
-        override public void InstallBindings()
+        public override void InstallBindings()
         {
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();

@@ -60,7 +60,7 @@ namespace Frontier.Entities.Ai
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
-        override public (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts, in CharacterKey ownerKey )
+        public override (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts, in CharacterKey ownerKey )
         {
             _isDetermined = true;
 

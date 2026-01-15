@@ -97,7 +97,7 @@ namespace Frontier.Entities
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -111,7 +111,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="index">指定のスキルのインデックス番号</param>
         /// <returns>切替の有無</returns>
-        override public bool ToggleUseSkillks(int index)
+        public override bool ToggleUseSkillks(int index)
         {
             _params.TmpParam.isUseSkills[index] = !_params.TmpParam.isUseSkills[index];
 

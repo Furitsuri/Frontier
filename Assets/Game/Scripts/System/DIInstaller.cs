@@ -14,7 +14,7 @@ namespace Frontier
         /// <summary>
         /// DIコンテナのバインド対象を設定します
         /// </summary>
-        override public void InstallBindings()
+        public override void InstallBindings()
         {
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
@@ -27,7 +27,6 @@ namespace Frontier
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
-            Container.Bind<BattleRoutineController>().FromComponentInHierarchy().AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
@@ -36,6 +35,9 @@ namespace Frontier
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuUI>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
+
+            // TODO : 暫定処理
+            Container.Bind<GameRoutineController>().FromComponentInHierarchy().AsCached();
         }
 
         /// <summary>

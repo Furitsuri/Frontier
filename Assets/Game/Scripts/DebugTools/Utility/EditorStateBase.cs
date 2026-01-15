@@ -21,7 +21,7 @@ public class EditorStateBase : StateBase
     /// <summary>
     /// 現在のステートを実行します
     /// </summary>
-    override public void RunState()
+    public override void RunState()
     {
         base.RunState();
         RegisterInputCodes();
@@ -30,7 +30,7 @@ public class EditorStateBase : StateBase
     /// <summary>
     /// 現在のステートを再開します
     /// </summary>
-    override public void RestartState()
+    public override void RestartState()
     {
         base.RestartState();
         RegisterInputCodes();
@@ -39,7 +39,7 @@ public class EditorStateBase : StateBase
     /// <summary>
     /// 現在のステートを中断します
     /// </summary>
-    override public void PauseState()
+    public override void PauseState()
     {
         base.PauseState();
         UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
@@ -48,7 +48,7 @@ public class EditorStateBase : StateBase
     /// <summary>
     /// 現在のステートから退避します
     /// </summary>
-    override public void ExitState()
+    public override void ExitState()
     {
         base.ExitState();
         UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );

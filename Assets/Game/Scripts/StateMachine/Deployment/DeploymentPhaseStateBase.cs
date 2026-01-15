@@ -8,7 +8,7 @@ namespace Frontier.StateMachine
     {
         protected DeploymentPhasePresenter _presenter = null;
 
-        override public void AssignPresenter( PhasePresenterBase presenter )
+        public override void AssignPresenter( PhasePresenterBase presenter )
         {
             _presenter = presenter as DeploymentPhasePresenter;
         }

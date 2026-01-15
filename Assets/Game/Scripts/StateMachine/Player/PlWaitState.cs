@@ -5,7 +5,7 @@ namespace Frontier.StateMachine
 {
     public class PlWaitState : PlPhaseStateBase
     {
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 

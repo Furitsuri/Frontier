@@ -41,7 +41,7 @@ namespace Frontier.UI
 
 #region ILocalizedText implementation
 
-        override public void RefreshText()
+        public override void RefreshText()
         {
             _tooltipText = _localization.Get( _textKey );
         }

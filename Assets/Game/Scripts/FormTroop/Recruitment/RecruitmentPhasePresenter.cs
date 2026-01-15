@@ -1,7 +1,7 @@
 ﻿using Zenject;
 using Frontier.StateMachine;
 
-namespace Frontier.Recruitment
+namespace Frontier.FormTroop
 {
     public class RecruitmentPhasePresenter : PhasePresenterBase
     {

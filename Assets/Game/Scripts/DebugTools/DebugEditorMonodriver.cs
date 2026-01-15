@@ -17,44 +17,44 @@ public class DebugEditorMonoDriver : FocusRoutineBase
 
     #region IFocusRoutine Implementation
 
-    override public void UpdateRoutine()
+    public override void UpdateRoutine()
     {
         _editorHnd?.Update();
     }
 
-    override public void LateUpdateRoutine()
+    public override void LateUpdateRoutine()
     {
         _editorHnd?.LateUpdate();
     }
 
-    override public void ScheduleRun()
+    public override void ScheduleRun()
     {
         base.ScheduleRun();
     }
 
-    override public void Run()
+    public override void Run()
     {
         base.Run();
 
         _editorHnd?.Run();
     }
 
-    override public void Restart()
+    public override void Restart()
     {
         base.Restart();
     }
 
-    override public void Pause()
+    public override void Pause()
     {
         base.Pause();
     }
 
-    override public void ScheduleExit()
+    public override void ScheduleExit()
     {
         base.ScheduleExit();
     }
 
-    override public void Exit()
+    public override void Exit()
     {
         _editorHnd?.Exit();
 

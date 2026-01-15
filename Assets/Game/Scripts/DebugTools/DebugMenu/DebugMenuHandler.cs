@@ -176,12 +176,12 @@ namespace Frontier.DebugTools.DebugMenu
         /// <summary>
         /// 更新を行います
         /// </summary>
-        override public void UpdateRoutine()
+        public override void UpdateRoutine()
         {
             _debugMenuView.UpdateMenuCursor(_currentMenuIndex);
         }
 
-        override public void Run()
+        public override void Run()
         {
             base.Run();
 
@@ -190,7 +190,7 @@ namespace Frontier.DebugTools.DebugMenu
             RegisterInputCodes();
         }
 
-        override public void Restart()
+        public override void Restart()
         {
             base.Restart();
 
@@ -199,7 +199,7 @@ namespace Frontier.DebugTools.DebugMenu
             RegisterInputCodes();
         }
 
-        override public void Pause()
+        public override void Pause()
         {
             base.Pause();
 
@@ -207,7 +207,7 @@ namespace Frontier.DebugTools.DebugMenu
             _inputFcd.UnregisterInputCodes(_inputHashCode);
         }
 
-        override public void Exit()
+        public override void Exit()
         {
             base.Exit();
 
@@ -217,7 +217,7 @@ namespace Frontier.DebugTools.DebugMenu
             _inputFcd.RegisterInputCodes((GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptBooleanInput(_acceptDebugTransitionCb), 0.0f, hashCode));
         }
 
-        override public int GetPriority() { return (int)FocusRoutinePriority.DEBUG_MENU; }
+        public override int GetPriority() { return (int)FocusRoutinePriority.DEBUG_MENU; }
 
         #endregion  // IFocusRoutine 実装
     }

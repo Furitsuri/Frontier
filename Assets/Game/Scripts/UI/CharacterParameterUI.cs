@@ -197,7 +197,7 @@ namespace Frontier.UI
             }
         }
 
-        override public void Setup()
+        public override void Setup()
         {
             LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
             LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );

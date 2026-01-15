@@ -2,7 +2,7 @@
 {
     public class StageEditorSaveState : StageEditorSaveLoadState
     {
-        override public void Init()
+        public override void Init()
         {
             _confirmMessage[( int ) State.CONFIRM]  = "SAVE THIS STAGE?";
             _confirmMessage[( int ) State.NOTIFY]   = "STAGE SAVED";

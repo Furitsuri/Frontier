@@ -25,7 +25,7 @@ namespace Frontier.StateMachine
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
         }
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 

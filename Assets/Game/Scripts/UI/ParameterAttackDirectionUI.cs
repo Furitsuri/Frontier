@@ -7,7 +7,7 @@ namespace Frontier.UI
         public TextMeshProUGUI attackCursorP2E;
         public TextMeshProUGUI attackCursorE2P;
 
-        override public void Setup()
+        public override void Setup()
         {
             // base.Setup(); // ※ 親クラスのSetupは呼ばない
 

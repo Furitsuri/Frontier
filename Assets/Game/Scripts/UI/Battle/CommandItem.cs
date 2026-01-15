@@ -26,14 +26,14 @@ public class CommandItem : UIMonoBehaviourIncludingText
         return _commandName.fontSize;
     }
 
-    override public void Setup()
+    public override void Setup()
     {
         _commandName = this.GetComponent<TextMeshProUGUI>();
     }
 
     #region ILocalizedText implementation
 
-    override public void RefreshText()
+    public override void RefreshText()
     {
         _commandName.text = _localization.Get( _textKey );
     }

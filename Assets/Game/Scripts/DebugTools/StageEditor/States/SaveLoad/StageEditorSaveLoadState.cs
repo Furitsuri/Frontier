@@ -50,7 +50,7 @@ namespace Frontier.DebugTools
             _uiSystem.DebugUi.StageEditorView.RefreshConfirmWindowSize( _NotifyWinSize );
         }
 
-        override public void Init()
+        public override void Init()
         {
             ToggleConfirmState();
 

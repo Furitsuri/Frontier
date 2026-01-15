@@ -14,7 +14,7 @@ public class StageClearUI : UiMonoBehaviour
         _animator.SetTrigger("Enlarge");
     }
 
-    override public void Setup()
+    public override void Setup()
     {
         base.Setup();
 

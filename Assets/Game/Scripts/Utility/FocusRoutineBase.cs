@@ -1,10 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FocusRoutineBase : MonoBehaviour, IFocusRoutine
 {
     private FocusState _focusState = FocusState.NONE;
+
+    public bool IsMatchFocusState( FocusState state )
+    {
+        return _focusState == state;
+    }
 
     virtual public void Init()
     {
@@ -24,19 +27,19 @@ public class FocusRoutineBase : MonoBehaviour, IFocusRoutine
 
         _focusState = FocusState.RUN;
 
-        gameObject.SetActive(true);
+        gameObject.SetActive( true );
     }
     virtual public void Restart()
     {
         _focusState = FocusState.RUN;
 
-        gameObject.SetActive(true);
+        gameObject.SetActive( true );
     }
     virtual public void Pause()
     {
         _focusState = FocusState.PAUSE;
 
-        gameObject.SetActive(false);
+        gameObject.SetActive( false );
     }
     virtual public void ScheduleExit()
     {
@@ -46,11 +49,7 @@ public class FocusRoutineBase : MonoBehaviour, IFocusRoutine
     {
         _focusState = FocusState.EXIT;
 
-        gameObject.SetActive(false);
+        gameObject.SetActive( false );
     }
-    virtual public bool IsMatchFocusState(FocusState state)
-    {
-        return _focusState == state;
-    }
-    virtual public int GetPriority() { return (int)FocusRoutinePriority.NONE; }
+    virtual public int GetPriority() { return ( int ) FocusRoutinePriority.NONE; }
 }

@@ -79,6 +79,10 @@ public class StateBase : TreeNode<StateBase>
         return IsBack();
     }
 
+    virtual public void LateUpdate() { }
+
+    virtual public void FixedUpdate() { }
+
     /// <summary>
     /// 現在のステートを実行します
     /// </summary>

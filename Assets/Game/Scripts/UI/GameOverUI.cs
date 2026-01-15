@@ -14,7 +14,7 @@ public class GameOverUI : UiMonoBehaviour
         _animator.SetTrigger("Fall");
     }
 
-    override public void Setup()
+    public override void Setup()
     {
         base.Setup();
 

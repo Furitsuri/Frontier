@@ -1,24 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-/// <summary>
-/// 各ルーチンの優先度です
-/// 値の低いものから優先度が高くなります(ただしNONEは無効)
-/// </summary>
-public enum FocusRoutinePriority
-{
-    NONE    = -1,
-
-    DEBUG_EDITOR,       // デバッグエディター
-    DEBUG_MENU,         // デバッグメニュー
-    TUTORIAL,           // チュートリアル
-    EVENT,              // イベント
-    BATTLE_SKILL_EVENT, // 戦闘スキルイベント
-    BATTLE,             // 戦闘
-
-    NUM,
-}
+﻿using UnityEngine;
 
 /// <summary>
 /// FocusRoutineをその優先度毎に制御するクラス
@@ -28,25 +8,28 @@ public class FocusRoutineController : MonoBehaviour
     IFocusRoutine _currentRoutine = null;
 
     [SerializeField]
-    [Header("割込み優先度の高いものから順に、各ルーチンを挿入してください")]
+    [Header( "割込み優先度の高いものから順に、各ルーチンを挿入してください" )]
     private FocusRoutineBase[] _focusRoutineBhvs = null;
 
     [SerializeField]
-    [Header("上記で挿入したもののうち、最初に実行するルーチンのインデックス値を指定してください")]
+    [Header( "上記で挿入したもののうち、最初に実行するルーチンのインデックス値を指定してください" )]
     private int _firstRoutineIndex = 0;
 
-    IFocusRoutine[] _routines = new IFocusRoutine[(int)FocusRoutinePriority.NUM];
+    IFocusRoutine[] _routines = new IFocusRoutine[( int ) FocusRoutinePriority.NUM];
 
     /// <summary>
     /// 初期化します
     /// </summary>
     public void Init()
     {
+        Debug.Assert( _focusRoutineBhvs.Length == (int) FocusRoutinePriority.NUM, 
+            "挿入されたルーチンの数とルーチンの定義数が一致していません。\n確認してください。" );
+
         _currentRoutine = null;
 
-        for (int i = 0; i < _routines.Length; i++)
+        for( int i = 0; i < _routines.Length; i++ )
         {
-            if (_routines[i] != null)
+            if( _routines[i] != null )
             {
                 _routines[i].Exit();
             }
@@ -54,19 +37,19 @@ public class FocusRoutineController : MonoBehaviour
         }
 
         // SerializeFieldで設定された各ルーチンを登録します
-        for ( int i = 0; i < _focusRoutineBhvs.Length; ++i )
+        for( int i = 0; i < _focusRoutineBhvs.Length; ++i )
         {
-            Register(_focusRoutineBhvs[i], i);
+            Register( _focusRoutineBhvs[i], i );
         }
 
         // 最初に実行するルーチンのインデックス値が不正な場合は、0に設定します
-        if ( _firstRoutineIndex < 0 || _focusRoutineBhvs.Length <= _firstRoutineIndex || _routines[_firstRoutineIndex] == null)
+        if( _firstRoutineIndex < 0 || _focusRoutineBhvs.Length <= _firstRoutineIndex || _routines[_firstRoutineIndex] == null )
         {
-            LogHelper.LogError("Invalid first routine index specified.");
+            LogHelper.LogError( "Invalid first routine index specified." );
             _firstRoutineIndex = 0;
         }
 
-        RunRoutineAndPauseOthers( (FocusRoutinePriority)_firstRoutineIndex );
+        RunRoutineAndPauseOthers( ( FocusRoutinePriority ) _firstRoutineIndex );
     }
 
     /// <summary>
@@ -74,9 +57,9 @@ public class FocusRoutineController : MonoBehaviour
     /// </summary>
     public void UpdateRoutine()
     {
-        if (null == _currentRoutine)
+        if( null == _currentRoutine )
         {
-            LogHelper.LogError("Current routine is null.");
+            LogHelper.LogError( "Current routine is null." );
             return;
         }
 
@@ -100,9 +83,9 @@ public class FocusRoutineController : MonoBehaviour
     /// </summary>
     /// <param name="routine">登録するルーチン</param>
     /// <param name="p">登録するルーチンの優先度</param>
-    public void Register(IFocusRoutine routine, int p )
+    public void Register( IFocusRoutine routine, int p )
     {
-        if (p < 0 || (int)FocusRoutinePriority.NUM <= p || _routines[p] != null) return;
+        if( p < 0 || ( int ) FocusRoutinePriority.NUM <= p || _routines[p] != null ) return;
         _routines[p] = routine;
     }
 
@@ -110,30 +93,30 @@ public class FocusRoutineController : MonoBehaviour
     /// 指定のルーチンを駆動させると共に、駆動中の他のルーチンを中断します
     /// </summary>
     /// <param name="priority">駆動するルーチンの優先度</param>
-    public void RunRoutineAndPauseOthers(FocusRoutinePriority priority)
+    public void RunRoutineAndPauseOthers( FocusRoutinePriority priority )
     {
-        int p = (int)priority;
-        if (p < 0 || (int)FocusRoutinePriority.NUM <= p || _routines[p] == null)
+        int p = ( int ) priority;
+        if( p < 0 || ( int ) FocusRoutinePriority.NUM <= p || _routines[p] == null )
         {
-            LogHelper.LogError("Invalid priority");
+            LogHelper.LogError( "Invalid priority" );
             return;
         }
 
         for( int i = 0; i < _routines.Length; ++i )
         {
-            if (_routines[i] == null)
+            if( _routines[i] == null )
             {
                 continue;
             }
 
-            if (i == p)
+            if( i == p )
             {
                 _currentRoutine = _routines[p];
                 _currentRoutine.Run();
                 continue;
             }
 
-            if (_routines[i].IsMatchFocusState( FocusState.RUN ))
+            if( _routines[i].IsMatchFocusState( FocusState.RUN ) )
             {
                 _routines[i].Pause();
             }
@@ -154,21 +137,21 @@ public class FocusRoutineController : MonoBehaviour
         }
 
         // ルーチンの優先度を確認し、優先度が高いものがあれば中断します
-        for (int i = 0; i < _routines.Length; i++)
+        for( int i = 0; i < _routines.Length; i++ )
         {
-            if (_routines[i] == null || _routines[i].IsMatchFocusState(FocusState.EXIT)) continue;
+            if( _routines[i] == null || _routines[i].IsMatchFocusState( FocusState.EXIT ) ) continue;
 
             // 現在のルーチンより優先度の高いものに対する判定
-            if (i < currentPriority)
+            if( i < currentPriority )
             {
                 // 現在のルーチンが実行中で優先度の高いルーチンが実行予定の場合は、中断して新たに実行
-                if (_routines[i].IsMatchFocusState(FocusState.RUN_SCHEDULED))
+                if( _routines[i].IsMatchFocusState( FocusState.RUN_SCHEDULED ) )
                 {
-                    if (_currentRoutine.IsMatchFocusState(FocusState.RUN))
+                    if( _currentRoutine.IsMatchFocusState( FocusState.RUN ) )
                     {
                         _currentRoutine.Pause();
                     }
-                    
+
                     _currentRoutine = _routines[i];
                     _currentRoutine.Run();
 
@@ -179,13 +162,13 @@ public class FocusRoutineController : MonoBehaviour
             else
             {
                 // 現在のルーチンより優先度が高いルーチンが予約されておらず、かつ、現在のルーチンの実行を継続する場合はスルー
-                if (_currentRoutine.IsMatchFocusState(FocusState.RUN)) return;
+                if( _currentRoutine.IsMatchFocusState( FocusState.RUN ) ) return;
 
                 // 現在のルーチンについては判定しない(RUN以外が指定されている場合)
-                if (currentPriority == i) continue;
+                if( currentPriority == i ) continue;
 
                 // 中断中のルーチンのうち、現在のルーチンの次に優先度が高いものを再開
-                if (_routines[i].IsMatchFocusState(FocusState.PAUSE))
+                if( _routines[i].IsMatchFocusState( FocusState.PAUSE ) )
                 {
                     _currentRoutine = _routines[i];
                     _currentRoutine.Restart();
@@ -195,6 +178,6 @@ public class FocusRoutineController : MonoBehaviour
             }
         }
 
-        LogHelper.LogError("実行すべきルーチンが存在していない状態です。");
+        LogHelper.LogError( "実行すべきルーチンが存在していない状態です。" );
     }
 }

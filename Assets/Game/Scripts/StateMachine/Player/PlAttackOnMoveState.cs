@@ -9,7 +9,7 @@ namespace Frontier.StateMachine
     /// </summary>
     public class PlAttackOnMoveState : PlAttackState
     {
-        override public void Init()
+        public override void Init()
         {
             PlPhaseStateInit(); // base.Init()は呼ばない(PlAttackState.Init()が呼ばれてしまうため)
 
@@ -42,7 +42,7 @@ namespace Frontier.StateMachine
             _attackSequence.Init(); // 攻撃シーケンスを初期化
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();

@@ -1,5 +1,5 @@
 ﻿using Frontier.Battle;
-using Frontier.Recruitment;
+using Frontier.FormTroop;
 using Frontier.Stage;
 using Frontier.UI;
 using System.Collections;
@@ -9,14 +9,10 @@ namespace Frontier.StateMachine
 {
     public class PhaseHandlerBase : Tree<PhaseStateBase>
     {
-        [Inject] protected IUiSystem _uiSystem                  = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
-        [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
-        [Inject] protected StageController _stgCtrl             = null;
         
         private object _transitionContext;    // State間で受け渡すコンテキスト情報
         protected bool _isFirstUpdate = false;
-        protected BattleUISystem _btlUi = null;
 
         public void ReceiveContext( object context )
         {
@@ -57,7 +53,6 @@ namespace Frontier.StateMachine
             Traverse( RootNode, AssignHandler );    // 各ステートにハンドラを割り当てる
 
             _isFirstUpdate = true;
-            _btlUi = _uiSystem.BattleUi;
         }
 
         virtual public void Update()
@@ -67,6 +62,8 @@ namespace Frontier.StateMachine
 
         virtual public bool LateUpdate()
         {
+            CurrentNode.LateUpdate();  // 現在実行中のステートを後更新
+
             // ステートの遷移を監視
             int transitIndex = CurrentNode.TransitIndex;
             if( 0 <= transitIndex )
@@ -96,6 +93,11 @@ namespace Frontier.StateMachine
             }
 
             return false;
+        }
+
+        virtual public void FixedUpdate()
+        {
+            CurrentNode.FixedUpdate();  // 現在実行中のステートを固定更新
         }
 
         virtual public void Run()

@@ -29,7 +29,7 @@ namespace Frontier.UI
             return _rectTransform.pivot;
         }
 
-        override public void Setup()
+        public override void Setup()
         {
             _rectTransform = GetComponent<RectTransform>();
 

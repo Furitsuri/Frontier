@@ -26,7 +26,7 @@ namespace Frontier.StateMachine
         ///        そのため、行動範囲の計算やその表示についてはEmSelectState内のタイミングで行われています。
         ///        理由としては、EmMoveStateの初期化時点でどこに移動するか(引いては何を行うか)を決定していては遅いためです。
         /// </summary>
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -51,7 +51,7 @@ namespace Frontier.StateMachine
             }
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             switch( _Phase )
             {
@@ -80,7 +80,7 @@ namespace Frontier.StateMachine
             return false;
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示

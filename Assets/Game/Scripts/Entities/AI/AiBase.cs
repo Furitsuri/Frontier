@@ -145,7 +145,7 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 初期化します
         /// </summary>
-        override public void Init( Character owner )
+        public override void Init( Character owner )
         {
             _owner                  = owner;
             _gridEvaluationValues   = new float[_stageDataProvider.CurrentData.GetTileTotalNum()];
@@ -156,7 +156,7 @@ namespace Frontier.Entities.Ai
         /// 移動目標と攻撃対象キャラクターをリセットします
         /// TODO : 再行動スキルなどを実装する場合は、対象に再行動を適応した際にこの関数を呼び出してください
         /// </summary>
-        override public void ResetDestinationAndTarget()
+        public override void ResetDestinationAndTarget()
         {
             _isDetermined           = false;
             _destinationTileIndex   = -1;
@@ -167,13 +167,13 @@ namespace Frontier.Entities.Ai
         /// 既に移動対象や攻撃対象を決定しているかどうかの情報を取得します
         /// </summary>
         /// <returns>決定の有無</returns>
-        override public bool IsDetermined() { return _isDetermined; }
+        public override bool IsDetermined() { return _isDetermined; }
 
         /// <summary>
         /// 目的地のグリッドインデックスを取得します
         /// </summary>
         /// <returns>目的地のグリッドインデックス</returns>
-        override public int GetDestinationGridIndex()
+        public override int GetDestinationGridIndex()
         {
             return _destinationTileIndex;
         }
@@ -182,7 +182,7 @@ namespace Frontier.Entities.Ai
         /// 攻撃対象のキャラクターを取得します
         /// </summary>
         /// <returns>攻撃対象のキャラクター</returns>
-        override public Character GetTargetCharacter()
+        public override Character GetTargetCharacter()
         {
             return _targetCharacter;
         }

@@ -1,4 +1,4 @@
 ﻿public abstract class BaseHandlerExtendedFocusRoutine : FocusRoutineBase
 {
-    override public void Init() { base.Init(); }
+    public override void Init() { base.Init(); }
 }

@@ -23,7 +23,7 @@ namespace Frontier.StateMachine
         private Character _targetCharacter              = null;
         private CharacterAttackSequence _attackSequence = null;
 
-        override public void Init()
+        public override void Init()
         {
             base.Init();
 
@@ -60,7 +60,7 @@ namespace Frontier.StateMachine
             _phase = EmAttackPhase.EM_ATTACK_CONFIRM;
         }
 
-        override public bool Update()
+        public override bool Update()
         {
             // 攻撃可能状態でなければ何もしない
             if (_stageCtrl.GetGridCursorControllerState() != GridCursorState.ATTACK)
@@ -100,7 +100,7 @@ namespace Frontier.StateMachine
             return false;
         }
 
-        override public void ExitState()
+        public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = _attackSequence.GetDiedCharacter();
@@ -146,7 +146,7 @@ namespace Frontier.StateMachine
             base.ExitState();
         }
 
-        override public void RegisterInputCodes()
+        public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 

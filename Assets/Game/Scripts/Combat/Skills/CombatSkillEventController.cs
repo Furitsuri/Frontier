@@ -26,7 +26,7 @@ namespace Frontier.Combat.Skill
         /// 初期化します
         /// </summary>
         /// <param name="btlRtnCtrl">戦闘ルーチン操作クラス</param>
-        override public void Init()
+        public override void Init()
         {
             if( _currentSkillHandler != null )
             {
@@ -35,7 +35,7 @@ namespace Frontier.Combat.Skill
             }
         }
 
-        override public void Exit()
+        public override void Exit()
         {
             Debug.Assert( _currentSkillHandler != null );
 
@@ -44,12 +44,12 @@ namespace Frontier.Combat.Skill
             base.Exit();
         }
 
-        override public int GetPriority()
+        public override int GetPriority()
         {
             return (int)FocusRoutinePriority.BATTLE_SKILL_EVENT;
         }
 
-        override public void UpdateRoutine()
+        public override void UpdateRoutine()
         {
             if (_currentSkillHandler != null)
             {
@@ -57,7 +57,7 @@ namespace Frontier.Combat.Skill
             }
         }
 
-        override public void LateUpdateRoutine()
+        public override void LateUpdateRoutine()
         {
             if (_currentSkillHandler != null)
             {
@@ -65,7 +65,7 @@ namespace Frontier.Combat.Skill
             }
         }
 
-        override public void FixedUpdateRoutine()
+        public override void FixedUpdateRoutine()
         {
             if (_currentSkillHandler != null)
             {

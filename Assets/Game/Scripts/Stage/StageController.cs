@@ -1,15 +1,9 @@
-﻿using Froniter.Entities;
-using Frontier.Battle;
+﻿using Froniter.Registries;
 using Frontier.Entities;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Xml.Xsl;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Zenject;
 using static Constants;
 
@@ -30,16 +24,11 @@ namespace Frontier.Stage
         [Header( "デフォルトで読込むステージのインデックス値" )]
         [SerializeField] private int deafultLoadStageIndex;
 
-        [Header( "Prefabs" )]
-        [SerializeField] private GameObject stageFileLoaderPrefab;
-        [SerializeField] private GameObject _gridMeshObject;
-        [SerializeField] private GameObject _gridCursorCtrlObject;
-        [SerializeField] private GameObject[] _tilePrefabs;
-
         [SerializeField] public float BattlePosLengthFromCentral { get; private set; } = 2.0f;
 
         [Inject] private IStageDataProvider _stageDataProvider = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private PrefabRegistry _prefabReg = null;
 
         public bool back = true;
         private GridCursorController _gridCursorCtrl;
@@ -54,8 +43,8 @@ namespace Frontier.Stage
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _gridCursorCtrlObject, true, true, "GridCursorController" ) );
-            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _prefabReg.GridCursorCtrlPrefab, true, true, "GridCursorController" ) );
+            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
 
             _gridCursorCtrl.Init( 0 );
@@ -70,7 +59,7 @@ namespace Frontier.Stage
         /// </summary>
         public void Init()
         {
-            _stageFileLoader.Init( _tilePrefabs );
+            _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( deafultLoadStageIndex );
         }
 
@@ -369,7 +358,7 @@ namespace Frontier.Stage
         [UnityEditor.CustomEditor(typeof(StageController))]
         public class StageControllerEditor : UnityEditor.Editor
         {
-            override public void OnInspectorGUI()
+            public override void OnInspectorGUI()
             {
                 StageController script = target as StageController;
 
