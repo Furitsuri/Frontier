@@ -1,13 +1,16 @@
 ﻿using Frontier.Entities;
 using Frontier.StateMachine;
+using Zenject;
 
 namespace Frontier.Battle
 {
     /// <summary>
     /// プレイヤーターン終了確認の選択画面
     /// </summary>
-    public class PlConfirmTurnEnd : ConfirmPhaseStateBase
+    public sealed class PlConfirmTurnEnd : ConfirmPhaseStateBase
     {
+        [Inject] private BattleRoutineController _btlRtnCtrl = null;
+
         /// <summary>
         /// 方向入力を受け取り、コマンドリストを操作させます
         /// </summary>

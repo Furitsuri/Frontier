@@ -35,7 +35,7 @@ namespace Frontier
         {
             base.Init();
 
-            StartBattle();
+            StartRecruitment();
         }
 
         public override void UpdateRoutine()

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Frontier.Battle
 {
-    public class EmSelectState : PhaseStateBase
+    public class EmSelectState : UnitPhaseState
     {
         Enemy _currentEnemy = null;
         IEnumerator<Character> _enemyEnumerator;

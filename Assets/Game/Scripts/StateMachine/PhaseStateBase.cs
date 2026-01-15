@@ -9,8 +9,6 @@ namespace Frontier.StateMachine
     {
         [Inject] protected IUiSystem _uiSystem                  = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
-        [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
-        [Inject] protected StageController _stageCtrl           = null;
         [Inject] protected TutorialFacade _tutorialFcd          = null;
 
         protected bool _isEndedPhase = false;
@@ -20,16 +18,6 @@ namespace Frontier.StateMachine
         public void AssignHandler( PhaseHandlerBase handler )
         {
             Handler = handler;
-        }
-
-        /// <summary>
-        /// 死亡したキャラクターの存在を通知します
-        /// </summary>
-        /// <param name="characterKey">死亡したキャラクターのハッシュキー</param>
-        protected void NorifyCharacterDied( in CharacterKey characterKey )
-        {
-            _btlRtnCtrl.BtlCharaCdr.SetDiedCharacterKey( characterKey );
-            _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( characterKey );
         }
 
         /// <summary>

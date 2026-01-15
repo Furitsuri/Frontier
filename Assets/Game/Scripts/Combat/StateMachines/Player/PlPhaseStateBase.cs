@@ -3,7 +3,7 @@ using Frontier.StateMachine;
 
 namespace Frontier.Battle
 {
-    public class PlPhaseStateBase : PhaseStateBase
+    public class PlPhaseStateBase : UnitPhaseState
     {
         protected Player _plOwner = null;
 
