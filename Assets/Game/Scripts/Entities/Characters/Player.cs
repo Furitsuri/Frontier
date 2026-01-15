@@ -133,7 +133,7 @@ namespace Frontier.Entities
                 Params.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
             }
 
-            _btlRtnCtrl.BtlUi.GetPlayerParamSkillBox(index).SetFlickEnabled(_params.TmpParam.isUseSkills[index]);
+            _uiSystem.BattleUi.GetPlayerParamSkillBox(index).SetFlickEnabled(_params.TmpParam.isUseSkills[index]);
 
             return true;
         }

@@ -1,5 +1,4 @@
-﻿using Frontier.Battle;
-using Frontier.Stage;
+﻿using Frontier.Stage;
 using Frontier.StateMachine;
 using Zenject;
 

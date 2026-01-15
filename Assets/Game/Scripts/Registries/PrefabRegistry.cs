@@ -8,12 +8,12 @@ namespace Frontier.Registries
         [SerializeField] private GameObject battleFileLoaderObject; // BattleFileLoaderプレハブ
 
         [Header( "Stage関連" )]
-        [SerializeField] private GameObject stageFileLoaderPrefab;
-        [SerializeField] private GameObject _gridMeshObject;
-        [SerializeField] private GameObject _gridCursorCtrlObject;
-        [SerializeField] private GameObject tileMeshObject;     // TileMeshプレハブ
-        [SerializeField] private GameObject[] _tilePrefabs;
-        
+        [SerializeField] private GameObject stageFileLoaderPrefab;  // StageFileLoaderプレハブ
+        [SerializeField] private GameObject _gridMeshObject;        // GridMeshプレハブ
+        [SerializeField] private GameObject _gridCursorCtrlObject;  // GridCursorCtrlプレハブ
+        [SerializeField] private GameObject tileMeshObject;         // TileMeshプレハブ
+        [SerializeField] private GameObject[] _tilePrefabs;         // タイルプレハブ配列
+
         public GameObject BattleFileLoaderPrefab => battleFileLoaderObject;
         public GameObject StageFileLoaderPrefab => stageFileLoaderPrefab;
         public GameObject GridMeshPrefab => _gridMeshObject;

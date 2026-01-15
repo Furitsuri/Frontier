@@ -18,7 +18,6 @@ namespace Frontier.Battle
         [SerializeField] private GameObject _skillCtrlObject;
         */
 
-        [Inject] private IUiSystem _uiSystem                = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private PrefabRegistry _prefabReg          = null;
 
@@ -29,13 +28,10 @@ namespace Frontier.Battle
         private BattleCharacterCoordinator _btlCharaCdr = null;
         private BattleTimeScaleController _battleTimeScaleCtrl = null;
         private BattleRoutinePresenter _presenter = null;
-        private BattleUISystem _btlUi = null;
-        private EntitySnapshot _entitySnapshot = null;
         private StageController _stgCtrl = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
 
         public CharacterKey SelectCharacterKey { get; private set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );
-        public BattleUISystem BtlUi => _btlUi;
         public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
 
@@ -53,38 +49,6 @@ namespace Frontier.Battle
             return _battleCameraCtrl;
         }
 
-        /// <summary>
-        /// ステージクリア時のUIとアニメーションを表示します
-        /// </summary>
-        public void StartStageClearAnim()
-        {
-            _btlUi.ToggleStageClearUI( true );
-            _btlUi.StartStageClearAnim();
-        }
-
-        /// <summary>
-        /// ゲームオーバー時のUIとアニメーションを表示します
-        /// </summary>
-        public void StartGameOverAnim()
-        {
-            _btlUi.ToggleGameOverUI( true );
-            _btlUi.StartGameOverAnim();
-        }
-
-        public Texture2D TakeCharacterStatusSnapshot( Character chara, bool isSnapAnim )
-        {
-            var textureSize = _uiSystem.GeneralUi.CharacterStatusView.GetSnapshotRectSize();
-            return TakeCharacterSnapshot( ( int ) textureSize.Item1, ( int ) textureSize.Item2, chara, isSnapAnim );
-        }
-
-        public Texture2D TakeCharacterSnapshot( int width, int height, Character chara, bool isSnapAnim )
-        {
-            Texture2D snapshot;
-            _entitySnapshot.CaptureCharacter( width, height, chara, out snapshot, isSnapAnim, AnimDatas.AnimeConditionsTag.WAIT );
-
-            return snapshot;
-        }
-
         private void Setup()
         {
             var btlCameraObj = GameObject.FindWithTag( "MainCamera" );
@@ -94,7 +58,6 @@ namespace Frontier.Battle
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
             LazyInject.GetOrCreate( ref _battleTimeScaleCtrl, () => _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>( false ) );
-            LazyInject.GetOrCreate( ref _entitySnapshot, () => _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false ) );
 
             if( SkillsData.skillNotifierFactory == null )
             {
@@ -119,7 +82,7 @@ namespace Frontier.Battle
         {
             if( current == BattlePhaseType.Deployment )
             {
-                _btlUi.gameObject.SetActive( true );                        // 戦闘用UIの表示をON
+                _presenter.SetActiveBattleUI( true );                       // 戦闘用UIの表示をON
                 _stgCtrl.TileDataHdlr().ClearUndeployableColorOfTiles();    // 配置不可タイルの色をクリア
 
                 return BattlePhaseType.Player;          // 配置が終わったら通常ループに移行
@@ -159,11 +122,8 @@ namespace Frontier.Battle
         {
             Setup();
 
-            _btlUi = _uiSystem.BattleUi;
-
             _stgCtrl.Init();
             _btlCharaCdr.Init();
-            _entitySnapshot.Init();
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -176,7 +136,7 @@ namespace Frontier.Battle
             _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
-            _btlUi.gameObject.SetActive( false );                       // 配置フェーズ移行前に戦闘用UIの表示をOFF
+            _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams( _battleCameraCtrl );       // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
@@ -198,7 +158,7 @@ namespace Frontier.Battle
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) { return; }
+            if( _presenter.IsActiveStageClearAnimation() || _presenter.IsActiveGameOverAnimation() ) { return; }
 
             _phaseHandlers[_currentPhase].Update();
 
@@ -207,11 +167,11 @@ namespace Frontier.Battle
 
         public override void LateUpdate()
         {
-            if( _btlUi.StageClear.isActiveAndEnabled ) { return; }  // ステージクリア時のUIアニメーションが再生されている場合は終了
-            if( _btlUi.GameOver.isActiveAndEnabled ) { return; }    // ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
+            if( _presenter.IsActiveStageClearAnimation() )  { return; }  // ステージクリア時のUIアニメーションが再生されている場合は終了
+            if( _presenter.IsActiveGameOverAnimation() )    { return; }  // ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
 
             // 勝利、全滅チェックを行う
-            if( _btlCharaCdr.CheckVictoryOrDefeat( StartStageClearAnim, StartGameOverAnim ) ) { return; }
+            if( _btlCharaCdr.CheckVictoryOrDefeat( _presenter.StartStageClearAnim, _presenter.StartGameOverAnim ) ) { return; }
 
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )

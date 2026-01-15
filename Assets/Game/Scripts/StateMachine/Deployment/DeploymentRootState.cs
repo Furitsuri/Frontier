@@ -1,11 +1,12 @@
-﻿using Frontier.StateMachine;
-using Frontier.Entities;
+﻿using Frontier.Entities;
 using Frontier.Stage;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
 using static InputCode;
+using static UnityEditor.Progress;
 
 namespace Frontier.StateMachine
 {
@@ -17,6 +18,7 @@ namespace Frontier.StateMachine
         [Inject] private IStageDataProvider _stageDataProvider = null;
 
         private int _focusCharacterIndex                        = 0;     // フォーカス中のキャラクターインデックス
+        private EntitySnapshot _entitySnapshot                  = null;
         private List<DeploymentCandidate> _deploymentCandidates = new List<DeploymentCandidate>();  // 配置可能なキャラクターリスト
 
         private enum TransitTag
@@ -40,7 +42,8 @@ namespace Frontier.StateMachine
 
                 // UI表示用に各キャラクターのスナップショットを撮影
                 var size = _presenter.GetDeploymentCharacterDisplaySize();
-                Texture2D candidateSnapshot = _btlRtnCtrl.TakeCharacterSnapshot( size.Item1, size.Item2, player, false );
+                Texture2D candidateSnapshot = null;
+                _entitySnapshot.CaptureCharacter( size.Item1, size.Item2, player, out candidateSnapshot, false, AnimDatas.AnimeConditionsTag.WAIT );
 
                 // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
                 DeploymentCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<DeploymentCandidate>( false );
@@ -104,10 +107,12 @@ namespace Frontier.StateMachine
 
         public override void Init()
         {
+            LazyInject.GetOrCreate( ref _entitySnapshot, () => _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false ) );
+
             base.Init();
+            _entitySnapshot.Init();
 
             _focusCharacterIndex = 0;
-
             InitDeploymentCandidates();
 
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
