@@ -197,8 +197,6 @@ namespace Frontier.Battle
             (var tileSData, var tileDData) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
             _battleCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
-            _btlUi.ParameterView.SetSelectedCharacter( _btlCharaCdr.GetSelectCharacter() );
-
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if( _btlUi.StageClear.isActiveAndEnabled || _btlUi.GameOver.isActiveAndEnabled ) { return; }
 

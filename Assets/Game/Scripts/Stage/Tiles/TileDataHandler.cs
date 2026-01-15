@@ -14,13 +14,11 @@ namespace Frontier.Stage
     public class TileDataHandler
     {
         [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl    = null;
         [Inject] private GridCursorController _gridCursorCtrl   = null;
 
-        // TODO : 暫定処理
-        [Inject] private GameRoutineController _gameRtnCtrl     = null;
-
         private List<int> _attackableTileIndexs = new List<int>();
-        private BattleRoutineController _btlRtnCtrl = null;
+        
 
         #region PUBLIC_METHOD
 
@@ -30,12 +28,6 @@ namespace Frontier.Stage
         public void UpdateTileDynamicDatas()
         {
             ResetTileDynamicDatas();    // 一度全てのタイル情報を元に戻す
-
-            // TODO : 暫定処理
-            if( _btlRtnCtrl == null )
-            {
-                _btlRtnCtrl = _gameRtnCtrl.GetCurrentSubRoutine() as BattleRoutineController;
-            }
 
             for( int i = 0; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
