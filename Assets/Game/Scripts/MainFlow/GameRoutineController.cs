@@ -14,12 +14,6 @@ namespace Frontier
 
         private SubRoutineController _current;
 
-        // TODO : 暫定処理
-        public SubRoutineController GetCurrentSubRoutine()
-        {
-            return _current;
-        }
-
         public void StartBattle()
         {
             SwitchTo( _hierarchyBld.InstantiateWithDiContainer<BattleRoutineController>( true ) );

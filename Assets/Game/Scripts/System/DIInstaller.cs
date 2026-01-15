@@ -34,9 +34,6 @@ namespace Frontier
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuUI>().FromComponentInHierarchy().AsCached();
 #endif // UNITY_EDITOR
-
-            // TODO : 暫定処理
-            Container.Bind<GameRoutineController>().FromComponentInHierarchy().AsCached();
         }
 
         /// <summary>
