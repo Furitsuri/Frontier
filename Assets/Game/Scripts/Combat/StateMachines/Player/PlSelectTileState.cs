@@ -1,11 +1,9 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.Tutorial;
-using System;
-using Zenject;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlSelectTileState : PlPhaseStateBase
     {

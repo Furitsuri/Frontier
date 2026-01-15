@@ -1,4 +1,4 @@
-﻿using Froniter.StateMachine;
+﻿using Frontier.StateMachine;
 using Frontier.Entities;
 using Frontier.Stage;
 using System.Collections.Generic;

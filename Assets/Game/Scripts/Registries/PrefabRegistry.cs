@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Froniter.Registries
+namespace Frontier.Registries
 {
     public class PrefabRegistry : MonoBehaviour
     {

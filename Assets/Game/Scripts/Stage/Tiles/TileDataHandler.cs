@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using Froniter.Entities;
 using static Constants;
 
 namespace Frontier.Stage

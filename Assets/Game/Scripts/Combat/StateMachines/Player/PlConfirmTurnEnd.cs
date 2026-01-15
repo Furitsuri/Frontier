@@ -1,9 +1,7 @@
 ﻿using Frontier.Entities;
-using System.Collections.Generic;
-using UnityEngine;
-using static Constants;
+using Frontier.StateMachine;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     /// <summary>
     /// プレイヤーターン終了確認の選択画面

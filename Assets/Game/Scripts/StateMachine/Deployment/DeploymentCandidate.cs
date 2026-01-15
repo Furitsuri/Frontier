@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Frontier.Entities;
 using Zenject;
 
-namespace Froniter.StateMachine
+namespace Frontier.StateMachine
 {
     /// <summary>
     /// 配置候補キャラクターを表すクラス

@@ -1,5 +1,4 @@
 ﻿using Frontier.Battle;
-using Frontier.FormTroop;
 using Frontier.Stage;
 using Frontier.Tutorial;
 using Zenject;

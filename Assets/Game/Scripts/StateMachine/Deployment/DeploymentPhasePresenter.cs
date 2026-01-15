@@ -1,7 +1,6 @@
-﻿using Froniter.StateMachine;
+﻿using Frontier.StateMachine;
 using Frontier.Battle;
 using Frontier.Entities;
-using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.ObjectModel;

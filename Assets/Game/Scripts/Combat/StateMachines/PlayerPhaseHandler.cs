@@ -1,23 +1,11 @@
-﻿using Frontier.Battle;
-using Frontier.Entities;
-using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Entities;
+using Frontier.StateMachine;
 using System.Linq;
-using UnityEngine;
-using Zenject;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
-    public class PlayerPhaseHandler : PhaseHandlerBase
+    public class PlayerPhaseHandler : TroopPhaseHandler
     {
-        [Inject] protected BattleRoutineController _btlRtnCtrl = null;
-        [Inject] private BattleRoutinePresenter _presenter = null;
-        [Inject] protected StageController _stgCtrl = null;
-
-        /// <summary>
-        /// 初期化を行います
-        /// </summary>
         public override void Init()
         {
             base.Init();

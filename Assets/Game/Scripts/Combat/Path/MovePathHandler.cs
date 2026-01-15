@@ -1,5 +1,4 @@
-﻿using Froniter.Entities;
-using Frontier.Entities;
+﻿using Frontier.Entities;
 using Frontier.Stage;
 using System;
 using System.Collections;

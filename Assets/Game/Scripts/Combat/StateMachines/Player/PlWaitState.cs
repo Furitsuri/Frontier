@@ -1,7 +1,7 @@
 ﻿using Frontier.Entities;
 using UnityEngine;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlWaitState : PlPhaseStateBase
     {

@@ -1,8 +1,7 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
-using Zenject;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     /// <summary>
     /// 移動ステート中に直接攻撃へと遷移した際の攻撃選択ステートです

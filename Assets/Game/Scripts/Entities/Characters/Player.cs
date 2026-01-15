@@ -1,4 +1,4 @@
-﻿using Froniter.Entities;
+﻿using Frontier.Entities;
 using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;

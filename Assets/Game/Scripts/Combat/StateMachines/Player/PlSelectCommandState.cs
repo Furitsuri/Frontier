@@ -3,7 +3,7 @@ using Frontier.Entities;
 using System.Collections.Generic;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlSelectCommandState : PlPhaseStateBase
     {

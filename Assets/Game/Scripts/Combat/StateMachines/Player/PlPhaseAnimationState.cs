@@ -1,6 +1,6 @@
-﻿using Frontier.Battle;
+﻿using Frontier.StateMachine;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class PlPhaseStateAnimation : PhaseAnimationStateBase
     {

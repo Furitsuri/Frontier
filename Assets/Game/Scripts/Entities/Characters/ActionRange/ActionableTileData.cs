@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Froniter.Entities
+namespace Frontier.Entities
 {
     /// <summary>
     /// アクション(移動や攻撃など)可能なタイルの情報

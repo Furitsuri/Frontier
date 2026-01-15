@@ -4,7 +4,7 @@ using Frontier.Battle;
 using Frontier.Combat.Skill;
 using Frontier.DebugTools.DebugMenu;
 using Zenject;
-using Froniter.Registries;
+using Frontier.Registries;
 using Frontier.Tutorial;
 
 namespace Frontier

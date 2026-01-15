@@ -1,4 +1,4 @@
-﻿using Froniter.Entities;
+﻿using Frontier.Entities;
 using Frontier.Combat;
 using Frontier.Stage;
 using System;
