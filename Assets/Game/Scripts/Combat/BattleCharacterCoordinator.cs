@@ -26,7 +26,6 @@ namespace Frontier.Battle
         private CharacterKey _diedCharacterKey;
         private CharacterKey _battleBossCharacterKey;
         private CharacterKey _escortTargetCharacterKey;
-        
 
         public delegate void StageAnim();
 
@@ -72,11 +71,11 @@ namespace Frontier.Battle
             {
                 foreach ( var chara in charaList )
                 {
-                    int gridIndex = chara.Params.CharacterParam.initGridIndex;                                  // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-                    chara.Params.TmpParam.SetCurrentGridIndex( gridIndex );                                     // ステージ上のグリッド位置の設定
-                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos );   // プレイヤーの画面上の位置を設定
-                    chara.GetTransformHandler.SetRotation( rot[(int)chara.Params.CharacterParam.initDir] );     // 向きを設定
-                    _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                               // 対応するグリッドに立っているキャラクターを登録
+                    int gridIndex = chara.Params.CharacterParam.initGridIndex;                                      // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
+                    chara.Params.TmpParam.SetCurrentGridIndex( gridIndex );                                         // ステージ上のグリッド位置の設定
+                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
+                    chara.GetTransformHandler.SetRotation( rot[(int)chara.Params.CharacterParam.initDir] );         // 向きを設定
+                    _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
                 }
             }
         }

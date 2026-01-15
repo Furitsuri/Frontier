@@ -10,9 +10,6 @@ namespace Frontier
         [Header( "スキルコントローラオブジェクト" )]
         [SerializeField] private GameObject _skillCtrlObject;
 
-        [Header( "戦闘ファイル読込オブジェクト" )]
-        [SerializeField] private GameObject _btlFileLoadObject;
-
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private SubRoutineController _current;

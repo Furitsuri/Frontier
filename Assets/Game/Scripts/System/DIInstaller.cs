@@ -29,7 +29,6 @@ namespace Frontier
             Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
-            Container.Bind<StageController>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();

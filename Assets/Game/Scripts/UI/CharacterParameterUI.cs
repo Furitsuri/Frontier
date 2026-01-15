@@ -93,7 +93,7 @@ namespace Frontier.UI
         public void AssignCharacter( Character character, int layerMaskIndex )
         {
             // 以前ディスプレイに設定していたキャラクターのレイヤーマスクを元に戻す
-            if( null != _character )
+            if( null != _character && _character != character )
             {
                 _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
             }

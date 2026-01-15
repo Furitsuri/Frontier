@@ -6,7 +6,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Zenject;
 using Frontier.Combat.Skill;
-using static UnityEngine.GraphicsBuffer;
+using static Constants;
 
 namespace Frontier
 {
@@ -379,8 +379,8 @@ namespace Frontier
             // 味方は奥行手前側、敵は奥行奥側の立ち位置とする
             Transform allyTransform = ally.transform;
             Transform opponentTransform = opponent.transform;
-            allyTransform.position = centralPos + new Vector3( 0f, 0f, -_stageCtrl.BattlePosLengthFromCentral );
-            opponentTransform.position = centralPos + new Vector3( 0f, 0f, _stageCtrl.BattlePosLengthFromCentral );
+            allyTransform.position = centralPos + new Vector3( 0f, 0f, -COMBAT_POS_LENGTH_FROM_CENTER );
+            opponentTransform.position = centralPos + new Vector3( 0f, 0f, COMBAT_POS_LENGTH_FROM_CENTER );
             allyTransform.rotation = Quaternion.LookRotation( centralPos - allyTransform.position );
             opponentTransform.rotation = Quaternion.LookRotation( centralPos - opponentTransform.position );
             // カメラパラメータを戦闘フィールド用に設定

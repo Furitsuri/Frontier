@@ -19,7 +19,7 @@ namespace Frontier.UI
         [SerializeField] private ParameterAttackDirectionUI _attackDirection;  // パラメータUI間上の攻撃(回復)元から対象への表示
 
         [Inject] private IUiSystem _uiSystem                    = null;
-        [Inject] private StageController _stgCtrl               = null;
+        // [Inject] private StageController _stgCtrl               = null;
 
         private Character _selectCharacter      = null;
         private Character _prevSelectCharacter  = null;
@@ -31,6 +31,7 @@ namespace Frontier.UI
         // Update is called once per frame
         void Update()
         {
+            /*
             var bindCharacter = _stgCtrl.GetBindCharacterFromGridCursor();
 
             switch( _stgCtrl.GetGridCursorControllerState() )
@@ -104,6 +105,7 @@ namespace Frontier.UI
             }
 
             _prevSelectCharacter = _selectCharacter;
+            */
         }
 
         public void SetSelectedCharacter( Character selectCharacter )
@@ -123,6 +125,5 @@ namespace Frontier.UI
             _playerParameter.gameObject.SetActive( false );
             _enemyParameter.gameObject.SetActive( false );
         }
-
     }
 }
