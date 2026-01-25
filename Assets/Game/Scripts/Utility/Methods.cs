@@ -203,8 +203,8 @@ static public class Methods
     /// <returns>前者と後者のうち、より味方に近い側</returns>
     static public Character CompareAllyCharacter( Character former, Character latter )
     {
-        var formerTag = former.Params.CharacterParam.characterTag;
-        var latterTag = latter.Params.CharacterParam.characterTag;
+        var formerTag = former.GetStatusRef.characterTag;
+        var latterTag = latter.GetStatusRef.characterTag;
 
         if ( formerTag != CHARACTER_TAG.PLAYER )
         {

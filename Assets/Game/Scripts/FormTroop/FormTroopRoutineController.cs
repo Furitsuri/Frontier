@@ -8,9 +8,13 @@ namespace Frontier.FormTroop
 
         private RecruitmentPhaseHandler _handler = null;
 
+        public override void Setup()
+        {
+            LazyInject.GetOrCreate( ref _handler, () => _hierarchyBld.InstantiateWithDiContainer<RecruitmentPhaseHandler>( true ) );
+        }
+
         public override void Init()
         {
-            Setup();
         }
 
         public override void Update()
@@ -49,11 +53,6 @@ namespace Frontier.FormTroop
         public override void Exit()
         {
             _handler.Exit();
-        }
-
-        private void Setup()
-        {
-            LazyInject.GetOrCreate( ref _handler, () => _hierarchyBld.InstantiateWithDiContainer<RecruitmentPhaseHandler>( true ) );
         }
     }
 }

@@ -23,8 +23,6 @@ namespace Frontier.Entities.Ai
         [Inject] protected HierarchyBuilderBase _hierarchyBld       = null;
         [Inject] protected StageController _stageCtrl               = null;
         [Inject] protected IStageDataProvider _stageDataProvider    = null;
-
-        
         
         protected int _destinationTileIndex         = -1;                               // 移動目標グリッドのインデックス値
         protected float[] _gridEvaluationValues     = null;                             // 各グリッドの評価値
@@ -61,7 +59,7 @@ namespace Frontier.Entities.Ai
         /// <returns>有効か否か</returns>
         public bool IsValidTargetCharacterIndex()
         {
-            return ( _targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY );
+            return ( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag != CHARACTER_TAG.ENEMY );
         }
 
         /// <summary>
@@ -101,7 +99,7 @@ namespace Frontier.Entities.Ai
                 {
                     // 敵対勢力(攻撃可能)であることを確認した上でリストに追加
                     var tileData = _stageCtrl.GetTileDynamicData( tuple.index );
-                    if( Character.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileData.CharaKey.CharacterTag ) )
+                    if( BattleLogicBase.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileData.CharaKey.CharacterTag ) )
                     {
                         opponentCharaIndexs.Add( tileData.CharaKey );
                     }
@@ -115,7 +113,7 @@ namespace Frontier.Entities.Ai
         /// <param name="mySelf">自身</param>
         /// <param name="TargetCharacter">対象のキャラクター</param>
         /// <returns>評価値</returns>
-        protected float CalcurateEvaluateAttack( in CharacterParameter selfParam, in CharacterParameter targetParam )
+        protected float CalcurateEvaluateAttack( in Status selfParam, in Status targetParam )
         {
             float evaluateValue = 0f;
 
@@ -133,14 +131,14 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        virtual protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates ) { }
+        virtual protected void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates ) { }
 
         /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居ない場合の処理を行います
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        virtual protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts ) { }
+        virtual protected void DetermineDestinationAndTargetOutOfAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts ) { }
 
         /// <summary>
         /// 初期化します

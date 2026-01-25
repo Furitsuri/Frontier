@@ -41,7 +41,7 @@ namespace Frontier.UI
 
         public void AssignCharacter( Character chara )
         {
-            var charaParam = chara.Params.CharacterParam;
+            var charaParam = chara.GetStatusRef;
 
             TMPName.text = charaParam.Name;
             TMPLevel.SetValueText( charaParam.Level.ToString() );

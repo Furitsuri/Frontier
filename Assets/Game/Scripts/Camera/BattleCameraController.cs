@@ -9,7 +9,7 @@ using Frontier.Combat.Skill;
 
 namespace Frontier
 {
-    public class BattleCameraController : Singleton<BattleCameraController>
+    public class BattleCameraController : MonoBehaviour
     {
         /// <summary>
         /// カメラのモード
@@ -61,7 +61,7 @@ namespace Frontier
         private List<CameraParamData[]> _rangedAtkCameraParamDatas;
         private CameraParamData[] _currentCameraParamDatas;
         private CameraMosaicEffect _mosaicEffectScript;
-        
+
         // カメラ座標の基点となるトランスフォーム
         private Transform _cameraBaseTransform;
         // カメラの被写体座標の基点となるトランスフォーム
@@ -81,39 +81,39 @@ namespace Frontier
         // 被写体座標とカメラ座標との差となるオフセット
         private Vector3 _offset;
         // カメラ移動遷移に用いるフェイズのインデックス値
-        private int _cameraPhaseIndex       = 0;
-        private float _followElapsedTime    = 0.0f;
-        private float _fadeElapsedTime      = 0.0f;
-        private float _length               = 0.0f;
-        private float _roll                 = 0.0f;
-        private float _pitch                = 0.0f;
-        private float _yaw                  = 0.0f;
+        private int _cameraPhaseIndex = 0;
+        private float _followElapsedTime = 0.0f;
+        private float _fadeElapsedTime = 0.0f;
+        private float _length = 0.0f;
+        private float _roll = 0.0f;
+        private float _pitch = 0.0f;
+        private float _yaw = 0.0f;
 
         // Start is called before the first frame update
-        override protected void OnStart()
+        void Start()
         {
-            _mainCamera             = Camera.main;
-            _mosaicEffectScript     = GetComponent<CameraMosaicEffect>();
-            _cameraBaseTransform    = null;
-            _lookAtTransform        = null;
-            _mode                   = CameraMode.FOLLOWING;
-            _atkCameraPhase         = AttackSequenceCameraPhase.START;
-            _prevCameraPosition     = transform.position;
-            _lookAtPosition         = _mainCamera.transform.position + _mainCamera.transform.forward;
-            _followingPosition      = _mainCamera.transform.position;
-            _offset                 = _followingPosition - _mainCamera.transform.forward;
-            _offsetLength           = _offset.magnitude;
+            _mainCamera = Camera.main;
+            _mosaicEffectScript = GetComponent<CameraMosaicEffect>();
+            _cameraBaseTransform = null;
+            _lookAtTransform = null;
+            _mode = CameraMode.FOLLOWING;
+            _atkCameraPhase = AttackSequenceCameraPhase.START;
+            _prevCameraPosition = transform.position;
+            _lookAtPosition = _mainCamera.transform.position + _mainCamera.transform.forward;
+            _followingPosition = _mainCamera.transform.position;
+            _offset = _followingPosition - _mainCamera.transform.forward;
+            _offsetLength = _offset.magnitude;
         }
 
         // Update is called once per frame
-        override protected void OnUpdate()
+        void Update()
         {
-            switch (_mode)
+            switch( _mode )
             {
                 case CameraMode.FOLLOWING:
                     // MEMO : positionを決定してからLookAtを設定しないと、画面にかくつきが発生するため注意
-                    _followElapsedTime = Mathf.Clamp(_followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration);
-                    _mainCamera.transform.position = Vector3.Lerp(_prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration);
+                    _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration );
+                    _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration );
                     break;
 
                 case CameraMode.CHARACTER_MOVE:
@@ -232,9 +232,9 @@ namespace Frontier
         /// 選択カーソルに従うカメラ情報を設定します
         /// </summary>
         /// <param name="pos">カメラ対象座標</param>
-        public void SetLookAtBasedOnSelectCursor(in Vector3 pos)
+        public void SetLookAtBasedOnSelectCursor( in Vector3 pos )
         {
-            if (_mode == CameraMode.ATTACK_SEQUENCE) return;
+            if( _mode == CameraMode.ATTACK_SEQUENCE ) return;
 
             _prevCameraPosition = transform.position;
             _lookAtPosition = pos;
@@ -247,7 +247,7 @@ namespace Frontier
         /// </summary>
         /// <param name="closeDatas">近距離攻撃カメラデータ</param>
         /// <param name="rangedDatas">遠距離攻撃カメラデータ</param>
-        public void SetCameraParamDatas(in List<CameraParamData[]> closeDatas, in List<CameraParamData[]> rangedDatas)
+        public void SetCameraParamDatas( in List<CameraParamData[]> closeDatas, in List<CameraParamData[]> rangedDatas )
         {
             _closeAtkCameraParamDatas = closeDatas;
             _rangedAtkCameraParamDatas = rangedDatas;
@@ -260,49 +260,49 @@ namespace Frontier
         /// <param name="target">攻撃対象キャラクター</param>
         public void StartAttackSequenceMode( Character attacker, Character target )
         {
-            if (attacker == null || target == null) return;
+            if( attacker == null || target == null ) return;
 
             // 通常は攻撃キャラクターを視点にしたカメラワークとするが、
             // パリィが使用される場合は必ず被攻撃キャラクターを視点とする
             var cameraFromChara = attacker;
-            var cameraToChara   = target;
-            if (0 <= target.GetUsingSkillSlotIndexById(ID.SKILL_PARRY))
+            var cameraToChara = target;
+            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( ID.SKILL_PARRY ) )
             {
                 cameraFromChara = target;
-                cameraToChara   = attacker;
+                cameraToChara = attacker;
             }
 
             // 攻撃キャラクターが近接タイプか遠隔タイプかによって参照するカメラデータを変更する
             List<CameraParamData[]> cameraParamDatas;
-            if (attacker.GetBullet() == null) cameraParamDatas = _closeAtkCameraParamDatas;
+            if( attacker.GetBullet() == null ) cameraParamDatas = _closeAtkCameraParamDatas;
             else cameraParamDatas = _rangedAtkCameraParamDatas;
 
-            _mode                   = CameraMode.ATTACK_SEQUENCE;
-            _atkCameraPhase         = AttackSequenceCameraPhase.START;
-            _prevCameraPosition     = transform.position;
-            _cameraBaseTransform    = cameraFromChara.transform;
-            _lookAtTransform        = cameraToChara.transform;
-            _characterCameraOffset  = cameraFromChara.Params.CameraParam.OffsetOnAtkSequence;
+            _mode = CameraMode.ATTACK_SEQUENCE;
+            _atkCameraPhase = AttackSequenceCameraPhase.START;
+            _prevCameraPosition = transform.position;
+            _cameraBaseTransform = cameraFromChara.transform;
+            _lookAtTransform = cameraToChara.transform;
+            _characterCameraOffset = cameraFromChara.CameraParam.OffsetOnAtkSequence;
 
             // ランダムな値を用いて、カメラ移動のパターンデータから使用するデータを取得する
-            int cameraIndex             = new System.Random().Next(0, cameraParamDatas.Count);
-            _currentCameraParamDatas    = cameraParamDatas[cameraIndex];
-            _cameraPhaseIndex           = 0;
-            _length                     = _currentCameraParamDatas[_cameraPhaseIndex].Length;
-            _roll                       = _currentCameraParamDatas[_cameraPhaseIndex].Roll;
-            _pitch                      = _currentCameraParamDatas[_cameraPhaseIndex].Pitch;
-            _yaw                        = _currentCameraParamDatas[_cameraPhaseIndex].Yaw;
+            int cameraIndex = new System.Random().Next( 0, cameraParamDatas.Count );
+            _currentCameraParamDatas = cameraParamDatas[cameraIndex];
+            _cameraPhaseIndex = 0;
+            _length = _currentCameraParamDatas[_cameraPhaseIndex].Length;
+            _roll = _currentCameraParamDatas[_cameraPhaseIndex].Roll;
+            _pitch = _currentCameraParamDatas[_cameraPhaseIndex].Pitch;
+            _yaw = _currentCameraParamDatas[_cameraPhaseIndex].Yaw;
 
             // カメラ基点キャラと被写体キャラ間の中心点に向かってカメラを近づける
-            _lookAtPosition     = ( cameraFromChara.transform.position + cameraToChara.transform.position ) * 0.5f;
-            _fadeElapsedTime    = 0f;
+            _lookAtPosition = ( cameraFromChara.transform.position + cameraToChara.transform.position ) * 0.5f;
+            _fadeElapsedTime = 0f;
 
             // カメラの基点となる座標に加算するオフセット座標をパラメータを参照して計算する
-            _cameraOffset = Methods.RotateVector(_cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward) * _length + _characterCameraOffset;
+            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
 
             // 一度パラメータを非表示
-            _uiSystem.BattleUi.SetPlayerParameterActive(false);
-            _uiSystem.BattleUi.SetEnemyParameterActive(false);
+            _uiSystem.BattleUi.SetPlayerParameterActive( false );
+            _uiSystem.BattleUi.SetEnemyParameterActive( false );
         }
 
         /// <summary>
@@ -310,23 +310,23 @@ namespace Frontier
         /// </summary>
         public void AdaptBattleFieldSetting()
         {
-            _cameraOffset           = Methods.RotateVector(_cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward) * _length + _characterCameraOffset;
-            _prevCameraPosition     = _mainCamera.transform.position = _cameraBaseTransform.position + _cameraOffset;
-            _prevLookAtPosition     = _lookAtTransform.position;
-            _mainCamera.transform.LookAt(_prevLookAtPosition);
+            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
+            _prevCameraPosition = _mainCamera.transform.position = _cameraBaseTransform.position + _cameraOffset;
+            _prevLookAtPosition = _lookAtTransform.position;
+            _mainCamera.transform.LookAt( _prevLookAtPosition );
         }
 
         /// <summary>
         /// 攻撃遷移終了時のカメラ設定を行います
         /// </summary>
         /// <param name="attacker">攻撃するキャラクター</param>
-        public void EndAttackSequenceMode(Character attacker)
+        public void EndAttackSequenceMode( Character attacker )
         {
-            _atkCameraPhase     = AttackSequenceCameraPhase.END;
+            _atkCameraPhase = AttackSequenceCameraPhase.END;
             _prevCameraPosition = _mainCamera.transform.position;
-            _lookAtPosition     = attacker.transform.position;
-            _followingPosition  = _lookAtPosition + _offset;
-            _fadeElapsedTime    = 0f;
+            _lookAtPosition = attacker.transform.position;
+            _followingPosition = _lookAtPosition + _offset;
+            _fadeElapsedTime = 0f;
         }
 
         /// <summary>
@@ -334,20 +334,20 @@ namespace Frontier
         /// </summary>
         /// <param name="nextBase">遷移先のカメラ位置対象</param>
         /// <param name="nextLookAt">遷移先のカメラ視線対象</param>
-        public void TransitNextPhaseCameraParam(Transform nextBase = null, Transform nextLookAt = null)
+        public void TransitNextPhaseCameraParam( Transform nextBase = null, Transform nextLookAt = null )
         {
-            _cameraPhaseIndex   = Mathf.Clamp(++_cameraPhaseIndex, 0, _currentCameraParamDatas.Length - 1);
-            _length             = _currentCameraParamDatas[_cameraPhaseIndex].Length;
-            _roll               = _currentCameraParamDatas[_cameraPhaseIndex].Roll;
-            _pitch              = _currentCameraParamDatas[_cameraPhaseIndex].Pitch;
-            _yaw                = _currentCameraParamDatas[_cameraPhaseIndex].Yaw;
-            _fadeElapsedTime    = 0f;
-            _cameraOffset       = Methods.RotateVector(_cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward) * _length + _characterCameraOffset;
+            _cameraPhaseIndex = Mathf.Clamp( ++_cameraPhaseIndex, 0, _currentCameraParamDatas.Length - 1 );
+            _length = _currentCameraParamDatas[_cameraPhaseIndex].Length;
+            _roll = _currentCameraParamDatas[_cameraPhaseIndex].Roll;
+            _pitch = _currentCameraParamDatas[_cameraPhaseIndex].Pitch;
+            _yaw = _currentCameraParamDatas[_cameraPhaseIndex].Yaw;
+            _fadeElapsedTime = 0f;
+            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
             _prevCameraPosition = _mainCamera.transform.position;
             _prevLookAtPosition = _lookAtPosition;
 
-            if (nextBase != null) _cameraBaseTransform = nextBase;
-            if (nextLookAt != null) _lookAtTransform = nextLookAt;
+            if( nextBase != null ) _cameraBaseTransform = nextBase;
+            if( nextLookAt != null ) _lookAtTransform = nextLookAt;
         }
 
         /// <summary>

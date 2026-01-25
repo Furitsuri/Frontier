@@ -73,7 +73,7 @@ public class BattleRoutinePresenter
                 // PLAYER 対 ENEMY
                 // OTHER  対 ENEMY
                 // PLAYER 対 OTHER
-                if( bindCharacter.Params.CharacterParam.characterTag != CHARACTER_TAG.ENEMY )
+                if( bindCharacter.GetStatusRef.characterTag != CHARACTER_TAG.ENEMY )
                 {
                     ParameterView.PlayerParameter.AssignCharacter( bindCharacter, LAYER_MASK_INDEX_PLAYER );
                     ParameterView.EnemyParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_ENEMY );
@@ -99,13 +99,13 @@ public class BattleRoutinePresenter
 
             default:
                 // ※1フレーム中にgameObjectのアクティブ切り替えを複数回行うと正しく反映されないため、無駄があって気持ち悪いが以下の判定文を用いる
-                _uiSystem.BattleUi.SetPlayerParameterActive( _selectCharacter != null && _selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER );
-                _uiSystem.BattleUi.SetEnemyParameterActive( _selectCharacter != null && _selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY );
+                _uiSystem.BattleUi.SetPlayerParameterActive( _selectCharacter != null && _selectCharacter.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER );
+                _uiSystem.BattleUi.SetEnemyParameterActive( _selectCharacter != null && _selectCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY );
 
                 // パラメータ表示を更新
                 if( _selectCharacter != null && _prevSelectCharacter != _selectCharacter )
                 {
-                    if( _selectCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+                    if( _selectCharacter.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
                     {
                         ParameterView.PlayerParameter.AssignCharacter( _selectCharacter, LAYER_MASK_INDEX_PLAYER );
                     }

@@ -36,5 +36,18 @@ namespace Frontier
         {
             return dict[new CharacterKey( tag, index )];
         }
+
+        public List<Player> GetPlayerList()
+        {
+            List<Player> players = new List<Player>();
+            foreach( var kvp in dict )
+            {
+                if( kvp.Key.CharacterTag == CHARACTER_TAG.PLAYER )
+                {
+                    players.Add( kvp.Value as Player );
+                }
+            }
+            return players;
+        }
     }
 }

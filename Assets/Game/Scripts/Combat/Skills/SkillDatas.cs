@@ -54,7 +54,7 @@ namespace Frontier.Combat.Skill
         /// </summary>
         /// <param name="modifiedParam">スキル使用キャラのバフ・デバフ用パラメータ</param>
         /// <param name="param">スキル使用キャラのパラメータ</param>
-        static public void ExecGuard(ref ModifiedParameter modifiedParam, ref CharacterParameter param)
+        static public void ExecGuard(ref ModifiedParameter modifiedParam, ref Status param)
         {
             modifiedParam.Def = (int)Mathf.Floor(param.Def * 0.5f);
             param.consumptionActionGauge += 1;

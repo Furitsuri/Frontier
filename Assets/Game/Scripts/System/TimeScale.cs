@@ -12,17 +12,17 @@ public class TimeScale
 
     public void Reset()
     {
-        SetTimeScale(1f);
+        SetTimeScale( 1f );
     }
 
     public void Stop()
     {
-        SetTimeScale(0f);
+        SetTimeScale( 0f );
     }
 
-    public void SetTimeScale(float timeScale)
+    public void SetTimeScale( float timeScale )
     {
         _timeScale = timeScale;
-        OnValueChange?.Invoke(timeScale);
+        OnValueChange?.Invoke( timeScale );
     }
 }

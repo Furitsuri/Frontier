@@ -21,7 +21,7 @@ namespace Frontier.Entities.Ai
         /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
         /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
         /// <returns>存在の有無</returns>
-        private bool CollectTargetInActionableRange( CharacterParameter selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, in CharacterKey ownerKey, out List<(int tileIndex, List<CharacterKey> opponents)> candidates )
+        private bool CollectTargetInActionableRange( Status selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, in CharacterKey ownerKey, out List<(int tileIndex, List<CharacterKey> opponents)> candidates )
         {
             candidates = new List<(int tileIndex, List<CharacterKey> opponents)>( Constants.CHARACTER_MAX_NUM );
 
@@ -29,14 +29,14 @@ namespace Frontier.Entities.Ai
             bool isAttackable = !selfTmpParam.isEndCommand[( int ) COMMAND_TAG.ATTACK];
             float curHeight = _stageCtrl.GetTileStaticData( selfTmpParam.gridIndex ).Height;
 
-            _owner.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.gridIndex, curHeight );
-            _owner.ActionRangeCtrl.DrawActionableRange();
+            _owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.gridIndex, curHeight );
+            _owner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
 
             // 攻撃可能範囲に攻撃対象がいるかどうかを判定
-            for( int i = 0; i < _owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.Count; ++i )
+            for( int i = 0; i < _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.Count; ++i )
             {
-                var tileIndex = _owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Key;
-                var tileDData = _owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Value;
+                var tileIndex = _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Key;
+                var tileDData = _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Value;
 
                 // 移動可能地点、かつキャラクターが存在していない(自分自身は有効)タイルを取得
                 if( 0 <= tileDData.EstimatedMoveRange && ( !tileDData.CharaKey.IsValid() || tileDData.CharaKey == ownerKey ) )
@@ -60,21 +60,21 @@ namespace Frontier.Entities.Ai
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
-        public override (bool, bool) DetermineDestinationAndTarget( in CharacterParameters ownerParams, in int[] ownerTileCosts, in CharacterKey ownerKey )
+        public override (bool, bool) DetermineDestinationAndTarget( in BattleParameters battleParams, in Status status, in int[] ownerTileCosts, in CharacterKey ownerKey )
         {
             _isDetermined = true;
 
             List<(int tileIndex, List<CharacterKey> opponents)> candidates = null;
 
             // 攻撃範囲内に敵対キャラクターが存在するか確認し、存在する場合はそのキャラクター達を取得
-            if( CollectTargetInActionableRange( ownerParams.CharacterParam, ownerParams.TmpParam, in ownerTileCosts, in ownerKey, out candidates ) )
+            if( CollectTargetInActionableRange( status, battleParams.TmpParam, in ownerTileCosts, in ownerKey, out candidates ) )
             {
-                DetermineDestinationAndTargetInAttackRange( in ownerParams, in ownerTileCosts, candidates );
+                DetermineDestinationAndTargetInAttackRange( in battleParams, in ownerTileCosts, candidates );
             }
             // 攻撃範囲内に敵対キャラクターが存在しない場合は、評価値を計算して最も高いグリッド位置へ向かうように
             else
             {
-                DetermineDestinationAndTargetOutOfAttackRange( in ownerParams, in ownerTileCosts );
+                DetermineDestinationAndTargetOutOfAttackRange( in battleParams, in ownerTileCosts );
             }
 
             ResetAllTileEvaluationValues(); // 必ず評価値をリセットしてから終了する
@@ -87,7 +87,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        override protected void DetermineDestinationAndTargetInAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates )
+        override protected void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates )
         {
             (int gridIndex, Character target, float eValue) maxEvaluate = (-1, null, int.MinValue);
 
@@ -99,7 +99,7 @@ namespace Frontier.Entities.Ai
                     var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( opponent );
                     if( character == null ) continue;
 
-                    var eValue = CalcurateEvaluateAttack( ownerParams.CharacterParam, character.Params.CharacterParam );
+                    var eValue = CalcurateEvaluateAttack( _owner.GetStatusRef, character.GetStatusRef );
                     if( maxEvaluate.eValue < eValue )
                     {
                         maxEvaluate = (candidate.gridIndex, character, eValue);
@@ -111,7 +111,7 @@ namespace Frontier.Entities.Ai
             _destinationTileIndex   = maxEvaluate.gridIndex;
             _targetCharacter        = maxEvaluate.target;
 
-            _owner.ActionRangeCtrl.MovePathHdlr.FindMovePath( ownerParams.TmpParam.gridIndex, _destinationTileIndex, ownerParams.CharacterParam.jumpForce, ownerTileCosts, _owner.ActionRangeCtrl.ActionableTileMap.MoveableTileMap );
+            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.FindMovePath( battleParams.TmpParam.gridIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, ownerTileCosts, _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.MoveableTileMap );
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        override protected void DetermineDestinationAndTargetOutOfAttackRange( in CharacterParameters ownerParams, in int[] ownerTileCosts )
+        override protected void DetermineDestinationAndTargetOutOfAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts )
         {
             // 最大評価ルート保存用
             (List<WaypointInformation> path, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);
@@ -136,23 +136,23 @@ namespace Frontier.Entities.Ai
                 return ( !Methods.CheckBitFlag( tileDData.Flag, flag ) );
             };
 
-            _owner.ActionRangeCtrl.SetupMoveableRangeDataFilterByCondition( setup, condition );
+            _owner.BattleLogic.ActionRangeCtrl.SetupMoveableRangeDataFilterByCondition( setup, condition );
 
             // 各プレイヤーが存在するグリッドの評価値を計算する
             foreach ( Character chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.OTHER ) )
             {
-                int destGridIndex       = chara.Params.TmpParam.GetCurrentGridIndex();
+                int destGridIndex       = chara.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex();
                 ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
-                evaluateValue += CalcurateEvaluateAttack( ownerParams.CharacterParam, chara.Params.CharacterParam );  // 攻撃による評価値を加算
+                evaluateValue += CalcurateEvaluateAttack( _owner.GetStatusRef, chara.GetStatusRef );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまりターゲットが存在するタイルの中でも、近ければ近いものほど評価値を大きくするため)
-                if( !_owner.ActionRangeCtrl.FindMovePath( ownerParams.TmpParam.gridIndex, destGridIndex, ownerParams.CharacterParam.jumpForce, in ownerTileCosts ) )
+                if( !_owner.BattleLogic.ActionRangeCtrl.FindMovePath( battleParams.TmpParam.gridIndex, destGridIndex, _owner.GetStatusRef.jumpForce, in ownerTileCosts ) )
                 {
                     Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;
                 }
-                var path        = _owner.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.ToList();
+                var path        = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.ToList();
                 int totalCost   = path[^1].MoveCost;    // ^1は最後の要素のインデックス(C#8.0以降から使用可能)
                 evaluateValue   *= 1f / totalCost;
 
@@ -161,8 +161,8 @@ namespace Frontier.Entities.Ai
             }
 
             // 得られたルートのパスをキャラクターの移動レンジ分に調整する
-            _owner.ActionRangeCtrl.MovePathHdlr.AdjustPathToRangeAndSet( ownerParams.CharacterParam.moveRange, ownerParams.CharacterParam.jumpForce, in maxEvaluateRoute.path );
-            _destinationTileIndex = _owner.ActionRangeCtrl.MovePathHdlr.ProposedMovePath[^1].TileIndex;
+            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.AdjustPathToRangeAndSet( _owner.GetStatusRef.moveRange, _owner.GetStatusRef.jumpForce, in maxEvaluateRoute.path );
+            _destinationTileIndex = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath[^1].TileIndex;
         }
     }
 }

@@ -34,16 +34,17 @@ namespace Frontier.Battle
 
                 _stageCtrl.ApplyCurrentGrid2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
 
-                if( !_currentEnemy.GetAi().IsDetermined() )
+                if( !_currentEnemy.BattleLogic.GetAi().IsDetermined() )
                 {
-                    (_isValidDestination, _isValidTarget) = _currentEnemy.DetermineDestinationAndTargetWithAI();
+                    EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
+                    ( _isValidDestination, _isValidTarget) = enemyLogic.DetermineDestinationAndTargetWithAI();
                 }
 
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
                 // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
                 if( !_isValidTarget )
                 {
-                    _currentEnemy.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    _currentEnemy.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                 }
 
                 break;
@@ -94,7 +95,7 @@ namespace Frontier.Battle
         {
             if( !_isValidDestination ) return false;
 
-            if( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
+            if( em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
@@ -108,7 +109,7 @@ namespace Frontier.Battle
         {
             if( !_isValidTarget ) return false;
 
-            if( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
+            if( em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
 
             return true;
         }
@@ -120,13 +121,13 @@ namespace Frontier.Battle
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if( em.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
-                em.Params.TmpParam.EndAction();
+                em.BattleLogic.BattleParams.TmpParam.EndAction();
                 return true;
             }
 
-            if( em.Params.TmpParam.IsEndAction() ) return true;
+            if( em.BattleLogic.BattleParams.TmpParam.IsEndAction() ) return true;
 
             return false;
         }

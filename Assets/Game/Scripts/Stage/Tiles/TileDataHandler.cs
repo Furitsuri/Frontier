@@ -32,9 +32,9 @@ namespace Frontier.Stage
             {
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( ( CHARACTER_TAG ) i ) )
                 {
-                    var tileIndex       = chara.Params.TmpParam.GetCurrentGridIndex();
+                    var tileIndex       = chara.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex();
                     var tileData        = _stageDataProvider.CurrentData.GetTileDynamicData( tileIndex );
-                    tileData.CharaKey   = new CharacterKey( chara.Params.CharacterParam.characterTag, chara.Params.CharacterParam.characterIndex );
+                    tileData.CharaKey   = new CharacterKey( chara.GetStatusRef.characterTag, chara.GetStatusRef.characterIndex );
                 }
             }
         }
@@ -188,13 +188,13 @@ namespace Frontier.Stage
         /// <param name="owner">攻撃を行うキャラクター</param>
         /// <param name="target">予め攻撃対象が決まっている際に指定</param>
         /// <returns>攻撃可能キャラクターが存在している</returns>
-        public bool CorrectAttackableTileIndexs( Character owner, Character target = null )
+        public bool CorrectAttackableTileIndexs( ActionRangeController actionRangeCtrl, Character target = null )
         {
             _gridCursorCtrl.ClearAtkTargetInfo();
             _attackableTileIndexs.Clear();
 
             // 攻撃可能、かつ攻撃対象となるキャラクターが存在するタイルのインデックス値をリストに登録
-            foreach( var tileDData in owner.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
+            foreach( var tileDData in actionRangeCtrl.ActionableTileMap.AttackableTileMap )
             {
                 if( Methods.CheckBitFlag( tileDData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {
@@ -350,7 +350,7 @@ namespace Frontier.Stage
             // 既に計算済みのグリッドであれば終了
             if( mvRng <= tileDData.EstimatedMoveRange ) { return; }
             // 自身における敵対勢力キャラクターが存在すれば終了
-            if( Character.IsOpponentFaction[Convert.ToInt32( charaKey.CharacterTag )]( tileDData.CharaKey.CharacterTag ) ) { return; }
+            if( BattleLogicBase.IsOpponentFaction[Convert.ToInt32( charaKey.CharacterTag )]( tileDData.CharaKey.CharacterTag ) ) { return; }
 
             // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
             var staticData  = _stageDataProvider.CurrentData.GetTileStaticData( tileIdx );
@@ -402,7 +402,7 @@ namespace Frontier.Stage
                 Methods.SetBitFlag( ref tgtTileData.Flag, TileBitFlag.ATTACKABLE ); // 攻撃可能地点であることをフラグに記述
 
                 // tgtTileに攻撃対象となるキャラクターがいれば、そのこともフラグに記述
-                if( Character.IsOpponentFaction[Convert.ToInt32( charaTag )]( tgtTileData.CharaKey.CharacterTag ) )
+                if( BattleLogicBase.IsOpponentFaction[Convert.ToInt32( charaTag )]( tgtTileData.CharaKey.CharacterTag ) )
                 {
                     Methods.SetBitFlag( ref tileDDatas[dprtIdx].Flag, TileBitFlag.REACHABLE_ATTACK );   // dprtIdxであれば攻撃対象へ攻撃可能であることを記述
                     Methods.SetBitFlag( ref tgtTileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );    // tgtTileに攻撃可能な攻撃対象がいることを記述

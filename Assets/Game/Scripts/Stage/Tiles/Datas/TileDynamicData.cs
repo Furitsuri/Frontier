@@ -32,7 +32,7 @@ namespace Frontier.Stage
         /// <param name="chara">設定するキャラクター</param>
         public void SetExistCharacter( Character chara )
         {
-            CharaKey = new CharacterKey( chara.Params.CharacterParam.characterTag, chara.Params.CharacterParam.characterIndex );
+            CharaKey = new CharacterKey( chara.GetStatusRef.characterTag, chara.GetStatusRef.characterIndex );
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Frontier.Stage
         /// <returns>合致しているか否か</returns>
         public bool IsMatchExistCharacter( Character chara )
         {
-            return ( CharaKey.CharacterTag == chara.Params.CharacterParam.characterTag && CharaKey.CharacterIndex == chara.Params.CharacterParam.characterIndex );
+            return ( CharaKey.CharacterTag == chara.GetStatusRef.characterTag && CharaKey.CharacterIndex == chara.GetStatusRef.characterIndex );
         }
 
         /// <summary>

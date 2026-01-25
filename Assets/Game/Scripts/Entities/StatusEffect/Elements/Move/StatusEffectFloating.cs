@@ -15,7 +15,7 @@ namespace Frontier.Entities
         /// </summary>
         public override void ApplyEffect()
         {
-            _targetCharacter.ApplyCostTable( TileCostTables.floatingCostTable );
+            _targetCharacter.BattleLogic.ApplyCostTable( TileCostTables.floatingCostTable );
         }
     }
 }

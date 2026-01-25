@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 /// <summary>
 /// このクラスにTimeScaleクラスを登録したインスタンスのタイムスケール管理を行います
 /// </summary>
-public class BattleTimeScaleController
+public class TimeScaleController
 {
     private float _timeScale = 1.0f;
     private readonly List<TimeScale> _timeScaleList = new();

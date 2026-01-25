@@ -10,7 +10,7 @@ namespace Frontier.Combat
     {
         static public bool IsExecutableCommandBase(Character character)
         {
-            if( character.Params.TmpParam.IsEndAction() ) { return false; }
+            if( character.BattleLogic.BattleParams.TmpParam.IsEndAction() ) { return false; }
 
             return true;
         }
@@ -19,13 +19,13 @@ namespace Frontier.Combat
         {
             if( !IsExecutableCommandBase( character ) ) { return false; }
 
-            return !character.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE );
+            return !character.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE );
         }
 
         static public bool IsExecutableAttackCommand( Character character, StageController stageCtrl )
         {
-            var charaParam  = character.Params.CharacterParam;
-            var tmpParam    = character.Params.TmpParam;
+            var charaParam  = character.GetStatusRef;
+            var tmpParam    = character.BattleLogic.BattleParams.TmpParam;
             if( !IsExecutableCommandBase( character ) ||       // 行動終了済みである場合は攻撃不可
                 tmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )  // 攻撃済みである場合は攻撃不可
             {
@@ -34,10 +34,10 @@ namespace Frontier.Combat
 
             // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
 
-            int dprtTileIndex   = character.Params.TmpParam.gridIndex;
-            character.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            int dprtTileIndex   = character.BattleLogic.BattleParams.TmpParam.gridIndex;
+            character.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
             bool isExecutable = false;
-            foreach( var data in character.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
+            foreach( var data in character.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
             {
                 if( Methods.CheckBitFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {

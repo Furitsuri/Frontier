@@ -34,16 +34,16 @@ namespace Frontier
 
         public void ApplySkill( Character chara, int index )
         {
-            bool isValid = chara.Params.CharacterParam.IsValidSkill( index );
+            bool isValid = chara.GetStatusRef.IsValidSkill( index );
             gameObject.SetActive( isValid );
             if( !isValid ) { return; }
 
-            string skillName    = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Name;
-            var type            = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Type;
-            _textKey            = SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].ExplainTextKey;
+            string skillName    = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Name;
+            var type            = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Type;
+            _textKey            = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].ExplainTextKey;
             SetSkillName( skillName, type );
             SetTooltipText( _textKey );
-            ShowSkillCostImage( SkillsData.data[( int ) chara.Params.CharacterParam.equipSkills[index]].Cost );
+            ShowSkillCostImage( SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Cost );
 
             EnableRefreshText();
         }

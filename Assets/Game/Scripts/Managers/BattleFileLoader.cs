@@ -10,43 +10,35 @@ using Frontier.Stage;
 using Zenject;
 using Frontier.Combat.Skill;
 using UnityEngine.UI;
+using Frontier.Registries;
 
 namespace Frontier
 {
     public class BattleFileLoader : MonoBehaviour
     {
-        [Header("各味方キャラクターのプレハブ")]
-        [SerializeField] public GameObject[] PlayersPrefab;
-
-        [Header("各敵キャラクターのプレハブ")]
-        [SerializeField] public GameObject[] EnemiesPrefab;
-
-        [Header("各第三勢力キャラクターのプレハブ")]
-        [SerializeField] public GameObject[] OthersPrefab;
-
-        [Header("各味方キャラクターのパラメータ参照先")]
+        [Header( "各味方キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] PlayerParamFilePath;
 
-        [Header("各敵キャラクターのパラメータ参照先")]
+        [Header( "各敵キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] EnemyParamFilePath;
 
-        [Header("各第三軍勢キャラクターのパラメータ参照先")]
+        [Header( "各第三軍勢キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] OtherParamFilePath;
 
-        [Header("各スキルデータのパラメータ参照先")]
+        [Header( "各スキルデータのパラメータ参照先" )]
         [SerializeField] public string SkillDataFilePath;
 
-        [Header("近接攻撃時のカメラパラメータの参照先")]
+        [Header( "近接攻撃時のカメラパラメータの参照先" )]
         [SerializeField] public string CloseAtkCameraParamFilePath;
 
-        [Header("遠隔攻撃時のカメラパラメータの参照先")]
+        [Header( "遠隔攻撃時のカメラパラメータの参照先" )]
         [SerializeField] public string RangedAtkCameraParamFilePath;
 
-        [Inject] private HierarchyBuilderBase _hierarchyBld  = null;
         [Inject] private BattleRoutineController _btlRtnCtrl = null;
+        [Inject] private CharacterFactory _characterFactory = null;
 
         [System.Serializable]
-        public struct CharacterParamData
+        public struct CharacterStatusData
         {
             public int CharacterTag;
             public int CharacterIndex;
@@ -88,13 +80,13 @@ namespace Frontier
         [System.Serializable]
         public class PlayerParamContainer
         {
-            public CharacterParamData[] CharacterParams;
+            public CharacterStatusData[] CharacterStatus;
         }
 
         [System.Serializable]
-        public class CharacterParamContainer
+        public class CharacterStatusContainer
         {
-            public CharacterParamData[] CharacterParams;
+            public CharacterStatusData[] CharacterStatuses;
         }
 
         [System.Serializable]
@@ -113,7 +105,7 @@ namespace Frontier
         /// 該当ステージの全キャラクター情報をロードし、バトルマネージャ上に設置します
         /// </summary>
         /// <param name="stageIndex">ステージナンバー</param>
-        public void CharacterLoad(int stageIndex)
+        public void CharacterLoad( int stageIndex )
         {
             List<string>[] ParamFilePaths = new List<string>[]
             {
@@ -122,48 +114,25 @@ namespace Frontier
                 new List<string>(OtherParamFilePath),
             };
 
-            List<GameObject>[] CharacterPrefabs = new List<GameObject>[]
+            // プレイヤーは既に生成されているためスキップ
+            for( int i = ( int ) CHARACTER_TAG.PLAYER + 1; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
-                new List<GameObject>(PlayersPrefab),
-                new List<GameObject>(EnemiesPrefab),
-                new List<GameObject>(OthersPrefab),
-            };
-
-            for (int i = 0; i < (int)CHARACTER_TAG.NUM; ++i)
-            {
-                if ( ParamFilePaths[i].Count <= 0 ) continue;
+                if( ParamFilePaths[i].Count <= 0 ) continue;
 
                 // JSONファイルの読み込み
-                string json = File.ReadAllText(ParamFilePaths[i][stageIndex]);
+                string json = File.ReadAllText( ParamFilePaths[i][stageIndex] );
                 // JSONデータのデシリアライズ
-                var dataContainer = JsonUtility.FromJson<CharacterParamContainer>(json);
-                if (dataContainer == null) return;
-                
+                var dataContainer = JsonUtility.FromJson<CharacterStatusContainer>( json );
+                if( dataContainer == null ) { return; }
+
                 // デシリアライズされたデータを配列に格納
-                foreach ( var param in dataContainer.CharacterParams )
+                foreach( var status in dataContainer.CharacterStatuses )
                 {
-                    int prefabIndex = param.Prefab;
-                    Character chara = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Character>(CharacterPrefabs[i][prefabIndex], true, false, typeof(Character).Name);
-                    chara.Init();
+                    int prefabIndex = status.Prefab;
+                    Character chara = _characterFactory.CreateCharacter( ( CHARACTER_TAG ) i, prefabIndex, status );
+                    if( null == chara ) { continue; }
 
-                    // 弾オブジェクトが設定されていれば生成
-                    // 使用時まで非アクティブにする
-                    if( chara.BulletObject != null )
-                    {
-                        Bullet bullet = _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>( chara.BulletObject, chara.gameObject, "Bullet", false, false );
-                        chara.SetBullet( bullet );
-                    }
-
-                    chara.Params.CharacterParam.Apply( param ); // ファイルから読み込んだパラメータを設定
-                    chara.CharaKey = new CharacterKey( (CHARACTER_TAG)param.CharacterTag, param.CharacterIndex );
-
-                    if ( !chara.Params.CharacterParam.IsMatchCharacterTag( CHARACTER_TAG.PLAYER ) )
-                    {
-                        var npc = chara as Npc;
-                        npc.SetThinkType((ThinkingType)param.ThinkType);
-                    }
-
-                    _btlRtnCtrl.BtlCharaCdr.loadCharacterToList( chara );
+                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( chara );
                 }
             }
         }
@@ -173,12 +142,12 @@ namespace Frontier
         /// </summary>
         public void LoadSkillsData()
         {
-            string json = File.ReadAllText(SkillDataFilePath);
-            var dataContainer = JsonUtility.FromJson<SkillDataContainer>(json);
-            if (dataContainer == null) return;
-            for (int i = 0; i < (int)ID.SKILL_NUM; ++i)
+            string json = File.ReadAllText( SkillDataFilePath );
+            var dataContainer = JsonUtility.FromJson<SkillDataContainer>( json );
+            if( dataContainer == null ) return;
+            for( int i = 0; i < ( int ) ID.SKILL_NUM; ++i )
             {
-                ApplySkillsData(ref SkillsData.data[i], dataContainer.SkillsData[i]);
+                ApplySkillsData( ref SkillsData.data[i], dataContainer.SkillsData[i] );
             }
         }
 
@@ -187,17 +156,17 @@ namespace Frontier
         /// </summary>
         public void LoadCameraParams( BattleCameraController cameraController )
         {
-            string json = File.ReadAllText(CloseAtkCameraParamFilePath);
-            var dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>(json);
-            if (dataContainer == null) return;
+            string json = File.ReadAllText( CloseAtkCameraParamFilePath );
+            var dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>( json );
+            if( dataContainer == null ) return;
             List<BattleCameraController.CameraParamData[]> closeParams = dataContainer.CameraParams;
 
-            json = File.ReadAllText(RangedAtkCameraParamFilePath);
-            dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>(json);
-            if (dataContainer == null) return;
+            json = File.ReadAllText( RangedAtkCameraParamFilePath );
+            dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>( json );
+            if( dataContainer == null ) return;
             List<BattleCameraController.CameraParamData[]> rangedParams = dataContainer.CameraParams;
 
-            cameraController.SetCameraParamDatas(closeParams, rangedParams);
+            cameraController.SetCameraParamDatas( closeParams, rangedParams );
         }
 
         /// <summary>
@@ -228,29 +197,29 @@ namespace Frontier
         /// <summary>
         /// デバッグ用にユニットを生成します
         /// </summary>
-        public void DebugBattleLoadUnit(int prefabIndex, ref CharacterParameter param)
+        public void DebugBattleLoadUnit( int prefabIndex, ref Status param )
         {
-            if (param.characterTag == CHARACTER_TAG.PLAYER)
+            if( param.characterTag == CHARACTER_TAG.PLAYER )
             {
-                Player player = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Player>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
-                if (player == null) return;
+                Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, prefabIndex ) as Player;
+                if( player == null ) { return; }
 
                 player.Init();
-                player.Params.CharacterParam = param;
+                player.GetStatusRef = param;
 
-                _btlRtnCtrl.BtlCharaCdr.loadCharacterToList(player);
+                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( player );
             }
             else
             {
-                Enemy enemy = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Enemy>(PlayersPrefab[prefabIndex], true, false, typeof(Character).Name);
-                if (enemy == null) return;
+                Enemy enemy = _characterFactory.CreateCharacter( CHARACTER_TAG.ENEMY, prefabIndex ) as Enemy;
+                if( enemy == null ) { return; }
 
                 enemy.Init();
-                enemy.Params.CharacterParam = param;
+                enemy.GetStatusRef = param;
 
-                _btlRtnCtrl.BtlCharaCdr.loadCharacterToList(enemy);
+                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( enemy );
             }
         }
 #endif  // DEVELOPMENT_BUILD || UNITY_EDITOR
-            }
+    }
 }

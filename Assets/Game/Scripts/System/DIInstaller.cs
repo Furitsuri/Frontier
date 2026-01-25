@@ -16,18 +16,23 @@ namespace Frontier
         /// </summary>
         public override void InstallBindings()
         {
-            Container.Bind<InputFacade>().AsSingle();
-            Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
             Container.Bind<ISaveHandler<TutorialSaveData>>().To<TutorialSaveHandler>().AsSingle();
             Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();
+            Container.Bind<InputFacade>().AsSingle();
+            Container.Bind<TimeScaleController>().AsSingle();
+            Container.Bind<TutorialFacade>().AsSingle();
+            Container.Bind<CharacterFactory>().AsSingle();
+            Container.Bind<UserDomain>().AsSingle();
+            Container.Bind<CharacterDictionary>().AsSingle().NonLazy();
 
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
 
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
+            // Container.Bind<BattleCameraController>().FromComponentInHierarchy().AsCached();
+            Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
-            Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();

@@ -19,7 +19,7 @@ namespace Frontier.Battle
 
             // UI側へこのスクリプトを登録し、UIを表示
             List<COMMAND_TAG> executableCommands;
-            _plOwner.FetchExecutableCommand( out executableCommands, _stageCtrl );
+            _plOwner.BattleLogic.FetchExecutableCommand( out executableCommands, _stageCtrl );
 
             // 入力ベース情報の設定
             List<int> commandIndexs = new List<int>();
@@ -42,7 +42,7 @@ namespace Frontier.Battle
             base.Init();
 
             // 可能な行動が全て終了している場合は即終了
-            if( _plOwner.Params.TmpParam.IsEndAction() )
+            if( _plOwner.BattleLogic.BattleParams.TmpParam.IsEndAction() )
             {
                 return;
             }
@@ -56,7 +56,7 @@ namespace Frontier.Battle
         /// <returns>0以上の値のとき次の状態に遷移します</returns>
         public override bool Update()
         {
-            if( _plOwner.Params.TmpParam.IsEndAction() )
+            if( _plOwner.BattleLogic.BattleParams.TmpParam.IsEndAction() )
             {
                 Back();
                 return true;
@@ -66,10 +66,10 @@ namespace Frontier.Battle
             if( base.Update() )
             {
                 // コマンドのうち、移動のみが終了している場合は移動前の状態に戻れるように          
-                if( _plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && !_plOwner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+                if( _plOwner.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && !_plOwner.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
                 {
                     _stageCtrl.FollowFootprint( _plOwner );
-                    _plOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, false );
+                    _plOwner.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, false );
                 }
 
                 return true;

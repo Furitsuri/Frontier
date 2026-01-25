@@ -18,6 +18,11 @@ public class Generator : MonoBehaviour
         _installer = installer;
     }
 
+    public void Inject<T>( T instance )
+    {
+        _container.Inject( instance );
+    }
+
     /// <summary>
     /// オブジェクトを生成し、そのオブジェクトにコンポーネントを追加します
     /// </summary>

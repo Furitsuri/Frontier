@@ -1,12 +1,10 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
 using static InputCode;
-using static UnityEditor.Progress;
 
 namespace Frontier.StateMachine
 {
@@ -16,6 +14,7 @@ namespace Frontier.StateMachine
     public class DeploymentRootState : DeploymentPhaseStateBase
     {
         [Inject] private IStageDataProvider _stageDataProvider = null;
+        [Inject] private CharacterDictionary _characterDict    = null;
 
         private int _focusCharacterIndex                        = 0;     // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot                  = null;
@@ -34,10 +33,10 @@ namespace Frontier.StateMachine
         {
             _deploymentCandidates.Clear();
 
-            foreach( var player in _btlRtnCtrl.BtlCharaCdr.GetCandidatePlayerEnumerable() )
+            foreach( var player in _characterDict.GetPlayerList() )
             {
                 player.gameObject.SetActive( false );
-                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * player.Params.CharacterParam.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
+                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * player.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
                 player.GetTransformHandler.SetPosition( reservePos );
 
                 // UI表示用に各キャラクターのスナップショットを撮影
@@ -67,8 +66,8 @@ namespace Frontier.StateMachine
                 // キャラクター管理リストから削除
                 _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey );
                 // 見えない位置に退避
-                charaOnSelectTile.Params.TmpParam.gridIndex = -1;
-                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * charaOnSelectTile.Params.CharacterParam.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
+                charaOnSelectTile.BattleLogic.BattleParams.TmpParam.gridIndex = -1;
+                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * charaOnSelectTile.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
                 charaOnSelectTile.GetTransformHandler.SetPosition( reservePos );
 
                 return true;
@@ -259,7 +258,7 @@ namespace Frontier.StateMachine
             var focusCharacter = candidate.Character;
             focusCharacter.gameObject.SetActive( true );
             focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
-            focusCharacter.Params.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
+            focusCharacter.BattleLogic.BattleParams.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
 
             _presenter.RefreshGridCursorSelectCharacter();
 

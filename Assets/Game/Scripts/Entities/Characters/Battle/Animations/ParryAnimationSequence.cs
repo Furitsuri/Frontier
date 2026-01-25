@@ -1,4 +1,4 @@
-using Frontier.Battle;
+ï»¿using Frontier.Battle;
 using UnityEngine;
 using Zenject;
 using Frontier.Combat.Skill;
@@ -8,14 +8,7 @@ namespace Frontier.Entities
     public class ParryAnimationSequence : ICombatAnimationSequence
     {
         private Character _character;
-        private BattleRoutineController _btlRtnCtrl = null;
         private PARRY_PHASE _parryPhase = PARRY_PHASE.NONE;
-
-        [Inject]
-        void Construct(BattleRoutineController btlRtnCtrl)
-        {
-            _btlRtnCtrl = btlRtnCtrl;
-        }
 
         public void Init(Character character, AnimDatas.AnimeConditionsTag[] consitionTags)
         {
@@ -23,7 +16,7 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ƒpƒŠƒBƒV[ƒPƒ“ƒX‚ğŠJn‚µ‚Ü‚·
+        /// ãƒ‘ãƒªã‚£ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
         public void StartSequence()
         {
@@ -31,15 +24,15 @@ namespace Frontier.Entities
 
             _character.AnimCtrl.SetAnimator(AnimDatas.AnimeConditionsTag.PARRY);
             _character.ResetElapsedTime();
-            _character.GetTimeScale.SetTimeScale(0.1f);    // ƒ^ƒCƒ€ƒXƒP[ƒ‹‚ğ’x‚­‚µAƒpƒŠƒB‹““®‚ğƒXƒ[ƒ‚[ƒVƒ‡ƒ“‚ÅŒ©‚¹‚é
+            _character.GetTimeScale.SetTimeScale(0.1f);    // ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’é…ãã—ã€ãƒ‘ãƒªã‚£æŒ™å‹•ã‚’ã‚¹ãƒ­ãƒ¼ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã§è¦‹ã›ã‚‹
         }
 
         /// <summary>
-        /// ƒpƒŠƒBƒV[ƒPƒ“ƒX‚ğXV‚µ‚Ü‚·
+        /// ãƒ‘ãƒªã‚£ã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="departure">UŒ‚‚ÌŠJn’n“_</param>
-        /// <param name="destination">UŒ‚‚ÌI—¹’n“_</param>
-        /// <returns>I—¹”»’è</returns>
+        /// <param name="departure">æ”»æ’ƒã®é–‹å§‹åœ°ç‚¹</param>
+        /// <param name="destination">æ”»æ’ƒã®çµ‚äº†åœ°ç‚¹</param>
+        /// <returns>çµ‚äº†åˆ¤å®š</returns>
         public bool UpdateSequence(in Vector3 departure, in Vector3 destination)
         {
             bool isJustParry = false;

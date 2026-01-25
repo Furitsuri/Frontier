@@ -2,7 +2,6 @@
 using Frontier.Entities;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -41,9 +40,9 @@ namespace Frontier.UI
         {
             Debug.Assert( _character != null );   // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
 
-            _characterCamera.Update( _character.Params.CameraParam );
+            _characterCamera?.Update( _character.CameraParam );
 
-            UpdateParamRender( _character, _character.Params.CharacterParam, _character.Params.SkillModifiedParam );  // パラメータ表示を反映
+            UpdateParamRender( _character, _character.GetStatusRef, _character.BattleLogic.BattleParams.SkillModifiedParam );  // パラメータ表示を反映
         }
 
         /// <summary>
@@ -54,7 +53,7 @@ namespace Frontier.UI
             var layerToName         = LayerMask.LayerToName( _layerMaskIndex );
             TargetImage.texture     = _targetTexture;
 
-            _characterCamera.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, _cameraAngleY, ref TargetImage );
+            _characterCamera?.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, _cameraAngleY, ref TargetImage );
 
             for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
@@ -101,7 +100,7 @@ namespace Frontier.UI
             _character = character;
 
             _character.gameObject.SetActive( true );
-            _characterCamera.AssignCharacter( character, layerMaskIndex );
+            _characterCamera?.AssignCharacter( character, layerMaskIndex );
         }
 
         /// <summary>
@@ -109,7 +108,7 @@ namespace Frontier.UI
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        private void UpdateParamRender( Character selectCharacter, in CharacterParameter param, in SkillModifiedParameter skillParam )
+        private void UpdateParamRender( Character selectCharacter, in Status param, in SkillModifiedParameter skillParam )
         {
             Debug.Assert( param.consumptionActionGauge <= param.curActionGauge );
 
@@ -122,7 +121,7 @@ namespace Frontier.UI
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
-            selectCharacter.Params.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
+            selectCharacter.BattleLogic.BattleParams.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
 
             totalHpChange = Mathf.Clamp( totalHpChange, -param.CurHP, param.MaxHP - param.CurHP );
             if( 0 < totalHpChange )

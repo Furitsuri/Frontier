@@ -1,11 +1,7 @@
-﻿using Frontier.Combat;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using Frontier.Combat.Skill;
 using static Frontier.BattleFileLoader;
-using static Frontier.Entities.Character;
 
 namespace Frontier.Entities
 {
@@ -13,7 +9,7 @@ namespace Frontier.Entities
     /// キャラクターのパラメータの構造体です
     /// </summary>
     [Serializable]
-    public struct CharacterParameter
+    public struct Status
     {
         public CHARACTER_TAG characterTag;  // キャラクタータグ
         public int characterIndex;          // キャラクター番号
@@ -38,77 +34,77 @@ namespace Frontier.Entities
         /// キャラクターパラメータを適応させます
         /// ※C#のstructは基本的に値渡しで動作するため、this.CurHP = fdata.MaxHP;などとしても反映されない
         /// </summary>
-        /// <param name="param">適応先のキャラクターパラメータ</param>
+        /// <param name="status">適応先のキャラクターパラメータ</param>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        static public void ApplyParams(ref CharacterParameter param, in CharacterParamData fdata)
+        static public void ApplyParams( ref Status status, in CharacterStatusData fdata )
         {
-            param.characterTag          = (CHARACTER_TAG)fdata.CharacterTag;
-            param.characterIndex        = fdata.CharacterIndex;
-            param.CurHP                 = param.MaxHP = fdata.MaxHP;
-            param.Atk                   = fdata.Atk;
-            param.Def                   = fdata.Def;
-            param.moveRange             = fdata.MoveRange;
-            param.jumpForce             = fdata.JumpForce;
-            param.attackRange           = fdata.AtkRange;
-            param.curActionGauge        = param.maxActionGauge = fdata.ActGaugeMax;
-            param.recoveryActionGauge   = fdata.ActRecovery;
-            param.initGridIndex         = fdata.InitGridIndex;
-            param.initDir               = (Direction)fdata.InitDir;
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            status.characterTag = ( CHARACTER_TAG ) fdata.CharacterTag;
+            status.characterIndex = fdata.CharacterIndex;
+            status.CurHP = status.MaxHP = fdata.MaxHP;
+            status.Atk = fdata.Atk;
+            status.Def = fdata.Def;
+            status.moveRange = fdata.MoveRange;
+            status.jumpForce = fdata.JumpForce;
+            status.attackRange = fdata.AtkRange;
+            status.curActionGauge = status.maxActionGauge = fdata.ActGaugeMax;
+            status.recoveryActionGauge = fdata.ActRecovery;
+            status.initGridIndex = fdata.InitGridIndex;
+            status.initDir = ( Direction ) fdata.InitDir;
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                param.equipSkills[i] = (ID )fdata.Skills[i];
+                status.equipSkills[i] = ( ID ) fdata.Skills[i];
             }
         }
 
-        public void Awake()
+        public void Setup()
         {
             equipSkills = new ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
         }
 
         public void Init()
         {
-            characterTag            = CHARACTER_TAG.NONE;
-            characterIndex          = 0;
-            Name                    = "";
-            Level                   = 1;
-            MaxHP                   = 0;
-            CurHP                   = 0;
-            Atk                     = 0;
-            Def                     = 0;
-            moveRange               = 0;
-            jumpForce               = 0;
-            attackRange             = 0;
-            maxActionGauge          = 0;
-            curActionGauge          = 0;
-            recoveryActionGauge     = 0;
-            consumptionActionGauge  = 0;
-            initGridIndex           = 0;
-            initDir                 = Direction.NONE;
+            characterTag = CHARACTER_TAG.NONE;
+            characterIndex = 0;
+            Name = "";
+            Level = 1;
+            MaxHP = 0;
+            CurHP = 0;
+            Atk = 0;
+            Def = 0;
+            moveRange = 0;
+            jumpForce = 0;
+            attackRange = 0;
+            maxActionGauge = 0;
+            curActionGauge = 0;
+            recoveryActionGauge = 0;
+            consumptionActionGauge = 0;
+            initGridIndex = 0;
+            initDir = Direction.NONE;
         }
 
         /// <summary>
         /// 外部からパラメータを適用させます
         /// </summary>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        public void Apply( in CharacterParamData fdata )
+        public void Apply( in CharacterStatusData fdata )
         {
-            this.characterTag           = (CHARACTER_TAG)fdata.CharacterTag;
-            this.characterIndex         = fdata.CharacterIndex;
-            this.Name                   = fdata.Name;
-            this.Level                  = fdata.Level;
-            this.CurHP                  = this.MaxHP = fdata.MaxHP;
-            this.Atk                    = fdata.Atk;
-            this.Def                    = fdata.Def;
-            this.moveRange              = fdata.MoveRange;
-            this.jumpForce              = fdata.JumpForce;
-            this.attackRange            = fdata.AtkRange;
-            this.curActionGauge         = this.maxActionGauge = fdata.ActGaugeMax;
-            this.recoveryActionGauge    = fdata.ActRecovery;
-            this.initGridIndex          = fdata.InitGridIndex;
-            this.initDir                = (Direction)fdata.InitDir;
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            this.characterTag = ( CHARACTER_TAG ) fdata.CharacterTag;
+            this.characterIndex = fdata.CharacterIndex;
+            this.Name = fdata.Name;
+            this.Level = fdata.Level;
+            this.CurHP = this.MaxHP = fdata.MaxHP;
+            this.Atk = fdata.Atk;
+            this.Def = fdata.Def;
+            this.moveRange = fdata.MoveRange;
+            this.jumpForce = fdata.JumpForce;
+            this.attackRange = fdata.AtkRange;
+            this.curActionGauge = this.maxActionGauge = fdata.ActGaugeMax;
+            this.recoveryActionGauge = fdata.ActRecovery;
+            this.initGridIndex = fdata.InitGridIndex;
+            this.initDir = ( Direction ) fdata.InitDir;
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                this.equipSkills[i] = (ID)fdata.Skills[i];
+                this.equipSkills[i] = ( ID ) fdata.Skills[i];
             }
         }
 
@@ -143,7 +139,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="tag">指定するキャラクタータグ</param>
         /// <returns>合致しているか否か</returns>
-        public bool IsMatchCharacterTag(CHARACTER_TAG tag)
+        public bool IsMatchCharacterTag( CHARACTER_TAG tag )
         {
             return characterTag == tag;
         }
@@ -162,7 +158,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="index">指定インデックス</param>
         /// <returns>有効か否か</returns>
-        public bool IsValidSkill(int index)
+        public bool IsValidSkill( int index )
         {
             return ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < ID.SKILL_NUM;
         }
@@ -174,24 +170,24 @@ namespace Frontier.Entities
         /// <returns>指定スキルの使用可否</returns>
         public bool CanUseEquipSkill( int skillIdx, SituationType situationType )
         {
-            if ( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
 
                 return false;
             }
 
-            int skillID = (int)equipSkills[skillIdx];
+            int skillID = ( int ) equipSkills[skillIdx];
             var skillData = SkillsData.data[skillID];
 
             // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
-            if ( skillData.Type != situationType )
+            if( skillData.Type != situationType )
             {
                 return false;
             }
 
             // コストが現在のアクションゲージ値を越えていないかをチェック
-            if ( consumptionActionGauge + skillData.Cost <= curActionGauge )
+            if( consumptionActionGauge + skillData.Cost <= curActionGauge )
             {
                 return true;
             }
@@ -207,12 +203,12 @@ namespace Frontier.Entities
         {
             string[] names = new string[Constants.EQUIPABLE_SKILL_MAX_NUM];
 
-            for (int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i)
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 names[i] = "";
-                if ( !IsValidSkill(i) ) continue;
-                names[i] = SkillsData.data[(int)equipSkills[i]].Name;
-                names[i] = names[i].Replace("_", Environment.NewLine);
+                if( !IsValidSkill( i ) ) continue;
+                names[i] = SkillsData.data[( int ) equipSkills[i]].Name;
+                names[i] = names[i].Replace( "_", Environment.NewLine );
             }
 
             return names;

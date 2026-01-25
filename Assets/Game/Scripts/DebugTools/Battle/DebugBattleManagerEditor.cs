@@ -55,7 +55,7 @@ namespace Frontier
         public void GenerateUnit()
         {
             /*
-            int prefabIndex = Params[i].Prefab;
+            int prefabIndex = BattleLogic.BattleParams[i].Prefab;
             GameObject playerObject = Instantiate(PlayersPrefab[prefabIndex]);
             if (playerObject == null) continue;
 
@@ -63,7 +63,7 @@ namespace Frontier
             if (player == null) continue;
 
             // ファイルから読み込んだパラメータを設定
-            ApplyCharacterParams(ref player.param, Params[i]);
+            ApplyCharacterParams(ref player.param, BattleLogic.BattleParams[i]);
             player.Init();
             playerObject.SetActive(true);
 

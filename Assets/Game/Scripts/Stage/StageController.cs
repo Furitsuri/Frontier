@@ -64,7 +64,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterTile( Character character )
         {
-            _gridCursorCtrl.Index = character.Params.TmpParam.GetCurrentGridIndex();
+            _gridCursorCtrl.Index = character.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex();
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Frontier.Stage
         /// <param name="footprint">保持する値</param>
         public void HoldFootprint( Character chara )
         {
-            _footprint.gridIndex = chara.Params.TmpParam.gridIndex;
+            _footprint.gridIndex = chara.BattleLogic.BattleParams.TmpParam.gridIndex;
             _footprint.rotation = chara.transform.rotation;
         }
 
@@ -133,7 +133,7 @@ namespace Frontier.Stage
         public void FollowFootprint( Character character )
         {
             _gridCursorCtrl.Index = _footprint.gridIndex;
-            character.Params.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
+            character.BattleLogic.BattleParams.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
             TileStaticData tileData = _tileDataHdlr.GetCurrentTileDatas().Item1;
             character.GetTransformHandler.SetPosition( tileData.CharaStandPos );
             character.GetTransformHandler.SetRotation( _footprint.rotation );
