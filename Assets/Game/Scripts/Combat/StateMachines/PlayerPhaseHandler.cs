@@ -35,7 +35,7 @@ namespace Frontier.Battle
             // プレイヤー以外の攻撃範囲表示をすべてクリア
             foreach( var npc in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
             {
-                npc.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
+                npc.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
             }
 
             base.Exit();

@@ -1,4 +1,4 @@
-using Frontier.Combat;
+ï»¿using Frontier.Combat;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,31 +11,33 @@ namespace Frontier.Entities
     {
         private CLOSED_ATTACK_PHASE _closingAttackPhase;
         private Character _character;
+        private BattleAnimationEventReceiver _animReceiver;
         private ReadOnlyCollection<AnimDatas.AnimeConditionsTag> AttackAnimTags;
 
         /// <summary>
-        /// UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌI—¹”»’è‚ğ•Ô‚µ‚Ü‚·
+        /// æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®çµ‚äº†åˆ¤å®šã‚’è¿”ã—ã¾ã™
         /// </summary>
-        /// <returns>UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚Ä‚¢‚é‚©</returns>
+        /// <returns>æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ã¦ã„ã‚‹ã‹</returns>
         private bool IsEndAttackAnimSequence()
         {
-            return _character.AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||                  // ÅŒã‚ÌUŒ‚‚ÌState–¼‚Í•K‚¸AtkEndStateName‚Åˆê’v‚³‚¹‚é
-                (_character.GetOpponentChara().IsDeclaredDead && _character.AnimCtrl.IsEndCurrentAnimation());  // •¡”‰ñUŒ‚‚Å‚àA“r’†‚Å‘Šè‚ª€–S‚·‚é‚±‚Æ‚ªŠm–ñ‚³‚ê‚éê‡‚ÍUŒ‚‚ğI—¹‚·‚é
+            return _character.AnimCtrl.IsEndAnimationOnStateName(AnimDatas.AtkEndStateName) ||                  // æœ€å¾Œã®æ”»æ’ƒã®Stateåã¯å¿…ãšAtkEndStateNameã§ä¸€è‡´ã•ã›ã‚‹
+                (_character.BattleLogic.GetOpponent().BattleLogic.IsDeclaredDead && _character.AnimCtrl.IsEndCurrentAnimation());  // è¤‡æ•°å›æ”»æ’ƒæ™‚ã§ã‚‚ã€é€”ä¸­ã§ç›¸æ‰‹ãŒæ­»äº¡ã™ã‚‹ã“ã¨ãŒç¢ºç´„ã•ã‚Œã‚‹å ´åˆã¯æ”»æ’ƒã‚’çµ‚äº†ã™ã‚‹
         }
 
         public void Init( Character character, AnimDatas.AnimeConditionsTag[] consitionTags)
         {
             _character          = character;
+            _animReceiver       = character.BtlAnimReceiver;
             AttackAnimTags      = Array.AsReadOnly(consitionTags);
             _closingAttackPhase = CLOSED_ATTACK_PHASE.NONE;
         }
 
         /// <summary>
-        /// ‹ßÚUŒ‚ƒV[ƒPƒ“ƒX‚ğŠJn‚µ‚Ü‚·
+        /// è¿‘æ¥æ”»æ’ƒã‚·ãƒ¼ã‚±ãƒ³ã‚¹ã‚’é–‹å§‹ã—ã¾ã™
         /// </summary>
         public void StartSequence()
         {
-            _character.IsAttacked   = false;
+            _animReceiver.IsAttacked   = false;
             _closingAttackPhase     = CLOSED_ATTACK_PHASE.CLOSINGE;
             _character.ResetElapsedTime();
 
@@ -43,19 +45,19 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ‹ßÚUŒ‚‚Ì—¬‚ê‚ğXV‚µ‚Ü‚·
+        /// è¿‘æ¥æ”»æ’ƒæ™‚ã®æµã‚Œã‚’æ›´æ–°ã—ã¾ã™
         /// </summary>
-        /// <param name="departure">‹ßÚUŒ‚‚ÌŠJn’n“_</param>
-        /// <param name="destination">‹ßÚUŒ‚‚ÌI—¹’n“_</param>
-        /// <returns>I—¹”»’è</returns>
+        /// <param name="departure">è¿‘æ¥æ”»æ’ƒã®é–‹å§‹åœ°ç‚¹</param>
+        /// <param name="destination">è¿‘æ¥æ”»æ’ƒã®çµ‚äº†åœ°ç‚¹</param>
+        /// <returns>çµ‚äº†åˆ¤å®š</returns>
         public bool UpdateSequence( in Vector3 departure, in Vector3 destination )
         {
-            var attackAnimtag = AttackAnimTags[_character.Params.SkillModifiedParam.AtkNum - 1];
+            var attackAnimtag = AttackAnimTags[_character.BattleLogic.BattleParams.SkillModifiedParam.AtkNum - 1];
 
             if ( _character.GetBullet() != null ) return false;
 
             float t = 0f;
-            bool isReservedParry = (0 <= _character.GetOpponentChara().GetUsingSkillSlotIndexById(ID.SKILL_PARRY));
+            bool isReservedParry = (0 <= _character.BattleLogic.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById(ID.SKILL_PARRY));
 
             switch ( _closingAttackPhase )
             {
@@ -83,7 +85,7 @@ namespace Frontier.Entities
                     }
                     break;
                 case CLOSED_ATTACK_PHASE.DISTANCING:
-                    // UŒ‚‘O‚ÌêŠ‚É–ß‚é
+                    // æ”»æ’ƒå‰ã®å ´æ‰€ã«æˆ»ã‚‹
                     _character.ElapsedTime += DeltaTimeProvider.DeltaTime;
                     t = Mathf.Clamp01( _character.ElapsedTime / Constants.ATTACK_DISTANCING_TIME );
                     t = Mathf.SmoothStep( 0f, 1f, t );

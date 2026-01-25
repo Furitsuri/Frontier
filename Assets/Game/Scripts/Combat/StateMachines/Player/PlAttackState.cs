@@ -39,7 +39,7 @@ namespace Frontier.Battle
         {
             base.Init();
 
-            _playerSkillNames = _plOwner.Params.CharacterParam.GetEquipSkillNames();
+            _playerSkillNames = _plOwner.GetStatusRef.GetEquipSkillNames();
             _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
             _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
@@ -47,12 +47,12 @@ namespace Frontier.Battle
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
-            int dprtTileIndex = _attackCharacter.Params.TmpParam.gridIndex;
-            _attackCharacter.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
-            _attackCharacter.ActionRangeCtrl.DrawAttackableRange();
+            int dprtTileIndex = _attackCharacter.BattleLogic.BattleParams.TmpParam.gridIndex;
+            _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY ) ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY ) ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.SetAttackCursorP2EActive( true ); // アタックカーソルUI表示
@@ -90,9 +90,9 @@ namespace Frontier.Battle
                             prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
                         }
 
-                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.Params.TmpParam.GetCurrentGridIndex() );
+                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
                         _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-                        var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.Params.TmpParam.GetCurrentGridIndex() );
+                        var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
                         _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
                     }
 
@@ -100,8 +100,8 @@ namespace Frontier.Battle
                     _uiSystem.BattleUi.ToggleBattleExpect( true );
 
                     // 使用スキルを選択する
-                    _attackCharacter.SelectUseSkills( SituationType.ATTACK );
-                    _targetCharacter.SelectUseSkills( SituationType.DEFENCE );
+                    _attackCharacter.BattleLogic.SelectUseSkills( SituationType.ATTACK );
+                    _targetCharacter.BattleLogic.SelectUseSkills( SituationType.DEFENCE );
 
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
@@ -116,7 +116,7 @@ namespace Frontier.Battle
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -132,7 +132,7 @@ namespace Frontier.Battle
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if( diedCharacter != null )
             {
-                var key = new CharacterKey( diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex );
+                var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
                 NorifyCharacterDied( key );
                 diedCharacter.Dispose();    // 破棄
             }
@@ -158,15 +158,15 @@ namespace Frontier.Battle
             // 予測ダメージと使用スキルコスト見積もりをリセット
             if( null != _attackCharacter )
             {
-                _attackCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
-                _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-                _attackCharacter.Params.SkillModifiedParam.Reset();
+                _attackCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+                _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
+                _attackCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
             }
             if( null != _targetCharacter )
             {
-                _targetCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
-                _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-                _targetCharacter.Params.SkillModifiedParam.Reset();
+                _targetCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+                _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
+                _targetCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
@@ -261,7 +261,7 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[0].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill( 0, SituationType.ATTACK );
+            return _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
         }
 
         override protected bool CanAcceptSub2()
@@ -270,7 +270,7 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[1].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill( 1, SituationType.ATTACK );
+            return _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
         }
 
         override protected bool CanAcceptSub3()
@@ -279,7 +279,7 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[2].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill( 2, SituationType.ATTACK );
+            return _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
         }
 
         override protected bool CanAcceptSub4()
@@ -288,7 +288,7 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[3].Length <= 0 ) return false;
 
-            return _plOwner.CanToggleEquipSkill( 3, SituationType.ATTACK );
+            return _plOwner.BattleLogic.CanToggleEquipSkill( 3, SituationType.ATTACK );
         }
 
         /// <summary>
@@ -316,11 +316,11 @@ namespace Frontier.Battle
             if( !isInput ) return false;
 
             // 選択したキャラクターが敵である場合は攻撃開始
-            if( _targetCharacter != null && _targetCharacter.Params.CharacterParam.characterTag == CHARACTER_TAG.ENEMY )
+            if( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
             {
                 // キャラクターのアクションゲージを消費
-                _attackCharacter.ConsumeActionGauge();
-                _targetCharacter.ConsumeActionGauge();
+                _attackCharacter.BattleLogic.ConsumeActionGauge();
+                _targetCharacter.BattleLogic.ConsumeActionGauge();
 
                 // 選択グリッドを一時非表示
                 _stageCtrl.SetGridCursorControllerActive( false );
@@ -370,28 +370,28 @@ namespace Frontier.Battle
         {
             if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks( 0 );
+            return _plOwner.BattleLogic.ToggleUseSkillks( 0 );
         }
 
         override protected bool AcceptSub2( bool isInput )
         {
             if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks( 1 );
+            return _plOwner.BattleLogic.ToggleUseSkillks( 1 );
         }
 
         override protected bool AcceptSub3( bool isInput )
         {
             if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks( 2 );
+            return _plOwner.BattleLogic.ToggleUseSkillks( 2 );
         }
 
         override protected bool AcceptSub4( bool isInput )
         {
             if( !isInput ) return false;
 
-            return _plOwner.ToggleUseSkillks( 3 );
+            return _plOwner.BattleLogic.ToggleUseSkillks( 3 );
         }
     }
 }

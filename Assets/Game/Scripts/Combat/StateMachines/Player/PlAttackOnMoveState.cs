@@ -18,21 +18,21 @@ namespace Frontier.Battle
             _stageCtrl.ClearGridCursroBind();                          // 念のためバインドを解除
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );     // グリッドカーソル位置を元に戻す
 
-            _playerSkillNames   = _plOwner.Params.CharacterParam.GetEquipSkillNames();
+            _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex    = _plOwner.Params.TmpParam.gridIndex;
+            _curentGridIndex    = _plOwner.BattleLogic.BattleParams.TmpParam.gridIndex;
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
-            var param = _attackCharacter.Params.CharacterParam;
+            var param = _attackCharacter.GetStatusRef;
 
-            _plOwner.ActionRangeCtrl.SetupAttackableRangeData( _curentGridIndex );
-            _attackCharacter.ActionRangeCtrl.DrawAttackableRange();
+            _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _curentGridIndex );
+            _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter, targetChara ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl, targetChara ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.SetAttackCursorP2EActive( true ); // アタックカーソルUI表示
@@ -47,7 +47,7 @@ namespace Frontier.Battle
             Character diedCharacter = _attackSequence.GetDiedCharacter();
             if ( diedCharacter != null )
             {
-                var key = new CharacterKey(diedCharacter.Params.CharacterParam.characterTag, diedCharacter.Params.CharacterParam.characterIndex);
+                var key = new CharacterKey(diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex);
                 NorifyCharacterDied( key );
                 // 破棄
                 diedCharacter.Dispose();
@@ -57,8 +57,8 @@ namespace Frontier.Battle
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _attackCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
-            _targetCharacter.Params.TmpParam.SetExpectedHpChange( 0, 0 );
+            _attackCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _targetCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
@@ -76,10 +76,10 @@ namespace Frontier.Battle
             }
 
             // 使用スキルコスト見積もりをリセット
-            _attackCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-            _attackCharacter.Params.SkillModifiedParam.Reset();
-            _targetCharacter.Params.CharacterParam.ResetConsumptionActionGauge();
-            _targetCharacter.Params.SkillModifiedParam.Reset();
+            _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
+            _attackCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+            _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
+            _targetCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示

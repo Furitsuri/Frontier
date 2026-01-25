@@ -105,9 +105,9 @@ namespace Frontier.Battle
             if( null == character ) { return false; }
 
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
-            if( character.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+            if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
-                return !character.Params.TmpParam.IsEndAction();
+                return !character.BattleLogic.BattleParams.TmpParam.IsEndAction();
             }
             // 敵キャラクター、その他のキャラクターの場合、レンジ表示を行うため常に選択可能
             else
@@ -148,7 +148,7 @@ namespace Frontier.Battle
             if( null == character ) { return false; }
 
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
-            if( character.Params.CharacterParam.characterTag == CHARACTER_TAG.PLAYER )
+            if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
                 TransitStateWithExit( ( int ) TransitTag.CHARACTER_COMMAND );
                 // コマンドを開くことをチュートリアルへ通知
@@ -160,13 +160,13 @@ namespace Frontier.Battle
                 Npc npc = character as Npc;
                 if( null == npc ) { return false; }
 
-                npc.ToggleDisplayDangerRange(); // 攻撃範囲表示を切り替える
+                npc.BattleLogic.ToggleDisplayDangerRange(); // 攻撃範囲表示を切り替える
 
                 // 全ての敵及び第三勢力の攻撃範囲表示状態を確認し、全てが_isShowingAllDangerRangeの値と異なっている場合は、全危険範囲表示状態を切り替える
                 bool isAllMismatch = true;
                 foreach( Npc npcChara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
                 {
-                    if( _isShowingAllDangerRange == npcChara.ActionRangeCtrl.ActionableRangeRdr.IsShowingAttackableRange )
+                    if( _isShowingAllDangerRange == npcChara.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.IsShowingAttackableRange )
                     {
                         isAllMismatch = false;
                         break;
@@ -206,7 +206,7 @@ namespace Frontier.Battle
 
             foreach( Npc npcChara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
             {
-                npcChara.SetDisplayDangerRange( _isShowingAllDangerRange );
+                npcChara.BattleLogic.SetDisplayDangerRange( _isShowingAllDangerRange );
             }
 
             return true;

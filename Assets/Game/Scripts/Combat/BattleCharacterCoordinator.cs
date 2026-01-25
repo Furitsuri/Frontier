@@ -13,16 +13,16 @@ namespace Frontier.Battle
     /// </summary>
     public class BattleCharacterCoordinator
     {
-        [Inject] HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] StageController _stgCtrl     = null;
+        [Inject] private StageController _stgCtrl           = null;
 
         private List<Player> _candidatePlayers          = new List<Player>(Constants.CHARACTER_MAX_NUM);   // ステージ配置候補プレイヤーリスト
         private List<Player> _players                   = new List<Player>(Constants.CHARACTER_MAX_NUM);
         private List<Enemy> _enemies                    = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
         private List<Other> _others                     = new List<Other>(Constants.CHARACTER_MAX_NUM);
         private List<Character> _allCharacters          = new List<Character>();
+        private CharacterDictionary _characterDict      = null; // キャラクターハッシュテーブル(あくまで戦闘用のインスタンスであるため、DiContainerで定義されているものとは別のインスタンスです)
         private Dictionary<CHARACTER_TAG, IEnumerable<Character>> _characterGroups;
-        private CharacterDictionary _characterDict      = null;
+        
         private CharacterKey _diedCharacterKey;
         private CharacterKey _battleBossCharacterKey;
         private CharacterKey _escortTargetCharacterKey;
@@ -34,9 +34,11 @@ namespace Frontier.Battle
         /// </summary>
         public void Init()
         {
-            _diedCharacterKey           = new CharacterKey(CHARACTER_TAG.NONE, -1);
-            _battleBossCharacterKey     = new CharacterKey(CHARACTER_TAG.NONE, -1);
-            _escortTargetCharacterKey   = new CharacterKey(CHARACTER_TAG.NONE, -1);
+            _diedCharacterKey           = new CharacterKey( CHARACTER_TAG.NONE, -1 );
+            _battleBossCharacterKey     = new CharacterKey( CHARACTER_TAG.NONE, -1 );
+            _escortTargetCharacterKey   = new CharacterKey( CHARACTER_TAG.NONE, -1 );
+
+            LazyInject.GetOrCreate( ref _characterDict, () => new CharacterDictionary() );
 
             _characterGroups = new Dictionary<CHARACTER_TAG, IEnumerable<Character>>
             {
@@ -44,47 +46,13 @@ namespace Frontier.Battle
                 { CHARACTER_TAG.ENEMY,  _enemies },
                 { CHARACTER_TAG.OTHER,  _others }
             };
-
-            LazyInject.GetOrCreate( ref _characterDict, () => _hierarchyBld.InstantiateWithDiContainer<CharacterDictionary>( false ) );
-        }
-
-        /// <summary>
-        /// キャラクター達をステージの初期座標に配置します
-        /// </summary>
-        public void PlaceAllCharactersAtStartPosition()
-        {
-            List<Character>[] charaLists = new List<Character>[]
-            {
-                new List<Character>(_players),
-                new List<Character>(_enemies),
-                new List<Character>(_others)
-            };
-
-            // 向きの値を設定
-            Quaternion[] rot = new Quaternion[(int)Direction.NUM_MAX];
-            for (int i = 0; i < (int)Direction.NUM_MAX; ++i)
-            {
-                rot[i] = Quaternion.AngleAxis(90 * i, Vector3.up);
-            }
-
-            foreach( var charaList in charaLists )
-            {
-                foreach ( var chara in charaList )
-                {
-                    int gridIndex = chara.Params.CharacterParam.initGridIndex;                                      // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-                    chara.Params.TmpParam.SetCurrentGridIndex( gridIndex );                                         // ステージ上のグリッド位置の設定
-                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
-                    chara.GetTransformHandler.SetRotation( rot[(int)chara.Params.CharacterParam.initDir] );         // 向きを設定
-                    _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
-                }
-            }
         }
 
         /// <summary>
         /// キャラクターをリストとハッシュに登録します
         /// </summary>
-        /// <param name="chara">登録対象のキャラクター</param>
-        public void loadCharacterToList( Character chara )
+        /// <status name="chara">登録対象のキャラクター</status>
+        public void AddCharacterToList( Character chara )
         {
             Action<Character>[] addActionsByType = new Action<Character>[]
             {
@@ -93,8 +61,8 @@ namespace Frontier.Battle
                 // ENEMY
                 c =>
                 {
-                    var param = chara.Params.CharacterParam;
-                    CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+                    var status = chara.GetStatusRef;
+                    CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
                     _enemies.Add(c as Enemy);
                     _allCharacters.Add( chara );
                     _characterDict.Add( in charaKey, chara );
@@ -102,8 +70,8 @@ namespace Frontier.Battle
                 // OTHER
                 c =>
                 {
-                    var param = chara.Params.CharacterParam;
-                    CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+                    var status = chara.GetStatusRef;
+                    CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
                     _others.Add(c as Other);
                     _allCharacters.Add( chara );
                     _characterDict.Add( in charaKey, chara );
@@ -112,23 +80,22 @@ namespace Frontier.Battle
 
             Debug.Assert( addActionsByType.Length == ( int ) CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。" );
 
-            addActionsByType[( int ) chara.Params.CharacterParam.characterTag]( chara );
-            
+            addActionsByType[( int ) chara.GetStatusRef.characterTag]( chara );
         }
 
         public void AddPlayerToList( Character pl )
         {
-            var param = pl.Params.CharacterParam;
-            CharacterKey charaKey = new CharacterKey( param.characterTag, param.characterIndex );
+            var status = pl.GetStatusRef;
+            CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
             _players.Add( pl as Player );
-            _characterDict.Add( in charaKey, pl );
             _allCharacters.Add( pl );
+            _characterDict.Add( in charaKey, pl );
         }
 
         /// <summary>
         /// 該当キャラクターが死亡した際などにリストから対象を削除します
         /// </summary>
-        /// <param name="charaKey">削除対象のキャラクター</param>
+        /// <status name="charaKey">削除対象のキャラクター</status>
         public void RemoveCharacterFromList( CharacterKey charaKey )
         {
             var chara = _characterDict.Get( charaKey );
@@ -141,7 +108,7 @@ namespace Frontier.Battle
                 c => _others.Remove(c as Other)    // OTHER
             };
 
-            removeActionsByType[( int ) chara.Params.CharacterParam.characterTag]( chara );
+            removeActionsByType[( int ) chara.GetStatusRef.characterTag]( chara );
             _allCharacters.Remove( chara );
             _characterDict.Remove( in charaKey );
         }
@@ -153,8 +120,18 @@ namespace Frontier.Battle
         {
             foreach( var character in _allCharacters )
             {
-                character.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
+                character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
             }
+        }
+
+        public void OnBattleEnter( BattleCameraController btlCamCtrl )
+        {
+            foreach( var character in _allCharacters )
+            {
+                character.OnBattleEnter( btlCamCtrl );
+            }
+
+            PlaceAllCharactersAtStartPosition();
         }
 
         /// <summary>
@@ -177,7 +154,7 @@ namespace Frontier.Battle
         {
             foreach ( var character in _allCharacters )
             {
-                if ( tags.Contains( character.Params.CharacterParam.characterTag ) )
+                if ( tags.Contains( character.GetStatusRef.characterTag ) )
                 {
                     yield return character;
                 }
@@ -199,7 +176,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    if (!c.Params.TmpParam.IsEndAction())
+                    if (!c.BattleLogic.BattleParams.TmpParam.IsEndAction())
                     {
                         return false;
                     }
@@ -211,7 +188,7 @@ namespace Frontier.Battle
         /// <summary>
         /// ステージのボスキャラクターが倒されているかを取得します
         /// </summary>
-        /// <param name="diedCharacterKey">倒されたキャラクターのハッシュキー</param>
+        /// <status name="diedCharacterKey">倒されたキャラクターのハッシュキー</status>
         /// <returns>ボスキャラクターが設定されている上で倒されているか</returns>
         public bool IsDiedBossCharacter( in CharacterKey diedCharacterKey )
         {
@@ -227,7 +204,7 @@ namespace Frontier.Battle
         /// <summary>
         /// ステージの庇護対象キャラクターが倒されているかを取得します
         /// </summary>
-        /// <param name="diedCharacterKey">倒されたキャラクターのハッシュキー</param>
+        /// <status name="diedCharacterKey">倒されたキャラクターのハッシュキー</status>
         /// <returns>庇護対象のキャラクターが設定されている上で倒されているか</returns>
         public bool IsDiedEscortCharacter( in CharacterKey diedCharacterKey )
         {
@@ -243,8 +220,8 @@ namespace Frontier.Battle
         /// <summary>
         /// 勝利、敗戦判定を行います
         /// </summary>
-        /// <param name="clearAnim">ステージクリア時のアニメーション呼び出し関数</param>
-        /// <param name="overAnim">ゲームオーバー時のアニメーション呼び出し関数</param>
+        /// <status name="clearAnim">ステージクリア時のアニメーション呼び出し関数</status>
+        /// <status name="overAnim">ゲームオーバー時のアニメーション呼び出し関数</status>
         /// <returns>勝利、敗戦処理に遷移するか否か</returns>
         public bool CheckVictoryOrDefeat( StageAnim clearAnim, StageAnim overAnim )
         {
@@ -287,7 +264,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 対象軍勢が全滅しているかを確認します
         /// </summary>
-        /// <param name="tag">軍勢のタグ</param>
+        /// <status name="tag">軍勢のタグ</status>
         /// <returns>対象軍勢が全滅しているか</returns>
         public bool CheckCharacterAnnihilated(CHARACTER_TAG tag)
         {
@@ -297,7 +274,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    if (!c.Params.CharacterParam.IsDead())
+                    if (!c.GetStatusRef.IsDead())
                     {
                         isAnnihilated = false;
                         break;
@@ -310,7 +287,7 @@ namespace Frontier.Battle
         /// <summary>
         /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
         /// </summary>
-        /// <param name="key">ハッシュキー</param>
+        /// <status name="key">ハッシュキー</status>
         /// <returns>指定のキーに対応するキャラクター</returns>
         public Character GetCharacterFromDictionary( in CharacterKey key )
         {
@@ -335,13 +312,13 @@ namespace Frontier.Battle
         /// <summary>
         /// 対象のキャラクターにとって、最も近い視線上のキャラクターを取得します
         /// </summary>
-        /// <param name="baseChara">対象キャラクター</param>
+        /// <status name="baseChara">対象キャラクター</status>
         /// <returns>最も近い視線上のキャラクター</returns>
         public List<Character> GetLineOfSightCharacter( Character baseChara, CHARACTER_TAG tag )
         {
             List<Character> list = new List<Character>();
 
-            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.Params.TmpParam.gridIndex ).CharaStandPos;
+            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.BattleLogic.BattleParams.TmpParam.gridIndex ).CharaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y = 0f;
 
@@ -349,7 +326,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    Vector3 targetPos = _stgCtrl.GetTileStaticData( c.Params.TmpParam.gridIndex ).CharaStandPos;
+                    Vector3 targetPos = _stgCtrl.GetTileStaticData( c.BattleLogic.BattleParams.TmpParam.gridIndex ).CharaStandPos;
 
                     var direction   = targetPos - basePos;
                     direction.y     = 0f;
@@ -378,7 +355,7 @@ namespace Frontier.Battle
 
             foreach( var chara in charaList )
             {
-                int range = _stgCtrl.CalcurateTotalRange(baseChara.Params.TmpParam.gridIndex, chara.Params.TmpParam.gridIndex);
+                int range = _stgCtrl.CalcurateTotalRange(baseChara.BattleLogic.BattleParams.TmpParam.gridIndex, chara.BattleLogic.BattleParams.TmpParam.gridIndex);
                 if( range < totalRange )
                 {
                     totalRange  = range;
@@ -392,7 +369,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 指定されたキャラクタータグの総ユニット数を取得します
         /// </summary>
-        /// <param name="tag">指定するキャラクターのタグ</param>
+        /// <status name="tag">指定するキャラクターのタグ</status>
         /// <returns>指定タグの総ユニット数</returns>
         public int GetCharacterCount( CHARACTER_TAG tag )
         {
@@ -408,21 +385,21 @@ namespace Frontier.Battle
         /// <summary>
         /// 直近の戦闘で死亡したキャラクターのキャラクタータグを設定します
         /// </summary>
-        /// <param name="tag">死亡したキャラクターのキャラクタータグ</param>
+        /// <status name="tag">死亡したキャラクターのキャラクタータグ</status>
         public void SetDiedCharacterKey( in CharacterKey key ) { _diedCharacterKey = key; }
 
         /// <summary>
         /// 対象とする軍勢の全てのキャラクターを待機済みに変更します
         /// 主にターンを終了させる際に使用します
         /// </summary>
-        /// /// <param name="tag">指定する軍勢のタグ</param>
+        /// /// <status name="tag">指定する軍勢のタグ</status>
         public void ApplyAllArmyEndAction(CHARACTER_TAG tag)
         {
             if (_characterGroups.TryGetValue(tag, out var group))
             {
                 foreach (var c in group)
                 {
-                    c.Params.TmpParam.EndAction();
+                    c.BattleLogic.BattleParams.TmpParam.EndAction();
                 }
             }
         }
@@ -430,8 +407,8 @@ namespace Frontier.Battle
         /// <summary>
         /// ダメージ予測を適応します
         /// </summary>
-        /// <param name="attacker">攻撃キャラクター</param>
-        /// <param name="target">標的キャラクター</param>
+        /// <status name="attacker">攻撃キャラクター</status>
+        /// <status name="target">標的キャラクター</status>
         public void ApplyDamageExpect(Character attacker, Character target)
         {
             if (target == null)
@@ -439,11 +416,11 @@ namespace Frontier.Battle
                 return;
             }
 
-            int targetDef   = (int)Mathf.Floor((target.Params.CharacterParam.Def + target.Params.ModifiedParam.Def) * target.Params.SkillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.Params.CharacterParam.Atk + attacker.Params.ModifiedParam.Atk) * attacker.Params.SkillModifiedParam.AtkMagnification);
+            int targetDef   = (int)Mathf.Floor((target.GetStatusRef.Def + target.BattleLogic.BattleParams.ModifiedParam.Def) * target.BattleLogic.BattleParams.SkillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.GetStatusRef.Atk + attacker.BattleLogic.BattleParams.ModifiedParam.Atk) * attacker.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification);
             int changeHP    = (targetDef - attackerAtk);
 
-            target.Params.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.Params.SkillModifiedParam.AtkNum, 0) );
+            target.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.BattleLogic.BattleParams.SkillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>
@@ -451,13 +428,13 @@ namespace Frontier.Battle
         /// </summary>
         public void ResetTmpParamAllCharacter()
         {
-            for (int i = 0; i < (int)CHARACTER_TAG.NUM; ++i)
+            for( int i = 0; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
-                if (_characterGroups.TryGetValue((CHARACTER_TAG)i, out var group))
+                if( _characterGroups.TryGetValue( ( CHARACTER_TAG ) i, out var group ) )
                 {
-                    foreach (var c in group)
+                    foreach( var c in group )
                     {
-                        c.BePossibleAction();
+                        c.BattleLogic.BePossibleAction();
                     }
                 }
             }
@@ -475,14 +452,46 @@ namespace Frontier.Battle
         /// <summary>
         /// 指定のキャラクター群のアクションゲージを回復させます
         /// </summary>
-        /// <param name="tag">キャラクター群のタグ</param>
+        /// <status name="tag">キャラクター群のタグ</status>
         public void RecoveryActionGaugeForGroup(CHARACTER_TAG tag)
         {
             if (_characterGroups.TryGetValue(tag, out var group))
             {
                 foreach (var c in group)
                 {
-                    c.Params.CharacterParam.RecoveryActionGauge();
+                    c.GetStatusRef.RecoveryActionGauge();
+                }
+            }
+        }
+
+        /// <summary>
+        /// キャラクター達をステージの初期座標に配置します
+        /// </summary>
+        private void PlaceAllCharactersAtStartPosition()
+        {
+            List<Character>[] charaLists = new List<Character>[]
+            {
+                new List<Character>(_players),
+                new List<Character>(_enemies),
+                new List<Character>(_others)
+            };
+
+            // 向きの値を設定
+            Quaternion[] rot = new Quaternion[( int ) Direction.NUM_MAX];
+            for( int i = 0; i < ( int ) Direction.NUM_MAX; ++i )
+            {
+                rot[i] = Quaternion.AngleAxis( 90 * i, Vector3.up );
+            }
+
+            foreach( var charaList in charaLists )
+            {
+                foreach( var chara in charaList )
+                {
+                    int gridIndex = chara.GetStatusRef.initGridIndex;                                               // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
+                    chara.BattleLogic.BattleParams.TmpParam.SetCurrentGridIndex( gridIndex );                                // ステージ上のグリッド位置の設定
+                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
+                    chara.GetTransformHandler.SetRotation( rot[( int ) chara.GetStatusRef.initDir] );                  // 向きを設定
+                    _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
                 }
             }
         }

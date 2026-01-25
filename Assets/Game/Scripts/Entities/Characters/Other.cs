@@ -9,14 +9,25 @@ namespace Frontier.Entities
     // 仕様変更があれば処理を追加する
     public class Other : Enemy
     {
-        public override void ToggleDisplayDangerRange()
+        public override void OnFieldEnter()
         {
-            _actionRangeCtrl.ToggleDisplayDangerRange( in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
+            base.OnFieldEnter();
+            LazyInject.GetOrCreate( ref _fieldLogic, () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<OtherFieldLogic>( gameObject, true, false, "FieldLogic" ) );
+            _fieldLogic.Setup();
+            _fieldLogic.Regist( this );
+            _fieldLogic.Init();
         }
 
-        public override void SetDisplayDangerRange( bool isShow )
+        public override void OnBattleEnter( BattleCameraController btlCamCtrl )
         {
-            _actionRangeCtrl.SetDisplayDangerRange( isShow, in TileColors.Colors[( int ) MeshType.OTHERS_ATTACKABLE] );
+            LazyInject.GetOrCreate( ref _battleLogic, () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<OtherBattleLogic>( gameObject, true, false, "BattleLogic" ) );
+            _battleLogic.Setup();
+            _battleLogic.Regist( this );
+            _battleLogic.Init();
+
+            _battleLogic.SetThinkType( ThinkingType );
+
+            base.OnBattleEnter( btlCamCtrl );   // 基底クラスのOnBattleEnterは最後に呼ぶ
         }
     }
 }

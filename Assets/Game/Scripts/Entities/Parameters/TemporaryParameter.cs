@@ -18,7 +18,7 @@ namespace Frontier.Entities
         // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
         public int totalExpectedHpChange;
 
-        public void Awake()
+        public void Setup()
         {
             isEndCommand = new bool[( int ) COMMAND_TAG.NUM];
             isUseSkills = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];

@@ -50,6 +50,10 @@ namespace Frontier.UI
             _recruitmentUi?.Setup();
             _deploymentUi?.Setup();
             _battleUi?.Setup();
+
+            _recruitmentUi?.gameObject.SetActive( false );
+            _deploymentUi?.gameObject.SetActive( false );
+            _battleUi?.gameObject.SetActive( false );
         }
     }
 }

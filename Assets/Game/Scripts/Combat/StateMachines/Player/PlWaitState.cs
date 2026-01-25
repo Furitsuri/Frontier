@@ -10,7 +10,7 @@ namespace Frontier.Battle
             base.Init();
 
             // 選択しているプレイヤーの行動をすべて終了
-            _plOwner.Params.TmpParam.EndAction();
+            _plOwner.BattleLogic.BattleParams.TmpParam.EndAction();
 
             // 更新せずに終了
             Back();

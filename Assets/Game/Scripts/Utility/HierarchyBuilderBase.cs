@@ -228,6 +228,14 @@ public class HierarchyBuilderBase : MonoBehaviour
         return _generator.InstantiateWithDiContainer(original, position, rotation, isBind);
     }
 
+    public T AddComponentWithDi<T>( GameObject go ) where T : MonoBehaviour
+    {
+        var comp = go.AddComponent<T>();
+        _generator.Inject( comp );   // ZenjectなどのDIコンテナ
+        return comp;
+    }
+
+
     /// <summary>
     /// 引数に指定したビヘイビアの紐づけ先のオブジェクトを決定します
     /// </summary>

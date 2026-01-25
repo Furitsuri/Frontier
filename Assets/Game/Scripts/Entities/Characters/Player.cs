@@ -1,13 +1,5 @@
-﻿using Frontier.Entities;
-using Frontier.Combat;
-using Frontier.Combat.Skill;
-using Frontier.Entities.Ai;
-using Frontier.Stage;
-using System;
-using System.Collections.Generic;
+﻿using Frontier.Combat;
 using UnityEngine;
-using static Constants;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Entities
 {
@@ -41,7 +33,7 @@ namespace Frontier.Entities
         /// </summary>
         public void HoldBeforeMoveInfo()
         {
-            _prevMoveInfo.tmpParam  = _params.TmpParam.Clone();
+            _prevMoveInfo.tmpParam  = _battleLogic.BattleParams.TmpParam.Clone();
             _prevMoveInfo.rotDir    = _transformHdlr.GetRotation();
         }
 
@@ -58,8 +50,8 @@ namespace Frontier.Entities
         /// </summary>
         public void RewindToPreviousState()
         {
-            _params.TmpParam = _prevMoveInfo.tmpParam;
-            SetPosition( _params.TmpParam.gridIndex, _prevMoveInfo.rotDir );
+            _battleLogic.BattleParams.TmpParam = _prevMoveInfo.tmpParam;
+            BattleLogic.SetPositionOnStage( _battleLogic.BattleParams.TmpParam.gridIndex, _prevMoveInfo.rotDir );
         }
 
         /// <summary>
@@ -75,7 +67,7 @@ namespace Frontier.Entities
             {
                 if( i == (int)COMMAND_TAG.MOVE )
                 {
-                    if (!_params.TmpParam.IsEndCommand(COMMAND_TAG.MOVE))
+                    if (!_battleLogic.BattleParams.TmpParam.IsEndCommand(COMMAND_TAG.MOVE))
                     {
                         isPossible = false;
                         break;
@@ -83,7 +75,7 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    if (_params.TmpParam.IsEndCommand((COMMAND_TAG)i))
+                    if (_battleLogic.BattleParams.TmpParam.IsEndCommand((COMMAND_TAG)i))
                     {
                         isPossible = false;
                         break;
@@ -100,42 +92,25 @@ namespace Frontier.Entities
         public override void Init()
         {
             base.Init();
-
-            LazyInject.GetOrCreate( ref _baseAi, () => _hierarchyBld.InstantiateWithDiContainer<AiBase>( false ) );
-
-            _baseAi.Init( this );
         }
 
-        /// <summary>
-        /// 指定のスキルの使用設定を切り替えます
-        /// </summary>
-        /// <param name="index">指定のスキルのインデックス番号</param>
-        /// <returns>切替の有無</returns>
-        public override bool ToggleUseSkillks(int index)
+        public override void OnFieldEnter()
         {
-            _params.TmpParam.isUseSkills[index] = !_params.TmpParam.isUseSkills[index];
+            base.OnFieldEnter();
+            LazyInject.GetOrCreate( ref _fieldLogic, () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<PlayerFieldLogic>( gameObject, true, false, "FieldLogic" ) );
+            _fieldLogic.Setup();
+            _fieldLogic.Regist( this );
+            _fieldLogic.Init();
+        }
 
-            int skillID = (int)_params.CharacterParam.equipSkills[index];
-            var skillData = SkillsData.data[skillID];
+        public override void OnBattleEnter( BattleCameraController btlCamCtrl )
+        {
+            LazyInject.GetOrCreate( ref _battleLogic, () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<PlayerBattleLogic>( gameObject, true, false, "BattleLogic" ) );
+            _battleLogic.Setup();
+            _battleLogic.Regist( this );
+            _battleLogic.Init();
 
-            if (_params.TmpParam.isUseSkills[index])
-            {
-                _params.CharacterParam.consumptionActionGauge += skillData.Cost;
-                Params.SkillModifiedParam.AtkNum += skillData.AddAtkNum;
-                Params.SkillModifiedParam.AtkMagnification += skillData.AddAtkMag;
-                Params.SkillModifiedParam.DefMagnification += skillData.AddDefMag;
-            }
-            else
-            {
-                _params.CharacterParam.consumptionActionGauge -= skillData.Cost;
-                Params.SkillModifiedParam.AtkNum -= skillData.AddAtkNum;
-                Params.SkillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
-                Params.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
-            }
-
-            _uiSystem.BattleUi.GetPlayerParamSkillBox(index).SetFlickEnabled(_params.TmpParam.isUseSkills[index]);
-
-            return true;
+            base.OnBattleEnter( btlCamCtrl );   // 基底クラスのOnBattleEnterは最後に呼ぶ
         }
     }
 }

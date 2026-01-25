@@ -2,7 +2,9 @@
 
 static public class Constants
 {
-    // 必ず奇数とすること
+    // 雇用候補に出来るユニット数
+    public const int EMPLOYABLE_CHARACTERS_NUM = 9;
+    // 配置の際に可視出来る味方のユニット数(必ず奇数とすること)
     public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
     // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;

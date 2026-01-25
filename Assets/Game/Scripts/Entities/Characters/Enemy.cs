@@ -1,29 +1,7 @@
-﻿using Frontier.Entities.Ai;
-using Frontier.Stage;
-using System;
-using System.Collections.Generic;
-
-namespace Frontier.Entities
+﻿namespace Frontier.Entities
 {
     public class Enemy : Npc
     {
-        /// <summary>
-        /// 目標座標と標的キャラクターを取得します
-        /// </summary>
-        public void FetchDestinationAndTarget(out int destinationIndex, out Character targetCharacter)
-        {
-            destinationIndex    = _baseAi.GetDestinationGridIndex();
-            targetCharacter     = _baseAi.GetTargetCharacter();
-        }
-
-        /// <summary>
-        /// 目的座標と標的キャラクターを決定する
-        /// </summary>
-        public (bool, bool) DetermineDestinationAndTargetWithAI()
-        {
-            return _baseAi.DetermineDestinationAndTarget( in _params, in _tileCostTable, CharaKey );
-        }
-
         /// <summary>
         /// 初期化します
         /// </summary>
@@ -32,34 +10,25 @@ namespace Frontier.Entities
             base.Init();
         }
 
-        /// <summary>
-        /// 思考タイプを設定します
-        /// </summary>
-        /// <param name="type">設定する思考タイプ</param>
-        public override void SetThinkType( ThinkingType type )
+        public override void OnFieldEnter()
         {
-            _thikType = type;
-
-            // 思考タイプによってemAIに代入する派生クラスを変更する
-            Func<BaseAi>[] emAiFactorys = new Func<BaseAi>[(int)ThinkingType.NUM]
-            {
-                () => _hierarchyBld.InstantiateWithDiContainer<AiBase>(false),        // BASE
-                () => _hierarchyBld.InstantiateWithDiContainer<AiAggressive>(false),  // AGGRESSIVE
-                () => _hierarchyBld.InstantiateWithDiContainer<AiWaiting>(false),     // WAITING
-            };
-
-            _baseAi = emAiFactorys[( int )_thikType]();
-            _baseAi.Init( this );
+            base.OnFieldEnter();
+            LazyInject.GetOrCreate( ref _fieldLogic, () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<EnemyFieldLogic>( gameObject, true, false, "FieldLogic" ) );
+            _fieldLogic.Setup();
+            _fieldLogic.Regist( this );
+            _fieldLogic.Init();
         }
 
-        public override void ToggleDisplayDangerRange()
+        public override void OnBattleEnter( BattleCameraController btlCamCtrl )
         {
-            _actionRangeCtrl.ToggleDisplayDangerRange( in TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
-        }
+            LazyInject.GetOrCreate( ref _battleLogic, () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<EnemyBattleLogic>( gameObject, true, false, "BattleLogic" ) );
+            _battleLogic.Setup();
+            _battleLogic.Regist( this );
+            _battleLogic.Init();
 
-        public override void SetDisplayDangerRange( bool isShow )
-        {
-            _actionRangeCtrl.SetDisplayDangerRange( isShow, in TileColors.Colors[( int ) MeshType.ENEMIES_ATTACKABLE] );
+            _battleLogic.SetThinkType( ThinkingType );
+
+            base.OnBattleEnter( btlCamCtrl );   // 基底クラスのOnBattleEnterは最後に呼ぶ
         }
     }
 }

@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using static Constants;
 
 public class TransformHandler
 {
-    private Transform _transform;
+    private ReadOnlyReference<Transform> _readOnlyTransform;
     private Vector3 _velocity;                              // 速度
     private Vector3 _accel;                                 // 加速度
     private Vector3 _prevPosition;                          // 1フレーム前の位置
@@ -13,24 +11,23 @@ public class TransformHandler
     private Quaternion? _orderdRotation         = null;     // 指示されている回転量(nullは指示がないことを示す)
     private Quaternion? _beforeOrderdRotation   = null;     // 指示される前の回転量(nullは指示がないことを示す)
 
-    public void Init( Transform transform )
+    public void Init()
     {
-        _transform      = transform;
         _velocity       = new Vector3( 0, 0, 0 );
         _accel          = new Vector3( 0, 0, 0 );
-        _prevPosition   = _transform.position;
-        _prevRotation   = _transform.rotation;
+        _prevPosition   = _readOnlyTransform.Value.position;
+        _prevRotation   = _readOnlyTransform.Value.rotation;
         _orderdRotation = null;
     }
 
     public void Update( float deltaTime )
     {
         // 前フレームの位置・回転を保存
-        _prevPosition   = _transform.position;
-        _prevRotation   = _transform.rotation;
+        _prevPosition   = _readOnlyTransform.Value.position;
+        _prevRotation   = _readOnlyTransform.Value.rotation;
 
         // 速度・位置を更新
-        _transform.position += ( _velocity * deltaTime + 0.5f * _accel * deltaTime * deltaTime );
+        _readOnlyTransform.Value.position += ( _velocity * deltaTime + 0.5f * _accel * deltaTime * deltaTime );
         _velocity += ( _accel * deltaTime );
 
         AdjustRotationToXZPlane();  // キャラクターの角度をXZ平面に垂直となるように補正
@@ -38,14 +35,19 @@ public class TransformHandler
         // 向き回転命令
         if( _orderdRotation != null )
         {
-            _transform.rotation = Quaternion.Slerp( _transform.rotation, _orderdRotation.Value, Constants.CHARACTER_ROT_SPEED * DeltaTimeProvider.DeltaTime );
+            _readOnlyTransform.Value.rotation = Quaternion.Slerp( _readOnlyTransform.Value.rotation, _orderdRotation.Value, Constants.CHARACTER_ROT_SPEED * DeltaTimeProvider.DeltaTime );
 
-            float angleDiff = Quaternion.Angle( _transform.rotation, _orderdRotation.Value );
-            if( Mathf.Abs( angleDiff ) < Constants.CHARACTER_ROT_THRESHOLD )
+            float angleDiff = Quaternion.Angle( _readOnlyTransform.Value.rotation, _orderdRotation.Value );
+            if( Mathf.Abs( angleDiff ) < CHARACTER_ROT_THRESHOLD )
             {
                 _orderdRotation = null;
             }
         }
+    }
+
+    public void Regist( Transform transform )
+    {
+        _readOnlyTransform = new ReadOnlyReference<Transform>( transform );
     }
 
     public void ResetVelocityAcceleration()
@@ -62,17 +64,17 @@ public class TransformHandler
 
     public void SetPosition( in Vector3 position )
     {
-        _transform.position = position;
+        _readOnlyTransform.Value.position = position;
     }
 
     public void SetPositionXZ( in Vector3 position )
     {
-        _transform.position = new Vector3( position.x, _transform.position.y, position.z );
+        _readOnlyTransform.Value.position = new Vector3( position.x, _readOnlyTransform.Value.position.y, position.z );
     }
 
     public void SetRotation( in Quaternion rotation )
     {
-        _transform.rotation = rotation;
+        _readOnlyTransform.Value.rotation = rotation;
     }
 
     public void AddVelocityAcceleration( in Vector3 velocity, in Vector3 accel )
@@ -83,17 +85,17 @@ public class TransformHandler
 
     public void AddPosition( in Vector3 position )
     {
-        _transform.position += position;
+        _readOnlyTransform.Value.position += position;
     }
 
     public void AddRotation( in Quaternion rotation )
     {
-        _transform.rotation *= rotation;
+        _readOnlyTransform.Value.rotation *= rotation;
     }
 
     public Vector3 GetPosition()
     {
-        return _transform.position;
+        return _readOnlyTransform.Value.position;
     }
 
     public Vector3 GetPreviousPosition()
@@ -103,7 +105,7 @@ public class TransformHandler
 
     public Quaternion GetRotation()
     {
-        return _transform.rotation;
+        return _readOnlyTransform.Value.rotation;
     }
 
     public Quaternion GetPreviousRotation()
@@ -114,7 +116,7 @@ public class TransformHandler
     public void OrderRotate( in Quaternion rotation )
     {
         _orderdRotation         = rotation;
-        _beforeOrderdRotation   = _transform.rotation;  // 命令発行前の回転を保存
+        _beforeOrderdRotation   = _readOnlyTransform.Value.rotation;  // 命令発行前の回転を保存
     }
 
     /// <summary>
@@ -123,7 +125,7 @@ public class TransformHandler
     /// <param name="targetPos">向きを合わせる位置</param>
     public void RotateToPosition( in Vector3 targetPos )
     {
-        var directionXZ = ( targetPos - _transform.position ).XZ();
+        var directionXZ = ( targetPos - _readOnlyTransform.Value.position ).XZ();
         OrderRotate( Quaternion.LookRotation( directionXZ ) );
     }
 
@@ -177,10 +179,10 @@ public class TransformHandler
     private void AdjustRotationToXZPlane()
     {
         // キャラクターの向きを保ったまま、常にXZ平面に対して垂直にする
-        Vector3 forward = _transform.forward.XZ();
+        Vector3 forward = _readOnlyTransform.Value.forward.XZ();
         if( 0.0001f < forward.sqrMagnitude )
         {
-            _transform.rotation = Quaternion.LookRotation( forward, Vector3.up );
+            _readOnlyTransform.Value.rotation = Quaternion.LookRotation( forward, Vector3.up );
         }
     }
 }

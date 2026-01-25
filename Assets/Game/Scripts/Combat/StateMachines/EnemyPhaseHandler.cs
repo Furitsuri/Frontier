@@ -10,7 +10,7 @@ namespace Frontier.Battle
             // 目標座標や攻撃対象をリセット
             foreach( Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
             {
-                enemy.GetAi().ResetDestinationAndTarget();
+                enemy.BattleLogic.GetAi().ResetDestinationAndTarget();
             }
             // MEMO : 上記リセット後に初期化する必要があるためにこの位置であることに注意
             base.Init();

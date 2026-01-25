@@ -34,10 +34,10 @@ namespace Frontier.Battle
             // 現在選択中のキャラクター情報を取得して移動範囲を表示
             _emOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert( _emOwner != null );
-            var param = _emOwner.Params.CharacterParam;
+            var param = _emOwner.GetStatusRef;
 
             // 移動目標地点が、現在地点であった場合は即時終了
-            if( _emOwner.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
+            if( _emOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
             {
                 _Phase = EmMovePhase.EM_MOVE_END;
             }
@@ -64,13 +64,13 @@ namespace Frontier.Battle
                     }
                     break;
                 case EmMovePhase.EM_MOVE_EXECUTE:
-                    if( _emOwner.UpdateMovePath() )
+                    if( _emOwner.BattleLogic.UpdateMovePath() )
                     {
                         _Phase = EmMovePhase.EM_MOVE_END;
                     }
                     break;
                 case EmMovePhase.EM_MOVE_END:
-                    _emOwner.Params.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );   // 移動したキャラクターの移動コマンドを選択不可にする
+                    _emOwner.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );   // 移動したキャラクターの移動コマンドを選択不可にする
                     Back(); // コマンド選択に戻る
 
                     return true;
@@ -83,7 +83,7 @@ namespace Frontier.Battle
         {
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
-            _emOwner.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();  // タイルメッシュの描画をクリア
+            _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();  // タイルメッシュの描画をクリア
 
             base.ExitState();
         }

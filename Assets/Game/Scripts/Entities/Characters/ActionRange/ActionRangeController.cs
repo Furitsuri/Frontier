@@ -41,19 +41,19 @@ namespace Frontier.Entities
         {
             _actionableTileMap.Init();
 
-            var charaParam  = _owner.Params.CharacterParam;
+            var charaParam  = _owner.GetStatusRef;
             var mvRng       = charaParam.moveRange;
             var jmp         = charaParam.jumpForce;
-            var atkRng      = !_owner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.Params.CharacterParam.attackRange : 0;
+            var atkRng      = !_owner.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.TileCostTable, _owner.CharaKey, ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.CharaKey, ref _actionableTileMap );
         }
 
         public void SetupAttackableRangeData( int dprtTileIdx )
         {
             _actionableTileMap.Init();
 
-            var atkRng = !_owner.Params.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.Params.CharacterParam.attackRange : 0;
+            var atkRng = !_owner.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.GetStatusRef.attackRange : 0;
 
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, _owner.CharaKey, ref _actionableTileMap );
         }
@@ -76,7 +76,7 @@ namespace Frontier.Entities
             // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
             if( _actionableTileMap.IsEmpty() )
             {
-                int dprtTileIndex   = _owner.Params.TmpParam.gridIndex;
+                int dprtTileIndex   = _owner.BattleLogic.BattleParams.TmpParam.gridIndex;
                 var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
                 SetupActionableRangeData( dprtTileIndex, data.Height );
             }
@@ -89,7 +89,7 @@ namespace Frontier.Entities
             // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
             if( _actionableTileMap.IsEmpty() )
             {
-                int dprtTileIndex   = _owner.Params.TmpParam.gridIndex;
+                int dprtTileIndex   = _owner.BattleLogic.BattleParams.TmpParam.gridIndex;
                 var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
                 SetupActionableRangeData( dprtTileIndex, data.Height );
             }

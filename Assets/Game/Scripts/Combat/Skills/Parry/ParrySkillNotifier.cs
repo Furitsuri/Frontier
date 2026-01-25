@@ -76,7 +76,7 @@ namespace Frontier.Combat.Skill
         /// </summary>
         public void ParryRecieveEvent()
         {
-            Character opponent = _skillUser.GetOpponentChara();
+            Character opponent = _skillUser.BattleLogic.GetOpponent();
             NullCheck.AssertNotNull( opponent , nameof( opponent ) );
 
             opponent.GetTimeScale.Reset();
@@ -88,13 +88,13 @@ namespace Frontier.Combat.Skill
         /// </summary>
         public void StartParryJudgeEvent()
         {
-            if ( _skillUser.GetUsingSkillSlotIndexById( ID.SKILL_PARRY ) < 0 ) return;
+            if ( _skillUser.BattleLogic.GetUsingSkillSlotIndexById( ID.SKILL_PARRY ) < 0 ) return;
 
             ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
             if ( parryCtrl == null ) return;
 
             SubscribeParryEvent( parryCtrl );
-            parryCtrl.StartParryEvent( _skillUser, _skillUser.GetOpponentChara() );
+            parryCtrl.StartParryEvent( _skillUser, _skillUser.BattleLogic.GetOpponent() );
             _combatSkillEventCtrl.ScheduleRun();
         }
     }

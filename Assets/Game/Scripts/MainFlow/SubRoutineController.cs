@@ -1,5 +1,6 @@
 ﻿public abstract class SubRoutineController
 {
+    public abstract void Setup();
     public abstract void Init();
     public abstract void Update();
     public abstract void LateUpdate();

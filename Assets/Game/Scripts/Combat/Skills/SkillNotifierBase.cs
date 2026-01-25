@@ -1,19 +1,13 @@
-﻿using Frontier.Combat;
-using Frontier.Entities;
+﻿using Frontier.Entities;
 using Zenject;
 
 namespace Frontier.Combat.Skill
 {
     public class SkillNotifierBase
     {
-        protected Character _skillUser = null;    // スキル使用者
-        protected CombatSkillEventController _combatSkillEventCtrl = null;
+        [Inject] protected CombatSkillEventController _combatSkillEventCtrl = null;
 
-        [Inject]
-        void Construct( CombatSkillEventController combatSkillEventCtrl )
-        {
-            _combatSkillEventCtrl = combatSkillEventCtrl;
-        }
+        protected Character _skillUser = null;    // スキル使用者
 
         /// <summary>
         /// 初期化します

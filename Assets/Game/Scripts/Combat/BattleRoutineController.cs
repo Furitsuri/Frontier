@@ -1,9 +1,10 @@
-﻿using Frontier.Registries;
-using Frontier.Combat.Skill;
+﻿using Frontier.Combat.Skill;
 using Frontier.Entities;
+using Frontier.Registries;
 using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,20 +19,20 @@ namespace Frontier.Battle
         [SerializeField] private GameObject _skillCtrlObject;
         */
 
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private PrefabRegistry _prefabReg          = null;
+        
+        [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
+        [Inject] private PrefabRegistry _prefabReg                  = null;
+        [Inject] private CharacterDictionary _charaDict             = null;
 
-        private int _currentStageIndex = 0;
-        private BattlePhaseType _currentPhase;
-        private BattleFileLoader _btlFileLoader = null;
+        private int _currentStageIndex                  = 0;
+        private BattlePhaseType _currentPhase           = BattlePhaseType.Deployment;
+        private BattleFileLoader _btlFileLoader         = null;
         private BattleCameraController _battleCameraCtrl = null;
         private BattleCharacterCoordinator _btlCharaCdr = null;
-        private BattleTimeScaleController _battleTimeScaleCtrl = null;
-        private BattleRoutinePresenter _presenter = null;
-        private StageController _stgCtrl = null;
+        private BattleRoutinePresenter _presenter       = null;
+        private StageController _stgCtrl                = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
 
-        public BattleTimeScaleController TimeScaleCtrl => _battleTimeScaleCtrl;
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
 
         public IEnumerator Battle()
@@ -48,15 +49,20 @@ namespace Frontier.Battle
             return _battleCameraCtrl;
         }
 
-        private void Setup()
+        // =========================================================
+        // SubRoutineControllerの実装
+        // =========================================================
+        #region SubRoutineController Implementation
+
+        public override void Setup()
         {
             var btlCameraObj = GameObject.FindWithTag( "MainCamera" );
+
             LazyInject.GetOrCreate( ref _stgCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
-            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => btlCameraObj.GetComponent<BattleCameraController>() );
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
-            LazyInject.GetOrCreate( ref _battleTimeScaleCtrl, () => _hierarchyBld.InstantiateWithDiContainer<BattleTimeScaleController>( false ) );
+            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => btlCameraObj.GetComponent<BattleCameraController>() );
 
             if( SkillsData.skillNotifierFactory == null )
             {
@@ -73,54 +79,10 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 次のフェーズへの移行先を取得します
-        /// </summary>
-        /// <param name="current"></param>
-        /// <returns></returns>
-        private BattlePhaseType GetNextPhase( BattlePhaseType current )
-        {
-            if( current == BattlePhaseType.Deployment )
-            {
-                _presenter.SetActiveBattleUI( true );                       // 戦闘用UIの表示をON
-                _stgCtrl.TileDataHdlr().ClearUndeployableColorOfTiles();    // 配置不可タイルの色をクリア
-
-                return BattlePhaseType.Player;          // 配置が終わったら通常ループに移行
-            }
-
-            // 第三勢力キャラクターが存在する場合は、第三勢力キャラクターのフェイズを追加
-            if( 0 < _btlCharaCdr.GetCharacterCount( CHARACTER_TAG.OTHER ) )
-            {
-                return current switch
-                {
-                    BattlePhaseType.Player => BattlePhaseType.Enemy,
-                    BattlePhaseType.Enemy => BattlePhaseType.Other,
-                    BattlePhaseType.Other => BattlePhaseType.Player,
-                    _ => BattlePhaseType.Player
-                };
-            }
-            else
-            {
-                return current switch
-                {
-                    BattlePhaseType.Player => BattlePhaseType.Enemy,
-                    BattlePhaseType.Enemy => BattlePhaseType.Player,
-                    _ => BattlePhaseType.Player
-                };
-            }
-        }
-
-        // =========================================================
-        // SubRoutineControllerの実装
-        // =========================================================
-        #region SubRoutineController Implementation
-
-        /// <summary>
         /// 各種パラメータを初期化させます
         /// </summary>
         public override void Init()
         {
-            Setup();
-
             _stgCtrl.Init();
             _btlCharaCdr.Init();
 
@@ -129,10 +91,11 @@ namespace Frontier.Battle
             if( !Methods.IsDebugScene() )
 #endif
             {
+                PushPlayersToDictionary();
                 _btlFileLoader.CharacterLoad( _currentStageIndex );
             }
 
-            _btlCharaCdr.PlaceAllCharactersAtStartPosition();           // 全キャラクターのステージ初期座標の設定
+            _btlCharaCdr.OnBattleEnter( _battleCameraCtrl );                               // 戦闘開始時の処理を実行
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
@@ -226,5 +189,50 @@ namespace Frontier.Battle
         }
 
         #endregion // SubRoutineController Implementation
+
+        /// <summary>
+        /// 次のフェーズへの移行先を取得します
+        /// </summary>
+        /// <param name="current"></param>
+        /// <returns></returns>
+        private BattlePhaseType GetNextPhase( BattlePhaseType current )
+        {
+            if( current == BattlePhaseType.Deployment )
+            {
+                _presenter.SetActiveBattleUI( true );                       // 戦闘用UIの表示をON
+                _stgCtrl.TileDataHdlr().ClearUndeployableColorOfTiles();    // 配置不可タイルの色をクリア
+
+                return BattlePhaseType.Player;          // 配置が終わったら通常ループに移行
+            }
+
+            // 第三勢力キャラクターが存在する場合は、第三勢力キャラクターのフェイズを追加
+            if( 0 < _btlCharaCdr.GetCharacterCount( CHARACTER_TAG.OTHER ) )
+            {
+                return current switch
+                {
+                    BattlePhaseType.Player => BattlePhaseType.Enemy,
+                    BattlePhaseType.Enemy => BattlePhaseType.Other,
+                    BattlePhaseType.Other => BattlePhaseType.Player,
+                    _ => BattlePhaseType.Player
+                };
+            }
+            else
+            {
+                return current switch
+                {
+                    BattlePhaseType.Player => BattlePhaseType.Enemy,
+                    BattlePhaseType.Enemy => BattlePhaseType.Player,
+                    _ => BattlePhaseType.Player
+                };
+            }
+        }
+
+        private void PushPlayersToDictionary()
+        {
+            foreach( var player in _charaDict.GetPlayerList() )
+            {
+                _btlCharaCdr.AddPlayerToList( player );
+            }
+        }
     }
 }

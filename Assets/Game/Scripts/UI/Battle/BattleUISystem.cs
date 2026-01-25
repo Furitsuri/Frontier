@@ -16,7 +16,7 @@ namespace Frontier.UI
         [Header( "表示キャンバス" )]
         [SerializeField] private Canvas _canvas;
 
-        [Header( "CharacterParameter" )]
+        [Header( "Status" )]
         public BattleParameterUI ParameterView;   // キャラクターパラメータ表示
 
         [Header( "PlayerCommand" )]
@@ -141,7 +141,7 @@ namespace Frontier.UI
 
         public void ShowDamageOnCharacter( Character chara )
         {
-            SetDamageUIPosByCharaPos( chara, chara.Params.TmpParam.expectedHpChange );
+            SetDamageUIPosByCharaPos( chara, chara.BattleLogic.BattleParams.TmpParam.expectedHpChange );
             ToggleDamageUI( true );
         }
 
