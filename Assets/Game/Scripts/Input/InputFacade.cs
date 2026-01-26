@@ -7,7 +7,7 @@ public class InputFacade
     [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
     private InputGuidePresenter _inputGuideView = null;
-    private InputHandler _inputHdlr = null;
+    private InputHandler _inputHdlr             = null;
     private InputCode[] _inputCodes;
 
     /// <summary>
@@ -15,11 +15,12 @@ public class InputFacade
     /// </summary>
     public void Init()
     {
-        // 入力コード情報を全て初期化
-        InitInputCodes();
-
         LazyInject.GetOrCreate( ref _inputHdlr, () => _hierarchyBld.CreateComponentAndOrganize<InputHandler>( true, "InputHandler" ) );
         LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
+        _inputHdlr.Setup();
+        _inputGuideView.Setup();
+
+        SetupInputCodes();  // 入力コード情報を設定します
 
         // 入力コード情報を受け渡す
         _inputHdlr.Init( _inputGuideView, _inputCodes );
@@ -102,9 +103,9 @@ public class InputFacade
     }
 
     /// <summary>
-    /// 判定対象となる入力コードを初期化します
+    /// 判定対象となる入力コードを設定します
     /// </summary>
-    private void InitInputCodes()
+    private void SetupInputCodes()
     {
         _inputCodes = new InputCode[( int ) GuideIcon.NUM_MAX]
         {

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Frontier.Registries;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// 入力ガイド表示における各ガイド部分です。
@@ -25,8 +27,8 @@ public class InputGuideUI : UiMonoBehaviour
         /// <param name="explanation">キーに対する説明文</param>
         public InputGuide( GuideIcon[] icons, InputCodeStringWrapper explWrapper )
         {
-            _icons = icons;
-            _explWrapper = explWrapper;
+            _icons          = icons;
+            _explWrapper    = explWrapper;
         }
     }
 
@@ -89,6 +91,16 @@ public class InputGuideUI : UiMonoBehaviour
         AdjustWidth();          // ガイド幅を調整
     }
 
+    public void Unregister()
+    {
+        for( int i = 1; i < GuideSpriteRenderers.Count; ++i )
+        {
+            Destroy( GuideSpriteRenderers[i].gameObject );
+            GuideSpriteRenderers.RemoveAt( i );
+        }
+        GuideExplanation.text = string.Empty;
+    }
+
     /// <summary>
     /// スプライトの描画優先度を設定します
     /// </summary>
@@ -128,6 +140,26 @@ public class InputGuideUI : UiMonoBehaviour
         return GuideSpriteRenderers[spriteIndex].gameObject.activeSelf;
     }
 
+    public override void Setup()
+    {
+        base.Setup();
+
+        // 子のオブジェクトを取得
+        _childrenObjects = new GameObject[( int ) ChildIndex.NUM];
+        for( int i = 0; i < ( int ) ChildIndex.NUM; ++i )
+        {
+            Transform childTransform = transform.GetChild( i );
+
+            Debug.Assert( childTransform != null, $"Not Found : Child of \"{Enum.GetValues( typeof( ChildIndex ) ).GetValue( i ).ToString()}\"." );
+
+            _childrenObjects[i] = childTransform.gameObject;
+        }
+
+        _rectTransform = gameObject.GetComponent<RectTransform>();
+
+        Debug.Assert( _rectTransform != null, "GetComponent of \"RectTransform\" failed." );
+    }
+
     /// <summary>
     /// TextMeshProのパラメータを初期化します
     /// </summary>
@@ -156,25 +188,5 @@ public class InputGuideUI : UiMonoBehaviour
 
         var guideWidth = textPosX + textRectTransform.sizeDelta.x;
         _rectTransform.sizeDelta = new Vector2( guideWidth, _rectTransform.sizeDelta.y );
-    }
-
-    public override void Setup()
-    {
-        base.Setup();
-
-        // 子のオブジェクトを取得
-        _childrenObjects = new GameObject[( int ) ChildIndex.NUM];
-        for( int i = 0; i < ( int ) ChildIndex.NUM; ++i )
-        {
-            Transform childTransform = transform.GetChild( i );
-
-            Debug.Assert( childTransform != null, $"Not Found : Child of \"{Enum.GetValues( typeof( ChildIndex ) ).GetValue( i ).ToString()}\"." );
-
-            _childrenObjects[i] = childTransform.gameObject;
-        }
-
-        _rectTransform = gameObject.GetComponent<RectTransform>();
-
-        Debug.Assert( _rectTransform != null, "GetComponent of \"RectTransform\" failed." );
     }
 }
