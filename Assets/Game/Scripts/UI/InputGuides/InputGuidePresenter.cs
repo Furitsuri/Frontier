@@ -67,6 +67,14 @@ public sealed class InputGuidePresenter
 #endif
     };
 
+    public void Setup()
+    {
+        LazyInject.GetOrCreate( ref _inputGuideBar, () => _uiSystem.GeneralUi.InputGuideView );
+        LazyInject.GetOrCreate( ref _guideUiArrray, () => new InputGuideUI[( int ) GuideIcon.NUM_MAX] );
+
+        _inputGuideBar.Setup();
+    }
+
     /// <summary>
     /// 初期化します
     /// </summary>
@@ -75,11 +83,7 @@ public sealed class InputGuidePresenter
     {
         Debug.Assert( spriteTailNoString.Length == ( int ) GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。" );
 
-        LazyInject.GetOrCreate( ref _inputGuideBar, () => _uiSystem.GeneralUi.InputGuideView );
-        LazyInject.GetOrCreate( ref _guideUiArrray, () => new InputGuideUI[( int ) GuideIcon.NUM_MAX] );
-
         _inputCodes = Array.AsReadOnly( inputCodes );
-        _inputGuideBar.Setup();
         LoadSprites();
         InitGuideUi();
     }
@@ -99,12 +103,15 @@ public sealed class InputGuidePresenter
         {
             var code = _inputCodes[i];
 
+            _guideUiArrray[i].Unregister();
             _guideUiArrray[i].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
             _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
         }
 
         TransitFadeMode();  // フェード状態の遷移
         _inputGuideBar.gameObject.SetActive( EvaluateActiveGuideUiCount() > 0 ); // ガイドUIが1つでもあればガイドバーを表示
+
+        
     }
 
     /// <summary>

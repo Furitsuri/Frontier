@@ -23,6 +23,10 @@ public class InputHandler : MonoBehaviour
     private InputGuidePresenter _inputGuideView = null;     // 入力ガイド表示
     private ReadOnlyCollection<InputCode> _inputCodes;      // InputFacade内のInputCodeの参照値
 
+    public void Setup()
+    {
+    }
+
     /// <summary>
     /// 初期化します
     /// </summary>
