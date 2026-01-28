@@ -70,7 +70,7 @@ namespace Frontier.Battle
                     }
                     break;
                 case EmMovePhase.EM_MOVE_END:
-                    _emOwner.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );   // 移動したキャラクターの移動コマンドを選択不可にする
+                    _emOwner.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );   // 移動したキャラクターの移動コマンドを選択不可にする
                     Back(); // コマンド選択に戻る
 
                     return true;

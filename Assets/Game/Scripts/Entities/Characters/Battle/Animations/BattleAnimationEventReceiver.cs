@@ -34,6 +34,14 @@ namespace Frontier.Entities
         /// </summary>
         void Update() { }
 
+        public void Dispose()
+        {
+            _readOnlyOwner              = null;
+            _readOnlyBullet             = null;
+            _readOnlyBattleLogic        = null;
+            _readOnlyBattleCameraCtrl   = null;
+        }
+
         public void Regist( Character owner, BattleCameraController btlCamCtrl )
         {
             _readOnlyOwner              = new ReadOnlyReference<Character>( owner );
@@ -67,13 +75,13 @@ namespace Frontier.Entities
             var targetCoordinate = _readOnlyBattleLogic.Value.GetOpponent().transform.position;
             targetCoordinate.y += _readOnlyBattleLogic.Value.GetOpponent().CameraParam.UICameraLookAtCorrectY;
             _readOnlyBullet.Value.SetTargetCoordinate( targetCoordinate );
-            var gridLength = _stageCtrl.CalcurateGridLength( _readOnlyBattleLogic.Value.BattleParams.TmpParam.gridIndex, _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.BattleParams.TmpParam.gridIndex );
+            var gridLength = _stageCtrl.CalcurateGridLength( _readOnlyOwner.Value.RefBattleParams.TmpParam.gridIndex, _readOnlyBattleLogic.Value.GetOpponent().RefBattleParams.TmpParam.gridIndex );
             _readOnlyBullet.Value.SetFlightTimeFromGridLength( gridLength );
             _readOnlyBullet.Value.StartUpdateCoroutine( HurtOpponentByAnimation );
             _readOnlyBattleCameraCtrl.Value.TransitNextPhaseCameraParam( null, _readOnlyBullet.Value.transform );   // 発射と同時に次のカメラパラメータを適用
 
             // この攻撃によって相手が倒されるかどうかを判定
-            _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.IsDeclaredDead = ( _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP + _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.BattleParams.TmpParam.expectedHpChange ) <= 0;
+            _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.IsDeclaredDead = ( _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP + _readOnlyBattleLogic.Value.GetOpponent().RefBattleParams.TmpParam.expectedHpChange ) <= 0;
             if( !_readOnlyBattleLogic.Value.GetOpponent().BattleLogic.IsDeclaredDead && 0 < AtkRemainingNum )
             {
                 --AtkRemainingNum;
@@ -93,10 +101,10 @@ namespace Frontier.Entities
             }
 
             IsAttacked = true;
-            _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.BattleParams.TmpParam.expectedHpChange;
+            _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().RefBattleParams.TmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
-            if( _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.BattleParams.TmpParam.expectedHpChange != 0 )
+            if( _readOnlyBattleLogic.Value.GetOpponent().RefBattleParams.TmpParam.expectedHpChange != 0 )
             {
                 if( _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP <= 0 )
                 {
@@ -126,10 +134,10 @@ namespace Frontier.Entities
             }
 
             IsAttacked = true;
-            _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.BattleParams.TmpParam.expectedHpChange;
+            _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().RefBattleParams.TmpParam.expectedHpChange;
 
             //　ダメージが0の場合はモーションを取らない
-            if( _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.BattleParams.TmpParam.expectedHpChange != 0 )
+            if( _readOnlyBattleLogic.Value.GetOpponent().RefBattleParams.TmpParam.expectedHpChange != 0 )
             {
                 if( _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP <= 0 )
                 {

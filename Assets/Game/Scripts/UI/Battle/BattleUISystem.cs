@@ -141,7 +141,7 @@ namespace Frontier.UI
 
         public void ShowDamageOnCharacter( Character chara )
         {
-            SetDamageUIPosByCharaPos( chara, chara.BattleLogic.BattleParams.TmpParam.expectedHpChange );
+            SetDamageUIPosByCharaPos( chara, chara.RefBattleParams.TmpParam.expectedHpChange );
             ToggleDamageUI( true );
         }
 

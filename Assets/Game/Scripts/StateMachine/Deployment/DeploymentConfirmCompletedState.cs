@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Frontier.Battle;
+using System.Collections.Generic;
+using Zenject;
 using static Constants;
 
 namespace Frontier.StateMachine

@@ -107,7 +107,7 @@ namespace Frontier.Battle
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
             if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
-                return !character.BattleLogic.BattleParams.TmpParam.IsEndAction();
+                return !character.RefBattleParams.TmpParam.IsEndAction();
             }
             // 敵キャラクター、その他のキャラクターの場合、レンジ表示を行うため常に選択可能
             else

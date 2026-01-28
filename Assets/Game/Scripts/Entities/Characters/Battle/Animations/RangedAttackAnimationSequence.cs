@@ -36,7 +36,7 @@ namespace Frontier.Entities
         public void StartSequence()
         {
             _animReceiver.IsAttacked           = false;
-            _animReceiver.AtkRemainingNum   = _character.BattleLogic.BattleParams.SkillModifiedParam.AtkNum - 1;   // 攻撃回数を1消費
+            _animReceiver.AtkRemainingNum   = _character.RefBattleParams.SkillModifiedParam.AtkNum - 1;   // 攻撃回数を1消費
             var attackAnimtag               = AttackAnimTags[_animReceiver.AtkRemainingNum];
 
             _character.AnimCtrl.SetAnimator(attackAnimtag);

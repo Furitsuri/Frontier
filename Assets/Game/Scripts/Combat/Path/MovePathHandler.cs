@@ -29,6 +29,14 @@ public class MovePathHandler
         _owner = owner;
     }
 
+    public void Dispose()
+    {
+        _proposedMovePath.Clear();
+        _proposedMovePath = null;
+        _owner = null;
+        _stageCtrl = null;
+    }
+
     /// <summary>
     /// 目標とするタイルを更新するため、インデックスをインクリメントします
     /// </summary>

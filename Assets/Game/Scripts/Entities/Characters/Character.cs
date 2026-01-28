@@ -21,6 +21,13 @@ namespace Frontier.Entities
         [Header( "ステータス" )]
         [SerializeField] protected Status _status;
 
+        /// <summary>
+        /// Unityの仕様上、実行後に追加したコンポーネントについては[SerializeField]や[Serializable]が設定されていても、
+        /// Inspector上に表示されないため、本来BattleLogicBaseに持たせるべきパラメータ群をここで定義する
+        /// </summary>
+        [Header( "戦闘用一時パラメータ" )]
+        [SerializeField] private BattleParameters _btlParams;
+
         [Header( "戦闘表示用カメラパラメータ" )]
         [SerializeField] private CameraParameter _camParam;
 
@@ -40,10 +47,10 @@ namespace Frontier.Entities
         public int StatusEffectBitFlag { get; set; } = 0;                           // キャラクターに設定されているステータス効果のビットフラグ
         public float ElapsedTime { get; set; } = 0f;
         public CharacterKey CharaKey { get; set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );    // キャラクターのハッシュキー
-        public AnimationController AnimCtrl => _animCtrl;                           // アニメーションコントローラの取得
-        public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
-        // public BattleParameters BattleLogic.BattleParams => _params;                               // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
-        public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
+        public AnimationController AnimCtrl => _animCtrl;                                           // アニメーションコントローラの取得
+        public TimeScale GetTimeScale => _timeScale;                                                // タイムスケールの取得
+        public ref BattleParameters RefBattleParams => ref _btlParams;                                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
+        public TransformHandler GetTransformHandler => _transformHdlr;                              // Transform操作クラスの取得
         public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
         public List<(Material material, Color originalColor)> TextureMaterialAndColors => _textureMaterialsAndColors;
@@ -92,6 +99,7 @@ namespace Frontier.Entities
 
         virtual public void Setup()
         {
+            LazyInject.GetOrCreate( ref _btlParams, () => _hierarchyBld.InstantiateWithDiContainer<BattleParameters>( false ) );
             LazyInject.GetOrCreate( ref _animCtrl, () => _hierarchyBld.InstantiateWithDiContainer<AnimationController>( false ) );
             LazyInject.GetOrCreate( ref _transformHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TransformHandler>( false ) );
 
@@ -99,8 +107,9 @@ namespace Frontier.Entities
             {
                 LazyInject.GetOrCreate( ref _bullet, () => _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>( _bulletObject, this.gameObject, "Bullet", false, false ) );
             }
-
+            
             _status.Setup();
+            _btlParams.Setup();
 
             _transformHdlr.Regist( this.transform );
             _animCtrl.Regist( GetComponent<Animator>() );   // アニメーションコントローラにプレハブに登録されたアニメーションを登録
@@ -113,6 +122,7 @@ namespace Frontier.Entities
         virtual public void Init()
         {
             _status.Init();
+            _btlParams.Init();
             _camParam.Init();
             _transformHdlr.Init();
 
@@ -148,7 +158,16 @@ namespace Frontier.Entities
         {
             LazyInject.GetOrCreate( ref _animReceiver, () => _hierarchyBld.AddComponentWithDi<BattleAnimationEventReceiver>( gameObject ) );
             _animReceiver.Regist( this, btlCamCtrl );
-            
+        }
+
+        virtual public void OnBattleExit()
+        {
+            if( _animReceiver != null )
+            {
+                _animReceiver.Dispose();
+                Destroy( _animReceiver );
+                _animReceiver = null;
+            }
         }
 
         /// <summary>

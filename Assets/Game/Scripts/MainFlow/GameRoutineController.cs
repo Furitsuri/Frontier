@@ -88,6 +88,28 @@ namespace Frontier
             var hero = _characterFactory.CreateCharacter( (CHARACTER_TAG)data.CharacterTag, 0, data );
 
             _characterDictionary.Add( hero.CharaKey, hero );    // 生成した主人公を登録
+
+            CharacterStatusData archerData = new CharacterStatusData()
+            {
+                Name = "Archer",
+                CharacterTag = ( int ) CHARACTER_TAG.PLAYER,
+                CharacterIndex = 1,
+                MaxHP = 30,
+                Atk = 20,
+                Def = 10,
+                MoveRange = 5,
+                JumpForce = 2,
+                AtkRange = 2,
+                ActGaugeMax = 5,
+                ActRecovery = 2,
+                InitGridIndex = 0,
+                InitDir = ( int ) Direction.FORWARD,
+                Skills = new int[] { 1, -1, -1, -1 },
+            };
+
+            var archer = _characterFactory.CreateCharacter( ( CHARACTER_TAG ) archerData.CharacterTag, 1, archerData );
+
+            _characterDictionary.Add( archer.CharaKey, archer );    // テスト用にもう一人登録
         }
     }
 }

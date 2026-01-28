@@ -24,27 +24,27 @@ namespace Frontier.Entities
         /// <returns>切替の有無</returns>
         public override bool ToggleUseSkillks( int index )
         {
-            _readOnlyOwner.Value.BattleLogic.BattleParams.TmpParam.isUseSkills[index] = !_readOnlyOwner.Value.BattleLogic.BattleParams.TmpParam.isUseSkills[index];
+            _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[index] = !_readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[index];
 
             int skillID = ( int ) _readOnlyOwner.Value.GetStatusRef.equipSkills[index];
             var skillData = SkillsData.data[skillID];
 
-            if( _readOnlyOwner.Value.BattleLogic.BattleParams.TmpParam.isUseSkills[index] )
+            if( _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[index] )
             {
                 _readOnlyOwner.Value.GetStatusRef.consumptionActionGauge += skillData.Cost;
-                _readOnlyOwner.Value.BattleLogic.BattleParams.SkillModifiedParam.AtkNum += skillData.AddAtkNum;
-                _readOnlyOwner.Value.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification += skillData.AddAtkMag;
-                _readOnlyOwner.Value.BattleLogic.BattleParams.SkillModifiedParam.DefMagnification += skillData.AddDefMag;
+                _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.AtkNum += skillData.AddAtkNum;
+                _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.AtkMagnification += skillData.AddAtkMag;
+                _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.DefMagnification += skillData.AddDefMag;
             }
             else
             {
                 _readOnlyOwner.Value.GetStatusRef.consumptionActionGauge -= skillData.Cost;
-                _readOnlyOwner.Value.BattleLogic.BattleParams.SkillModifiedParam.AtkNum -= skillData.AddAtkNum;
-                _readOnlyOwner.Value.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
-                _readOnlyOwner.Value.BattleLogic.BattleParams.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
+                _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.AtkNum -= skillData.AddAtkNum;
+                _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
+                _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
             }
 
-            _uiSystem.BattleUi.GetPlayerParamSkillBox( index ).SetFlickEnabled( _readOnlyOwner.Value.BattleLogic.BattleParams.TmpParam.isUseSkills[index] );
+            _uiSystem.BattleUi.GetPlayerParamSkillBox( index ).SetFlickEnabled( _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[index] );
 
             return true;
         }

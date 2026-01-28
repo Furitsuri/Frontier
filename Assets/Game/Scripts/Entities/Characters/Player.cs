@@ -33,7 +33,7 @@ namespace Frontier.Entities
         /// </summary>
         public void HoldBeforeMoveInfo()
         {
-            _prevMoveInfo.tmpParam  = _battleLogic.BattleParams.TmpParam.Clone();
+            _prevMoveInfo.tmpParam  = RefBattleParams.TmpParam.Clone();
             _prevMoveInfo.rotDir    = _transformHdlr.GetRotation();
         }
 
@@ -50,8 +50,8 @@ namespace Frontier.Entities
         /// </summary>
         public void RewindToPreviousState()
         {
-            _battleLogic.BattleParams.TmpParam = _prevMoveInfo.tmpParam;
-            BattleLogic.SetPositionOnStage( _battleLogic.BattleParams.TmpParam.gridIndex, _prevMoveInfo.rotDir );
+            RefBattleParams.TmpParam = _prevMoveInfo.tmpParam;
+            BattleLogic.SetPositionOnStage( RefBattleParams.TmpParam.gridIndex, _prevMoveInfo.rotDir );
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Frontier.Entities
             {
                 if( i == (int)COMMAND_TAG.MOVE )
                 {
-                    if (!_battleLogic.BattleParams.TmpParam.IsEndCommand(COMMAND_TAG.MOVE))
+                    if (!RefBattleParams.TmpParam.IsEndCommand(COMMAND_TAG.MOVE))
                     {
                         isPossible = false;
                         break;
@@ -75,7 +75,7 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    if (_battleLogic.BattleParams.TmpParam.IsEndCommand((COMMAND_TAG)i))
+                    if (RefBattleParams.TmpParam.IsEndCommand((COMMAND_TAG)i))
                     {
                         isPossible = false;
                         break;
@@ -111,6 +111,13 @@ namespace Frontier.Entities
             _battleLogic.Init();
 
             base.OnBattleEnter( btlCamCtrl );   // 基底クラスのOnBattleEnterは最後に呼ぶ
+        }
+
+        public override void OnBattleExit()
+        {
+            _battleLogic.Dispose();
+            _battleLogic = null;
+            base.OnBattleExit();
         }
     }
 }

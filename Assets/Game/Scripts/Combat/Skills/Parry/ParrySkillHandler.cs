@@ -185,8 +185,8 @@ namespace Frontier.Combat.Skill
             _ui.gameObject.SetActive( false );
 
             // 防御側の防御力と攻撃側の攻撃力からパリィ判定範囲を算出して設定
-            int selfDef = ( int ) Mathf.Floor( ( _useParryCharacter.GetStatusRef.Def + _useParryCharacter.BattleLogic.BattleParams.ModifiedParam.Def ) * _useParryCharacter.BattleLogic.BattleParams.SkillModifiedParam.DefMagnification );
-            int oppoAtk = ( int ) Mathf.Floor( ( _attackCharacter.GetStatusRef.Atk + _attackCharacter.BattleLogic.BattleParams.ModifiedParam.Atk ) * _attackCharacter.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification );
+            int selfDef = ( int ) Mathf.Floor( ( _useParryCharacter.GetStatusRef.Def + _useParryCharacter.RefBattleParams.ModifiedParam.Def ) * _useParryCharacter.RefBattleParams.SkillModifiedParam.DefMagnification );
+            int oppoAtk = ( int ) Mathf.Floor( ( _attackCharacter.GetStatusRef.Atk + _attackCharacter.RefBattleParams.ModifiedParam.Atk ) * _attackCharacter.RefBattleParams.SkillModifiedParam.AtkMagnification );
             CalcurateParryRingParam( selfDef, oppoAtk );
 
             // パリィ中のキャラクタースローモーション速度を設定
@@ -290,14 +290,14 @@ namespace Frontier.Combat.Skill
             switch( result )
             {
                 case JudgeResult.SUCCESS:
-                    attackChara.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param1;
+                    attackChara.RefBattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param1;
                     break;
                 case JudgeResult.FAILED:
-                    useParryChara.BattleLogic.BattleParams.SkillModifiedParam.DefMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param2;
+                    useParryChara.RefBattleParams.SkillModifiedParam.DefMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param2;
                     break;
                 case JudgeResult.JUST:
-                    attackChara.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param1;
-                    useParryChara.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param3;
+                    attackChara.RefBattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param1;
+                    useParryChara.RefBattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) ID.SKILL_PARRY].Param3;
                     break;
                 default:
                     Debug.Assert( false );

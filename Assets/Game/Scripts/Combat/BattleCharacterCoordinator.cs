@@ -13,7 +13,8 @@ namespace Frontier.Battle
     /// </summary>
     public class BattleCharacterCoordinator
     {
-        [Inject] private StageController _stgCtrl           = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl    = null;
+        [Inject] private StageController _stgCtrl               = null;
 
         private List<Player> _candidatePlayers          = new List<Player>(Constants.CHARACTER_MAX_NUM);   // ステージ配置候補プレイヤーリスト
         private List<Player> _players                   = new List<Player>(Constants.CHARACTER_MAX_NUM);
@@ -80,11 +81,14 @@ namespace Frontier.Battle
 
             Debug.Assert( addActionsByType.Length == ( int ) CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。" );
 
+            chara.OnBattleEnter( _btlRtnCtrl.GetBtlCameraCtrl );
+            PlaceCharacterAtStartPosition( chara );
             addActionsByType[( int ) chara.GetStatusRef.characterTag]( chara );
         }
 
         public void AddPlayerToList( Character pl )
         {
+            pl.OnBattleEnter( _btlRtnCtrl.GetBtlCameraCtrl );
             var status = pl.GetStatusRef;
             CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
             _players.Add( pl as Player );
@@ -111,6 +115,7 @@ namespace Frontier.Battle
             removeActionsByType[( int ) chara.GetStatusRef.characterTag]( chara );
             _allCharacters.Remove( chara );
             _characterDict.Remove( in charaKey );
+            chara.OnBattleExit();
         }
 
         /// <summary>
@@ -122,16 +127,6 @@ namespace Frontier.Battle
             {
                 character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
             }
-        }
-
-        public void OnBattleEnter( BattleCameraController btlCamCtrl )
-        {
-            foreach( var character in _allCharacters )
-            {
-                character.OnBattleEnter( btlCamCtrl );
-            }
-
-            PlaceAllCharactersAtStartPosition();
         }
 
         /// <summary>
@@ -176,7 +171,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    if (!c.BattleLogic.BattleParams.TmpParam.IsEndAction())
+                    if (!c.RefBattleParams.TmpParam.IsEndAction())
                     {
                         return false;
                     }
@@ -318,7 +313,7 @@ namespace Frontier.Battle
         {
             List<Character> list = new List<Character>();
 
-            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.BattleLogic.BattleParams.TmpParam.gridIndex ).CharaStandPos;
+            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y = 0f;
 
@@ -326,7 +321,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    Vector3 targetPos = _stgCtrl.GetTileStaticData( c.BattleLogic.BattleParams.TmpParam.gridIndex ).CharaStandPos;
+                    Vector3 targetPos = _stgCtrl.GetTileStaticData( c.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
 
                     var direction   = targetPos - basePos;
                     direction.y     = 0f;
@@ -355,7 +350,7 @@ namespace Frontier.Battle
 
             foreach( var chara in charaList )
             {
-                int range = _stgCtrl.CalcurateTotalRange(baseChara.BattleLogic.BattleParams.TmpParam.gridIndex, chara.BattleLogic.BattleParams.TmpParam.gridIndex);
+                int range = _stgCtrl.CalcurateTotalRange(baseChara.RefBattleParams.TmpParam.gridIndex, chara.RefBattleParams.TmpParam.gridIndex);
                 if( range < totalRange )
                 {
                     totalRange  = range;
@@ -399,7 +394,7 @@ namespace Frontier.Battle
             {
                 foreach (var c in group)
                 {
-                    c.BattleLogic.BattleParams.TmpParam.EndAction();
+                    c.RefBattleParams.TmpParam.EndAction();
                 }
             }
         }
@@ -416,11 +411,11 @@ namespace Frontier.Battle
                 return;
             }
 
-            int targetDef   = (int)Mathf.Floor((target.GetStatusRef.Def + target.BattleLogic.BattleParams.ModifiedParam.Def) * target.BattleLogic.BattleParams.SkillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.GetStatusRef.Atk + attacker.BattleLogic.BattleParams.ModifiedParam.Atk) * attacker.BattleLogic.BattleParams.SkillModifiedParam.AtkMagnification);
+            int targetDef   = (int)Mathf.Floor((target.GetStatusRef.Def + target.RefBattleParams.ModifiedParam.Def) * target.RefBattleParams.SkillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.GetStatusRef.Atk + attacker.RefBattleParams.ModifiedParam.Atk) * attacker.RefBattleParams.SkillModifiedParam.AtkMagnification);
             int changeHP    = (targetDef - attackerAtk);
 
-            target.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.BattleLogic.BattleParams.SkillModifiedParam.AtkNum, 0) );
+            target.RefBattleParams.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.RefBattleParams.SkillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>
@@ -464,18 +459,8 @@ namespace Frontier.Battle
             }
         }
 
-        /// <summary>
-        /// キャラクター達をステージの初期座標に配置します
-        /// </summary>
-        private void PlaceAllCharactersAtStartPosition()
+        private void PlaceCharacterAtStartPosition( Character chara )
         {
-            List<Character>[] charaLists = new List<Character>[]
-            {
-                new List<Character>(_players),
-                new List<Character>(_enemies),
-                new List<Character>(_others)
-            };
-
             // 向きの値を設定
             Quaternion[] rot = new Quaternion[( int ) Direction.NUM_MAX];
             for( int i = 0; i < ( int ) Direction.NUM_MAX; ++i )
@@ -483,17 +468,11 @@ namespace Frontier.Battle
                 rot[i] = Quaternion.AngleAxis( 90 * i, Vector3.up );
             }
 
-            foreach( var charaList in charaLists )
-            {
-                foreach( var chara in charaList )
-                {
-                    int gridIndex = chara.GetStatusRef.initGridIndex;                                               // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-                    chara.BattleLogic.BattleParams.TmpParam.SetCurrentGridIndex( gridIndex );                                // ステージ上のグリッド位置の設定
-                    chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
-                    chara.GetTransformHandler.SetRotation( rot[( int ) chara.GetStatusRef.initDir] );                  // 向きを設定
-                    _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
-                }
-            }
+            int gridIndex = chara.GetStatusRef.initGridIndex;                                               // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
+            chara.RefBattleParams.TmpParam.SetCurrentGridIndex( gridIndex );                                // ステージ上のグリッド位置の設定
+            chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
+            chara.GetTransformHandler.SetRotation( rot[( int ) chara.GetStatusRef.initDir] );               // 向きを設定
+            _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
         }
     }
 }

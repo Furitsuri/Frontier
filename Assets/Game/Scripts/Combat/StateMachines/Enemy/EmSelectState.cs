@@ -44,7 +44,7 @@ namespace Frontier.Battle
                 // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
                 if( !_isValidTarget )
                 {
-                    _currentEnemy.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    _currentEnemy.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                 }
 
                 break;
@@ -95,7 +95,7 @@ namespace Frontier.Battle
         {
             if( !_isValidDestination ) return false;
 
-            if( em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
+            if( em.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
 
             return true;
         }
@@ -109,7 +109,7 @@ namespace Frontier.Battle
         {
             if( !_isValidTarget ) return false;
 
-            if( em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
+            if( em.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
 
             return true;
         }
@@ -121,13 +121,13 @@ namespace Frontier.Battle
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if( em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( em.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
-                em.BattleLogic.BattleParams.TmpParam.EndAction();
+                em.RefBattleParams.TmpParam.EndAction();
                 return true;
             }
 
-            if( em.BattleLogic.BattleParams.TmpParam.IsEndAction() ) return true;
+            if( em.RefBattleParams.TmpParam.IsEndAction() ) return true;
 
             return false;
         }
