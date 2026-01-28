@@ -216,6 +216,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _deploymentCharacterDisplayPrefab: {fileID: 1124319393661308937, guid: 7b971dc0ad991164cbca45df0bd4b72d, type: 3}
   _focusCharaParamUI: {fileID: 915352196}
+  _leftInputArrow: {fileID: 956858064}
+  _rightInputArrow: {fileID: 1307475941}
 --- !u!114 &1275183
 MonoBehaviour:
   m_ObjectHideFlags: 0

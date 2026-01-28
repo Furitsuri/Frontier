@@ -47,7 +47,7 @@ namespace Frontier.Battle
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter = _plOwner;
-            int dprtTileIndex = _attackCharacter.BattleLogic.BattleParams.TmpParam.gridIndex;
+            int dprtTileIndex = _attackCharacter.RefBattleParams.TmpParam.gridIndex;
             _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
             _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
@@ -90,9 +90,9 @@ namespace Frontier.Battle
                             prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
                         }
 
-                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
+                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.RefBattleParams.TmpParam.GetCurrentGridIndex() );
                         _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-                        var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
+                        var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.RefBattleParams.TmpParam.GetCurrentGridIndex() );
                         _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
                     }
 
@@ -116,7 +116,7 @@ namespace Frontier.Battle
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -158,15 +158,15 @@ namespace Frontier.Battle
             // 予測ダメージと使用スキルコスト見積もりをリセット
             if( null != _attackCharacter )
             {
-                _attackCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+                _attackCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
                 _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
-                _attackCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+                _attackCharacter.RefBattleParams.SkillModifiedParam.Reset();
             }
             if( null != _targetCharacter )
             {
-                _targetCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+                _targetCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
                 _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-                _targetCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+                _targetCharacter.RefBattleParams.SkillModifiedParam.Reset();
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア

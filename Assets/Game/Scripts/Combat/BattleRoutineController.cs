@@ -19,10 +19,8 @@ namespace Frontier.Battle
         [SerializeField] private GameObject _skillCtrlObject;
         */
 
-        
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
         [Inject] private PrefabRegistry _prefabReg                  = null;
-        [Inject] private CharacterDictionary _charaDict             = null;
 
         private int _currentStageIndex                  = 0;
         private BattlePhaseType _currentPhase           = BattlePhaseType.Deployment;
@@ -34,19 +32,11 @@ namespace Frontier.Battle
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
 
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
+        public BattleCameraController GetBtlCameraCtrl => _battleCameraCtrl;
 
         public IEnumerator Battle()
         {
             yield return null;
-        }
-
-        /// <summary>
-        /// 戦闘カメラコントローラを取得します
-        /// </summary>
-        /// <returns>戦闘カメラコントローラ</returns>
-        public BattleCameraController GetCameraController()
-        {
-            return _battleCameraCtrl;
         }
 
         // =========================================================
@@ -91,11 +81,9 @@ namespace Frontier.Battle
             if( !Methods.IsDebugScene() )
 #endif
             {
-                PushPlayersToDictionary();
                 _btlFileLoader.CharacterLoad( _currentStageIndex );
             }
 
-            _btlCharaCdr.OnBattleEnter( _battleCameraCtrl );                               // 戦闘開始時の処理を実行
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
@@ -224,14 +212,6 @@ namespace Frontier.Battle
                     BattlePhaseType.Enemy => BattlePhaseType.Player,
                     _ => BattlePhaseType.Player
                 };
-            }
-        }
-
-        private void PushPlayersToDictionary()
-        {
-            foreach( var player in _charaDict.GetPlayerList() )
-            {
-                _btlCharaCdr.AddPlayerToList( player );
             }
         }
     }

@@ -7,11 +7,17 @@ namespace Frontier.UI
 {
     public class DeploymentCharacterSelectUI : UiMonoBehaviour
     {
-        [Header( "配置候補キャラクター表示洋プレハブ" )]
+        [Header( "配置候補キャラクター表示用プレハブ" )]
         [SerializeField] private DeploymentCharacterDisplay _deploymentCharacterDisplayPrefab;
 
         [Header( "キャラクターパタメータ表示UI" )]
         [SerializeField] private CharacterParameterUI _focusCharaParamUI;
+
+        [Header( "左方向入力矢印" )]
+        [SerializeField] private GameObject _leftInputArrow;
+
+        [Header( "右方向入力矢印" )]
+        [SerializeField] private GameObject _rightInputArrow;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -57,6 +63,16 @@ namespace Frontier.UI
             _focusCharaParamUI.gameObject.SetActive( isActive );
         }
 
+        public void SetActiveLeftInputArrow( bool isLeftActive )
+        {
+            _leftInputArrow.SetActive( isLeftActive );
+        }
+
+        public void SetActiveRightInputArrow( bool isRightActive )
+        {
+            _rightInputArrow.SetActive( isRightActive );
+        }
+
         public void StartSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
         {
             Vector2 SlideGoalPos = ( direction == DeploymentPhasePresenter.SlideDirection.LEFT ) ?
@@ -81,6 +97,12 @@ namespace Frontier.UI
         {
             for( int i = 0; i < DEPLOYMENT_SHOWABLE_CHARACTERS_NUM; ++i )
             {
+                if( selectCandidates[i] == null ) {
+                    _deploymentCharacterDisplays[i].gameObject.SetActive( false );
+                    continue;
+                }
+
+                _deploymentCharacterDisplays[i].gameObject.SetActive( true );
                 _deploymentCharacterDisplays[i].AssignSelectCandidate( ref selectCandidates[i] );
             }
         }
@@ -111,6 +133,9 @@ namespace Frontier.UI
 
                 _deploymentCharacterDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
             }
+
+            _leftInputArrow.SetActive( true );
+            _rightInputArrow.SetActive( true );
         }
     }
 }

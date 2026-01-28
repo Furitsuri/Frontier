@@ -1,8 +1,11 @@
-﻿namespace Frontier.Entities
+﻿using System;
+
+namespace Frontier.Entities
 {
     /// <summary>
     /// 特定のスキル使用時のみに上乗せされるパラメータです
     /// </summary>
+    [Serializable]
     public struct SkillModifiedParameter
     {
         public int AtkNum;

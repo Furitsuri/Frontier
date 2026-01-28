@@ -1,4 +1,5 @@
 ﻿using Frontier.Combat;
+using System;
 
 namespace Frontier.Entities
 {

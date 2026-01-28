@@ -21,6 +21,14 @@ namespace Frontier.Entities
             _attackableTileMap.Clear();
         }
 
+        public void Dispose()
+        {
+            _moveableTileMap.Clear();
+            _attackableTileMap.Clear();
+            _moveableTileMap = null;
+            _attackableTileMap = null;
+        }
+
         public void AddMoveableTile( int index, TileDynamicData addTileData )
         {
             _moveableTileMap[index] = addTileData;

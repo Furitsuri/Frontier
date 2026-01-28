@@ -52,7 +52,7 @@ namespace Frontier
 
         public void Init()
         {
-            _btlCamCtrl     = _btlRtnCtrl.GetCameraController();
+            _btlCamCtrl     = _btlRtnCtrl.GetBtlCameraCtrl;
             _diedCharacter  = null;
             _elapsedTime    = 0f;
             _phase          = Phase.START;
@@ -403,10 +403,10 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var tileData = _stageCtrl.GetTileStaticData( attacker.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
+            var tileData = _stageCtrl.GetTileStaticData( attacker.RefBattleParams.TmpParam.GetCurrentGridIndex() );
             _attackCharacter.transform.position = tileData.CharaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            tileData = _stageCtrl.GetTileStaticData( target.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
+            tileData = _stageCtrl.GetTileStaticData( target.RefBattleParams.TmpParam.GetCurrentGridIndex() );
             _targetCharacter.transform.position = tileData.CharaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
         }

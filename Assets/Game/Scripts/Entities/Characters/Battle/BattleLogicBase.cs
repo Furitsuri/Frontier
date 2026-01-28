@@ -12,9 +12,6 @@ namespace Frontier.Entities
 {
     public class BattleLogicBase : MonoBehaviour
     {
-		[Header( "戦闘パラメータ群" )]
-		[SerializeField] protected BattleParameters _battleParams;
-
 		[Inject] protected IUiSystem _uiSystem                  = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected StageController _stageCtrl           = null;
@@ -37,7 +34,6 @@ namespace Frontier.Entities
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public int[] TileCostTable => _tileCostTable;                               // タイル移動コストテーブルの取得
         public ICombatAnimationSequence CombatAnimSeq => _combatAnimSeq;
-		public BattleParameters BattleParams => _battleParams;
 		public BaseAi GetAi() => _baseAi;                                           // AIの取得
         public Character GetOpponent() => _opponent;
         public ActionRangeController ActionRangeCtrl => _actionRangeCtrl;           // 行動範囲管理クラスの取得
@@ -61,17 +57,19 @@ namespace Frontier.Entities
             tag => (tag == CHARACTER_TAG.PLAYER || tag == CHARACTER_TAG.ENEMY),  // OTHERにおける攻撃可能勢力
         };
 
-        /// <summary>
-        /// 特に何もしませんが、アクティブ設定のチェックボックスをInspector上に出現させるために定義
-        /// </summary>
         void Update()
         {
             // 移動と攻撃が終了していれば、行動不可に遷移
-            var endCommand = _battleParams.TmpParam.isEndCommand;
+            var endCommand = _readOnlyOwner.Value.RefBattleParams.TmpParam.isEndCommand;
             if( endCommand[( int ) COMMAND_TAG.MOVE] && endCommand[( int ) COMMAND_TAG.ATTACK] )
             {
                 BeImpossibleAction();
             }
+        }
+
+        public void Dispose()
+        {
+            _actionRangeCtrl.Dispose();
         }
 
         public void Regist( Character owner )
@@ -87,7 +85,7 @@ namespace Frontier.Entities
         /// <param name="dir">キャラクター角度</param>
         public void SetPositionOnStage( int tileIndex, in Quaternion dir )
         {
-            _battleParams.TmpParam.SetCurrentGridIndex( tileIndex );
+            _readOnlyOwner.Value.RefBattleParams.TmpParam.SetCurrentGridIndex( tileIndex );
             _transformHdlr.SetPosition( _stageCtrl.GetTileStaticData( tileIndex ).CharaStandPos );
             _transformHdlr.SetRotation( dir );
         }
@@ -144,7 +142,7 @@ namespace Frontier.Entities
         /// </summary>
         public void BePossibleAction()
         {
-            _battleParams.TmpParam.Reset();
+            _readOnlyOwner.Value.RefBattleParams.TmpParam.Reset();
 
             // マテリアルの色味を通常の色味に戻す
             for( int i = 0; i < _readOnlyOwner.Value.TextureMaterialAndColors.Count; ++i )
@@ -161,7 +159,7 @@ namespace Frontier.Entities
         {
             for( int i = 0; i < ( int ) COMMAND_TAG.NUM; ++i )
             {
-                _battleParams.TmpParam.SetEndCommandStatus( ( COMMAND_TAG ) i, true );
+                _readOnlyOwner.Value.RefBattleParams.TmpParam.SetEndCommandStatus( ( COMMAND_TAG ) i, true );
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -189,7 +187,7 @@ namespace Frontier.Entities
         {
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( !_battleParams.TmpParam.isUseSkills[i] ) { continue; }
+                if( !_readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[i] ) { continue; }
 
                 if( _readOnlyOwner.Value.GetStatusRef.equipSkills[i] == skillID ) { return i; }
             }
@@ -212,7 +210,7 @@ namespace Frontier.Entities
             }
 
             // スキル使用ONの状態であれば、OFFにするだけなので、コストチェックする必要がない
-            if( _battleParams.TmpParam.isUseSkills[skillIdx] )
+            if( _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[skillIdx] )
             {
                 return true;
             }
@@ -239,17 +237,14 @@ namespace Frontier.Entities
         /// </summary>
         public void ResetOnEndOfAttackSequence()
         {
-            _opponent = null;                       // 対戦相手情報をリセット
-            _battleParams.TmpParam.ResetUseSkill(); // 使用スキル情報をリセット
+            _opponent = null;                                               // 対戦相手情報をリセット
+            _readOnlyOwner.Value.RefBattleParams.TmpParam.ResetUseSkill();  // 使用スキル情報をリセット
         }
 
         virtual public void Setup()
         {
-            LazyInject.GetOrCreate( ref _battleParams, () => _hierarchyBld.InstantiateWithDiContainer<BattleParameters>( false ) );
             LazyInject.GetOrCreate( ref _actionRangeCtrl, () => _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false ) );
             _skillNotifier = new SkillNotifierBase[EQUIPABLE_SKILL_MAX_NUM];
-
-            _battleParams.Setup();
 
             IsDeclaredDead = false;
             _animSeqfactories = new Func<ICombatAnimationSequence>[]
@@ -263,7 +258,7 @@ namespace Frontier.Entities
         virtual public void Init()
         {
             _isPrevMoving = false;
-            _battleParams.Init();
+            _readOnlyOwner.Value.RefBattleParams.Init();
             _actionRangeCtrl.Init( _readOnlyOwner.Value );
 
             InitSkillNotifier();                                // スキルの通知クラスを初期化
@@ -330,7 +325,7 @@ namespace Frontier.Entities
             {
                 _transformHdlr.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
                 _transformHdlr.ResetVelocityAcceleration();     // 速度、加速度をリセット
-                _battleParams.TmpParam.gridIndex = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
+                _readOnlyOwner.Value.RefBattleParams.TmpParam.gridIndex = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
                 pathHdlr.IncrementFocusedWaypointIndex();                            // 目標インデックス値をインクリメントして次の目標タイルに更新
 
                 // 最終インデックスに到達している場合は移動アニメーションを停止して終了
@@ -358,7 +353,7 @@ namespace Frontier.Entities
                 // 移動開始の場合は速度と向きを設定
                 if( !_isPrevMoving )
                 {
-                    var currentTileData = _stageCtrl.GetTileStaticData( _battleParams.TmpParam.gridIndex );
+                    var currentTileData = _stageCtrl.GetTileStaticData( _readOnlyOwner.Value.RefBattleParams.TmpParam.gridIndex );
 
                     _transformHdlr.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
                     _transformHdlr.SetRotation( Quaternion.LookRotation( focusDirXZ ) );

@@ -34,7 +34,7 @@ namespace Frontier.Battle
             Debug.Assert( _attackCharacter != null );
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _attackCharacter.BattleLogic.BattleParams.TmpParam.gridIndex );
+            _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _attackCharacter.RefBattleParams.TmpParam.gridIndex );
             _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
@@ -50,9 +50,9 @@ namespace Frontier.Battle
             _playerSkillNames = _targetCharacter.GetStatusRef.GetEquipSkillNames();
 
             // 攻撃者の向きを設定
-            var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
+            var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.RefBattleParams.TmpParam.GetCurrentGridIndex() );
             _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-            var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex() );
+            var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.RefBattleParams.TmpParam.GetCurrentGridIndex() );
             _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
 
             // 攻撃シーケンスを初期化
@@ -91,7 +91,7 @@ namespace Frontier.Battle
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    _attackCharacter.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                     // コマンド選択に戻る
                     Back();
 
@@ -116,8 +116,8 @@ namespace Frontier.Battle
             // アタッカーキャラクターの設定を解除
             _stageCtrl.ClearGridCursroBind();
             // 予測ダメージをリセット
-            _attackCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            _targetCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _attackCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _targetCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
@@ -133,9 +133,9 @@ namespace Frontier.Battle
             }
             // 使用スキルコスト見積もりをリセット
             _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _attackCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+            _attackCharacter.RefBattleParams.SkillModifiedParam.Reset();
             _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _targetCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+            _targetCharacter.RefBattleParams.SkillModifiedParam.Reset();
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、

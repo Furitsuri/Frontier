@@ -1,8 +1,11 @@
-﻿namespace Frontier.Entities
+﻿using System;
+
+namespace Frontier.Entities
 {
     /// <summary>
     /// バフ・デバフなどで上乗せされるパラメータです
     /// </summary>
+    [Serializable]
     public struct ModifiedParameter
     {
         // 攻撃力

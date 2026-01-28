@@ -36,7 +36,7 @@ namespace Frontier.Battle
         /// </summary>
         private void SetupMovePath()
         {
-            int departingTileIndex = _plOwner.BattleLogic.BattleParams.TmpParam.gridIndex;
+            int departingTileIndex = _plOwner.RefBattleParams.TmpParam.gridIndex;
             int destinationTileIndex = _stageCtrl.GetCurrentGridIndex();
             MovePathHandler pathHdlr = _plOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr;
             bool isEndPathTrace = pathHdlr.IsEndPathTrace();
@@ -71,7 +71,7 @@ namespace Frontier.Battle
             if( !Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
-            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.BattleLogic.BattleParams.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
+            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.RefBattleParams.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
 
             return ranges.Item1 + ranges.Item2 <= _plOwner.GetStatusRef.attackRange;
         }
@@ -81,7 +81,7 @@ namespace Frontier.Battle
             base.Init();
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _plOwner.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( _plOwner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
@@ -92,7 +92,7 @@ namespace Frontier.Battle
             _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
-            int atkRange            = !_plOwner.BattleLogic.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _plOwner.GetStatusRef.attackRange : 0;
+            int atkRange            = !_plOwner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _plOwner.GetStatusRef.attackRange : 0;
             var param               = _plOwner.GetStatusRef;
             float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
@@ -126,7 +126,7 @@ namespace Frontier.Battle
 
                 case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _plOwner.BattleLogic.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+                    _plOwner.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
                     Back();     // コマンド選択に戻る
 
                     return true;

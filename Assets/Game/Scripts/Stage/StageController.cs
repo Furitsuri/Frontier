@@ -20,14 +20,13 @@ namespace Frontier.Stage
             public Quaternion rotation;
         }
 
-        [Inject] private IStageDataProvider _stageDataProvider = null;
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private PrefabRegistry _prefabReg = null;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        [Inject] private PrefabRegistry _prefabReg              = null;
 
         private GridCursorController _gridCursorCtrl;
         private StageFileLoader _stageFileLoader;
         private TileDataHandler _tileDataHdlr;
-        private List<TileMesh> _tileMeshes;
 		private Footprint _footprint;
 
 		public TileDataHandler TileDataHdlr() => _tileDataHdlr;
@@ -41,8 +40,6 @@ namespace Frontier.Stage
             LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
 
             _gridCursorCtrl.Init( 0 );
-
-            _tileMeshes = new List<TileMesh>();
         }
 
         #region PUBLIC_METHOD
@@ -64,7 +61,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterTile( Character character )
         {
-            _gridCursorCtrl.Index = character.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex();
+            _gridCursorCtrl.Index = character.RefBattleParams.TmpParam.GetCurrentGridIndex();
         }
 
         /// <summary>
@@ -122,7 +119,7 @@ namespace Frontier.Stage
         /// <param name="footprint">保持する値</param>
         public void HoldFootprint( Character chara )
         {
-            _footprint.gridIndex = chara.BattleLogic.BattleParams.TmpParam.gridIndex;
+            _footprint.gridIndex = chara.RefBattleParams.TmpParam.gridIndex;
             _footprint.rotation = chara.transform.rotation;
         }
 
@@ -133,7 +130,7 @@ namespace Frontier.Stage
         public void FollowFootprint( Character character )
         {
             _gridCursorCtrl.Index = _footprint.gridIndex;
-            character.BattleLogic.BattleParams.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
+            character.RefBattleParams.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
             TileStaticData tileData = _tileDataHdlr.GetCurrentTileDatas().Item1;
             character.GetTransformHandler.SetPosition( tileData.CharaStandPos );
             character.GetTransformHandler.SetRotation( _footprint.rotation );

@@ -21,7 +21,7 @@ namespace Frontier.Battle
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex    = _plOwner.BattleLogic.BattleParams.TmpParam.gridIndex;
+            _curentGridIndex    = _plOwner.RefBattleParams.TmpParam.gridIndex;
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
@@ -57,8 +57,8 @@ namespace Frontier.Battle
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _attackCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            _targetCharacter.BattleLogic.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _attackCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _targetCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
@@ -77,9 +77,9 @@ namespace Frontier.Battle
 
             // 使用スキルコスト見積もりをリセット
             _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _attackCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+            _attackCharacter.RefBattleParams.SkillModifiedParam.Reset();
             _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _targetCharacter.BattleLogic.BattleParams.SkillModifiedParam.Reset();
+            _targetCharacter.RefBattleParams.SkillModifiedParam.Reset();
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示

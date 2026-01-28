@@ -1340,6 +1340,16 @@ MonoBehaviour:
     initGridIndex: 0
     initDir: 0
     equipSkills: 
+  _btlParams:
+    _modifiedParam:
+      Atk: 0
+      Def: 0
+      moveRange: 0
+      recoveryActionGauge: 0
+    _skillModifiedParam:
+      AtkNum: 0
+      AtkMagnification: 0
+      DefMagnification: 0
   _camParam:
     OffsetOnAtkSequence: {x: 0, y: 0, z: 0}
     UICameraLengthY: 1.2

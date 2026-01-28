@@ -36,6 +36,13 @@ namespace Frontier.Entities
             _readOnlyActionableTileMap  = new ReadOnlyReference<ActionableTileMap>( actionableTileMap );
         }
 
+        public void Dispose()
+        {
+            ClearTileMeshes();
+            _owner = null;
+            _readOnlyActionableTileMap = null;
+        }
+
         /// <summary>
         /// 攻撃範囲の表示・非表示を切り替えます
         /// </summary>

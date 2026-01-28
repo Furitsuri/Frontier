@@ -141,7 +141,7 @@ namespace Frontier.Entities.Ai
             // 各プレイヤーが存在するグリッドの評価値を計算する
             foreach ( Character chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.OTHER ) )
             {
-                int destGridIndex       = chara.BattleLogic.BattleParams.TmpParam.GetCurrentGridIndex();
+                int destGridIndex       = chara.RefBattleParams.TmpParam.GetCurrentGridIndex();
                 ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
                 evaluateValue += CalcurateEvaluateAttack( _owner.GetStatusRef, chara.GetStatusRef );  // 攻撃による評価値を加算

@@ -42,7 +42,7 @@ namespace Frontier.UI
 
             _characterCamera?.Update( _character.CameraParam );
 
-            UpdateParamRender( _character, _character.GetStatusRef, _character.BattleLogic.BattleParams.SkillModifiedParam );  // パラメータ表示を反映
+            UpdateParamRender( _character, _character.GetStatusRef, _character.RefBattleParams.SkillModifiedParam );  // パラメータ表示を反映
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Frontier.UI
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
-            selectCharacter.BattleLogic.BattleParams.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
+            selectCharacter.RefBattleParams.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
 
             totalHpChange = Mathf.Clamp( totalHpChange, -param.CurHP, param.MaxHP - param.CurHP );
             if( 0 < totalHpChange )

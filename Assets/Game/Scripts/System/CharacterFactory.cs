@@ -1,15 +1,13 @@
-﻿using Frontier;
-using Frontier.Entities;
+﻿using Frontier.Entities;
 using Frontier.Registries;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using Zenject;
 using static Frontier.BattleFileLoader;
 
 public class CharacterFactory
 {
-    [Inject] HierarchyBuilderBase _hierarchyBld     = null;
+    [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
     [Inject] private PrefabRegistry _prefabReg      = null;
 
     static private List<GameObject>[] CharacterPrefabs  = null;

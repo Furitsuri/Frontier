@@ -18,10 +18,10 @@ public class DeploymentPhasePresenter : PhasePresenterBase
 
     [Inject] protected BattleRoutineController _btlRtnCtrl = null;
 
-    private bool _isSlideAnimationPlaying = false;
+    private bool _isSlideAnimationPlaying           = false;
     private SlideDirection _slideDirection;
-    private Character _currentGridSelectCharacter = null;
-    private DeploymentUISystem _deployUiSystem = null;
+    private Character _currentGridSelectCharacter   = null;
+    private DeploymentUISystem _deployUiSystem      = null;
     private DeploymentCandidate[] _focusDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
     private ReadOnlyCollection<DeploymentCandidate> _refDeploymentCandidates;
     private Action<SlideDirection> _onCompletedeSlideAnimation;
@@ -54,6 +54,11 @@ public class DeploymentPhasePresenter : PhasePresenterBase
         int centralIndex    = arrayLength / 2;
         int candidateCount  = _refDeploymentCandidates.Count;
 
+        if( candidateCount <= centralIndex )
+        {
+            candidateCount = arrayLength;
+        }
+
         // 中央のインデックスを基準に、左右に配置するキャラクターを決定していく
         // 配列の端を超えた場合はループさせる
         for( int i = 0; i < _focusDeployments.Length; ++i )
@@ -61,8 +66,12 @@ public class DeploymentPhasePresenter : PhasePresenterBase
             // 「中央」を中心に左右に割り当てる（不足分はループする）
             int offset = ( i - centralIndex + candidateCount ) % candidateCount;
             int targetIndex = ( focusCharaIndex + offset ) % candidateCount;
-            
-            _focusDeployments[i] = _refDeploymentCandidates[targetIndex];
+
+            if( targetIndex.IsBetween( 0, _refDeploymentCandidates.Count - 1 ) )
+            {
+                _focusDeployments[i] = _refDeploymentCandidates[targetIndex];
+            }
+            else { _focusDeployments[i] = null; }
         }
 
         _deployUiSystem.CharacterSelectUi.AssignSelectCandidates( ref _focusDeployments );
@@ -89,6 +98,16 @@ public class DeploymentPhasePresenter : PhasePresenterBase
     public void SetActiveCharacterSelectUis( bool isActive )
     {
         _deployUiSystem.CharacterSelectUi.SetActive( isActive );
+    }
+
+    public void SetActiveLeftInputArrow( bool isActiveLeft )
+    {
+        _deployUiSystem.CharacterSelectUi.SetActiveLeftInputArrow( isActiveLeft );
+    }
+
+    public void SetActiveRightInputArrow( bool isActiveRight )
+    {
+        _deployUiSystem.CharacterSelectUi.SetActiveRightInputArrow( isActiveRight );
     }
 
     /// <summary>
