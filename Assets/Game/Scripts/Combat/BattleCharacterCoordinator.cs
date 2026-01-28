@@ -16,13 +16,7 @@ namespace Frontier.Battle
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
         [Inject] private StageController _stgCtrl               = null;
 
-        private List<Player> _candidatePlayers          = new List<Player>(Constants.CHARACTER_MAX_NUM);   // ステージ配置候補プレイヤーリスト
-        private List<Player> _players                   = new List<Player>(Constants.CHARACTER_MAX_NUM);
-        private List<Enemy> _enemies                    = new List<Enemy>(Constants.CHARACTER_MAX_NUM);
-        private List<Other> _others                     = new List<Other>(Constants.CHARACTER_MAX_NUM);
-        private List<Character> _allCharacters          = new List<Character>();
         private CharacterDictionary _characterDict      = null; // キャラクターハッシュテーブル(あくまで戦闘用のインスタンスであるため、DiContainerで定義されているものとは別のインスタンスです)
-        private Dictionary<CHARACTER_TAG, IEnumerable<Character>> _characterGroups;
         
         private CharacterKey _diedCharacterKey;
         private CharacterKey _battleBossCharacterKey;
@@ -40,13 +34,6 @@ namespace Frontier.Battle
             _escortTargetCharacterKey   = new CharacterKey( CHARACTER_TAG.NONE, -1 );
 
             LazyInject.GetOrCreate( ref _characterDict, () => new CharacterDictionary() );
-
-            _characterGroups = new Dictionary<CHARACTER_TAG, IEnumerable<Character>>
-            {
-                { CHARACTER_TAG.PLAYER, _players },
-                { CHARACTER_TAG.ENEMY,  _enemies },
-                { CHARACTER_TAG.OTHER,  _others }
-            };
         }
 
         /// <summary>
@@ -57,15 +44,16 @@ namespace Frontier.Battle
         {
             Action<Character>[] addActionsByType = new Action<Character>[]
             {
-                // ステージ配置候補のPLAYER
-                c => _candidatePlayers.Add(c as Player),
+                // PLAYER
+                c =>
+                {
+                    // プレイヤーに関しては、配置設定をユーザーが行う都合上、AddPlayerToListを使用するためここでは何もしない
+                },
                 // ENEMY
                 c =>
                 {
                     var status = chara.GetStatusRef;
                     CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
-                    _enemies.Add(c as Enemy);
-                    _allCharacters.Add( chara );
                     _characterDict.Add( in charaKey, chara );
                 },
                 // OTHER
@@ -73,8 +61,6 @@ namespace Frontier.Battle
                 {
                     var status = chara.GetStatusRef;
                     CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
-                    _others.Add(c as Other);
-                    _allCharacters.Add( chara );
                     _characterDict.Add( in charaKey, chara );
                 }
             };
@@ -91,8 +77,6 @@ namespace Frontier.Battle
             pl.OnBattleEnter( _btlRtnCtrl.GetBtlCameraCtrl );
             var status = pl.GetStatusRef;
             CharacterKey charaKey = new CharacterKey( status.characterTag, status.characterIndex );
-            _players.Add( pl as Player );
-            _allCharacters.Add( pl );
             _characterDict.Add( in charaKey, pl );
         }
 
@@ -105,15 +89,6 @@ namespace Frontier.Battle
             var chara = _characterDict.Get( charaKey );
             NullCheck.AssertNotNull( chara, nameof( chara ) );
 
-            Action<Character>[] removeActionsByType = new Action<Character>[( int ) CHARACTER_TAG.NUM]
-            {
-                c => _players.Remove(c as Player), // PLAYER
-                c => _enemies.Remove(c as Enemy),  // ENEMY
-                c => _others.Remove(c as Other)    // OTHER
-            };
-
-            removeActionsByType[( int ) chara.GetStatusRef.characterTag]( chara );
-            _allCharacters.Remove( chara );
             _characterDict.Remove( in charaKey );
             chara.OnBattleExit();
         }
@@ -123,21 +98,9 @@ namespace Frontier.Battle
         /// </summary>
         public void ClearAllTileMeshes()
         {
-            foreach( var character in _allCharacters )
+            foreach( var character in _characterDict.GetAllCharacters() )
             {
                 character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
-            }
-        }
-
-        /// <summary>
-        /// 配置候補プレイヤーをリストから順番に取得します
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<Player> GetCandidatePlayerEnumerable()
-        {
-            foreach( var player in _candidatePlayers )
-            {
-                yield return player;
             }
         }
 
@@ -147,7 +110,7 @@ namespace Frontier.Battle
         /// <returns>キャラクター</returns>
         public IEnumerable<Character> GetCharacterEnumerable( params CHARACTER_TAG[] tags )
         {
-            foreach ( var character in _allCharacters )
+            foreach ( var character in _characterDict.GetAllCharacters() )
             {
                 if ( tags.Contains( character.GetStatusRef.characterTag ) )
                 {
@@ -165,18 +128,16 @@ namespace Frontier.Battle
         /// 全ての行動可能キャラクターの行動が終了したかを判定します
         /// </summary>
         /// <returns>全ての行動可能キャラクターの行動が終了したか</returns>
-        public bool IsEndAllArmyWaitCommand(CHARACTER_TAG tag)
+        public bool IsEndAllArmyWaitCommand( CHARACTER_TAG tag )
         {
-            if (_characterGroups.TryGetValue(tag, out var group))
+            foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                foreach (var c in group)
+                if( !c.RefBattleParams.TmpParam.IsEndAction() )
                 {
-                    if (!c.RefBattleParams.TmpParam.IsEndAction())
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
+
             return true;
         }
 
@@ -261,21 +222,19 @@ namespace Frontier.Battle
         /// </summary>
         /// <status name="tag">軍勢のタグ</status>
         /// <returns>対象軍勢が全滅しているか</returns>
-        public bool CheckCharacterAnnihilated(CHARACTER_TAG tag)
+        public bool CheckCharacterAnnihilated( CHARACTER_TAG tag )
         {
             bool isAnnihilated = true;
 
-            if (_characterGroups.TryGetValue(tag, out var group))
+            foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                foreach (var c in group)
+                if( !c.GetStatusRef.IsDead() )
                 {
-                    if (!c.GetStatusRef.IsDead())
-                    {
-                        isAnnihilated = false;
-                        break;
-                    }
+                    isAnnihilated = false;
+                    break;
                 }
             }
+
             return isAnnihilated;
         }
 
@@ -313,26 +272,23 @@ namespace Frontier.Battle
         {
             List<Character> list = new List<Character>();
 
-            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
+            Vector3 basePos = _stgCtrl.GetTileStaticData( baseChara.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y = 0f;
 
-            if (_characterGroups.TryGetValue(tag, out var group))
+            foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                foreach (var c in group)
+                Vector3 targetPos = _stgCtrl.GetTileStaticData( c.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
+
+                var direction = targetPos - basePos;
+                direction.y = 0f;
+                direction = direction.normalized;
+
+                // 内積で向きが一致しているかを確認
+                float dot = Vector3.Dot( baseForward, direction );
+                if( Constants.DOT_THRESHOLD < dot )
                 {
-                    Vector3 targetPos = _stgCtrl.GetTileStaticData( c.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
-
-                    var direction   = targetPos - basePos;
-                    direction.y     = 0f;
-                    direction       = direction.normalized;
-
-                    // 内積で向きが一致しているかを確認
-                    float dot = Vector3.Dot(baseForward, direction);
-                    if( Constants.DOT_THRESHOLD < dot )
-                    {
-                        list.Add(c);
-                    }
+                    list.Add( c );
                 }
             }
 
@@ -370,9 +326,9 @@ namespace Frontier.Battle
         {
             switch( tag )
             {
-                case CHARACTER_TAG.PLAYER: return _players.Count;
-                case CHARACTER_TAG.ENEMY: return _enemies.Count;
-                case CHARACTER_TAG.OTHER: return _others.Count;
+                case CHARACTER_TAG.PLAYER: return _characterDict.GetCharacterList( CHARACTER_TAG.PLAYER ).Count;
+                case CHARACTER_TAG.ENEMY: return _characterDict.GetCharacterList( CHARACTER_TAG.ENEMY ).Count;
+                case CHARACTER_TAG.OTHER: return _characterDict.GetCharacterList( CHARACTER_TAG.OTHER ).Count;
                 default: return -1;
             }
         }
@@ -388,14 +344,11 @@ namespace Frontier.Battle
         /// 主にターンを終了させる際に使用します
         /// </summary>
         /// /// <status name="tag">指定する軍勢のタグ</status>
-        public void ApplyAllArmyEndAction(CHARACTER_TAG tag)
+        public void ApplyAllArmyEndAction( CHARACTER_TAG tag )
         {
-            if (_characterGroups.TryGetValue(tag, out var group))
+            foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                foreach (var c in group)
-                {
-                    c.RefBattleParams.TmpParam.EndAction();
-                }
+                c.RefBattleParams.TmpParam.EndAction();
             }
         }
 
@@ -425,12 +378,9 @@ namespace Frontier.Battle
         {
             for( int i = 0; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
-                if( _characterGroups.TryGetValue( ( CHARACTER_TAG ) i, out var group ) )
+                foreach( var c in _characterDict.GetCharacterList( ( CHARACTER_TAG ) i ) )
                 {
-                    foreach( var c in group )
-                    {
-                        c.BattleLogic.BePossibleAction();
-                    }
+                    c.BattleLogic.BePossibleAction();
                 }
             }
         }
@@ -450,12 +400,9 @@ namespace Frontier.Battle
         /// <status name="tag">キャラクター群のタグ</status>
         public void RecoveryActionGaugeForGroup(CHARACTER_TAG tag)
         {
-            if (_characterGroups.TryGetValue(tag, out var group))
+            foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                foreach (var c in group)
-                {
-                    c.GetStatusRef.RecoveryActionGauge();
-                }
+                c.GetStatusRef.RecoveryActionGauge();
             }
         }
 

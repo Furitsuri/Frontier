@@ -281,7 +281,7 @@ namespace Frontier.StateMachine
         {
             _deploymentCandidates.Clear();
 
-            foreach( var player in _characterDict.GetPlayerList() )
+            foreach( var player in _characterDict.GetCharacterList( CHARACTER_TAG.PLAYER ) )
             {
                 player.gameObject.SetActive( false );
                 var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * player.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
