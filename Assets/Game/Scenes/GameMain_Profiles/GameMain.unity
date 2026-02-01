@@ -11112,10 +11112,6 @@ PrefabInstance:
       propertyPath: _layerMaskIndex
       value: 6
       objectReference: {fileID: 0}
-    - target: {fileID: 5626079772233172074, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
-      propertyPath: _cameraLayeredName
-      value: Character
-      objectReference: {fileID: 0}
     - target: {fileID: 7911500139776428092, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
       propertyPath: m_Name
       value: GridCursorSelectCharaParamUI
