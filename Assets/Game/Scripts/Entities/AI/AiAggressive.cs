@@ -11,8 +11,8 @@ namespace Frontier.Entities.Ai
 {
     public class AiAggressive : AiBase
     {
-        override protected float ATTACKABLE_VALUE { get; } = 50;
-        override protected float WITHIN_RANGE_VALUE { get; } = 50;
+        protected override float ATTACKABLE_VALUE { get; } = 50;
+        protected override float WITHIN_RANGE_VALUE { get; } = 50;
 
         /// <summary>
         /// 攻撃対象が自身の攻撃範囲に存在するかを取得します
@@ -87,7 +87,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        override protected void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates )
+        protected override void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates )
         {
             (int gridIndex, Character target, float eValue) maxEvaluate = (-1, null, int.MinValue);
 
@@ -119,7 +119,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        override protected void DetermineDestinationAndTargetOutOfAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts )
+        protected override void DetermineDestinationAndTargetOutOfAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts )
         {
             // 最大評価ルート保存用
             (List<WaypointInformation> path, float evaluateValue) maxEvaluateRoute = (null, float.MinValue);

@@ -19,7 +19,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>
-        override protected void AdaptSelectPlayer()
+        protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;

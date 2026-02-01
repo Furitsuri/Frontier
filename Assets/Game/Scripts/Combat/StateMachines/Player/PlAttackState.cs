@@ -198,7 +198,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>
-        override protected void AdaptSelectPlayer()
+        protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
@@ -209,7 +209,7 @@ namespace Frontier.Battle
         /// 方向入力の受付可否を判定します
         /// </summary>
         /// <returns>方向入力の受付可否</returns>
-        override protected bool CanAcceptDirection()
+        protected override bool CanAcceptDirection()
         {
             if( !CanAcceptDefault() ) { return false; }
             if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
@@ -222,7 +222,7 @@ namespace Frontier.Battle
         /// 決定入力の受付可否を判定します
         /// </summary>
         /// <returns>決定入力の受付可否</returns>
-        override protected bool CanAcceptConfirm()
+        protected override bool CanAcceptConfirm()
         {
             if( !CanAcceptDefault() ) { return false; }
             if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
@@ -234,7 +234,7 @@ namespace Frontier.Battle
         /// キャンセル入力の受付可否を判定します
         /// </summary>
         /// <returns>キャンセル入力の受付可否</returns>
-        override protected bool CanAcceptCancel()
+        protected override bool CanAcceptCancel()
         {
             // Confirmと同一
             return CanAcceptConfirm();
@@ -244,7 +244,7 @@ namespace Frontier.Battle
         /// PL_ATTACK_SELECT_GRID時のみ、相手のステータス情報を表示可能とします
         /// </summary>
         /// <returns></returns>
-        override protected bool CanAcceptInfo()
+        protected override bool CanAcceptInfo()
         {
             if( !CanAcceptDefault() ) { return false; }
             if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
@@ -255,7 +255,7 @@ namespace Frontier.Battle
         /// サブ1の入力の受付可否を判定します
         /// </summary>
         /// <returns>サブ1の入力の受付可否</returns>
-        override protected bool CanAcceptSub1()
+        protected override bool CanAcceptSub1()
         {
             if( !CanAcceptConfirm() ) return false;
 
@@ -264,7 +264,7 @@ namespace Frontier.Battle
             return _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
         }
 
-        override protected bool CanAcceptSub2()
+        protected override bool CanAcceptSub2()
         {
             if( !CanAcceptConfirm() ) return false;
 
@@ -273,7 +273,7 @@ namespace Frontier.Battle
             return _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
         }
 
-        override protected bool CanAcceptSub3()
+        protected override bool CanAcceptSub3()
         {
             if( !CanAcceptConfirm() ) return false;
 
@@ -282,7 +282,7 @@ namespace Frontier.Battle
             return _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
         }
 
-        override protected bool CanAcceptSub4()
+        protected override bool CanAcceptSub4()
         {
             if( !CanAcceptConfirm() ) return false;
 
@@ -296,7 +296,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             if( _stageCtrl.OperateTargetSelect( dir ) )
             {
@@ -311,7 +311,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) return false;
 
@@ -344,7 +344,7 @@ namespace Frontier.Battle
             return false;
         }
 
-        override protected bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( bool isCancel )
         {
             if( !isCancel ) { return false; }
 
@@ -366,28 +366,28 @@ namespace Frontier.Battle
             return false;
         }
 
-        override protected bool AcceptSub1( bool isInput )
+        protected override bool AcceptSub1( bool isInput )
         {
             if( !isInput ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 0 );
         }
 
-        override protected bool AcceptSub2( bool isInput )
+        protected override bool AcceptSub2( bool isInput )
         {
             if( !isInput ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 1 );
         }
 
-        override protected bool AcceptSub3( bool isInput )
+        protected override bool AcceptSub3( bool isInput )
         {
             if( !isInput ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 2 );
         }
 
-        override protected bool AcceptSub4( bool isInput )
+        protected override bool AcceptSub4( bool isInput )
         {
             if( !isInput ) return false;
 

@@ -3,6 +3,7 @@
 public class UserDomain
 {
     public int Money { get; private set; }
+    public int StageLevel { get; private set; }
     /*
     public IReadOnlyList<Unit> Units => _units;
 

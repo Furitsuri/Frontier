@@ -34,7 +34,7 @@ namespace Frontier.Battle
             _presenter.Update();
         }
 
-        override protected void CreateTree()
+        protected override void CreateTree()
         {
             // 遷移木の作成
             /*

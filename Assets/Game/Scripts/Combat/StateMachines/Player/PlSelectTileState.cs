@@ -94,7 +94,7 @@ namespace Frontier.Battle
         /// キャラクターコマンドへ遷移可能かを判定します
         /// </summary>
         /// <returns>コマンド選択が可能か</returns>
-        override protected bool CanAcceptConfirm()
+        protected override bool CanAcceptConfirm()
         {
             if( 0 <= TransitIndex )
             {
@@ -120,7 +120,7 @@ namespace Frontier.Battle
         /// グリッド上にキャラクターが存在していればステータス画面に遷移可能と判定します
         /// </summary>
         /// <returns></returns>
-        override protected bool CanAcceptInfo()
+        protected override bool CanAcceptInfo()
         {
             return null != _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
         }
@@ -130,7 +130,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             return _stageCtrl.OperateGridCursorController( dir );
         }
@@ -140,7 +140,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) { return false; }
 
@@ -184,7 +184,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isOptional"></param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptOptional( bool isOptional )
+        protected override bool AcceptOptional( bool isOptional )
         {
             if( !isOptional ) return false;
 
@@ -198,7 +198,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptTool( bool isInput )
+        protected override bool AcceptTool( bool isInput )
         {
             if( !isInput ) { return false; }
 
@@ -217,7 +217,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( bool isInput )
         {
             if( !isInput ) { return false; }
 

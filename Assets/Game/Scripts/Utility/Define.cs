@@ -3,7 +3,11 @@
 static public class Constants
 {
     // 雇用候補に出来るユニット数
-    public const int EMPLOYABLE_CHARACTERS_NUM = 9;
+    public const int EMPLOYABLE_CHARACTERS_NUM = 5;
+    // キャラクター選択の際に可視出来る味方のユニット数(必ず奇数とすること)
+    public const int SHOWABLE_SELECTION_CHARACTERS_NUM = 5;
+    // 雇用の際に可視出来る味方のユニット数(必ず奇数とすること)
+    public const int EMPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
     // 配置の際に可視出来る味方のユニット数(必ず奇数とすること)
     public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
     // プレイヤー、敵それぞれのキャラクター最大数
@@ -54,6 +58,10 @@ static public class Constants
     public const float DEPLOYMENT_CHARACTER_SPACING_X   = 50f;
     public const float DEPLOYMENT_CHARACTER_OFFSET_Y    = 0f;
     public const float DEPLOYMENT_CHARACTER_OFFSET_Z    = -1000f;
+    // キャラクター選択フェーズにおけるキャラクターの配置前座標
+    public const float CHARACTER_SELECTION_SPACING_X    = 50f;
+    public const float CHARACTER_SELECTION_OFFSET_Y     = 0f;
+    public const float CHARACTER_SELECTION_OFFSET_Z     = -1000f;
     // 配置フェーズにおいて表示するキャラクター画像のX座標オフセット値
     public const float DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X = 180f;
     // キャラクターの移動速度

@@ -10,20 +10,14 @@ using static Constants;
 
 public class DeploymentPhasePresenter : PhasePresenterBase
 {
-    public enum SlideDirection
-    {
-        LEFT = 0,
-        RIGHT,
-    }
-
     [Inject] protected BattleRoutineController _btlRtnCtrl = null;
 
     private bool _isSlideAnimationPlaying           = false;
     private SlideDirection _slideDirection;
     private Character _currentGridSelectCharacter   = null;
     private DeploymentUISystem _deployUiSystem      = null;
-    private DeploymentCandidate[] _focusDeployments = new DeploymentCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
-    private ReadOnlyCollection<DeploymentCandidate> _refDeploymentCandidates;
+    private CharacterCandidate[] _focusDeployments = new CharacterCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    private ReadOnlyCollection<CharacterCandidate> _refDeploymentCandidates;
     private Action<SlideDirection> _onCompletedeSlideAnimation;
 
     public void Init()
@@ -74,19 +68,19 @@ public class DeploymentPhasePresenter : PhasePresenterBase
             else { _focusDeployments[i] = null; }
         }
 
-        _deployUiSystem.CharacterSelectUi.AssignSelectCandidates( ref _focusDeployments );
+        _deployUiSystem.CharacterSelectUI.AssignSelectCandidates( ref _focusDeployments );
     }
 
     public void ClearFocusCharacter()
     {
-        _deployUiSystem.CharacterSelectUi.ClearSelectCharacter();
+        _deployUiSystem.CharacterSelectUI.ClearSelectCharacter();
     }
 
     /// <summary>
     /// 配置候補キャラクターリストの参照を受け取ります
     /// </summary>
     /// <param name="refCandidateCharas"></param>
-    public void AssignDeploymentCandidates( ReadOnlyCollection<DeploymentCandidate> refCandidateCharas )
+    public void AssignDeploymentCandidates( ReadOnlyCollection<CharacterCandidate> refCandidateCharas )
     {
         _refDeploymentCandidates  = refCandidateCharas;
     }
@@ -95,19 +89,19 @@ public class DeploymentPhasePresenter : PhasePresenterBase
     /// キャラクター選択UIの表示・非表示を切り替えます
     /// </summary>
     /// <param name="isActive"></param>
-    public void SetActiveCharacterSelectUis( bool isActive )
+    public void SetActiveCharacterSelectUIs( bool isActive )
     {
-        _deployUiSystem.CharacterSelectUi.SetActive( isActive );
+        _deployUiSystem.CharacterSelectUI.SetActive( isActive );
     }
 
     public void SetActiveLeftInputArrow( bool isActiveLeft )
     {
-        _deployUiSystem.CharacterSelectUi.SetActiveLeftInputArrow( isActiveLeft );
+        _deployUiSystem.CharacterSelectUI.SetActiveLeftInputArrow( isActiveLeft );
     }
 
     public void SetActiveRightInputArrow( bool isActiveRight )
     {
-        _deployUiSystem.CharacterSelectUi.SetActiveRightInputArrow( isActiveRight );
+        _deployUiSystem.CharacterSelectUI.SetActiveRightInputArrow( isActiveRight );
     }
 
     /// <summary>
@@ -116,13 +110,13 @@ public class DeploymentPhasePresenter : PhasePresenterBase
     /// <param name="isActive"></param>
     public void SetActiveConfirmUis( bool isActive )
     {
-        _deployUiSystem.CharacterSelectUi.SetActive( !isActive );           // 配置キャラクター選択UIの表示を切替
+        _deployUiSystem.CharacterSelectUI.SetActive( !isActive );           // 配置キャラクター選択UIの表示を切替
         _deployUiSystem.ConfirmCompleted.gameObject.SetActive( isActive );  // 配置完了確認UIの表示を切替
     }
 
     public void ResetDeploymentCharacterDispPosition()
     {
-        _deployUiSystem.CharacterSelectUi.ResetDeploymentCharacterDispPositions();
+        _deployUiSystem.CharacterSelectUI.ResetDeploymentCharacterDispPositions();
     }
 
     /// <summary>
@@ -145,7 +139,7 @@ public class DeploymentPhasePresenter : PhasePresenterBase
 
         // 配置候補UI内でフォーカス中のキャラクターも更新
         // MEMO : RefreshFocusDeploymentCharacter()を呼んでしまうと無限ループに陥るため注意
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+        _deployUiSystem.CharacterSelectUI.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
     }
 
     /// <summary>
@@ -155,7 +149,7 @@ public class DeploymentPhasePresenter : PhasePresenterBase
     {
         // フォーカス中のキャラクターのパラメータの表示
         Debug.Assert( _focusDeployments.Length % 2 == 1 );  // 奇数であることが前提
-        _deployUiSystem.CharacterSelectUi.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+        _deployUiSystem.CharacterSelectUI.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
 
         RefreshGridCursorSelectCharacter();
     }
@@ -169,13 +163,13 @@ public class DeploymentPhasePresenter : PhasePresenterBase
         _deployUiSystem.ConfirmCompleted.ApplyTextColor( selectIndex );
     }
 
-    public void SlideAnimationDeploymentCharacterDisplay( SlideDirection direction, Action<DeploymentPhasePresenter.SlideDirection> onCompleted )
+    public void SlideAnimationCharacterSelectionDisplay( SlideDirection direction, Action<SlideDirection> onCompleted )
     {
         _isSlideAnimationPlaying    = true;
         _slideDirection             = direction;
         _onCompletedeSlideAnimation = onCompleted;
 
-        _deployUiSystem.CharacterSelectUi.StartSlideAnimation( direction );
+        _deployUiSystem.CharacterSelectUI.StartSlideAnimation( direction );
     }
 
     public bool IsSlideAnimationPlaying()
@@ -183,9 +177,9 @@ public class DeploymentPhasePresenter : PhasePresenterBase
         return _isSlideAnimationPlaying;
     }
 
-    public ( int, int ) GetDeploymentCharacterDisplaySize()
+    public ( int, int ) GetCharacterSelectionDisplaySize()
     {
-        var size = _deployUiSystem.CharacterSelectUi.GetDeploymentCharacterDisplaySize();
+        var size = _deployUiSystem.CharacterSelectUI.GetCharacterSelectionDisplaySize();
 
         return ( (int)size.Item1, ( int ) size.Item2 );
     }
@@ -197,7 +191,7 @@ public class DeploymentPhasePresenter : PhasePresenterBase
     {
         if( _isSlideAnimationPlaying )
         {
-            _isSlideAnimationPlaying = !_deployUiSystem.CharacterSelectUi.UpdateSlideAnimation();
+            _isSlideAnimationPlaying = !_deployUiSystem.CharacterSelectUI.UpdateSlideAnimation();
             if( !_isSlideAnimationPlaying )
             {
                 _onCompletedeSlideAnimation?.Invoke( _slideDirection );

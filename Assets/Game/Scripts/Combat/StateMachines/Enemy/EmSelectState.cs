@@ -58,14 +58,7 @@ namespace Frontier.Battle
 
         public override bool Update()
         {
-            // TODO : FetchDestinationAndTargetのくだりが必要かもしれないけど、一旦コメントアウト
-
-            // int gridIndex;
-            // Character targetCharacter = null;
-
             if( IsBack() ) { return true; }
-
-            // _currentEnemy.FetchDestinationAndTarget( out gridIndex, out targetCharacter );
 
             // 移動行動に遷移するか
             if( ShouldTransitionToMove( _currentEnemy ) )

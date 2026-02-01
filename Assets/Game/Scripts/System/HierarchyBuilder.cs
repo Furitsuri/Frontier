@@ -63,7 +63,7 @@ namespace Frontier
         /// </summary>
         /// <param name="original">紐づけを行う対象オブジェクト</param>
         /// <returns>紐づけ先のオブジェクト</returns>
-        override protected GameObject MapObjectToType<T>( T original )
+        protected override GameObject MapObjectToType<T>( T original )
         {
             if (original == null)
             {

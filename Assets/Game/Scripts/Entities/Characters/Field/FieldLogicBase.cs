@@ -31,5 +31,10 @@ namespace Frontier.Entities
         virtual public void Init()
         {
         }
+
+        virtual public void Dispose()
+        {
+            _readOnlyOwner = null;
+        }
     }
 }

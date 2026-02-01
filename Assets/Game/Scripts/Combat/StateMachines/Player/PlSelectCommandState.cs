@@ -114,7 +114,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>
-        override protected void AdaptSelectPlayer()
+        protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
@@ -126,7 +126,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             return _commandList.OperateListCursor( dir );
         }
@@ -136,7 +136,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) { return false; }
 
@@ -149,7 +149,7 @@ namespace Frontier.Battle
         /// キャンセル入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isCancel">キャンセル入力の有無</param>
-        override protected bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( bool isCancel )
         {
             if( base.AcceptCancel( isCancel ) )
             {

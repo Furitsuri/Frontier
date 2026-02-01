@@ -90,7 +90,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>
-        override protected void AdaptSelectPlayer()
+        protected override void AdaptSelectPlayer()
         {
             _plOwner = _stageCtrl.GetBindCharacterFromGridCursor() as Player;
             NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );

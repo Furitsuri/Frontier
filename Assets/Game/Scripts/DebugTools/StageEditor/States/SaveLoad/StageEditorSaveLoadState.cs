@@ -57,7 +57,7 @@ namespace Frontier.DebugTools
             base.Init();
         }
 
-        override protected bool CanAcceptDirection()
+        protected override bool CanAcceptDirection()
         {
             // 現在のステートが確認中でない場合は入力を受け付けない
             if( State.CONFIRM != _currentState ) { return false; }
@@ -75,7 +75,7 @@ namespace Frontier.DebugTools
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) { return false; }
 

@@ -2,15 +2,15 @@
 
 namespace Frontier.FormTroop
 {
-    public class RecruitmentPhaseHandler : PhaseHandlerBase
+    public class RecruitPhaseHandler : PhaseHandlerBase
     {
-        private RecruitmentPhasePresenter _presenter = null;
+        private RecruitPhasePresenter _presenter = null;
 
         public override void Init()
         {
             base.Init();
 
-            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitmentPhasePresenter>( true ) );
+            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhasePresenter>( true ) );
 
             _presenter.Init();
 
@@ -34,7 +34,7 @@ namespace Frontier.FormTroop
         /// <summary>
         /// 遷移の木構造を作成します
         /// </summary>
-        override protected void CreateTree()
+        protected override void CreateTree()
         {
             // 遷移木の作成
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
@@ -42,16 +42,16 @@ namespace Frontier.FormTroop
             /*
              *  親子図
              * 
-             *      RecruitmentRootState
+             *      RecruitRootState
              *              ｜
              *              ├─ CharacterStatusViewState
              *              ｜
-             *              └─ RecruitmentConfirmCompletedState
+             *              └─ RecruitConfirmCompletedState
              *              
              */
-            RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitmentRootState>( false );
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitRootState>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitmentConfirmCompletedState>( false ) );
+            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
 
             CurrentNode = RootNode;
         }

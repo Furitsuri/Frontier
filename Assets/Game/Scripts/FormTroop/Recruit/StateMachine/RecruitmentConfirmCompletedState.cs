@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Frontier.FormTroop
 {
-    public class RecruitmentConfirmCompletedState : RecruitmentPhaseStateBase
+    public class RecruitConfirmCompletedState : RecruitPhaseStateBase
     {
 
     }

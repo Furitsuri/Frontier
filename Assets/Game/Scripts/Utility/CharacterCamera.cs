@@ -28,6 +28,23 @@ public class CharacterCamera
         _camera.gameObject.name = "Camera_" + cameraName;
     }
 
+    public void Dispose()
+    {
+        if( _camera != null )
+        {
+            Object.Destroy( _camera.gameObject );
+            _camera = null;
+        }
+        if( _targetTexture != null )
+        {
+            _targetTexture.Release();
+            Object.Destroy( _targetTexture );
+            _targetTexture = null;
+        }
+        _refTargetImage = null;
+        _dispCharacter = null;
+    }
+
     public void Update( in CameraParameter camParam )
     {
         Transform characterTransform = _dispCharacter.transform;

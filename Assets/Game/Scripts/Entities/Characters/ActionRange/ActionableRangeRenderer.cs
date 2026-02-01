@@ -38,7 +38,6 @@ namespace Frontier.Entities
 
         public void Dispose()
         {
-            ClearTileMeshes();
             _owner = null;
             _readOnlyActionableTileMap = null;
         }

@@ -167,7 +167,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>
-        override protected void AdaptSelectPlayer()
+        protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
@@ -178,7 +178,7 @@ namespace Frontier.Battle
         /// 決定入力受付の可否を判定します
         /// </summary>
         /// <returns>決定入力受付の可否</returns>
-        override protected bool CanAcceptConfirm()
+        protected override bool CanAcceptConfirm()
         {
             if( !CanAcceptDefault() ) { return false; }
 
@@ -195,7 +195,7 @@ namespace Frontier.Battle
         /// 方向入力受付の可否を判定します
         /// </summary>
         /// <returns>方向入力受付の可否</returns>
-        override protected bool CanAcceptDirection()
+        protected override bool CanAcceptDirection()
         {
             if( !CanAcceptDefault() ) { return false; }
 
@@ -209,7 +209,7 @@ namespace Frontier.Battle
         /// グリッド上に移動中のキャラクター以外が選択されている場合は、ステータス画面への遷移を受け付けます
         /// </summary>
         /// <returns></returns>
-        override protected bool CanAcceptInfo()
+        protected override bool CanAcceptInfo()
         {
             if( !CanAcceptDefault() ) { return false; }
             // 移動フェーズでない場合は不可
@@ -229,7 +229,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力によってキャラクター移動が行われたか</returns>
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             return _stageCtrl.OperateGridCursorController( dir );
         }
@@ -239,7 +239,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>決定入力実行の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) { return false; }
 
@@ -271,7 +271,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>キャンセル入力実行の有無</returns>
-        override protected bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( bool isCancel )
         {
             if( base.AcceptCancel( isCancel ) )
             {

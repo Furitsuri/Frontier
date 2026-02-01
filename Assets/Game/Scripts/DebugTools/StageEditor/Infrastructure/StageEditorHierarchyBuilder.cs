@@ -46,7 +46,7 @@ public class StageEditorHierarchyBuilder : HierarchyBuilderBase
             "Required object reference is missing.");
     }
 
-    override protected GameObject MapObjectToType<T>(T original)
+    protected override GameObject MapObjectToType<T>(T original)
     {
         if (original == null)
         {
