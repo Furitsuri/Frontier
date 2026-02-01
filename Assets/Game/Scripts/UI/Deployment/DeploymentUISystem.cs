@@ -14,7 +14,7 @@ namespace Frontier.UI
         public GameObject DeployMessage;
 
         [Header( "配置キャラクター選択UI" )]
-        public DeploymentCharacterSelectUI CharacterSelectUi;
+        public CharacterSelectionUI CharacterSelectUI;
 
         [Header( "配置完了確認用UI" )]
         public ConfirmUI ConfirmCompleted;
@@ -27,12 +27,12 @@ namespace Frontier.UI
             gameObject.SetActive( true );
             GridCursorSelectCharaParam.Setup();
 
-            CharacterSelectUi.Init();
+            CharacterSelectUI.Init( CharacterSelectionDisplayMode.Texture );
             ConfirmCompleted.Init();
             GridCursorSelectCharaParam.Init();
 
             DeployMessage.SetActive( true );
-            CharacterSelectUi.gameObject.SetActive( true );
+            CharacterSelectUI.gameObject.SetActive( true );
             ConfirmCompleted.gameObject.SetActive( false );
             GridCursorSelectCharaParam.gameObject.SetActive( false );
         }
@@ -42,14 +42,14 @@ namespace Frontier.UI
             gameObject.SetActive( false );
 
             DeployMessage.SetActive( false );
-            CharacterSelectUi.gameObject.SetActive( false );
+            CharacterSelectUI.gameObject.SetActive( false );
             ConfirmCompleted.gameObject.SetActive( false );
             GridCursorSelectCharaParam.gameObject.SetActive( false );
         }
 
         public void Setup()
         {
-            CharacterSelectUi?.Setup();
+            CharacterSelectUI?.Setup();
             ConfirmCompleted?.Setup();
             GridCursorSelectCharaParam?.Setup();
         }

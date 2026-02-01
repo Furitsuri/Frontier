@@ -2,23 +2,11 @@
 using Frontier.Entities.Ai;
 using Frontier.Stage;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace Frontier.Entities
 {
     public class EnemyBattleLogic : BattleLogicBase
     {
-        /// <summary>
-        /// 目標座標と標的キャラクターを取得します
-        /// </summary>
-        public void FetchDestinationAndTarget( out int destinationIndex, out Character targetCharacter )
-        {
-            destinationIndex    = _baseAi.GetDestinationGridIndex();
-            targetCharacter     = _baseAi.GetTargetCharacter();
-        }
-
         /// <summary>
         /// 目的座標と標的キャラクターを決定する
         /// </summary>

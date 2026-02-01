@@ -18,7 +18,7 @@ namespace Frontier.StateMachine
 
         private int _focusCharacterIndex = 0;     // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot = null;
-        private List<DeploymentCandidate> _deploymentCandidates = new List<DeploymentCandidate>();  // 配置可能なキャラクターリスト
+        private List<CharacterCandidate> _deploymentCandidates = new List<CharacterCandidate>();  // 配置可能なキャラクターリスト
 
         private enum TransitTag
         {
@@ -34,11 +34,11 @@ namespace Frontier.StateMachine
             _entitySnapshot.Init();
 
             _focusCharacterIndex = 0;
-            InitDeploymentCandidates();
+            SetupDeploymentCandidates();
 
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
 
-            _presenter.SetActiveCharacterSelectUis( true );                                 // キャラクター選択画面の表示を有効化
+            _presenter.SetActiveCharacterSelectUIs( true );                                 // キャラクター選択画面の表示を有効化
             _presenter.AssignDeploymentCandidates( _deploymentCandidates.AsReadOnly() );    // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
             _presenter.SetFocusCharacters( _focusCharacterIndex );                          // 最初のキャラクターにフォーカスを当てておく
             _presenter.RefreshGridCursorSelectCharacter();
@@ -72,7 +72,7 @@ namespace Frontier.StateMachine
             );
         }
 
-        override protected bool CanAcceptConfirm()
+        protected override bool CanAcceptConfirm()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力不可
             // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
@@ -93,7 +93,7 @@ namespace Frontier.StateMachine
             return true;
         }
 
-        override protected bool CanAcceptCancel()
+        protected override bool CanAcceptCancel()
         {
             // タイル上にキャラクターが配置されていなければ入力不可
             Character characterOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
@@ -109,7 +109,7 @@ namespace Frontier.StateMachine
         /// グリッドカーソルがキャラクターを選択している場合はステータス情報表示を受け付けます
         /// </summary>
         /// <returns></returns>
-        override protected bool CanAcceptInfo()
+        protected override bool CanAcceptInfo()
         {
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null == character ) { return false; }
@@ -120,7 +120,7 @@ namespace Frontier.StateMachine
             return true;
         }
 
-        override protected bool CanAcceptSub1()
+        protected override bool CanAcceptSub1()
         {
             // 配置可能キャラクター数が表示可能数の半分以上ある場合は常に入力可能
             if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
@@ -131,7 +131,7 @@ namespace Frontier.StateMachine
             return canInput;
         }
 
-        override protected bool CanAcceptSub2()
+        protected override bool CanAcceptSub2()
         {
             if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
 
@@ -145,7 +145,7 @@ namespace Frontier.StateMachine
         /// 配置キャラクターが1体以上いる場合は配置完了入力を受け付けます
         /// </summary>
         /// <returns></returns>
-        override protected bool CanAcceptOptional()
+        protected override bool CanAcceptOptional()
         {
             // キャラクター選択UIのスライドアニメーションが再生中であれば入力を受け付けない
             // if( _presenter.IsSlideAnimationPlaying() ) { return false; }
@@ -160,7 +160,7 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             bool isOperated = _stageCtrl.OperateGridCursorController( dir );
 
@@ -174,14 +174,14 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) { return false; }
 
             UndoDeploymentCandidates();
 
             var candidate = _deploymentCandidates[_focusCharacterIndex];
-            candidate.IsDeployed = true;
+            candidate.IsSelected = true;
             var focusCharacter = candidate.Character;
             focusCharacter.gameObject.SetActive( true );
             focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
@@ -203,7 +203,7 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isCancel"></param>
         /// <returns></returns>
-        override protected bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( bool isCancel )
         {
             if( !isCancel ) { return false; }
 
@@ -221,7 +221,7 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( bool isInput )
         {
             if( !isInput ) { return false; }
 
@@ -237,11 +237,11 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptSub1( bool isInput )
+        protected override bool AcceptSub1( bool isInput )
         {
             if( !isInput ) { return false; }
 
-            _presenter.SlideAnimationDeploymentCharacterDisplay( DeploymentPhasePresenter.SlideDirection.LEFT, OnCompleteSlideAnimation );
+            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
 
             return true;
         }
@@ -251,11 +251,11 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptSub2( bool isInput )
+        protected override bool AcceptSub2( bool isInput )
         {
             if( !isInput ) { return false; }
 
-            _presenter.SlideAnimationDeploymentCharacterDisplay( DeploymentPhasePresenter.SlideDirection.RIGHT, OnCompleteSlideAnimation );
+            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
 
             return true;
         }
@@ -265,7 +265,7 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isOptional"></param>
         /// <returns></returns>
-        override protected bool AcceptOptional( bool isOptional )
+        protected override bool AcceptOptional( bool isOptional )
         {
             if( !isOptional ) { return false; }
 
@@ -277,23 +277,19 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 配置可能なキャラクターリストを初期化します
         /// </summary>
-        private void InitDeploymentCandidates()
+        private void SetupDeploymentCandidates()
         {
             _deploymentCandidates.Clear();
 
             foreach( var player in _characterDict.GetCharacterList( CHARACTER_TAG.PLAYER ) )
             {
-                player.gameObject.SetActive( false );
-                var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * player.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
-                player.GetTransformHandler.SetPosition( reservePos );
-
                 // UI表示用に各キャラクターのスナップショットを撮影
-                var size = _presenter.GetDeploymentCharacterDisplaySize();
+                var size = _presenter.GetCharacterSelectionDisplaySize();
                 Texture2D candidateSnapshot = null;
                 _entitySnapshot.CaptureCharacter( size.Item1, size.Item2, player, out candidateSnapshot, false, AnimDatas.AnimeConditionsTag.WAIT );
 
                 // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
-                DeploymentCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<DeploymentCandidate>( false );
+                CharacterCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<CharacterCandidate>( false );
                 candidate.Init( player, candidateSnapshot );
                 _deploymentCandidates.Add( candidate );
             }
@@ -310,7 +306,7 @@ namespace Frontier.StateMachine
             if( null != charaOnSelectTile && charaOnSelectTile.CharaKey.CharacterTag == CHARACTER_TAG.PLAYER )
             {
                 // 配置済みフラグをOFFに
-                _deploymentCandidates.Find( c => c.Character.CharaKey == charaOnSelectTile.CharaKey ).IsDeployed = false;
+                _deploymentCandidates.Find( c => c.Character.CharaKey == charaOnSelectTile.CharaKey ).IsSelected = false;
                 // キャラクター管理リストから削除
                 _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey );
                 // 見えない位置に退避
@@ -328,11 +324,11 @@ namespace Frontier.StateMachine
         /// スライドアニメーション完了時のコールバック
         /// </summary>
         /// <param name="direction"></param>
-        private void OnCompleteSlideAnimation( DeploymentPhasePresenter.SlideDirection direction )
+        private void OnCompleteSlideAnimation( SlideDirection direction )
         {
             _presenter.ClearFocusCharacter();
 
-            if( direction == DeploymentPhasePresenter.SlideDirection.LEFT )
+            if( direction == SlideDirection.LEFT )
             {
                 _focusCharacterIndex = ( ( _focusCharacterIndex - 1 ) + _deploymentCandidates.Count ) % _deploymentCandidates.Count;
             }

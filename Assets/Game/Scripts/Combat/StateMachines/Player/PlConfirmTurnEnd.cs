@@ -16,7 +16,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力によってリストカーソルの位置が更新されたか</returns>
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             return _commandList.OperateListCursor( dir );
         }
@@ -26,7 +26,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) return false;
 

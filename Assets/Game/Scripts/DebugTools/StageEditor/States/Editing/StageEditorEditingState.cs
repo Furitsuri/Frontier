@@ -109,14 +109,14 @@ namespace Frontier.DebugTools.StageEditor
             );
         }
 
-        override protected bool CanAcceptTool() { return 0 < (int)_editMode ; }
-        override protected bool CanAcceptInfo() { return ( int )_editMode < (int)StageEditMode.NUM - 1; }
-        override protected bool CanAcceptSub1() { return _currentEdit.CanAcceptSub1(); }
-        override protected bool CanAcceptSub2() { return _currentEdit.CanAcceptSub2(); }
-        override protected bool CanAcceptSub3() { return _currentEdit.CanAcceptSub3(); }
-        override protected bool CanAcceptSub4() { return _currentEdit.CanAcceptSub4(); }
+        protected override bool CanAcceptTool() { return 0 < (int)_editMode ; }
+        protected override bool CanAcceptInfo() { return ( int )_editMode < (int)StageEditMode.NUM - 1; }
+        protected override bool CanAcceptSub1() { return _currentEdit.CanAcceptSub1(); }
+        protected override bool CanAcceptSub2() { return _currentEdit.CanAcceptSub2(); }
+        protected override bool CanAcceptSub3() { return _currentEdit.CanAcceptSub3(); }
+        protected override bool CanAcceptSub4() { return _currentEdit.CanAcceptSub4(); }
 
-        override protected bool AcceptDirection(Direction dir)
+        protected override bool AcceptDirection(Direction dir)
         {
 
             if (dir == Direction.NONE) return false;
@@ -134,7 +134,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptConfirm(bool isInput)
+        protected override bool AcceptConfirm(bool isInput)
         {
             return _currentEdit.AcceptConfirm(isInput);
         }
@@ -144,7 +144,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptTool( bool isInput )
+        protected override bool AcceptTool( bool isInput )
         {
             if ( isInput )
             {
@@ -164,7 +164,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">情報画面入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( bool isInput )
         {
             if ( isInput )
             {
@@ -184,7 +184,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptOptional1( bool isInput )
+        protected override bool AcceptOptional1( bool isInput )
         {
             if( !isInput ) return false;
 
@@ -198,7 +198,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        override protected bool AcceptOptional2(bool isInput)
+        protected override bool AcceptOptional2(bool isInput)
         {
             if( !isInput ) { return false; }
 
@@ -207,17 +207,17 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
-        override protected bool AcceptSub1( bool isInput ) { return _currentEdit.AcceptSub1( isInput ); }
-        override protected bool AcceptSub2( bool isInput ) { return _currentEdit.AcceptSub2( isInput ); }
-        override protected bool AcceptSub3( bool isInput ) { return _currentEdit.AcceptSub3( isInput ); }
-        override protected bool AcceptSub4( bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
+        protected override bool AcceptSub1( bool isInput ) { return _currentEdit.AcceptSub1( isInput ); }
+        protected override bool AcceptSub2( bool isInput ) { return _currentEdit.AcceptSub2( isInput ); }
+        protected override bool AcceptSub3( bool isInput ) { return _currentEdit.AcceptSub3( isInput ); }
+        protected override bool AcceptSub4( bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
 
         /// <summary>
         /// ファイルネーム編集へ遷移させます
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        override protected bool AcceptDebugTransition( bool isInput )
+        protected override bool AcceptDebugTransition( bool isInput )
         {
             if( !isInput ) { return false; }
 

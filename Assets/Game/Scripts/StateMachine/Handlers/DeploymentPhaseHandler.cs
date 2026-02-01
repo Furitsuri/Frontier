@@ -42,7 +42,7 @@ namespace Frontier.StateMachine
         /// <summary>
         /// 遷移の木構造を作成します
         /// </summary>
-        override protected void CreateTree()
+        protected override void CreateTree()
         {
             // 遷移木の作成
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ

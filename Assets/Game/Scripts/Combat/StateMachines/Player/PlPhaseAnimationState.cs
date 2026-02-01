@@ -4,7 +4,7 @@ namespace Frontier.Battle
 {
     public class PlPhaseStateAnimation : PhaseAnimationStateBase
     {
-        override protected void StartPhaseAnim()
+        protected override void StartPhaseAnim()
         {
             _btlUi.TogglePhaseUI( true, TurnType.PLAYER_TURN );
 

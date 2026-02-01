@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6538370290886049410}
   - component: {fileID: 1124319393661308937}
   m_Layer: 5
-  m_Name: DeploymentCharacterDisplay
+  m_Name: CharacterSelectionDisplay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -98,12 +98,12 @@ namespace Frontier.StateMachine
         /// ツールチップUIを表示しているときに限り、方向入力を受け付けます
         /// </summary>
         /// <returns></returns>
-        override protected bool CanAcceptDirection()
+        protected override bool CanAcceptDirection()
         {
             return _statusPresenter.IsToolTipActive();
         }
 
-        override protected bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( Direction dir )
         {
             int addValue = 0;
 
@@ -129,7 +129,7 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        override protected bool AcceptCancel( bool isInput )
+        protected override bool AcceptCancel( bool isInput )
         {
             if( !isInput ) return false;
 
@@ -138,7 +138,7 @@ namespace Frontier.StateMachine
             return true;
         }
 
-        override protected bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( bool isInput )
         {
             if( !isInput ) return false;
 

@@ -148,11 +148,16 @@ namespace Frontier.Entities
                 _bullet = null;
             }
 
+            _fieldLogic?.Dispose();
+            _battleLogic?.Dispose();
+
             Destroy( gameObject );
             Destroy( this );
         }
 
         virtual public void OnFieldEnter() { }
+
+        virtual public void OnFieldExit() { }
 
         virtual public void OnBattleEnter( BattleCameraController btlCamCtrl )
         {

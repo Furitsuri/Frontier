@@ -6,11 +6,11 @@ namespace Frontier.FormTroop
     {
         [Inject] HierarchyBuilderBase _hierarchyBld = null;
 
-        private RecruitmentPhaseHandler _handler = null;
+        private RecruitPhaseHandler _handler = null;
 
         public override void Setup()
         {
-            LazyInject.GetOrCreate( ref _handler, () => _hierarchyBld.InstantiateWithDiContainer<RecruitmentPhaseHandler>( true ) );
+            LazyInject.GetOrCreate( ref _handler, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhaseHandler>( true ) );
         }
 
         public override void Init()
@@ -48,7 +48,6 @@ namespace Frontier.FormTroop
         {
             _handler.Pause();
         }
-
 
         public override void Exit()
         {

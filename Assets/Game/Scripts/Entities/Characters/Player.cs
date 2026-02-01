@@ -1,4 +1,6 @@
 ﻿using Frontier.Combat;
+using Frontier.FormTroop;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier.Entities
@@ -24,8 +26,10 @@ namespace Frontier.Entities
             }
         }
 
-        // private bool _isPrevMoving = false;
+        private RecruitLogic _recruitLogic;
         private PrevMoveInfo _prevMoveInfo;
+
+        public RecruitLogic RecruitLogic => _recruitLogic;
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
 
         /// <summary>
@@ -52,6 +56,18 @@ namespace Frontier.Entities
         {
             RefBattleParams.TmpParam = _prevMoveInfo.tmpParam;
             BattleLogic.SetPositionOnStage( RefBattleParams.TmpParam.gridIndex, _prevMoveInfo.rotDir );
+        }
+
+        public void OnRecruitEnter( int cost )
+        {
+            LazyInject.GetOrCreate( ref _recruitLogic, () => _hierarchyBld.InstantiateWithDiContainer<RecruitLogic>( false ) );
+            _recruitLogic.Setup( this, cost );
+        }
+
+        public void OnRecruitExit()
+        {
+            _recruitLogic.Dispose();
+            _recruitLogic = null;
         }
 
         /// <summary>
@@ -92,6 +108,14 @@ namespace Frontier.Entities
         public override void Init()
         {
             base.Init();
+        }
+
+        public override void Dispose()
+        {
+            _recruitLogic?.Dispose();
+            _recruitLogic = null;
+
+            base.Dispose();
         }
 
         public override void OnFieldEnter()

@@ -24,7 +24,7 @@ namespace Frontier
             SwitchTo( _hierarchyBld.InstantiateWithDiContainer<BattleRoutineController>( true ) );
         }
 
-        public void StartRecruitment()
+        public void StartRecruit()
         {
             SwitchTo( _hierarchyBld.InstantiateWithDiContainer<FormTroopRoutineController>( false ) );
         }
@@ -43,11 +43,11 @@ namespace Frontier
 
             if( _startMode == StartMode.NEW_GAME )
             {
-                StartNewGame();
+                // StartNewGame();
             }
 
-            // StartRecruitment();
-            StartBattle();
+            StartRecruit();
+            // StartBattle();
         }
 
         public override void UpdateRoutine()

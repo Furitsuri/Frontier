@@ -7,7 +7,7 @@ namespace Frontier
 {
     public class ManagerProvider : Singleton<ManagerProvider>, IServiceProvider
     {
-        override protected void Init()
+        protected override void Init()
         {
         }
 

@@ -5,7 +5,7 @@ namespace Frontier.UI
     public class UISystem : MonoBehaviour, IUiSystem
     {
         [SerializeField] private GeneralUISystem _generalUi         = null;
-        [SerializeField] private RecruitmentUISystem _recruitmentUi = null;
+        [SerializeField] private RecruitUISystem _recruitmentUi = null;
         [SerializeField] private DeploymentUISystem _deploymentUi   = null;
         [SerializeField] private BattleUISystem _battleUi           = null;
 #if UNITY_EDITOR
@@ -13,7 +13,7 @@ namespace Frontier.UI
 #endif // UNITY_EDITOR
 
         public GeneralUISystem GeneralUi => _generalUi;
-        public RecruitmentUISystem RecruitmentUi => _recruitmentUi;
+        public RecruitUISystem RecruitUi => _recruitmentUi;
         public DeploymentUISystem DeployUi => _deploymentUi;
         public BattleUISystem BattleUi => _battleUi;
 #if UNITY_EDITOR
@@ -26,7 +26,7 @@ namespace Frontier.UI
         enum ChildIndex
         {
             General = 0,
-            Recruitment,
+            Recruit,
             Deployment,
             Battle,
 #if UNITY_EDITOR

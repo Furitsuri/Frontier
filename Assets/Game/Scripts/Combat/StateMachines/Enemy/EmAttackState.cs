@@ -164,7 +164,7 @@ namespace Frontier.Battle
         /// 決定入力受付の可否を判定します
         /// </summary>
         /// <returns>決定入力受付の可否</returns>
-        override protected bool CanAcceptConfirm()
+        protected override bool CanAcceptConfirm()
         {
             if( !CanAcceptDefault() ) return false;
 
@@ -177,7 +177,7 @@ namespace Frontier.Battle
         /// サブ1の入力の受付可否を判定します
         /// </summary>
         /// <returns>サブ1の入力の受付可否</returns>
-        override protected bool CanAcceptSub1()
+        protected override bool CanAcceptSub1()
         {
             if( !CanAcceptDefault() ) return false;
 
@@ -188,7 +188,7 @@ namespace Frontier.Battle
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 0, SituationType.DEFENCE );
         }
 
-        override protected bool CanAcceptSub2()
+        protected override bool CanAcceptSub2()
         {
             if( !CanAcceptDefault() ) return false;
 
@@ -199,7 +199,7 @@ namespace Frontier.Battle
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 1, SituationType.DEFENCE );
         }
 
-        override protected bool CanAcceptSub3()
+        protected override bool CanAcceptSub3()
         {
             if( !CanAcceptDefault() ) return false;
 
@@ -210,7 +210,7 @@ namespace Frontier.Battle
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 2, SituationType.DEFENCE );
         }
 
-        override protected bool CanAcceptSub4()
+        protected override bool CanAcceptSub4()
         {
             if( !CanAcceptDefault() ) return false;
 
@@ -225,7 +225,7 @@ namespace Frontier.Battle
         /// 決定入力を受け取った際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力の有無</param>
-        override protected bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) return false;
 
@@ -252,28 +252,28 @@ namespace Frontier.Battle
             return true;
         }
 
-        override protected bool AcceptSub1( bool isInput )
+        protected override bool AcceptSub1( bool isInput )
         {
             if( !isInput ) return false;
 
             return _targetCharacter.BattleLogic.ToggleUseSkillks( 0 );
         }
 
-        override protected bool AcceptSub2( bool isInput )
+        protected override bool AcceptSub2( bool isInput )
         {
             if( !isInput ) return false;
 
             return _targetCharacter.BattleLogic.ToggleUseSkillks( 1 );
         }
 
-        override protected bool AcceptSub3( bool isInput )
+        protected override bool AcceptSub3( bool isInput )
         {
             if( !isInput ) return false;
 
             return _targetCharacter.BattleLogic.ToggleUseSkillks( 2 );
         }
 
-        override protected bool AcceptSub4( bool isInput )
+        protected override bool AcceptSub4( bool isInput )
         {
             if( !isInput ) return false;
 

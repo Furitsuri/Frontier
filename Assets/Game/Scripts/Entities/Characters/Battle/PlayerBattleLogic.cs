@@ -1,8 +1,5 @@
 ﻿using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace Frontier.Entities
 {

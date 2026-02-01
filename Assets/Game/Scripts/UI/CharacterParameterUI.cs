@@ -20,6 +20,8 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI TMPCurHPValue;
         [SerializeField] private TextMeshProUGUI TMPAtkValue;
         [SerializeField] private TextMeshProUGUI TMPDefValue;
+        [SerializeField] private TextMeshProUGUI TMPMovValue;
+        [SerializeField] private TextMeshProUGUI TMPJmpValue;
         [SerializeField] private TextMeshProUGUI TMPAtkNumValue;
         [SerializeField] private TextMeshProUGUI TMPDiffHPValue;
         [SerializeField] private TextMeshProUGUI TMPActRecoveryValue;
@@ -50,10 +52,12 @@ namespace Frontier.UI
         /// </summary>
         public void Init()
         {
-            var layerToName         = LayerMask.LayerToName( _layerMaskIndex );
-            TargetImage.texture     = _targetTexture;
-
-            _characterCamera?.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, _cameraAngleY, ref TargetImage );
+            if( null != TargetImage )
+            {
+                var layerToName     = LayerMask.LayerToName( _layerMaskIndex );
+                TargetImage.texture = _targetTexture;
+                _characterCamera?.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, _cameraAngleY, ref TargetImage );
+            }
 
             for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
@@ -62,6 +66,14 @@ namespace Frontier.UI
                 elem.gameObject.SetActive( false );
                 elem.transform.SetParent( PanelTransform, false );
             }
+        }
+
+        /// <summary>
+        /// パラメータUIにキャラクターを映す場合に呼び出してください
+        /// </summary>
+        public void SetupCamera()
+        {
+            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
         }
 
         /// <summary>
@@ -103,6 +115,19 @@ namespace Frontier.UI
             _characterCamera?.AssignCharacter( character, layerMaskIndex );
         }
 
+        public override void Setup()
+        {
+            if( null != TargetImage )
+            {
+                LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
+            }
+
+            foreach( var item in SkillBoxes )
+            {
+                item.Setup();
+            }
+        }
+
         /// <summary>
         /// パラメータUIに表示するキャラクターのパラメータを更新します
         /// </summary>
@@ -116,6 +141,8 @@ namespace Frontier.UI
             TMPCurHPValue.text = $"{param.CurHP}";
             TMPAtkValue.text = $"{param.Atk}";
             TMPDefValue.text = $"{param.Def}";
+            TMPMovValue.text = $"{param.moveRange}";
+            TMPJmpValue.text = $"{param.jumpForce}";
             TMPAtkNumValue.text = $"x {skillParam.AtkNum}";
             TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
@@ -193,17 +220,6 @@ namespace Frontier.UI
             else if( 0 < changeHP )
             {
                 TMPDiffHPValue.color = Color.green;
-            }
-        }
-
-        public override void Setup()
-        {
-            LazyInject.GetOrCreate( ref _targetTexture, () => new RenderTexture( ( int ) TargetImage.rectTransform.rect.width * 2, ( int ) TargetImage.rectTransform.rect.height * 2, 16, RenderTextureFormat.ARGB32 ) );
-            LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
-
-            foreach( var item in SkillBoxes )
-            {
-                item.Setup();
             }
         }
     }
