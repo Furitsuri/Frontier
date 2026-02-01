@@ -43,11 +43,11 @@ namespace Frontier
 
             if( _startMode == StartMode.NEW_GAME )
             {
-                // StartNewGame();
+                StartNewGame();
             }
 
-            StartRecruit();
-            // StartBattle();
+            // StartRecruit();
+            StartBattle();
         }
 
         public override void UpdateRoutine()
