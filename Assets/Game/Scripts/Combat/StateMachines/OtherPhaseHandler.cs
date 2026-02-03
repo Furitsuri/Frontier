@@ -22,6 +22,8 @@ namespace Frontier.Battle
             }
             // アクションゲージの回復
             _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.OTHER );
+
+            AssignPresenterToNodes( RootNode, _presenter );
         }
 
         public override void Update()

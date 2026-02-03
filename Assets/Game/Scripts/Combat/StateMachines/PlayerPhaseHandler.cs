@@ -18,6 +18,8 @@ namespace Frontier.Battle
                 // アクションゲージの回復
                 _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.PLAYER );
             }
+
+            AssignPresenterToNodes( RootNode, _presenter );
         }
 
         /// <summary>

@@ -6,11 +6,10 @@ using System.Collections.ObjectModel;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static DeploymentPhasePresenter;
 
 namespace Frontier.FormTroop
 {
-    public class RecruitPhasePresenter : PhasePresenterBase
+    public class RecruitPhasePresenter : PhasePresenterBase, IConfirmPresenter
     {
         [Inject] private UserDomain _userDomain = null;
 
@@ -108,10 +107,14 @@ namespace Frontier.FormTroop
             _refEmploymentCandidates = candidates;
         }
 
-        public void InitEmploymentCompletedUI( Action<ConfirmUI> callback )
+        public void SetActiveConfirmUI( bool isActive )
         {
-            callback( _recruitmentUI.ConfirmEmploymentUI );
-            _recruitmentUI.ConfirmEmploymentUI.gameObject.SetActive( true );
+            _recruitmentUI.ConfirmEmploymentUI.gameObject.SetActive( isActive );
+        }
+
+        public void ApplyColor2Options( int selectIndex )
+        {
+            _recruitmentUI.ConfirmEmploymentUI.ApplyTextColor( selectIndex );
         }
 
         /// <summary>

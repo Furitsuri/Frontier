@@ -19,14 +19,9 @@ namespace Frontier.StateMachine
             NUM
         }
 
-        protected CommandList _commandList = new CommandList();
+        protected IConfirmPresenter _confirmPresenter   = null;
+        protected CommandList _commandList              = new CommandList();
         protected CommandList.CommandIndexedValue _cmdIdxVal;
-        protected ConfirmUI _confirmUi;
-
-        public void AssignConfirmUI( ConfirmUI confirmUi )
-        {
-            _confirmUi = confirmUi;
-        }
 
         public override void Init()
         {
@@ -41,8 +36,7 @@ namespace Frontier.StateMachine
             }
             _commandList.Init( ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal );
 
-            _confirmUi = _uiSystem.BattleUi.GetConfirmTurnEndUI();
-            _confirmUi.gameObject.SetActive( true );
+            _confirmPresenter.SetActiveConfirmUI( true );
         }
 
         public override bool Update()
@@ -52,16 +46,21 @@ namespace Frontier.StateMachine
                 return true;
             }
 
-            _confirmUi.ApplyTextColor( _commandList.GetCurrentValue() );
+            _confirmPresenter.ApplyColor2Options( _commandList.GetCurrentValue() );
 
             return IsBack();
         }
 
         public override void ExitState()
         {
-            _confirmUi.gameObject.SetActive( false );
+            _confirmPresenter.SetActiveConfirmUI( false );
 
             base.ExitState();
+        }
+
+        public override void AssignPresenter( PhasePresenterBase presenter )
+        {
+            _confirmPresenter = presenter as IConfirmPresenter;
         }
 
         /// <summary>
