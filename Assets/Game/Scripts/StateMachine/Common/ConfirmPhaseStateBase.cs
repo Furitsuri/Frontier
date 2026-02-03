@@ -23,6 +23,11 @@ namespace Frontier.StateMachine
         protected CommandList.CommandIndexedValue _cmdIdxVal;
         protected ConfirmUI _confirmUi;
 
+        public void AssignConfirmUI( ConfirmUI confirmUi )
+        {
+            _confirmUi = confirmUi;
+        }
+
         public override void Init()
         {
             base.Init();
@@ -72,6 +77,20 @@ namespace Frontier.StateMachine
                (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
             );
+        }
+
+        protected override bool AcceptDirection( Direction dir )
+        {
+            return _commandList.OperateListCursor( dir );
+        }
+
+        protected override bool AcceptCancel( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            Back();
+
+            return true;
         }
     }
 }
