@@ -8,6 +8,11 @@ namespace Frontier.UI
     /// </summary>
     public sealed class EmploymentSelectionUI : CharacterSelectionUI
     {
+        /// <summary>
+        /// 雇用候補のキャラクターを表示するための表示オブジェクト配列です。
+        /// 実機上ではボタン操作によってスライド上の動きが確認できますが、実際には固定数の表示オブジェクトであり、
+        /// スライドが完了した際に表示オブジェクトの内容を書き換えることで実現しています。
+        /// </summary>
         private EmploymentSelectionDisplay[] _employmentSelectionDisplays = new EmploymentSelectionDisplay[SHOWABLE_SELECTION_CHARACTERS_NUM];
 
         /// <summary>

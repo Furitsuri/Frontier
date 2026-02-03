@@ -38,6 +38,10 @@ public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
         SetActiveCostObject( true );
     }
 
+    /// <summary>
+    /// キャラクター候補の情報を表示に反映します
+    /// </summary>
+    /// <param name="candidate"></param>
     public override void AssignSelectCandidate( ref CharacterCandidate candidate )
     {
         base.AssignSelectCandidate( ref candidate );

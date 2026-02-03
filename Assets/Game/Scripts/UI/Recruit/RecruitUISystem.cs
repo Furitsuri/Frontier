@@ -11,17 +11,23 @@ namespace Frontier.UI
         [Header( "雇用ユニット選択UI" )]
         [SerializeField] private EmploymentSelectionUI _employmentSelectUI;
 
+        [Header( "雇用完了確認UI" )]
+        [SerializeField] private ConfirmUI _confirmEmploymentUI;
+
         private TextMeshProUGUI _moneyValueText;
 
         public EmploymentSelectionUI EmploymentSelectUI => _employmentSelectUI;
+        public ConfirmUI ConfirmEmploymentUI => _confirmEmploymentUI;
 
         public void Init()
         {
             _employmentSelectUI.Init( CharacterSelectionDisplayMode.Camera );
+            _confirmEmploymentUI.Init();
 
             gameObject.SetActive( true );
             _moneyUI.SetActive( true );
             _employmentSelectUI.gameObject.SetActive( true );
+            _confirmEmploymentUI.gameObject.SetActive( false );
         }
 
         public void Exit()

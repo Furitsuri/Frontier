@@ -8,19 +8,28 @@ namespace Frontier.FormTroop
 {
     public sealed class RecruitRootState : RecruitPhaseStateBase
     {
+        private enum RecruitRootTransitTag
+        {
+            CHARACTER_STATUS = 0,
+            CONFIRM,
+        }
+
         [Inject] private UserDomain _userDomain                     = null;
         [Inject] private CharacterDictionary _characterDictionary   = null;
         [Inject] private CharacterFactory _characterFactory         = null;
 
-        private int _focusCharacterIndex = 0;     // フォーカス中のキャラクターインデックス
+        private bool _isExistEmployedCharacter  = false;
+        private int _focusCharacterIndex        = 0;     // フォーカス中のキャラクターインデックス
         private List<CharacterCandidate> _employmentCandidates = new List<CharacterCandidate>();
 
         public override void Init()
         {
             base.Init();
 
-            _employmentCandidates.Clear();
-            _focusCharacterIndex = 0;
+            
+            _isExistEmployedCharacter   = false;
+            _focusCharacterIndex        = 0;
+            
             SetupEmploymentCandidates();
             _presenter.SetActiveCharacterSelectUIs( true );
             _presenter.AssignEmploymentCandidates( _employmentCandidates.AsReadOnly() );
@@ -98,6 +107,11 @@ namespace Frontier.FormTroop
             return false;
         }
 
+        protected override bool CanAcceptOptional()
+        {
+            return _isExistEmployedCharacter;   // 雇用候補キャラクターが一人もいない場合は完了できない
+        }
+
         protected override bool AcceptConfirm( bool isInput )
         {
             if( !isInput ) { return false; }
@@ -123,12 +137,25 @@ namespace Frontier.FormTroop
 
             // ユニットの表示を更新
             _presenter.RefreshCentralCandidateEmployed();
+            // 雇用キャラクターの存在フラグを更新
+            _isExistEmployedCharacter = IsExistEmployedCharacter();
+
+            return true;
+        }
+
+        protected override bool AcceptOptional( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            TransitState( ( int ) RecruitRootTransitTag.CONFIRM );  // 雇用完了確認ステートへ遷移
 
             return true;
         }
 
         private void SetupEmploymentCandidates()
         {
+            _employmentCandidates.Clear();
+
             for( int i = 0; i < EMPLOYABLE_CHARACTERS_NUM; ++i )
             {
                 Player player = CreateEmploymentCandidate( i );
@@ -189,6 +216,18 @@ namespace Frontier.FormTroop
 
             _presenter.SetFocusCharacters( _focusCharacterIndex );
             _presenter.ResetEmploymentCharacterDispPosition();
+        }
+
+        private bool IsExistEmployedCharacter()
+        {
+            foreach( var candidate in _employmentCandidates )
+            {
+                var player = candidate.Character as Player;
+                NullCheck.AssertNotNull( player, nameof( player ) );
+                if( player.RecruitLogic.IsEmployed ) { return true; }
+            }
+
+            return false;
         }
 
         /// <summary>

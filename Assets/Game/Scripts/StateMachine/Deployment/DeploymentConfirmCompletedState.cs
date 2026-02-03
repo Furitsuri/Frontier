@@ -8,7 +8,7 @@ namespace Frontier.StateMachine
     /// <summary>
     /// 配置フェーズ：配置確定終了状態
     /// </summary>
-    public class DeploymentConfirmCompletedState : DeploymentPhaseStateBase
+    public class DeploymentConfirmCompletedState : DeploymentPhaseStateBase // TODO: ConfirmPhaseStateBase を継承するように変更する
     {
         private enum ConfirmTag
         {

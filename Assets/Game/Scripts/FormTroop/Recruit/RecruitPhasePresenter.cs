@@ -108,6 +108,12 @@ namespace Frontier.FormTroop
             _refEmploymentCandidates = candidates;
         }
 
+        public void InitEmploymentCompletedUI( Action<ConfirmUI> callback )
+        {
+            callback( _recruitmentUI.ConfirmEmploymentUI );
+            _recruitmentUI.ConfirmEmploymentUI.gameObject.SetActive( true );
+        }
+
         /// <summary>
         /// キャラクター選択UIの表示・非表示を切り替えます
         /// </summary>
