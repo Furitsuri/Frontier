@@ -8,7 +8,7 @@ using UnityEngine;
 using Zenject;
 using static Constants;
 
-public class DeploymentPhasePresenter : PhasePresenterBase
+public class DeploymentPhasePresenter : PhasePresenterBase, IConfirmPresenter
 {
     [Inject] protected BattleRoutineController _btlRtnCtrl = null;
 
@@ -104,14 +104,15 @@ public class DeploymentPhasePresenter : PhasePresenterBase
         _deployUiSystem.CharacterSelectUI.SetActiveRightInputArrow( isActiveRight );
     }
 
-    /// <summary>
-    /// 配置完了確認UIの表示・非表示を切り替えます
-    /// </summary>
-    /// <param name="isActive"></param>
-    public void SetActiveConfirmUis( bool isActive )
+    public void SetActiveConfirmUI( bool isActive )
     {
         _deployUiSystem.CharacterSelectUI.SetActive( !isActive );           // 配置キャラクター選択UIの表示を切替
-        _deployUiSystem.ConfirmCompleted.gameObject.SetActive( isActive );  // 配置完了確認UIの表示を切替
+        _deployUiSystem.ConfirmCompletedUI.gameObject.SetActive( isActive );  // 配置完了確認UIの表示を切替
+    }
+
+    public void ApplyColor2Options( int selectIndex )
+    {
+        _deployUiSystem.ConfirmCompletedUI.ApplyTextColor( selectIndex );
     }
 
     public void ResetDeploymentCharacterDispPosition()
@@ -160,7 +161,7 @@ public class DeploymentPhasePresenter : PhasePresenterBase
     /// <param name="selectIndex"></param>
     public void ApplyTextColor2ConfirmCompleted( int selectIndex )
     {
-        _deployUiSystem.ConfirmCompleted.ApplyTextColor( selectIndex );
+        _deployUiSystem.ConfirmCompletedUI.ApplyTextColor( selectIndex );
     }
 
     public void SlideAnimationCharacterSelectionDisplay( SlideDirection direction, Action<SlideDirection> onCompleted )

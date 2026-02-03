@@ -20,25 +20,25 @@ namespace Frontier.UI
         public BattleParameterUI ParameterView;   // キャラクターパラメータ表示
 
         [Header( "PlayerCommand" )]
-        public PlayerCommandUI PlCommandWindow;             // プレイヤーの選択コマンドUI
+        public PlayerCommandUI PlCommandWindow;   // プレイヤーの選択コマンドUI
 
         [Header( "ConfirmTurnEndUI" )]
-        public ConfirmUI ConfirmTurnEnd;                    // ターン終了確認UI
+        public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
         [Header( "DamageUI" )]
-        public DamageUI DamageValue;                        // ダメージ表記
+        public DamageUI DamageValue;              // ダメージ表記
 
         [Header( "PhaseUI" )]
-        public PhaseUI Phase;                               // フェーズ表記UI
+        public PhaseUI Phase;                     // フェーズ表記UI
 
         [Header( "StageClearUI" )]
-        public StageClearUI StageClear;                     // ステージクリアUI
+        public StageClearUI StageClear;           // ステージクリアUI
 
         [Header( "GameOver" )]
-        public GameOverUI GameOver;                         // ゲームオーバー画面
+        public GameOverUI GameOver;               // ゲームオーバー画面
 
-        private RectTransform _rectTransform;               // BattleUIのRectTransform
-        private Camera _uiCamera;                           // UI表示用のカメラ
+        private RectTransform _rectTransform;     // BattleUIのRectTransform
+        private Camera _uiCamera;                 // UI表示用のカメラ
 
         public void Setup()
         {

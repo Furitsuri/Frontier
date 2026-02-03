@@ -872,7 +872,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DeployMessage: {fileID: 1075831345}
   CharacterSelectUI: {fileID: 1275182}
-  ConfirmCompleted: {fileID: 1219046206}
+  ConfirmCompletedUI: {fileID: 1219046206}
   GridCursorSelectCharaParam: {fileID: 1738820742}
 --- !u!114 &51485010
 MonoBehaviour:
