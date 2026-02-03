@@ -30,5 +30,10 @@ namespace Frontier.Entities
         {
             _owner = null;
         }
+
+        public void SetEmployed( bool isEmployed )
+        {
+            _isEmployed = isEmployed;
+        }
     }
 }

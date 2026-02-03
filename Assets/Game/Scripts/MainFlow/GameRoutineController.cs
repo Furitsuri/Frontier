@@ -15,6 +15,7 @@ namespace Frontier
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
         [Inject] private CharacterDictionary _characterDictionary   = null;
         [Inject] private CharacterFactory _characterFactory         = null;
+        [Inject] private UserDomain _userDomain                     = null;
 
         private StartMode _startMode = StartMode.NEW_GAME;
         private SubRoutineController _current;
@@ -26,6 +27,9 @@ namespace Frontier
 
         public void StartRecruit()
         {
+            // TODO : 仮実装
+            _userDomain.AddMoney( 1000 );
+
             SwitchTo( _hierarchyBld.InstantiateWithDiContainer<FormTroopRoutineController>( false ) );
         }
 

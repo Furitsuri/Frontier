@@ -143,12 +143,7 @@ namespace Frontier.Entities
         public void BePossibleAction()
         {
             _readOnlyOwner.Value.RefBattleParams.TmpParam.Reset();
-
-            // マテリアルの色味を通常の色味に戻す
-            for( int i = 0; i < _readOnlyOwner.Value.TextureMaterialAndColors.Count; ++i )
-            {
-                _readOnlyOwner.Value.TextureMaterialAndColors[i].material.color = _readOnlyOwner.Value.TextureMaterialAndColors[i].originalColor;
-            }
+            _readOnlyOwner.Value.RestoreMaterialsOriginalColor();
         }
 
         /// <summary>
@@ -163,10 +158,7 @@ namespace Frontier.Entities
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
-            for( int i = 0; i < _readOnlyOwner.Value.TextureMaterialAndColors.Count; ++i )
-            {
-                _readOnlyOwner.Value.TextureMaterialAndColors[i].material.color = Color.gray;
-            }
+            _readOnlyOwner.Value.SetMaterialsGrayColor();
         }
 
         /// <summary>

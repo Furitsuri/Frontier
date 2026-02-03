@@ -53,7 +53,6 @@ namespace Frontier.Entities
         public TransformHandler GetTransformHandler => _transformHdlr;                              // Transform操作クラスの取得
         public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
-        public List<(Material material, Color originalColor)> TextureMaterialAndColors => _textureMaterialsAndColors;
         public ref Status GetStatusRef => ref _status;
         public ref CameraParameter CameraParam => ref _camParam;
 
@@ -84,6 +83,22 @@ namespace Frontier.Entities
             Status.ApplyParams( ref _status, in statusData );
 
             CharaKey = new CharacterKey( _status.characterTag, _status.characterIndex );
+        }
+
+        public void RestoreMaterialsOriginalColor()
+        {
+            foreach( var (material, originalColor) in _textureMaterialsAndColors )
+            {
+                material.color = originalColor;
+            }
+        }
+
+        public void SetMaterialsGrayColor()
+        {
+            foreach( var (material, originalColor) in _textureMaterialsAndColors )
+            {
+                material.color = Color.gray;
+            }
         }
 
         public void NotifySkillActivated( int skillId )
