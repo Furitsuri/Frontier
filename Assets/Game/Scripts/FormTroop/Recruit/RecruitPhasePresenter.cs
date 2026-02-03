@@ -88,6 +88,16 @@ namespace Frontier.FormTroop
             _recruitmentUI.EmploymentSelectUI.FocusCharaParamUI.AssignCharacter( _focusEmployments[_focusEmployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
         }
 
+        public void RefreshCentralCandidateEmployed()
+        {
+            int centralIndex = _focusEmployments.Length / 2;
+            var player = _focusEmployments[ centralIndex ].Character as Player;
+            NullCheck.AssertNotNull( player, nameof( player ) );
+
+            // フォーカス中のキャラクター表示の更新
+            _recruitmentUI.EmploymentSelectUI.RefreshCandidate( centralIndex, ref _focusEmployments[ centralIndex ] );
+        }
+
         public void ClearFocusCharacter()
         {
             _recruitmentUI.EmploymentSelectUI.ClearSelectCharacter();

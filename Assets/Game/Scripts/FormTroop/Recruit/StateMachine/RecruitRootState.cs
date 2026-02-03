@@ -8,20 +8,22 @@ namespace Frontier.FormTroop
 {
     public sealed class RecruitRootState : RecruitPhaseStateBase
     {
-        [Inject] private UserDomain _userDomain             = null;
-        [Inject] private CharacterFactory _characterFactory = null;
+        [Inject] private UserDomain _userDomain                     = null;
+        [Inject] private CharacterDictionary _characterDictionary   = null;
+        [Inject] private CharacterFactory _characterFactory         = null;
 
         private int _focusCharacterIndex = 0;     // フォーカス中のキャラクターインデックス
-        private List<CharacterCandidate> _employmentedCandidates = new List<CharacterCandidate>();
+        private List<CharacterCandidate> _employmentCandidates = new List<CharacterCandidate>();
 
         public override void Init()
         {
             base.Init();
 
+            _employmentCandidates.Clear();
             _focusCharacterIndex = 0;
             SetupEmploymentCandidates();
             _presenter.SetActiveCharacterSelectUIs( true );
-            _presenter.AssignEmploymentCandidates( _employmentedCandidates.AsReadOnly() );
+            _presenter.AssignEmploymentCandidates( _employmentCandidates.AsReadOnly() );
             _presenter.SetFocusCharacters( _focusCharacterIndex );
         }
 
@@ -35,6 +37,7 @@ namespace Frontier.FormTroop
 
         public override void ExitState()
         {
+            JoinCandidates();
             RemoveEmploymentCandidates();
 
             base.ExitState();
@@ -81,6 +84,49 @@ namespace Frontier.FormTroop
             return isOperated;
         }
 
+        protected override bool CanAcceptConfirm()
+        {
+            var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
+            NullCheck.AssertNotNull( player, nameof( player ) );
+
+            // 既に雇用チェックされている場合は雇用前の状態に戻すことができる
+            if( player.RecruitLogic.IsEmployed ) { return true; }
+
+            // 所持金が足りているかチェック
+            if( player.RecruitLogic.Cost <= _userDomain.Money ) { return true; }
+
+            return false;
+        }
+
+        protected override bool AcceptConfirm( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
+            NullCheck.AssertNotNull( player, nameof( player ) );
+
+            // 既に雇用チェックされている場合は所持金とユニットを雇用前の状態に戻す
+            if( player.RecruitLogic.IsEmployed )
+            {
+                player.RecruitLogic.SetEmployed( false );
+                _userDomain.AddMoney( player.RecruitLogic.Cost );
+            }
+            else
+            {
+                // 所持金チェック
+                if( _userDomain.Money < player.RecruitLogic.Cost )　{　return false;　}
+
+                // 所持金を減算して雇用確定
+                _userDomain.AddMoney( - player.RecruitLogic.Cost );
+                player.RecruitLogic.SetEmployed( true );
+            }
+
+            // ユニットの表示を更新
+            _presenter.RefreshCentralCandidateEmployed();
+
+            return true;
+        }
+
         private void SetupEmploymentCandidates()
         {
             for( int i = 0; i < EMPLOYABLE_CHARACTERS_NUM; ++i )
@@ -91,20 +137,36 @@ namespace Frontier.FormTroop
                 CharacterCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<CharacterCandidate>( false );
                 candidate.Init( player, null );
 
-                _employmentedCandidates.Add( candidate );
+                _employmentCandidates.Add( candidate );
             }
         }
 
+        /// <summary>
+        /// 雇用チェックされたキャラクターをキャラクター辞書に登録します
+        /// </summary>
+        private void JoinCandidates()
+        {
+            foreach( var candidate in _employmentCandidates )
+            {
+                var player = candidate.Character as Player;
+                if( !player.RecruitLogic.IsEmployed ) { continue; }
+                _characterDictionary.Add( new CharacterKey( CHARACTER_TAG.PLAYER, player.GetStatusRef.characterIndex ), player );
+            }
+        }
+
+        /// <summary>
+        /// 不要な雇用候補キャラクターを破棄します
+        /// </summary>
         private void RemoveEmploymentCandidates()
         {
-            foreach( var unit in _employmentedCandidates )
+            foreach( var unit in _employmentCandidates )
             {
                 Player player = unit.Character as Player;
 
                 if( player.RecruitLogic.IsEmployed ) { continue; }
 
                 player.Dispose();
-                _employmentedCandidates.Remove( unit );
+                _employmentCandidates.Remove( unit );
             }
         }
 
@@ -118,11 +180,11 @@ namespace Frontier.FormTroop
 
             if( direction == SlideDirection.LEFT )
             {
-                _focusCharacterIndex = ( ( _focusCharacterIndex - 1 ) + _employmentedCandidates.Count ) % _employmentedCandidates.Count;
+                _focusCharacterIndex = ( ( _focusCharacterIndex - 1 ) + _employmentCandidates.Count ) % _employmentCandidates.Count;
             }
             else
             {
-                _focusCharacterIndex = ( _focusCharacterIndex + 1 ) % _employmentedCandidates.Count;
+                _focusCharacterIndex = ( _focusCharacterIndex + 1 ) % _employmentCandidates.Count;
             }
 
             _presenter.SetFocusCharacters( _focusCharacterIndex );
@@ -136,7 +198,7 @@ namespace Frontier.FormTroop
         private Player CreateEmploymentCandidate( int characterIndex )
         {
             ( int unitTypeIndex, int cost, CharacterStatusData statusData ) =
-                RecruitFormula.GenerateEmploymentCandidateData( _userDomain.StageLevel, characterIndex, _employmentedCandidates );
+                RecruitFormula.GenerateEmploymentCandidateData( _userDomain.StageLevel, characterIndex, _employmentCandidates );
 
             Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, unitTypeIndex, statusData ) as Player;
             player.OnRecruitEnter( cost );

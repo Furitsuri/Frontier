@@ -1,16 +1,24 @@
 ﻿using Frontier.Entities;
-using Frontier.UI;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
-using UnityEngine;
 using static Constants;
 
 namespace Frontier.UI
 {
+    /// <summary>
+    /// キャラクターを雇用する際のキャラクター選択UI
+    /// </summary>
     public sealed class EmploymentSelectionUI : CharacterSelectionUI
     {
         private EmploymentSelectionDisplay[] _employmentSelectionDisplays = new EmploymentSelectionDisplay[SHOWABLE_SELECTION_CHARACTERS_NUM];
+
+        /// <summary>
+        /// 指定のインデックスの候補キャラクターにおける表示を更新します
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="candidate"></param>
+        public void RefreshCandidate( int index,  ref CharacterCandidate candidate )
+        {
+            _employmentSelectionDisplays[index].AssignSelectCandidate( ref candidate );
+        }
 
         public override void Setup()
         {
