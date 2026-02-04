@@ -137,7 +137,8 @@ namespace Frontier.UI
 
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
-                LazyInject.GetOrCreate( ref _characterSelectionDisplays[i], () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<CharacterSelectionDisplay>( _characterSelectionDisplayPrefab.gameObject, gameObject, true, false, "DeploymentCharaDisp_" + i ) );
+                LazyInject.GetOrCreate( ref _characterSelectionDisplays[i],
+                    () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<CharacterSelectionDisplay>( _characterSelectionDisplayPrefab.gameObject, gameObject, true, false, "CharacterDisp_" + i ) );
                 _characterSelectionDisplays[i].Setup();
 
                 _characterSelectionDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる

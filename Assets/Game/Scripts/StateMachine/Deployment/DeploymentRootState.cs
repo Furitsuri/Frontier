@@ -13,8 +13,8 @@ namespace Frontier.StateMachine
     /// </summary>
     public class DeploymentRootState : DeploymentPhaseStateBase
     {
-        [Inject] private IStageDataProvider _stageDataProvider = null;
-        [Inject] private CharacterDictionary _characterDict = null;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private UserDomain _userDomain                 = null;
 
         private int _focusCharacterIndex = 0;     // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot = null;
@@ -63,12 +63,12 @@ namespace Frontier.StateMachine
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "PLACE CHARACTER", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "UNDO PLACE", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.ALL_CURSOR,   "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      "PLACE\nCHARACTER", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,       "UNDO\nPLACE", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub2 ) }, 0.0f, hashCode),
-               (GuideIcon.OPT2, "COMPLETE", CanAcceptOptional, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.OPT2,         "COMPLETE", CanAcceptOptional, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
         }
 
@@ -281,7 +281,7 @@ namespace Frontier.StateMachine
         {
             _deploymentCandidates.Clear();
 
-            foreach( var player in _characterDict.GetCharacterList( CHARACTER_TAG.PLAYER ) )
+            foreach( var player in _userDomain.Members )
             {
                 // UI表示用に各キャラクターのスナップショットを撮影
                 var size = _presenter.GetCharacterSelectionDisplaySize();

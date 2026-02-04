@@ -2,6 +2,7 @@
 {
     public enum TriggerType
     {
+        FirstRecruit,
         OpenBattleCommand,
         LearnParrySkill,
         StartTutorialBattle,
