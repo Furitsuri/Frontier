@@ -42,8 +42,8 @@ namespace Frontier.StateMachine
             // INFOアイコンの文字列を設定
             _inputInfoStrings = new string[]
             {
-                "SHOW TOOL TIP", // ツールチップ表示
-                "HIDE TOOL TIP", // ツールチップ非表示
+                "SHOW\nTOOL TIP", // ツールチップ表示
+                "HIDE\nTOOL TIP", // ツールチップ非表示
             };
 
             _inputInfoStrWrapper = new InputCodeStringWrapper( _inputInfoStrings[0] );
