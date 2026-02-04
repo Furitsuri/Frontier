@@ -10,9 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6407282b39c7fcd43bdf2237141dd828, type: 3}
-  m_Name: HowToMove
+  m_Name: RecruitGuide
   m_EditorClassIdentifier: 
-  _triggerType: 1
   _title: HOW TO MOVE
   flagBitIndex: 0
   _tutorialElements:

@@ -22,9 +22,14 @@ namespace Frontier.FormTroop
             _handler.Update();
         }
 
-        public override void LateUpdate()
+        public override bool LateUpdate()
         {
-            _handler.LateUpdate();
+            if( _handler.LateUpdate() )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public override void FixedUpdate()

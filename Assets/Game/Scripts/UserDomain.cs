@@ -1,14 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using Frontier.Entities;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
+[Serializable]
 public class UserDomain
 {
-    public int Money { get; private set; }
-    public int StageLevel { get; private set; }
+    [SerializeField] public int Money { get; private set; } = 0;
+    [SerializeField] public int StageLevel { get; private set; } = 1;
+    [SerializeField] public List<Player> Members { get; private set; } = new List<Player>();
 
     public void AddMoney( int amount )
     {
         Money += amount;
     }
+
+    public void IncreaseStageLevel()
+    {
+        StageLevel++;
+    }
+
+    public void RecruitMember( Player member )
+    {
+        Members.Add( member );
+    }
+
     /*
     public IReadOnlyList<Unit> Units => _units;
 

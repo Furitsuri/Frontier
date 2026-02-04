@@ -116,13 +116,13 @@ namespace Frontier.Battle
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();   // タイル情報を更新
         }
 
-        public override void LateUpdate()
+        public override bool LateUpdate()
         {
-            if( _presenter.IsActiveStageClearAnimation() )  { return; }  // ステージクリア時のUIアニメーションが再生されている場合は終了
-            if( _presenter.IsActiveGameOverAnimation() )    { return; }  // ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
+            if( _presenter.IsActiveStageClearAnimation() )  { return false; }  // ステージクリア時のUIアニメーションが再生中の場合は終了
+            if( _presenter.IsActiveGameOverAnimation() )    { return false; }  // ゲーム―オーバー時のUIアニメーションが再生中の場合は終了
 
             // 勝利、全滅チェックを行う
-            if( _btlCharaCdr.CheckVictoryOrDefeat( _presenter.StartStageClearAnim, _presenter.StartGameOverAnim ) ) { return; }
+            if( _btlCharaCdr.CheckVictoryOrDefeat( _presenter.StartStageClearAnim, _presenter.StartGameOverAnim ) ) { return true; }
 
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )
@@ -135,6 +135,8 @@ namespace Frontier.Battle
                 _currentPhase = GetNextPhase( _currentPhase );
                 _phaseHandlers[_currentPhase].Run();
             }
+
+            return false;
         }
 
         public override void FixedUpdate() { }

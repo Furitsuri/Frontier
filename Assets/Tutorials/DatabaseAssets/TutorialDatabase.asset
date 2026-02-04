@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: TutorialDatabase
   m_EditorClassIdentifier: 
   tutorials:
+  - {fileID: 11400000, guid: 2be1a44556e0a10479a17358cb3e59cc, type: 2}
   - {fileID: 11400000, guid: 1076a6b4f8fef80419fdfb359aab159b, type: 2}

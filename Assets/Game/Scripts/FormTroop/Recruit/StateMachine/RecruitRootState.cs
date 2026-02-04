@@ -1,6 +1,6 @@
 ﻿using Frontier.Entities;
+using Frontier.Tutorial;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using Zenject;
 using static Constants;
 using static Frontier.BattleFileLoader;
@@ -16,7 +16,6 @@ namespace Frontier.FormTroop
         }
 
         [Inject] private UserDomain _userDomain                     = null;
-        [Inject] private CharacterDictionary _characterDictionary   = null;
         [Inject] private CharacterFactory _characterFactory         = null;
 
         private bool _isExistEmployedCharacter  = false;
@@ -26,7 +25,6 @@ namespace Frontier.FormTroop
         public override void Init()
         {
             base.Init();
-
             
             _isExistEmployedCharacter   = false;
             _focusCharacterIndex        = 0;
@@ -35,6 +33,9 @@ namespace Frontier.FormTroop
             _presenter.SetActiveCharacterSelectUIs( true );
             _presenter.AssignEmploymentCandidates( _employmentCandidates.AsReadOnly() );
             _presenter.SetFocusCharacters( _focusCharacterIndex );
+
+            // 初の雇用フェーズの開始をチュートリアルへ通知
+            TutorialFacade.Notify( TriggerType.FirstRecruit );
         }
 
         public override bool Update()
@@ -191,7 +192,7 @@ namespace Frontier.FormTroop
             {
                 var player = candidate.Character as Player;
                 if( !player.RecruitLogic.IsEmployed ) { continue; }
-                _characterDictionary.Add( new CharacterKey( CHARACTER_TAG.PLAYER, player.GetStatusRef.characterIndex ), player );
+                _userDomain.RecruitMember( player );
             }
         }
 
@@ -200,14 +201,14 @@ namespace Frontier.FormTroop
         /// </summary>
         private void RemoveEmploymentCandidates()
         {
-            foreach( var unit in _employmentCandidates )
+            for( int i = 0; i < _employmentCandidates.Count; ++i )
+            // foreach( var unit in _employmentCandidates )
             {
-                Player player = unit.Character as Player;
+                Player player = _employmentCandidates[i].Character as Player;
 
                 if( player.RecruitLogic.IsEmployed ) { continue; }
 
                 player.Dispose();
-                _employmentCandidates.Remove( unit );
             }
         }
 
