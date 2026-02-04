@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using Zenject;
 using static Constants;
 using static Frontier.BattleFileLoader;
@@ -57,12 +58,31 @@ namespace Frontier.FormTroop
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "SELECT UNIT",  CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      "RECRUIT UNIT", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.TOOL,         "HIRED UNIT",   CanAcceptTool, new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
-               (GuideIcon.INFO,         "STATUS",       CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2,         "COMPLETE",     CanAcceptOptional, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "SELECT\nUNIT", CanAcceptDefault,   new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      "RECRUIT\nUNIT",CanAcceptConfirm,   new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.TOOL,         "HIRED UNIT",   CanAcceptTool,      new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "STATUS",       CanAcceptDefault,   new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT2,         "COMPLETE",     CanAcceptOptional,  new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
+        }
+
+        protected override bool CanAcceptConfirm()
+        {
+            var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
+            NullCheck.AssertNotNull( player, nameof( player ) );
+
+            // 既に雇用チェックされている場合は雇用前の状態に戻すことができる
+            if( player.RecruitLogic.IsEmployed ) { return true; }
+
+            // 所持金が足りているかチェック
+            if( player.RecruitLogic.Cost <= _userDomain.Money ) { return true; }
+
+            return false;
+        }
+
+        protected override bool CanAcceptOptional()
+        {
+            return _isExistEmployedCharacter;   // 雇用候補キャラクターが一人もいない場合は完了できない
         }
 
         /// <summary>
@@ -91,25 +111,6 @@ namespace Frontier.FormTroop
             }
 
             return isOperated;
-        }
-
-        protected override bool CanAcceptConfirm()
-        {
-            var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
-            NullCheck.AssertNotNull( player, nameof( player ) );
-
-            // 既に雇用チェックされている場合は雇用前の状態に戻すことができる
-            if( player.RecruitLogic.IsEmployed ) { return true; }
-
-            // 所持金が足りているかチェック
-            if( player.RecruitLogic.Cost <= _userDomain.Money ) { return true; }
-
-            return false;
-        }
-
-        protected override bool CanAcceptOptional()
-        {
-            return _isExistEmployedCharacter;   // 雇用候補キャラクターが一人もいない場合は完了できない
         }
 
         protected override bool AcceptConfirm( bool isInput )
@@ -143,11 +144,24 @@ namespace Frontier.FormTroop
             return true;
         }
 
+        protected override bool AcceptInfo( bool isInput )
+        {
+            if( !isInput ) { return false; }
+
+            // ステータス表示ステートに対象キャラクターを渡す
+            Handler.ReceiveContext( _employmentCandidates[_focusCharacterIndex].Character );
+            // キャラクターステータス表示ステートへ遷移
+            TransitState( ( int ) RecruitRootTransitTag.CHARACTER_STATUS );
+
+            return true;
+        }
+
         protected override bool AcceptOptional( bool isInput )
         {
             if( !isInput ) { return false; }
 
-            TransitState( ( int ) RecruitRootTransitTag.CONFIRM );  // 雇用完了確認ステートへ遷移
+            // 雇用完了確認ステートへ遷移
+            TransitState( ( int ) RecruitRootTransitTag.CONFIRM );
 
             return true;
         }
