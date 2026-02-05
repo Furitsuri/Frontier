@@ -45,7 +45,7 @@ namespace Frontier
 
             if( _startMode == StartMode.NEW_GAME )
             {
-                // StartNewGame();
+                StartNewGame();
             }
 
             StartRecruit();

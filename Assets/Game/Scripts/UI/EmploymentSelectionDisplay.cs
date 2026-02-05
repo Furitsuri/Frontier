@@ -3,6 +3,7 @@ using Frontier.UI;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
 {
@@ -14,6 +15,9 @@ public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
 
     [Header( "雇用コストテキスト" )]
     [SerializeField] private TextMeshProUGUI _tmpEmploymentCostValue;
+
+    private Color _originalCostSpriteColor;
+    private Color _originalCostTextColor;
 
     public void SetActiveEmployedMarkObject( bool isActive )
     {
@@ -36,6 +40,9 @@ public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
 
         SetActiveEmployedMarkObject( false );
         SetActiveCostObject( true );
+
+        _originalCostSpriteColor    = _costObject.GetComponentInChildren<Image>().color;
+        _originalCostTextColor      = _tmpEmploymentCostValue.color;
     }
 
     /// <summary>
@@ -50,5 +57,29 @@ public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
         NullCheck.AssertNotNull( player, nameof( player ) );
         SetActiveEmployedMarkObject( player.RecruitLogic.IsEmployed );
         SetCostValueText( player.RecruitLogic.Cost );
+    }
+
+    public override void SetFocusedColor( bool isFocused )
+    {
+        base.SetFocusedColor( isFocused );
+
+        if( !isFocused )
+        {
+            _costObject.GetComponentInChildren<Image>().color = ToGray( _originalCostSpriteColor );
+            _tmpEmploymentCostValue.color = ToGray( _originalCostTextColor );
+        }
+        else
+        {
+            _costObject.GetComponentInChildren<Image>().color = _originalCostSpriteColor;
+            _tmpEmploymentCostValue.color = _originalCostTextColor;
+        }
+    }
+
+    private Color ToGray( Color srcColor )
+    {
+        float gray = srcColor.grayscale;
+        Color grayColor = new Color( gray, gray, gray, srcColor.a );
+
+        return grayColor * 0.6f;
     }
 }

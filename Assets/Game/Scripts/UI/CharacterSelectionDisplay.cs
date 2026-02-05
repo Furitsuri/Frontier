@@ -99,6 +99,18 @@ namespace Frontier.UI
             _characterCamera?.AssignCharacter( _candidate.Character, _candidate.Character.gameObject.layer );
         }
 
+        public virtual void SetFocusedColor( bool isFocused )
+        {
+            if( !isFocused )
+            {
+                _candidate.Character.SetMaterialsGrayColor();
+            }
+            else
+            {
+                _candidate.Character.RestoreMaterialsOriginalColor();
+            }
+        }
+
         public override void Setup()
         {
             base.Setup();

@@ -50,6 +50,8 @@ namespace Frontier.UI
 
                 // 先頭と末尾以外はコスト表示を有効化
                 _employmentSelectionDisplays[i].SetActiveCostObject( !( i == 0 || i == SHOWABLE_SELECTION_CHARACTERS_NUM - 1 ) );
+                // 中央のキャラクターのみフォーカス色にする
+                _employmentSelectionDisplays[i].SetFocusedColor( i == SHOWABLE_SELECTION_CHARACTERS_NUM / 2 );
             }
         }
     }

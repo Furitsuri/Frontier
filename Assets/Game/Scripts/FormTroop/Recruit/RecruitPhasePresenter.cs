@@ -69,7 +69,7 @@ namespace Frontier.FormTroop
 
             _recruitmentUI.EmploymentSelectUI.AssignSelectCandidates( ref _focusEmployments );
 
-            RefreshFocusEmploymentCharacter();
+            RefreshFocusCharacterParameter();
         }
 
         public void ResetEmploymentCharacterDispPosition()
@@ -80,13 +80,16 @@ namespace Frontier.FormTroop
         /// <summary>
         /// フォーカス中の配置可能キャラクター情報を更新します
         /// </summary>
-        public void RefreshFocusEmploymentCharacter()
+        public void RefreshFocusCharacterParameter()
         {
             // フォーカス中のキャラクターのパラメータの表示
             Debug.Assert( _focusEmployments.Length % 2 == 1 );  // 奇数であることが前提
             _recruitmentUI.EmploymentSelectUI.FocusCharaParamUI.AssignCharacter( _focusEmployments[_focusEmployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
         }
 
+        /// <summary>
+        /// 表示中央のキャラクター(フォーカス中)の雇用チェック状態に応じて表示を更新します
+        /// </summary>
         public void RefreshCentralCandidateEmployed()
         {
             int centralIndex = _focusEmployments.Length / 2;
