@@ -20,7 +20,9 @@ namespace Frontier.FormTroop
 
         private bool _isExistEmployedCharacter  = false;
         private int _focusCharacterIndex        = 0;     // フォーカス中のキャラクターインデックス
+        private string[] _inputConfirmStrings;
         private List<CharacterCandidate> _employmentCandidates = new List<CharacterCandidate>();
+        private InputCodeStringWrapper _inputConfirmStrWrapper = null;
 
         public override void Init()
         {
@@ -28,7 +30,16 @@ namespace Frontier.FormTroop
             
             _isExistEmployedCharacter   = false;
             _focusCharacterIndex        = 0;
-            
+
+            // CONFIRMアイコンの文字列を設定
+            _inputConfirmStrings = new string[]
+            {
+                "EMPLOY\nCONTARCT",     // 雇用契約
+                "CANCEL\nCONTRACT",     // 契約中止
+            };
+
+            _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
+
             SetupEmploymentCandidates();
             _presenter.SetActiveCharacterSelectUIs( true );
             _presenter.AssignEmploymentCandidates( _employmentCandidates.AsReadOnly() );
@@ -42,6 +53,10 @@ namespace Frontier.FormTroop
         {
             // 基底の更新は行わない
             // if( base.Update() ) { return true; }
+
+            _inputConfirmStrWrapper.Explanation = 
+                _employmentCandidates[_focusCharacterIndex].Character is Player player && player.RecruitLogic.IsEmployed ?
+                _inputConfirmStrings[1] : _inputConfirmStrings[0];
 
             return ( 0 <= TransitIndex );
         }
@@ -59,11 +74,10 @@ namespace Frontier.FormTroop
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "SELECT\nUNIT", CanAcceptDefault,   new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      "RECRUIT\nUNIT",CanAcceptConfirm,   new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.TOOL,         "HIRED UNIT",   CanAcceptTool,      new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
-               (GuideIcon.INFO,         "STATUS",       CanAcceptDefault,   new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2,         "COMPLETE",     CanAcceptOptional,  new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "SELECT\nUNIT",             CanAcceptDefault,   new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      _inputConfirmStrWrapper,    CanAcceptConfirm,   new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "STATUS",                   CanAcceptDefault,   new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT2,         "COMPLETE",                 CanAcceptOptional,  new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
             );
         }
 
