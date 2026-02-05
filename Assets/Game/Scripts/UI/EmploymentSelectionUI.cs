@@ -37,21 +37,12 @@ namespace Frontier.UI
 
         public override void AssignSelectCandidates( ref CharacterCandidate[] selectCandidates )
         {
+            base.AssignSelectCandidates( ref selectCandidates );
+
+            // 先頭と末尾以外はコスト表示を有効化
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
-                if( selectCandidates[i] == null )
-                {
-                    _employmentSelectionDisplays[i].gameObject.SetActive( false );
-                    continue;
-                }
-
-                _employmentSelectionDisplays[i].gameObject.SetActive( true );
-                _employmentSelectionDisplays[i].AssignSelectCandidate( ref selectCandidates[i] );
-
-                // 先頭と末尾以外はコスト表示を有効化
                 _employmentSelectionDisplays[i].SetActiveCostObject( !( i == 0 || i == SHOWABLE_SELECTION_CHARACTERS_NUM - 1 ) );
-                // 中央のキャラクターのみフォーカス色にする
-                _employmentSelectionDisplays[i].SetFocusedColor( i == SHOWABLE_SELECTION_CHARACTERS_NUM / 2 );
             }
         }
     }

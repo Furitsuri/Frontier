@@ -88,6 +88,16 @@ namespace Frontier.UI
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
                 _characterSelectionDisplays[i].StartSlide( SlideGoalPos );
+
+                // スライド開始前にフォーカスしている項目とそうでない項目のカラー変更を適応させる
+                if( direction == SlideDirection.LEFT )
+                {
+                    _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 - 1 ) );
+                }
+                else if( direction == SlideDirection.RIGHT )
+                {
+                    _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 + 1 ) );
+                }
             }
         }
 
@@ -128,6 +138,9 @@ namespace Frontier.UI
 
                 _characterSelectionDisplays[i].gameObject.SetActive( true );
                 _characterSelectionDisplays[i].AssignSelectCandidate( ref selectCandidates[i] );
+
+                // 中央のキャラクターのみフォーカス色にする
+                _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 ) );
             }
         }
 
@@ -140,7 +153,6 @@ namespace Frontier.UI
                 LazyInject.GetOrCreate( ref _characterSelectionDisplays[i],
                     () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<CharacterSelectionDisplay>( _characterSelectionDisplayPrefab.gameObject, gameObject, true, false, "CharacterDisp_" + i ) );
                 _characterSelectionDisplays[i].Setup();
-
                 _characterSelectionDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
             }
 
