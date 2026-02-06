@@ -140,7 +140,7 @@ public class DeploymentPhasePresenter : PhasePresenterBase, IConfirmPresenter
 
         // 配置候補UI内でフォーカス中のキャラクターも更新
         // MEMO : RefreshFocusDeploymentCharacter()を呼んでしまうと無限ループに陥るため注意
-        _deployUiSystem.CharacterSelectUI.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+        // _deployUiSystem.CharacterSelectUI.FocusCharaParamUI.AssignCharacter( _focusDeployments[_focusDeployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
     }
 
     /// <summary>

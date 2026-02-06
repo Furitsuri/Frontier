@@ -79,28 +79,6 @@ namespace Frontier.UI
             _rightInputArrow.SetActive( isRightActive );
         }
 
-        public void StartSlideAnimation( SlideDirection direction )
-        {
-            Vector2 SlideGoalPos = ( direction == SlideDirection.LEFT ) ?
-                new Vector2( _offsetX, 0f ) :
-                new Vector2( -_offsetX, 0f );
-
-            for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
-            {
-                _characterSelectionDisplays[i].StartSlide( SlideGoalPos );
-
-                // スライド開始前にフォーカスしている項目とそうでない項目のカラー変更を適応させる
-                if( direction == SlideDirection.LEFT )
-                {
-                    _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 - 1 ) );
-                }
-                else if( direction == SlideDirection.RIGHT )
-                {
-                    _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 + 1 ) );
-                }
-            }
-        }
-
         public void ResetDeploymentCharacterDispPositions()
         {
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
@@ -108,7 +86,6 @@ namespace Frontier.UI
                 _characterSelectionDisplays[i].ResetAnchoredPosition();
             }
         }
-
 
         public void ClearSelectCharacter()
         {
@@ -126,6 +103,18 @@ namespace Frontier.UI
             return (rect.rect.width, rect.rect.height);
         }
 
+        public virtual void StartSlideAnimation( SlideDirection direction )
+        {
+            Vector2 SlideGoalPos = ( direction == SlideDirection.LEFT ) ?
+                new Vector2( _offsetX, 0f ) :
+                new Vector2( -_offsetX, 0f );
+
+            for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
+            {
+                _characterSelectionDisplays[i].StartSlide( SlideGoalPos );
+            }
+        }
+
         public virtual void AssignSelectCandidates( ref CharacterCandidate[] selectCandidates )
         {
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
@@ -138,9 +127,6 @@ namespace Frontier.UI
 
                 _characterSelectionDisplays[i].gameObject.SetActive( true );
                 _characterSelectionDisplays[i].AssignSelectCandidate( ref selectCandidates[i] );
-
-                // 中央のキャラクターのみフォーカス色にする
-                _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 ) );
             }
         }
 
