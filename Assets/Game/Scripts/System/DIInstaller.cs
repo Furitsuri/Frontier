@@ -24,12 +24,10 @@ namespace Frontier
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().AsSingle();
-            Container.Bind<CharacterDictionary>().AsSingle().NonLazy();
 
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
 
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
-            // Container.Bind<BattleCameraController>().FromComponentInHierarchy().AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();

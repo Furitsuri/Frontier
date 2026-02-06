@@ -219,6 +219,7 @@ namespace Frontier.FormTroop
             // foreach( var unit in _employmentCandidates )
             {
                 Player player = _employmentCandidates[i].Character as Player;
+                player.RestoreMaterialsOriginalColor();
 
                 if( player.RecruitLogic.IsEmployed ) { continue; }
 

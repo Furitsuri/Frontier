@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using UnityEngine;
 using static Constants;
 
 namespace Frontier.UI
@@ -35,14 +36,34 @@ namespace Frontier.UI
             }
         }
 
+        public override void StartSlideAnimation( SlideDirection direction )
+        {
+            base.StartSlideAnimation( direction );
+
+            for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
+            {
+                // スライド開始前にフォーカスしている項目とそうでない項目のカラー変更を適応させる
+                if( direction == SlideDirection.LEFT )
+                {
+                    _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 - 1 ) );
+                }
+                else if( direction == SlideDirection.RIGHT )
+                {
+                    _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 + 1 ) );
+                }
+            }
+        }
+
         public override void AssignSelectCandidates( ref CharacterCandidate[] selectCandidates )
         {
             base.AssignSelectCandidates( ref selectCandidates );
 
-            // 先頭と末尾以外はコスト表示を有効化
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
+                // 先頭と末尾以外はコスト表示を有効化
                 _employmentSelectionDisplays[i].SetActiveCostObject( !( i == 0 || i == SHOWABLE_SELECTION_CHARACTERS_NUM - 1 ) );
+                // 中央のキャラクターのみフォーカス色にする
+                _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 ) );
             }
         }
     }
