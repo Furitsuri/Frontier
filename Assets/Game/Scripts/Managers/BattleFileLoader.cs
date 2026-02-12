@@ -37,7 +37,7 @@ namespace Frontier
         [Inject] private BattleRoutineController _btlRtnCtrl = null;
         [Inject] private CharacterFactory _characterFactory = null;
 
-        [System.Serializable]
+        [Serializable]
         public struct CharacterStatusData
         {
             public int CharacterTag;
@@ -59,7 +59,7 @@ namespace Frontier
             public int[] Skills;
         }
 
-        [System.Serializable]
+        [Serializable]
         public struct FileSkillData
         {
             public string Name;

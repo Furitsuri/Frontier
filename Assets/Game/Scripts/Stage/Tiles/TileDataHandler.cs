@@ -213,7 +213,7 @@ namespace Frontier.Stage
                     for( int i = 0; i < _attackableTileIndexs.Count; ++i )
                     {
                         var tileData = _stageDataProvider.CurrentData.GetTile( _attackableTileIndexs[i] ).DynamicData();
-                        if( target.CharaKey == tileData.CharaKey )
+                        if( target.CharaKey() == tileData.CharaKey )
                         {
                             _gridCursorCtrl.SetAtkTargetIndex( i );
                             break;

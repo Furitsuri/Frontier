@@ -1,6 +1,8 @@
 ﻿using Frontier.Entities;
 using Frontier.Tutorial;
 using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
 using Zenject;
 using static Constants;
 using static Frontier.BattleFileLoader;
@@ -23,6 +25,7 @@ namespace Frontier.FormTroop
         private string[] _inputConfirmStrings;
         private List<CharacterCandidate> _employmentCandidates = new List<CharacterCandidate>();
         private InputCodeStringWrapper _inputConfirmStrWrapper = null;
+        private UnitLevelStatsContainer _unitLevelStatsContainer = null;
 
         public override void Init()
         {
@@ -39,6 +42,10 @@ namespace Frontier.FormTroop
             };
 
             _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
+
+            // JSONファイルの読み込み
+            string json = File.ReadAllText( "Assets/Resources/CharactersData/UnitLevelStats/UnitLevelStatsData.json" );
+            _unitLevelStatsContainer = JsonUtility.FromJson<UnitLevelStatsContainer>( json );
 
             SetupEmploymentCandidates();
             _presenter.SetActiveCharacterSelectUIs( true );
@@ -187,7 +194,7 @@ namespace Frontier.FormTroop
 
             for( int i = 0; i < EMPLOYABLE_CHARACTERS_NUM; ++i )
             {
-                Player player = CreateEmploymentCandidate( i );
+                Player player = CreateEmploymentCandidate( _userDomain.StageLevel, i );
 
                 // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
                 CharacterCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<CharacterCandidate>( false );
@@ -216,7 +223,6 @@ namespace Frontier.FormTroop
         private void RemoveEmploymentCandidates()
         {
             for( int i = 0; i < _employmentCandidates.Count; ++i )
-            // foreach( var unit in _employmentCandidates )
             {
                 Player player = _employmentCandidates[i].Character as Player;
                 player.RestoreMaterialsOriginalColor();
@@ -264,10 +270,10 @@ namespace Frontier.FormTroop
         /// 雇用候補キャラクターを生成します
         /// </summary>
         /// <returns></returns>
-        private Player CreateEmploymentCandidate( int characterIndex )
+        private Player CreateEmploymentCandidate( int level, int characterIndex )
         {
             ( int unitTypeIndex, int cost, CharacterStatusData statusData ) =
-                RecruitFormula.GenerateEmploymentCandidateData( _userDomain.StageLevel, characterIndex, _employmentCandidates );
+                RecruitFormula.GenerateEmploymentCandidateData( level, characterIndex, _unitLevelStatsContainer, _employmentCandidates );
 
             Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, unitTypeIndex, statusData ) as Player;
             player.OnRecruitEnter( cost );

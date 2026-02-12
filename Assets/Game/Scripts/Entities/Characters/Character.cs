@@ -46,7 +46,6 @@ namespace Frontier.Entities
 
         public int StatusEffectBitFlag { get; set; } = 0;                           // キャラクターに設定されているステータス効果のビットフラグ
         public float ElapsedTime { get; set; } = 0f;
-        public CharacterKey CharaKey { get; set; } = new CharacterKey( CHARACTER_TAG.NONE, -1 );    // キャラクターのハッシュキー
         public AnimationController AnimCtrl => _animCtrl;                                           // アニメーションコントローラの取得
         public TimeScale GetTimeScale => _timeScale;                                                // タイムスケールの取得
         public ref BattleParameters RefBattleParams => ref _btlParams;                                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
@@ -81,8 +80,6 @@ namespace Frontier.Entities
         public void Apply( CharacterStatusData statusData )
         {
             Status.ApplyParams( ref _status, in statusData );
-
-            CharaKey = new CharacterKey( _status.characterTag, _status.characterIndex );
         }
 
         public void RestoreMaterialsOriginalColor()
@@ -104,6 +101,11 @@ namespace Frontier.Entities
         public void NotifySkillActivated( int skillId )
         {
             // _skillNotifier = SkillsData.skillNotifierFactory[skillId];
+        }
+
+        public CharacterKey CharaKey()
+        {
+            return new CharacterKey( _status.characterTag, _status.characterIndex );
         }
 
         /// <summary>
