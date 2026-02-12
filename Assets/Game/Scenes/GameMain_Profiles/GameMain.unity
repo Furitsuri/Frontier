@@ -15192,7 +15192,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e957076e0504794cad643a081807965, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PhaseText:
+  _animNames:
+  - CrossingFromL
+  - CrossingFromR
+  _phaseText:
   - {fileID: 6843313300780142705}
   - {fileID: 3448929923026830265}
 --- !u!114 &572692664377140242

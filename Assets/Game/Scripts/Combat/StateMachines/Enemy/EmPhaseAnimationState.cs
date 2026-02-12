@@ -6,7 +6,7 @@ namespace Frontier.Battle
     {
         protected override void StartPhaseAnim()
         {
-            _btlUi.TogglePhaseUI( true, TurnType.ENEMY_TURN );
+            _btlUi.SetTurnType( TurnType.ENEMY_TURN );
 
             base.StartPhaseAnim();
         }
