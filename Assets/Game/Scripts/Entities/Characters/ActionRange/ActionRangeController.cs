@@ -56,7 +56,7 @@ namespace Frontier.Entities
             var jmp         = charaParam.jumpForce;
             var atkRng      = !_owner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.CharaKey, ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.CharaKey(), ref _actionableTileMap );
         }
 
         public void SetupAttackableRangeData( int dprtTileIdx )
@@ -65,7 +65,7 @@ namespace Frontier.Entities
 
             var atkRng = !_owner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, _owner.CharaKey, ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, _owner.CharaKey(), ref _actionableTileMap );
         }
 
         /// <summary>

@@ -81,7 +81,7 @@ namespace Frontier.Entities
                         LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.CharaKey );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.CharaKey() );
 
                         break;
                     }
@@ -107,7 +107,7 @@ namespace Frontier.Entities
                         LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.CharaKey );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.CharaKey() );
 
                         break;
                     }
@@ -124,13 +124,13 @@ namespace Frontier.Entities
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( _owner.CharaKey );
+                tile.ClearTileMesh( _owner.CharaKey() );
             }
             foreach( var data in _readOnlyActionableTileMap.Value.MoveableTileMap )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( _owner.CharaKey );
+                tile.ClearTileMesh( _owner.CharaKey() );
             }
 
             _isShowingAttackableRange = false;
@@ -148,7 +148,7 @@ namespace Frontier.Entities
                 LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in color, _owner.CharaKey );
+                tile.DrawTileMesh( tileMesh, in color, _owner.CharaKey() );
             }
         }
     }

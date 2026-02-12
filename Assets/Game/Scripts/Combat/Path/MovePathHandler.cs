@@ -1,7 +1,5 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -170,7 +168,7 @@ public class MovePathHandler
     public bool CanStandOnTile( TileDynamicData tileDData )
     {
         // 有効 かつ 自身以外のCharacterが存在しない
-        return ( null != tileDData ) && ( tileDData.CharaKey == _owner.CharaKey || !tileDData.CharaKey.IsValid() );
+        return ( null != tileDData ) && ( tileDData.CharaKey == _owner.CharaKey() || !tileDData.CharaKey.IsValid() );
     }
 
     public TileStaticData GetFocusedTileStaticData()

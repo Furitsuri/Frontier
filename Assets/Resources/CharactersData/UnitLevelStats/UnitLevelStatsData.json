@@ -1,0 +1,18 @@
+{
+  "Stats": [
+    {
+      "StatusDatas" : [
+        { "MaxHP": 20, "Atk": 5, "Def": 3, "MoveRange": 4, "JumpForce": 3, "AtkRange": 1, "ActGaugeMax": 2, "ActRecovery": 1, "Skills" : [ -1 , -1, -1, -1 ] },
+        { "MaxHP": 22, "Atk": 6, "Def": 3, "MoveRange": 4, "JumpForce": 3, "AtkRange": 1, "ActGaugeMax": 2, "ActRecovery": 1, "Skills" : [ -1 , -1, -1, -1 ] },
+        { "MaxHP": 25, "Atk": 7, "Def": 4, "MoveRange": 4, "JumpForce": 3, "AtkRange": 1, "ActGaugeMax": 2, "ActRecovery": 1, "Skills" : [ -1 , -1, -1, -1 ] }
+      ]
+    },
+    {
+      "StatusDatas" : [
+        { "MaxHP": 18, "Atk": 4, "Def": 2, "MoveRange": 4, "JumpForce": 4, "AtkRange": 2, "ActGaugeMax": 3, "ActRecovery": 1, "Skills" : [ -1 , -1, -1, -1 ] },
+        { "MaxHP": 20, "Atk": 5, "Def": 3, "MoveRange": 4, "JumpForce": 4, "AtkRange": 2, "ActGaugeMax": 3, "ActRecovery": 1, "Skills" : [ -1 , -1, -1, -1 ] },
+        { "MaxHP": 23, "Atk": 6, "Def": 3, "MoveRange": 4, "JumpForce": 4, "AtkRange": 2, "ActGaugeMax": 3, "ActRecovery": 1, "Skills" : [ -1 , -1, -1, -1 ] }
+      ]
+    }
+  ]
+}

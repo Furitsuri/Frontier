@@ -7,7 +7,7 @@ using UnityEngine;
 public class UserDomain
 {
     [SerializeField] public int Money { get; private set; } = 0;
-    [SerializeField] public int StageLevel { get; private set; } = 1;
+    [SerializeField] public int StageLevel { get; private set; } = 0;   // 0オリジンのため、0はステージレベル1を表します
     [SerializeField] public List<Player> Members { get; private set; } = new List<Player>();
 
     public void AddMoney( int amount )
@@ -22,6 +22,8 @@ public class UserDomain
 
     public void RecruitMember( Player member )
     {
+        member.GetStatusRef.characterIndex = Members.Count; // characterIndexは0オリジンのため、カウント数がそのままIndexになります
+
         Members.Add( member );
     }
 

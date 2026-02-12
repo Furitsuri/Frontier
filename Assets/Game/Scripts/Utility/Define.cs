@@ -44,6 +44,14 @@ static public class Constants
     public const int DESCENT_MARGIN = 1;
     // ステータス異常のビットフラグにおいて、カテゴリーの区切りとなるビット数
     public const int STATUS_EFFECT_CATEGORY_BIT = 8;
+    // 雇用フェーズにおいて、キャラクターの雇用コストを計算する際に用いる各パラメータ毎の係数
+    public const int COEFFICIENT_RECRUIT_COST_LV = 10;
+    public const int COEFFICIENT_RECRUIT_COST_HP = 1;
+    public const int COEFFICIENT_RECRUIT_COST_ATK = 1;
+    public const int COEFFICIENT_RECRUIT_COST_DEF = 1;
+    public const int COEFFICIENT_RECRUIT_COST_ACT_MAX   = 5;
+    public const int COEFFICIENT_RECRUIT_COST_ACT_RECOV = 8;
+
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値
