@@ -1,19 +1,45 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Frontier.Battle;
 using TMPro;
 using UnityEngine;
 
 public class PhaseUI : UiMonoBehaviour
 {
+    private int _currentTurnTypeIndex;
     private Animator _animator;
-    public TextMeshProUGUI[] PhaseText;
+    [SerializeField] private string[] _animNames;
+    [SerializeField] private TextMeshProUGUI[] _phaseText;
 
     /// <summary>
     /// 横切りアニメーションを開始します
     /// </summary>
     public void StartAnim()
     {
-        _animator.SetTrigger( "Crossing" );
+        gameObject.SetActive( true );
+        _animator.SetTrigger( _animNames[_currentTurnTypeIndex] );
+    }
+
+    /// <summary>
+    /// gameObjectを有効化していないとアニメーション自体が再生されないため、
+    /// SetActive( true )はStartAnimから呼び出しています。
+    /// 参照数は0ですが、アニメーションのイベントフラグから呼び出されています
+    /// </summary>
+    public void Activate()
+    {
+        _phaseText[_currentTurnTypeIndex].gameObject.SetActive( true );
+    }
+
+    /// <summary>
+    /// 参照数は0ですが、アニメーションのイベントフラグから呼び出されています
+    /// </summary>
+    public void Deactivate()
+    {
+        gameObject.SetActive( false );
+        _phaseText[_currentTurnTypeIndex].gameObject.SetActive( false );
+    }
+
+    public void SetTurnType( TurnType turnType )
+    {
+        _currentTurnTypeIndex = ( int ) turnType;
     }
 
     /// <summary>
@@ -29,19 +55,6 @@ public class PhaseUI : UiMonoBehaviour
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// ゲームオブジェクト及び下のレイヤーを非有効化にします
-    /// 参照数は0ですが、アニメーションのイベントフラグから呼び出されています
-    /// </summary>
-    public void Toggle()
-    {
-        gameObject.SetActive( false );
-        foreach( TextMeshProUGUI text in PhaseText )
-        {
-            text.gameObject.SetActive( false );
-        }
     }
 
     public override void Setup()

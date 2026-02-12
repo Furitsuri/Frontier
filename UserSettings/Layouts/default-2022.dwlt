@@ -132,7 +132,7 @@ MonoBehaviour:
   - {fileID: 12}
   - {fileID: 22}
   m_Selected: 4
-  m_LastSelected: 2
+  m_LastSelected: 3
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -329,7 +329,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Game/Prefabs/Combats/Loaders
+    - Assets/Game/Prefabs/Stage/Loaders
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -337,16 +337,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 67
   m_LastFolders:
-  - Assets/Game/Prefabs/Combats/Loaders
+  - Assets/Game/Prefabs/Stage/Loaders
   m_LastFoldersGridSize: 67
   m_LastProjectPath: C:\Users\tssm4\Unity\FRONTIER
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 239}
-    m_SelectedIDs: ba940000
-    m_LastClickedID: 38074
-    m_ExpandedIDs: 000000008492000086920000889200008a9200008c9200008e92000090920000929200009492000096920000989200009a9200009c9200009e920000a0920000a2920000
+    m_SelectedIDs: b4930000
+    m_LastClickedID: 37812
+    m_ExpandedIDs: 000000008492000086920000889200008a9200008c9200008e92000090920000929200009492000096920000989200009a9200009c9200009e920000a0920000a2920000ba9200002a9300003893000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -399,8 +399,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 
-    m_LastClickedInstanceID: 0
+    m_SelectedInstanceIDs: fc850000
+    m_LastClickedInstanceID: 34300
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: 40dc000080d10000b6da0000d2da0000ccdb000066930000
     m_RenameOverlay:
@@ -522,7 +522,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Game/Scripts/Entities
+    - Assets/Game/Prefabs/Stage/Loaders
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -530,16 +530,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 61
   m_LastFolders:
-  - Assets/Game/Scripts/Entities
+  - Assets/Game/Prefabs/Stage/Loaders
   m_LastFoldersGridSize: 61
   m_LastProjectPath: C:\Users\tssm4\Unity\FRONTIER
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 514}
-    m_SelectedIDs: 88920000
-    m_LastClickedID: 37512
-    m_ExpandedIDs: 000000008492000086920000889200008a9200008c9200008e92000090920000929200009492000096920000989200009a9200009c9200009e920000a0920000a2920000
+    scrollPos: {x: 0, y: 383}
+    m_SelectedIDs: b4930000
+    m_LastClickedID: 37812
+    m_ExpandedIDs: 000000008492000086920000889200008a9200008c9200008e92000090920000929200009492000096920000989200009a9200009c9200009e920000a0920000a2920000ba920000be9200003893000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -592,8 +592,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 32940000
-    m_LastClickedInstanceID: 37938
+    m_SelectedInstanceIDs: f0800000
+    m_LastClickedInstanceID: 33008
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: d47e0000f67e0000a49e0000de8b000000000000f4e700005a830000b6da0000ccdb0000288a0000
     m_RenameOverlay:
@@ -668,7 +668,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Tutorials/DatabaseAssets
+    - Assets/Game/Prefabs/Stage/Loaders
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -676,16 +676,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 62
   m_LastFolders:
-  - Assets/Tutorials/DatabaseAssets
+  - Assets/Game/Prefabs/Stage/Loaders
   m_LastFoldersGridSize: 62
   m_LastProjectPath: C:\Users\tssm4\Unity\FRONTIER
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 671}
-    m_SelectedIDs: 22930000
-    m_LastClickedID: 37666
-    m_ExpandedIDs: 000000008492000086920000889200008a9200008c9200008e92000090920000929200009492000096920000989200009a9200009c9200009e920000a0920000a2920000
+    scrollPos: {x: 0, y: 383}
+    m_SelectedIDs: b4930000
+    m_LastClickedID: 37812
+    m_ExpandedIDs: 000000008492000086920000889200008a9200008c9200008e92000090920000929200009492000096920000989200009a9200009c9200009e920000a0920000a2920000ba920000e89200003893000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -738,9 +738,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 
-    m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 1
+    m_SelectedInstanceIDs: f0800000
+    m_LastClickedInstanceID: 33008
+    m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: 00000000a49e0000de8b0000f47b0000b6da0000ccdb0000248a000066930000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1110,7 +1110,7 @@ MonoBehaviour:
     m_CachedPref: 295
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
-  m_LastInspectedObjectInstanceID: 37938
+  m_LastInspectedObjectInstanceID: 34300
   m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
@@ -1154,9 +1154,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 
+      m_SelectedIDs: fc850000
       m_LastClickedID: 0
-      m_ExpandedIDs: e8f9ffff
+      m_ExpandedIDs: e8f9fffff4ffffffbe810000e2810000488200007482000088820000dc820000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 

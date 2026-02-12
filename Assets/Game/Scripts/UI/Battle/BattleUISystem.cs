@@ -145,10 +145,9 @@ namespace Frontier.UI
             ToggleDamageUI( true );
         }
 
-        public void TogglePhaseUI( bool isActive, TurnType turntype )
+        public void SetTurnType( TurnType turntype )
         {
-            Phase.PhaseText[( int ) turntype].gameObject.SetActive( isActive );
-            Phase.gameObject.SetActive( isActive );
+            Phase.SetTurnType( turntype );
         }
 
         public void StartAnimPhaseUI()
