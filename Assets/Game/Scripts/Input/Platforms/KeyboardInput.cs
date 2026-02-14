@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static Constants;
 
 /// <summary>
 /// キーボード入力における各入力判定を管理します
@@ -64,6 +65,16 @@ public class KeyboardInput : IInput
     public bool IsSub4Pressed()
     {
         return Input.GetKeyUp(KeyCode.Alpha4);
+    }
+
+    public Vector2 GetVectorPressed()
+    {
+        if( !Input.GetMouseButton( INPUT_INDEX_MOUSE_RIGHT_CLICK ) ) { return Vector2.zero; }
+
+        float mouseX = Input.GetAxis( "Mouse X" );
+        float mouseY = Input.GetAxis( "Mouse Y" );
+
+        return new Vector2( mouseX, mouseY );
     }
 
     public bool IsDebugMenuPressed()

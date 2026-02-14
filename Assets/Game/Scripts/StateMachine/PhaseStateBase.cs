@@ -1,6 +1,5 @@
-﻿using Frontier.Battle;
-using Frontier.Stage;
-using Frontier.Tutorial;
+﻿using Frontier.Tutorial;
+using UnityEngine;
 using Zenject;
 
 namespace Frontier.StateMachine
@@ -76,9 +75,10 @@ namespace Frontier.StateMachine
         virtual protected bool AcceptTool( bool isInput ) { return false; }
         virtual protected bool AcceptInfo( bool isInput ) { return false; }
         virtual protected bool AcceptSub1( bool isInput ) { return false; }
-        virtual protected bool AcceptSub2(bool isInput) { return false; }
-        virtual protected bool AcceptSub3(bool isInput) { return false; }
-        virtual protected bool AcceptSub4(bool isInput) { return false; }
+        virtual protected bool AcceptSub2( bool isInput ) { return false; }
+        virtual protected bool AcceptSub3( bool isInput ) { return false; }
+        virtual protected bool AcceptSub4( bool isInput ) { return false; }
+        virtual protected bool AcceptCamera( Vector2 vec ) { return false; }
 
         /// <summary>
         /// 現在のステートを実行します

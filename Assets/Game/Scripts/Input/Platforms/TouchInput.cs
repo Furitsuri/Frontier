@@ -65,6 +65,11 @@ public class TouchInput : IInput
         return false;
     }
 
+    public Vector2 GetVectorPressed()
+    {
+        return Vector2.zero;
+    }
+
     public bool IsDebugMenuPressed()
     {
         return false;

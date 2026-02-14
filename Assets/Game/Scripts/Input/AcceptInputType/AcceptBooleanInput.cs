@@ -7,7 +7,7 @@ public class AcceptBooleanInput : IAcceptInputBase, IAcceptGenericInput<bool>
 
     private AcceptBooleanInputCallback _callback;
 
-    public AcceptBooleanInput(AcceptBooleanInputCallback callback)
+    public AcceptBooleanInput( AcceptBooleanInputCallback callback )
     {
         _callback = callback;
     }
@@ -21,9 +21,9 @@ public class AcceptBooleanInput : IAcceptInputBase, IAcceptGenericInput<bool>
     {
         bool? value = obj as bool?;
 
-        if ( value == null )
+        if( value == null )
         {
-            Debug.Assert(false, "Argument is not of type bool.");
+            Debug.Assert( false, "Argument is not of type bool." );
 
             return false;
         }

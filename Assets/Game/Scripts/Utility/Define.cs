@@ -2,6 +2,9 @@
 
 static public class Constants
 {
+    public const int INPUT_INDEX_MOUSE_LEFT_CLICK       = 0;
+    public const int INPUT_INDEX_MOUSE_RIGHT_CLICK      = 1;
+    public const int INPUT_INDEX_MOUSE_MIDDLE_CLICK     = 2;
     // 雇用候補に出来るユニット数
     public const int EMPLOYABLE_CHARACTERS_NUM = 5;
     // キャラクター選択の際に可視出来る味方のユニット数(必ず奇数とすること)
@@ -128,6 +131,7 @@ static public class Constants
 
     public const float COMBAT_POS_LENGTH_FROM_CENTER = 2.0f;
 
+    public const string INPUT_CAMERA_STRING = "CAMERA";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
     public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";
     public const string TILE_MATERIALS_FOLDER_PASS          = "Materials/Tile/";

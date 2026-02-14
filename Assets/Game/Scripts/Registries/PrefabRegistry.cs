@@ -15,6 +15,8 @@ namespace Frontier.Registries
 
         [Header( "Battle関連" )]
         [SerializeField] private GameObject _battleFileLoaderObject;    // BattleFileLoaderプレハブ
+        [SerializeField] private GameObject _battleCameraObject;
+        [SerializeField] private GameObject _cameraMosaicEffectObject;
 
         [Header( "Stage関連" )]
         [SerializeField] private GameObject _stageFileLoaderPrefab;     // StageFileLoaderプレハブ
@@ -27,6 +29,8 @@ namespace Frontier.Registries
         public GameObject[] EnemyPrefabs => _enemyGameObjects;
         public GameObject[] OtherPrefabs => _otherGameObjects;
         public GameObject BattleFileLoaderPrefab => _battleFileLoaderObject;
+        public GameObject BattleCameraPrefab => _battleCameraObject;
+        public GameObject CameraMosaicEffectPrefab => _cameraMosaicEffectObject;
         public GameObject StageFileLoaderPrefab => _stageFileLoaderPrefab;
         public GameObject GridMeshPrefab => _gridMeshObject;
         public GameObject GridCursorCtrlPrefab => _gridCursorCtrlObject;

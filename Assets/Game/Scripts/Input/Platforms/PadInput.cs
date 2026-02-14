@@ -65,6 +65,10 @@ public class PadInput : IInput
         return Input.GetButtonUp("joystick button 7");
     }
 
+    public Vector2 GetVectorPressed()
+    {
+        return Vector2.zero;
+    }
     public bool IsDebugMenuPressed()
     {
         return Input.GetButtonUp("joystick button 8");

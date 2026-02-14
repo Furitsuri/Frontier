@@ -47,13 +47,11 @@ namespace Frontier.Battle
 
         public override void Setup()
         {
-            var btlCameraObj = GameObject.FindWithTag( "MainCamera" );
-
             LazyInject.GetOrCreate( ref _stgCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
+            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, false, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
-            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => btlCameraObj.GetComponent<BattleCameraController>() );
 
             if( SkillsData.skillNotifierFactory == null )
             {
