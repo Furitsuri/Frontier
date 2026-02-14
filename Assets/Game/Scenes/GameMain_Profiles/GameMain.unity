@@ -5304,7 +5304,6 @@ GameObject:
   - component: {fileID: 753196271}
   - component: {fileID: 753196270}
   - component: {fileID: 753196277}
-  - component: {fileID: 753196274}
   - component: {fileID: 753196275}
   - component: {fileID: 753196276}
   m_Layer: 0
@@ -5388,24 +5387,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1808781085}
   m_LocalEulerAnglesHint: {x: 34.077, y: 0, z: 0}
---- !u!114 &753196274
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 753196269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9ab79730e0acf5429d6977222705245, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _offsetLength: 0
-  _followDuration: 0.1
-  _fadeDuration: 0.5
-  _atkCameraLerpDuration: 0.33
-  _mosaicStartFadeRate: 0
-  _mosaicBlockSizeMaxRate: 1
 --- !u!114 &753196275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5698,6 +5679,8 @@ MonoBehaviour:
   - {fileID: 6753617674297473082, guid: 2bec217a3905df94888e00a48ed03539, type: 3}
   _otherGameObjects: []
   _battleFileLoaderObject: {fileID: 242638392536068251, guid: 50ecdac321897ff428051ad4b4815b18, type: 3}
+  _battleCameraObject: {fileID: 2865494705789143224, guid: f715f0bb9637f444b9d6008e0721d848, type: 3}
+  _cameraMosaicEffectObject: {fileID: 1510469034128366006, guid: e1662eb2b53404b48bf219d529c7a0d4, type: 3}
   _stageFileLoaderPrefab: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}
   _gridMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
   _gridCursorCtrlObject: {fileID: 8350404123717608506, guid: 1b64c7c7109b2d64d8e59331fbee99c9, type: 3}

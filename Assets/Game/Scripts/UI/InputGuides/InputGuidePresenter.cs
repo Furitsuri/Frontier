@@ -47,6 +47,7 @@ public sealed class InputGuidePresenter
             "_alpha_95",    // SUB2(2)
             "_alpha_96",    // SUB3(3)
             "_alpha_97",    // SUB4(4)
+            "_alpha_328",   // CAMERA_MOVE
             "_alpha_119",   // DEBUG_MENU
 #elif UNITY_STANDALONE_WIN
             "_9",       // ALL_CURSOR
@@ -62,6 +63,7 @@ public sealed class InputGuidePresenter
             "_101",     // SUB2
             "_102",     // SUB3
             "_103",     // SUB4
+            "",     // CAMERA_MOVE
             "_140",     // DEBUG
 #else
 #endif

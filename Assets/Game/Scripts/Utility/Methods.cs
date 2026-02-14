@@ -167,31 +167,35 @@ static public class Methods
     /// <summary>
     /// 指定のベクトルを回転させた値を取得します
     /// </summary>
-    /// <param name="baseTransform">基軸とするTransform. nulkの場合はVector3のデフォルト軸を使用</param
+    /// <param name="baseTransform">基軸とするTransform. nullの場合はVector3のデフォルト軸を使用</param>
     /// <param name="roll">回転させるロール角度(Degree)</param>
     /// <param name="pitch">回転させるピッチ角度(Degree)</param>
     /// <param name="yaw">回転させるヨー角度(Degree)</param>
     /// <param name="vec">回転するベクトル</param>
     /// <returns>回転結果のベクトル</returns>
-    static public Vector3 RotateVector( in Transform baseTransform, float roll, float pitch, float yaw, in Vector3 vec )
+    static public Vector3 RotateVector( in Transform baseTransform, float pitch, float yaw, float roll, in Vector3 vec )
     {
-        Vector3 rollAxis, rightAxis, yawAxis;
+        Vector3 rollAxis, pitchAxis, yawAxis;
 
         if( baseTransform == null )
         {
             rollAxis    = Vector3.forward;
-            rightAxis   = Vector3.right;
+            pitchAxis = Vector3.right;
             yawAxis     = Vector3.up;
         }
         else
         {
             rollAxis    = baseTransform.forward;
-            rightAxis   = baseTransform.right;
+            pitchAxis = baseTransform.right;
             yawAxis     = baseTransform.up;
         }
 
+        Quaternion yawRot   = Quaternion.AngleAxis( yaw, Vector3.up );
+        Quaternion pitchRot = Quaternion.AngleAxis( pitch, Vector3.right );
+        Quaternion rollRot  = Quaternion.AngleAxis( roll, Vector3.forward );
+
         // MEMO : vecの値によって向きが変わる可能性があるため、EulerではなくAngleAxisを用いる
-        var rotateQuat = Quaternion.AngleAxis(roll, rollAxis) * Quaternion.AngleAxis(pitch, rightAxis) * Quaternion.AngleAxis(yaw, yawAxis);
+        var rotateQuat = Quaternion.AngleAxis( roll, rollAxis ) * Quaternion.AngleAxis( pitch, pitchAxis ) * Quaternion.AngleAxis( yaw, yawAxis );
         return rotateQuat * vec;
     }
 

@@ -19,6 +19,7 @@ public enum GuideIcon : int
     SUB4,               // 入力サブ4     PS : R2 / Xbox : RT
     // SUB5,               // 入力サブ5     PS : L3 / Xbox : LS
     // SUB6,               // 入力サブ6     PS : R3 / Xbox : RS
+    CAMERA_MOVE,        // カメラ移動
 
 #if UNITY_EDITOR
     DEBUG_MENU,         // デバッグメニュー

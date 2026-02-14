@@ -124,6 +124,7 @@ public class InputFacade
             ( new GuideIcon[]{ GuideIcon.SUB4 },               "", null, null, 0.0f, -1),
             // ( new GuideIcon[]{ GuideIcon.SUB5 },               "", null, null, 0.0f, -1),
             // ( new GuideIcon[]{ GuideIcon.SUB6 },               "", null, null, 0.0f, -1),
+            ( new GuideIcon[]{ GuideIcon.CAMERA_MOVE },        "", null, null, 0.0f, -1),
 #if UNITY_EDITOR
             ( new GuideIcon[]{ GuideIcon.DEBUG_MENU },         "", null, null, 0.0f, -1)
 #endif  // UNITY_EDITOR

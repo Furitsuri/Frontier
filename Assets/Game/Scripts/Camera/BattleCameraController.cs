@@ -1,9 +1,11 @@
 ﻿using Frontier.Combat;
+using Frontier.Combat.Skill;
 using Frontier.Entities;
+using Frontier.Registries;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Zenject;
-using Frontier.Combat.Skill;
 
 #pragma warning disable 0414
 
@@ -14,10 +16,9 @@ namespace Frontier
         /// <summary>
         /// カメラのモード
         /// </summary>
-        public enum CameraMode
+        private enum CameraMode
         {
             FOLLOWING = 0,      // 選択グリッド追跡状態
-            CHARACTER_MOVE,     // キャラクター移動状態
             ATTACK_SEQUENCE,    // 戦闘状態
 
             NUM
@@ -26,7 +27,7 @@ namespace Frontier
         /// <summary>
         /// 攻撃シーケンスにおけるカメラ処理フェイズ
         /// </summary>
-        enum AttackSequenceCameraPhase
+        private enum AttackSequenceCameraPhase
         {
             START = 0,      // 戦闘状態に移行開始～戦闘開始まで
             BATTLE_FIELD,   // 戦闘中～戦闘終了まで
@@ -45,14 +46,16 @@ namespace Frontier
             public float Yaw;
         }
 
-        [SerializeField] private float _offsetLength;
         [SerializeField] private float _followDuration = 1f;
         [SerializeField] private float _fadeDuration = 0.4f;
         [SerializeField] private float _atkCameraLerpDuration = 0.2f;
         [SerializeField] private float _mosaicStartFadeRate = 0.0f;
         [SerializeField] private float _mosaicBlockSizeMaxRate = 0.5f;
 
-        [Inject] private IUiSystem _uiSystem = null;
+        [Inject] private IUiSystem _uiSystem    = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private InputFacade _inputFcd  = null;
+        [Inject] private PrefabRegistry _prefabReg = null;
 
         private CameraMode _mode;
         private AttackSequenceCameraPhase _atkCameraPhase;
@@ -60,7 +63,7 @@ namespace Frontier
         private List<CameraParamData[]> _closeAtkCameraParamDatas;
         private List<CameraParamData[]> _rangedAtkCameraParamDatas;
         private CameraParamData[] _currentCameraParamDatas;
-        private CameraMosaicEffect _mosaicEffectScript;
+        private CameraMosaicEffect _mosaicEffect;
 
         // カメラ座標の基点となるトランスフォーム
         private Transform _cameraBaseTransform;
@@ -82,27 +85,35 @@ namespace Frontier
         private Vector3 _offset;
         // カメラ移動遷移に用いるフェイズのインデックス値
         private int _cameraPhaseIndex = 0;
-        private float _followElapsedTime = 0.0f;
-        private float _fadeElapsedTime = 0.0f;
-        private float _length = 0.0f;
-        private float _roll = 0.0f;
-        private float _pitch = 0.0f;
-        private float _yaw = 0.0f;
+        private float _followElapsedTime    = 0.0f;
+        private float _fadeElapsedTime      = 0.0f;
+        private float _length               = 0.0f;
+        private float _roll                 = 0.0f;
+        private float _pitch                = 0.0f;
+        private float _yaw                  = 0.0f;
+        private float _offsetLength         = 0.0f;
+        private float _angleXZ                = 0.0f;
+        private float _angleYZ                = 0.0f;
 
         // Start is called before the first frame update
         void Start()
         {
-            _mainCamera = Camera.main;
-            _mosaicEffectScript = GetComponent<CameraMosaicEffect>();
-            _cameraBaseTransform = null;
-            _lookAtTransform = null;
-            _mode = CameraMode.FOLLOWING;
-            _atkCameraPhase = AttackSequenceCameraPhase.START;
-            _prevCameraPosition = transform.position;
-            _lookAtPosition = _mainCamera.transform.position + _mainCamera.transform.forward;
-            _followingPosition = _mainCamera.transform.position;
-            _offset = _followingPosition - _mainCamera.transform.forward;
-            _offsetLength = _offset.magnitude;
+            LazyInject.GetOrCreate( ref _mosaicEffect, () => _hierarchyBld.CreateComponentAndOrganize<CameraMosaicEffect>( _prefabReg.CameraMosaicEffectPrefab, false ) );
+
+            _mainCamera             = Camera.main;
+            _cameraBaseTransform    = null;
+            _lookAtTransform        = null;
+            _mode                   = CameraMode.FOLLOWING;
+            _atkCameraPhase         = AttackSequenceCameraPhase.START;
+            _prevCameraPosition     = _mainCamera.transform.position;
+            _lookAtPosition         = _mainCamera.transform.position + _mainCamera.transform.forward;
+            _followingPosition      = _mainCamera.transform.position;
+            _offset                 = _followingPosition - _mainCamera.transform.forward;
+            _offsetLength           = _offset.magnitude;
+            _angleXZ                = Vector3.Angle( Vector3.back, new Vector3( _offset.x, 0, _offset.z ) );
+            _angleYZ                = Vector3.Angle( Vector3.back, new Vector3( 0, _offset.y, _offset.z ) );
+
+            RegisterInputCodes();
         }
 
         // Update is called once per frame
@@ -114,113 +125,11 @@ namespace Frontier
                     // MEMO : positionを決定してからLookAtを設定しないと、画面にかくつきが発生するため注意
                     _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration );
                     _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration );
-                    break;
-
-                case CameraMode.CHARACTER_MOVE:
-                    UpdateCharacterMoveCamera();
+                    _mainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
                     break;
 
                 case CameraMode.ATTACK_SEQUENCE:
                     UpdateAttackSequenceCamera();
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// ユニットが移動する際のカメラ更新を行います
-        /// </summary>
-        private void UpdateCharacterMoveCamera()
-        {
-
-        }
-
-        /// <summary>
-        /// ユニット同士の対戦シーケンスにおけるカメラ更新を行います
-        /// </summary>
-        private void UpdateAttackSequenceCamera()
-        {
-            switch( _atkCameraPhase )
-            {
-                case AttackSequenceCameraPhase.START:
-                    {
-                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
-                        var fadeRate = _fadeElapsedTime / _fadeDuration;
-                        var destCameraPos = _cameraBaseTransform.position + _cameraOffset;
-                        _mainCamera.transform.position = Vector3.Lerp( _followingPosition, destCameraPos, fadeRate );
-                        _mainCamera.transform.LookAt( _lookAtPosition );
-
-                        // 指定レートを上回った際はモザイク処理を施す
-                        if( _mosaicStartFadeRate <= fadeRate )
-                        {
-                            _mosaicEffectScript.ToggleEnable( true );
-
-                            // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
-                            var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( fadeRate - _mosaicStartFadeRate ) / ( 1f - _mosaicStartFadeRate );
-                            _mosaicEffectScript.UpdateBlockSizeByRate( blockSizeRate );
-                        }
-
-                        if( _fadeDuration <= _fadeElapsedTime )
-                        {
-                            _mosaicEffectScript.ToggleEnable( false );
-                            _mosaicEffectScript.ResetBlockSize();
-                            // パラメータを表示
-                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
-                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
-                            // 戦闘フィールドに移行
-                            _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
-                        }
-                    }
-                    break;
-
-                case AttackSequenceCameraPhase.BATTLE_FIELD:
-                    {
-                        if( _cameraBaseTransform == null || _lookAtTransform == null )
-                        {
-                            Debug.Assert( false );
-                            return;
-                        }
-
-                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _atkCameraLerpDuration );
-                        var lerpRate = _fadeElapsedTime / _atkCameraLerpDuration;
-                        var nextCameraPosition = _cameraBaseTransform.position + _cameraOffset;
-                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, nextCameraPosition, lerpRate );
-                        _lookAtPosition = Vector3.Lerp( _prevLookAtPosition, _lookAtTransform.position, lerpRate );
-                        _mainCamera.transform.LookAt( _lookAtPosition );
-                    }
-                    break;
-
-                case AttackSequenceCameraPhase.END:
-                    {
-                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
-                        var fadeRate = _fadeElapsedTime / _fadeDuration;
-                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, fadeRate );
-                        _mainCamera.transform.LookAt( _lookAtPosition );
-                        // STARTの反対の処理
-                        if( fadeRate < 1f - _mosaicStartFadeRate )
-                        {
-                            _mosaicEffectScript.ToggleEnable( true );
-
-                            // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
-                            var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( 1f - ( fadeRate / ( 1f - _mosaicStartFadeRate ) ) );
-                            _mosaicEffectScript.UpdateBlockSizeByRate( blockSizeRate );
-                        }
-
-                        if( _fadeDuration <= _fadeElapsedTime )
-                        {
-                            _mosaicEffectScript.ToggleEnable( false );
-                            _mosaicEffectScript.ResetBlockSize();
-                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
-                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
-
-                            _mainCamera.transform.position = _followingPosition;
-                            _mainCamera.transform.LookAt( _lookAtPosition );
-
-                            _mode = CameraMode.FOLLOWING;
-                        }
-                    }
                     break;
 
                 default:
@@ -236,10 +145,10 @@ namespace Frontier
         {
             if( _mode == CameraMode.ATTACK_SEQUENCE ) return;
 
-            _prevCameraPosition = transform.position;
-            _lookAtPosition = pos;
-            _followingPosition = _lookAtPosition + _offset;
-            _followElapsedTime = 0.0f;
+            _prevCameraPosition = _mainCamera.transform.position;
+            _lookAtPosition     = pos;
+            _followingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
+            _followElapsedTime  = 0.0f;
         }
 
         /// <summary>
@@ -279,7 +188,7 @@ namespace Frontier
 
             _mode = CameraMode.ATTACK_SEQUENCE;
             _atkCameraPhase = AttackSequenceCameraPhase.START;
-            _prevCameraPosition = transform.position;
+            _prevCameraPosition = _mainCamera.transform.position;
             _cameraBaseTransform = cameraFromChara.transform;
             _lookAtTransform = cameraToChara.transform;
             _characterCameraOffset = cameraFromChara.CameraParam.OffsetOnAtkSequence;
@@ -298,7 +207,7 @@ namespace Frontier
             _fadeElapsedTime = 0f;
 
             // カメラの基点となる座標に加算するオフセット座標をパラメータを参照して計算する
-            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
+            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
 
             // 一度パラメータを非表示
             _uiSystem.BattleUi.SetPlayerParameterActive( false );
@@ -310,7 +219,7 @@ namespace Frontier
         /// </summary>
         public void AdaptBattleFieldSetting()
         {
-            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
+            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
             _prevCameraPosition = _mainCamera.transform.position = _cameraBaseTransform.position + _cameraOffset;
             _prevLookAtPosition = _lookAtTransform.position;
             _mainCamera.transform.LookAt( _prevLookAtPosition );
@@ -342,7 +251,7 @@ namespace Frontier
             _pitch = _currentCameraParamDatas[_cameraPhaseIndex].Pitch;
             _yaw = _currentCameraParamDatas[_cameraPhaseIndex].Yaw;
             _fadeElapsedTime = 0f;
-            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _roll, _pitch, _yaw, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
+            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
             _prevCameraPosition = _mainCamera.transform.position;
             _prevLookAtPosition = _lookAtPosition;
 
@@ -366,6 +275,123 @@ namespace Frontier
         public bool IsFadeEnd()
         {
             return _mode == CameraMode.FOLLOWING;
+        }
+
+        /// <summary>
+        /// ユニット同士の対戦シーケンスにおけるカメラ更新を行います
+        /// </summary>
+        private void UpdateAttackSequenceCamera()
+        {
+            switch( _atkCameraPhase )
+            {
+                case AttackSequenceCameraPhase.START:
+                    {
+                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
+                        var fadeRate = _fadeElapsedTime / _fadeDuration;
+                        var destCameraPos = _cameraBaseTransform.position + _cameraOffset;
+                        _mainCamera.transform.position = Vector3.Lerp( _followingPosition, destCameraPos, fadeRate );
+                        _mainCamera.transform.LookAt( _lookAtPosition );
+
+                        // 指定レートを上回った際はモザイク処理を施す
+                        if( _mosaicStartFadeRate <= fadeRate )
+                        {
+                            _mosaicEffect.ToggleEnable( true );
+
+                            // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
+                            var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( fadeRate - _mosaicStartFadeRate ) / ( 1f - _mosaicStartFadeRate );
+                            _mosaicEffect.UpdateBlockSizeByRate( blockSizeRate );
+                        }
+
+                        if( _fadeDuration <= _fadeElapsedTime )
+                        {
+                            _mosaicEffect.ToggleEnable( false );
+                            _mosaicEffect.ResetBlockSize();
+                            // パラメータを表示
+                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
+                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
+                            // 戦闘フィールドに移行
+                            _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
+                        }
+                    }
+                    break;
+
+                case AttackSequenceCameraPhase.BATTLE_FIELD:
+                    {
+                        if( _cameraBaseTransform == null || _lookAtTransform == null )
+                        {
+                            Debug.Assert( false );
+                            return;
+                        }
+
+                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _atkCameraLerpDuration );
+                        var lerpRate = _fadeElapsedTime / _atkCameraLerpDuration;
+                        var nextCameraPosition = _cameraBaseTransform.position + _cameraOffset;
+                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, nextCameraPosition, lerpRate );
+                        _lookAtPosition = Vector3.Lerp( _prevLookAtPosition, _lookAtTransform.position, lerpRate );
+                        _mainCamera.transform.LookAt( _lookAtPosition );
+                    }
+                    break;
+
+                case AttackSequenceCameraPhase.END:
+                    {
+                        _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
+                        var fadeRate = _fadeElapsedTime / _fadeDuration;
+                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, fadeRate );
+                        _mainCamera.transform.LookAt( _lookAtPosition );
+                        // STARTの反対の処理
+                        if( fadeRate < 1f - _mosaicStartFadeRate )
+                        {
+                            _mosaicEffect.ToggleEnable( true );
+
+                            // _mosaicStartFadeRateの値に依存しない形でレート変化するように調整している
+                            var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( 1f - ( fadeRate / ( 1f - _mosaicStartFadeRate ) ) );
+                            _mosaicEffect.UpdateBlockSizeByRate( blockSizeRate );
+                        }
+
+                        if( _fadeDuration <= _fadeElapsedTime )
+                        {
+                            _mosaicEffect.ToggleEnable( false );
+                            _mosaicEffect.ResetBlockSize();
+                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
+                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
+
+                            _mainCamera.transform.position = _followingPosition;
+                            _mainCamera.transform.LookAt( _lookAtPosition );
+
+                            _mode = CameraMode.FOLLOWING;
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void RegisterInputCodes()
+        {
+            int hashCode = Hash.GetStableHash( Constants.INPUT_CAMERA_STRING );
+
+            _inputFcd.RegisterInputCodes( (GuideIcon.CAMERA_MOVE, "CAMERA", CanAcceptCamera, new AcceptVectorInput( AcceptCameraInput ), 0.0f, hashCode) );
+        }
+
+        /// <summary>
+        /// 攻撃シーケンスではカメラ入力を受け付けないようにしています
+        /// </summary>
+        /// <returns></returns>
+        private bool CanAcceptCamera()
+        {
+            return ( _mode != CameraMode.ATTACK_SEQUENCE );
+        }
+
+        private bool AcceptCameraInput( Vector2 vec )
+        {
+            if( vec.SqrMagnitude() <= 0f ) { return false; }
+
+            _angleXZ += vec.x * 5f;
+            // _angleYZ -= vec.y * 5f;
+
+            return true;
         }
     }
 }
