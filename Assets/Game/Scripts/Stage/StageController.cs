@@ -24,19 +24,22 @@ namespace Frontier.Stage
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
 
+        private BattleCameraController _btlCameraCtrl;
         private GridCursorController _gridCursorCtrl;
         private StageFileLoader _stageFileLoader;
+        private StageDirectionConverter _directionConverter;
         private TileDataHandler _tileDataHdlr;
 		private Footprint _footprint;
 
 		public TileDataHandler TileDataHdlr() => _tileDataHdlr;
 
-        private void Setup()
+        public void Setup()
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
             LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _prefabReg.GridCursorCtrlPrefab, true, true, "GridCursorController" ) );
             LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
+            LazyInject.GetOrCreate( ref _directionConverter, () => _hierarchyBld.InstantiateWithDiContainer<StageDirectionConverter>( false ) );
             LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
 
             _gridCursorCtrl.Init( 0 );
@@ -47,12 +50,14 @@ namespace Frontier.Stage
         /// <summary>
         /// 初期化を行います
         /// </summary>
-        public void Init()
+        public void Init( BattleCameraController btlCameraCtrl )
         {
-            Setup();
+            _btlCameraCtrl = btlCameraCtrl;
 
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
+
+            _directionConverter.Regist( btlCameraCtrl );
         }
 
         /// <summary>
@@ -143,12 +148,19 @@ namespace Frontier.Stage
         /// /// <returns>グリッド移動の有無</returns>
         public bool OperateGridCursorController( Direction direction )
         {
-            if( direction == Direction.FORWARD )  { _gridCursorCtrl.Up();     return true; }
-            if( direction == Direction.BACK )     { _gridCursorCtrl.Down();   return true; }
-            if( direction == Direction.LEFT )     { _gridCursorCtrl.Left();   return true; }
-            if( direction == Direction.RIGHT )    { _gridCursorCtrl.Right();  return true; }
+            if( direction == Direction.NONE ) { return false; }
 
-            return false;
+            direction = _directionConverter.Convert( direction );
+
+            if( direction == Direction.FORWARD )  { _gridCursorCtrl.Up();    }
+            if( direction == Direction.BACK )     { _gridCursorCtrl.Down();  }
+            if( direction == Direction.LEFT )     { _gridCursorCtrl.Left();  }
+            if( direction == Direction.RIGHT )    { _gridCursorCtrl.Right(); }
+
+            (var tileSData, var tileDData) = TileDataHdlr().GetCurrentTileDatas();
+            _btlCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
+
+            return true;
         }
 
         /// <summary>

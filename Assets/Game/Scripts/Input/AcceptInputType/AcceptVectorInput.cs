@@ -2,7 +2,7 @@
 
 public class AcceptVectorInput : IAcceptInputBase, IAcceptGenericInput<Vector2>
 {
-    public delegate bool AcceptVectorInputCallback( Vector2 input );
+    public delegate bool AcceptVectorInputCallback( in Vector2 input );
 
     private AcceptVectorInputCallback _callback;
 

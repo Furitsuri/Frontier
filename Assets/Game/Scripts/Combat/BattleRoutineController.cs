@@ -25,14 +25,14 @@ namespace Frontier.Battle
         private int _currentStageIndex                  = 0;
         private BattlePhaseType _currentPhase           = BattlePhaseType.Deployment;
         private BattleFileLoader _btlFileLoader         = null;
-        private BattleCameraController _battleCameraCtrl = null;
+        private BattleCameraController _btlCameraCtrl = null;
         private BattleCharacterCoordinator _btlCharaCdr = null;
         private BattleRoutinePresenter _presenter       = null;
         private StageController _stgCtrl                = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
 
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
-        public BattleCameraController GetBtlCameraCtrl => _battleCameraCtrl;
+        public BattleCameraController GetBtlCameraCtrl => _btlCameraCtrl;
         public BattleRoutinePresenter BtlPresenter => _presenter;
 
         public IEnumerator Battle()
@@ -50,7 +50,7 @@ namespace Frontier.Battle
             LazyInject.GetOrCreate( ref _stgCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
-            LazyInject.GetOrCreate( ref _battleCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, false, typeof( BattleCameraController ).Name ) );
+            LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, false, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
 
             if( SkillsData.skillNotifierFactory == null )
@@ -65,6 +65,9 @@ namespace Frontier.Battle
                 { BattlePhaseType.Enemy,        _hierarchyBld.InstantiateWithDiContainer<EnemyPhaseHandler>(false) },
                 { BattlePhaseType.Other,        _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
             };
+
+            _stgCtrl.Setup();
+            _btlCameraCtrl.Setup();
         }
 
         /// <summary>
@@ -72,7 +75,8 @@ namespace Frontier.Battle
         /// </summary>
         public override void Init()
         {
-            _stgCtrl.Init();
+            _stgCtrl.Init( _btlCameraCtrl );
+            _btlCameraCtrl.Init();
             _btlCharaCdr.Init();
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
@@ -86,8 +90,11 @@ namespace Frontier.Battle
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
-            _btlFileLoader.LoadCameraParams( _battleCameraCtrl );       // ファイル読込マネージャにカメラパラメータをロードさせる
+            _btlFileLoader.LoadCameraParams( _btlCameraCtrl );          // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
+
+            // カメラの注視座標の初期設定
+            _btlCameraCtrl.SetLookAtBasedOnSelectCursor( _stgCtrl.TileDataHdlr().GetCurrentTileDatas().Item1.CharaStandPos );
         }
 
         public override void Update()
@@ -101,10 +108,6 @@ namespace Frontier.Battle
                     return;
                 }
             }
-
-            // 現在選択しているタイル上に存在するキャラクター情報を更新
-            (var tileSData, var tileDData) = _stgCtrl.TileDataHdlr().GetCurrentTileDatas();
-            _battleCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
             if( _presenter.IsActiveStageClearAnimation() || _presenter.IsActiveGameOverAnimation() ) { return; }
