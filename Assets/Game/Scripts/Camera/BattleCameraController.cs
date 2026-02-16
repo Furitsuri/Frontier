@@ -3,6 +3,7 @@ using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Registries;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
@@ -13,6 +14,11 @@ namespace Frontier
 {
     public class BattleCameraController : MonoBehaviour
     {
+        public class CameraSlideParameters
+        {
+
+        }
+
         /// <summary>
         /// カメラのモード
         /// </summary>
@@ -20,6 +26,14 @@ namespace Frontier
         {
             FOLLOWING = 0,      // 選択グリッド追跡状態
             ATTACK_SEQUENCE,    // 戦闘状態
+
+            NUM
+        }
+
+        private enum CameraDirection
+        {
+            LEFT,
+            RIGHT,
 
             NUM
         }
@@ -46,6 +60,13 @@ namespace Frontier
             public float Yaw;
         }
 
+        [Header("XZ平面上のカメラの移動をスライドで行わせる場合はチェックを入れてください")]
+        [SerializeField] private bool _cameraXZSlide = false;
+        [ShowIf( nameof( _cameraXZSlide ) )]
+        [SerializeField] private float _inputThreshold = 0f;
+
+        [Space(3)]
+
         [SerializeField] private float _followDuration = 1f;
         [SerializeField] private float _fadeDuration = 0.4f;
         [SerializeField] private float _atkCameraLerpDuration = 0.2f;
@@ -57,6 +78,8 @@ namespace Frontier
         [Inject] private InputFacade _inputFcd  = null;
         [Inject] private PrefabRegistry _prefabReg = null;
 
+        private bool _cameraSliding = false;
+        private float _initialValueAngleXZ = 0f;
         private CameraMode _mode;
         private AttackSequenceCameraPhase _atkCameraPhase;
         private Camera _mainCamera;
@@ -94,27 +117,11 @@ namespace Frontier
         private float _offsetLength         = 0.0f;
         private float _angleXZ                = 0.0f;
         private float _angleYZ                = 0.0f;
+        private float _startAngleXZ         = 0.0f;
+        private float _goalAngleXZ          = 0.0f;
 
-        // Start is called before the first frame update
-        void Start()
-        {
-            LazyInject.GetOrCreate( ref _mosaicEffect, () => _hierarchyBld.CreateComponentAndOrganize<CameraMosaicEffect>( _prefabReg.CameraMosaicEffectPrefab, false ) );
-
-            _mainCamera             = Camera.main;
-            _cameraBaseTransform    = null;
-            _lookAtTransform        = null;
-            _mode                   = CameraMode.FOLLOWING;
-            _atkCameraPhase         = AttackSequenceCameraPhase.START;
-            _prevCameraPosition     = _mainCamera.transform.position;
-            _lookAtPosition         = _mainCamera.transform.position + _mainCamera.transform.forward;
-            _followingPosition      = _mainCamera.transform.position;
-            _offset                 = _followingPosition - _mainCamera.transform.forward;
-            _offsetLength           = _offset.magnitude;
-            _angleXZ                = Vector3.Angle( Vector3.back, new Vector3( _offset.x, 0, _offset.z ) );
-            _angleYZ                = Vector3.Angle( Vector3.back, new Vector3( 0, _offset.y, _offset.z ) );
-
-            RegisterInputCodes();
-        }
+        public float InitialAngleXZ => _initialValueAngleXZ;
+        public float AngleXZ => _angleXZ;
 
         // Update is called once per frame
         void Update()
@@ -122,10 +129,24 @@ namespace Frontier
             switch( _mode )
             {
                 case CameraMode.FOLLOWING:
-                    // MEMO : positionを決定してからLookAtを設定しないと、画面にかくつきが発生するため注意
-                    _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration );
-                    _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration );
-                    _mainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
+                    if( _cameraSliding )
+                    {
+                        _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, 0.3f );
+                        _angleXZ = Mathf.LerpAngle( _startAngleXZ, _goalAngleXZ, _followElapsedTime / 0.3f );
+
+                        _followingPosition = _prevCameraPosition = _mainCamera.transform.position = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
+                        _mainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
+
+                        _cameraSliding = !( Mathf.Abs( _goalAngleXZ - _angleXZ ) <= 0f );
+                    }
+                    else
+                    {
+                        // MEMO : positionを決定してからLookAtを設定しないと、画面にかくつきが発生するため注意
+                        _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration );
+                        _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _followingPosition, _followElapsedTime / _followDuration );
+                        _mainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
+                    }
+
                     break;
 
                 case CameraMode.ATTACK_SEQUENCE:
@@ -137,13 +158,39 @@ namespace Frontier
             }
         }
 
+        public void Setup()
+        {
+            LazyInject.GetOrCreate( ref _mosaicEffect, () => _hierarchyBld.CreateComponentAndOrganize<CameraMosaicEffect>( _prefabReg.CameraMosaicEffectPrefab, false ) );
+
+            _mainCamera = Camera.main;
+        }
+
+        public void Init()
+        {
+            _cameraBaseTransform    = null;
+            _lookAtTransform        = null;
+            _mode                   = CameraMode.FOLLOWING;
+            _atkCameraPhase         = AttackSequenceCameraPhase.START;
+            _prevCameraPosition     = _mainCamera.transform.position;
+            _lookAtPosition         = _mainCamera.transform.position + _mainCamera.transform.forward;
+            _followingPosition      = _mainCamera.transform.position;
+            _offset                 = _followingPosition - _mainCamera.transform.forward;
+            _offsetLength           = _offset.magnitude;
+            _initialValueAngleXZ    = _angleXZ = Vector3.Angle( Vector3.back, new Vector3( _offset.x, 0, _offset.z ) );
+            _angleYZ                = Vector3.Angle( Vector3.back, new Vector3( 0, _offset.y, _offset.z ) );
+
+            RegisterInputCodes();
+        }
+
         /// <summary>
         /// 選択カーソルに従うカメラ情報を設定します
         /// </summary>
         /// <param name="pos">カメラ対象座標</param>
         public void SetLookAtBasedOnSelectCursor( in Vector3 pos )
         {
-            if( _mode == CameraMode.ATTACK_SEQUENCE ) return;
+            if( _mode == CameraMode.ATTACK_SEQUENCE ) { return; }
+
+            if( _cameraSliding ) return;
 
             _prevCameraPosition = _mainCamera.transform.position;
             _lookAtPosition     = pos;
@@ -368,6 +415,15 @@ namespace Frontier
             }
         }
 
+        private void StartSlide( CameraDirection dir )
+        {
+            _cameraSliding = true;
+
+            _angleXZ = ( _angleXZ + 360f ) % 360f;  // 0～360の値に納める
+            _startAngleXZ = _angleXZ;
+            _goalAngleXZ = ( dir == CameraDirection.LEFT ) ? _angleXZ - 90f : _angleXZ + 90f;
+        }
+
         private void RegisterInputCodes()
         {
             int hashCode = Hash.GetStableHash( Constants.INPUT_CAMERA_STRING );
@@ -381,15 +437,27 @@ namespace Frontier
         /// <returns></returns>
         private bool CanAcceptCamera()
         {
-            return ( _mode != CameraMode.ATTACK_SEQUENCE );
+            return ( _mode != CameraMode.ATTACK_SEQUENCE && !_cameraSliding );
         }
 
-        private bool AcceptCameraInput( Vector2 vec )
+        private bool AcceptCameraInput( in Vector2 vec )
         {
             if( vec.SqrMagnitude() <= 0f ) { return false; }
 
-            _angleXZ += vec.x * 5f;
-            // _angleYZ -= vec.y * 5f;
+            // カメラをスライド移動させるチェックが付いている場合
+            if( _cameraXZSlide )
+            {
+                if( _inputThreshold <= Mathf.Abs( vec.x ) )
+                {
+                    CameraDirection dir = ( vec.x < 0 ) ? CameraDirection.LEFT : CameraDirection.RIGHT;
+                    StartSlide( dir );
+                }
+            }
+            // チェックが付いていない場合はユーザーの入力量に従う
+            else
+            {
+                _angleXZ += vec.x;
+            }
 
             return true;
         }

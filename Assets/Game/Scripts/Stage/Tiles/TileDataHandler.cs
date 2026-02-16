@@ -40,7 +40,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 
+        /// 移動可能なタイルを登録します
         /// </summary>
         /// <param name="tileDDatas"></param>
         /// <param name="dprtIdx"></param>
@@ -63,8 +63,8 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// アクション(移動、攻撃)が可能な範囲を抽出します。
-        /// 攻撃の範囲を不要にしたい場合は、atkRngの値を0以下に指定してください。
+        /// アクション(移動、攻撃)が可能な範囲を抽出します
+        /// 攻撃の範囲を不要にしたい場合は、atkRngの値を0以下に指定してください
         /// </summary>
         /// <param name="dprtIdx"></param>
         /// <param name="mvRng"></param>
@@ -103,7 +103,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 
+        /// 指定する条件に合う移動可能タイルを抽出します
         /// </summary>
         /// <param name="actionableTileMap"></param>
         /// <param name="setup"></param>
@@ -127,9 +127,12 @@ namespace Frontier.Stage
         /// <summary>
         /// タイルへの攻撃可能情報の登録を開始します
         /// </summary>
-        /// <param name="dprtIndex">攻撃キャラクターが存在するグリッドのインデックス値</param>
-        /// <param name="atkRange">攻撃可能範囲値</param>
-        /// <param name="selfTag">攻撃を行うキャラクター自身のキャラクタータグ</param>
+        /// <param name="tileDDatas"></param>
+        /// <param name="dprtIdx"></param>
+        /// <param name="atkRng"></param>
+        /// <param name="charaTag"></param>
+        /// <param name="isClearAttackableInfo"></param>
+        /// <param name="actionableTileMap"></param>
         public void BeginRegisterAttackableTiles( TileDynamicData[] tileDDatas, int dprtIdx, int atkRng, CHARACTER_TAG charaTag, bool isClearAttackableInfo, ref ActionableTileMap actionableTileMap )
         {
             Debug.Assert( dprtIdx.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );

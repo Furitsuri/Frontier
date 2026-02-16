@@ -186,7 +186,7 @@ static public class Methods
         else
         {
             rollAxis    = baseTransform.forward;
-            pitchAxis = baseTransform.right;
+            pitchAxis   = baseTransform.right;
             yawAxis     = baseTransform.up;
         }
 
