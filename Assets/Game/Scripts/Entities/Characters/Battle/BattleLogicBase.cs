@@ -233,6 +233,14 @@ namespace Frontier.Entities
             _readOnlyOwner.Value.RefBattleParams.TmpParam.ResetUseSkill();  // 使用スキル情報をリセット
         }
 
+        public void ForcedStopMoving()
+        {
+            _isPrevMoving = false;
+            _actionRangeCtrl.MovePathHdlr.ClearMovePath();
+            _transformHdlr.ResetVelocityAcceleration();
+            _readOnlyOwner.Value.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, false );
+        }
+
         virtual public void Setup()
         {
             LazyInject.GetOrCreate( ref _actionRangeCtrl, () => _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false ) );

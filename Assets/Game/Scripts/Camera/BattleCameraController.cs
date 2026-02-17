@@ -69,9 +69,7 @@ namespace Frontier
         [SerializeField] private float _mosaicBlockSizeMaxRate = 0.5f;
 
         [Inject] private IUiSystem _uiSystem    = null;
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private InputFacade _inputFcd  = null;
-        [Inject] private PrefabRegistry _prefabReg = null;
 
         private bool _cameraSliding = false;
         private float _initialValueAngleXZ = 0f;
@@ -185,7 +183,7 @@ namespace Frontier
         {
             if( _mode == CameraMode.ATTACK_SEQUENCE ) { return; }
 
-            if( _cameraSliding ) return;
+            if( _cameraSliding ) { return; }
 
             _prevCameraPosition = _mainCamera.transform.position;
             _lookAtPosition     = pos;
@@ -273,11 +271,11 @@ namespace Frontier
         /// <param name="attacker">攻撃するキャラクター</param>
         public void EndAttackSequenceMode( Character attacker )
         {
-            _atkCameraPhase = AttackSequenceCameraPhase.END;
+            _atkCameraPhase     = AttackSequenceCameraPhase.END;
             _prevCameraPosition = _mainCamera.transform.position;
-            _lookAtPosition = attacker.transform.position;
-            _followingPosition = _lookAtPosition + _offset;
-            _fadeElapsedTime = 0f;
+            _lookAtPosition     = attacker.transform.position;
+            _followingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
+            _fadeElapsedTime    = 0f;
         }
 
         /// <summary>

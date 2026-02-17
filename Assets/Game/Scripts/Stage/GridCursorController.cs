@@ -9,21 +9,25 @@ namespace Frontier.Stage
 {
     public class GridCursorController : MonoBehaviour
     {
-        [Header("移動補間時間")]
+        [Header( "移動補間時間" )]
         [SerializeField]
         private float MoveInterpolationTime = 1f;
 
-        [Inject] IStageDataProvider _stageDataProvider   = null;
+        [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private BattleCameraController _btlCamCtrl     = null;
 
         private LineRenderer _lineRenderer;
-        private Vector3 _beginPos       = Vector3.zero;
-        private Vector3 _endPos         = Vector3.zero;
-        private Vector3 _currentPos     = Vector3.zero;
-        private int _atkTargetIndex     = 0;
-        private int _atkTargetNum       = 0;
-        private float _totalTime        = 0;
+        private Vector3 _beginPos   = Vector3.zero;
+        private Vector3 _endPos     = Vector3.zero;
+        private Vector3 _currentPos = Vector3.zero;
+        private int _tileIndex      = 0;
+        private int _atkTargetIndex = 0;
+        private int _atkTargetNum   = 0;
+        private float _totalTime    = 0;
 
-        public int Index { get; set; } = 0;
+        // public int Index { get; set; } = 0;
+
+        public int Index => _tileIndex;
         public GridCursorState GridState { get; set; } = GridCursorState.NONE;
         public Character BindCharacter { get; set; } = null;
 
@@ -40,11 +44,12 @@ namespace Frontier.Stage
         /// <param name="columnNum">盤面における列に該当するグリッド数</param>
         public void Init( int initIndex )
         {
-            Index           = initIndex;
             _atkTargetIndex = 0;
             _atkTargetNum   = 0;
             GridState       = GridCursorState.NONE;
             BindCharacter   = null;
+
+            SetTileIndex( initIndex );
         }
 
         /// <summary>
@@ -52,12 +57,16 @@ namespace Frontier.Stage
         /// </summary>
         public void Up()
         {
+            int tIndex = _tileIndex;
+
             StartLerpMove();
-            Index += _stageDataProvider.CurrentData.TileColNum;
-            if ( _stageDataProvider.CurrentData.GetTileTotalNum() <= Index)
+            tIndex += _stageDataProvider.CurrentData.TileColNum;
+            if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tIndex )
             {
-                Index = Index % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
+                tIndex = tIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
             }
+
+            SetTileIndex( tIndex );
         }
 
         /// <summary>
@@ -65,12 +74,16 @@ namespace Frontier.Stage
         /// </summary>
         public void Down()
         {
+            int tIndex = _tileIndex;
+
             StartLerpMove();
-            Index -= _stageDataProvider.CurrentData.TileColNum;
-            if (Index < 0)
+            tIndex -= _stageDataProvider.CurrentData.TileColNum;
+            if( tIndex < 0 )
             {
-                Index += _stageDataProvider.CurrentData.GetTileTotalNum();
+                tIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
             }
+
+            SetTileIndex( tIndex );
         }
 
         /// <summary>
@@ -78,12 +91,16 @@ namespace Frontier.Stage
         /// </summary>
         public void Right()
         {
+            int tIndex = _tileIndex;
+
             StartLerpMove();
-            Index++;
-            if (Index % _stageDataProvider.CurrentData.TileColNum == 0)
+            tIndex++;
+            if( tIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
             {
-                Index -= _stageDataProvider.CurrentData.TileColNum;
+                tIndex -= _stageDataProvider.CurrentData.TileColNum;
             }
+
+            SetTileIndex( tIndex );
         }
 
         /// <summary>
@@ -91,12 +108,16 @@ namespace Frontier.Stage
         /// </summary>
         public void Left()
         {
+            int tIndex = _tileIndex;
+
             StartLerpMove();
-            Index--;
-            if ((Index + 1) % _stageDataProvider.CurrentData.TileColNum == 0)
+            tIndex--;
+            if( ( tIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
             {
-                Index += _stageDataProvider.CurrentData.TileColNum;
+                tIndex += _stageDataProvider.CurrentData.TileColNum;
             }
+
+            SetTileIndex( tIndex );
         }
 
         /// <summary>
@@ -112,16 +133,24 @@ namespace Frontier.Stage
         /// オブジェクトのアクティブ・非アクティブを設定します
         /// </summary>
         /// <param name="isActive">アクティブ設定</param>
-        public void SetActive(bool isActive)
+        public void SetActive( bool isActive )
         {
-            gameObject.SetActive(isActive);
+            gameObject.SetActive( isActive );
+        }
+
+        public void SetTileIndex( int index )
+        {
+            _tileIndex = index;
+
+            var tilePos = _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos;
+            _btlCamCtrl.SetLookAtBasedOnSelectCursor( tilePos );
         }
 
         /// <summary>
         /// 攻撃対象インデックス値を設定します
         /// </summary>
         /// <param name="index">攻撃対象インデックス値</param>
-        public void SetAtkTargetIndex(int index)
+        public void SetAtkTargetIndex( int index )
         {
             _atkTargetIndex = index;
         }
@@ -130,7 +159,7 @@ namespace Frontier.Stage
         /// 攻撃対象インデックスの総数を設定します
         /// </summary>
         /// <param name="num">攻撃対象インデックスの総数</param>
-        public void SetAtkTargetNum(int num)
+        public void SetAtkTargetNum( int num )
         {
             _atkTargetNum = num;
         }
@@ -140,7 +169,7 @@ namespace Frontier.Stage
         /// </summary>
         public void TransitNextTarget()
         {
-            _atkTargetIndex = (_atkTargetIndex + 1) % _atkTargetNum;
+            _atkTargetIndex = ( _atkTargetIndex + 1 ) % _atkTargetNum;
         }
 
         /// <summary>
@@ -148,7 +177,7 @@ namespace Frontier.Stage
         /// </summary>
         public void TransitPrevTarget()
         {
-            _atkTargetIndex = (_atkTargetIndex - 1) < 0 ? _atkTargetNum - 1 : _atkTargetIndex - 1;
+            _atkTargetIndex = ( _atkTargetIndex - 1 ) < 0 ? _atkTargetNum - 1 : _atkTargetIndex - 1;
         }
 
         /// <summary>
@@ -190,13 +219,13 @@ namespace Frontier.Stage
         {
             _endPos = GetGoalPosition();
 
-            if ( GridState == GridCursorState.NONE || GridState == GridCursorState.MOVE)
+            if( GridState == GridCursorState.NONE || GridState == GridCursorState.MOVE )
             {
-                UpdateLerpPosition(delta);
+                UpdateLerpPosition( delta );
             }
             else
             {
-                DrawSquareLine(TILE_SIZE, _endPos);
+                DrawSquareLine( TILE_SIZE, _endPos );
             }
         }
 
@@ -207,9 +236,9 @@ namespace Frontier.Stage
         void UpdateLerpPosition( float delta )
         {
             _totalTime += delta;
-            _currentPos = Vector3.Lerp( _beginPos, _endPos, _totalTime / MoveInterpolationTime);
+            _currentPos = Vector3.Lerp( _beginPos, _endPos, _totalTime / MoveInterpolationTime );
 
-            DrawSquareLine(TILE_SIZE, _currentPos);
+            DrawSquareLine( TILE_SIZE, _currentPos );
         }
 
         /// <summary>
@@ -217,7 +246,7 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="gridSize">1グリッドのサイズ</param>
         /// <param name="centralPos">指定グリッドの中心位置</param>
-        void DrawSquareLine(float gridSize, in Vector3 centralPos)
+        void DrawSquareLine( float gridSize, in Vector3 centralPos )
         {
             float halfSize = 0.5f * gridSize;
 
@@ -230,8 +259,8 @@ namespace Frontier.Stage
             };
 
             // SetVertexCountは廃止されているはずだが、使用しないと正常に描画されなかったため使用(2023/5/26)
-            _lineRenderer.SetVertexCount(linePoints.Length);
-            _lineRenderer.SetPositions(linePoints);
+            _lineRenderer.SetVertexCount( linePoints.Length );
+            _lineRenderer.SetPositions( linePoints );
         }
 
         /// <summary>
@@ -239,8 +268,8 @@ namespace Frontier.Stage
         /// </summary>
         private void StartLerpMove()
         {
-            _beginPos   = GetGoalPosition();
-            _totalTime  = 0f;
+            _beginPos = GetGoalPosition();
+            _totalTime = 0f;
         }
 
         /// <summary>
@@ -249,7 +278,6 @@ namespace Frontier.Stage
         /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            // return _stageDataProvider.CurrentData.GetTileInfo(Index).charaStandPos;
             return _stageDataProvider.CurrentData.GetTileStaticData( Index ).CharaStandPos;
         }
     }

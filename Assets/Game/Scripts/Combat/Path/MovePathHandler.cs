@@ -175,4 +175,10 @@ public class MovePathHandler
     {
         return _stageCtrl.GetTileStaticData( _proposedMovePath[_focusedWaypointIndex].TileIndex );
     }
+
+    public void ClearMovePath()
+    {
+        _focusedWaypointIndex = 0;
+        _proposedMovePath.Clear();
+    }
 }

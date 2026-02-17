@@ -54,6 +54,7 @@ namespace Frontier.Entities
         /// </summary>
         public void RewindToPreviousState()
         {
+            _battleLogic.ForcedStopMoving();
             RefBattleParams.TmpParam = _prevMoveInfo.tmpParam;
             BattleLogic.SetPositionOnStage( RefBattleParams.TmpParam.gridIndex, _prevMoveInfo.rotDir );
         }
