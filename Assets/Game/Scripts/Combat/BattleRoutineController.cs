@@ -50,7 +50,7 @@ namespace Frontier.Battle
             LazyInject.GetOrCreate( ref _stgCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
-            LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, false, typeof( BattleCameraController ).Name ) );
+            LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
 
             if( SkillsData.skillNotifierFactory == null )
@@ -75,9 +75,9 @@ namespace Frontier.Battle
         /// </summary>
         public override void Init()
         {
-            _stgCtrl.Init( _btlCameraCtrl );
             _btlCameraCtrl.Init();
             _btlCharaCdr.Init();
+            _stgCtrl.Init( _btlCameraCtrl );
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -92,9 +92,6 @@ namespace Frontier.Battle
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams( _btlCameraCtrl );          // ファイル読込マネージャにカメラパラメータをロードさせる
             _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
-
-            // カメラの注視座標の初期設定
-            _btlCameraCtrl.SetLookAtBasedOnSelectCursor( _stgCtrl.TileDataHdlr().GetCurrentTileDatas().Item1.CharaStandPos );
         }
 
         public override void Update()

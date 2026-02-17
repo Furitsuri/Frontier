@@ -24,7 +24,6 @@ namespace Frontier.Stage
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
 
-        private BattleCameraController _btlCameraCtrl;
         private GridCursorController _gridCursorCtrl;
         private StageFileLoader _stageFileLoader;
         private StageDirectionConverter _directionConverter;
@@ -41,8 +40,6 @@ namespace Frontier.Stage
             LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _directionConverter, () => _hierarchyBld.InstantiateWithDiContainer<StageDirectionConverter>( false ) );
             LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
-
-            _gridCursorCtrl.Init( 0 );
         }
 
         #region PUBLIC_METHOD
@@ -52,11 +49,9 @@ namespace Frontier.Stage
         /// </summary>
         public void Init( BattleCameraController btlCameraCtrl )
         {
-            _btlCameraCtrl = btlCameraCtrl;
-
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
-
+            _gridCursorCtrl.Init( 0 );
             _directionConverter.Regist( btlCameraCtrl );
         }
 
@@ -66,7 +61,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterTile( Character character )
         {
-            _gridCursorCtrl.Index = character.RefBattleParams.TmpParam.GetCurrentGridIndex();
+            _gridCursorCtrl.SetTileIndex( character.RefBattleParams.TmpParam.GetCurrentGridIndex() );
         }
 
         /// <summary>
@@ -134,7 +129,7 @@ namespace Frontier.Stage
         /// <param name="character">指定するキャラクター</param>
         public void FollowFootprint( Character character )
         {
-            _gridCursorCtrl.Index = _footprint.gridIndex;
+            _gridCursorCtrl.SetTileIndex( _footprint.gridIndex );
             character.RefBattleParams.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
             TileStaticData tileData = _tileDataHdlr.GetCurrentTileDatas().Item1;
             character.GetTransformHandler.SetPosition( tileData.CharaStandPos );
@@ -156,9 +151,6 @@ namespace Frontier.Stage
             if( direction == Direction.BACK )     { _gridCursorCtrl.Down();  }
             if( direction == Direction.LEFT )     { _gridCursorCtrl.Left();  }
             if( direction == Direction.RIGHT )    { _gridCursorCtrl.Right(); }
-
-            (var tileSData, var tileDData) = TileDataHdlr().GetCurrentTileDatas();
-            _btlCameraCtrl.SetLookAtBasedOnSelectCursor( tileSData.CharaStandPos );
 
             return true;
         }

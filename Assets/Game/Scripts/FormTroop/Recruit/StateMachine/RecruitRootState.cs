@@ -226,8 +226,13 @@ namespace Frontier.FormTroop
             {
                 Player player = _employmentCandidates[i].Character as Player;
                 player.RestoreMaterialsOriginalColor();
+                
 
-                if( player.RecruitLogic.IsEmployed ) { continue; }
+                if( player.RecruitLogic.IsEmployed )
+                {
+                    player.OnRecruitExit();
+                    continue;
+                }
 
                 player.Dispose();
             }
