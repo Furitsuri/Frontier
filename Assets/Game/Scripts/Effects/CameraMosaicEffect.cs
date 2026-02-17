@@ -64,6 +64,6 @@ public class CameraMosaicEffect : MonoBehaviour
     /// </summary>
     public void ResetBlockSize()
     {
-        _mosaicMaterial.SetFloat(_blockSizeID, _initialBlockSize);
+        _mosaicMaterial.SetFloat( _blockSizeID, _initialBlockSize );
     }
 }
