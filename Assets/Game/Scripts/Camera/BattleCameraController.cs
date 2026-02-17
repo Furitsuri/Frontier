@@ -155,9 +155,9 @@ namespace Frontier
 
         public void Setup()
         {
-            LazyInject.GetOrCreate( ref _mosaicEffect, () => _hierarchyBld.CreateComponentAndOrganize<CameraMosaicEffect>( _prefabReg.CameraMosaicEffectPrefab, false ) );
-
             _mainCamera = Camera.main;
+
+            LazyInject.GetOrCreate( ref _mosaicEffect, () => _mainCamera.GetComponent<CameraMosaicEffect>() );
         }
 
         public void Init()
