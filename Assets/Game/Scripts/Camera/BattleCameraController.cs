@@ -3,9 +3,7 @@ using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Registries;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Zenject;
 
 #pragma warning disable 0414
@@ -14,11 +12,6 @@ namespace Frontier
 {
     public class BattleCameraController : MonoBehaviour
     {
-        public class CameraSlideParameters
-        {
-
-        }
-
         /// <summary>
         /// カメラのモード
         /// </summary>
@@ -64,8 +57,10 @@ namespace Frontier
         [SerializeField] private bool _cameraXZSlide = false;
         [ShowIf( nameof( _cameraXZSlide ) )]
         [SerializeField] private float _inputThreshold = 0f;
+        [HideIf( nameof( _cameraXZSlide ) )]
+        [SerializeField] private float _inputCoefficientOnCameraXZSlide = 3f;
 
-        [Space(3)]
+        [Space(5)]
 
         [SerializeField] private float _followDuration = 1f;
         [SerializeField] private float _fadeDuration = 0.4f;
@@ -115,8 +110,8 @@ namespace Frontier
         private float _pitch                = 0.0f;
         private float _yaw                  = 0.0f;
         private float _offsetLength         = 0.0f;
-        private float _angleXZ                = 0.0f;
-        private float _angleYZ                = 0.0f;
+        private float _angleXZ              = 0.0f;
+        private float _angleYZ              = 0.0f;
         private float _startAngleXZ         = 0.0f;
         private float _goalAngleXZ          = 0.0f;
 
@@ -456,7 +451,8 @@ namespace Frontier
             // チェックが付いていない場合はユーザーの入力量に従う
             else
             {
-                _angleXZ += vec.x;
+                _angleXZ += vec.x * _inputCoefficientOnCameraXZSlide;
+                _followingPosition = _prevCameraPosition = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
             }
 
             return true;
