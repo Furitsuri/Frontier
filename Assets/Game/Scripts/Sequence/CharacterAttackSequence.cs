@@ -260,16 +260,8 @@ namespace Frontier
                     if( _btlCamCtrl.IsFadeEnd() )
                     {
                         // 対戦相手設定をリセット
-                        if( null != _attackCharacter )
-                        {
-                            _attackCharacter.BattleLogic.ResetOnEndOfAttackSequence();
-                            _attackCharacter.GetTransformHandler.ResetRotationOrder();
-                        }
-                        if( null != _targetCharacter )
-                        {
-                            _targetCharacter.BattleLogic.ResetOnEndOfAttackSequence();
-                            _targetCharacter.GetTransformHandler.ResetRotationOrder();
-                        }
+                        _attackCharacter?.BattleLogic.ResetOnEndOfAttackSequence();
+                        _targetCharacter?.BattleLogic.ResetOnEndOfAttackSequence();
 
                         return true;
                     }
