@@ -33,9 +33,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if ( !isCancel ) return false;
+            if( !base.AcceptCancel( context ) ) { return false; }
 
             Back();
 

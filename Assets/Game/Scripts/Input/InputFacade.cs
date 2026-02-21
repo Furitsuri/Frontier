@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Zenject;
 using static Constants;
 
@@ -8,7 +9,7 @@ public class InputFacade
 
     private InputGuidePresenter _inputGuideView = null;
     private InputHandler _inputHdlr             = null;
-    private InputCode[] _inputCodes;
+    private List<InputCode> _inputCodes         = new List<InputCode>();
 
     /// <summary>
     /// 初期化します
@@ -19,8 +20,6 @@ public class InputFacade
         LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
         _inputHdlr.Setup();
         _inputGuideView.Setup();
-
-        SetupInputCodes();  // 入力コード情報を設定します
 
         // 入力コード情報を受け渡す
         _inputHdlr.Init( _inputGuideView, _inputCodes );
@@ -33,14 +32,12 @@ public class InputFacade
     /// </summary>
     public void UnregisterInputCodes()
     {
-        for( int i = 0; i < ( int ) GuideIcon.NUM_MAX; ++i )
+        foreach( InputCode code in _inputCodes )
         {
-            _inputCodes[i].Explanation = new InputCodeStringWrapper( "" );
-            _inputCodes[i].EnableCbs = null;
-            _inputCodes[i].ResetIntervalTime();
-            _inputCodes[i].SetInputLastTime( 0.0f );
-            _inputCodes[i].RegisterClassHashCode = 0;
+            code.Dispose();
         }
+
+        _inputCodes.Clear();
     }
 
     /// <summary>
@@ -49,7 +46,7 @@ public class InputFacade
     /// <param name="hashCode">ハッシュ値</param>
     public void UnregisterInputCodes( int hashCode )
     {
-        for( int i = 0; i < ( int ) GuideIcon.NUM_MAX; ++i )
+        for( int i = 0; i < _inputCodes.Count; ++i )
         {
             if( _inputCodes[i].RegisterClassHashCode == hashCode )
             {
@@ -73,17 +70,19 @@ public class InputFacade
         {
             if( arg == null ) { continue; }
 
-            // _inputCodesが未登録であれば登録する
-            // 1つのコードに複数アイコンを登録する場合は、先頭に指定しているアイコンを基準にする
-            if( _inputCodes[( int ) arg.Icons.First()].IsUnRegistererd() )
+            // 既に登録済みのガイドアイコンで入力コードが登録されている場合はエラー
+            foreach( var code in _inputCodes )
             {
-                _inputCodes[( int ) arg.Icons.First()] = arg;
+                if( code.Icons.First() == arg.Icons.First() && !code.IsUnRegistererd() )
+                {
+                    LogHelper.LogError( $"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}" );
+                }
             }
-            else
-            {
-                LogHelper.LogError( $"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}" );
-            }
+
+            _inputCodes.Add( arg );
         }
+
+        _inputCodes.Sort( ( a, b ) => a.Icons.First().CompareTo( b.Icons.First() ) );
 
         // ガイドアイコンを登録
         _inputGuideView.RegisterInputGuides();
@@ -103,40 +102,11 @@ public class InputFacade
     }
 
     /// <summary>
-    /// 判定対象となる入力コードを設定します
-    /// </summary>
-    private void SetupInputCodes()
-    {
-        _inputCodes = new InputCode[( int ) GuideIcon.NUM_MAX]
-        {
-            ( new GuideIcon[]{ GuideIcon.ALL_CURSOR },         "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.VERTICAL_CURSOR },    "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.HORIZONTAL_CURSOR },  "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.CONFIRM },            "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.CANCEL },             "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.TOOL },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.INFO },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.OPT1 },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.OPT2 },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB1 },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB2 },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB3 },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.SUB4 },               "", null, null, 0.0f, -1),
-            // ( new GuideIcon[]{ GuideIcon.SUB5 },               "", null, null, 0.0f, -1),
-            // ( new GuideIcon[]{ GuideIcon.SUB6 },               "", null, null, 0.0f, -1),
-            ( new GuideIcon[]{ GuideIcon.CAMERA_MOVE },        "", null, null, 0.0f, -1),
-#if UNITY_EDITOR
-            ( new GuideIcon[]{ GuideIcon.DEBUG_MENU },         "", null, null, 0.0f, -1)
-#endif  // UNITY_EDITOR
-        };
-    }
-
-    /// <summary>
     /// 入力コードのインターバル時間をリセットします。
     /// </summary>
     private void ResetIntervalTimeOnInputCodes()
     {
-        for( int i = 0; i < _inputCodes.Length; ++i )
+        for( int i = 0; i < _inputCodes.Count; ++i )
         {
             _inputCodes[i].ResetIntervalTime();
         }

@@ -11,12 +11,12 @@ namespace Frontier.StateMachine
     /// </summary>
     public class DeploymentConfirmCompletedState : ConfirmPhaseStateBase
     {
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) return false;
+			if( !base.AcceptConfirm( context ) ) { return false; }
 
-            // 配置完了を確定させて配置フェーズを終了する
-            if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
+			// 配置完了を確定させて配置フェーズを終了する
+			if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {
                 _isEndedPhase = true;
             }

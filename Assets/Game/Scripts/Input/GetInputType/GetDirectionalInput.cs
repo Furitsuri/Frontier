@@ -18,4 +18,9 @@
     {
         return GetGenericInput();
     }
+
+    public void Apply( InputContext context )
+    {
+        context.Cursor = _callback();
+    }
 }

@@ -184,14 +184,14 @@ namespace Frontier.Battle
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "TARGET SELECT", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      "CONFIRM", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL,       "BACK", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.INFO,         "INFO", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.SUB1,         _playerSkillNames[0], CanAcceptSub1, new AcceptBooleanInput( AcceptSub1 ), 0.0f, hashCode),
-               (GuideIcon.SUB2,         _playerSkillNames[1], CanAcceptSub2, new AcceptBooleanInput( AcceptSub2 ), 0.0f, hashCode),
-               (GuideIcon.SUB3,         _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput( AcceptSub3 ), 0.0f, hashCode),
-               (GuideIcon.SUB4,         _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput( AcceptSub4 ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "TARGET SELECT", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,       "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "INFO", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.SUB1,         _playerSkillNames[0], CanAcceptSub1, new AcceptContextInput( AcceptSub1 ), 0.0f, hashCode),
+               (GuideIcon.SUB2,         _playerSkillNames[1], CanAcceptSub2, new AcceptContextInput( AcceptSub2 ), 0.0f, hashCode),
+               (GuideIcon.SUB3,         _playerSkillNames[2], CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode),
+               (GuideIcon.SUB4,         _playerSkillNames[3], CanAcceptSub4, new AcceptContextInput( AcceptSub4 ), 0.0f, hashCode)
             );
         }
 
@@ -296,9 +296,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
-            if( _stageCtrl.OperateTargetSelect( dir ) )
+            if( _stageCtrl.OperateTargetSelect( context.Cursor ) )
             {
                 return true;
             }
@@ -311,12 +311,12 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) return false;
+			if( !base.AcceptConfirm( context ) ) { return false; }
 
-            // 選択したキャラクターが敵である場合は攻撃開始
-            if( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
+			// 選択したキャラクターが敵である場合は攻撃開始
+			if( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
             {
                 // キャラクターのアクションゲージを消費
                 _attackCharacter.BattleLogic.ConsumeActionGauge();
@@ -344,9 +344,9 @@ namespace Frontier.Battle
             return false;
         }
 
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if( !isCancel ) { return false; }
+            if( !base.AcceptCancel( context ) ) { return false; }
 
             // 攻撃対象キャラクターの向きをリセット
             if( null != _targetCharacter )
@@ -354,42 +354,42 @@ namespace Frontier.Battle
                 _targetCharacter.GetTransformHandler.ResetRotationOrder();
             }
 
-            return base.AcceptCancel( isCancel );
+            return true;
         }
 
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptInfo( context ) ) { return false; }
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return false;
         }
 
-        protected override bool AcceptSub1( bool isInput )
+        protected override bool AcceptSub1( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptSub1( context ) ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 0 );
         }
 
-        protected override bool AcceptSub2( bool isInput )
+        protected override bool AcceptSub2( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptSub2( context ) ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 1 );
         }
 
-        protected override bool AcceptSub3( bool isInput )
+        protected override bool AcceptSub3( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptSub3( context ) ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 2 );
         }
 
-        protected override bool AcceptSub4( bool isInput )
+        protected override bool AcceptSub4( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptSub4( context ) ) return false;
 
             return _plOwner.BattleLogic.ToggleUseSkillks( 3 );
         }

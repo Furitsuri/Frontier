@@ -6,9 +6,9 @@ namespace Frontier.StateMachine
 {
     public class PhaseStateBase : StateBase
     {
-        [Inject] protected IUiSystem _uiSystem                  = null;
-        [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
-        [Inject] protected TutorialFacade _tutorialFcd          = null;
+        [Inject] protected IUiSystem _uiSystem = null;
+        [Inject] protected HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] protected TutorialFacade _tutorialFcd = null;
 
         protected bool _isEndedPhase = false;
         protected PhaseHandlerBase Handler { get; private set; }
@@ -25,7 +25,7 @@ namespace Frontier.StateMachine
         /// <returns>入力コードのハッシュ値</returns>
         protected int GetInputCodeHash()
         {
-            return Hash.GetStableHash(GetType().Name);
+            return Hash.GetStableHash( GetType().Name );
         }
 
         virtual public void AssignPresenter( PhasePresenterBase presenter ) { }
@@ -68,16 +68,18 @@ namespace Frontier.StateMachine
         virtual protected bool CanAcceptSub2() { return false; }
         virtual protected bool CanAcceptSub3() { return false; }
         virtual protected bool CanAcceptSub4() { return false; }
-        virtual protected bool AcceptDirection(Direction dir) { return false; }
-        virtual protected bool AcceptConfirm(bool isInput) { return false; }
-        virtual protected bool AcceptCancel(bool isCancel) { return false; }
-        virtual protected bool AcceptOptional(bool isOptional) { return false; }
-        virtual protected bool AcceptTool( bool isInput ) { return false; }
-        virtual protected bool AcceptInfo( bool isInput ) { return false; }
-        virtual protected bool AcceptSub1( bool isInput ) { return false; }
-        virtual protected bool AcceptSub2( bool isInput ) { return false; }
-        virtual protected bool AcceptSub3( bool isInput ) { return false; }
-        virtual protected bool AcceptSub4( bool isInput ) { return false; }
+
+        virtual protected bool AcceptDirection( InputContext context )  { return false; }
+        virtual protected bool AcceptConfirm( InputContext context )    { return context.GetButton( GameButton.Confirm ); }
+        virtual protected bool AcceptCancel( InputContext context )     { return context.GetButton( GameButton.Cancel ); }
+        virtual protected bool AcceptTool( InputContext context )       { return context.GetButton( GameButton.Tool ); }
+        virtual protected bool AcceptInfo( InputContext context )       { return context.GetButton( GameButton.Info ); }
+        virtual protected bool AcceptOpt1( InputContext context )       { return context.GetButton( GameButton.Opt1 ); }
+        virtual protected bool AcceptOpt2( InputContext context )       { return context.GetButton( GameButton.Opt2 ); }
+        virtual protected bool AcceptSub1( InputContext context )       { return context.GetButton( GameButton.Sub1 ); }
+        virtual protected bool AcceptSub2( InputContext context )       { return context.GetButton( GameButton.Sub2 ); }
+        virtual protected bool AcceptSub3( InputContext context )       { return context.GetButton( GameButton.Sub3 ); }
+        virtual protected bool AcceptSub4( InputContext context )       { return context.GetButton( GameButton.Sub4 ); }
         virtual protected bool AcceptCamera( Vector2 vec ) { return false; }
 
         /// <summary>

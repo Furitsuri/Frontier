@@ -63,12 +63,12 @@ namespace Frontier.StateMachine
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      "PLACE\nCHARACTER", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL,       "UNDO\nPLACE", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.INFO,         "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub2 ) }, 0.0f, hashCode),
-               (GuideIcon.OPT2,         "COMPLETE", CanAcceptOptional, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "MOVE", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      "PLACE\nCHARACTER", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,       "UNDO\nPLACE", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+               (GuideIcon.OPT2,         "COMPLETE", CanAcceptOptional, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 
@@ -160,9 +160,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
-            bool isOperated = _stageCtrl.OperateGridCursorController( dir );
+            bool isOperated = _stageCtrl.OperateGridCursorController( context.Cursor );
 
             if( isOperated ) { _presenter.RefreshGridCursorSelectCharacter(); }
 
@@ -174,11 +174,11 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+			if( !base.AcceptConfirm( context ) ) { return false; }
 
-            UndoDeploymentCandidates();
+			UndoDeploymentCandidates();
 
             var candidate = _deploymentCandidates[_focusCharacterIndex];
             candidate.IsSelected = true;
@@ -203,9 +203,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isCancel"></param>
         /// <returns></returns>
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if( !isCancel ) { return false; }
+            if( !base.AcceptCancel( context ) ) { return false; }
 
             if( UndoDeploymentCandidates() )
             {
@@ -221,9 +221,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptInfo( context ) ) { return false; }
 
             Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
@@ -237,9 +237,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptSub1( bool isInput )
+        protected override bool AcceptSub1( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptSub1( context ) ) { return false; }
 
             _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
 
@@ -251,9 +251,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptSub2( bool isInput )
+        protected override bool AcceptSub2( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptSub2( context ) ) { return false; }
 
             _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
 
@@ -265,9 +265,9 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isOptional"></param>
         /// <returns></returns>
-        protected override bool AcceptOptional( bool isOptional )
+        protected override bool AcceptOpt2( InputContext context )
         {
-            if( !isOptional ) { return false; }
+            if( !base.AcceptOpt2( context ) ) { return false; }
 
             TransitState( ( int ) TransitTag.CONFIRM_COMPLETED );
 

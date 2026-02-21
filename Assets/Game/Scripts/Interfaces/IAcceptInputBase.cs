@@ -1,10 +1,10 @@
 ﻿/// <summary>
-///  非ジェネリックの基底インターフェースです
-///  ジェネリック型のIGetInputはそのまま配列として変数化出来ないため、
-///  こちらを配列として扱うことで代用します
+///  非ジェネリックの入力受付基底インターフェースです
+///  ※はじめは入力受付をbool, Direction, Vector2などで分けていたため、
+///  それらの入力受付へ付加するインターフェースとして作成しましたが、
+///  現在は入力をすべてInputContextに集約しているため、不要かもしれません( 2026/02/22 )
 /// </summary>
 public interface IAcceptInputBase
 {
-    // 引数をobject型にすることで汎用的に扱う
-    bool Accept( object obj );
+    bool Accept( InputContext context );
 }

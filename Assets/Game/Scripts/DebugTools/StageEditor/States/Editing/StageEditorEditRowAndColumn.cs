@@ -25,50 +25,47 @@ namespace Frontier.DebugTools.StageEditor
         public override bool CanAcceptSub3() { return TILE_COLUMN_MIN_NUM < _refParams.Col; }
         public override bool CanAcceptSub4() { return _refParams.Col < TILE_COLUMN_MAX_NUM; }
 
-        public override bool AcceptConfirm( bool isInput )
+        public override bool AcceptConfirm( InputContext context )
         {
-            if ( isInput )
-            {
-                OwnCallback( _refParams.Col, _refParams.Row );
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
-                return true;
-            }
+            OwnCallback( _refParams.Col, _refParams.Row );
 
-            return false;
+            return true;
         }
 
-        public override bool AcceptCancel( bool isCancel ) { return false; }
+        public override bool AcceptCancel( InputContext context ) { return false; }
 
-        public override bool AcceptSub1( bool isInput )
+        public override bool AcceptSub1( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub1( context ) ) { return false; }
 
             _refParams.Col = Math.Clamp( _refParams.Col - 1, TILE_COLUMN_MIN_NUM, TILE_COLUMN_MAX_NUM );
 
             return true;
         }
 
-        public override bool AcceptSub2( bool isInput )
+        public override bool AcceptSub2( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub2( context ) ) { return false; }
 
             _refParams.Col = Math.Clamp( _refParams.Col + 1, TILE_COLUMN_MIN_NUM, TILE_COLUMN_MAX_NUM );
 
             return true;
         }
 
-        public override bool AcceptSub3( bool isInput )
+        public override bool AcceptSub3( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub3( context ) ) { return false; }
 
             _refParams.Row = Math.Clamp( _refParams.Row - 1, TILE_ROW_MIN_NUM, TILE_ROW_MAX_NUM );
 
             return true;
         }
 
-        public override bool AcceptSub4( bool isInput )
+        public override bool AcceptSub4( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub4( context ) ) { return false; }
 
             _refParams.Row = Math.Clamp( _refParams.Row + 1, TILE_ROW_MIN_NUM, TILE_ROW_MAX_NUM );
 

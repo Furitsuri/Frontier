@@ -7,4 +7,6 @@ public interface IGetInputBase
 {
     // 返り値をobject型にすることで汎用的に扱う
     object GetInput();
+
+    void Apply( InputContext context );
 }

@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -32,10 +31,10 @@ public class InputHandler : MonoBehaviour
     /// </summary>
     /// <param name="inputGuidePresenter">入力ガイド表示クラス</param>
     /// <param name="inputCodes">入力情報コード</param>
-    public void Init( InputGuidePresenter inputGuidePresenter, InputCode[] inputCodes )
+    public void Init( InputGuidePresenter inputGuidePresenter, List<InputCode> inputCodes )
     {
         _inputGuideView = inputGuidePresenter;
-        _inputCodes = Array.AsReadOnly( inputCodes );
+        _inputCodes = inputCodes.AsReadOnly();
 
         InitializeInputSource();
         InitializeInputForGuideIcon();
@@ -65,22 +64,25 @@ public class InputHandler : MonoBehaviour
     private void InitializeInputForGuideIcon()
     {
         _inputForIcons = new IGetInputBase[( int ) GuideIcon.NUM_MAX];
-        _inputForIcons[( int ) GuideIcon.ALL_CURSOR]        = new GetDirectionalInput( _iInput.GetDirectionalPressed );
-        _inputForIcons[( int ) GuideIcon.VERTICAL_CURSOR]   = new GetDirectionalInput( _iInput.GetDirectionalPressed );
-        _inputForIcons[( int ) GuideIcon.HORIZONTAL_CURSOR] = new GetDirectionalInput( _iInput.GetDirectionalPressed );
-        _inputForIcons[( int ) GuideIcon.CONFIRM]           = new GetBooleanInput( _iInput.IsConfirmPressed );
-        _inputForIcons[( int ) GuideIcon.CANCEL]            = new GetBooleanInput( _iInput.IsCancelPressed );
-        _inputForIcons[( int ) GuideIcon.TOOL]              = new GetBooleanInput( _iInput.IsToolPressed );
-        _inputForIcons[( int ) GuideIcon.INFO]              = new GetBooleanInput( _iInput.IsInfoPressed );
-        _inputForIcons[( int ) GuideIcon.OPT1]              = new GetBooleanInput( _iInput.IsOptions1Pressed );
-        _inputForIcons[( int ) GuideIcon.OPT2]              = new GetBooleanInput( _iInput.IsOptions2Pressed );
-        _inputForIcons[( int ) GuideIcon.SUB1]              = new GetBooleanInput( _iInput.IsSub1Pressed );
-        _inputForIcons[( int ) GuideIcon.SUB2]              = new GetBooleanInput( _iInput.IsSub2Pressed );
-        _inputForIcons[( int ) GuideIcon.SUB3]              = new GetBooleanInput( _iInput.IsSub3Pressed );
-        _inputForIcons[( int ) GuideIcon.SUB4]              = new GetBooleanInput( _iInput.IsSub4Pressed );
-        _inputForIcons[( int ) GuideIcon.CAMERA_MOVE]       = new GetVectorInput( _iInput.GetVectorPressed );
+        _inputForIcons[( int ) GuideIcon.ALL_CURSOR]        = new GetDirectionalInput( _iInput.GetDirectionalPress );
+        _inputForIcons[( int ) GuideIcon.VERTICAL_CURSOR]   = new GetDirectionalInput( _iInput.GetDirectionalPress );
+        _inputForIcons[( int ) GuideIcon.HORIZONTAL_CURSOR] = new GetDirectionalInput( _iInput.GetDirectionalPress );
+        _inputForIcons[( int ) GuideIcon.CONFIRM]           = new GetBooleanInput( _iInput.IsConfirmPressed, GameButton.Confirm );
+        _inputForIcons[( int ) GuideIcon.CANCEL]            = new GetBooleanInput( _iInput.IsCancelPressed, GameButton.Cancel );
+        _inputForIcons[( int ) GuideIcon.TOOL]              = new GetBooleanInput( _iInput.IsToolPressed, GameButton.Tool );
+        _inputForIcons[( int ) GuideIcon.INFO]              = new GetBooleanInput( _iInput.IsInfoPressed, GameButton.Info );
+        _inputForIcons[( int ) GuideIcon.OPT1]              = new GetBooleanInput( _iInput.IsOptions1Pressed, GameButton.Opt1 );
+        _inputForIcons[( int ) GuideIcon.OPT2]              = new GetBooleanInput( _iInput.IsOptions2Pressed, GameButton.Opt2 );
+        _inputForIcons[( int ) GuideIcon.SUB1]              = new GetBooleanInput( _iInput.IsSub1Pressed, GameButton.Sub1 );
+        _inputForIcons[( int ) GuideIcon.SUB2]              = new GetBooleanInput( _iInput.IsSub2Pressed, GameButton.Sub2 );
+        _inputForIcons[( int ) GuideIcon.SUB3]              = new GetBooleanInput( _iInput.IsSub3Pressed, GameButton.Sub3 );
+        _inputForIcons[( int ) GuideIcon.SUB4]              = new GetBooleanInput( _iInput.IsSub4Pressed, GameButton.Sub4 );
+        _inputForIcons[( int ) GuideIcon.POINTER_MOVE]      = new GetVectorInput( _iInput.GetVectorPressed );
+        _inputForIcons[( int ) GuideIcon.POINTER_LEFT]      = new GetBooleanInput( _iInput.IsPointerLeftPress, GameButton.PointerLeft );
+        _inputForIcons[( int ) GuideIcon.POINTER_RIGHT]     = new GetBooleanInput( _iInput.IsPointerRightPress, GameButton.PointerRight );
+        _inputForIcons[( int ) GuideIcon.POINTER_MIDDLE]    = new GetBooleanInput( _iInput.IsPointerMiddlePress, GameButton.PointerMiddle );
 #if UNITY_EDITOR
-        _inputForIcons[( int ) GuideIcon.DEBUG_MENU]        = new GetBooleanInput( _iInput.IsDebugMenuPressed );
+        _inputForIcons[( int ) GuideIcon.DEBUG_MENU]        = new GetBooleanInput( _iInput.IsDebugMenuPressed, GameButton.Debug );
 #endif  // UNITY_EDITOR
     }
 
@@ -156,14 +158,46 @@ public class InputHandler : MonoBehaviour
             // 有効判定コールバックが登録されていない or インターバル時間が過ぎていない場合は無効
             if( code.EnableCbs == null || !code.IsIntervalTimePassed() ) { continue; }
 
-            for( int i = 0; i < code.Icons.Length; ++i )
+            // 同時入力設定の場合は先頭のガイドアイコンに対応する入力可否関数、及び入力受付関数を参照する
+            if( code.IsSimultaneousInput )
             {
-                bool enable = ( code.EnableCbs[i] != null && code.EnableCbs[i]() );
-                if( !enable ) { continue; }
-
-                var input = _inputForIcons[( int ) code.Icons[i]].GetInput();
-                if( code.ExecuteAcceptInputCallback( input, i ) ) { break; }   // 入力があった場合は必ずブレークする
+                if( UpdateSimultaneousInput( code ) ) { break; }
+            }
+            // 単一入力設定
+            else {
+                if( UpdateSingleInput( code ) ) { break; }
             }
         }
+    }
+
+    private bool UpdateSingleInput( InputCode code )
+    {
+        for( int i = 0; i < code.Icons.Length; ++i )
+        {
+            bool enable = ( code.EnableCbs[i] != null && code.EnableCbs[i]() );
+            if( !enable ) { continue; }
+
+            InputContext inputContext = new InputContext();
+            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext );
+            if( code.ExecuteAcceptInputCallback( inputContext, i ) ) { return true; }   // 入力があった場合は必ずブレークする
+        }
+
+        return false;
+    }
+
+    private bool UpdateSimultaneousInput( InputCode code )
+    {
+        if( !code.EnableCbs[0]() ) { return false; }
+
+        int iconNum = code.Icons.Length;
+        InputContext inputContext = new InputContext();
+
+        for( int i = 0; i < iconNum; ++i )
+        {
+            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext );
+        }
+        if( code.ExecuteAcceptSimultaneousInputCallback( inputContext ) ) { return true; }
+
+        return false;
     }
 }

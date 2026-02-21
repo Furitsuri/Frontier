@@ -30,8 +30,8 @@ namespace Frontier.DebugTools.StageEditor
 
             // 入力ガイドを登録(InputField側で処理が行われるため、基本的に入力を受け取っても何もしない。ガイド表示のみ)
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.CONFIRM, "Choose Candidate", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode ),
-                ( GuideIcon.CANCEL, "Back", CanAcceptInputAlways, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode )
+                ( GuideIcon.CONFIRM, "Choose Candidate", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode ),
+                ( GuideIcon.CANCEL, "Back", CanAcceptInputAlways, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode )
             );
         }
 

@@ -93,18 +93,18 @@ public class EditorStateBase : StateBase
     virtual protected bool CanAcceptDebugTransition() { return false; }
 
 
-    virtual protected bool AcceptDirection( Direction dir ) { return false; }
-    virtual protected bool AcceptConfirm( bool isInput ) { return false; }
-    virtual protected bool AcceptCancel( bool isCancel ) { return false; }
-    virtual protected bool AcceptTool( bool isInput ) { return false; }
-    virtual protected bool AcceptInfo( bool isInput ) { return false; }
-    virtual protected bool AcceptOptional1( bool isOptional ) { return false; }
-    virtual protected bool AcceptOptional2( bool isOptional ) { return false; }
-    virtual protected bool AcceptSub1( bool isInput ) { return false; }
-    virtual protected bool AcceptSub2( bool isInput ) { return false; }
-    virtual protected bool AcceptSub3( bool isInput ) { return false; }
-    virtual protected bool AcceptSub4( bool isInput ) { return false; }
-    virtual protected bool AcceptDebugTransition( bool isInput ) { return false; }
+    virtual protected bool AcceptDirection( InputContext context )          { return false; }
+    virtual protected bool AcceptConfirm( InputContext context )            { return context.GetButton( GameButton.Confirm ); }
+    virtual protected bool AcceptCancel( InputContext context )             { return context.GetButton( GameButton.Cancel ); }
+    virtual protected bool AcceptTool( InputContext context )               { return context.GetButton( GameButton.Tool ); }
+    virtual protected bool AcceptInfo( InputContext context )               { return context.GetButton( GameButton.Info ); }
+    virtual protected bool AcceptOptional1( InputContext context )          { return context.GetButton( GameButton.Opt1 ); }
+    virtual protected bool AcceptOptional2( InputContext context )          { return context.GetButton( GameButton.Opt2 ); }
+    virtual protected bool AcceptSub1( InputContext context )               { return context.GetButton( GameButton.Sub1 ); }
+    virtual protected bool AcceptSub2( InputContext context )               { return context.GetButton( GameButton.Sub2 ); }
+    virtual protected bool AcceptSub3( InputContext context )               { return context.GetButton( GameButton.Sub3 ); }
+    virtual protected bool AcceptSub4( InputContext context )               { return context.GetButton( GameButton.Sub4 ); }
+    virtual protected bool AcceptDebugTransition( InputContext context )    { return context.GetButton( GameButton.Debug ); }
 }
 
 #endif // UNITY_EDITOR

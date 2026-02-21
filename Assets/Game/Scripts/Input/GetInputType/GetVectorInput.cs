@@ -20,4 +20,9 @@ public class GetVectorInput : IGetInputBase, IGetGenericInput<Vector2>
     {
         return GetGenericInput();
     }
+
+    public void Apply( InputContext context )
+    {
+        context.Stick = _callback();
+    }
 }

@@ -313,7 +313,7 @@ namespace Frontier.Combat.Skill
         private void RegisterInputCodes( int hash )
         {
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.CONFIRM, "PARRY EXEC", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hash)
+                (GuideIcon.CONFIRM, "PARRY EXEC", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hash)
             );
         }
 
@@ -323,9 +323,9 @@ namespace Frontier.Combat.Skill
             return !IsJudgeEnd();
         }
 
-        private bool AcceptConfirm( bool isInput )
+        private bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !context.GetButton( GameButton.Confirm ) ) { return false; }
 
             float shrinkRadius = _ringEffect.GetCurShrinkRingRadius();
 

@@ -129,7 +129,7 @@ namespace Frontier
         {
             int hashCode = Hash.GetStableHash( Constants.DEBUG_TRANSION_INPUT_HASH_STRING );
 
-            _inputFcd.RegisterInputCodes( (GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptBooleanInput( AcceptDebugTransition ), 0.0f, hashCode) );
+            _inputFcd.RegisterInputCodes( (GuideIcon.DEBUG_MENU, "DEBUG", CanAcceptDebugTransition, new AcceptContextInput( AcceptDebugTransition ), 0.0f, hashCode) );
         }
 
         /// <summary>
@@ -146,9 +146,9 @@ namespace Frontier
         /// </summary>
         /// <param name="isDebugTranstion">デバッグメニューへの遷移入力</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptDebugTransition( bool isDebugTranstion )
+        private bool AcceptDebugTransition( InputContext context )
         {
-            if( !isDebugTranstion ) return false;
+            if( !context.GetButton( GameButton.Debug ) ) { return false; }
 
             _debugMenuFcd.OpenDebugMenu();
 
