@@ -24,28 +24,18 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         virtual public bool CanAcceptConfirm() { return false; }
-
         virtual public bool CanAcceptCancel() { return false; }
-
         virtual public bool CanAcceptSub1() { return false; }
-
         virtual public bool CanAcceptSub2() { return false; }
-
         virtual public bool CanAcceptSub3() { return false; }
-
         virtual public bool CanAcceptSub4() { return false; }
 
-        virtual public bool AcceptConfirm( bool isInput ) { return false; }
-
-        virtual public bool AcceptCancel( bool isCancel ) { return false; }
-
-        virtual public bool AcceptSub1( bool isInput ) { return false; }
-
-        virtual public bool AcceptSub2( bool isInput ) { return false; }
-
-        virtual public bool AcceptSub3( bool isInput ) { return false; }
-
-        virtual public bool AcceptSub4( bool isInput ) { return false; }
+        virtual public bool AcceptConfirm( InputContext context )   { return context.GetButton( GameButton.Confirm ); }
+        virtual public bool AcceptCancel( InputContext context )    { return context.GetButton( GameButton.Cancel ); }
+        virtual public bool AcceptSub1( InputContext context )      { return context.GetButton( GameButton.Sub1 ); }
+        virtual public bool AcceptSub2( InputContext context )      { return context.GetButton( GameButton.Sub2 ); }
+        virtual public bool AcceptSub3( InputContext context )      { return context.GetButton( GameButton.Sub3 ); }
+        virtual public bool AcceptSub4( InputContext context )      { return context.GetButton( GameButton.Sub4 ); }
     }
 }
 

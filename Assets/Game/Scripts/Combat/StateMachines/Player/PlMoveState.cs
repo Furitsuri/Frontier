@@ -157,10 +157,10 @@ namespace Frontier.Battle
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.INFO,        "STATUS",   CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.INFO,        "STATUS",   CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
              );
         }
 
@@ -229,9 +229,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力によってキャラクター移動が行われたか</returns>
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
-            return _stageCtrl.OperateGridCursorController( dir );
+            return _stageCtrl.OperateGridCursorController( context.Cursor );
         }
 
         /// <summary>
@@ -239,11 +239,11 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>決定入力実行の有無</returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+			if( !base.AcceptConfirm( context ) ) { return false; }
 
-            var currentIndex            = _stageCtrl.GetCurrentGridIndex();
+			var currentIndex            = _stageCtrl.GetCurrentGridIndex();
             TileDynamicData tileData    = _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.GetAttackableTile( currentIndex );
 
             // 出発地点と同一グリッドであれば戻る
@@ -271,16 +271,13 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>キャンセル入力実行の有無</returns>
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if( base.AcceptCancel( isCancel ) )
-            {
-                Rewind();   // 巻き戻しを行う
+            if( !base.AcceptCancel( context ) ) { return false; }
 
-                return true;
-            }
+            Rewind();   // 巻き戻しを行う
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -288,9 +285,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptInfo( context ) ) { return false; }
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

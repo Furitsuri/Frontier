@@ -5,9 +5,9 @@ namespace Frontier.FormTroop
 {
     public class RecruitConfirmCompletedState : ConfirmPhaseStateBase
     {
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
             if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {

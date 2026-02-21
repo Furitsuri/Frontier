@@ -11,16 +11,13 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        public override bool AcceptConfirm( bool isInput )
+        public override bool AcceptConfirm( InputContext context )
         {
-            if( isInput )
-            {
-                OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
-                return true;
-            }
+            OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
 
-            return false;
+            return true;
         }
     }
 }

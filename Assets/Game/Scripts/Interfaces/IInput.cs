@@ -6,7 +6,7 @@
 /// </summary>
 public interface IInput
 {
-    public Direction GetDirectionalPressed();
+    public Direction GetDirectionalPress();
     public bool IsConfirmPressed();
     public bool IsCancelPressed();
     public bool IsToolPressed();
@@ -17,6 +17,9 @@ public interface IInput
     public bool IsSub2Pressed();
     public bool IsSub3Pressed();
     public bool IsSub4Pressed();
+    public bool IsPointerLeftPress();
+    public bool IsPointerRightPress();
+    public bool IsPointerMiddlePress();
     public Vector2 GetVectorPressed();
     public bool IsDebugMenuPressed();
 }

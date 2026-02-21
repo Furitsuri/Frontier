@@ -105,9 +105,9 @@ namespace Frontier.Battle
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.VERTICAL_CURSOR, "Select", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
+               (GuideIcon.VERTICAL_CURSOR, "Select", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
             );
         }
 
@@ -126,9 +126,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
-            return _commandList.OperateListCursor( dir );
+            return _commandList.OperateListCursor( context.Cursor );
         }
 
         /// <summary>
@@ -136,9 +136,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
             TransitStateWithExit( GetCommandValue() );
 
@@ -149,20 +149,17 @@ namespace Frontier.Battle
         /// キャンセル入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isCancel">キャンセル入力の有無</param>
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if( base.AcceptCancel( isCancel ) )
-            {
-                // 以前の状態に巻き戻せる場合は状態を巻き戻す
-                if( _plOwner.IsRewindStatePossible() )
-                {
-                    Rewind();
-                }
+            if( !base.AcceptCancel( context ) ) { return false; }
 
-                return true;
+            // 以前の状態に巻き戻せる場合は状態を巻き戻す
+            if( _plOwner.IsRewindStatePossible() )
+            {
+                Rewind();
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>

@@ -65,9 +65,9 @@ namespace Frontier.DebugTools
             return true;
         }
 
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
-            return _commandList.OperateListCursor( dir );
+            return _commandList.OperateListCursor( context.Cursor );
         }
 
         /// <summary>
@@ -75,9 +75,9 @@ namespace Frontier.DebugTools
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
             // 現在のステートに応じた処理を行う
             switch( _currentState )
@@ -101,9 +101,9 @@ namespace Frontier.DebugTools
             return true;
         }
 
-        protected override bool AcceptCancel( bool isCancel )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if( !isCancel ) { return false; }
+            if( !base.AcceptCancel( context ) ) { return false; }
 
             Back();
 

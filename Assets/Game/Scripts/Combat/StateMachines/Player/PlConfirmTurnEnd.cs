@@ -16,9 +16,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
             if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {

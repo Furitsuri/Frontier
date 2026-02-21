@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using UnityEngine;
 using Zenject;
+using Zenject.ReflectionBaking.Mono.Cecil.Cil;
 using static InputCode;
 
 /// <summary>
@@ -47,7 +50,10 @@ public sealed class InputGuidePresenter
             "_alpha_95",    // SUB2(2)
             "_alpha_96",    // SUB3(3)
             "_alpha_97",    // SUB4(4)
-            "_alpha_328",   // CAMERA_MOVE
+            "_alpha_298",   // POINTER_MOVE
+            "_alpha_300",   // POINTER_LEFT
+            "_alpha_301",   // POINTER_RIGHT
+            "_alpha_302",   // POINTER_MIDDLE
             "_alpha_119",   // DEBUG_MENU
 #elif UNITY_STANDALONE_WIN
             "_9",       // ALL_CURSOR
@@ -81,11 +87,11 @@ public sealed class InputGuidePresenter
     /// 初期化します
     /// </summary>
     /// <param name="inputCodes">入力可能となる情報</param>
-    public void Init( InputCode[] inputCodes )
+    public void Init( List<InputCode> inputCodes )
     {
         Debug.Assert( spriteTailNoString.Length == ( int ) GuideIcon.NUM_MAX, "ガイドアイコンにおける総登録数と総定義数が一致していません。" );
 
-        _inputCodes = Array.AsReadOnly( inputCodes );
+        _inputCodes = inputCodes.AsReadOnly();
         LoadSprites();
         InitGuideUi();
     }
@@ -105,9 +111,9 @@ public sealed class InputGuidePresenter
         {
             var code = _inputCodes[i];
 
-            _guideUiArrray[i].Unregister();
-            _guideUiArrray[i].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
-            _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
+            _guideUiArrray[( int ) code.Icons.First()].Unregister();
+            _guideUiArrray[( int ) code.Icons.First()].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
+            _guideUiArrray[( int ) code.Icons.First()].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
         }
 
         TransitFadeMode();  // フェード状態の遷移
@@ -121,19 +127,17 @@ public sealed class InputGuidePresenter
     /// </summary>
     private void InitGuideUi()
     {
-        for( int i = 0; i < _inputCodes.Count; ++i )
+        for( int i = 0; i < _guideUiArrray.Length; ++i )
         {
-            var code = _inputCodes[i];
-
             InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( _inputGuideBar.GuideUIPrefab, _inputGuideBar.gameObject, true );
             if( guideUi == null ) { continue; }
             guideUi.Setup();
 
-            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide( code.Icons, code.Explanation );
+            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide( new GuideIcon[] { ( GuideIcon ) i }, new InputCodeStringWrapper("") );
             guideUi.Register( _sprites, guide );
 
             _guideUiArrray[i] = guideUi;
-            _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
+            _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( null ) );
             _guideUiArrray[i].SetSpriteSortingOrder( _inputGuideBar.SortingOrder );
         }
     }
@@ -186,7 +190,7 @@ public sealed class InputGuidePresenter
         {
             bool isActive   = false;
             var code        = _inputCodes[i];
-            var guideUi     = _guideUiArrray[i];
+            var guideUi     = _guideUiArrray[( int )code.Icons.First()];
 
             if( code.EnableCbs != null )
             {

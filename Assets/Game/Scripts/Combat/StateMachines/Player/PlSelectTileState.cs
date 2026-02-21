@@ -82,11 +82,11 @@ namespace Frontier.Battle
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptBooleanInput( AcceptTool ), 0.0f, hashCode),
-               (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2, "TURN END", CanAcceptDefault, new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
+               (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT2, "TURN END", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 
@@ -130,9 +130,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
-            return _stageCtrl.OperateGridCursorController( dir );
+            return _stageCtrl.OperateGridCursorController( context.Cursor );
         }
 
         /// <summary>
@@ -140,9 +140,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null == character ) { return false; }
@@ -180,27 +180,13 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// OPTION入力を受けた際にターン終了へ遷移させます
-        /// </summary>
-        /// <param name="isOptional"></param>
-        /// <returns>入力実行の有無</returns>
-        protected override bool AcceptOptional( bool isOptional )
-        {
-            if( !isOptional ) return false;
-
-            TransitState( ( int ) TransitTag.TURN_END );
-
-            return true;
-        }
-
-        /// <summary>
         /// TOOL入力を受けた際に敵・その他キャラクターの攻撃可能範囲表示を切り替えます
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptTool( bool isInput )
+        protected override bool AcceptTool( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptTool( context ) ) { return false; }
 
             _isShowingAllDangerRange = !_isShowingAllDangerRange;
 
@@ -217,9 +203,9 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptInfo( context ) ) { return false; }
 
             Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
@@ -227,5 +213,19 @@ namespace Frontier.Battle
 
             return true;
         }
-    }
+
+		/// <summary>
+		/// OPTION入力を受けた際にターン終了へ遷移させます
+		/// </summary>
+		/// <param name="isOptional"></param>
+		/// <returns>入力実行の有無</returns>
+		protected override bool AcceptOpt2( InputContext context )
+		{
+			if( !base.AcceptOpt2( context ) ) { return false; }
+
+			TransitState( ( int ) TransitTag.TURN_END );
+
+			return true;
+		}
+	}
 }

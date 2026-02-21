@@ -78,9 +78,9 @@ namespace Frontier.Tutorial
             int hashCode = Hash.GetStableHash( GetType().Name );
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.HORIZONTAL_CURSOR, "PAGE TRANSACTION", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM, "NEXT", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.HORIZONTAL_CURSOR, "PAGE TRANSACTION", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM, "NEXT", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
              );
         }
 
@@ -146,9 +146,9 @@ namespace Frontier.Tutorial
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptDirection( Direction dir )
+        private bool AcceptDirection( InputContext context )
         {
-            switch( dir )
+            switch( context.Cursor )
             {
                 case Direction.LEFT:
                     TransitPrevPage();
@@ -169,9 +169,9 @@ namespace Frontier.Tutorial
         /// </summary>
         /// <param name="isInput">入力の有無</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptConfirm( bool isInput )
+        private bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !context.GetButton( GameButton.Confirm ) ) { return false; }
 
             if( _currentPageIndex >= _displayContents.Count - 1 )
             {
@@ -192,9 +192,9 @@ namespace Frontier.Tutorial
         /// </summary>
         /// <param name="isInput">入力の有無</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptCancel( bool isInput )
+        private bool AcceptCancel( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !context.GetButton( GameButton.Cancel ) ) { return false; }
 
             // チュートリアルの終了を予約
             ScheduleExit();

@@ -27,19 +27,19 @@ namespace Frontier.DebugTools.StageEditor
         public override bool CanAcceptSub3() { return 0f < _refParams.SelectedHeight; }
         public override bool CanAcceptSub4() { return _refParams.SelectedHeight < TILE_MAX_HEIGHT; }
 
-        public override bool AcceptConfirm( bool isInput )
+        public override bool AcceptConfirm( InputContext context )
         {
-            if ( isInput )
+            if( !base.AcceptConfirm( context ) )
             {
-                OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
-
-                return true;
+                return false;
             }
 
-            return false;
+            OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
+
+            return true;
         }
 
-        public override bool AcceptCancel( bool isCancel ) { return false; }
+        public override bool AcceptCancel( InputContext context ) { return false; }
 
         /// <summary>
         /// タイルタイプの値をデクリメントします。
@@ -47,9 +47,9 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">入力の有無</param>
         /// <returns>入力受付の有無</returns>
-        public override bool AcceptSub1( bool isInput )
+        public override bool AcceptSub1( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub1( context ) ) { return false; }
 
             if ( --_refParams.SelectedType < 0 ) { _refParams.SelectedType = ( int )TileType.NUM - 1; }
 
@@ -62,27 +62,27 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">入力の有無</param>
         /// <returns>入力受付の有無</returns>
-        public override bool AcceptSub2( bool isInput )
+        public override bool AcceptSub2( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub2( context ) ) { return false; }
 
             if ( ( int )TileType.NUM <= ++_refParams.SelectedType ) { _refParams.SelectedType = 0; }
 
             return true;
         }
 
-        public override bool AcceptSub3( bool isInput )
+        public override bool AcceptSub3( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub3( context ) ) { return false; }
 
             _refParams.SelectedHeight = Mathf.Clamp( ( float )_refParams.SelectedHeight - 0.5f, 0.0f, TILE_MAX_HEIGHT );
 
             return true;
         }
 
-        public override bool AcceptSub4( bool isInput )
+        public override bool AcceptSub4( InputContext context )
         {
-            if ( !isInput ) return false;
+            if( !base.AcceptSub4( context ) ) { return false; }
 
             _refParams.SelectedHeight = Mathf.Clamp( ( float )_refParams.SelectedHeight + 0.5f, 0.0f, TILE_MAX_HEIGHT );
 

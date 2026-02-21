@@ -6,65 +6,78 @@ using static Constants;
 /// </summary>
 public class KeyboardInput : IInput
 {
-    public Direction GetDirectionalPressed()
+    public Direction GetDirectionalPress()
     {
 
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))           return Direction.FORWARD;
-        else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))    return Direction.LEFT;
-        else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))    return Direction.BACK;
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))   return Direction.RIGHT;
+        if( Input.GetKey( KeyCode.W ) || Input.GetKey( KeyCode.UpArrow ) ) return Direction.FORWARD;
+        else if( Input.GetKey( KeyCode.A ) || Input.GetKey( KeyCode.LeftArrow ) ) return Direction.LEFT;
+        else if( Input.GetKey( KeyCode.S ) || Input.GetKey( KeyCode.DownArrow ) ) return Direction.BACK;
+        else if( Input.GetKey( KeyCode.D ) || Input.GetKey( KeyCode.RightArrow ) ) return Direction.RIGHT;
 
         return Direction.NONE;
     }
 
     public bool IsConfirmPressed()
     {
-        return Input.GetKeyUp(KeyCode.Tab);
+        return Input.GetKeyUp( KeyCode.Tab );
     }
 
     public bool IsCancelPressed()
     {
-        return Input.GetKeyUp(KeyCode.Escape);
+        return Input.GetKeyUp( KeyCode.Escape );
     }
 
     public bool IsToolPressed()
     {
-        return Input.GetKeyUp(KeyCode.LeftControl);
+        return Input.GetKeyUp( KeyCode.LeftControl );
     }
 
     public bool IsInfoPressed()
     {
-        return Input.GetKeyUp(KeyCode.LeftShift);
+        return Input.GetKeyUp( KeyCode.LeftShift );
     }
 
     public bool IsOptions1Pressed()
     {
-        return Input.GetKeyUp(KeyCode.LeftAlt);
+        return Input.GetKeyUp( KeyCode.LeftAlt );
     }
 
     public bool IsOptions2Pressed()
     {
-        return Input.GetKeyUp(KeyCode.Space);
+        return Input.GetKeyUp( KeyCode.Space );
     }
 
     public bool IsSub1Pressed()
     {
-        return Input.GetKeyUp(KeyCode.Alpha1);
+        return Input.GetKeyUp( KeyCode.Alpha1 );
     }
 
     public bool IsSub2Pressed()
     {
-        return Input.GetKeyUp(KeyCode.Alpha2);
+        return Input.GetKeyUp( KeyCode.Alpha2 );
     }
 
     public bool IsSub3Pressed()
     {
-        return Input.GetKeyUp(KeyCode.Alpha3);
+        return Input.GetKeyUp( KeyCode.Alpha3 );
     }
 
     public bool IsSub4Pressed()
     {
-        return Input.GetKeyUp(KeyCode.Alpha4);
+        return Input.GetKeyUp( KeyCode.Alpha4 );
+    }
+
+    public bool IsPointerLeftPress()
+    {
+        return Input.GetMouseButton( INPUT_INDEX_MOUSE_LEFT_CLICK );
+    }
+    public bool IsPointerRightPress()
+    {
+        return Input.GetMouseButton( INPUT_INDEX_MOUSE_RIGHT_CLICK );
+    }
+    public bool IsPointerMiddlePress()
+    {
+        return Input.GetMouseButton( INPUT_INDEX_MOUSE_MIDDLE_CLICK );
     }
 
     public Vector2 GetVectorPressed()
@@ -79,6 +92,6 @@ public class KeyboardInput : IInput
 
     public bool IsDebugMenuPressed()
     {
-        return Input.GetKeyUp(KeyCode.F12);
+        return Input.GetKeyUp( KeyCode.F12 );
     }
 }

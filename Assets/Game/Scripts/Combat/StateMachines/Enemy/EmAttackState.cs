@@ -152,11 +152,11 @@ namespace Frontier.Battle
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptBooleanInput( AcceptSub1 ), 0.0f, hashCode),
-               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptBooleanInput( AcceptSub2 ), 0.0f, hashCode),
-               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptBooleanInput( AcceptSub3 ), 0.0f, hashCode),
-               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptBooleanInput( AcceptSub4 ), 0.0f, hashCode)
+               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptContextInput( AcceptSub1 ), 0.0f, hashCode),
+               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptContextInput( AcceptSub2 ), 0.0f, hashCode),
+               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode),
+               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptContextInput( AcceptSub4 ), 0.0f, hashCode)
             );
         }
 
@@ -225,9 +225,9 @@ namespace Frontier.Battle
         /// 決定入力を受け取った際の処理を行います
         /// </summary>
         /// <param name="isConfirm">決定入力の有無</param>
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
             // キャラクターのアクションゲージを消費
             _attackCharacter.BattleLogic.ConsumeActionGauge();
@@ -252,32 +252,32 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool AcceptSub1( bool isInput )
+        protected override bool AcceptSub1( InputContext context )
         {
-            if( !isInput ) return false;
+			if( !base.AcceptSub1( context ) ) { return false; }
 
-            return _targetCharacter.BattleLogic.ToggleUseSkillks( 0 );
+			return _targetCharacter.BattleLogic.ToggleUseSkillks( 0 );
         }
 
-        protected override bool AcceptSub2( bool isInput )
+        protected override bool AcceptSub2( InputContext context )
         {
-            if( !isInput ) return false;
+			if( !base.AcceptSub2( context ) ) { return false; }
 
-            return _targetCharacter.BattleLogic.ToggleUseSkillks( 1 );
+			return _targetCharacter.BattleLogic.ToggleUseSkillks( 1 );
         }
 
-        protected override bool AcceptSub3( bool isInput )
+        protected override bool AcceptSub3( InputContext context )
         {
-            if( !isInput ) return false;
+			if( !base.AcceptSub3( context ) ) { return false; }
 
-            return _targetCharacter.BattleLogic.ToggleUseSkillks( 2 );
+			return _targetCharacter.BattleLogic.ToggleUseSkillks( 2 );
         }
 
-        protected override bool AcceptSub4( bool isInput )
+        protected override bool AcceptSub4( InputContext context )
         {
-            if( !isInput ) return false;
+			if( !base.AcceptSub4( context ) ) { return false; }
 
-            return _targetCharacter.BattleLogic.ToggleUseSkillks( 3 );
+			return _targetCharacter.BattleLogic.ToggleUseSkillks( 3 );
         }
     }
 }

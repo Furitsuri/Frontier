@@ -22,7 +22,7 @@ namespace Frontier.DebugTools.DebugMenu
         // デバッグメニューへの遷移の入力可否コールバック
         private InputCode.EnableCallback _canAcceptDebugTransitionCb = null;
         // デバッグメニューへの遷移入力のコールバック
-        private AcceptBooleanInput.AcceptBooleanInputCallback _acceptDebugTransitionCb = null;
+        private AcceptContextInput.AcceptContextInputCallback _acceptDebugTransitionCb = null;
 
         public ToggleDebugCallback _toggleDebugCb = null;
 
@@ -35,7 +35,7 @@ namespace Frontier.DebugTools.DebugMenu
         /// <summary>
         /// 初期化します
         /// </summary>
-        public void Init( DebugMenuPresenter debugMenuView, ToggleDebugCallback cb, InputCode.EnableCallback canAcceptCb, AcceptBooleanInput.AcceptBooleanInputCallback acceptInputCb )
+        public void Init( DebugMenuPresenter debugMenuView, ToggleDebugCallback cb, InputCode.EnableCallback canAcceptCb, AcceptContextInput.AcceptContextInputCallback acceptInputCb )
         {
             base.Init();
 
@@ -63,9 +63,9 @@ namespace Frontier.DebugTools.DebugMenu
             int hashCode = Hash.GetStableHash( GetType().Name );
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.VERTICAL_CURSOR, "SELECT", CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL, "EXIT", CanAcceptCancel, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.VERTICAL_CURSOR, "SELECT", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL, "EXIT", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
             );
         }
 
@@ -112,16 +112,16 @@ namespace Frontier.DebugTools.DebugMenu
             return true;
         }
 
-        private bool AcceptDirection( Direction dir )
+        private bool AcceptDirection( InputContext context )
         {
-            if( dir == Direction.FORWARD )
+            if( context.Cursor == Direction.FORWARD )
             {
                 // 前のメニューへ
                 _currentMenuIndex = ( _currentMenuIndex - 1 + _menuTexts.Count ) % _menuTexts.Count;
 
                 return true;
             }
-            else if( dir == Direction.BACK )
+            else if( context.Cursor == Direction.BACK )
             {
                 // 次のメニューへ
                 _currentMenuIndex = ( _currentMenuIndex + 1 ) % _menuTexts.Count;
@@ -137,17 +137,14 @@ namespace Frontier.DebugTools.DebugMenu
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptConfirm( bool isInput )
+        private bool AcceptConfirm( InputContext context )
         {
-            if( isInput )
-            {
-                Pause();
-                LaunchDebugMenu( _currentMenuIndex );
+            if( !context.GetButton( GameButton.Confirm ) ) { return false; }
 
-                return true;
-            }
+            Pause();
+            LaunchDebugMenu( _currentMenuIndex );
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -155,16 +152,13 @@ namespace Frontier.DebugTools.DebugMenu
         /// </summary>
         /// <param name="isInput">オプション入力</param>
         /// <returns>入力実行の有無</returns>
-        private bool AcceptCancel( bool isInput )
+        private bool AcceptCancel( InputContext context )
         {
-            if( isInput )
-            {
-                ScheduleExit();
+            if( !context.GetButton( GameButton.Cancel ) ) { return false; }
 
-                return true;
-            }
+            ScheduleExit();
 
-            return false;
+            return true;
         }
 
         // =========================================================
@@ -214,7 +208,7 @@ namespace Frontier.DebugTools.DebugMenu
             ToggleDebugView();
             _inputFcd.UnregisterInputCodes( _inputHashCode );
             int hashCode = Hash.GetStableHash( Constants.DEBUG_TRANSION_INPUT_HASH_STRING );
-            _inputFcd.RegisterInputCodes( (GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptBooleanInput( _acceptDebugTransitionCb ), 0.0f, hashCode) );
+            _inputFcd.RegisterInputCodes( (GuideIcon.DEBUG_MENU, "DEBUG", _canAcceptDebugTransitionCb, new AcceptContextInput( _acceptDebugTransitionCb ), 0.0f, hashCode) );
         }
 
         public override int GetPriority() { return ( int ) FocusRoutinePriority.DEBUG_MENU; }

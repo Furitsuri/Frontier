@@ -88,9 +88,9 @@ namespace Frontier.StateMachine
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.VERTICAL_CURSOR,    "SELECT",               CanAcceptDirection, new AcceptDirectionInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-                ( GuideIcon.CANCEL,             "BACK",                 CanAcceptDefault, new AcceptBooleanInput( AcceptCancel ), 0.0f, hashCode ),
-                ( GuideIcon.INFO,               _inputInfoStrWrapper,   CanAcceptDefault, new AcceptBooleanInput( AcceptInfo ),   0.0f, hashCode )
+                ( GuideIcon.VERTICAL_CURSOR,    "SELECT",               CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                ( GuideIcon.CANCEL,             "BACK",                 CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode ),
+                ( GuideIcon.INFO,               _inputInfoStrWrapper,   CanAcceptDefault, new AcceptContextInput( AcceptInfo ),   0.0f, hashCode )
             );
         }
 
@@ -103,11 +103,11 @@ namespace Frontier.StateMachine
             return _statusPresenter.IsToolTipActive();
         }
 
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
             int addValue = 0;
 
-            switch( dir )
+            switch( context.Cursor )
             {
                 case Direction.FORWARD:
                     addValue = -1;
@@ -129,18 +129,18 @@ namespace Frontier.StateMachine
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// /// <returns>決定入力の有無</returns>
-        protected override bool AcceptCancel( bool isInput )
+        protected override bool AcceptCancel( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptCancel( context ) ) return false;
 
             Back();
 
             return true;
         }
 
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptInfo( context ) ) return false;
 
             _statusPresenter.ToggleToolTipActive();
 

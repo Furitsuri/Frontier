@@ -11,20 +11,14 @@ public class InputCode
 {
     public delegate bool EnableCallback();
 
-    // 入力アイコン
-    public GuideIcon[] Icons;
-    // アイコンに対する説明文
-    public InputCodeStringWrapper Explanation;
-    // 有効・無効を判定するコールバック
-    public EnableCallback[] EnableCbs;
-    // 入力受付のコールバック
-    public IAcceptInputBase[] AcceptInputs;
-    // 入力処理を有効にするインターバル
-    public float InputInterval;
-    // 入力コード登録を行ったクラスのハッシュ値
-    public int RegisterClassHashCode;
-    // 入力処理を行った最後の時間
-    private float InputLastTime;
+    public GuideIcon[] Icons;                   // 入力アイコン
+    public InputCodeStringWrapper Explanation;  // アイコンに対する説明文
+    public EnableCallback[] EnableCbs;          // 有効・無効を判定するコールバック
+    public IAcceptInputBase[] AcceptInputs;     // 入力受付のコールバック
+    public float InputInterval;                 // 入力処理を有効にするインターバル
+    public int RegisterClassHashCode;           // 入力コード登録を行ったクラスのハッシュ値
+    public bool IsSimultaneousInput;            // 同時入力か否か
+    private float _inputLastTime;               // 入力処理を行った最後の時間
 
     /// <summary>
     /// 入力コードを設定します
@@ -45,19 +39,13 @@ public class InputCode
         AcceptInputs            = acceptInputs;
         InputInterval           = interval;
         RegisterClassHashCode   = hashCode;
-        InputLastTime           = 0f;
+        _inputLastTime          = 0f;
+        IsSimultaneousInput     = false;
     }
 
     /// <summary>
-    /// 入力コードを設定します
     /// 上記と同様ですが、説明文を直接文字列で指定します
     /// </summary>
-    /// <param name="icons">ガイドアイコン</param>
-    /// <param name="expl">説明文</param>
-    /// <param name="enableCbs">入力受付判定のコールバック</param>
-    /// <param name="acceptInputs">入力時のコールバック</param>
-    /// <param name="interval">入力受付のインターバル時間</param>
-    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
     public InputCode( GuideIcon[] icons, string expl, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode )
     {
         Icons                   = icons;
@@ -66,20 +54,14 @@ public class InputCode
         AcceptInputs            = acceptInputs;
         InputInterval           = interval;
         RegisterClassHashCode   = hashCode;
-        InputLastTime           = 0f;
+        _inputLastTime          = 0f;
+        IsSimultaneousInput     = false;
     }
 
     /// <summary>
-    /// 入力コードを設定します
     /// ガイドアイコン及び入力受付関数が単一ケースの入力コードを設定します
     /// 説明文はラッパークラスを使用してください
     /// </summary>
-    /// <param name="icon">ガイドアイコン</param>
-    /// <param name="explwrapper">説明文</param>
-    /// <param name="enableCb">入力受付判定のコールバック</param>
-    /// <param name="acceptInput">入力時のコールバック</param>
-    /// <param name="interval">入力受付のインターバル時間</param>
-    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
     public InputCode( GuideIcon icon, InputCodeStringWrapper explwrapper, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
     {
         Icons           = new GuideIcon[1];
@@ -92,19 +74,13 @@ public class InputCode
         AcceptInputs[0]         = acceptInput;
         InputInterval           = interval;
         RegisterClassHashCode   = hashCode;
-        InputLastTime           = 0f;
+        _inputLastTime          = 0f;
+        IsSimultaneousInput    = false;
     }
 
     /// <summary>
-    /// 入力コードを設定します
-    /// 上記と同様ですが、説明文を直接文字列で指定します
+    /// 単一のアイコン、入力受付関数を用い、説明文を直接文字列で指定したい場合に用います
     /// </summary>
-    /// <param name="icon">ガイドアイコン</param>
-    /// <param name="expl">説明文</param>
-    /// <param name="enableCb">入力受付判定のコールバック</param>
-    /// <param name="acceptInput">入力時のコールバック</param>
-    /// <param name="interval">入力受付のインターバル時間</param>
-    /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
     public InputCode( GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
     {
         Icons           = new GuideIcon[1];
@@ -117,7 +93,27 @@ public class InputCode
         AcceptInputs[0]         = acceptInput;
         InputInterval           = interval;
         RegisterClassHashCode   = hashCode;
-        InputLastTime           = 0f;
+        _inputLastTime          = 0f;
+        IsSimultaneousInput     = false;
+    }
+
+    /// <summary>
+    /// 主に同時入力を受付させる場合に用います
+    /// 複数のガイドアイコンを設定可能で、説明文や入力受付関数については単一のものを使用します
+    /// </summary>
+    public InputCode( GuideIcon[] icons, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
+    {
+        EnableCbs = new EnableCallback[1];
+        AcceptInputs = new IAcceptInputBase[1];
+
+        Icons                   = icons;
+        Explanation             = new InputCodeStringWrapper( expl );
+        EnableCbs[0]            = enableCb;
+        AcceptInputs[0]         = acceptInput;
+        InputInterval           = interval;
+        RegisterClassHashCode   = hashCode;
+        _inputLastTime          = 0f;
+        IsSimultaneousInput     = true;
     }
 
     /// <summary>
@@ -141,7 +137,7 @@ public class InputCode
     /// 上記のコンストラクタをタプルでまとめて呼び出せるようにするためのオペレーター群です
     /// </summary>
     /// <param name="tuple">オペレーター対象の設定</param>
-    static public implicit operator InputCode( (GuideIcon[], InputCodeStringWrapper, EnableCallback[], IAcceptInputBase[], float, int) tuple )
+    static public implicit operator InputCode( (GuideIcon[], InputCodeStringWrapper, EnableCallback[], IAcceptInputBase[], float, int ) tuple )
     {
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
     }
@@ -161,23 +157,54 @@ public class InputCode
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
     }
 
-    /// <summary>
-    /// 入力受付時のコールバックを実行します
-    /// </summary>
-    /// <typeparam name="T">実行するコールバックの型</typeparam>
-    /// <param name="input">受け取った入力</param>
-    public bool ExecuteAcceptInputCallback<T>( T input, int acceptIdx )
+    static public implicit operator InputCode( (GuideIcon[], string, EnableCallback, IAcceptInputBase, float, int) tuple )
     {
-        if ( AcceptInputs == null || AcceptInputs[acceptIdx] == null )
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
+    }
+
+    /// <summary>
+    /// 入力受付のコールバックを実行します
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="acceptIdx"></param>
+    /// <returns></returns>
+    public bool ExecuteAcceptInputCallback( InputContext context, int acceptIdx )
+    {
+        if( AcceptInputs == null || AcceptInputs[acceptIdx] == null )
         {
             Debug.Assert( false );
             return false;
         }
 
-        bool hasInput = AcceptInputs[acceptIdx].Accept( input );
-        if ( hasInput ) { SetInputLastTime( Time.time ); }  // 最後の入力時間を記録
+        bool hasInput = AcceptInputs[acceptIdx].Accept( context );
+        if( hasInput ) { SetInputLastTime( Time.time ); }  // 最後の入力時間を記録
 
         return hasInput;
+    }
+
+    /// <summary>
+    /// 同時入力に対する入力受付のコールバックを実行します
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public bool ExecuteAcceptSimultaneousInputCallback( InputContext context )
+    {
+        if( AcceptInputs == null || AcceptInputs[0] == null )
+        {
+            Debug.Assert( false );
+            return false;
+        }
+
+        bool hasInput = AcceptInputs[0].Accept( context );
+        if( hasInput ) { SetInputLastTime( Time.time ); }  // 最後の入力時間を記録
+
+        return hasInput;
+    }
+
+    public void Dispose()
+    {
+        Explanation     = null;
+        AcceptInputs    = null;
     }
 
     /// <summary>
@@ -185,7 +212,7 @@ public class InputCode
     /// </summary>
     public void ResetIntervalTime()
     {
-        InputLastTime = 0f;
+        _inputLastTime = 0f;
     }
 
     /// <summary>
@@ -194,7 +221,7 @@ public class InputCode
     /// <param name="time">入力を行った時間</param>
     public void SetInputLastTime( float time )
     {
-        InputLastTime = time;
+        _inputLastTime = time;
     }
 
     /// <summary>
@@ -212,7 +239,7 @@ public class InputCode
     /// <returns>インターバル時間が経過したか</returns>
     public bool IsIntervalTimePassed()
     {
-        return ( InputInterval <= Time.time - InputLastTime );
+        return ( InputInterval <= Time.time - _inputLastTime );
     }
 
     /// <summary>

@@ -5,7 +5,7 @@
 /// </summary>
 public class TouchInput : IInput
 {
-    public Direction GetDirectionalPressed()
+    public Direction GetDirectionalPress()
     {
         return Direction.NONE;
     }
@@ -46,7 +46,7 @@ public class TouchInput : IInput
     }
 
     public bool IsSub1Pressed()
-    { 
+    {
         return false;
     }
 
@@ -68,6 +68,21 @@ public class TouchInput : IInput
     public Vector2 GetVectorPressed()
     {
         return Vector2.zero;
+    }
+
+    public bool IsPointerLeftPress()
+    {
+        return false;
+    }
+
+    public bool IsPointerRightPress()
+    {
+        return false;
+    }
+
+    public bool IsPointerMiddlePress()
+    {
+        return false;
     }
 
     public bool IsDebugMenuPressed()

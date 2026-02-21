@@ -17,7 +17,7 @@ namespace Frontier.DebugTools.DebugMenu
         /// <summary>
         /// 初期化します
         /// </summary>
-        public void Init( InputCode.EnableCallback canAcceptCb, AcceptBooleanInput.AcceptBooleanInputCallback acceptInputCb )
+        public void Init( InputCode.EnableCallback canAcceptCb, AcceptContextInput.AcceptContextInputCallback acceptInputCb )
         {
             LazyInject.GetOrCreate( ref _debugUi, () => GameObjectFinder.FindInSceneEvenIfInactive( "DebugUI" ) );
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<DebugMenuPresenter>( false ) );

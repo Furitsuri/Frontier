@@ -44,10 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9ab79730e0acf5429d6977222705245, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _cameraXZSlide: 0
+  _cameraXZSlide: 1
   _inputThreshold: 0.5
-  _inputCoefficientOnCameraXZSlide: 10
-  _followDuration: 0.1
+  _inputCoefficientOnCameraSlide: 5
+  _angleYZMin: 15
+  _angleYZMax: 65
+  _followDuration: 0.2
   _fadeDuration: 0.5
   _atkCameraLerpDuration: 0.33
   _mosaicStartFadeRate: 0

@@ -57,11 +57,12 @@ namespace Frontier
         [SerializeField] private bool _cameraXZSlide = false;
         [ShowIf( nameof( _cameraXZSlide ) )]
         [SerializeField] private float _inputThreshold = 0f;
-        [HideIf( nameof( _cameraXZSlide ) )]
-        [SerializeField] private float _inputCoefficientOnCameraXZSlide = 3f;
 
         [Space(5)]
 
+        [SerializeField] private float _inputCoefficientOnCameraSlide   = 3f;
+        [SerializeField] private float _angleYZMin                      = 30f;
+        [SerializeField] private float _angleYZMax                      = 80f;
         [SerializeField] private float _followDuration = 1f;
         [SerializeField] private float _fadeDuration = 0.4f;
         [SerializeField] private float _atkCameraLerpDuration = 0.2f;
@@ -421,7 +422,7 @@ namespace Frontier
         {
             int hashCode = Hash.GetStableHash( Constants.INPUT_CAMERA_STRING );
 
-            _inputFcd.RegisterInputCodes( (GuideIcon.CAMERA_MOVE, "CAMERA", CanAcceptCamera, new AcceptVectorInput( AcceptCameraInput ), 0.0f, hashCode) );
+            _inputFcd.RegisterInputCodes( ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_RIGHT }, "CAMERA\nMOVE", CanAcceptCamera, new AcceptContextInput( AcceptCameraInput ), 0.0f, hashCode ) );
         }
 
         /// <summary>
@@ -433,25 +434,29 @@ namespace Frontier
             return ( _mode != CameraMode.ATTACK_SEQUENCE && !_cameraSliding );
         }
 
-        private bool AcceptCameraInput( in Vector2 vec )
+        private bool AcceptCameraInput( InputContext context )
         {
-            if( vec.SqrMagnitude() <= 0f ) { return false; }
+            if( !context.GetButton( GameButton.PointerRight ) ) { return false; }   // Keyboard入力時、右クリックが押下されていない場合は無視
+            if( context.Stick.SqrMagnitude() <= 0f ) { return false; }              // マウス入力、もしくはスティック入力が一定値を超えていない場合は無視
 
             // カメラをスライド移動させるチェックが付いている場合
             if( _cameraXZSlide )
             {
-                if( _inputThreshold <= Mathf.Abs( vec.x ) )
+                if( _inputThreshold <= Mathf.Abs( context.Stick.x ) )
                 {
-                    CameraDirection dir = ( vec.x < 0 ) ? CameraDirection.LEFT : CameraDirection.RIGHT;
+                    CameraDirection dir = ( context.Stick.x < 0 ) ? CameraDirection.LEFT : CameraDirection.RIGHT;
                     StartSlide( dir );
                 }
             }
             // チェックが付いていない場合はユーザーの入力量に従う
             else
             {
-                _angleXZ += vec.x * _inputCoefficientOnCameraXZSlide;
-                _followingPosition = _prevCameraPosition = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
+                _angleXZ += context.Stick.x * _inputCoefficientOnCameraSlide;
             }
+
+            // YZ平面はどちらの場合でも入力量に従う
+            _angleYZ = Mathf.Clamp( _angleYZ - context.Stick.y * _inputCoefficientOnCameraSlide, _angleYZMin, _angleYZMax );
+            _followingPosition = _prevCameraPosition = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
 
             return true;
         }

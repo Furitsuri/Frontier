@@ -73,15 +73,15 @@ namespace Frontier.DebugTools.StageEditor
 
             _sub1sub2InputCode = new InputCode[( int )StageEditMode.NUM]
             {
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE MATERIAL", new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE ROW NUM",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub1 ), new AcceptBooleanInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE MATERIAL", new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE ROW NUM",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
                 (null),
             };
 
             _sub3sub4InputCode = new InputCode[( int )StageEditMode.NUM]
             {
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE HEIGHT",       new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub3 ), new AcceptBooleanInput( AcceptSub4 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE COLUMN NUM",   new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptSub3 ), new AcceptBooleanInput( AcceptSub4 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE HEIGHT",       new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE COLUMN NUM",   new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
                 (null),
             };
         }
@@ -98,14 +98,14 @@ namespace Frontier.DebugTools.StageEditor
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptInputAlways, new AcceptDirectionInput( AcceptDirection ), 0.1f, hashCode),
-                (GuideIcon.CONFIRM, "APPLY",        CanAcceptInputAlways, new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.TOOL, GuideIcon.INFO }, "MODE CHANGE", new EnableCallback[] { CanAcceptTool, CanAcceptInfo }, new IAcceptInputBase[] { new AcceptBooleanInput( AcceptTool ), new AcceptBooleanInput( AcceptInfo ) }, 0.0f, hashCode),
-                (GuideIcon.OPT1, "LOAD",            CanAcceptInputAlways, new AcceptBooleanInput( AcceptOptional1 ), 0.0f, hashCode),
-                (GuideIcon.OPT2, "SAVE",            CanAcceptInputAlways, new AcceptBooleanInput( AcceptOptional2 ), 0.0f, hashCode),
+                (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptInputAlways, new AcceptContextInput( AcceptDirection ), 0.1f, hashCode),
+                (GuideIcon.CONFIRM, "APPLY",        CanAcceptInputAlways, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.TOOL, GuideIcon.INFO }, "MODE CHANGE", new EnableCallback[] { CanAcceptTool, CanAcceptInfo }, new IAcceptInputBase[] { new AcceptContextInput( AcceptTool ), new AcceptContextInput( AcceptInfo ) }, 0.0f, hashCode),
+                (GuideIcon.OPT1, "LOAD",            CanAcceptInputAlways, new AcceptContextInput( AcceptOptional1 ), 0.0f, hashCode),
+                (GuideIcon.OPT2, "SAVE",            CanAcceptInputAlways, new AcceptContextInput( AcceptOptional2 ), 0.0f, hashCode),
                 _sub1sub2InputCode[(int)_editMode]?.Clone(),    // _sub1sub2InputCode[(int)_editMode]がnullの場合は、そのままnullを渡す
                 _sub3sub4InputCode[(int)_editMode]?.Clone(),
-                (GuideIcon.DEBUG_MENU, "FILE NAME", CanAcceptInputAlways, new AcceptBooleanInput( AcceptDebugTransition ), 0.0f, hashCode)
+                (GuideIcon.DEBUG_MENU, "FILE NAME", CanAcceptInputAlways, new AcceptContextInput( AcceptDebugTransition ), 0.0f, hashCode)
             );
         }
 
@@ -116,15 +116,15 @@ namespace Frontier.DebugTools.StageEditor
         protected override bool CanAcceptSub3() { return _currentEdit.CanAcceptSub3(); }
         protected override bool CanAcceptSub4() { return _currentEdit.CanAcceptSub4(); }
 
-        protected override bool AcceptDirection(Direction dir)
+        protected override bool AcceptDirection( InputContext context )
         {
 
-            if (dir == Direction.NONE) return false;
+            if( context.Cursor == Direction.NONE ) { return false; }
 
-            if (dir == Direction.RIGHT)         _gridCursorCtrl.Right();
-            else if (dir == Direction.LEFT)     _gridCursorCtrl.Left();
-            else if (dir == Direction.FORWARD)  _gridCursorCtrl.Up();
-            else if (dir == Direction.BACK)     _gridCursorCtrl.Down();
+            if( context.Cursor == Direction.RIGHT )         { _gridCursorCtrl.Right();  }
+            else if( context.Cursor == Direction.LEFT )     { _gridCursorCtrl.Left();   }
+            else if( context.Cursor == Direction.FORWARD )  { _gridCursorCtrl.Up();     }
+            else if( context.Cursor == Direction.BACK )     { _gridCursorCtrl.Down();   }
 
             return true;
         }
@@ -134,9 +134,9 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptConfirm(bool isInput)
+        protected override bool AcceptConfirm( InputContext context )
         {
-            return _currentEdit.AcceptConfirm(isInput);
+            return _currentEdit.AcceptConfirm( context );
         }
 
         /// <summary>
@@ -144,9 +144,9 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptTool( bool isInput )
+        protected override bool AcceptTool( InputContext context )
         {
-            if ( isInput )
+            if ( base.AcceptTool( context ) )
             {
                 _editMode = ChangeEditModeCallback( -1 );
                 _inputFcd.UnregisterInputCodes();
@@ -164,19 +164,16 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">情報画面入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if ( isInput )
-            {
-                _editMode = ChangeEditModeCallback( 1 );
-                _inputFcd.UnregisterInputCodes();
-                RegisterInputCodes();
-                _currentEdit = _editClasses[( int )_editMode];
-                _currentEdit.Init( _editCallbacks[( int ) _editMode] );
-                return true;
-            }
+            if( !base.AcceptInfo( context ) ) { return false; }
 
-            return false;
+            _editMode = ChangeEditModeCallback( 1 );
+            _inputFcd.UnregisterInputCodes();
+            RegisterInputCodes();
+            _currentEdit = _editClasses[( int ) _editMode];
+            _currentEdit.Init( _editCallbacks[( int ) _editMode] );
+            return true;
         }
 
         /// <summary>
@@ -184,9 +181,9 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptOptional1( bool isInput )
+        protected override bool AcceptOptional1( InputContext context )
         {
-            if( !isInput ) return false;
+            if( !base.AcceptOptional1( context ) ) { return false; }
 
             TransitState( ( int ) TransitTag.Load );
 
@@ -198,28 +195,28 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptOptional2(bool isInput)
+        protected override bool AcceptOptional2(InputContext context)
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptOptional2( context ) ) { return false; }
 
             TransitState( ( int ) TransitTag.Save );
 
             return true;
         }
 
-        protected override bool AcceptSub1( bool isInput ) { return _currentEdit.AcceptSub1( isInput ); }
-        protected override bool AcceptSub2( bool isInput ) { return _currentEdit.AcceptSub2( isInput ); }
-        protected override bool AcceptSub3( bool isInput ) { return _currentEdit.AcceptSub3( isInput ); }
-        protected override bool AcceptSub4( bool isInput ) { return _currentEdit.AcceptSub4( isInput ); }
+        protected override bool AcceptSub1( InputContext context ) { return _currentEdit.AcceptSub1( context ); }
+        protected override bool AcceptSub2( InputContext context ) { return _currentEdit.AcceptSub2( context ); }
+        protected override bool AcceptSub3( InputContext context ) { return _currentEdit.AcceptSub3( context ); }
+        protected override bool AcceptSub4( InputContext context ) { return _currentEdit.AcceptSub4( context ); }
 
         /// <summary>
         /// ファイルネーム編集へ遷移させます
         /// </summary>
         /// <param name="isInput"></param>
         /// <returns></returns>
-        protected override bool AcceptDebugTransition( bool isInput )
+        protected override bool AcceptDebugTransition( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptDebugTransition( context ) ) { return false; }
 
             TransitState( ( int ) TransitTag.EditFileName );
             return true;

@@ -81,10 +81,10 @@ namespace Frontier.FormTroop
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "SELECT\nUNIT",             CanAcceptDefault,   new AcceptDirectionInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      _inputConfirmStrWrapper,    CanAcceptConfirm,   new AcceptBooleanInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.INFO,         "STATUS",                   CanAcceptDefault,   new AcceptBooleanInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2,         "COMPLETE",                 CanAcceptOptional,  new AcceptBooleanInput( AcceptOptional ), 0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR,   "SELECT\nUNIT",             CanAcceptDefault,   new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,      _inputConfirmStrWrapper,    CanAcceptConfirm,   new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.INFO,         "STATUS",                   CanAcceptDefault,   new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT2,         "COMPLETE",                 CanAcceptOptional,  new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 
@@ -112,11 +112,11 @@ namespace Frontier.FormTroop
         /// </summary>
         /// <param name="dir">方向入力</param>
         /// <returns>入力実行の有無</returns>
-        protected override bool AcceptDirection( Direction dir )
+        protected override bool AcceptDirection( InputContext context )
         {
             bool isOperated = false;
 
-            switch( dir )
+            switch( context.Cursor )
             {
                 case Direction.LEFT:
                     {
@@ -135,11 +135,11 @@ namespace Frontier.FormTroop
             return isOperated;
         }
 
-        protected override bool AcceptConfirm( bool isInput )
+        protected override bool AcceptConfirm( InputContext context )
         {
-            if( !isInput ) { return false; }
+			if( !base.AcceptConfirm( context ) ) { return false; }
 
-            var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
+			var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
 
             // 既に雇用チェックされている場合は所持金とユニットを雇用前の状態に戻す
@@ -166,9 +166,9 @@ namespace Frontier.FormTroop
             return true;
         }
 
-        protected override bool AcceptInfo( bool isInput )
+        protected override bool AcceptInfo( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptInfo( context ) ) { return false; }
 
             // ステータス表示ステートに対象キャラクターを渡す
             Handler.ReceiveContext( _employmentCandidates[_focusCharacterIndex].Character );
@@ -178,9 +178,9 @@ namespace Frontier.FormTroop
             return true;
         }
 
-        protected override bool AcceptOptional( bool isInput )
+        protected override bool AcceptOpt2( InputContext context )
         {
-            if( !isInput ) { return false; }
+            if( !base.AcceptOpt2( context ) ) { return false; }
 
             // 雇用完了確認ステートへ遷移
             TransitState( ( int ) RecruitRootTransitTag.CONFIRM );
