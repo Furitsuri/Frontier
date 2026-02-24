@@ -11,6 +11,12 @@ namespace Frontier.UI
 {
     public class BattleUISystem : MonoBehaviour
     {
+        public enum ParameterWindowType
+        {
+            Left,
+            Right
+        }
+
         [Inject] private CombatSkillEventController _combatSkillCtrl = null;
 
         [Header( "表示キャンバス" )]

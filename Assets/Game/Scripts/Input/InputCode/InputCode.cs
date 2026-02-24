@@ -75,7 +75,7 @@ public class InputCode
         InputInterval           = interval;
         RegisterClassHashCode   = hashCode;
         _inputLastTime          = 0f;
-        IsSimultaneousInput    = false;
+        IsSimultaneousInput     = false;
     }
 
     /// <summary>

@@ -97,6 +97,8 @@ namespace Frontier.Battle
             float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
+            // パラメータビューにキャラクターを割り当て
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
         }
 
         public override bool Update()
@@ -198,9 +200,8 @@ namespace Frontier.Battle
         protected override bool CanAcceptDirection()
         {
             if( !CanAcceptDefault() ) { return false; }
-
             // 移動フェーズでない場合、または移動入力受付が不可能である場合は不可
-            if( PlMovePhase.PL_MOVE == _phase ) return true;
+            if( PlMovePhase.PL_MOVE == _phase ) { return true; }
 
             return false;
         }
@@ -231,7 +232,20 @@ namespace Frontier.Battle
         /// <returns>入力によってキャラクター移動が行われたか</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            return _stageCtrl.OperateGridCursorController( context.Cursor );
+            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( context.Cursor );
+
+            if( isAcceptDirection )
+            {
+                var gridSelectChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+                bool isActiveEnemyParameter = gridSelectChara != null && gridSelectChara != _plOwner;
+                if( isActiveEnemyParameter )
+                {
+                    _presenter.AssignCharacterToParameterView( gridSelectChara, UI.BattleUISystem.ParameterWindowType.Right );
+                }
+                _presenter.SetActiveEnemyParameter( isActiveEnemyParameter );
+            }
+
+            return isAcceptDirection;
         }
 
         /// <summary>
