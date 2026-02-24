@@ -11,6 +11,7 @@ namespace Frontier.Stage
     [System.Serializable]
     public class StageData
     {
+        [SerializeField] private int _maxDeployableUnits;                   // ステージに出撃可能なユニット数
         [SerializeField] private int _tileRowNum;                           // タイルの行数
         [SerializeField] private int _tileColNum;                           // タイルの列数
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -21,11 +22,13 @@ namespace Frontier.Stage
 
         private Tile[] _tiles = null;           // タイル
 
+        public int MaxDeployableUnits => _maxDeployableUnits;
         public int TileRowNum => _tileRowNum;
         public int TileColNum => _tileColNum;
 
-        public void Init( int tileRowNum, int tileColumnNum )
+        public void Init( int maxDeployableUnits, int tileRowNum, int tileColumnNum )
         {
+            _maxDeployableUnits = maxDeployableUnits;
             _tileRowNum         = tileRowNum;
             _tileColNum         = tileColumnNum;
             _tiles              = new Tile[_tileRowNum * _tileColNum];
@@ -119,6 +122,7 @@ namespace Frontier.Stage
         }
 
         public void SetTile( int x, int y, Tile tile ) => _tiles[x + ( y * _tileColNum )] = tile;
+        public void SetMaxDeployableUnits( int maxDeployableUnits ) => _maxDeployableUnits = maxDeployableUnits;
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
         public TileSaveData GetSaveData( int x, int y ) => _tileSaveDatas[x + ( y * _tileColNum )];

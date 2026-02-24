@@ -52,8 +52,7 @@ namespace Frontier.DebugTools.StageEditor
         /// <param name="index">エディットモードのインデックス値</param>
         public void SwitchEditParamView( StageEditMode mode )
         {
-            // キャラクター配置エディットでは、編集可能パラメータが存在しないため表示しない
-            _editParamImage.SetActive( ( mode != StageEditMode.EDIT_CHARACTER_DEPLOYMENT_TILE ) );
+            _editParamImage.SetActive( true );
 
             int index = ( int ) mode;
 
@@ -119,10 +118,10 @@ namespace Frontier.DebugTools.StageEditor
             {
                 ( ( TileType )refParams.SelectedType ).ToString(),
                 refParams.Col.ToString(),
-                ""
+                refParams.MaxDeployableUnits.ToString()
             };
 
-                string[] secondParamText = new string[( int ) StageEditMode.NUM]
+            string[] secondParamText = new string[( int ) StageEditMode.NUM]
             {
                 refParams.SelectedHeight.ToString(),
                 refParams.Row.ToString(),
@@ -131,11 +130,14 @@ namespace Frontier.DebugTools.StageEditor
 
             _editModeTextMesh.text = mode.ToString().Replace( '_', ' ' );
 
-            // キャラクターの配置タイル設定編集では、エディット可能パラメータが存在しないため終了する
-            if( mode == StageEditMode.EDIT_CHARACTER_DEPLOYMENT_TILE ) { return; }
-
-            _firstParamTextMesh[( int ) mode].text  = firstParamText[( int ) mode];
-            _secondParamTextMesh[( int ) mode].text = secondParamText[( int ) mode];
+            if( 0 < firstParamText[( int ) mode].Length )
+            {
+                _firstParamTextMesh[( int ) mode].text = firstParamText[( int ) mode];
+            }
+            if( 0 < secondParamText[( int ) mode].Length )
+            {
+                _secondParamTextMesh[( int ) mode].text = secondParamText[( int ) mode];
+            }
         }
 
         public bool HasSuggestions()

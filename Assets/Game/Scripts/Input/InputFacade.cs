@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Zenject;
-using static Constants;
 
 public class InputFacade
 {
@@ -46,16 +45,17 @@ public class InputFacade
     /// <param name="hashCode">ハッシュ値</param>
     public void UnregisterInputCodes( int hashCode )
     {
-        for( int i = 0; i < _inputCodes.Count; ++i )
+        _inputCodes.RemoveAll( code =>
         {
-            if( _inputCodes[i].RegisterClassHashCode == hashCode )
+            if( code.RegisterClassHashCode == hashCode )
             {
-                _inputCodes[i].Explanation = new InputCodeStringWrapper( "" );
-                _inputCodes[i].EnableCbs = null;
-                _inputCodes[i].ResetIntervalTime();
-                _inputCodes[i].SetInputLastTime( 0.0f );
+                code.Dispose();
+
+                return true;
             }
-        }
+
+            return false;
+        } );
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class InputFacade
             // 既に登録済みのガイドアイコンで入力コードが登録されている場合はエラー
             foreach( var code in _inputCodes )
             {
-                if( code.Icons.First() == arg.Icons.First() && !code.IsUnRegistererd() )
+                if( code.Icons.First() == arg.Icons.First() )
                 {
                     LogHelper.LogError( $"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}" );
                 }
@@ -94,7 +94,7 @@ public class InputFacade
     /// また、そのキーを押下した際の処理をコールバックとして登録します。
     /// </summary>
     /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
-    public void ReRegisterInputCodes<T>( InputCode[] args )
+    public void ReRegisterInputCodes( InputCode[] args )
     {
         UnregisterInputCodes();
 

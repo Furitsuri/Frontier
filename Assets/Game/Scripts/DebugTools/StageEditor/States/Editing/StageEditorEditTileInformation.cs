@@ -10,7 +10,7 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditTileInformation : StageEditorEditBase
     {
-        public override void Init( Action<int, int> callback )
+        public override void Init( Action<EditActionContext> callback )
         {
             base.Init( callback );
         }
@@ -34,7 +34,10 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
-            OwnCallback( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
+            _context.X = _gridCursorCtrl.X();
+            _context.Y = _gridCursorCtrl.Y();
+
+            OwnCallback( _context );
 
             return true;
         }

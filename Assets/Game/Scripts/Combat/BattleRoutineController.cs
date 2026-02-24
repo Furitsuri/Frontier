@@ -67,7 +67,7 @@ namespace Frontier.Battle
             };
 
             _stgCtrl.Setup();
-            _btlCameraCtrl.Setup();
+            _btlCameraCtrl.Setup( true );
         }
 
         /// <summary>

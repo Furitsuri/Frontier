@@ -48,9 +48,10 @@ namespace Frontier.Stage
                 _stageDataProvider.CurrentData = _hierarchyBld.InstantiateWithDiContainer<StageData>( false );
             }
 
-            var row = loadData.TileRowNum;
-            var col = loadData.TileColNum;
-            _stageDataProvider.CurrentData.Init( row, col ); // 新しいステージデータを初期化
+            var deployableNum   = loadData.MaxDeployableUnits;
+            var row             = loadData.TileRowNum;
+            var col             = loadData.TileColNum;
+            _stageDataProvider.CurrentData.Init( deployableNum, row, col ); // 新しいステージデータを初期化
 
             for( int x = 0; x < col; x++ )
             {

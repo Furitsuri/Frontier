@@ -110,6 +110,19 @@ public class DeploymentPhasePresenter : PhasePresenterBase, IConfirmPresenter
         _deployUiSystem.ConfirmCompletedUI.gameObject.SetActive( isActive );  // 配置完了確認UIの表示を切替
     }
 
+    public void SetRemainingDeployableNum( int num )
+    {
+        _deployUiSystem.RemainingDeployments.RemainingNum.text = num.ToString();
+        if( num <= 0 )
+        {
+            _deployUiSystem.RemainingDeployments.RemainingNum.color = Color.red;
+        }
+        else
+        {
+            _deployUiSystem.RemainingDeployments.RemainingNum.color = Color.yellow;
+        }
+    }
+
     public void ApplyColor2Options( int selectIndex )
     {
         _deployUiSystem.ConfirmCompletedUI.ApplyTextColor( selectIndex );

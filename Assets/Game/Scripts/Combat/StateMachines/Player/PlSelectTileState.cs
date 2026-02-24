@@ -86,7 +86,7 @@ namespace Frontier.Battle
                (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2, "TURN END", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
+               (GuideIcon.OPT2, "TURN\nEND", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 
