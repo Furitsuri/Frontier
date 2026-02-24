@@ -9,11 +9,11 @@ using static InputFacade;
 /// </summary>
 public class InputCode
 {
-    public delegate bool EnableCallback();
+    public delegate bool EnableCallback();      // 入力可否の判定を行うコールバック
 
     public GuideIcon[] Icons;                   // 入力アイコン
     public InputCodeStringWrapper Explanation;  // アイコンに対する説明文
-    public EnableCallback[] EnableCbs;          // 有効・無効を判定するコールバック
+    public EnableCallback[] EnableCbs;          // 入力の有効・無効を判定するコールバック
     public IAcceptInputBase[] AcceptInputs;     // 入力受付のコールバック
     public float InputInterval;                 // 入力処理を有効にするインターバル
     public int RegisterClassHashCode;           // 入力コード登録を行ったクラスのハッシュ値

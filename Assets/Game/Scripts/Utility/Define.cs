@@ -41,6 +41,12 @@ static public class Constants
     public const int TILE_ROW_MAX_NUM       = 25;
     // ステージに設定可能なタイルの最大数(縦軸)
     public const int TILE_COLUMN_MAX_NUM    = 25;
+    // ステージに設定可能なユニット配置最小数
+    public const int DEPLOYABLE_UNIT_MIN_NUM = 1;
+    // ステージに設定可能なユニット配置最大数
+    public const int DEPLOYABLE_UNIT_MAX_NUM = 10;
+    // ステージに設定可能なユニット配置デフォルト数
+    public const int DEPLOYABLE_UNIT_DEFAULT_NUM = 5;
     // ジャンプ動作が必要と判定する高低差
     public const int NEED_JUMP_HEIGHT_DIFFERENCE = 1;
     // 降下する際に必要なジャンプ力に対して加算するマージン

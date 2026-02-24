@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using Zenject;
-using Zenject.ReflectionBaking.Mono.Cecil.Cil;
 using static InputCode;
 
 /// <summary>
@@ -24,16 +23,16 @@ public sealed class InputGuidePresenter
     [Inject] private IUiSystem _uiSystem                = null;
     [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-    private FadeMode _fadeMode              = FadeMode.NEUTRAL; // キーガイドバーの入出状態
-    private float _currentGuideBarWidth     = 0f;               // 現在の背景の幅
-    private float _prevFadeGuideBarWidth    = 0f;               // ガイドが遷移する以前の背景の幅
-    private float _targetGuideBarWidth      = 0f;               // 更新する際に目標とする背景の幅
-    private float _fadeTime                 = 0f;               // 現在の時間
-    private Sprite[] _sprites;                                  // ガイド上に表示可能なスプライト群
-    private InputGuideBarUI _inputGuideBar = null;              // ガイドバーUI
-    private InputGuideUI[] _guideUiArrray;                      // 表示するガイドUIの配列
-    private ReadOnlyCollection<InputCode> _inputCodes;          // InputFacadeで管理している入力コード情報の参照
-    private static readonly string[] spriteTailNoString =       // 各スプライトファイル名の末尾の番号
+    private FadeMode _fadeMode              = FadeMode.NEUTRAL;                                             // キーガイドバーの入出状態
+    private float _currentGuideBarWidth     = 0f;                                                           // 現在の背景の幅
+    private float _prevFadeGuideBarWidth    = 0f;                                                           // ガイドが遷移する以前の背景の幅
+    private float _targetGuideBarWidth      = 0f;                                                           // 更新する際に目標とする背景の幅
+    private float _fadeTime                 = 0f;                                                           // 現在の時間
+    private Sprite[] _sprites;                                                                              // ガイド上に表示可能なスプライト群
+    private InputGuideBarUI _inputGuideBar = null;                                                          // ガイドバーUI
+    private Dictionary<InputCode, InputGuideUI> _guideUIDict = new Dictionary<InputCode, InputGuideUI>();   // 入力コードとガイドUIの対応表
+    private ReadOnlyCollection<InputCode> _inputCodes;                                                      // InputFacadeで管理している入力コード情報の参照
+    private static readonly string[] spriteTailNoString =                                                   // 各スプライトファイル名の末尾の番号
     // 各プラットフォーム毎に参照スプライトが異なるため、末尾インデックスも異なる
     {
 #if UNITY_EDITOR
@@ -78,7 +77,6 @@ public sealed class InputGuidePresenter
     public void Setup()
     {
         LazyInject.GetOrCreate( ref _inputGuideBar, () => _uiSystem.GeneralUi.InputGuideView );
-        LazyInject.GetOrCreate( ref _guideUiArrray, () => new InputGuideUI[( int ) GuideIcon.NUM_MAX] );
 
         _inputGuideBar.Setup();
     }
@@ -93,7 +91,6 @@ public sealed class InputGuidePresenter
 
         _inputCodes = inputCodes.AsReadOnly();
         LoadSprites();
-        InitGuideUi();
     }
 
     public void Update()
@@ -107,39 +104,28 @@ public sealed class InputGuidePresenter
     /// </summary>
     public void RegisterInputGuides()
     {
-        for( int i = 0; i < _inputCodes.Count; ++i )
-        {
-            var code = _inputCodes[i];
+        // 登録済みのガイドUIを全て削除
+        _inputGuideBar.DestroyChildren();
+        _guideUIDict.Clear();
 
-            _guideUiArrray[( int ) code.Icons.First()].Unregister();
-            _guideUiArrray[( int ) code.Icons.First()].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
-            _guideUiArrray[( int ) code.Icons.First()].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
+        foreach( var code in _inputCodes )
+        {
+            if( code.Icons == null || code.Icons.Length == 0 ) { continue; }
+
+            InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( _inputGuideBar.GuideUIPrefab, _inputGuideBar.gameObject, true );
+            if( guideUi == null ) { continue; }
+            guideUi.Setup();
+            guideUi.SetSpriteSortingOrder( _inputGuideBar.SortingOrder );
+            _guideUIDict.Add( code, guideUi );
+            
+            _guideUIDict[code].Register( _sprites, new InputGuideUI.InputGuide( code.Icons, code.Explanation ) );
+            _guideUIDict[code].gameObject.SetActive( IsActiveGuideUi( code.EnableCbs ) );
         }
 
         TransitFadeMode();  // フェード状態の遷移
         _inputGuideBar.gameObject.SetActive( EvaluateActiveGuideUiCount() > 0 ); // ガイドUIが1つでもあればガイドバーを表示
 
         
-    }
-
-    /// <summary>
-    /// ガイドUiを初期化します
-    /// </summary>
-    private void InitGuideUi()
-    {
-        for( int i = 0; i < _guideUiArrray.Length; ++i )
-        {
-            InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( _inputGuideBar.GuideUIPrefab, _inputGuideBar.gameObject, true );
-            if( guideUi == null ) { continue; }
-            guideUi.Setup();
-
-            InputGuideUI.InputGuide guide = new InputGuideUI.InputGuide( new GuideIcon[] { ( GuideIcon ) i }, new InputCodeStringWrapper("") );
-            guideUi.Register( _sprites, guide );
-
-            _guideUiArrray[i] = guideUi;
-            _guideUiArrray[i].gameObject.SetActive( IsActiveGuideUi( null ) );
-            _guideUiArrray[i].SetSpriteSortingOrder( _inputGuideBar.SortingOrder );
-        }
     }
 
     /// <summary>
@@ -186,29 +172,14 @@ public sealed class InputGuidePresenter
     {
         bool isToggled = false;
 
-        for( int i = 0; i < _inputCodes.Count; ++i )
+        foreach( var guideUI in _guideUIDict )
         {
-            bool isActive   = false;
-            var code        = _inputCodes[i];
-            var guideUi     = _guideUiArrray[( int )code.Icons.First()];
-
-            if( code.EnableCbs != null )
+            bool isActive = IsActiveGuideUi( guideUI.Key.EnableCbs );
+            if( isToggled == false )
             {
-                // キーの有効判定コールバックの返り値次第で対応するガイドアイコンについても表示を切り替える
-                for( int j = 0; j < code.EnableCbs.Length; ++j )
-                {
-                    bool isEnable = ( code.EnableCbs[j] != null && code.EnableCbs[j]() );
-                    if( !isToggled )
-                    {
-                        isToggled = ( isEnable != guideUi.GetSpriteRendererActive( j ) );
-                    }
-                    guideUi.SetSpriteRendererActive( j, isEnable );
-
-                    if( isEnable ) { isActive = true; }
-                }
+                isToggled = ( isActive != guideUI.Value.gameObject.activeSelf );
             }
-
-            guideUi.gameObject.SetActive( isActive );
+            guideUI.Value.gameObject.SetActive( isActive );
         }
 
         // アクティブ状態が切替られたガイド項目があるため、フェード処理を行う
@@ -259,17 +230,6 @@ public sealed class InputGuidePresenter
     }
 
     /// <summary>
-    /// 全ての入力ガイドUIを無効にします
-    /// </summary>
-    private void ClearInputGuideUi()
-    {
-        foreach( var guideUi in _guideUiArrray )
-        {
-            guideUi.gameObject.SetActive( false );
-        }
-    }
-
-    /// <summary>
     /// ガイドUIをアクティブにするか判定します
     /// </summary>
     /// <param name="enableCbs"></param>
@@ -287,12 +247,9 @@ public sealed class InputGuidePresenter
     {
         int count = 0;
 
-        foreach( var guide in _guideUiArrray )
+        foreach( var guideUI in _guideUIDict )
         {
-            if( guide.gameObject.activeSelf )
-            {
-                ++count;
-            }
+            if( guideUI.Value.gameObject.activeSelf ) { ++count; }
         }
 
         return count;
@@ -311,12 +268,11 @@ public sealed class InputGuidePresenter
         var taregtWidth = _inputGuideBar.LayoutGroup.padding.left + _inputGuideBar.LayoutGroup.padding.right + _inputGuideBar.LayoutGroup.spacing * ( EvaluateActiveGuideUiCount() - 1 );
 
         // ガイドUIのそれぞれの幅を加算
-        foreach( var guideUi in _guideUiArrray )
+        foreach( var guideUI in _guideUIDict )
         {
-            // アクティブなオブジェクトのみを判定
-            if( !guideUi.gameObject.activeSelf ) { continue; }
+            if( !guideUI.Value.gameObject.activeSelf ) { continue; }
 
-            var inputGuideUiRectTransform = guideUi.gameObject.GetComponent<RectTransform>();
+            var inputGuideUiRectTransform = guideUI.Value.gameObject.GetComponent<RectTransform>();
             Debug.Assert( inputGuideUiRectTransform != null, "GetComponent of \"RectTransform of InputGuideUI\" failed." );
 
             taregtWidth += inputGuideUiRectTransform.sizeDelta.x;

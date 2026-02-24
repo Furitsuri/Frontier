@@ -1,4 +1,5 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Registries;
+using Frontier.Stage;
 using Zenject;
 
 #if UNITY_EDITOR
@@ -17,6 +18,7 @@ namespace Frontier.DebugTools.StageEditor
 
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);
 
+            Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageEditorController>().FromComponentInHierarchy().AsCached();
             Container.Bind<IUiSystem>().To<EditorUiSystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<StageEditorHierarchyBuilder>().FromComponentInHierarchy().AsCached();

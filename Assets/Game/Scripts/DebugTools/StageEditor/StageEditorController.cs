@@ -1,9 +1,9 @@
-﻿using Frontier.Stage;
+﻿using Frontier.Registries;
+using Frontier.Stage;
 using System;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using Zenject;
+using static Constants;
 
 #if UNITY_EDITOR
 
@@ -16,11 +16,12 @@ namespace Frontier.DebugTools.StageEditor
     {
         public class StageEditRefParams
         {
-            public StageEditMode EditMode   = StageEditMode.EDIT_TILE;  // 編集モード
-            public int Row                  = 10;                       // タイルの行数
-            public int Col                  = 10;                       // タイルの列数
-            public int SelectedType         = 0;                        // 選択中のタイルタイプ
-            public float SelectedHeight     = 0;                        // 選択中のタイル高さ
+            public StageEditMode EditMode   = StageEditMode.EDIT_TILE;      // 編集モード
+            public int MaxDeployableUnits   = DEPLOYABLE_UNIT_DEFAULT_NUM;  // 配置可能ユニット数
+            public int Row                  = 10;                           // タイルの行数
+            public int Col                  = 10;                           // タイルの列数
+            public int SelectedType         = 0;                            // 選択中のタイルタイプ
+            public float SelectedHeight     = 0;                            // 選択中のタイル高さ
 
             /// <summary>
             /// ステージデータの内容を適応させます
@@ -30,6 +31,11 @@ namespace Frontier.DebugTools.StageEditor
             {
                 Row = stageData.TileRowNum;
                 Col = stageData.TileColNum;
+            }
+
+            public void SetDeployableUnitsNum( int deployableUnitsNum )
+            {
+                MaxDeployableUnits = Math.Clamp( deployableUnitsNum, DEPLOYABLE_UNIT_MIN_NUM, DEPLOYABLE_UNIT_MAX_NUM );
             }
         }
 
@@ -45,10 +51,12 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private InputFacade _inputFcd                  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        [Inject] private PrefabRegistry _prefabReg              = null;
 
+        private BattleCameraController _btlCamCtrl      = null;
         private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler  = null;
-        private StageEditorUI _stageEditorView   = null;
+        private StageEditorUI _stageEditorView          = null;
         private StageFileLoader _stageFileLoader        = null;
         private GridCursorController _gridCursorCtrl    = null;
         private StageEditRefParams _refParams           = null;
@@ -63,14 +71,14 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="x">指定する横軸のインデックス</param>
         /// <param name="y">指定する縦軸のインデックス</param>
-        private void PlaceTile(int x, int y)
+        private void PlaceTile( EditActionContext context )
         {
             var data = _stageDataProvider.CurrentData;
 
-            bool isDeployable   = data.GetTile( x, y ).StaticData().IsDeployable;   // 以前の配置可能状態を取得
-            data.GetTile( x, y ).Dispose();
-            data.SetTile( x, y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{x}_Y{y}" ) );
-            data.GetTile( x, y ).Init( x, y, isDeployable, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
+            bool isDeployable   = data.GetTile( context.X, context.Y ).StaticData().IsDeployable;   // 以前の配置可能状態を取得
+            data.GetTile( context.X, context.Y ).Dispose();
+            data.SetTile( context.X, context.Y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{context.X}_Y{context.Y}" ) );
+            data.GetTile( context.X, context.Y ).Init( context.X, context.Y, isDeployable, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
         }
 
         /// <summary>
@@ -78,17 +86,17 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="newRow">行数</param>
         /// <param name="newColumn">列数</param>
-        private void ResizeTileGrid( int newCol, int newRow )
+        private void ResizeTileGrid( EditActionContext context )
         {
             StageData resizeStageData = _hierarchyBld.InstantiateWithDiContainer<StageData>(false);
-            resizeStageData.Init( newRow, newCol );
+            resizeStageData.Init( _stageDataProvider.CurrentData.MaxDeployableUnits, context.Y, context.X );
 
-            int minRow = Mathf.Min( newRow, _stageDataProvider.CurrentData.TileRowNum );
-            int minCol = Mathf.Min( newCol, _stageDataProvider.CurrentData.TileColNum );
+            int minRow = Mathf.Min( context.Y, _stageDataProvider.CurrentData.TileRowNum );
+            int minCol = Mathf.Min( context.X, _stageDataProvider.CurrentData.TileColNum );
 
-            for ( int i = 0; i < newCol; ++i )
+            for ( int i = 0; i < context.X; ++i )
             {
-                for ( int j = 0; j < newRow; ++j )
+                for ( int j = 0; j < context.Y; ++j )
                 {
                     // 変更前のステージデータと重複するタイルは変更前のものを複製する
                     if ( i < minCol && j < minRow )
@@ -125,12 +133,20 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void ToggleDeployable( int x, int y )
+        private void ToggleDeployable( EditActionContext context )
         {
             var data = _stageDataProvider.CurrentData;
 
-            data.GetTile( x, y ).StaticData().IsDeployable = !data.GetTile( x, y ).StaticData().IsDeployable;
-            data.GetTile( x, y ).ApplyDeployableColor();
+            // 配置可能ユニット数の更新
+            if( 0 < context.ExtraIntValues.Count )
+            {
+                data.SetMaxDeployableUnits( context.ExtraIntValues[0] );
+            }
+
+            if( context.X < 0 || context.Y < 0 ) { return; }   // タイルの位置が不正な場合は処理しない
+
+            data.GetTile( context.X, context.Y ).StaticData().IsDeployable = !data.GetTile( context.X, context.Y ).StaticData().IsDeployable;
+            data.GetTile( context.X, context.Y ).ApplyDeployableColor();
         }
 
         /// <summary>
@@ -159,7 +175,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             StageData stageData = _hierarchyBld.InstantiateWithDiContainer<StageData>( false );
             NullCheck.AssertNotNull( stageData, nameof(stageData) );
-            stageData.Init( _refParams.Row, _refParams.Col );
+            stageData.Init( _refParams.MaxDeployableUnits, _refParams.Row, _refParams.Col );
             stageData.CreateDefaultTiles( tilePrefabs );
 
             return stageData;
@@ -221,20 +237,25 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
             LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
+            LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( cursorPrefab, true, true, "GridCursorController" ) );
+
+            _btlCamCtrl.Setup( false );
 
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
-            _gridCursorCtrl.Init( 0 );
 
-            _stageDataProvider.CurrentData  = CreateDefaultStage(); // プロバイダーに登録
+            _stageDataProvider.CurrentData  = CreateDefaultStage();         // プロバイダーに登録
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
+            _gridCursorCtrl.Init( 0 );
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Run();
+
+            _btlCamCtrl.Init();
 
             _mainCamera = Camera.main;
         }

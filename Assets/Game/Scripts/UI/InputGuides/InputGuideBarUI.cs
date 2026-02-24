@@ -1,13 +1,5 @@
-﻿
-
-using ModestTree;
-using System;
-using System.Collections.ObjectModel;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using Zenject;
-using static InputCode;
-using static UnityEngine.EventSystems.StandaloneInputModule;
 
 public class InputGuideBarUI : UiMonoBehaviour
 {
@@ -27,6 +19,14 @@ public class InputGuideBarUI : UiMonoBehaviour
     public float ResizeTime => _resizeTime;
     public HorizontalLayoutGroup LayoutGroup => _layoutGrp;
     public GameObject GuideUIPrefab => _guideUIPrefab;
+
+    public void DestroyChildren()
+    {
+        foreach ( Transform child in transform )
+        {
+            Destroy( child.gameObject );
+        }
+    }
 
     public void SetWidth( float nextWidth )
     {

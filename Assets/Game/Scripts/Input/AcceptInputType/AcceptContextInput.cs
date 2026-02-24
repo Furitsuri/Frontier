@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-public class AcceptContextInput : IAcceptInputBase, IAcceptGenericInput<InputContext>
+﻿public class AcceptContextInput : IAcceptInputBase, IAcceptGenericInput<InputContext>
 {
     public delegate bool AcceptContextInputCallback( InputContext input );
 

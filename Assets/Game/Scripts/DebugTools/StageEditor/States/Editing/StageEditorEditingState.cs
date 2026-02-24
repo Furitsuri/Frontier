@@ -24,21 +24,21 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private GridCursorController _gridCursorCtrl   = null;
 
-        private Action<int, int> PlaceTileCallback;
-        private Action<int, int> ResizeTileGridCallback;
-        private Action<int, int> ToggleDeployableCallback;
+        private Action<EditActionContext> PlaceTileCallback;
+        private Action<EditActionContext> ResizeTileGridCallback;
+        private Action<EditActionContext> ToggleDeployableCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
-        private StageEditorEditBase _currentEdit    = null;
-        private StageEditorEditBase[] _editClasses  = null;
-        private Action<int, int>[]  _editCallbacks  = null;
-        private InputCode[] _sub1sub2InputCode      = null;
-        private InputCode[] _sub3sub4InputCode      = null;
-        private StageEditMode _editMode             = StageEditMode.NONE;
+        private StageEditorEditBase _currentEdit            = null;
+        private StageEditorEditBase[] _editClasses          = null;
+        private Action<EditActionContext>[]  _editCallbacks = null;
+        private InputCode[] _sub1sub2InputCode              = null;
+        private InputCode[] _sub3sub4InputCode              = null;
+        private StageEditMode _editMode                     = StageEditMode.NONE;
 
         public GameObject[] tilePrefabs;
 
-        public void SetCallbacks( Action<int, int> placeTileCb, Action<int, int> risizeTileGridCb, Action<int, int> toggleDeployableCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
@@ -59,7 +59,7 @@ namespace Frontier.DebugTools.StageEditor
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false)
             };
 
-            _editCallbacks = new Action<int, int>[( int ) StageEditMode.NUM]
+            _editCallbacks = new Action<EditActionContext>[( int ) StageEditMode.NUM]
             {
                 PlaceTileCallback,
                 ResizeTileGridCallback,
@@ -73,15 +73,15 @@ namespace Frontier.DebugTools.StageEditor
 
             _sub1sub2InputCode = new InputCode[( int )StageEditMode.NUM]
             {
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE MATERIAL", new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE ROW NUM",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (null),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nMATERIAL", new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nROW NUM",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nDEPLOYABLE COUNT",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
             };
 
             _sub3sub4InputCode = new InputCode[( int )StageEditMode.NUM]
             {
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE HEIGHT",       new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE COLUMN NUM",   new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nHEIGHT",       new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nCOLUMN NUM",   new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
                 (null),
             };
         }
@@ -100,12 +100,12 @@ namespace Frontier.DebugTools.StageEditor
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptInputAlways, new AcceptContextInput( AcceptDirection ), 0.1f, hashCode),
                 (GuideIcon.CONFIRM, "APPLY",        CanAcceptInputAlways, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.TOOL, GuideIcon.INFO }, "MODE CHANGE", new EnableCallback[] { CanAcceptTool, CanAcceptInfo }, new IAcceptInputBase[] { new AcceptContextInput( AcceptTool ), new AcceptContextInput( AcceptInfo ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.TOOL, GuideIcon.INFO }, "MODE\nCHANGE", new EnableCallback[] { CanAcceptTool, CanAcceptInfo }, new IAcceptInputBase[] { new AcceptContextInput( AcceptTool ), new AcceptContextInput( AcceptInfo ) }, 0.0f, hashCode),
                 (GuideIcon.OPT1, "LOAD",            CanAcceptInputAlways, new AcceptContextInput( AcceptOptional1 ), 0.0f, hashCode),
                 (GuideIcon.OPT2, "SAVE",            CanAcceptInputAlways, new AcceptContextInput( AcceptOptional2 ), 0.0f, hashCode),
                 _sub1sub2InputCode[(int)_editMode]?.Clone(),    // _sub1sub2InputCode[(int)_editMode]がnullの場合は、そのままnullを渡す
                 _sub3sub4InputCode[(int)_editMode]?.Clone(),
-                (GuideIcon.DEBUG_MENU, "FILE NAME", CanAcceptInputAlways, new AcceptContextInput( AcceptDebugTransition ), 0.0f, hashCode)
+                (GuideIcon.DEBUG_MENU, "FILE\nNAME", CanAcceptInputAlways, new AcceptContextInput( AcceptDebugTransition ), 0.0f, hashCode)
             );
         }
 

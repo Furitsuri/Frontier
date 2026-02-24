@@ -8,7 +8,7 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditRowAndColumn : StageEditorEditBase
     {
-        public override void Init( Action<int, int> callback )
+        public override void Init( Action<EditActionContext> callback )
         {
             base.Init( callback );
         }
@@ -29,7 +29,10 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            OwnCallback( _refParams.Col, _refParams.Row );
+            _context.X = _refParams.Col;
+            _context.Y = _refParams.Row;
+
+            OwnCallback( _context );
 
             return true;
         }

@@ -16,9 +16,9 @@ namespace Frontier.StateMachine
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private UserDomain _userDomain                 = null;
 
-        private int _focusCharacterIndex = 0;     // フォーカス中のキャラクターインデックス
-        private EntitySnapshot _entitySnapshot = null;
-        private List<CharacterCandidate> _deploymentCandidates = new List<CharacterCandidate>();  // 配置可能なキャラクターリスト
+        private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
+        private EntitySnapshot _entitySnapshot  = null;
+        private List<CharacterCandidate> _deploymentCandidates = new List<CharacterCandidate>();    // 配置可能なキャラクターリスト
 
         private enum TransitTag
         {
@@ -43,6 +43,7 @@ namespace Frontier.StateMachine
             _presenter.SetFocusCharacters( _focusCharacterIndex );                          // 最初のキャラクターにフォーカスを当てておく
             _presenter.RefreshGridCursorSelectCharacter();
             _presenter.RefreshFocusDeploymentCharacter();
+            RefreshRemainingDeployableOnPresenter();
         }
 
         public override bool Update()
@@ -67,7 +68,7 @@ namespace Frontier.StateMachine
                (GuideIcon.CONFIRM,      "PLACE\nCHARACTER", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.CANCEL,       "UNDO\nPLACE", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
                (GuideIcon.INFO,         "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-               (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE CHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+               (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nCHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
                (GuideIcon.OPT2,         "COMPLETE", CanAcceptOptional, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
@@ -86,6 +87,12 @@ namespace Frontier.StateMachine
             // タイル上に同じキャラクターが配置されている場合は入力不可
             Character characterOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null != characterOnSelectTile && characterOnSelectTile.CharaKey() == _deploymentCandidates[_focusCharacterIndex].Character.CharaKey() )
+            {
+                return false;
+            }
+
+            // 残り配置可能数が0の場合は入力不可
+            if( _stageDataProvider.CurrentData.MaxDeployableUnits - _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.PLAYER ) <= 0 )
             {
                 return false;
             }
@@ -193,6 +200,7 @@ namespace Frontier.StateMachine
             if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.CharaKey() ) )
             {
                 _btlRtnCtrl.BtlCharaCdr.AddPlayerToList( focusCharacter );
+                RefreshRemainingDeployableOnPresenter();
             }
 
             return true;
@@ -210,6 +218,8 @@ namespace Frontier.StateMachine
             if( UndoDeploymentCandidates() )
             {
                 _presenter.RefreshGridCursorSelectCharacter();
+                RefreshRemainingDeployableOnPresenter();
+
                 return true;
             }
 
@@ -293,6 +303,16 @@ namespace Frontier.StateMachine
                 candidate.Init( player, candidateSnapshot );
                 _deploymentCandidates.Add( candidate );
             }
+        }
+
+        /// <summary>
+        /// 残り出撃可能ユニット数の表示を更新します
+        /// </summary>
+        private void RefreshRemainingDeployableOnPresenter()
+        {
+            int maxDeployable = _stageDataProvider.CurrentData.MaxDeployableUnits;
+            int deployedCount = _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.PLAYER );
+            _presenter.SetRemainingDeployableNum( maxDeployable - deployedCount );
         }
 
         /// <summary>

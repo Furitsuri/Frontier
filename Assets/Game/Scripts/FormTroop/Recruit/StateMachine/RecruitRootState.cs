@@ -81,10 +81,10 @@ namespace Frontier.FormTroop
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,   "SELECT\nUNIT",             CanAcceptDefault,   new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,      _inputConfirmStrWrapper,    CanAcceptConfirm,   new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.INFO,         "STATUS",                   CanAcceptDefault,   new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2,         "COMPLETE",                 CanAcceptOptional,  new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
+               (GuideIcon.HORIZONTAL_CURSOR,    "SELECT\nUNIT",             CanAcceptDefault,   new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,   new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.INFO,                 "STATUS",                   CanAcceptDefault,   new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT2,                 "COMPLETE",                 CanAcceptOptional,  new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 

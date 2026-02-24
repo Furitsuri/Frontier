@@ -1,9 +1,7 @@
-﻿using Frontier.Registries;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using Zenject;
 
 /// <summary>
 /// 入力ガイド表示における各ガイド部分です。
@@ -179,7 +177,7 @@ public class InputGuideUI : UiMonoBehaviour
     {
         var spriteRectTransform = _childrenObjects[( int ) ChildIndex.SPRITE].GetComponent<RectTransform>();
         Debug.Assert( spriteRectTransform != null, "GetComponent of \"RectTransform in sprite\" failed." );
-        var textPosX = spriteRectTransform.anchoredPosition.x + 0.5f * spriteRectTransform.rect.width * spriteRectTransform.localScale.x + Constants.SPRITE_TEXT_SPACING_ON_KEY_GUIDE;
+        var textPosX = spriteRectTransform.localScale.x + Constants.SPRITE_TEXT_SPACING_ON_KEY_GUIDE;
 
         var textRectTransform = _childrenObjects[( int ) ChildIndex.TEXT].GetComponent<RectTransform>();
         Debug.Assert( textRectTransform != null, "GetComponent of \"RectTransform in text\" failed." );
