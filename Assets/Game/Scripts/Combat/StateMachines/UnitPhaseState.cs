@@ -12,6 +12,13 @@ namespace Frontier.Battle
         [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
         [Inject] protected StageController _stageCtrl           = null;
 
+        protected BattleRoutinePresenter _presenter = null;
+
+        public override void AssignPresenter( PhasePresenterBase presenter )
+        {
+            _presenter = presenter as BattleRoutinePresenter;
+        }
+
         /// <summary>
         /// 死亡したキャラクターの存在を通知します
         /// </summary>
