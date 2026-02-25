@@ -129,8 +129,11 @@ namespace Frontier.StateMachine
 
         protected override bool CanAcceptSub1()
         {
-            // 配置可能キャラクター数が表示可能数の半分以上ある場合は常に入力可能
-            if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
+            if( _presenter.RefIsSlideLoop )
+            {
+                // 配置可能キャラクター数が表示可能数の半分以上ある場合は常に入力可能
+                if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
+            }
 
             bool canInput = CanInputDirectionLeftOnDeploymentList();
             _presenter.SetActiveLeftInputArrow( canInput );
@@ -140,7 +143,10 @@ namespace Frontier.StateMachine
 
         protected override bool CanAcceptSub2()
         {
-            if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
+            if( !_presenter.RefIsSlideLoop )
+            {
+                if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
+            }
 
             bool canInput = CanInputDirectionRightOnDeploymentList();
             _presenter.SetActiveRightInputArrow( canInput );

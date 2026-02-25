@@ -16,14 +16,20 @@ namespace Frontier.FormTroop
         private bool _isSlideAnimationPlaying = false;
         private SlideDirection _slideDirection;
         private RecruitUISystem _recruitmentUI                                  = null;
+        // キャラクター選択UIのスライドループの有無の参照
+        private ReadOnlyReference<bool> _refIsSlideLoop = null;
         private ReadOnlyCollection<CharacterCandidate> _refEmploymentCandidates = null;
         private CharacterCandidate[] _focusEmployments                          = new CharacterCandidate[EMPLOYMENT_SHOWABLE_CHARACTERS_NUM];
         private Action<SlideDirection> _onCompletedeSlideAnimation;
+
+        public bool RefIsSlideLoop => _refIsSlideLoop.Value;
 
         public void Init()
         {
             _recruitmentUI = _uiSystem.RecruitUi;
             _recruitmentUI.Init();
+
+            _refIsSlideLoop = new ReadOnlyReference<bool>( _recruitmentUI.EmploymentSelectUI.IsSlideLoop );
         }
 
         public void Update()
@@ -34,6 +40,10 @@ namespace Frontier.FormTroop
 
         public void Exit()
         {
+            // 参照をクリアしておく
+            _refEmploymentCandidates = null;
+            _refIsSlideLoop          = null;
+
             _recruitmentUI.Exit();
         }
 
@@ -53,12 +63,18 @@ namespace Frontier.FormTroop
             }
 
             // 中央のインデックスを基準に、左右に配置するキャラクターを決定していく
-            // 配列の端を超えた場合はループさせる
+            // ループフラグが設定されている場合は、配列の端を超えた場合はループさせる
             for( int i = 0; i < _focusEmployments.Length; ++i )
             {
-                // 「中央」を中心に左右に割り当てる（不足分はループする）
-                int offset = ( i - centralIndex + candidateCount ) % candidateCount;
-                int targetIndex = ( focusCharaIndex + offset ) % candidateCount;
+                int offset      = i - centralIndex;
+                int targetIndex = focusCharaIndex + offset;
+
+                // ループフラグが設定されている場合は「中央」を中心に左右に割り当てる(不足分はループする)
+                if( _recruitmentUI.EmploymentSelectUI.IsSlideLoop )
+                {
+                    offset      = ( i - centralIndex + candidateCount ) % candidateCount;
+                    targetIndex = ( focusCharaIndex + offset ) % candidateCount;
+                }
 
                 if( targetIndex.IsBetween( 0, _refEmploymentCandidates.Count - 1 ) )
                 {
@@ -108,6 +124,16 @@ namespace Frontier.FormTroop
         public void AssignEmploymentCandidates( ReadOnlyCollection<CharacterCandidate> candidates )
         {
             _refEmploymentCandidates = candidates;
+        }
+
+        public void SetActiveLeftInputArrow( bool isActiveLeft )
+        {
+            _recruitmentUI.EmploymentSelectUI.SetActiveLeftInputArrow( isActiveLeft );
+        }
+
+        public void SetActiveRightInputArrow( bool isActiveRight )
+        {
+            _recruitmentUI.EmploymentSelectUI.SetActiveRightInputArrow( isActiveRight );
         }
 
         public void SetActiveConfirmUI( bool isActive )

@@ -16,14 +16,22 @@ public class DeploymentPhasePresenter : PhasePresenterBase, IConfirmPresenter
     private SlideDirection _slideDirection;
     private Character _currentGridSelectCharacter   = null;
     private DeploymentUISystem _deployUiSystem      = null;
-    private CharacterCandidate[] _focusDeployments = new CharacterCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    // ディスプレイする配置候補キャラクターの配列（奇数前提）
+    private CharacterCandidate[] _focusDeployments  = new CharacterCandidate[DEPLOYMENT_SHOWABLE_CHARACTERS_NUM];
+    // キャラクター選択UIのスライドループの有無の参照
+    private ReadOnlyReference<bool> _refIsSlideLoop = null;
+    // 配置候補キャラクターリストの参照
     private ReadOnlyCollection<CharacterCandidate> _refDeploymentCandidates;
     private Action<SlideDirection> _onCompletedeSlideAnimation;
+
+    public bool RefIsSlideLoop => _refIsSlideLoop.Value;
 
     public void Init()
     {
         _deployUiSystem = _uiSystem.DeployUi;
         _deployUiSystem.Init();
+
+        _refIsSlideLoop = new ReadOnlyReference<bool>( _deployUiSystem.CharacterSelectUI.IsSlideLoop );
     }
 
     public void Update()
@@ -33,7 +41,9 @@ public class DeploymentPhasePresenter : PhasePresenterBase, IConfirmPresenter
 
     public void Exit()
     {
-        _refDeploymentCandidates = null;    // 参照をクリアしておく
+        // 参照をクリアしておく
+        _refDeploymentCandidates    = null;
+        _refIsSlideLoop             = null;
 
         _deployUiSystem.Exit();
     }
@@ -54,12 +64,18 @@ public class DeploymentPhasePresenter : PhasePresenterBase, IConfirmPresenter
         }
 
         // 中央のインデックスを基準に、左右に配置するキャラクターを決定していく
-        // 配列の端を超えた場合はループさせる
+        // ループフラグが設定されている場合は、配列の端を超えた場合はループさせる
         for( int i = 0; i < _focusDeployments.Length; ++i )
         {
-            // 「中央」を中心に左右に割り当てる（不足分はループする）
-            int offset = ( i - centralIndex + candidateCount ) % candidateCount;
-            int targetIndex = ( focusCharaIndex + offset ) % candidateCount;
+            int offset      = i - centralIndex;
+            int targetIndex = focusCharaIndex + offset;
+
+            // ループフラグが設定されている場合は「中央」を中心に左右に割り当てる(不足分はループする)
+            if( _deployUiSystem.CharacterSelectUI.IsSlideLoop )
+            {
+                offset      = ( i - centralIndex + candidateCount ) % candidateCount;
+                targetIndex = ( focusCharaIndex + offset ) % candidateCount;
+            }
 
             if( targetIndex.IsBetween( 0, _refDeploymentCandidates.Count - 1 ) )
             {
