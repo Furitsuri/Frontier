@@ -81,11 +81,19 @@ namespace Frontier.FormTroop
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.HORIZONTAL_CURSOR,    "SELECT\nUNIT",             CanAcceptDefault,   new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,   new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.INFO,                 "STATUS",                   CanAcceptDefault,   new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2,                 "COMPLETE",                 CanAcceptOptional,  new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
+               (GuideIcon.HORIZONTAL_CURSOR,    "SELECT\nUNIT",             CanAcceptDirection,     new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,       new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.INFO,                 "STATUS",                   CanAcceptDefault,       new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT2,                 "COMPLETE",                 CanAcceptOptional,      new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
+        }
+
+        protected override bool CanAcceptDirection()
+        {
+            _presenter.SetActiveLeftInputArrow( CanInputDirectionLeftOnDeploymentList() );
+            _presenter.SetActiveRightInputArrow( CanInputDirectionRightOnDeploymentList() );
+
+            return true;    // 方向入力は常に受け付ける
         }
 
         protected override bool CanAcceptConfirm()
@@ -120,14 +128,30 @@ namespace Frontier.FormTroop
             {
                 case Direction.LEFT:
                     {
-                        _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
-                        isOperated = true;
+                        if( _presenter.RefIsSlideLoop )
+                        {
+                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
+                            isOperated = true;
+                        }
+                        else if( CanInputDirectionLeftOnDeploymentList() )
+                        {
+                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
+                            isOperated = true;
+                        }
                     }
                     break;
                 case Direction.RIGHT:
                     {
-                        _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
-                        isOperated = true;
+                        if( _presenter.RefIsSlideLoop )
+                        {
+                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
+                            isOperated = true;
+                        }
+                        else if( CanInputDirectionRightOnDeploymentList() )
+                        {
+                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
+                            isOperated = true;
+                        }
                     }
                     break;
             }
@@ -246,14 +270,20 @@ namespace Frontier.FormTroop
         {
             _presenter.ClearFocusCharacter();
 
-            if( direction == SlideDirection.LEFT )
+            int[] nextIndex = new int[( int ) SlideDirection.NUM];
+
+            if( _presenter.RefIsSlideLoop )
             {
-                _focusCharacterIndex = ( ( _focusCharacterIndex - 1 ) + _employmentCandidates.Count ) % _employmentCandidates.Count;
+                nextIndex[(int) SlideDirection.LEFT]    = ( ( _focusCharacterIndex - 1 ) + _employmentCandidates.Count ) % _employmentCandidates.Count;
+                nextIndex[(int) SlideDirection.RIGHT]   = ( _focusCharacterIndex + 1 ) % _employmentCandidates.Count;
             }
             else
             {
-                _focusCharacterIndex = ( _focusCharacterIndex + 1 ) % _employmentCandidates.Count;
+                nextIndex[(int) SlideDirection.LEFT]    = _focusCharacterIndex - 1;
+                nextIndex[(int) SlideDirection.RIGHT]   = _focusCharacterIndex + 1;
             }
+
+            _focusCharacterIndex = Mathf.Clamp(  nextIndex[(int) direction], 0, _employmentCandidates.Count - 1 );
 
             _presenter.SetFocusCharacters( _focusCharacterIndex );
             _presenter.ResetEmploymentCharacterDispPosition();
@@ -269,6 +299,26 @@ namespace Frontier.FormTroop
             }
 
             return false;
+        }
+
+        private bool CanInputDirectionLeftOnDeploymentList()
+        {
+            if( _focusCharacterIndex <= 0 )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool CanInputDirectionRightOnDeploymentList()
+        {
+            if( _employmentCandidates.Count - 1 <= _focusCharacterIndex )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
