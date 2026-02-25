@@ -42,6 +42,8 @@ namespace Frontier.UI
 
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
+                if( !_characterSelectionDisplays[i].gameObject.activeSelf ) { continue; }
+
                 // スライド開始前にフォーカスしている項目とそうでない項目のカラー変更を適応させる
                 if( direction == SlideDirection.LEFT )
                 {
@@ -60,6 +62,8 @@ namespace Frontier.UI
 
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
+                if( !_characterSelectionDisplays[i].gameObject.activeSelf ) { continue; }
+
                 // 先頭と末尾以外はコスト表示を有効化
                 _employmentSelectionDisplays[i].SetActiveCostObject( !( i == 0 || i == SHOWABLE_SELECTION_CHARACTERS_NUM - 1 ) );
                 // 中央のキャラクターのみフォーカス色にする
