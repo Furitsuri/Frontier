@@ -22,12 +22,16 @@ namespace Frontier.UI
         [Header( "右方向入力矢印" )]
         [SerializeField] private GameObject _rightInputArrow;
 
+        [Header( "スライドループの有無" )]
+        [SerializeField] private bool _isSlideLoop = false;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         protected CharacterSelectionDisplay[] _characterSelectionDisplays = new CharacterSelectionDisplay[SHOWABLE_SELECTION_CHARACTERS_NUM];
         private float _offsetX = 0f;
 
         public CharacterParameterUI FocusCharaParamUI => _focusCharaParamUI;
+        public bool IsSlideLoop => _isSlideLoop;
 
         public void Init( CharacterSelectionDisplayMode mode )
         {
