@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
+public sealed class RecruitSelectionDisplay : CharacterSelectionDisplay
 {
     [Header( "雇用チェックマークオブジェクト" )]
     [SerializeField] private GameObject _employedMarkObject;
@@ -34,9 +34,9 @@ public sealed class EmploymentSelectionDisplay : CharacterSelectionDisplay
         _tmpEmploymentCostValue.text = value.ToString();
     }
 
-    public override void Setup()
+    public override void Setup( CharacterSelectionDisplayMode mode )
     {
-        base.Setup();
+        base.Setup( mode );
 
         SetActiveEmployedMarkObject( false );
         SetActiveCostObject( true );

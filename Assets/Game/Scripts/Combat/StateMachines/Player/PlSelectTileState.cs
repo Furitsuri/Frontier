@@ -40,8 +40,8 @@ namespace Frontier.Battle
             // TOOLアイコンの文字列を設定
             _inputToolStrings = new string[]
             {
-                "SHOW DANGER RANGE", // 危険領域表示
-                "HIDE DANGER RANGE", // 危険領域非表示
+                "SHOW\nDANGER RANGE", // 危険領域表示
+                "HIDE\nDANGER RANGE", // 危険領域非表示
             };
 
             _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );

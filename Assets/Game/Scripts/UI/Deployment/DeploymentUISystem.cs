@@ -28,7 +28,7 @@ namespace Frontier.UI
             GridCursorSelectCharaParam.Setup();
             GridCursorSelectCharaParam.SetupCamera();
 
-            CharacterSelectUI.Init( CharacterSelectionDisplayMode.Texture );
+            CharacterSelectUI.Init( /* CharacterSelectionDisplayMode.Texture */ );
             ConfirmCompletedUI.Init();
             GridCursorSelectCharaParam.Init();
 
@@ -52,7 +52,7 @@ namespace Frontier.UI
 
         public void Setup()
         {
-            CharacterSelectUI?.Setup();
+            CharacterSelectUI?.Setup( CharacterSelectionDisplayMode.Texture );
             ConfirmCompletedUI?.Setup();
             GridCursorSelectCharaParam?.Setup();
         }
