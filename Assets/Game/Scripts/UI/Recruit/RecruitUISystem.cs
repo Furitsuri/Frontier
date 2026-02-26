@@ -9,19 +9,19 @@ namespace Frontier.UI
         [SerializeField] private GameObject _moneyUI;
 
         [Header( "雇用ユニット選択UI" )]
-        [SerializeField] private EmploymentSelectionUI _employmentSelectUI;
+        [SerializeField] private RecruitSelectionUI _employmentSelectUI;
 
         [Header( "雇用完了確認UI" )]
         [SerializeField] private ConfirmUI _confirmEmploymentUI;
 
         private TextMeshProUGUI _moneyValueText;
 
-        public EmploymentSelectionUI EmploymentSelectUI => _employmentSelectUI;
+        public RecruitSelectionUI EmploymentSelectUI => _employmentSelectUI;
         public ConfirmUI ConfirmEmploymentUI => _confirmEmploymentUI;
 
         public void Init()
         {
-            _employmentSelectUI.Init( CharacterSelectionDisplayMode.Camera );
+            _employmentSelectUI.Init();
             _confirmEmploymentUI.Init();
 
             gameObject.SetActive( true );
@@ -39,7 +39,7 @@ namespace Frontier.UI
 
         public void Setup()
         {
-            _employmentSelectUI.Setup();
+            _employmentSelectUI.Setup( CharacterSelectionDisplayMode.Camera );
             _moneyValueText = _moneyUI.GetComponentInChildren<TextMeshProUGUI>();
         }
 

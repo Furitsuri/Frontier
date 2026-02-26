@@ -53,34 +53,6 @@ namespace Frontier.UI
             _candidate = null;
         }
 
-        public void SetTextureMode()
-        {
-            _mode = CharacterSelectionDisplayMode.Texture;
-            if( null != _characterCamera )
-            {
-                _characterCamera.Dispose();
-                _characterCamera = null;
-            }
-        }
-
-        public void SetMode( CharacterSelectionDisplayMode mode )
-        {
-            _mode = mode;
-
-            if( _mode == CharacterSelectionDisplayMode.Texture )
-            {
-                if( null != _characterCamera )
-                {
-                    _characterCamera.Dispose();
-                    _characterCamera = null;
-                }
-            }
-            else if( _mode == CharacterSelectionDisplayMode.Camera )
-            {
-                LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
-            }
-        }
-
         public bool UpdateSlide()
         {
             _slideCurrentTime = Mathf.Clamp( _slideCurrentTime + DeltaTimeProvider.DeltaTime, 0f, _slideTime );
@@ -111,12 +83,28 @@ namespace Frontier.UI
             }
         }
 
-        public override void Setup()
+        public virtual void Setup( CharacterSelectionDisplayMode mode )
         {
             base.Setup();
 
             LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
             LazyInject.GetOrCreate( ref _backGround, () => GetComponent<RawImage>() );
+
+            _mode = mode;
+
+            if( _mode == CharacterSelectionDisplayMode.Texture )
+            {
+                if( null != _characterCamera )
+                {
+                    _characterCamera.Dispose();
+                    _characterCamera = null;
+                }
+            }
+            else if( _mode == CharacterSelectionDisplayMode.Camera )
+            {
+                LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
+                _characterCamera.Setup( gameObject, "CharacterSelectionCamera" );
+            }
 
             _candidate = null;
         }

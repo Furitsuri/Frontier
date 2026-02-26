@@ -219,6 +219,7 @@ MonoBehaviour:
   _focusImageObject: {fileID: 491947314}
   _leftInputArrow: {fileID: 956858064}
   _rightInputArrow: {fileID: 1307475941}
+  _isSlideLoop: 0
 --- !u!114 &1275183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -833,7 +834,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &51485008
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1066,7 +1067,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &212725256
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6023,6 +6024,7 @@ MonoBehaviour:
   _focusImageObject: {fileID: 1454134330}
   _leftInputArrow: {fileID: 1340371441}
   _rightInputArrow: {fileID: 35924726}
+  _isSlideLoop: 0
 --- !u!1001 &856777130
 PrefabInstance:
   m_ObjectHideFlags: 0

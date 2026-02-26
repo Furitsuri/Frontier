@@ -33,7 +33,7 @@ namespace Frontier.UI
         public CharacterParameterUI FocusCharaParamUI => _focusCharaParamUI;
         public bool IsSlideLoop => _isSlideLoop;
 
-        public void Init( CharacterSelectionDisplayMode mode )
+        public void Init()
         {
             _offsetX = _focusImageObject.GetComponent<RectTransform>().rect.width;
             int centralIndex = SHOWABLE_SELECTION_CHARACTERS_NUM / 2;
@@ -45,7 +45,6 @@ namespace Frontier.UI
             {
                 float imagePosX = _offsetX * ( i - centralIndex );
                 _characterSelectionDisplays[i].InitAnchoredPosition( imagePosX );
-                _characterSelectionDisplays[i].SetMode( mode );
             }
 
             gameObject.SetActive( false );
@@ -134,7 +133,7 @@ namespace Frontier.UI
             }
         }
 
-        public override void Setup()
+        public virtual void Setup( CharacterSelectionDisplayMode mode )
         {
             base.Setup();
 
@@ -142,7 +141,7 @@ namespace Frontier.UI
             {
                 LazyInject.GetOrCreate( ref _characterSelectionDisplays[i],
                     () => _hierarchyBld.CreateComponentNestedParentWithDiContainer<CharacterSelectionDisplay>( _characterSelectionDisplayPrefab.gameObject, gameObject, true, false, "CharacterDisp_" + i ) );
-                _characterSelectionDisplays[i].Setup();
+                _characterSelectionDisplays[i].Setup( mode );
                 _characterSelectionDisplays[i].transform.SetSiblingIndex( i ); // 表示順を登録順に合わせる
             }
 

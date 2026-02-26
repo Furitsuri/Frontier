@@ -7,14 +7,14 @@ namespace Frontier.UI
     /// <summary>
     /// キャラクターを雇用する際のキャラクター選択UI
     /// </summary>
-    public sealed class EmploymentSelectionUI : CharacterSelectionUI
+    public sealed class RecruitSelectionUI : CharacterSelectionUI
     {
         /// <summary>
         /// 雇用候補のキャラクターを表示するための表示オブジェクト配列です。
         /// 実機上ではボタン操作によってスライド上の動きが確認できますが、実際には固定数の表示オブジェクトであり、
         /// スライドが完了した際に表示オブジェクトの内容を書き換えることで実現しています。
         /// </summary>
-        private EmploymentSelectionDisplay[] _employmentSelectionDisplays = new EmploymentSelectionDisplay[SHOWABLE_SELECTION_CHARACTERS_NUM];
+        private RecruitSelectionDisplay[] _recruitSelectionDisplays = new RecruitSelectionDisplay[SHOWABLE_SELECTION_CHARACTERS_NUM];
 
         /// <summary>
         /// 指定のインデックスの候補キャラクターにおける表示を更新します
@@ -23,16 +23,16 @@ namespace Frontier.UI
         /// <param name="candidate"></param>
         public void RefreshCandidate( int index,  ref CharacterCandidate candidate )
         {
-            _employmentSelectionDisplays[index].AssignSelectCandidate( ref candidate );
+            _recruitSelectionDisplays[index].AssignSelectCandidate( ref candidate );
         }
 
-        public override void Setup()
+        public override void Setup( CharacterSelectionDisplayMode mode )
         {
-            base.Setup();
+            base.Setup( mode );
 
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {
-                _employmentSelectionDisplays[i] = _characterSelectionDisplays[i] as EmploymentSelectionDisplay;
+                _recruitSelectionDisplays[i] = _characterSelectionDisplays[i] as RecruitSelectionDisplay;
             }
         }
 
@@ -65,7 +65,8 @@ namespace Frontier.UI
                 if( !_characterSelectionDisplays[i].gameObject.activeSelf ) { continue; }
 
                 // 先頭と末尾以外はコスト表示を有効化
-                _employmentSelectionDisplays[i].SetActiveCostObject( !( i == 0 || i == SHOWABLE_SELECTION_CHARACTERS_NUM - 1 ) );
+                // MEMO : 全てのコストを表示したほうが良いように感じたためコメントアウト
+                // _recruitSelectionDisplays[i].SetActiveCostObject( !( i == 0 || i == SHOWABLE_SELECTION_CHARACTERS_NUM - 1 ) );
                 // 中央のキャラクターのみフォーカス色にする
                 _characterSelectionDisplays[i].SetFocusedColor( i == ( SHOWABLE_SELECTION_CHARACTERS_NUM / 2 ) );
             }
