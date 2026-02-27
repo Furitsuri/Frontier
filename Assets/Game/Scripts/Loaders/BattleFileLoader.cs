@@ -1,18 +1,14 @@
 ﻿using Frontier.Battle;
-using Frontier.Combat;
 using Frontier.Entities;
 using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Frontier.Stage;
 using Zenject;
 using Frontier.Combat.Skill;
-using UnityEngine.UI;
-using Frontier.Registries;
 
-namespace Frontier
+namespace Frontier.Loaders
 {
     public class BattleFileLoader : MonoBehaviour
     {

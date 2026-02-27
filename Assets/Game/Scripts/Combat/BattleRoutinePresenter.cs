@@ -93,6 +93,11 @@ namespace Frontier.Battle
             return _uiSystem.BattleUi.GameOver.isActiveAndEnabled;
         }
 
+        public void SetSkillFlickOnLeftParamView( int skillIndex, bool enabled )
+        {
+            _uiSystem.BattleUi.ParameterView.PlayerParameter.GetSkillBox( skillIndex ).SetFlickEnabled( enabled );
+        }
+
         private void UpdateBattleParameters()
         {
             var bindCharacter = _stageCtrl.GetBindCharacterFromGridCursor();

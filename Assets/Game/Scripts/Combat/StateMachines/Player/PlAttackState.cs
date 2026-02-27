@@ -2,6 +2,7 @@
 using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Stage;
+using System;
 using static Constants;
 
 namespace Frontier.Battle
@@ -370,28 +371,40 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub1( context ) ) return false;
 
-            return _plOwner.BattleLogic.ToggleUseSkillks( 0 );
+            _plOwner.BattleLogic.ToggleUseSkillks( 0 );
+            _presenter.SetSkillFlickOnLeftParamView( 0, _plOwner.RefBattleParams.TmpParam.isUseSkills[0] );
+
+            return true;
         }
 
         protected override bool AcceptSub2( InputContext context )
         {
             if( !base.AcceptSub2( context ) ) return false;
 
-            return _plOwner.BattleLogic.ToggleUseSkillks( 1 );
+            _plOwner.BattleLogic.ToggleUseSkillks( 1 );
+            _presenter.SetSkillFlickOnLeftParamView( 1, _plOwner.RefBattleParams.TmpParam.isUseSkills[1] );
+
+            return true;
         }
 
         protected override bool AcceptSub3( InputContext context )
         {
             if( !base.AcceptSub3( context ) ) return false;
 
-            return _plOwner.BattleLogic.ToggleUseSkillks( 2 );
+            _plOwner.BattleLogic.ToggleUseSkillks( 2 );
+            _presenter.SetSkillFlickOnLeftParamView( 2, _plOwner.RefBattleParams.TmpParam.isUseSkills[2] );
+
+            return true;
         }
 
         protected override bool AcceptSub4( InputContext context )
         {
             if( !base.AcceptSub4( context ) ) return false;
 
-            return _plOwner.BattleLogic.ToggleUseSkillks( 3 );
+            _plOwner.BattleLogic.ToggleUseSkillks( 3 );
+            _presenter.SetSkillFlickOnLeftParamView( 3, _plOwner.RefBattleParams.TmpParam.isUseSkills[3] );
+
+            return true;
         }
     }
 }

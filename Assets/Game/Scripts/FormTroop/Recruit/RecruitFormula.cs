@@ -1,7 +1,7 @@
 ﻿using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
-using static Frontier.BattleFileLoader;
+using static Frontier.Loaders.BattleFileLoader;
 using static Constants;
 
 namespace Frontier.FormTroop
@@ -39,6 +39,8 @@ namespace Frontier.FormTroop
             statusData.Def += defRandValue;
             statusData.ActGaugeMax += actMaxRandValue;
             statusData.ActRecovery += actRecovRandValue;
+            statusData.Skills[0] = ( int ) Combat.Skill.ID.SKILL_PARRY;          // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
+            statusData.Skills[1] = ( int ) Combat.Skill.ID.SKILL_DOUBLE_STRIKE; // TODO : 仮で1を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
 
             int employmentCost = CalcurateEmploymentCost( unitTypeIndex, statusData.Level, hpRandValue, atkRandValue, defRandValue, actMaxRandValue, actRecovRandValue );
 

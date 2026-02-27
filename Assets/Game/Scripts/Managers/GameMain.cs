@@ -2,6 +2,8 @@
 using Frontier.Tutorial;
 using Frontier.DebugTools.DebugMenu;
 using Zenject;
+using Frontier.Loaders;
+using Frontier.Registries;
 
 namespace Frontier
 {
@@ -16,12 +18,13 @@ namespace Frontier
         [Header( "ステージ開始時に表示する時間(秒)" )]
         [SerializeField] private float stageStartDelay = 2f;
 
-        [Inject] private DiContainer _diContainer = null;
+        [Inject] private DiContainer _diContainer           = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private InputFacade _inputFcd = null;
-        [Inject] private TutorialFacade _tutorialFcd = null;
+        [Inject] private InputFacade _inputFcd              = null;
+        [Inject] private TutorialFacade _tutorialFcd        = null;
 
         private GameObject _stageImage;
+        private GeneralFileLoader _generalFileLoader;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
         private DebugEditorMonoDriver _debugEditorMonoDrv;
@@ -55,6 +58,7 @@ namespace Frontier
                 _hierarchyBld.CreateComponentAndOrganize<ManagerProvider>( _managerProvider, true );
             }
 
+            LazyInject.GetOrCreate( ref _generalFileLoader, () => _hierarchyBld.InstantiateWithDiContainer<GeneralFileLoader>( true ) );
 #if UNITY_EDITOR
             LazyInject.GetOrCreate( ref _debugMenuFcd, () => _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>( false ) );
             LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
@@ -109,6 +113,8 @@ namespace Frontier
             {
                 Invoke( "StageLevelImage", stageStartDelay );
             }
+
+            _generalFileLoader.LoadSkillsData();
         }
 
         /// <summary>
