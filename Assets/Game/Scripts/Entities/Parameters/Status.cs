@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using Frontier.Combat.Skill;
-using static Frontier.BattleFileLoader;
+using Frontier.Loaders;
 
 namespace Frontier.Entities
 {
@@ -36,7 +36,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="status">適応先のキャラクターパラメータ</param>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        static public void ApplyParams( ref Status status, in CharacterStatusData fdata )
+        static public void ApplyParams( ref Status status, in BattleFileLoader.CharacterStatusData fdata )
         {
             status.characterTag = ( CHARACTER_TAG ) fdata.CharacterTag;
             status.characterIndex = fdata.CharacterIndex;
@@ -86,7 +86,7 @@ namespace Frontier.Entities
         /// 外部からパラメータを適用させます
         /// </summary>
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        public void Apply( in CharacterStatusData fdata )
+        public void Apply( in BattleFileLoader.CharacterStatusData fdata )
         {
             this.characterTag = ( CHARACTER_TAG ) fdata.CharacterTag;
             this.characterIndex = fdata.CharacterIndex;

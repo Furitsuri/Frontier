@@ -1,14 +1,10 @@
-﻿using Frontier.Battle;
-using Frontier.Combat;
-using Frontier.Combat.Skill;
-using Frontier.Entities.Ai;
+﻿using Frontier.Loaders;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static Frontier.BattleFileLoader;
 
 namespace Frontier.Entities
 {
@@ -77,7 +73,7 @@ namespace Frontier.Entities
             ElapsedTime = 0;
         }
 
-        public void Apply( CharacterStatusData statusData )
+        public void Apply( BattleFileLoader.CharacterStatusData statusData )
         {
             Status.ApplyParams( ref _status, in statusData );
         }

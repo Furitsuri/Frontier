@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static Frontier.BattleFileLoader;
+using static Frontier.Loaders.BattleFileLoader;
 
 namespace Frontier.FormTroop
 {

@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using static Frontier.BattleFileLoader;
+using static Frontier.Loaders.BattleFileLoader;
 
 namespace Frontier
 {

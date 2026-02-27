@@ -3,7 +3,7 @@ using Frontier.Registries;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using static Frontier.BattleFileLoader;
+using Frontier.Loaders;
 
 public class CharacterFactory
 {
@@ -44,7 +44,7 @@ public class CharacterFactory
     /// <param name="statusData"></param>
     /// <param name="level"></param>
     /// <returns></returns>
-    public Character CreateCharacter( CHARACTER_TAG tag, int prefabIndex, CharacterStatusData statusData, int level = 1 )
+    public Character CreateCharacter( CHARACTER_TAG tag, int prefabIndex, BattleFileLoader.CharacterStatusData statusData, int level = 1 )
     {
         Character chara = CreateCharacter( tag, prefabIndex, level );
         if( null == chara ) {

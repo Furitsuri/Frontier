@@ -3,7 +3,7 @@ using Frontier.Entities;
 using Frontier.FormTroop;
 using UnityEngine;
 using Zenject;
-using static Frontier.BattleFileLoader;
+using static Frontier.Loaders.BattleFileLoader;
 
 namespace Frontier
 {

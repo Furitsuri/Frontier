@@ -41,7 +41,7 @@ namespace Frontier.Entities
                 _readOnlyOwner.Value.RefBattleParams.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
             }
 
-            _uiSystem.BattleUi.GetPlayerParamSkillBox( index ).SetFlickEnabled( _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[index] );
+            // _uiSystem.BattleUi.GetPlayerParamSkillBox( index ).SetFlickEnabled( _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[index] );
 
             return true;
         }
