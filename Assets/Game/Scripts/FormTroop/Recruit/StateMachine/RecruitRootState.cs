@@ -49,7 +49,7 @@ namespace Frontier.FormTroop
 
             SetupEmploymentCandidates();
             _presenter.SetActiveCharacterSelectUIs( true );
-            _presenter.AssignEmploymentCandidates( _employmentCandidates.AsReadOnly() );
+            _presenter.AssignCandidates( _employmentCandidates.AsReadOnly() );
             _presenter.SetFocusCharacters( _focusCharacterIndex );
 
             // 初の雇用フェーズの開始をチュートリアルへ通知
@@ -286,7 +286,7 @@ namespace Frontier.FormTroop
             _focusCharacterIndex = Mathf.Clamp(  nextIndex[(int) direction], 0, _employmentCandidates.Count - 1 );
 
             _presenter.SetFocusCharacters( _focusCharacterIndex );
-            _presenter.ResetEmploymentCharacterDispPosition();
+            _presenter.ResetCharacterDispPosition();
         }
 
         private bool IsExistEmployedCharacter()

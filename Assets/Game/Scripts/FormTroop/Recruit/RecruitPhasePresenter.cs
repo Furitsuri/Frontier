@@ -9,27 +9,18 @@ using static Constants;
 
 namespace Frontier.FormTroop
 {
-    public class RecruitPhasePresenter : PhasePresenterBase, IConfirmPresenter
+    public class RecruitPhasePresenter : CharacterSelectionPresenter, IConfirmPresenter
     {
         [Inject] private UserDomain _userDomain = null;
 
-        private bool _isSlideAnimationPlaying = false;
-        private SlideDirection _slideDirection;
         private RecruitUISystem _recruitmentUI                                  = null;
-        // キャラクター選択UIのスライドループの有無の参照
-        private ReadOnlyReference<bool> _refIsSlideLoop = null;
-        private ReadOnlyCollection<CharacterCandidate> _refEmploymentCandidates = null;
-        private CharacterCandidate[] _focusEmployments                          = new CharacterCandidate[EMPLOYMENT_SHOWABLE_CHARACTERS_NUM];
-        private Action<SlideDirection> _onCompletedeSlideAnimation;
-
-        public bool RefIsSlideLoop => _refIsSlideLoop.Value;
 
         public void Init()
         {
+            base.Init( _uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM );
+
             _recruitmentUI = _uiSystem.RecruitUi;
             _recruitmentUI.Init();
-
-            _refIsSlideLoop = new ReadOnlyReference<bool>( _recruitmentUI.EmploymentSelectUI.IsSlideLoop );
         }
 
         public void Update()
@@ -38,59 +29,18 @@ namespace Frontier.FormTroop
             UpdateSlideAnimation();
         }
 
-        public void Exit()
+        public override void Exit()
         {
-            // 参照をクリアしておく
-            _refEmploymentCandidates = null;
-            _refIsSlideLoop          = null;
+            base.Exit();
 
             _recruitmentUI.Exit();
         }
 
-        /// <summary>
-        /// 配置候補キャラクターリストから、指定されたインデックスを中心にキャラクターを抽出して表示させます
-        /// </summary>
-        /// <param name="focusCharaIndex"></param>
-        public void SetFocusCharacters( int focusCharaIndex )
+        public override void SetFocusCharacters( int focusCharaIndex )
         {
-            int arrayLength = _focusEmployments.Length;  // 奇数前提であることに注意
-            int centralIndex = arrayLength / 2;
-            int candidateCount = _refEmploymentCandidates.Count;
-
-            if( candidateCount <= centralIndex )
-            {
-                candidateCount = arrayLength;
-            }
-
-            // 中央のインデックスを基準に、左右に配置するキャラクターを決定していく
-            // ループフラグが設定されている場合は、配列の端を超えた場合はループさせる
-            for( int i = 0; i < _focusEmployments.Length; ++i )
-            {
-                int offset      = i - centralIndex;
-                int targetIndex = focusCharaIndex + offset;
-
-                // ループフラグが設定されている場合は「中央」を中心に左右に割り当てる(不足分はループする)
-                if( _recruitmentUI.EmploymentSelectUI.IsSlideLoop )
-                {
-                    offset      = ( i - centralIndex + candidateCount ) % candidateCount;
-                    targetIndex = ( focusCharaIndex + offset ) % candidateCount;
-                }
-
-                if( targetIndex.IsBetween( 0, _refEmploymentCandidates.Count - 1 ) )
-                {
-                    _focusEmployments[i] = _refEmploymentCandidates[targetIndex];
-                }
-                else { _focusEmployments[i] = null; }
-            }
-
-            _recruitmentUI.EmploymentSelectUI.AssignSelectCandidates( ref _focusEmployments );
+            base.SetFocusCharacters( focusCharaIndex );
 
             RefreshFocusCharacterParameter();
-        }
-
-        public void ResetEmploymentCharacterDispPosition()
-        {
-            _recruitmentUI.EmploymentSelectUI.ResetDeploymentCharacterDispPositions();
         }
 
         /// <summary>
@@ -99,8 +49,8 @@ namespace Frontier.FormTroop
         public void RefreshFocusCharacterParameter()
         {
             // フォーカス中のキャラクターのパラメータの表示
-            Debug.Assert( _focusEmployments.Length % 2 == 1 );  // 奇数であることが前提
-            _recruitmentUI.EmploymentSelectUI.FocusCharaParamUI.AssignCharacter( _focusEmployments[_focusEmployments.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+            Debug.Assert( _focusCandidates.Length % 2 == 1 );  // 奇数であることが前提
+            _recruitmentUI.EmploymentSelectUI.FocusCharaParamUI.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
         }
 
         /// <summary>
@@ -108,32 +58,12 @@ namespace Frontier.FormTroop
         /// </summary>
         public void RefreshCentralCandidateEmployed()
         {
-            int centralIndex = _focusEmployments.Length / 2;
-            var player = _focusEmployments[ centralIndex ].Character as Player;
+            int centralIndex = _focusCandidates.Length / 2;
+            var player = _focusCandidates[ centralIndex ].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
 
             // フォーカス中のキャラクター表示の更新
-            _recruitmentUI.EmploymentSelectUI.RefreshCandidate( centralIndex, ref _focusEmployments[ centralIndex ] );
-        }
-
-        public void ClearFocusCharacter()
-        {
-            _recruitmentUI.EmploymentSelectUI.ClearSelectCharacter();
-        }
-
-        public void AssignEmploymentCandidates( ReadOnlyCollection<CharacterCandidate> candidates )
-        {
-            _refEmploymentCandidates = candidates;
-        }
-
-        public void SetActiveLeftInputArrow( bool isActiveLeft )
-        {
-            _recruitmentUI.EmploymentSelectUI.SetActiveLeftInputArrow( isActiveLeft );
-        }
-
-        public void SetActiveRightInputArrow( bool isActiveRight )
-        {
-            _recruitmentUI.EmploymentSelectUI.SetActiveRightInputArrow( isActiveRight );
+            _recruitmentUI.EmploymentSelectUI.RefreshCandidate( centralIndex, ref _focusCandidates[ centralIndex ] );
         }
 
         public void SetActiveConfirmUI( bool isActive )
@@ -144,39 +74,6 @@ namespace Frontier.FormTroop
         public void ApplyColor2Options( int selectIndex )
         {
             _recruitmentUI.ConfirmEmploymentUI.ApplyTextColor( selectIndex );
-        }
-
-        /// <summary>
-        /// キャラクター選択UIの表示・非表示を切り替えます
-        /// </summary>
-        /// <param name="isActive"></param>
-        public void SetActiveCharacterSelectUIs( bool isActive )
-        {
-            _recruitmentUI.EmploymentSelectUI.SetActive( isActive );
-        }
-
-        public void SlideAnimationCharacterSelectionDisplay( SlideDirection direction, Action<SlideDirection> onCompleted )
-        {
-            _isSlideAnimationPlaying = true;
-            _slideDirection = direction;
-            _onCompletedeSlideAnimation = onCompleted;
-
-            _recruitmentUI.EmploymentSelectUI.StartSlideAnimation( direction );
-        }
-
-        /// <summary>
-        /// キャラクター選択UIのスライドアニメーションの更新
-        /// </summary>
-        private void UpdateSlideAnimation()
-        {
-            if( _isSlideAnimationPlaying )
-            {
-                _isSlideAnimationPlaying = !_recruitmentUI.EmploymentSelectUI.UpdateSlideAnimation();
-                if( !_isSlideAnimationPlaying )
-                {
-                    _onCompletedeSlideAnimation?.Invoke( _slideDirection );
-                }
-            }
         }
     }
 }

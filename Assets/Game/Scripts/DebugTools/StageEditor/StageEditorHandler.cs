@@ -11,7 +11,7 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> ToggleDeployableCallback;
         private Func<string, bool> SaveStageCallback;
         private Func<string, bool> LoadStageCallback;
-        private Func< int, StageEditMode > ChangeEditModeCallback;
+        private Func<int, StageEditMode> ChangeEditModeCallback;
 
         private StageEditorUI _stageEditorView   = null;
 

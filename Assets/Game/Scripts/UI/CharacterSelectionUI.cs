@@ -82,7 +82,7 @@ namespace Frontier.UI
             _rightInputArrow.SetActive( isRightActive );
         }
 
-        public void ResetDeploymentCharacterDispPositions()
+        public void ResetCharacterDispPositions()
         {
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {

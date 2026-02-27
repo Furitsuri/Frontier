@@ -39,7 +39,7 @@ namespace Frontier.StateMachine
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
 
             _presenter.SetActiveCharacterSelectUIs( true );                                 // キャラクター選択画面の表示を有効化
-            _presenter.AssignDeploymentCandidates( _deploymentCandidates.AsReadOnly() );    // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
+            _presenter.AssignCandidates( _deploymentCandidates.AsReadOnly() );    // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
             _presenter.SetFocusCharacters( _focusCharacterIndex );                          // 最初のキャラクターにフォーカスを当てておく
             _presenter.RefreshGridCursorSelectCharacter();
             _presenter.RefreshFocusDeploymentCharacter();
@@ -143,7 +143,7 @@ namespace Frontier.StateMachine
 
         protected override bool CanAcceptSub2()
         {
-            if( !_presenter.RefIsSlideLoop )
+            if( _presenter.RefIsSlideLoop )
             {
                 if( DEPLOYMENT_SHOWABLE_CHARACTERS_NUM / 2 + 1 <= _deploymentCandidates.Count ) { return true; }
             }
@@ -365,7 +365,7 @@ namespace Frontier.StateMachine
 
             _presenter.SetFocusCharacters( _focusCharacterIndex );
             _presenter.RefreshFocusDeploymentCharacter();
-            _presenter.ResetDeploymentCharacterDispPosition();
+            _presenter.ResetCharacterDispPosition();
         }
 
         private bool CanInputDirectionLeftOnDeploymentList()
