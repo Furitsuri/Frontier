@@ -94,7 +94,8 @@ namespace Frontier.StateMachine
             // 残り配置可能数が0の場合は入力不可
             if( _stageDataProvider.CurrentData.MaxDeployableUnits - _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.PLAYER ) <= 0 )
             {
-                return false;
+                // ただし、配置済みのキャラクターを選択している場合は配置のやり直しとみなして入力を受け付ける
+                if( null == characterOnSelectTile ) { return false; }
             }
 
             return true;
@@ -206,8 +207,9 @@ namespace Frontier.StateMachine
             if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.CharaKey() ) )
             {
                 _btlRtnCtrl.BtlCharaCdr.AddPlayerToList( focusCharacter );
-                RefreshRemainingDeployableOnPresenter();
             }
+
+            RefreshRemainingDeployableOnPresenter();
 
             return true;
         }
