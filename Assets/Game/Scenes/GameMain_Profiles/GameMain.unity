@@ -219,7 +219,7 @@ MonoBehaviour:
   _focusImageObject: {fileID: 491947314}
   _leftInputArrow: {fileID: 956858064}
   _rightInputArrow: {fileID: 1307475941}
-  _isSlideLoop: 0
+  _isSlideLoop: 1
 --- !u!114 &1275183
 MonoBehaviour:
   m_ObjectHideFlags: 0

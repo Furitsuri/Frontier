@@ -10,7 +10,7 @@ static public class Constants
     // キャラクター選択の際に可視出来る味方のユニット数(必ず奇数とすること)
     public const int SHOWABLE_SELECTION_CHARACTERS_NUM = 5;
     // 雇用の際に可視出来る味方のユニット数(必ず奇数とすること)
-    public const int EMPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
+    public const int RECRUIT_SHOWABLE_CHARACTERS_NUM = 5;
     // 配置の際に可視出来る味方のユニット数(必ず奇数とすること)
     public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
     // プレイヤー、敵それぞれのキャラクター最大数
