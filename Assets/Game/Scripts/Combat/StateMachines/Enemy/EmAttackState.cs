@@ -185,6 +185,8 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[0].Length <= 0 ) return false;
 
+            if( _targetCharacter is not Player ) return false;
+
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 0, SituationType.DEFENCE );
         }
 
@@ -195,6 +197,8 @@ namespace Frontier.Battle
             if( EmAttackPhase.EM_ATTACK_CONFIRM != _phase ) return false;
 
             if( _playerSkillNames[1].Length <= 0 ) return false;
+
+            if( _targetCharacter is not Player ) return false;
 
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 1, SituationType.DEFENCE );
         }
@@ -207,6 +211,8 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[2].Length <= 0 ) return false;
 
+            if( _targetCharacter is not Player ) return false;
+
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 2, SituationType.DEFENCE );
         }
 
@@ -217,6 +223,8 @@ namespace Frontier.Battle
             if( EmAttackPhase.EM_ATTACK_CONFIRM != _phase ) return false;
 
             if( _playerSkillNames[3].Length <= 0 ) return false;
+
+            if( _targetCharacter is not Player ) return false;
 
             return _targetCharacter.BattleLogic.CanToggleEquipSkill( 3, SituationType.DEFENCE );
         }
@@ -233,19 +241,12 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ConsumeActionGauge();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            // 選択グリッドを一時非表示
-            _stageCtrl.SetGridCursorControllerActive( false );
-
-            // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetAttackCursorE2PActive( false );
-
-            // ダメージ予測表示UIを非表示
-            _uiSystem.BattleUi.ToggleBattleExpect( false );
-
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
-
-            // 攻撃シーケンスの開始
-            _attackSequence.StartSequence( _attackCharacter, _targetCharacter );
+            _stageCtrl.SetGridCursorControllerActive( false );                      // 選択グリッドを一時非表示
+            _uiSystem.BattleUi.SetAttackCursorE2PActive( false );                   // アタックカーソルUI非表示
+            _uiSystem.BattleUi.ToggleBattleExpect( false );                         // ダメージ予測表示UIを非表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
+            _attackSequence.StartSequence( _attackCharacter, _targetCharacter );    // 攻撃シーケンスの開始
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除
 
             _phase = EmAttackPhase.EM_ATTACK_EXECUTE;
 
@@ -256,28 +257,41 @@ namespace Frontier.Battle
         {
 			if( !base.AcceptSub1( context ) ) { return false; }
 
-			return _targetCharacter.BattleLogic.ToggleUseSkillks( 0 );
+            _targetCharacter.BattleLogic.ToggleUseSkillks( 0 );
+            _presenter.SetSkillFlickOnLeftParamView( 0, _targetCharacter.RefBattleParams.TmpParam.isUseSkills[0] );
+
+            return true;
+
         }
 
         protected override bool AcceptSub2( InputContext context )
         {
 			if( !base.AcceptSub2( context ) ) { return false; }
 
-			return _targetCharacter.BattleLogic.ToggleUseSkillks( 1 );
+            _targetCharacter.BattleLogic.ToggleUseSkillks( 1 );
+            _presenter.SetSkillFlickOnLeftParamView( 1, _targetCharacter.RefBattleParams.TmpParam.isUseSkills[1] );
+
+            return true;
         }
 
         protected override bool AcceptSub3( InputContext context )
         {
 			if( !base.AcceptSub3( context ) ) { return false; }
 
-			return _targetCharacter.BattleLogic.ToggleUseSkillks( 2 );
+            _targetCharacter.BattleLogic.ToggleUseSkillks( 2 );
+            _presenter.SetSkillFlickOnLeftParamView( 2, _targetCharacter.RefBattleParams.TmpParam.isUseSkills[2] );
+
+            return true;
         }
 
         protected override bool AcceptSub4( InputContext context )
         {
 			if( !base.AcceptSub4( context ) ) { return false; }
 
-			return _targetCharacter.BattleLogic.ToggleUseSkillks( 3 );
+            _targetCharacter.BattleLogic.ToggleUseSkillks( 3 );
+            _presenter.SetSkillFlickOnLeftParamView( 3, _targetCharacter.RefBattleParams.TmpParam.isUseSkills[3] );
+
+            return true;
         }
     }
 }

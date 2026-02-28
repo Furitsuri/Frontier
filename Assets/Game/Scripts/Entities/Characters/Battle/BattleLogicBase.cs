@@ -224,13 +224,18 @@ namespace Frontier.Entities
         /// </summary>
         public void SetReceiveAttackSetting() { }
 
+        public void ResetUseSkills()
+        {
+            _readOnlyOwner.Value.RefBattleParams.TmpParam.ResetUseSkills();
+        }
+
         /// <summary>
         /// 対戦相手の設定をリセットします
         /// </summary>
         public void ResetOnEndOfAttackSequence()
         {
-            _opponent = null;                                               // 対戦相手情報をリセット
-            _readOnlyOwner.Value.RefBattleParams.TmpParam.ResetUseSkill();  // 使用スキル情報をリセット
+            _opponent = null;   // 対戦相手情報をリセット
+            ResetUseSkills();   // 使用スキル情報をリセット
         }
 
         public void ForcedStopMoving()

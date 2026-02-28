@@ -1,10 +1,6 @@
-﻿using Frontier.Battle;
-using Frontier.Combat.Skill;
-using Frontier.Entities;
+﻿using Frontier.Combat.Skill;
 using Frontier.Registries;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Zenject;
@@ -31,7 +27,7 @@ namespace Frontier.Loaders
             public string ExplainTextKey;
         }
 
-        [System.Serializable]
+        [Serializable]
         public class SkillDataContainer
         {
             public FileSkillData[] SkillsData;
