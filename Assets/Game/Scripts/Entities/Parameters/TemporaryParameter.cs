@@ -57,7 +57,7 @@ namespace Frontier.Entities
         /// <summary>
         /// スキルの使用フラグをリセットします
         /// </summary>
-        public void ResetUseSkill()
+        public void ResetUseSkills()
         {
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {

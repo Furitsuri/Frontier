@@ -323,19 +323,12 @@ namespace Frontier.Battle
                 _attackCharacter.BattleLogic.ConsumeActionGauge();
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-                // 選択グリッドを一時非表示
-                _stageCtrl.SetGridCursorControllerActive( false );
-
-                // アタックカーソルUI非表示
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
-
-                // ダメージ予測表示UIを非表示
-                _uiSystem.BattleUi.ToggleBattleExpect( false );
-
-                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
-
-                // 攻撃シーケンスの開始
-                _attackSequence.StartSequence( _attackCharacter, _targetCharacter );
+                _stageCtrl.SetGridCursorControllerActive( false );                      // 選択グリッドを一時非表示
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( false );                   // アタックカーソルUI非表示
+                _uiSystem.BattleUi.ToggleBattleExpect( false );                         // ダメージ予測表示UIを非表示
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
+                _attackSequence.StartSequence( _attackCharacter, _targetCharacter );    // 攻撃シーケンスの開始
+                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除
 
                 _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
 
@@ -354,6 +347,9 @@ namespace Frontier.Battle
             {
                 _targetCharacter.GetTransformHandler.ResetRotationOrder();
             }
+
+            _plOwner.BattleLogic.ResetUseSkills();
+            _targetCharacter.BattleLogic.ResetUseSkills();
 
             return true;
         }
