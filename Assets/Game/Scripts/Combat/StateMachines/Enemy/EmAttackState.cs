@@ -127,9 +127,9 @@ namespace Frontier.Battle
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUseable( true );
+                _presenter.SetUseableSkillOnLeftParamView( i, true );
                 _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
-                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetUseable( true );
+                _presenter.SetUseableSkillOnRightParamView( i, true );
             }
             // 使用スキルコスト見積もりをリセット
             _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
@@ -187,7 +187,10 @@ namespace Frontier.Battle
 
             if( _targetCharacter is not Player ) return false;
 
-            return _targetCharacter.BattleLogic.CanToggleEquipSkill( 0, SituationType.DEFENCE );
+            bool useable = _targetCharacter.BattleLogic.CanToggleEquipSkill( 0, SituationType.DEFENCE );
+            _presenter.SetUseableSkillOnLeftParamView( 0, useable );
+
+            return useable;
         }
 
         protected override bool CanAcceptSub2()
@@ -200,7 +203,10 @@ namespace Frontier.Battle
 
             if( _targetCharacter is not Player ) return false;
 
-            return _targetCharacter.BattleLogic.CanToggleEquipSkill( 1, SituationType.DEFENCE );
+            bool useable = _targetCharacter.BattleLogic.CanToggleEquipSkill( 1, SituationType.DEFENCE );
+            _presenter.SetUseableSkillOnLeftParamView( 1, useable );
+
+            return useable;
         }
 
         protected override bool CanAcceptSub3()
@@ -213,7 +219,10 @@ namespace Frontier.Battle
 
             if( _targetCharacter is not Player ) return false;
 
-            return _targetCharacter.BattleLogic.CanToggleEquipSkill( 2, SituationType.DEFENCE );
+            bool useable = _targetCharacter.BattleLogic.CanToggleEquipSkill( 2, SituationType.DEFENCE );
+            _presenter.SetUseableSkillOnLeftParamView( 2, useable );
+
+            return useable;
         }
 
         protected override bool CanAcceptSub4()
@@ -226,7 +235,10 @@ namespace Frontier.Battle
 
             if( _targetCharacter is not Player ) return false;
 
-            return _targetCharacter.BattleLogic.CanToggleEquipSkill( 3, SituationType.DEFENCE );
+            bool useable = _targetCharacter.BattleLogic.CanToggleEquipSkill( 3, SituationType.DEFENCE );
+            _presenter.SetUseableSkillOnLeftParamView( 3, useable );
+
+            return useable;
         }
 
         /// <summary>
