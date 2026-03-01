@@ -31,6 +31,7 @@ namespace Frontier
             {
                 "UI_CMD_MOVE",
                 "UI_CMD_ATTACK",
+                "UI_CMD_SKILL",
                 "UI_CMD_WAIT"
             };
             Debug.Assert( _commandTextKeys.Length == ( int ) COMMAND_TAG.NUM );

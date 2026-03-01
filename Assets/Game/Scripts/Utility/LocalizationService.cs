@@ -20,6 +20,7 @@ public class LocalizationService : ILocalizationService
                 { "UI_STATUS_DEFFENCE", "Defence" },
                 { "UI_CMD_MOVE", "Move" },
                 { "UI_CMD_ATTACK", "Attack" },
+                { "UI_CMD_SKILL", "Skill" },
                 { "UI_CMD_WAIT", "Wait" }
             }
         },
@@ -37,6 +38,7 @@ public class LocalizationService : ILocalizationService
                 { "UI_STATUS_DEFFENCE", "防御力" },
                 { "UI_CMD_MOVE", "移動" },
                 { "UI_CMD_ATTACK", "攻撃" },
+                { "UI_CMD_SKILL", "スキル" },
                 { "UI_CMD_WAIT", "待機" }
             }
         }

@@ -213,8 +213,8 @@ namespace Frontier.Battle
         protected override bool CanAcceptDirection()
         {
             if( !CanAcceptDefault() ) { return false; }
-            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
-            if( _stageCtrl.GetAttackabkeTargetNum() <= 1 ) { return false; }   // 攻撃可能な標的数が1より大きくなければ終了
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は不可
+            if( _stageCtrl.GetAttackabkeTargetNum() <= 1 ) { return false; }   // 攻撃可能な標的数が1より大きくなければ不可
 
             return true;
         }
@@ -226,7 +226,7 @@ namespace Frontier.Battle
         protected override bool CanAcceptConfirm()
         {
             if( !CanAcceptDefault() ) { return false; }
-            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は終了
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は不可
 
             return true;
         }

@@ -46,6 +46,7 @@ namespace Frontier.Entities
         {
             Command.IsExecutableMoveCommand,
             Command.IsExecutableAttackCommand,
+            Command.IsExecutableSkillCommand,
             Command.IsExecutableWaitCommand,
         };
 

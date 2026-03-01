@@ -15,7 +15,15 @@ public class FocusRoutineController : MonoBehaviour
     [Header( "上記で挿入したもののうち、最初に実行するルーチンのインデックス値を指定してください" )]
     private int _firstRoutineIndex = 0;
 
-    IFocusRoutine[] _routines = new IFocusRoutine[( int ) FocusRoutinePriority.NUM];
+    private IFocusRoutine[] _routines = new IFocusRoutine[( int ) FocusRoutinePriority.NUM];
+
+    /// <summary>
+    /// 優先度からルーチンを取得します
+    /// 配列のインデックスとFocusRoutinePriorityの値は逆順になっているため、( ( int ) FocusRoutinePriority.NUM - 1 ) - (int) pでアクセスします
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    protected FocusRoutineBase GetFocusRoutine( FocusRoutinePriority p ) => _focusRoutineBhvs[( ( int ) FocusRoutinePriority.NUM - 1 ) - (int) p];
 
     /// <summary>
     /// 初期化します
@@ -83,7 +91,7 @@ public class FocusRoutineController : MonoBehaviour
     /// </summary>
     /// <param name="routine">登録するルーチン</param>
     /// <param name="p">登録するルーチンの優先度</param>
-    public void Register( IFocusRoutine routine, int p )
+    private void Register( IFocusRoutine routine, int p )
     {
         if( p < 0 || ( int ) FocusRoutinePriority.NUM <= p || _routines[p] != null ) return;
         _routines[p] = routine;
@@ -93,7 +101,7 @@ public class FocusRoutineController : MonoBehaviour
     /// 指定のルーチンを駆動させると共に、駆動中の他のルーチンを中断します
     /// </summary>
     /// <param name="priority">駆動するルーチンの優先度</param>
-    public void RunRoutineAndPauseOthers( FocusRoutinePriority priority )
+    private void RunRoutineAndPauseOthers( FocusRoutinePriority priority )
     {
         int p = ( int ) priority;
         if( p < 0 || ( int ) FocusRoutinePriority.NUM <= p || _routines[p] == null )
