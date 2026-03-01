@@ -151,9 +151,9 @@ namespace Frontier.Battle
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUseable( true );
+                _presenter.SetUseableSkillOnLeftParamView( i, true );
                 _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
-                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetUseable( true );
+                _presenter.SetUseableSkillOnRightParamView( i, true );
             }
 
             // 予測ダメージと使用スキルコスト見積もりをリセット
@@ -262,7 +262,10 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[0].Length <= 0 ) return false;
 
-            return _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
+            _presenter.SetUseableSkillOnLeftParamView( 0, useable );
+
+            return useable;
         }
 
         protected override bool CanAcceptSub2()
@@ -271,7 +274,10 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[1].Length <= 0 ) return false;
 
-            return _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
+            _presenter.SetUseableSkillOnLeftParamView( 1, useable );
+
+            return useable;
         }
 
         protected override bool CanAcceptSub3()
@@ -280,7 +286,10 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[2].Length <= 0 ) return false;
 
-            return _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
+            _presenter.SetUseableSkillOnLeftParamView( 2, useable );
+
+            return useable;
         }
 
         protected override bool CanAcceptSub4()
@@ -289,7 +298,10 @@ namespace Frontier.Battle
 
             if( _playerSkillNames[3].Length <= 0 ) return false;
 
-            return _plOwner.BattleLogic.CanToggleEquipSkill( 3, SituationType.ATTACK );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 3, SituationType.ATTACK );
+            _presenter.SetUseableSkillOnLeftParamView( 3, useable );
+
+            return useable;
         }
 
         /// <summary>

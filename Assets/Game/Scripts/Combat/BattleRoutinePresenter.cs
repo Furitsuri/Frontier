@@ -98,6 +98,16 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.ParameterView.PlayerParameter.GetSkillBox( skillIndex ).SetFlickEnabled( enabled );
         }
 
+        public void SetUseableSkillOnLeftParamView( int skillIndex, bool isUsable )
+        {
+            _uiSystem.BattleUi.GetPlayerParamSkillBox( skillIndex ).SetUseable( isUsable );
+        }
+
+        public void SetUseableSkillOnRightParamView( int skillIndex, bool isUsable )
+        {
+            _uiSystem.BattleUi.GetEnemyParamSkillBox( skillIndex ).SetUseable( isUsable );
+        }
+
         private void UpdateBattleParameters()
         {
             var bindCharacter = _stageCtrl.GetBindCharacterFromGridCursor();
