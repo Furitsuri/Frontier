@@ -10,21 +10,25 @@ namespace Frontier.Tutorial
     {
         [Inject] private ISaveHandler<TutorialSaveData> _saveHdlr = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private TutorialHandler _handler = null;
-
+        
         private static readonly List<TriggerType> _pendingTriggers = new();
+        private TutorialHandler _handler = null;
         private TutorialSaveData _saveData = null;  // 表示済みのトリガータイプ
         private TutorialPresenter _presenter = null;
+
+        public void Setup( FocusRoutineBase handler )
+        {
+            _saveData   = _saveHdlr.Load();
+
+            LazyInject.GetOrCreate( ref _handler, () => handler as TutorialHandler );
+            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<TutorialPresenter>( false ) );
+        }
 
         /// <summary>
         /// 初期化します
         /// </summary>
         public void Init()
         {
-            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<TutorialPresenter>( false ) );
-
-            _saveData = _saveHdlr.Load();
-
             _handler.Init( _presenter );
             _presenter.Init();
         }

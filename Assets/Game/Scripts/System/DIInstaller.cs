@@ -32,7 +32,6 @@ namespace Frontier
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
-            Container.Bind<TutorialHandler>().FromComponentInHierarchy().AsCached();
 #if UNITY_EDITOR
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();

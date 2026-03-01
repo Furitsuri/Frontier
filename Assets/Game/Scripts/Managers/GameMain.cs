@@ -63,6 +63,8 @@ namespace Frontier
             LazyInject.GetOrCreate( ref _debugMenuFcd, () => _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>( false ) );
             LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
 #endif // UNITY_EDITOR
+
+            _tutorialFcd.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
         }
 
         // Start is called before the first frame update
