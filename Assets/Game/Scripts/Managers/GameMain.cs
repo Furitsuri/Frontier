@@ -70,6 +70,8 @@ namespace Frontier
         // Start is called before the first frame update
         void Start()
         {
+            _generalFileLoader.LoadSkillsData();
+
             // 入力関連の初期化
             _inputFcd.Init();
             // チュートリアル関連の初期化
@@ -115,8 +117,6 @@ namespace Frontier
             {
                 Invoke( "StageLevelImage", stageStartDelay );
             }
-
-            _generalFileLoader.LoadSkillsData();
         }
 
         /// <summary>

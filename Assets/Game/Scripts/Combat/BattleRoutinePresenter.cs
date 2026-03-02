@@ -1,6 +1,8 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.StateMachine;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -106,6 +108,28 @@ namespace Frontier.Battle
         public void SetUseableSkillOnRightParamView( int skillIndex, bool isUsable )
         {
             _uiSystem.BattleUi.GetEnemyParamSkillBox( skillIndex ).SetUseable( isUsable );
+        }
+
+        public void RefreshOnLeftParameterView()
+        {
+            _uiSystem.BattleUi.ParameterView.PlayerParameter.RefreshParams();
+        }
+
+        public void RefreshOnRightParameterView()
+        {
+            _uiSystem.BattleUi.ParameterView.EnemyParameter.RefreshParams();
+        }
+
+        public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )
+        {
+            _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript( script );
+            _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
+            _uiSystem.BattleUi.SetPlayerCommandActive( true );
+        }
+
+        public void ExitPLCommandView()
+        {
+            _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
         private void UpdateBattleParameters()

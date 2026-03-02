@@ -29,9 +29,7 @@ namespace Frontier.Battle
             }
             _commandList.Init( ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript( this );
-            _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
-            _uiSystem.BattleUi.SetPlayerCommandActive( true );
+            _presenter.InitPLCommandView( this, executableCommands );
         }
 
         /// <summary>
@@ -94,7 +92,7 @@ namespace Frontier.Battle
                 _stageCtrl.HoldFootprint( _plOwner );  // キャラクターの現在の位置情報を保持
             }
 
-            _uiSystem.BattleUi.SetPlayerCommandActive( false );  // UIを非表示
+            _presenter.ExitPLCommandView();
 
             base.ExitState();
         }

@@ -1067,7 +1067,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &212725256
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5906,7 +5906,6 @@ MonoBehaviour:
   - {fileID: 7153141402127884706, guid: 43db87572dc3d1842bcc4298ff637b49, type: 3}
   - {fileID: 6753617674297473082, guid: 2bec217a3905df94888e00a48ed03539, type: 3}
   _otherGameObjects: []
-  GeneralFileLoaderObject: {fileID: 8388043770050968110, guid: 125a15b64ccdb274fbecc028af519da7, type: 3}
   _battleFileLoaderObject: {fileID: 242638392536068251, guid: 50ecdac321897ff428051ad4b4815b18, type: 3}
   _battleCameraObject: {fileID: 2865494705789143224, guid: f715f0bb9637f444b9d6008e0721d848, type: 3}
   _stageFileLoaderPrefab: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}
@@ -35746,7 +35745,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &7911500139447084885
 GameObject:
   m_ObjectHideFlags: 0

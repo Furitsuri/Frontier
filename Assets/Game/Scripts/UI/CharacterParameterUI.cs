@@ -1,11 +1,12 @@
 ﻿using Frontier.Combat;
+using Frontier.Combat.Skill;
 using Frontier.Entities;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-using Frontier.Combat.Skill;
 
 namespace Frontier.UI
 {
@@ -44,7 +45,7 @@ namespace Frontier.UI
 
             _characterCamera?.Update( _character.CameraParam );
 
-            UpdateParamRender( _character, _character.GetStatusRef, _character.RefBattleParams.SkillModifiedParam );  // パラメータ表示を反映
+            // RefreshParamRender( _character, _character.GetStatusRef, _character.RefBattleParams.SkillModifiedParam );  // パラメータ表示を反映
         }
 
         /// <summary>
@@ -74,6 +75,11 @@ namespace Frontier.UI
         public void SetupCamera()
         {
             LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
+        }
+
+        public void RefreshParams()
+        {
+            RefreshParamRender( _character, _character.GetStatusRef, _character.RefBattleParams.SkillModifiedParam );
         }
 
         /// <summary>
@@ -113,6 +119,9 @@ namespace Frontier.UI
 
             _character.gameObject.SetActive( true );
             _characterCamera?.AssignCharacter( character, layerMaskIndex );
+
+            // パラメータ表示を反映
+            RefreshParams();
         }
 
         public override void Setup()
@@ -133,18 +142,18 @@ namespace Frontier.UI
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        private void UpdateParamRender( Character selectCharacter, in Status param, in SkillModifiedParameter skillParam )
+        private void RefreshParamRender( Character selectCharacter, in Status param, in SkillModifiedParameter skillParam )
         {
             Debug.Assert( param.consumptionActionGauge <= param.curActionGauge );
 
-            TMPMaxHPValue.text = $"{param.MaxHP}";
-            TMPCurHPValue.text = $"{param.CurHP}";
-            TMPAtkValue.text = $"{param.Atk}";
-            TMPDefValue.text = $"{param.Def}";
-            TMPMovValue.text = $"{param.moveRange}";
-            TMPJmpValue.text = $"{param.jumpForce}";
-            TMPAtkNumValue.text = $"x {skillParam.AtkNum}";
-            TMPActRecoveryValue.text = $"+{param.recoveryActionGauge}";
+            TMPMaxHPValue.text          = $"{param.MaxHP}";
+            TMPCurHPValue.text          = $"{param.CurHP}";
+            TMPAtkValue.text            = $"{param.Atk}";
+            TMPDefValue.text            = $"{param.Def}";
+            TMPMovValue.text            = $"{param.moveRange}";
+            TMPJmpValue.text            = $"{param.jumpForce}";
+            TMPAtkNumValue.text         = $"x {skillParam.AtkNum}";
+            TMPActRecoveryValue.text    = $"+{param.recoveryActionGauge}";
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
