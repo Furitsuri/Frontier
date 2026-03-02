@@ -38,14 +38,16 @@ namespace Frontier
             gameObject.SetActive( isValid );
             if( !isValid ) { return; }
 
-            string skillName    = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Name;
-            var type            = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Type;
-            _textKey            = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].ExplainTextKey;
+            var skillData       = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]];
+            string skillName    = skillData.Name;
+            var type            = skillData.Type;
+            _textKey            = skillData.ExplainTextKey;
             SetSkillName( skillName, type );
             SetTooltipText( _textKey );
             ShowSkillCostImage( SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Cost );
 
             EnableRefreshText();
+            SetUseable( skillData.Cost <= chara.GetStatusRef.curActionGauge );  // コストが不足しているスキルは専用表示に
         }
 
         /// <summary>

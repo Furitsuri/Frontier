@@ -178,6 +178,7 @@ namespace Frontier.Entities
             }
 
             int skillID = ( int ) equipSkills[skillIdx];
+            if( !IsValidSkill( skillIdx ) ) { return false; }
             var skillData = SkillsData.data[skillID];
 
             // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
