@@ -11,15 +11,6 @@ namespace Frontier.Stage
 {
     public sealed class StageController
     {
-        /// <summary>
-        /// キャラクターの位置を元に戻す際に使用します
-        /// </summary>
-        public struct Footprint
-        {
-            public int gridIndex;
-            public Quaternion rotation;
-        }
-
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
@@ -28,7 +19,6 @@ namespace Frontier.Stage
         private StageFileLoader _stageFileLoader;
         private StageDirectionConverter _directionConverter;
         private TileDataHandler _tileDataHdlr;
-		private Footprint _footprint;
 
 		public TileDataHandler TileDataHdlr() => _tileDataHdlr;
 
@@ -61,7 +51,7 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyCurrentGrid2CharacterTile( Character character )
         {
-            _gridCursorCtrl.SetTileIndex( character.RefBattleParams.TmpParam.GetCurrentGridIndex() );
+            _gridCursorCtrl.SetTileIndex( character.BattleParams.TmpParam.CurrentTileIndex );
         }
 
         /// <summary>
@@ -111,29 +101,6 @@ namespace Frontier.Stage
                 meshRenderer.enabled = isDisplay;
             }
             */
-        }
-
-        /// <summary>
-        /// キャラクターの位置及び向きを保持します
-        /// </summary>
-        /// <param name="footprint">保持する値</param>
-        public void HoldFootprint( Character chara )
-        {
-            _footprint.gridIndex = chara.RefBattleParams.TmpParam.gridIndex;
-            _footprint.rotation = chara.transform.rotation;
-        }
-
-        /// <summary>
-        /// 保持していた位置及び向きを指定のキャラクターに設定します
-        /// </summary>
-        /// <param name="character">指定するキャラクター</param>
-        public void FollowFootprint( Character character )
-        {
-            _gridCursorCtrl.SetTileIndex( _footprint.gridIndex );
-            character.RefBattleParams.TmpParam.SetCurrentGridIndex( _footprint.gridIndex );
-            TileStaticData tileData = _tileDataHdlr.GetCurrentTileDatas().Item1;
-            character.GetTransformHandler.SetPosition( tileData.CharaStandPos );
-            character.GetTransformHandler.SetRotation( _footprint.rotation );
         }
 
         /// <summary>

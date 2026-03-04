@@ -23,12 +23,12 @@ namespace Frontier.Entities
         public int jumpForce;               // ジャンプレンジ
         public int attackRange;             // 攻撃レンジ( 高低差にもそのまま適用される )
         public int maxActionGauge;          // アクションゲージ最大値
-        public int curActionGauge;          // アクションゲージ現在値
+        public int CurActionGauge;          // アクションゲージ現在値
         public int recoveryActionGauge;     // アクションゲージ回復値
-        public int consumptionActionGauge;  // アクションゲージ消費値
+        public int ActGaugeConsumption;     // アクションゲージ消費値
         public int initGridIndex;           // ステージ開始時グリッド座標(インデックス)
-        public Direction initDir; // ステージ開始時向き
-        public ID[] equipSkills;            // 装備しているスキル
+        public Direction initDir;           // ステージ開始時向き
+        public SkillID[] EquipSkills;       // 装備しているスキル
 
         /// <summary>
         /// キャラクターパラメータを適応させます
@@ -38,48 +38,49 @@ namespace Frontier.Entities
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
         static public void ApplyParams( ref Status status, in BattleFileLoader.CharacterStatusData fdata )
         {
-            status.characterTag = ( CHARACTER_TAG ) fdata.CharacterTag;
-            status.characterIndex = fdata.CharacterIndex;
-            status.CurHP = status.MaxHP = fdata.MaxHP;
-            status.Atk = fdata.Atk;
-            status.Def = fdata.Def;
-            status.moveRange = fdata.MoveRange;
-            status.jumpForce = fdata.JumpForce;
-            status.attackRange = fdata.AtkRange;
-            status.curActionGauge = status.maxActionGauge = fdata.ActGaugeMax;
-            status.recoveryActionGauge = fdata.ActRecovery;
-            status.initGridIndex = fdata.InitGridIndex;
-            status.initDir = ( Direction ) fdata.InitDir;
+            status.characterTag         = ( CHARACTER_TAG ) fdata.CharacterTag;
+            status.characterIndex       = fdata.CharacterIndex;
+            status.CurHP                = status.MaxHP = fdata.MaxHP;
+            status.Atk                  = fdata.Atk;
+            status.Def                  = fdata.Def;
+            status.moveRange            = fdata.MoveRange;
+            status.jumpForce            = fdata.JumpForce;
+            status.attackRange          = fdata.AtkRange;
+            status.CurActionGauge       = status.maxActionGauge = fdata.ActGaugeMax;
+            status.recoveryActionGauge  = fdata.ActRecovery;
+            status.initGridIndex        = fdata.InitGridIndex;
+            status.initDir              = ( Direction ) fdata.InitDir;
+
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                status.equipSkills[i] = ( ID ) fdata.Skills[i];
+                status.EquipSkills[i] = ( SkillID ) fdata.Skills[i];
             }
         }
 
         public void Setup()
         {
-            equipSkills = new ID[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            EquipSkills = new SkillID[Constants.EQUIPABLE_SKILL_MAX_NUM];
         }
 
         public void Init()
         {
-            characterTag = CHARACTER_TAG.NONE;
-            characterIndex = 0;
-            Name = "";
-            Level = 1;
-            MaxHP = 0;
-            CurHP = 0;
-            Atk = 0;
-            Def = 0;
-            moveRange = 0;
-            jumpForce = 0;
-            attackRange = 0;
-            maxActionGauge = 0;
-            curActionGauge = 0;
+            characterTag        = CHARACTER_TAG.NONE;
+            characterIndex      = 0;
+            Name                = "";
+            Level               = 1;
+            MaxHP               = 0;
+            CurHP               = 0;
+            Atk                 = 0;
+            Def                 = 0;
+            moveRange           = 0;
+            jumpForce           = 0;
+            attackRange         = 0;
+            maxActionGauge      = 0;
+            CurActionGauge      = 0;
             recoveryActionGauge = 0;
-            consumptionActionGauge = 0;
-            initGridIndex = 0;
-            initDir = Direction.NONE;
+            ActGaugeConsumption = 0;
+            initGridIndex       = 0;
+            initDir             = Direction.NONE;
         }
 
         /// <summary>
@@ -88,23 +89,24 @@ namespace Frontier.Entities
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
         public void Apply( in BattleFileLoader.CharacterStatusData fdata )
         {
-            this.characterTag = ( CHARACTER_TAG ) fdata.CharacterTag;
-            this.characterIndex = fdata.CharacterIndex;
-            this.Name = fdata.Name;
-            this.Level = fdata.Level;
-            this.CurHP = this.MaxHP = fdata.MaxHP;
-            this.Atk = fdata.Atk;
-            this.Def = fdata.Def;
-            this.moveRange = fdata.MoveRange;
-            this.jumpForce = fdata.JumpForce;
-            this.attackRange = fdata.AtkRange;
-            this.curActionGauge = this.maxActionGauge = fdata.ActGaugeMax;
-            this.recoveryActionGauge = fdata.ActRecovery;
-            this.initGridIndex = fdata.InitGridIndex;
-            this.initDir = ( Direction ) fdata.InitDir;
+            this.characterTag           = ( CHARACTER_TAG ) fdata.CharacterTag;
+            this.characterIndex         = fdata.CharacterIndex;
+            this.Name                   = fdata.Name;
+            this.Level                  = fdata.Level;
+            this.CurHP                  = this.MaxHP = fdata.MaxHP;
+            this.Atk                    = fdata.Atk;
+            this.Def                    = fdata.Def;
+            this.moveRange              = fdata.MoveRange;
+            this.jumpForce              = fdata.JumpForce;
+            this.attackRange            = fdata.AtkRange;
+            this.CurActionGauge         = this.maxActionGauge = fdata.ActGaugeMax;
+            this.recoveryActionGauge    = fdata.ActRecovery;
+            this.initGridIndex          = fdata.InitGridIndex;
+            this.initDir                = ( Direction ) fdata.InitDir;
+
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                this.equipSkills[i] = ( ID ) fdata.Skills[i];
+                this.EquipSkills[i] = ( SkillID ) fdata.Skills[i];
             }
         }
 
@@ -113,7 +115,7 @@ namespace Frontier.Entities
         /// </summary>
         public void ResetConsumptionActionGauge()
         {
-            consumptionActionGauge = 0;
+            ActGaugeConsumption = 0;
         }
 
         /// <summary>
@@ -122,7 +124,7 @@ namespace Frontier.Entities
         /// </summary>
         public void RecoveryActionGauge()
         {
-            curActionGauge = Mathf.Clamp( curActionGauge + recoveryActionGauge, 0, maxActionGauge );
+            CurActionGauge = Mathf.Clamp( CurActionGauge + recoveryActionGauge, 0, maxActionGauge );
         }
 
         /// <summary>
@@ -154,49 +156,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定のスキルが有効か否かを返します
-        /// </summary>
-        /// <param name="index">指定インデックス</param>
-        /// <returns>有効か否か</returns>
-        public bool IsValidSkill( int index )
-        {
-            return ID.SKILL_NONE < equipSkills[index] && equipSkills[index] < ID.SKILL_NUM;
-        }
-
-        /// <summary>
-        /// 指定のスキルが使用可能かを判定します
-        /// </summary>
-        /// <param name="skillIdx">スキルの装備インデックス値</param>
-        /// <returns>指定スキルの使用可否</returns>
-        public bool CanUseEquipSkill( int skillIdx, SituationType situationType )
-        {
-            if( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
-            {
-                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
-
-                return false;
-            }
-
-            int skillID = ( int ) equipSkills[skillIdx];
-            if( !IsValidSkill( skillIdx ) ) { return false; }
-            var skillData = SkillsData.data[skillID];
-
-            // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
-            if( skillData.Type != situationType )
-            {
-                return false;
-            }
-
-            // コストが現在のアクションゲージ値を越えていないかをチェック
-            if( consumptionActionGauge + skillData.Cost <= curActionGauge )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 装備中のスキルの名前を取得します
         /// </summary>
         /// <returns>スキル名の配列</returns>
@@ -207,8 +166,8 @@ namespace Frontier.Entities
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 names[i] = "";
-                if( !IsValidSkill( i ) ) continue;
-                names[i] = SkillsData.data[( int ) equipSkills[i]].Name;
+                if( !SkillsData.IsValidSkill( EquipSkills[i] ) ) { continue; }
+                names[i] = SkillsData.data[( int ) EquipSkills[i]].Name;
                 names[i] = names[i].Replace( "_", Environment.NewLine );
             }
 

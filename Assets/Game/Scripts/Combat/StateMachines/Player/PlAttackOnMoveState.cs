@@ -21,24 +21,24 @@ namespace Frontier.Battle
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex    = _plOwner.RefBattleParams.TmpParam.gridIndex;
+            _curentGridIndex    = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _plOwner;
-            var param = _attackCharacter.GetStatusRef;
-
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _curentGridIndex );
-            _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
+            _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl, targetChara ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, targetChara ) )
             {
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( true ); // アタックカーソルUI表示
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( true );                // アタックカーソルUI表示
             }
 
             _attackSequence.Init(); // 攻撃シーケンスを初期化
+
+            // パラメータビューにキャラクターを割り当て
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
         }
 
         public override void ExitState()
@@ -57,8 +57,8 @@ namespace Frontier.Battle
             _stageCtrl.ClearGridCursroBind();
 
             // 予測ダメージをリセット
-            _attackCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            _targetCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _plOwner.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+            _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
 
             // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
@@ -76,10 +76,10 @@ namespace Frontier.Battle
             }
 
             // 使用スキルコスト見積もりをリセット
-            _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _attackCharacter.RefBattleParams.SkillModifiedParam.Reset();
+            _plOwner.GetStatusRef.ResetConsumptionActionGauge();
+            _plOwner.BattleParams.SkillModifiedParam.Reset();
             _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _targetCharacter.RefBattleParams.SkillModifiedParam.Reset();
+            _targetCharacter.BattleParams.SkillModifiedParam.Reset();
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示

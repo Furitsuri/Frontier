@@ -1,5 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.FormTroop;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,36 +28,45 @@ namespace Frontier.Entities
         }
 
         private RecruitLogic _recruitLogic;
-        private PrevMoveInfo _prevMoveInfo;
 
         public RecruitLogic RecruitLogic => _recruitLogic;
-        public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
+        public ref PrevMoveInfo PrevMoveInformaiton => ref ( ( PlayerBattleLogic )_battleLogic ).PrevMoveInformaiton;
 
         /// <summary>
         /// 現在の移動前情報を適応します
         /// </summary>
         public void HoldBeforeMoveInfo()
         {
-            _prevMoveInfo.tmpParam  = RefBattleParams.TmpParam.Clone();
-            _prevMoveInfo.rotDir    = _transformHdlr.GetRotation();
+            ( ( PlayerBattleLogic ) _battleLogic ).HoldBeforeMoveInfo();
         }
 
-        /// <summary>
-        /// 移動前情報をリセットします
-        /// </summary>
-        public void ResetPrevMoveInfo()
+        public void PushCommandHistory( COMMAND_TAG commandTag )
         {
-            _prevMoveInfo.Reset();
+            ( ( PlayerBattleLogic ) _battleLogic ).PushCommandHistory( commandTag );
+        }
+
+        public COMMAND_TAG PopCommandHistory()
+        {
+            var prevExecCommandTag = ( ( PlayerBattleLogic ) _battleLogic ).PopCommandHistory();
+            if( prevExecCommandTag == COMMAND_TAG.NONE ) { return COMMAND_TAG.NONE; }
+
+            // コマンド履歴から直前のコマンドを取得して、コマンドの状態を巻き戻す(ただし攻撃、待機を行っている場合は不可)
+            RevertToPreviousExecCommand( prevExecCommandTag );
+
+            return prevExecCommandTag;
+        }
+
+        public void ClearCommandHistory()
+        {
+            ( ( PlayerBattleLogic ) _battleLogic ).ClearCommandHistory();
         }
 
         /// <summary>
         /// コマンドの可否や位置を以前の状態に巻き戻します
         /// </summary>
-        public void RewindToPreviousState()
+        public void RevertBeforeMoving()
         {
-            _battleLogic.ForcedStopMoving();
-            RefBattleParams.TmpParam = _prevMoveInfo.tmpParam;
-            BattleLogic.SetPositionOnStage( RefBattleParams.TmpParam.gridIndex, _prevMoveInfo.rotDir );
+            ( ( PlayerBattleLogic ) _battleLogic ).RevertBeforeMoving();
         }
 
         public void OnRecruitEnter( int cost )
@@ -75,32 +85,18 @@ namespace Frontier.Entities
         /// 移動後などに直前のコマンド状態に戻れるかどうかを取得します
         /// </summary>
         /// <returns>直前のコマンドに戻れるか否か</returns>
-        public bool IsRewindStatePossible()
+        public bool IsEnableRevertState()
         {
-            // 移動コマンドだけが終了している場合のみ直前の状態に戻れるように
-            // MEMO : コマンドが今後増えても問題ないようにfor文で判定しています
-            bool isPossible = true;
-            for( int i = 0; i < (int)COMMAND_TAG.NUM; ++i )
-            {
-                if( i == (int)COMMAND_TAG.MOVE )
-                {
-                    if (!RefBattleParams.TmpParam.IsEndCommand(COMMAND_TAG.MOVE))
-                    {
-                        isPossible = false;
-                        break;
-                    }
-                }
-                else
-                {
-                    if (RefBattleParams.TmpParam.IsEndCommand((COMMAND_TAG)i))
-                    {
-                        isPossible = false;
-                        break;
-                    }
-                }
-            }
+            var playerBattleLogic = ( PlayerBattleLogic ) _battleLogic;
 
-            return isPossible;
+            // コマンド履歴が存在しない場合は巻き戻せない
+            if( playerBattleLogic.GetCommandHistoryCount() <= 0 ) { return false; }
+            // 攻撃コマンドが履歴に存在する場合は巻き戻せない
+            if( playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.ATTACK ) ) { return false; }
+            // 待機コマンドが履歴に存在する場合は巻き戻せない
+            if( playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.WAIT ) ) { return false; }
+
+            return true;
         }
 
         /// <summary>
@@ -143,6 +139,11 @@ namespace Frontier.Entities
             _battleLogic.Dispose();
             _battleLogic = null;
             base.OnBattleExit();
+        }
+
+        private void RevertToPreviousExecCommand( COMMAND_TAG commandTag )
+        {
+            ( ( PlayerBattleLogic ) _battleLogic ).RevertToPreviousExecCommand( commandTag );
         }
     }
 }

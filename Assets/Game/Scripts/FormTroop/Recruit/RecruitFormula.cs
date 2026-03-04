@@ -39,8 +39,8 @@ namespace Frontier.FormTroop
             statusData.Def += defRandValue;
             statusData.ActGaugeMax += actMaxRandValue;
             statusData.ActRecovery += actRecovRandValue;
-            statusData.Skills[0] = ( int ) Combat.Skill.ID.SKILL_PARRY;          // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
-            statusData.Skills[1] = ( int ) Combat.Skill.ID.SKILL_DOUBLE_STRIKE; // TODO : 仮で1を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
+            statusData.Skills[0] = ( int ) Combat.Skill.SkillID.PARRY;          // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
+            statusData.Skills[1] = ( int ) Combat.Skill.SkillID.DOUBLE_STRIKE;  // TODO : 仮で1を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
 
             int employmentCost = CalcurateEmploymentCost( unitTypeIndex, statusData.Level, hpRandValue, atkRandValue, defRandValue, actMaxRandValue, actRecovRandValue );
 
@@ -78,7 +78,8 @@ namespace Frontier.FormTroop
 
         static private int SelectBalancedTypeIndex( List<CharacterCandidate> candidatedMercenaries )
         {
-            return 0;
+            // TODO : 仮で0か1を返すようにしているが、ユニットタイプの総数が決まり次第、定数に変更し、尚且つ既存の雇用候補キャラクターリストを基に、バランスの取れたユニットタイプを選択するロジックを実装すること
+            return Random.Range( 0, 2 );
         }
     }
 }

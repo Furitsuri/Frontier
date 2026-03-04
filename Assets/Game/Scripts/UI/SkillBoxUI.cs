@@ -32,22 +32,32 @@ namespace Frontier
         /// </summary>
         void OnEnable() { }
 
-        public void ApplySkill( Character chara, int index )
+        public void ApplySkill( Character chara, int skillIdx )
         {
-            bool isValid = chara.GetStatusRef.IsValidSkill( index );
+            SkillID skillID     = chara.GetEquipSkillID( skillIdx );
+            bool isValid        = SkillsData.IsValidSkill( skillID );
             gameObject.SetActive( isValid );
             if( !isValid ) { return; }
 
-            var skillData       = SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]];
+            var skillData       = SkillsData.data[( int ) chara.GetEquipSkillID( skillIdx )];
             string skillName    = skillData.Name;
             var type            = skillData.Type;
             _textKey            = skillData.ExplainTextKey;
             SetSkillName( skillName, type );
             SetTooltipText( _textKey );
-            ShowSkillCostImage( SkillsData.data[( int ) chara.GetStatusRef.equipSkills[index]].Cost );
+            ShowSkillCostImage( SkillsData.data[( int ) chara.GetEquipSkillID( skillIdx )].Cost );
 
             EnableRefreshText();
-            SetUseable( skillData.Cost <= chara.GetStatusRef.curActionGauge );  // コストが不足しているスキルは専用表示に
+            // 使用フラグが立っておらず、コストが不足しているスキルは専用表示に
+            if( !chara.BattleParams.TmpParam.isUseSkills[ skillIdx ] )
+            {
+                SetUseable( skillData.Cost <= chara.GetStatusRef.CurActionGauge );
+            }
+        }
+
+        public void SetUsing()
+        {
+            _uiImage.color = Color.white;
         }
 
         /// <summary>

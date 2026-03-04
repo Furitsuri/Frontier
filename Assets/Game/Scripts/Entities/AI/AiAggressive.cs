@@ -27,9 +27,9 @@ namespace Frontier.Entities.Ai
 
             // 自身の移動範囲をステージ上に登録する
             bool isAttackable = !selfTmpParam.isEndCommand[( int ) COMMAND_TAG.ATTACK];
-            float curHeight = _stageCtrl.GetTileStaticData( selfTmpParam.gridIndex ).Height;
+            float curHeight = _stageCtrl.GetTileStaticData( selfTmpParam.CurrentTileIndex ).Height;
 
-            _owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.gridIndex, curHeight );
+            _owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.CurrentTileIndex, curHeight );
             _owner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
 
             // 攻撃可能範囲に攻撃対象がいるかどうかを判定
@@ -60,7 +60,7 @@ namespace Frontier.Entities.Ai
         /// <param name="selfParam">自身のパラメータ</param>
         /// <param name="selfTmpParam">自身の一時パラメータ</param>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
-        public override (bool, bool) DetermineDestinationAndTarget( in BattleParameters battleParams, in Status status, in int[] ownerTileCosts, in CharacterKey ownerKey )
+        public override (bool, bool) DetermineDestinationAndTarget( BattleParameters battleParams, in Status status, in int[] ownerTileCosts, in CharacterKey ownerKey )
         {
             _isDetermined = true;
 
@@ -111,7 +111,7 @@ namespace Frontier.Entities.Ai
             _destinationTileIndex   = maxEvaluate.gridIndex;
             _targetCharacter        = maxEvaluate.target;
 
-            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.FindMovePath( battleParams.TmpParam.gridIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, ownerTileCosts, _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.MoveableTileMap );
+            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.FindMovePath( battleParams.TmpParam.CurrentTileIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, ownerTileCosts, _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.MoveableTileMap );
         }
 
         /// <summary>
@@ -141,13 +141,13 @@ namespace Frontier.Entities.Ai
             // 各プレイヤーが存在するグリッドの評価値を計算する
             foreach ( Character chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.OTHER ) )
             {
-                int destGridIndex       = chara.RefBattleParams.TmpParam.GetCurrentGridIndex();
+                int destGridIndex       = chara.BattleParams.TmpParam.CurrentTileIndex;
                 ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
                 evaluateValue += CalcurateEvaluateAttack( _owner.GetStatusRef, chara.GetStatusRef );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまりターゲットが存在するタイルの中でも、近ければ近いものほど評価値を大きくするため)
-                if( !_owner.BattleLogic.ActionRangeCtrl.FindMovePath( battleParams.TmpParam.gridIndex, destGridIndex, _owner.GetStatusRef.jumpForce, in ownerTileCosts ) )
+                if( !_owner.BattleLogic.ActionRangeCtrl.FindMovePath( battleParams.TmpParam.CurrentTileIndex, destGridIndex, _owner.GetStatusRef.jumpForce, in ownerTileCosts ) )
                 {
                     Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;

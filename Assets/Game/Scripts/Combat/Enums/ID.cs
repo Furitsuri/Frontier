@@ -1,15 +1,15 @@
 ﻿namespace Frontier.Combat.Skill
 {
-    public enum ID
+    public enum SkillID
     {
-        SKILL_NONE = -1,
+        NONE = -1,
 
-        SKILL_PARRY,
-        SKILL_GUARD,
-        SKILL_COUNTER,
-        SKILL_DOUBLE_STRIKE,
-        SKILL_TRIPLE_STRIKE,
+        PARRY,
+        GUARD,
+        COUNTER,
+        DOUBLE_STRIKE,
+        TRIPLE_STRIKE,
 
-        SKILL_NUM,
+        NUM,
     }
 }

@@ -16,7 +16,7 @@ namespace Frontier.Battle
         {
             if ( _plOwner == null ) { return; }
 
-            _plOwner.RewindToPreviousState();
+            _plOwner.RevertBeforeMoving();
             _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();    // グリッド情報を更新
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
         }

@@ -11,10 +11,12 @@ namespace Frontier.UI
 {
     public class BattleUISystem : MonoBehaviour
     {
-        public enum ParameterWindowType
+        public enum ParameterWindowType : int
         {
-            Left,
-            Right
+            Left = 0,
+            Right,
+
+            NUM
         }
 
         [Inject] private CombatSkillEventController _combatSkillCtrl = null;
@@ -147,7 +149,7 @@ namespace Frontier.UI
 
         public void ShowDamageOnCharacter( Character chara )
         {
-            SetDamageUIPosByCharaPos( chara, chara.RefBattleParams.TmpParam.expectedHpChange );
+            SetDamageUIPosByCharaPos( chara, chara.BattleParams.TmpParam.ExpectedHpChange );
             ToggleDamageUI( true );
         }
 

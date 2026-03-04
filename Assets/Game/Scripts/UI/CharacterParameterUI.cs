@@ -44,8 +44,6 @@ namespace Frontier.UI
             Debug.Assert( _character != null );   // キャラクターがnullの状態でGameObjectがActiveになっていることは想定しない
 
             _characterCamera?.Update( _character.CameraParam );
-
-            // RefreshParamRender( _character, _character.GetStatusRef, _character.RefBattleParams.SkillModifiedParam );  // パラメータ表示を反映
         }
 
         /// <summary>
@@ -77,9 +75,11 @@ namespace Frontier.UI
             LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
         }
 
-        public void RefreshParams()
+        public void UpdateAssignCharacterParamRender()
         {
-            RefreshParamRender( _character, _character.GetStatusRef, _character.RefBattleParams.SkillModifiedParam );
+            if( null == _character ) { return; }
+
+            UpdateParamRender( _character, _character.GetStatusRef, _character.BattleParams.SkillModifiedParam );
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Frontier.UI
             _characterCamera?.AssignCharacter( character, layerMaskIndex );
 
             // パラメータ表示を反映
-            RefreshParams();
+            UpdateAssignCharacterParamRender();
         }
 
         public override void Setup()
@@ -142,9 +142,9 @@ namespace Frontier.UI
         /// </summary>
         /// <param name="selectCharacter">選択しているキャラクター</param>
         /// <param name="param">選択しているキャラクターのパラメータ</param>
-        private void RefreshParamRender( Character selectCharacter, in Status param, in SkillModifiedParameter skillParam )
+        private void UpdateParamRender( Character selectCharacter, in Status param, in SkillModifiedParameter skillParam )
         {
-            Debug.Assert( param.consumptionActionGauge <= param.curActionGauge );
+            Debug.Assert( param.ActGaugeConsumption <= param.CurActionGauge );
 
             TMPMaxHPValue.text          = $"{param.MaxHP}";
             TMPCurHPValue.text          = $"{param.CurHP}";
@@ -157,7 +157,7 @@ namespace Frontier.UI
             TMPAtkNumValue.gameObject.SetActive( 1 < skillParam.AtkNum );
 
             int hpChange, totalHpChange;
-            selectCharacter.RefBattleParams.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
+            selectCharacter.BattleParams.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
 
             totalHpChange = Mathf.Clamp( totalHpChange, -param.CurHP, param.MaxHP - param.CurHP );
             if( 0 < totalHpChange )
@@ -186,12 +186,12 @@ namespace Frontier.UI
                 {
                     elem.gameObject.SetActive( true );
 
-                    if( i <= param.curActionGauge - 1 )
+                    if( i <= param.CurActionGauge - 1 )
                     {
                         elem.color = Color.green;
 
                         // アクションゲージ使用時は点滅させる
-                        if( ( param.curActionGauge - param.consumptionActionGauge ) <= i )
+                        if( ( param.CurActionGauge - param.ActGaugeConsumption ) <= i )
                         {
                             _blinkingElapsedTime += DeltaTimeProvider.DeltaTime;
                             _alpha = Mathf.PingPong( _blinkingElapsedTime / BlinkingDuration, 1.0f );

@@ -199,7 +199,7 @@ namespace Frontier.StateMachine
             var focusCharacter = candidate.Character;
             focusCharacter.gameObject.SetActive( true );
             focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
-            focusCharacter.RefBattleParams.TmpParam.SetCurrentGridIndex( _stageCtrl.GetCurrentGridIndex() );
+            focusCharacter.BattleParams.TmpParam.CurrentTileIndex = _stageCtrl.GetCurrentGridIndex();
 
             _presenter.RefreshGridCursorSelectCharacter();
 
@@ -338,7 +338,7 @@ namespace Frontier.StateMachine
                 // キャラクター管理リストから削除
                 _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey() );
                 // 見えない位置に退避
-                charaOnSelectTile.RefBattleParams.TmpParam.gridIndex = -1;
+                charaOnSelectTile.BattleParams.TmpParam.CurrentTileIndex = -1;
                 var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * charaOnSelectTile.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
                 charaOnSelectTile.GetTransformHandler.SetPosition( reservePos );
 

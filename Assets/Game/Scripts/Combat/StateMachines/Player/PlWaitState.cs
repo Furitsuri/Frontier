@@ -10,8 +10,9 @@ namespace Frontier.Battle
             base.Init();
 
             // 選択しているプレイヤーの行動をすべて終了
-            _plOwner.RefBattleParams.TmpParam.EndAction();
-
+            _plOwner.BattleParams.TmpParam.EndAction();
+            // コマンド履歴もすべてクリア
+            _plOwner.ClearCommandHistory();
             // 更新せずに終了
             Back();
         }

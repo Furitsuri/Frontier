@@ -1,6 +1,5 @@
-﻿using Frontier.Loaders;
-using Frontier.Stage;
-using System;
+﻿using Frontier.Combat.Skill;
+using Frontier.Loaders;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -18,8 +17,9 @@ namespace Frontier.Entities
         [SerializeField] protected Status _status;
 
         /// <summary>
+        /// 本来ならBattleLogicBaseに持たせるべきですが、BattleLogicBaseは戦闘ルーチン開始後にキャラクターに追加されるものであり、
         /// Unityの仕様上、実行後に追加したコンポーネントについては[SerializeField]や[Serializable]が設定されていても、
-        /// Inspector上に表示されないため、本来BattleLogicBaseに持たせるべきパラメータ群をここで定義する
+        /// Inspector上に表示されないため、仕方なくパラメータ群をここで定義しています。
         /// </summary>
         [Header( "戦闘用一時パラメータ" )]
         [SerializeField] private BattleParameters _btlParams;
@@ -42,10 +42,10 @@ namespace Frontier.Entities
 
         public int StatusEffectBitFlag { get; set; } = 0;                           // キャラクターに設定されているステータス効果のビットフラグ
         public float ElapsedTime { get; set; } = 0f;
-        public AnimationController AnimCtrl => _animCtrl;                                           // アニメーションコントローラの取得
-        public TimeScale GetTimeScale => _timeScale;                                                // タイムスケールの取得
-        public ref BattleParameters RefBattleParams => ref _btlParams;                                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
-        public TransformHandler GetTransformHandler => _transformHdlr;                              // Transform操作クラスの取得
+        public AnimationController AnimCtrl => _animCtrl;                           // アニメーションコントローラの取得
+        public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
+        public BattleParameters BattleParams => _btlParams;                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
+        public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
         public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
         public ref Status GetStatusRef => ref _status;
@@ -94,9 +94,53 @@ namespace Frontier.Entities
             }
         }
 
-        public void NotifySkillActivated( int skillId )
+        /// <summary>
+        /// 指定の装備インデックスに対応するスキルが、指定のシチュエーションで使用可能かを返します
+        /// </summary>
+        /// <param name="skillIdx"></param>
+        /// <param name="situationType"></param>
+        /// <returns></returns>
+        public bool CanUseEquipSkill( int skillIdx, SituationType situationType )
         {
-            // _skillNotifier = SkillsData.skillNotifierFactory[skillId];
+            if( EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            {
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
+
+                return false;
+            }
+
+            SkillID skillID = GetEquipSkillID( skillIdx );
+            if( !SkillsData.IsValidSkill( skillID ) ) { return false; }
+            var skillData = SkillsData.data[( int ) skillID];
+
+            // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
+            if( skillData.Type != situationType )
+            {
+                return false;
+            }
+
+            // コストが現在のアクションゲージ値を越えていないかをチェック
+            if( _status.ActGaugeConsumption + skillData.Cost <= _status.CurActionGauge )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public SkillID GetEquipSkillID( int skillIdx )
+        {
+            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            {
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
+                return SkillID.NONE;
+            }
+            return _status.EquipSkills[skillIdx];
+        }
+
+        public CHARACTER_TAG GetCharacterTag()
+        {
+            return _status.characterTag;
         }
 
         public CharacterKey CharaKey()

@@ -1,4 +1,5 @@
 ﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Stage;
@@ -6,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Constants;
+using static Frontier.UI.BattleUISystem;
 
 namespace Frontier.Battle
 {
@@ -26,10 +28,15 @@ namespace Frontier.Battle
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _phase              = PlSelectSkillPhase.PL_SELECT_SKILL;
+
+            // パラメータビューにキャラクターを割り当て
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
         }
 
         public override bool Update()
         {
+            _presenter.UpdateLeftParameterView();
+
             if( base.Update() )
             {
                 return true;
@@ -73,7 +80,7 @@ namespace Frontier.Battle
             // 所有スキルのうち、どれか一つでも使用フラグが立っていれば決定入力を受け付ける
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( _plOwner.RefBattleParams.TmpParam.isUseSkills[i] )
+                if( _plOwner.BattleLogic.IsUsingEquipSkill( i ) )
                 {
                     return true;
                 }
@@ -92,7 +99,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[0].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 0, useable );
+            _presenter.SetUseableSkillOnParamView( 0, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -102,7 +109,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[1].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 1, useable );
+            _presenter.SetUseableSkillOnParamView( 1, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -112,7 +119,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[2].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 2, useable );
+            _presenter.SetUseableSkillOnParamView( 2, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -122,7 +129,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[3].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 3, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 3, useable );
+            _presenter.SetUseableSkillOnParamView( 3, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -131,8 +138,16 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
+            // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
+            _plOwner.BattleLogic.TemporarilyConsumeActionGauge();
+            
+            // コマンド履歴にスキル選択を追加
+            _plOwner.PushCommandHistory( COMMAND_TAG.SKILL );
 
-            return false;
+            Back();
+
+            return true;
         }
 
         protected override bool AcceptCancel( InputContext context )
@@ -148,9 +163,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub1( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 0 );
-            _presenter.SetSkillFlickOnLeftParamView( 0, _plOwner.RefBattleParams.TmpParam.isUseSkills[0] );
-            _presenter.RefreshOnLeftParameterView();
+            _plOwner.BattleLogic.ToggleUseSkill( 0 );
+            _presenter.SetSkillFlickOnParamView( 0, _plOwner.BattleLogic.IsUsingEquipSkill( 0 ), ParameterWindowType.Left );
 
             return true;
         }
@@ -159,9 +173,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub2( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 1 );
-            _presenter.SetSkillFlickOnLeftParamView( 1, _plOwner.RefBattleParams.TmpParam.isUseSkills[1] );
-            _presenter.RefreshOnLeftParameterView();
+            _plOwner.BattleLogic.ToggleUseSkill( 1 );
+            _presenter.SetSkillFlickOnParamView( 1, _plOwner.BattleLogic.IsUsingEquipSkill( 1 ), ParameterWindowType.Left );
 
             return true;
         }
@@ -170,9 +183,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub3( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 2 );
-            _presenter.SetSkillFlickOnLeftParamView( 2, _plOwner.RefBattleParams.TmpParam.isUseSkills[2] );
-            _presenter.RefreshOnLeftParameterView();
+            _plOwner.BattleLogic.ToggleUseSkill( 2 );
+            _presenter.SetSkillFlickOnParamView( 2, _plOwner.BattleLogic.IsUsingEquipSkill( 2 ), ParameterWindowType.Left );
 
             return true;
         }
@@ -181,9 +193,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub4( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 3 );
-            _presenter.SetSkillFlickOnLeftParamView( 3, _plOwner.RefBattleParams.TmpParam.isUseSkills[3] );
-            _presenter.RefreshOnLeftParameterView();
+            _plOwner.BattleLogic.ToggleUseSkill( 3 );
+            _presenter.SetSkillFlickOnParamView( 3, _plOwner.BattleLogic.IsUsingEquipSkill( 3 ), ParameterWindowType.Left );
 
             return true;
         }

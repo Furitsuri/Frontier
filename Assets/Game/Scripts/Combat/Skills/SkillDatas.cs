@@ -27,17 +27,17 @@ namespace Frontier.Combat.Skill
             public string ExplainTextKey;
         }
 
-        static public Data[] data                                       = new Data[(int)ID.SKILL_NUM];
-        static public Func<SkillNotifierBase>[] skillNotifierFactory    = null;
-        private static readonly SkillNotifierBase sharedNotifier        = new SkillNotifierBase();  // 使いまわし前提のため静的読み取り専用
+        static public Data[] data = new Data[( int ) SkillID.NUM];
+        static public Func<SkillNotifierBase>[] skillNotifierFactory = null;
+        private static readonly SkillNotifierBase sharedNotifier = new SkillNotifierBase();  // 使いまわし前提のため静的読み取り専用
 
         static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {
-            if ( skillNotifierFactory != null ) { return; }
+            if( skillNotifierFactory != null ) { return; }
 
             // MEMO : バフなどのDataのみで対応可能なものは何もする必要がないため、
             //        ベースクラスであるSkillNotifierBaseで対応しています。
-            Func<SkillNotifierBase>[] factories = new Func<SkillNotifierBase>[(int)ID.SKILL_NUM]
+            Func<SkillNotifierBase>[] factories = new Func<SkillNotifierBase>[( int ) SkillID.NUM]
             {
                 () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),   // SKILL_PARRY
                 () => sharedNotifier,                                                       // SKILL_GUARD
@@ -54,10 +54,15 @@ namespace Frontier.Combat.Skill
         /// </summary>
         /// <param name="modifiedParam">スキル使用キャラのバフ・デバフ用パラメータ</param>
         /// <param name="param">スキル使用キャラのパラメータ</param>
-        static public void ExecGuard(ref ModifiedParameter modifiedParam, ref Status param)
+        static public void ExecGuard( ref ModifiedParameter modifiedParam, ref Status param )
         {
-            modifiedParam.Def = (int)Mathf.Floor(param.Def * 0.5f);
-            param.consumptionActionGauge += 1;
+            modifiedParam.Def = ( int ) Mathf.Floor( param.Def * 0.5f );
+            param.ActGaugeConsumption += 1;
+        }
+
+        static public bool IsValidSkill( SkillID skillID )
+        {
+            return SkillID.NONE < skillID && skillID < SkillID.NUM;
         }
     }
 }

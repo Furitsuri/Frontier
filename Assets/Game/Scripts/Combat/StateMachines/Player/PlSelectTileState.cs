@@ -1,6 +1,7 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.Tutorial;
+using Frontier.UI;
 using static Constants;
 
 namespace Frontier.Battle
@@ -27,7 +28,7 @@ namespace Frontier.Battle
         {
             base.Init();
 
-            _isShowingAllDangerRange　= false;
+            _isShowingAllDangerRange = false;
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
 
             // Confirmアイコンの文字列を設定
@@ -45,7 +46,9 @@ namespace Frontier.Battle
             };
 
             _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
-            _inputToolStrWrapper    = new InputCodeStringWrapper( _inputToolStrings[0] );
+            _inputToolStrWrapper = new InputCodeStringWrapper( _inputToolStrings[0] );
+
+            RefreshDispParameterView();
         }
 
         public override bool Update()
@@ -107,7 +110,7 @@ namespace Frontier.Battle
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
             if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
-                return !character.RefBattleParams.TmpParam.IsEndAction();
+                return !character.BattleParams.TmpParam.IsEndAction();
             }
             // 敵キャラクター、その他のキャラクターの場合、レンジ表示を行うため常に選択可能
             else
@@ -132,7 +135,14 @@ namespace Frontier.Battle
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            return _stageCtrl.OperateGridCursorController( context.Cursor );
+            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( context.Cursor );
+
+            if( isAcceptDirection )
+            {
+                RefreshDispParameterView();
+            }
+
+            return isAcceptDirection;
         }
 
         /// <summary>
@@ -214,18 +224,38 @@ namespace Frontier.Battle
             return true;
         }
 
-		/// <summary>
-		/// OPTION入力を受けた際にターン終了へ遷移させます
-		/// </summary>
-		/// <param name="isOptional"></param>
-		/// <returns>入力実行の有無</returns>
-		protected override bool AcceptOpt2( InputContext context )
-		{
-			if( !base.AcceptOpt2( context ) ) { return false; }
+        /// <summary>
+        /// OPTION入力を受けた際にターン終了へ遷移させます
+        /// </summary>
+        /// <param name="isOptional"></param>
+        /// <returns>入力実行の有無</returns>
+        protected override bool AcceptOpt2( InputContext context )
+        {
+            if( !base.AcceptOpt2( context ) ) { return false; }
 
-			TransitState( ( int ) TransitTag.TURN_END );
+            TransitState( ( int ) TransitTag.TURN_END );
 
-			return true;
-		}
-	}
+            return true;
+        }
+
+        private void RefreshDispParameterView()
+        {
+            var gridSelectChara         = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            bool isActiveParamView      = ( gridSelectChara != null );
+            bool isActiveLeftParamUI    = isActiveParamView && ( gridSelectChara.GetCharacterTag() == CHARACTER_TAG.PLAYER );
+            bool isActiveRightParamUI   = isActiveParamView && ( gridSelectChara.GetCharacterTag() != CHARACTER_TAG.PLAYER );
+
+            if( isActiveParamView )
+            {
+                BattleUISystem.ParameterWindowType windowType = ( gridSelectChara.GetCharacterTag() == CHARACTER_TAG.PLAYER )
+                    ? BattleUISystem.ParameterWindowType.Left
+                    : BattleUISystem.ParameterWindowType.Right;
+
+                _presenter.AssignCharacterToParameterView( gridSelectChara, windowType );
+            }
+
+            _presenter.SetActiveParamView( isActiveLeftParamUI, BattleUISystem.ParameterWindowType.Left );
+            _presenter.SetActiveParamView( isActiveRightParamUI, BattleUISystem.ParameterWindowType.Right );
+        }
+    }
 }

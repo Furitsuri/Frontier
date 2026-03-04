@@ -40,7 +40,7 @@ namespace Frontier.Battle
             base.Init();
 
             // 可能な行動が全て終了している場合は即終了
-            if( _plOwner.RefBattleParams.TmpParam.IsEndAction() )
+            if( _plOwner.BattleParams.TmpParam.IsEndAction() )
             {
                 return;
             }
@@ -56,7 +56,7 @@ namespace Frontier.Battle
         /// <returns>0以上の値のとき次の状態に遷移します</returns>
         public override bool Update()
         {
-            if( _plOwner.RefBattleParams.TmpParam.IsEndAction() )
+            if( _plOwner.BattleParams.TmpParam.IsEndAction() )
             {
                 Back();
                 return true;
@@ -65,13 +65,6 @@ namespace Frontier.Battle
             // IsBackの判定を行うため、base.Updateは最後に呼び出す
             if( base.Update() )
             {
-                // コマンドのうち、移動のみが終了している場合は移動前の状態に戻れるように          
-                if( _plOwner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && !_plOwner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
-                {
-                    _stageCtrl.FollowFootprint( _plOwner );
-                    _plOwner.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, false );
-                }
-
                 return true;
             }
 
@@ -89,7 +82,6 @@ namespace Frontier.Battle
             if( TransitIndex == ( int ) COMMAND_TAG.MOVE )
             {
                 _plOwner.HoldBeforeMoveInfo();
-                _stageCtrl.HoldFootprint( _plOwner );  // キャラクターの現在の位置情報を保持
             }
 
             _presenter.ExitPLCommandView();
@@ -154,9 +146,14 @@ namespace Frontier.Battle
             if( !base.AcceptCancel( context ) ) { return false; }
 
             // 以前の状態に巻き戻せる場合は状態を巻き戻す
-            if( _plOwner.IsRewindStatePossible() )
+            if( _plOwner.IsEnableRevertState() )
             {
-                Rewind();
+                // 巻き戻したコマンドを再度実行できるように、コマンドの状態を巻き戻す
+                var commandTag = _plOwner.PopCommandHistory();
+                _plOwner.BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
+                // コマンド選択状態を終了させる必要はないため、初期化した後にfalseを返す
+                Init();
+                return false;
             }
 
             return true;
