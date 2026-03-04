@@ -4,6 +4,7 @@ using Frontier.Entities;
 using Frontier.Stage;
 using System;
 using static Constants;
+using static Frontier.UI.BattleUISystem;
 
 namespace Frontier.Battle
 {
@@ -24,7 +25,6 @@ namespace Frontier.Battle
         protected PlAttackPhase _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
         protected int _curentGridIndex = -1;
         protected string[] _playerSkillNames = null;
-        protected Character _attackCharacter = null;
         protected Character _targetCharacter = null;
         protected CharacterAttackSequence _attackSequence = null;
 
@@ -40,31 +40,37 @@ namespace Frontier.Battle
         {
             base.Init();
 
-            _playerSkillNames = _plOwner.GetStatusRef.GetEquipSkillNames();
-            _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
-            _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
-            _curentGridIndex = _stageCtrl.GetCurrentGridIndex();
-            _targetCharacter = null;
+            _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
+            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
+            _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
+            _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
+            _targetCharacter    = null;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            _attackCharacter = _plOwner;
-            int dprtTileIndex = _attackCharacter.RefBattleParams.TmpParam.gridIndex;
-            _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
-            _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
+            int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
+            _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _attackCharacter, CHARACTER_TAG.ENEMY ) ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) ) )
             {
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );  // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( true ); // アタックカーソルUI表示
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( true );                // アタックカーソルUI表示
             }
 
             // 攻撃シーケンスを初期化
             _attackSequence.Init();
+
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
         }
 
         public override bool Update()
         {
+            _presenter.UpdateLeftParameterView();
+            bool isActiveRightParameterView = ( null != _targetCharacter );
+            _presenter.SetActiveParamView( isActiveRightParameterView, UI.BattleUISystem.ParameterWindowType.Right );
+            if( isActiveRightParameterView ) { _presenter.UpdateRightParameterView(); }
+
             if( base.Update() )
             {
                 return true;
@@ -83,17 +89,19 @@ namespace Frontier.Battle
                     var prevTargetCharacter = _targetCharacter;
                     _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
 
-                    // 選択キャラクターが更新された場合は向きを更新
+                    // 選択キャラクターが更新された場合はパラメータUIへの描画対象と、キャラクターの向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
+                        _presenter.AssignCharacterToParameterView( _targetCharacter, UI.BattleUISystem.ParameterWindowType.Right );
+
                         if( null != prevTargetCharacter )
                         {
                             prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
                         }
 
-                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.RefBattleParams.TmpParam.GetCurrentGridIndex() );
-                        _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-                        var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.RefBattleParams.TmpParam.GetCurrentGridIndex() );
+                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
+                        _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
+                        var attackerTileData = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
                         _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
                     }
 
@@ -101,11 +109,11 @@ namespace Frontier.Battle
                     _uiSystem.BattleUi.ToggleBattleExpect( true );
 
                     // 使用スキルを選択する
-                    _attackCharacter.BattleLogic.SelectUseSkills( SituationType.ATTACK );
+                    _plOwner.BattleLogic.SelectUseSkills( SituationType.ATTACK );
                     _targetCharacter.BattleLogic.SelectUseSkills( SituationType.DEFENCE );
 
                     // 予測ダメージを適応する
-                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
+                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );
 
                     break;
                 case PlAttackPhase.PL_ATTACK_EXECUTE:
@@ -117,7 +125,9 @@ namespace Frontier.Battle
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _attackCharacter.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                    // 攻撃コマンド以外も選択不可にする（攻撃後は移動やスキルも使用できないようにするため）
+                    _plOwner.ClearCommandHistory();
                     // コマンド選択に戻る
                     Back();
 
@@ -148,26 +158,26 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.ToggleBattleExpect( false );
 
             // 使用スキルの点滅を非表示
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
-                _presenter.SetUseableSkillOnLeftParamView( i, true );
+                _presenter.SetUseableSkillOnParamView( i, true, ParameterWindowType.Left );
                 _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
-                _presenter.SetUseableSkillOnRightParamView( i, true );
+                _presenter.SetUseableSkillOnParamView( i, true, ParameterWindowType.Right );
             }
 
             // 予測ダメージと使用スキルコスト見積もりをリセット
-            if( null != _attackCharacter )
+            if( null != _plOwner )
             {
-                _attackCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-                _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
-                _attackCharacter.RefBattleParams.SkillModifiedParam.Reset();
+                _plOwner.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+                _plOwner.GetStatusRef.ResetConsumptionActionGauge();
+                _plOwner.BattleParams.SkillModifiedParam.Reset();
             }
             if( null != _targetCharacter )
             {
-                _targetCharacter.RefBattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+                _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
                 _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-                _targetCharacter.RefBattleParams.SkillModifiedParam.Reset();
+                _targetCharacter.BattleParams.SkillModifiedParam.Reset();
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
@@ -263,7 +273,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[0].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 0, useable );
+            _presenter.SetUseableSkillOnParamView( 0, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -275,7 +285,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[1].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 1, useable );
+            _presenter.SetUseableSkillOnParamView( 1, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -287,7 +297,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[2].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 2, useable );
+            _presenter.SetUseableSkillOnParamView( 2, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -299,7 +309,7 @@ namespace Frontier.Battle
             if( _playerSkillNames[3].Length <= 0 ) return false;
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 3, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnLeftParamView( 3, useable );
+            _presenter.SetUseableSkillOnParamView( 3, useable, ParameterWindowType.Left );
 
             return useable;
         }
@@ -332,14 +342,14 @@ namespace Frontier.Battle
 			if( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
             {
                 // キャラクターのアクションゲージを消費
-                _attackCharacter.BattleLogic.ConsumeActionGauge();
+                _plOwner.BattleLogic.ConsumeActionGauge();
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
                 _stageCtrl.SetGridCursorControllerActive( false );                      // 選択グリッドを一時非表示
                 _uiSystem.BattleUi.SetAttackCursorP2EActive( false );                   // アタックカーソルUI非表示
                 _uiSystem.BattleUi.ToggleBattleExpect( false );                         // ダメージ予測表示UIを非表示
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
-                _attackSequence.StartSequence( _attackCharacter, _targetCharacter );    // 攻撃シーケンスの開始
+                _attackSequence.StartSequence( _plOwner, _targetCharacter );    // 攻撃シーケンスの開始
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除
 
                 _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
@@ -379,8 +389,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub1( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 0 );
-            _presenter.SetSkillFlickOnLeftParamView( 0, _plOwner.RefBattleParams.TmpParam.isUseSkills[0] );
+            _plOwner.BattleLogic.ToggleUseSkill( 0 );
+            _presenter.SetSkillFlickOnParamView( 0, _plOwner.BattleLogic.IsUsingEquipSkill( 0 ), ParameterWindowType.Left );
 
             return true;
         }
@@ -389,8 +399,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub2( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 1 );
-            _presenter.SetSkillFlickOnLeftParamView( 1, _plOwner.RefBattleParams.TmpParam.isUseSkills[1] );
+            _plOwner.BattleLogic.ToggleUseSkill( 1 );
+            _presenter.SetSkillFlickOnParamView( 1, _plOwner.BattleLogic.IsUsingEquipSkill( 1 ), ParameterWindowType.Left );
 
             return true;
         }
@@ -399,8 +409,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub3( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 2 );
-            _presenter.SetSkillFlickOnLeftParamView( 2, _plOwner.RefBattleParams.TmpParam.isUseSkills[2] );
+            _plOwner.BattleLogic.ToggleUseSkill( 2 );
+            _presenter.SetSkillFlickOnParamView( 2, _plOwner.BattleLogic.IsUsingEquipSkill( 2 ), ParameterWindowType.Left );
 
             return true;
         }
@@ -409,8 +419,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub4( context ) ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkillks( 3 );
-            _presenter.SetSkillFlickOnLeftParamView( 3, _plOwner.RefBattleParams.TmpParam.isUseSkills[3] );
+            _plOwner.BattleLogic.ToggleUseSkill( 3 );
+            _presenter.SetSkillFlickOnParamView( 3, _plOwner.BattleLogic.IsUsingEquipSkill( 3 ), ParameterWindowType.Left );
 
             return true;
         }

@@ -69,8 +69,6 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// 指定された位置にタイルを設置します
         /// </summary>
-        /// <param name="x">指定する横軸のインデックス</param>
-        /// <param name="y">指定する縦軸のインデックス</param>
         private void PlaceTile( EditActionContext context )
         {
             var data = _stageDataProvider.CurrentData;
@@ -84,8 +82,6 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// タイルの行数、列数を編集します
         /// </summary>
-        /// <param name="newRow">行数</param>
-        /// <param name="newColumn">列数</param>
         private void ResizeTileGrid( EditActionContext context )
         {
             StageData resizeStageData = _hierarchyBld.InstantiateWithDiContainer<StageData>(false);
@@ -131,8 +127,6 @@ namespace Frontier.DebugTools.StageEditor
         /// <summary>
         /// 指定された位置のタイルの配置可能状態を切り替えます
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
         private void ToggleDeployable( EditActionContext context )
         {
             var data = _stageDataProvider.CurrentData;

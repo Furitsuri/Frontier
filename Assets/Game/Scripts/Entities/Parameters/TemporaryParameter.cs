@@ -13,16 +13,16 @@ namespace Frontier.Entities
         // 該当スキルの使用フラグ
         public bool[] isUseSkills;
         // 現在位置を示すタイルインデックス
-        public int gridIndex;
+        public int CurrentTileIndex;
         // 1回の攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮しない)
-        public int expectedHpChange;
+        public int ExpectedHpChange;
         // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
-        public int totalExpectedHpChange;
+        public int TotalExpectedHpChange;
 
         public void Setup()
         {
-            isEndCommand = new bool[( int ) COMMAND_TAG.NUM];
-            isUseSkills = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            isEndCommand    = new bool[( int ) COMMAND_TAG.NUM];
+            isUseSkills     = new bool[Constants.EQUIPABLE_SKILL_MAX_NUM];
         }
 
         /// <summary>
@@ -35,7 +35,12 @@ namespace Frontier.Entities
                 isEndCommand[i] = false;
             }
 
-            totalExpectedHpChange = expectedHpChange = 0;
+            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                isUseSkills[i] = false;
+            }
+
+            TotalExpectedHpChange = ExpectedHpChange = 0;
         }
 
         /// <summary>
@@ -55,17 +60,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// スキルの使用フラグをリセットします
-        /// </summary>
-        public void ResetUseSkills()
-        {
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                isUseSkills[i] = false;
-            }
-        }
-
-        /// <summary>
         /// 全てのパラメータをリセットします
         /// </summary>
         public void Reset()
@@ -80,8 +74,8 @@ namespace Frontier.Entities
         /// <param name="total">複数回攻撃の予測総変動量</param>
         public void AssignExpectedHpChange( out int single, out int total )
         {
-            single = expectedHpChange;
-            total = totalExpectedHpChange;
+            single = ExpectedHpChange;
+            total = TotalExpectedHpChange;
         }
 
         /// <summary>
@@ -91,17 +85,8 @@ namespace Frontier.Entities
         /// <param name="total">複数回攻撃における予測総変動量</param>
         public void SetExpectedHpChange( int single, int total )
         {
-            expectedHpChange = single;
-            totalExpectedHpChange = total;
-        }
-
-        /// <summary>
-        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を設定します
-        /// </summary>
-        /// <param name="index">設定するインデックス値</param>
-        public void SetCurrentGridIndex( int index )
-        {
-            gridIndex = index;
+            ExpectedHpChange = single;
+            TotalExpectedHpChange = total;
         }
 
         /// <summary>
@@ -123,15 +108,6 @@ namespace Frontier.Entities
             {
                 SetEndCommandStatus( ( COMMAND_TAG ) i, true );
             }
-        }
-
-        /// <summary>
-        /// 現在地点(キャラクターが移動中ではない状態の)のグリッドのインデックス値を返します
-        /// </summary>
-        /// <returns>現在グリッドのインデックス値</returns>
-        public int GetCurrentGridIndex()
-        {
-            return gridIndex;
         }
 
         /// <summary>

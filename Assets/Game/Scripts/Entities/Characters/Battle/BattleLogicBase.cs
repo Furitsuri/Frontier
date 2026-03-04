@@ -19,16 +19,16 @@ namespace Frontier.Entities
         protected Character _opponent = null;
 
         protected bool _isPrevMoving = false;
-        protected int[] _tileCostTable                              = null;                 // タイル移動時のコストテーブル(並列計算する可能性があるため、キャラ毎に保持)
-        protected ReadOnlyReference<Character> _readOnlyOwner       = null;
-        protected TransformHandler _transformHdlr                   = null;
-        protected ActionRangeController _actionRangeCtrl            = null;                 // 行動範囲管理クラス
-        protected BaseAi _baseAi                                    = null;                 // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
-        protected SkillNotifierBase[] _skillNotifier                = null;                 // スキル使用通知
-        protected ThinkingType _thikType                            = ThinkingType.BASE;    // 思考タイプ
-        protected PARRY_PHASE _parryPhase                           = PARRY_PHASE.NONE;
-        private ICombatAnimationSequence _combatAnimSeq             = null;
-        private List<COMMAND_TAG> _executableCommands               = new List<COMMAND_TAG>();
+        protected int[] _tileCostTable                                      = null;                 // タイル移動時のコストテーブル(並列計算する可能性があるため、キャラ毎に保持)
+        protected ReadOnlyReference<Character> _readOnlyOwner               = null;
+        protected ReadOnlyReference<TransformHandler> _readonlyTransform    = null;
+        protected ActionRangeController _actionRangeCtrl                    = null;                 // 行動範囲管理クラス
+        protected BaseAi _baseAi                                            = null;                 // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
+        protected SkillNotifierBase[] _skillNotifier                        = null;                 // スキル使用通知
+        protected ThinkingType _thikType                                    = ThinkingType.BASE;    // 思考タイプ
+        protected PARRY_PHASE _parryPhase                                   = PARRY_PHASE.NONE;
+        private ICombatAnimationSequence _combatAnimSeq                     = null;
+        private List<COMMAND_TAG> _executableCommands                       = new List<COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
 
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
@@ -61,7 +61,7 @@ namespace Frontier.Entities
         void Update()
         {
             // 移動と攻撃が終了していれば、行動不可に遷移
-            var endCommand = _readOnlyOwner.Value.RefBattleParams.TmpParam.isEndCommand;
+            var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.isEndCommand;
             if( endCommand[( int ) COMMAND_TAG.MOVE] && endCommand[( int ) COMMAND_TAG.ATTACK] )
             {
                 BeImpossibleAction();
@@ -76,7 +76,7 @@ namespace Frontier.Entities
         public void Regist( Character owner )
         {
             _readOnlyOwner = new ReadOnlyReference<Character>( owner );
-            _transformHdlr = owner.GetTransformHandler;
+            _readonlyTransform = new ReadOnlyReference<TransformHandler>( owner.GetTransformHandler );
         }
 
         /// <summary>
@@ -86,9 +86,9 @@ namespace Frontier.Entities
         /// <param name="dir">キャラクター角度</param>
         public void SetPositionOnStage( int tileIndex, in Quaternion dir )
         {
-            _readOnlyOwner.Value.RefBattleParams.TmpParam.SetCurrentGridIndex( tileIndex );
-            _transformHdlr.SetPosition( _stageCtrl.GetTileStaticData( tileIndex ).CharaStandPos );
-            _transformHdlr.SetRotation( dir );
+            _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex = tileIndex;
+            _readonlyTransform.Value.SetPosition( _stageCtrl.GetTileStaticData( tileIndex ).CharaStandPos );
+            _readonlyTransform.Value.SetRotation( dir );
         }
 
         /// <summary>
@@ -109,10 +109,6 @@ namespace Frontier.Entities
             executableCommands = _executableCommands;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="type"></param>
         public void RegisterCombatAnimation( COMBAT_ANIMATION_TYPE type )
         {
             _combatAnimSeq = _animSeqfactories[( int ) type]();
@@ -128,12 +124,30 @@ namespace Frontier.Entities
         /// </summary>
         public void ConsumeActionGauge()
         {
-            _readOnlyOwner.Value.GetStatusRef.curActionGauge -= _readOnlyOwner.Value.GetStatusRef.consumptionActionGauge;
-            _readOnlyOwner.Value.GetStatusRef.consumptionActionGauge = 0;
+            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption;
+            _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption = 0;
 
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).StopFlick();
+            }
+        }
+
+        /// <summary>
+        /// 一時的にキャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
+        /// </summary>
+        public void TemporarilyConsumeActionGauge()
+        {
+            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption;
+            _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption = 0;
+
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                if( IsUsingEquipSkill( i ) )
+                {
+                    _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
+                    _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUsing();
+                }
             }
         }
 
@@ -143,7 +157,7 @@ namespace Frontier.Entities
         /// </summary>
         public void BePossibleAction()
         {
-            _readOnlyOwner.Value.RefBattleParams.TmpParam.Reset();
+            _readOnlyOwner.Value.BattleParams.TmpParam.Reset();
             _readOnlyOwner.Value.RestoreMaterialsOriginalColor();
         }
 
@@ -155,7 +169,7 @@ namespace Frontier.Entities
         {
             for( int i = 0; i < ( int ) COMMAND_TAG.NUM; ++i )
             {
-                _readOnlyOwner.Value.RefBattleParams.TmpParam.SetEndCommandStatus( ( COMMAND_TAG ) i, true );
+                _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( ( COMMAND_TAG ) i, true );
             }
 
             // 行動終了を示すためにマテリアルの色味をグレーに変更
@@ -163,29 +177,12 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 
+        /// タイルの移動コストテーブルを適用します
         /// </summary>
         /// <param name="costTable"></param>
         public void ApplyCostTable( int[] costTable )
         {
             _tileCostTable = costTable;
-        }
-
-        /// <summary>
-        /// 指定のスキルが使用登録されているかを判定します
-        /// </summary>
-        /// <param name="skillID">指定スキルID</param>
-        /// <returns>使用登録されているか否か</returns>
-        public int GetUsingSkillSlotIndexById( ID skillID )
-        {
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                if( !_readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[i] ) { continue; }
-
-                if( _readOnlyOwner.Value.GetStatusRef.equipSkills[i] == skillID ) { return i; }
-            }
-
-            return -1;
         }
 
         /// <summary>
@@ -195,7 +192,7 @@ namespace Frontier.Entities
         /// <returns>指定スキルの使用状態切替可否</returns>
         public bool CanToggleEquipSkill( int skillIdx, SituationType situationType )
         {
-            if( Constants.EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
 
@@ -203,13 +200,43 @@ namespace Frontier.Entities
             }
 
             // スキル使用ONの状態であれば、OFFにするだけなので、コストチェックする必要がない
-            if( _readOnlyOwner.Value.RefBattleParams.TmpParam.isUseSkills[skillIdx] )
+            if( IsUsingEquipSkill( skillIdx ) )
             {
                 return true;
             }
 
-            return _readOnlyOwner.Value.GetStatusRef.CanUseEquipSkill( skillIdx, situationType );
+            return _readOnlyOwner.Value.CanUseEquipSkill( skillIdx, situationType );
         }
+
+        public bool IsUsingEquipSkill( int skillIdx )
+        {
+            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            {
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
+                return false;
+            }
+            return _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[skillIdx];
+        }
+
+        /// <summary>
+        /// 指定のスキルが使用登録されているかを判定します
+        /// 使用登録されている場合は、そのスキルの装備インデックス値を返します
+        /// </summary>
+        /// <param name="skillID">指定スキルID</param>
+        /// <returns>使用登録されているか否か</returns>
+        public int GetUsingSkillSlotIndexById( SkillID skillID )
+        {
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                if( !IsUsingEquipSkill( i ) ) { continue; }
+
+                if( _readOnlyOwner.Value.GetEquipSkillID( i ) == skillID ) { return i; }
+            }
+
+            return -1;
+        }
+
+        
 
         /// <summary>
         /// 対戦相手を設定します
@@ -227,7 +254,10 @@ namespace Frontier.Entities
 
         public void ResetUseSkills()
         {
-            _readOnlyOwner.Value.RefBattleParams.TmpParam.ResetUseSkills();
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[i] = false;
+            }
         }
 
         /// <summary>
@@ -239,11 +269,14 @@ namespace Frontier.Entities
             ResetUseSkills();   // 使用スキル情報をリセット
         }
 
+        /// <summary>
+        /// 強制的に移動を停止させます
+        /// </summary>
         public void ForcedStopMoving()
         {
             _isPrevMoving = false;
             _actionRangeCtrl.MovePathHdlr.ClearMovePath();
-            _transformHdlr.ResetVelocityAcceleration();
+            _readonlyTransform.Value.ResetVelocityAcceleration();
             _readOnlyOwner.Value.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, false );
         }
 
@@ -264,7 +297,7 @@ namespace Frontier.Entities
         virtual public void Init()
         {
             _isPrevMoving = false;
-            _readOnlyOwner.Value.RefBattleParams.Init();
+            _readOnlyOwner.Value.BattleParams.Init();
             _actionRangeCtrl.Init( _readOnlyOwner.Value );
 
             InitSkillNotifier();                                // スキルの通知クラスを初期化
@@ -297,8 +330,7 @@ namespace Frontier.Entities
         /// 指定のスキルの使用設定を切り替えます
         /// </summary>
         /// <param name="index">指定のスキルのインデックス番号</param>
-        /// <returns>切替の有無</returns>
-        virtual public bool ToggleUseSkillks( int index ) { return false; }
+        virtual public void ToggleUseSkill( int index ) { }
 
         /// <summary>
         /// キャラクターを、作成済みのパスに沿って移動させます
@@ -315,23 +347,23 @@ namespace Frontier.Entities
             bool toggleAnimation = false;
             var focusedTileData = pathHdlr.GetFocusedTileStaticData();
             var focusedTilePos = focusedTileData.CharaStandPos;
-            Vector3 prevDirXZ = ( focusedTilePos - _transformHdlr.GetPreviousPosition() ).XZ().normalized;
-            Vector3 focusDirXZ = ( focusedTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+            Vector3 prevDirXZ = ( focusedTilePos - _readonlyTransform.Value.GetPreviousPosition() ).XZ().normalized;
+            Vector3 focusDirXZ = ( focusedTilePos - _readonlyTransform.Value.GetPosition() ).XZ().normalized;
             Action<float, float, Vector3, Vector3> jumpAction = ( float dprtHeight, float destHeight, Vector3 dprtPos, Vector3 destPos ) =>
             {
                 // 高低差が一定以上ある場合はジャンプ動作を開始
                 if( NEED_JUMP_HEIGHT_DIFFERENCE <= ( int ) Math.Abs( destHeight - dprtHeight ) )
                 {
-                    _transformHdlr.StartJump( in dprtPos, in destPos, moveSpeedRate );
+                    _readonlyTransform.Value.StartJump( in dprtPos, in destPos, moveSpeedRate );
                 }
             };
 
             // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
             if( Vector3.Dot( prevDirXZ, focusDirXZ ) <= 0 )
             {
-                _transformHdlr.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
-                _transformHdlr.ResetVelocityAcceleration();     // 速度、加速度をリセット
-                _readOnlyOwner.Value.RefBattleParams.TmpParam.gridIndex = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
+                _readonlyTransform.Value.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
+                _readonlyTransform.Value.ResetVelocityAcceleration();     // 速度、加速度をリセット
+                _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
                 pathHdlr.IncrementFocusedWaypointIndex();                            // 目標インデックス値をインクリメントして次の目標タイルに更新
 
                 // 最終インデックスに到達している場合は移動アニメーションを停止して終了
@@ -346,10 +378,10 @@ namespace Frontier.Entities
                 {
                     var nextTileData = pathHdlr.GetFocusedTileStaticData();
                     var nextTilePos = nextTileData.CharaStandPos;
-                    Vector3 nextDirXZ = ( nextTilePos - _transformHdlr.GetPosition() ).XZ().normalized;
+                    Vector3 nextDirXZ = ( nextTilePos - _readonlyTransform.Value.GetPosition() ).XZ().normalized;
 
-                    _transformHdlr.SetVelocityAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
-                    _transformHdlr.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
+                    _readonlyTransform.Value.SetVelocityAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _readonlyTransform.Value.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
 
                     jumpAction( focusedTileData.Height, nextTileData.Height, focusedTilePos, nextTilePos );
                 }
@@ -359,10 +391,10 @@ namespace Frontier.Entities
                 // 移動開始の場合は速度と向きを設定
                 if( !_isPrevMoving )
                 {
-                    var currentTileData = _stageCtrl.GetTileStaticData( _readOnlyOwner.Value.RefBattleParams.TmpParam.gridIndex );
+                    var currentTileData = _stageCtrl.GetTileStaticData( _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex );
 
-                    _transformHdlr.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
-                    _transformHdlr.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
+                    _readonlyTransform.Value.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _readonlyTransform.Value.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
                     toggleAnimation = true;
 
                     jumpAction( currentTileData.Height, focusedTileData.Height, currentTileData.CharaStandPos, focusedTilePos );
@@ -383,7 +415,7 @@ namespace Frontier.Entities
         {
             for( int i = 0; i < ( int ) EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                int skillID = ( int ) _readOnlyOwner.Value.GetStatusRef.equipSkills[i];
+                int skillID = ( int ) _readOnlyOwner.Value.GetEquipSkillID( i );
                 if( skillID < 0 ) { continue; }
 
                 _skillNotifier[i] = SkillsData.skillNotifierFactory[skillID]();

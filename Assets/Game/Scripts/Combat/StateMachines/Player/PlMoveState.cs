@@ -22,6 +22,7 @@ namespace Frontier.Battle
 
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
+        private bool _isActiveRightParamUI   = false;
 
         /// <summary>
         /// 移動中攻撃に遷移します
@@ -36,7 +37,7 @@ namespace Frontier.Battle
         /// </summary>
         private void SetupMovePath()
         {
-            int departingTileIndex = _plOwner.RefBattleParams.TmpParam.gridIndex;
+            int departingTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             int destinationTileIndex = _stageCtrl.GetCurrentGridIndex();
             MovePathHandler pathHdlr = _plOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr;
             bool isEndPathTrace = pathHdlr.IsEndPathTrace();
@@ -71,7 +72,7 @@ namespace Frontier.Battle
             if( !Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
-            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.RefBattleParams.TmpParam.gridIndex, _stageCtrl.GetCurrentGridIndex() );
+            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _stageCtrl.GetCurrentGridIndex() );
 
             return ranges.Item1 + ranges.Item2 <= _plOwner.GetStatusRef.attackRange;
         }
@@ -80,19 +81,21 @@ namespace Frontier.Battle
         {
             base.Init();
 
+            _isActiveRightParamUI = false;
+
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _plOwner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( _plOwner.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
             }
             else { _phase = PlMovePhase.PL_MOVE; }
 
-            _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.gridIndex;
+            _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
-            int atkRange            = !_plOwner.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _plOwner.GetStatusRef.attackRange : 0;
+            int atkRange            = !_plOwner.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _plOwner.GetStatusRef.attackRange : 0;
             var param               = _plOwner.GetStatusRef;
             float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
@@ -103,11 +106,11 @@ namespace Frontier.Battle
 
         public override bool Update()
         {
+            _presenter.UpdateLeftParameterView();
+            if( _isActiveRightParamUI ) { _presenter.UpdateRightParameterView(); }
+
             if( base.Update() )
             {
-                // キャラクターのグリッドの位置に選択グリッドの位置を戻す
-                _stageCtrl.FollowFootprint( _plOwner );
-
                 return true;
             }
 
@@ -128,7 +131,8 @@ namespace Frontier.Battle
 
                 case PlMovePhase.PL_MOVE_END:
                     // 移動したキャラクターの移動コマンドを選択不可にする
-                    _plOwner.RefBattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+                    _plOwner.PushCommandHistory( COMMAND_TAG.MOVE );
                     Back();     // コマンド選択に戻る
 
                     return true;
@@ -236,13 +240,13 @@ namespace Frontier.Battle
 
             if( isAcceptDirection )
             {
-                var gridSelectChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-                bool isActiveEnemyParameter = gridSelectChara != null && gridSelectChara != _plOwner;
-                if( isActiveEnemyParameter )
+                var gridSelectChara     = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+                _isActiveRightParamUI   = ( gridSelectChara != null && gridSelectChara != _plOwner );
+                if( _isActiveRightParamUI )
                 {
                     _presenter.AssignCharacterToParameterView( gridSelectChara, UI.BattleUISystem.ParameterWindowType.Right );
                 }
-                _presenter.SetActiveEnemyParameter( isActiveEnemyParameter );
+                _presenter.SetActiveParamView( _isActiveRightParamUI, UI.BattleUISystem.ParameterWindowType.Right );
             }
 
             return isAcceptDirection;

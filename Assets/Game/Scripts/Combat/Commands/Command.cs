@@ -10,7 +10,7 @@ namespace Frontier.Combat
     {
         static public bool IsExecutableCommandBase( Character character )
         {
-            if( character.RefBattleParams.TmpParam.IsEndAction() ) { return false; }
+            if( character.BattleParams.TmpParam.IsEndAction() ) { return false; }
 
             return true;
         }
@@ -19,12 +19,12 @@ namespace Frontier.Combat
         {
             if( !IsExecutableCommandBase( character ) ) { return false; }
 
-            return !character.RefBattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE );
+            return !character.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE );
         }
 
         static public bool IsExecutableAttackCommand( Character character, StageController stageCtrl )
         {
-            var tmpParam = character.RefBattleParams.TmpParam;
+            var tmpParam = character.BattleParams.TmpParam;
             if( !IsExecutableCommandBase( character ) ||        // 行動終了済みである場合は攻撃不可
                 tmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ||  // 攻撃済みである場合は攻撃不可
                 tmpParam.IsEndCommand( COMMAND_TAG.SKILL ) )    // スキル使用済みである場合は攻撃不可
@@ -33,7 +33,7 @@ namespace Frontier.Combat
             }
 
             // 現在グリッドから攻撃可能な対象の居るグリッドが存在すれば、実行可能
-            int dprtTileIndex = character.RefBattleParams.TmpParam.gridIndex;
+            int dprtTileIndex = character.BattleParams.TmpParam.CurrentTileIndex;
             character.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
             bool isExecutable = false;
             foreach( var data in character.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
@@ -53,7 +53,7 @@ namespace Frontier.Combat
 
         static public bool IsExecutableSkillCommand( Character character, StageController stageCtrl )
         {
-            var tmpParam = character.RefBattleParams.TmpParam;
+            var tmpParam = character.BattleParams.TmpParam;
             if( !IsExecutableCommandBase( character ) ||        // 行動終了済みである場合は攻撃不可
                 tmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ||  // 攻撃済みである場合は攻撃不可
                 tmpParam.IsEndCommand( COMMAND_TAG.SKILL ) )    // スキル使用済みである場合は攻撃不可
@@ -64,7 +64,7 @@ namespace Frontier.Combat
             bool isExecutable = false;
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( character.GetStatusRef.CanUseEquipSkill( i, Skill.SituationType.ATTACK ) )
+                if( character.CanUseEquipSkill( i, Skill.SituationType.ATTACK ) )
                 {
                     isExecutable = true;
                     break;

@@ -52,12 +52,12 @@ namespace Frontier.Entities
         /// <returns>終了判定</returns>
         public bool UpdateSequence( in Vector3 departure, in Vector3 destination )
         {
-            var attackAnimtag = AttackAnimTags[_character.RefBattleParams.SkillModifiedParam.AtkNum - 1];
+            var attackAnimtag = AttackAnimTags[_character.BattleParams.SkillModifiedParam.AtkNum - 1];
 
             if ( _character.GetBullet() != null ) return false;
 
             float t = 0f;
-            bool isReservedParry = (0 <= _character.BattleLogic.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById(ID.SKILL_PARRY));
+            bool isReservedParry = ( 0 <= _character.BattleLogic.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) );
 
             switch ( _closingAttackPhase )
             {

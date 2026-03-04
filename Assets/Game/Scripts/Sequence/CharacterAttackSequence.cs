@@ -76,7 +76,7 @@ namespace Frontier
             _attackCharacter.BattleLogic.SetOpponentCharacter( _targetCharacter );
             _targetCharacter.BattleLogic.SetOpponentCharacter( _attackCharacter );
 
-            _counterConditions = ( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( ID.SKILL_COUNTER ) ); // カウンター条件の設定
+            _counterConditions = ( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.COUNTER ) ); // カウンター条件の設定
 
             // 攻撃更新処理の条件別設定
             if( _counterConditions && _attackCharacter.GetBullet() != null ) _counterConditions = _targetCharacter.GetBullet() != null;
@@ -123,7 +123,7 @@ namespace Frontier
                     {
                         _elapsedTime = 0f;
                         StartAttack( _attackCharacter, _targetCharacter );
-                        int parryIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( ID.SKILL_PARRY );
+                        int parryIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY );
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
                         if( 0 <= parryIdx )
@@ -147,7 +147,7 @@ namespace Frontier
                         _uiSystem.BattleUi.ToggleDamageUI( false );
 
                         // ガードスキルを使用時はガードモーションを戻す
-                        int guardSkillIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( ID.SKILL_GUARD );
+                        int guardSkillIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD );
                         if( 0 <= guardSkillIdx ) { _targetCharacter.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, false ); }
 
                         // 対象が死亡している場合は死亡処理へ
@@ -293,7 +293,7 @@ namespace Frontier
             target.BattleLogic.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( ID.SKILL_GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
+            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
         }
 
         /// <summary>
@@ -395,10 +395,10 @@ namespace Frontier
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var tileData = _stageCtrl.GetTileStaticData( attacker.RefBattleParams.TmpParam.GetCurrentGridIndex() );
+            var tileData = _stageCtrl.GetTileStaticData( attacker.BattleParams.TmpParam.CurrentTileIndex );
             _attackCharacter.transform.position = tileData.CharaStandPos;
             _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            tileData = _stageCtrl.GetTileStaticData( target.RefBattleParams.TmpParam.GetCurrentGridIndex() );
+            tileData = _stageCtrl.GetTileStaticData( target.BattleParams.TmpParam.CurrentTileIndex );
             _targetCharacter.transform.position = tileData.CharaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
         }

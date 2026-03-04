@@ -132,7 +132,7 @@ namespace Frontier.Battle
         {
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                if( !c.RefBattleParams.TmpParam.IsEndAction() )
+                if( !c.BattleParams.TmpParam.IsEndAction() )
                 {
                     return false;
                 }
@@ -272,13 +272,13 @@ namespace Frontier.Battle
         {
             List<Character> list = new List<Character>();
 
-            Vector3 basePos = _stgCtrl.GetTileStaticData( baseChara.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
+            Vector3 basePos = _stgCtrl.GetTileStaticData( baseChara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y = 0f;
 
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                Vector3 targetPos = _stgCtrl.GetTileStaticData( c.RefBattleParams.TmpParam.gridIndex ).CharaStandPos;
+                Vector3 targetPos = _stgCtrl.GetTileStaticData( c.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
 
                 var direction = targetPos - basePos;
                 direction.y = 0f;
@@ -306,7 +306,7 @@ namespace Frontier.Battle
 
             foreach( var chara in charaList )
             {
-                int range = _stgCtrl.CalcurateTotalRange(baseChara.RefBattleParams.TmpParam.gridIndex, chara.RefBattleParams.TmpParam.gridIndex);
+                int range = _stgCtrl.CalcurateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
                 if( range < totalRange )
                 {
                     totalRange  = range;
@@ -348,7 +348,7 @@ namespace Frontier.Battle
         {
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                c.RefBattleParams.TmpParam.EndAction();
+                c.BattleParams.TmpParam.EndAction();
             }
         }
 
@@ -364,11 +364,11 @@ namespace Frontier.Battle
                 return;
             }
 
-            int targetDef   = (int)Mathf.Floor((target.GetStatusRef.Def + target.RefBattleParams.ModifiedParam.Def) * target.RefBattleParams.SkillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.GetStatusRef.Atk + attacker.RefBattleParams.ModifiedParam.Atk) * attacker.RefBattleParams.SkillModifiedParam.AtkMagnification);
+            int targetDef   = (int)Mathf.Floor((target.GetStatusRef.Def + target.BattleParams.ModifiedParam.Def) * target.BattleParams.SkillModifiedParam.DefMagnification);
+            int attackerAtk = (int)Mathf.Floor((attacker.GetStatusRef.Atk + attacker.BattleParams.ModifiedParam.Atk) * attacker.BattleParams.SkillModifiedParam.AtkMagnification);
             int changeHP    = (targetDef - attackerAtk);
 
-            target.RefBattleParams.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.RefBattleParams.SkillModifiedParam.AtkNum, 0) );
+            target.BattleParams.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.BattleParams.SkillModifiedParam.AtkNum, 0) );
         }
 
         /// <summary>
@@ -416,7 +416,7 @@ namespace Frontier.Battle
             }
 
             int gridIndex = chara.GetStatusRef.initGridIndex;                                               // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-            chara.RefBattleParams.TmpParam.SetCurrentGridIndex( gridIndex );                                // ステージ上のグリッド位置の設定
+            chara.BattleParams.TmpParam.CurrentTileIndex = gridIndex;                                // ステージ上のグリッド位置の設定
             chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
             chara.GetTransformHandler.SetRotation( rot[( int ) chara.GetStatusRef.initDir] );               // 向きを設定
             _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録

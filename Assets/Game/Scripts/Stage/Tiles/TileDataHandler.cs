@@ -32,7 +32,7 @@ namespace Frontier.Stage
             {
                 foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( ( CHARACTER_TAG ) i ) )
                 {
-                    var tileIndex       = chara.RefBattleParams.TmpParam.GetCurrentGridIndex();
+                    var tileIndex       = chara.BattleParams.TmpParam.CurrentTileIndex;
                     var tileData        = _stageDataProvider.CurrentData.GetTileDynamicData( tileIndex );
                     tileData.CharaKey   = new CharacterKey( chara.GetStatusRef.characterTag, chara.GetStatusRef.characterIndex );
                 }
