@@ -2,10 +2,7 @@
 using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities;
-using Frontier.Stage;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Frontier.UI;
 using static Constants;
 using static Frontier.UI.BattleUISystem;
 
@@ -30,12 +27,12 @@ namespace Frontier.Battle
             _phase              = PlSelectSkillPhase.PL_SELECT_SKILL;
 
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
         }
 
         public override bool Update()
         {
-            _presenter.UpdateLeftParameterView();
+            _presenter.UpdateParameterView( ParameterWindowType.Left );
 
             if( base.Update() )
             {

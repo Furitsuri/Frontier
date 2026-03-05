@@ -1,11 +1,11 @@
-﻿namespace Frontier.Combat.Skill
+﻿namespace Frontier.Combat
 {
-    public enum SituationType
+    public enum SituationType : int
     {
         ATTACK = 0,
         DEFENCE,
         PASSIVE,
 
-        TYPE_NUM,
+        NUM,
     }
 }

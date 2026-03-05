@@ -38,7 +38,7 @@ namespace Frontier.Battle
             _attackSequence.Init(); // 攻撃シーケンスを初期化
 
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
         }
 
         public override void ExitState()

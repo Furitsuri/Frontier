@@ -101,13 +101,13 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
         }
 
         public override bool Update()
         {
-            _presenter.UpdateLeftParameterView();
-            if( _isActiveRightParamUI ) { _presenter.UpdateRightParameterView(); }
+            _presenter.UpdateParameterView( UI.ParameterWindowType.Left );
+            if( _isActiveRightParamUI ) { _presenter.UpdateParameterView( UI.ParameterWindowType.Right ); }
 
             if( base.Update() )
             {
@@ -244,9 +244,9 @@ namespace Frontier.Battle
                 _isActiveRightParamUI   = ( gridSelectChara != null && gridSelectChara != _plOwner );
                 if( _isActiveRightParamUI )
                 {
-                    _presenter.AssignCharacterToParameterView( gridSelectChara, UI.BattleUISystem.ParameterWindowType.Right );
+                    _presenter.AssignCharacterToParameterView( gridSelectChara, UI.ParameterWindowType.Right );
                 }
-                _presenter.SetActiveParamView( _isActiveRightParamUI, UI.BattleUISystem.ParameterWindowType.Right );
+                _presenter.SetActiveParamView( _isActiveRightParamUI, UI.ParameterWindowType.Right );
             }
 
             return isAcceptDirection;

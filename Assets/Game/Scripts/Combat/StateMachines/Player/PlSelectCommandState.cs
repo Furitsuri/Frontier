@@ -47,7 +47,7 @@ namespace Frontier.Battle
 
             InitInputInfo();
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
         }
 
         /// <summary>

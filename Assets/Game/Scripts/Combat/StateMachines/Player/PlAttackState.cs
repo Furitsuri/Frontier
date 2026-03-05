@@ -2,9 +2,9 @@
 using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Stage;
+using Frontier.UI;
 using System;
 using static Constants;
-using static Frontier.UI.BattleUISystem;
 
 namespace Frontier.Battle
 {
@@ -27,6 +27,7 @@ namespace Frontier.Battle
         protected string[] _playerSkillNames = null;
         protected Character _targetCharacter = null;
         protected CharacterAttackSequence _attackSequence = null;
+        private Func<InputContext, bool>[] AccespuSubs;
 
         protected void PlPhaseStateInit()
         {
@@ -45,6 +46,13 @@ namespace Frontier.Battle
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
+            AccespuSubs         = new Func<InputContext, bool>[]
+            {
+                ( context ) => base.AcceptSub1( context ),
+                ( context ) => base.AcceptSub2( context ),
+                ( context ) => base.AcceptSub3( context ),
+                ( context ) => base.AcceptSub4( context )
+            };
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
@@ -61,15 +69,15 @@ namespace Frontier.Battle
             // 攻撃シーケンスを初期化
             _attackSequence.Init();
 
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.BattleUISystem.ParameterWindowType.Left );
+            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
         }
 
         public override bool Update()
         {
-            _presenter.UpdateLeftParameterView();
+            _presenter.UpdateParameterView( ParameterWindowType.Left );
             bool isActiveRightParameterView = ( null != _targetCharacter );
-            _presenter.SetActiveParamView( isActiveRightParameterView, UI.BattleUISystem.ParameterWindowType.Right );
-            if( isActiveRightParameterView ) { _presenter.UpdateRightParameterView(); }
+            _presenter.SetActiveParamView( isActiveRightParameterView, UI.ParameterWindowType.Right );
+            if( isActiveRightParameterView ) { _presenter.UpdateParameterView( ParameterWindowType.Right ); }
 
             if( base.Update() )
             {
@@ -92,7 +100,7 @@ namespace Frontier.Battle
                     // 選択キャラクターが更新された場合はパラメータUIへの描画対象と、キャラクターの向きを更新
                     if( prevTargetCharacter != _targetCharacter )
                     {
-                        _presenter.AssignCharacterToParameterView( _targetCharacter, UI.BattleUISystem.ParameterWindowType.Right );
+                        _presenter.AssignCharacterToParameterView( _targetCharacter, UI.ParameterWindowType.Right );
 
                         if( null != prevTargetCharacter )
                         {
@@ -262,57 +270,10 @@ namespace Frontier.Battle
             return true;
         }
 
-        /// <summary>
-        /// サブ1の入力の受付可否を判定します
-        /// </summary>
-        /// <returns>サブ1の入力の受付可否</returns>
-        protected override bool CanAcceptSub1()
-        {
-            if( !CanAcceptConfirm() ) return false;
-
-            if( _playerSkillNames[0].Length <= 0 ) return false;
-
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 0, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnParamView( 0, useable, ParameterWindowType.Left );
-
-            return useable;
-        }
-
-        protected override bool CanAcceptSub2()
-        {
-            if( !CanAcceptConfirm() ) return false;
-
-            if( _playerSkillNames[1].Length <= 0 ) return false;
-
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 1, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnParamView( 1, useable, ParameterWindowType.Left );
-
-            return useable;
-        }
-
-        protected override bool CanAcceptSub3()
-        {
-            if( !CanAcceptConfirm() ) return false;
-
-            if( _playerSkillNames[2].Length <= 0 ) return false;
-
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 2, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnParamView( 2, useable, ParameterWindowType.Left );
-
-            return useable;
-        }
-
-        protected override bool CanAcceptSub4()
-        {
-            if( !CanAcceptConfirm() ) return false;
-
-            if( _playerSkillNames[3].Length <= 0 ) return false;
-
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( 3, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnParamView( 3, useable, ParameterWindowType.Left );
-
-            return useable;
-        }
+        protected override bool CanAcceptSub1() => CanAcceptSub( 0 );
+        protected override bool CanAcceptSub2() => CanAcceptSub( 1 );
+        protected override bool CanAcceptSub3() => CanAcceptSub( 2 );
+        protected override bool CanAcceptSub4() => CanAcceptSub( 3 );
 
         /// <summary>
         /// 方向入力を受け取った際の処理を行います
@@ -345,12 +306,12 @@ namespace Frontier.Battle
                 _plOwner.BattleLogic.ConsumeActionGauge();
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-                _stageCtrl.SetGridCursorControllerActive( false );                      // 選択グリッドを一時非表示
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( false );                   // アタックカーソルUI非表示
-                _uiSystem.BattleUi.ToggleBattleExpect( false );                         // ダメージ予測表示UIを非表示
-                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
+                _stageCtrl.SetGridCursorControllerActive( false );              // 選択グリッドを一時非表示
+                _uiSystem.BattleUi.SetAttackCursorP2EActive( false );           // アタックカーソルUI非表示
+                _uiSystem.BattleUi.ToggleBattleExpect( false );                 // ダメージ予測表示UIを非表示
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
                 _attackSequence.StartSequence( _plOwner, _targetCharacter );    // 攻撃シーケンスの開始
-                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除
+                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
 
                 _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
 
@@ -385,42 +346,33 @@ namespace Frontier.Battle
             return false;
         }
 
-        protected override bool AcceptSub1( InputContext context )
+        protected override bool AcceptSub1( InputContext context ) => AcceptSub( 0, context );
+        protected override bool AcceptSub2( InputContext context ) => AcceptSub( 1, context );
+        protected override bool AcceptSub3( InputContext context ) => AcceptSub( 2, context );
+        protected override bool AcceptSub4( InputContext context ) => AcceptSub( 3, context );
+
+        private bool CanAcceptSub( int index )
         {
-            if( !base.AcceptSub1( context ) ) return false;
+            if( !CanAcceptConfirm() ) return false;
+            if( _playerSkillNames[index].Length <= 0 ) return false;
 
-            _plOwner.BattleLogic.ToggleUseSkill( 0 );
-            _presenter.SetSkillFlickOnParamView( 0, _plOwner.BattleLogic.IsUsingEquipSkill( 0 ), ParameterWindowType.Left );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill(
+                index,
+                SituationType.ATTACK,
+                Methods.ToBit( SkillType.BUFF )
+            );
 
-            return true;
+            _presenter.SetUseableSkillOnParamView( index, useable, ParameterWindowType.Left );
+
+            return useable;
         }
 
-        protected override bool AcceptSub2( InputContext context )
+        private bool AcceptSub( int index, InputContext context )
         {
-            if( !base.AcceptSub2( context ) ) return false;
+            if( !AccespuSubs[index]( context ) ) { return false; }
 
-            _plOwner.BattleLogic.ToggleUseSkill( 1 );
-            _presenter.SetSkillFlickOnParamView( 1, _plOwner.BattleLogic.IsUsingEquipSkill( 1 ), ParameterWindowType.Left );
-
-            return true;
-        }
-
-        protected override bool AcceptSub3( InputContext context )
-        {
-            if( !base.AcceptSub3( context ) ) return false;
-
-            _plOwner.BattleLogic.ToggleUseSkill( 2 );
-            _presenter.SetSkillFlickOnParamView( 2, _plOwner.BattleLogic.IsUsingEquipSkill( 2 ), ParameterWindowType.Left );
-
-            return true;
-        }
-
-        protected override bool AcceptSub4( InputContext context )
-        {
-            if( !base.AcceptSub4( context ) ) return false;
-
-            _plOwner.BattleLogic.ToggleUseSkill( 3 );
-            _presenter.SetSkillFlickOnParamView( 3, _plOwner.BattleLogic.IsUsingEquipSkill( 3 ), ParameterWindowType.Left );
+            _plOwner.BattleLogic.ToggleUseSkill( index );
+            _presenter.SetSkillFlickOnParamView( index, _plOwner.BattleLogic.IsUsingEquipSkill( index ), ParameterWindowType.Left );
 
             return true;
         }

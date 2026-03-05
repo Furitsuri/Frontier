@@ -26,7 +26,7 @@ namespace Frontier.Battle
         private int _currentStageIndex                  = 0;
         private BattlePhaseType _currentPhase           = BattlePhaseType.Deployment;
         private BattleFileLoader _btlFileLoader         = null;
-        private BattleCameraController _btlCameraCtrl = null;
+        private BattleCameraController _btlCameraCtrl   = null;
         private BattleCharacterCoordinator _btlCharaCdr = null;
         private BattleRoutinePresenter _presenter       = null;
         private StageController _stgCtrl                = null;

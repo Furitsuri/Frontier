@@ -247,15 +247,15 @@ namespace Frontier.Battle
 
             if( isActiveParamView )
             {
-                BattleUISystem.ParameterWindowType windowType = ( gridSelectChara.GetCharacterTag() == CHARACTER_TAG.PLAYER )
-                    ? BattleUISystem.ParameterWindowType.Left
-                    : BattleUISystem.ParameterWindowType.Right;
+                ParameterWindowType windowType = ( gridSelectChara.GetCharacterTag() == CHARACTER_TAG.PLAYER )
+                    ? ParameterWindowType.Left
+                    : ParameterWindowType.Right;
 
                 _presenter.AssignCharacterToParameterView( gridSelectChara, windowType );
             }
 
-            _presenter.SetActiveParamView( isActiveLeftParamUI, BattleUISystem.ParameterWindowType.Left );
-            _presenter.SetActiveParamView( isActiveRightParamUI, BattleUISystem.ParameterWindowType.Right );
+            _presenter.SetActiveParamView( isActiveLeftParamUI, ParameterWindowType.Left );
+            _presenter.SetActiveParamView( isActiveRightParamUI, ParameterWindowType.Right );
         }
     }
 }

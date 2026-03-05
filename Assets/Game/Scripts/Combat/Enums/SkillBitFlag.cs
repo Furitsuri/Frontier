@@ -1,7 +1,7 @@
 ﻿namespace Frontier.Combat
 {
     [System.Flags]
-    public enum SkillBitFlag
+    public enum SkillBitFlag : int
     {
         NONE = 0,
         ABLE_TO_COOPERATE   = 1 << 0,   // 連携可能

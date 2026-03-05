@@ -12,19 +12,20 @@ namespace Frontier.Combat.Skill
         [System.Serializable]
         public struct Data
         {
-            public string Name;
-            public int Cost;            // 使用コスト
-            public SituationType Type;  // 使用シチュエーションタイプ
-            public int Flags;           // スキルフラグ
-            public int Duration;
-            public float AddAtkMag;     // 攻撃力倍率加算
-            public float AddDefMag;     // 防御力倍率加算
-            public int AddAtkNum;       // 攻撃回数加算
-            public float Param1;
-            public float Param2;
-            public float Param3;
-            public float Param4;
-            public string ExplainTextKey;
+            public string Name;             // スキル名
+            public int Cost;                // 使用コスト
+            public SituationType Type;      // 使用シチュエーションタイプ
+            public SkillType SkillType;     // スキルタイプ
+            public SkillBitFlag Flags;      // スキルフラグ
+            public int Duration;            // 効果時間（ターン数）
+            public float AddAtkMag;         // 攻撃力倍率加算
+            public float AddDefMag;         // 防御力倍率加算
+            public int AddAtkNum;           // 攻撃回数加算
+            public float Param1;            // 汎用パラメータ1
+            public float Param2;            // 汎用パラメータ2
+            public float Param3;            // 汎用パラメータ3
+            public float Param4;            // 汎用パラメータ4
+            public string ExplainTextKey;   // スキル説明文のテキストキー
         }
 
         static public Data[] data = new Data[( int ) SkillID.NUM];
