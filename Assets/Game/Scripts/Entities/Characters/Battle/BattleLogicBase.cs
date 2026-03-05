@@ -190,7 +190,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
         /// <returns>指定スキルの使用状態切替可否</returns>
-        public bool CanToggleEquipSkill( int skillIdx, SituationType situationType )
+        public bool CanToggleEquipSkill( int skillIdx, SituationType situationType, int useableSkillTypeBit = 0xff )
         {
             if( EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
@@ -205,7 +205,7 @@ namespace Frontier.Entities
                 return true;
             }
 
-            return _readOnlyOwner.Value.CanUseEquipSkill( skillIdx, situationType );
+            return _readOnlyOwner.Value.CanUseEquipSkill( skillIdx, situationType, useableSkillTypeBit );
         }
 
         public bool IsUsingEquipSkill( int skillIdx )

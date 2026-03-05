@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities;
 
@@ -105,7 +106,7 @@ namespace Frontier
         /// <param name="name">設定するスキル名</param>
         private void SetSkillName( string name, SituationType type )
         {
-            Color[] typeColor = new Color[( int ) SituationType.TYPE_NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
+            Color[] typeColor = new Color[( int ) SituationType.NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
 
             TMPSkillName.text = name.Replace( "_", Environment.NewLine );
             TMPSkillName.color = typeColor[( int ) type];

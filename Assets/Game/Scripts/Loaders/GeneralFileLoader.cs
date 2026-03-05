@@ -1,4 +1,5 @@
-﻿using Frontier.Combat.Skill;
+﻿using Frontier.Combat;
+using Frontier.Combat.Skill;
 using Frontier.Registries;
 using System;
 using System.IO;
@@ -15,6 +16,7 @@ namespace Frontier.Loaders
             public string Name;
             public int Cost;
             public int Type;
+            public int SkillType;
             public int Flags;
             public int Duration;
             public float AddAtkMag;
@@ -56,18 +58,19 @@ namespace Frontier.Loaders
         /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
         private void ApplySkillsData( ref SkillsData.Data data, in FileSkillData fdata )
         {
-            data.Name = fdata.Name;
-            data.Cost = fdata.Cost;
-            data.Type = ( SituationType ) fdata.Type;
-            data.Flags = fdata.Flags;
-            data.Duration = fdata.Duration;
-            data.AddAtkMag = fdata.AddAtkMag;
-            data.AddDefMag = fdata.AddDefMag;
-            data.AddAtkNum = fdata.AddAtkNum;
-            data.Param1 = fdata.Param1;
-            data.Param2 = fdata.Param2;
-            data.Param3 = fdata.Param3;
-            data.Param4 = fdata.Param4;
+            data.Name           = fdata.Name;
+            data.Cost           = fdata.Cost;
+            data.Type           = ( SituationType ) fdata.Type;
+            data.SkillType      = ( SkillType ) fdata.SkillType;
+            data.Flags          = ( SkillBitFlag ) fdata.Flags;
+            data.Duration       = fdata.Duration;
+            data.AddAtkMag      = fdata.AddAtkMag;
+            data.AddDefMag      = fdata.AddDefMag;
+            data.AddAtkNum      = fdata.AddAtkNum;
+            data.Param1         = fdata.Param1;
+            data.Param2         = fdata.Param2;
+            data.Param3         = fdata.Param3;
+            data.Param4         = fdata.Param4;
             data.ExplainTextKey = fdata.ExplainTextKey;
             // TODO : nullアクセス防止の暫定対応。後で消すこと
             if( null == data.ExplainTextKey ) { data.ExplainTextKey = ""; }

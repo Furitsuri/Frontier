@@ -50,8 +50,7 @@ static public class Methods
     /// <param name="value">指定するビット値</param>
     static public void SetBitFlag<T>( ref int flags, T value ) where T : Enum
     {
-        int valueInt    = Convert.ToInt32( value );
-        flags           |= 1 << valueInt;
+        flags           |= ToBit( value );
     }
 
     /// <summary>
@@ -98,8 +97,7 @@ static public class Methods
     /// <param name="value">指定するビット値</param>
     static public void UnsetBitFlag<T>( ref int flags, T value ) where T : Enum
     {
-        int valueInt    = Convert.ToInt32( value );
-        flags           &= ~( 1 << valueInt );
+        flags           &= ~( ToBit( value ) );
     }
 
     /// <summary>
@@ -125,8 +123,7 @@ static public class Methods
     /// <returns>設定されているか否か</returns>
     static public bool CheckBitFlag<T>( in int flags, T value ) where T : Enum
     {
-        int valueInt = Convert.ToInt32( value );
-        return 0 != ( flags & ( 1 << valueInt ) );
+        return 0 != ( flags & ToBit( value ) );
     }
 
     /// <summary>
@@ -141,6 +138,20 @@ static public class Methods
         int flagsValue = Convert.ToInt32(flags);
         int valueInt = Convert.ToInt32(value);
         return 0 != (flagsValue & valueInt);
+    }
+
+    /// <summary>
+    /// 対象のenum値をビット値に変換します
+    /// </summary>
+    /// <typeparam name="T">enum値の型</typeparam>
+    /// <param name="value">enum値</param>
+    /// <returns>変換されたビット値</returns>
+    static public int ToBit<T>( this T value ) where T : Enum
+    {
+        int v = Convert.ToInt32( value );
+        if( v < 0 ) { return 0; }
+
+        return 1 << v;
     }
 
     /// <summary>

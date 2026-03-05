@@ -2,10 +2,10 @@
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.StateMachine;
+using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
 using static Constants;
-using static Frontier.UI.BattleUISystem;
 
 namespace Frontier.Battle
 {
@@ -98,14 +98,9 @@ namespace Frontier.Battle
             _parameterUIs[( int ) winType].GetSkillBox( skillIndex ).SetUseable( isUsable );
         }
 
-        public void UpdateLeftParameterView()
+        public void UpdateParameterView( ParameterWindowType winType )
         {
-            _uiSystem.BattleUi.ParameterView.PlayerParameter.UpdateAssignCharacterParamRender();
-        }
-
-        public void UpdateRightParameterView()
-        {
-            _uiSystem.BattleUi.ParameterView.EnemyParameter.UpdateAssignCharacterParamRender();
+            _parameterUIs[( int ) winType].UpdateAssignCharacterParamRender();
         }
 
         public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )

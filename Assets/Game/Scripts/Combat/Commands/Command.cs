@@ -64,7 +64,7 @@ namespace Frontier.Combat
             bool isExecutable = false;
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( character.CanUseEquipSkill( i, Skill.SituationType.ATTACK ) )
+                if( character.CanUseEquipSkill( i, SituationType.ATTACK, 255 ) )
                 {
                     isExecutable = true;
                     break;
