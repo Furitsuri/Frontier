@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.UI;
 using System.Collections;
@@ -10,12 +11,24 @@ namespace Frontier.Battle
 {
     public class PlSkillActionToTargetState : PlPhaseStateBase
     {
+        private enum TransitTag
+        {
+            CHARACTER_STATUS = 0,
+        }
+
+        private int skillRange = 0;
+        private SkillsData.Data _usingSkillData;
+
         public override void Init()
         {
             base.Init();
 
             // パラメータビューにキャラクターを割り当て
             _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
+
+            _usingSkillData = _plOwner.BattleLogic.GetUsingActionSkillData();
+            skillRange      = ( int ) _usingSkillData.Param1;
+
         }
 
         public override bool Update()
@@ -45,7 +58,8 @@ namespace Frontier.Battle
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "SELECT\nTILE", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                 (GuideIcon.CONFIRM,     "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL,      "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.CANCEL,      "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+                (GuideIcon.INFO,        "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode)
             // (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptContextInput( AcceptSub1 ), 0.0f, hashCode),
             // (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptContextInput( AcceptSub2 ), 0.0f, hashCode),
             // (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode),
@@ -73,6 +87,19 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptCancel()
         {
+            return true;
+        }
+
+        protected override bool CanAcceptInfo()
+        {
+            if( !CanAcceptDefault() ) { return false; }
+
+            // 自身以外のキャラクターが選択されていない場合は不可
+            if( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() == null || _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() == _plOwner )
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -116,6 +143,17 @@ namespace Frontier.Battle
         protected override bool AcceptCancel( InputContext context )
         {
             if( !base.AcceptCancel( context ) ) { return false; }
+
+            return true;
+        }
+
+        protected override bool AcceptInfo( InputContext context )
+        {
+            if( !base.AcceptInfo( context ) ) { return false; }
+
+            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+
+            TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return true;
         }

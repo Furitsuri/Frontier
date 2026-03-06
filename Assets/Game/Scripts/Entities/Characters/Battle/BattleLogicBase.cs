@@ -27,6 +27,7 @@ namespace Frontier.Entities
         protected SkillNotifierBase[] _skillNotifier                        = null;                 // スキル使用通知
         protected ThinkingType _thikType                                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                                   = PARRY_PHASE.NONE;
+        protected SkillsData.Data usingActionSkillData;
         private ICombatAnimationSequence _combatAnimSeq                     = null;
         private List<COMMAND_TAG> _executableCommands                       = new List<COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
@@ -38,6 +39,8 @@ namespace Frontier.Entities
         public Character GetOpponent() => _opponent;
         public ActionRangeController ActionRangeCtrl => _actionRangeCtrl;           // 行動範囲管理クラスの取得
         public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
+        public void SetUsingActionSkillData( in SkillsData.Data data ) => usingActionSkillData = data;   // 使用スキルデータの設定
+        public SkillsData.Data GetUsingActionSkillData() => usingActionSkillData;    // 使用スキルデータの取得
 
 
         private delegate bool IsExecutableCommand( Character character, StageController stageCtrl );

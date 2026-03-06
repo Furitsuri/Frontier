@@ -165,8 +165,8 @@ namespace Frontier.Battle
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR,  "MOVE",     CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                 (GuideIcon.CONFIRM,     "DECISION", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.INFO,        "STATUS",   CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.CANCEL,      "BACK",     CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+                (GuideIcon.INFO,        "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode)
              );
         }
 
@@ -306,6 +306,8 @@ namespace Frontier.Battle
         protected override bool AcceptInfo( InputContext context )
         {
             if( !base.AcceptInfo( context ) ) { return false; }
+
+            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

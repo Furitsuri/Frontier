@@ -17,7 +17,7 @@ namespace Frontier.Battle
             PL_SELECT_SKILL_END,
         }
 
-        private enum TrsnsitTag
+        private enum TransitTag
         {
             SKILL_ACTION_TO_TARGET = 0,
         }
@@ -138,7 +138,7 @@ namespace Frontier.Battle
             // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
             if( IsTransitionSkillActionState() )
             {
-                TransitState( ( int ) TrsnsitTag.SKILL_ACTION_TO_TARGET );
+                TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
             }
             else
             {
@@ -203,6 +203,7 @@ namespace Frontier.Battle
                         case SkillType.ATTACK:
                         case SkillType.SUPPORT:
                         case SkillType.HEAL:
+                            _plOwner.BattleLogic.SetUsingActionSkillData( skillData );
                             return true;
                         default:
                             break;
