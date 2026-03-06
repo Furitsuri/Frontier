@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-using Frontier.Combat.Skill;
+using Frontier.Combat;
 using Frontier.Loaders;
 
 namespace Frontier.Entities

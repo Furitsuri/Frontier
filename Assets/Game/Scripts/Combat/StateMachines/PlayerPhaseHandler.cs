@@ -67,8 +67,8 @@ namespace Frontier.Battle
              *                                   ├─ PlWaitState
              *                                   ｜
              *                                   ├────────────────────────────────────────PlSelectSkillState
-             *                                   ｜                       
-             *                                   ├───────────────────── PlAttackState
+             *                                   ｜                                                                                        ｜
+             *                                   ├───────────────────── PlAttackState                                └─ PlSkillActionToTargetState
              *                                   ｜                                                ｜
              *                                   └─ PlMoveState                                  └─ CharacterStatusViewState
              *                                            ｜
@@ -96,6 +96,8 @@ namespace Frontier.Battle
             RootNode.Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateを追加
             RootNode.Children[0].Children[0].Children[1].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            // Children[0].Children[0].Children[1]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
+            RootNode.Children[0].Children[0].Children[2].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
 
             CurrentNode = RootNode;
         }

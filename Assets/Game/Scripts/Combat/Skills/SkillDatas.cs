@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Frontier.Combat.Skill
+namespace Frontier.Combat
 {
     /// <summary>
     /// 各スキルの実行内容の関数集合です
@@ -45,6 +45,7 @@ namespace Frontier.Combat.Skill
                 () => sharedNotifier,                                                       // SKILL_COUNTER
                 () => sharedNotifier,                                                       // SKILL_DOUBLE_STRIKE
                 () => sharedNotifier,                                                       // SKILL_TRIPLE_STRIKE
+                () => sharedNotifier,                                                       // SKILL_DASH_SLASH
             };
 
             skillNotifierFactory = factories;

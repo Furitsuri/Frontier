@@ -1,7 +1,7 @@
 ﻿using Frontier.Entities;
 using Zenject;
 
-namespace Frontier.Combat.Skill
+namespace Frontier.Combat
 {
     public class SkillNotifierBase
     {

@@ -1,8 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Frontier.Combat.Skill
+namespace Frontier.Combat
 {
     public class AssaultSkillNotifier : SkillNotifierBase
     {

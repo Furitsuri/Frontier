@@ -1,5 +1,4 @@
 ﻿using Frontier.Combat;
-using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
 using System;
 using System.Collections.Generic;

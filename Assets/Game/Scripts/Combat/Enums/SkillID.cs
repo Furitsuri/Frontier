@@ -1,4 +1,4 @@
-﻿namespace Frontier.Combat.Skill
+﻿namespace Frontier.Combat
 {
     public enum SkillID
     {
@@ -9,6 +9,7 @@
         COUNTER,
         DOUBLE_STRIKE,
         TRIPLE_STRIKE,
+        DASH_SLASH,
 
         NUM,
     }

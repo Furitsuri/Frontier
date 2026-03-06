@@ -1,6 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
-using Frontier.Combat.Skill;
+using Frontier.Combat;
 
 namespace Frontier
 {

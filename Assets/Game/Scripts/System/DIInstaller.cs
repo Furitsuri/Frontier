@@ -1,7 +1,6 @@
 ﻿using Frontier.Stage;
 using Frontier.UI;
-using Frontier.Battle;
-using Frontier.Combat.Skill;
+using Frontier.Combat;
 using Frontier.DebugTools.DebugMenu;
 using Zenject;
 using Frontier.Registries;
