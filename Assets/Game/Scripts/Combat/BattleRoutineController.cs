@@ -1,4 +1,4 @@
-﻿using Frontier.Combat.Skill;
+﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Registries;
 using Frontier.Stage;

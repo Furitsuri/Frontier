@@ -97,9 +97,9 @@ namespace Frontier.Battle
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.VERTICAL_CURSOR, "Select", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptDefault, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "Back", CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+               (GuideIcon.VERTICAL_CURSOR,  "Select",   CanAcceptDefault, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,          "Confirm",  CanAcceptDefault, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,           "Back",     CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
             );
         }
 

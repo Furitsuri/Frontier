@@ -1,4 +1,4 @@
-﻿namespace Frontier.Combat.Skill
+﻿namespace Frontier.Combat
 {
     /// <summary>
     /// パリィ判定の種類

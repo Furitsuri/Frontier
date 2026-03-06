@@ -1,4 +1,4 @@
-﻿using Frontier.Combat.Skill;
+﻿using Frontier.Combat;
 using Frontier.Stage;
 using UnityEngine;
 using Zenject;

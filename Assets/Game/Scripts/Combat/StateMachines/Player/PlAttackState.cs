@@ -356,11 +356,7 @@ namespace Frontier.Battle
             if( !CanAcceptConfirm() ) return false;
             if( _playerSkillNames[index].Length <= 0 ) return false;
 
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill(
-                index,
-                SituationType.ATTACK,
-                Methods.ToBit( SkillType.BUFF )
-            );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( index, SituationType.ATTACK, Methods.ToBit( SkillType.BUFF ) );
 
             _presenter.SetUseableSkillOnParamView( index, useable, ParameterWindowType.Left );
 

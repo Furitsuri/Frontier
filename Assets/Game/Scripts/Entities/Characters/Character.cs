@@ -103,9 +103,9 @@ namespace Frontier.Entities
         /// <returns></returns>
         public bool CanUseEquipSkill( int skillIdx, SituationType situationType, int useableSkillTypeBit )
         {
-            if( EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
-                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
 
                 return false;
             }

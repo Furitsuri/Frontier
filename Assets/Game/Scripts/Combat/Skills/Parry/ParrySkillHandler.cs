@@ -1,11 +1,10 @@
-﻿using Frontier.Battle;
-using Frontier.Entities;
+﻿using Frontier.Entities;
 using System;
 using UnityEngine;
 using Zenject;
 using static Constants;
 
-namespace Frontier.Combat.Skill
+namespace Frontier.Combat
 {
     /// <summary>
     /// パリィスキルの処理を行います

@@ -5,7 +5,7 @@ using Frontier.Entities;
 using UnityEngine;
 using Frontier.Combat.Skill;
 
-namespace Frontier.Combat.Skill
+namespace Frontier.Combat
 {
     /// <summary>
     /// パリィスキルを使用するエンティティに持たせるクラスです
