@@ -28,6 +28,7 @@ namespace Frontier.StateMachine
         {
             _targetChara = GetContextAsCharacter();
             NullCheck.AssertNotNull( _targetChara, nameof( _targetChara ) );
+            _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER_STATUS );
             _statusPresenter.OpenCharacterStatus( _targetChara );
         }
 
@@ -57,6 +58,15 @@ namespace Frontier.StateMachine
             return ( 0 <= TransitIndex );
         }
 
+        public override void ExitState()
+        {
+            _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
+            _statusPresenter.CloseCharacterStatus();
+            _targetChara = null;
+
+            base.ExitState();
+        }
+
         public override void RunState()
         {
             base.RunState();
@@ -69,14 +79,6 @@ namespace Frontier.StateMachine
             base.RestartState();
 
             AssignCharacter();
-        }
-
-        public override void ExitState()
-        {
-            base.ExitState();
-
-            _statusPresenter.CloseCharacterStatus();
-            _targetChara = null;
         }
 
         /// <summary>

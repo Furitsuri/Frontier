@@ -69,8 +69,8 @@ namespace Frontier.Battle
              *                                   ├────────────────────────────────────────PlSelectSkillState
              *                                   ｜                                                                                        ｜
              *                                   ├───────────────────── PlAttackState                                └─ PlSkillActionToTargetState
-             *                                   ｜                                                ｜
-             *                                   └─ PlMoveState                                  └─ CharacterStatusViewState
+             *                                   ｜                                                ｜                                                     ｜
+             *                                   └─ PlMoveState                                  └─ CharacterStatusViewState                          └─ CharacterStatusViewState
              *                                            ｜
              *                                            ├─ CharacterStatusViewState
              *                                            ｜
@@ -96,8 +96,10 @@ namespace Frontier.Battle
             RootNode.Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateを追加
             RootNode.Children[0].Children[0].Children[1].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
-            // Children[0].Children[0].Children[1]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
+            // Children[0].Children[0].Children[2]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
             RootNode.Children[0].Children[0].Children[2].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
+            // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewStateを追加
+            RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
 
             CurrentNode = RootNode;
         }

@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using static Constants;
 
 namespace Frontier.UI
 {
@@ -54,11 +55,11 @@ namespace Frontier.UI
 
             // _characterCameraImage.texture = chara.Snapshot;
             _characterCameraImage.texture = _targetTexture;
-            _characterCamera.Init( "StatusCamera", chara.gameObject.layer, _cameraAngleY, ref _characterCameraImage );
-            _characterCamera.AssignCharacter( chara, chara.gameObject.layer );
+            _characterCamera.Init( "StatusCamera", LAYER_MASK_INDEX_CHARACTER_STATUS, _cameraAngleY, ref _characterCameraImage );
+            _characterCamera.AssignCharacter( chara, LAYER_MASK_INDEX_CHARACTER_STATUS );
 
             // スキルボックスUIの表示
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 SkillBoxes[i].ApplySkill( chara, i );
             }

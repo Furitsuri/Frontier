@@ -33,6 +33,8 @@ static public class Constants
     public const int LAYER_MASK_INDEX_PLAYER            = 8;
     // 戦闘フェーズにおけるエネミーカメラのレイヤーマスク番号
     public const int LAYER_MASK_INDEX_ENEMY             = 9;
+    // 戦闘フェーズにおけるステータス画面のレイヤーマスク番号
+    public const int LAYER_MASK_INDEX_CHARACTER_STATUS = 11;
     // ステージに設定可能なタイルの最小数(横軸)
     public const int TILE_ROW_MIN_NUM       = 5;
     // ステージに設定可能なタイルの最小数(縦軸)
