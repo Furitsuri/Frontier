@@ -22,6 +22,9 @@ namespace Frontier.UI
         [Header( "PlayerCommand" )]
         public PlayerCommandUI PlCommandWindow;   // プレイヤーの選択コマンドUI
 
+        [Header( "CommandName" )]
+        public GameObject CommandName;          // コマンド名表示
+
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
@@ -52,6 +55,7 @@ namespace Frontier.UI
             Phase?.Setup();
             StageClear?.Setup();
             GameOver?.Setup();
+            CommandName.gameObject.SetActive( false );
 
             DamageValue.Init( _rectTransform, _uiCamera );
         }

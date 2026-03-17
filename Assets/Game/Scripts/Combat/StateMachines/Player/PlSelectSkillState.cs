@@ -5,6 +5,7 @@ using Frontier.Entities;
 using Frontier.Sequences;
 using Frontier.UI;
 using System;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 using static Frontier.UI.BattleUISystem;
@@ -150,9 +151,13 @@ namespace Frontier.Battle
             if( !base.AcceptConfirm( context ) ) { return false; }
 
             // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
-            if( _plOwner.BattleLogic.IsUsingSelfBuffSkills() )
+            List<string> skillNames;
+            if( _plOwner.BattleLogic.IsUsingSelfBuffSkills( out skillNames ) )
             {
-                _sequenceFcd.RegistSelfBuffs( _plOwner );
+                foreach( var name in skillNames )
+                {
+                    _sequenceFcd.RegistSelfBuffs( _plOwner, name );
+                }
             }
 
             // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
