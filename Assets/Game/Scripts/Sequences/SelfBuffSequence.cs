@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Battle;
+using Frontier.Entities;
 using Frontier.Registries;
 using UnityEngine;
 using Zenject;
@@ -14,27 +15,30 @@ namespace Frontier.Sequences
             EXE_BUFF,
         }
 
+        [Inject] private BattleRoutinePresenter _presenter = null; 
+
         private float _elapsedTime = 0f;
+        private string _commandName;
         private State _state;
         private Character _owner;
 
-        public SelfBuffSequence( Character owner)
+        public SelfBuffSequence( Character owner, string cmdName )
         {
-            _owner = owner;
+            _owner          = owner;
+            _commandName    = cmdName;
         }
 
         public void Start()
         {
-            _state          = State.DISP_BUFF_NAME;
+            _state = State.DISP_BUFF_NAME;
             ResetElapsedTime();
-
-            Debug.Log( "SelfBuffSequence Start" );
+            _presenter.SetCommandName( _commandName );
+            _presenter.SetActiveCommandName( true );
         }
 
         public void End()
         {
-
-            Debug.Log( "SelfBuffSequence End" );
+            _presenter.SetActiveCommandName( false );
         }
 
         public bool Update()

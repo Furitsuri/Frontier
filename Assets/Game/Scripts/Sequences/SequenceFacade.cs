@@ -30,11 +30,12 @@ namespace Frontier.Sequences
             _handler.Regist( attackSeq );
         }
 
-        public void RegistSelfBuffs( Character owner )
+        public void RegistSelfBuffs( Character owner, string cmdName )
         {
-            var factory = _hierarchyBld.InstantiateWithDiContainer<SelfBuffSequenceCreator>( false );
-            var param   = _hierarchyBld.InstantiateWithDiContainer<SelfBuffSequenceParam>( false );
-            param.Self  = owner;
+            var factory     = _hierarchyBld.InstantiateWithDiContainer<SelfBuffSequenceCreator>( false );
+            var param       = _hierarchyBld.InstantiateWithDiContainer<SelfBuffSequenceParam>( false );
+            param.Self      = owner;
+            param.cmdName   = cmdName;
 
             ISequence selfBuffSeq = factory.CreateSequence( param );
 

@@ -4,6 +4,7 @@ using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System.Collections.Generic;
+using TMPro;
 using Zenject;
 using static Constants;
 
@@ -11,7 +12,8 @@ namespace Frontier.Battle
 {
     public class BattleRoutinePresenter : PhasePresenterBase, IConfirmPresenter
     {
-        UI.CharacterParameterUI[] _parameterUIs;
+        private CharacterParameterUI[] _parameterUIs;
+        private TextMeshProUGUI _TMPCommandName;
 
         public void Setup()
         {
@@ -20,6 +22,9 @@ namespace Frontier.Battle
                 _uiSystem.BattleUi.ParameterView.PlayerParameter,
                 _uiSystem.BattleUi.ParameterView.EnemyParameter
             };
+
+            _TMPCommandName = _uiSystem.BattleUi.CommandName.GetComponentInChildren<TextMeshProUGUI>();
+            NullCheck.AssertNotNull( _TMPCommandName, nameof( _TMPCommandName ) );
         }
 
         public void Update() { }
@@ -32,6 +37,11 @@ namespace Frontier.Battle
         public void SetActiveConfirmUI( bool isActive )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.gameObject.SetActive( isActive );
+        }
+
+        public void SetActiveCommandName( bool isActive )
+        {
+            _uiSystem.BattleUi.CommandName.SetActive( isActive );
         }
 
         public void SetActiveParamView( bool isActive, ParameterWindowType winType )
@@ -81,6 +91,11 @@ namespace Frontier.Battle
         public bool IsActiveGameOverAnimation()
         {
             return _uiSystem.BattleUi.GameOver.isActiveAndEnabled;
+        }
+
+        public void SetCommandName( string name )
+        {
+            _TMPCommandName.text = name;
         }
 
         public void SetSkillFlickOnParamView( int skillIndex, bool enabled, ParameterWindowType winType )

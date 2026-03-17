@@ -4,6 +4,7 @@ using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
@@ -316,9 +317,13 @@ namespace Frontier.Battle
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
 
                 // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
-                if( _plOwner.BattleLogic.IsUsingSelfBuffSkills() )
+                List<string> skillNames;
+                if( _plOwner.BattleLogic.IsUsingSelfBuffSkills( out skillNames ) )
                 {
-                    _sequenceFcd.RegistSelfBuffs( _plOwner );
+                    foreach( var name in skillNames )
+                    {
+                        _sequenceFcd.RegistSelfBuffs( _plOwner, name );
+                    }
                 }
 
                 _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始

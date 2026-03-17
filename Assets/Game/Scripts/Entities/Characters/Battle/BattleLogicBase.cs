@@ -229,15 +229,22 @@ namespace Frontier.Entities
             return _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[skillIdx];
         }
 
-        public bool IsUsingSelfBuffSkills()
+        public bool IsUsingSelfBuffSkills( out List<string> skillNames )
         {
+            skillNames = new List<string>();
+
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 if( !IsUsingEquipSkill( i ) ) { continue; }
 
                 var skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
                 var skillData = SkillsData.data[( int ) skillID];
-                if( skillData.SkillType == SkillType.BUFF ) { return true; }
+                if( skillData.SkillType == SkillType.BUFF )
+                {
+                    skillNames.Add( skillData.Name );
+
+                    return true;
+                }
             }
 
             return false;

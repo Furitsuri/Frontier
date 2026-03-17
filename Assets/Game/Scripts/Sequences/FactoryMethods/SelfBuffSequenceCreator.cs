@@ -8,7 +8,7 @@ namespace Frontier.Sequences
 
         public override ISequence CreateSequence( SelfBuffSequenceParam param )
         {
-            object[] args = { param.Self };
+            object[] args = { param.Self, param.cmdName };
 
             return _hierarchyBld.InstantiateWithDiContainer<SelfBuffSequence>( args, false );
         }
