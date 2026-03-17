@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Frontier;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine.AddressableAssets;
 using Zenject;
 
 namespace Frontier.Tutorial
@@ -38,18 +37,29 @@ namespace Frontier.Tutorial
         /// </summary>
         public void TryShowTutorial()
         {
-            foreach( var trigger in _pendingTriggers )
+            for( int i = 0; i < _pendingTriggers.Count; ++i )
             {
-                if( _saveData._shownTriggers.Contains( trigger ) ) continue;
+                if( _saveData._shownTriggers.Contains( _pendingTriggers[i] ) )
+                {
+                    _pendingTriggers.RemoveAt( i );
+                    --i;
+
+                    continue;
+                }
 
                 // チュートリアルを表示
-                if( _handler.ShowTutorial( trigger ) )
+                if( _handler.ShowTutorial( _pendingTriggers[i] ) )
                 {
                     // 表示済みのトリガータイプに追加、保存
-                    _saveData._shownTriggers.Add( trigger );
+                    _saveData._shownTriggers.Add( _pendingTriggers[i] );
                     _saveHdlr.Save( _saveData );
                 }
             }
+        }
+
+        public Task LoadTutorialData()
+        {
+            return _handler.LoadTutorialData();
         }
 
         /// <summary>

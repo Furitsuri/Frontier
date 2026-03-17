@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -13,9 +14,13 @@ public class TutorialFileLoader : MonoBehaviour
     /// <summary>
     /// チュートリアルデータを読込みます
     /// </summary>
-    public void LoadData()
+    public async Task<TutorialDatabase> LoadData()
     {
-        Addressables.LoadAssetAsync<TutorialDatabase>(_tutorialDatabaseFileName).Completed += OnLoaded;
+        var handle =  Addressables.LoadAssetAsync<TutorialDatabase>(_tutorialDatabaseFileName);
+
+        await handle.Task;
+
+        return handle.Result;
     }
 
     /// <summary>

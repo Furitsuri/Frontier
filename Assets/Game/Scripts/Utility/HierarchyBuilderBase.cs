@@ -25,6 +25,11 @@ public class HierarchyBuilderBase : MonoBehaviour
         _generator.Inject(container, installer);
     }
 
+    public GameObject CreateGameObject( GameObject obj, bool initActive, string objName )
+    {
+        return _generator.GenerateGameObject( obj, initActive, objName );
+    }
+
     /// <summary>
     /// オブジェクト及びコンポーネントを作成し、ヒエラルキー上の任意のオブジェクトの階層下に設置します
     /// </summary>
@@ -221,6 +226,11 @@ public class HierarchyBuilderBase : MonoBehaviour
     public T InstantiateWithDiContainer<T>( bool isBind )
     {
         return _generator.InstantiateWithDiContainer<T>(isBind);
+    }
+
+    public T InstantiateWithDiContainer<T>( object[] args, bool isBind )
+    {
+        return _generator.InstantiateWithDiContainer<T>( args, isBind );
     }
 
     public T InstantiateWithDiContainer<T>(T original, Vector3 position, Quaternion rotation, bool isBind) where T : UnityEngine.Object

@@ -1,10 +1,12 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 using static Constants;
 
 namespace Frontier.Battle
@@ -60,10 +62,6 @@ namespace Frontier.Battle
                 (GuideIcon.CONFIRM,     "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                 (GuideIcon.CANCEL,      "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
                 (GuideIcon.INFO,        "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode)
-            // (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptContextInput( AcceptSub1 ), 0.0f, hashCode),
-            // (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptContextInput( AcceptSub2 ), 0.0f, hashCode),
-            // (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode),
-            // (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptContextInput( AcceptSub4 ), 0.0f, hashCode)
             );
         }
 
@@ -123,23 +121,15 @@ namespace Frontier.Battle
             return isAcceptDirection;
         }
 
-        /// <summary>
-        /// 決定入力を受けた際は選択した地点に移動するか、選択した場でそのまま攻撃へ遷移します
-        /// </summary>
-        /// <param name="isConfirm">決定入力</param>
-        /// <returns>決定入力実行の有無</returns>
         protected override bool AcceptConfirm( InputContext context )
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            
+
             return true;
         }
 
-        /// <summary>
-        /// キャンセル入力を受けた際は巻き戻し処理を行います
-        /// </summary>
-        /// <param name="isCancel">キャンセル入力</param>
-        /// <returns>キャンセル入力実行の有無</returns>
         protected override bool AcceptCancel( InputContext context )
         {
             if( !base.AcceptCancel( context ) ) { return false; }
@@ -147,6 +137,11 @@ namespace Frontier.Battle
             return true;
         }
 
+        /// <summary>
+        /// 情報キー入力時、ステータス画面へ遷移します
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         protected override bool AcceptInfo( InputContext context )
         {
             if( !base.AcceptInfo( context ) ) { return false; }

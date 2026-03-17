@@ -105,6 +105,9 @@ static public class Constants
     public const float STAGE_EDITOR_CONFIRM_WIN_HEIGHT  = 280f;
     public const float STAGE_EDITOR_NOTIFY_WIN_WIDTH    = 400f;
     public const float STAGE_EDITOR_NOTIFY_WIN_HEIGHT   = 180f;
+    // 自身にバフをかける処理の待ち時間
+    public const float SELF_BUFF_DISP_NAME_TIME = 0.5f;
+    public const float SELF_BUFF_EXE_TIME = 0.75f;
     // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
     // 攻撃時に相手に近接するまでの時間

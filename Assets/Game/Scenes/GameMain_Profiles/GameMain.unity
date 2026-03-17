@@ -5707,8 +5707,9 @@ MonoBehaviour:
   - {fileID: 405018023}
   - {fileID: 2020674925}
   - {fileID: 1632990935}
+  - {fileID: 1598831032}
   - {fileID: 1846550848}
-  _firstRoutineIndex: 5
+  _firstRoutineIndex: 6
   _UICameraObject: {fileID: 6651904351024763421}
   _managerProvider: {fileID: 8922468461745508450, guid: 815abdb4467fd75488976f0b0199271e, type: 3}
   stageStartDelay: 2
@@ -5914,6 +5915,8 @@ MonoBehaviour:
   tileMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
   _tilePrefabs:
   - {fileID: 1062838171624191041, guid: db69ba040f2ba074bbe071a615964f70, type: 3}
+  BuffCirclePrefab: {fileID: 734234413312254984, guid: b67ad43873ab11e48940c652bb691bd9, type: 3}
+  BuffAuraPrefab: {fileID: 2444267416405518009, guid: e2b3834c3f8e1c745a453b6d4636a971, type: 3}
 --- !u!1 &799412078
 GameObject:
   m_ObjectHideFlags: 0
@@ -8791,6 +8794,7 @@ Transform:
   - {fileID: 405018022}
   - {fileID: 2020674924}
   - {fileID: 1632990934}
+  - {fileID: 1598831031}
   - {fileID: 1846550847}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -11094,6 +11098,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1573335434}
   m_CullTransparentMesh: 1
+--- !u!1 &1598831030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1598831031}
+  - component: {fileID: 1598831032}
+  m_Layer: 0
+  m_Name: SequenceHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1598831031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1598831030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327347337}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1598831032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1598831030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5001219305916ca46a28480674c83dab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1601957711
 GameObject:
   m_ObjectHideFlags: 0

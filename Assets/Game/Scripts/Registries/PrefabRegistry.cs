@@ -24,6 +24,10 @@ namespace Frontier.Registries
         [SerializeField] private GameObject tileMeshObject;             // TileMeshプレハブ
         [SerializeField] private GameObject[] _tilePrefabs;             // タイルプレハブ配列
 
+        [Header( "Effect関連" )]
+        [SerializeField] public GameObject BuffCirclePrefab;            // バフサークル用プレハブ
+        [SerializeField] public GameObject BuffAuraPrefab;              // バフオーラ用プレハブ
+
         public GameObject[] PlayerPrefabs => _playerGameObjects;
         public GameObject[] EnemyPrefabs => _enemyGameObjects;
         public GameObject[] OtherPrefabs => _otherGameObjects;

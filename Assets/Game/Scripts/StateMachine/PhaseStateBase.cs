@@ -82,6 +82,14 @@ namespace Frontier.StateMachine
         virtual protected bool AcceptSub4( InputContext context )       { return context.GetButton( GameButton.Sub4 ); }
         virtual protected bool AcceptCamera( Vector2 vec ) { return false; }
 
+        public override void LateUpdate()
+        {
+            base.LateUpdate();
+
+            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
+            _tutorialFcd.TryShowTutorial();
+        }
+
         /// <summary>
         /// 現在のステートを実行します
         /// </summary>
@@ -116,9 +124,6 @@ namespace Frontier.StateMachine
         {
             base.ExitState();
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
-
-            // 表示すべきチュートリアルがある場合はチュートリアル遷移に移行
-            _tutorialFcd.TryShowTutorial();
         }
     }
 }

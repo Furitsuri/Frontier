@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Zenject;
 using static Constants;
 using System;
+using System.Threading.Tasks;
 
 namespace Frontier.Tutorial
 {
@@ -11,7 +12,7 @@ namespace Frontier.Tutorial
         [Inject] private InputFacade _inputFcd = null;
 
         private TutorialPresenter _tutorialView = null;
-        private TutorialFileLoader _tutorialLdr = null;
+        private TutorialFileLoader _tutorialLoader = null;
         private int _currentPageIndex = 0;
 
         // チュートリアルデータの参照
@@ -32,16 +33,14 @@ namespace Frontier.Tutorial
             GameObject obj = GameObject.Find( "Tutorial" );
             if( obj != null )
             {
-                _tutorialLdr = obj.GetComponent<TutorialFileLoader>();
+                _tutorialLoader = obj.GetComponent<TutorialFileLoader>();
             }
 
-            if( _tutorialLdr == null )
+            if( _tutorialLoader == null )
             {
                 LogHelper.LogError( "チュートリアルデータの読み込みに失敗しました。" );
                 return;
             }
-
-            _tutorialLdr.LoadData();
         }
 
         /// <summary>
@@ -51,7 +50,7 @@ namespace Frontier.Tutorial
         /// <returns>表示の成否</returns>
         public bool ShowTutorial( TriggerType trigger )
         {
-            _tutorialDatas = Array.AsReadOnly( _tutorialLdr.GetTutorialDatas() );
+            _tutorialDatas = Array.AsReadOnly( _tutorialLoader.GetTutorialDatas() );
 
             var matchingData = FindMatchingTutorialData( trigger );
             if( null == matchingData )
@@ -70,6 +69,11 @@ namespace Frontier.Tutorial
             return true;
         }
 
+        public async Task LoadTutorialData()
+        {
+            await _tutorialLoader.LoadData();
+        }
+
         /// <summary>
         /// チュートリアル画面における入力コードを登録します
         /// </summary>
@@ -78,7 +82,7 @@ namespace Frontier.Tutorial
             int hashCode = Hash.GetStableHash( GetType().Name );
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.HORIZONTAL_CURSOR, "PAGE TRANSACTION", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.HORIZONTAL_CURSOR, "PAGE\nTRANSACTION", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
                 (GuideIcon.CONFIRM, "NEXT", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                 (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
              );

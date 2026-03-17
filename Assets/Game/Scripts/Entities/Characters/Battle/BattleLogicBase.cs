@@ -1,12 +1,14 @@
 ﻿using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
+using Frontier.Registries;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Entities
 {
@@ -15,6 +17,7 @@ namespace Frontier.Entities
 		[Inject] protected IUiSystem _uiSystem                  = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected StageController _stageCtrl           = null;
+        [Inject] private PrefabRegistry _prefabReg              = null;
 
         protected Character _opponent = null;
 
@@ -31,6 +34,8 @@ namespace Frontier.Entities
         private ICombatAnimationSequence _combatAnimSeq                     = null;
         private List<COMMAND_TAG> _executableCommands                       = new List<COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
+        private GameObject _buffCircle;
+        private GameObject _buffAura;
 
         public bool IsDeclaredDead { get; set; } = false;                           // 死亡確定フラグ(攻撃シーケンスにおいて使用)
         public int[] TileCostTable => _tileCostTable;                               // タイル移動コストテーブルの取得
@@ -218,7 +223,24 @@ namespace Frontier.Entities
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
                 return false;
             }
+
+            
+
             return _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[skillIdx];
+        }
+
+        public bool IsUsingSelfBuffSkills()
+        {
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                if( !IsUsingEquipSkill( i ) ) { continue; }
+
+                var skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
+                var skillData = SkillsData.data[( int ) skillID];
+                if( skillData.SkillType == SkillType.BUFF ) { return true; }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -238,8 +260,6 @@ namespace Frontier.Entities
 
             return -1;
         }
-
-        
 
         /// <summary>
         /// 対戦相手を設定します
@@ -424,6 +444,22 @@ namespace Frontier.Entities
                 _skillNotifier[i] = SkillsData.skillNotifierFactory[skillID]();
                 _skillNotifier[i].Init( _readOnlyOwner.Value );
             }
+        }
+
+        public void AddBuffEffect()
+        {
+            _buffCircle = _hierarchyBld.CreateGameObject( _prefabReg.BuffCirclePrefab, true, "BuffCircle" );
+            _buffAura   = _hierarchyBld.CreateGameObject( _prefabReg.BuffAuraPrefab, true, "BuffAura" );
+            _buffCircle.transform.SetParent( _readOnlyOwner.Value.transform, false );
+            _buffAura.transform.SetParent( _readOnlyOwner.Value.transform, false );
+        }
+
+        public void RemoveBuffEffect()
+        {
+            Destroy( _buffCircle );
+            Destroy( _buffAura );
+            _buffCircle = null;
+            _buffAura   = null;
         }
     }
 }

@@ -15,8 +15,8 @@ namespace Frontier.Battle
                 // 選択グリッドを(1番目の)プレイヤーのグリッド位置に合わせる
                 Character player = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER ).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterTile( player );
-                // アクションゲージの回復
-                _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.PLAYER );
+                // ターン開始時の自軍キャラへの処理
+                _btlRtnCtrl.BtlCharaCdr.ApplyTurnStartProccessingForGroup( CHARACTER_TAG.PLAYER );
             }
 
             AssignPresenterToNodes( RootNode, _presenter );

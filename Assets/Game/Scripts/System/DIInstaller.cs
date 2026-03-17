@@ -5,6 +5,7 @@ using Frontier.DebugTools.DebugMenu;
 using Zenject;
 using Frontier.Registries;
 using Frontier.Tutorial;
+using Frontier.Sequences;
 
 namespace Frontier
 {
@@ -20,6 +21,7 @@ namespace Frontier
             Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TimeScaleController>().AsSingle();
+            Container.Bind<SequenceFacade>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().AsSingle();

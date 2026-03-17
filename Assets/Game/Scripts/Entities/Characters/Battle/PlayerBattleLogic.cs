@@ -99,6 +99,7 @@ namespace Frontier.Entities
                 }
             }
 
+            _readOnlyOwner.Value.BattleLogic.RemoveBuffEffect();
             _readOnlyOwner.Value.GetStatusRef.ResetConsumptionActionGauge();
             _readOnlyOwner.Value.GetStatusRef.CurActionGauge += totalCost;
         }

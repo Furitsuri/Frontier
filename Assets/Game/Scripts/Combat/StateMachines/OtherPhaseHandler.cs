@@ -20,8 +20,8 @@ namespace Frontier.Battle
                 Character other = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ).First();
                 _stgCtrl.ApplyCurrentGrid2CharacterTile( other );
             }
-            // アクションゲージの回復
-            _btlRtnCtrl.BtlCharaCdr.RecoveryActionGaugeForGroup( CHARACTER_TAG.OTHER );
+            // ターン開始時の自軍キャラへの処理
+            _btlRtnCtrl.BtlCharaCdr.ApplyTurnStartProccessingForGroup( CHARACTER_TAG.OTHER );
 
             AssignPresenterToNodes( RootNode, _presenter );
         }

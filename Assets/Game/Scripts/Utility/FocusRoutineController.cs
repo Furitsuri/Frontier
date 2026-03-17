@@ -23,7 +23,7 @@ public class FocusRoutineController : MonoBehaviour
     /// </summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    protected FocusRoutineBase GetFocusRoutine( FocusRoutinePriority p ) => _focusRoutineBhvs[( ( int ) FocusRoutinePriority.NUM - 1 ) - (int) p];
+    protected FocusRoutineBase GetFocusRoutine( FocusRoutinePriority p ) => _focusRoutineBhvs[/*( ( int ) FocusRoutinePriority.NUM - 1 ) - */(int) p];
 
     /// <summary>
     /// 初期化します
@@ -73,12 +73,14 @@ public class FocusRoutineController : MonoBehaviour
 
         _currentRoutine.UpdateRoutine();
 
-        UpdateRoutineIfNextIsDue();
+        
     }
 
     public void LateUpdateRoutine()
     {
         _currentRoutine.LateUpdateRoutine();
+
+        UpdateRoutineIfNextIsDue();
     }
 
     public void FixedUpdateRoutine()

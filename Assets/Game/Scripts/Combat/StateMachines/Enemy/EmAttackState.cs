@@ -1,10 +1,11 @@
 ﻿using Frontier.Combat;
-using Frontier.Combat.Skill;
 using Frontier.Entities;
+using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
 using UnityEngine;
+using Zenject;
 using static Constants;
 
 namespace Frontier.Battle
@@ -18,18 +19,20 @@ namespace Frontier.Battle
             EM_ATTACK_END,
         }
 
+        [Inject] private SequenceFacade _sequenceFcd = null;
+
         private EmAttackPhase _phase;
         private string[] _playerSkillNames = null;
         private Enemy _attackCharacter = null;
         private Character _targetCharacter = null;
-        private CharacterAttackSequence _attackSequence = null;
+        // private CharacterAttackSequence _attackSequence = null;
         private Func<InputContext, bool>[] AccespuSubs;
 
         public override void Init()
         {
             base.Init();
 
-            _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
+            // _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
             _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert( _attackCharacter != null );
             AccespuSubs = new Func<InputContext, bool>[]
@@ -63,7 +66,7 @@ namespace Frontier.Battle
             _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
 
             // 攻撃シーケンスを初期化
-            _attackSequence.Init();
+            // _attackSequence.Init();
 
             // パラメータビューにキャラクターを割り当て
             _presenter.AssignCharacterToParameterView( _targetCharacter, ParameterWindowType.Left );
@@ -100,7 +103,7 @@ namespace Frontier.Battle
 
                     break;
                 case EmAttackPhase.EM_ATTACK_EXECUTE:
-                    if( _attackSequence.Update() )
+                    // if( _attackSequence.Update() )
                     {
                         _phase = EmAttackPhase.EM_ATTACK_END;
                     }
@@ -108,7 +111,7 @@ namespace Frontier.Battle
                 case EmAttackPhase.EM_ATTACK_END:
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
                     _attackCharacter.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
-                    // コマンド選択に戻る
+
                     Back();
 
                     return true;
@@ -120,7 +123,7 @@ namespace Frontier.Battle
         public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
-            Character diedCharacter = _attackSequence.GetDiedCharacter();
+            Character diedCharacter = null; // _attackSequence.GetDiedCharacter();
             if( diedCharacter != null )
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
@@ -211,8 +214,10 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetAttackCursorE2PActive( false );                   // アタックカーソルUI非表示
             _uiSystem.BattleUi.ToggleBattleExpect( false );                         // ダメージ予測表示UIを非表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
-            _attackSequence.StartSequence( _attackCharacter, _targetCharacter );    // 攻撃シーケンスの開始
+            // _attackSequence.StartSequence( _attackCharacter, _targetCharacter );    // 攻撃シーケンスの開始
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除
+
+            _sequenceFcd.RegistAttack( _attackCharacter, _targetCharacter );
 
             _phase = EmAttackPhase.EM_ATTACK_EXECUTE;
 
