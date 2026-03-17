@@ -23,19 +23,30 @@ public class Generator : MonoBehaviour
         _container.Inject( instance );
     }
 
+    public GameObject GenerateGameObject( GameObject gameObject, bool initActive, string objName )
+    {
+        GameObject gameObj = Instantiate( gameObject );
+        Debug.Assert( gameObj != null );
+        gameObject.name = objName;
+
+        gameObj.SetActive( initActive );
+
+        return gameObj;
+    }
+
     /// <summary>
     /// オブジェクトを生成し、そのオブジェクトにコンポーネントを追加します
     /// </summary>
     /// <typeparam name="T">オブジェクトに追加するコンポーネント</typeparam>
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <returns>生成したコンポーネント</returns>
-    public T GenerateObjectAndAddComponent<T>(bool initActive, string objName) where T : Behaviour
+    public T GenerateObjectAndAddComponent<T>( bool initActive, string objName ) where T : Behaviour
     {
-        GameObject gameObj = new GameObject(objName);
+        GameObject gameObj = new GameObject( objName );
 
         T original = gameObj.AddComponent<T>();
 
-        gameObj.SetActive(initActive);
+        gameObj.SetActive( initActive );
 
         return original;
     }
@@ -47,15 +58,15 @@ public class Generator : MonoBehaviour
     /// <param name="gameObject">渡すゲームオブジェクト</param>
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <returns>生成したコンポーネント</returns>
-    public T GenerateComponentFromObject<T> ( GameObject gameObject, bool initActive ) where T : Behaviour
+    public T GenerateComponentFromObject<T>( GameObject gameObject, bool initActive ) where T : Behaviour
     {
         GameObject gameObj = Instantiate( gameObject );
-        Debug.Assert(gameObj != null );
+        Debug.Assert( gameObj != null );
 
         T original = gameObj.GetComponent<T>();
         Debug.Assert( original != null );
-        
-        gameObj.SetActive(initActive);
+
+        gameObj.SetActive( initActive );
 
         return original;
     }
@@ -67,17 +78,17 @@ public class Generator : MonoBehaviour
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T InstantiateComponentWithDiContainerOnNewObj<T>(bool initActive, bool isBind, string objectName) where T : Behaviour
+    public T InstantiateComponentWithDiContainerOnNewObj<T>( bool initActive, bool isBind, string objectName ) where T : Behaviour
     {
-        T original = _container.InstantiateComponentOnNewGameObject<T>(objectName);
-        Debug.Assert(original != null);
+        T original = _container.InstantiateComponentOnNewGameObject<T>( objectName );
+        Debug.Assert( original != null );
 
-        original.gameObject.SetActive(initActive);
+        original.gameObject.SetActive( initActive );
 
         // Diコンテナにバインドする場合はここでバインド
-        if (isBind)
+        if( isBind )
         {
-            _installer.InstallBindings(original);
+            _installer.InstallBindings( original );
         }
 
         return original;
@@ -90,18 +101,18 @@ public class Generator : MonoBehaviour
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T InstantiateAndAddComponentWithDiContainer<T>(bool initActive, bool isBind, string objectName) where T : Behaviour
+    public T InstantiateAndAddComponentWithDiContainer<T>( bool initActive, bool isBind, string objectName ) where T : Behaviour
     {
-        GameObject gameObj = new GameObject(objectName);
-        T original = _container.InstantiatePrefabForComponent<T>(gameObj.AddComponent<T>().gameObject);
-        Debug.Assert(original != null);
+        GameObject gameObj = new GameObject( objectName );
+        T original = _container.InstantiatePrefabForComponent<T>( gameObj.AddComponent<T>().gameObject );
+        Debug.Assert( original != null );
 
-        original.gameObject.SetActive(initActive);
+        original.gameObject.SetActive( initActive );
 
         // Diコンテナにバインドする場合はここでバインド
-        if (isBind)
+        if( isBind )
         {
-            _installer.InstallBindings(original);
+            _installer.InstallBindings( original );
         }
 
         return original;
@@ -115,17 +126,17 @@ public class Generator : MonoBehaviour
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T InstantiateComponentWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind) where T : Behaviour
+    public T InstantiateComponentWithDiContainer<T>( GameObject gameObject, bool initActive, bool isBind ) where T : Behaviour
     {
-        T original = _container.InstantiatePrefabForComponent<T>(gameObject);
-        Debug.Assert(original != null);
+        T original = _container.InstantiatePrefabForComponent<T>( gameObject );
+        Debug.Assert( original != null );
 
-        original.gameObject.SetActive(initActive);
+        original.gameObject.SetActive( initActive );
 
         // Diコンテナにバインドする場合はここでバインド
-        if (isBind)
+        if( isBind )
         {
-            _installer.InstallBindings(original);
+            _installer.InstallBindings( original );
         }
 
         return original;
@@ -141,11 +152,22 @@ public class Generator : MonoBehaviour
     {
         T original = _container.Instantiate<T>();
 
-        if ( isBind )
+        if( isBind )
         {
-            _installer.InstallBindings(original);
+            _installer.InstallBindings( original );
         }
 
+        return original;
+    }
+
+    public T InstantiateWithDiContainer<T>( object[] args, bool isBind )
+    {
+        T original = _container.Instantiate<T>( args );
+
+        if( isBind )
+        {
+            _installer.InstallBindings( original );
+        }
         return original;
     }
 
@@ -160,17 +182,17 @@ public class Generator : MonoBehaviour
     {
         object obj = _container.Instantiate( type );
 
-        return (T)obj;
+        return ( T ) obj;
     }
 
-    public T InstantiateWithDiContainer<T>(T original, Vector3 position, Quaternion rotation, bool isBind) where T : UnityEngine.Object
+    public T InstantiateWithDiContainer<T>( T original, Vector3 position, Quaternion rotation, bool isBind ) where T : UnityEngine.Object
     {
-        T instance = _container.InstantiatePrefabForComponent<T>(original, position, rotation, null);
-        Debug.Assert(instance != null);
-        
-        if (isBind)
+        T instance = _container.InstantiatePrefabForComponent<T>( original, position, rotation, null );
+        Debug.Assert( instance != null );
+
+        if( isBind )
         {
-            _installer.InstallBindings(instance);
+            _installer.InstallBindings( instance );
         }
         return instance;
     }

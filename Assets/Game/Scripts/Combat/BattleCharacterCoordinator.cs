@@ -394,14 +394,16 @@ namespace Frontier.Battle
             _diedCharacterKey.CharacterIndex    = -1;
         }
 
+
         /// <summary>
-        /// 指定のキャラクター群のアクションゲージを回復させます
+        /// ターン開始時の各軍への処理
         /// </summary>
-        /// <status name="tag">キャラクター群のタグ</status>
-        public void RecoveryActionGaugeForGroup(CHARACTER_TAG tag)
+        /// <param name="tag"></param>
+        public void ApplyTurnStartProccessingForGroup( CHARACTER_TAG tag )
         {
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
+                c.BattleLogic.RemoveBuffEffect();
                 c.GetStatusRef.RecoveryActionGauge();
             }
         }

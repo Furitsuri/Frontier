@@ -8,9 +8,9 @@ using Zenject;
 using Frontier.Combat.Skill;
 using static Constants;
 
-namespace Frontier
+namespace Frontier.Sequences
 {
-    public class CharacterAttackSequence
+    public class CharacterAttackSequence : ISequence
     {
         enum Phase
         {
@@ -50,23 +50,19 @@ namespace Frontier
         private UpdateAttack _updateTargetAttack = null;
         private ParrySkillNotifier _parryNotifier = null;
 
-        public void Init()
+        public CharacterAttackSequence( Character attackChara, Character targetChara )
+        {
+            _attackCharacter = attackChara;
+            _targetCharacter = targetChara;
+        }
+
+        public void Start()
         {
             _btlCamCtrl     = _btlRtnCtrl.GetBtlCameraCtrl;
             _diedCharacter  = null;
             _elapsedTime    = 0f;
             _phase          = Phase.START;
-        }
 
-        /// <summary>
-        /// シーケンスを開始します
-        /// </summary>
-        /// <param name="attackChara">攻撃キャラクター</param>
-        /// <param name="targetChara">被攻撃キャラクター</param>
-        public void StartSequence( Character attackChara, Character targetChara )
-        {
-            _attackCharacter = attackChara;
-            _targetCharacter = targetChara;
             _atkCharaTransform = _attackCharacter.GetTransformHandler;
             _tgtCharaTransform = _targetCharacter.GetTransformHandler;
             _atkCharaInitialRot = _atkCharaTransform.GetRotation();
@@ -269,6 +265,17 @@ namespace Frontier
             }
 
             return false;
+        }
+
+        public void End() { }
+
+
+        public void Init()
+        {
+            _btlCamCtrl = _btlRtnCtrl.GetBtlCameraCtrl;
+            _diedCharacter = null;
+            _elapsedTime = 0f;
+            _phase = Phase.START;
         }
 
         /// <summary>

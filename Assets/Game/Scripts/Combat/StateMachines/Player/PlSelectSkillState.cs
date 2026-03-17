@@ -2,8 +2,10 @@
 using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities;
+using Frontier.Sequences;
 using Frontier.UI;
 using System;
+using Zenject;
 using static Constants;
 using static Frontier.UI.BattleUISystem;
 
@@ -21,6 +23,8 @@ namespace Frontier.Battle
         {
             SKILL_ACTION_TO_TARGET = 0,
         }
+
+        [Inject] private SequenceFacade _sequenceFcd = null;
 
         private string[] _playerSkillNames = null;
         private PlSelectSkillPhase _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
@@ -60,6 +64,12 @@ namespace Frontier.Battle
 
                     break;
                 case PlSelectSkillPhase.PL_SELECT_SKILL_END:
+                    if( _sequenceFcd.IsEmptySequence() )
+                    {
+                        Back();
+
+                        return true;
+                    }
                     break;
             }
 
@@ -109,6 +119,8 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptConfirm()
         {
+            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+
             // 所有スキルのうち、どれか一つでも使用フラグが立っていれば決定入力を受け付ける
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
@@ -123,6 +135,8 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptCancel()
         {
+            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+
             return true;
         }
 
@@ -134,6 +148,12 @@ namespace Frontier.Battle
         protected override bool AcceptConfirm( InputContext context )
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
+
+            // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
+            if( _plOwner.BattleLogic.IsUsingSelfBuffSkills() )
+            {
+                _sequenceFcd.RegistSelfBuffs( _plOwner );
+            }
 
             // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
             if( IsTransitionSkillActionState() )
@@ -148,9 +168,9 @@ namespace Frontier.Battle
 
                 // コマンド履歴にスキル選択を追加
                 _plOwner.PushCommandHistory( COMMAND_TAG.SKILL );
-
-                Back();
             }
+
+            _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
 
             return true;
         }
@@ -171,6 +191,8 @@ namespace Frontier.Battle
 
         private bool CanAcceptSub( int index )
         {
+            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+
             if( _playerSkillNames[index].Length <= 0 ) { return false; }
 
             bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( index, SituationType.ATTACK );

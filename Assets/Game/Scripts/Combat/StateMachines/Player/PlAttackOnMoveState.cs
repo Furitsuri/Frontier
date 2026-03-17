@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Sequences;
 using Frontier.Stage;
 
 namespace Frontier.Battle

@@ -1,9 +1,10 @@
 ﻿using Frontier.Combat;
-using Frontier.Combat.Skill;
 using Frontier.Entities;
+using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
+using Zenject;
 using static Constants;
 
 namespace Frontier.Battle
@@ -21,6 +22,8 @@ namespace Frontier.Battle
         {
             CHARACTER_STATUS = 0,
         }
+
+        [Inject] private SequenceFacade _sequenceFcd = null;
 
         protected PlAttackPhase _phase = PlAttackPhase.PL_ATTACK_SELECT_GRID;
         protected int _curentGridIndex = -1;
@@ -42,7 +45,7 @@ namespace Frontier.Battle
             base.Init();
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
-            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
+            // _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
@@ -67,7 +70,7 @@ namespace Frontier.Battle
             }
 
             // 攻撃シーケンスを初期化
-            _attackSequence.Init();
+            // _attackSequence.Init();
 
             _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
         }
@@ -122,7 +125,7 @@ namespace Frontier.Battle
 
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );
-
+                        
                     break;
                 case PlAttackPhase.PL_ATTACK_EXECUTE:
                     if( _attackSequence.Update() )
@@ -148,7 +151,7 @@ namespace Frontier.Battle
         public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
-            Character diedCharacter = _attackSequence.GetDiedCharacter();
+            Character diedCharacter = null;// _attackSequence.GetDiedCharacter();
             if( diedCharacter != null )
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
@@ -310,10 +313,17 @@ namespace Frontier.Battle
                 _uiSystem.BattleUi.SetAttackCursorP2EActive( false );           // アタックカーソルUI非表示
                 _uiSystem.BattleUi.ToggleBattleExpect( false );                 // ダメージ予測表示UIを非表示
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
-                _attackSequence.StartSequence( _plOwner, _targetCharacter );    // 攻撃シーケンスの開始
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
 
-                _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
+                // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
+                if( _plOwner.BattleLogic.IsUsingSelfBuffSkills() )
+                {
+                    _sequenceFcd.RegistSelfBuffs( _plOwner );
+                }
+
+                _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始
+
+                _phase = PlAttackPhase.PL_ATTACK_END;
 
                 return true;
             }

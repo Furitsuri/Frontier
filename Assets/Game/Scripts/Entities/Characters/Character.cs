@@ -1,6 +1,8 @@
 ﻿using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Loaders;
+using Frontier.Registries;
+using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -30,6 +32,7 @@ namespace Frontier.Entities
 
         [Inject] protected IUiSystem _uiSystem                              = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld               = null;
+        [Inject] protected PrefabRegistry _prefabReg                        = null;
         [Inject] protected TimeScaleController _timeScaleCtrl               = null;
 
         private readonly TimeScale _timeScale   = new TimeScale();
@@ -135,14 +138,14 @@ namespace Frontier.Entities
             return false;
         }
 
-        public SkillID GetEquipSkillID( int skillIdx )
+        public SkillID GetEquipSkillID( int slotIdx )
         {
-            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( slotIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= slotIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
                 return SkillID.NONE;
             }
-            return _status.EquipSkills[skillIdx];
+            return _status.EquipSkills[slotIdx];
         }
 
         public CHARACTER_TAG GetCharacterTag()

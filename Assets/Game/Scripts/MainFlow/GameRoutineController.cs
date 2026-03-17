@@ -56,6 +56,7 @@ namespace Frontier
         {
             _current.Update();
         }
+
         public override void LateUpdateRoutine() 
         {
             if( _current.LateUpdate() )
@@ -75,6 +76,32 @@ namespace Frontier
             _current.FixedUpdate();
         }
         public override int GetPriority() { return ( int ) FocusRoutinePriority.MAIN_FLOW; }
+
+        public override void Run()
+        {
+            base.Run();
+        }
+
+        public override void Restart()
+        {
+            base.Restart();
+
+            _current.Restart();
+        }
+
+        public override void Pause()
+        {
+            _current.Pause();
+
+            base.Pause();
+        }
+
+        public override void Exit()
+        {
+            _current.Exit();
+
+            base.Exit();
+        }
 
         private void StartNewGame()
         {

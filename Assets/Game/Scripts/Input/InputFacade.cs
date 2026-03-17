@@ -10,16 +10,16 @@ public class InputFacade
     private InputHandler _inputHdlr             = null;
     private List<InputCode> _inputCodes         = new List<InputCode>();
 
-    /// <summary>
-    /// 初期化します
-    /// </summary>
-    public void Init()
+    public void Setup()
     {
         LazyInject.GetOrCreate( ref _inputHdlr, () => _hierarchyBld.CreateComponentAndOrganize<InputHandler>( true, "InputHandler" ) );
         LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
         _inputHdlr.Setup();
         _inputGuideView.Setup();
-
+    }
+    
+    public void Init()
+    {
         // 入力コード情報を受け渡す
         _inputHdlr.Init( _inputGuideView, _inputCodes );
         _inputGuideView.Init( _inputCodes );

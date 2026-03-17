@@ -1,9 +1,11 @@
-﻿using UnityEngine;
-using Frontier.Tutorial;
-using Frontier.DebugTools.DebugMenu;
-using Zenject;
+﻿using Frontier.DebugTools.DebugMenu;
 using Frontier.Loaders;
 using Frontier.Registries;
+using Frontier.Sequences;
+using Frontier.Tutorial;
+using System.Collections;
+using UnityEngine;
+using Zenject;
 
 namespace Frontier
 {
@@ -21,6 +23,7 @@ namespace Frontier
         [Inject] private DiContainer _diContainer           = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private InputFacade _inputFcd              = null;
+        [Inject] private SequenceFacade _sequenceFcd        = null;
         [Inject] private TutorialFacade _tutorialFcd        = null;
 
         private GameObject _stageImage;
@@ -64,12 +67,16 @@ namespace Frontier
             LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
 #endif // UNITY_EDITOR
 
+            _inputFcd.Setup();
+            _sequenceFcd.Setup( GetFocusRoutine( FocusRoutinePriority.SEQUENCE ) );
             _tutorialFcd.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
         }
 
         // Start is called before the first frame update
         void Start()
         {
+            StartCoroutine( Bootstrap() );
+
             _generalFileLoader.LoadSkillsData();
 
             // 入力関連の初期化
@@ -77,8 +84,7 @@ namespace Frontier
             // チュートリアル関連の初期化
             _tutorialFcd.Init();
 
-            base.Init();
-            InitGame();
+            StartCoroutine( InitGame() );
         }
 
         void Update()
@@ -99,10 +105,11 @@ namespace Frontier
         /// <summary>
         /// ゲームを初期化します
         /// </summary>
-        private void InitGame()
+        private IEnumerator InitGame()
         {
-            // アニメーションデータの初期化
-            AnimDatas.Init();
+            enabled = false;    // 読込処理完了までUpdate()などを無効にする
+
+            AnimDatas.Init();   // アニメーションデータの初期化
 
 #if UNITY_EDITOR
             // デバッグモードの初期化
@@ -117,6 +124,13 @@ namespace Frontier
             {
                 Invoke( "StageLevelImage", stageStartDelay );
             }
+
+            var tutorialLoadTask = _tutorialFcd.LoadTutorialData();   // チュートリアルデータの読込待ち
+            yield return new WaitUntil( () => tutorialLoadTask.IsCompleted );
+
+            base.Init();
+
+            enabled = true; // 読込完了したため、Update()などを有効に
         }
 
         /// <summary>
@@ -126,6 +140,11 @@ namespace Frontier
         private void StageLevelImage()
         {
             _stageImage.SetActive( false );
+        }
+
+        private IEnumerator Bootstrap()
+        {
+            yield return null;
         }
 
 #if UNITY_EDITOR
@@ -162,6 +181,7 @@ namespace Frontier
 
             return true;
         }
+
 #endif // UNITY_EDITOR
     }
 }
