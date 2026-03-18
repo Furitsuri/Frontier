@@ -32,7 +32,7 @@ namespace Frontier.Sequences
         {
             _state = State.DISP_BUFF_NAME;
             ResetElapsedTime();
-            _presenter.SetCommandName( _commandName );
+            _presenter.SetCommandName( _commandName.Replace( '_', ' ' ) );
             _presenter.SetActiveCommandName( true );
         }
 

@@ -104,7 +104,7 @@ namespace Frontier.Entities
         /// <param name="skillIdx"></param>
         /// <param name="situationType"></param>
         /// <returns></returns>
-        public bool CanUseEquipSkill( int skillIdx, SituationType situationType, int useableSkillTypeBit )
+        public bool CanUseEquipSkill( int skillIdx, SituationType situationType, int useableActionTypeBit )
         {
             if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
@@ -118,24 +118,24 @@ namespace Frontier.Entities
             var skillData = SkillsData.data[( int ) skillID];
 
             // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
-            if( skillData.Type != situationType )
+            if( skillData.SituationType != situationType )
             {
                 return false;
             }
 
             // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
-            if( !Methods.CheckBitFlag( useableSkillTypeBit, skillData.SkillType ) )
+            if( !Methods.CheckBitFlag( useableActionTypeBit, skillData.ActionType ) )
             {
                 return false;
             }
 
             // コストが現在のアクションゲージ値を越えていないかをチェック
-            if( _status.ActGaugeConsumption + skillData.Cost <= _status.CurActionGauge )
+            if( _status.CurActionGauge < _status.ActGaugeConsumption + skillData.Cost )
             {
-                return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         public SkillID GetEquipSkillID( int slotIdx )

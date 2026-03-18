@@ -22,9 +22,6 @@ namespace Frontier.Loaders
         [Header( "各第三軍勢キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] OtherParamFilePath;
 
-        [Header( "各スキルデータのパラメータ参照先" )]
-        [SerializeField] public string SkillDataFilePath;
-
         [Header( "近接攻撃時のカメラパラメータの参照先" )]
         [SerializeField] public string CloseAtkCameraParamFilePath;
 
@@ -56,25 +53,6 @@ namespace Frontier.Loaders
             public int[] Skills;
         }
 
-        [Serializable]
-        public struct FileSkillData
-        {
-            public string Name;
-            public int Cost;
-            public int Type;
-            public int SkillType;
-            public int Flags;
-            public int Duration;
-            public float AddAtkMag;
-            public float AddDefMag;
-            public int AddAtkNum;
-            public float Param1;
-            public float Param2;
-            public float Param3;
-            public float Param4;
-            public string ExplainTextKey;
-        }
-
         [System.Serializable]
         public class PlayerParamContainer
         {
@@ -85,12 +63,6 @@ namespace Frontier.Loaders
         public class CharacterStatusContainer
         {
             public CharacterStatusData[] CharacterStatuses;
-        }
-
-        [System.Serializable]
-        public class SkillDataContainer
-        {
-            public FileSkillData[] SkillsData;
         }
 
         [System.Serializable]
@@ -136,20 +108,6 @@ namespace Frontier.Loaders
         }
 
         /// <summary>
-        /// 各スキルのデータをロードします
-        /// </summary>
-        public void LoadSkillsData()
-        {
-            string json = File.ReadAllText( SkillDataFilePath );
-            var dataContainer = JsonUtility.FromJson<SkillDataContainer>( json );
-            if( dataContainer == null ) return;
-            for( int i = 0; i < ( int ) SkillID.NUM; ++i )
-            {
-                ApplySkillsData( ref SkillsData.data[i], dataContainer.SkillsData[i] );
-            }
-        }
-
-        /// <summary>
         /// カメラのパラメータを読み込みます
         /// </summary>
         public void LoadCameraParams( BattleCameraController cameraController )
@@ -165,31 +123,6 @@ namespace Frontier.Loaders
             List<BattleCameraController.CameraParamData[]> rangedParams = dataContainer.CameraParams;
 
             cameraController.SetCameraParamDatas( closeParams, rangedParams );
-        }
-
-        /// <summary>
-        /// スキルデータを適応させます
-        /// </summary>
-        /// <param name="data">適応先のスキルデータ</param>
-        /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
-        private void ApplySkillsData( ref SkillsData.Data data, in FileSkillData fdata )
-        {
-            data.Name       = fdata.Name;
-            data.Cost       = fdata.Cost;
-            data.Type       = ( SituationType ) fdata.Type;
-            data.SkillType  = ( SkillType ) fdata.SkillType;
-            data.Flags      = ( SkillBitFlag ) fdata.Flags;
-            data.Duration   = fdata.Duration;
-            data.AddAtkMag  = fdata.AddAtkMag;
-            data.AddDefMag  = fdata.AddDefMag;
-            data.AddAtkNum  = fdata.AddAtkNum;
-            data.Param1     = fdata.Param1;
-            data.Param2     = fdata.Param2;
-            data.Param3     = fdata.Param3;
-            data.Param4     = fdata.Param4;
-            data.ExplainTextKey = fdata.ExplainTextKey;
-            // TODO : nullアクセス防止の暫定対応。後で消すこと
-            if( null == data.ExplainTextKey ) { data.ExplainTextKey = ""; }
         }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR

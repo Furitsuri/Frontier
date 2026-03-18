@@ -316,15 +316,7 @@ namespace Frontier.Battle
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
 
-                // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
-                List<string> skillNames;
-                if( _plOwner.BattleLogic.IsUsingSelfBuffSkills( out skillNames ) )
-                {
-                    foreach( var name in skillNames )
-                    {
-                        _sequenceFcd.RegistSelfBuffs( _plOwner, name );
-                    }
-                }
+                _plOwner.BattleLogic.RegistSelfBuffSequences();                 // 自己バフスキルの登録
 
                 _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始
 
@@ -371,7 +363,7 @@ namespace Frontier.Battle
             if( !CanAcceptConfirm() ) return false;
             if( _playerSkillNames[index].Length <= 0 ) return false;
 
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( index, SituationType.ATTACK, Methods.ToBit( SkillType.BUFF ) );
+            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( index, SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 
             _presenter.SetUseableSkillOnParamView( index, useable, ParameterWindowType.Left );
 

@@ -2,13 +2,13 @@
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
 using Frontier.Registries;
+using Frontier.Sequences;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Entities
 {
@@ -18,6 +18,7 @@ namespace Frontier.Entities
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected StageController _stageCtrl           = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
+        [Inject] private SequenceFacade _sequenceFcd            = null;
 
         protected Character _opponent = null;
 
@@ -117,6 +118,19 @@ namespace Frontier.Entities
             executableCommands = _executableCommands;
         }
 
+        public void RegistSelfBuffSequences()
+        {
+            // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
+            List<string> skillNames;
+            if( IsUsingSelfBuffSkills( out skillNames ) )
+            {
+                foreach( var name in skillNames )
+                {
+                    _sequenceFcd.RegistSelfBuffs( _readOnlyOwner.Value, name );
+                }
+            }
+        }
+
         public void RegisterCombatAnimation( COMBAT_ANIMATION_TYPE type )
         {
             _combatAnimSeq = _animSeqfactories[( int ) type]();
@@ -198,7 +212,7 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillIdx">スキルの装備インデックス値</param>
         /// <returns>指定スキルの使用状態切替可否</returns>
-        public bool CanToggleEquipSkill( int skillIdx, SituationType situationType, int useableSkillTypeBit = 0xff )
+        public bool CanToggleEquipSkill( int skillIdx, SituationType situationType, int useableActionTypeBit = 0xff )
         {
             if( EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
@@ -213,7 +227,7 @@ namespace Frontier.Entities
                 return true;
             }
 
-            return _readOnlyOwner.Value.CanUseEquipSkill( skillIdx, situationType, useableSkillTypeBit );
+            return _readOnlyOwner.Value.CanUseEquipSkill( skillIdx, situationType, useableActionTypeBit );
         }
 
         public bool IsUsingEquipSkill( int skillIdx )
@@ -239,7 +253,7 @@ namespace Frontier.Entities
 
                 var skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
                 var skillData = SkillsData.data[( int ) skillID];
-                if( skillData.SkillType == SkillType.BUFF )
+                if( skillData.ActionType == ActionType.BUFF )
                 {
                     skillNames.Add( skillData.Name );
 

@@ -150,15 +150,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
-            List<string> skillNames;
-            if( _plOwner.BattleLogic.IsUsingSelfBuffSkills( out skillNames ) )
-            {
-                foreach( var name in skillNames )
-                {
-                    _sequenceFcd.RegistSelfBuffs( _plOwner, name );
-                }
-            }
+            _plOwner.BattleLogic.RegistSelfBuffSequences(); // 自己バフスキルの登録
 
             // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
             if( IsTransitionSkillActionState() )
@@ -224,12 +216,12 @@ namespace Frontier.Battle
                 {
                     SkillID skillID = _plOwner.GetEquipSkillID( i );
                     var skillData = SkillsData.data[( int ) skillID];
-                    switch( skillData.SkillType )
+                    switch( skillData.ActionType )
                     {
                         // ターゲット選択に遷移するスキルタイプの場合は遷移する
-                        case SkillType.ATTACK:
-                        case SkillType.SUPPORT:
-                        case SkillType.HEAL:
+                        case ActionType.ATTACK:
+                        case ActionType.SUPPORT:
+                        case ActionType.HEAL:
                             _plOwner.BattleLogic.SetUsingActionSkillData( skillData );
                             return true;
                         default:

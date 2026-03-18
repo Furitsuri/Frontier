@@ -1,6 +1,6 @@
 ﻿namespace Frontier.Combat
 {
-    public enum SkillType : int
+    public enum ActionType : int
     {
         NONE = -1,
 

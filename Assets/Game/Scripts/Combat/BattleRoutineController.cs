@@ -93,7 +93,6 @@ namespace Frontier.Battle
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams( _btlCameraCtrl );          // ファイル読込マネージャにカメラパラメータをロードさせる
-            _btlFileLoader.LoadSkillsData();                            // スキルデータの読込
         }
 
         public override void Update()
