@@ -15,8 +15,8 @@ namespace Frontier.Loaders
         {
             public string Name;
             public int Cost;
-            public int Type;
-            public int SkillType;
+            public int SituationType;
+            public int ActionType;
             public int Flags;
             public int Duration;
             public float AddAtkMag;
@@ -60,8 +60,8 @@ namespace Frontier.Loaders
         {
             data.Name           = fdata.Name;
             data.Cost           = fdata.Cost;
-            data.Type           = ( SituationType ) fdata.Type;
-            data.SkillType      = ( SkillType ) fdata.SkillType;
+            data.SituationType  = ( SituationType ) fdata.SituationType;
+            data.ActionType     = ( ActionType ) fdata.ActionType;
             data.Flags          = ( SkillBitFlag ) fdata.Flags;
             data.Duration       = fdata.Duration;
             data.AddAtkMag      = fdata.AddAtkMag;

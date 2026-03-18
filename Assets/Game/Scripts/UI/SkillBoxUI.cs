@@ -42,18 +42,13 @@ namespace Frontier
 
             var skillData       = SkillsData.data[( int ) chara.GetEquipSkillID( skillIdx )];
             string skillName    = skillData.Name;
-            var type            = skillData.Type;
+            var situationType   = skillData.SituationType;
             _textKey            = skillData.ExplainTextKey;
-            SetSkillName( skillName, type );
+            SetSkillName( skillName, situationType );
             SetTooltipText( _textKey );
             ShowSkillCostImage( SkillsData.data[( int ) chara.GetEquipSkillID( skillIdx )].Cost );
 
             EnableRefreshText();
-            // 使用フラグが立っておらず、コストが不足しているスキルは専用表示に
-            if( !chara.BattleParams.TmpParam.isUseSkills[ skillIdx ] )
-            {
-                SetUseable( skillData.Cost <= chara.GetStatusRef.CurActionGauge );
-            }
         }
 
         public void SetUsing()

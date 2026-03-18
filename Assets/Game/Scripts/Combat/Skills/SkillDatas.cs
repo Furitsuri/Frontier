@@ -14,8 +14,8 @@ namespace Frontier.Combat
         {
             public string Name;             // スキル名
             public int Cost;                // 使用コスト
-            public SituationType Type;      // 使用シチュエーションタイプ
-            public SkillType SkillType;     // スキルタイプ
+            public SituationType SituationType;      // 使用シチュエーションタイプ
+            public ActionType ActionType;     // スキルタイプ
             public SkillBitFlag Flags;      // スキルフラグ
             public int Duration;            // 効果時間（ターン数）
             public float AddAtkMag;         // 攻撃力倍率加算
@@ -42,6 +42,7 @@ namespace Frontier.Combat
             {
                 () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),   // SKILL_PARRY
                 () => sharedNotifier,                                                       // SKILL_GUARD
+                () => sharedNotifier,                                                       // SKILL_BUILD_UP
                 () => sharedNotifier,                                                       // SKILL_COUNTER
                 () => sharedNotifier,                                                       // SKILL_DOUBLE_STRIKE
                 () => sharedNotifier,                                                       // SKILL_TRIPLE_STRIKE
