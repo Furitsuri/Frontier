@@ -77,6 +77,7 @@ namespace Frontier.Battle
         /// </summary>
         public override void Init()
         {
+            _presenter.Init();
             _btlCameraCtrl.Init();
             _btlCharaCdr.Init();
             _stgCtrl.Init( _btlCameraCtrl );

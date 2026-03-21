@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.ObjectModel;
 using Zenject;
-using static Constants;
 using System;
 using System.Threading.Tasks;
+using static Constants;
 
 namespace Frontier.Tutorial
 {
@@ -82,9 +82,9 @@ namespace Frontier.Tutorial
             int hashCode = Hash.GetStableHash( GetType().Name );
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.HORIZONTAL_CURSOR, "PAGE\nTRANSACTION", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM, "NEXT", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.HORIZONTAL_CURSOR,   "PAGE\nTRANSACTION", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM,             "NEXT", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL,              "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
              );
         }
 
@@ -269,8 +269,6 @@ namespace Frontier.Tutorial
             _tutorialView.Exit();
             // 入力コードの解除
             _inputFcd.UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
-            // 表示済みのトリガータイプをクリア
-            TutorialFacade.Clear();
         }
 
         public override int GetPriority() { return ( int ) FocusRoutinePriority.TUTORIAL; }

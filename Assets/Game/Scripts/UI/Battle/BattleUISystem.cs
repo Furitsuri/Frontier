@@ -87,8 +87,8 @@ namespace Frontier.UI
 
         public void ToggleBattleExpect( bool isActive )
         {
-            ParameterView.PlayerParameter.GetDiffHPText().gameObject.SetActive( isActive );
-            ParameterView.EnemyParameter.GetDiffHPText().gameObject.SetActive( isActive );
+            ParameterView.PlayerParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
+            ParameterView.EnemyParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
         }
 
         public void ToggleDamageUI( bool isActive )
@@ -103,12 +103,12 @@ namespace Frontier.UI
 
         public SkillBoxUI GetPlayerParamSkillBox( int index )
         {
-            return ParameterView.PlayerParameter.GetSkillBox( index );
+            return ParameterView.PlayerParameter.SkillBoxes[index];
         }
 
         public SkillBoxUI GetEnemyParamSkillBox( int index )
         {
-            return ParameterView.EnemyParameter.GetSkillBox( index );
+            return ParameterView.EnemyParameter.SkillBoxes[index];
         }
 
         public void SetDamageUIPosByCharaPos( Character character, int damageValue )

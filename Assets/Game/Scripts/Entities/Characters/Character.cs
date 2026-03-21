@@ -80,6 +80,38 @@ namespace Frontier.Entities
         public void Apply( BattleFileLoader.CharacterStatusData statusData )
         {
             Status.ApplyParams( ref _status, in statusData );
+
+            // スキルの使用可否フラグを更新
+            RefreshUseableSkillFlags( SituationType.NONE, 0xff );
+        }
+
+        public void RefreshUseableSkillFlags( SituationType situationType, int useableActionTypeBit = 0xff )
+        {
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                SkillID skillID = GetEquipSkillID( i );
+                if( !SkillsData.IsValidSkill( skillID ) ) { return; }
+                var skillData = SkillsData.data[( int ) skillID];
+
+                // スキル使用ONの状態であればOFFにするだけなので、チェックする必要がない
+                if( BattleParams.TmpParam.IsSkillsToggledON[i] )
+                {
+                    BattleParams.TmpParam.IsUseableSkill[i] = true;
+                    continue;
+                }
+
+                BattleParams.TmpParam.IsUseableSkill[i] = false;
+                
+                if( BattleParams.TmpParam.IsSkillsUsed[i] ||                                                // 使用済みのスキルは切替不可
+                    ( SituationType.NONE != situationType && skillData.SituationType != situationType ) ||  // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
+                    !Methods.CheckBitFlag( useableActionTypeBit, skillData.ActionType ) ||                  // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
+                    _status.CurActionGauge < _status.ActGaugeConsumption + skillData.Cost )                 // コストが現在のアクションゲージ値を越えていないかをチェック
+                { 
+                    continue;
+                }
+
+                BattleParams.TmpParam.IsUseableSkill[i] = true;
+            }
         }
 
         public void RestoreMaterialsOriginalColor()
@@ -99,12 +131,13 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定の装備インデックスに対応するスキルが、指定のシチュエーションで使用可能かを返します
+        /// 指定の装備インデックスに対応するスキルが、使用コストの面で使用可能かどうかを判定します。
+        /// MEMO : BattleLogicが生成されていない状態である雇用フェーズでも判定する機会があるため、Character内に定義しています。
         /// </summary>
         /// <param name="skillIdx"></param>
         /// <param name="situationType"></param>
         /// <returns></returns>
-        public bool CanUseEquipSkill( int skillIdx, SituationType situationType, int useableActionTypeBit )
+        public bool IsUseableSkillByCost( int skillIdx )
         {
             if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
@@ -114,26 +147,10 @@ namespace Frontier.Entities
             }
 
             SkillID skillID = GetEquipSkillID( skillIdx );
-            if( !SkillsData.IsValidSkill( skillID ) ) { return false; }
+            if( !SkillsData.IsValidSkill( skillID ) )                                   { return false; }
             var skillData = SkillsData.data[( int ) skillID];
-
-            // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
-            if( skillData.SituationType != situationType )
-            {
-                return false;
-            }
-
-            // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
-            if( !Methods.CheckBitFlag( useableActionTypeBit, skillData.ActionType ) )
-            {
-                return false;
-            }
-
             // コストが現在のアクションゲージ値を越えていないかをチェック
-            if( _status.CurActionGauge < _status.ActGaugeConsumption + skillData.Cost )
-            {
-                return false;
-            }
+            if( _status.CurActionGauge < _status.ActGaugeConsumption + skillData.Cost ) { return false; }
 
             return true;
         }
@@ -196,7 +213,6 @@ namespace Frontier.Entities
             _timeScale.OnValueChange = AnimCtrl.UpdateTimeScale;
 
             ResetElapsedTime();
-
             // キャラクターモデルのマテリアルが設定されているObjectを取得し、Materialと初期のColor設定を保存
             RegistMaterialsRecursively( this.transform, OBJECT_TAG_NAME_CHARA_SKIN_MESH );
         }

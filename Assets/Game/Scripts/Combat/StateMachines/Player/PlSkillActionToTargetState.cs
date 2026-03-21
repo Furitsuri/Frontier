@@ -26,7 +26,8 @@ namespace Frontier.Battle
             base.Init();
 
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
 
             _usingSkillData = _plOwner.BattleLogic.GetUsingActionSkillData();
             skillRange      = ( int ) _usingSkillData.Param1;
@@ -35,8 +36,6 @@ namespace Frontier.Battle
 
         public override bool Update()
         {
-            _presenter.UpdateParameterView( ParameterWindowType.Left );
-
             if( base.Update() )
             {
                 return true;
@@ -112,7 +111,7 @@ namespace Frontier.Battle
                 _isActiveRightParamUI = ( gridSelectChara != null && gridSelectChara != _plOwner );
                 if( _isActiveRightParamUI )
                 {
-                    _presenter.AssignCharacterToParameterView( gridSelectChara, UI.ParameterWindowType.Right );
+                    _presenter.AssignCharacter( gridSelectChara, UI.ParameterWindowType.Right );
                 }
                 _presenter.SetActiveParamView( _isActiveRightParamUI, UI.ParameterWindowType.Right );
             }

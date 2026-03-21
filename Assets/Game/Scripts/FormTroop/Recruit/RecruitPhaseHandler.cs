@@ -1,4 +1,5 @@
 ﻿using Frontier.StateMachine;
+using Zenject;
 
 namespace Frontier.FormTroop
 {
@@ -6,11 +7,18 @@ namespace Frontier.FormTroop
     {
         private RecruitPhasePresenter _presenter = null;
 
+        [Inject] RecruitPhaseHandler( HierarchyBuilderBase hierarchyBld )
+        {
+            _hierarchyBld = hierarchyBld;
+
+            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhasePresenter>( true ) );
+        }
+
         public override void Init()
         {
             base.Init();
 
-            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhasePresenter>( true ) );
+            // LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhasePresenter>( true ) );
 
             _presenter.Init();
 

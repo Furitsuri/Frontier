@@ -13,13 +13,19 @@ namespace Frontier.FormTroop
     {
         [Inject] private UserDomain _userDomain = null;
 
-        private RecruitUISystem _recruitmentUI                                  = null;
+        private RecruitUISystem _recruitmentUI = null;
+
+        [Inject]
+        public RecruitPhasePresenter( IUiSystem uiSystem, HierarchyBuilderBase hierarchyBld ) : base( uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM, false, hierarchyBld )
+        {
+            _uiSystem      = uiSystem;
+            _recruitmentUI = _uiSystem.RecruitUi;
+        }
 
         public void Init()
         {
-            base.Init( _uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM );
+            base.Init( _uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM, false );
 
-            _recruitmentUI = _uiSystem.RecruitUi;
             _recruitmentUI.Init();
         }
 
@@ -50,7 +56,7 @@ namespace Frontier.FormTroop
         {
             // フォーカス中のキャラクターのパラメータの表示
             Debug.Assert( _focusCandidates.Length % 2 == 1 );  // 奇数であることが前提
-            _recruitmentUI.EmploymentSelectUI.FocusCharaParamUI.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+            _parameterPresenter.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
         }
 
         /// <summary>

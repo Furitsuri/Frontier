@@ -39,7 +39,6 @@ namespace Frontier.UI
             int centralIndex = SHOWABLE_SELECTION_CHARACTERS_NUM / 2;
 
             _focusCharaParamUI.Setup();
-            _focusCharaParamUI.Init();
 
             for( int i = 0; i < SHOWABLE_SELECTION_CHARACTERS_NUM; ++i )
             {

@@ -1,8 +1,10 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities.Ai;
+using Frontier.UI;
 using System;
 using System.Collections.Generic;
 using static Frontier.Entities.Player;
+using static Constants;
 
 namespace Frontier.Entities
 {
@@ -17,6 +19,8 @@ namespace Frontier.Entities
         public override void Init()
         {
             base.Init();
+
+            _paramWinType = ParameterWindowType.Left;
 
             LazyInject.GetOrCreate( ref _baseAi, () => _hierarchyBld.InstantiateWithDiContainer<AiBase>( false ) );
 
@@ -95,7 +99,6 @@ namespace Frontier.Entities
                     totalCost += skillData.Cost;
 
                     ToggleUseSkill( i );
-                    _uiSystem.BattleUi.ParameterView.PlayerParameter.GetSkillBox( i ).SetFlickEnabled( false );
                 }
             }
 
@@ -120,25 +123,25 @@ namespace Frontier.Entities
         /// <param name="index">指定のスキルのインデックス番号</param>
         public override void ToggleUseSkill( int index )
         {
-            bool IsUsing = _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[index] = !_readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[index];
+            bool IsToggledToUse = _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[index] = !_readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[index];
 
             SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( index );
             if( !SkillsData.IsValidSkill( skillID ) ) { return; }
             var skillData = SkillsData.data[( int ) skillID];
 
-            if( IsUsing )
+            if( IsToggledToUse )
             {
-                _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption += skillData.Cost;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkNum += skillData.AddAtkNum;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkMagnification += skillData.AddAtkMag;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.DefMagnification += skillData.AddDefMag;
+                _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption                   += skillData.Cost;
+                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkNum             += skillData.AddAtkNum;
+                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkMagnification   += skillData.AddAtkMag;
+                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.DefMagnification   += skillData.AddDefMag;
             }
             else
             {
-                _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption -= skillData.Cost;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkNum -= skillData.AddAtkNum;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkMagnification -= skillData.AddAtkMag;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.DefMagnification -= skillData.AddDefMag;
+                _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption                   -= skillData.Cost;
+                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkNum             -= skillData.AddAtkNum;
+                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkMagnification   -= skillData.AddAtkMag;
+                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.DefMagnification   -= skillData.AddDefMag;
             }
         }
     }

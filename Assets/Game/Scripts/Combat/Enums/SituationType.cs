@@ -2,7 +2,9 @@
 {
     public enum SituationType : int
     {
-        ATTACK = 0,
+        NONE = -1,
+
+        ATTACK,
         DEFENCE,
         PASSIVE,
 

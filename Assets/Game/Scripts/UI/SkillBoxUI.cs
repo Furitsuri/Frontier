@@ -5,7 +5,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Frontier.Combat;
-using Frontier.Combat.Skill;
 using Frontier.Entities;
 
 namespace Frontier

@@ -88,7 +88,7 @@ namespace Frontier.Battle
         {
             if( !_isValidDestination ) return false;
 
-            if( em.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) ) return false;
+            if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.MOVE ] ) return false;
 
             return true;
         }
@@ -102,7 +102,7 @@ namespace Frontier.Battle
         {
             if( !_isValidTarget ) return false;
 
-            if( em.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ) return false;
+            if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ) return false;
 
             return true;
         }
@@ -114,7 +114,7 @@ namespace Frontier.Battle
         /// <returns>遷移するか否か</returns>
         private bool ShouldTransitionToNextCharacter( Enemy em )
         {
-            if( em.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.MOVE ) && em.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.MOVE ] && em.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] )
             {
                 em.BattleParams.TmpParam.EndAction();
                 return true;

@@ -5,10 +5,8 @@ using Frontier.Entities;
 using Frontier.Sequences;
 using Frontier.UI;
 using System;
-using System.Collections.Generic;
 using Zenject;
 using static Constants;
-using static Frontier.UI.BattleUISystem;
 
 namespace Frontier.Battle
 {
@@ -35,8 +33,8 @@ namespace Frontier.Battle
         {
             base.Init();
 
-            _playerSkillNames = _plOwner.GetStatusRef.GetEquipSkillNames();
-            _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
+            _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
+            _phase              = PlSelectSkillPhase.PL_SELECT_SKILL;
 
             AcceptSubs = new Func<InputContext, bool>[]
             {
@@ -46,14 +44,16 @@ namespace Frontier.Battle
                 ( context ) => base.AcceptSub4( context )
             };
 
+            // 使用可能スキルの更新
+            _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, 0xff );
+
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override bool Update()
         {
-            _presenter.UpdateParameterView( ParameterWindowType.Left );
-
             if( base.Update() )
             {
                 return true;
@@ -79,18 +79,11 @@ namespace Frontier.Battle
 
         public override void ExitState()
         {
-            // 使用スキルの点滅を非表示
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
-                _presenter.SetUseableSkillOnParamView( i, true, ParameterWindowType.Left );
-                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
-                _presenter.SetUseableSkillOnParamView( i, true, ParameterWindowType.Right );
-            }
             // 使用スキルコスト見積もりをリセット
             if( null != _plOwner )
             {
                 _plOwner.GetStatusRef.ResetConsumptionActionGauge();
+                _plOwner.BattleParams.TmpParam.ResetSkillsToggledOn();
                 _plOwner.BattleParams.SkillModifiedParam.Reset();
             }
 
@@ -115,7 +108,8 @@ namespace Frontier.Battle
         protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            LazyInject.GetOrCreate( ref _plOwner, () => _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player );
+            _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 
         protected override bool CanAcceptConfirm()
@@ -125,7 +119,7 @@ namespace Frontier.Battle
             // 所有スキルのうち、どれか一つでも使用フラグが立っていれば決定入力を受け付ける
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( _plOwner.BattleLogic.IsUsingEquipSkill( i ) )
+                if( _plOwner.BattleLogic.IsEquipSkillToggledOn( i ) )
                 {
                     return true;
                 }
@@ -162,7 +156,6 @@ namespace Frontier.Battle
                 // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
                 // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
                 _plOwner.BattleLogic.TemporarilyConsumeActionGauge();
-
                 // コマンド履歴にスキル選択を追加
                 _plOwner.PushCommandHistory( COMMAND_TAG.SKILL );
             }
@@ -188,14 +181,10 @@ namespace Frontier.Battle
 
         private bool CanAcceptSub( int index )
         {
-            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL )      { return false; }
+            if( _playerSkillNames[index].Length <= 0 )              { return false; }
 
-            if( _playerSkillNames[index].Length <= 0 ) { return false; }
-
-            bool useable = _plOwner.BattleLogic.CanToggleEquipSkill( index, SituationType.ATTACK );
-            _presenter.SetUseableSkillOnParamView( index, useable, ParameterWindowType.Left );
-
-            return useable;
+            return _plOwner.BattleParams.TmpParam.IsUseableSkill[index];
         }
 
         private bool AcceptSub( int index, InputContext context )
@@ -203,7 +192,7 @@ namespace Frontier.Battle
             if( !AcceptSubs[index]( context ) ) { return false; }
 
             _plOwner.BattleLogic.ToggleUseSkill( index );
-            _presenter.SetSkillFlickOnParamView( index, _plOwner.BattleLogic.IsUsingEquipSkill( index ), ParameterWindowType.Left );
+            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );  // 使用可能スキルの更新
 
             return true;
         }
@@ -216,16 +205,11 @@ namespace Frontier.Battle
                 {
                     SkillID skillID = _plOwner.GetEquipSkillID( i );
                     var skillData = SkillsData.data[( int ) skillID];
-                    switch( skillData.ActionType )
+                    if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
                     {
-                        // ターゲット選択に遷移するスキルタイプの場合は遷移する
-                        case ActionType.ATTACK:
-                        case ActionType.SUPPORT:
-                        case ActionType.HEAL:
-                            _plOwner.BattleLogic.SetUsingActionSkillData( skillData );
-                            return true;
-                        default:
-                            break;
+                        _plOwner.BattleLogic.SetUsingActionSkillData( skillData );
+
+                        return true;
                     }
                 }
             }

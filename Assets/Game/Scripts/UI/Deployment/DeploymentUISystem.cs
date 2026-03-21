@@ -26,11 +26,9 @@ namespace Frontier.UI
         {
             gameObject.SetActive( true );
             GridCursorSelectCharaParam.Setup();
-            GridCursorSelectCharaParam.SetupCamera();
 
-            CharacterSelectUI.Init( /* CharacterSelectionDisplayMode.Texture */ );
+            CharacterSelectUI.Init();
             ConfirmCompletedUI.Init();
-            GridCursorSelectCharaParam.Init();
 
             DeployMessage.SetActive( true );
             RemainingDeployments.gameObject.SetActive( true );

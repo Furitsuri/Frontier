@@ -9,20 +9,32 @@ public class DeploymentPhasePresenter : CharacterSelectionPresenter, IConfirmPre
 {
     [Inject] protected BattleRoutineController _btlRtnCtrl = null;
 
-    private Character _currentGridSelectCharacter   = null;
-    private DeploymentUISystem _deployUiSystem      = null;
+    private Character _currentGridSelectCharacter                           = null;
+    private CharacterParameterPresenter _charaParamPresenterOnGridCursor    = null;
+    private DeploymentUISystem _deployUiSystem                              = null;
+
+    [Inject]
+    public DeploymentPhasePresenter( IUiSystem uiSystem, HierarchyBuilderBase hierarchyBld ) : base( uiSystem.DeployUi.CharacterSelectUI, DEPLOYMENT_SHOWABLE_CHARACTERS_NUM, false, hierarchyBld )
+    {
+        _uiSystem       = uiSystem;
+        _deployUiSystem = _uiSystem.DeployUi;
+
+        LazyInject.GetOrCreate( ref _charaParamPresenterOnGridCursor,
+            () => hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _deployUiSystem.GridCursorSelectCharaParam, true }, false ) );
+    }
 
     public void Init()
     {
-        base.Init( _uiSystem.DeployUi.CharacterSelectUI, DEPLOYMENT_SHOWABLE_CHARACTERS_NUM );
+        base.Init( _uiSystem.DeployUi.CharacterSelectUI, DEPLOYMENT_SHOWABLE_CHARACTERS_NUM, false );
 
-        _deployUiSystem = _uiSystem.DeployUi;
         _deployUiSystem.Init();
+        _charaParamPresenterOnGridCursor.Init();
     }
 
     public void Update()
     {
-        UpdateSlideAnimation();
+        _charaParamPresenterOnGridCursor.Update();
+		UpdateSlideAnimation();
     }
 
     public override void Exit()
@@ -71,12 +83,8 @@ public class DeploymentPhasePresenter : CharacterSelectionPresenter, IConfirmPre
 
         if( null != _currentGridSelectCharacter )
         {
-            _deployUiSystem.GridCursorSelectCharaParam.AssignCharacter( _currentGridSelectCharacter, LAYER_MASK_INDEX_DEPLOYMENT_GRID );
+            _charaParamPresenterOnGridCursor.AssignCharacter( _currentGridSelectCharacter, LAYER_MASK_INDEX_DEPLOYMENT_GRID );
         }
-
-        // 配置候補UI内でフォーカス中のキャラクターも更新
-        // MEMO : RefreshFocusDeploymentCharacter()を呼んでしまうと無限ループに陥るため注意
-        // _deployUiSystem.CharacterSelectUI.FocusCharaParamUI.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
     }
 
     /// <summary>
@@ -86,7 +94,7 @@ public class DeploymentPhasePresenter : CharacterSelectionPresenter, IConfirmPre
     {
         // フォーカス中のキャラクターのパラメータの表示
         Debug.Assert( _focusCandidates.Length % 2 == 1 );  // 奇数であることが前提
-        _deployUiSystem.CharacterSelectUI.FocusCharaParamUI.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
+        _parameterPresenter.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
 
         RefreshGridCursorSelectCharacter();
     }

@@ -26,7 +26,7 @@ namespace Frontier.Entities.Ai
             candidates = new List<(int tileIndex, List<CharacterKey> opponents)>( Constants.CHARACTER_MAX_NUM );
 
             // 自身の移動範囲をステージ上に登録する
-            bool isAttackable = !selfTmpParam.isEndCommand[( int ) COMMAND_TAG.ATTACK];
+            bool isAttackable = !selfTmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK];
             float curHeight = _stageCtrl.GetTileStaticData( selfTmpParam.CurrentTileIndex ).Height;
 
             _owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.CurrentTileIndex, curHeight );
