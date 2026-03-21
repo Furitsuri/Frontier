@@ -225,7 +225,7 @@ public class HierarchyBuilderBase : MonoBehaviour
     /// <returns>作成したインスタンス</returns>
     public T InstantiateWithDiContainer<T>( bool isBind )
     {
-        return _generator.InstantiateWithDiContainer<T>(isBind);
+        return _generator.InstantiateWithDiContainer<T>( isBind );
     }
 
     public T InstantiateWithDiContainer<T>( object[] args, bool isBind )

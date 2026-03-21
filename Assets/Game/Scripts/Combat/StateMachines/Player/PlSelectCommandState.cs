@@ -1,5 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.UI;
 using System.Collections.Generic;
 using static Constants;
 
@@ -46,8 +47,11 @@ namespace Frontier.Battle
             }
 
             InitInputInfo();
+            // 使用可能スキルを更新
+            _plOwner.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         /// <summary>

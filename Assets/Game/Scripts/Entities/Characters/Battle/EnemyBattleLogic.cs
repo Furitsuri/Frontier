@@ -1,7 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities.Ai;
 using Frontier.Stage;
+using Frontier.UI;
 using System;
+using static Constants;
 
 namespace Frontier.Entities
 {
@@ -13,6 +15,13 @@ namespace Frontier.Entities
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
             return _baseAi.DetermineDestinationAndTarget( _readOnlyOwner.Value.BattleParams, in _readOnlyOwner.Value.GetStatusRef, in _tileCostTable, _readOnlyOwner.Value.CharaKey() );
+        }
+
+        public override void Init()
+        {
+            base.Init();
+
+            _paramWinType = ParameterWindowType.Right;
         }
 
         /// <summary>

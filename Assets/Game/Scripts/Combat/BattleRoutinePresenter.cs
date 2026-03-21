@@ -12,11 +12,28 @@ namespace Frontier.Battle
 {
     public class BattleRoutinePresenter : PhasePresenterBase, IConfirmPresenter
     {
+        [Inject] HierarchyBuilderBase _hierarchyBld = null;
+
+        private CharacterParameterPresenter[] _parameterPresenters;
         private CharacterParameterUI[] _parameterUIs;
         private TextMeshProUGUI _TMPCommandName;
+        static private int[] _layerMaskIndex;
+        public CharacterParameterPresenter CharaParamView( ParameterWindowType winType ) => _parameterPresenters[( int ) winType];
 
         public void Setup()
         {
+            _parameterPresenters = new CharacterParameterPresenter[( int ) ParameterWindowType.NUM]
+            {
+                _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.PlayerParameter, true }, false ),
+                _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.EnemyParameter, true }, false ),
+            };
+
+            _layerMaskIndex = new int[]
+            {
+                LAYER_MASK_INDEX_PLAYER,
+                LAYER_MASK_INDEX_ENEMY
+            };
+
             _parameterUIs = new UI.CharacterParameterUI[( int )ParameterWindowType.NUM]
             {
                 _uiSystem.BattleUi.ParameterView.PlayerParameter,
@@ -27,7 +44,21 @@ namespace Frontier.Battle
             NullCheck.AssertNotNull( _TMPCommandName, nameof( _TMPCommandName ) );
         }
 
-        public void Update() { }
+        public void Init()
+        {
+            foreach( var paramPresenter in _parameterPresenters )
+            {
+                paramPresenter.Init();
+            }
+        }
+
+        public void Update()
+        {
+            foreach( var paramPresenter in _parameterPresenters )
+            {
+                paramPresenter.Update();
+            }
+        }
 
         public void SetActiveBattleUI( bool isActive )
         {
@@ -72,17 +103,6 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.StartGameOverAnim();
         }
 
-        public void AssignCharacterToParameterView( Character character, ParameterWindowType winType )
-        {
-            int[] layerMaskIndex = new int[]
-            {
-                LAYER_MASK_INDEX_PLAYER,
-                LAYER_MASK_INDEX_ENEMY
-            };
-
-            _parameterUIs[(int)winType].AssignCharacter( character, layerMaskIndex[( int)winType] );
-        }
-
         public bool IsActiveStageClearAnimation()
         {
             return _uiSystem.BattleUi.StageClear.isActiveAndEnabled;
@@ -98,26 +118,6 @@ namespace Frontier.Battle
             _TMPCommandName.text = name;
         }
 
-        public void SetSkillFlickOnParamView( int skillIndex, bool enabled, ParameterWindowType winType )
-        {
-            _parameterUIs[( int ) winType].GetSkillBox( skillIndex ).SetFlickEnabled( enabled );
-        }
-
-        public void SetUsingSkillOnLeftParamView( int skillIndex )
-        {
-            _uiSystem.BattleUi.ParameterView.PlayerParameter.GetSkillBox( skillIndex ).SetUsing();
-        }
-
-        public void SetUseableSkillOnParamView( int skillIndex, bool isUsable, ParameterWindowType winType )
-        {
-            _parameterUIs[( int ) winType].GetSkillBox( skillIndex ).SetUseable( isUsable );
-        }
-
-        public void UpdateParameterView( ParameterWindowType winType )
-        {
-            _parameterUIs[( int ) winType].UpdateAssignCharacterParamRender();
-        }
-
         public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )
         {
             _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript( script );
@@ -128,6 +128,11 @@ namespace Frontier.Battle
         public void ExitPLCommandView()
         {
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
+        }
+
+        static public int GetLayerMaskIndexFromWinType( ParameterWindowType winType )
+        {
+            return _layerMaskIndex[( int ) winType];
         }
     }
 }

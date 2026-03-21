@@ -1,6 +1,7 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
+using Frontier.UI;
 using static Constants;
 
 namespace Frontier.Battle
@@ -22,7 +23,6 @@ namespace Frontier.Battle
 
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
-        private bool _isActiveRightParamUI   = false;
 
         /// <summary>
         /// 移動中攻撃に遷移します
@@ -81,10 +81,8 @@ namespace Frontier.Battle
         {
             base.Init();
 
-            _isActiveRightParamUI = false;
-
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _plOwner.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) )
+            if( _plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
             {
                 _phase = PlMovePhase.PL_MOVE_END;
                 return;
@@ -95,20 +93,18 @@ namespace Frontier.Battle
             _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
-            int atkRange            = !_plOwner.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _plOwner.GetStatusRef.attackRange : 0;
+            int atkRange            = !_plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ? _plOwner.GetStatusRef.attackRange : 0;
             var param               = _plOwner.GetStatusRef;
             float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override bool Update()
         {
-            _presenter.UpdateParameterView( UI.ParameterWindowType.Left );
-            if( _isActiveRightParamUI ) { _presenter.UpdateParameterView( UI.ParameterWindowType.Right ); }
-
             if( base.Update() )
             {
                 return true;
@@ -241,12 +237,13 @@ namespace Frontier.Battle
             if( isAcceptDirection )
             {
                 var gridSelectChara     = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-                _isActiveRightParamUI   = ( gridSelectChara != null && gridSelectChara != _plOwner );
-                if( _isActiveRightParamUI )
+                bool isActiveRightParamUI   = ( gridSelectChara != null && gridSelectChara != _plOwner );
+                if( isActiveRightParamUI )
                 {
-                    _presenter.AssignCharacterToParameterView( gridSelectChara, UI.ParameterWindowType.Right );
+                    var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
+                    _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( gridSelectChara, layerMaskIndex );
                 }
-                _presenter.SetActiveParamView( _isActiveRightParamUI, UI.ParameterWindowType.Right );
+                _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParamUI );
             }
 
             return isAcceptDirection;

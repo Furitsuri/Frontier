@@ -46,7 +46,16 @@ namespace Frontier.Battle
             };
 
             _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
-            _inputToolStrWrapper = new InputCodeStringWrapper( _inputToolStrings[0] );
+            _inputToolStrWrapper    = new InputCodeStringWrapper( _inputToolStrings[0] );
+
+            foreach( Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER ) )
+            {
+                player.RefreshUseableSkillFlags( Combat.SituationType.NONE, 0xff );
+            }
+            foreach( Enemy enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) )
+            {
+                enemy.RefreshUseableSkillFlags( Combat.SituationType.NONE, 0xff );
+            }
 
             RefreshDispParameterView();
         }
@@ -251,7 +260,8 @@ namespace Frontier.Battle
                     ? ParameterWindowType.Left
                     : ParameterWindowType.Right;
 
-                _presenter.AssignCharacterToParameterView( gridSelectChara, windowType );
+                var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( windowType );
+                _presenter.CharaParamView( windowType ).AssignCharacter( gridSelectChara, layerMaskIndex );
             }
 
             _presenter.SetActiveParamView( isActiveLeftParamUI, ParameterWindowType.Left );

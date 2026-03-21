@@ -1,9 +1,11 @@
-﻿using Frontier.Combat;
+﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities.Ai;
 using Frontier.Registries;
 using Frontier.Sequences;
 using Frontier.Stage;
+using Frontier.UI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,22 +17,23 @@ namespace Frontier.Entities
     public class BattleLogicBase : MonoBehaviour
     {
 		[Inject] protected IUiSystem _uiSystem                  = null;
+        [Inject] protected BattleRoutinePresenter _presenter    = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected StageController _stageCtrl           = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
         [Inject] private SequenceFacade _sequenceFcd            = null;
 
-        protected Character _opponent = null;
-
-        protected bool _isPrevMoving = false;
+        protected bool _isPrevMoving                                        = false;
         protected int[] _tileCostTable                                      = null;                 // タイル移動時のコストテーブル(並列計算する可能性があるため、キャラ毎に保持)
         protected ReadOnlyReference<Character> _readOnlyOwner               = null;
         protected ReadOnlyReference<TransformHandler> _readonlyTransform    = null;
+        protected Character _opponent                                       = null;
         protected ActionRangeController _actionRangeCtrl                    = null;                 // 行動範囲管理クラス
         protected BaseAi _baseAi                                            = null;                 // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
         protected SkillNotifierBase[] _skillNotifier                        = null;                 // スキル使用通知
         protected ThinkingType _thikType                                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                                   = PARRY_PHASE.NONE;
+        protected ParameterWindowType _paramWinType;
         protected SkillsData.Data usingActionSkillData;
         private ICombatAnimationSequence _combatAnimSeq                     = null;
         private List<COMMAND_TAG> _executableCommands                       = new List<COMMAND_TAG>();
@@ -47,7 +50,6 @@ namespace Frontier.Entities
         public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
         public void SetUsingActionSkillData( in SkillsData.Data data ) => usingActionSkillData = data;   // 使用スキルデータの設定
         public SkillsData.Data GetUsingActionSkillData() => usingActionSkillData;    // 使用スキルデータの取得
-
 
         private delegate bool IsExecutableCommand( Character character, StageController stageCtrl );
 
@@ -70,7 +72,7 @@ namespace Frontier.Entities
         void Update()
         {
             // 移動と攻撃が終了していれば、行動不可に遷移
-            var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.isEndCommand;
+            var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.IsEndCommand;
             if( endCommand[( int ) COMMAND_TAG.MOVE] && endCommand[( int ) COMMAND_TAG.ATTACK] )
             {
                 BeImpossibleAction();
@@ -165,10 +167,12 @@ namespace Frontier.Entities
 
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( IsUsingEquipSkill( i ) )
+                if( _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[i] )
                 {
-                    _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
-                    _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUsing();
+                    _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsUsed[i]      = true;
+                    _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[i]  = false;
+
+                    _presenter.CharaParamView( _paramWinType ).SetSkillBoxToUsing( i );
                 }
             }
         }
@@ -180,6 +184,7 @@ namespace Frontier.Entities
         public void BePossibleAction()
         {
             _readOnlyOwner.Value.BattleParams.TmpParam.Reset();
+            _readOnlyOwner.Value.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
             _readOnlyOwner.Value.RestoreMaterialsOriginalColor();
         }
 
@@ -207,27 +212,15 @@ namespace Frontier.Entities
             _tileCostTable = costTable;
         }
 
-        /// <summary>
-        /// 指定のスキルの使用状態が切替可能かを判定します
-        /// </summary>
-        /// <param name="skillIdx">スキルの装備インデックス値</param>
-        /// <returns>指定スキルの使用状態切替可否</returns>
-        public bool CanToggleEquipSkill( int skillIdx, SituationType situationType, int useableActionTypeBit = 0xff )
+        public bool IsEquipSkillToggledOn( int skillIdx )
         {
-            if( EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
             {
-                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備最大数を超えています。" );
-
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
                 return false;
             }
 
-            // スキル使用ONの状態であれば、OFFにするだけなので、コストチェックする必要がない
-            if( IsUsingEquipSkill( skillIdx ) )
-            {
-                return true;
-            }
-
-            return _readOnlyOwner.Value.CanUseEquipSkill( skillIdx, situationType, useableActionTypeBit );
+            return _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[skillIdx];
         }
 
         public bool IsUsingEquipSkill( int skillIdx )
@@ -238,9 +231,7 @@ namespace Frontier.Entities
                 return false;
             }
 
-            
-
-            return _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[skillIdx];
+            return _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsUsed[skillIdx];
         }
 
         public bool IsUsingSelfBuffSkills( out List<string> skillNames )
@@ -300,7 +291,7 @@ namespace Frontier.Entities
         {
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                _readOnlyOwner.Value.BattleParams.TmpParam.isUseSkills[i] = false;
+                _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsUsed[i] = false;
             }
         }
 
@@ -327,7 +318,7 @@ namespace Frontier.Entities
         virtual public void Setup()
         {
             LazyInject.GetOrCreate( ref _actionRangeCtrl, () => _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false ) );
-            _skillNotifier = new SkillNotifierBase[EQUIPABLE_SKILL_MAX_NUM];
+            _skillNotifier          = new SkillNotifierBase[EQUIPABLE_SKILL_MAX_NUM];
 
             IsDeclaredDead = false;
             _animSeqfactories = new Func<ICombatAnimationSequence>[]
@@ -341,8 +332,9 @@ namespace Frontier.Entities
         virtual public void Init()
         {
             _isPrevMoving = false;
-            _readOnlyOwner.Value.BattleParams.Init();
             _actionRangeCtrl.Init( _readOnlyOwner.Value );
+            _readOnlyOwner.Value.BattleParams.Init();
+            _readOnlyOwner.Value.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
 
             InitSkillNotifier();                                // スキルの通知クラスを初期化
             ApplyCostTable( TileCostTables.defaultCostTable );  // タイル移動コストテーブルを初期化

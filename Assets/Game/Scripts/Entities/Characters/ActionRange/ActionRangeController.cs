@@ -54,7 +54,7 @@ namespace Frontier.Entities
             var charaParam  = _owner.GetStatusRef;
             var mvRng       = charaParam.moveRange;
             var jmp         = charaParam.jumpForce;
-            var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.GetStatusRef.attackRange : 0;
+            var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
             _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.CharaKey(), ref _actionableTileMap );
         }
@@ -63,7 +63,7 @@ namespace Frontier.Entities
         {
             _actionableTileMap.Init();
 
-            var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand( COMMAND_TAG.ATTACK ) ? _owner.GetStatusRef.attackRange : 0;
+            var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, _owner.CharaKey(), ref _actionableTileMap );
         }

@@ -3,24 +3,39 @@ using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.ObjectModel;
+using Zenject;
 
 public class CharacterSelectionPresenter : PhasePresenterBase
 {
+    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
+    protected CharacterSelectionUI _characterSelectUI;
+    protected CharacterParameterPresenter _parameterPresenter = null;
+    protected CharacterCandidate[] _focusCandidates;
+    protected ReadOnlyCollection<CharacterCandidate> _refCandidates = null;
     private SlideDirection _slideDirection;
     private bool _isSlideAnimationPlaying = false;
-    protected CharacterSelectionUI _characterSelectUI;
-    protected CharacterCandidate[] _focusCandidates;
-    private ReadOnlyReference<bool> _refIsSlideLoop = null;
-    protected ReadOnlyCollection<CharacterCandidate> _refCandidates = null;
     private Action<SlideDirection> _onCompletedeSlideAnimation;
+    private ReadOnlyReference<bool> _refIsSlideLoop = null;
 
     public bool RefIsSlideLoop => _refIsSlideLoop.Value;
 
-    public virtual void Init( CharacterSelectionUI characterSelectionUI, int focusCandidatesArrayLength )
+    [Inject] public CharacterSelectionPresenter( CharacterSelectionUI characterSelectionUI, int focusCandidatesArrayLength, bool isNeededParamWinCamera, HierarchyBuilderBase hierarchyBld )
     {
         _characterSelectUI  = characterSelectionUI;
+        _hierarchyBld       = hierarchyBld;
         _focusCandidates    = new CharacterCandidate[focusCandidatesArrayLength];
         _refIsSlideLoop     = new ReadOnlyReference<bool>( _characterSelectUI.IsSlideLoop );
+
+        LazyInject.GetOrCreate( ref _parameterPresenter,
+            () => _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>
+            ( new object[] { _characterSelectUI.FocusCharaParamUI, isNeededParamWinCamera }, false )
+            );
+    }
+
+    public virtual void Init( CharacterSelectionUI characterSelectionUI, int focusCandidatesArrayLength, bool isNeededParamWinCamera )
+    {
+        _parameterPresenter.Init();
     }
 
     public virtual void Exit()

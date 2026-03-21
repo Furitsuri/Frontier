@@ -220,6 +220,7 @@ namespace Frontier.FormTroop
             {
                 Player player = CreateEmploymentCandidate( _userDomain.StageLevel, i );
 
+
                 // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
                 CharacterCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<CharacterCandidate>( false );
                 candidate.Init( player, null );

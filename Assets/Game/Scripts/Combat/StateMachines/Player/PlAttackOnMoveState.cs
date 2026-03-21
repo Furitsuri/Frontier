@@ -1,6 +1,8 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Sequences;
 using Frontier.Stage;
+using Frontier.UI;
 
 namespace Frontier.Battle
 {
@@ -38,8 +40,12 @@ namespace Frontier.Battle
 
             _attackSequence.Init(); // 攻撃シーケンスを初期化
 
+            // 使用可能スキルを更新
+            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+
             // パラメータビューにキャラクターを割り当て
-            _presenter.AssignCharacterToParameterView( _plOwner, UI.ParameterWindowType.Left );
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override void ExitState()
@@ -67,20 +73,13 @@ namespace Frontier.Battle
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect( false );
 
-            // 使用スキルの点滅を非表示
-            for ( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetFlickEnabled( false );
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).SetUseable( true );
-                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetFlickEnabled( false );
-                _uiSystem.BattleUi.GetEnemyParamSkillBox( i ).SetUseable( true );
-            }
-
             // 使用スキルコスト見積もりをリセット
             _plOwner.GetStatusRef.ResetConsumptionActionGauge();
             _plOwner.BattleParams.SkillModifiedParam.Reset();
+            _plOwner.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
             _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
             _targetCharacter.BattleParams.SkillModifiedParam.Reset();
+            _targetCharacter.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示

@@ -25,13 +25,8 @@ namespace Frontier.UI
         public override void Setup()
         {
             _playerParameter.Setup();
-            _playerParameter.SetupCamera();
             _enemyParameter.Setup();
-            _enemyParameter.SetupCamera();
             _attackDirection.Setup();
-
-            _playerParameter.Init();
-            _enemyParameter.Init();
 
             _playerParameter.gameObject.SetActive( false );
             _enemyParameter.gameObject.SetActive( false );
