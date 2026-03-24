@@ -12,28 +12,6 @@ namespace Frontier.Battle
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
         /// <summary>
-        /// 入力情報を初期化します
-        /// </summary>
-        private void InitInputInfo()
-        {
-            _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
-
-            // UI側へこのスクリプトを登録し、UIを表示
-            List<COMMAND_TAG> executableCommands;
-            _plOwner.BattleLogic.FetchExecutableCommand( out executableCommands, _stageCtrl );
-
-            // 入力ベース情報の設定
-            List<int> commandIndexs = new List<int>();
-            foreach( var executableCmd in executableCommands )
-            {
-                commandIndexs.Add( ( int ) executableCmd );
-            }
-            _commandList.Init( ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
-
-            _presenter.InitPLCommandView( this, executableCommands );
-        }
-
-        /// <summary>
         /// 初期化します
         /// </summary>
         public override void Init()
@@ -45,10 +23,10 @@ namespace Frontier.Battle
             {
                 return;
             }
-
-            InitInputInfo();
             // 使用可能スキルを更新
-            _plOwner.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
+            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );
+            // 実行可能なコマンドを設定
+            SetupExecutableCommands();
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
@@ -179,6 +157,28 @@ namespace Frontier.Battle
         public int GetCommandValue()
         {
             return _cmdIdxVal.value;
+        }
+
+        /// <summary>
+        /// 実行可能なコマンドを設定します
+        /// </summary>
+        private void SetupExecutableCommands()
+        {
+            _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
+
+            // UI側へこのスクリプトを登録し、UIを表示
+            List<COMMAND_TAG> executableCommands;
+            _plOwner.BattleLogic.FetchExecutableCommand( out executableCommands, _stageCtrl );
+
+            // 入力ベース情報の設定
+            List<int> commandIndexs = new List<int>();
+            foreach( var executableCmd in executableCommands )
+            {
+                commandIndexs.Add( ( int ) executableCmd );
+            }
+            _commandList.Init( ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
+
+            _presenter.InitPLCommandView( this, executableCommands );
         }
     }
 }

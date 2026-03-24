@@ -35,7 +35,8 @@ namespace Frontier.Entities
         [Inject] protected PrefabRegistry _prefabReg                        = null;
         [Inject] protected TimeScaleController _timeScaleCtrl               = null;
 
-        private readonly TimeScale _timeScale   = new TimeScale();
+        private CharacterParameterPresenter _parameterPresenter = null;
+        private readonly TimeScale _timeScale                   = new TimeScale();
         private List<(Material material, Color originalColor)> _textureMaterialsAndColors   = new List<(Material, Color)>();
         protected FieldLogicBase _fieldLogic                                                = null;
         protected BattleLogicBase _battleLogic                                              = null;
@@ -85,6 +86,11 @@ namespace Frontier.Entities
             RefreshUseableSkillFlags( SituationType.NONE, 0xff );
         }
 
+        public void RegistParameterPresenter( CharacterParameterPresenter presenter )
+        {
+            _parameterPresenter = presenter;
+        }
+
         public void RefreshUseableSkillFlags( SituationType situationType, int useableActionTypeBit = 0xff )
         {
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
@@ -102,16 +108,18 @@ namespace Frontier.Entities
 
                 BattleParams.TmpParam.IsUseableSkill[i] = false;
                 
-                if( BattleParams.TmpParam.IsSkillsUsed[i] ||                                                // 使用済みのスキルは切替不可
+                if( BattleParams.TmpParam.IsSkillsUsed[i] ||                                                // 既に使用済みのスキルは使用不可
                     ( SituationType.NONE != situationType && skillData.SituationType != situationType ) ||  // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
                     !Methods.CheckBitFlag( useableActionTypeBit, skillData.ActionType ) ||                  // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
-                    _status.CurActionGauge < _status.ActGaugeConsumption + skillData.Cost )                 // コストが現在のアクションゲージ値を越えていないかをチェック
+                    _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost )   // コストが現在のアクションゲージ値を越えていないかをチェック
                 { 
                     continue;
                 }
 
                 BattleParams.TmpParam.IsUseableSkill[i] = true;
             }
+
+            _parameterPresenter?.RefreshParamRender( this, _status, _btlParams.ModifiedParam );
         }
 
         public void RestoreMaterialsOriginalColor()
@@ -150,7 +158,7 @@ namespace Frontier.Entities
             if( !SkillsData.IsValidSkill( skillID ) )                                   { return false; }
             var skillData = SkillsData.data[( int ) skillID];
             // コストが現在のアクションゲージ値を越えていないかをチェック
-            if( _status.CurActionGauge < _status.ActGaugeConsumption + skillData.Cost ) { return false; }
+            if( _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost ) { return false; }
 
             return true;
         }

@@ -2,7 +2,9 @@
 using Frontier.Entities;
 using Frontier.Sequences;
 using Frontier.Stage;
+using Frontier.StateMachine;
 using Frontier.UI;
+using System;
 
 namespace Frontier.Battle
 {
@@ -22,10 +24,16 @@ namespace Frontier.Battle
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );     // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
-            _attackSequence     = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>(false);
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             _targetCharacter    = null;
+            AccespuSubs         = new Func<InputContext, bool>[]
+            {
+                ( context ) => AcceptSub1Core( context ),
+                ( context ) => AcceptSub2Core( context ),
+                ( context ) => AcceptSub3Core( context ),
+                ( context ) => AcceptSub4Core( context )
+            };
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _curentGridIndex );
@@ -38,8 +46,6 @@ namespace Frontier.Battle
                 _uiSystem.BattleUi.SetAttackCursorP2EActive( true );                // アタックカーソルUI表示
             }
 
-            _attackSequence.Init(); // 攻撃シーケンスを初期化
-
             // 使用可能スキルを更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 
@@ -51,7 +57,7 @@ namespace Frontier.Battle
         public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
-            Character diedCharacter = _attackSequence.GetDiedCharacter();
+            Character diedCharacter = null; // _attackSequence.GetDiedCharacter();
             if ( diedCharacter != null )
             {
                 var key = new CharacterKey(diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex);
@@ -74,11 +80,7 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.ToggleBattleExpect( false );
 
             // 使用スキルコスト見積もりをリセット
-            _plOwner.GetStatusRef.ResetConsumptionActionGauge();
-            _plOwner.BattleParams.SkillModifiedParam.Reset();
             _plOwner.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
-            _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _targetCharacter.BattleParams.SkillModifiedParam.Reset();
             _targetCharacter.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア

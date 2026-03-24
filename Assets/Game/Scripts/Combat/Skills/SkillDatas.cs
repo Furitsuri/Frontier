@@ -54,17 +54,6 @@ namespace Frontier.Combat
             skillNotifierFactory = factories;
         }
 
-        /// <summary>
-        /// ガードスキルの実行内容です
-        /// </summary>
-        /// <param name="modifiedParam">スキル使用キャラのバフ・デバフ用パラメータ</param>
-        /// <param name="param">スキル使用キャラのパラメータ</param>
-        static public void ExecGuard( ref ModifiedParameter modifiedParam, ref Status param )
-        {
-            modifiedParam.Def = ( int ) Mathf.Floor( param.Def * 0.5f );
-            param.ActGaugeConsumption += 1;
-        }
-
         static public bool IsValidSkill( SkillID skillID )
         {
             return SkillID.NONE < skillID && skillID < SkillID.NUM;

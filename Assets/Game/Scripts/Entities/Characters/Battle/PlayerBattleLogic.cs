@@ -28,7 +28,7 @@ namespace Frontier.Entities
             {
                 RevertBeforeMoving,         // COMMAND_TAG.MOVE
                 null,                       // COMMAND_TAG.ATTACK
-                RevertExecutedSkills,       // COMMAND_TAG.SKILL
+                RevertUsedSkills,       // COMMAND_TAG.SKILL
                 null,                       // COMMAND_TAG.WAIT
             };
 
@@ -87,23 +87,22 @@ namespace Frontier.Entities
         /// <summary>
         /// 実行済みのスキルを全て取り消します
         /// </summary>
-        public void RevertExecutedSkills()
+        public void RevertUsedSkills()
         {
             int totalCost = 0;
 
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 if( IsUsingEquipSkill( i ) )
                 {
-                    var skillData = SkillsData.data[( int ) _readOnlyOwner.Value.GetEquipSkillID( i )];
-                    totalCost += skillData.Cost;
-
-                    ToggleUseSkill( i );
+                    var skillID     = _readOnlyOwner.Value.GetEquipSkillID( i );
+                    var skillData   = SkillsData.data[( int ) skillID];
+                    totalCost       += skillData.Cost;
+                    _readOnlyOwner.Value.BattleParams.RemoveSkill( skillID, _readOnlyOwner.Value.GetStatusRef );
                 }
             }
 
             _readOnlyOwner.Value.BattleLogic.RemoveBuffEffect();
-            _readOnlyOwner.Value.GetStatusRef.ResetConsumptionActionGauge();
             _readOnlyOwner.Value.GetStatusRef.CurActionGauge += totalCost;
         }
 
@@ -121,27 +120,25 @@ namespace Frontier.Entities
         /// 指定のスキルの使用設定を切り替えます
         /// </summary>
         /// <param name="index">指定のスキルのインデックス番号</param>
-        public override void ToggleUseSkill( int index )
+        public override void ToggleEquipSkill( int index )
         {
-            bool IsToggledToUse = _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[index] = !_readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[index];
+            var owner = _readOnlyOwner.Value;
+            bool IsToggledToUse = owner.BattleParams.TmpParam.IsSkillsToggledON[index] = !owner.BattleParams.TmpParam.IsSkillsToggledON[index];
 
-            SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( index );
+            SkillID skillID = owner.GetEquipSkillID( index );
             if( !SkillsData.IsValidSkill( skillID ) ) { return; }
             var skillData = SkillsData.data[( int ) skillID];
 
-            if( IsToggledToUse )
+            if( ActionType.BUFF == skillData.ActionType )
             {
-                _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption                   += skillData.Cost;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkNum             += skillData.AddAtkNum;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkMagnification   += skillData.AddAtkMag;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.DefMagnification   += skillData.AddDefMag;
-            }
-            else
-            {
-                _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption                   -= skillData.Cost;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkNum             -= skillData.AddAtkNum;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.AtkMagnification   -= skillData.AddAtkMag;
-                _readOnlyOwner.Value.BattleParams.SkillModifiedParam.DefMagnification   -= skillData.AddDefMag;
+                if( IsToggledToUse )
+                {
+                    owner.BattleParams.ApplySkill( skillID, owner.GetStatusRef );
+                }
+                else
+                {
+                    owner.BattleParams.RemoveSkill( skillID, owner.GetStatusRef );
+                }
             }
         }
     }

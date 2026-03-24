@@ -11973,7 +11973,8 @@ MonoBehaviour:
   TMPDefValue: {fileID: 1801169158}
   TMPMovValue: {fileID: 701662260}
   TMPJmpValue: {fileID: 493414854}
-  TMPAtkNumValue: {fileID: 1648081275}
+  TMPAddAtkValue: {fileID: 0}
+  TMPAddDefValue: {fileID: 0}
   TMPDiffHPValue: {fileID: 460023100}
   TMPActRecoveryValue: {fileID: 731702679}
   TargetImage: {fileID: 0}
@@ -34039,7 +34040,8 @@ MonoBehaviour:
   TMPDefValue: {fileID: 7517812813822632499}
   TMPMovValue: {fileID: 1925567076}
   TMPJmpValue: {fileID: 390606223}
-  TMPAtkNumValue: {fileID: 3314674718434197480}
+  TMPAddAtkValue: {fileID: 0}
+  TMPAddDefValue: {fileID: 0}
   TMPDiffHPValue: {fileID: 5950143827301976222}
   TMPActRecoveryValue: {fileID: 7810105338854438249}
   TargetImage: {fileID: 0}

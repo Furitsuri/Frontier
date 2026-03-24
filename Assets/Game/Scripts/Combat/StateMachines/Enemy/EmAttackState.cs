@@ -25,14 +25,12 @@ namespace Frontier.Battle
         private string[] _targetCharaSkillNames = null;
         private Enemy _attackCharacter = null;
         private Character _targetCharacter = null;
-        // private CharacterAttackSequence _attackSequence = null;
         private Func<InputContext, bool>[] AccespuSubs;
 
         public override void Init()
         {
             base.Init();
 
-            // _attackSequence = _hierarchyBld.InstantiateWithDiContainer<CharacterAttackSequence>( false );
             _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert( _attackCharacter != null );
             AccespuSubs = new Func<InputContext, bool>[]
@@ -118,7 +116,7 @@ namespace Frontier.Battle
         public override void ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
-            Character diedCharacter = null; // _attackSequence.GetDiedCharacter();
+            Character diedCharacter = null;
             if( diedCharacter != null )
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
@@ -136,14 +134,8 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.ToggleBattleExpect( false );
-            // 使用スキルコスト見積もりをリセット
-            _attackCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _attackCharacter.BattleParams.TmpParam.ResetSkillsToggledOn();
-            _attackCharacter.BattleParams.SkillModifiedParam.Reset();
-            _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
-            _targetCharacter.BattleParams.TmpParam.ResetSkillsToggledOn();
-            _targetCharacter.BattleParams.SkillModifiedParam.Reset();
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes(); // タイルメッシュの描画をすべてクリア
+            // タイルメッシュの描画をすべてクリア
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、
             //   その後プレイヤーに選択グリッドが移るという状況になります。
@@ -229,7 +221,7 @@ namespace Frontier.Battle
         {
             if( !AccespuSubs[index]( context ) ) { return false; }
 
-            _targetCharacter.BattleLogic.ToggleUseSkill( index );
+            _targetCharacter.BattleLogic.ToggleEquipSkill( index );
 
             return true;
         }

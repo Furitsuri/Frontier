@@ -120,7 +120,7 @@ namespace Frontier.Entities
             executableCommands = _executableCommands;
         }
 
-        public void RegistSelfBuffSequences()
+        public bool RegistSelfBuffSequences()
         {
             // 自己バフスキルが使用されている場合にはバフシーケンスを開始(必ず攻撃シーケンスより先に登録する)
             List<string> skillNames;
@@ -130,7 +130,11 @@ namespace Frontier.Entities
                 {
                     _sequenceFcd.RegistSelfBuffs( _readOnlyOwner.Value, name );
                 }
+
+                return true;
             }
+
+            return false;
         }
 
         public void RegisterCombatAnimation( COMBAT_ANIMATION_TYPE type )
@@ -148,8 +152,8 @@ namespace Frontier.Entities
         /// </summary>
         public void ConsumeActionGauge()
         {
-            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption;
-            _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption = 0;
+            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption;
+            _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption = 0;
 
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
@@ -162,16 +166,19 @@ namespace Frontier.Entities
         /// </summary>
         public void TemporarilyConsumeActionGauge()
         {
-            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption;
-            _readOnlyOwner.Value.GetStatusRef.ActGaugeConsumption = 0;
+            Character owner = _readOnlyOwner.Value;
+
+            owner.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption;
+            owner.BattleParams.TmpParam.ActGaugeConsumption = 0;
 
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                if( _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[i] )
+                if( owner.BattleParams.TmpParam.IsSkillsToggledON[i] )
                 {
-                    _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsUsed[i]      = true;
-                    _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsToggledON[i]  = false;
+                    owner.BattleParams.TmpParam.IsSkillsUsed[i]      = true;
+                    owner.BattleParams.TmpParam.IsSkillsToggledON[i] = false;
 
+                    _presenter.CharaParamView( _paramWinType ).RefreshParamRender( owner, owner.GetStatusRef, owner.BattleParams.ModifiedParam );
                     _presenter.CharaParamView( _paramWinType ).SetSkillBoxToUsing( i );
                 }
             }
@@ -304,6 +311,21 @@ namespace Frontier.Entities
             ResetUseSkills();   // 使用スキル情報をリセット
         }
 
+        public void RevertSkillsToggledOn()
+        {
+            var owner = _readOnlyOwner.Value;
+
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                if( owner.BattleParams.TmpParam.IsSkillsToggledON[i] )
+                {
+                    ToggleEquipSkill( i );
+                }
+            }
+
+            owner.BattleParams.TmpParam.ActGaugeConsumption = 0;
+        }
+
         /// <summary>
         /// 強制的に移動を停止させます
         /// </summary>
@@ -366,7 +388,7 @@ namespace Frontier.Entities
         /// 指定のスキルの使用設定を切り替えます
         /// </summary>
         /// <param name="index">指定のスキルのインデックス番号</param>
-        virtual public void ToggleUseSkill( int index ) { }
+        virtual public void ToggleEquipSkill( int index ) { }
 
         /// <summary>
         /// キャラクターを、作成済みのパスに沿って移動させます

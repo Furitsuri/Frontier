@@ -25,7 +25,6 @@ namespace Frontier.Entities
         public int maxActionGauge;          // アクションゲージ最大値
         public int CurActionGauge;          // アクションゲージ現在値
         public int recoveryActionGauge;     // アクションゲージ回復値
-        public int ActGaugeConsumption;     // アクションゲージ消費値
         public int initGridIndex;           // ステージ開始時グリッド座標(インデックス)
         public Direction initDir;           // ステージ開始時向き
         public SkillID[] EquipSkills;       // 装備しているスキル
@@ -78,7 +77,6 @@ namespace Frontier.Entities
             maxActionGauge      = 0;
             CurActionGauge      = 0;
             recoveryActionGauge = 0;
-            ActGaugeConsumption = 0;
             initGridIndex       = 0;
             initDir             = Direction.NONE;
         }
@@ -108,14 +106,6 @@ namespace Frontier.Entities
             {
                 this.EquipSkills[i] = ( SkillID ) fdata.Skills[i];
             }
-        }
-
-        /// <summary>
-        /// アクションゲージ消費量をリセットします
-        /// </summary>
-        public void ResetConsumptionActionGauge()
-        {
-            ActGaugeConsumption = 0;
         }
 
         /// <summary>

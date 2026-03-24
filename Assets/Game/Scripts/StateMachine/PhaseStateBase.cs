@@ -70,17 +70,28 @@ namespace Frontier.StateMachine
         virtual protected bool CanAcceptSub4() { return false; }
 
         virtual protected bool AcceptDirection( InputContext context )  { return false; }
-        virtual protected bool AcceptConfirm( InputContext context )    { return context.GetButton( GameButton.Confirm ); }
-        virtual protected bool AcceptCancel( InputContext context )     { return context.GetButton( GameButton.Cancel ); }
-        virtual protected bool AcceptTool( InputContext context )       { return context.GetButton( GameButton.Tool ); }
-        virtual protected bool AcceptInfo( InputContext context )       { return context.GetButton( GameButton.Info ); }
-        virtual protected bool AcceptOpt1( InputContext context )       { return context.GetButton( GameButton.Opt1 ); }
-        virtual protected bool AcceptOpt2( InputContext context )       { return context.GetButton( GameButton.Opt2 ); }
-        virtual protected bool AcceptSub1( InputContext context )       { return context.GetButton( GameButton.Sub1 ); }
-        virtual protected bool AcceptSub2( InputContext context )       { return context.GetButton( GameButton.Sub2 ); }
-        virtual protected bool AcceptSub3( InputContext context )       { return context.GetButton( GameButton.Sub3 ); }
-        virtual protected bool AcceptSub4( InputContext context )       { return context.GetButton( GameButton.Sub4 ); }
+        virtual protected bool AcceptConfirm( InputContext context )    { return AcceptConfirmCore( context ); }
+        virtual protected bool AcceptCancel( InputContext context )     { return AcceptCancelCore( context ); }
+        virtual protected bool AcceptTool( InputContext context )       { return AcceptToolCore( context ); }
+        virtual protected bool AcceptInfo( InputContext context )       { return AcceptInfoCore( context ); }
+        virtual protected bool AcceptOpt1( InputContext context )       { return AcceptOpt1Core( context ); }
+        virtual protected bool AcceptOpt2( InputContext context )       { return AcceptOpt2Core( context ); }
+        virtual protected bool AcceptSub1( InputContext context )       { return AcceptSub1Core( context ); }
+        virtual protected bool AcceptSub2( InputContext context )       { return AcceptSub2Core( context ); }
+        virtual protected bool AcceptSub3( InputContext context )       { return AcceptSub3Core( context ); }
+        virtual protected bool AcceptSub4( InputContext context )       { return AcceptSub4Core( context ); }
         virtual protected bool AcceptCamera( Vector2 vec ) { return false; }
+
+        protected bool AcceptConfirmCore( InputContext context ) { return context.GetButton( GameButton.Confirm ); }
+        protected bool AcceptCancelCore( InputContext context ) { return context.GetButton( GameButton.Cancel ); }
+        protected bool AcceptToolCore( InputContext context ) { return context.GetButton( GameButton.Tool ); }
+        protected bool AcceptInfoCore( InputContext context ) { return context.GetButton( GameButton.Info ); }
+        protected bool AcceptOpt1Core( InputContext context ) { return context.GetButton( GameButton.Opt1 ); }
+        protected bool AcceptOpt2Core( InputContext context ) { return context.GetButton( GameButton.Opt2 ); }
+        protected bool AcceptSub1Core( InputContext context ) { return context.GetButton( GameButton.Sub1 ); }
+        protected bool AcceptSub2Core( InputContext context ) { return context.GetButton( GameButton.Sub2 ); }
+        protected bool AcceptSub3Core( InputContext context ) { return context.GetButton( GameButton.Sub3 ); }
+        protected bool AcceptSub4Core( InputContext context ) { return context.GetButton( GameButton.Sub4 ); }
 
         public override void LateUpdate()
         {

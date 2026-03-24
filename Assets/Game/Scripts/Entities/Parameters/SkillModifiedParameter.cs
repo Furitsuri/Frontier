@@ -8,15 +8,15 @@ namespace Frontier.Entities
     [Serializable]
     public struct SkillModifiedParameter
     {
-        public int AtkNum;
+        public int AddAtkNum;
         public float AtkMagnification;
         public float DefMagnification;
 
         public void Init()
         {
-            AtkNum              = 1;
-            AtkMagnification    = 1f;
-            DefMagnification    = 1f;
+            AddAtkNum           = 0;
+            AtkMagnification    = 0f;
+            DefMagnification    = 0f;
         }
 
         public void Reset()
