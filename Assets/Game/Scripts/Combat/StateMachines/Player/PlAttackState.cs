@@ -30,7 +30,7 @@ namespace Frontier.Battle
         protected string[] _playerSkillNames = null;
         protected Character _targetCharacter = null;
         protected CharacterAttackSequence _attackSequence = null;
-        private Func<InputContext, bool>[] AccespuSubs;
+        protected Func<InputContext, bool>[] AccespuSubs;
 
         protected void PlPhaseStateInit()
         {
@@ -169,16 +169,10 @@ namespace Frontier.Battle
             if( null != _plOwner )
             {
                 _plOwner.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-                _plOwner.BattleParams.TmpParam.ResetSkillsToggledOn();
-                _plOwner.BattleParams.SkillModifiedParam.Reset();
-                _plOwner.GetStatusRef.ResetConsumptionActionGauge();
             }
             if( null != _targetCharacter )
             {
                 _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-                _targetCharacter.BattleParams.TmpParam.ResetSkillsToggledOn();
-                _targetCharacter.BattleParams.SkillModifiedParam.Reset();
-                _targetCharacter.GetStatusRef.ResetConsumptionActionGauge();
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
@@ -305,10 +299,11 @@ namespace Frontier.Battle
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
 
-                // 自己バフスキルの登録
-                _plOwner.BattleLogic.RegistSelfBuffSequences();
-                // 使用可能スキルの更新
-                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+                // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
+                if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+                {
+                    _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+                }
 
                 _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始
 
@@ -330,8 +325,7 @@ namespace Frontier.Battle
                 _targetCharacter.GetTransformHandler.ResetRotationOrder();
             }
 
-            _plOwner.BattleLogic.ResetUseSkills();
-            _targetCharacter.BattleLogic.ResetUseSkills();
+            _plOwner.BattleLogic.RevertSkillsToggledOn();
 
             return true;
         }
@@ -362,7 +356,7 @@ namespace Frontier.Battle
         {
             if( !AccespuSubs[index]( context ) ) { return false; }
 
-            _plOwner.BattleLogic.ToggleUseSkill( index );
+            _plOwner.BattleLogic.ToggleEquipSkill( index );
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 

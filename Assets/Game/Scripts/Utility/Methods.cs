@@ -53,6 +53,11 @@ static public class Methods
         flags           |= ToBit( value );
     }
 
+    static public void SetBitFlag<T>( ref Int64 flags, T value ) where T : Enum
+    {
+        flags |= ToBit64( value );
+    }
+
     /// <summary>
     /// 対象に指定のビットフラグを設定します
     /// </summary>
@@ -97,7 +102,12 @@ static public class Methods
     /// <param name="value">指定するビット値</param>
     static public void UnsetBitFlag<T>( ref int flags, T value ) where T : Enum
     {
-        flags           &= ~( ToBit( value ) );
+        flags &= ~( ToBit( value ) );
+    }
+
+    static public void UnsetBitFlag<T>( ref Int64 flags, T value ) where T : Enum
+    {
+        flags &= ~( ToBit64( value ) );
     }
 
     /// <summary>
@@ -152,6 +162,14 @@ static public class Methods
         if( v < 0 ) { return 0; }
 
         return 1 << v;
+    }
+
+    static public Int64 ToBit64<T>( this T value ) where T : Enum
+    {
+        int v = Convert.ToInt32( value );
+        if( v < 0 ) { return 0; }
+
+        return 1L << v;
     }
 
     /// <summary>

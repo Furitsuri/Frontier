@@ -22,15 +22,15 @@ namespace Frontier
         private Image _uiImage;
         private Color _initialColor;
 
-        void Update()
-        {
-            _imageFlicker.UpdateFlick();
-        }
-
         /// <summary>
         /// OnEnableでEnableRefreshText()を呼び出さないため、空実装にしています。
         /// </summary>
         void OnEnable() { }
+
+        public void UpdateImageFlick()
+        {
+            _imageFlicker.UpdateFlick();
+        }
 
         public void ApplySkill( Character chara, int skillIdx )
         {
@@ -74,7 +74,7 @@ namespace Frontier
         /// スキル使用の可否を示します
         /// </summary>
         /// <param name="useable">使用の可否</param>
-        public void SetUseable( bool useable )
+        public void SetUseableOrNot( bool useable )
         {
             if( useable )
             {

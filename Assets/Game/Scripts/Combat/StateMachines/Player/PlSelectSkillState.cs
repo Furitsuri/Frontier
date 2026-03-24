@@ -79,14 +79,6 @@ namespace Frontier.Battle
 
         public override void ExitState()
         {
-            // 使用スキルコスト見積もりをリセット
-            if( null != _plOwner )
-            {
-                _plOwner.GetStatusRef.ResetConsumptionActionGauge();
-                _plOwner.BattleParams.TmpParam.ResetSkillsToggledOn();
-                _plOwner.BattleParams.SkillModifiedParam.Reset();
-            }
-
             base.ExitState();
         }
 
@@ -144,20 +136,20 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            _plOwner.BattleLogic.RegistSelfBuffSequences(); // 自己バフスキルの登録
+            // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
+            // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
+            _plOwner.BattleLogic.TemporarilyConsumeActionGauge();
 
-            // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
-            if( IsTransitionSkillActionState() )
+            if( _plOwner.BattleLogic.RegistSelfBuffSequences() ) // 自己バフスキルの登録
             {
-                TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
-            }
-            else
-            {
-                // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
-                // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
-                _plOwner.BattleLogic.TemporarilyConsumeActionGauge();
                 // コマンド履歴にスキル選択を追加
                 _plOwner.PushCommandHistory( COMMAND_TAG.SKILL );
+            }
+
+            // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
+            if( IsSkillUsedTransitActionState() )
+            {
+                TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
             }
 
             _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
@@ -169,7 +161,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
-            _plOwner.BattleLogic.ResetUseSkills();
+            _plOwner.BattleLogic.RevertSkillsToggledOn();
 
             return true;
         }
@@ -191,13 +183,13 @@ namespace Frontier.Battle
         {
             if( !AcceptSubs[index]( context ) ) { return false; }
 
-            _plOwner.BattleLogic.ToggleUseSkill( index );
+            _plOwner.BattleLogic.ToggleEquipSkill( index );
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );  // 使用可能スキルの更新
 
             return true;
         }
 
-        private bool IsTransitionSkillActionState()
+        private bool IsSkillUsedTransitActionState()
         {
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {

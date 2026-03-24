@@ -357,18 +357,18 @@ namespace Frontier.Battle
         /// </summary>
         /// <status name="attacker">攻撃キャラクター</status>
         /// <status name="target">標的キャラクター</status>
-        public void ApplyDamageExpect(Character attacker, Character target)
+        public void ApplyDamageExpect( Character attacker, Character target )
         {
-            if (target == null)
+            if( target == null )
             {
                 return;
             }
 
-            int targetDef   = (int)Mathf.Floor((target.GetStatusRef.Def + target.BattleParams.ModifiedParam.Def) * target.BattleParams.SkillModifiedParam.DefMagnification);
-            int attackerAtk = (int)Mathf.Floor((attacker.GetStatusRef.Atk + attacker.BattleParams.ModifiedParam.Atk) * attacker.BattleParams.SkillModifiedParam.AtkMagnification);
-            int changeHP    = (targetDef - attackerAtk);
+            int targetDef   = target.GetStatusRef.Def + target.BattleParams.ModifiedParam.Def;
+            int attackerAtk = attacker.GetStatusRef.Atk + attacker.BattleParams.ModifiedParam.Atk;
+            int changeHP    = ( targetDef - attackerAtk );
 
-            target.BattleParams.TmpParam.SetExpectedHpChange( Mathf.Min(changeHP, 0), Mathf.Min(changeHP * attacker.BattleParams.SkillModifiedParam.AtkNum, 0) );
+            target.BattleParams.TmpParam.SetExpectedHpChange( Mathf.Min( changeHP, 0 ), Mathf.Min( changeHP * ( 1 + attacker.BattleParams.SkillModifiedParam.AddAtkNum ), 0 ) );
         }
 
         /// <summary>
