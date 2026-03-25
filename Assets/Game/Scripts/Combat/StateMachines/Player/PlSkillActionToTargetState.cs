@@ -18,20 +18,22 @@ namespace Frontier.Battle
             CHARACTER_STATUS = 0,
         }
 
-        private int skillRange = 0;
+        private SkillID _useSkillID;
         private SkillsData.Data _usingSkillData;
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
 
-            _usingSkillData = _plOwner.BattleLogic.GetUsingActionSkillData();
-            skillRange      = ( int ) _usingSkillData.Param1;
+            // 使用スキルから攻撃可能範囲を決定
+            _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _useSkillID );
 
+            ReceiveContext( ref _useSkillID, context );
+            _usingSkillData = _plOwner.BattleLogic.GetUsingActionSkillData();
         }
 
         public override bool Update()
@@ -44,11 +46,11 @@ namespace Frontier.Battle
             return false;
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );  // グリッドカーソルの位置をプレイヤーの位置に合わせる
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void RegisterInputCodes()
@@ -145,7 +147,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
-            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            // ステータス表示ステートに対象キャラクターを渡す
+            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

@@ -4,9 +4,9 @@ namespace Frontier.Battle
 {
     public class EmWaitState : PhaseStateBase
     {
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context );
         }
     }
 }

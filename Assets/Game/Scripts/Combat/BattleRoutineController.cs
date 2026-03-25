@@ -133,7 +133,7 @@ namespace Frontier.Battle
                 // 次のハンドラーに切り替える
                 handler.Exit();
                 _currentPhase = GetNextPhase( _currentPhase );
-                _phaseHandlers[_currentPhase].Run();
+                _phaseHandlers[_currentPhase].Enter();
             }
 
             return false;
@@ -149,7 +149,7 @@ namespace Frontier.Battle
         {
             Init();
 
-            _phaseHandlers[_currentPhase].Run();
+            _phaseHandlers[_currentPhase].Enter();
         }
 
         /// <summary>

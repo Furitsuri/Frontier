@@ -27,9 +27,9 @@ namespace Frontier.FormTroop
         private InputCodeStringWrapper _inputConfirmStrWrapper = null;
         private UnitLevelStatsContainer _unitLevelStatsContainer = null;
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
             
             _isExistEmployedCharacter   = false;
             _focusCharacterIndex        = 0;
@@ -68,12 +68,12 @@ namespace Frontier.FormTroop
             return ( 0 <= TransitIndex );
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             JoinCandidates();
             RemoveEmploymentCandidates();
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void RegisterInputCodes()
@@ -195,7 +195,7 @@ namespace Frontier.FormTroop
             if( !base.AcceptInfo( context ) ) { return false; }
 
             // ステータス表示ステートに対象キャラクターを渡す
-            Handler.ReceiveContext( _employmentCandidates[_focusCharacterIndex].Character );
+            SetSendTransitionContext( _employmentCandidates[_focusCharacterIndex].Character );
             // キャラクターステータス表示ステートへ遷移
             TransitState( ( int ) RecruitRootTransitTag.CHARACTER_STATUS );
 

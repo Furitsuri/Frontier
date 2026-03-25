@@ -27,9 +27,9 @@ namespace Frontier.Battle
         private Character _targetCharacter = null;
         private Func<InputContext, bool>[] AccespuSubs;
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert( _attackCharacter != null );
@@ -113,7 +113,7 @@ namespace Frontier.Battle
             return false;
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = null;
@@ -143,7 +143,7 @@ namespace Frontier.Battle
             //   次のキャラクターが行動開始する際に表示するようにします。
             // Stage.StageController.Instance.SetGridCursorControllerActive(true);
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void RegisterInputCodes()

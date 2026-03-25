@@ -247,7 +247,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageFileLoader.Init( tilePrefabs );
 
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
-            _stageEditorHandler.Run();
+            _stageEditorHandler.Enter();
 
             _btlCamCtrl.Init();
 

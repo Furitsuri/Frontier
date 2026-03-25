@@ -21,9 +21,9 @@ namespace Frontier.Battle
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
         }
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             AdaptSelectPlayer();
         }

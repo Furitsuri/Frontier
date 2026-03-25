@@ -14,30 +14,11 @@ namespace Frontier.StateMachine
         private StatusPresenter _statusPresenter = null;
         private InputCodeStringWrapper _inputInfoStrWrapper = null;
 
-        /// <summary>
-        /// ステータス表示対象のキャラクターを割り当てます
-        /// </summary>
-        private Character GetContextAsCharacter()
+        public override void Init( object context )
         {
-            object obj;
-            Handler.SendContext( out obj );
-            return obj as Character;
-        }
-
-        private void AssignCharacter()
-        {
-            _targetChara = GetContextAsCharacter();
-            NullCheck.AssertNotNull( _targetChara, nameof( _targetChara ) );
-            _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER_STATUS );
-            _statusPresenter.OpenCharacterStatus( _targetChara );
-        }
-
-        public override void Init()
-        {
-            base.Init();
+            base.Init( context );
 
             LazyInject.GetOrCreate( ref _statusPresenter, () => _hierarchyBld.InstantiateWithDiContainer<StatusPresenter>( false ) );
-
             _statusPresenter.Init();
 
             // INFOアイコンの文字列を設定
@@ -46,8 +27,12 @@ namespace Frontier.StateMachine
                 "SHOW\nTOOL TIP", // ツールチップ表示
                 "HIDE\nTOOL TIP", // ツールチップ非表示
             };
-
             _inputInfoStrWrapper = new InputCodeStringWrapper( _inputInfoStrings[0] );
+
+            ReceiveContext( ref _targetChara, context );
+            NullCheck.AssertNotNull( _targetChara, nameof( _targetChara ) );
+            _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER_STATUS );
+            _statusPresenter.OpenCharacterStatus( _targetChara );
         }
 
         public override bool Update()
@@ -58,27 +43,23 @@ namespace Frontier.StateMachine
             return ( 0 <= TransitIndex );
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
             _statusPresenter.CloseCharacterStatus();
             _targetChara = null;
 
-            base.ExitState();
+            return base.ExitState();
         }
 
-        public override void RunState()
+        public override void OnEnter( object context )
         {
-            base.RunState();
-
-            AssignCharacter();
+            base.OnEnter( context);
         }
 
         public override void RestartState()
         {
             base.RestartState();
-
-            AssignCharacter();
         }
 
         /// <summary>

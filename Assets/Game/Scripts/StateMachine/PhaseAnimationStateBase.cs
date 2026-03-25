@@ -23,7 +23,7 @@ namespace Frontier.StateMachine
             _btlUi.StartAnimPhaseUI();
         }
 
-        public override void Init()
+        public override void Init( object context )
         {
             _btlUi = _uiSystem.BattleUi;
 

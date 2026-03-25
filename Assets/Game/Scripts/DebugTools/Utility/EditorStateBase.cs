@@ -21,9 +21,9 @@ public class EditorStateBase : StateBase
     /// <summary>
     /// 現在のステートを実行します
     /// </summary>
-    public override void RunState()
+    public override void OnEnter( object context )
     {
-        base.RunState();
+        base.OnEnter( context );
         RegisterInputCodes();
     }
 
@@ -39,19 +39,21 @@ public class EditorStateBase : StateBase
     /// <summary>
     /// 現在のステートを中断します
     /// </summary>
-    public override void PauseState()
+    public override object PauseState()
     {
-        base.PauseState();
         UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
+
+        return base.PauseState();
     }
 
     /// <summary>
     /// 現在のステートから退避します
     /// </summary>
-    public override void ExitState()
+    public override object ExitState()
     {
-        base.ExitState();
         UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
+
+        return base.ExitState();
     }
 
     /// <summary>

@@ -34,15 +34,15 @@ namespace Frontier.Battle
 
         protected void PlPhaseStateInit()
         {
-            base.Init();
+            base.Init( null );
         }
 
         /// <summary>
         /// 初期化します
         /// </summary>
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
@@ -148,7 +148,7 @@ namespace Frontier.Battle
             return false;
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = null;// _attackSequence.GetDiedCharacter();
@@ -178,7 +178,7 @@ namespace Frontier.Battle
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         /// <summary>

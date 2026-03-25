@@ -5,9 +5,9 @@ namespace Frontier.Battle
 {
     public class PlWaitState : PlPhaseStateBase
     {
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             // 選択しているプレイヤーの行動をすべて終了
             _plOwner.BattleParams.TmpParam.EndAction();

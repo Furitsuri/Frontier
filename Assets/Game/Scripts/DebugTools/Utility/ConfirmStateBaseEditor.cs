@@ -22,9 +22,9 @@ public class ConfirmStateBaseEditor : EditorStateBase
     protected CommandList.CommandIndexedValue _cmdIdxVal;
     protected Frontier.ConfirmUI _confirmUi;
 
-    public override void Init()
+    public override void Init( object context )
     {
-        base.Init();
+        base.Init( context );
 
         _cmdIdxVal = new CommandList.CommandIndexedValue( 1, 1 );
 
@@ -51,11 +51,11 @@ public class ConfirmStateBaseEditor : EditorStateBase
         return IsBack();
     }
 
-    public override void ExitState()
+    public override object ExitState()
     {
         _confirmUi.gameObject.SetActive( false );
 
-        base.ExitState();
+        return base.ExitState();
     }
 
     public override void RegisterInputCodes()

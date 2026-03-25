@@ -11,19 +11,7 @@ namespace Frontier.StateMachine
     {
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         
-        private object _transitionContext;    // State間で受け渡すコンテキスト情報
         protected bool _isFirstUpdate = false;
-
-        public void ReceiveContext( object context )
-        {
-            _transitionContext = context;
-        }
-
-        public void SendContext( out object receieve )
-        {
-            receieve = _transitionContext;
-            _transitionContext = null;   // 受け渡し後はクリア
-        }
 
         private void AssignHandler( PhaseStateBase state )
         {
@@ -62,17 +50,19 @@ namespace Frontier.StateMachine
 
         virtual public bool LateUpdate()
         {
+            object transitionContext = null;
+
             CurrentNode.LateUpdate();  // 現在実行中のステートを後更新
 
             // ステートの遷移を監視
             int transitIndex = CurrentNode.TransitIndex;
             if( 0 <= transitIndex )
             {
-                if( CurrentNode.IsExitReserved ) { CurrentNode.ExitState(); }   // 終了
-                else { CurrentNode.PauseState(); }                              // 中断
+                if( CurrentNode.IsExitReserved ) { transitionContext = CurrentNode.ExitState(); }   // 終了
+                else { transitionContext = CurrentNode.PauseState(); }                              // 中断
 
                 CurrentNode = CurrentNode.GetChildren<PhaseStateBase>( transitIndex );
-                CurrentNode.RunState();
+                CurrentNode.OnEnter( transitionContext );
             }
             else if( CurrentNode.IsBack() )
             {
@@ -84,11 +74,11 @@ namespace Frontier.StateMachine
                     return true;
                 }
 
-                CurrentNode.ExitState();
+                transitionContext = CurrentNode.ExitState();
                 CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
 
                 // Exit処理が行われたノードはRunを実行。それ以外はPause処理が行われたためRestartを実行
-                if( CurrentNode.IsExitReserved ) { CurrentNode.RunState(); }
+                if( CurrentNode.IsExitReserved ) { CurrentNode.OnEnter( transitionContext ); }
                 else { CurrentNode.RestartState(); }
             }
 
@@ -100,10 +90,10 @@ namespace Frontier.StateMachine
             CurrentNode.FixedUpdate();  // 現在実行中のステートを固定更新
         }
 
-        virtual public void Run()
+        virtual public void Enter()
         {
             Init();
-            CurrentNode.RunState();     // ステートの開始
+            CurrentNode.OnEnter( null );     // ステートの開始
         }
 
         virtual public void Restart()

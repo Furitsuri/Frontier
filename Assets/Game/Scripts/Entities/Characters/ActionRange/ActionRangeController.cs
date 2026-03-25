@@ -68,6 +68,20 @@ namespace Frontier.Entities
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, _owner.CharaKey(), ref _actionableTileMap );
         }
 
+        public void SetupAttackableRangeData( int dprtTileIdx, SkillID useSkillID )
+        {
+            SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
+            if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
+            {
+                Debug.LogError( "攻撃用のスキル以外のスキルが指定されています。" );
+
+                return;
+            }
+
+            _actionableTileMap.Init();
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, skillData.Range, _owner.CharaKey(), ref _actionableTileMap );
+        }
+
         /// <summary>
         /// 
         /// </summary>

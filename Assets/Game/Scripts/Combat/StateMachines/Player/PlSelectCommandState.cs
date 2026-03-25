@@ -14,9 +14,9 @@ namespace Frontier.Battle
         /// <summary>
         /// 初期化します
         /// </summary>
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context );
 
             // 可能な行動が全て終了している場合は即終了
             if( _plOwner.BattleParams.TmpParam.IsEndAction() )
@@ -56,7 +56,7 @@ namespace Frontier.Battle
         /// <summary>
         /// 現在のステートから離脱します
         /// </summary>
-        public override void ExitState()
+        public override object ExitState()
         {
             // 移動コマンドを選択した場合は、この時点でのキャラクターの位置情報を保存する
             // ( PlMoveStateのInitなどで保存すると、『移動ステート中に敵を直接攻撃→攻撃をキャンセルして移動に戻る』とした場合に、
@@ -68,7 +68,7 @@ namespace Frontier.Battle
 
             _presenter.ExitPLCommandView();
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Frontier.Battle
                 var commandTag = _plOwner.PopCommandHistory();
                 _plOwner.BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
                 // コマンド選択状態を終了させる必要はないため、初期化した後にfalseを返す
-                Init();
+                Init( null );
                 return false;
             }
 

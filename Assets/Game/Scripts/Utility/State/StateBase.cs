@@ -9,19 +9,40 @@ public class StateBase : TreeNode<StateBase>
     [Inject] protected InputFacade _inputFcd = null;
 
     public bool IsExitReserved { get; private set; } = false;
-    private int _transitIndex = -1;
-    protected bool _isBack = false;
+    protected bool _isBack                      = false;
+    private object _sendTransitionContext     = null;
+    private int _transitIndex                   = -1;
 
     public int TransitIndex => _transitIndex;
 
+    
     /// <summary>
     /// 初期化します
     /// </summary>
-    virtual public void Init()
+    /// <param name="context">
+    /// 現在のStateへ渡されるコンテキストです。
+    /// overrideされたInitでasなどで加工されて保持されるため、仮想関数であるこの関数内では受け取りません。
+    /// _sendTransitionContextはこのStateから別のStateへ遷移する際に渡す内容のものになります。
+    /// </param>
+    virtual public void Init( object context )
     {
-        IsExitReserved  = false;
-        _transitIndex   = -1;
-        _isBack         = false;
+        IsExitReserved              = false;
+        _isBack                     = false;
+        _sendTransitionContext      = null;
+        _transitIndex               = -1;
+    }
+
+    public void SetSendTransitionContext( object transitionContext )
+    {
+        _sendTransitionContext = transitionContext;
+    }
+
+    public void ReceiveContext<T>( ref T receieveValue, object context )
+    {
+        if( context is T )
+        {
+            receieveValue = (T)context;
+        }
     }
 
     /// <summary>
@@ -86,9 +107,9 @@ public class StateBase : TreeNode<StateBase>
     /// <summary>
     /// 現在のステートを実行します
     /// </summary>
-    virtual public void RunState()
+    virtual public void OnEnter( object context )
     {
-        Init(); // ステートの初期化を行う
+        Init( context ); // ステートの初期化を行う
     }
 
     /// <summary>
@@ -102,12 +123,12 @@ public class StateBase : TreeNode<StateBase>
     /// <summary>
     /// 現在のステートを中断します
     /// </summary>
-    virtual public void PauseState() { }
+    virtual public object PauseState() { return _sendTransitionContext; }
 
     /// <summary>
     /// 現在のステートから退避します
     /// </summary>
-    virtual public void ExitState() { }
+    virtual public object ExitState() { return _sendTransitionContext; }
 
     /// <summary>
     /// 以前のステートに戻るフラグを取得します

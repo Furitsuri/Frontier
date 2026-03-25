@@ -47,9 +47,9 @@ namespace Frontier.DebugTools.StageEditor
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context );
 
             // エディットモード毎に編集出来る内容を切り替えるため、各エディットクラスを配列内に挿入
             _editClasses = new StageEditorEditBase[( int ) StageEditMode.NUM]
