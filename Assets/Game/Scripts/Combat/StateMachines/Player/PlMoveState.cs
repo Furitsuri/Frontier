@@ -77,9 +77,9 @@ namespace Frontier.Battle
             return ranges.Item1 + ranges.Item2 <= _plOwner.GetStatusRef.attackRange;
         }
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context );
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
             if( _plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
@@ -137,7 +137,7 @@ namespace Frontier.Battle
             return ( 0 <= TransitIndex );
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
@@ -148,7 +148,7 @@ namespace Frontier.Battle
                 _stageCtrl.ClearGridCursroBind();           // 操作対象データをリセット
             }
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         /// <summary>
@@ -304,7 +304,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
-            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            // ステータス表示ステートに対象キャラクターを渡す
+            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

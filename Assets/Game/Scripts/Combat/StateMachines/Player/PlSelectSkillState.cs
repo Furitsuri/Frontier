@@ -29,9 +29,9 @@ namespace Frontier.Battle
         private PlSelectSkillPhase _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
         private Func<InputContext, bool>[] AcceptSubs;
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _phase              = PlSelectSkillPhase.PL_SELECT_SKILL;
@@ -77,9 +77,9 @@ namespace Frontier.Battle
             return false;
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void RegisterInputCodes()
@@ -146,9 +146,12 @@ namespace Frontier.Battle
                 _plOwner.PushCommandHistory( COMMAND_TAG.SKILL );
             }
 
+            SkillID skillID;
             // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
-            if( IsSkillUsedTransitActionState() )
+            if( IsSkillUsedTransitActionState( out skillID ) )
             {
+                SetSendTransitionContext( skillID );
+
                 TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
             }
 
@@ -189,7 +192,7 @@ namespace Frontier.Battle
             return true;
         }
 
-        private bool IsSkillUsedTransitActionState()
+        private bool IsSkillUsedTransitActionState( out SkillID useSkillID )
         {
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
@@ -199,12 +202,14 @@ namespace Frontier.Battle
                     var skillData = SkillsData.data[( int ) skillID];
                     if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
                     {
-                        _plOwner.BattleLogic.SetUsingActionSkillData( skillData );
+                        useSkillID = skillID;
 
                         return true;
                     }
                 }
             }
+
+            useSkillID = SkillID.NONE;
 
             return false;
         }

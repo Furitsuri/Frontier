@@ -41,7 +41,7 @@ namespace Frontier.FormTroop
         {
             Init();
 
-            _handler.Run();
+            _handler.Enter();
         }
 
         public override void Restart()

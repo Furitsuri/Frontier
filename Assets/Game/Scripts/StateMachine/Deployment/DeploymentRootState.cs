@@ -26,11 +26,11 @@ namespace Frontier.StateMachine
             CONFIRM_COMPLETED,
         }
 
-        public override void Init()
+        public override void Init( object context )
         {
             LazyInject.GetOrCreate( ref _entitySnapshot, () => _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false ) );
 
-            base.Init();
+            base.Init( context);
             _entitySnapshot.Init();
 
             _focusCharacterIndex = 0;
@@ -53,9 +53,9 @@ namespace Frontier.StateMachine
             return ( 0 <= TransitIndex );
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void RegisterInputCodes()
@@ -242,7 +242,8 @@ namespace Frontier.StateMachine
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
-            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            // ステータス表示ステートに対象キャラクターを渡す
+            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

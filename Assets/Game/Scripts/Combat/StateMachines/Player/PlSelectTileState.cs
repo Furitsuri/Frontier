@@ -24,9 +24,9 @@ namespace Frontier.Battle
         /// <summary>
         /// 遷移先を示すタグ
         /// </summary>
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context );
 
             _isShowingAllDangerRange = false;
             _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
@@ -226,7 +226,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
-            Handler.ReceiveContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            // ステータス表示ステートに対象キャラクターを渡す
+            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 

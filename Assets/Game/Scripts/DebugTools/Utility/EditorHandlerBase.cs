@@ -11,21 +11,29 @@ using Zenject;
 public class EditorHandlerBase : Tree<EditorStateBase>
 {
     [Inject] protected HierarchyBuilderBase _hierarchyBld = null;
-    protected bool _isInitReserved = false;
+
+    protected bool _isInitReserved      = false;
+    private object _transitionContext   = null;    // State間で受け渡すコンテキスト情報
+
+    public void SetTransitionContext( object context )
+    {
+        _transitionContext = context;
+    }
 
     virtual public void Init()
     {
         // 遷移木の作成
         CreateTree();
 
-        CurrentNode.Init();
+        CurrentNode.Init( _transitionContext );
+        _transitionContext = null;
     }
 
     virtual public bool Update()
     {
         if (_isInitReserved)
         {
-            CurrentNode.RunState();
+            CurrentNode.OnEnter( _transitionContext );
             _isInitReserved = false;
         }
 
@@ -61,10 +69,10 @@ public class EditorHandlerBase : Tree<EditorStateBase>
         }
     }
 
-    virtual public void Run()
+    virtual public void Enter()
     {
         // ステートの実行
-        CurrentNode.RunState();
+        CurrentNode.OnEnter( _transitionContext );
     }
 
     virtual public void Restart()

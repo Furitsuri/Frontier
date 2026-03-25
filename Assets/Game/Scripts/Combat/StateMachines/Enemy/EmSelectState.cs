@@ -12,11 +12,11 @@ namespace Frontier.Battle
         bool _isValidDestination = false;
         bool _isValidTarget = false;
 
-        public override void Init()
+        public override void Init( object context )
         {
             bool isExist = false;   // 行動可能なキャラクターが存在するか
 
-            base.Init();
+            base.Init( context);
 
             _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).GetEnumerator();
             _currentEnemy = null;

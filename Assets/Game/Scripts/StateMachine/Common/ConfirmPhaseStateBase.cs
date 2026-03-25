@@ -23,9 +23,9 @@ namespace Frontier.StateMachine
         protected CommandList _commandList              = new CommandList();
         protected CommandList.CommandIndexedValue _cmdIdxVal;
 
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context);
 
             _cmdIdxVal = new CommandList.CommandIndexedValue( 1, 1 );
 
@@ -51,11 +51,11 @@ namespace Frontier.StateMachine
             return IsBack();
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             _confirmPresenter.SetActiveConfirmUI( false );
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void AssignPresenter( PhasePresenterBase presenter )

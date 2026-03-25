@@ -25,9 +25,9 @@ namespace Frontier.Battle
         ///        そのため、行動範囲の計算やその表示についてはEmSelectState内のタイミングで行われています。
         ///        理由としては、EmMoveStateの初期化時点でどこに移動するか(引いては何を行うか)を決定していては遅いためです。
         /// </summary>
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init();
+            base.Init( context );
 
             _moveWaitTimer = 0f;    // 移動開始までの待機時間をリセット
 
@@ -79,13 +79,13 @@ namespace Frontier.Battle
             return false;
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
             _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();  // タイルメッシュの描画をクリア
 
-            base.ExitState();
+            return base.ExitState();
         }
     }
 }

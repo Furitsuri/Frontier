@@ -10,18 +10,18 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditFileNameState : EditorStateBase
     {
-        public override void Init()
+        public override void Init( object context )
         {
-            base.Init( );
+            base.Init( context );
 
             _uiSystem.DebugUi.StageEditorView.OpenEditFileName( () => { Back(); } );
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             _uiSystem.DebugUi.StageEditorView.CloseEditFileName();
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         public override void RegisterInputCodes()

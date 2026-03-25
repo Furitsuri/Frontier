@@ -13,7 +13,7 @@ namespace Frontier.Battle
     /// </summary>
     public class PlAttackOnMoveState : PlAttackState
     {
-        public override void Init()
+        public override void Init( object context )
         {
             PlPhaseStateInit(); // base.Init()は呼ばない(PlAttackState.Init()が呼ばれてしまうため)
 
@@ -54,7 +54,7 @@ namespace Frontier.Battle
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
-        public override void ExitState()
+        public override object ExitState()
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = null; // _attackSequence.GetDiedCharacter();
@@ -86,7 +86,7 @@ namespace Frontier.Battle
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
             _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
 
-            base.ExitState();
+            return base.ExitState();
         }
 
         /// <summary>
