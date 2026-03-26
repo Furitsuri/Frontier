@@ -49,7 +49,7 @@ namespace Frontier.Battle
             if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl, _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.SetAttackCursorE2PActive( true );                           // アタックカーソルUI表示
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
             }
 
             _targetCharacter = _attackCharacter.BattleLogic.GetAi().GetTargetCharacter();
@@ -92,9 +92,6 @@ namespace Frontier.Battle
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
 
-                    // ダメージ予測表示UIを表示
-                    _uiSystem.BattleUi.ToggleBattleExpect( true );
-
                     break;
                 case EmAttackPhase.EM_ATTACK_EXECUTE:
                     {
@@ -126,14 +123,14 @@ namespace Frontier.Battle
             }
 
             // アタッカーキャラクターの設定を解除
-            _stageCtrl.ClearGridCursroBind();
+            _stageCtrl.ClearGridCursorBind();
             // 予測ダメージをリセット
             _attackCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
+            _uiSystem.BattleUi.SetActiveLeft2RightDirection( false );
             // ダメージ予測表示UIを非表示
-            _uiSystem.BattleUi.ToggleBattleExpect( false );
+            _uiSystem.BattleUi.SetActiveActionResultExpect( false );
             // タイルメッシュの描画をすべてクリア
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
             // 選択グリッドを表示
@@ -189,8 +186,8 @@ namespace Frontier.Battle
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
             _stageCtrl.SetGridCursorControllerActive( false );                      // 選択グリッドを一時非表示
-            _uiSystem.BattleUi.SetAttackCursorE2PActive( false );                   // アタックカーソルUI非表示
-            _uiSystem.BattleUi.ToggleBattleExpect( false );                         // ダメージ予測表示UIを非表示
+            _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );                   // アタックカーソルUI非表示
+            _uiSystem.BattleUi.SetActiveActionResultExpect( false );                         // ダメージ予測表示UIを非表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
 
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除

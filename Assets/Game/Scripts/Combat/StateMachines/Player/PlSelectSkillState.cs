@@ -46,10 +46,6 @@ namespace Frontier.Battle
 
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, 0xff );
-
-            // パラメータビューにキャラクターを割り当て
-            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
-            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override bool Update()
@@ -104,6 +100,15 @@ namespace Frontier.Battle
             NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            // パラメータビューにキャラクターを割り当て
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+        }
+
         protected override bool CanAcceptConfirm()
         {
             if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
@@ -136,26 +141,25 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
-            // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
-            _plOwner.BattleLogic.TemporarilyConsumeActionGauge();
+            int transitActionIndex = -1;
 
-            if( _plOwner.BattleLogic.RegistSelfBuffSequences() ) // 自己バフスキルの登録
-            {
-                // コマンド履歴にスキル選択を追加
-                _plOwner.PushCommandHistory( COMMAND_TAG.SKILL );
-            }
-
-            SkillID skillID;
             // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
-            if( IsSkillUsedTransitActionState( out skillID ) )
+            if( _plOwner.BattleLogic.IsSkillToggledTransitActionState( out transitActionIndex ) )
             {
-                SetSendTransitionContext( skillID );
+                SetSendTransitionContext( _plOwner.GetEquipSkillID( transitActionIndex ) );
 
                 TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
             }
+            else
+            {
+                // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
+                // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
+                _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+                // スキルを使用した場合は以前の状態には戻せないため、行動履歴をクリア
+                _plOwner.ClearCommandHistory();
 
-            _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
+                _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
+            }
 
             return true;
         }
@@ -190,28 +194,6 @@ namespace Frontier.Battle
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );  // 使用可能スキルの更新
 
             return true;
-        }
-
-        private bool IsSkillUsedTransitActionState( out SkillID useSkillID )
-        {
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                if( _plOwner.BattleLogic.IsUsingEquipSkill( i ) )
-                {
-                    SkillID skillID = _plOwner.GetEquipSkillID( i );
-                    var skillData = SkillsData.data[( int ) skillID];
-                    if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
-                    {
-                        useSkillID = skillID;
-
-                        return true;
-                    }
-                }
-            }
-
-            useSkillID = SkillID.NONE;
-
-            return false;
         }
     }
 }

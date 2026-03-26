@@ -258,8 +258,7 @@ namespace Frontier.Battle
             if( isActiveParamView )
             {
                 ParameterWindowType windowType = ( gridSelectChara.GetCharacterTag() == CHARACTER_TAG.PLAYER )
-                    ? ParameterWindowType.Left
-                    : ParameterWindowType.Right;
+                    ? ParameterWindowType.Left : ParameterWindowType.Right;
 
                 var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( windowType );
                 _presenter.CharaParamView( windowType ).AssignCharacter( gridSelectChara, layerMaskIndex );

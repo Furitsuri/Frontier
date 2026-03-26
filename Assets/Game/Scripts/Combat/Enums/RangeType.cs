@@ -6,10 +6,11 @@
     /// </summary>
     public enum RangeType
     {
-        None = -1,
+        NONE = -1,
 
         NORMAL,
-        SINGLE_TARGET,
-        LINE,
+        LINEARLY,
+
+        NUM,
     }
 }

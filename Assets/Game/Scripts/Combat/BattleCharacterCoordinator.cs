@@ -411,8 +411,8 @@ namespace Frontier.Battle
         private void PlaceCharacterAtStartPosition( Character chara )
         {
             // 向きの値を設定
-            Quaternion[] rot = new Quaternion[( int ) Direction.NUM_MAX];
-            for( int i = 0; i < ( int ) Direction.NUM_MAX; ++i )
+            Quaternion[] rot = new Quaternion[( int ) Direction.NUM];
+            for( int i = 0; i < ( int ) Direction.NUM; ++i )
             {
                 rot[i] = Quaternion.AngleAxis( 90 * i, Vector3.up );
             }

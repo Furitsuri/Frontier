@@ -7,5 +7,5 @@
     BACK,       // Z軸負方向
     LEFT,       // X軸負方向
 
-    NUM_MAX
+    NUM
 }

@@ -27,9 +27,6 @@ namespace Frontier.Battle
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );
             // 実行可能なコマンドを設定
             SetupExecutableCommands();
-            // パラメータビューにキャラクターを割り当て
-            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
-            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         /// <summary>
@@ -93,6 +90,15 @@ namespace Frontier.Battle
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
             NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
+        }
+
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            // パラメータビューにキャラクターを割り当て
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         /// <summary>

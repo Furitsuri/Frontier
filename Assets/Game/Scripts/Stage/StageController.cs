@@ -42,6 +42,7 @@ namespace Frontier.Stage
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
             _gridCursorCtrl.Init( 0 );
+            _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );
         }
 
@@ -68,7 +69,7 @@ namespace Frontier.Stage
         /// <summary>
         /// グリッドカーソルのキャラクターバインドを解除します
         /// </summary>
-        public void ClearGridCursroBind()
+        public void ClearGridCursorBind()
         {
             if( _gridCursorCtrl.BindCharacter != null )
             {

@@ -68,11 +68,8 @@ namespace Frontier.Battle
             if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( true );                // アタックカーソルUI表示
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );    // アクション対象指定関連のUIを表示
             }
-
-            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
-            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override bool Update()
@@ -115,9 +112,6 @@ namespace Frontier.Battle
                         _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
                     }
 
-                    // ダメージ予測表示UIを表示
-                    _uiSystem.BattleUi.ToggleBattleExpect( true );
-
                     // 使用スキルを選択する
                     _plOwner.BattleLogic.SelectUseSkills( SituationType.ATTACK );
                     _targetCharacter.RefreshUseableSkillFlags( SituationType.DEFENCE, Methods.ToBit( ActionType.BUFF ) | Methods.ToBit( ActionType.SPECIAL ) );
@@ -159,12 +153,9 @@ namespace Frontier.Battle
                 diedCharacter.Dispose();    // 破棄
             }
 
-            // アタッカーキャラクターの設定を解除
-            _stageCtrl.ClearGridCursroBind();
-            // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
-            // ダメージ予測表示UIを非表示
-            _uiSystem.BattleUi.ToggleBattleExpect( false );
+            _stageCtrl.ClearGridCursorBind();                                                       // アタッカーキャラクターの設定を解除
+            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
+
             // 予測ダメージと使用スキルコスト見積もりをリセット
             if( null != _plOwner )
             {
@@ -209,6 +200,15 @@ namespace Frontier.Battle
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
             NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
+        }
+
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            // パラメータビューにキャラクターを割り当て
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         /// <summary>
@@ -293,11 +293,10 @@ namespace Frontier.Battle
                 _plOwner.BattleLogic.ConsumeActionGauge();
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-                _stageCtrl.SetGridCursorControllerActive( false );              // 選択グリッドを一時非表示
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( false );           // アタックカーソルUI非表示
-                _uiSystem.BattleUi.ToggleBattleExpect( false );                 // ダメージ予測表示UIを非表示
-                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
-                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
+                _stageCtrl.SetGridCursorControllerActive( false );                                      // 選択グリッドを一時非表示
+                _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                           // タイルメッシュの描画をすべてクリア
+                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                           // 現在の入力コードを登録解除
 
                 // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
                 if( _plOwner.BattleLogic.RegistSelfBuffSequences() )

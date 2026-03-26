@@ -251,8 +251,8 @@ namespace Frontier
             _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
 
             // 一度パラメータを非表示
-            _uiSystem.BattleUi.SetPlayerParameterActive( false );
-            _uiSystem.BattleUi.SetEnemyParameterActive( false );
+            _uiSystem.BattleUi.SetActiveLeftParameterWindow( false );
+            _uiSystem.BattleUi.SetActiveRightParameterWindow( false );
         }
 
         /// <summary>
@@ -348,8 +348,8 @@ namespace Frontier
                             _mosaicEffect.ToggleEnable( false );
                             _mosaicEffect.ResetBlockSize();
                             // パラメータを表示
-                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
-                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
+                            _uiSystem.BattleUi.SetActiveLeftParameterWindow( true );
+                            _uiSystem.BattleUi.SetActiveRightParameterWindow( true );
                             // 戦闘フィールドに移行
                             _atkCameraPhase = AttackSequenceCameraPhase.BATTLE_FIELD;
                         }
@@ -393,8 +393,8 @@ namespace Frontier
                         {
                             _mosaicEffect.ToggleEnable( false );
                             _mosaicEffect.ResetBlockSize();
-                            _uiSystem.BattleUi.SetPlayerParameterActive( true );
-                            _uiSystem.BattleUi.SetEnemyParameterActive( true );
+                            _uiSystem.BattleUi.SetActiveLeftParameterWindow( true );
+                            _uiSystem.BattleUi.SetActiveRightParameterWindow( true );
 
                             _mainCamera.transform.position = _followingPosition;
                             _mainCamera.transform.LookAt( _lookAtPosition );
