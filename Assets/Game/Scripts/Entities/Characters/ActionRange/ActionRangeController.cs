@@ -59,27 +59,39 @@ namespace Frontier.Entities
             _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.CharaKey(), ref _actionableTileMap );
         }
 
+        /// <summary>
+        /// 通常攻撃用に攻撃可能な範囲を設定します
+        /// </summary>
+        /// <param name="dprtTileIdx"></param>
         public void SetupAttackableRangeData( int dprtTileIdx )
         {
             _actionableTileMap.Init();
 
             var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeType.NORMAL, _owner.CharaKey(), ref _actionableTileMap );
         }
 
+        /// <summary>
+        /// スキルによる攻撃用に攻撃可能な範囲を設定します
+        /// </summary>
+        /// <param name="dprtTileIdx"></param>
+        /// <param name="useSkillID"></param>
         public void SetupAttackableRangeData( int dprtTileIdx, SkillID useSkillID )
         {
             SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
-            if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
+            if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
             {
                 Debug.LogError( "攻撃用のスキル以外のスキルが指定されています。" );
 
                 return;
             }
 
+            // スキルの効果範囲に負の値が設定されている場合は、キャラクターの攻撃レンジをそのまま用いる
+            var atkRng = ( skillData.Range < 0 ) ? _owner.GetStatusRef.attackRange : skillData.Range;
+
             _actionableTileMap.Init();
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, skillData.Range, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeType, _owner.CharaKey(), ref _actionableTileMap );
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ public class StateBase : TreeNode<StateBase>
 
     public bool IsExitReserved { get; private set; } = false;
     protected bool _isBack                      = false;
-    private object _sendTransitionContext     = null;
+    private object _sendTransitionContext       = null;
     private int _transitIndex                   = -1;
 
     public int TransitIndex => _transitIndex;
@@ -110,6 +110,7 @@ public class StateBase : TreeNode<StateBase>
     virtual public void OnEnter( object context )
     {
         Init( context ); // ステートの初期化を行う
+        OnActivated();
     }
 
     /// <summary>
@@ -118,6 +119,7 @@ public class StateBase : TreeNode<StateBase>
     virtual public void RestartState()
     {
         _transitIndex = -1;
+        OnActivated();
     }
 
     /// <summary>
@@ -150,6 +152,12 @@ public class StateBase : TreeNode<StateBase>
 
         IsExitReserved = true;
     }
+
+    /// <summary>
+    /// ステートが起動した際に行われる処理です。
+    /// 継承先で定義してください。
+    /// </summary>
+    protected virtual void OnActivated() { }
 
     /// <summary>
     /// 親の遷移に戻ります

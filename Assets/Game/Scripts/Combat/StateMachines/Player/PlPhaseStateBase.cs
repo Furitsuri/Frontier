@@ -23,7 +23,7 @@ namespace Frontier.Battle
 
         public override void Init( object context )
         {
-            base.Init( context);
+            base.Init( context );
 
             AdaptSelectPlayer();
         }

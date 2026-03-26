@@ -60,22 +60,22 @@ namespace Frontier.UI
             DamageValue.Init( _rectTransform, _uiCamera );
         }
 
-        public void SetPlayerParameterActive( bool isActive )
+        public void SetActiveLeftParameterWindow( bool isActive )
         {
             ParameterView.PlayerParameter.gameObject.SetActive( isActive );
         }
 
-        public void SetEnemyParameterActive( bool isActive )
+        public void SetActiveRightParameterWindow( bool isActive )
         {
             ParameterView.EnemyParameter.gameObject.SetActive( isActive );
         }
 
-        public void SetAttackCursorP2EActive( bool isActive )
+        public void SetActiveLeft2RightDirection( bool isActive )
         {
             ParameterView.AttackDirection.attackCursorP2E.gameObject.SetActive( isActive );
         }
 
-        public void SetAttackCursorE2PActive( bool isActive )
+        public void SetActiveRight2LeftDirection( bool isActive )
         {
             ParameterView.AttackDirection.attackCursorE2P.gameObject.SetActive( isActive );
         }
@@ -85,7 +85,7 @@ namespace Frontier.UI
             PlCommandWindow.gameObject.SetActive( isActive );
         }
 
-        public void ToggleBattleExpect( bool isActive )
+        public void SetActiveActionResultExpect( bool isActive )
         {
             ParameterView.PlayerParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
             ParameterView.EnemyParameter.TMPDiffHPValue.gameObject.SetActive( isActive );

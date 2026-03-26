@@ -93,6 +93,9 @@ namespace Frontier.Entities
 
         public void RefreshUseableSkillFlags( SituationType situationType, int useableActionTypeBit = 0xff )
         {
+            int equipSkillIndexTransitAction = -1;
+            _battleLogic?.IsSkillToggledTransitActionState( out equipSkillIndexTransitAction );
+
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 SkillID skillID = GetEquipSkillID( i );
@@ -108,10 +111,11 @@ namespace Frontier.Entities
 
                 BattleParams.TmpParam.IsUseableSkill[i] = false;
                 
-                if( BattleParams.TmpParam.IsSkillsUsed[i] ||                                                // 既に使用済みのスキルは使用不可
-                    ( SituationType.NONE != situationType && skillData.SituationType != situationType ) ||  // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
-                    !Methods.CheckBitFlag( useableActionTypeBit, skillData.ActionType ) ||                  // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
-                    _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost )   // コストが現在のアクションゲージ値を越えていないかをチェック
+                if( BattleParams.TmpParam.IsSkillsUsed[i] ||                                                                    // 既に使用済みのスキルは使用不可
+                    ( SituationType.NONE != situationType && skillData.SituationType != situationType ) ||                      // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
+                    !Methods.CheckBitFlag( useableActionTypeBit, skillData.ActionType ) ||                                      // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
+                    ( 0 <= equipSkillIndexTransitAction && SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) ||  // 対象選択に遷移するスキルの使用フラグがONの状態では、同様のスキルは使用不可
+                    _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost )                       // コストが現在のアクションゲージ値を越えていないかをチェック
                 { 
                     continue;
                 }

@@ -20,7 +20,7 @@ namespace Frontier.Battle
             Character targetChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
-            _stageCtrl.ClearGridCursroBind();                          // 念のためバインドを解除
+            _stageCtrl.ClearGridCursorBind();                          // 念のためバインドを解除
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );     // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
@@ -43,15 +43,11 @@ namespace Frontier.Battle
             if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, targetChara ) )
             {
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.SetAttackCursorP2EActive( true );                // アタックカーソルUI表示
+                _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );                // アタックカーソルUI表示
             }
 
             // 使用可能スキルを更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
-
-            // パラメータビューにキャラクターを割り当て
-            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
-            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override object ExitState()
@@ -66,18 +62,12 @@ namespace Frontier.Battle
                 diedCharacter.Dispose();
             }
 
-            // アタッカーキャラクターの設定を解除
-            _stageCtrl.ClearGridCursroBind();
+			_stageCtrl.ClearGridCursorBind();                                                       // アタッカーキャラクターの設定を解除
+			_presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
 
-            // 予測ダメージをリセット
-            _plOwner.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
+			// 予測ダメージをリセット
+			_plOwner.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-
-            // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetAttackCursorP2EActive( false );
-
-            // ダメージ予測表示UIを非表示
-            _uiSystem.BattleUi.ToggleBattleExpect( false );
 
             // 使用スキルコスト見積もりをリセット
             _plOwner.RefreshUseableSkillFlags( SituationType.NONE, 0xff );

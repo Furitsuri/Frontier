@@ -24,7 +24,7 @@ namespace Frontier.FormTroop
             int hpRandValue         = Random.Range( -3, 4 );
             int atkRandValue        = Random.Range( -2, 3 );
             int defRandValue        = Random.Range( -2, 3 );
-            int actMaxRandValue     = Random.Range( 0, 2 );
+            int actMaxRandValue     = Random.Range( 4, 6 );
             int actRecovRandValue   = Random.Range( 0, 2 );
 
             CharacterStatusData statusData = unitLevelStats.Stats[unitTypeIndex].StatusDatas[levelIndex];

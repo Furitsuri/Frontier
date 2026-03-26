@@ -129,16 +129,13 @@ namespace Frontier.Entities
             if( !SkillsData.IsValidSkill( skillID ) ) { return; }
             var skillData = SkillsData.data[( int ) skillID];
 
-            if( ActionType.BUFF == skillData.ActionType )
+            if( IsToggledToUse )
             {
-                if( IsToggledToUse )
-                {
-                    owner.BattleParams.ApplySkill( skillID, owner.GetStatusRef );
-                }
-                else
-                {
-                    owner.BattleParams.RemoveSkill( skillID, owner.GetStatusRef );
-                }
+                owner.BattleParams.ApplySkill( skillID, owner.GetStatusRef );
+            }
+            else
+            {
+                owner.BattleParams.RemoveSkill( skillID, owner.GetStatusRef );
             }
         }
     }

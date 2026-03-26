@@ -98,9 +98,6 @@ namespace Frontier.Battle
             float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
-            // パラメータビューにキャラクターを割り当て
-            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
-            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         public override bool Update()
@@ -145,7 +142,7 @@ namespace Frontier.Battle
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
             {
-                _stageCtrl.ClearGridCursroBind();           // 操作対象データをリセット
+                _stageCtrl.ClearGridCursorBind();           // 操作対象データをリセット
             }
 
             return base.ExitState();
@@ -174,6 +171,15 @@ namespace Frontier.Battle
             // グリッドカーソルで選択中のプレイヤーを取得
             _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
             NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
+        }
+
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            // パラメータビューにキャラクターを割り当て
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
+            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
         }
 
         /// <summary>

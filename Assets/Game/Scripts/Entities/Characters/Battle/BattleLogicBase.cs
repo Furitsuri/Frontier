@@ -34,7 +34,6 @@ namespace Frontier.Entities
         protected ThinkingType _thikType                                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                                   = PARRY_PHASE.NONE;
         protected ParameterWindowType _paramWinType;
-        protected SkillsData.Data usingActionSkillData;
         private ICombatAnimationSequence _combatAnimSeq                     = null;
         private List<COMMAND_TAG> _executableCommands                       = new List<COMMAND_TAG>();
         private Func<ICombatAnimationSequence>[] _animSeqfactories;
@@ -48,8 +47,6 @@ namespace Frontier.Entities
         public Character GetOpponent() => _opponent;
         public ActionRangeController ActionRangeCtrl => _actionRangeCtrl;           // 行動範囲管理クラスの取得
         public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
-        public void SetUsingActionSkillData( in SkillsData.Data data ) => usingActionSkillData = data;   // 使用スキルデータの設定
-        public SkillsData.Data GetUsingActionSkillData() => usingActionSkillData;    // 使用スキルデータの取得
 
         private delegate bool IsExecutableCommand( Character character, StageController stageCtrl );
 
@@ -162,9 +159,9 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 一時的にキャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
+        /// スキルによるアクションゲージの消費を反映し、ゲージのUIの表示を更新します
         /// </summary>
-        public void TemporarilyConsumeActionGauge()
+        public void ConsumeActionGaugeForSkill()
         {
             Character owner = _readOnlyOwner.Value;
 
@@ -256,6 +253,28 @@ namespace Frontier.Entities
                     skillNames.Add( skillData.Name );
 
                     return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool IsSkillToggledTransitActionState( out int equipIndex )
+        {
+            equipIndex = -1;
+
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                if( IsEquipSkillToggledOn( i ) )
+                {
+                    SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
+                    var skillData = SkillsData.data[( int ) skillID];
+                    if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
+                    {
+                        equipIndex = i;
+
+                        return true;
+                    }
                 }
             }
 
