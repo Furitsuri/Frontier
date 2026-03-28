@@ -20,6 +20,8 @@ namespace Frontier.Entities
         private MovePathHandler _movePathHandler            = null;
         private ActionableRangeRenderer _actionableRangeRdr = null;
 
+        private Action<int, int, Character, ActionableTileMap>[] RefreshTargetingRangeCallbacks;
+
         public ActionableTileMap ActionableTileMap => _actionableTileMap;
         public MovePathHandler MovePathHdlr => _movePathHandler;
         public ActionableRangeRenderer ActionableRangeRdr => _actionableRangeRdr;
@@ -31,6 +33,13 @@ namespace Frontier.Entities
             LazyInject.GetOrCreate( ref _actionableTileMap, () => _hierarchyBld.InstantiateWithDiContainer<ActionableTileMap>( false ) );
             LazyInject.GetOrCreate( ref _movePathHandler, () => _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
             LazyInject.GetOrCreate( ref _actionableRangeRdr, () => _hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
+
+            RefreshTargetingRangeCallbacks = new Action<int, int, Character, ActionableTileMap>[( int ) TargetingMode.NUM]
+            {
+                RefreshTargetingWithCenter,
+                RefreshTargetingWithDirectional,
+                RefreshTargetingWithAll
+            };
 
             _actionableTileMap.Init();
             _movePathHandler.Init( owner );
@@ -69,7 +78,7 @@ namespace Frontier.Entities
 
             var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeType.NORMAL, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeShape.FROM_MYSELF, _owner.CharaKey(), ref _actionableTileMap );
         }
 
         /// <summary>
@@ -88,14 +97,31 @@ namespace Frontier.Entities
             }
 
             // スキルの効果範囲に負の値が設定されている場合は、キャラクターの攻撃レンジをそのまま用いる
-            var atkRng = ( skillData.Range < 0 ) ? _owner.GetStatusRef.attackRange : skillData.Range;
+            var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
             _actionableTileMap.Init();
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeType, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.CharaKey(), ref _actionableTileMap );
+        }
+
+        public void RefreshTargetingRange( TargetingMode targetingMode, int tileIndex, int targetingValue )
+        {
+            if( _actionableTileMap.IsEmpty() )
+            {
+                Debug.LogError("アクション可能範囲が設定されていない状態で対象範囲指定の処理が呼び出されています。");
+                return;
+            }
+
+            // 一度全てのTARGETABLEフラグのビットを降ろす
+            foreach( var attackableMap in _actionableTileMap.AttackableTileMap )
+            {
+                Methods.UnsetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
+            }
+
+            RefreshTargetingRangeCallbacks[( int ) targetingMode]( tileIndex, targetingValue, _owner, _actionableTileMap );
         }
 
         /// <summary>
-        /// 
+        /// 条件を指定して移動可能範囲を設定します
         /// </summary>
         /// <param name="setup"></param>
         /// <param name="condition"></param>
@@ -147,9 +173,16 @@ namespace Frontier.Entities
             // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
             _actionableRangeRdr.DrawAttackableRange( tileData => new (MeshType, bool)[]
             {
+                ( MeshType.TARGETABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.TARGETABLE) ),
                 ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) && tileData.EstimatedMoveRange < 0 ),
                 ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) && tileData.EstimatedMoveRange < 0 ),
             } );
+        }
+
+        public void ReDrawAttackableRange()
+        {
+            _actionableRangeRdr.ClearTileMeshes();
+            DrawAttackableRange();
         }
 
         public void DrawActionableRange()
@@ -170,6 +203,46 @@ namespace Frontier.Entities
             Debug.Assert( null != _actionableTileMap, "_actionableTileMapのセットアップが完了しているか確認してください。" );
 
             return _movePathHandler.FindActuallyMovePath( departingTileIndex, destinationTileIndex, ownerJumpForce, ownerTileCosts, isEndPathTrace, _actionableTileMap );
+        }
+
+        private void RefreshTargetingWithCenter( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        {
+
+        }
+
+        /// <summary>
+        /// 指定のキャラクターの向きに沿った位置の攻撃可能タイルを、ターゲット可能タイルとして設定します
+        /// </summary>
+        /// <param name="tileIndex"></param>
+        /// <param name="TargetingValue"></param>
+        /// <param name="owner"></param>
+        /// <param name="actionableTileMap"></param>
+        private void RefreshTargetingWithDirectional( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        {
+            Direction ownerDir = owner.GetTransformHandler.GetDirection();
+
+            foreach( var attackableMap in actionableTileMap.AttackableTileMap )
+            {
+                if( ownerDir == _stageCtrl.TileDataHdlr().GetDirectionBetweenTiles( owner.BattleParams.TmpParam.CurrentTileIndex, attackableMap.Key ) )
+                {
+                    Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 現在の攻撃可能タイルをすべてターゲット可能タイルとして設定します
+        /// </summary>
+        /// <param name="tileIndex"></param>
+        /// <param name="TargetingValue"></param>
+        /// <param name="owner"></param>
+        /// <param name="actionableTileMap"></param>
+        private void RefreshTargetingWithAll( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        {
+            foreach( var attackableMap in actionableTileMap.AttackableTileMap )
+            {
+                Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
+            }
         }
     }
 }

@@ -8,6 +8,7 @@
         ATTACKABLE_TARGET_EXIST,
         ENEMIES_ATTACKABLE,
         OTHERS_ATTACKABLE,
+        TARGETABLE,
 
         DEPLOYABLE,     // 配置可能(ステージ開始前の配置フェーズで使用)
 

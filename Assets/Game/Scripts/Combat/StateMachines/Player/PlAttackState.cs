@@ -59,6 +59,7 @@ namespace Frontier.Battle
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( TargetingMode.DIRECTIONAL, -1, -1 );
             _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // 使用可能スキルの更新
@@ -110,6 +111,9 @@ namespace Frontier.Battle
                         _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
                         var attackerTileData = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
                         _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
+
+                        _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( TargetingMode.DIRECTIONAL, -1, -1 );
+                        _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
                     }
 
                     // 使用スキルを選択する
