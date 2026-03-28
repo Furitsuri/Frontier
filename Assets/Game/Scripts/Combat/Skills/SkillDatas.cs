@@ -18,8 +18,10 @@ namespace Frontier.Combat
             public ActionType ActionType;           // スキルタイプ
             public SkillBitFlag Flags;              // スキルフラグ
             public int Duration;                    // 効果時間（ターン数）
-            public RangeType RangeType;             // レンジタイプ
-            public int Range;                       // レンジ範囲
+            public RangeShape RangeShape;           // レンジタイプ
+            public int RangeValue;                  // レンジ範囲
+            public TargetingMode TargetingMode;     // レンジ内選択モード
+            public int TargetingValue;              // レンジ内選択モードに用いる範囲値
             public float AddAtkMag;                 // 攻撃力倍率加算
             public float AddDefMag;                 // 防御力倍率加算
             public int AddAtkNum;                   // 攻撃回数加算

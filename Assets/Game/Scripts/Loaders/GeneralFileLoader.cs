@@ -19,8 +19,10 @@ namespace Frontier.Loaders
             public int ActionType;
             public int Flags;
             public int Duration;
-            public int RangeType;
-            public int Range;
+            public int RangeShape;
+            public int RangeValue;
+            public int TargetingMode;
+            public int TargetingValue;
             public float AddAtkMag;
             public float AddDefMag;
             public int AddAtkNum;
@@ -66,8 +68,10 @@ namespace Frontier.Loaders
             data.ActionType     = ( ActionType ) fdata.ActionType;
             data.Flags          = ( SkillBitFlag ) fdata.Flags;
             data.Duration       = fdata.Duration;
-            data.RangeType      = ( RangeType ) fdata.RangeType;
-            data.Range          = fdata.Range;
+            data.RangeShape     = ( RangeShape ) fdata.RangeShape;
+            data.RangeValue     = fdata.RangeValue;
+            data.TargetingMode  = ( TargetingMode ) fdata.TargetingMode;
+            data.TargetingValue = fdata.TargetingValue;
             data.AddAtkMag      = fdata.AddAtkMag;
             data.AddDefMag      = fdata.AddDefMag;
             data.AddAtkNum      = fdata.AddAtkNum;

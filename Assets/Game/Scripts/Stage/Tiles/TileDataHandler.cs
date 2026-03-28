@@ -18,18 +18,18 @@ namespace Frontier.Stage
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
         [Inject] private GridCursorController _gridCursorCtrl   = null;
 
+        private delegate void RegisterAttackableTileCallback( TileDynamicData[] tiles, int l, int m, int n, CHARACTER_TAG tag, ref ActionableTileMap map );
+
         private int[] _addTileIndexValues;
         private List<int> _attackableTileIndexs = new List<int>();
-        private delegate void AttackableTilesRegisters( TileDynamicData[] tiles, int l, int m, int n, CHARACTER_TAG tag, ref ActionableTileMap map );
-
-        private AttackableTilesRegisters[] _attackableTilesRegisters;
+        private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
 
         #region PUBLIC_METHOD
 
         [Inject]
         public TileDataHandler()
         {
-            _attackableTilesRegisters = new AttackableTilesRegisters[( int )RangeType.NUM]
+            _registerAttackableTileCallbacks = new RegisterAttackableTileCallback[( int )RangeShape.NUM]
             {
                 RegisterAttackableTilesAllSides,
                 RegisterAttackableTilesAllSidesLinearly,
@@ -106,7 +106,7 @@ namespace Frontier.Stage
             // 基データを直接変更しないようにクローンを作成してから処理を行う
             var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
 
-            BeginRegisterAttackableTiles( cloneStageDynamicDatas, dprtIdx, atkRng, RangeType.NORMAL, charaKey.CharacterTag, false, ref actionableTileMap );
+            BeginRegisterAttackableTiles( cloneStageDynamicDatas, dprtIdx, atkRng, RangeShape.FROM_MYSELF, charaKey.CharacterTag, false, ref actionableTileMap );
             BeginRegisterMoveableTiles( cloneStageDynamicDatas, dprtIdx, mvRng, jmp, atkRng, dprtHeight, in tileCosts, in charaKey, ref actionableTileMap );
         }
 
@@ -121,7 +121,7 @@ namespace Frontier.Stage
         /// <param name="tileCosts"></param>
         /// <param name="charaKey"></param>
         /// <returns></returns>
-        public void ExtractAttackableData( int dprtIdx, int atkRng, RangeType rangeType, in CharacterKey charaKey, ref ActionableTileMap actionableTileMap )
+        public void ExtractAttackableData( int dprtIdx, int atkRng, RangeShape rangeType, in CharacterKey charaKey, ref ActionableTileMap actionableTileMap )
         {
             // 基データを直接変更しないようにクローンを作成してから処理を行う
             var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
@@ -160,7 +160,7 @@ namespace Frontier.Stage
         /// <param name="charaTag"></param>
         /// <param name="isClearAttackableInfo"></param>
         /// <param name="actionableTileMap"></param>
-        public void BeginRegisterAttackableTiles( TileDynamicData[] tileDDatas, int dprtIdx, int atkRng, RangeType rangeType, CHARACTER_TAG charaTag, bool isClearAttackableInfo, ref ActionableTileMap actionableTileMap )
+        public void BeginRegisterAttackableTiles( TileDynamicData[] tileDDatas, int dprtIdx, int atkRng, RangeShape rangeType, CHARACTER_TAG charaTag, bool isClearAttackableInfo, ref ActionableTileMap actionableTileMap )
         {
             Debug.Assert( dprtIdx.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );
 
@@ -168,7 +168,7 @@ namespace Frontier.Stage
 
             // 攻撃可否情報を各タイルに登録
             int targetTileIndex = dprtIdx;    // 開始時点では出発タイルと同じ
-            _attackableTilesRegisters[( int )rangeType]( tileDDatas, dprtIdx, targetTileIndex, atkRng, charaTag, ref actionableTileMap );
+            _registerAttackableTileCallbacks[( int )rangeType]( tileDDatas, dprtIdx, targetTileIndex, atkRng, charaTag, ref actionableTileMap );
         }
 
         /// <summary>
@@ -210,6 +210,18 @@ namespace Frontier.Stage
             bool leftright      = ( fstQuotient == scdQuotient ) && ( Math.Abs( fstRemainder - scdRemainder ) == 1 );
 
             return updown || leftright;
+        }
+
+        public Direction GetDirectionBetweenTiles( int fromTileIndex, int toTileIndex )
+        {
+            var toPosition      = _stageDataProvider.CurrentData.GetTile( toTileIndex ).StaticData().CharaStandPos;
+            var fromPosition    = _stageDataProvider.CurrentData.GetTile( fromTileIndex ).StaticData().CharaStandPos;
+
+            var dirVec = toPosition - fromPosition;
+            dirVec.y = 0f;
+            dirVec.Normalize();
+
+            return Methods.ConvertDirectionFromVector( dirVec );
         }
 
         /// <summary>
@@ -419,7 +431,7 @@ namespace Frontier.Stage
             // 攻撃範囲についても登録する
             if( ( 0 < atkRng ) && ( !tileDData.CharaKey.IsValid() || tileDData.CharaKey == charaKey ) )
             {
-                BeginRegisterAttackableTiles( tileDDatas, tileIdx, atkRng, RangeType.NORMAL, charaKey.CharacterTag, false, ref actionableTileMap );
+                BeginRegisterAttackableTiles( tileDDatas, tileIdx, atkRng, RangeShape.FROM_MYSELF, charaKey.CharacterTag, false, ref actionableTileMap );
             }
 
             RegisterMoveableTilesAllSides( tileDDatas, tileIdx, currentMoveRange, jmp, atkRng, curHeight, in tileCosts, in charaKey, ref actionableTileMap );

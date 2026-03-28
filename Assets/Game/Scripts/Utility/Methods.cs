@@ -261,6 +261,36 @@ static public class Methods
         return former;
     }
 
+    /// <summary>
+    /// 指定されたベクトルをワールド座標からEnum値Directionに変換します
+    /// </summary>
+    /// <param name=""></param>
+    /// <returns></returns>
+    static public Direction ConvertDirectionFromVector( in Vector3 vec )
+    {
+        float dotForward    = Vector3.Dot( vec, Vector3.forward ); // ワールド前(Z+)
+        float dotRight      = Vector3.Dot( vec, Vector3.right );   // ワールド右(X+)
+
+        if( dotForward > 0.7f )
+        {
+            return Direction.FORWARD; // 前
+        }
+        else if( dotForward < -0.7f )
+        {
+            return Direction.BACK;  // 後ろ
+        }
+        else if( dotRight > 0.7f )
+        {
+            return Direction.RIGHT; // 右
+        }
+        else if( dotRight < -0.7f )
+        {
+            return Direction.LEFT;  // 左
+        }
+
+        return Direction.NONE;
+    }
+
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
     static public bool IsDebugScene()
     {

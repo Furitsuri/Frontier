@@ -116,7 +116,7 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 各タイルに登録したタイルメッシュを全て削除します
+        /// 各タイルに登録したタイルメッシュの描画を全て消去します
         /// </summary>
         public void ClearTileMeshes()
         {

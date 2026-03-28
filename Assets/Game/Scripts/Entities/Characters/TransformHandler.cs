@@ -119,6 +119,26 @@ public class TransformHandler
         _beforeOrderdRotation   = _readOnlyTransform.Value.rotation;  // 命令発行前の回転を保存
     }
 
+    public Direction GetDirection()
+    {
+        Vector3 forward;
+
+        // 向きへの指示値がある場合はその値を用いる
+        if( null != _orderdRotation )
+        {
+            forward = _orderdRotation.Value * Vector3.forward;
+        }
+        // それ以外は現在の向きを用いる
+        else
+        {
+            forward     = _readOnlyTransform.Value.forward;
+            forward.y   = 0;
+            forward.Normalize();
+        }
+
+        return Methods.ConvertDirectionFromVector( forward );
+    }
+
     /// <summary>
     /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
     /// </summary>
