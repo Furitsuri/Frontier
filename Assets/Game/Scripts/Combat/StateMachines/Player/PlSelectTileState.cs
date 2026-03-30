@@ -144,7 +144,7 @@ namespace Frontier.Battle
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( context.Cursor );
+            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( ref context.Cursor );
 
             if( isAcceptDirection )
             {

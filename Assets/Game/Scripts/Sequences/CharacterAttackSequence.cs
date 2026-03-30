@@ -336,8 +336,6 @@ namespace Frontier.Sequences
         /// <param name="target">被攻撃キャラクター</param>
         private void TransitBattleField( Character attacker, Character target )
         {
-            _stageCtrl.ToggleMeshDisplay( false ); // メッシュ及びattakerとtarget以外のキャラクターを非表示に
-
             foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
             {
                 if( chara != attacker && chara != target )
@@ -393,9 +391,6 @@ namespace Frontier.Sequences
         /// <param name="target">被攻撃キャラクター</param>
         private void TransitStageField( Character attacker, Character target )
         {
-            // 非表示にしていたものを表示
-            _stageCtrl.ToggleMeshDisplay( true );
-
             foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY ) )
             {
                 chara.gameObject.SetActive( true );
