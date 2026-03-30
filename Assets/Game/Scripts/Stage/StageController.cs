@@ -90,30 +90,15 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// グリッドのメッシュの描画の切替を行います
-        /// </summary>
-        /// <param name="isDisplay">描画するか否か</param>
-        public void ToggleMeshDisplay( bool isDisplay )
-        {
-            /*
-            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-            if( meshRenderer != null )
-            {
-                meshRenderer.enabled = isDisplay;
-            }
-            */
-        }
-
-        /// <summary>
         /// 指定方向にグリッドを移動させます
         /// </summary>
         /// <param name="direction">グリッドの移動方向</param>
         /// /// <returns>グリッド移動の有無</returns>
-        public bool OperateGridCursorController( Direction direction )
+        public bool OperateGridCursorController( ref Direction direction )
         {
             if( direction == Direction.NONE ) { return false; }
 
-            direction = _directionConverter.Convert( direction );
+            direction = ConvertDirectionDependOnCameraAngle( direction );
 
             if( direction == Direction.FORWARD )  { _gridCursorCtrl.Up();    }
             if( direction == Direction.BACK )     { _gridCursorCtrl.Down();  }
@@ -214,6 +199,11 @@ namespace Frontier.Stage
         {
             TileStaticData tileData = _stageDataProvider.CurrentData.GetTileStaticData( _gridCursorCtrl.Index );
             return tileData.CharaStandPos;
+        }
+
+        public Direction ConvertDirectionDependOnCameraAngle( Direction dir )
+        {
+            return _directionConverter.ConvertDirectionDependOnCameraAngle( dir );
         }
 
         /// <summary>

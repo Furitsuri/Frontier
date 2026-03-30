@@ -5,13 +5,14 @@ namespace Frontier.Stage
     public class StageDirectionConverter
     {
         BattleCameraController _btlCameraCtrl;
+        static public float[] DirectionAngles = new float[] { 0f, 90f, 180f, 270f };
 
         public void Regist( BattleCameraController btlCameraCtrl )
         {
             _btlCameraCtrl = btlCameraCtrl;
         }
 
-        public Direction Convert( Direction dir )
+        public Direction ConvertDirectionDependOnCameraAngle( Direction dir )
         {
             float angleXZ = ( _btlCameraCtrl.AngleXZ + 360f ) % 360f;
 

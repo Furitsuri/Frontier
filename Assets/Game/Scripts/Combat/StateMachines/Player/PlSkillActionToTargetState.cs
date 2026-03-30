@@ -1,12 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
-using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
-using Zenject;
 using static Constants;
 
 namespace Frontier.Battle
@@ -27,11 +24,15 @@ namespace Frontier.Battle
 
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
+        private TargetingMode _targetingMode;
         private Character _targetCharacter = null;
+        private Action<Direction>[] _changeDirectionCallbacks;
 
         public override void Init( object context )
         {
             base.Init( context );
+
+            _targetCharacter = null;
 
             // 使用スキルを取得
             ReceiveContext( ref _useSkillID, context );
@@ -46,6 +47,15 @@ namespace Frontier.Battle
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );          // アタッカーキャラクターの設定
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
             }
+
+            _changeDirectionCallbacks = new Action<Direction>[( int )TargetingMode.NUM]
+            {
+                AcceptDirectionWithTargetingModeCenter,        // TargetingMode.Center
+                AcceptDirectionWithTargetingModeDirectional,   // TargetingMode.Directional
+                null,                                           // TargetingMode.Allは方向の概念がないため、コールバックは不要
+            };
+
+            _targetingMode = SkillsData.data[( int ) _useSkillID].TargetingMode;
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
@@ -65,7 +75,7 @@ namespace Frontier.Battle
                 case PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID:
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
-                    _targetCharacter        = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
 
                     // 選択キャラクターが更新された場合はパラメータUIへの描画対象と、キャラクターの向きを更新
                     if( prevTargetCharacter != _targetCharacter )
@@ -82,6 +92,9 @@ namespace Frontier.Battle
                         _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
                         var attackerTileData = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
                         _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
+
+                        _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, -1 );
+                        _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
                     }
 
                     // 予測ダメージを適応する
@@ -132,10 +145,10 @@ namespace Frontier.Battle
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR,  "SELECT\nTILE", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM,     "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL,      "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
-                (GuideIcon.INFO,        "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode)
+                (GuideIcon.ALL_CURSOR, "SELECT\nTILE", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode)
             );
         }
 
@@ -186,20 +199,12 @@ namespace Frontier.Battle
 
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( context.Cursor );
+            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( ref context.Cursor );
 
-            /*
             if( isAcceptDirection )
             {
-                var gridSelectChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-                _isActiveRightParamUI = ( gridSelectChara != null && gridSelectChara != _plOwner );
-                if( _isActiveRightParamUI )
-                {
-                    _presenter.AssignCharacter( gridSelectChara, UI.ParameterWindowType.Right );
-                }
-                _presenter.SetActiveParamView( _isActiveRightParamUI, UI.ParameterWindowType.Right );
+                _changeDirectionCallbacks[( int )_targetingMode]?.Invoke( context.Cursor );
             }
-            */
 
             return isAcceptDirection;
         }
@@ -208,7 +213,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            
+
 
             return true;
         }
@@ -241,6 +246,21 @@ namespace Frontier.Battle
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return true;
+        }
+
+        private void AcceptDirectionWithTargetingModeCenter( Direction dir )
+        {
+
+        }
+
+        private void AcceptDirectionWithTargetingModeDirectional( Direction dir )
+        {
+            Direction orderdDir = _stageCtrl.ConvertDirectionDependOnCameraAngle( dir );
+
+            _plOwner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
+
+            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, -1 );
+            _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
         }
     }
 }
