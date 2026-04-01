@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Frontier.Stage
 {
@@ -192,6 +193,33 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
+        /// </summary>
+        /// <param name="designatedTarget"></param>
+        public void MoveGridCursorToAttackableTile( Character designatedTarget = null )
+        {
+            if( _attackableTileIndexs.Count <= 0 ) { return; }
+
+            _gridCursorCtrl.SetAtkTargetNum( _attackableTileIndexs.Count );
+
+            // 攻撃対象引数targetが定められている場合はその対象を探す
+            if( designatedTarget != null && 1 < _attackableTileIndexs.Count )
+            {
+                for( int i = 0; i < _attackableTileIndexs.Count; ++i )
+                {
+                    var tileData = _stageDataProvider.CurrentData.GetTile( _attackableTileIndexs[i] ).DynamicData();
+                    if( designatedTarget.CharaKey() == tileData.CharaKey )
+                    {
+                        _gridCursorCtrl.SetAtkTargetIndex( i );
+                        break;
+                    }
+                }
+            }
+            // 定められていない場合は先頭を指定する
+            else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }
+        }
+
+        /// <summary>
         /// 2つの指定のインデックスが隣り合う座標に存在しているかを判定します
         /// </summary>
         /// <param name="fstIndex">指定インデックスその1</param>
@@ -230,40 +258,18 @@ namespace Frontier.Stage
         /// <param name="owner">攻撃を行うキャラクター</param>
         /// <param name="target">予め攻撃対象が決まっている際に指定</param>
         /// <returns>攻撃可能キャラクターが存在している</returns>
-        public bool CorrectAttackableTileIndexs( ActionRangeController actionRangeCtrl, Character target = null )
+        public bool CorrectAttackableTileIndexs( Dictionary<int, TileDynamicData> attackableTileMap )
         {
             _gridCursorCtrl.ClearAtkTargetInfo();
             _attackableTileIndexs.Clear();
 
             // 攻撃可能、かつ攻撃対象となるキャラクターが存在するタイルのインデックス値をリストに登録
-            foreach( var tileDData in actionRangeCtrl.ActionableTileMap.AttackableTileMap )
+            foreach( var tileDData in attackableTileMap )
             {
                 if( Methods.CheckBitFlag( tileDData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {
                     _attackableTileIndexs.Add( tileDData.Key );
                 }
-            }
-
-            // グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定
-            if( 0 < _attackableTileIndexs.Count )
-            {
-                _gridCursorCtrl.SetAtkTargetNum( _attackableTileIndexs.Count );
-
-                // 攻撃対象引数targetが定められている場合はその対象を探す
-                if( target != null && 1 < _attackableTileIndexs.Count )
-                {
-                    for( int i = 0; i < _attackableTileIndexs.Count; ++i )
-                    {
-                        var tileData = _stageDataProvider.CurrentData.GetTile( _attackableTileIndexs[i] ).DynamicData();
-                        if( target.CharaKey() == tileData.CharaKey )
-                        {
-                            _gridCursorCtrl.SetAtkTargetIndex( i );
-                            break;
-                        }
-                    }
-                }
-                // 定められていない場合は先頭を指定する
-                else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }
             }
 
             return ( 0 < _attackableTileIndexs.Count );
@@ -304,7 +310,7 @@ namespace Frontier.Stage
 
             if( _gridCursorCtrl.GridState == GridCursorState.ATTACK )
             {
-                index = _attackableTileIndexs[_gridCursorCtrl.GetAtkTargetIndex()];
+                index = _attackableTileIndexs[_gridCursorCtrl.AttackTargetIndex];
             }
             else
             {

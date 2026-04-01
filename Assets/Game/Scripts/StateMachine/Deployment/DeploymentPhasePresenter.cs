@@ -23,9 +23,9 @@ public class DeploymentPhasePresenter : CharacterSelectionPresenter, IConfirmPre
             () => hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _deployUiSystem.GridCursorSelectCharaParam, true }, false ) );
     }
 
-    public void Init()
+    public override void Init()
     {
-        base.Init( _uiSystem.DeployUi.CharacterSelectUI, DEPLOYMENT_SHOWABLE_CHARACTERS_NUM, false );
+        base.Init();
 
         _deployUiSystem.Init();
         _charaParamPresenterOnGridCursor.Init();

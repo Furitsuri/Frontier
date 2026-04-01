@@ -1,25 +1,19 @@
 ﻿using Frontier.Entities;
-using Frontier.StateMachine;
-using Frontier.UI;
-using System;
-using System.Collections.ObjectModel;
 using UnityEngine;
 using Zenject;
 using static Constants;
 
-namespace Frontier.FormTroop
+namespace Frontier.Battle
 {
-    public class RecruitPhasePresenter : CharacterSelectionPresenter, IConfirmPresenter
+    public class SelectableCharaParamPresenter : CharacterSelectionPresenter, IConfirmPresenter
     {
-        [Inject] private UserDomain _userDomain = null;
-
-        private RecruitUISystem _recruitmentUI = null;
+        private SelectableCharaParamUI _recruitmentUI = null;
 
         [Inject]
-        public RecruitPhasePresenter( IUiSystem uiSystem, HierarchyBuilderBase hierarchyBld ) : base( uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM, false, hierarchyBld )
+        public SelectableCharaParamPresenter( IUiSystem uiSystem, HierarchyBuilderBase hierarchyBld ) : base( uiSystem.BattleUi.SelectableCharaParam, RECRUIT_SHOWABLE_CHARACTERS_NUM, false, hierarchyBld )
         {
-            _uiSystem      = uiSystem;
-            _recruitmentUI = _uiSystem.RecruitUi;
+            _uiSystem       = uiSystem;
+            _recruitmentUI  = _uiSystem.BattleUi.SelectableCharaParam;
         }
 
         public override void Init()
@@ -31,15 +25,12 @@ namespace Frontier.FormTroop
 
         public void Update()
         {
-            _recruitmentUI.SetMoneyValue( _userDomain.Money );  // 所持金の更新
             UpdateSlideAnimation();
         }
 
         public override void Exit()
         {
             base.Exit();
-
-            _recruitmentUI.Exit();
         }
 
         public override void SetFocusCharacters( int focusCharaIndex )
@@ -65,21 +56,16 @@ namespace Frontier.FormTroop
         public void RefreshCentralCandidateEmployed()
         {
             int centralIndex = _focusCandidates.Length / 2;
-            var player = _focusCandidates[ centralIndex ].Character as Player;
+            var player = _focusCandidates[centralIndex].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
-
-            // フォーカス中のキャラクター表示の更新
-            _recruitmentUI.EmploymentSelectUI.RefreshCandidate( centralIndex, ref _focusCandidates[ centralIndex ] );
         }
 
         public void SetActiveConfirmUI( bool isActive )
         {
-            _recruitmentUI.ConfirmEmploymentUI.gameObject.SetActive( isActive );
         }
 
         public void ApplyColor2Options( int selectIndex )
         {
-            _recruitmentUI.ConfirmEmploymentUI.ApplyTextColor( selectIndex );
         }
     }
 }

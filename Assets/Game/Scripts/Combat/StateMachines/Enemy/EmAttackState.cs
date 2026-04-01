@@ -46,8 +46,9 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl, _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _attackCharacter.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
             {
+                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() );
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
             }

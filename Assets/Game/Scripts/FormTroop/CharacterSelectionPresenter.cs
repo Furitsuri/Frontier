@@ -33,7 +33,7 @@ public class CharacterSelectionPresenter : PhasePresenterBase
             );
     }
 
-    public virtual void Init( CharacterSelectionUI characterSelectionUI, int focusCandidatesArrayLength, bool isNeededParamWinCamera )
+    public virtual void Init()
     {
         _parameterPresenter.Init();
     }

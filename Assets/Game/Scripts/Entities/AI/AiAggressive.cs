@@ -96,7 +96,7 @@ namespace Frontier.Entities.Ai
             {
                 foreach( var opponent in candidate.opponents )
                 {
-                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacterFromDictionary( opponent );
+                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacter( opponent );
                     if( character == null ) continue;
 
                     var eValue = CalcurateEvaluateAttack( _owner.GetStatusRef, character.GetStatusRef );

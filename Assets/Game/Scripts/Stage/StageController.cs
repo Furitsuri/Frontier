@@ -62,8 +62,8 @@ namespace Frontier.Stage
         /// <param name="bindCharacter">バインド対象のキャラクター</param>
         public void BindToGridCursor( GridCursorState state, Character character )
         {
-            _gridCursorCtrl.GridState = state;
-            _gridCursorCtrl.BindCharacter = character;
+            _gridCursorCtrl.GridState       = state;
+            _gridCursorCtrl.BindCharacter   = character;
         }
 
         /// <summary>
@@ -89,12 +89,24 @@ namespace Frontier.Stage
             _gridCursorCtrl.SetActive( isActive );
         }
 
+        public bool OperateGridCursorController( Direction direction )
+        {
+            if( direction == Direction.NONE ) { return false; }
+
+            if( direction == Direction.FORWARD )    { _gridCursorCtrl.Up();     }
+            if( direction == Direction.BACK )       { _gridCursorCtrl.Down();   }
+            if( direction == Direction.LEFT )       { _gridCursorCtrl.Left();   }
+            if( direction == Direction.RIGHT )      { _gridCursorCtrl.Right();  }
+
+            return true;
+        }
+
         /// <summary>
         /// 指定方向にグリッドを移動させます
         /// </summary>
         /// <param name="direction">グリッドの移動方向</param>
         /// /// <returns>グリッド移動の有無</returns>
-        public bool OperateGridCursorController( ref Direction direction )
+        public bool OperateGridCursorControllerBasedOnCamera( ref Direction direction )
         {
             if( direction == Direction.NONE ) { return false; }
 

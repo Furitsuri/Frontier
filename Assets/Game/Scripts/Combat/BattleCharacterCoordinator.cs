@@ -243,7 +243,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <status name="key">ハッシュキー</status>
         /// <returns>指定のキーに対応するキャラクター</returns>
-        public Character GetCharacterFromDictionary( in CharacterKey key )
+        public Character GetCharacter( in CharacterKey key )
         {
             if( IsContains( key ) )
             {
@@ -260,7 +260,7 @@ namespace Frontier.Battle
         {
             TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetCurrentTileDatas().Item2;
 
-            return GetCharacterFromDictionary( tileData.CharaKey );
+            return GetCharacter( tileData.CharaKey );
         }
 
         /// <summary>

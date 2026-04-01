@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Unity.Burst.Intrinsics.X86.Avx;
+using Cysharp.Threading.Tasks;
 
 namespace Frontier.Entities
 {
@@ -20,7 +21,7 @@ namespace Frontier.Entities
         private MovePathHandler _movePathHandler            = null;
         private ActionableRangeRenderer _actionableRangeRdr = null;
 
-        private Action<int, int, Character, ActionableTileMap>[] RefreshTargetingRangeCallbacks;
+        private Func<int, int, Character, ActionableTileMap, List<CharacterKey>>[] RefreshTargetingRangeCallbacks;
 
         public ActionableTileMap ActionableTileMap => _actionableTileMap;
         public MovePathHandler MovePathHdlr => _movePathHandler;
@@ -34,7 +35,7 @@ namespace Frontier.Entities
             LazyInject.GetOrCreate( ref _movePathHandler, () => _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
             LazyInject.GetOrCreate( ref _actionableRangeRdr, () => _hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
 
-            RefreshTargetingRangeCallbacks = new Action<int, int, Character, ActionableTileMap>[( int ) TargetingMode.NUM]
+            RefreshTargetingRangeCallbacks = new Func<int, int, Character, ActionableTileMap, List<CharacterKey>>[( int ) TargetingMode.NUM]
             {
                 RefreshTargetingWithCenter,
                 RefreshTargetingWithDirectional,
@@ -103,12 +104,12 @@ namespace Frontier.Entities
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.CharaKey(), ref _actionableTileMap );
         }
 
-        public void RefreshTargetingRange( TargetingMode targetingMode, int tileIndex, int targetingValue )
+        public List<CharacterKey> RefreshTargetingRange( TargetingMode targetingMode, int tileIndex, int targetingValue )
         {
             if( _actionableTileMap.IsEmpty() )
             {
                 Debug.LogError("アクション可能範囲が設定されていない状態で対象範囲指定の処理が呼び出されています。");
-                return;
+                return null;
             }
 
             // 一度全てのTARGETABLEフラグのビットを降ろす
@@ -117,7 +118,7 @@ namespace Frontier.Entities
                 Methods.UnsetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
             }
 
-            RefreshTargetingRangeCallbacks[( int ) targetingMode]( tileIndex, targetingValue, _owner, _actionableTileMap );
+            return RefreshTargetingRangeCallbacks[( int ) targetingMode]( tileIndex, targetingValue, _owner, _actionableTileMap );
         }
 
         /// <summary>
@@ -205,9 +206,11 @@ namespace Frontier.Entities
             return _movePathHandler.FindActuallyMovePath( departingTileIndex, destinationTileIndex, ownerJumpForce, ownerTileCosts, isEndPathTrace, _actionableTileMap );
         }
 
-        private void RefreshTargetingWithCenter( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        private List<CharacterKey> RefreshTargetingWithCenter( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
         {
+            List<CharacterKey> retTargetingCharaKeys = new List<CharacterKey>();
 
+            return retTargetingCharaKeys;
         }
 
         /// <summary>
@@ -217,8 +220,10 @@ namespace Frontier.Entities
         /// <param name="TargetingValue"></param>
         /// <param name="owner"></param>
         /// <param name="actionableTileMap"></param>
-        private void RefreshTargetingWithDirectional( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        private List<CharacterKey> RefreshTargetingWithDirectional( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
         {
+            List<CharacterKey> retTargetingCharaKeys = new List<CharacterKey>();
+
             Direction ownerDir = owner.GetTransformHandler.GetDirection();
 
             foreach( var attackableMap in actionableTileMap.AttackableTileMap )
@@ -226,8 +231,15 @@ namespace Frontier.Entities
                 if( ownerDir == _stageCtrl.TileDataHdlr().GetDirectionBetweenTiles( owner.BattleParams.TmpParam.CurrentTileIndex, attackableMap.Key ) )
                 {
                     Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
+
+                    if( IsOpponentExist( attackableMap.Value, owner.GetCharacterTag() ) )
+                    {
+                        retTargetingCharaKeys.Add( attackableMap.Value.CharaKey );
+                    }
                 }
             }
+
+            return retTargetingCharaKeys;
         }
 
         /// <summary>
@@ -237,12 +249,26 @@ namespace Frontier.Entities
         /// <param name="TargetingValue"></param>
         /// <param name="owner"></param>
         /// <param name="actionableTileMap"></param>
-        private void RefreshTargetingWithAll( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        private List<CharacterKey> RefreshTargetingWithAll( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
         {
+            List<CharacterKey> retTargetingCharaKeys = new List<CharacterKey>();
+
             foreach( var attackableMap in actionableTileMap.AttackableTileMap )
             {
                 Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
+
+                if( IsOpponentExist( attackableMap.Value, owner.GetCharacterTag() ) )
+                {
+                    retTargetingCharaKeys.Add( attackableMap.Value.CharaKey );
+                }
             }
+
+            return retTargetingCharaKeys;
+        }
+
+        private bool IsOpponentExist( TileDynamicData tileDData, CHARACTER_TAG ownerTag )
+        {
+            return tileDData.CharaKey.IsValid() && BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDData.CharaKey.CharacterTag );
         }
     }
 }

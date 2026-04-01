@@ -40,10 +40,11 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, targetChara ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
             {
+                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( targetChara );
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
-                _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );                // アタックカーソルUI表示
+                _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );            // アタックカーソルUI表示
             }
 
             // 使用可能スキルを更新
