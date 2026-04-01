@@ -3,8 +3,10 @@ using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static Constants;
+using static InputCode;
 
 namespace Frontier.Battle
 {
@@ -22,10 +24,12 @@ namespace Frontier.Battle
             PL_SKILL_ACTION_END,
         }
 
+        private int _targetingValue;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
-        private Character _targetCharacter = null;
+        private Character _targetCharacter      = null;
+        List<CharacterKey> _targetingCharaKeys  = new List<CharacterKey>();
         private Action<Direction>[] _changeDirectionCallbacks;
 
         public override void Init( object context )
@@ -42,8 +46,9 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) ) )
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
             {
+                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );          // アタッカーキャラクターの設定
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
             }
@@ -52,10 +57,11 @@ namespace Frontier.Battle
             {
                 AcceptDirectionWithTargetingModeCenter,        // TargetingMode.Center
                 AcceptDirectionWithTargetingModeDirectional,   // TargetingMode.Directional
-                null,                                           // TargetingMode.Allは方向の概念がないため、コールバックは不要
+                null,                                          // TargetingMode.Allは方向の概念がないため、コールバックは不要
             };
 
-            _targetingMode = SkillsData.data[( int ) _useSkillID].TargetingMode;
+            _targetingMode  = SkillsData.data[( int ) _useSkillID].TargetingMode;
+            _targetingValue = SkillsData.data[( int ) _useSkillID].TargetingValue;
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
@@ -73,6 +79,7 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID:
+                    /*
                     // グリッド上のキャラクターを取得
                     var prevTargetCharacter = _targetCharacter;
                     _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
@@ -99,6 +106,7 @@ namespace Frontier.Battle
 
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );
+                    */
                     break;
                 default:
                     break;
@@ -145,10 +153,11 @@ namespace Frontier.Battle
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR, "SELECT\nTILE", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
-                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode)
+                (GuideIcon.ALL_CURSOR,  "SELECT\nTILE", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.CONFIRM,     "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+                (GuideIcon.CANCEL,      "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+                (GuideIcon.INFO,        "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nCHARACTER", new EnableCallback[] { CanAcceptConfirm, CanAcceptConfirm }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode)
             );
         }
 
@@ -176,7 +185,7 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptConfirm()
         {
-            return false;
+            return ( 0 < _targetingCharaKeys.Count );
         }
 
         protected override bool CanAcceptCancel()
@@ -199,14 +208,14 @@ namespace Frontier.Battle
 
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( ref context.Cursor );
+            context.Cursor = _stageCtrl.ConvertDirectionDependOnCameraAngle( context.Cursor );
+            if( Direction.NONE == context.Cursor ) { return false; }
 
-            if( isAcceptDirection )
-            {
-                _changeDirectionCallbacks[( int )_targetingMode]?.Invoke( context.Cursor );
-            }
+            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( context.Cursor );
 
-            return isAcceptDirection;
+            _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
+
+            return true;
         }
 
         protected override bool AcceptConfirm( InputContext context )
@@ -250,17 +259,25 @@ namespace Frontier.Battle
 
         private void AcceptDirectionWithTargetingModeCenter( Direction dir )
         {
+            _stageCtrl.OperateGridCursorController( dir );
 
+            _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
         }
 
         private void AcceptDirectionWithTargetingModeDirectional( Direction dir )
         {
-            Direction orderdDir = _stageCtrl.ConvertDirectionDependOnCameraAngle( dir );
-
             _plOwner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
 
-            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, -1 );
-            _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
+            _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, _targetingValue );
+
+            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
+            {
+                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
+
+                // _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );          // アタッカーキャラクターの設定
+                // _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
+            }
         }
     }
 }

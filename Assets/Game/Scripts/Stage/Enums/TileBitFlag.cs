@@ -1,7 +1,7 @@
 ﻿namespace Frontier.Stage
 {
     [System.Flags]
-    public enum TileBitFlag
+    public enum TileBitFlag : int
     {
         NONE                    = 0,
         CANNOT_MOVE             = 1 << 0,   // 移動不可タイル

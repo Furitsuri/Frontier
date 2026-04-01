@@ -238,7 +238,7 @@ namespace Frontier.Battle
         /// <returns>入力によってキャラクター移動が行われたか</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( ref context.Cursor );
+            bool isAcceptDirection = _stageCtrl.OperateGridCursorControllerBasedOnCamera( ref context.Cursor );
 
             if( isAcceptDirection )
             {

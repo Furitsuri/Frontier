@@ -1,5 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.FormTroop;
 using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
@@ -17,7 +18,7 @@ namespace Frontier.Battle
         [Inject] HierarchyBuilderBase _hierarchyBld = null;
 
         private CharacterParameterPresenter[] _parameterPresenters;
-        private CharacterParameterUI[] _parameterUIs;
+        private SelectableCharaParamPresenter _selectableCharaParamPresenter;
         private TextMeshProUGUI _TMPCommandName;
         private Action<bool>[] SetActiveActionDirectionCallbacks;
         static private int[] _layerMaskIndex;
@@ -31,12 +32,6 @@ namespace Frontier.Battle
                 _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.EnemyParameter, true }, false ),
             };
 
-            _parameterUIs = new UI.CharacterParameterUI[( int )ParameterWindowType.NUM]
-            {
-                _uiSystem.BattleUi.ParameterView.PlayerParameter,
-                _uiSystem.BattleUi.ParameterView.EnemyParameter
-            };
-
             SetActiveActionDirectionCallbacks = new Action<bool>[( int ) ParameterWindowType.NUM]
             {
                 SetActiveParamWinDirectionLeft2Right,
@@ -48,6 +43,8 @@ namespace Frontier.Battle
                 LAYER_MASK_INDEX_PLAYER,
                 LAYER_MASK_INDEX_ENEMY
             };
+
+            // LazyInject.GetOrCreate( ref _selectableCharaParamPresenter, () => _hierarchyBld.InstantiateWithDiContainer<SelectableCharaParamPresenter>( true ) );
 
             _TMPCommandName = _uiSystem.BattleUi.CommandName.GetComponentInChildren<TextMeshProUGUI>();
             NullCheck.AssertNotNull( _TMPCommandName, nameof( _TMPCommandName ) );
@@ -82,11 +79,6 @@ namespace Frontier.Battle
         public void SetActiveCommandName( bool isActive )
         {
             _uiSystem.BattleUi.CommandName.SetActive( isActive );
-        }
-
-        public void SetActiveParamView( bool isActive, ParameterWindowType winType )
-        {
-            _parameterUIs[( int ) winType].gameObject.SetActive( isActive );
         }
 
         public void SetActiveParamWinDirectionLeft2Right( bool isActive )

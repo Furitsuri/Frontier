@@ -175,7 +175,7 @@ namespace Frontier.StateMachine
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isOperated = _stageCtrl.OperateGridCursorController( ref context.Cursor );
+            bool isOperated = _stageCtrl.OperateGridCursorControllerBasedOnCamera( ref context.Cursor );
 
             if( isOperated ) { _presenter.RefreshGridCursorSelectCharacter(); }
 

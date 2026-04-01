@@ -22,6 +22,9 @@ namespace Frontier.UI
         [Header( "PlayerCommand" )]
         public PlayerCommandUI PlCommandWindow;   // プレイヤーの選択コマンドUI
 
+        [Header("SelectableCharaParam")]
+        public SelectableCharaParamUI SelectableCharaParam;   // 選択可能なキャラクターパラメータ表示
+
         [Header( "CommandName" )]
         public GameObject CommandName;          // コマンド名表示
 

@@ -25,9 +25,8 @@ namespace Frontier.Stage
         private int _atkTargetNum   = 0;
         private float _totalTime    = 0;
 
-        // public int Index { get; set; } = 0;
-
         public int Index => _tileIndex;
+        public int AttackTargetIndex => _atkTargetIndex;
         public GridCursorState GridState { get; set; } = GridCursorState.NONE;
         public Character BindCharacter { get; set; } = null;
 
@@ -121,15 +120,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 攻撃対象インデックス値を取得します
-        /// </summary>
-        /// <returns>攻撃対象インデックス値</returns>
-        public int GetAtkTargetIndex()
-        {
-            return _atkTargetIndex;
-        }
-
-        /// <summary>
         /// オブジェクトのアクティブ・非アクティブを設定します
         /// </summary>
         /// <param name="isActive">アクティブ設定</param>
@@ -186,7 +176,7 @@ namespace Frontier.Stage
         public void ClearAtkTargetInfo()
         {
             _atkTargetIndex = 0;
-            _atkTargetNum = 0;
+            _atkTargetNum   = 0;
         }
 
         public int X()

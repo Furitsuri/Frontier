@@ -65,10 +65,11 @@ namespace Frontier.Battle
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 
-            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl, _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) ) )
+            // 攻撃可能なタイルを選択している場合はグリッドカーソルを移動して攻撃対象指定状態にする
+            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
             {
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
+                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );             // アタッカーキャラクターの設定
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );    // アクション対象指定関連のUIを表示
             }
         }

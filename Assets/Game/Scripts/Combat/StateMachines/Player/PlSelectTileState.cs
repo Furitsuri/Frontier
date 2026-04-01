@@ -144,7 +144,7 @@ namespace Frontier.Battle
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isAcceptDirection = _stageCtrl.OperateGridCursorController( ref context.Cursor );
+            bool isAcceptDirection = _stageCtrl.OperateGridCursorControllerBasedOnCamera( ref context.Cursor );
 
             if( isAcceptDirection )
             {
@@ -264,8 +264,8 @@ namespace Frontier.Battle
                 _presenter.CharaParamView( windowType ).AssignCharacter( gridSelectChara, layerMaskIndex );
             }
 
-            _presenter.SetActiveParamView( isActiveLeftParamUI, ParameterWindowType.Left );
-            _presenter.SetActiveParamView( isActiveRightParamUI, ParameterWindowType.Right );
+            _presenter.CharaParamView( ParameterWindowType.Left ).SetActive( isActiveLeftParamUI );
+            _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParamUI );
         }
     }
 }
