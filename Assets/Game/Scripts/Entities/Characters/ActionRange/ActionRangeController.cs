@@ -104,6 +104,18 @@ namespace Frontier.Entities
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.CharaKey(), ref _actionableTileMap );
         }
 
+        public void ClearActionableRangeData()
+        {
+            _actionableTileMap.Init();
+        }
+
+        public void ClearActionableRangeDataWithRender()
+        {
+            _actionableRangeRdr.ClearTileMeshes();
+
+            ClearActionableRangeData();
+        }
+
         public List<CharacterKey> RefreshTargetingRange( TargetingMode targetingMode, int tileIndex, int targetingValue )
         {
             if( _actionableTileMap.IsEmpty() )

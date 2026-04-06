@@ -1,7 +1,12 @@
 ﻿using Frontier.Entities;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using UniRx;
 using UnityEngine;
-using static Constants;
 using Zenject;
+using static Constants;
 
 #pragma warning disable 0618
 
@@ -16,17 +21,18 @@ namespace Frontier.Stage
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private BattleCameraController _btlCamCtrl     = null;
 
-        private LineRenderer _lineRenderer;
+        private int _tileIndex      = 0;
+        private int _atkTargetIndex = 0;
+        private float _totalTime    = 0;
         private Vector3 _beginPos   = Vector3.zero;
         private Vector3 _endPos     = Vector3.zero;
         private Vector3 _currentPos = Vector3.zero;
-        private int _tileIndex      = 0;
-        private int _atkTargetIndex = 0;
-        private int _atkTargetNum   = 0;
-        private float _totalTime    = 0;
+        private ReadOnlyCollection<int> _refAttackableTileIndices;
+        private LineRenderer _lineRenderer;
+        private Func<int, int>[] _directionMoveCallbacks;
+        private Func<int, int>[] _directionAttackTargetCallbacks;
 
         public int Index => _tileIndex;
-        public int AttackTargetIndex => _atkTargetIndex;
         public GridCursorState GridState { get; set; } = GridCursorState.NONE;
         public Character BindCharacter { get; set; } = null;
 
@@ -44,85 +50,28 @@ namespace Frontier.Stage
         public void Init( int initIndex )
         {
             _atkTargetIndex = 0;
-            _atkTargetNum   = 0;
             GridState       = GridCursorState.NONE;
             BindCharacter   = null;
 
             SetTileIndex( initIndex );
+
+            InitCallbacks();
         }
 
-        /// <summary>
-        /// インデックス値を現在グリッドの上に該当する値に設定します
-        /// </summary>
-        public void Up()
+        public void Move( Direction direction )
         {
-            int tIndex = _tileIndex;
-
             StartLerpMove();
-            tIndex += _stageDataProvider.CurrentData.TileColNum;
-            if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tIndex )
-            {
-                tIndex = tIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
-            }
 
-            SetTileIndex( tIndex );
+            _tileIndex = _directionMoveCallbacks[ ( int )direction ]( _tileIndex );
         }
 
-        /// <summary>
-        /// インデックス値を現在グリッドの下に該当する値に設定します
-        /// </summary>
-        public void Down()
+        public void TransitAttackTarget( Direction direction )
         {
-            int tIndex = _tileIndex;
-
             StartLerpMove();
-            tIndex -= _stageDataProvider.CurrentData.TileColNum;
-            if( tIndex < 0 )
-            {
-                tIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
-            }
 
-            SetTileIndex( tIndex );
+            _atkTargetIndex = _directionAttackTargetCallbacks[ ( int )direction ]( _atkTargetIndex );
         }
 
-        /// <summary>
-        /// インデックス値を現在グリッドの右に該当する値に設定します
-        /// </summary>
-        public void Right()
-        {
-            int tIndex = _tileIndex;
-
-            StartLerpMove();
-            tIndex++;
-            if( tIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
-            {
-                tIndex -= _stageDataProvider.CurrentData.TileColNum;
-            }
-
-            SetTileIndex( tIndex );
-        }
-
-        /// <summary>
-        /// インデックス値を現在グリッドの左に該当する値に設定します
-        /// </summary>
-        public void Left()
-        {
-            int tIndex = _tileIndex;
-
-            StartLerpMove();
-            tIndex--;
-            if( ( tIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
-            {
-                tIndex += _stageDataProvider.CurrentData.TileColNum;
-            }
-
-            SetTileIndex( tIndex );
-        }
-
-        /// <summary>
-        /// オブジェクトのアクティブ・非アクティブを設定します
-        /// </summary>
-        /// <param name="isActive">アクティブ設定</param>
         public void SetActive( bool isActive )
         {
             gameObject.SetActive( isActive );
@@ -131,9 +80,6 @@ namespace Frontier.Stage
         public void SetTileIndex( int index )
         {
             _tileIndex = index;
-
-            var tilePos = _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos;
-            _btlCamCtrl.SetLookAtBasedOnSelectCursor( tilePos );
         }
 
         /// <summary>
@@ -145,38 +91,25 @@ namespace Frontier.Stage
             _atkTargetIndex = index;
         }
 
-        /// <summary>
-        /// 攻撃対象インデックスの総数を設定します
-        /// </summary>
-        /// <param name="num">攻撃対象インデックスの総数</param>
-        public void SetAtkTargetNum( int num )
+        public void AssignAttackableTileIndices( ReadOnlyCollection<int> attackableTileIndices )
         {
-            _atkTargetNum = num;
-        }
-
-        /// <summary>
-        /// 次のターゲットインデックス値に遷移します
-        /// </summary>
-        public void TransitNextTarget()
-        {
-            _atkTargetIndex = ( _atkTargetIndex + 1 ) % _atkTargetNum;
+            _refAttackableTileIndices = attackableTileIndices;
         }
 
         /// <summary>
         /// 前のターゲットインデックス値に遷移します
         /// </summary>
-        public void TransitPrevTarget()
+        public int TransitPrevTarget( int atkTargetIndex )
         {
-            _atkTargetIndex = ( _atkTargetIndex - 1 ) < 0 ? _atkTargetNum - 1 : _atkTargetIndex - 1;
+            return ( atkTargetIndex - 1 ) < 0 ? _refAttackableTileIndices.Count - 1 : atkTargetIndex - 1;
         }
 
         /// <summary>
-        /// 攻撃対象情報をクリアします
+        /// 次のターゲットインデックス値に遷移します
         /// </summary>
-        public void ClearAtkTargetInfo()
+        public int TransitNextTarget( int atkTargetIndex )
         {
-            _atkTargetIndex = 0;
-            _atkTargetNum   = 0;
+            return ( atkTargetIndex + 1 ) % _refAttackableTileIndices.Count;
         }
 
         public int X()
@@ -189,11 +122,69 @@ namespace Frontier.Stage
             return Index / _stageDataProvider.CurrentData.TileColNum;
         }
 
-        public int GetAttackableTargetNum() { return _atkTargetNum; }
-
         public Vector3 GetPosition()
         {
             return _currentPos;
+        }
+
+        private void InitCallbacks()
+        {
+            _directionMoveCallbacks = new Func<int, int>[( int )Direction.NUM]
+            {
+                // Direction.FORWARD
+                ( tileIndex ) =>
+                {
+                    tileIndex += _stageDataProvider.CurrentData.TileColNum;
+                    if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tileIndex )
+                    {
+                        tileIndex = tileIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
+                    }
+
+                    return tileIndex;
+                },
+                // Direction.RIGHT
+                ( tileIndex ) =>
+                {
+                    tileIndex++;
+                    if( tileIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
+                    {
+                        tileIndex -= _stageDataProvider.CurrentData.TileColNum;
+                    }
+                    return tileIndex;
+                },
+                // Direction.BACK
+                ( tileIndex ) =>
+                {
+                    tileIndex -= _stageDataProvider.CurrentData.TileColNum;
+                    if( tileIndex < 0 )
+                    {
+                        tileIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
+                    }
+                    return tileIndex;
+                },
+                // Direction.LEFT
+                ( tileIndex ) =>
+                {
+                    tileIndex--;
+                    if( ( tileIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
+                    {
+                        tileIndex += _stageDataProvider.CurrentData.TileColNum;
+                    }
+                    return tileIndex;
+                }
+            };
+
+            _directionAttackTargetCallbacks = new Func<int, int>[( int )Direction.NUM]
+            {
+                // Direction.FORWARD
+                ( atkTargetIndex ) => TransitNextTarget( atkTargetIndex ),
+                // Direction.RIGHT
+                ( atkTargetIndex ) => TransitNextTarget( atkTargetIndex ),
+                // Direction.BACK
+                ( atkTargetIndex ) => TransitPrevTarget( atkTargetIndex ),
+                // Direction.LEFT
+                ( atkTargetIndex ) => TransitPrevTarget( atkTargetIndex ),
+            };
         }
 
         private void Update()
@@ -205,30 +196,23 @@ namespace Frontier.Stage
         /// 選択しているカーソル位置を更新します
         /// </summary>
         /// /// <param name="delta">フレーム間の時間</param>
-        void UpdateUI( float delta )
+        private void UpdateUI( float delta )
         {
             _endPos = GetGoalPosition();
 
-            if( GridState == GridCursorState.NONE || GridState == GridCursorState.MOVE )
-            {
-                UpdateLerpPosition( delta );
-            }
-            else
-            {
-                DrawSquareLine( TILE_SIZE, _endPos );
-            }
+            UpdateLerpPosition( delta );
         }
 
         /// <summary>
         /// グリッドの位置を線形補間で更新します
         /// </summary>
         /// <param name="delta">フレーム間の時間</param>
-        void UpdateLerpPosition( float delta )
+        private void UpdateLerpPosition( float delta )
         {
             _totalTime += delta;
             _currentPos = Vector3.Lerp( _beginPos, _endPos, _totalTime / MoveInterpolationTime );
 
-            DrawSquareLine( TILE_SIZE, _currentPos );
+            SetCameraLookAtPosAndDrawCursor( _currentPos );
         }
 
         /// <summary>
@@ -236,7 +220,7 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="gridSize">1グリッドのサイズ</param>
         /// <param name="centralPos">指定グリッドの中心位置</param>
-        void DrawSquareLine( float gridSize, in Vector3 centralPos )
+        private void DrawSquareLine( float gridSize, in Vector3 centralPos )
         {
             float halfSize = 0.5f * gridSize;
 
@@ -262,13 +246,26 @@ namespace Frontier.Stage
             _totalTime = 0f;
         }
 
+        private void SetCameraLookAtPosAndDrawCursor( in Vector3 pos )
+        {
+            DrawSquareLine( TILE_SIZE, pos );
+            _btlCamCtrl.SetLookAtBasedOnSelectCursor( pos );
+        }
+
         /// <summary>
         /// グリッドの現在座標を取得します
         /// </summary>
         /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            return _stageDataProvider.CurrentData.GetTileStaticData( Index ).CharaStandPos;
+            var tileIndex = _tileIndex;
+
+            if( GridState == GridCursorState.ATTACK )
+            {
+                tileIndex = _refAttackableTileIndices[_atkTargetIndex];
+            }
+
+            return _stageDataProvider.CurrentData.GetTileStaticData( tileIndex ).CharaStandPos;
         }
     }
 }

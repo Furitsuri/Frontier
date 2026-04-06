@@ -36,19 +36,19 @@ public class CommandList
     /// <summary>
     /// 初期化します
     /// </summary>
-    /// <param name="setCommandIndexs">操作させたいListの参照</param>
+    /// <param name="setCommandIndices">操作させたいListの参照</param>
     /// <param name="direction">リストの方向</param>
     /// <param name="lastNodeStart">ノードの初期値を末尾にする(falseの場合は先頭)</param>
     /// <param name="cmdIdxVal">使用側がこのクラスに操作させたいIndexとValue</param>
-    public void Init(ref List<int> setCommandIndexs, CommandDirection direction, bool lastNodeStart, CommandIndexedValue cmdIdxVal )
+    public void Init(ref List<int> setCommandIndices, CommandDirection direction, bool lastNodeStart, CommandIndexedValue cmdIdxVal )
     {
-        if (setCommandIndexs.Count <= 0)
+        if (setCommandIndices.Count <= 0)
         {
             Debug.Assert(false);
-            setCommandIndexs.Add(0);
+            setCommandIndices.Add(0);
         }
 
-        _list = new LinkedList<int>(setCommandIndexs);
+        _list = new LinkedList<int>(setCommandIndices);
 
         _currentNode = ( lastNodeStart ) ? _list.Last : _list.First;
 

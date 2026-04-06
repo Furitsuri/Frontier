@@ -177,12 +177,12 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.FetchExecutableCommand( out executableCommands, _stageCtrl );
 
             // 入力ベース情報の設定
-            List<int> commandIndexs = new List<int>();
+            List<int> commandIndices = new List<int>();
             foreach( var executableCmd in executableCommands )
             {
-                commandIndexs.Add( ( int ) executableCmd );
+                commandIndices.Add( ( int ) executableCmd );
             }
-            _commandList.Init( ref commandIndexs, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
+            _commandList.Init( ref commandIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
             _presenter.InitPLCommandView( this, executableCommands );
         }

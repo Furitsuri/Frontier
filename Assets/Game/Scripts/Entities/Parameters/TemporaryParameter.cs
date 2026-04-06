@@ -28,7 +28,7 @@ namespace Frontier.Entities
         public void Setup()
         {
             IsEndCommand        = new bool[( int ) COMMAND_TAG.NUM];
-            IsSkillsToggledON    = new bool[EQUIPABLE_SKILL_MAX_NUM];
+            IsSkillsToggledON   = new bool[EQUIPABLE_SKILL_MAX_NUM];
             IsSkillsUsed        = new bool[EQUIPABLE_SKILL_MAX_NUM];
             IsUseableSkill      = new bool[EQUIPABLE_SKILL_MAX_NUM];
         }
@@ -64,7 +64,7 @@ namespace Frontier.Entities
             TemporaryParameter copy = this;
 
             copy.IsEndCommand       = ( bool[] ) IsEndCommand.Clone();
-            copy.IsSkillsToggledON   = ( bool[] ) IsSkillsToggledON.Clone();
+            copy.IsSkillsToggledON  = ( bool[] ) IsSkillsToggledON.Clone();
             copy.IsSkillsUsed       = ( bool[] ) IsSkillsUsed.Clone();
             copy.IsUseableSkill     = ( bool[] ) IsUseableSkill.Clone();
 

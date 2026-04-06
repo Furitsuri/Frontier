@@ -143,11 +143,11 @@ static public class Methods
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
     /// <returns>設定されているか否か</returns>
-    static public bool CheckBitFlag<T>(in T flags, T value) where T : Enum
+    static public bool CheckBitFlag<T>( in T flags, T value ) where T : Enum
     {
-        int flagsValue = Convert.ToInt32(flags);
-        int valueInt = Convert.ToInt32(value);
-        return 0 != (flagsValue & valueInt);
+        int flagsValue = Convert.ToInt32( flags );
+        int valueInt = Convert.ToInt32( value );
+        return 0 != ( flagsValue & valueInt );
     }
 
     /// <summary>

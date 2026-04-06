@@ -121,10 +121,7 @@ namespace Frontier.DebugTools.StageEditor
 
             if( context.Cursor == Direction.NONE ) { return false; }
 
-            if( context.Cursor == Direction.RIGHT )         { _gridCursorCtrl.Right();  }
-            else if( context.Cursor == Direction.LEFT )     { _gridCursorCtrl.Left();   }
-            else if( context.Cursor == Direction.FORWARD )  { _gridCursorCtrl.Up();     }
-            else if( context.Cursor == Direction.BACK )     { _gridCursorCtrl.Down();   }
+            _gridCursorCtrl.Move( context.Cursor );
 
             return true;
         }
