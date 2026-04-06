@@ -44,6 +44,9 @@ namespace Frontier.Stage
             _gridCursorCtrl.Init( 0 );
             _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );
+
+            // 攻撃可能タイルのインデックスリストをグリッドカーソルコントローラーに渡す
+            _gridCursorCtrl.AssignAttackableTileIndices( _tileDataHdlr.AttackableTileIndices.AsReadOnly() );
         }
 
         /// <summary>
@@ -89,14 +92,37 @@ namespace Frontier.Stage
             _gridCursorCtrl.SetActive( isActive );
         }
 
+        /// <summary>
+        /// グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
+        /// </summary>
+        /// <param name="designatedTarget"></param>
+        public void MoveGridCursorToAttackableTile( Character designatedTarget = null )
+        {
+            var attackableTileIndices = _tileDataHdlr.AttackableTileIndices;
+            if( attackableTileIndices.Count <= 0 ) { return; }
+
+            // 攻撃対象引数targetが定められている場合はその対象を探す
+            if( designatedTarget != null && 1 < attackableTileIndices.Count )
+            {
+                for( int i = 0; i < attackableTileIndices.Count; ++i )
+                {
+                    var tileData = _stageDataProvider.CurrentData.GetTile( attackableTileIndices[i] ).DynamicData();
+                    if( designatedTarget.CharaKey() == tileData.CharaKey )
+                    {
+                        _gridCursorCtrl.SetAtkTargetIndex( i );
+                        break;
+                    }
+                }
+            }
+            // 定められていない場合は先頭を指定する
+            else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }
+        }
+
         public bool OperateGridCursorController( Direction direction )
         {
             if( direction == Direction.NONE ) { return false; }
 
-            if( direction == Direction.FORWARD )    { _gridCursorCtrl.Up();     }
-            if( direction == Direction.BACK )       { _gridCursorCtrl.Down();   }
-            if( direction == Direction.LEFT )       { _gridCursorCtrl.Left();   }
-            if( direction == Direction.RIGHT )      { _gridCursorCtrl.Right();  }
+            _gridCursorCtrl.Move( direction );
 
             return true;
         }
@@ -112,10 +138,7 @@ namespace Frontier.Stage
 
             direction = ConvertDirectionDependOnCameraAngle( direction );
 
-            if( direction == Direction.FORWARD )  { _gridCursorCtrl.Up();    }
-            if( direction == Direction.BACK )     { _gridCursorCtrl.Down();  }
-            if( direction == Direction.LEFT )     { _gridCursorCtrl.Left();  }
-            if( direction == Direction.RIGHT )    { _gridCursorCtrl.Right(); }
+            _gridCursorCtrl.Move( direction );
 
             return true;
         }
@@ -127,10 +150,11 @@ namespace Frontier.Stage
         /// <returns>グリッド移動の有無</returns>
         public bool OperateTargetSelect( Direction direction )
         {
-            if( direction == Direction.FORWARD || direction == Direction.LEFT ) { _gridCursorCtrl.TransitPrevTarget(); return true; }
-            if( direction == Direction.BACK || direction == Direction.RIGHT ) { _gridCursorCtrl.TransitNextTarget(); return true; }
+            if( Direction.NONE == direction ) { return false; }
 
-            return false;
+            _gridCursorCtrl.TransitAttackTarget( direction );
+
+            return true;
         }
 
         /// <summary>
@@ -140,15 +164,6 @@ namespace Frontier.Stage
         public int GetCurrentGridIndex()
         {
             return _gridCursorCtrl.Index;
-        }
-
-        /// <summary>
-        /// 攻撃可能な標的の数を取得します
-        /// </summary>
-        /// <returns>標的の数</returns>
-        public int GetAttackabkeTargetNum()
-        {
-            return _gridCursorCtrl.GetAttackableTargetNum();
         }
 
         /// <summary>
@@ -255,18 +270,18 @@ namespace Frontier.Stage
         {
             if( departGridIndex == destGridIndex ) { return null; } // 出発地と目的地が同じ場合は経路なし
 
-            List<int> candidataPathIndexs = movaableTileMap.Keys.ToList();
-            Dijkstra dijkstra   = new Dijkstra( candidataPathIndexs.Count );
+            List<int> candidataPathIndices = movaableTileMap.Keys.ToList();
+            Dijkstra dijkstra   = new Dijkstra( candidataPathIndices.Count );
             StageData stageData = _stageDataProvider.CurrentData;
             int colNum          = stageData.TileColNum;
 
             // 出発グリッドからのインデックスの差を取得
-            for( int i = 0; i + 1 < candidataPathIndexs.Count; ++i )
+            for( int i = 0; i + 1 < candidataPathIndices.Count; ++i )
             {
-                for( int j = i + 1; j < candidataPathIndexs.Count; ++j )
+                for( int j = i + 1; j < candidataPathIndices.Count; ++j )
                 {
-                    (int i2jCost, bool passablei2j ) = _tileDataHdlr.CalcurateTileCost( candidataPathIndexs[i], candidataPathIndexs[j], ownerJumpForce, in ownerTileCosts );
-                    (int j2iCost, bool passablej2i ) = _tileDataHdlr.CalcurateTileCost( candidataPathIndexs[j], candidataPathIndexs[i], ownerJumpForce, in ownerTileCosts );
+                    (int i2jCost, bool passablei2j ) = _tileDataHdlr.CalcurateTileCost( candidataPathIndices[i], candidataPathIndices[j], ownerJumpForce, in ownerTileCosts );
+                    (int j2iCost, bool passablej2i ) = _tileDataHdlr.CalcurateTileCost( candidataPathIndices[j], candidataPathIndices[i], ownerJumpForce, in ownerTileCosts );
 
                     // 移動可能な隣接タイル情報をダイクストラに入れる
                     if( passablei2j )
@@ -281,7 +296,7 @@ namespace Frontier.Stage
             }
 
             // ダイクストラから出発グリッドから目的グリッドまでの最短経路を得る
-            return dijkstra.GetMinRoute( candidataPathIndexs.IndexOf( departGridIndex ), candidataPathIndexs.IndexOf( destGridIndex ), candidataPathIndexs );
+            return dijkstra.GetMinRoute( candidataPathIndices.IndexOf( departGridIndex ), candidataPathIndices.IndexOf( destGridIndex ), candidataPathIndices );
         }
 
         /// <summary>

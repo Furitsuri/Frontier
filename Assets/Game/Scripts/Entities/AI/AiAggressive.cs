@@ -43,7 +43,7 @@ namespace Frontier.Entities.Ai
                 {
                     // タイルの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterKey> opponentKeys;
-                    ExtractAttackabkeOpponentIndexs( tileIndex, ownerKey.CharacterTag, out opponentKeys );
+                    ExtractAttackabkeOpponentIndices( tileIndex, ownerKey.CharacterTag, out opponentKeys );
                     if( 0 < opponentKeys.Count )
                     {
                         candidates.Add( (tileIndex, opponentKeys) );

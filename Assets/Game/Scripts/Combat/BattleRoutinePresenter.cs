@@ -1,7 +1,4 @@
 ﻿using Frontier.Combat;
-using Frontier.Entities;
-using Frontier.FormTroop;
-using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System;
@@ -21,7 +18,7 @@ namespace Frontier.Battle
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
         private TextMeshProUGUI _TMPCommandName;
         private Action<bool>[] SetActiveActionDirectionCallbacks;
-        static private int[] _layerMaskIndex;
+        static private int[] _layerMaskIndecies;
         public CharacterParameterPresenter CharaParamView( ParameterWindowType winType ) => _parameterPresenters[( int ) winType];
 
         public void Setup()
@@ -38,7 +35,7 @@ namespace Frontier.Battle
                 SetActiveParamWinDirectionRight2Left
             };
 
-            _layerMaskIndex = new int[]
+            _layerMaskIndecies = new int[]
             {
                 LAYER_MASK_INDEX_PLAYER,
                 LAYER_MASK_INDEX_ENEMY
@@ -151,7 +148,7 @@ namespace Frontier.Battle
 
         static public int GetLayerMaskIndexFromWinType( ParameterWindowType winType )
         {
-            return _layerMaskIndex[( int ) winType];
+            return _layerMaskIndecies[( int ) winType];
         }
     }
 }

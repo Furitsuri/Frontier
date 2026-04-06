@@ -40,9 +40,9 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
+            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
-                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( targetChara );
+                _stageCtrl.MoveGridCursorToAttackableTile( targetChara );
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );            // アタックカーソルUI表示
             }
@@ -63,7 +63,7 @@ namespace Frontier.Battle
                 diedCharacter.Dispose();
             }
 
-			_stageCtrl.ClearGridCursorBind();                                                       // アタッカーキャラクターの設定を解除
+			_stageCtrl.ClearGridCursorBind();                                             // アタッカーキャラクターの設定を解除
 			_presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
 
 			// 予測ダメージをリセット

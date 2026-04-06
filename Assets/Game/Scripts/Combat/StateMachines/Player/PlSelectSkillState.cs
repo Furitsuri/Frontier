@@ -3,8 +3,10 @@ using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities;
 using Frontier.Sequences;
+using Frontier.Stage;
 using Frontier.UI;
 using System;
+using UnityEngine.TextCore.Text;
 using Zenject;
 using static Constants;
 
@@ -25,7 +27,8 @@ namespace Frontier.Battle
 
         [Inject] private SequenceFacade _sequenceFcd = null;
 
-        private string[] _playerSkillNames = null;
+        private SkillID _transitTargetSelectSkillID = SkillID.NONE;
+        private string[] _playerSkillNames          = null;
         private PlSelectSkillPhase _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
         private Func<InputContext, bool>[] AcceptSubs;
 
@@ -33,8 +36,9 @@ namespace Frontier.Battle
         {
             base.Init( context);
 
-            _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
-            _phase              = PlSelectSkillPhase.PL_SELECT_SKILL;
+            _transitTargetSelectSkillID     = SkillID.NONE;
+            _playerSkillNames               = _plOwner.GetStatusRef.GetEquipSkillNames();
+            _phase                          = PlSelectSkillPhase.PL_SELECT_SKILL;
 
             AcceptSubs = new Func<InputContext, bool>[]
             {
@@ -113,16 +117,34 @@ namespace Frontier.Battle
         {
             if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
 
+            bool isExistTransitionSkillActionType = false;
+            bool isExistToggledOnSkill = false;
+
             // 所有スキルのうち、どれか一つでも使用フラグが立っていれば決定入力を受け付ける
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 if( _plOwner.BattleLogic.IsEquipSkillToggledOn( i ) )
                 {
-                    return true;
+                    var skillID     = _plOwner.GetEquipSkillID( i );
+                    var skillData = SkillsData.data[( int ) skillID];
+
+                    // ただし、ターゲット選択に遷移するスキルタイプのものがある場合は、そちらを優先して遷移させる
+                    // ターゲット選択に遷移するスキルタイプのものがある場合は、他のスキルの使用フラグが立っていても攻撃可能な範囲にターゲットが存在しない可能性があるため、そちらをチェック
+                    bool isTransitionSkillActionType = SkillsData.IsTransitionSkillActionType( skillData.ActionType );
+                    if( isTransitionSkillActionType )
+                    {
+                        isExistTransitionSkillActionType = true;
+                    }
+                    else
+                    {
+                        isExistToggledOnSkill = true;
+                    }
                 }
             }
 
-            return false;
+            if( isExistTransitionSkillActionType ) { return _transitTargetSelectSkillID != SkillID.NONE; }
+
+            return isExistToggledOnSkill;
         }
 
         protected override bool CanAcceptCancel()
@@ -141,16 +163,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            int transitActionIndex = -1;
-
-            // スキル使用フラグが立っているスキルのうち、どれか一つでもターゲット選択に遷移するスキルタイプのものがあれば遷移する
-            if( _plOwner.BattleLogic.IsSkillToggledTransitActionState( out transitActionIndex ) )
-            {
-                SetSendTransitionContext( _plOwner.GetEquipSkillID( transitActionIndex ) );
-
-                TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
-            }
-            else
+            if( SkillID.NONE == _transitTargetSelectSkillID )
             {
                 // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
                 // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
@@ -160,6 +173,13 @@ namespace Frontier.Battle
 
                 _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
             }
+            else
+            {
+                // ターゲット選択に遷移するスキルタイプのものがONになっている場合は、ターゲット選択に遷移
+                SetSendTransitionContext( _transitTargetSelectSkillID );
+
+                TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
+            }
 
             return true;
         }
@@ -167,8 +187,9 @@ namespace Frontier.Battle
         protected override bool AcceptCancel( InputContext context )
         {
             if( !base.AcceptCancel( context ) ) { return false; }
-
-            _plOwner.BattleLogic.RevertSkillsToggledOn();
+            
+            _plOwner.BattleLogic.RevertSkillsToggledOn();              // 全てのスキルの使用フラグをOFFにする
+            _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();  // 攻撃可能範囲の描画と範囲データをクリアする
 
             return true;
         }
@@ -190,8 +211,39 @@ namespace Frontier.Battle
         {
             if( !AcceptSubs[index]( context ) ) { return false; }
 
+            var skillID                         = _plOwner.GetEquipSkillID( index );
+            var skillData                       = SkillsData.data[( int ) skillID];
+            bool isTransitionSkillActionType    = SkillsData.IsTransitionSkillActionType( skillData.ActionType );
+
             _plOwner.BattleLogic.ToggleEquipSkill( index );
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );  // 使用可能スキルの更新
+
+            if( isTransitionSkillActionType )
+            {
+                if( _plOwner.BattleParams.TmpParam.IsSkillsToggledON[index] )
+                {
+                    var targetingMode   = skillData.TargetingMode;
+                    var targetingValue  = skillData.TargetingValue;
+
+                    _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID );
+                    _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
+
+                    foreach( var data in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
+                    {
+                        if( Methods.CheckBitFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                        {
+                            _transitTargetSelectSkillID = skillID;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
+                    _transitTargetSelectSkillID = SkillID.NONE;
+
+                }
+            }
 
             return true;
         }

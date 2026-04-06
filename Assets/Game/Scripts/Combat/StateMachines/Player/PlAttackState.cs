@@ -66,9 +66,9 @@ namespace Frontier.Battle
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 
             // 攻撃可能なタイルを選択している場合はグリッドカーソルを移動して攻撃対象指定状態にする
-            if( _stageCtrl.TileDataHdlr().CorrectAttackableTileIndexs( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap ) )
+            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
-                _stageCtrl.TileDataHdlr().MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
+                _stageCtrl.MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
                 _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );             // アタッカーキャラクターの設定
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );    // アクション対象指定関連のUIを表示
             }
@@ -224,7 +224,7 @@ namespace Frontier.Battle
         {
             if( !CanAcceptDefault() ) { return false; }
             if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は不可
-            if( _stageCtrl.GetAttackabkeTargetNum() <= 1 ) { return false; }   // 攻撃可能な標的数が1より大きくなければ不可
+            if( _stageCtrl.TileDataHdlr().AttackableTileIndices.Count <= 1 ) { return false; }   // 攻撃可能な標的数が1より大きくなければ不可
 
             return true;
         }
@@ -328,7 +328,7 @@ namespace Frontier.Battle
             {
                 _targetCharacter.GetTransformHandler.ResetRotationOrder();
             }
-
+            // 全てのスキルの使用フラグをOFFにする
             _plOwner.BattleLogic.RevertSkillsToggledOn();
 
             return true;

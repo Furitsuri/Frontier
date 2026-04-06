@@ -17,13 +17,14 @@ namespace Frontier.Stage
     {
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
-        [Inject] private GridCursorController _gridCursorCtrl   = null;
 
         private delegate void RegisterAttackableTileCallback( TileDynamicData[] tiles, int l, int m, int n, CHARACTER_TAG tag, ref ActionableTileMap map );
 
-        private int[] _addTileIndexValues;
-        private List<int> _attackableTileIndexs = new List<int>();
+        private int[] _directionOffsets;
+        private List<int> _attackableTileIndices = new List<int>();
         private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
+
+        public List<int> AttackableTileIndices => _attackableTileIndices;
 
         #region PUBLIC_METHOD
 
@@ -40,7 +41,7 @@ namespace Frontier.Stage
         public void Init()
         {
             // コンストラクタ時点ではCurrentDataがnullのため、Initで初期化
-            _addTileIndexValues = new int[( int ) Direction.NUM]
+            _directionOffsets = new int[( int ) Direction.NUM]
             {
                 _stageDataProvider.CurrentData.TileColNum,  // Direction.FORWARD
                 1,                                          // Direction.RIGHT
@@ -188,35 +189,8 @@ namespace Frontier.Stage
         /// </summary>
         public void ClearAttackableInformation()
         {
-            _attackableTileIndexs.Clear();
+            _attackableTileIndices.Clear();
             UnsetAllTilesBitFlag( TileBitFlag.REACHABLE_ATTACK | TileBitFlag.ATTACKABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST );
-        }
-
-        /// <summary>
-        /// グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
-        /// </summary>
-        /// <param name="designatedTarget"></param>
-        public void MoveGridCursorToAttackableTile( Character designatedTarget = null )
-        {
-            if( _attackableTileIndexs.Count <= 0 ) { return; }
-
-            _gridCursorCtrl.SetAtkTargetNum( _attackableTileIndexs.Count );
-
-            // 攻撃対象引数targetが定められている場合はその対象を探す
-            if( designatedTarget != null && 1 < _attackableTileIndexs.Count )
-            {
-                for( int i = 0; i < _attackableTileIndexs.Count; ++i )
-                {
-                    var tileData = _stageDataProvider.CurrentData.GetTile( _attackableTileIndexs[i] ).DynamicData();
-                    if( designatedTarget.CharaKey() == tileData.CharaKey )
-                    {
-                        _gridCursorCtrl.SetAtkTargetIndex( i );
-                        break;
-                    }
-                }
-            }
-            // 定められていない場合は先頭を指定する
-            else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }
         }
 
         /// <summary>
@@ -258,21 +232,20 @@ namespace Frontier.Stage
         /// <param name="owner">攻撃を行うキャラクター</param>
         /// <param name="target">予め攻撃対象が決まっている際に指定</param>
         /// <returns>攻撃可能キャラクターが存在している</returns>
-        public bool CorrectAttackableTileIndexs( Dictionary<int, TileDynamicData> attackableTileMap )
+        public bool CollectAttackableTileIndicesWithFlag( in Dictionary<int, TileDynamicData> attackableTileMap, TileBitFlag bitFlag )
         {
-            _gridCursorCtrl.ClearAtkTargetInfo();
-            _attackableTileIndexs.Clear();
+            _attackableTileIndices.Clear();
 
-            // 攻撃可能、かつ攻撃対象となるキャラクターが存在するタイルのインデックス値をリストに登録
+            // 指定のビット値をフラグに持つタイルのインデックス値をリストに登録
             foreach( var tileDData in attackableTileMap )
             {
-                if( Methods.CheckBitFlag( tileDData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                if( Methods.CheckBitFlag( tileDData.Value.Flag, bitFlag ) )
                 {
-                    _attackableTileIndexs.Add( tileDData.Key );
+                    _attackableTileIndices.Add( tileDData.Key );
                 }
             }
 
-            return ( 0 < _attackableTileIndexs.Count );
+            return ( 0 < _attackableTileIndices.Count );
         }
 
         /// <summary>
@@ -304,18 +277,20 @@ namespace Frontier.Stage
         /// 攻撃対象選択状態では選択している攻撃対象が存在するタイル情報を取得します
         /// </summary>
         /// /// <returns>タイル間のコスト及び移動可否</returns>
-        public ( TileStaticData, TileDynamicData ) GetCurrentTileDatas()
+        public ( TileStaticData, TileDynamicData ) GetTileDatas( int index )
         {
+            /*
             int index = 0;
 
             if( _gridCursorCtrl.GridState == GridCursorState.ATTACK )
             {
-                index = _attackableTileIndexs[_gridCursorCtrl.AttackTargetIndex];
+                index = _attackableTileIndices[_gridCursorCtrl.AttackTargetIndex];
             }
             else
             {
                 index = _gridCursorCtrl.Index;
             }
+            */
 
             return ( _stageDataProvider.CurrentData.GetTileStaticData( index ), _stageDataProvider.CurrentData.GetTileDynamicData( index ) );
         }
@@ -494,7 +469,7 @@ namespace Frontier.Stage
         {
             if( !RegisterAttackableTile( tileDDatas, dprtIdx, tgtTileIdx, ref atkRng, charaTag, ref actionableTileMap ) ) { return; }
 
-            tgtTileIdx += _addTileIndexValues[( int ) dir]; // 次のタイルインデックスを設定
+            tgtTileIdx += _directionOffsets[( int ) dir]; // 次のタイルインデックスを設定
 
             RegisterAttackableTilesLinearly( tileDDatas, dprtIdx, tgtTileIdx, atkRng, dir, charaTag, ref actionableTileMap );  // 現在のtargetTileIndexの地点から更に四方に展開
         }

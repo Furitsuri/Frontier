@@ -258,7 +258,7 @@ namespace Frontier.Battle
         /// <returns>選択しているグリッド上のキャラクター</returns>
         public Character GetSelectCharacter()
         {
-            TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetCurrentTileDatas().Item2;
+            TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetTileDatas( _stgCtrl.GetCurrentGridIndex() ).Item2;
 
             return GetCharacter( tileData.CharaKey );
         }

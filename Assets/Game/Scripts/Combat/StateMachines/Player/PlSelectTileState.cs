@@ -73,7 +73,7 @@ namespace Frontier.Battle
                 return true;
             }
 
-            TileDynamicData tileData = _stageCtrl.TileDataHdlr().GetCurrentTileDatas().Item2;
+            TileDynamicData tileData = _stageCtrl.TileDataHdlr().GetTileDatas( _stageCtrl.GetCurrentGridIndex() ).Item2;
             if( tileData.CharaKey.IsValid() )
             {
                 // Confirmアイコンの文字列を更新

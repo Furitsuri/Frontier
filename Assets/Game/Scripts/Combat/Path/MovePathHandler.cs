@@ -69,7 +69,7 @@ public class MovePathHandler
     {
         if ( moveableTileMap.Count <= 0 )
         {
-            Debug.LogError( "_candidatePathIndexs is not set up. Please check." );
+            Debug.LogError( "_candidatePathIndices is not set up. Please check." );
             return false;
         }
 
@@ -100,7 +100,7 @@ public class MovePathHandler
     {
         if ( actionableTileMap.MoveableTileMap.Count <= 0 )
         {
-            Debug.LogError( "_candidatePathIndexs is not set up. Please check." );
+            Debug.LogError( "_candidatePathIndices is not set up. Please check." );
             return false;
         }
 

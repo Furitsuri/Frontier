@@ -28,12 +28,12 @@ public class ConfirmStateBaseEditor : EditorStateBase
 
         _cmdIdxVal = new CommandList.CommandIndexedValue( 1, 1 );
 
-        List<int> commandIndexs = new List<int>( ( int ) ConfirmTag.NUM );
+        List<int> commandIndices = new List<int>( ( int ) ConfirmTag.NUM );
         for( int i = 0; i < ( int ) ConfirmTag.NUM; ++i )
         {
-            commandIndexs.Add( i );
+            commandIndices.Add( i );
         }
-        _commandList.Init( ref commandIndexs, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal );
+        _commandList.Init( ref commandIndices, CommandList.CommandDirection.HORIZONTAL, true, _cmdIdxVal );
 
         _confirmUi = _uiSystem.DebugUi.StageEditorView.GetConfirmSaveLoadUI();
         _confirmUi.gameObject.SetActive( true );
