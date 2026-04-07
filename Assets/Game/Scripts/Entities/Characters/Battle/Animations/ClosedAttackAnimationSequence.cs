@@ -52,7 +52,7 @@ namespace Frontier.Entities
         /// <returns>終了判定</returns>
         public bool UpdateSequence( in Vector3 departure, in Vector3 destination )
         {
-            var attackAnimtag = AttackAnimTags[_character.BattleParams.SkillModifiedParam.AddAtkNum - 1];
+            var attackAnimtag = AttackAnimTags[_character.BattleParams.SkillModifiedParam.AddAtkNum];
 
             if ( _character.GetBullet() != null ) return false;
 

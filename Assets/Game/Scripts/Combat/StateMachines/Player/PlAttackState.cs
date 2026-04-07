@@ -29,7 +29,6 @@ namespace Frontier.Battle
         protected int _curentGridIndex = -1;
         protected string[] _playerSkillNames = null;
         protected Character _targetCharacter = null;
-        protected CharacterAttackSequence _attackSequence = null;
         protected Func<InputContext, bool>[] AccespuSubs;
 
         protected void PlPhaseStateInit()
@@ -127,10 +126,8 @@ namespace Frontier.Battle
                         
                     break;
                 case PlAttackPhase.PL_ATTACK_EXECUTE:
-                    if( _attackSequence.Update() )
-                    {
-                        _phase = PlAttackPhase.PL_ATTACK_END;
-                    }
+
+                    _phase = PlAttackPhase.PL_ATTACK_END;
 
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
@@ -174,7 +171,7 @@ namespace Frontier.Battle
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
+            _stageCtrl.SetActiveGridCursor( true );   // 選択グリッドを表示
 
             return base.ExitState();
         }
@@ -300,7 +297,7 @@ namespace Frontier.Battle
                 _plOwner.BattleLogic.ConsumeActionGauge();
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-                _stageCtrl.SetGridCursorControllerActive( false );                                      // 選択グリッドを一時非表示
+                _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
                 _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                           // タイルメッシュの描画をすべてクリア
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                           // 現在の入力コードを登録解除
@@ -313,7 +310,7 @@ namespace Frontier.Battle
 
                 _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始
 
-                _phase = PlAttackPhase.PL_ATTACK_END;
+                _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
 
                 return true;
             }
