@@ -44,7 +44,7 @@ namespace Frontier.Battle
             // 移動前処理
             else
             {
-                _stageCtrl.SetGridCursorControllerActive( true ); // 選択グリッドを表示
+                _stageCtrl.SetActiveGridCursor( true ); // 選択グリッドを表示
 
                 _Phase = EmMovePhase.EM_MOVE_WAIT;
             }
@@ -58,7 +58,7 @@ namespace Frontier.Battle
                     _moveWaitTimer += DeltaTimeProvider.DeltaTime;
                     if( ENEMY_SHOW_MOVE_RANGE_TIME <= _moveWaitTimer )
                     {
-                        _stageCtrl.SetGridCursorControllerActive( false );  // 選択グリッドを一時非表示
+                        _stageCtrl.SetActiveGridCursor( false );  // 選択グリッドを一時非表示
 
                         _Phase = EmMovePhase.EM_MOVE_EXECUTE;
                     }
@@ -82,7 +82,7 @@ namespace Frontier.Battle
         public override object ExitState()
         {
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
-            _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
+            _stageCtrl.SetActiveGridCursor( true );               // 選択グリッドを表示
             _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();  // タイルメッシュの描画をクリア
 
             return base.ExitState();

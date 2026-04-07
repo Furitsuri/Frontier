@@ -29,7 +29,7 @@ namespace Frontier.Battle
             base.Init( context );
 
             _isShowingAllDangerRange = false;
-            _stageCtrl.SetGridCursorControllerActive( true );   // グリッド選択を有効化
+            _stageCtrl.SetActiveGridCursor( true );   // グリッド選択を有効化
 
             // Confirmアイコンの文字列を設定
             _inputConfirmStrings = new string[( int ) CHARACTER_TAG.NUM]

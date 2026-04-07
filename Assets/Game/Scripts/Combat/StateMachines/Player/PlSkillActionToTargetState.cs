@@ -158,7 +158,7 @@ namespace Frontier.Battle
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
+            _stageCtrl.SetActiveGridCursor( true );   // 選択グリッドを表示
 
             return base.ExitState();
         }

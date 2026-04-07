@@ -36,7 +36,7 @@ namespace Frontier.StateMachine
             _focusCharacterIndex = 0;
             SetupDeploymentCandidates();
 
-            _stageCtrl.SetGridCursorControllerActive( true );                   // グリッド選択を有効化
+            _stageCtrl.SetActiveGridCursor( true );                   // グリッド選択を有効化
             _presenter.SetActiveCharacterSelectUIs( true );                     // キャラクター選択画面の表示を有効化
             _presenter.AssignCandidates( _deploymentCandidates.AsReadOnly() );  // 配置可能キャラクターリストを読取専用参照としてPresenterに渡す
             _presenter.SetFocusCharacters( _focusCharacterIndex );              // 最初のキャラクターにフォーカスを当てておく

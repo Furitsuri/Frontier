@@ -77,7 +77,7 @@ namespace Frontier.Battle
             _targetCharacter.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetGridCursorControllerActive( true );   // 選択グリッドを表示
+            _stageCtrl.SetActiveGridCursor( true );   // 選択グリッドを表示
 
             return base.ExitState();
         }

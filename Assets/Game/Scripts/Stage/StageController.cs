@@ -87,7 +87,7 @@ namespace Frontier.Stage
         /// 選択グリッドのアクティブ状態を設定します
         /// </summary>
         /// <param name="isActive">設定するアクティブ状態</param>
-        public void SetGridCursorControllerActive( bool isActive )
+        public void SetActiveGridCursor( bool isActive )
         {
             _gridCursorCtrl.SetActive( isActive );
         }

@@ -136,7 +136,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            _stageCtrl.SetGridCursorControllerActive( true );               // 選択グリッドを表示
+            _stageCtrl.SetActiveGridCursor( true );               // 選択グリッドを表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
 
             // 攻撃に直接遷移しない場合のみに限定される処理

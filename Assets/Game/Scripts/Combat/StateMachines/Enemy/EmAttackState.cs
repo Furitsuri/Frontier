@@ -139,7 +139,7 @@ namespace Frontier.Battle
             //   その後プレイヤーに選択グリッドが移るという状況になります。
             //   その挙動が少しバグのように見えてしまうので、消去したままにすることにし、
             //   次のキャラクターが行動開始する際に表示するようにします。
-            // Stage.StageController.Instance.SetGridCursorControllerActive(true);
+            // Stage.StageController.Instance.SetActiveGridCursor(true);
 
             return base.ExitState();
         }
@@ -186,7 +186,7 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ConsumeActionGauge();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            _stageCtrl.SetGridCursorControllerActive( false );                      // 選択グリッドを一時非表示
+            _stageCtrl.SetActiveGridCursor( false );                      // 選択グリッドを一時非表示
             _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );                   // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );                         // ダメージ予測表示UIを非表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア

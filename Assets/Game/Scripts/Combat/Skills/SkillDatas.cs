@@ -22,9 +22,9 @@ namespace Frontier.Combat
             public int RangeValue;                  // レンジ範囲
             public TargetingMode TargetingMode;     // レンジ内選択モード
             public int TargetingValue;              // レンジ内選択モードに用いる範囲値
-            public float AddAtkMag;                 // 攻撃力倍率加算
-            public float AddDefMag;                 // 防御力倍率加算
-            public int AddAtkNum;                   // 攻撃回数加算
+            public float AddAtkMag;                 // 攻撃力倍率加算値
+            public float AddDefMag;                 // 防御力倍率加算値
+            public int AddAtkNum;                   // 攻撃回数加算値
             public float Param1;                    // 汎用パラメータ1
             public float Param2;                    // 汎用パラメータ2
             public float Param3;                    // 汎用パラメータ3
