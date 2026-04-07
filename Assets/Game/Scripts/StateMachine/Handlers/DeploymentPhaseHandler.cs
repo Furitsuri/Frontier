@@ -10,6 +10,10 @@ namespace Frontier.StateMachine
     {
         private DeploymentPhasePresenter _presenter;
 
+        public DeploymentPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
+        {
+        }
+
         public override void Init()
         {
             base.Init();

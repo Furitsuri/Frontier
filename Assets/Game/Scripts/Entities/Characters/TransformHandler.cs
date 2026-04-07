@@ -8,8 +8,8 @@ public class TransformHandler
     private Vector3 _accel;                                 // 加速度
     private Vector3 _prevPosition;                          // 1フレーム前の位置
     private Quaternion _prevRotation;                       // 1フレーム前の回転
+    private Quaternion _baseRotation;                       // ターン開始時や移動完了時など、回転命令が発行されていない状態の回転量(キャラクターの向き)を保存する(回転命令が発行されたときに、回転命令実行前の回転量を保存するために用いる)
     private Quaternion? _orderdRotation         = null;     // 指示されている回転量(nullは指示がないことを示す)
-    private Quaternion? _beforeOrderdRotation   = null;     // 指示される前の回転量(nullは指示がないことを示す)
 
     public void Init()
     {
@@ -50,10 +50,9 @@ public class TransformHandler
         _readOnlyTransform = new ReadOnlyReference<Transform>( transform );
     }
 
-    public void ResetVelocityAcceleration()
+    public void EstablishBaseRotation()
     {
-        _velocity   = new Vector3( 0, 0, 0 );
-        _accel      = new Vector3( 0, 0, 0 );
+        _baseRotation = _readOnlyTransform.Value.rotation;
     }
 
     public void SetVelocityAcceleration( in Vector3 velocity, in Vector3 accel )
@@ -75,6 +74,27 @@ public class TransformHandler
     public void SetRotation( in Quaternion rotation )
     {
         _readOnlyTransform.Value.rotation = rotation;
+    }
+
+    public void ResetVelocityAcceleration()
+    {
+        _velocity   = new Vector3( 0, 0, 0 );
+        _accel      = new Vector3( 0, 0, 0 );
+    }
+
+    public void ResetRotationOrder()
+    {
+        _orderdRotation = _baseRotation;
+    }
+
+    /// <summary>
+    /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
+    /// </summary>
+    /// <param name="targetPos">向きを合わせる位置</param>
+    public void RotateToPosition( in Vector3 targetPos )
+    {
+        var directionXZ = ( targetPos - _readOnlyTransform.Value.position ).XZ();
+        OrderRotate( Quaternion.LookRotation( directionXZ ) );
     }
 
     public void AddVelocityAcceleration( in Vector3 velocity, in Vector3 accel )
@@ -115,8 +135,7 @@ public class TransformHandler
 
     public void OrderRotate( in Quaternion rotation )
     {
-        _orderdRotation         = rotation;
-        _beforeOrderdRotation   = _readOnlyTransform.Value.rotation;  // 命令発行前の回転を保存
+        _orderdRotation = rotation;
     }
 
     public Direction GetDirection()
@@ -137,25 +156,6 @@ public class TransformHandler
         }
 
         return Methods.ConvertDirectionFromVector( forward );
-    }
-
-    /// <summary>
-    /// 指定インデックスのグリッドにキャラクターの向きを合わせるように命令を発行します
-    /// </summary>
-    /// <param name="targetPos">向きを合わせる位置</param>
-    public void RotateToPosition( in Vector3 targetPos )
-    {
-        var directionXZ = ( targetPos - _readOnlyTransform.Value.position ).XZ();
-        OrderRotate( Quaternion.LookRotation( directionXZ ) );
-    }
-
-    public void ResetRotationOrder()
-    {
-        if( null != _beforeOrderdRotation )
-        {
-            _orderdRotation         = _beforeOrderdRotation;
-            _beforeOrderdRotation   = null;
-        }
     }
 
     public void StartJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )

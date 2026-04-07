@@ -41,12 +41,6 @@ namespace Frontier.Stage
             _lineRenderer = gameObject.GetComponent<LineRenderer>();
         }
 
-        /// <summary>
-        /// 初期化します
-        /// </summary>
-        /// <param name="initIndex">初期インデックス値</param>
-        /// <param name="rowNum">盤面における行に該当するグリッド数</param>
-        /// <param name="columnNum">盤面における列に該当するグリッド数</param>
         public void Init( int initIndex )
         {
             _atkTargetIndex = 0;
@@ -70,6 +64,7 @@ namespace Frontier.Stage
             StartLerpMove();
 
             _atkTargetIndex = _directionAttackTargetCallbacks[ ( int )direction ]( _atkTargetIndex );
+            _tileIndex      = _refAttackableTileIndices[_atkTargetIndex];
         }
 
         public void SetActive( bool isActive )
@@ -89,6 +84,7 @@ namespace Frontier.Stage
         public void SetAtkTargetIndex( int index )
         {
             _atkTargetIndex = index;
+            _tileIndex      = _refAttackableTileIndices[_atkTargetIndex];
         }
 
         public void AssignAttackableTileIndices( ReadOnlyCollection<int> attackableTileIndices )
@@ -242,8 +238,8 @@ namespace Frontier.Stage
         /// </summary>
         private void StartLerpMove()
         {
-            _beginPos = GetGoalPosition();
-            _totalTime = 0f;
+            _beginPos   = GetGoalPosition();
+            _totalTime  = 0f;
         }
 
         private void SetCameraLookAtPosAndDrawCursor( in Vector3 pos )
@@ -258,14 +254,7 @@ namespace Frontier.Stage
         /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            var tileIndex = _tileIndex;
-
-            if( GridState == GridCursorState.ATTACK )
-            {
-                tileIndex = _refAttackableTileIndices[_atkTargetIndex];
-            }
-
-            return _stageDataProvider.CurrentData.GetTileStaticData( tileIndex ).CharaStandPos;
+            return _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos;
         }
     }
 }

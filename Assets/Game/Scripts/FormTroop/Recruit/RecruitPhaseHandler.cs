@@ -7,10 +7,9 @@ namespace Frontier.FormTroop
     {
         private RecruitPhasePresenter _presenter = null;
 
-        [Inject] RecruitPhaseHandler( HierarchyBuilderBase hierarchyBld )
+        [Inject]
+        public RecruitPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
         {
-            _hierarchyBld = hierarchyBld;
-
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhasePresenter>( true ) );
         }
 

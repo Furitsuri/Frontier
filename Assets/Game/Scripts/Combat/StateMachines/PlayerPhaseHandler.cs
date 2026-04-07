@@ -1,11 +1,17 @@
 ﻿using Frontier.Entities;
 using Frontier.StateMachine;
 using System.Linq;
+using Zenject;
 
 namespace Frontier.Battle
 {
     public class PlayerPhaseHandler : TroopPhaseHandler
     {
+        [Inject]
+        public PlayerPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
+        {
+        }
+
         public override void Init()
         {
             base.Init();
@@ -100,8 +106,6 @@ namespace Frontier.Battle
             RootNode.Children[0].Children[0].Children[2].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
             // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewStateを追加
             RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
-
-            CurrentNode = RootNode;
         }
     }
 }

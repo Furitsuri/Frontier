@@ -9,5 +9,10 @@ namespace Frontier.Battle
         [Inject] protected BattleRoutineController _btlRtnCtrl = null;
         [Inject] protected BattleRoutinePresenter _presenter = null;
         [Inject] protected StageController _stgCtrl = null;
+
+        [Inject]
+        public TroopPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
+        {
+        }
     }
 }

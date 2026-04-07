@@ -127,8 +127,8 @@ namespace Frontier.Battle
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )
             {
-                // 一時パラメータをリセット
-                _btlCharaCdr.ResetTmpParamAllCharacter();
+                // フェーズ終了時の全てのキャラクターへの処理を実行
+                _btlCharaCdr.AdjustAllCharactersEndOfPhase();
 
                 // 次のハンドラーに切り替える
                 handler.Exit();
