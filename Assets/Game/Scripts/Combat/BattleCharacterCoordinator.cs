@@ -372,15 +372,16 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 全てのキャラクターの一時パラメータをリセットします
+        /// フェーズ終了時に全てのキャラクターの行動可能状態などをリセットします
         /// </summary>
-        public void ResetTmpParamAllCharacter()
+        public void AdjustAllCharactersEndOfPhase()
         {
             for( int i = 0; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
                 foreach( var c in _characterDict.GetCharacterList( ( CHARACTER_TAG ) i ) )
                 {
                     c.BattleLogic.BePossibleAction();
+                    c.GetTransformHandler.EstablishBaseRotation();
                 }
             }
         }

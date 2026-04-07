@@ -134,6 +134,7 @@ namespace Frontier.Battle
         public override object ExitState()
         {
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );  // グリッドカーソルの位置をプレイヤーの位置に合わせる
+            _stageCtrl.ClearGridCursorBind();                       // アタッカーキャラクターの設定を解除
 
             //死亡判定を通知
             Character diedCharacter = null;// _attackSequence.GetDiedCharacter();
@@ -144,7 +145,6 @@ namespace Frontier.Battle
                 diedCharacter.Dispose();    // 破棄
             }
 
-            _stageCtrl.ClearGridCursorBind();                                             // アタッカーキャラクターの設定を解除
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
 
             // 予測ダメージと使用スキルコスト見積もりをリセット

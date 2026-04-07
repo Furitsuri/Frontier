@@ -1,10 +1,16 @@
 ﻿using Frontier.Entities;
 using System.Linq;
+using Zenject;
 
 namespace Frontier.Battle
 {
     public class EnemyPhaseHandler : TroopPhaseHandler
     {
+        [Inject]
+        public EnemyPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
+        {
+        }
+
         public override void Init()
         {
             // 目標座標や攻撃対象をリセット
@@ -58,8 +64,6 @@ namespace Frontier.Battle
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
-
-            CurrentNode = RootNode;
         }
     }
 }

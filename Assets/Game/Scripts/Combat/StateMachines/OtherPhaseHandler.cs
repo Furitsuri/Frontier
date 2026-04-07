@@ -1,10 +1,16 @@
 ﻿using Frontier.Entities;
 using System.Linq;
+using Zenject;
 
 namespace Frontier.Battle
 {
     public class OtherPhaseHandler : TroopPhaseHandler
     {
+        [Inject]
+        public OtherPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
+        {
+        }
+
         public override void Init()
         {
             // 目標座標や攻撃対象をリセット

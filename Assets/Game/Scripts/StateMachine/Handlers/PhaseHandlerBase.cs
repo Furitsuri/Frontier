@@ -9,9 +9,16 @@ namespace Frontier.StateMachine
 {
     public class PhaseHandlerBase : Tree<PhaseStateBase>
     {
-        [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
-        
-        protected bool _isFirstUpdate = false;
+        protected HierarchyBuilderBase _hierarchyBld    = null;
+        protected bool _isFirstUpdate                   = false;
+
+        [Inject] public PhaseHandlerBase( HierarchyBuilderBase hierarchyBld )
+        {
+            _hierarchyBld = hierarchyBld;
+
+            CreateTree();                           // 遷移木の作成
+            Traverse( RootNode, AssignHandler );    // 各ステートにハンドラを割り当てる
+        }
 
         private void AssignHandler( PhaseStateBase state )
         {
@@ -36,11 +43,8 @@ namespace Frontier.StateMachine
         /// </summary>
         virtual public void Init()
         {
-            CreateTree();   // 遷移木の作成
-
-            Traverse( RootNode, AssignHandler );    // 各ステートにハンドラを割り当てる
-
-            _isFirstUpdate = true;
+            CurrentNode     = RootNode;
+            _isFirstUpdate  = true;
         }
 
         virtual public void Update()
