@@ -110,12 +110,14 @@ namespace Frontier.Stage
                     if( designatedTarget.CharaKey() == tileData.CharaKey )
                     {
                         _gridCursorCtrl.SetAtkTargetIndex( i );
-                        break;
+
+                        return;
                     }
                 }
             }
+
             // 定められていない場合は先頭を指定する
-            else { _gridCursorCtrl.SetAtkTargetIndex( 0 ); }
+            _gridCursorCtrl.SetAtkTargetIndex( 0 );
         }
 
         public bool OperateGridCursorController( Direction direction )
@@ -242,6 +244,13 @@ namespace Frontier.Stage
             return _gridCursorCtrl.GridState;
         }
 
+        public CharacterKey GetCharacterKeyOnGridCursor()
+        {
+            var tileData = _stageDataProvider.CurrentData.GetTile( _gridCursorCtrl.Index ).DynamicData();
+            if( !tileData.CharaKey.IsValid() ) { return new CharacterKey( CHARACTER_TAG.NONE, -1 ); }
+            return ( tileData.CharaKey );
+        }
+
         /// <summary>
         /// グリッドカーソルがバインドしているキャラクターを取得します
         /// </summary>
@@ -250,6 +259,7 @@ namespace Frontier.Stage
         {
             return _gridCursorCtrl.BindCharacter;
         }
+
 
         public TileStaticData GetTileStaticData( int index )
         {

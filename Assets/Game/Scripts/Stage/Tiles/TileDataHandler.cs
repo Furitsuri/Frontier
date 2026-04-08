@@ -239,7 +239,7 @@ namespace Frontier.Stage
             // 指定のビット値をフラグに持つタイルのインデックス値をリストに登録
             foreach( var tileDData in attackableTileMap )
             {
-                if( Methods.CheckBitFlag( tileDData.Value.Flag, bitFlag ) )
+                if( Methods.HasAllFlags( tileDData.Value.Flag, bitFlag ) )
                 {
                     _attackableTileIndices.Add( tileDData.Key );
                 }
@@ -388,7 +388,7 @@ namespace Frontier.Stage
             // 指定のタイル情報を取得
             var tileDData = tileDDatas[ tileIdx ];
             // 移動不可のグリッドに辿り着いた場合は終了
-            if( Methods.CheckBitFlag( tileDData.Flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
+            if( Methods.HasAnyFlag( tileDData.Flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
             // 既に計算済みのグリッドであれば終了
             if( mvRng <= tileDData.EstimatedMoveRange ) { return; }
             // 自身における敵対勢力キャラクターが存在すれば終了
@@ -423,7 +423,7 @@ namespace Frontier.Stage
             // 範囲外のグリッドは考慮しない
             if( !tgtTileIdx.IsInHalfOpenRange( 0, tileDDatas.Length ) ) { return false; }
             // 移動不可のグリッドには攻撃できない
-            if( Methods.CheckBitFlag( tileDDatas[tgtTileIdx].Flag, TileBitFlag.CANNOT_MOVE ) ) { return false; }
+            if( Methods.HasAnyFlag( tileDDatas[tgtTileIdx].Flag, TileBitFlag.CANNOT_MOVE ) ) { return false; }
             // 高低差が攻撃範囲を超過している場合は攻撃できない
             var dprtTileData = _stageDataProvider.CurrentData.GetTileStaticData( dprtIdx );
             var targetTileData = _stageDataProvider.CurrentData.GetTileStaticData( tgtTileIdx );

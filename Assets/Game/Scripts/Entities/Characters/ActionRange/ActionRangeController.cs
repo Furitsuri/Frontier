@@ -176,7 +176,7 @@ namespace Frontier.Entities
         {
             _actionableRangeRdr.DrawMoveableRange( tileData => new (MeshType, bool)[]
             {
-                ( MeshType.REACHABLE_ATTACK,        Methods.CheckBitFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
+                ( MeshType.REACHABLE_ATTACK,        Methods.HasAnyFlag(tileData.Flag, TileBitFlag.REACHABLE_ATTACK) ),
                 ( MeshType.MOVE,                    0 <= tileData.EstimatedMoveRange ),
             } );
         }
@@ -186,9 +186,9 @@ namespace Frontier.Entities
             // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )
             _actionableRangeRdr.DrawAttackableRange( tileData => new (MeshType, bool)[]
             {
-                ( MeshType.TARGETABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.TARGETABLE) ),
-                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) && tileData.EstimatedMoveRange < 0 ),
-                ( MeshType.ATTACKABLE,              Methods.CheckBitFlag(tileData.Flag, TileBitFlag.ATTACKABLE) && tileData.EstimatedMoveRange < 0 ),
+                ( MeshType.TARGETABLE,              Methods.HasAnyFlag(tileData.Flag, TileBitFlag.TARGETABLE) ),
+                ( MeshType.ATTACKABLE_TARGET_EXIST, Methods.HasAnyFlag(tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST) && tileData.EstimatedMoveRange < 0 ),
+                ( MeshType.ATTACKABLE,              Methods.HasAnyFlag(tileData.Flag, TileBitFlag.ATTACKABLE) && tileData.EstimatedMoveRange < 0 ),
             } );
         }
 

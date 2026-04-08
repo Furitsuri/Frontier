@@ -131,7 +131,7 @@ static public class Methods
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
     /// <returns>設定されているか否か</returns>
-    static public bool CheckBitFlag<T>( in int flags, T value ) where T : Enum
+    static public bool HasAnyFlag<T>( in int flags, T value ) where T : Enum
     {
         return 0 != ( flags & ToBit( value ) );
     }
@@ -143,11 +143,18 @@ static public class Methods
     /// <param name="flags">対象とするフラグ</param>
     /// <param name="value">指定するビット値</param>
     /// <returns>設定されているか否か</returns>
-    static public bool CheckBitFlag<T>( in T flags, T value ) where T : Enum
+    static public bool HasAnyFlag<T>( in T flags, T value ) where T : Enum
     {
-        int flagsValue = Convert.ToInt32( flags );
-        int valueInt = Convert.ToInt32( value );
+        int flagsValue  = Convert.ToInt32( flags );
+        int valueInt    = Convert.ToInt32( value );
         return 0 != ( flagsValue & valueInt );
+    }
+
+    static public bool HasAllFlags<T>( T flags, T value ) where T : Enum
+    {
+        int flagsValue  = Convert.ToInt32( flags );
+        int valueInt    = Convert.ToInt32( value );
+        return ( flagsValue & valueInt ) == valueInt;
     }
 
     /// <summary>

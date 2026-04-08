@@ -86,6 +86,11 @@ namespace Frontier.Battle
         {
             bool isActiveRightParameterView = ( null != _targetCharacter );
             _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParameterView );
+            if( isActiveRightParameterView )
+            {
+                var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
+                _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetCharacter, layerMaskIndex );
+            }
 
             if( base.Update() )
             {
@@ -137,7 +142,9 @@ namespace Frontier.Battle
             _stageCtrl.ClearGridCursorBind();                       // アタッカーキャラクターの設定を解除
 
             //死亡判定を通知
-            Character diedCharacter = null;// _attackSequence.GetDiedCharacter();
+            Character diedCharacter = null;
+            if( _plOwner.GetStatusRef.IsDead() )                                        { diedCharacter = _plOwner; }
+            if( _targetCharacter != null && _targetCharacter.GetStatusRef.IsDead() )    { diedCharacter = _targetCharacter; }
             if( diedCharacter != null )
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
@@ -157,8 +164,8 @@ namespace Frontier.Battle
                 _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             }
 
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetActiveGridCursor( true );   // 選択グリッドを表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();   // タイルメッシュの描画をすべてクリア
+            _stageCtrl.SetActiveGridCursor( true );         // 選択グリッドを表示
 
             return base.ExitState();
         }
@@ -223,8 +230,8 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool CanAcceptSub1() { return CanAcceptConfirm(); }
-        protected override bool CanAcceptSub2() { return CanAcceptConfirm(); }
+        protected override bool CanAcceptSub1() { return 1 < _stageCtrl.TileDataHdlr().AttackableTileIndices.Count; }
+        protected override bool CanAcceptSub2() { return CanAcceptSub1(); }
 
         protected override bool AcceptDirection( InputContext context )
         {
@@ -284,6 +291,9 @@ namespace Frontier.Battle
             // ターゲット切り替え
             if( _stageCtrl.OperateTargetSelect( Direction.LEFT ) )
             {
+                CharacterKey key = _stageCtrl.GetCharacterKeyOnGridCursor();
+                _targetCharacter =  _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+
                 return true;
             }
 
@@ -297,6 +307,9 @@ namespace Frontier.Battle
             // ターゲット切り替え
             if( _stageCtrl.OperateTargetSelect( Direction.RIGHT ) )
             {
+                CharacterKey key = _stageCtrl.GetCharacterKeyOnGridCursor();
+                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+
                 return true;
             }
 
@@ -317,12 +330,30 @@ namespace Frontier.Battle
             _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, _targetingValue );
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, TileBitFlag.TARGETABLE ) )
+            var bitFalg = TileBitFlag.ATTACKABLE_TARGET_EXIST | TileBitFlag.TARGETABLE;
+            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, bitFalg ) )
             {
-                _stageCtrl.MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
+                _targetCharacter = GetTargetCharacterCallbacks[( int )_targetingMode]( _plOwner, CHARACTER_TAG.ENEMY );
+                if( null == _targetCharacter )
+                {
+                    _stageCtrl.SetActiveGridCursor( false );
+                }
+                else
+                {
+                    _stageCtrl.SetActiveGridCursor( true );
+                    _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
+                }
 
-                // _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );          // アタッカーキャラクターの設定
-                // _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );          // アタッカーキャラクターの設定
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
+            }
+            else
+            {
+                _targetCharacter = null;
+
+                // 攻撃可能なグリッドがない場合はカーソル位置(カメラ位置)をプレイヤーに合わせる
+                _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
+                _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             }
         }
     }

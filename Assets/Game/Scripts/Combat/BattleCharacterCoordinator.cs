@@ -272,12 +272,19 @@ namespace Frontier.Battle
         {
             List<Character> list = new List<Character>();
 
-            Vector3 basePos = _stgCtrl.GetTileStaticData( baseChara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
+            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
+            Direction baseDir   = baseChara.GetTransformHandler.GetDirection();
             Vector3 baseForward = baseChara.transform.forward;
-            baseForward.y = 0f;
+            baseForward.y       = 0f;
 
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
+                if( baseDir == _stgCtrl.TileDataHdlr().GetDirectionBetweenTiles( baseChara.BattleParams.TmpParam.CurrentTileIndex, c.BattleParams.TmpParam.CurrentTileIndex ) )
+                {
+                    list.Add( c );
+                }
+
+                /*
                 Vector3 targetPos = _stgCtrl.GetTileStaticData( c.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
 
                 var direction = targetPos - basePos;
@@ -290,6 +297,7 @@ namespace Frontier.Battle
                 {
                     list.Add( c );
                 }
+                */
             }
 
             return list;
@@ -299,7 +307,7 @@ namespace Frontier.Battle
         {
             Character retChara = null;
 
-            List<Character> charaList = GetLineOfSightCharacter(baseChara, tag);
+            List<Character> charaList = GetLineOfSightCharacter( baseChara, tag );
             if( charaList.Count <= 0 ) { return null; }
 
             int totalRange = int.MaxValue;
