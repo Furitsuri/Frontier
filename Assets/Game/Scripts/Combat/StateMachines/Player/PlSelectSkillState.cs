@@ -230,7 +230,7 @@ namespace Frontier.Battle
 
                     foreach( var data in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
                     {
-                        if( Methods.CheckBitFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                        if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                         {
                             _transitTargetSelectSkillID = skillID;
                             break;

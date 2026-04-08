@@ -133,7 +133,7 @@ namespace Frontier.Entities.Ai
             Func<TileDynamicData, object[], bool> condition = ( tileDData, args ) =>
             {
                 var flag = TileBitFlag.CANNOT_MOVE;
-                return ( !Methods.CheckBitFlag( tileDData.Flag, flag ) );
+                return ( !Methods.HasAnyFlag( tileDData.Flag, flag ) );
             };
 
             _owner.BattleLogic.ActionRangeCtrl.SetupMoveableRangeDataFilterByCondition( setup, condition );

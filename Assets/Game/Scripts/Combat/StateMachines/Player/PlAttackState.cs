@@ -150,7 +150,9 @@ namespace Frontier.Battle
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
 
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
-            Character diedCharacter = null;// _attackSequence.GetDiedCharacter();
+            Character diedCharacter = null;
+            if( _plOwner.GetStatusRef.IsDead() )                                        { diedCharacter = _plOwner; }
+            if( _targetCharacter != null && _targetCharacter.GetStatusRef.IsDead() )    { diedCharacter = _targetCharacter; }
             if( diedCharacter != null )
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
@@ -170,8 +172,8 @@ namespace Frontier.Battle
                 _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             }
 
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();       // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetActiveGridCursor( true );   // 選択グリッドを表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();   // タイルメッシュの描画をすべてクリア
+            _stageCtrl.SetActiveGridCursor( true );         // 選択グリッドを表示
 
             return base.ExitState();
         }
@@ -299,8 +301,8 @@ namespace Frontier.Battle
 
                 _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
                 _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
-                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                           // タイルメッシュの描画をすべてクリア
-                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                           // 現在の入力コードを登録解除
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                 // タイルメッシュの描画をすべてクリア
+                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
 
                 // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
                 if( _plOwner.BattleLogic.RegistSelfBuffSequences() )

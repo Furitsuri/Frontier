@@ -69,7 +69,7 @@ namespace Frontier.Battle
         {
             if( null == tileData ) { return false; }
 
-            if( !Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
+            if( !Methods.HasAnyFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
 
             // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
             (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _stageCtrl.GetCurrentGridIndex() );
@@ -275,7 +275,7 @@ namespace Frontier.Battle
                 return true;
             }
             // 攻撃可能なキャラクターが存在している場合は攻撃へ遷移
-            else if( null != tileData && Methods.CheckBitFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+            else if( null != tileData && Methods.HasAnyFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 TransitAttackOnMoveState();
 

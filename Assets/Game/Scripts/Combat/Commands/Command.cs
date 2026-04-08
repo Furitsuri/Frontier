@@ -38,7 +38,7 @@ namespace Frontier.Combat
             bool isExecutable = false;
             foreach( var data in character.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
             {
-                if( Methods.CheckBitFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {
                     isExecutable = true;
                     break;

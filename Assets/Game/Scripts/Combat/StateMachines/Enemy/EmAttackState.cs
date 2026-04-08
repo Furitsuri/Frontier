@@ -186,12 +186,12 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ConsumeActionGauge();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            _stageCtrl.SetActiveGridCursor( false );                      // 選択グリッドを一時非表示
-            _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );                   // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetActiveActionResultExpect( false );                         // ダメージ予測表示UIを非表示
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                           // タイルメッシュの描画をすべてクリア
+            _stageCtrl.SetActiveGridCursor( false );                            // 選択グリッドを一時非表示
+            _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );           // アタックカーソルUI非表示
+            _uiSystem.BattleUi.SetActiveActionResultExpect( false );            // ダメージ予測表示UIを非表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                       // タイルメッシュの描画をすべてクリア
 
-            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );           // 現在の入力コードを登録解除
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除
 
             _sequenceFcd.RegistAttack( _attackCharacter, _targetCharacter );    // 攻撃シーケンス処理に移行
 
