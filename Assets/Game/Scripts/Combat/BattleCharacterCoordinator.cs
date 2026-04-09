@@ -236,6 +236,17 @@ namespace Frontier.Battle
             }
 
             return isAnnihilated;
+        }        
+
+        /// <summary>
+        /// 現在選択しているグリッド上のキャラクターを取得します
+        /// </summary>
+        /// <returns>選択しているグリッド上のキャラクター</returns>
+        public Character GetSelectCharacter()
+        {
+            TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetTileDatas( _stgCtrl.GetCurrentGridIndex() ).Item2;
+
+            return GetCharacter( tileData.CharaKey );
         }
 
         /// <summary>
@@ -252,15 +263,34 @@ namespace Frontier.Battle
             else { return null; }
         }
 
-        /// <summary>
-        /// 現在選択しているグリッド上のキャラクターを取得します
-        /// </summary>
-        /// <returns>選択しているグリッド上のキャラクター</returns>
-        public Character GetSelectCharacter()
+        public Player GetPlayer( in CharacterKey key )
         {
-            TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetTileDatas( _stgCtrl.GetCurrentGridIndex() ).Item2;
+            Character chara = GetCharacter( key );
+            if( chara != null && chara.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
+            {
+                return ( Player ) chara;
+            }
+            else { return null; }
+        }
 
-            return GetCharacter( tileData.CharaKey );
+        public Enemy GetEnemy( in CharacterKey key )
+        {
+            Character chara = GetCharacter( key );
+            if( chara != null && chara.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
+            {
+                return ( Enemy ) chara;
+            }
+            else { return null; }
+        }
+
+        public Enemy GetOther( in CharacterKey key )
+        {
+            Character chara = GetCharacter( key );
+            if( chara != null && chara.GetStatusRef.characterTag == CHARACTER_TAG.OTHER )
+            {
+                return ( Other ) chara;
+            }
+            else { return null; }
         }
 
         /// <summary>

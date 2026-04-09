@@ -168,7 +168,7 @@ public class MovePathHandler
     public bool CanStandOnTile( TileDynamicData tileDData )
     {
         // 有効 かつ 自身以外のCharacterが存在しない
-        return ( null != tileDData ) && ( tileDData.CharaKey == _owner.CharaKey() || !tileDData.CharaKey.IsValid() );
+        return ( null != tileDData ) && ( tileDData.CharaKey == _owner.GetCharacterKey() || !tileDData.CharaKey.IsValid() );
     }
 
     public TileStaticData GetFocusedTileStaticData()

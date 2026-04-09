@@ -5,6 +5,7 @@ using Frontier.UI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 using static Constants;
 using static InputCode;
 
@@ -31,24 +32,36 @@ namespace Frontier.Battle
         private Character _targetCharacter              = null;
         private List<CharacterKey> _targetingCharaKeys  = new();
         private Action<Direction>[] _changeDirectionCallbacks;
+        private Func<Character, CHARACTER_TAG, Character>[] GetTargetCharacterCallbacks;
         private readonly TileBitFlag[] CollectTileBitFlags = new TileBitFlag[( int )TargetingMode.NUM]
         {
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.Center
             TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.Directional
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.All
         };
-        private Func<Character, CHARACTER_TAG, Character>[] GetTargetCharacterCallbacks;
 
-        public override void Init( object context )
+        [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl )
         {
-            base.Init( context );
+            _btlRtnCtrl = btlRtnCtrl;
 
-            GetTargetCharacterCallbacks = new Func<Character, CHARACTER_TAG, Character>[( int )TargetingMode.NUM]
+            _changeDirectionCallbacks = new Action<Direction>[( int ) TargetingMode.NUM]
+            {
+                AcceptDirectionWithTargetingModeCenter,        // TargetingMode.Center
+                AcceptDirectionWithTargetingModeDirectional,   // TargetingMode.Directional
+                null,                                          // TargetingMode.Allは方向の概念がないため、コールバックは不要
+            };
+
+            GetTargetCharacterCallbacks = new Func<Character, CHARACTER_TAG, Character>[( int ) TargetingMode.NUM]
             {
                 ( character, tag ) => character,                        // TargetingMode.Center
                 _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.Directional
                 _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.All
             };
+        }
+
+        public override void Init( object context )
+        {
+            base.Init( context );
 
             _targetCharacter = null;
 
@@ -72,12 +85,7 @@ namespace Frontier.Battle
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
             }
 
-            _changeDirectionCallbacks = new Action<Direction>[( int )TargetingMode.NUM]
-            {
-                AcceptDirectionWithTargetingModeCenter,        // TargetingMode.Center
-                AcceptDirectionWithTargetingModeDirectional,   // TargetingMode.Directional
-                null,                                          // TargetingMode.Allは方向の概念がないため、コールバックは不要
-            };
+            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( _plOwner.GetTransformHandler.GetDirection() );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
@@ -100,34 +108,10 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID:
-                    /*
-                    // グリッド上のキャラクターを取得
-                    var prevTargetCharacter = _targetCharacter;
-                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-
-                    // 選択キャラクターが更新された場合はパラメータUIへの描画対象と、キャラクターの向きを更新
-                    if( prevTargetCharacter != _targetCharacter )
-                    {
-                        var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
-                        _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetCharacter, layerMaskIndex );
-
-                        if( null != prevTargetCharacter )
-                        {
-                            prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
-                        }
-
-                        var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
-                        _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-                        var attackerTileData = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
-                        _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
-
-                        _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, -1 );
-                        _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
-                    }
-
-                    // 予測ダメージを適応する
-                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );
-                    */
+                    break;
+                case PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE:
+                    break;
+                    case PlSkillActionPhase.PL_SKILL_ACTION_END:
                     break;
                 default:
                     break;
@@ -138,34 +122,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );  // グリッドカーソルの位置をプレイヤーの位置に合わせる
-            _stageCtrl.ClearGridCursorBind();                       // アタッカーキャラクターの設定を解除
-
-            //死亡判定を通知
-            Character diedCharacter = null;
-            if( _plOwner.GetStatusRef.IsDead() )                                        { diedCharacter = _plOwner; }
-            if( _targetCharacter != null && _targetCharacter.GetStatusRef.IsDead() )    { diedCharacter = _targetCharacter; }
-            if( diedCharacter != null )
-            {
-                var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
-                NorifyCharacterDied( key );
-                diedCharacter.Dispose();    // 破棄
-            }
-
-            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
-
-            // 予測ダメージと使用スキルコスト見積もりをリセット
-            if( null != _plOwner )
-            {
-                _plOwner.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            }
-            if( null != _targetCharacter )
-            {
-                _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            }
-
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();   // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetActiveGridCursor( true );         // 選択グリッドを表示
+            OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
             return base.ExitState();
         }
@@ -187,7 +144,9 @@ namespace Frontier.Battle
         protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            LazyInject.GetOrCreate( ref _plOwner, () => _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player );
+            var selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            _plOwner            = _btlRtnCtrl.BtlCharaCdr.GetPlayer( selectCharacter.GetCharacterKey() );
+            NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 
         protected override void OnActivated()
@@ -288,14 +247,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub1( context ) ) { return false; }
 
-            // ターゲット切り替え
-            if( _stageCtrl.OperateTargetSelect( Direction.LEFT ) )
-            {
-                CharacterKey key = _stageCtrl.GetCharacterKeyOnGridCursor();
-                _targetCharacter =  _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
-
-                return true;
-            }
+            AcceptSub( Direction.LEFT );
 
             return true;
         }
@@ -304,14 +256,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub2( context ) ) { return false; }
 
-            // ターゲット切り替え
-            if( _stageCtrl.OperateTargetSelect( Direction.RIGHT ) )
-            {
-                CharacterKey key = _stageCtrl.GetCharacterKeyOnGridCursor();
-                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
-
-                return true;
-            }
+            AcceptSub( Direction.RIGHT );
 
             return true;
         }
@@ -342,10 +287,11 @@ namespace Frontier.Battle
                 {
                     _stageCtrl.SetActiveGridCursor( true );
                     _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
+                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
                 }
 
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );          // アタッカーキャラクターの設定
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
+                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );                // アタッカーキャラクターの設定
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );       // アクション対象指定関連のUIを表示
             }
             else
             {
@@ -354,6 +300,16 @@ namespace Frontier.Battle
                 // 攻撃可能なグリッドがない場合はカーソル位置(カメラ位置)をプレイヤーに合わせる
                 _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
                 _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
+            }
+        }
+
+        private void AcceptSub( Direction dir )
+        {
+            // ターゲット切り替え
+            if( _stageCtrl.OperateTargetSelect( dir ) )
+            {
+                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+                _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
             }
         }
     }

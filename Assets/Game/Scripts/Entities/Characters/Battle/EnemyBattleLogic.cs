@@ -14,7 +14,7 @@ namespace Frontier.Entities
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
-            return _baseAi.DetermineDestinationAndTarget( _readOnlyOwner.Value.BattleParams, in _readOnlyOwner.Value.GetStatusRef, in _tileCostTable, _readOnlyOwner.Value.CharaKey() );
+            return _baseAi.DetermineDestinationAndTarget( _readOnlyOwner.Value.BattleParams, in _readOnlyOwner.Value.GetStatusRef, in _tileCostTable, _readOnlyOwner.Value.GetCharacterKey() );
         }
 
         public override void Init()

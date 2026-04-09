@@ -107,7 +107,7 @@ namespace Frontier.Stage
                 for( int i = 0; i < attackableTileIndices.Count; ++i )
                 {
                     var tileData = _stageDataProvider.CurrentData.GetTile( attackableTileIndices[i] ).DynamicData();
-                    if( designatedTarget.CharaKey() == tileData.CharaKey )
+                    if( designatedTarget.GetCharacterKey() == tileData.CharaKey )
                     {
                         _gridCursorCtrl.SetAtkTargetIndex( i );
 
@@ -244,13 +244,6 @@ namespace Frontier.Stage
             return _gridCursorCtrl.GridState;
         }
 
-        public CharacterKey GetCharacterKeyOnGridCursor()
-        {
-            var tileData = _stageDataProvider.CurrentData.GetTile( _gridCursorCtrl.Index ).DynamicData();
-            if( !tileData.CharaKey.IsValid() ) { return new CharacterKey( CHARACTER_TAG.NONE, -1 ); }
-            return ( tileData.CharaKey );
-        }
-
         /// <summary>
         /// グリッドカーソルがバインドしているキャラクターを取得します
         /// </summary>
@@ -259,7 +252,6 @@ namespace Frontier.Stage
         {
             return _gridCursorCtrl.BindCharacter;
         }
-
 
         public TileStaticData GetTileStaticData( int index )
         {
