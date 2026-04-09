@@ -85,7 +85,7 @@ namespace Frontier.StateMachine
 
             // タイル上に同じキャラクターが配置されている場合は入力不可
             Character characterOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if( null != characterOnSelectTile && characterOnSelectTile.CharaKey() == _deploymentCandidates[_focusCharacterIndex].Character.CharaKey() )
+            if( null != characterOnSelectTile && characterOnSelectTile.GetCharacterKey() == _deploymentCandidates[_focusCharacterIndex].Character.GetCharacterKey() )
             {
                 return false;
             }
@@ -104,7 +104,7 @@ namespace Frontier.StateMachine
         {
             // タイル上にキャラクターが配置されていなければ入力不可
             Character characterOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if( null == characterOnSelectTile || characterOnSelectTile.CharaKey().CharacterTag != CHARACTER_TAG.PLAYER )
+            if( null == characterOnSelectTile || characterOnSelectTile.GetCharacterKey().CharacterTag != CHARACTER_TAG.PLAYER )
             {
                 return false;
             }
@@ -203,7 +203,7 @@ namespace Frontier.StateMachine
             _presenter.RefreshGridCursorSelectCharacter();
 
             // リストに挿入されていない場合は挿入
-            if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.CharaKey() ) )
+            if( !_btlRtnCtrl.BtlCharaCdr.IsContains( focusCharacter.GetCharacterKey() ) )
             {
                 _btlRtnCtrl.BtlCharaCdr.AddPlayerToList( focusCharacter );
             }
@@ -331,12 +331,12 @@ namespace Frontier.StateMachine
         {
             // 既にキャラクターが配置されているタイルに配置する場合は、そのキャラクターを配置済みリストから削除
             var charaOnSelectTile = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if( null != charaOnSelectTile && charaOnSelectTile.CharaKey().CharacterTag == CHARACTER_TAG.PLAYER )
+            if( null != charaOnSelectTile && charaOnSelectTile.GetCharacterKey().CharacterTag == CHARACTER_TAG.PLAYER )
             {
                 // 配置済みフラグをOFFに
-                _deploymentCandidates.Find( c => c.Character.CharaKey() == charaOnSelectTile.CharaKey() ).IsSelected = false;
+                _deploymentCandidates.Find( c => c.Character.GetCharacterKey() == charaOnSelectTile.GetCharacterKey() ).IsSelected = false;
                 // キャラクター管理リストから削除
-                _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.CharaKey() );
+                _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( charaOnSelectTile.GetCharacterKey() );
                 // 見えない位置に退避
                 charaOnSelectTile.BattleParams.TmpParam.CurrentTileIndex = -1;
                 var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * charaOnSelectTile.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );

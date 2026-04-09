@@ -66,7 +66,7 @@ namespace Frontier.Entities
             var jmp         = charaParam.jumpForce;
             var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref _actionableTileMap );
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Frontier.Entities
 
             var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeShape.FROM_MYSELF, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeShape.FROM_MYSELF, _owner.GetCharacterKey(), ref _actionableTileMap );
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Frontier.Entities
             var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
             _actionableTileMap.Init();
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.CharaKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileMap );
         }
 
         public void ClearActionableRangeData()

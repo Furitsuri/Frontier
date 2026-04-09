@@ -169,7 +169,8 @@ namespace Frontier.Battle
         protected override void AdaptSelectPlayer()
         {
             // グリッドカーソルで選択中のプレイヤーを取得
-            _plOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            var selectCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            _plOwner            = _btlRtnCtrl.BtlCharaCdr.GetPlayer( selectCharacter.GetCharacterKey() );
             NullCheck.AssertNotNull( _plOwner, nameof( _plOwner ) );
         }
 

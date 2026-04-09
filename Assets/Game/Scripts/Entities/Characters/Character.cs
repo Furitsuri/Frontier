@@ -182,7 +182,7 @@ namespace Frontier.Entities
             return _status.characterTag;
         }
 
-        public CharacterKey CharaKey()
+        public CharacterKey GetCharacterKey()
         {
             return new CharacterKey( _status.characterTag, _status.characterIndex );
         }
