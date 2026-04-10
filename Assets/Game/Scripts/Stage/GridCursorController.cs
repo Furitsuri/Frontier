@@ -21,20 +21,22 @@ namespace Frontier.Stage
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private BattleCameraController _btlCamCtrl     = null;
 
-        private int _tileIndex      = 0;
-        private int _atkTargetIndex = 0;
-        private float _totalTime    = 0;
-        private Vector3 _beginPos   = Vector3.zero;
-        private Vector3 _endPos     = Vector3.zero;
-        private Vector3 _currentPos = Vector3.zero;
+        private int _tileIndex              = 0;
+        private int _atkTargetIndex         = 0;
+        private float _totalTime            = 0;
+        private GridCursorState _gridState  = GridCursorState.NONE;
+        private Vector3 _beginPos           = Vector3.zero;
+        private Vector3 _endPos             = Vector3.zero;
+        private Vector3 _currentPos         = Vector3.zero;
+        private Character _bindCharacter    = null;
         private ReadOnlyCollection<int> _refAttackableTileIndices;
         private LineRenderer _lineRenderer;
         private Func<int, int>[] _directionMoveCallbacks;
         private Func<int, int>[] _directionAttackTargetCallbacks;
 
-        public int Index => _tileIndex;
-        public GridCursorState GridState { get; set; } = GridCursorState.NONE;
-        public Character BindCharacter { get; set; } = null;
+        public int CurrentTileIndex => _tileIndex;
+        public GridCursorState GridState => _gridState;
+        public Character BindCharacter => _bindCharacter;
 
         private void Start()
         {
@@ -44,12 +46,42 @@ namespace Frontier.Stage
         public void Init( int initIndex )
         {
             _atkTargetIndex = 0;
-            GridState       = GridCursorState.NONE;
-            BindCharacter   = null;
+            _bindCharacter  = null;
+            _gridState      = GridCursorState.NONE;
 
             SetTileIndex( initIndex );
 
             InitCallbacks();
+        }
+
+        public void AssignAttackTargetTileIndices( ReadOnlyCollection<int> attackTargetTileIndices )
+        {
+            _refAttackableTileIndices = attackTargetTileIndices;
+        }
+
+        public void Bind( GridCursorState gridState, Character bindCharacter )
+        {
+            _gridState      = gridState;
+            _bindCharacter  = bindCharacter;
+
+            if( null == _bindCharacter ) { return; }
+
+            // 攻撃ステートの場合は、キャラクターの攻撃対象となるタイルのインデックスを参照出来るように登録しておく
+            if( GridCursorState.ATTACK == _gridState )
+            {
+                _refAttackableTileIndices = _bindCharacter.BattleLogic.ActionRangeCtrl.AttackTargetTileIndicies.AsReadOnly();
+            }
+        }
+
+        public void Unbind()
+        {
+            if( _bindCharacter != null )
+            {
+                _bindCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
+            }
+
+            _gridState      = GridCursorState.NONE;
+            _bindCharacter  = null;
         }
 
         public void Move( Direction direction )
@@ -57,14 +89,6 @@ namespace Frontier.Stage
             StartLerpMove();
 
             _tileIndex = _directionMoveCallbacks[ ( int )direction ]( _tileIndex );
-        }
-
-        public void TransitAttackTarget( Direction direction )
-        {
-            StartLerpMove();
-
-            _atkTargetIndex = _directionAttackTargetCallbacks[ ( int )direction ]( _atkTargetIndex );
-            _tileIndex      = _refAttackableTileIndices[_atkTargetIndex];
         }
 
         public void SetActive( bool isActive )
@@ -77,19 +101,32 @@ namespace Frontier.Stage
             _tileIndex = index;
         }
 
+        public void TransitAttackTarget( Direction direction )
+        {
+            StartLerpMove();
+
+            _atkTargetIndex = _directionAttackTargetCallbacks[( int ) direction]( _atkTargetIndex );
+            _tileIndex = _refAttackableTileIndices[_atkTargetIndex];
+        }
+
         /// <summary>
         /// 攻撃対象インデックス値を設定します
         /// </summary>
         /// <param name="index">攻撃対象インデックス値</param>
-        public void SetAtkTargetIndex( int index )
+        public bool TrySetAttackTargetIndex( int targetTileIndex )
         {
-            _atkTargetIndex = index;
-            _tileIndex      = _refAttackableTileIndices[_atkTargetIndex];
-        }
+            for( int i = 0; i < _refAttackableTileIndices.Count; i++ )
+            {
+                if( targetTileIndex == _refAttackableTileIndices[i] )
+                {
+                    _atkTargetIndex = i;
+                    _tileIndex = _refAttackableTileIndices[_atkTargetIndex];
 
-        public void AssignAttackableTileIndices( ReadOnlyCollection<int> attackableTileIndices )
-        {
-            _refAttackableTileIndices = attackableTileIndices;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -110,12 +147,12 @@ namespace Frontier.Stage
 
         public int X()
         {
-            return Index % _stageDataProvider.CurrentData.TileColNum;
+            return _tileIndex % _stageDataProvider.CurrentData.TileColNum;
         }
 
         public int Y()
         {
-            return Index / _stageDataProvider.CurrentData.TileColNum;
+            return _tileIndex / _stageDataProvider.CurrentData.TileColNum;
         }
 
         public Vector3 GetPosition()

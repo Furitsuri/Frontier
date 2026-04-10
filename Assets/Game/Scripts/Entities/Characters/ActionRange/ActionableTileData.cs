@@ -8,7 +8,7 @@ namespace Frontier.Entities
     /// <summary>
     /// アクション(移動や攻撃など)可能なタイルの情報
     /// </summary>
-    public class ActionableTileMap
+    public class ActionableTileData
     {
         private Dictionary<int, TileDynamicData> _moveableTileMap      = new Dictionary<int, TileDynamicData>();
         private Dictionary<int, TileDynamicData> _attackableTileMap    = new Dictionary<int, TileDynamicData>();

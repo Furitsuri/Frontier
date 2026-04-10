@@ -36,7 +36,7 @@ namespace Frontier.Combat
             int dprtTileIndex = character.BattleParams.TmpParam.CurrentTileIndex;
             character.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
             bool isExecutable = false;
-            foreach( var data in character.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
+            foreach( var data in character.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
             {
                 if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                 {

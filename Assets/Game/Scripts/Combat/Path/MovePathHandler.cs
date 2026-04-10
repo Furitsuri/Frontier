@@ -96,7 +96,7 @@ public class MovePathHandler
     /// <param name="departingTileIndex">出発地点のタイルインデックス</param>
     /// <param name="destinationlTileIndex">目標地点のタイルのインデックス</param>
     /// <returns>ルート取得の可否</returns>
-    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace, ActionableTileMap actionableTileMap )
+    public bool FindActuallyMovePath( int departingTileIndex, int destinationlTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace, ActionableTileData actionableTileMap )
     {
         if ( actionableTileMap.MoveableTileMap.Count <= 0 )
         {
@@ -165,10 +165,10 @@ public class MovePathHandler
     /// <param name="tileIdx">指定のタイル位置のインデックス</param>
     /// <param name="moveableTileMap">移動可否を示すタイルマップ</param>
     /// <returns>留まることの可否</returns>
-    public bool CanStandOnTile( TileDynamicData tileDData )
+    public bool CanStandOnTile( TileDynamicData tileDynamicData )
     {
         // 有効 かつ 自身以外のCharacterが存在しない
-        return ( null != tileDData ) && ( tileDData.CharaKey == _owner.GetCharacterKey() || !tileDData.CharaKey.IsValid() );
+        return ( null != tileDynamicData ) && ( tileDynamicData.CharaKey == _owner.GetCharacterKey() || !tileDynamicData.CharaKey.IsValid() );
     }
 
     public TileStaticData GetFocusedTileStaticData()

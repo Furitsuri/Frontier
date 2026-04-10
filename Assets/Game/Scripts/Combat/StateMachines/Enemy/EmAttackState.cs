@@ -45,11 +45,13 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _attackCharacter.BattleParams.TmpParam.CurrentTileIndex );
             _attackCharacter.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
-            // 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _attackCharacter.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+			// アタッカーキャラクターの設定
+			_stageCtrl.BindGridCursor( GridCursorState.ATTACK, _attackCharacter );
+
+			// 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
+			if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _attackCharacter.BattleLogic.ActionRangeCtrl, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 _stageCtrl.MoveGridCursorToAttackableTile( _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() );
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _attackCharacter );    // アタッカーキャラクターの設定
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
             }
 
@@ -124,7 +126,7 @@ namespace Frontier.Battle
             }
 
             // アタッカーキャラクターの設定を解除
-            _stageCtrl.ClearGridCursorBind();
+            _stageCtrl.UnbindGridCursor();
             // 予測ダメージをリセット
             _attackCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );

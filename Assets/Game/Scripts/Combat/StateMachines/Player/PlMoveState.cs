@@ -90,7 +90,7 @@ namespace Frontier.Battle
             else { _phase = PlMovePhase.PL_MOVE; }
 
             _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
-            _stageCtrl.BindToGridCursor( GridCursorState.MOVE, _plOwner );
+            _stageCtrl.BindGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動可能情報を登録及び表示
             int atkRange            = !_plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ? _plOwner.GetStatusRef.attackRange : 0;
@@ -142,7 +142,7 @@ namespace Frontier.Battle
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )
             {
-                _stageCtrl.ClearGridCursorBind();           // 操作対象データをリセット
+                _stageCtrl.UnbindGridCursor();           // 操作対象データをリセット
             }
 
             return base.ExitState();
@@ -195,9 +195,9 @@ namespace Frontier.Battle
 
             // 移動不可の地点であっても、敵対勢力が存在しており自身の攻撃レンジ以内の場合にはtrueを返す
             int currentIndex = _stageCtrl.GetCurrentGridIndex();
-            if( CanAttackOnMove( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.GetAttackableTile( currentIndex ) ) ) { return true; }
+            if( CanAttackOnMove( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.GetAttackableTile( currentIndex ) ) ) { return true; }
             // それ以外は留まることが可能かを確認
-            else { return _plOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr.CanStandOnTile( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.GetMoveableTile( currentIndex ) ); }
+            else { return _plOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr.CanStandOnTile( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.GetMoveableTile( currentIndex ) ); }
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace Frontier.Battle
 			if( !base.AcceptConfirm( context ) ) { return false; }
 
 			var currentIndex            = _stageCtrl.GetCurrentGridIndex();
-            TileDynamicData tileData    = _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.GetAttackableTile( currentIndex );
+            TileDynamicData tileData    = _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.GetAttackableTile( currentIndex );
 
             // 出発地点と同一グリッドであれば戻る
             if( currentIndex == _departTileIndex )

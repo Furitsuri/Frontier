@@ -33,7 +33,7 @@ namespace Frontier.Battle
 
         protected void OnExitStateAfterCombat( Character ownerChara, Character targetChara )
         {
-            _stageCtrl.ClearGridCursorBind();                       // アタッカーキャラクターの設定を解除
+            _stageCtrl.UnbindGridCursor();                       // アタッカーキャラクターの設定を解除
             _stageCtrl.ApplyCurrentGrid2CharacterTile( ownerChara );
 
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)

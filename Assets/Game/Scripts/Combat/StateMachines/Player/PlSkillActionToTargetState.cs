@@ -32,7 +32,7 @@ namespace Frontier.Battle
         private Character _targetCharacter              = null;
         private List<CharacterKey> _targetingCharaKeys  = new();
         private Action<Direction>[] _changeDirectionCallbacks;
-        private Func<Character, CHARACTER_TAG, Character>[] GetTargetCharacterCallbacks;
+        private Func<Character, List<CharacterKey>, Character>[] GetTargetCharacterCallbacks;
         private readonly TileBitFlag[] CollectTileBitFlags = new TileBitFlag[( int )TargetingMode.NUM]
         {
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.Center
@@ -51,9 +51,9 @@ namespace Frontier.Battle
                 null,                                          // TargetingMode.Allは方向の概念がないため、コールバックは不要
             };
 
-            GetTargetCharacterCallbacks = new Func<Character, CHARACTER_TAG, Character>[( int ) TargetingMode.NUM]
+            GetTargetCharacterCallbacks = new Func<Character, List<CharacterKey>, Character>[( int ) TargetingMode.NUM]
             {
-                ( character, tag ) => character,                        // TargetingMode.Center
+                _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.Center
                 _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.Directional
                 _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.All
             };
@@ -76,12 +76,12 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
             _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
 
-            _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
+            _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, CollectTileBitFlags[( int )_targetingMode] ) )
+            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, CollectTileBitFlags[( int )_targetingMode] ) )
             {
-                _stageCtrl.MoveGridCursorToAttackableTile( GetTargetCharacterCallbacks[( int )_targetingMode]( _plOwner, CHARACTER_TAG.ENEMY ) );
+                _stageCtrl.MoveGridCursorToAttackableTile( GetTargetCharacterCallbacks[( int )_targetingMode]( _plOwner, _targetingCharaKeys ) );
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
             }
 
@@ -189,7 +189,7 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool CanAcceptSub1() { return 1 < _stageCtrl.TileDataHdlr().AttackableTileIndices.Count; }
+        protected override bool CanAcceptSub1() { return 1 < _plOwner.BattleLogic.ActionRangeCtrl.AttackTargetTileIndicies.Count; }
         protected override bool CanAcceptSub2() { return CanAcceptSub1(); }
 
         protected override bool AcceptDirection( InputContext context )
@@ -266,6 +266,16 @@ namespace Frontier.Battle
             _stageCtrl.OperateGridCursorController( dir );
 
             _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
+
+            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
+            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, CollectTileBitFlags[( int ) _targetingMode] ) )
+            {
+            }
+            else
+            {
+                _targetCharacter = null;
+                _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
+            }
         }
 
         private void AcceptDirectionWithTargetingModeDirectional( Direction dir )
@@ -275,23 +285,14 @@ namespace Frontier.Battle
             _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, _targetingValue );
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            var bitFalg = TileBitFlag.ATTACKABLE_TARGET_EXIST | TileBitFlag.TARGETABLE;
-            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, bitFalg ) )
+            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, CollectTileBitFlags[( int ) _targetingMode] ) )
             {
-                _targetCharacter = GetTargetCharacterCallbacks[( int )_targetingMode]( _plOwner, CHARACTER_TAG.ENEMY );
-                if( null == _targetCharacter )
-                {
-                    _stageCtrl.SetActiveGridCursor( false );
-                }
-                else
-                {
-                    _stageCtrl.SetActiveGridCursor( true );
-                    _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
-                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
-                }
+                _targetCharacter = GetTargetCharacterCallbacks[( int ) _targetingMode]( _plOwner, _targetingCharaKeys );
+                Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
 
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );                // アタッカーキャラクターの設定
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );       // アクション対象指定関連のUIを表示
+                _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
+                _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );   // アクション対象指定関連のUIを表示
             }
             else
             {

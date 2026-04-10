@@ -13,60 +13,68 @@ namespace Frontier.Entities
 {
     public class ActionRangeController
     {
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private StageController _stageCtrl         = null;
-
+        private StageController _stageCtrl                  = null;
         private Character _owner                            = null;
-        private ActionableTileMap _actionableTileMap        = null;
         private MovePathHandler _movePathHandler            = null;
+        private ActionableTileData _actionableTileData      = null;
         private ActionableRangeRenderer _actionableRangeRdr = null;
+        private List<int> _attackTargetTileIndicies         = new List<int>();
 
-        private Func<int, int, Character, ActionableTileMap, List<CharacterKey>>[] RefreshTargetingRangeCallbacks;
+        private Func<int, int, Character, ActionableTileData, List<CharacterKey>>[] RefreshTargetingRangeCallbacks;
 
-        public ActionableTileMap ActionableTileMap => _actionableTileMap;
         public MovePathHandler MovePathHdlr => _movePathHandler;
+        public ActionableTileData ActionableTileData => _actionableTileData;
         public ActionableRangeRenderer ActionableRangeRdr => _actionableRangeRdr;
+        public List<int> AttackTargetTileIndicies => _attackTargetTileIndicies;
 
-        public void Init( Character owner )
+        [Inject] public ActionRangeController( HierarchyBuilderBase hierarchyBld, StageController stageCtrl )
         {
-            _owner = owner;
+            _stageCtrl      = stageCtrl;
 
-            LazyInject.GetOrCreate( ref _actionableTileMap, () => _hierarchyBld.InstantiateWithDiContainer<ActionableTileMap>( false ) );
-            LazyInject.GetOrCreate( ref _movePathHandler, () => _hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
-            LazyInject.GetOrCreate( ref _actionableRangeRdr, () => _hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
+            LazyInject.GetOrCreate( ref _actionableTileData, () => hierarchyBld.InstantiateWithDiContainer<ActionableTileData>( false ) );
+            LazyInject.GetOrCreate( ref _movePathHandler, () => hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
+            LazyInject.GetOrCreate( ref _actionableRangeRdr, () => hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
 
-            RefreshTargetingRangeCallbacks = new Func<int, int, Character, ActionableTileMap, List<CharacterKey>>[( int ) TargetingMode.NUM]
+            RefreshTargetingRangeCallbacks = new Func<int, int, Character, ActionableTileData, List<CharacterKey>>[( int ) TargetingMode.NUM]
             {
                 RefreshTargetingWithCenter,
                 RefreshTargetingWithDirectional,
                 RefreshTargetingWithAll
             };
+        }
 
-            _actionableTileMap.Init();
+        public void Init( Character owner )
+        {
+            _owner = owner;
+
+            _actionableTileData.Init();
             _movePathHandler.Init( owner );
-            _actionableRangeRdr.Init( owner, _actionableTileMap );
+            _actionableRangeRdr.Init( owner, _actionableTileData );
+            _attackTargetTileIndicies.Clear();
         }
 
         public void Dispose()
         {
-            _owner = null;
-            _actionableTileMap.Dispose();
-            _actionableTileMap = null;
-            _movePathHandler.Dispose();
-            _movePathHandler = null;
             _actionableRangeRdr.Dispose();
-            _actionableRangeRdr = null;
+            _actionableTileData.Dispose();
+            _movePathHandler.Dispose();
+
+            _owner                      = null;
+            _attackTargetTileIndicies   = null;
+            _actionableRangeRdr         = null;
+            _actionableTileData         = null;
+            _movePathHandler            = null;
         }
         public void SetupActionableRangeData( int dprtTileIdx, float dprtTileHeight )
         {
-            _actionableTileMap.Init();
+            _actionableTileData.Init();
 
             var charaParam  = _owner.GetStatusRef;
             var mvRng       = charaParam.moveRange;
             var jmp         = charaParam.jumpForce;
             var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref _actionableTileData );
         }
 
         /// <summary>
@@ -75,11 +83,11 @@ namespace Frontier.Entities
         /// <param name="dprtTileIdx"></param>
         public void SetupAttackableRangeData( int dprtTileIdx )
         {
-            _actionableTileMap.Init();
+            _actionableTileData.Init();
 
             var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeShape.FROM_MYSELF, _owner.GetCharacterKey(), ref _actionableTileMap );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, RangeShape.FROM_MYSELF, _owner.GetCharacterKey(), ref _actionableTileData );
         }
 
         /// <summary>
@@ -100,13 +108,13 @@ namespace Frontier.Entities
             // スキルの効果範囲に負の値が設定されている場合は、キャラクターの攻撃レンジをそのまま用いる
             var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
-            _actionableTileMap.Init();
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileMap );
+            _actionableTileData.Init();
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData );
         }
 
         public void ClearActionableRangeData()
         {
-            _actionableTileMap.Init();
+            _actionableTileData.Init();
         }
 
         public void ClearActionableRangeDataWithRender()
@@ -118,19 +126,19 @@ namespace Frontier.Entities
 
         public List<CharacterKey> RefreshTargetingRange( TargetingMode targetingMode, int tileIndex, int targetingValue )
         {
-            if( _actionableTileMap.IsEmpty() )
+            if( _actionableTileData.IsEmpty() )
             {
                 Debug.LogError("アクション可能範囲が設定されていない状態で対象範囲指定の処理が呼び出されています。");
                 return null;
             }
 
             // 一度全てのTARGETABLEフラグのビットを降ろす
-            foreach( var attackableMap in _actionableTileMap.AttackableTileMap )
+            foreach( var attackableMap in _actionableTileData.AttackableTileMap )
             {
                 Methods.UnsetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
             }
 
-            return RefreshTargetingRangeCallbacks[( int ) targetingMode]( tileIndex, targetingValue, _owner, _actionableTileMap );
+            return RefreshTargetingRangeCallbacks[( int ) targetingMode]( tileIndex, targetingValue, _owner, _actionableTileData );
         }
 
         /// <summary>
@@ -141,15 +149,15 @@ namespace Frontier.Entities
         /// <param name="args"></param>
         public void SetupMoveableRangeDataFilterByCondition( Func<TileDynamicData[]> setup, Func<TileDynamicData, object[], bool> condition, params object[] args )
         {
-            _actionableTileMap.Init();
+            _actionableTileData.Init();
 
-            _stageCtrl.TileDataHdlr().ExtractMoveableRangeDataFilterByCondition( ref _actionableTileMap, setup, condition, args );
+            _stageCtrl.TileDataHdlr().ExtractMoveableRangeDataFilterByCondition( ref _actionableTileData, setup, condition, args );
         }
 
         public void ToggleDisplayDangerRange( in Color color )
         {
-            // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
-            if( _actionableTileMap.IsEmpty() )
+            // ActionableTileDataが空の場合はこのタイミングでセットアップを行う
+            if( _actionableTileData.IsEmpty() )
             {
                 int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
                 var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
@@ -161,8 +169,8 @@ namespace Frontier.Entities
 
         public void SetDisplayDangerRange( bool isShow, in Color color )
         {
-            // ActionableTileMapが空の場合はこのタイミングでセットアップを行う
-            if( _actionableTileMap.IsEmpty() )
+            // ActionableTileDataが空の場合はこのタイミングでセットアップを行う
+            if( _actionableTileData.IsEmpty() )
             {
                 int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
                 var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
@@ -206,19 +214,19 @@ namespace Frontier.Entities
 
         public bool FindMovePath( int dprtTileIndex, int destTileIndex, int ownerJumpForce, in int[] ownerTileCosts )
         {
-            Debug.Assert( null != _actionableTileMap, "_actionableTileMapのセットアップが完了しているか確認してください。" );
+            Debug.Assert( null != _actionableTileData, "_actionableTileDataのセットアップが完了しているか確認してください。" );
 
-            return _movePathHandler.FindMovePath( dprtTileIndex, destTileIndex, ownerJumpForce, ownerTileCosts, _actionableTileMap.MoveableTileMap );
+            return _movePathHandler.FindMovePath( dprtTileIndex, destTileIndex, ownerJumpForce, ownerTileCosts, _actionableTileData.MoveableTileMap );
         }
 
         public bool FindActuallyMovePath( int departingTileIndex, int destinationTileIndex, int ownerJumpForce, int[] ownerTileCosts, bool isEndPathTrace )
         {
-            Debug.Assert( null != _actionableTileMap, "_actionableTileMapのセットアップが完了しているか確認してください。" );
+            Debug.Assert( null != _actionableTileData, "_actionableTileDataのセットアップが完了しているか確認してください。" );
 
-            return _movePathHandler.FindActuallyMovePath( departingTileIndex, destinationTileIndex, ownerJumpForce, ownerTileCosts, isEndPathTrace, _actionableTileMap );
+            return _movePathHandler.FindActuallyMovePath( departingTileIndex, destinationTileIndex, ownerJumpForce, ownerTileCosts, isEndPathTrace, _actionableTileData );
         }
 
-        private List<CharacterKey> RefreshTargetingWithCenter( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        private List<CharacterKey> RefreshTargetingWithCenter( int tileIndex, int TargetingValue, Character owner, ActionableTileData actionableTileMap )
         {
             List<CharacterKey> retTargetingCharaKeys = new List<CharacterKey>();
 
@@ -232,7 +240,7 @@ namespace Frontier.Entities
         /// <param name="TargetingValue"></param>
         /// <param name="owner"></param>
         /// <param name="actionableTileMap"></param>
-        private List<CharacterKey> RefreshTargetingWithDirectional( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        private List<CharacterKey> RefreshTargetingWithDirectional( int tileIndex, int TargetingValue, Character owner, ActionableTileData actionableTileMap )
         {
             List<CharacterKey> retTargetingCharaKeys = new List<CharacterKey>();
 
@@ -244,7 +252,7 @@ namespace Frontier.Entities
                 {
                     Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
 
-                    if( IsOpponentExist( attackableMap.Value, owner.GetCharacterTag() ) )
+                    if( IsExistOpponent( attackableMap.Value, owner.GetCharacterTag() ) )
                     {
                         retTargetingCharaKeys.Add( attackableMap.Value.CharaKey );
                     }
@@ -261,7 +269,7 @@ namespace Frontier.Entities
         /// <param name="TargetingValue"></param>
         /// <param name="owner"></param>
         /// <param name="actionableTileMap"></param>
-        private List<CharacterKey> RefreshTargetingWithAll( int tileIndex, int TargetingValue, Character owner, ActionableTileMap actionableTileMap )
+        private List<CharacterKey> RefreshTargetingWithAll( int tileIndex, int TargetingValue, Character owner, ActionableTileData actionableTileMap )
         {
             List<CharacterKey> retTargetingCharaKeys = new List<CharacterKey>();
 
@@ -269,7 +277,7 @@ namespace Frontier.Entities
             {
                 Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
 
-                if( IsOpponentExist( attackableMap.Value, owner.GetCharacterTag() ) )
+                if( IsExistOpponent( attackableMap.Value, owner.GetCharacterTag() ) )
                 {
                     retTargetingCharaKeys.Add( attackableMap.Value.CharaKey );
                 }
@@ -278,9 +286,9 @@ namespace Frontier.Entities
             return retTargetingCharaKeys;
         }
 
-        private bool IsOpponentExist( TileDynamicData tileDData, CHARACTER_TAG ownerTag )
+        private bool IsExistOpponent( TileDynamicData tileDynamicData, CHARACTER_TAG ownerTag )
         {
-            return tileDData.CharaKey.IsValid() && BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDData.CharaKey.CharacterTag );
+            return tileDynamicData.CharaKey.IsValid() && BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDynamicData.CharaKey.CharacterTag );
         }
     }
 }
