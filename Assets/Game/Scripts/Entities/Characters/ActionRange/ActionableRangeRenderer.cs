@@ -25,21 +25,21 @@ namespace Frontier.Entities
 
         private bool _isShowingAttackableRange                  = false;
         private Character _owner                                = null;
-        private ReadOnlyReference<ActionableTileMap> _readOnlyActionableTileMap;
+        private ReadOnlyReference<ActionableTileData> _readOnlyActionableTileData;
 
         public bool IsShowingAttackableRange => _isShowingAttackableRange;
 
-        public void Init( Character owner, ActionableTileMap actionableTileMap )
+        public void Init( Character owner, ActionableTileData actionableTileMap )
         {
             _isShowingAttackableRange   = false;
             _owner                      = owner;
-            _readOnlyActionableTileMap  = new ReadOnlyReference<ActionableTileMap>( actionableTileMap );
+            _readOnlyActionableTileData  = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
         }
 
         public void Dispose()
         {
             _owner = null;
-            _readOnlyActionableTileMap = null;
+            _readOnlyActionableTileData = null;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Frontier.Entities
         /// <param name="conditionBuilder"></param>
         public void DrawMoveableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            foreach( var data in _readOnlyActionableTileMap.Value.MoveableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.MoveableTileMap )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
 
@@ -95,7 +95,7 @@ namespace Frontier.Entities
         /// <param name="conditionBuilder"></param>
         public void DrawAttackableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
 
@@ -120,13 +120,13 @@ namespace Frontier.Entities
         /// </summary>
         public void ClearTileMeshes()
         {
-            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
                 tile.ClearTileMesh( _owner.GetCharacterKey() );
             }
-            foreach( var data in _readOnlyActionableTileMap.Value.MoveableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.MoveableTileMap )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
@@ -142,7 +142,7 @@ namespace Frontier.Entities
         /// <param name="color"></param>
         private void DrawDangerRange( in UnityEngine.Color color )
         {
-            foreach( var data in _readOnlyActionableTileMap.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
             {
                 TileMesh tileMesh = null;
                 LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );

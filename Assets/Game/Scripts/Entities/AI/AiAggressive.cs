@@ -33,13 +33,13 @@ namespace Frontier.Entities.Ai
             _owner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
 
             // 攻撃可能範囲に攻撃対象がいるかどうかを判定
-            for( int i = 0; i < _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.Count; ++i )
+            for( int i = 0; i < _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.Count; ++i )
             {
-                var tileIndex = _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Key;
-                var tileDData = _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap.ElementAt( i ).Value;
+                var tileIndex = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.ElementAt( i ).Key;
+                var tileDynamicData = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.ElementAt( i ).Value;
 
                 // 移動可能地点、かつキャラクターが存在していない(自分自身は有効)タイルを取得
-                if( 0 <= tileDData.EstimatedMoveRange && ( !tileDData.CharaKey.IsValid() || tileDData.CharaKey == ownerKey ) )
+                if( 0 <= tileDynamicData.EstimatedMoveRange && ( !tileDynamicData.CharaKey.IsValid() || tileDynamicData.CharaKey == ownerKey ) )
                 {
                     // タイルの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterKey> opponentKeys;
@@ -111,7 +111,7 @@ namespace Frontier.Entities.Ai
             _destinationTileIndex   = maxEvaluate.gridIndex;
             _targetCharacter        = maxEvaluate.target;
 
-            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.FindMovePath( battleParams.TmpParam.CurrentTileIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, ownerTileCosts, _owner.BattleLogic.ActionRangeCtrl.ActionableTileMap.MoveableTileMap );
+            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.FindMovePath( battleParams.TmpParam.CurrentTileIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, ownerTileCosts, _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap );
         }
 
         /// <summary>
@@ -130,10 +130,10 @@ namespace Frontier.Entities.Ai
                 return _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
             };
             // 移動値を無視した上で、進行可能なタイル全てをルート候補とする条件
-            Func<TileDynamicData, object[], bool> condition = ( tileDData, args ) =>
+            Func<TileDynamicData, object[], bool> condition = ( tileDynamicData, args ) =>
             {
                 var flag = TileBitFlag.CANNOT_MOVE;
-                return ( !Methods.HasAnyFlag( tileDData.Flag, flag ) );
+                return ( !Methods.HasAnyFlag( tileDynamicData.Flag, flag ) );
             };
 
             _owner.BattleLogic.ActionRangeCtrl.SetupMoveableRangeDataFilterByCondition( setup, condition );

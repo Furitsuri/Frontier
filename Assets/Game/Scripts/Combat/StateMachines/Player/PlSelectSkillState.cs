@@ -229,7 +229,7 @@ namespace Frontier.Battle
                     _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID );
                     _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
-                    foreach( var data in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap )
+                    foreach( var data in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
                     {
                         if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
                         {

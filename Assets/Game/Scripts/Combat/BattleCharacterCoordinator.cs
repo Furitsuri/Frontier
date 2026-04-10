@@ -298,7 +298,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <status name="baseChara">対象キャラクター</status>
         /// <returns>最も近い視線上のキャラクター</returns>
-        public List<Character> GetLineOfSightCharacter( Character baseChara, CHARACTER_TAG tag )
+        public List<Character> GetLineOfSightCharacters( Character baseChara, CHARACTER_TAG tag )
         {
             List<Character> list = new List<Character>();
 
@@ -337,7 +337,7 @@ namespace Frontier.Battle
         {
             Character retChara = null;
 
-            List<Character> charaList = GetLineOfSightCharacter( baseChara, tag );
+            List<Character> charaList = GetLineOfSightCharacters( baseChara, tag );
             if( charaList.Count <= 0 ) { return null; }
 
             int totalRange = int.MaxValue;
@@ -349,6 +349,28 @@ namespace Frontier.Battle
                 {
                     totalRange  = range;
                     retChara    = chara;
+                }
+            }
+
+            return retChara;
+        }
+
+        public Character GetNearestLineOfSightCharacter( Character baseChara, List<CharacterKey> keys )
+        {
+            Character retChara = null;
+
+            int totalRange = int.MaxValue;
+
+            foreach( var charaKey in keys )
+            {
+                Character chara = GetCharacter( charaKey );
+                if( chara == null ) { continue; }
+
+                int range = _stgCtrl.CalcurateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
+                if( range < totalRange )
+                {
+                    totalRange = range;
+                    retChara = chara;
                 }
             }
 
@@ -457,7 +479,7 @@ namespace Frontier.Battle
             }
 
             int gridIndex = chara.GetStatusRef.initGridIndex;                                               // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-            chara.BattleParams.TmpParam.CurrentTileIndex = gridIndex;                                // ステージ上のグリッド位置の設定
+            chara.BattleParams.TmpParam.CurrentTileIndex = gridIndex;                                       // ステージ上のグリッド位置の設定
             chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
             chara.GetTransformHandler.SetRotation( rot[( int ) chara.GetStatusRef.initDir] );               // 向きを設定
             _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録

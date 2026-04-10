@@ -20,7 +20,7 @@ namespace Frontier.Battle
             Character targetChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
-            _stageCtrl.ClearGridCursorBind();                          // 念のためバインドを解除
+            _stageCtrl.UnbindGridCursor();                          // 念のためバインドを解除
             _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );     // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
@@ -39,11 +39,13 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _curentGridIndex );
             _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
+            // アタッカーキャラクターの設定
+            _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
+
             // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if( _stageCtrl.TileDataHdlr().CollectAttackableTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileMap.AttackableTileMap, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 _stageCtrl.MoveGridCursorToAttackableTile( targetChara );
-                _stageCtrl.BindToGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
                 _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );            // アタックカーソルUI表示
             }
 

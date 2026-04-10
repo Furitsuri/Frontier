@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using Zenject;
 using static Constants;
+using System.Collections.ObjectModel;
 
 namespace Frontier.Stage
 {
@@ -44,9 +45,6 @@ namespace Frontier.Stage
             _gridCursorCtrl.Init( 0 );
             _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );
-
-            // 攻撃可能タイルのインデックスリストをグリッドカーソルコントローラーに渡す
-            _gridCursorCtrl.AssignAttackableTileIndices( _tileDataHdlr.AttackableTileIndices.AsReadOnly() );
         }
 
         /// <summary>
@@ -63,24 +61,17 @@ namespace Frontier.Stage
         /// </summary>
         /// <param name="state">バインドタイプ</param>
         /// <param name="bindCharacter">バインド対象のキャラクター</param>
-        public void BindToGridCursor( GridCursorState state, Character character )
+        public void BindGridCursor( GridCursorState state, Character character )
         {
-            _gridCursorCtrl.GridState       = state;
-            _gridCursorCtrl.BindCharacter   = character;
+            _gridCursorCtrl.Bind( state, character );
         }
 
         /// <summary>
         /// グリッドカーソルのキャラクターバインドを解除します
         /// </summary>
-        public void ClearGridCursorBind()
+        public void UnbindGridCursor()
         {
-            if( _gridCursorCtrl.BindCharacter != null )
-            {
-                _gridCursorCtrl.BindCharacter.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
-            }
-
-            _gridCursorCtrl.GridState = GridCursorState.NONE;
-            _gridCursorCtrl.BindCharacter = null;
+            _gridCursorCtrl.Unbind();
         }
 
         /// <summary>
@@ -98,26 +89,26 @@ namespace Frontier.Stage
         /// <param name="designatedTarget"></param>
         public void MoveGridCursorToAttackableTile( Character designatedTarget = null )
         {
-            var attackableTileIndices = _tileDataHdlr.AttackableTileIndices;
-            if( attackableTileIndices.Count <= 0 ) { return; }
-
-            // 攻撃対象引数targetが定められている場合はその対象を探す
-            if( designatedTarget != null && 1 < attackableTileIndices.Count )
+            // 攻撃対象引数targetが定められている場合はその対象のタイル位置を指定する
+            if( designatedTarget != null )
             {
-                for( int i = 0; i < attackableTileIndices.Count; ++i )
-                {
-                    var tileData = _stageDataProvider.CurrentData.GetTile( attackableTileIndices[i] ).DynamicData();
-                    if( designatedTarget.GetCharacterKey() == tileData.CharaKey )
-                    {
-                        _gridCursorCtrl.SetAtkTargetIndex( i );
-
-                        return;
-                    }
-                }
+                int targetTileIndex = designatedTarget.BattleParams.TmpParam.CurrentTileIndex;
+                if( _gridCursorCtrl.TrySetAttackTargetIndex( targetTileIndex ) ) { return; }
             }
 
             // 定められていない場合は先頭を指定する
-            _gridCursorCtrl.SetAtkTargetIndex( 0 );
+            _gridCursorCtrl.TrySetAttackTargetIndex( 0 );
+        }
+
+        /// <summary>
+        /// 指定されたビットフラグに該当する攻撃対象タイルのインデックスを収集し、グリッドカーソルに設定します
+        /// </summary>
+        /// <param name="actionRangeCtrl"></param>
+        /// <param name="bitFlag"></param>
+        /// <returns></returns>
+        public bool TryCollectAttackTargetTileIndicesWithFlag( ActionRangeController actionRangeCtrl, TileBitFlag bitFlag )
+        {
+            return 0 < _tileDataHdlr.CollectAttackTargetTileIndicesWithFlag( actionRangeCtrl, bitFlag ).Count;
         }
 
         public bool OperateGridCursorController( Direction direction )
@@ -165,7 +156,7 @@ namespace Frontier.Stage
         /// <returns>現在の選択グリッドのインデックス値</returns>
         public int GetCurrentGridIndex()
         {
-            return _gridCursorCtrl.Index;
+            return _gridCursorCtrl.CurrentTileIndex;
         }
 
         /// <summary>
@@ -226,7 +217,7 @@ namespace Frontier.Stage
 
         public Vector3 GetCurrentGridPosition()
         {
-            TileStaticData tileData = _stageDataProvider.CurrentData.GetTileStaticData( _gridCursorCtrl.Index );
+            TileStaticData tileData = _stageDataProvider.CurrentData.GetTileStaticData( _gridCursorCtrl.CurrentTileIndex );
             return tileData.CharaStandPos;
         }
 
