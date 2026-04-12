@@ -22,7 +22,7 @@ namespace Frontier.Battle
             NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
             _stageCtrl.UnbindGridCursor();                          // 念のためバインドを解除
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );     // グリッドカーソル位置を元に戻す
+            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );  // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
@@ -42,27 +42,10 @@ namespace Frontier.Battle
 
             // アタッカーキャラクターの設定
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
-
-            List<int> tileIndicies = new List<int>();
-
-            foreach( var tileDynamicData in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
-            {
-                if( Methods.HasAllFlags( tileDynamicData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
-                {
-                    tileIndicies.Add( tileDynamicData.Key );
-                }
-            }
-
-            if( 0 < tileIndicies.Count )
-            {
-                _stageCtrl.MoveGridCursorToAttackableTile( targetChara );
-                _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );            // アタックカーソルUI表示
-            }
-
             // 使用可能スキルを更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
             // 攻撃対象キャラクターの情報を更新
-            RefreshTargetCharacter( true );
+            RefreshTargetCharacter( true, targetChara );
         }
 
         public override object ExitState()

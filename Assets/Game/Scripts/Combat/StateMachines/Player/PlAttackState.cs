@@ -65,7 +65,6 @@ namespace Frontier.Battle
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
-            // _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( TargetingMode.NORMAL_ATTACK, -1, -1 );
             // 攻撃対象キャラクターの情報を更新
             RefreshTargetCharacter( true );
         }
@@ -136,7 +135,7 @@ namespace Frontier.Battle
             );
         }
 
-        protected void RefreshTargetCharacter( bool isFirstRefresh )
+        protected void RefreshTargetCharacter( bool isFirstRefresh, Character designatedTarget = null )
         {
             var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
             actionRangeCtrl.RefreshTargetingRange( TargetingMode.NORMAL_ATTACK, -1, -1 );
@@ -144,8 +143,10 @@ namespace Frontier.Battle
 
             if( isFirstRefresh )
             {
-                _stageCtrl.MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() ) );
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );    // アクション対象指定関連のUIを表示
+                var target = designatedTarget ?? _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() );
+                _stageCtrl.MoveGridCursorToAttackableTile( target );
+                // アクション対象指定するUIを表示
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );
             }
 
             // グリッド上のキャラクターを取得
