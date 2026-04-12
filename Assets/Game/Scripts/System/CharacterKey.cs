@@ -8,6 +8,7 @@ namespace Frontier
     {
         public CHARACTER_TAG CharacterTag;
         public int CharacterIndex;
+        public static readonly CharacterKey Invalid = new CharacterKey( CHARACTER_TAG.NONE, -1 );
 
         public CharacterKey( CHARACTER_TAG tag, int index )
         {
@@ -17,7 +18,7 @@ namespace Frontier
 
         public bool IsValid()
         {
-            return CharacterTag != CHARACTER_TAG.NONE && 0 <= CharacterIndex;
+            return this != Invalid;
         }
 
         static public bool operator ==( CharacterKey a, CharacterKey b )

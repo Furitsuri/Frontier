@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Entities.Ai;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
@@ -333,6 +334,28 @@ namespace Frontier.Battle
             return list;
         }
 
+        public Character GetNearestCharacter( Character owner, List<CharacterKey> characterKeys )
+        {
+            Character retChara = null;
+
+            int totalRange = int.MaxValue;
+
+            foreach( var charaKey in characterKeys )
+            {
+                Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacter( charaKey );
+                if( chara == null ) { continue; }
+
+                int range = _stgCtrl.CalcurateTotalRange( owner.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
+                if( range < totalRange )
+                {
+                    totalRange = range;
+                    retChara = chara;
+                }
+            }
+
+            return retChara;
+        }
+
         public Character GetNearestLineOfSightCharacter( Character baseChara, CHARACTER_TAG tag )
         {
             Character retChara = null;
@@ -366,11 +389,16 @@ namespace Frontier.Battle
                 Character chara = GetCharacter( charaKey );
                 if( chara == null ) { continue; }
 
+                if( baseChara.GetTransformHandler.GetDirection() == _stgCtrl.TileDataHdlr().GetDirectionBetweenTiles( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex ) )
+                {
+                    return chara;
+                }
+
                 int range = _stgCtrl.CalcurateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
                 if( range < totalRange )
                 {
-                    totalRange = range;
-                    retChara = chara;
+                    totalRange  = range;
+                    retChara    = chara;
                 }
             }
 

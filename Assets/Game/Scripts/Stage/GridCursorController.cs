@@ -69,7 +69,7 @@ namespace Frontier.Stage
             // 攻撃ステートの場合は、キャラクターの攻撃対象となるタイルのインデックスを参照出来るように登録しておく
             if( GridCursorState.ATTACK == _gridState )
             {
-                _refAttackableTileIndices = _bindCharacter.BattleLogic.ActionRangeCtrl.AttackTargetTileIndicies.AsReadOnly();
+                _refAttackableTileIndices = _bindCharacter.BattleLogic.ActionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies;
             }
         }
 
@@ -106,7 +106,7 @@ namespace Frontier.Stage
             StartLerpMove();
 
             _atkTargetIndex = _directionAttackTargetCallbacks[( int ) direction]( _atkTargetIndex );
-            _tileIndex = _refAttackableTileIndices[_atkTargetIndex];
+            _tileIndex      = _refAttackableTileIndices[_atkTargetIndex];
         }
 
         /// <summary>

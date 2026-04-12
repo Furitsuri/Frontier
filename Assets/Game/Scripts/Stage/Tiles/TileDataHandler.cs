@@ -247,28 +247,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 攻撃可能タイルのうち、攻撃可能キャラクターが存在するタイルを専用のリストに追加していきます
-        /// </summary>
-        /// <param name="owner">攻撃を行うキャラクター</param>
-        /// <param name="target">予め攻撃対象が決まっている際に指定</param>
-        /// <returns>攻撃可能キャラクターが存在している</returns>
-        public List<int> CollectAttackTargetTileIndicesWithFlag( ActionRangeController actionRangeCtrl, TileBitFlag bitFlag )
-        {
-            actionRangeCtrl.AttackTargetTileIndicies.Clear();
-
-            // 指定のビット値をフラグに持つタイルのインデックス値をリストに登録
-            foreach( var tileDynamicData in actionRangeCtrl.ActionableTileData.AttackableTileMap )
-            {
-                if( Methods.HasAllFlags( tileDynamicData.Value.Flag, bitFlag ) )
-                {
-                    actionRangeCtrl.AttackTargetTileIndicies.Add( tileDynamicData.Key );
-                }
-            }
-
-            return actionRangeCtrl.AttackTargetTileIndicies;
-        }
-
-        /// <summary>
         /// 現在選択しているタイルの動的データを取得します
         /// 攻撃対象選択状態では選択している攻撃対象が存在するタイル情報を取得します
         /// </summary>
