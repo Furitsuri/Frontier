@@ -29,36 +29,46 @@ namespace Frontier.Battle
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
-        private Character _targetCharacter              = null;
-        private List<CharacterKey> _targetingCharaKeys  = new();
+        private Character _targetCharacter                  = null;
+        private List<CharacterKey> _attackTargetCharaKeys   = null;
         private Action<Direction>[] _changeDirectionCallbacks;
         private Func<Character, List<CharacterKey>, Character>[] GetTargetCharacterCallbacks;
         private readonly TileBitFlag[] CollectTileBitFlags = new TileBitFlag[( int )TargetingMode.NUM]
         {
-            TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.Center
-            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.Directional
-            TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.All
+            TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.NORMAL_ATTACK
+            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.CENTER
+            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.DIRECTIONAL
+            TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.ALL
         };
 
         [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl )
         {
             _btlRtnCtrl = btlRtnCtrl;
 
+            _attackTargetCharaKeys = new List<CharacterKey>();
+
             _changeDirectionCallbacks = new Action<Direction>[( int ) TargetingMode.NUM]
             {
-                AcceptDirectionWithTargetingModeCenter,        // TargetingMode.Center
-                AcceptDirectionWithTargetingModeDirectional,   // TargetingMode.Directional
-                null,                                          // TargetingMode.Allは方向の概念がないため、コールバックは不要
+                AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.NORMAL_ATTACKはキャラクターの向きに依存するため、TargetingMode.Directionalと同じコールバックを使用
+                AcceptDirectionWithTargetingModeCenter,         // TargetingMode.Center
+                AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.Directional
+                null,                                           // TargetingMode.Allは方向の概念がないため、コールバックは不要
             };
 
             GetTargetCharacterCallbacks = new Func<Character, List<CharacterKey>, Character>[( int ) TargetingMode.NUM]
             {
+                _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter,            // TargetingMode.NORMAL_ATTACKはキャラクターの向きに依存するため、TargetingMode.Directionalと同じコールバックを使用
                 _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.Center
-                _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.Directional
+                _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter,            // TargetingMode.Directional
                 _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.All
             };
         }
 
+        /// <summary>
+        /// 初期化します
+        /// MEMO : 攻撃範囲については前StateのPlSelectSkillStateで設定済みであるため、ここでは設定しないことに注意
+        /// </summary>
+        /// <param name="context"></param>
         public override void Init( object context )
         {
             base.Init( context );
@@ -67,24 +77,12 @@ namespace Frontier.Battle
 
             // 使用スキルを取得
             ReceiveContext( ref _useSkillID, context );
+            // アタッカーキャラクターの設定
+            _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
 
             _targetingMode  = SkillsData.data[( int ) _useSkillID].TargetingMode;
             _targetingValue = SkillsData.data[( int ) _useSkillID].TargetingValue;
-
-            // 使用スキルから攻撃可能範囲を描画
-            // MEMO : 攻撃範囲については前StateのPlSelectSkillStateで設定済みであるため、ここでは設定しないことに注意
-            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
-            _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
-
-            _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );    // アタッカーキャラクターの設定
-
-            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, CollectTileBitFlags[( int )_targetingMode] ) )
-            {
-                _stageCtrl.MoveGridCursorToAttackableTile( GetTargetCharacterCallbacks[( int )_targetingMode]( _plOwner, _targetingCharaKeys ) );
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left ); // アクション対象指定関連のUIを表示
-            }
-
+            
             _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( _plOwner.GetTransformHandler.GetDirection() );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
@@ -111,7 +109,7 @@ namespace Frontier.Battle
                     break;
                 case PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE:
                     break;
-                    case PlSkillActionPhase.PL_SKILL_ACTION_END:
+                case PlSkillActionPhase.PL_SKILL_ACTION_END:
                     break;
                 default:
                     break;
@@ -167,7 +165,7 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptConfirm()
         {
-            return ( 0 < _targetingCharaKeys.Count );
+            return ( 0 < _attackTargetCharaKeys.Count );
         }
 
         protected override bool CanAcceptCancel()
@@ -189,7 +187,7 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool CanAcceptSub1() { return 1 < _plOwner.BattleLogic.ActionRangeCtrl.AttackTargetTileIndicies.Count; }
+        protected override bool CanAcceptSub1() { return 1 < _attackTargetCharaKeys.Count; }
         protected override bool CanAcceptSub2() { return CanAcceptSub1(); }
 
         protected override bool AcceptDirection( InputContext context )
@@ -198,8 +196,6 @@ namespace Frontier.Battle
             if( Direction.NONE == context.Cursor ) { return false; }
 
             _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( context.Cursor );
-
-            _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
 
             return true;
         }
@@ -265,29 +261,22 @@ namespace Frontier.Battle
         {
             _stageCtrl.OperateGridCursorController( dir );
 
-            _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
-
-            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, CollectTileBitFlags[( int ) _targetingMode] ) )
-            {
-            }
-            else
-            {
-                _targetCharacter = null;
-                _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            }
+            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
         }
 
         private void AcceptDirectionWithTargetingModeDirectional( Direction dir )
         {
-            _plOwner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
+            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
+            var targetingMode   = ( int )_targetingMode;
 
-            _targetingCharaKeys = _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, _targetingValue );
+            _plOwner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
+            actionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, _targetingValue );
+            _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, CollectTileBitFlags[( int ) _targetingMode] ) )
+            if( 0 < _attackTargetCharaKeys.Count )
             {
-                _targetCharacter = GetTargetCharacterCallbacks[( int ) _targetingMode]( _plOwner, _targetingCharaKeys );
+                _targetCharacter = GetTargetCharacterCallbacks[targetingMode]( _plOwner, _attackTargetCharaKeys );
                 Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
 
                 _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );

@@ -100,17 +100,6 @@ namespace Frontier.Stage
             _gridCursorCtrl.TrySetAttackTargetIndex( 0 );
         }
 
-        /// <summary>
-        /// 指定されたビットフラグに該当する攻撃対象タイルのインデックスを収集し、グリッドカーソルに設定します
-        /// </summary>
-        /// <param name="actionRangeCtrl"></param>
-        /// <param name="bitFlag"></param>
-        /// <returns></returns>
-        public bool TryCollectAttackTargetTileIndicesWithFlag( ActionRangeController actionRangeCtrl, TileBitFlag bitFlag )
-        {
-            return 0 < _tileDataHdlr.CollectAttackTargetTileIndicesWithFlag( actionRangeCtrl, bitFlag ).Count;
-        }
-
         public bool OperateGridCursorController( Direction direction )
         {
             if( direction == Direction.NONE ) { return false; }
@@ -169,14 +158,14 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 2つのグリッド間の総レンジ数を求めます
+        /// 2つのタイル間の総レンジ数を求めます
         /// </summary>
-        /// <param name="gridIdxA"></param>
-        /// <param name="gridIdxB"></param>
+        /// <param name="tileIdxA"></param>
+        /// <param name="tileIdxB"></param>
         /// <returns>タイルのrowとcolumnにおけるレンジ差の合計</returns>
-        public int CalcurateTotalRange( int gridIdxA, int gridIdxB )
+        public int CalcurateTotalRange( int tileIdxA, int tileIdxB )
         {
-            (int, int) ranges = CalcurateRanges( gridIdxA, gridIdxB );
+            (int, int) ranges = CalcurateRanges( tileIdxA, tileIdxB );
 
             return ranges.Item1 + ranges.Item2;
         }
@@ -191,14 +180,14 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 2つのグリッド間のグリッドレンジを求めます
+        /// 2つのタイル間のタイルレンジを求めます
         /// </summary>
-        /// <param name="gridIdxA"></param>
-        /// <param name="gridIdxB"></param>
+        /// <param name="tileIdxA"></param>
+        /// <param name="tileIdxB"></param>
         /// <returns>タイルのrowとcolumnにおけるレンジ差</returns>
-        public (int, int) CalcurateRanges( int gridIdxA, int gridIdxB )
+        public (int, int) CalcurateRanges( int tileIdxA, int tileIdxB )
         {
-            int range = Math.Abs( gridIdxA - gridIdxB );
+            int range = Math.Abs( tileIdxA - tileIdxB );
             int colNum = _stageDataProvider.CurrentData.TileColNum;
 
             return (range % colNum, range / colNum);

@@ -22,7 +22,7 @@ namespace Frontier.Stage
         public void Init()
         {
             EstimatedMoveRange  = -1;
-            CharaKey            = new CharacterKey( CHARACTER_TAG.NONE, -1 );
+            CharaKey            = CharacterKey.Invalid;
             Flag                = Stage.TileBitFlag.NONE;
         }
 

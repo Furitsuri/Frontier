@@ -116,7 +116,7 @@
             "Duration": 0,
             "RangeShape": 1,
             "RangeValue": 3,
-            "TargetingMode" : 1,
+            "TargetingMode" : 2,
             "TargetingValue" : -1,
             "AddAtkMag": 0,
             "AddDefMag": 0,

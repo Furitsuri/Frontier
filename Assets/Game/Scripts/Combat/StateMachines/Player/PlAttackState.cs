@@ -4,6 +4,8 @@ using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -55,27 +57,17 @@ namespace Frontier.Battle
                 ( context ) => base.AcceptSub4( context )
             };
 
-            // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
-            int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
-            _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
-            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( TargetingMode.DIRECTIONAL, -1, -1 );
-            _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
-
             // アタッカーキャラクターの設定
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
-
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 
-            // 攻撃可能なタイルを選択している場合はグリッドカーソルを移動して攻撃対象指定状態にする
-            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
-            {
-                _stageCtrl.MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, CHARACTER_TAG.ENEMY ) );
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );    // アクション対象指定関連のUIを表示
-            }
-
+            // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
+            int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
+            _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
+            // _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( TargetingMode.NORMAL_ATTACK, -1, -1 );
             // 攻撃対象キャラクターの情報を更新
-            RefreshTargetCharacter();
+            RefreshTargetCharacter( true );
         }
 
         public override bool Update()
@@ -144,31 +136,37 @@ namespace Frontier.Battle
             );
         }
 
-        protected void RefreshTargetCharacter()
+        protected void RefreshTargetCharacter( bool isFirstRefresh )
         {
+            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
+            actionRangeCtrl.RefreshTargetingRange( TargetingMode.NORMAL_ATTACK, -1, -1 );
+            Debug.Assert( 0 < actionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count , "攻撃対象が存在しない状態で攻撃対象の更新処理が呼び出されました。");
+
+            if( isFirstRefresh )
+            {
+                _stageCtrl.MoveGridCursorToAttackableTile( _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() ) );
+                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );    // アクション対象指定関連のUIを表示
+            }
+
             // グリッド上のキャラクターを取得
             var prevTargetCharacter = _targetCharacter;
-            _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            _targetCharacter        = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+
+            if( prevTargetCharacter == _targetCharacter ) { return; }
 
             // 選択キャラクターが更新された場合はパラメータUIへの描画対象と、キャラクターの向きを更新
-            if( prevTargetCharacter != _targetCharacter )
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
+            _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetCharacter, layerMaskIndex );
+
+            if( null != prevTargetCharacter )
             {
-                var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
-                _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetCharacter, layerMaskIndex );
-
-                if( null != prevTargetCharacter )
-                {
-                    prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
-                }
-
-                var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
-                _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-                var attackerTileData = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
-                _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
-
-                _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( TargetingMode.DIRECTIONAL, -1, -1 );
-                _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
+                prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
             }
+
+            var targetTileData      = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
+            var attackerTileData    = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
+            _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
+            _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
 
             // 使用スキルを選択する
             _targetCharacter.RefreshUseableSkillFlags( SituationType.DEFENCE, Methods.ToBit( ActionType.BUFF ) | Methods.ToBit( ActionType.SPECIAL ) );
@@ -205,8 +203,10 @@ namespace Frontier.Battle
         protected override bool CanAcceptDirection()
         {
             if( !CanAcceptDefault() ) { return false; }
-            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は不可
-            if( _plOwner.BattleLogic.ActionRangeCtrl.AttackTargetTileIndicies.Count <= 1 ) { return false; }   // 攻撃可能な標的数が1より大きくなければ不可
+            // 攻撃対象選択フェーズでない場合は不可
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }
+            // 攻撃可能な標的数が1より大きくなければ不可
+            if( _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count <= 1 ) { return false; }
 
             return true;
         }
@@ -218,7 +218,8 @@ namespace Frontier.Battle
         protected override bool CanAcceptConfirm()
         {
             if( !CanAcceptDefault() ) { return false; }
-            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }   // 攻撃対象選択フェーズでない場合は不可
+            // 攻撃対象選択フェーズでない場合は不可
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID != _phase ) { return false; }
 
             return true;
         }
@@ -259,7 +260,7 @@ namespace Frontier.Battle
             if( _stageCtrl.OperateTargetSelect( context.Cursor ) )
             {
                 // 攻撃対象キャラクターの情報を更新
-                RefreshTargetCharacter();
+                RefreshTargetCharacter( false );
 
                 return true;
             }

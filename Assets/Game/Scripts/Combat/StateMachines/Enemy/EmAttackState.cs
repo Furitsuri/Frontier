@@ -4,6 +4,7 @@ using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -48,8 +49,17 @@ namespace Frontier.Battle
 			// アタッカーキャラクターの設定
 			_stageCtrl.BindGridCursor( GridCursorState.ATTACK, _attackCharacter );
 
-			// 攻撃可能なタイル内に攻撃可能対象がいた場合にグリッドを合わせる
-			if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _attackCharacter.BattleLogic.ActionRangeCtrl, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+            List<int> tileIndicies = new List<int>();
+
+            foreach( var tileDynamicData in _attackCharacter.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
+            {
+                if( Methods.HasAllFlags( tileDynamicData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                {
+                    tileIndicies.Add( tileDynamicData.Key );
+                }
+            }
+
+            if( 0 < tileIndicies.Count )
             {
                 _stageCtrl.MoveGridCursorToAttackableTile( _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() );
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );

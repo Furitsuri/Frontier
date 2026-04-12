@@ -5,6 +5,7 @@ using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System;
+using System.Collections.Generic;
 
 namespace Frontier.Battle
 {
@@ -42,8 +43,17 @@ namespace Frontier.Battle
             // アタッカーキャラクターの設定
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
 
-            // グリッドカーソル上のキャラクターを攻撃対象に設定
-            if( _stageCtrl.TryCollectAttackTargetTileIndicesWithFlag( _plOwner.BattleLogic.ActionRangeCtrl, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+            List<int> tileIndicies = new List<int>();
+
+            foreach( var tileDynamicData in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
+            {
+                if( Methods.HasAllFlags( tileDynamicData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                {
+                    tileIndicies.Add( tileDynamicData.Key );
+                }
+            }
+
+            if( 0 < tileIndicies.Count )
             {
                 _stageCtrl.MoveGridCursorToAttackableTile( targetChara );
                 _uiSystem.BattleUi.SetActiveLeft2RightDirection( true );            // アタックカーソルUI表示
@@ -52,7 +62,7 @@ namespace Frontier.Battle
             // 使用可能スキルを更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
             // 攻撃対象キャラクターの情報を更新
-            RefreshTargetCharacter();
+            RefreshTargetCharacter( true );
         }
 
         public override object ExitState()
