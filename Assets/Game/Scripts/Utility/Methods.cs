@@ -157,6 +157,15 @@ static public class Methods
         return ( flagsValue & valueInt ) == valueInt;
     }
 
+    static public bool IsMatchForward( in Vector3 baseForward, in Vector3 basePos, in Vector3 targetPos )
+    {
+        var direction   = targetPos - basePos;
+        direction.y     = 0f;
+        direction       = direction.normalized;
+
+        return Constants.DOT_THRESHOLD < Vector3.Dot( baseForward, direction );
+    }
+
     /// <summary>
     /// 対象のenum値をビット値に変換します
     /// </summary>

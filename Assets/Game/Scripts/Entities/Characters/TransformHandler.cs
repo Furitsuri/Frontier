@@ -138,26 +138,6 @@ public class TransformHandler
         _orderdRotation = rotation;
     }
 
-    public Direction GetDirection()
-    {
-        Vector3 forward;
-
-        // 向きへの指示値がある場合はその値を用いる
-        if( null != _orderdRotation )
-        {
-            forward = _orderdRotation.Value * Vector3.forward;
-        }
-        // それ以外は現在の向きを用いる
-        else
-        {
-            forward     = _readOnlyTransform.Value.forward;
-            forward.y   = 0;
-            forward.Normalize();
-        }
-
-        return Methods.ConvertDirectionFromVector( forward );
-    }
-
     public void StartJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )
     {
         var diffPosition    = destinationPosition - departingPosition;
@@ -190,6 +170,38 @@ public class TransformHandler
             _velocity.y = JUMP_NEGATIVE_Y_VELOCITY;
             // 0.5 * g * t^2 + v0 * t - h = 0 より、 g = 2 * ( - v0 * t + h ) / t^2
             _accel.y = 2 * ( - _velocity.y * arrivalTime + diffHeight ) / ( arrivalTime * arrivalTime );
+        }
+    }
+
+    public Direction GetDirection()
+    {
+        Vector3 forward;
+
+        // 向きへの指示値がある場合はその値を用いる
+        if( null != _orderdRotation )
+        {
+            forward = _orderdRotation.Value * Vector3.forward;
+        }
+        // それ以外は現在の向きを用いる
+        else
+        {
+            forward = _readOnlyTransform.Value.forward;
+            forward.y = 0;
+            forward.Normalize();
+        }
+
+        return Methods.ConvertDirectionFromVector( forward );
+    }
+
+    public Vector3 GetOrderedForward()
+    {
+        if( null != _orderdRotation )
+        {
+            return _orderdRotation.Value * Vector3.forward;
+        }
+        else
+        {
+            return _readOnlyTransform.Value.forward;
         }
     }
 

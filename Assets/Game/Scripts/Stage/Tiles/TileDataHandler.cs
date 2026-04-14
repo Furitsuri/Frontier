@@ -65,6 +65,14 @@ namespace Frontier.Stage
             }
         }
 
+        public void BeginExpandTargetableTilesWithPartOfRange( int baseTileIndex, int expandRange, CHARACTER_TAG ownerTag, ActionableTileData actionableTileData )
+        {
+            // 基データを直接変更しないようにクローンを作成してから処理を行う
+            var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
+
+            ExpandTargetableTilesWithPartOfRange( cloneStageDynamicDatas, baseTileIndex, expandRange, ownerTag, actionableTileData );
+        }
+
         /// <summary>
         /// 移動可能なタイルを登録します
         /// </summary>
@@ -89,6 +97,45 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// タイルへの攻撃可能情報の登録を開始します
+        /// </summary>
+        /// <param name="tileDynamicDatas"></param>
+        /// <param name="dprtIdx"></param>
+        /// <param name="atkRng"></param>
+        /// <param name="charaTag"></param>
+        /// <param name="isClearAttackableInfo"></param>
+        /// <param name="actionableTileMap"></param>
+        public void BeginRegisterAttackableTiles( TileDynamicData[] tileDynamicDatas, int dprtIdx, int atkRng, RangeShape rangeType, CHARACTER_TAG charaTag, bool isClearAttackableInfo, ref ActionableTileData actionableTileMap )
+        {
+            Debug.Assert( dprtIdx.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );
+
+            if( isClearAttackableInfo ) { ClearAttackableInformation(); }   // 全てのタイルの攻撃可否情報を初期化
+
+            // 攻撃可否情報を各タイルに登録
+            int targetTileIndex = dprtIdx;    // 開始時点では出発タイルと同じ
+            _registerAttackableTileCallbacks[( int )rangeType]( tileDynamicDatas, dprtIdx, targetTileIndex, atkRng, charaTag, actionableTileMap );
+        }
+
+        /// <summary>
+        /// タイルの配置不可色を消去します
+        /// </summary>
+        public void ClearUndeployableColorOfTiles()
+        {
+            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
+            {
+                _stageDataProvider.CurrentData.Tiles[i].ClearUndeployableColor();
+            }
+        }
+
+        /// <summary>
+        /// 攻撃可能情報を消去します
+        /// </summary>
+        public void ClearAttackableInformation()
+        {
+            UnsetAllTilesBitFlag( TileBitFlag.REACHABLE_ATTACK | TileBitFlag.ATTACKABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST );
+        }
+
+        /// <summary>
         /// アクション(移動、攻撃)が可能な範囲を抽出します
         /// 攻撃の範囲を不要にしたい場合は、atkRngの値を0以下に指定してください
         /// </summary>
@@ -100,7 +147,7 @@ namespace Frontier.Stage
         /// <param name="tileCosts"></param>
         /// <param name="charaKey"></param>
         /// <returns></returns>
-        public void ExtractActionableRangeData( int dprtIdx, int mvRng, int jmp,  int atkRng, float dprtHeight, in int[] tileCosts, in CharacterKey charaKey, ref ActionableTileData actionableTileMap )
+        public void ExtractActionableRangeData( int dprtIdx, int mvRng, int jmp, int atkRng, float dprtHeight, in int[] tileCosts, in CharacterKey charaKey, ref ActionableTileData actionableTileMap )
         {
             // 基データを直接変更しないようにクローンを作成してから処理を行う
             var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
@@ -151,45 +198,6 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// タイルへの攻撃可能情報の登録を開始します
-        /// </summary>
-        /// <param name="tileDynamicDatas"></param>
-        /// <param name="dprtIdx"></param>
-        /// <param name="atkRng"></param>
-        /// <param name="charaTag"></param>
-        /// <param name="isClearAttackableInfo"></param>
-        /// <param name="actionableTileMap"></param>
-        public void BeginRegisterAttackableTiles( TileDynamicData[] tileDynamicDatas, int dprtIdx, int atkRng, RangeShape rangeType, CHARACTER_TAG charaTag, bool isClearAttackableInfo, ref ActionableTileData actionableTileMap )
-        {
-            Debug.Assert( dprtIdx.IsInHalfOpenRange( 0, _stageDataProvider.CurrentData.GetTileTotalNum() ), "StageController : Irregular Index." );
-
-            if( isClearAttackableInfo ) { ClearAttackableInformation(); }   // 全てのタイルの攻撃可否情報を初期化
-
-            // 攻撃可否情報を各タイルに登録
-            int targetTileIndex = dprtIdx;    // 開始時点では出発タイルと同じ
-            _registerAttackableTileCallbacks[( int )rangeType]( tileDynamicDatas, dprtIdx, targetTileIndex, atkRng, charaTag, actionableTileMap );
-        }
-
-        /// <summary>
-        /// タイルの配置不可色を消去します
-        /// </summary>
-        public void ClearUndeployableColorOfTiles()
-        {
-            for( int i = 0; i < _stageDataProvider.CurrentData.GetTileTotalNum(); ++i )
-            {
-                _stageDataProvider.CurrentData.Tiles[i].ClearUndeployableColor();
-            }
-        }
-
-        /// <summary>
-        /// 攻撃可能情報を消去します
-        /// </summary>
-        public void ClearAttackableInformation()
-        {
-            UnsetAllTilesBitFlag( TileBitFlag.REACHABLE_ATTACK | TileBitFlag.ATTACKABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST );
-        }
-
-        /// <summary>
         /// 2つの指定のインデックスが隣り合う座標に存在しているかを判定します
         /// </summary>
         /// <param name="fstIndex">指定インデックスその1</param>
@@ -208,18 +216,6 @@ namespace Frontier.Stage
             bool leftright      = ( fstQuotient == scdQuotient ) && ( Math.Abs( fstRemainder - scdRemainder ) == 1 );
 
             return updown || leftright;
-        }
-
-        public Direction GetDirectionBetweenTiles( int fromTileIndex, int toTileIndex )
-        {
-            var toPosition      = _stageDataProvider.CurrentData.GetTile( toTileIndex ).StaticData().CharaStandPos;
-            var fromPosition    = _stageDataProvider.CurrentData.GetTile( fromTileIndex ).StaticData().CharaStandPos;
-
-            var dirVec = toPosition - fromPosition;
-            dirVec.y = 0f;
-            dirVec.Normalize();
-
-            return Methods.ConvertDirectionFromVector( dirVec );
         }
 
         /// <summary>
@@ -259,6 +255,38 @@ namespace Frontier.Stage
         #endregion PUBLIC_METHOD
 
         #region PRIVATE_METHOD
+
+        private void ExpandTargetableTilesWithPartOfRange( TileDynamicData[] tileDynamicDatas, int tileIndex, int expandRange, CHARACTER_TAG ownerTag, ActionableTileData actionableTileData )
+        {
+            // 範囲外のタイルは考慮しない
+            if( tileIndex < 0 || tileDynamicDatas.Length <= tileIndex ) { return; }
+            // 指定のタイル情報を取得
+            var tileDynamicData = tileDynamicDatas[tileIndex];
+            // 移動不可のグリッドに辿り着いた場合は終了
+            if( Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
+            // 既にターゲット可能なグリッドであれば終了
+            if( Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.TARGETABLE ) ) { return; }
+
+            // ターゲット可能タイルとして登録
+            actionableTileData.AddTargetableTile( tileIndex, tileDynamicData );
+
+            // 敵対勢力のキャラクターが存在するタイルであれば、攻撃対象タイルとして登録
+            if( BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDynamicData.CharaKey.CharacterTag ) )
+            {
+                actionableTileData.AddAttackTargetTileIndex( tileIndex );
+            }
+
+            // 次に展開する際の展開範囲が0以下であれば終了
+            if( --expandRange <= 0 ) { return; }
+
+            var tileColNum = _stageDataProvider.CurrentData.TileColNum;
+
+            // 現在のタイルから更に四方に展開
+            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex - 1, expandRange, ownerTag, actionableTileData );            // tileIndexからX軸方向へ-1
+            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex + 1, expandRange, ownerTag, actionableTileData );            // tileIndexからX軸方向へ+1
+            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex - tileColNum, expandRange, ownerTag, actionableTileData );   // tileIndexからZ軸方向へ-1
+            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex + tileColNum, expandRange, ownerTag, actionableTileData );   // tileIndexからZ軸方向へ+1
+        }
 
         /// <summary>
         /// タイル情報を基の状態に戻します
@@ -342,8 +370,6 @@ namespace Frontier.Stage
 
         private void RegisterMoveableTiles( TileDynamicData[] tileDynamicDatas, int tileIdx, int mvRng, int jmp, int atkRng, float prevHeight, in int[] tileCosts, in CharacterKey charaKey, ref ActionableTileData actionableTileMap )
         {
-            int columnNum = _stageDataProvider.CurrentData.TileColNum;
-
             // 範囲外のタイルは考慮しない
             if( tileIdx < 0 || tileDynamicDatas.Length <= tileIdx ) { return; }
             // 指定のタイル情報を取得
@@ -386,9 +412,9 @@ namespace Frontier.Stage
             // 移動不可のグリッドには攻撃できない
             if( Methods.HasAnyFlag( tileDynamicDatas[tgtTileIdx].Flag, TileBitFlag.CANNOT_MOVE ) ) { return false; }
             // 高低差が攻撃範囲を超過している場合は攻撃できない
-            var dprtTileData = _stageDataProvider.CurrentData.GetTileStaticData( dprtIdx );
-            var targetTileData = _stageDataProvider.CurrentData.GetTileStaticData( tgtTileIdx );
-            int diffHeight = Convert.ToInt32( Mathf.Ceil( Mathf.Abs( targetTileData.Height - dprtTileData.Height ) ) );
+            var dprtTileData    = _stageDataProvider.CurrentData.GetTileStaticData( dprtIdx );
+            var targetTileData  = _stageDataProvider.CurrentData.GetTileStaticData( tgtTileIdx );
+            int diffHeight      = Convert.ToInt32( Mathf.Ceil( Mathf.Abs( targetTileData.Height - dprtTileData.Height ) ) );
             if( atkRng < diffHeight ) { return false; }
 
             // 出発地点でなければ登録
