@@ -33,7 +33,7 @@ namespace Frontier.Entities
         {
             _isShowingAttackableRange   = false;
             _owner                      = owner;
-            _readOnlyActionableTileData  = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
+            _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
         }
 
         public void Dispose()
@@ -90,11 +90,12 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// アクション可能領域を描画します
+        /// 攻撃可能領域を描画します
         /// </summary>
         /// <param name="conditionBuilder"></param>
         public void DrawAttackableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
+            // 攻撃可能なタイルの描画
             foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
@@ -113,6 +114,15 @@ namespace Frontier.Entities
                     }
                 }
             }
+
+            // ターゲット可能なタイルは攻撃可能なタイルの上にさらに描画する
+            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            {
+                TileMesh tileMesh = null;
+                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE], _owner.GetCharacterKey() );
+            }
         }
 
         /// <summary>
@@ -120,6 +130,12 @@ namespace Frontier.Entities
         /// </summary>
         public void ClearTileMeshes()
         {
+            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            {
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                NullCheck.AssertNotNull( tile, nameof( tile ) );
+                tile.ClearTileMesh( _owner.GetCharacterKey() );
+            }
             foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );

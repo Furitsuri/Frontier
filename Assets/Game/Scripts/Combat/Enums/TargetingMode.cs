@@ -8,7 +8,7 @@
         NONE = -1,
 
         NORMAL_ATTACK,  // 通常攻撃
-        CENTER,         // 特定のタイルを中心にTargetingValueの値分を展開した範囲
+        PART_OF_RANGE,  // 特定のタイルを中心にTargetingValueの値分を展開した範囲
         DIRECTIONAL,    // キャラクターの向きに依存
         ALL,            // 範囲内すべて
 

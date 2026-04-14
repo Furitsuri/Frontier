@@ -4,6 +4,7 @@ using Frontier.Stage;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -32,11 +33,10 @@ namespace Frontier.Battle
         private Character _targetCharacter                  = null;
         private List<CharacterKey> _attackTargetCharaKeys   = null;
         private Action<Direction>[] _changeDirectionCallbacks;
-        private Func<Character, List<CharacterKey>, Character>[] GetTargetCharacterCallbacks;
         private readonly TileBitFlag[] CollectTileBitFlags = new TileBitFlag[( int )TargetingMode.NUM]
         {
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.NORMAL_ATTACK
-            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.CENTER
+            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.PART_OF_RANGE
             TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.DIRECTIONAL
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.ALL
         };
@@ -50,17 +50,9 @@ namespace Frontier.Battle
             _changeDirectionCallbacks = new Action<Direction>[( int ) TargetingMode.NUM]
             {
                 AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.NORMAL_ATTACKはキャラクターの向きに依存するため、TargetingMode.Directionalと同じコールバックを使用
-                AcceptDirectionWithTargetingModeCenter,         // TargetingMode.Center
-                AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.Directional
-                null,                                           // TargetingMode.Allは方向の概念がないため、コールバックは不要
-            };
-
-            GetTargetCharacterCallbacks = new Func<Character, List<CharacterKey>, Character>[( int ) TargetingMode.NUM]
-            {
-                _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter,            // TargetingMode.NORMAL_ATTACKはキャラクターの向きに依存するため、TargetingMode.Directionalと同じコールバックを使用
-                _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.Center
-                _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter,            // TargetingMode.Directional
-                _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter, // TargetingMode.All
+                AcceptDirectionWithTargetingModePartOfRange,    // TargetingMode.PART_OF_RANGE
+                AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.DIRECTIONAL
+                null,                                           // TargetingMode.ALLは方向の概念がないため、コールバックは不要
             };
         }
 
@@ -257,11 +249,48 @@ namespace Frontier.Battle
             return true;
         }
 
-        private void AcceptDirectionWithTargetingModeCenter( Direction dir )
+        private void AcceptDirectionWithTargetingModePartOfRange( Direction dir )
         {
             _stageCtrl.OperateGridCursorController( dir );
 
-            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetingRange( _targetingMode, _stageCtrl.GetCurrentGridIndex(), _targetingValue );
+            var actionRangeCtrl     = _plOwner.BattleLogic.ActionRangeCtrl;
+            var targetingRangeIndex = _stageCtrl.GetCurrentGridIndex();
+
+            // ターゲット指定中のグリッドが攻撃可能なタイルを指していない場合は、ターゲットキャラクターを再設定せずに処理を終了する
+            if( !_plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.Keys.Contains( targetingRangeIndex ) )
+            {
+                return;
+            }
+
+            actionRangeCtrl.RefreshTargetingRange( _targetingMode, targetingRangeIndex, _targetingValue );
+            _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
+
+            // 攻撃可能なグリッド内に敵がおり、尚且つ現在のターゲットキャラクターが存在しない場合は、ターゲットキャラクターを設定する
+            if( 0 < _attackTargetCharaKeys.Count )
+            {
+                if( null == _targetCharacter )
+                {
+                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
+                    Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
+                    _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
+                }
+                else
+                {
+                    // 現在のターゲットキャラクターが攻撃可能なグリッド内にいる場合は、ターゲットキャラクターを再設定しない
+                    if( !_attackTargetCharaKeys.Contains( _targetCharacter.GetCharacterKey() ) )
+                    {
+                        _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
+                        Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
+                        _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
+                    }
+                }
+            }
+            else
+            {
+                _targetCharacter = null;
+            }
+
+            _presenter.SetActiveActionResultExpect( _targetCharacter != null, ParameterWindowType.Left );
         }
 
         private void AcceptDirectionWithTargetingModeDirectional( Direction dir )
@@ -276,7 +305,7 @@ namespace Frontier.Battle
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
             if( 0 < _attackTargetCharaKeys.Count )
             {
-                _targetCharacter = GetTargetCharacterCallbacks[targetingMode]( _plOwner, _attackTargetCharaKeys );
+                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
                 Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
 
                 _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );

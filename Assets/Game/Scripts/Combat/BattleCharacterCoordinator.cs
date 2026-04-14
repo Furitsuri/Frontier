@@ -304,31 +304,17 @@ namespace Frontier.Battle
             List<Character> list = new List<Character>();
 
             Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
-            Direction baseDir   = baseChara.GetTransformHandler.GetDirection();
             Vector3 baseForward = baseChara.transform.forward;
             baseForward.y       = 0f;
 
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
-                if( baseDir == _stgCtrl.TileDataHdlr().GetDirectionBetweenTiles( baseChara.BattleParams.TmpParam.CurrentTileIndex, c.BattleParams.TmpParam.CurrentTileIndex ) )
+                Vector3 targetPos   = _stgCtrl.GetTileStaticData( c.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
+
+                if( Methods.IsMatchForward( baseForward, basePos, targetPos ) )
                 {
                     list.Add( c );
                 }
-
-                /*
-                Vector3 targetPos = _stgCtrl.GetTileStaticData( c.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
-
-                var direction = targetPos - basePos;
-                direction.y = 0f;
-                direction = direction.normalized;
-
-                // 内積で向きが一致しているかを確認
-                float dot = Vector3.Dot( baseForward, direction );
-                if( Constants.DOT_THRESHOLD < dot )
-                {
-                    list.Add( c );
-                }
-                */
             }
 
             return list;
@@ -336,9 +322,8 @@ namespace Frontier.Battle
 
         public Character GetNearestCharacter( Character owner, List<CharacterKey> characterKeys )
         {
-            Character retChara = null;
-
-            int totalRange = int.MaxValue;
+            Character retChara  = null;
+            int totalRange      = int.MaxValue;
 
             foreach( var charaKey in characterKeys )
             {
@@ -380,18 +365,21 @@ namespace Frontier.Battle
 
         public Character GetNearestLineOfSightCharacter( Character baseChara, List<CharacterKey> keys )
         {
-            Character retChara = null;
-
-            int totalRange = int.MaxValue;
+            Character retChara  = null;
+            int totalRange      = int.MaxValue;
+            Vector3 basePos     = _stgCtrl.GetTileStaticData( baseChara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
+            Vector3 baseForward = baseChara.transform.forward;
+            baseForward.y       = 0f;
 
             foreach( var charaKey in keys )
             {
                 Character chara = GetCharacter( charaKey );
                 if( chara == null ) { continue; }
 
-                if( baseChara.GetTransformHandler.GetDirection() == _stgCtrl.TileDataHdlr().GetDirectionBetweenTiles( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex ) )
+                Vector3 targetPos = _stgCtrl.GetTileStaticData( chara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
+                if( !Methods.IsMatchForward( baseForward, basePos, targetPos ) )
                 {
-                    return chara;
+                    continue;
                 }
 
                 int range = _stgCtrl.CalcurateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );

@@ -144,6 +144,9 @@ namespace Frontier.Battle
             if( isFirstRefresh )
             {
                 var target = designatedTarget ?? _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() );
+                // 直線状に攻撃対象が存在しない場合は、攻撃可能なタイルの中で最も近いタイルを選択する
+                if( null == target ) { target = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() ); }
+                // グリッドカーソルを攻撃対象のタイルに移動
                 _stageCtrl.MoveGridCursorToAttackableTile( target );
                 // アクション対象指定するUIを表示
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );
