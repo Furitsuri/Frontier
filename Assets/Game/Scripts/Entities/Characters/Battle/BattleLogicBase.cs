@@ -457,7 +457,7 @@ namespace Frontier.Entities
                     var nextTilePos = nextTileData.CharaStandPos;
                     Vector3 nextDirXZ = ( nextTilePos - _readonlyTransform.Value.GetPosition() ).XZ().normalized;
 
-                    _readonlyTransform.Value.SetVelocityAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _readonlyTransform.Value.SetVelocityAndAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
                     _readonlyTransform.Value.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
 
                     jumpAction( focusedTileData.Height, nextTileData.Height, focusedTilePos, nextTilePos );
@@ -470,7 +470,7 @@ namespace Frontier.Entities
                 {
                     var currentTileData = _stageCtrl.GetTileStaticData( _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex );
 
-                    _readonlyTransform.Value.SetVelocityAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _readonlyTransform.Value.SetVelocityAndAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
                     _readonlyTransform.Value.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
                     toggleAnimation = true;
 

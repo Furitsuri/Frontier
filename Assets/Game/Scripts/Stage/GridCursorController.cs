@@ -291,7 +291,10 @@ namespace Frontier.Stage
         /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            return _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos;
+            var offsetY = _stageDataProvider.CurrentData.GetTile( _tileIndex ).GetTileMeshPosYOffset();
+            var goalPos = _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
+
+            return goalPos;
         }
     }
 }

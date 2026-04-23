@@ -70,7 +70,7 @@ static public class Constants
     // タイルの高さの最大値
     public const float TILE_MAX_HEIGHT      = 5.0f;
     // タイルのY座標に加算する補正値
-    public const float ADD_TILE_POS_Y       = 0.1f;
+    public const float ADD_TILE_POS_Y       = 0.02f;
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
     // 配置フェーズにおけるキャラクターの配置前座標

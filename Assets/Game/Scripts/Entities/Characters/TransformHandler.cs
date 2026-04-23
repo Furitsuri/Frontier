@@ -55,7 +55,7 @@ public class TransformHandler
         _baseRotation = _readOnlyTransform.Value.rotation;
     }
 
-    public void SetVelocityAcceleration( in Vector3 velocity, in Vector3 accel )
+    public void SetVelocityAndAcceleration( in Vector3 velocity, in Vector3 accel )
     {
         _velocity   = velocity;
         _accel      = accel;
