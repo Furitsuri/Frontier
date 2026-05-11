@@ -142,6 +142,15 @@ static public class Constants
 
     public const float COMBAT_POS_LENGTH_FROM_CENTER = 2.0f;
 
+    // ダッシュスラッシュ: ダッシュ開始時の前方向速度
+    public const float DASH_SLASH_INITIAL_SPEED             = 10f;
+    // ダッシュスラッシュ: ターゲット不在時に前方へ進むゴール距離
+    public const float DASH_SLASH_FALLBACK_GOAL_DISTANCE    = 3f;
+    // ダッシュスラッシュ: 攻撃判定を発動するターゲットとの距離閾値
+    public const float DASH_SLASH_ATTACK_TRIGGER_DISTANCE   = 1.5f;
+    // ダッシュスラッシュ: 斬撃フェーズへ移行した際の速度倍率
+    public const float DASH_SLASH_SLASHING_SPEED_MULTIPLIER = 1.5f;
+
     public const string INPUT_CAMERA_STRING = "CAMERA";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
     public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";

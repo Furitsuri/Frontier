@@ -48,13 +48,13 @@ namespace Frontier.Battle
 
         public override void Setup()
         {
-            LazyInject.GetOrCreate( ref _stgCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
-            LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
+            LazyInject.GetOrCreate( ref _stgCtrl,       () => _hierarchyBld.InstantiateWithDiContainer<StageController>( true ) );
+            LazyInject.GetOrCreate( ref _presenter,     () => _hierarchyBld.InstantiateWithDiContainer<BattleRoutinePresenter>( true ) );
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
             LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
-            LazyInject.GetOrCreate( ref _btlCharaCdr, () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
+            LazyInject.GetOrCreate( ref _btlCharaCdr,   () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
 
-            if( SkillsData.skillNotifierFactory == null )
+            if( SkillsData.SkillNotifierFactory == null )
             {
                 SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
             }

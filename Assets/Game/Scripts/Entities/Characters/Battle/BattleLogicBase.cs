@@ -495,7 +495,7 @@ namespace Frontier.Entities
                 int skillID = ( int ) _readOnlyOwner.Value.GetEquipSkillID( i );
                 if( skillID < 0 ) { continue; }
 
-                _skillNotifier[i] = SkillsData.skillNotifierFactory[skillID]();
+                _skillNotifier[i] = SkillsData.SkillNotifierFactory[skillID]();
                 _skillNotifier[i].Init( _readOnlyOwner.Value );
             }
         }

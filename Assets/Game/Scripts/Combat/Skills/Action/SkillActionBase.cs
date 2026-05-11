@@ -1,11 +1,9 @@
 ﻿using Frontier.Entities;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Frontier.Sequences;
 
 namespace Frontier.Combat
 {
-    public class SkillActionBase
+    public class SkillActionBase : ISequence
     {
         protected Character _owner = null;
 
@@ -14,7 +12,28 @@ namespace Frontier.Combat
             _owner = owner;
         }
 
+        public void Start()
+        {
+            StartAction();
+        }
+
+        public void End()
+        {
+            EndAction();
+        }
+
+        public bool Update()
+        {
+            UpdateAction();
+
+            return IsFinished();
+        }
+
         protected virtual void StartAction()
+        {
+        }
+
+        protected virtual void EndAction()
         {
         }
 
@@ -22,8 +41,9 @@ namespace Frontier.Combat
         {
         }
 
-        protected virtual void EndAction()
+        protected virtual bool IsFinished()
         {
+            return true;
         }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
-using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Combat
 {
@@ -19,14 +16,16 @@ namespace Frontier.Combat
         }
 
         private DashSlashState _state;
+        private bool _isAttackAnimEnded;
         private Vector3 _velocity;
+        private Vector3 _goalPosition;
         private BattleCharacterCoordinator _btlCharaCdr;
         private List<Character> _targetCharacters = null;
 
         [Inject]
         public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleCharacterCoordinator btlCharaCdr ) : base( owner )
         {
-            _velocity           = owner.GetTransformHandler.GetOrderedForward() * 10f;
+            _velocity           = owner.GetTransformHandler.GetOrderedForward() * Constants.DASH_SLASH_INITIAL_SPEED;
             _targetCharacters   = new List<Character>();
             _btlCharaCdr        = btlCharaCdr;
             foreach( var key in targetCharaKeys )
@@ -44,9 +43,15 @@ namespace Frontier.Combat
             base.StartAction();
             Debug.Log( "DashSlashSA: StartAction" );
 
+            _isAttackAnimEnded = false;
             _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE );
-            _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, new Vector3( 0f, 0f, 0f ) );
+            _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, Vector3.zero );
             SortTargetCharactersByDistance();
+
+            // 最も遠いターゲット位置をゴールとする
+            _goalPosition = _targetCharacters.Count > 0
+                ? _targetCharacters[_targetCharacters.Count - 1].GetTransformHandler.GetPosition()
+                : _owner.GetTransformHandler.GetPosition() + _owner.GetTransformHandler.GetOrderedForward() * Constants.DASH_SLASH_FALLBACK_GOAL_DISTANCE;
 
             _state = DashSlashState.START;
         }
@@ -54,25 +59,28 @@ namespace Frontier.Combat
         protected override void UpdateAction()
         {
             base.UpdateAction();
-            
+
             switch( _state )
             {
                 case DashSlashState.START:
-                    // 最も近い位置の_targetCharactersとの距離が一定以下になったら、SLASHINGに遷移する
-                    if( IsInAttackRange( _targetCharacters[0] ) )
+                    if( _targetCharacters.Count > 0 && IsInAttackRange( _targetCharacters[0] ) )
                     {
                         _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.SINGLE_ATTACK );
-                        // 加速させる
-                        _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, new Vector3( 0f, 0f, 0f ) );
+                        _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity * Constants.DASH_SLASH_SLASHING_SPEED_MULTIPLIER, Vector3.zero );
                         _state = DashSlashState.SLASHING;
                     }
                     break;
                 case DashSlashState.SLASHING:
                     UpdateAttack2TargetCharacters();
 
-                    // 目標タイルに到達したら、ENDに遷移する
-                    if( true )
+                    if( !_isAttackAnimEnded )
                     {
+                        _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.SINGLE_ATTACK );
+                    }
+
+                    if( IsPassedGoalPosition() && _isAttackAnimEnded )
+                    {
+                        _owner.GetTransformHandler.ResetVelocityAcceleration();
                         _state = DashSlashState.END;
                     }
                     break;
@@ -82,40 +90,44 @@ namespace Frontier.Combat
             }
         }
 
-        private void ApplyDamage( Character target )
-        {
-            // ダメージを与える
-            // _btlCharaCdr.ApplyDamage( target, damage );
-
-            // ダメージを与えた後、targetを_targetCharactersから削除する
-            _targetCharacters.Remove( target ); 
-        }
-
         private void SortTargetCharactersByDistance()
         {
-            // _targetCharactersを_ownerとの距離が近い順にソートする
+            Vector3 ownerPos = _owner.GetTransformHandler.GetPosition();
+            _targetCharacters.Sort( ( a, b ) =>
+            {
+                float distA = ( a.GetTransformHandler.GetPosition() - ownerPos ).XZ().sqrMagnitude;
+                float distB = ( b.GetTransformHandler.GetPosition() - ownerPos ).XZ().sqrMagnitude;
+                return distA.CompareTo( distB );
+            } );
         }
 
         private bool IsInAttackRange( Character target )
         {
-            // _targetとの距離が一定以下かどうかを判定する
-            return true;
+            Vector3 ownerPos  = _owner.GetTransformHandler.GetPosition();
+            Vector3 targetPos = target.GetTransformHandler.GetPosition();
+            return ( targetPos - ownerPos ).XZ().magnitude <= Constants.DASH_SLASH_ATTACK_TRIGGER_DISTANCE;
+        }
+
+        private bool IsPassedGoalPosition()
+        {
+            Vector3 ownerPos = _owner.GetTransformHandler.GetPosition();
+            Vector3 toGoal   = ( _goalPosition - ownerPos ).XZ();
+            Vector3 forward  = _owner.GetTransformHandler.GetOrderedForward().XZ();
+            return Vector3.Dot( forward, toGoal ) <= 0f;
         }
 
         private bool UpdateAttack2TargetCharacters()
         {
-            // _targetCharactersとの距離が一定以下になる毎に攻撃処理を行う
-            foreach( var target in _targetCharacters )
+            bool attacked = false;
+            for( int i = _targetCharacters.Count - 1; i >= 0; --i )
             {
-                if( true /* 距離判定 */ )
+                if( IsInAttackRange( _targetCharacters[i] ) )
                 {
-                    ApplyDamage( target );
-
-                    return true;
+                    _targetCharacters.RemoveAt( i );
+                    attacked = true;
                 }
             }
-
-            return false;
+            return attacked;
         }
     }
 }

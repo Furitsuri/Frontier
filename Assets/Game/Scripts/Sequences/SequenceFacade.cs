@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Tutorial;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,6 +29,17 @@ namespace Frontier.Sequences
             ISequence attackSeq = factory.CreateSequence( param );
 
             _handler.Regist( attackSeq );
+        }
+
+        public void RegistSkillAction( Character attacker, Character target, SkillID skillID )
+        {
+            var factory     = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceCreator>( false );
+            var param       = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceParam>( false );
+            param.Attacker  = attacker;
+            param.Target    = target;
+            param.SkillID   = skillID;
+            ISequence skillActionSeq = factory.CreateSequence( param );
+            _handler.Regist( skillActionSeq );
         }
 
         public void RegistSelfBuffs( Character owner, string cmdName )

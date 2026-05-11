@@ -1,7 +1,4 @@
-﻿using Frontier;
-using Frontier.Battle;
-using Frontier.Combat;
-using Frontier.Entities;
+﻿using Frontier.Entities;
 using UnityEngine;
 using Frontier.Combat.Skill;
 
@@ -13,21 +10,44 @@ namespace Frontier.Combat
     public class ParrySkillNotifier : SkillNotifierBase
     {
         /// <summary>
-        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲートを設定します
+        /// 対戦相手の攻撃をパリィ(弾く)するイベントを発生させます
+        /// ※攻撃アニメーションから呼び出されます
         /// </summary>
-        /// <param name="parryCtrl">パリィ操作クラス</param>
-        void SubscribeParryEvent( ParrySkillHandler parryCtrl )
+        public void ParryOpponentEvent()
         {
-            parryCtrl.ProcessCompleted += ParryEventProcessCompleted;
+            ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
+            if( parryCtrl == null ) return;
+
+            // NONE以外の結果が通知されているはず
+            Debug.Assert( !parryCtrl.IsMatchResult( JudgeResult.NONE ) );
+
+            if( _skillUser == null )
+            {
+                Debug.Assert( false );
+            }
+
+            if( parryCtrl.IsMatchResult( JudgeResult.FAILED ) )
+            {
+                return;
+            }
+
+            // 成功時(ジャスト含む)にはパリィ挙動
+            ParryRecieveEvent();
         }
 
         /// <summary>
-        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲート設定を解除します
+        /// パリィ判定処理を開始します
         /// </summary>
-        /// <param name="parryCtrl">パリィ操作クラス</param>
-        void UnsubscribeParryEvent( ParrySkillHandler parryCtrl )
+        public void StartParryJudgeEvent()
         {
-            parryCtrl.ProcessCompleted -= ParryEventProcessCompleted;
+            if( _skillUser.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) return;
+
+            ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
+            if( parryCtrl == null ) return;
+
+            SubscribeParryEvent( parryCtrl );
+            parryCtrl.StartParryEvent( _skillUser, _skillUser.BattleLogic.GetOpponent() );
+            _combatSkillEventCtrl.ScheduleRun();
         }
 
         /// <summary>
@@ -35,7 +55,7 @@ namespace Frontier.Combat
         /// </summary>
         /// <param name="sender">呼び出しを行うパリィイベントコントローラ</param>
         /// <param name="e">イベントハンドラ用オブジェクト(この関数ではempty)</param>
-        void ParryEventProcessCompleted( object sender, ParrySkillHdlrEventArgs e )
+        private void ParryEventProcessCompleted( object sender, ParrySkillHdlrEventArgs e )
         {
             ParrySkillHandler ParryHdlr = sender as ParrySkillHandler;
             ParryHdlr.EndParryEvent();
@@ -46,35 +66,9 @@ namespace Frontier.Combat
         }
 
         /// <summary>
-        /// 対戦相手の攻撃をパリィ(弾く)するイベントを発生させます
-        /// ※攻撃アニメーションから呼び出されます
-        /// </summary>
-        public void ParryOpponentEvent()
-        {
-            ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
-            if ( parryCtrl == null ) return;
-
-            // NONE以外の結果が通知されているはず
-            Debug.Assert( !parryCtrl.IsMatchResult( JudgeResult.NONE ) );
-
-            if ( _skillUser == null )
-            {
-                Debug.Assert( false );
-            }
-
-            if ( parryCtrl.IsMatchResult( JudgeResult.FAILED ) )
-            {
-                return;
-            }
-
-            // 成功時(ジャスト含む)にはパリィ挙動
-            ParryRecieveEvent();
-        }
-
-        /// <summary>
         /// パリィを受けた際のイベントを発生させます
         /// </summary>
-        public void ParryRecieveEvent()
+        private void ParryRecieveEvent()
         {
             Character opponent = _skillUser.BattleLogic.GetOpponent();
             NullCheck.AssertNotNull( opponent , nameof( opponent ) );
@@ -84,18 +78,21 @@ namespace Frontier.Combat
         }
 
         /// <summary>
-        /// パリィ判定処理を開始します
+        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲートを設定します
         /// </summary>
-        public void StartParryJudgeEvent()
+        /// <param name="parryCtrl">パリィ操作クラス</param>
+        private void SubscribeParryEvent( ParrySkillHandler parryCtrl )
         {
-            if ( _skillUser.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) return;
+            parryCtrl.ProcessCompleted += ParryEventProcessCompleted;
+        }
 
-            ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
-            if ( parryCtrl == null ) return;
-
-            SubscribeParryEvent( parryCtrl );
-            parryCtrl.StartParryEvent( _skillUser, _skillUser.BattleLogic.GetOpponent() );
-            _combatSkillEventCtrl.ScheduleRun();
+        /// <summary>
+        /// 指定のパリィ操作クラスがイベント終了した際に呼び出すデリゲート設定を解除します
+        /// </summary>
+        /// <param name="parryCtrl">パリィ操作クラス</param>
+        private void UnsubscribeParryEvent( ParrySkillHandler parryCtrl )
+        {
+            parryCtrl.ProcessCompleted -= ParryEventProcessCompleted;
         }
     }
 }

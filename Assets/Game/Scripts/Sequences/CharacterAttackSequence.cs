@@ -2,10 +2,8 @@
 using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Zenject;
-using Frontier.Combat.Skill;
 using static Constants;
 
 namespace Frontier.Sequences
@@ -85,6 +83,8 @@ namespace Frontier.Sequences
             // 攻撃シーケンスの開始
             _btlCamCtrl.StartAttackSequenceMode( _attackCharacter, _targetCharacter );
         }
+
+        public void End() { }
 
         /// <summary>
         /// 処理を更新します
@@ -266,9 +266,6 @@ namespace Frontier.Sequences
 
             return false;
         }
-
-        public void End() { }
-
 
         public void Init()
         {

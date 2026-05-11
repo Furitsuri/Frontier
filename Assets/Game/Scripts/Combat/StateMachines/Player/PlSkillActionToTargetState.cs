@@ -1,9 +1,11 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using UnityEngine;
 using Zenject;
@@ -31,8 +33,10 @@ namespace Frontier.Battle
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
         private Character _targetCharacter                  = null;
+        private SequenceFacade _sequenceFcd                 = null;
         private List<CharacterKey> _attackTargetCharaKeys   = null;
-        private Action<Direction>[] _changeDirectionCallbacks;
+        private Action<Direction, bool>[] _changeDirectionCallbacks;
+        private GameObject _ghostObject                     = null;
         private readonly TileBitFlag[] CollectTileBitFlags = new TileBitFlag[( int )TargetingMode.NUM]
         {
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.NORMAL_ATTACK
@@ -41,13 +45,14 @@ namespace Frontier.Battle
             TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.ALL
         };
 
-        [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl )
+        [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl, SequenceFacade sequenceFcd )
         {
-            _btlRtnCtrl = btlRtnCtrl;
+            _btlRtnCtrl     = btlRtnCtrl;
+            _sequenceFcd    = sequenceFcd;
 
             _attackTargetCharaKeys = new List<CharacterKey>();
 
-            _changeDirectionCallbacks = new Action<Direction>[( int ) TargetingMode.NUM]
+            _changeDirectionCallbacks = new Action<Direction, bool>[( int ) TargetingMode.NUM]
             {
                 AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.NORMAL_ATTACKはキャラクターの向きに依存するため、TargetingMode.Directionalと同じコールバックを使用
                 AcceptDirectionWithTargetingModePartOfRange,    // TargetingMode.PART_OF_RANGE
@@ -75,7 +80,7 @@ namespace Frontier.Battle
             _targetingMode  = SkillsData.data[( int ) _useSkillID].TargetingMode;
             _targetingValue = SkillsData.data[( int ) _useSkillID].TargetingValue;
             
-            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( _plOwner.GetTransformHandler.GetDirection() );
+            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( _plOwner.GetTransformHandler.GetDirection(), true );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
@@ -112,6 +117,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
+            CleanupGhost();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
             return base.ExitState();
@@ -187,7 +193,7 @@ namespace Frontier.Battle
             context.Cursor = _stageCtrl.ConvertDirectionDependOnCameraAngle( context.Cursor );
             if( Direction.NONE == context.Cursor ) { return false; }
 
-            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( context.Cursor );
+            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( context.Cursor, true );
 
             return true;
         }
@@ -196,7 +202,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-
+            _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID );
 
             return true;
         }
@@ -249,7 +255,7 @@ namespace Frontier.Battle
             return true;
         }
 
-        private void AcceptDirectionWithTargetingModePartOfRange( Direction dir )
+        private void AcceptDirectionWithTargetingModePartOfRange( Direction dir, bool isMoveSkill )
         {
             _stageCtrl.OperateGridCursorController( dir );
 
@@ -293,7 +299,7 @@ namespace Frontier.Battle
             _presenter.SetActiveActionResultExpect( _targetCharacter != null, ParameterWindowType.Left );
         }
 
-        private void AcceptDirectionWithTargetingModeDirectional( Direction dir )
+        private void AcceptDirectionWithTargetingModeDirectional( Direction dir, bool isMoveSkill )
         {
             var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
             var targetingMode   = ( int )_targetingMode;
@@ -320,6 +326,10 @@ namespace Frontier.Battle
                 _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
                 _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             }
+
+            if( isMoveSkill ) {
+                RefreshGhostPreview( actionRangeCtrl );
+            }
         }
 
         private void AcceptSub( Direction dir )
@@ -329,6 +339,80 @@ namespace Frontier.Battle
             {
                 _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
                 _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
+            }
+        }
+
+        /// <summary>
+        /// 移動スキル時に、攻撃範囲内で最も遠いタイルへスキル使用者のゴーストを表示します
+        /// </summary>
+        private void RefreshGhostPreview( ActionRangeController actionRangeCtrl )
+        {
+            var targetableTileMap = actionRangeCtrl.ActionableTileData.TargetableTileMap;
+            if( targetableTileMap.Count == 0 )
+            {
+                SetGhostActive( false );
+                return;
+            }
+
+            // ターゲット可能範囲内でスキル使用者から最も離れたタイルを探す
+            Vector3 ownerPos        = _plOwner.GetTransformHandler.GetPosition();
+            int     farthestIdx     = -1;
+            float   maxDist         = -1f;
+
+            foreach( int tileIdx in targetableTileMap.Keys )
+            {
+                float dist = Vector3.Distance( ownerPos, _stageCtrl.GetTileStaticData( tileIdx ).CharaStandPos );
+                if( dist > maxDist )
+                {
+                    maxDist     = dist;
+                    farthestIdx = tileIdx;
+                }
+            }
+
+            if( farthestIdx < 0 )
+            {
+                SetGhostActive( false );
+                return;
+            }
+
+            if( _ghostObject == null )
+            {
+                _ghostObject = _plOwner.CreateGhostObject();
+            }
+
+            var targetTile  = _stageCtrl.GetTileStaticData( farthestIdx );
+            var originalRot = Quaternion.LookRotation( Vector3.forward, Vector3.up );
+            var rotatedRot  = Quaternion.LookRotation( _plOwner.GetTransformHandler.GetOrderedForward(), Vector3.up );
+            _ghostObject.transform.SetPositionAndRotation( targetTile.CharaStandPos, rotatedRot * Quaternion.Inverse( originalRot ) );
+            SetGhostActive( true );
+        }
+
+        private void SetGhostActive( bool isActive )
+        {
+            if( _ghostObject != null )
+            {
+                _ghostObject.SetActive( isActive );
+            }
+        }
+
+        private void CleanupGhost()
+        {
+            if( _ghostObject != null )
+            {
+                // CreateGhostObject でベイクした Mesh と生成したマテリアルは Unity が自動破棄しないため明示的に解放する
+                foreach( var mf in _ghostObject.GetComponentsInChildren<MeshFilter>() )
+                {
+                    if( mf.sharedMesh != null ) { UnityEngine.Object.Destroy( mf.sharedMesh ); }
+                }
+                foreach( var mr in _ghostObject.GetComponentsInChildren<MeshRenderer>() )
+                {
+                    foreach( var mat in mr.sharedMaterials )
+                    {
+                        if( mat != null ) { UnityEngine.Object.Destroy( mat ); }
+                    }
+                }
+                UnityEngine.Object.Destroy( _ghostObject );
+                _ghostObject = null;
             }
         }
     }

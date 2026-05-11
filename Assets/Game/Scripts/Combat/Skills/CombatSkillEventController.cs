@@ -6,8 +6,8 @@ namespace Frontier.Combat
 {
     public class CombatSkillEventController : FocusRoutineBase
     {
-        private HierarchyBuilderBase _hierarchyBld = null;
-        private CombatSkillEventHandlerBase _currentSkillHandler = null;
+        private HierarchyBuilderBase _hierarchyBld                  = null;
+        private CombatSkillEventHandlerBase _currentSkillHandler    = null;
         public CombatSkillEventHandlerBase CurrentSkillHandler => _currentSkillHandler;
 
         [SerializeField]

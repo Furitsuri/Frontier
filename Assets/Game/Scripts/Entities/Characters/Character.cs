@@ -41,6 +41,7 @@ namespace Frontier.Entities
         protected FieldLogicBase _fieldLogic                                                = null;
         protected BattleLogicBase _battleLogic                                              = null;
         protected BattleAnimationEventReceiver _animReceiver                                = null;
+        protected GameObject _ghostObject                                                   = null;
         protected TransformHandler _transformHdlr                                           = null;     // キャラクターのTransform操作を行うクラス
         protected AnimationController _animCtrl                                             = null;     // アニメーションコントローラ
         protected Bullet _bullet                                                            = null;     // 矢などの弾
@@ -53,6 +54,7 @@ namespace Frontier.Entities
         public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
         public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
+        public GameObject GhostObj => _ghostObject;
         public ref Status GetStatusRef => ref _status;
         public ref CameraParameter CameraParam => ref _camParam;
 
@@ -131,6 +133,24 @@ namespace Frontier.Entities
             foreach( var (material, originalColor) in _textureMaterialsAndColors )
             {
                 material.color = originalColor;
+                material.SetFloat( "_Surface", 0f );
+                material.DisableKeyword( "_SURFACE_TYPE_TRANSPARENT" );
+                material.SetOverrideTag( "RenderType", "Opaque" );
+                material.renderQueue = ( int ) UnityEngine.Rendering.RenderQueue.Geometry;
+            }
+        }
+
+        public void SetMaterialsSemiTransparent( float alpha = 0.5f )
+        {
+            foreach( var (material, originalColor) in _textureMaterialsAndColors )
+            {
+                material.SetFloat( "_Surface", 1f );
+                material.EnableKeyword( "_SURFACE_TYPE_TRANSPARENT" );
+                material.SetOverrideTag( "RenderType", "Transparent" );
+                material.renderQueue = ( int ) UnityEngine.Rendering.RenderQueue.Transparent;
+                Color color = originalColor;
+                color.a = Mathf.Clamp01( alpha );
+                material.color = color;
             }
         }
 
@@ -193,6 +213,56 @@ namespace Frontier.Entities
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
 
+        /// <summary>
+        /// 現在のアニメーションポーズをベイクし、Renderer のみを持つ軽量なゴーストオブジェクトを生成します。
+        /// Character コンポーネント等のゲームロジックは一切含みません。
+        /// </summary>
+        public GameObject CreateGhostObject()
+        {
+            var ghost = new GameObject( $"{gameObject.name}_Ghost" );
+
+            // SkinnedMeshRenderer: 現在の骨格ポーズをベイクして静的メッシュとして複製
+            foreach( var smr in GetComponentsInChildren<SkinnedMeshRenderer>() )
+            {
+                var child = new GameObject( smr.gameObject.name );
+                child.transform.SetParent( ghost.transform, false );
+                child.transform.localPosition = transform.InverseTransformPoint( smr.transform.position );
+                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * smr.transform.rotation;
+                child.transform.localScale    = new Vector3(
+                    smr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
+                    smr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
+                    smr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
+                );
+
+                var baked = new Mesh();
+                smr.BakeMesh( baked );
+                child.AddComponent<MeshFilter>().sharedMesh  = baked;
+                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( smr.sharedMaterials );
+            }
+
+            // MeshRenderer: 共有メッシュをそのまま参照して複製
+            foreach( var mr in GetComponentsInChildren<MeshRenderer>() )
+            {
+                var mf = mr.GetComponent<MeshFilter>();
+                if( mf == null || mf.sharedMesh == null ) { continue; }
+
+                var child = new GameObject( mr.gameObject.name );
+                child.transform.SetParent( ghost.transform, false );
+                child.transform.localPosition = transform.InverseTransformPoint( mr.transform.position );
+                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * mr.transform.rotation;
+                child.transform.localScale    = new Vector3(
+                    mr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
+                    mr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
+                    mr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
+                );
+
+                child.AddComponent<MeshFilter>().sharedMesh  = mf.sharedMesh;
+                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( mr.sharedMaterials );
+            }
+
+            return ghost;
+        }
+
         virtual public void Setup()
         {
             LazyInject.GetOrCreate( ref _btlParams, () => _hierarchyBld.InstantiateWithDiContainer<BattleParameters>( false ) );
@@ -234,8 +304,8 @@ namespace Frontier.Entities
         /// </summary>
         virtual public void Dispose()
         {
-            // 戦闘時間管理クラスの登録を解除
-            _timeScaleCtrl.Unregist( _timeScale );
+            // 戦闘時間管理クラスの登録を解除（DI未注入のゴーストオブジェクトからも呼ばれる可能性があるため null チェック）
+            _timeScaleCtrl?.Unregist( _timeScale );
 
             if ( _bullet != null )
             {
@@ -268,6 +338,29 @@ namespace Frontier.Entities
                 Destroy( _animReceiver );
                 _animReceiver = null;
             }
+        }
+
+        private static Material[] CreateGhostMaterials( Material[] originals )
+        {
+            var mats = new Material[originals.Length];
+            for( int i = 0; i < originals.Length; i++ )
+            {
+                var mat = new Material( originals[i] );
+                mat.SetFloat( "_Surface", 1 );
+                mat.SetOverrideTag( "RenderType", "Transparent" );
+                mat.SetInt( "_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha );
+                mat.SetInt( "_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha );
+                mat.SetInt( "_ZWrite", 0 );
+                mat.DisableKeyword( "_ALPHATEST_ON" );
+                mat.EnableKeyword( "_SURFACE_TYPE_TRANSPARENT" );
+                mat.EnableKeyword( "_ALPHABLEND_ON" );
+                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                Color c = mat.color;
+                c.a = 0.5f;
+                mat.color = c;
+                mats[i] = mat;
+            }
+            return mats;
         }
 
         /// <summary>
