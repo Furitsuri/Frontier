@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using UnityEditor.Rendering;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -28,7 +29,9 @@ namespace Frontier.Battle
             PL_SKILL_ACTION_END,
         }
 
-        private int _targetingValue;
+        private int _currentRange;
+        private int _maxRange;
+        private bool _isAdjustableRange;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
@@ -77,8 +80,12 @@ namespace Frontier.Battle
             // アタッカーキャラクターの設定
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
 
-            _targetingMode  = SkillsData.data[( int ) _useSkillID].TargetingMode;
-            _targetingValue = SkillsData.data[( int ) _useSkillID].TargetingValue;
+            var skillData       = SkillsData.data[( int ) _useSkillID];
+            _targetingMode      = skillData.TargetingMode;
+            _maxRange           = skillData.RangeValue;
+            // TargetingValueに負の値が設定されている場合はRangeValueをそのまま用いる
+            _currentRange       = _maxRange;
+            _isAdjustableRange  = skillData.IsAdjustableRange;
             
             _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( _plOwner.GetTransformHandler.GetDirection(), true );
 
@@ -133,7 +140,8 @@ namespace Frontier.Battle
                 (GuideIcon.CONFIRM,     "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                 (GuideIcon.CANCEL,      "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
                 (GuideIcon.INFO,        "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nCHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode)
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nCHARACTER", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "ADJUST\nPOWER",    new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode)
             );
         }
 
@@ -187,6 +195,9 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptSub1() { return 1 < _attackTargetCharaKeys.Count; }
         protected override bool CanAcceptSub2() { return CanAcceptSub1(); }
+
+        protected override bool CanAcceptSub3() => _isAdjustableRange && 1 < _currentRange;
+        protected override bool CanAcceptSub4() => _isAdjustableRange && _currentRange < _maxRange;
 
         protected override bool AcceptDirection( InputContext context )
         {
@@ -255,6 +266,55 @@ namespace Frontier.Battle
             return true;
         }
 
+        protected override bool AcceptSub3( InputContext context )
+        {
+            if( !base.AcceptSub3( context ) ) { return false; }
+
+            _currentRange--;
+            RefreshAfterCurrentRangeChanged();
+
+            return true;
+        }
+
+        protected override bool AcceptSub4( InputContext context )
+        {
+            if( !base.AcceptSub4( context ) ) { return false; }
+
+            _currentRange++;
+            RefreshAfterCurrentRangeChanged();
+
+            return true;
+        }
+
+        /// <summary>
+        /// _currentRange変更後にターゲット可能範囲とゴーストをリアルタイム更新します
+        /// </summary>
+        private void RefreshAfterCurrentRangeChanged()
+        {
+            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
+            int tileIndex = ( _targetingMode == TargetingMode.PART_OF_RANGE )
+                ? _stageCtrl.GetCurrentGridIndex()
+                : _plOwner.BattleParams.TmpParam.CurrentTileIndex;
+
+            actionRangeCtrl.RefreshTargetingRange( _targetingMode, tileIndex, _currentRange );
+            _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
+
+            if( 0 < _attackTargetCharaKeys.Count )
+            {
+                if( _targetCharacter == null || !_attackTargetCharaKeys.Contains( _targetCharacter.GetCharacterKey() ) )
+                {
+                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
+                }
+            }
+            else
+            {
+                _targetCharacter = null;
+            }
+
+            _presenter.SetActiveActionResultExpect( _targetCharacter != null, ParameterWindowType.Left );
+            RefreshGhostPreview( actionRangeCtrl );
+        }
+
         private void AcceptDirectionWithTargetingModePartOfRange( Direction dir, bool isMoveSkill )
         {
             _stageCtrl.OperateGridCursorController( dir );
@@ -268,7 +328,7 @@ namespace Frontier.Battle
                 return;
             }
 
-            actionRangeCtrl.RefreshTargetingRange( _targetingMode, targetingRangeIndex, _targetingValue );
+            actionRangeCtrl.RefreshTargetingRange( _targetingMode, targetingRangeIndex, _currentRange );
             _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
 
             // 攻撃可能なグリッド内に敵がおり、尚且つ現在のターゲットキャラクターが存在しない場合は、ターゲットキャラクターを設定する
@@ -302,10 +362,9 @@ namespace Frontier.Battle
         private void AcceptDirectionWithTargetingModeDirectional( Direction dir, bool isMoveSkill )
         {
             var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
-            var targetingMode   = ( int )_targetingMode;
 
             _plOwner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
-            actionRangeCtrl.RefreshTargetingRange( _targetingMode, -1, _targetingValue );
+            actionRangeCtrl.RefreshTargetingRange( _targetingMode, _plOwner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
             _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
 
             // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる

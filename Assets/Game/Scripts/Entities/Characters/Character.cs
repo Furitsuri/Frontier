@@ -240,7 +240,7 @@ namespace Frontier.Entities
                 child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( smr.sharedMaterials );
             }
 
-            // MeshRenderer: 共有メッシュをそのまま参照して複製
+            // MeshRenderer: アセットメッシュをコピーしてランタイムオブジェクトとして複製
             foreach( var mr in GetComponentsInChildren<MeshRenderer>() )
             {
                 var mf = mr.GetComponent<MeshFilter>();
@@ -256,7 +256,7 @@ namespace Frontier.Entities
                     mr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
                 );
 
-                child.AddComponent<MeshFilter>().sharedMesh  = mf.sharedMesh;
+                child.AddComponent<MeshFilter>().sharedMesh  = Object.Instantiate( mf.sharedMesh );
                 child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( mr.sharedMaterials );
             }
 

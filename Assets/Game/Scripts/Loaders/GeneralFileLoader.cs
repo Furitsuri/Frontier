@@ -21,6 +21,7 @@ namespace Frontier.Loaders
             public int Duration;
             public int RangeShape;
             public int RangeValue;
+            public int IsAdjustableRange;
             public int TargetingMode;
             public int TargetingValue;
             public float AddAtkMag;
@@ -62,24 +63,25 @@ namespace Frontier.Loaders
         /// <param name="fdata">適応元のファイルから読み取ったスキルデータ</param>
         private void ApplySkillsData( ref SkillsData.Data data, in FileSkillData fdata )
         {
-            data.Name           = fdata.Name;
-            data.Cost           = fdata.Cost;
-            data.SituationType  = ( SituationType ) fdata.SituationType;
-            data.ActionType     = ( ActionType ) fdata.ActionType;
-            data.Flags          = ( SkillBitFlag ) fdata.Flags;
-            data.Duration       = fdata.Duration;
-            data.RangeShape     = ( RangeShape ) fdata.RangeShape;
-            data.RangeValue     = fdata.RangeValue;
-            data.TargetingMode  = ( TargetingMode ) fdata.TargetingMode;
-            data.TargetingValue = fdata.TargetingValue;
-            data.AddAtkMag      = fdata.AddAtkMag;
-            data.AddDefMag      = fdata.AddDefMag;
-            data.AddAtkNum      = fdata.AddAtkNum;
-            data.Param1         = fdata.Param1;
-            data.Param2         = fdata.Param2;
-            data.Param3         = fdata.Param3;
-            data.Param4         = fdata.Param4;
-            data.ExplainTextKey = fdata.ExplainTextKey;
+            data.Name               = fdata.Name;
+            data.Cost               = fdata.Cost;
+            data.SituationType      = ( SituationType ) fdata.SituationType;
+            data.ActionType         = ( ActionType ) fdata.ActionType;
+            data.Flags              = ( SkillBitFlag ) fdata.Flags;
+            data.Duration           = fdata.Duration;
+            data.RangeShape         = ( RangeShape ) fdata.RangeShape;
+            data.RangeValue         = fdata.RangeValue;
+            data.IsAdjustableRange  = ( 0 < fdata.IsAdjustableRange );
+            data.TargetingMode      = ( TargetingMode ) fdata.TargetingMode;
+            data.TargetingValue     = fdata.TargetingValue;
+            data.AddAtkMag          = fdata.AddAtkMag;
+            data.AddDefMag          = fdata.AddDefMag;
+            data.AddAtkNum          = fdata.AddAtkNum;
+            data.Param1             = fdata.Param1;
+            data.Param2             = fdata.Param2;
+            data.Param3             = fdata.Param3;
+            data.Param4             = fdata.Param4;
+            data.ExplainTextKey     = fdata.ExplainTextKey;
             // TODO : nullアクセス防止の暫定対応。後で消すこと
             if( null == data.ExplainTextKey ) { data.ExplainTextKey = ""; }
         }

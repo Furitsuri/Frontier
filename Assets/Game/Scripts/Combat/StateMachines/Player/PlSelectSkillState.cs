@@ -219,13 +219,13 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ToggleEquipSkill( index );
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );  // 使用可能スキルの更新
 
+            // 場面遷移が必要なアクションスキルが選択されている場合
             if( isTransitionSkillActionType )
             {
+                // スキル使用フラグが立っている場合はその攻撃範囲などを描画し、
+                // その範囲内に攻撃対象が存在している場合のみ、遷移可能なスキルとして保持する
                 if( _plOwner.BattleParams.TmpParam.IsSkillsToggledON[index] )
                 {
-                    var targetingMode   = skillData.TargetingMode;
-                    var targetingValue  = skillData.TargetingValue;
-
                     _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID );
                     _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
 
