@@ -29,9 +29,9 @@ namespace Frontier.Entities
         /// <param name="targetCharacter"></param>
         /// <param name="isMovingSkill"></param>
         /// <param name="refreshGhostCallback"></param>
-        static public void RefreshFocusTarget( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill, Action<ActionRangeController> refreshGhostCallback )
+        static public void RefreshFocusTarget( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill )
         {
-            DirectionalTargetingRange.RefreshFocusTarget( context, ref attackTargetCharaKeys, ref targetCharacter, isMovingSkill, refreshGhostCallback );
+            DirectionalTargetingRange.RefreshFocusTarget( context, ref attackTargetCharaKeys, ref targetCharacter, isMovingSkill );
         }
 
         static public void RefreshTargetableRange( TargetingRangeContext context, bool isWithMove, int tileIndex, int currentRange, ActionableTileData actionableTileData )

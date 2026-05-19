@@ -49,7 +49,7 @@ namespace Frontier.Entities
 
 			// 移動を伴う場合は、最も遠方の移動可能(キャラクターが存在しない)なタイルにターゲット可能レンジを合わせる
 			// また、全てのタイルが移動不可である場合は、ターゲット可能タイル及び攻撃対象タイルから削除し、実行不可とする
-			if(isWithMove)
+			if( isWithMove )
 			{
 				// 攻撃対象が存在するタイルがない場合には実行不可
 				if(actionableTileData.RefAttackTargetTileIndicies.Count <= 0)
@@ -63,7 +63,7 @@ namespace Frontier.Entities
 			}
 		}
 
-		static public void RefreshFocusTarget( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill, Action<ActionRangeController> refreshGhostCallback )
+		static public void RefreshFocusTarget( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill )
         {
             var actionRangeCtrl   = context.Owner.BattleLogic.ActionRangeCtrl;
             attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
@@ -91,11 +91,6 @@ namespace Frontier.Entities
                 // 攻撃可能なグリッドがない場合はカーソル位置(カメラ位置)をプレイヤーに合わせる
                 context.StageCtrl.ApplyCurrentGrid2CharacterTile( context.Owner );
                 context.Presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            }
-
-            if( isMovingSkill )
-            {
-                refreshGhostCallback?.Invoke( actionRangeCtrl );
             }
         }
 
