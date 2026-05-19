@@ -1,16 +1,7 @@
-﻿using Frontier.Entities;
-using Frontier.Registries;
+﻿using Frontier.Registries;
 using Frontier.Stage;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using UnityEngine;
 using Zenject;
-using static Constants;
 
 namespace Frontier.Entities
 {

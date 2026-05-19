@@ -140,6 +140,14 @@ namespace Frontier.Entities
             }
         }
 
+        public void SetGhostActive( bool isActive )
+        {
+            if( _ghostObject != null )
+            {
+                _ghostObject.SetActive( isActive );
+            }
+        }
+
         public void SetMaterialsSemiTransparent( float alpha = 0.5f )
         {
             foreach( var (material, originalColor) in _textureMaterialsAndColors )
@@ -213,54 +221,14 @@ namespace Frontier.Entities
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
 
-        /// <summary>
-        /// 現在のアニメーションポーズをベイクし、Renderer のみを持つ軽量なゴーストオブジェクトを生成します。
-        /// Character コンポーネント等のゲームロジックは一切含みません。
-        /// </summary>
-        public GameObject CreateGhostObject()
+        public GameObject GetGhostObject()
         {
-            var ghost = new GameObject( $"{gameObject.name}_Ghost" );
-
-            // SkinnedMeshRenderer: 現在の骨格ポーズをベイクして静的メッシュとして複製
-            foreach( var smr in GetComponentsInChildren<SkinnedMeshRenderer>() )
+            if( null == _ghostObject )
             {
-                var child = new GameObject( smr.gameObject.name );
-                child.transform.SetParent( ghost.transform, false );
-                child.transform.localPosition = transform.InverseTransformPoint( smr.transform.position );
-                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * smr.transform.rotation;
-                child.transform.localScale    = new Vector3(
-                    smr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
-                    smr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
-                    smr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
-                );
-
-                var baked = new Mesh();
-                smr.BakeMesh( baked );
-                child.AddComponent<MeshFilter>().sharedMesh  = baked;
-                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( smr.sharedMaterials );
+                _ghostObject = CreateGhostObject();
             }
 
-            // MeshRenderer: アセットメッシュをコピーしてランタイムオブジェクトとして複製
-            foreach( var mr in GetComponentsInChildren<MeshRenderer>() )
-            {
-                var mf = mr.GetComponent<MeshFilter>();
-                if( mf == null || mf.sharedMesh == null ) { continue; }
-
-                var child = new GameObject( mr.gameObject.name );
-                child.transform.SetParent( ghost.transform, false );
-                child.transform.localPosition = transform.InverseTransformPoint( mr.transform.position );
-                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * mr.transform.rotation;
-                child.transform.localScale    = new Vector3(
-                    mr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
-                    mr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
-                    mr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
-                );
-
-                child.AddComponent<MeshFilter>().sharedMesh  = Object.Instantiate( mf.sharedMesh );
-                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( mr.sharedMaterials );
-            }
-
-            return ghost;
+            return _ghostObject;
         }
 
         virtual public void Setup()
@@ -361,6 +329,77 @@ namespace Frontier.Entities
                 mats[i] = mat;
             }
             return mats;
+        }
+
+        /// <summary>
+        /// 現在のアニメーションポーズをベイクし、Renderer のみを持つ軽量なゴーストオブジェクトを生成します。
+        /// Character コンポーネント等のゲームロジックは一切含みません。
+        /// </summary>
+        private GameObject CreateGhostObject()
+        {
+            var ghost = new GameObject( $"{gameObject.name}_Ghost" );
+
+            // SkinnedMeshRenderer: 現在の骨格ポーズをベイクして静的メッシュとして複製
+            foreach( var smr in GetComponentsInChildren<SkinnedMeshRenderer>() )
+            {
+                var child = new GameObject( smr.gameObject.name );
+                child.transform.SetParent( ghost.transform, false );
+                child.transform.localPosition = transform.InverseTransformPoint( smr.transform.position );
+                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * smr.transform.rotation;
+                child.transform.localScale    = new Vector3(
+                    smr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
+                    smr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
+                    smr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
+                );
+
+                var baked = new Mesh();
+                smr.BakeMesh( baked );
+                child.AddComponent<MeshFilter>().sharedMesh  = baked;
+                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( smr.sharedMaterials );
+            }
+
+            // MeshRenderer: アセットメッシュをコピーしてランタイムオブジェクトとして複製
+            foreach( var mr in GetComponentsInChildren<MeshRenderer>() )
+            {
+                var mf = mr.GetComponent<MeshFilter>();
+                if( mf == null || mf.sharedMesh == null ) { continue; }
+
+                var child = new GameObject( mr.gameObject.name );
+                child.transform.SetParent( ghost.transform, false );
+                child.transform.localPosition = transform.InverseTransformPoint( mr.transform.position );
+                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * mr.transform.rotation;
+                child.transform.localScale    = new Vector3(
+                    mr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
+                    mr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
+                    mr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
+                );
+
+                child.AddComponent<MeshFilter>().sharedMesh  = Object.Instantiate( mf.sharedMesh );
+                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( mr.sharedMaterials );
+            }
+
+            return ghost;
+        }
+
+        public void CleanupGhost()
+        {
+            if( _ghostObject != null )
+            {
+                // CreateGhostObject でベイクした Mesh と生成したマテリアルは Unity が自動破棄しないため明示的に解放する
+                foreach(var mf in _ghostObject.GetComponentsInChildren<MeshFilter>())
+                {
+                    if(mf.sharedMesh != null) { UnityEngine.Object.Destroy( mf.sharedMesh ); }
+                }
+                foreach(var mr in _ghostObject.GetComponentsInChildren<MeshRenderer>())
+                {
+                    foreach(var mat in mr.sharedMaterials)
+                    {
+                        if(mat != null) { UnityEngine.Object.Destroy( mat ); }
+                    }
+                }
+                UnityEngine.Object.Destroy( _ghostObject );
+                _ghostObject = null;
+            }
         }
 
         /// <summary>

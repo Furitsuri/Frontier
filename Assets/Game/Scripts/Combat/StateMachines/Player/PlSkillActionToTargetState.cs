@@ -5,9 +5,8 @@ using Frontier.Stage;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using UnityEditor.Rendering;
+using Unity.VisualScripting;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -29,24 +28,23 @@ namespace Frontier.Battle
             PL_SKILL_ACTION_END,
         }
 
+        private delegate void ChangeDirectionCallback( TargetingRangeContext context, Direction dir, bool isWithMove, int range );
+        private delegate void RefreshTargetCallback( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill, Action<ActionRangeController> refreshGhostCallback );
+        private delegate bool TryAdjustRangeCallback( TargetingRangeContext context, int step, ref int currentRange, int maxRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter );
+
         private int _currentRange;
         private int _maxRange;
         private bool _isAdjustableRange;
+        private bool _isMovingSkill;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
         private Character _targetCharacter                  = null;
         private SequenceFacade _sequenceFcd                 = null;
         private List<CharacterKey> _attackTargetCharaKeys   = null;
-        private Action<Direction, bool>[] _changeDirectionCallbacks;
-        private GameObject _ghostObject                     = null;
-        private readonly TileBitFlag[] CollectTileBitFlags = new TileBitFlag[( int )TargetingMode.NUM]
-        {
-            TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.NORMAL_ATTACK
-            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.PART_OF_RANGE
-            TileBitFlag.TARGETABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST,   // TargetingMode.DIRECTIONAL
-            TileBitFlag.ATTACKABLE_TARGET_EXIST,                            // TargetingMode.ALL
-        };
+        private ChangeDirectionCallback[] _changeDirectionCallbacks;
+        private RefreshTargetCallback[] _refreshFocusTargetCallbacks;
+        private TryAdjustRangeCallback[] _tryAdjustRangeCallbacks;
 
         [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl, SequenceFacade sequenceFcd )
         {
@@ -55,12 +53,28 @@ namespace Frontier.Battle
 
             _attackTargetCharaKeys = new List<CharacterKey>();
 
-            _changeDirectionCallbacks = new Action<Direction, bool>[( int ) TargetingMode.NUM]
+            _changeDirectionCallbacks = new ChangeDirectionCallback[( int ) TargetingMode.NUM]
             {
-                AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.NORMAL_ATTACKはキャラクターの向きに依存するため、TargetingMode.Directionalと同じコールバックを使用
-                AcceptDirectionWithTargetingModePartOfRange,    // TargetingMode.PART_OF_RANGE
-                AcceptDirectionWithTargetingModeDirectional,    // TargetingMode.DIRECTIONAL
-                null,                                           // TargetingMode.ALLは方向の概念がないため、コールバックは不要
+                NormalAttackTargetingRange.AcceptDirection,     // TargetingMode.NORMAL_ATTACK
+                PartOfRangeTargetingRange.AcceptDirection,      // TargetingMode.PART_OF_RANGE
+                DirectionalTargetingRange.AcceptDirection,      // TargetingMode.DIRECTIONAL
+                AllTargetingRange.AcceptDirection,              // TargetingMode.ALL
+            };
+
+            _refreshFocusTargetCallbacks = new RefreshTargetCallback[( int ) TargetingMode.NUM]
+            {
+                NormalAttackTargetingRange.RefreshFocusTarget,       // TargetingMode.NORMAL_ATTACK
+                PartOfRangeTargetingRange.RefreshFocusTarget,        // TargetingMode.PART_OF_RANGE
+                DirectionalTargetingRange.RefreshFocusTarget,        // TargetingMode.DIRECTIONAL
+                AllTargetingRange.RefreshFocusTarget,                // TargetingMode.ALL
+            };
+
+            _tryAdjustRangeCallbacks = new TryAdjustRangeCallback[( int ) TargetingMode.NUM]
+            {
+                NormalAttackTargetingRange.TryAdjustRange,      // TargetingMode.NORMAL_ATTACK
+                PartOfRangeTargetingRange.TryAdjustRange,       // TargetingMode.PART_OF_RANGE
+                DirectionalTargetingRange.TryAdjustRange,       // TargetingMode.DIRECTIONAL
+                AllTargetingRange.TryAdjustRange,               // TargetingMode.ALL
             };
         }
 
@@ -83,11 +97,14 @@ namespace Frontier.Battle
             var skillData       = SkillsData.data[( int ) _useSkillID];
             _targetingMode      = skillData.TargetingMode;
             _maxRange           = skillData.RangeValue;
-            // TargetingValueに負の値が設定されている場合はRangeValueをそのまま用いる
             _currentRange       = _maxRange;
             _isAdjustableRange  = skillData.IsAdjustableRange;
+            _isMovingSkill      = skillData.IsMovingSkill;
             
-            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( _plOwner.GetTransformHandler.GetDirection(), true );
+            var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
+
+            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetableRange( _targetingMode, _isMovingSkill, _plOwner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
+            _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, ref _attackTargetCharaKeys, ref _targetCharacter, _isMovingSkill, null );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
@@ -124,7 +141,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            CleanupGhost();
+            _plOwner.CleanupGhost();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
             return base.ExitState();
@@ -171,7 +188,7 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptConfirm()
         {
-            return ( 0 < _attackTargetCharaKeys.Count );
+            return IsExecutableAttack();
         }
 
         protected override bool CanAcceptCancel()
@@ -204,7 +221,9 @@ namespace Frontier.Battle
             context.Cursor = _stageCtrl.ConvertDirectionDependOnCameraAngle( context.Cursor );
             if( Direction.NONE == context.Cursor ) { return false; }
 
-            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( context.Cursor, true );
+            var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
+            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, context.Cursor, _isMovingSkill, _currentRange );
+            _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, ref _attackTargetCharaKeys, ref _targetCharacter, _isMovingSkill, null );
 
             return true;
         }
@@ -270,125 +289,18 @@ namespace Frontier.Battle
         {
             if( !base.AcceptSub3( context ) ) { return false; }
 
-            _currentRange--;
-            RefreshAfterCurrentRangeChanged();
-
-            return true;
+            var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
+            var callback = _tryAdjustRangeCallbacks[( int ) _targetingMode];
+            return callback != null && callback( targetingContext, -1, ref _currentRange, _maxRange, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
         }
 
         protected override bool AcceptSub4( InputContext context )
         {
             if( !base.AcceptSub4( context ) ) { return false; }
 
-            _currentRange++;
-            RefreshAfterCurrentRangeChanged();
-
-            return true;
-        }
-
-        /// <summary>
-        /// _currentRange変更後にターゲット可能範囲とゴーストをリアルタイム更新します
-        /// </summary>
-        private void RefreshAfterCurrentRangeChanged()
-        {
-            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
-            int tileIndex = ( _targetingMode == TargetingMode.PART_OF_RANGE )
-                ? _stageCtrl.GetCurrentGridIndex()
-                : _plOwner.BattleParams.TmpParam.CurrentTileIndex;
-
-            actionRangeCtrl.RefreshTargetingRange( _targetingMode, tileIndex, _currentRange );
-            _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
-
-            if( 0 < _attackTargetCharaKeys.Count )
-            {
-                if( _targetCharacter == null || !_attackTargetCharaKeys.Contains( _targetCharacter.GetCharacterKey() ) )
-                {
-                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
-                }
-            }
-            else
-            {
-                _targetCharacter = null;
-            }
-
-            _presenter.SetActiveActionResultExpect( _targetCharacter != null, ParameterWindowType.Left );
-            RefreshGhostPreview( actionRangeCtrl );
-        }
-
-        private void AcceptDirectionWithTargetingModePartOfRange( Direction dir, bool isMoveSkill )
-        {
-            _stageCtrl.OperateGridCursorController( dir );
-
-            var actionRangeCtrl     = _plOwner.BattleLogic.ActionRangeCtrl;
-            var targetingRangeIndex = _stageCtrl.GetCurrentGridIndex();
-
-            // ターゲット指定中のグリッドが攻撃可能なタイルを指していない場合は、ターゲットキャラクターを再設定せずに処理を終了する
-            if( !_plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.Keys.Contains( targetingRangeIndex ) )
-            {
-                return;
-            }
-
-            actionRangeCtrl.RefreshTargetingRange( _targetingMode, targetingRangeIndex, _currentRange );
-            _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
-
-            // 攻撃可能なグリッド内に敵がおり、尚且つ現在のターゲットキャラクターが存在しない場合は、ターゲットキャラクターを設定する
-            if( 0 < _attackTargetCharaKeys.Count )
-            {
-                if( null == _targetCharacter )
-                {
-                    _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
-                    Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
-                    _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
-                }
-                else
-                {
-                    // 現在のターゲットキャラクターが攻撃可能なグリッド内にいる場合は、ターゲットキャラクターを再設定しない
-                    if( !_attackTargetCharaKeys.Contains( _targetCharacter.GetCharacterKey() ) )
-                    {
-                        _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
-                        Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
-                        _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
-                    }
-                }
-            }
-            else
-            {
-                _targetCharacter = null;
-            }
-
-            _presenter.SetActiveActionResultExpect( _targetCharacter != null, ParameterWindowType.Left );
-        }
-
-        private void AcceptDirectionWithTargetingModeDirectional( Direction dir, bool isMoveSkill )
-        {
-            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
-
-            _plOwner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
-            actionRangeCtrl.RefreshTargetingRange( _targetingMode, _plOwner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
-            _attackTargetCharaKeys = actionRangeCtrl.GetAttackTargetCharacterKeys();
-
-            // 攻撃可能なグリッド内に敵がいた場合に標的グリッドを合わせる
-            if( 0 < _attackTargetCharaKeys.Count )
-            {
-                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, _attackTargetCharaKeys );
-                Debug.Assert( _targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
-
-                _stageCtrl.MoveGridCursorToAttackableTile( _targetCharacter );
-                _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );   // アクション対象指定関連のUIを表示
-            }
-            else
-            {
-                _targetCharacter = null;
-
-                // 攻撃可能なグリッドがない場合はカーソル位置(カメラ位置)をプレイヤーに合わせる
-                _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
-                _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            }
-
-            if( isMoveSkill ) {
-                RefreshGhostPreview( actionRangeCtrl );
-            }
+            var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
+            var callback = _tryAdjustRangeCallbacks[( int ) _targetingMode];
+            return callback != null && callback( targetingContext, +1, ref _currentRange, _maxRange, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
         }
 
         private void AcceptSub( Direction dir )
@@ -401,78 +313,9 @@ namespace Frontier.Battle
             }
         }
 
-        /// <summary>
-        /// 移動スキル時に、攻撃範囲内で最も遠いタイルへスキル使用者のゴーストを表示します
-        /// </summary>
-        private void RefreshGhostPreview( ActionRangeController actionRangeCtrl )
+        private bool IsExecutableAttack()
         {
-            var targetableTileMap = actionRangeCtrl.ActionableTileData.TargetableTileMap;
-            if( targetableTileMap.Count == 0 )
-            {
-                SetGhostActive( false );
-                return;
-            }
-
-            // ターゲット可能範囲内でスキル使用者から最も離れたタイルを探す
-            Vector3 ownerPos        = _plOwner.GetTransformHandler.GetPosition();
-            int     farthestIdx     = -1;
-            float   maxDist         = -1f;
-
-            foreach( int tileIdx in targetableTileMap.Keys )
-            {
-                float dist = Vector3.Distance( ownerPos, _stageCtrl.GetTileStaticData( tileIdx ).CharaStandPos );
-                if( dist > maxDist )
-                {
-                    maxDist     = dist;
-                    farthestIdx = tileIdx;
-                }
-            }
-
-            if( farthestIdx < 0 )
-            {
-                SetGhostActive( false );
-                return;
-            }
-
-            if( _ghostObject == null )
-            {
-                _ghostObject = _plOwner.CreateGhostObject();
-            }
-
-            var targetTile  = _stageCtrl.GetTileStaticData( farthestIdx );
-            var originalRot = Quaternion.LookRotation( Vector3.forward, Vector3.up );
-            var rotatedRot  = Quaternion.LookRotation( _plOwner.GetTransformHandler.GetOrderedForward(), Vector3.up );
-            _ghostObject.transform.SetPositionAndRotation( targetTile.CharaStandPos, rotatedRot * Quaternion.Inverse( originalRot ) );
-            SetGhostActive( true );
-        }
-
-        private void SetGhostActive( bool isActive )
-        {
-            if( _ghostObject != null )
-            {
-                _ghostObject.SetActive( isActive );
-            }
-        }
-
-        private void CleanupGhost()
-        {
-            if( _ghostObject != null )
-            {
-                // CreateGhostObject でベイクした Mesh と生成したマテリアルは Unity が自動破棄しないため明示的に解放する
-                foreach( var mf in _ghostObject.GetComponentsInChildren<MeshFilter>() )
-                {
-                    if( mf.sharedMesh != null ) { UnityEngine.Object.Destroy( mf.sharedMesh ); }
-                }
-                foreach( var mr in _ghostObject.GetComponentsInChildren<MeshRenderer>() )
-                {
-                    foreach( var mat in mr.sharedMaterials )
-                    {
-                        if( mat != null ) { UnityEngine.Object.Destroy( mat ); }
-                    }
-                }
-                UnityEngine.Object.Destroy( _ghostObject );
-                _ghostObject = null;
-            }
+            return 0 < _attackTargetCharaKeys.Count;
         }
     }
 }

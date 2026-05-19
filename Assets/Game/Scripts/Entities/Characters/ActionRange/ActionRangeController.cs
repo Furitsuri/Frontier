@@ -1,13 +1,12 @@
-﻿using Frontier.Entities;
-using Frontier.Combat;
+﻿using Frontier.Combat;
 using Frontier.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using static Unity.Burst.Intrinsics.X86.Avx;
 using Cysharp.Threading.Tasks;
+using Frontier.Battle;
 
 namespace Frontier.Entities
 {
@@ -18,8 +17,7 @@ namespace Frontier.Entities
         private MovePathHandler _movePathHandler            = null;
         private ActionableTileData _actionableTileData      = null;
         private ActionableRangeRenderer _actionableRangeRdr = null;
-
-        private Action<int, int, Character, ActionableTileData>[] RefreshTargetingRangeCallbacks;
+        private Action<TargetingRangeContext, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         public MovePathHandler MovePathHdlr => _movePathHandler;
         public ActionableTileData ActionableTileData => _actionableTileData;
@@ -33,12 +31,12 @@ namespace Frontier.Entities
             LazyInject.GetOrCreate( ref _movePathHandler, () => hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
             LazyInject.GetOrCreate( ref _actionableRangeRdr, () => hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
 
-            RefreshTargetingRangeCallbacks = new Action<int, int, Character, ActionableTileData>[( int ) TargetingMode.NUM]
+            RefreshTargetableRangeCallbacks = new Action<TargetingRangeContext, bool, int, int, ActionableTileData>[( int ) TargetingMode.NUM]
             {
-                RefreshTargetingWithNormalAttack,   // TargetingMode.NORMAL_ATTACK
-                RefreshTargetingWithPartOfRange,    // TargetingMode.PART_OF_RANGE
-                RefreshTargetingWithDirectional,    // TargetingMode.DIRECTIONAL
-                RefreshTargetingWithAll             // TargetingMode.ALL
+                NormalAttackTargetingRange.RefreshTargetableRange,    // TargetingMode.NORMAL_ATTACK
+                PartOfRangeTargetingRange.RefreshTargetableRange,     // TargetingMode.PART_OF_RANGE
+                DirectionalTargetingRange.RefreshTargetableRange,     // TargetingMode.DIRECTIONAL
+                AllTargetingRange.RefreshTargetableRange,             // TargetingMode.ALL
             };
         }
 
@@ -121,7 +119,7 @@ namespace Frontier.Entities
             ClearActionableRangeData();
         }
 
-        public void RefreshTargetingRange( TargetingMode targetingMode, int tileIndex, int currentRange )
+        public void RefreshTargetableRange( TargetingMode targetingMode, bool isWithMove, int tileIndex, int currentRange )
         {
             if( _actionableTileData.IsEmpty() )
             {
@@ -136,7 +134,8 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            RefreshTargetingRangeCallbacks[( int ) targetingMode]( tileIndex, currentRange, _owner, _actionableTileData );
+            var context = new TargetingRangeContext { Owner = _owner, StageCtrl = _stageCtrl };
+            RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();
         }
@@ -240,82 +239,5 @@ namespace Frontier.Entities
             return targetKeys;
         }
 
-        private void RefreshTargetingWithNormalAttack( int tileIndex, int currentRange, Character owner, ActionableTileData actionableTileMap )
-        {
-            foreach( var attackableMap in actionableTileMap.AttackableTileMap )
-            {
-                if( Methods.HasAnyFlag( attackableMap.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
-                {
-                    actionableTileMap.AddAttackTargetTileIndex( attackableMap.Key );
-                }
-            }
-        }
-
-        private void RefreshTargetingWithPartOfRange( int tileIndex, int currentRange, Character owner, ActionableTileData actionableTileMap )
-        {
-            // ターゲット指定の値に応じた範囲のターゲット可能タイルを、ターゲット可能タイルとして設定する
-            _stageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( tileIndex, currentRange, owner.GetCharacterTag(), actionableTileMap );
-        }
-
-        /// <summary>
-        /// 指定のキャラクターの向きに沿った位置の攻撃可能タイルを、ターゲット可能タイルとして設定します
-        /// </summary>
-        /// <param name="tileIndex"></param>
-        /// <param name="TargetingValue"></param>
-        /// <param name="owner"></param>
-        /// <param name="actionableTileData"></param>
-        private void RefreshTargetingWithDirectional( int tileIndex, int currentRange, Character owner, ActionableTileData actionableTileData )
-        {
-            Vector3 basePos     = _stageCtrl.GetTileStaticData( owner.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
-            Vector3 baseForward = owner.GetTransformHandler.GetOrderedForward();
-            baseForward.y       = 0f;
-            baseForward         = baseForward.normalized;
-
-            foreach( var attackableMap in actionableTileData.AttackableTileMap )
-            {
-                // 一度全てのTARGETABLEフラグのビットを降ろす
-                Methods.UnsetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
-
-                // キャラクターの向きに沿ったタイル
-                var targetTilePos   = _stageCtrl.GetTileStaticData( attackableMap.Key ).CharaStandPos;
-                if( !Methods.IsMatchForward( baseForward, basePos, targetTilePos ) ) { continue; }
-                
-                // 指定範囲内のタイル
-                var tileRange       = _stageCtrl.CalcurateTotalRange( tileIndex, attackableMap.Key );
-                if( currentRange < tileRange ) { continue; }
-
-                // ターゲット可能タイルとして登録する
-                actionableTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
-                // さらに、そのタイルに攻撃対象のキャラクターが存在する場合は、攻撃対象タイルインデックスリストに追加する
-                if( IsExistOpponent( attackableMap.Value, owner.GetCharacterTag() ) )
-                {
-                    actionableTileData.AddAttackTargetTileIndex( attackableMap.Key );
-                }
-            }
-        }
-
-        /// <summary>
-        /// 現在の攻撃可能タイルをすべてターゲット可能タイルとして設定します
-        /// </summary>
-        /// <param name="tileIndex"></param>
-        /// <param name="TargetingValue"></param>
-        /// <param name="owner"></param>
-        /// <param name="actionableTileMap"></param>
-        private void RefreshTargetingWithAll( int tileIndex, int currentRange, Character owner, ActionableTileData actionableTileMap )
-        {
-            foreach( var attackableMap in actionableTileMap.AttackableTileMap )
-            {
-                Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
-
-                if( IsExistOpponent( attackableMap.Value, owner.GetCharacterTag() ) )
-                {
-                }
-            }
-        }
-
-        private bool IsExistOpponent( TileDynamicData tileDynamicData, CHARACTER_TAG ownerTag )
-        {
-            return tileDynamicData.CharaKey.IsValid() && BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDynamicData.CharaKey.CharacterTag );
-        }
     }
 }

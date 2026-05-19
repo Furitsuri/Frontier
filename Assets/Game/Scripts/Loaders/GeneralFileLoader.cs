@@ -24,6 +24,7 @@ namespace Frontier.Loaders
             public int IsAdjustableRange;
             public int TargetingMode;
             public int TargetingValue;
+            public int IsMovingSkill;
             public float AddAtkMag;
             public float AddDefMag;
             public int AddAtkNum;
@@ -74,6 +75,7 @@ namespace Frontier.Loaders
             data.IsAdjustableRange  = ( 0 < fdata.IsAdjustableRange );
             data.TargetingMode      = ( TargetingMode ) fdata.TargetingMode;
             data.TargetingValue     = fdata.TargetingValue;
+            data.IsMovingSkill      = ( 0 < fdata.IsMovingSkill );
             data.AddAtkMag          = fdata.AddAtkMag;
             data.AddDefMag          = fdata.AddDefMag;
             data.AddAtkNum          = fdata.AddAtkNum;

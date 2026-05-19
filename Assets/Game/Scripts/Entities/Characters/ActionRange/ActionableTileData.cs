@@ -72,6 +72,16 @@ namespace Frontier.Entities
             _attackTargetTileIndicies.Clear();
         }
 
+        public void DeleteTargetableTile( int index )
+        {
+            _targetableTileMap.Remove( index );
+        }
+
+        public void DeleteAttackTargetTileIndex( int index )
+        {
+            _attackTargetTileIndicies.Remove( index );
+        }
+
         public bool IsEmpty()
         {
             return _moveableTileMap.Count <= 0 && _attackableTileMap.Count <= 0;

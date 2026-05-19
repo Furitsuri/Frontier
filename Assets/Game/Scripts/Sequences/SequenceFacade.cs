@@ -1,9 +1,5 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
-using Frontier.Tutorial;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Zenject;
 
 namespace Frontier.Sequences
