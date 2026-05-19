@@ -36,6 +36,7 @@ namespace Frontier.Battle
         private int _maxRange;
         private bool _isAdjustableRange;
         private bool _isMovingSkill;
+        private bool _isSkillRegistered;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
@@ -87,7 +88,8 @@ namespace Frontier.Battle
         {
             base.Init( context );
 
-            _targetCharacter = null;
+            _targetCharacter     = null;
+            _isSkillRegistered  = false;
 
             // 使用スキルを取得
             ReceiveContext( ref _useSkillID, context );
@@ -143,6 +145,11 @@ namespace Frontier.Battle
         {
             _plOwner.CleanupGhost();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
+
+            if( !_isSkillRegistered )
+            {
+                _plOwner.BattleLogic.ActionRangeCtrl.ClearTargetableAndReDrawAttackableRange();
+            }
 
             return base.ExitState();
         }
@@ -232,6 +239,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            _isSkillRegistered = true;
             _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID );
 
             return true;

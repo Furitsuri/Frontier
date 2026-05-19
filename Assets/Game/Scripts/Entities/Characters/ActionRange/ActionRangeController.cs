@@ -5,8 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using Cysharp.Threading.Tasks;
-using Frontier.Battle;
 
 namespace Frontier.Entities
 {
@@ -202,6 +200,17 @@ namespace Frontier.Entities
         public void ReDrawAttackableRange()
         {
             _actionableRangeRdr.ClearTileMeshes();
+            DrawAttackableRange();
+        }
+
+        /// <summary>
+        /// ターゲット可能範囲(黄色)のみをクリアし、攻撃可能範囲(赤色)のみを再描画します。
+        /// DIRECTIONALスキルのキャンセル時など、攻撃範囲を維持したままターゲット表示だけ消したい場合に使います。
+        /// </summary>
+        public void ClearTargetableAndReDrawAttackableRange()
+        {
+            _actionableTileData.ClearTargetableTile();
+            _actionableTileData.ClearAttackTargetTileIndicies();
             DrawAttackableRange();
         }
 
