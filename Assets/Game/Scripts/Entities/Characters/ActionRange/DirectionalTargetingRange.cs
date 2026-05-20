@@ -48,16 +48,15 @@ namespace Frontier.Entities
 			}
 
 			// 移動を伴う場合は、最も遠方の移動可能(キャラクターが存在しない)なタイルにターゲット可能レンジを合わせる
-			// また、全てのタイルが移動不可である場合は、ターゲット可能タイル及び攻撃対象タイルから削除し、実行不可とする
+			// また、全てのタイルが移動不可、もしくは攻撃対象が存在しない場合は実行不可とする
 			if( isWithMove )
 			{
-				// 攻撃対象が存在するタイルがない場合には実行不可
-				if(actionableTileData.RefAttackTargetTileIndicies.Count <= 0)
-				{
-					actionableTileData.ClearTargetableTile();
-					RefreshGhostPreview( context, -1 );
-					return;
-				}
+                // 攻撃対象が存在するタイルがない場合には実行不可
+                if( actionableTileData.RefAttackTargetTileIndicies.Count <= 0 )
+                {
+                    RefreshGhostPreview( context, -1 );
+                    return;
+                }
 
 				AdjustRangeForMove( context, tileIndex, actionableTileData );
 			}

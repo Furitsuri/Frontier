@@ -11,7 +11,7 @@ namespace Frontier.Entities
 {
     public class ActionRangeController
     {
-        private BattleRoutineController _btlRtnCtrl = null;
+        private BattleRoutineController _btlRtnCtrl         = null;
         private StageController _stageCtrl                  = null;
         private Character _owner                            = null;
         private MovePathHandler _movePathHandler            = null;

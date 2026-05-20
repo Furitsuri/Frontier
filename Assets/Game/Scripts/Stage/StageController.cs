@@ -6,7 +6,6 @@ using System.Linq;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using System.Collections.ObjectModel;
 
 namespace Frontier.Stage
 {
