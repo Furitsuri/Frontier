@@ -57,7 +57,7 @@ namespace Frontier.Entities
             return tileDynamicData.CharaKey.IsValid() && BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDynamicData.CharaKey.CharacterTag );
         }
 
-        static public void RefreshFocusTarget( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill )
+        static public void RefreshFocusTarget( TargetingRangeContext context, bool isMovingSkill, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter )
         {
             var actionRangeCtrl     = context.Owner.BattleLogic.ActionRangeCtrl;
             attackTargetCharaKeys   = actionRangeCtrl.GetAttackTargetCharacterKeys();

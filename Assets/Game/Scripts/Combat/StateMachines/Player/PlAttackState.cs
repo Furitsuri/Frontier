@@ -139,46 +139,12 @@ namespace Frontier.Battle
         {
             var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
             const bool isMoving = false;    // すべての通常攻撃は移動を伴わない
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.NORMAL_ATTACK, false, isMoving, -1, -1 );
-            Debug.Assert( 0 < actionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count , "攻撃対象が存在しない状態で攻撃対象の更新処理が呼び出されました。");
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.NORMAL_ATTACK, isFirstRefresh, isMoving, -1, -1 );
+            Debug.Assert( 0 < actionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count, "攻撃対象が存在しない状態で攻撃対象の更新処理が呼び出されました。" );
 
-            if( isFirstRefresh )
-            {
-                var target = designatedTarget ?? _btlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() );
-                // 直線状に攻撃対象が存在しない場合は、攻撃可能なタイルの中で最も近いタイルを選択する
-                if( null == target ) { target = _btlRtnCtrl.BtlCharaCdr.GetNearestCharacter( _plOwner, actionRangeCtrl.GetAttackTargetCharacterKeys() ); }
-                // グリッドカーソルを攻撃対象のタイルに移動
-                _stageCtrl.MoveGridCursorToAttackableTile( target );
-                // アクション対象指定するUIを表示
-                _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );
-            }
-
-            // グリッド上のキャラクターを取得
-            var prevTargetCharacter = _targetCharacter;
-            _targetCharacter        = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-
-            if( prevTargetCharacter == _targetCharacter ) { return; }
-
-            // 選択キャラクターが更新された場合はパラメータUIへの描画対象と、キャラクターの向きを更新
-            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
-            _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetCharacter, layerMaskIndex );
-
-            if( null != prevTargetCharacter )
-            {
-                prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
-            }
-
-            var targetTileData      = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
-            var attackerTileData    = _stageCtrl.GetTileStaticData( _plOwner.BattleParams.TmpParam.CurrentTileIndex );
-            _plOwner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-            _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
-
-            // 使用スキルを選択する
-            _targetCharacter.RefreshUseableSkillFlags( SituationType.DEFENCE, Methods.ToBit( ActionType.BUFF ) | Methods.ToBit( ActionType.SPECIAL ) );
-            _targetCharacter.BattleLogic.SelectUseSkills( SituationType.DEFENCE );
-
-            // 予測ダメージを適応する
-            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );
+            var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
+            List<CharacterKey> attackTargetCharaKeys = null;
+            NormalAttackTargetingRange.RefreshFocusTarget( targetingContext, isMoving, ref attackTargetCharaKeys, ref _targetCharacter );
         }
 
         /// <summary>

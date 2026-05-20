@@ -29,7 +29,7 @@ namespace Frontier.Battle
         }
 
         private delegate void ChangeDirectionCallback( TargetingRangeContext context, Direction dir, bool isWithMove, int range );
-        private delegate void RefreshTargetCallback( TargetingRangeContext context, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter, bool isMovingSkill );
+        private delegate void RefreshTargetCallback( TargetingRangeContext context, bool isMovingSkill, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter );
         private delegate bool TryAdjustRangeCallback( TargetingRangeContext context, int step, ref int currentRange, int maxRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter );
 
         private int _currentRange;
@@ -106,7 +106,7 @@ namespace Frontier.Battle
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
 
             _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetableRange( _targetingMode, true, _isMovingSkill, _plOwner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
-            _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, ref _attackTargetCharaKeys, ref _targetCharacter, _isMovingSkill );
+            _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
@@ -230,7 +230,7 @@ namespace Frontier.Battle
 
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
             _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, context.Cursor, _isMovingSkill, _currentRange );
-            _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, ref _attackTargetCharaKeys, ref _targetCharacter, _isMovingSkill );
+            _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
 
             return true;
         }
