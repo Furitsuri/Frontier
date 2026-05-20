@@ -105,7 +105,7 @@ namespace Frontier.Battle
             
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
 
-            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetableRange( _targetingMode, _isMovingSkill, _plOwner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
+            _plOwner.BattleLogic.ActionRangeCtrl.RefreshTargetableRange( _targetingMode, true, _isMovingSkill, _plOwner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, ref _attackTargetCharaKeys, ref _targetCharacter, _isMovingSkill );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;

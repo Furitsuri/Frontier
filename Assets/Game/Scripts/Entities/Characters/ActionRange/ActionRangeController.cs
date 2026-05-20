@@ -1,4 +1,5 @@
-﻿using Frontier.Combat;
+﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Stage;
 using System;
 using System.Collections;
@@ -10,26 +11,28 @@ namespace Frontier.Entities
 {
     public class ActionRangeController
     {
+        private BattleRoutineController _btlRtnCtrl = null;
         private StageController _stageCtrl                  = null;
         private Character _owner                            = null;
         private MovePathHandler _movePathHandler            = null;
         private ActionableTileData _actionableTileData      = null;
         private ActionableRangeRenderer _actionableRangeRdr = null;
-        private Action<TargetingRangeContext, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
+        private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         public MovePathHandler MovePathHdlr => _movePathHandler;
         public ActionableTileData ActionableTileData => _actionableTileData;
         public ActionableRangeRenderer ActionableRangeRdr => _actionableRangeRdr;
 
-        [Inject] public ActionRangeController( HierarchyBuilderBase hierarchyBld, StageController stageCtrl )
+        [Inject] public ActionRangeController( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, StageController stageCtrl )
         {
+            _btlRtnCtrl    = btlRtnCtrl;
             _stageCtrl      = stageCtrl;
 
             LazyInject.GetOrCreate( ref _actionableTileData, () => hierarchyBld.InstantiateWithDiContainer<ActionableTileData>( false ) );
             LazyInject.GetOrCreate( ref _movePathHandler, () => hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
             LazyInject.GetOrCreate( ref _actionableRangeRdr, () => hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
 
-            RefreshTargetableRangeCallbacks = new Action<TargetingRangeContext, bool, int, int, ActionableTileData>[( int ) TargetingMode.NUM]
+            RefreshTargetableRangeCallbacks = new Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[( int ) TargetingMode.NUM]
             {
                 NormalAttackTargetingRange.RefreshTargetableRange,    // TargetingMode.NORMAL_ATTACK
                 PartOfRangeTargetingRange.RefreshTargetableRange,     // TargetingMode.PART_OF_RANGE
@@ -117,7 +120,7 @@ namespace Frontier.Entities
             ClearActionableRangeData();
         }
 
-        public void RefreshTargetableRange( TargetingMode targetingMode, bool isWithMove, int tileIndex, int currentRange )
+        public void RefreshTargetableRange( TargetingMode targetingMode, bool isFirstRefresh, bool isWithMove, int tileIndex, int currentRange )
         {
             if( _actionableTileData.IsEmpty() )
             {
@@ -132,8 +135,8 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { Owner = _owner, StageCtrl = _stageCtrl };
-            RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isWithMove, tileIndex, currentRange, _actionableTileData );
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl };
+            RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();
         }

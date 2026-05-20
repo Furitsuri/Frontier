@@ -34,7 +34,7 @@ namespace Frontier.Entities
             DirectionalTargetingRange.RefreshFocusTarget( context, ref attackTargetCharaKeys, ref targetCharacter, isMovingSkill );
         }
 
-        static public void RefreshTargetableRange( TargetingRangeContext context, bool isWithMove, int tileIndex, int currentRange, ActionableTileData actionableTileData )
+        static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isWithMove, int tileIndex, int currentRange, ActionableTileData actionableTileData )
         {
             foreach( var attackableMap in actionableTileData.AttackableTileMap )
             {

@@ -15,18 +15,18 @@ namespace Frontier.Entities
             var actionRangeCtrl = context.Owner.BattleLogic.ActionRangeCtrl;
 
             context.Owner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, isWithMove, context.Owner.BattleParams.TmpParam.CurrentTileIndex, range );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isWithMove, context.Owner.BattleParams.TmpParam.CurrentTileIndex, range );
         }
 
-		static public void RefreshTargetableRange( TargetingRangeContext context, bool isWithMove, int tileIndex, int range, ActionableTileData actionableTileData )
+		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isWithMove, int tileIndex, int range, ActionableTileData actionableTileData )
 		{
 			Vector3 basePos = context.StageCtrl.GetTileStaticData( context.Owner.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
 			Vector3 baseForward = context.Owner.GetTransformHandler.GetOrderedForward();
 			baseForward.y = 0f;
 			baseForward = baseForward.normalized;
 
-			foreach(var attackableMap in actionableTileData.AttackableTileMap)
-			{
+            foreach( var attackableMap in actionableTileData.AttackableTileMap )
+            {
 				// 一度全てのTARGETABLEフラグのビットを降ろす
 				Methods.UnsetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
 
@@ -110,7 +110,7 @@ namespace Frontier.Entities
 
             while( ( step < 0 ) ? ( candidate >= limit ) : ( candidate <= limit ) )
             {
-                actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, isMovingSkill, tileIndex, candidate );
+                actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, tileIndex, candidate );
                 int newGhostIdx = FindGhostTileIndex( context, actionRangeCtrl );
 
                 bool isValid = ( step < 0 )
@@ -168,7 +168,7 @@ namespace Frontier.Entities
             var actionRangeCtrl = context.Owner.BattleLogic.ActionRangeCtrl;
             int tileIndex       = context.Owner.BattleParams.TmpParam.CurrentTileIndex;
 
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, isMovingSkill, tileIndex, currentRange );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, tileIndex, currentRange );
             attackTargets = actionRangeCtrl.GetAttackTargetCharacterKeys();
 
             var prevTarget = targetCharacter;

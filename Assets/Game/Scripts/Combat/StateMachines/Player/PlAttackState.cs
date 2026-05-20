@@ -139,7 +139,7 @@ namespace Frontier.Battle
         {
             var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
             const bool isMoving = false;    // すべての通常攻撃は移動を伴わない
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.NORMAL_ATTACK, isMoving, -1, -1 );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.NORMAL_ATTACK, false, isMoving, -1, -1 );
             Debug.Assert( 0 < actionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count , "攻撃対象が存在しない状態で攻撃対象の更新処理が呼び出されました。");
 
             if( isFirstRefresh )
