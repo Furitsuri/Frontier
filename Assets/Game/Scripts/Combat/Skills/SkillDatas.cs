@@ -23,7 +23,7 @@ namespace Frontier.Combat
             public int RangeValue;                  // レンジ範囲
             public bool IsAdjustableRange;          // レンジ調節可否
             public TargetingMode TargetingMode;     // レンジ内選択モード
-            public int TargetingValue;              // レンジ内選択モードに用いる範囲値
+            public int TargetingRange;              // レンジ内選択モードに用いる範囲値
             public bool IsMovingSkill;              // 移動を伴うスキルか否か
             public float AddAtkMag;                 // 攻撃力倍率加算値
             public float AddDefMag;                 // 防御力倍率加算値
