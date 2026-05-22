@@ -20,7 +20,7 @@ namespace Frontier.Registries
         [Header( "Stage関連" )]
         [SerializeField] private GameObject _stageFileLoaderPrefab;     // StageFileLoaderプレハブ
         [SerializeField] private GameObject _gridMeshObject;            // GridMeshプレハブ
-        [SerializeField] private GameObject _gridCursorCtrlObject;      // GridCursorCtrlプレハブ
+        [SerializeField] private GameObject _gridCursorObject;      // GridCursorCtrlプレハブ
         [SerializeField] private GameObject tileMeshObject;             // TileMeshプレハブ
         [SerializeField] private GameObject[] _tilePrefabs;             // タイルプレハブ配列
 
@@ -35,7 +35,7 @@ namespace Frontier.Registries
         public GameObject BattleCameraPrefab => _battleCameraObject;
         public GameObject StageFileLoaderPrefab => _stageFileLoaderPrefab;
         public GameObject GridMeshPrefab => _gridMeshObject;
-        public GameObject GridCursorCtrlPrefab => _gridCursorCtrlObject;
+        public GameObject GridCursorPrefab => _gridCursorObject;
         public GameObject TileMeshPrefab => tileMeshObject;
         public GameObject[] TilePrefabs => _tilePrefabs;
     }

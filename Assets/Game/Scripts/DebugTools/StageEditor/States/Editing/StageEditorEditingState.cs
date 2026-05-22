@@ -22,7 +22,7 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
-        [Inject] private GridCursorController _gridCursorCtrl   = null;
+        [Inject] private GridCursor _gridCursor   = null;
 
         private Action<EditActionContext> PlaceTileCallback;
         private Action<EditActionContext> ResizeTileGridCallback;
@@ -121,7 +121,7 @@ namespace Frontier.DebugTools.StageEditor
 
             if( context.Cursor == Direction.NONE ) { return false; }
 
-            _gridCursorCtrl.Move( context.Cursor );
+            _gridCursor.Move( context.Cursor );
 
             return true;
         }

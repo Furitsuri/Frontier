@@ -12,7 +12,7 @@ namespace Frontier.Entities
     {
         static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, int range )
         {
-            context.StageCtrl.OperateGridCursorController( dir );
+            context.StageCtrl.OperateGridCursor( dir );
 
             var actionRangeCtrl     = context.Owner.BattleLogic.ActionRangeCtrl;
             var targetingRangeIndex = context.StageCtrl.GetCurrentGridIndex();

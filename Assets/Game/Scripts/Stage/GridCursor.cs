@@ -1,9 +1,6 @@
 ﻿using Frontier.Entities;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
-using UniRx;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -12,7 +9,7 @@ using static Constants;
 
 namespace Frontier.Stage
 {
-    public class GridCursorController : MonoBehaviour
+    public class GridCursor : MonoBehaviour
     {
         [Header( "移動補間時間" )]
         [SerializeField]
@@ -48,7 +45,7 @@ namespace Frontier.Stage
 
             _isFocusCamera = isFocusCamera;
             var renderer = GetComponent<Renderer>();
-            Debug.Assert( renderer != null, "GridCursorControllerクラスのRendererコンポーネントがアタッチされていません" );
+            Debug.Assert( renderer != null, "GridCursorクラスのRendererコンポーネントがアタッチされていません" );
             renderer.material.color = color;
         }
 

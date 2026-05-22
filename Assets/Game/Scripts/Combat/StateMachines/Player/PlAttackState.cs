@@ -80,7 +80,7 @@ namespace Frontier.Battle
             }
 
             // 攻撃可能状態でなければ何もしない
-            if( _stageCtrl.GetGridCursorControllerState() != GridCursorState.ATTACK )
+            if( _stageCtrl.GetGridCursorState() != GridCursorState.ATTACK )
             {
                 return false;
             }

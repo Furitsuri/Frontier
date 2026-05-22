@@ -58,7 +58,7 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorUI _stageEditorView          = null;
         private StageFileLoader _stageFileLoader        = null;
-        private GridCursorController _gridCursorCtrl    = null;
+        private GridCursor _gridCursor    = null;
         private StageEditRefParams _refParams           = null;
         private Holder<string> _editFileName            = null;
         private StageEditMode _editMode                 = StageEditMode.EDIT_TILE;
@@ -121,7 +121,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageDataProvider.CurrentData.Dispose();
             _stageDataProvider.CurrentData = resizeStageData;      // 作成したデータを保持
 
-            _gridCursorCtrl.Init( 0 );  // グリッドカーソル位置を初期化
+            _gridCursor.Init( 0 );  // グリッドカーソル位置を初期化
         }
 
         /// <summary>
@@ -152,9 +152,9 @@ namespace Frontier.DebugTools.StageEditor
         {
             if (_mainCamera == null) return;
             // カメラの位置を更新
-            Vector3 targetPosition = _gridCursorCtrl.GetPosition() + offset;
+            Vector3 targetPosition = _gridCursor.GetPosition() + offset;
             _mainCamera.transform.position = targetPosition;
-            _mainCamera.transform.LookAt(_gridCursorCtrl.GetPosition());
+            _mainCamera.transform.LookAt(_gridCursor.GetPosition());
         }
 
         private void UpdateTileVisual(int x, int y)
@@ -213,7 +213,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( _stageFileLoader.Load( fileName ) )
             {
-                _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
+                _gridCursor.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
 
                 return true;
             }
@@ -232,7 +232,7 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
             LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
             LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
-            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursorController" ) );
+            LazyInject.GetOrCreate( ref _gridCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursor" ) );
 
             _btlCamCtrl.Setup( false );
 
@@ -242,7 +242,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageDataProvider.CurrentData  = CreateDefaultStage();         // プロバイダーに登録
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
-            _gridCursorCtrl.Init( 0 );
+            _gridCursor.Init( 0 );
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
 
@@ -258,8 +258,8 @@ namespace Frontier.DebugTools.StageEditor
         {
             _stageEditorHandler.Update();
 
-            UpdateCamera( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
-            UpdateTileVisual( _gridCursorCtrl.X(), _gridCursorCtrl.Y() );
+            UpdateCamera( _gridCursor.X(), _gridCursor.Y() );
+            UpdateTileVisual( _gridCursor.X(), _gridCursor.Y() );
             _stageEditorView.UpdateModeText( _editMode, _refParams );
         }
 
