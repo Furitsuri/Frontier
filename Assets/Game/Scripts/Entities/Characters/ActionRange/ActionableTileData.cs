@@ -57,8 +57,6 @@ namespace Frontier.Entities
 
         public void AddAttackTargetTileIndex( int index )
         {
-            Debug.Assert( _attackableTileMap[index].CharaKey.IsValid(), "Attackable tile data is null" );
-
             _attackTargetTileIndicies.Add( index );
         }
 

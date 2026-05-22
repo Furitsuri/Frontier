@@ -98,7 +98,8 @@ namespace Frontier.Battle
 
             var skillData       = SkillsData.data[( int ) _useSkillID];
             _targetingMode      = skillData.TargetingMode;
-            _maxRange           = skillData.RangeValue;
+            // DIRECTIONALは自身の向きに沿った直線状の範囲すべてが攻撃対象範囲となるため、RangeValueをそのまま適用
+            _maxRange = ( TargetingMode.DIRECTIONAL != _targetingMode ) ? skillData.TargetingRange : skillData.RangeValue;
             _currentRange       = _maxRange;
             _isAdjustableRange  = skillData.IsAdjustableRange;
             _isMovingSkill      = skillData.IsMovingSkill;
