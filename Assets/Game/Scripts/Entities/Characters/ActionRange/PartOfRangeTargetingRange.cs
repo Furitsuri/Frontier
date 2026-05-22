@@ -62,7 +62,7 @@ namespace Frontier.Entities
             var actionRangeCtrl     = context.Owner.BattleLogic.ActionRangeCtrl;
             attackTargetCharaKeys   = actionRangeCtrl.GetAttackTargetCharacterKeys();
 
-            /*
+
             // 攻撃可能なグリッド内に敵がおり、尚且つ現在のターゲットキャラクターが存在しない場合は、ターゲットキャラクターを設定する
             if( 0 < attackTargetCharaKeys.Count )
             {
@@ -87,7 +87,6 @@ namespace Frontier.Entities
             {
                 targetCharacter = null;
             }
-            */
 
             context.Presenter.SetActiveActionResultExpect( targetCharacter != null, ParameterWindowType.Left );
         }

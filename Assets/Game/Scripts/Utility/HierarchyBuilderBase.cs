@@ -145,13 +145,24 @@ public class HierarchyBuilderBase : MonoBehaviour
     /// <param name="initActive">ゲームオブジェクトの初期の有効・無効状態</param>
     /// <param name="isBind">DIコンテナにバインドするか否か</param>
     /// <returns>作成したコンポーネント</returns>
-    public T CreateComponentAndOrganizeWithDiContainer<T>(GameObject gameObject, bool initActive, bool isBind, string objectName) where T : Behaviour
+    public T CreateComponentAndOrganizeWithDiContainer<T>( GameObject gameObject, bool initActive, bool isBind, string objectName ) where T : Behaviour
     {
         gameObject.name = objectName;
-        T generateCpt = _generator.InstantiateComponentWithDiContainer<T>(gameObject, initActive, isBind);
-        NullCheck.AssertNotNull(generateCpt, nameof( generateCpt ) );
+        T generateCpt = _generator.InstantiateComponentWithDiContainer<T>( gameObject, initActive, isBind );
+        NullCheck.AssertNotNull( generateCpt, nameof( generateCpt ) );
 
-        Organize(generateCpt);
+        Organize( generateCpt );
+
+        return generateCpt;
+    }
+
+    public T CreateComponentAndOrganizeWithDiContainer<T>( GameObject gameObject, object[] args, bool initActive, bool isBind, string objectName ) where T : Behaviour
+    {
+        gameObject.name = objectName;
+        T generateCpt = _generator.InstantiateComponentWithDiContainer<T>( gameObject, args, initActive, isBind );
+        NullCheck.AssertNotNull( generateCpt, nameof( generateCpt ) );
+
+        Organize( generateCpt );
 
         return generateCpt;
     }

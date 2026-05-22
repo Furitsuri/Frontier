@@ -18,12 +18,13 @@ namespace Frontier.Stage
         [SerializeField]
         private float MoveInterpolationTime = 1f;
 
-        [Inject] private IStageDataProvider _stageDataProvider  = null;
-        [Inject] private BattleCameraController _btlCamCtrl     = null;
+        private IStageDataProvider _stageDataProvider  = null;
+        private BattleCameraController _btlCamCtrl     = null;
 
         private int _tileIndex              = 0;
         private int _atkTargetIndex         = 0;
         private float _totalTime            = 0;
+        private bool _isFocusCamera         = false;
         private GridCursorState _gridState  = GridCursorState.NONE;
         private Vector3 _beginPos           = Vector3.zero;
         private Vector3 _endPos             = Vector3.zero;
@@ -38,9 +39,17 @@ namespace Frontier.Stage
         public GridCursorState GridState => _gridState;
         public Character BindCharacter => _bindCharacter;
 
-        private void Start()
+        [Inject] public void Construct( Color color, bool isFocusCamera, IStageDataProvider stageDataProvider, BattleCameraController btlCamCtrl )
         {
+            _stageDataProvider  = stageDataProvider;
+            _btlCamCtrl         = btlCamCtrl;
+
             _lineRenderer = gameObject.GetComponent<LineRenderer>();
+
+            _isFocusCamera = isFocusCamera;
+            var renderer = GetComponent<Renderer>();
+            Debug.Assert( renderer != null, "GridCursorControllerクラスのRendererコンポーネントがアタッチされていません" );
+            renderer.material.color = color;
         }
 
         public void Init( int initIndex )
@@ -282,7 +291,12 @@ namespace Frontier.Stage
         private void SetCameraLookAtPosAndDrawCursor( in Vector3 pos )
         {
             DrawSquareLine( TILE_SIZE, pos );
-            _btlCamCtrl.SetLookAtBasedOnSelectCursor( pos );
+
+            // カメラがグリッドを注視する設定の場合、グリッドの位置に基づいてカメラの注視点を更新する
+            if( _isFocusCamera )
+            {
+                _btlCamCtrl.SetLookAtBasedOnSelectCursor( pos );
+            }
         }
 
         /// <summary>

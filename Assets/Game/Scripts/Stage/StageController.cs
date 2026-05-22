@@ -16,6 +16,7 @@ namespace Frontier.Stage
         [Inject] private PrefabRegistry _prefabReg              = null;
 
         private GridCursorController _gridCursorCtrl;
+        private GridCursorController _targetGridCursorCtrl;
         private StageFileLoader _stageFileLoader;
         private StageDirectionConverter _directionConverter;
         private TileDataHandler _tileDataHdlr;
@@ -26,7 +27,8 @@ namespace Frontier.Stage
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _prefabReg.GridCursorCtrlPrefab, true, true, "GridCursorController" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _prefabReg.GridCursorCtrlPrefab, new object[] { Color.yellow, true }, true, true, "GridCursorController" ) );
+            LazyInject.GetOrCreate( ref _targetGridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( _prefabReg.GridCursorCtrlPrefab, new object[] { Color.red, false }, true, true, "TargetGridCursorController" ) );
             LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _directionConverter, () => _hierarchyBld.InstantiateWithDiContainer<StageDirectionConverter>( false ) );
             LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
@@ -42,8 +44,11 @@ namespace Frontier.Stage
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
             _gridCursorCtrl.Init( 0 );
+            _targetGridCursorCtrl.Init( 0 );
             _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );
+
+            _targetGridCursorCtrl.SetActive( false );
         }
 
         /// <summary>

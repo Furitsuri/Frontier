@@ -232,7 +232,7 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
             LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
             LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
-            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( cursorPrefab, true, true, "GridCursorController" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursorController>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursorController" ) );
 
             _btlCamCtrl.Setup( false );
 

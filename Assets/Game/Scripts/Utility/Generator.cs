@@ -142,6 +142,22 @@ public class Generator : MonoBehaviour
         return original;
     }
 
+    public T InstantiateComponentWithDiContainer<T>( GameObject gameObject, object[] args, bool initActive, bool isBind ) where T : Behaviour
+    {
+        T original = _container.InstantiatePrefabForComponent<T>( gameObject, args );
+        Debug.Assert( original != null );
+
+        original.gameObject.SetActive( initActive );
+
+        // Diコンテナにバインドする場合はここでバインド
+        if( isBind )
+        {
+            _installer.InstallBindings( original );
+        }
+
+        return original;
+    }
+
     /// <summary>
     /// Diコンテナを用いて、インスタンスを作成します
     /// </summary>
