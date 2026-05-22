@@ -965,12 +965,11 @@ MonoBehaviour:
     jumpForce: 0
     attackRange: 0
     maxActionGauge: 0
-    curActionGauge: 0
+    CurActionGauge: 0
     recoveryActionGauge: 0
-    consumptionActionGauge: 0
     initGridIndex: 0
     initDir: 0
-    equipSkills: 
+    EquipSkills: 
   _btlParams:
     _modifiedParam:
       Atk: 0
@@ -978,7 +977,7 @@ MonoBehaviour:
       moveRange: 0
       recoveryActionGauge: 0
     _skillModifiedParam:
-      AtkNum: 0
+      AddAtkNum: 0
       AtkMagnification: 0
       DefMagnification: 0
   _camParam:
