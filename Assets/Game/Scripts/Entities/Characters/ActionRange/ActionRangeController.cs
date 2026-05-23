@@ -242,11 +242,8 @@ namespace Frontier.Entities
             List<CharacterKey> targetKeys = new List<CharacterKey>( _actionableTileData.RefAttackTargetTileIndicies.Count );
             for( int i = 0; i < _actionableTileData.RefAttackTargetTileIndicies.Count; ++i )
             {
-                var tileData = _actionableTileData.GetAttackableTile( _actionableTileData.RefAttackTargetTileIndicies[i] );
-                if( tileData != null && tileData.CharaKey.IsValid() )
-                {
-                    targetKeys.Add( tileData.CharaKey );
-                }
+                var tileData = _stageCtrl.GetTileDynamicData( _actionableTileData.RefAttackTargetTileIndicies[i] );
+                targetKeys.Add( tileData.CharaKey );
             }
             return targetKeys;
         }
