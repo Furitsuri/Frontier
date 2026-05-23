@@ -61,7 +61,7 @@ namespace Frontier.Battle
 
             if( 0 < tileIndicies.Count )
             {
-                _stageCtrl.MoveGridCursorToAttackableTile( _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() );
+                _stageCtrl.MoveGridCursorToAttackableTile( true, _attackCharacter.BattleLogic.GetAi().GetTargetCharacter() );
                 _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
             }
 

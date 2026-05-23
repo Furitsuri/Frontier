@@ -79,7 +79,7 @@ namespace Frontier.Entities
                 targetCharacter = context.BtlRtnCtrl.BtlCharaCdr.GetNearestCharacter( context.Owner, attackTargetCharaKeys );
                 Debug.Assert( targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
 
-                context.StageCtrl.MoveGridCursorToAttackableTile( targetCharacter );
+                context.StageCtrl.MoveGridCursorToAttackableTile( true, targetCharacter );
                 context.BtlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( context.Owner, targetCharacter );
                 context.Presenter.SetActiveActionResultExpect( true, ParameterWindowType.Left );
             }
@@ -187,7 +187,7 @@ namespace Frontier.Entities
             {
                 if( targetCharacter != null )
                 {
-                    context.StageCtrl.MoveGridCursorToAttackableTile( targetCharacter );
+                    context.StageCtrl.MoveGridCursorToAttackableTile( true, targetCharacter );
                     context.BtlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( context.Owner, targetCharacter );
                 }
                 else

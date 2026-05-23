@@ -96,9 +96,9 @@ namespace Frontier.Stage
         /// グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
         /// </summary>
         /// <param name="designatedTarget"></param>
-        public void MoveGridCursorToAttackableTile( Character designatedTarget = null )
+        public void MoveGridCursorToAttackableTile( bool isToggleCamera, Character designatedTarget = null )
         {
-            _gridCursorCtrl.MoveGridCursorToAttackableTile( designatedTarget );
+            _gridCursorCtrl.MoveGridCursorToAttackableTile( isToggleCamera, designatedTarget );
         }
 
         public bool OperateGridCursor( Direction direction )
