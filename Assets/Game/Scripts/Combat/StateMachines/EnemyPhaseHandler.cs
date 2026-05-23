@@ -24,7 +24,7 @@ namespace Frontier.Battle
             if( 0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.ENEMY ) && _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) != null )
             {
                 Character enemy = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).First();
-                _stgCtrl.ApplyCurrentGrid2CharacterTile( enemy );
+                _stgCtrl.ApplyGridCursor2CharacterTile( enemy );
             }
             // ターン開始時の自軍キャラへの処理
             _btlRtnCtrl.BtlCharaCdr.ApplyTurnStartProccessingForGroup( CHARACTER_TAG.ENEMY );

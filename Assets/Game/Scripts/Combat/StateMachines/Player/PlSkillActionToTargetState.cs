@@ -269,7 +269,7 @@ namespace Frontier.Battle
             if( !base.AcceptInfo( context ) ) { return false; }
 
             // ステータス表示ステートに対象キャラクターを渡す
-            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetTargetCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
@@ -317,7 +317,7 @@ namespace Frontier.Battle
             // ターゲット切り替え
             if( _stageCtrl.OperateTargetSelect( dir ) )
             {
-                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+                _targetCharacter = _btlRtnCtrl.BtlCharaCdr.GetTargetCharacter();
                 _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetCharacter );    // 予測ダメージを適用する
             }
         }

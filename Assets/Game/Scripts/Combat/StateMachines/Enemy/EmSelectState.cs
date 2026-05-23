@@ -32,7 +32,7 @@ namespace Frontier.Battle
 
                 isExist = true;
 
-                _stageCtrl.ApplyCurrentGrid2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
+                _stageCtrl.ApplyGridCursor2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
 
                 if( !_currentEnemy.BattleLogic.GetAi().IsDetermined() )
                 {

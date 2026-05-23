@@ -81,7 +81,7 @@ namespace Frontier.Entities
             SetPositionOnStage( _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex, _prevMoveInfo.rotDir );
 
             _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _readOnlyOwner.Value );
+            _stageCtrl.ApplyGridCursor2CharacterTile( _readOnlyOwner.Value );
         }
 
         /// <summary>

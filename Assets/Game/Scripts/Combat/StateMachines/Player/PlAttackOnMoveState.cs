@@ -22,7 +22,7 @@ namespace Frontier.Battle
             NullCheck.AssertNotNull( targetChara, nameof( targetChara ) );
 
             _stageCtrl.UnbindGridCursor();                          // 念のためバインドを解除
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );  // グリッドカーソル位置を元に戻す
+            _stageCtrl.ApplyGridCursor2CharacterTile( _plOwner );  // グリッドカーソル位置を元に戻す
 
             _playerSkillNames   = _plOwner.GetStatusRef.GetEquipSkillNames();
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;

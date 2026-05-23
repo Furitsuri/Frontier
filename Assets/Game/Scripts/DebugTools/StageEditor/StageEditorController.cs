@@ -58,13 +58,111 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditorHandler _stageEditorHandler  = null;
         private StageEditorUI _stageEditorView          = null;
         private StageFileLoader _stageFileLoader        = null;
-        private GridCursor _gridCursor    = null;
+        private GridCursor _gridCursor                  = null;
         private StageEditRefParams _refParams           = null;
         private Holder<string> _editFileName            = null;
         private StageEditMode _editMode                 = StageEditMode.EDIT_TILE;
         private Vector3 offset                          = new Vector3(0, 5, -5);    // ターゲットからの相対位置
+        private Func<int, int>[] _gridDirectionMoveCallbacks;
 
         public Holder<string> EditFileName => _editFileName;
+
+        /// <summary>
+        /// 初期化します
+        /// </summary>
+        public override void Init()
+        {
+            LazyInject.GetOrCreate( ref _stageEditorView, () => _uiSystem.DebugUi.StageEditorView );
+            LazyInject.GetOrCreate( ref _stageEditorHandler, () => _hierarchyBld.InstantiateWithDiContainer<StageEditorHandler>( false ) );
+            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" ) );
+            LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
+            LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
+            LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
+            LazyInject.GetOrCreate( ref _gridCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursor" ) );
+
+            _btlCamCtrl.Setup( false );
+
+            InitCallbacks();
+
+            _inputFcd.Init();           // 入力ファサードの初期化
+            TileMaterialLibrary.Init(); // タイルマテリアルの初期化
+
+            _stageDataProvider.CurrentData = CreateDefaultStage();         // プロバイダーに登録
+            _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
+
+            _gridCursor.Init( 0, _gridDirectionMoveCallbacks );
+            _stageEditorView.Init( EditFileName );
+            _stageFileLoader.Init( tilePrefabs );
+
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Enter();
+
+            _btlCamCtrl.Init();
+
+            _mainCamera = Camera.main;
+        }
+
+        public override void UpdateRoutine()
+        {
+            _stageEditorHandler.Update();
+
+            UpdateCamera( _gridCursor.X(), _gridCursor.Y() );
+            UpdateTileVisual( _gridCursor.X(), _gridCursor.Y() );
+            _stageEditorView.UpdateModeText( _editMode, _refParams );
+        }
+
+        public override void LateUpdateRoutine()
+        {
+            _stageEditorHandler.LateUpdate();
+        }
+
+        private void InitCallbacks()
+        {
+            _gridDirectionMoveCallbacks = new Func<int, int>[( int ) Direction.NUM]
+            {
+                // Direction.FORWARD
+                ( tileIndex ) =>
+                {
+                    tileIndex += _stageDataProvider.CurrentData.TileColNum;
+                    if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tileIndex )
+                    {
+                        tileIndex = tileIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
+                    }
+
+                    return tileIndex;
+                },
+                // Direction.RIGHT
+                ( tileIndex ) =>
+                {
+                    tileIndex++;
+                    if( tileIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
+                    {
+                        tileIndex -= _stageDataProvider.CurrentData.TileColNum;
+                    }
+                    return tileIndex;
+                },
+                // Direction.BACK
+                ( tileIndex ) =>
+                {
+                    tileIndex -= _stageDataProvider.CurrentData.TileColNum;
+                    if( tileIndex < 0 )
+                    {
+                        tileIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
+                    }
+                    return tileIndex;
+                },
+                // Direction.LEFT
+                ( tileIndex ) =>
+                {
+                    tileIndex--;
+                    if( ( tileIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
+                    {
+                        tileIndex += _stageDataProvider.CurrentData.TileColNum;
+                    }
+                    return tileIndex;
+                }
+            };
+        }
 
         /// <summary>
         /// 指定された位置にタイルを設置します
@@ -121,7 +219,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageDataProvider.CurrentData.Dispose();
             _stageDataProvider.CurrentData = resizeStageData;      // 作成したデータを保持
 
-            _gridCursor.Init( 0 );  // グリッドカーソル位置を初期化
+            _gridCursor.Init( 0, _gridDirectionMoveCallbacks );  // グリッドカーソル位置を初期化
         }
 
         /// <summary>
@@ -213,59 +311,12 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( _stageFileLoader.Load( fileName ) )
             {
-                _gridCursor.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
+                _gridCursor.Init( 0, _gridDirectionMoveCallbacks );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
 
                 return true;
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// 初期化します
-        /// </summary>
-        public override void Init()
-        {
-            LazyInject.GetOrCreate( ref _stageEditorView, () => _uiSystem.DebugUi.StageEditorView );
-            LazyInject.GetOrCreate( ref _stageEditorHandler, () => _hierarchyBld.InstantiateWithDiContainer<StageEditorHandler>( false ) );
-            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( stageFileLoaderPrefab, true, false, "StageFileLoader" ) );
-            LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
-            LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
-            LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
-            LazyInject.GetOrCreate( ref _gridCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursor" ) );
-
-            _btlCamCtrl.Setup( false );
-
-            _inputFcd.Init();           // 入力ファサードの初期化
-            TileMaterialLibrary.Init(); // タイルマテリアルの初期化
-
-            _stageDataProvider.CurrentData  = CreateDefaultStage();         // プロバイダーに登録
-            _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
-
-            _gridCursor.Init( 0 );
-            _stageEditorView.Init( EditFileName );
-            _stageFileLoader.Init( tilePrefabs );
-
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
-            _stageEditorHandler.Enter();
-
-            _btlCamCtrl.Init();
-
-            _mainCamera = Camera.main;
-        }
-
-        public override void UpdateRoutine()
-        {
-            _stageEditorHandler.Update();
-
-            UpdateCamera( _gridCursor.X(), _gridCursor.Y() );
-            UpdateTileVisual( _gridCursor.X(), _gridCursor.Y() );
-            _stageEditorView.UpdateModeText( _editMode, _refParams );
-        }
-
-        public override void LateUpdateRoutine()
-        {
-            _stageEditorHandler.LateUpdate();
         }
     }
 } // namespace Frontier.DebugTools.StageEditor

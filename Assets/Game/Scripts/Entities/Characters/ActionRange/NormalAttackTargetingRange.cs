@@ -40,7 +40,7 @@ namespace Frontier.Entities
             attackTargetCharaKeys = context.Owner.BattleLogic.ActionRangeCtrl.GetAttackTargetCharacterKeys();
 
             var prevTargetCharacter = targetCharacter;
-            targetCharacter         = context.BtlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            targetCharacter         = context.BtlRtnCtrl.BtlCharaCdr.GetTargetCharacter();
 
             if( prevTargetCharacter == targetCharacter ) { return; }
 

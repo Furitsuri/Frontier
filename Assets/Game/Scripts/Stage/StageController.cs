@@ -15,8 +15,7 @@ namespace Frontier.Stage
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
 
-        private GridCursor _gridCursor;
-        private GridCursor _targetCursor;
+        private GridCursorController _gridCursorCtrl;
         private StageFileLoader _stageFileLoader;
         private StageDirectionConverter _directionConverter;
         private TileDataHandler _tileDataHdlr;
@@ -27,8 +26,7 @@ namespace Frontier.Stage
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            LazyInject.GetOrCreate( ref _gridCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursor" ) );
-            LazyInject.GetOrCreate( ref _targetCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.red, false }, true, true, "TargetGridCursor" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( false ) );
             LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _directionConverter, () => _hierarchyBld.InstantiateWithDiContainer<StageDirectionConverter>( false ) );
             LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
@@ -43,21 +41,23 @@ namespace Frontier.Stage
         {
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
-            _gridCursor.Init( 0 );
-            _targetCursor.Init( 0 );
+            _gridCursorCtrl.Init( 0 );
             _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );
-
-            _targetCursor.SetActive( false );
         }
 
         /// <summary>
         /// 選択グリッドを指定のキャラクターのタイルに合わせます
         /// </summary>
         /// <param name="character">指定キャラクター</param>
-        public void ApplyCurrentGrid2CharacterTile( Character character )
+        public void ApplyGridCursor2CharacterTile( Character character )
         {
-            _gridCursor.SetTileIndex( character.BattleParams.TmpParam.CurrentTileIndex );
+            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.GRID_CURSOR );
+        }
+
+        public void ApplyTargetCursor2CharacterTile( Character character )
+        {
+            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.TARGET_CURSOR );
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Frontier.Stage
         /// <param name="bindCharacter">バインド対象のキャラクター</param>
         public void BindGridCursor( GridCursorState state, Character character )
         {
-            _gridCursor.Bind( state, character );
+            _gridCursorCtrl.BindGridCursor( state, character );
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Frontier.Stage
         /// </summary>
         public void UnbindGridCursor()
         {
-            _gridCursor.Unbind();
+            _gridCursorCtrl.UnbindGridCursor();
         }
 
         /// <summary>
@@ -84,7 +84,12 @@ namespace Frontier.Stage
         /// <param name="isActive">設定するアクティブ状態</param>
         public void SetActiveGridCursor( bool isActive )
         {
-            _gridCursor.SetActive( isActive );
+            _gridCursorCtrl.SetActiveGridCursor( isActive, GridCursorController.CursorType.GRID_CURSOR );
+        }
+
+        public void SetActiveTargetCursor( bool isActive )
+        {
+            _gridCursorCtrl.SetActiveGridCursor( isActive, GridCursorController.CursorType.TARGET_CURSOR );
         }
 
         /// <summary>
@@ -93,24 +98,12 @@ namespace Frontier.Stage
         /// <param name="designatedTarget"></param>
         public void MoveGridCursorToAttackableTile( Character designatedTarget = null )
         {
-            // 攻撃対象引数targetが定められている場合はその対象のタイル位置を指定する
-            if( designatedTarget != null )
-            {
-                int targetTileIndex = designatedTarget.BattleParams.TmpParam.CurrentTileIndex;
-                if( _gridCursor.TrySetAttackTargetIndex( targetTileIndex ) ) { return; }
-            }
-
-            // 定められていない場合は先頭を指定する
-            _gridCursor.TrySetAttackTargetIndex( 0 );
+            _gridCursorCtrl.MoveGridCursorToAttackableTile( designatedTarget );
         }
 
         public bool OperateGridCursor( Direction direction )
         {
-            if( direction == Direction.NONE ) { return false; }
-
-            _gridCursor.Move( direction );
-
-            return true;
+            return _gridCursorCtrl.OperateGridCursor( direction );
         }
 
         /// <summary>
@@ -123,8 +116,7 @@ namespace Frontier.Stage
             if( direction == Direction.NONE ) { return false; }
 
             direction = ConvertDirectionDependOnCameraAngle( direction );
-
-            _gridCursor.Move( direction );
+            _gridCursorCtrl.OperateGridCursor( direction );
 
             return true;
         }
@@ -136,11 +128,7 @@ namespace Frontier.Stage
         /// <returns>グリッド移動の有無</returns>
         public bool OperateTargetSelect( Direction direction )
         {
-            if( Direction.NONE == direction ) { return false; }
-
-            _gridCursor.TransitAttackTarget( direction );
-
-            return true;
+            return _gridCursorCtrl.OperateTargetSelect( direction );
         }
 
         /// <summary>
@@ -149,7 +137,12 @@ namespace Frontier.Stage
         /// <returns>現在の選択グリッドのインデックス値</returns>
         public int GetCurrentGridIndex()
         {
-            return _gridCursor.CurrentTileIndex;
+            return _gridCursorCtrl.GetCurrentGridIndex();
+        }
+
+        public int GetCurrentTargetIndex()
+        {
+            return _gridCursorCtrl.GetCurrentTargetIndex();
         }
 
         /// <summary>
@@ -210,7 +203,7 @@ namespace Frontier.Stage
 
         public Vector3 GetCurrentGridPosition()
         {
-            TileStaticData tileData = _stageDataProvider.CurrentData.GetTileStaticData( _gridCursor.CurrentTileIndex );
+            TileStaticData tileData = _stageDataProvider.CurrentData.GetTileStaticData( _gridCursorCtrl.GetCurrentGridIndex() );
             return tileData.CharaStandPos;
         }
 
@@ -225,7 +218,7 @@ namespace Frontier.Stage
         /// <returns>現在の選択グリッドの状態</returns>
         public GridCursorState GetGridCursorState()
         {
-            return _gridCursor.GridState;
+            return _gridCursorCtrl.GetGridCursorState();
         }
 
         /// <summary>
@@ -234,7 +227,7 @@ namespace Frontier.Stage
         /// <returns>バインドしているキャラクター(存在しない場合はnull)</returns>
         public Character GetBindCharacterFromGridCursor()
         {
-            return _gridCursor.BindCharacter;
+            return _gridCursorCtrl.GetBindCharacterFromGridCursor();
         }
 
         public TileStaticData GetTileStaticData( int index )

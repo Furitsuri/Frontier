@@ -250,6 +250,13 @@ namespace Frontier.Battle
             return GetCharacter( tileData.CharaKey );
         }
 
+        public Character GetTargetCharacter()
+        {
+            TileDynamicData tileData = _stgCtrl.TileDataHdlr().GetTileDatas( _stgCtrl.GetCurrentTargetIndex() ).Item2;
+
+            return GetCharacter( tileData.CharaKey );
+        }
+
         /// <summary>
         /// ハッシュテーブルから指定のタグとインデックスをキーとするキャラクターを取得します
         /// </summary>

@@ -27,7 +27,7 @@ namespace Frontier.Entities
         {
             _character      = character;
             _animReceiver   = character.BtlAnimReceiver;
-            AttackAnimTags  = Array.AsReadOnly(consitionTags);
+            AttackAnimTags  = Array.AsReadOnly( consitionTags );
         }
 
         /// <summary>
@@ -36,10 +36,10 @@ namespace Frontier.Entities
         public void StartSequence()
         {
             _animReceiver.IsAttacked        = false;
-            _animReceiver.AtkRemainingNum   = _character.BattleParams.SkillModifiedParam.AddAtkNum - 1;   // 攻撃回数を1消費
+            _animReceiver.AtkRemainingNum   = _character.BattleParams.SkillModifiedParam.AddAtkNum;
             var attackAnimtag               = AttackAnimTags[_animReceiver.AtkRemainingNum];
 
-            _character.AnimCtrl.SetAnimator(attackAnimtag);
+            _character.AnimCtrl.SetAnimator( attackAnimtag );
         }
 
         /// <summary>

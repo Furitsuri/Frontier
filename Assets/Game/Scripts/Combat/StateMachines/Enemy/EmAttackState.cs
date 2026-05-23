@@ -66,7 +66,7 @@ namespace Frontier.Battle
             }
 
             _targetCharacter = _attackCharacter.BattleLogic.GetAi().GetTargetCharacter();
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _attackCharacter );
+            _stageCtrl.ApplyGridCursor2CharacterTile( _attackCharacter );
 
             _targetCharaSkillNames = _targetCharacter.GetStatusRef.GetEquipSkillNames();
 

@@ -18,7 +18,7 @@ namespace Frontier.Battle
 
             _plOwner.RevertBeforeMoving();
             _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();    // グリッド情報を更新
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _plOwner );
+            _stageCtrl.ApplyGridCursor2CharacterTile( _plOwner );
         }
 
         public override void Init( object context )

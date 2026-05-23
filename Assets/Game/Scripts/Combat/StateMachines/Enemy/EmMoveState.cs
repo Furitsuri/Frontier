@@ -81,7 +81,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            _stageCtrl.ApplyCurrentGrid2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
+            _stageCtrl.ApplyGridCursor2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetActiveGridCursor( true );               // 選択グリッドを表示
             _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();  // タイルメッシュの描画をクリア
 

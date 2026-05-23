@@ -88,7 +88,7 @@ namespace Frontier.Entities
                 targetCharacter = null;
 
                 // 攻撃可能なグリッドがない場合はカーソル位置(カメラ位置)をプレイヤーに合わせる
-                context.StageCtrl.ApplyCurrentGrid2CharacterTile( context.Owner );
+                context.StageCtrl.ApplyGridCursor2CharacterTile( context.Owner );
                 context.Presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             }
         }
@@ -192,7 +192,7 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    context.StageCtrl.ApplyCurrentGrid2CharacterTile( context.Owner );
+                    context.StageCtrl.ApplyGridCursor2CharacterTile( context.Owner );
                 }
             }
 

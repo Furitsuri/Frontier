@@ -5911,7 +5911,7 @@ MonoBehaviour:
   _battleCameraObject: {fileID: 2865494705789143224, guid: f715f0bb9637f444b9d6008e0721d848, type: 3}
   _stageFileLoaderPrefab: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}
   _gridMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
-  _gridCursorCtrlObject: {fileID: 8350404123717608506, guid: 1b64c7c7109b2d64d8e59331fbee99c9, type: 3}
+  _gridCursorObject: {fileID: 8350404123717608506, guid: 1b64c7c7109b2d64d8e59331fbee99c9, type: 3}
   tileMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
   _tilePrefabs:
   - {fileID: 1062838171624191041, guid: db69ba040f2ba074bbe071a615964f70, type: 3}

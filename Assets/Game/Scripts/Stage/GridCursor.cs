@@ -19,7 +19,6 @@ namespace Frontier.Stage
         private BattleCameraController _btlCamCtrl     = null;
 
         private int _tileIndex              = 0;
-        private int _atkTargetIndex         = 0;
         private float _totalTime            = 0;
         private bool _isFocusCamera         = false;
         private GridCursorState _gridState  = GridCursorState.NONE;
@@ -27,10 +26,8 @@ namespace Frontier.Stage
         private Vector3 _endPos             = Vector3.zero;
         private Vector3 _currentPos         = Vector3.zero;
         private Character _bindCharacter    = null;
-        private ReadOnlyCollection<int> _refAttackableTileIndices;
         private LineRenderer _lineRenderer;
-        private Func<int, int>[] _directionMoveCallbacks;
-        private Func<int, int>[] _directionAttackTargetCallbacks;
+        private Func<int, int>[] _moveCallbacks;
 
         public int CurrentTileIndex => _tileIndex;
         public GridCursorState GridState => _gridState;
@@ -49,34 +46,19 @@ namespace Frontier.Stage
             renderer.material.color = color;
         }
 
-        public void Init( int initIndex )
+        public void Init( int initIndex, Func<int, int>[] moveCallbacks )
         {
-            _atkTargetIndex = 0;
             _bindCharacter  = null;
             _gridState      = GridCursorState.NONE;
+            _moveCallbacks  = moveCallbacks;
 
             SetTileIndex( initIndex );
-
-            InitCallbacks();
-        }
-
-        public void AssignAttackTargetTileIndices( ReadOnlyCollection<int> attackTargetTileIndices )
-        {
-            _refAttackableTileIndices = attackTargetTileIndices;
         }
 
         public void Bind( GridCursorState gridState, Character bindCharacter )
         {
             _gridState      = gridState;
             _bindCharacter  = bindCharacter;
-
-            if( null == _bindCharacter ) { return; }
-
-            // 攻撃ステートの場合は、キャラクターの攻撃対象となるタイルのインデックスを参照出来るように登録しておく
-            if( GridCursorState.ATTACK == _gridState )
-            {
-                _refAttackableTileIndices = _bindCharacter.BattleLogic.ActionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies;
-            }
         }
 
         public void Unbind()
@@ -94,7 +76,7 @@ namespace Frontier.Stage
         {
             StartLerpMove();
 
-            _tileIndex = _directionMoveCallbacks[ ( int )direction ]( _tileIndex );
+            _tileIndex = _moveCallbacks[ ( int )direction ]( _tileIndex );
         }
 
         public void SetActive( bool isActive )
@@ -107,48 +89,25 @@ namespace Frontier.Stage
             _tileIndex = index;
         }
 
+        /// <summary>
+        /// タイルインデックスによるグリッド座標を即時に反映させます。
+        /// ※Updateを経由せずに即時反映させたい場合に使用します。
+        /// </summary>
+        public void SyncPositionToTile()
+        {
+            _beginPos = _endPos = _currentPos = GetGoalPosition();
+
+            SetCameraLookAtPosAndDrawCursor( _currentPos );
+        }
+
         public void TransitAttackTarget( Direction direction )
         {
             StartLerpMove();
-
-            _atkTargetIndex = _directionAttackTargetCallbacks[( int ) direction]( _atkTargetIndex );
-            _tileIndex      = _refAttackableTileIndices[_atkTargetIndex];
         }
 
-        /// <summary>
-        /// 攻撃対象インデックス値を設定します
-        /// </summary>
-        /// <param name="index">攻撃対象インデックス値</param>
-        public bool TrySetAttackTargetIndex( int targetTileIndex )
+        public void SetCameraFocus( bool isFocus )
         {
-            for( int i = 0; i < _refAttackableTileIndices.Count; i++ )
-            {
-                if( targetTileIndex == _refAttackableTileIndices[i] )
-                {
-                    _atkTargetIndex = i;
-                    _tileIndex = _refAttackableTileIndices[_atkTargetIndex];
-
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 前のターゲットインデックス値に遷移します
-        /// </summary>
-        public int TransitPrevTarget( int atkTargetIndex )
-        {
-            return ( atkTargetIndex - 1 ) < 0 ? _refAttackableTileIndices.Count - 1 : atkTargetIndex - 1;
-        }
-
-        /// <summary>
-        /// 次のターゲットインデックス値に遷移します
-        /// </summary>
-        public int TransitNextTarget( int atkTargetIndex )
-        {
-            return ( atkTargetIndex + 1 ) % _refAttackableTileIndices.Count;
+            _isFocusCamera = isFocus;
         }
 
         public int X()
@@ -164,66 +123,6 @@ namespace Frontier.Stage
         public Vector3 GetPosition()
         {
             return _currentPos;
-        }
-
-        private void InitCallbacks()
-        {
-            _directionMoveCallbacks = new Func<int, int>[( int )Direction.NUM]
-            {
-                // Direction.FORWARD
-                ( tileIndex ) =>
-                {
-                    tileIndex += _stageDataProvider.CurrentData.TileColNum;
-                    if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tileIndex )
-                    {
-                        tileIndex = tileIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
-                    }
-
-                    return tileIndex;
-                },
-                // Direction.RIGHT
-                ( tileIndex ) =>
-                {
-                    tileIndex++;
-                    if( tileIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
-                    {
-                        tileIndex -= _stageDataProvider.CurrentData.TileColNum;
-                    }
-                    return tileIndex;
-                },
-                // Direction.BACK
-                ( tileIndex ) =>
-                {
-                    tileIndex -= _stageDataProvider.CurrentData.TileColNum;
-                    if( tileIndex < 0 )
-                    {
-                        tileIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
-                    }
-                    return tileIndex;
-                },
-                // Direction.LEFT
-                ( tileIndex ) =>
-                {
-                    tileIndex--;
-                    if( ( tileIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
-                    {
-                        tileIndex += _stageDataProvider.CurrentData.TileColNum;
-                    }
-                    return tileIndex;
-                }
-            };
-
-            _directionAttackTargetCallbacks = new Func<int, int>[( int )Direction.NUM]
-            {
-                // Direction.FORWARD
-                ( atkTargetIndex ) => TransitNextTarget( atkTargetIndex ),
-                // Direction.RIGHT
-                ( atkTargetIndex ) => TransitNextTarget( atkTargetIndex ),
-                // Direction.BACK
-                ( atkTargetIndex ) => TransitPrevTarget( atkTargetIndex ),
-                // Direction.LEFT
-                ( atkTargetIndex ) => TransitPrevTarget( atkTargetIndex ),
-            };
         }
 
         private void Update()
