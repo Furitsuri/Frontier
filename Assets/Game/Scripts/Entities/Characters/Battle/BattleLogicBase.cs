@@ -68,9 +68,10 @@ namespace Frontier.Entities
 
         void Update()
         {
-            // 移動と攻撃が終了していれば、行動不可に遷移
+            // 移動と攻撃、もしくはスキルが終了していれば、行動不可に遷移
             var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.IsEndCommand;
-            if( endCommand[( int ) COMMAND_TAG.MOVE] && endCommand[( int ) COMMAND_TAG.ATTACK] )
+            if( endCommand[( int ) COMMAND_TAG.MOVE] &&
+                ( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] ) )
             {
                 BeImpossibleAction();
             }
