@@ -31,7 +31,7 @@ namespace Frontier.Entities
                 var attackTargetKeys = context.Owner.BattleLogic.ActionRangeCtrl.GetAttackTargetCharacterKeys();
                 var target = context.BtlRtnCtrl.BtlCharaCdr.GetNearestLineOfSightCharacter( context.Owner, attackTargetKeys );
                 if( null == target ) { target = context.BtlRtnCtrl.BtlCharaCdr.GetNearestCharacter( context.Owner, attackTargetKeys ); }
-                context.StageCtrl.MoveGridCursorToAttackableTile( true, target );
+                context.StageCtrl.ApplyTargetCursor2CharacterTile( true, target );
             }
         }
 

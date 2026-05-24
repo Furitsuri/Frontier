@@ -47,7 +47,8 @@ namespace Frontier.Entities
                     targetCharacter = context.BtlRtnCtrl.BtlCharaCdr.GetNearestCharacter( context.Owner, context.Owner.BattleLogic.ActionRangeCtrl.GetAttackTargetCharacterKeys() );
                 }
                 Debug.Assert( targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
-                context.StageCtrl.MoveGridCursorToAttackableTile( false, targetCharacter );
+                context.StageCtrl.ApplyTargetCursor2CharacterTile( false, targetCharacter );
+                context.StageCtrl.ApplyGridCursor2CharacterTile( targetCharacter );
                 tileIndex = context.StageCtrl.GetCurrentGridIndex();
 
                 actionableTileData.ClearAttackTargetTileIndicies();
@@ -73,11 +74,11 @@ namespace Frontier.Entities
                 {
                     targetCharacter = context.BtlRtnCtrl.BtlCharaCdr.GetNearestCharacter( context.Owner, attackTargetCharaKeys );
                     Debug.Assert( targetCharacter != null, "攻撃可能なグリッドが存在する場合、必ずターゲットキャラクターが存在するはずですが、nullが返されました。" );
-                    context.StageCtrl.MoveGridCursorToAttackableTile( false, targetCharacter );
+                    context.StageCtrl.ApplyTargetCursor2CharacterTile( false, targetCharacter );
                 }
                 else if( attackTargetCharaKeys.Contains( targetCharacter.GetCharacterKey() ) )
                 {
-                    context.StageCtrl.MoveGridCursorToAttackableTile( false, targetCharacter );
+                    context.StageCtrl.ApplyTargetCursor2CharacterTile( false, targetCharacter );
                 }
                 else
                 {

@@ -55,9 +55,14 @@ namespace Frontier.Stage
             _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.GRID_CURSOR );
         }
 
-        public void ApplyTargetCursor2CharacterTile( Character character )
+        /// <summary>
+        /// ターゲットカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
+        /// </summary>
+        /// <param name="isToggleCamera">カメラの切り替えフラグ</param>
+        /// <param name="designatedTarget">指定ターゲットキャラクター</param>
+        public void ApplyTargetCursor2CharacterTile( bool isToggleCamera, Character designatedTarget = null )
         {
-            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.TARGET_CURSOR );
+            _gridCursorCtrl.ApplyTargetCursor2CharacterTile( isToggleCamera, designatedTarget );
         }
 
         /// <summary>
@@ -90,15 +95,6 @@ namespace Frontier.Stage
         public void SetActiveTargetCursor( bool isActive )
         {
             _gridCursorCtrl.SetActiveGridCursor( isActive, GridCursorController.CursorType.TARGET_CURSOR );
-        }
-
-        /// <summary>
-        /// グリッドカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
-        /// </summary>
-        /// <param name="designatedTarget"></param>
-        public void MoveGridCursorToAttackableTile( bool isToggleCamera, Character designatedTarget = null )
-        {
-            _gridCursorCtrl.MoveGridCursorToAttackableTile( isToggleCamera, designatedTarget );
         }
 
         public bool OperateGridCursor( Direction direction )
