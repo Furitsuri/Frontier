@@ -9,7 +9,7 @@ namespace Frontier.Sequences
 
         public override ISequence CreateSequence( SkillActionSequenceParam param )
         {
-            object[] args = new object[] { param.Attacker, param.Target };
+            object[] args = new object[] { param.SkillAction };
 
             return _hierarchyBld.InstantiateWithDiContainer<SkillActionSequence>( args, false );
         }
