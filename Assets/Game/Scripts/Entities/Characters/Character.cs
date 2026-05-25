@@ -41,7 +41,7 @@ namespace Frontier.Entities
         protected FieldLogicBase _fieldLogic                                                = null;
         protected BattleLogicBase _battleLogic                                              = null;
         protected BattleAnimationEventReceiver _animReceiver                                = null;
-        protected GameObject _ghostObject                                                   = null;
+        protected GhostObject _ghostObject                                                   = null;
         protected TransformHandler _transformHdlr                                           = null;     // キャラクターのTransform操作を行うクラス
         protected AnimationController _animCtrl                                             = null;     // アニメーションコントローラ
         protected Bullet _bullet                                                            = null;     // 矢などの弾
@@ -54,7 +54,7 @@ namespace Frontier.Entities
         public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
         public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
-        public GameObject GhostObj => _ghostObject;
+        public GhostObject GhostObj => _ghostObject;
         public ref Status GetStatusRef => ref _status;
         public ref CameraParameter CameraParam => ref _camParam;
 
@@ -144,7 +144,7 @@ namespace Frontier.Entities
         {
             if( _ghostObject != null )
             {
-                _ghostObject.SetActive( isActive );
+                _ghostObject.gameObject.SetActive( isActive );
             }
         }
 
@@ -221,11 +221,11 @@ namespace Frontier.Entities
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
 
-        public GameObject GetGhostObject()
+        public GhostObject GetGhostObject()
         {
             if( null == _ghostObject )
             {
-                _ghostObject = CreateGhostObject();
+                _ghostObject = GhostObject.Create( this.transform, gameObject.name );
             }
 
             return _ghostObject;
@@ -308,96 +308,11 @@ namespace Frontier.Entities
             }
         }
 
-        private static Material[] CreateGhostMaterials( Material[] originals )
-        {
-            var mats = new Material[originals.Length];
-            for( int i = 0; i < originals.Length; i++ )
-            {
-                var mat = new Material( originals[i] );
-                mat.SetFloat( "_Surface", 1 );
-                mat.SetOverrideTag( "RenderType", "Transparent" );
-                mat.SetInt( "_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha );
-                mat.SetInt( "_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha );
-                mat.SetInt( "_ZWrite", 0 );
-                mat.DisableKeyword( "_ALPHATEST_ON" );
-                mat.EnableKeyword( "_SURFACE_TYPE_TRANSPARENT" );
-                mat.EnableKeyword( "_ALPHABLEND_ON" );
-                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-                Color c = mat.color;
-                c.a = 0.5f;
-                mat.color = c;
-                mats[i] = mat;
-            }
-            return mats;
-        }
-
-        /// <summary>
-        /// 現在のアニメーションポーズをベイクし、Renderer のみを持つ軽量なゴーストオブジェクトを生成します。
-        /// Character コンポーネント等のゲームロジックは一切含みません。
-        /// </summary>
-        private GameObject CreateGhostObject()
-        {
-            var ghost = new GameObject( $"{gameObject.name}_Ghost" );
-
-            // SkinnedMeshRenderer: 現在の骨格ポーズをベイクして静的メッシュとして複製
-            foreach( var smr in GetComponentsInChildren<SkinnedMeshRenderer>() )
-            {
-                var child = new GameObject( smr.gameObject.name );
-                child.transform.SetParent( ghost.transform, false );
-                child.transform.localPosition = transform.InverseTransformPoint( smr.transform.position );
-                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * smr.transform.rotation;
-                child.transform.localScale    = new Vector3(
-                    smr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
-                    smr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
-                    smr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
-                );
-
-                var baked = new Mesh();
-                smr.BakeMesh( baked );
-                child.AddComponent<MeshFilter>().sharedMesh  = baked;
-                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( smr.sharedMaterials );
-            }
-
-            // MeshRenderer: アセットメッシュをコピーしてランタイムオブジェクトとして複製
-            foreach( var mr in GetComponentsInChildren<MeshRenderer>() )
-            {
-                var mf = mr.GetComponent<MeshFilter>();
-                if( mf == null || mf.sharedMesh == null ) { continue; }
-
-                var child = new GameObject( mr.gameObject.name );
-                child.transform.SetParent( ghost.transform, false );
-                child.transform.localPosition = transform.InverseTransformPoint( mr.transform.position );
-                child.transform.localRotation = Quaternion.Inverse( transform.rotation ) * mr.transform.rotation;
-                child.transform.localScale    = new Vector3(
-                    mr.transform.lossyScale.x / Mathf.Max( transform.lossyScale.x, float.Epsilon ),
-                    mr.transform.lossyScale.y / Mathf.Max( transform.lossyScale.y, float.Epsilon ),
-                    mr.transform.lossyScale.z / Mathf.Max( transform.lossyScale.z, float.Epsilon )
-                );
-
-                child.AddComponent<MeshFilter>().sharedMesh  = Object.Instantiate( mf.sharedMesh );
-                child.AddComponent<MeshRenderer>().materials = CreateGhostMaterials( mr.sharedMaterials );
-            }
-
-            return ghost;
-        }
-
         public void CleanupGhost()
         {
             if( _ghostObject != null )
             {
-                // CreateGhostObject でベイクした Mesh と生成したマテリアルは Unity が自動破棄しないため明示的に解放する
-                foreach(var mf in _ghostObject.GetComponentsInChildren<MeshFilter>())
-                {
-                    if(mf.sharedMesh != null) { UnityEngine.Object.Destroy( mf.sharedMesh ); }
-                }
-                foreach(var mr in _ghostObject.GetComponentsInChildren<MeshRenderer>())
-                {
-                    foreach(var mat in mr.sharedMaterials)
-                    {
-                        if(mat != null) { UnityEngine.Object.Destroy( mat ); }
-                    }
-                }
-                UnityEngine.Object.Destroy( _ghostObject );
+                _ghostObject.Cleanup();
                 _ghostObject = null;
             }
         }

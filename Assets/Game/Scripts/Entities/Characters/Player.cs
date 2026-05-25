@@ -93,6 +93,8 @@ namespace Frontier.Entities
             if( playerBattleLogic.GetCommandHistoryCount() <= 0 ) { return false; }
             // 攻撃コマンドが履歴に存在する場合は巻き戻せない
             if( playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.ATTACK ) ) { return false; }
+            // スキルコマンドが履歴に存在する場合は巻き戻せない
+            if( playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.SKILL ) ) { return false; }
             // 待機コマンドが履歴に存在する場合は巻き戻せない
             if( playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.WAIT ) ) { return false; }
 

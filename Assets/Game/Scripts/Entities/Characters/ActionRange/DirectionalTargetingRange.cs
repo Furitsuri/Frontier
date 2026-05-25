@@ -215,6 +215,7 @@ namespace Frontier.Entities
             var targetTile  = context.StageCtrl.GetTileStaticData( tileIdx );
             var originalRot = Quaternion.LookRotation( Vector3.forward, Vector3.up );
             var rotatedRot  = Quaternion.LookRotation( context.Owner.GetTransformHandler.GetOrderedForward(), Vector3.up );
+            ghostObject.TileIndex = tileIdx;
             ghostObject.transform.SetPositionAndRotation( targetTile.CharaStandPos, rotatedRot * Quaternion.Inverse( originalRot ) );
 
             context.Owner.SetGhostActive( true );

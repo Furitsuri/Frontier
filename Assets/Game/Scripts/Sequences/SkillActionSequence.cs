@@ -1,13 +1,17 @@
 ﻿using Frontier.Combat;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Zenject;
 
 namespace Frontier.Sequences
 {
     public class SkillActionSequence : ISequence
     {
-        private readonly SkillActionBase _skillAction = null;
+        private readonly SkillActionBase _skillAction;
+
+        [Inject]
+        public SkillActionSequence( SkillActionBase skillAction )
+        {
+            _skillAction = skillAction;
+        }
 
         public void Start()
         {

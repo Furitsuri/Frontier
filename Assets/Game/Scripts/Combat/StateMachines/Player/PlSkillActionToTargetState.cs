@@ -31,6 +31,7 @@ namespace Frontier.Battle
         private delegate void ChangeDirectionCallback( TargetingRangeContext context, Direction dir, bool isWithMove, int range );
         private delegate void RefreshTargetCallback( TargetingRangeContext context, bool isMovingSkill, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter );
         private delegate bool TryAdjustRangeCallback( TargetingRangeContext context, int step, ref int currentRange, int maxRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter );
+        private delegate int GetGhostTileIndexCallback();
 
         private int _currentRange;
         private int _maxRange;
@@ -132,9 +133,16 @@ namespace Frontier.Battle
                 case PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID:
                     break;
                 case PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE:
+                    _phase = PlSkillActionPhase.PL_SKILL_ACTION_END;
                     break;
                 case PlSkillActionPhase.PL_SKILL_ACTION_END:
-                    break;
+                    // スキルコマンドを選択不可にする
+                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+                    // スキル使用後は移動やその他のコマンドも使用できないようにするため行動履歴をクリア
+                    _plOwner.ClearCommandHistory();
+                    // コマンド選択に戻る
+                    Back();
+                    return true;
                 default:
                     break;
             }
@@ -240,8 +248,29 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            // アクションゲージを消費
+            _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+            if( null != _targetCharacter )
+            {
+                _targetCharacter.BattleLogic.ConsumeActionGauge();
+            }
+
+            _stageCtrl.SetActiveGridCursor( false );                                     // 選択グリッドを一時非表示
+            _stageCtrl.SetActiveTargetCursor( false );                                   // ターゲットカーソルを一時非表示
+            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );   // アクション対象指定関連のUIを非表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                // タイルメッシュの描画をすべてクリア
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                // 現在の入力コードを登録解除
+
+            // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
+            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+            {
+                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+            }
+
             _isSkillRegistered = true;
-            _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID );
+            _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID, _attackTargetCharaKeys );   // スキルシーケンスの開始
+
+            _phase = PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE;
 
             return true;
         }

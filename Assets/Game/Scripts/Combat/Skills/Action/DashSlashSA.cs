@@ -1,8 +1,11 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Stage;
+using Frontier.UI;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Combat
 {
@@ -11,23 +14,31 @@ namespace Frontier.Combat
         private enum DashSlashState
         {
             START,
+            WAIT_SLASH,
             SLASHING,
+            WAIT_END,
             END
         }
 
+        private IUiSystem _uiSystem                     = null;
+        private BattleCharacterCoordinator _btlCharaCdr = null;
+        private StageController _stageCtrl              = null;
+
         private DashSlashState _state;
         private bool _isAttackAnimEnded;
+        private int _goalTileIndex = -1;
         private Vector3 _velocity;
         private Vector3 _goalPosition;
-        private BattleCharacterCoordinator _btlCharaCdr;
         private List<Character> _targetCharacters = null;
 
         [Inject]
-        public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleCharacterCoordinator btlCharaCdr ) : base( owner )
+        public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner )
         {
-            _velocity           = owner.GetTransformHandler.GetOrderedForward() * Constants.DASH_SLASH_INITIAL_SPEED;
             _targetCharacters   = new List<Character>();
-            _btlCharaCdr        = btlCharaCdr;
+            _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
+            _stageCtrl          = stageCtrl;
+            _uiSystem           = uiSystem;
+
             foreach( var key in targetCharaKeys )
             {
                 var targetCharacter = _btlCharaCdr.GetCharacter( key );
@@ -44,14 +55,22 @@ namespace Frontier.Combat
             Debug.Log( "DashSlashSA: StartAction" );
 
             _isAttackAnimEnded = false;
-            _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE );
-            _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, Vector3.zero );
             SortTargetCharactersByDistance();
 
-            // 最も遠いターゲット位置をゴールとする
-            _goalPosition = _targetCharacters.Count > 0
-                ? _targetCharacters[_targetCharacters.Count - 1].GetTransformHandler.GetPosition()
-                : _owner.GetTransformHandler.GetPosition() + _owner.GetTransformHandler.GetOrderedForward() * Constants.DASH_SLASH_FALLBACK_GOAL_DISTANCE;
+            // 全ターゲットのダメージ予測を計算
+            foreach( var target in _targetCharacters )
+            {
+                _btlCharaCdr.ApplyDamageExpect( _owner, target );
+            }
+
+            _velocity = _owner.GetTransformHandler.GetOrderedForward() * Constants.DASH_SLASH_INITIAL_SPEED;
+
+            // ゴーストの位置が移動目標地点
+            var ghostObject = _owner.GetGhostObject();
+            Debug.Assert( ghostObject != null );
+            _goalTileIndex  = ghostObject.TileIndex;
+            _goalPosition   = ghostObject.transform.position;
+            _owner.CleanupGhost();
 
             _state = DashSlashState.START;
         }
@@ -63,24 +82,32 @@ namespace Frontier.Combat
             switch( _state )
             {
                 case DashSlashState.START:
-                    if( _targetCharacters.Count > 0 && IsInAttackRange( _targetCharacters[0] ) )
+                    _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_ATTACK_INITIAL );
+                    _state = DashSlashState.WAIT_SLASH;
+                    break;
+                case DashSlashState.WAIT_SLASH:
+                    if( _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_ATTACK_INITIAL ) )
                     {
-                        _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.SINGLE_ATTACK );
-                        _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity * Constants.DASH_SLASH_SLASHING_SPEED_MULTIPLIER, Vector3.zero );
+                        _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_ATTACK_LATTER );
+                        _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, Vector3.zero );
                         _state = DashSlashState.SLASHING;
                     }
                     break;
                 case DashSlashState.SLASHING:
                     UpdateAttack2TargetCharacters();
+                    UpdateSlashAnimEnd();
 
-                    if( !_isAttackAnimEnded )
-                    {
-                        _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.SINGLE_ATTACK );
-                    }
-
-                    if( IsPassedGoalPosition() && _isAttackAnimEnded )
+                    if( Methods.IsPassedPosition( _owner.GetTransformHandler.GetPosition(), _goalPosition, _velocity ) )
                     {
                         _owner.GetTransformHandler.ResetVelocityAcceleration();
+                        _owner.BattleParams.TmpParam.CurrentTileIndex = _goalTileIndex;
+                        _state = DashSlashState.WAIT_END;
+                    }
+                    break;
+                case DashSlashState.WAIT_END:
+                    UpdateSlashAnimEnd();
+                    if( _isAttackAnimEnded )
+                    {
                         _state = DashSlashState.END;
                     }
                     break;
@@ -88,6 +115,21 @@ namespace Frontier.Combat
                     EndAction();
                     break;
             }
+        }
+
+        protected override void EndAction()
+        {
+            base.EndAction();
+
+            _stageCtrl.UnbindGridCursor();                          // アタッカーキャラクターの設定を解除
+            _stageCtrl.ApplyGridCursor2CharacterTile( _owner );
+            _stageCtrl.SetActiveGridCursor( true );                 // 選択グリッドを表示
+            _stageCtrl.SetActiveTargetCursor( false );              // ターゲットカーソルを非表示
+        }
+
+        protected override bool IsFinished()
+        {
+            return _state == DashSlashState.END;
         }
 
         private void SortTargetCharactersByDistance()
@@ -108,12 +150,12 @@ namespace Frontier.Combat
             return ( targetPos - ownerPos ).XZ().magnitude <= Constants.DASH_SLASH_ATTACK_TRIGGER_DISTANCE;
         }
 
-        private bool IsPassedGoalPosition()
+        private void UpdateSlashAnimEnd()
         {
-            Vector3 ownerPos = _owner.GetTransformHandler.GetPosition();
-            Vector3 toGoal   = ( _goalPosition - ownerPos ).XZ();
-            Vector3 forward  = _owner.GetTransformHandler.GetOrderedForward().XZ();
-            return Vector3.Dot( forward, toGoal ) <= 0f;
+            if( !_isAttackAnimEnded )
+            {
+                _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_ATTACK_LATTER );
+            }
         }
 
         private bool UpdateAttack2TargetCharacters()
@@ -123,11 +165,33 @@ namespace Frontier.Combat
             {
                 if( IsInAttackRange( _targetCharacters[i] ) )
                 {
+                    ApplyDamageToTarget( _targetCharacters[i] );
                     _targetCharacters.RemoveAt( i );
                     attacked = true;
                 }
             }
             return attacked;
+        }
+
+        private void ApplyDamageToTarget( Character target )
+        {
+            int hpChange = target.BattleParams.TmpParam.ExpectedHpChange;
+            target.GetStatusRef.CurHP += hpChange;
+
+            if( hpChange != 0 )
+            {
+                if( target.GetStatusRef.CurHP <= 0 )
+                {
+                    target.GetStatusRef.CurHP = 0;
+                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
+                }
+                else
+                {
+                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );
+                }
+            }
+
+            _uiSystem.BattleUi.ShowDamageOnCharacter( target );
         }
     }
 }

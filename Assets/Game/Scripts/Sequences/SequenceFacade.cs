@@ -1,5 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.Sequences
@@ -27,13 +28,14 @@ namespace Frontier.Sequences
             _handler.Regist( attackSeq );
         }
 
-        public void RegistSkillAction( Character attacker, Character target, SkillID skillID )
+        public void RegistSkillAction( Character attacker, Character target, SkillID skillID, List<CharacterKey> attackTargetCharaKeys )
         {
-            var factory     = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceCreator>( false );
-            var param       = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceParam>( false );
-            param.Attacker  = attacker;
-            param.Target    = target;
-            param.SkillID   = skillID;
+            var factory         = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceCreator>( false );
+            var param           = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceParam>( false );
+            param.Attacker      = attacker;
+            param.Target        = target;
+            param.SkillID       = skillID;
+            param.SkillAction   = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld );
             ISequence skillActionSeq = factory.CreateSequence( param );
             _handler.Regist( skillActionSeq );
         }

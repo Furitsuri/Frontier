@@ -256,7 +256,7 @@ namespace Frontier.Battle
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
                 _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
-                _stageCtrl.SetActiveTargetCursor( false );                                     // ターゲットカーソルを一時非表示
+                _stageCtrl.SetActiveTargetCursor( false );                                    // ターゲットカーソルを一時非表示
                 _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                 // タイルメッシュの描画をすべてクリア
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除

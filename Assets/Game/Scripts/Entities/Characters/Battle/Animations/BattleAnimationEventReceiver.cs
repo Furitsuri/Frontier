@@ -103,8 +103,8 @@ namespace Frontier.Entities
             IsAttacked = true;
             _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().BattleParams.TmpParam.ExpectedHpChange;
 
-            //　ダメージが0の場合はモーションを取らない
-            if( _readOnlyBattleLogic.Value.GetOpponent().BattleParams.TmpParam.ExpectedHpChange != 0 )
+            //　ダメージが0, または正の数(回復する)場合はモーションを取らない
+            if( _readOnlyBattleLogic.Value.GetOpponent().BattleParams.TmpParam.ExpectedHpChange < 0 )
             {
                 if( _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP <= 0 )
                 {
@@ -153,6 +153,11 @@ namespace Frontier.Entities
 
             // ダメージUIを表示
             _uiSystem.BattleUi.ShowDamageOnCharacter( _readOnlyBattleLogic.Value.GetOpponent() );
+        }
+
+        public void DashStart()
+        {
+
         }
 
         /// <summary>

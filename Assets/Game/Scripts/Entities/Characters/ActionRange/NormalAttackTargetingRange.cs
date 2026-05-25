@@ -72,5 +72,10 @@ namespace Frontier.Entities
         {
             return false;
         }
+
+        static public int GetGhostTileIndex()
+        {
+            return -1;
+        }
     }
 }

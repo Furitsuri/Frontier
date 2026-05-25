@@ -209,6 +209,15 @@ static public class Methods
         return true;
     }
 
+    static public bool IsPassedPosition( in Vector3 basePos, in Vector3 targetPos, in Vector3 moveVec )
+    {
+        var toTargetVec = targetPos - basePos;
+        // 水平方向のみで判定
+        var moveVecXZ = moveVec.XZ();
+        toTargetVec.y = 0f;    
+        return Vector3.Dot( toTargetVec, moveVec ) <= 0f;
+    }
+
     /// <summary>
     /// 指定のベクトルを回転させた値を取得します
     /// </summary>

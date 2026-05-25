@@ -171,8 +171,6 @@ namespace Frontier.Battle
                 _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
                 // スキルを使用した場合は以前の状態には戻せないため、行動履歴をクリア
                 _plOwner.ClearCommandHistory();
-
-                _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
             }
             else
             {
@@ -181,6 +179,8 @@ namespace Frontier.Battle
 
                 TransitState( ( int ) TransitTag.SKILL_ACTION_TO_TARGET );
             }
+
+            _phase = PlSelectSkillPhase.PL_SELECT_SKILL_END;
 
             return true;
         }

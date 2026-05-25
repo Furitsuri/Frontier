@@ -37,9 +37,8 @@ namespace Frontier.Combat
 
         static public Data[] data = new Data[( int ) SkillID.NUM];
         static public Func<SkillNotifierBase>[] SkillNotifierFactory    = null;
-        static public Func<SkillActionBase>[] SkillActionFactory        = null;
         static private readonly SkillNotifierBase sharedNotifier        = new SkillNotifierBase();  // 使いまわし前提のため静的読み取り専用
-        static private readonly SkillActionBase sharedAction = new SkillActionBase(null);    // 使いまわし前提のため静的読み取り専用
+        static private readonly SkillActionBase sharedAction            = new SkillActionBase(null);    // 使いまわし前提のため静的読み取り専用
 
         static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {
@@ -61,22 +60,18 @@ namespace Frontier.Combat
             SkillNotifierFactory = factories;
         }
 
-        static public void BuildSkillActionFactory( HierarchyBuilderBase hierarchyBld, Character owner, List<Character> targets )
+        static public SkillActionBase CreateSkillAction( SkillID skillID, Character owner, List<CharacterKey> targetCharaKeys, HierarchyBuilderBase hierarchyBld )
         {
-            object[] args = { owner, targets };
-
-            if( SkillActionFactory != null ) { return; }
-            Func<SkillActionBase>[] factories = new Func<SkillActionBase>[( int ) SkillID.NUM]
+            switch( skillID )
             {
-                () => sharedAction,
-                () => sharedAction,
-                () => sharedAction,
-                () => sharedAction,
-                () => sharedAction,
-                () => sharedAction,
-                () => hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( args, false ),
-            };
-            SkillActionFactory = factories;
+                case SkillID.DASH_SLASH:
+                {
+                    object[] args = { owner, targetCharaKeys };
+                    return hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( args, false );
+                }
+                default:
+                    return sharedAction;
+            }
         }
 
         static public bool IsValidSkill( SkillID skillID )
