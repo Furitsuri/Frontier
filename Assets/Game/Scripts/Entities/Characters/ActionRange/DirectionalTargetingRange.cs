@@ -10,12 +10,13 @@ namespace Frontier.Entities
 {
     public static class DirectionalTargetingRange
     {
-        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isMovingSkill, int range )
+        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isMovingSkill, ref int currentRange, int maxRange )
         {
             var actionRangeCtrl = context.Owner.BattleLogic.ActionRangeCtrl;
+            currentRange = maxRange;    // 方向指定を受け入れたタイミングでは最大レンジに設定しておき、以降の調整で有効なレンジを探す
 
             context.Owner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, context.Owner.BattleParams.TmpParam.CurrentTileIndex, range );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, context.Owner.BattleParams.TmpParam.CurrentTileIndex, currentRange );
         }
 
 		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isMovingSkill, int tileIndex, int range, ActionableTileData actionableTileData )

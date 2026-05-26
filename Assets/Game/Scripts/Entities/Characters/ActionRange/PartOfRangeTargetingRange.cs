@@ -10,7 +10,7 @@ namespace Frontier.Entities
 {
     public static class PartOfRangeTargetingRange
     {
-        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, int range )
+        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, ref int currentRange, int maxRange )
         {
             context.StageCtrl.OperateGridCursor( dir );
 
@@ -25,7 +25,7 @@ namespace Frontier.Entities
                 return;
             }
 
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.PART_OF_RANGE, false, isWithMove, targetingRangeIndex, range );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.PART_OF_RANGE, false, isWithMove, targetingRangeIndex, currentRange );
         }
 
         static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isWithMove, int tileIndex, int currentRange, ActionableTileData actionableTileData )

@@ -11,9 +11,9 @@ namespace Frontier.Entities
         /// <summary>
         /// 通常攻撃は方向転換した際の挙動がDirectionalTargetingRangeの処理と変わらないため、そのまま呼び出しています。
         /// </summary>
-        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, int range )
+        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, ref int currentRange, int maxRange )
         {
-            DirectionalTargetingRange.AcceptDirection( context, dir, isWithMove, range );
+            DirectionalTargetingRange.AcceptDirection( context, dir, isWithMove, ref currentRange, maxRange );
         }
 
         static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isWithMove, int tileIndex, int currentRange, ActionableTileData actionableTileData )

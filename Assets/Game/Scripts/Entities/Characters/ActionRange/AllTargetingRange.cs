@@ -16,7 +16,7 @@ namespace Frontier.Entities
         /// <param name="range"></param>
         /// <param name="attackTargets"></param>
         /// <param name="targetCharacter"></param>
-        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, int range )
+        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, ref int currentRange, int maxRange )
         {
         }
 

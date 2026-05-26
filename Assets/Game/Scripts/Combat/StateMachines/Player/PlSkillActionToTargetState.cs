@@ -28,7 +28,7 @@ namespace Frontier.Battle
             PL_SKILL_ACTION_END,
         }
 
-        private delegate void ChangeDirectionCallback( TargetingRangeContext context, Direction dir, bool isWithMove, int range );
+        private delegate void ChangeDirectionCallback( TargetingRangeContext context, Direction dir, bool isWithMove, ref int currentRange, int maxRange );
         private delegate void RefreshTargetCallback( TargetingRangeContext context, bool isMovingSkill, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter );
         private delegate bool TryAdjustRangeCallback( TargetingRangeContext context, int step, ref int currentRange, int maxRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter );
         private delegate int GetGhostTileIndexCallback();
@@ -238,7 +238,7 @@ namespace Frontier.Battle
             if( Direction.NONE == context.Cursor ) { return false; }
 
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
-            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, context.Cursor, _isMovingSkill, _currentRange );
+            _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, context.Cursor, _isMovingSkill, ref _currentRange, _maxRange );
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
 
             return true;
