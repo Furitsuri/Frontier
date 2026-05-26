@@ -64,6 +64,11 @@ namespace Frontier.Combat
         {
             switch( skillID )
             {
+                case SkillID.DOUBLE_STRIKE:
+                {
+                    object[] args = { owner, targetCharaKeys };
+                    return hierarchyBld.InstantiateWithDiContainer<PartOfRangeSABase>( args, false );
+                }
                 case SkillID.DASH_SLASH:
                 {
                     object[] args = { owner, targetCharaKeys };
