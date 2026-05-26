@@ -191,7 +191,7 @@ namespace Frontier.Combat
                 }
             }
 
-            _uiSystem.BattleUi.ShowDamageOnCharacter( target );
+            _uiSystem.BattleUi.ShowDamageOnCharacter( target, 1f );
         }
     }
 }

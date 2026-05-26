@@ -177,6 +177,7 @@ namespace Frontier.Battle
         public override void Exit()
         {
             _phaseHandlers[_currentPhase].Exit();
+            _presenter.Exit();
         }
 
         #endregion // SubRoutineController Implementation

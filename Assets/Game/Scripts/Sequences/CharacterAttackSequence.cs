@@ -140,7 +140,7 @@ namespace Frontier.Sequences
                         // カメラ対象とカメラパラメータを変更
                         _btlCamCtrl.TransitNextPhaseCameraParam( null, _targetCharacter.transform );
                         // ダメージUIを非表示
-                        _uiSystem.BattleUi.ToggleDamageUI( false );
+                        _uiSystem.BattleUi.HideDamageOnCharacter( _targetCharacter );
 
                         // ガードスキルを使用時はガードモーションを戻す
                         int guardSkillIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD );
@@ -208,8 +208,8 @@ namespace Frontier.Sequences
                         }
                         else
                         {
-                            // ダメージUIを非表示
-                            _uiSystem.BattleUi.ToggleDamageUI( false );
+                            // ダメージUIを非表示（パリィ成功 → 攻撃キャラがダメージを受けた）
+                            _uiSystem.BattleUi.HideDamageOnCharacter( _attackCharacter );
 
                             _phase = Phase.WAIT_END;
                         }
@@ -227,7 +227,7 @@ namespace Frontier.Sequences
                         }
                         else
                         {
-                            _uiSystem.BattleUi.ToggleDamageUI( false );   // ダメージUIを非表示
+                            _uiSystem.BattleUi.HideDamageOnCharacter( _attackCharacter );  // ダメージUIを非表示（カウンター → 攻撃キャラがダメージを受けた）
 
                             _phase = Phase.WAIT_END;
                         }

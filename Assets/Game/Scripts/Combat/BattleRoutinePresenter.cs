@@ -146,6 +146,19 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
+        /// <summary>
+        /// バトル終了時に戦闘関連UIのインスタンスをまとめて破棄・終了させます
+        /// </summary>
+        public void Exit()
+        {
+            CleanupDamageUIs();
+        }
+
+        private void CleanupDamageUIs()
+        {
+            _uiSystem.BattleUi.CleanupDamageUIs();
+        }
+
         static public int GetLayerMaskIndexFromWinType( ParameterWindowType winType )
         {
             return _layerMaskIndecies[( int ) winType];
