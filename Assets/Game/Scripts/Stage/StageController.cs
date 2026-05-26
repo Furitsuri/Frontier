@@ -156,7 +156,7 @@ namespace Frontier.Stage
         /// <param name="tileIdxA"></param>
         /// <param name="tileIdxB"></param>
         /// <returns>タイルのrowとcolumnにおけるレンジ差の合計</returns>
-        public int CalcurateTotalRange( int tileIdxA, int tileIdxB )
+        public int CalculateTotalRange( int tileIdxA, int tileIdxB )
         {
             (int, int) ranges = CalcurateRanges( tileIdxA, tileIdxB );
 

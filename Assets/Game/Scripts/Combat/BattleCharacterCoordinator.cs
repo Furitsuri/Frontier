@@ -337,7 +337,7 @@ namespace Frontier.Battle
                 Character chara = _btlRtnCtrl.BtlCharaCdr.GetCharacter( charaKey );
                 if( chara == null ) { continue; }
 
-                int range = _stgCtrl.CalcurateTotalRange( owner.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
+                int range = _stgCtrl.CalculateTotalRange( owner.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
                 if( range < totalRange )
                 {
                     totalRange = range;
@@ -359,7 +359,7 @@ namespace Frontier.Battle
 
             foreach( var chara in charaList )
             {
-                int range = _stgCtrl.CalcurateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
+                int range = _stgCtrl.CalculateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
                 if( range < totalRange )
                 {
                     totalRange  = range;
@@ -389,7 +389,7 @@ namespace Frontier.Battle
                     continue;
                 }
 
-                int range = _stgCtrl.CalcurateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
+                int range = _stgCtrl.CalculateTotalRange( baseChara.BattleParams.TmpParam.CurrentTileIndex, chara.BattleParams.TmpParam.CurrentTileIndex );
                 if( range < totalRange )
                 {
                     totalRange  = range;

@@ -10,15 +10,15 @@ namespace Frontier.Entities
 {
     public static class DirectionalTargetingRange
     {
-        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isWithMove, int range )
+        static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isMovingSkill, int range )
         {
             var actionRangeCtrl = context.Owner.BattleLogic.ActionRangeCtrl;
 
             context.Owner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isWithMove, context.Owner.BattleParams.TmpParam.CurrentTileIndex, range );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, context.Owner.BattleParams.TmpParam.CurrentTileIndex, range );
         }
 
-		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isWithMove, int tileIndex, int range, ActionableTileData actionableTileData )
+		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isMovingSkill, int tileIndex, int range, ActionableTileData actionableTileData )
 		{
 			Vector3 basePos = context.StageCtrl.GetTileStaticData( context.Owner.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
 			Vector3 baseForward = context.Owner.GetTransformHandler.GetOrderedForward();
@@ -35,7 +35,7 @@ namespace Frontier.Entities
 				if(!Methods.IsMatchForward( baseForward, basePos, targetTilePos )) { continue; }
 
 				// 指定範囲内のタイル
-				var tileRange = context.StageCtrl.CalcurateTotalRange( tileIndex, attackableMap.Key );
+				var tileRange = context.StageCtrl.CalculateTotalRange( tileIndex, attackableMap.Key );
 				if(range < tileRange) { continue; }
 
 				// ターゲット可能タイルとして登録する
@@ -49,7 +49,7 @@ namespace Frontier.Entities
 
 			// 移動を伴う場合は、最も遠方の移動可能(キャラクターが存在しない)なタイルにターゲット可能レンジを合わせる
 			// また、全てのタイルが移動不可、もしくは攻撃対象が存在しない場合は実行不可とする
-			if( isWithMove )
+			if( isMovingSkill )
 			{
                 // 攻撃対象が存在するタイルがない場合には実行不可
                 if( actionableTileData.RefAttackTargetTileIndicies.Count <= 0 )
@@ -137,8 +137,9 @@ namespace Frontier.Entities
 
             // ターゲット可能タイルをtileIndexから近い順にソート
             var sortedTargetableMap = actionableTileData.TargetableTileMap
-                .OrderBy( pair => context.StageCtrl.CalcurateTotalRange( tileIndex, pair.Key ) );
+                .OrderBy( pair => context.StageCtrl.CalculateTotalRange( tileIndex, pair.Key ) );
 
+            // ターゲット可能タイルのうち、最も遠い移動可能なタイルを探す(ゴーストの表示位置)
             foreach( var targetableMap in sortedTargetableMap )
             {
                 // キャラクターが存在する場合は移動不可
@@ -150,6 +151,19 @@ namespace Frontier.Entities
 
                 farthestMoveableIdx = targetableMap.Key;
                 farthestData        = targetableMap.Value;
+            }
+
+            // ゴースト位置より遠い敵タイルを攻撃対象から除外する
+            if( 0 <= farthestMoveableIdx )
+            {
+                int ghostRange = context.StageCtrl.CalculateTotalRange( tileIndex, farthestMoveableIdx );
+                var toRemove = actionableTileData.RefAttackTargetTileIndicies
+                    .Where( idx => context.StageCtrl.CalculateTotalRange( tileIndex, idx ) > ghostRange )
+                    .ToList();
+                foreach( int idx in toRemove )
+                {
+                    actionableTileData.DeleteAttackTargetTileIndex( idx );
+                }
             }
 
             if( farthestMoveableIdx < 0  )
@@ -238,7 +252,7 @@ namespace Frontier.Entities
             {
                 if( attackTargetIndices.Contains( tileIdx ) ) { continue; }
 
-                int range = context.StageCtrl.CalcurateTotalRange( context.Owner.BattleParams.TmpParam.CurrentTileIndex, tileIdx );
+                int range = context.StageCtrl.CalculateTotalRange( context.Owner.BattleParams.TmpParam.CurrentTileIndex, tileIdx );
                 if( range > maxRange )
                 {
                     maxRange    = range;
