@@ -44,16 +44,18 @@ namespace Frontier.Battle
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
         private Character _targetCharacter                  = null;
-        private SequenceFacade _sequenceFcd                 = null;
-        private List<CharacterKey> _attackTargetCharaKeys   = null;
+        private SequenceFacade _sequenceFcd                         = null;
+        private SkillActionReservationQueue _reservationQueue       = null;
+        private List<CharacterKey> _attackTargetCharaKeys           = null;
         private ChangeDirectionCallback[] _changeDirectionCallbacks;
         private RefreshTargetCallback[] _refreshFocusTargetCallbacks;
         private TryAdjustRangeCallback[] _tryAdjustRangeCallbacks;
 
-        [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl, SequenceFacade sequenceFcd )
+        [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl, SequenceFacade sequenceFcd, SkillActionReservationQueue reservationQueue )
         {
-            _btlRtnCtrl     = btlRtnCtrl;
-            _sequenceFcd    = sequenceFcd;
+            _btlRtnCtrl         = btlRtnCtrl;
+            _sequenceFcd        = sequenceFcd;
+            _reservationQueue   = reservationQueue;
 
             _attackTargetCharaKeys = new List<CharacterKey>();
 
@@ -201,9 +203,20 @@ namespace Frontier.Battle
             {
                 _isWaitingForOptionResult = false;
                 var optionState = GetChildren<PlSkillUseOptionState>( ( int ) TransitTag.USE_SKILL_OPTION );
-                if( optionState?.SelectedOption == USE_SKILL_OPTION_TAG.EXECUTION )
+
+                switch( optionState?.SelectedOption )
                 {
-                    ExecuteSkill();
+                    case USE_SKILL_OPTION_TAG.EXECUTION:
+                        ExecuteSkill();
+                        break;
+
+                    case USE_SKILL_OPTION_TAG.QUEUE:
+                        EnqueueSkillAction();
+                        // スキルコマンドを選択不可にし、行動履歴をクリアしてコマンド選択に戻る
+                        _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+                        _plOwner.ClearCommandHistory();
+                        Back();
+                        break;
                 }
             }
         }
@@ -298,6 +311,40 @@ namespace Frontier.Battle
             _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID, _attackTargetCharaKeys );   // スキルシーケンスの開始
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE;
+        }
+
+        private void EnqueueSkillAction()
+        {
+            _plOwner.BattleParams.TmpParam.AssignExpectedHpChange( out int attackerHpChange, out int attackerTotalHpChange );
+
+            int targetHpChange = 0, targetTotalHpChange = 0;
+            var focusedTargetKey = CharacterKey.Invalid;
+            if( null != _targetCharacter )
+            {
+                _targetCharacter.BattleParams.TmpParam.AssignExpectedHpChange( out targetHpChange, out targetTotalHpChange );
+                focusedTargetKey = _targetCharacter.GetCharacterKey();
+            }
+
+            var data = new SkillActionReservationData(
+                _plOwner.GetCharacterKey(),
+                _plOwner.BattleParams.TmpParam.CurrentTileIndex,
+                _plOwner.BattleParams.TmpParam.IsSkillsToggledON,
+                _plOwner.BattleParams.TmpParam.ActGaugeConsumption,
+                _useSkillID,
+                _targetingMode,
+                _currentRange,
+                _maxRange,
+                _isAdjustableRange,
+                _isMovingSkill,
+                _attackTargetCharaKeys,
+                focusedTargetKey,
+                attackerHpChange,
+                attackerTotalHpChange,
+                targetHpChange,
+                targetTotalHpChange
+            );
+
+            _reservationQueue.Enqueue( data );
         }
 
         protected override bool AcceptCancel( InputContext context )

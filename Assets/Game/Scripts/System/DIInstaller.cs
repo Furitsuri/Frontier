@@ -1,6 +1,7 @@
 ﻿using Frontier.Stage;
 using Frontier.UI;
 using Frontier.Combat;
+using Frontier.Battle;
 using Frontier.DebugTools.DebugMenu;
 using Zenject;
 using Frontier.Registries;
@@ -22,6 +23,7 @@ namespace Frontier
             Container.Bind<InputFacade>().AsSingle();
             Container.Bind<TimeScaleController>().AsSingle();
             Container.Bind<SequenceFacade>().AsSingle();
+            Container.Bind<SkillActionReservationQueue>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().AsSingle();
