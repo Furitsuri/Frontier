@@ -19,7 +19,9 @@ namespace Frontier
         private RectTransform _commandUIBaseRectTransform;
         private VerticalLayoutGroup _cmdTextVerticalLayout;
         private PlSelectCommandState _PlSelectScript;
+        private PlSkillUseOptionState _useSkillOptionScript;
         private string[] _commandTextKeys;
+        private string[] _useSkillOptionTextKeys;
 
         /// <summary>
         /// コマンドの文字列を初期化します
@@ -35,6 +37,13 @@ namespace Frontier
                 "UI_CMD_WAIT"
             };
             Debug.Assert( _commandTextKeys.Length == ( int ) COMMAND_TAG.NUM );
+
+            _useSkillOptionTextKeys = new string[( int ) USE_SKILL_OPTION_TAG.NUM]
+            {
+                "UI_CMD_USE_SKILL_OPTION_EXECUTION",
+                "UI_CMD_USE_SKILL_OPTION_QUEUE"
+            };
+            Debug.Assert( _useSkillOptionTextKeys.Length == ( int ) USE_SKILL_OPTION_TAG.NUM );
         }
 
         // Update is called once per frame
@@ -48,6 +57,8 @@ namespace Frontier
         /// </summary>
         void UpdateSelectCommand()
         {
+            if( _commandItems.Count == 0 ) { return; }
+
             // 一度全てを白色に設定
             foreach( var command in _commandItems )
             {
@@ -55,7 +66,14 @@ namespace Frontier
             }
 
             // 選択項目を赤色に設定
-            _commandItems[_PlSelectScript.GetCommandIndex()].SetColor( Color.red );
+            if( _useSkillOptionScript != null )
+            {
+                _commandItems[_useSkillOptionScript.GetOptionIndex()].SetColor( Color.red );
+            }
+            else if( _PlSelectScript != null )
+            {
+                _commandItems[_PlSelectScript.GetCommandIndex()].SetColor( Color.red );
+            }
         }
 
         /// <summary>
@@ -77,6 +95,42 @@ namespace Frontier
         public void RegistPLCommandScript( PlSelectCommandState script )
         {
             _PlSelectScript = script;
+        }
+
+        /// <summary>
+        /// スキル使用オプションのスクリプトを登録します
+        /// </summary>
+        /// <param name="script">スキル使用オプションのスクリプト</param>
+        public void RegistUseSkillOptionScript( PlSkillUseOptionState script )
+        {
+            _useSkillOptionScript = script;
+        }
+
+        /// <summary>
+        /// スキル使用オプションのリストをUIに設定します
+        /// </summary>
+        public void SetUseSkillOptionList()
+        {
+            float fontSize = 0;
+
+            foreach( var command in _commandItems )
+            {
+                Destroy( command.gameObject );
+            }
+            _commandItems.Clear();
+
+            for( int i = 0; i < _useSkillOptionTextKeys.Length; ++i )
+            {
+                CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "option_" + i );
+                commandItem.Setup();
+                commandItem.transform.SetParent( this.gameObject.transform, false );
+                commandItem.SetTextKey( _useSkillOptionTextKeys[i] );
+                _commandItems.Add( commandItem );
+
+                fontSize = commandItem.GetFontSize();
+            }
+
+            ResizeUIBaseRectTransform( fontSize, _useSkillOptionTextKeys.Length );
         }
 
         /// <summary>

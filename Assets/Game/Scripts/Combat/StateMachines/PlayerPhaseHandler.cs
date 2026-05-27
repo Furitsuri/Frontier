@@ -59,7 +59,7 @@ namespace Frontier.Battle
 
             /*
              *  親子図
-             * 
+             *
              *      PlPhaseAnimationState
              *              ｜
              *              └─ PlSelectTileState
@@ -76,12 +76,12 @@ namespace Frontier.Battle
              *                                   ｜                                                                                        ｜
              *                                   ├───────────────────── PlAttackState                                └─ PlSkillActionToTargetState
              *                                   ｜                                                ｜                                                     ｜
-             *                                   └─ PlMoveState                                  └─ CharacterStatusViewState                          └─ CharacterStatusViewState
-             *                                            ｜
-             *                                            ├─ CharacterStatusViewState
+             *                                   └─ PlMoveState                                  └─ CharacterStatusViewState              ├─ CharacterStatusViewState
+             *                                            ｜                                                                              ｜
+             *                                            ├─ CharacterStatusViewState                                                     └─ PlSkillUseOptionState
              *                                            ｜
              *                                            └─ PlAttackOnMoveState
-             *                                   
+             *
              */
 
             // MEMO : キャラクターステータス表示状態は、各所から遷移可能にするため、複数個所に配置しています。
@@ -104,8 +104,9 @@ namespace Frontier.Battle
             RootNode.Children[0].Children[0].Children[1].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             // Children[0].Children[0].Children[2]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
             RootNode.Children[0].Children[0].Children[2].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
-            // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewStateを追加
+            // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewStateとPlSkillUseOptionStateを追加
             RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillUseOptionState>( false ) );
         }
     }
 }

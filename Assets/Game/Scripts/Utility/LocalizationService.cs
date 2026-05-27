@@ -21,7 +21,9 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_MOVE", "Move" },
                 { "UI_CMD_ATTACK", "Attack" },
                 { "UI_CMD_SKILL", "Skill" },
-                { "UI_CMD_WAIT", "Wait" }
+                { "UI_CMD_WAIT", "Wait" },
+                { "UI_CMD_USE_SKILL_OPTION_EXECUTION", "Execution" },
+                { "UI_CMD_USE_SKILL_OPTION_QUEUE", "Queue" }
             }
         },
         {
@@ -39,7 +41,9 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_MOVE", "移動" },
                 { "UI_CMD_ATTACK", "攻撃" },
                 { "UI_CMD_SKILL", "スキル" },
-                { "UI_CMD_WAIT", "待機" }
+                { "UI_CMD_WAIT", "待機" },
+                { "UI_CMD_USE_SKILL_OPTION_EXECUTION", "実行" },
+                { "UI_CMD_USE_SKILL_OPTION_QUEUE", "連携予約" }
             }
         }
     };

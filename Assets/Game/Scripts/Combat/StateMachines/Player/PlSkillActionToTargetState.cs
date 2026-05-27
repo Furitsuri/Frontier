@@ -19,6 +19,7 @@ namespace Frontier.Battle
         private enum TransitTag
         {
             CHARACTER_STATUS = 0,
+            USE_SKILL_OPTION  = 1,
         }
 
         protected enum PlSkillActionPhase : int
@@ -38,6 +39,7 @@ namespace Frontier.Battle
         private bool _isAdjustableRange;
         private bool _isMovingSkill;
         private bool _isSkillRegistered;
+        private bool _isWaitingForOptionResult;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
@@ -89,8 +91,9 @@ namespace Frontier.Battle
         {
             base.Init( context );
 
-            _targetCharacter     = null;
-            _isSkillRegistered  = false;
+            _targetCharacter          = null;
+            _isSkillRegistered        = false;
+            _isWaitingForOptionResult = false;
 
             // 使用スキルを取得
             ReceiveContext( ref _useSkillID, context );
@@ -193,6 +196,22 @@ namespace Frontier.Battle
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            if( _isWaitingForOptionResult )
+            {
+                _isWaitingForOptionResult = false;
+                var optionState = GetChildren<PlSkillUseOptionState>( ( int ) TransitTag.USE_SKILL_OPTION );
+                if( optionState?.SelectedOption == USE_SKILL_OPTION_TAG.EXECUTION )
+                {
+                    ExecuteSkill();
+                }
+            }
+        }
+
+        protected override bool CanAcceptDefault()
+        {
+            if( _phase != PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID ) { return false; }
+            return base.CanAcceptDefault();
         }
 
         protected override bool CanAcceptDirection()
@@ -204,12 +223,13 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptConfirm()
         {
+            if( _phase != PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID ) { return false; }
             return IsExecutableAttack();
         }
 
         protected override bool CanAcceptCancel()
         {
-            return true;
+            return _phase == PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
         }
 
         protected override bool CanAcceptInfo()
@@ -226,11 +246,11 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool CanAcceptSub1() { return 1 < _attackTargetCharaKeys.Count; }
+        protected override bool CanAcceptSub1() { return _phase == PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID && 1 < _attackTargetCharaKeys.Count; }
         protected override bool CanAcceptSub2() { return CanAcceptSub1(); }
 
-        protected override bool CanAcceptSub3() => _isAdjustableRange && 1 < _currentRange;
-        protected override bool CanAcceptSub4() => _isAdjustableRange && _currentRange < _maxRange;
+        protected override bool CanAcceptSub3() => _phase == PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID && _isAdjustableRange && 1 < _currentRange;
+        protected override bool CanAcceptSub4() => _phase == PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID && _isAdjustableRange && _currentRange < _maxRange;
 
         protected override bool AcceptDirection( InputContext context )
         {
@@ -248,6 +268,14 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            _isWaitingForOptionResult = true;
+            TransitState( ( int ) TransitTag.USE_SKILL_OPTION );
+
+            return true;
+        }
+
+        private void ExecuteSkill()
+        {
             // アクションゲージを消費
             _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
             if( null != _targetCharacter )
@@ -259,7 +287,6 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveTargetCursor( false );                                   // ターゲットカーソルを一時非表示
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );   // アクション対象指定関連のUIを非表示
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                // タイルメッシュの描画をすべてクリア
-            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                // 現在の入力コードを登録解除
 
             // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
             if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
@@ -271,8 +298,6 @@ namespace Frontier.Battle
             _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID, _attackTargetCharaKeys );   // スキルシーケンスの開始
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE;
-
-            return true;
         }
 
         protected override bool AcceptCancel( InputContext context )

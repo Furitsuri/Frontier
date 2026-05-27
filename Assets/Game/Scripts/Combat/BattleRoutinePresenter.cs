@@ -146,6 +146,18 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
+        public void InitUseSkillOptionView( PlSkillUseOptionState script )
+        {
+            _uiSystem.BattleUi.PlCommandWindow.RegistUseSkillOptionScript( script );
+            _uiSystem.BattleUi.PlCommandWindow.SetUseSkillOptionList();
+            _uiSystem.BattleUi.SetPlayerCommandActive( true );
+        }
+
+        public void ExitUseSkillOptionView()
+        {
+            _uiSystem.BattleUi.SetPlayerCommandActive( false );
+        }
+
         /// <summary>
         /// バトル終了時に戦闘関連UIのインスタンスをまとめて破棄・終了させます
         /// </summary>
