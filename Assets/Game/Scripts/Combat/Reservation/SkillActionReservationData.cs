@@ -64,6 +64,12 @@ namespace Frontier.Battle
         /// <summary>ターゲットへの複数回攻撃を考慮した予測 HP 総変動量</summary>
         public int TargetTotalExpectedHpChange { get; }
 
+        /// <summary>
+        /// 移動を伴うスキル（ダッシュ斬りなど）のゴースト目標タイルインデックス。
+        /// ゴーストを使用しないスキルの場合は -1。
+        /// </summary>
+        public int GhostTileIndex { get; }
+
         public SkillActionReservationData(
             CharacterKey            attackerKey,
             int                     attackerTileIndex,
@@ -80,7 +86,8 @@ namespace Frontier.Battle
             int                     attackerExpectedHpChange,
             int                     attackerTotalExpectedHpChange,
             int                     targetExpectedHpChange,
-            int                     targetTotalExpectedHpChange )
+            int                     targetTotalExpectedHpChange,
+            int                     ghostTileIndex = -1 )
         {
             AttackerKey                   = attackerKey;
             AttackerTileIndex             = attackerTileIndex;
@@ -98,6 +105,7 @@ namespace Frontier.Battle
             AttackerTotalExpectedHpChange = attackerTotalExpectedHpChange;
             TargetExpectedHpChange        = targetExpectedHpChange;
             TargetTotalExpectedHpChange   = targetTotalExpectedHpChange;
+            GhostTileIndex                = ghostTileIndex;
         }
     }
 }

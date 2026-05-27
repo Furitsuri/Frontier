@@ -158,6 +158,11 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
+        public void SetConfirmMessage( string message )
+        {
+            _uiSystem.BattleUi.ConfirmTurnEnd.SetMessageText( message );
+        }
+
         /// <summary>
         /// バトル終了時に戦闘関連UIのインスタンスをまとめて破棄・終了させます
         /// </summary>

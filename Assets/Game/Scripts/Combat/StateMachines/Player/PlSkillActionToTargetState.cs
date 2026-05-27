@@ -38,7 +38,6 @@ namespace Frontier.Battle
         private int _maxRange;
         private bool _isAdjustableRange;
         private bool _isMovingSkill;
-        private bool _isSkillRegistered;
         private bool _isWaitingForOptionResult;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
@@ -94,7 +93,6 @@ namespace Frontier.Battle
             base.Init( context );
 
             _targetCharacter          = null;
-            _isSkillRegistered        = false;
             _isWaitingForOptionResult = false;
 
             // 使用スキルを取得
@@ -160,11 +158,6 @@ namespace Frontier.Battle
             _plOwner.CleanupGhost();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
-            if( !_isSkillRegistered )
-            {
-                _plOwner.BattleLogic.ActionRangeCtrl.ClearTargetableAndReDrawAttackableRange();
-            }
-
             return base.ExitState();
         }
 
@@ -212,9 +205,7 @@ namespace Frontier.Battle
 
                     case USE_SKILL_OPTION_TAG.QUEUE:
                         EnqueueSkillAction();
-                        // スキルコマンドを選択不可にし、行動履歴をクリアしてコマンド選択に戻る
-                        _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
-                        _plOwner.ClearCommandHistory();
+                        CleanupEnqueuedAction();
                         Back();
                         break;
                 }
@@ -307,7 +298,6 @@ namespace Frontier.Battle
                 _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
             }
 
-            _isSkillRegistered = true;
             _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID, _attackTargetCharaKeys );   // スキルシーケンスの開始
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE;
@@ -341,10 +331,22 @@ namespace Frontier.Battle
                 attackerHpChange,
                 attackerTotalHpChange,
                 targetHpChange,
-                targetTotalHpChange
+                targetTotalHpChange,
+                _plOwner.GhostObj?.TileIndex ?? -1
             );
 
             _reservationQueue.Enqueue( data );
+        }
+
+        private void CleanupEnqueuedAction()
+        {
+            _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+            _plOwner.ClearCommandHistory();
+
+            _stageCtrl.SetActiveGridCursor( false );                                     // 選択グリッドを一時非表示
+            _stageCtrl.SetActiveTargetCursor( false );                                   // ターゲットカーソルを一時非表示
+            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );   // アクション対象指定関連のUIを非表示
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                // タイルメッシュの描画をすべてクリア
         }
 
         protected override bool AcceptCancel( InputContext context )

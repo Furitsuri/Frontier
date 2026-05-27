@@ -7,6 +7,10 @@ namespace Frontier.Battle
 {
     public class PlayerPhaseHandler : TroopPhaseHandler
     {
+        [Inject] private SkillActionReservationQueue _reservationQueue = null;
+
+        private PlConfirmReservedActionsState _confirmReservedActionsState = null;
+
         [Inject]
         public PlayerPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
         {
@@ -38,6 +42,24 @@ namespace Frontier.Battle
             _presenter.Update();
         }
 
+        /// <summary>
+        /// 後更新を行います。
+        /// フェーズ終了時にキューが残っていれば確認ステートへ遷移します。
+        /// </summary>
+        public override bool LateUpdate()
+        {
+            bool phaseEnded = base.LateUpdate();
+
+            if( phaseEnded && !_reservationQueue.IsEmpty && _confirmReservedActionsState != null )
+            {
+                CurrentNode = _confirmReservedActionsState;
+                CurrentNode.OnEnter( null );
+                return false;
+            }
+
+            return phaseEnded;
+        }
+
         public override void Exit()
         {
             // プレイヤー以外の攻撃範囲表示をすべてクリア
@@ -62,25 +84,27 @@ namespace Frontier.Battle
              *
              *      PlPhaseAnimationState
              *              ｜
-             *              └─ PlSelectTileState
-             *                      ｜
-             *                      ├─ CharacterStatusViewState
-             *                      ｜
-             *                      ├─ PlConfrimTurnEnd
-             *                      ｜
-             *                      └─ PlSelectCommandState
-             *                                   ｜
-             *                                   ├─ PlWaitState
-             *                                   ｜
-             *                                   ├────────────────────────────────────────PlSelectSkillState
-             *                                   ｜                                                                                        ｜
-             *                                   ├───────────────────── PlAttackState                                └─ PlSkillActionToTargetState
-             *                                   ｜                                                ｜                                                     ｜
-             *                                   └─ PlMoveState                                  └─ CharacterStatusViewState              ├─ CharacterStatusViewState
-             *                                            ｜                                                                              ｜
-             *                                            ├─ CharacterStatusViewState                                                     └─ PlSkillUseOptionState
-             *                                            ｜
-             *                                            └─ PlAttackOnMoveState
+             *              ├─ PlSelectTileState
+             *              ｜       ｜
+             *              ｜       ├─ CharacterStatusViewState
+             *              ｜       ｜
+             *              ｜       ├─ PlConfrimTurnEnd
+             *              ｜       ｜
+             *              ｜       └─ PlSelectCommandState
+             *              ｜                    ｜
+             *              ｜                    ├─ PlWaitState
+             *              ｜                    ｜
+             *              ｜                    ├────────────────────────────────────────PlSelectSkillState
+             *              ｜                    ｜                                                                                        ｜
+             *              ｜                    ├───────────────────── PlAttackState                                └─ PlSkillActionToTargetState
+             *              ｜                    ｜                                                ｜                                                     ｜
+             *              ｜                    └─ PlMoveState                                  └─ CharacterStatusViewState              ├─ CharacterStatusViewState
+             *              ｜                             ｜                                                                              ｜
+             *              ｜                             ├─ CharacterStatusViewState                                                     └─ PlSkillUseOptionState
+             *              ｜                             ｜
+             *              ｜                             └─ PlAttackOnMoveState
+             *              ｜
+             *              └─ PlConfirmReservedActionsState  (index 1 : キュー実行確認)
              *
              */
 
@@ -88,7 +112,9 @@ namespace Frontier.Battle
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PlPhaseStateAnimation>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectTileState>( false ) );
-            // Children[0]はPlSelectTileState
+            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmReservedActionsState>( false ) );
+            _confirmReservedActionsState = RootNode.GetChildren<PlConfirmReservedActionsState>( 1 );
+            // Children[0]はPlSelectTileState、Children[1]はPlConfirmReservedActionsState
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
