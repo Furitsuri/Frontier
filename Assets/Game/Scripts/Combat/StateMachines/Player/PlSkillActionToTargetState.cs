@@ -157,12 +157,15 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            _plOwner.CleanupGhost();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
             if( _isSkillQueued )
             {
                 _plOwner.BattleLogic.ActionRangeCtrl.DrawTargetableRangeAsQueued();
+            }
+            else
+            {
+                _plOwner.CleanupGhost();
             }
 
             return base.ExitState();
