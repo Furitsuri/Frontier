@@ -272,6 +272,7 @@ namespace Frontier.Stage
 
             // ターゲット可能タイルとして登録
             actionableTileData.AddTargetableTile( tileIndex, tileDynamicData );
+            Methods.SetBitFlag( ref tileDynamicData.Flag, TileBitFlag.TARGETABLE );
 
             // 敵対勢力のキャラクターが存在するタイルであれば、攻撃対象タイルとして登録
             if( BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDynamicData.CharaKey.CharacterTag ) )

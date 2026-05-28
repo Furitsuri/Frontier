@@ -105,15 +105,6 @@ namespace Frontier.Entities
                     }
                 }
             }
-
-            // ターゲット可能なタイルは攻撃可能なタイルの上にさらに描画する
-            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
-            {
-                TileMesh tileMesh = null;
-                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE], _owner.GetCharacterKey() );
-            }
         }
 
         /// <summary>

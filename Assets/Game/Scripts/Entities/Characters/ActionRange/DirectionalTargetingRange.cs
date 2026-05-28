@@ -37,14 +37,15 @@ namespace Frontier.Entities
 
 				// 指定範囲内のタイル
 				var tileRange = context.StageCtrl.CalculateTotalRange( tileIndex, attackableMap.Key );
-				if(range < tileRange) { continue; }
+				if( range < tileRange ) { continue; }
 
 				// ターゲット可能タイルとして登録する
 				actionableTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
-				// さらに、そのタイルが攻撃対象として有効な場合は攻撃対象タイルとして追加する
-				// ATTACKABLE_TARGET_EXISTはRegisterAttackableTileで敵の存在時に立てられ、
-				// DashSlash等の固有フィルタで着地不可な位置の敵については事前に降ろされている
-				if( Methods.HasAnyFlag( attackableMap.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
+                Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
+                // さらに、そのタイルが攻撃対象として有効な場合は攻撃対象タイルとして追加する
+                // ATTACKABLE_TARGET_EXISTはRegisterAttackableTileで敵の存在時に立てられ、
+                // DashSlash等の固有フィルタで着地不可な位置の敵については事前に降ろされている
+                if( Methods.HasAnyFlag( attackableMap.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
 				{
 					actionableTileData.AddAttackTargetTileIndex( attackableMap.Key );
 				}
@@ -148,7 +149,7 @@ namespace Frontier.Entities
                 // キャラクターが存在する場合は移動不可
                 if( targetableMap.Value.IsExistCharacter() )
                 {
-                    actionableTileData.DeleteTargetableTile( targetableMap.Key );
+                    // actionableTileData.DeleteTargetableTile( targetableMap.Key );
                     continue;
                 }
 
