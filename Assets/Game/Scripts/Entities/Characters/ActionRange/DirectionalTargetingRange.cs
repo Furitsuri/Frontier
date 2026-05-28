@@ -41,8 +41,10 @@ namespace Frontier.Entities
 
 				// ターゲット可能タイルとして登録する
 				actionableTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
-				// さらに、そのタイルに攻撃対象のキャラクターが存在する場合は、攻撃対象タイルとして追加する
-				if( IsExistOpponent( attackableMap.Value, context.Owner.GetCharacterTag() ) )
+				// さらに、そのタイルが攻撃対象として有効な場合は攻撃対象タイルとして追加する
+				// ATTACKABLE_TARGET_EXISTはRegisterAttackableTileで敵の存在時に立てられ、
+				// DashSlash等の固有フィルタで着地不可な位置の敵については事前に降ろされている
+				if( Methods.HasAnyFlag( attackableMap.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
 				{
 					actionableTileData.AddAttackTargetTileIndex( attackableMap.Key );
 				}
