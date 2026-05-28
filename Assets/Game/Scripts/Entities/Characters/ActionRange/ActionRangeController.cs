@@ -105,7 +105,8 @@ namespace Frontier.Entities
             var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
             _actionableTileData.Init();
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData );
+            var postProcessor = ( useSkillID == SkillID.DASH_SLASH ) ? DashSlashSA.FilterAttackTargets : null;
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData, postProcessor );
         }
 
         public void ClearActionableRangeData()
@@ -204,6 +205,11 @@ namespace Frontier.Entities
         {
             _actionableRangeRdr.ClearTileMeshes();
             DrawAttackableRange();
+        }
+
+        public void DrawTargetableRangeAsQueued()
+        {
+            _actionableRangeRdr.DrawTargetableRangeAsQueued();
         }
 
         /// <summary>

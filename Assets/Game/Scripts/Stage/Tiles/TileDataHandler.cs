@@ -20,6 +20,8 @@ namespace Frontier.Stage
 
         private delegate void RegisterAttackableTileCallback( TileDynamicData[] tiles, int l, int m, int n, CHARACTER_TAG tag, ActionableTileData map );
 
+        public delegate void AttackableDataPostProcessor( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData );
+
         private int[] _directionOffsets;
         private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
 
@@ -167,12 +169,13 @@ namespace Frontier.Stage
         /// <param name="tileCosts"></param>
         /// <param name="charaKey"></param>
         /// <returns></returns>
-        public void ExtractAttackableData( int dprtIdx, int atkRng, RangeShape rangeType, in CharacterKey charaKey, ref ActionableTileData actionableTileMap )
+        public void ExtractAttackableData( int dprtIdx, int atkRng, RangeShape rangeType, in CharacterKey charaKey, ref ActionableTileData actionableTileMap, AttackableDataPostProcessor postProcessor = null )
         {
             // 基データを直接変更しないようにクローンを作成してから処理を行う
             var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
 
             BeginRegisterAttackableTiles( cloneStageDynamicDatas, dprtIdx, atkRng, rangeType, charaKey.CharacterTag, false, ref actionableTileMap );
+            postProcessor?.Invoke( dprtIdx, atkRng, _stageDataProvider.CurrentData.TileColNum, actionableTileMap );
         }
 
         /// <summary>
@@ -364,7 +367,7 @@ namespace Frontier.Stage
                 RegisterAttackableTilesLinearly( tileDynamicDatas, dprtIdx, tgtTileIdx + 1, atkRng, Direction.RIGHT, charaTag, actionableTileMap );  // tgtTileIdxからX軸方向へ+1
             }
             // Z軸方向への加算と減算はそのまま
-            RegisterAttackableTilesLinearly( tileDynamicDatas, dprtIdx, tgtTileIdx - colNum, atkRng, Direction.BACK,charaTag, actionableTileMap ); // tgtTileIdxからZ軸方向へ-1
+            RegisterAttackableTilesLinearly( tileDynamicDatas, dprtIdx, tgtTileIdx - colNum, atkRng, Direction.BACK, charaTag, actionableTileMap ); // tgtTileIdxからZ軸方向へ-1
             RegisterAttackableTilesLinearly( tileDynamicDatas, dprtIdx, tgtTileIdx + colNum, atkRng, Direction.FORWARD, charaTag, actionableTileMap ); // targetTileIndexからZ軸方向へ+1
         }
 

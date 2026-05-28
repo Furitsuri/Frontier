@@ -117,6 +117,20 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// ターゲット可能範囲を指定色で描画します
+        /// </summary>
+        public void DrawTargetableRangeAsQueued()
+        {
+            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            {
+                TileMesh tileMesh = null;
+                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey() );
+            }
+        }
+
+        /// <summary>
         /// 各タイルに登録したタイルメッシュの描画を全て消去します
         /// </summary>
         public void ClearTileMeshes()

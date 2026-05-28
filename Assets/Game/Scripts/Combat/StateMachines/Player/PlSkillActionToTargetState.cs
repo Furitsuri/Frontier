@@ -39,6 +39,7 @@ namespace Frontier.Battle
         private bool _isAdjustableRange;
         private bool _isMovingSkill;
         private bool _isWaitingForOptionResult;
+        private bool _isSkillQueued;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
         private TargetingMode _targetingMode;
@@ -94,6 +95,7 @@ namespace Frontier.Battle
 
             _targetCharacter          = null;
             _isWaitingForOptionResult = false;
+            _isSkillQueued            = false;
 
             // 使用スキルを取得
             ReceiveContext( ref _useSkillID, context );
@@ -158,6 +160,11 @@ namespace Frontier.Battle
             _plOwner.CleanupGhost();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
+            if( _isSkillQueued )
+            {
+                _plOwner.BattleLogic.ActionRangeCtrl.DrawTargetableRangeAsQueued();
+            }
+
             return base.ExitState();
         }
 
@@ -204,6 +211,7 @@ namespace Frontier.Battle
                         break;
 
                     case USE_SKILL_OPTION_TAG.QUEUE:
+                        _isSkillQueued = true;
                         EnqueueSkillAction();
                         CleanupEnqueuedAction();
                         Back();
