@@ -4,7 +4,7 @@ using static Constants;
 
 namespace Frontier.Battle
 {
-    public class PlSkillUseOptionState : PlPhaseStateBase
+    public class PlSkillUseOptionState : PlPhaseStateBase, ICommandCursorProvider
     {
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
@@ -54,7 +54,7 @@ namespace Frontier.Battle
             );
         }
 
-        public int GetOptionIndex() => _cmdIdxVal.index;
+        public int GetCurrentIndex() => _cmdIdxVal.index;
 
         protected override bool AcceptDirection( InputContext context )
         {

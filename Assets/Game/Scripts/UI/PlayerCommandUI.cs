@@ -18,8 +18,7 @@ namespace Frontier
         private List<CommandItem> _commandItems = new List<CommandItem>();
         private RectTransform _commandUIBaseRectTransform;
         private VerticalLayoutGroup _cmdTextVerticalLayout;
-        private PlSelectCommandState _PlSelectScript;
-        private PlSkillUseOptionState _useSkillOptionScript;
+        private ICommandCursorProvider _activeCommandScript;
         private string[] _commandTextKeys;
         private string[] _useSkillOptionTextKeys;
 
@@ -66,13 +65,9 @@ namespace Frontier
             }
 
             // 選択項目を赤色に設定
-            if( _useSkillOptionScript != null )
+            if( _activeCommandScript != null )
             {
-                _commandItems[_useSkillOptionScript.GetOptionIndex()].SetColor( Color.red );
-            }
-            else if( _PlSelectScript != null )
-            {
-                _commandItems[_PlSelectScript.GetCommandIndex()].SetColor( Color.red );
+                _commandItems[_activeCommandScript.GetCurrentIndex()].SetColor( Color.red );
             }
         }
 
@@ -89,21 +84,12 @@ namespace Frontier
         }
 
         /// <summary>
-        /// プレイヤーコマンドのスクリプトを登録します
+        /// カーソル位置を提供するスクリプトを登録します。nullを渡すと登録を解除します。
         /// </summary>
-        /// <param name="script">プレイヤーコマンドのスクリプト</param>
-        public void RegistPLCommandScript( PlSelectCommandState script )
+        /// <param name="script">登録するスクリプト</param>
+        public void RegistCommandScript( ICommandCursorProvider script )
         {
-            _PlSelectScript = script;
-        }
-
-        /// <summary>
-        /// スキル使用オプションのスクリプトを登録します
-        /// </summary>
-        /// <param name="script">スキル使用オプションのスクリプト</param>
-        public void RegistUseSkillOptionScript( PlSkillUseOptionState script )
-        {
-            _useSkillOptionScript = script;
+            _activeCommandScript = script;
         }
 
         /// <summary>

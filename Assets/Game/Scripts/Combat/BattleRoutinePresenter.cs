@@ -136,26 +136,27 @@ namespace Frontier.Battle
 
         public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )
         {
-            _uiSystem.BattleUi.PlCommandWindow.RegistPLCommandScript( script );
+            _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
             _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 
         public void ExitPLCommandView()
         {
+            _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( null );
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
         public void InitUseSkillOptionView( PlSkillUseOptionState script )
         {
-            _uiSystem.BattleUi.PlCommandWindow.RegistUseSkillOptionScript( script );
+            _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
             _uiSystem.BattleUi.PlCommandWindow.SetUseSkillOptionList();
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 
         public void ExitUseSkillOptionView()
         {
-            _uiSystem.BattleUi.PlCommandWindow.RegistUseSkillOptionScript( null );
+            _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( null );
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 

@@ -6,7 +6,7 @@ using static Constants;
 
 namespace Frontier.Battle
 {
-    public class PlSelectCommandState : PlPhaseStateBase
+    public class PlSelectCommandState : PlPhaseStateBase, ICommandCursorProvider
     {
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
@@ -148,14 +148,7 @@ namespace Frontier.Battle
             return true;
         }
 
-        /// <summary>
-        /// 現在のコマンドのIndex値を取得します
-        /// </summary>
-        /// <returns>コマンドのIndex値</returns>
-        public int GetCommandIndex()
-        {
-            return _cmdIdxVal.index;
-        }
+        public int GetCurrentIndex() => _cmdIdxVal.index;
 
         /// <summary>
         /// 現在のコマンドのValue値を取得します
