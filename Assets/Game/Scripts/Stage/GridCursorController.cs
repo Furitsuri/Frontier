@@ -46,12 +46,16 @@ namespace Frontier.Stage
             _gridCursors[(int)CursorType.TARGET_CURSOR].SetActive( false );
         }
 
-        public void ApplyGridCursor2CharacterTile( Character character, CursorType cursorType )
+        public void ApplyGridCursor2CharacterTile( Character character, CursorType cursorType, bool isFocusCamera )
         {
             var tileIndex   = character.BattleParams.TmpParam.CurrentTileIndex;
 
             _gridCursors[( int )cursorType].SetTileIndex( tileIndex );
             SetActiveGridCursor( true, cursorType );
+            if( isFocusCamera )
+            {
+                SetCameraFocusType( cursorType );
+            }
         }
 
         public void BindGridCursor( GridCursorState state, Character character )

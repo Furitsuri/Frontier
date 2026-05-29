@@ -52,7 +52,12 @@ namespace Frontier.Stage
         /// <param name="character">指定キャラクター</param>
         public void ApplyGridCursor2CharacterTile( Character character )
         {
-            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.GRID_CURSOR );
+            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.GRID_CURSOR, false );
+        }
+
+        public void ApplyGridCursor2CharacterTileWithFocusCamera( Character character )
+        {
+            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.GRID_CURSOR, true );
         }
 
         /// <summary>

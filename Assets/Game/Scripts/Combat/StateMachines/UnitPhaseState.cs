@@ -33,8 +33,9 @@ namespace Frontier.Battle
 
         protected void OnExitStateAfterCombat( Character ownerChara, Character targetChara )
         {
-            _stageCtrl.UnbindGridCursor();                       // アタッカーキャラクターの設定を解除
-            _stageCtrl.ApplyGridCursor2CharacterTile( ownerChara );
+            _stageCtrl.UnbindGridCursor();                                          // アタッカーキャラクターの設定を解除
+            _stageCtrl.SetActiveTargetCursor( false );                              // ターゲットカーソルを非表示
+            _stageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( ownerChara );  // オーナーのタイルにグリッドカーソルとカメラを適用
 
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = null;
@@ -60,8 +61,6 @@ namespace Frontier.Battle
             }
 
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();   // タイルメッシュの描画をすべてクリア
-            _stageCtrl.SetActiveGridCursor( true );         // 選択グリッドを表示
-            _stageCtrl.SetActiveTargetCursor( false );      // ターゲットカーソルを非表示
         }
     }
 }
