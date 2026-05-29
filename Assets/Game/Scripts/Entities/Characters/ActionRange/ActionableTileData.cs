@@ -10,8 +10,14 @@ namespace Frontier.Entities
     /// </summary>
     public class ActionableTileData
     {
+        // キャラクターが移動可能なタイルの情報を保持するマップ
         private Dictionary<int, TileDynamicData> _moveableTileMap    = new Dictionary<int, TileDynamicData>();
+        // キャラクターが攻撃可能なタイルの情報を保持するマップ
         private Dictionary<int, TileDynamicData> _attackableTileMap  = new Dictionary<int, TileDynamicData>();
+        // 攻撃可能なタイルのうち、実際に攻撃対象として選択されているタイルの情報を保持するマップ
+        // MEMO : _attackableTileMapの要素を抽出しているようにみえるが、
+        //        ExpandTargetableTilesWithPartOfRangeを見ると分かるが、起点は_attackableTileMap内の要素だが、
+        //        そこからさらに条件を満たすタイルを探索しているため、_attackableTileMapの要素全てが_targetableTileMapに含まれるわけではない。
         private Dictionary<int, TileDynamicData> _targetableTileMap  = new Dictionary<int, TileDynamicData>();
         private List<int> _attackTargetTileIndicies                  = new List<int>();
         public Dictionary<int, TileDynamicData> MoveableTileMap { get { return _moveableTileMap; } }
