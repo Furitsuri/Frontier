@@ -108,6 +108,13 @@ namespace Frontier.Battle
         {
             base.OnActivated();
 
+            // スキルを既に実行している状態でこのフェーズに遷移してきた場合は、キャンセル扱いで前の状態に戻る
+            if( _plOwner.BattleParams.TmpParam.IsEndAction() )
+            {
+                Back();
+                return;
+            }
+
             _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
 
             // パラメータビューにキャラクターを割り当て
@@ -197,7 +204,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptCancel( context ) ) { return false; }
             
-            _plOwner.BattleLogic.RevertSkillsToggledOn();              // 全てのスキルの使用フラグをOFFにする
+            _plOwner.BattleLogic.RevertSkillsToggledOn();                               // 全てのスキルの使用フラグをOFFにする
             _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();  // 攻撃可能範囲の描画と範囲データをクリアする
 
             return true;
