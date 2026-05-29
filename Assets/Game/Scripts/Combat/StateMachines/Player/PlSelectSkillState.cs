@@ -38,7 +38,6 @@ namespace Frontier.Battle
 
             _transitTargetSelectSkillID     = SkillID.NONE;
             _playerSkillNames               = _plOwner.GetStatusRef.GetEquipSkillNames();
-            _phase                          = PlSelectSkillPhase.PL_SELECT_SKILL;
 
             AcceptSubs = new Func<InputContext, bool>[]
             {
@@ -109,9 +108,18 @@ namespace Frontier.Battle
         {
             base.OnActivated();
 
+            _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
+
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            // 遷移スキルが設定されていれば、キャンセル後に攻撃範囲を再描画する
+            if( _transitTargetSelectSkillID != SkillID.NONE )
+            {
+                _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _transitTargetSelectSkillID );
+                _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
+            }
         }
 
         protected override bool CanAcceptConfirm()
