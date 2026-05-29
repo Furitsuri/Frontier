@@ -157,7 +157,10 @@ public class StateBase : TreeNode<StateBase>
     /// ステートが起動した際に行われる処理です。
     /// 継承先で定義してください。
     /// </summary>
-    protected virtual void OnActivated() { }
+    protected virtual void OnActivated()
+    {
+        _isBack = false;
+    }
 
     /// <summary>
     /// 親の遷移に戻ります

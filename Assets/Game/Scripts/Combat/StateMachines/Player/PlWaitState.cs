@@ -17,6 +17,9 @@ namespace Frontier.Battle
             Back();
         }
 
+        // 何もしない( base.OnActivatedを呼ばない )
+        protected override void OnActivated() { }
+
         /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>

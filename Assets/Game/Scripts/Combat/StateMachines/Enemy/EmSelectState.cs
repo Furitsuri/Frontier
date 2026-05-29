@@ -14,46 +14,10 @@ namespace Frontier.Battle
 
         public override void Init( object context )
         {
-            bool isExist = false;   // 行動可能なキャラクターが存在するか
-
             base.Init( context);
 
             _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).GetEnumerator();
             _currentEnemy = null;
-
-            // 行動済みでないキャラクターを選択する
-            while( _enemyEnumerator.MoveNext() )
-            {
-                _currentEnemy = _enemyEnumerator.Current as Enemy;
-                if( ShouldTransitionToNextCharacter( _currentEnemy ) )
-                {
-                    continue;
-                }
-
-                isExist = true;
-
-                _stageCtrl.ApplyGridCursor2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
-
-                if( !_currentEnemy.BattleLogic.GetAi().IsDetermined() )
-                {
-                    EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
-                    ( _isValidDestination, _isValidTarget) = enemyLogic.DetermineDestinationAndTargetWithAI();
-                }
-
-                // 攻撃対象がいなかった場合は攻撃済み状態にする
-                // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
-                if( !_isValidTarget )
-                {
-                    _currentEnemy.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
-                }
-
-                break;
-            }
-
-            if( !isExist )
-            {
-                Back();
-            }
         }
 
         public override bool Update()
@@ -77,6 +41,52 @@ namespace Frontier.Battle
             }
 
             return false;
+        }
+
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            if( ShouldExitState() )
+            {
+                Back();
+            }
+        }
+
+        private bool ShouldExitState()
+        {
+            bool isExist = false;   // 行動可能なキャラクターが存在するか
+
+            // 行動済みでないキャラクターを選択する
+            while( _enemyEnumerator.MoveNext() )
+            {
+                _currentEnemy = _enemyEnumerator.Current as Enemy;
+                if( ShouldTransitionToNextCharacter( _currentEnemy ) )
+                {
+                    continue;
+                }
+
+                isExist = true;
+
+                _stageCtrl.ApplyGridCursor2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
+
+                if( !_currentEnemy.BattleLogic.GetAi().IsDetermined() )
+                {
+                    EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
+                    (_isValidDestination, _isValidTarget) = enemyLogic.DetermineDestinationAndTargetWithAI();
+                }
+
+                // 攻撃対象がいなかった場合は攻撃済み状態にする
+                // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
+                if( !_isValidTarget )
+                {
+                    _currentEnemy.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+                }
+
+                break;
+            }
+
+            return !isExist;
         }
 
         /// <summary>

@@ -73,12 +73,6 @@ namespace Frontier.Stage
         public void SetActiveGridCursor( bool isActive, CursorType cursorType )
         {
             _gridCursors[( int ) cursorType].SetActive( isActive );
-
-            // カーソルが非アクティブになった場合は、もう一方のカーソルにカメラフォーカスを切り替える
-            if( !isActive )
-            {
-                SetCameraFocusType( ( CursorType )(( ( int ) cursorType + 1 ) % ( int ) CursorType.NUM ) );
-            }
         }
 
         public void SetCameraFocusType( CursorType cursorType )
