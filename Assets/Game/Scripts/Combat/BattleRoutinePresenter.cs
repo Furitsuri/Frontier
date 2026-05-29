@@ -155,6 +155,7 @@ namespace Frontier.Battle
 
         public void ExitUseSkillOptionView()
         {
+            _uiSystem.BattleUi.PlCommandWindow.RegistUseSkillOptionScript( null );
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
