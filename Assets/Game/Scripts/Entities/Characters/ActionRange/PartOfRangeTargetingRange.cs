@@ -82,12 +82,13 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    // ターゲットしている敵が攻撃対象範囲から外れた場合はターゲットカーソルを非表示にする
-                    context.StageCtrl.SetActiveTargetCursor( false );
+                    targetCharacter = context.BtlRtnCtrl.BtlCharaCdr.GetCharacter( attackTargetCharaKeys[0] );
+                    context.StageCtrl.ApplyTargetCursor2CharacterTile( false, targetCharacter );
                 }
             }
             else
             {
+                // ターゲットに出来る敵がいないため、ターゲットカーソルを非表示にする
                 targetCharacter = null;
                 context.StageCtrl.SetActiveTargetCursor( false );
             }
