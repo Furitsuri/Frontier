@@ -105,6 +105,16 @@ namespace Frontier.Entities
                     }
                 }
             }
+
+            // ターゲット可能なタイルがあれば、上記のタイルメッシュよりも上に描画
+            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            {
+                TileMesh tileMesh = null;
+                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
+
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE], _owner.GetCharacterKey() );
+            }
         }
 
         /// <summary>

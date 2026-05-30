@@ -24,11 +24,7 @@ namespace Frontier.Entities
         {
             foreach( var attackableMap in actionableTileData.AttackableTileMap )
             {
-                Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
-
-                if( IsExistOpponent( attackableMap.Value, context.Owner.GetCharacterTag() ) )
-                {
-                }
+                actionableTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
             }
         }
 

@@ -268,11 +268,10 @@ namespace Frontier.Stage
             // 移動不可のグリッドに辿り着いた場合は終了
             if( Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
             // 既にターゲット可能なグリッドであれば終了
-            if( Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.TARGETABLE ) ) { return; }
+            if( actionableTileData.TargetableTileMap.ContainsKey( tileIndex ) ) { return; }
 
             // ターゲット可能タイルとして登録
             actionableTileData.AddTargetableTile( tileIndex, tileDynamicData );
-            Methods.SetBitFlag( ref tileDynamicData.Flag, TileBitFlag.TARGETABLE );
 
             // 敵対勢力のキャラクターが存在するタイルであれば、攻撃対象タイルとして登録
             if( BattleLogicBase.IsOpponentFaction[( int ) ownerTag]( tileDynamicData.CharaKey.CharacterTag ) )

@@ -28,9 +28,6 @@ namespace Frontier.Entities
 
             foreach( var attackableMap in actionableTileData.AttackableTileMap )
             {
-				// 一度全てのTARGETABLEフラグのビットを降ろす
-				Methods.UnsetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
-
 				// キャラクターの向きに沿ったタイル
 				var targetTilePos = context.StageCtrl.GetTileStaticData( attackableMap.Key ).CharaStandPos;
 				if(!Methods.IsMatchForward( baseForward, basePos, targetTilePos )) { continue; }
@@ -41,7 +38,6 @@ namespace Frontier.Entities
 
 				// ターゲット可能タイルとして登録する
 				actionableTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
-                Methods.SetBitFlag( ref attackableMap.Value.Flag, TileBitFlag.TARGETABLE );
                 // さらに、そのタイルが攻撃対象として有効な場合は攻撃対象タイルとして追加する
                 // ATTACKABLE_TARGET_EXISTはRegisterAttackableTileで敵の存在時に立てられ、
                 // DashSlash等の固有フィルタで着地不可な位置の敵については事前に降ろされている
