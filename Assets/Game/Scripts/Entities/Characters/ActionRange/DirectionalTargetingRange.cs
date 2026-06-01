@@ -88,7 +88,9 @@ namespace Frontier.Entities
                 targetCharacter = null;
 
                 // 攻撃可能なグリッドがない場合はカーソル位置(カメラ位置)をプレイヤーに合わせる
-                context.StageCtrl.ApplyGridCursor2CharacterTile( context.Owner );
+                context.StageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( context.Owner );
+                // ターゲットキャラクターがいないため、ターゲットカーソル及び攻撃結果の表示はオフにする
+                context.StageCtrl.SetActiveTargetCursor( false );
                 context.Presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             }
         }
@@ -105,24 +107,43 @@ namespace Frontier.Entities
 
             int limit           = ( step < 0 ) ? 1 : maxRange;
             int candidate       = currentRange + step;
-            int currentGhostIdx = FindGhostTileIndex( context, actionRangeCtrl );
+            int currentGhostIdx = ( isMovingSkill ) ? FindGhostTileIndex( context, actionRangeCtrl ) : -1;
 
             while( ( step < 0 ) ? ( candidate >= limit ) : ( candidate <= limit ) )
             {
                 actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, tileIndex, candidate );
-                int newGhostIdx = FindGhostTileIndex( context, actionRangeCtrl );
 
-                bool isValid = ( step < 0 )
-                    ? newGhostIdx >= 0
-                    : IsGhostFartherThan( context, newGhostIdx, currentGhostIdx );
+                if( isMovingSkill )
+                {
+                    int newGhostIdx = FindGhostTileIndex( context, actionRangeCtrl );
 
-                if( isValid )
+                    bool isValid = ( step < 0 )
+                        ? 0 <= newGhostIdx
+                        : IsGhostFartherThan( context, newGhostIdx, currentGhostIdx );
+
+                    if( isValid )
+                    {
+                        currentRange = candidate;
+                        RefreshAfterCurrentRangeChanged( context, currentRange, isMovingSkill, ref attackTargets, ref targetCharacter );
+                        // isMovingSkillの場合、AdjustRangeForMoveによってゴーストが候補レンジより近い位置に
+                        // 制限されることがある。currentRangeをゴーストの実効レンジに合わせて更新する。
+                        var ghostObj = context.Owner.GhostObj;
+                        if( ghostObj != null && ghostObj.gameObject.activeSelf )
+                        {
+                            currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
+                        }
+                        
+                        return true;
+                    }
+
+                    candidate += step;
+                }
+                else
                 {
                     currentRange = candidate;
                     RefreshAfterCurrentRangeChanged( context, currentRange, isMovingSkill, ref attackTargets, ref targetCharacter );
                     return true;
                 }
-                candidate += step;
             }
 
             // 有効なレンジが見つからなかった場合、元の状態を復元する
@@ -206,7 +227,8 @@ namespace Frontier.Entities
                 }
                 else
                 {
-                    context.StageCtrl.ApplyGridCursor2CharacterTile( context.Owner );
+                    context.StageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( context.Owner );
+                    context.StageCtrl.SetActiveTargetCursor( false );
                 }
             }
 
@@ -238,29 +260,20 @@ namespace Frontier.Entities
         /// <summary>
         /// ターゲット可能範囲内で敵が存在しないタイルのうち、スキル使用者から最も遠いタイルのインデックスを返します。
         /// 敵が存在しない有効なタイルが1つもない場合は -1 を返します。
+        /// isMovingSkillがtrueの場合はキャラクターの存在有無で判定します。
+        /// (AdjustRangeForMoveが攻撃対象インデックスを変更するため、attackTargetIndicesは信頼できないため)
         /// </summary>
         static private int FindGhostTileIndex( TargetingRangeContext context, ActionRangeController actionRangeCtrl )
         {
             var actionableTileData  = actionRangeCtrl.ActionableTileData;
             var targetableTileMap   = actionableTileData.TargetableTileMap;
-            var attackTargetIndices = actionableTileData.RefAttackTargetTileIndicies;
 
-            int farthestIdx = -1;
-            int maxRange    = -1;
-
-            foreach( int tileIdx in targetableTileMap.Keys )
+            if( targetableTileMap.Count <= 0 || targetableTileMap.Last().Value.IsExistCharacter() )
             {
-                if( attackTargetIndices.Contains( tileIdx ) ) { continue; }
-
-                int range = context.StageCtrl.CalculateTotalRange( context.Owner.BattleParams.TmpParam.CurrentTileIndex, tileIdx );
-                if( range > maxRange )
-                {
-                    maxRange    = range;
-                    farthestIdx = tileIdx;
-                }
+                return -1;
             }
 
-            return farthestIdx;
+            return targetableTileMap.Last().Key;
         }
 
         /// <summary>
