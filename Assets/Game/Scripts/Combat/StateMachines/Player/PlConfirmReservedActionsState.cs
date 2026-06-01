@@ -117,7 +117,6 @@ namespace Frontier.Battle
             }
 
             var attackTargetKeys = new List<CharacterKey>( data.AttackTargetCharaKeys );
-            ( _confirmPresenter as BattleRoutinePresenter )?.ShowCommandNameUI( data.UseSkillID );
             _sequenceFcd.RegistSkillAction( attacker, target, data.UseSkillID, attackTargetKeys );
         }
     }

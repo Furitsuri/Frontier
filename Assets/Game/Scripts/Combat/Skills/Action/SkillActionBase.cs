@@ -29,6 +29,15 @@ namespace Frontier.Combat
             return IsFinished();
         }
 
+        /// <summary>
+        /// スキル名表示の直前に呼ばれます。デフォルトではゴーストを非表示にします。
+        /// ゴーストの参照は保持されるため、サブクラスは StartAction() 内で引き続き参照できます。
+        /// </summary>
+        public virtual void OnBeforeNameDisplay()
+        {
+            _owner?.GhostObj?.gameObject.SetActive( false );
+        }
+
         protected virtual void StartAction()
         {
         }
