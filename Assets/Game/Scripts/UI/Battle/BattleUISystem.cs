@@ -25,8 +25,8 @@ namespace Frontier.UI
         [Header("SelectableCharaParam")]
         public SelectableCharaParamUI SelectableCharaParam;   // 選択可能なキャラクターパラメータ表示
 
-        [Header( "CommandName" )]
-        public GameObject CommandName;          // コマンド名表示
+        [Header( "CommandNameUI" )]
+        public CommandNameUI CommandNameView;   // コマンド名表示UI
 
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
@@ -61,7 +61,7 @@ namespace Frontier.UI
             Phase?.Setup();
             StageClear?.Setup();
             GameOver?.Setup();
-            CommandName.gameObject.SetActive( false );
+            CommandNameView?.Setup();
 
             DamageValue.Init( _rectTransform, _uiCamera );
         }

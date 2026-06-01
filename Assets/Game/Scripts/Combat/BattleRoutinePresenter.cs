@@ -16,7 +16,6 @@ namespace Frontier.Battle
 
         private CharacterParameterPresenter[] _parameterPresenters;
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
-        private TextMeshProUGUI _TMPCommandName;
         private Action<bool>[] SetActiveActionDirectionCallbacks;
         static private int[] _layerMaskIndecies;
         public CharacterParameterPresenter CharaParamView( ParameterWindowType winType ) => _parameterPresenters[( int ) winType];
@@ -42,9 +41,6 @@ namespace Frontier.Battle
             };
 
             // LazyInject.GetOrCreate( ref _selectableCharaParamPresenter, () => _hierarchyBld.InstantiateWithDiContainer<SelectableCharaParamPresenter>( true ) );
-
-            _TMPCommandName = _uiSystem.BattleUi.CommandName.GetComponentInChildren<TextMeshProUGUI>();
-            NullCheck.AssertNotNull( _TMPCommandName, nameof( _TMPCommandName ) );
         }
 
         public void Init()
@@ -71,11 +67,6 @@ namespace Frontier.Battle
         public void SetActiveConfirmUI( bool isActive )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.gameObject.SetActive( isActive );
-        }
-
-        public void SetActiveCommandName( bool isActive )
-        {
-            _uiSystem.BattleUi.CommandName.SetActive( isActive );
         }
 
         public void SetActiveParamWinDirectionLeft2Right( bool isActive )
@@ -129,9 +120,9 @@ namespace Frontier.Battle
             return _uiSystem.BattleUi.GameOver.isActiveAndEnabled;
         }
 
-        public void SetCommandName( string name )
+        public void ShowCommandNameUI( SkillID skillId, float duration = 2.0f )
         {
-            _TMPCommandName.text = name;
+            _uiSystem.BattleUi.CommandNameView.Show( skillId, duration );
         }
 
         public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )

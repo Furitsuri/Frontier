@@ -15,8 +15,6 @@ namespace Frontier.Sequences
             EXE_BUFF,
         }
 
-        [Inject] private BattleRoutinePresenter _presenter = null; 
-
         private float _elapsedTime = 0f;
         private string _commandName;
         private State _state;
@@ -32,13 +30,10 @@ namespace Frontier.Sequences
         {
             _state = State.DISP_BUFF_NAME;
             ResetElapsedTime();
-            _presenter.SetCommandName( _commandName.Replace( '_', ' ' ) );
-            _presenter.SetActiveCommandName( true );
         }
 
         public void End()
         {
-            _presenter.SetActiveCommandName( false );
         }
 
         public bool Update()

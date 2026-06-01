@@ -309,6 +309,7 @@ namespace Frontier.Battle
                 _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
             }
 
+            _presenter.ShowCommandNameUI( _useSkillID );
             _sequenceFcd.RegistSkillAction( _plOwner, _targetCharacter, _useSkillID, _attackTargetCharaKeys );   // スキルシーケンスの開始
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE;
