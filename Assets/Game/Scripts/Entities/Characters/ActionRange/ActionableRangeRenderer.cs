@@ -1,6 +1,7 @@
 ﻿using Frontier.Registries;
 using Frontier.Stage;
 using System;
+using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.Entities
@@ -14,10 +15,15 @@ namespace Frontier.Entities
         [Inject] private PrefabRegistry _prefabReg              = null;
         [Inject] private IStageDataProvider _stageDataProvider  = null;
 
-        private bool _isShowingAttackableRange                  = false;
-        private bool _isDisplayingQueuedRange                   = false;
-        private Character _owner                                = null;
+        private bool _isShowingAttackableRange                          = false;
+        private bool _isDisplayingQueuedRange                           = false;
+        private Character _owner                                        = null;
         private ReadOnlyReference<ActionableTileData> _readOnlyActionableTileData;
+
+        /// <summary>
+        /// 予約済み表示のタイルインデックス（オーナータイル + TargetableTileMap タイル）
+        /// </summary>
+        private readonly List<int> _queuedDisplayTileIndices = new List<int>();
 
         public bool IsShowingAttackableRange  => _isShowingAttackableRange;
         public bool IsDisplayingQueuedRange   => _isDisplayingQueuedRange;
@@ -28,12 +34,14 @@ namespace Frontier.Entities
             _isDisplayingQueuedRange    = false;
             _owner                      = owner;
             _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
+            _queuedDisplayTileIndices.Clear();
         }
 
         public void Dispose()
         {
             _owner = null;
             _readOnlyActionableTileData = null;
+            _queuedDisplayTileIndices.Clear();
         }
 
         /// <summary>
@@ -121,18 +129,38 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ターゲット可能範囲を予約済み色で描画します。
+        /// ターゲット可能範囲の既存描画を消去した後、オーナーのタイルと TargetableTileMap を
+        /// TARGETABLE_QUEUE 色で描画し、各タイルインデックスを _queuedDisplayTileIndices に記録します。
         /// </summary>
         public void DrawTargetableRangeAsQueued()
         {
+            // TargetableTileMap の既存描画を消去
             foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
             {
-                TileMesh tileMesh = null;
-                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey() );
+                tile?.ClearTileMesh( _owner.GetCharacterKey() );
             }
+            _queuedDisplayTileIndices.Clear();
+
+            // オーナーの現在タイルを描画・記録
+            DrawQueuedTile( _owner.BattleParams.TmpParam.CurrentTileIndex );
+
+            // TargetableTileMap のタイルを描画・記録
+            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            {
+                DrawQueuedTile( data.Key );
+            }
+
             _isDisplayingQueuedRange = true;
+        }
+
+        /// <summary>
+        /// DrawTargetableRangeAsQueued() で描画した予約済み表示を消去します。
+        /// キューに積まれたスキルの実行時に呼んでください。
+        /// </summary>
+        public void ClearQueuedRangeDisplay()
+        {
+            ClearQueuedDisplayInternal();
         }
 
         /// <summary>
@@ -141,9 +169,9 @@ namespace Frontier.Entities
         /// </summary>
         public void SetBlinkTargetableRange( bool isBlink )
         {
-            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            foreach( var tileIndex in _queuedDisplayTileIndices )
             {
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
                 if( tile == null ) { continue; }
                 tile.GetTileMeshByOwnerKey( _owner.GetCharacterKey() )?.SetBlink( isBlink );
             }
@@ -173,8 +201,31 @@ namespace Frontier.Entities
                 tile.ClearTileMesh( _owner.GetCharacterKey() );
             }
 
+            // ActionableTileData に含まれないオーナータイルなどの予約済み表示も消去
+            ClearQueuedDisplayInternal();
+
             _isShowingAttackableRange = false;
-            _isDisplayingQueuedRange  = false;
+        }
+
+        private void DrawQueuedTile( int tileIndex )
+        {
+            TileMesh tileMesh = null;
+            LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
+            var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
+            if( tile == null ) { return; }
+            tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey() );
+            _queuedDisplayTileIndices.Add( tileIndex );
+        }
+
+        private void ClearQueuedDisplayInternal()
+        {
+            foreach( var tileIndex in _queuedDisplayTileIndices )
+            {
+                var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
+                tile?.ClearTileMesh( _owner.GetCharacterKey() );
+            }
+            _queuedDisplayTileIndices.Clear();
+            _isDisplayingQueuedRange = false;
         }
 
         /// <summary>

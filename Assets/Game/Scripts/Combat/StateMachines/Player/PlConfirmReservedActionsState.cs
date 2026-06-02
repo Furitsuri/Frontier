@@ -106,7 +106,7 @@ namespace Frontier.Battle
             }
             attacker.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
 
-            attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
+            attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearQueuedRangeDisplay();
 
             attacker.BattleLogic.ConsumeActionGaugeForSkill();
             if( target != null ) { target.BattleLogic.ConsumeActionGauge(); }
