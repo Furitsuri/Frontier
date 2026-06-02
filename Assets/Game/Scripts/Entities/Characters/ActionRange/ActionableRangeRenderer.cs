@@ -1,7 +1,6 @@
 ﻿using Frontier.Registries;
 using Frontier.Stage;
 using System;
-using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.Entities
@@ -15,18 +14,13 @@ namespace Frontier.Entities
         [Inject] private PrefabRegistry _prefabReg              = null;
         [Inject] private IStageDataProvider _stageDataProvider  = null;
 
-        private bool _isShowingAttackableRange                          = false;
-        private bool _isDisplayingQueuedRange                           = false;
-        private Character _owner                                        = null;
+        private bool _isShowingAttackableRange = false;
+        private bool _isDisplayingQueuedRange  = false;
+        private Character _owner               = null;
         private ReadOnlyReference<ActionableTileData> _readOnlyActionableTileData;
 
-        /// <summary>
-        /// 予約済み表示のタイルインデックス（オーナータイル + TargetableTileMap タイル）
-        /// </summary>
-        private readonly List<int> _queuedDisplayTileIndices = new List<int>();
-
-        public bool IsShowingAttackableRange  => _isShowingAttackableRange;
-        public bool IsDisplayingQueuedRange   => _isDisplayingQueuedRange;
+        public bool IsShowingAttackableRange => _isShowingAttackableRange;
+        public bool IsDisplayingQueuedRange  => _isDisplayingQueuedRange;
 
         public void Init( Character owner, ActionableTileData actionableTileMap )
         {
@@ -34,44 +28,33 @@ namespace Frontier.Entities
             _isDisplayingQueuedRange    = false;
             _owner                      = owner;
             _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
-            _queuedDisplayTileIndices.Clear();
         }
 
         public void Dispose()
         {
             _owner = null;
             _readOnlyActionableTileData = null;
-            _queuedDisplayTileIndices.Clear();
         }
 
         /// <summary>
         /// 攻撃範囲の表示・非表示を切り替えます
         /// </summary>
-        /// <param name="isShow"></param>
-        /// <param name="color"></param>
         public void SetDisplayDangerRange( bool isShow, in UnityEngine.Color color )
         {
             if( isShow == _isShowingAttackableRange ) { return; }
 
             _isShowingAttackableRange = isShow;
 
-            if( _isShowingAttackableRange )
-            {
-                DrawDangerRange( in color );
-            }
-            else
-            {
-                ClearTileMeshes();
-            }
+            if( _isShowingAttackableRange ) { DrawDangerRange( in color ); }
+            else { ClearTileMeshes(); }
         }
 
         /// <summary>
         /// 移動可能領域を描画します
         /// </summary>
-        /// <param name="conditionBuilder"></param>
         public void DrawMoveableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            foreach( var data in _readOnlyActionableTileData.Value.MoveableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.MOVEABLE ) )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
 
@@ -83,7 +66,7 @@ namespace Frontier.Entities
                         LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey() );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), TileMapType.MOVEABLE );
 
                         break;
                     }
@@ -94,11 +77,9 @@ namespace Frontier.Entities
         /// <summary>
         /// 攻撃可能領域を描画します
         /// </summary>
-        /// <param name="conditionBuilder"></param>
         public void DrawAttackableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            // 攻撃可能なタイルの描画
-            foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
 
@@ -110,7 +91,7 @@ namespace Frontier.Entities
                         LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey() );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), TileMapType.ATTACKABLE );
 
                         break;
                     }
@@ -118,35 +99,35 @@ namespace Frontier.Entities
             }
 
             // ターゲット可能なタイルがあれば、上記のタイルメッシュよりも上に描画
-            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
             {
                 TileMesh tileMesh = null;
                 LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE], _owner.GetCharacterKey() );
+                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE], _owner.GetCharacterKey(), TileMapType.TARGETABLE );
             }
         }
 
         /// <summary>
-        /// ターゲット可能範囲の既存描画を消去した後、オーナーのタイルと TargetableTileMap を
-        /// TARGETABLE_QUEUE 色で描画し、各タイルインデックスを _queuedDisplayTileIndices に記録します。
+        /// TargetableTileMap の既存描画を消去した後、オーナーのタイルと TargetableTileMap を
+        /// TARGETABLE_QUEUE 色で描画し、タイルインデックスを ActionableTileData の QUEUED マップに記録します。
         /// </summary>
         public void DrawTargetableRangeAsQueued()
         {
             // TargetableTileMap の既存描画を消去
-            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 tile?.ClearTileMesh( _owner.GetCharacterKey() );
             }
-            _queuedDisplayTileIndices.Clear();
+            _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
 
-            // オーナーの現在タイルを描画・記録
+            // オーナーの現在タイルを QUEUED として描画・記録
             DrawQueuedTile( _owner.BattleParams.TmpParam.CurrentTileIndex );
 
-            // TargetableTileMap のタイルを描画・記録
-            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            // TargetableTileMap のタイルを QUEUED として描画・記録
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
             {
                 DrawQueuedTile( data.Key );
             }
@@ -164,14 +145,47 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 指定した TileMapType（複数可）に該当するタイルの描画を消去します。
+        /// ビットフラグで複数種を同時に指定できます。
+        /// </summary>
+        public void ClearTileMeshesByType( TileMapType types )
+        {
+            CharacterKey ownerKey = _owner.GetCharacterKey();
+            int typeValue         = ( int ) types;
+
+            for( int bit = 1; bit <= ( int ) TileMapType.QUEUED; bit <<= 1 )
+            {
+                if( ( typeValue & bit ) == 0 ) { continue; }
+
+                var singleType = ( TileMapType ) bit;
+                foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( singleType ) )
+                {
+                    var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                    tile?.ClearTileMesh( ownerKey, singleType );
+                }
+
+                if( singleType == TileMapType.QUEUED )
+                {
+                    _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
+                    _isDisplayingQueuedRange = false;
+                }
+            }
+
+            if( ( types & ( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE ) ) != 0 )
+            {
+                _isShowingAttackableRange = false;
+            }
+        }
+
+        /// <summary>
         /// 予約済み攻撃範囲のタイルメッシュを点滅させます。
         /// DrawTargetableRangeAsQueued() で描画済みの状態で呼ぶことを想定しています。
         /// </summary>
         public void SetBlinkTargetableRange( bool isBlink )
         {
-            foreach( var tileIndex in _queuedDisplayTileIndices )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.QUEUED ) )
             {
-                var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 if( tile == null ) { continue; }
                 tile.GetTileMeshByOwnerKey( _owner.GetCharacterKey() )?.SetBlink( isBlink );
             }
@@ -182,26 +196,28 @@ namespace Frontier.Entities
         /// </summary>
         public void ClearTileMeshes()
         {
-            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            CharacterKey ownerKey = _owner.GetCharacterKey();
+
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( _owner.GetCharacterKey() );
+                tile.ClearTileMesh( ownerKey );
             }
-            foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( _owner.GetCharacterKey() );
+                tile.ClearTileMesh( ownerKey );
             }
-            foreach( var data in _readOnlyActionableTileData.Value.MoveableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.MOVEABLE ) )
             {
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( _owner.GetCharacterKey() );
+                tile.ClearTileMesh( ownerKey );
             }
 
-            // ActionableTileData に含まれないオーナータイルなどの予約済み表示も消去
+            // ActionableTileData 外（オーナータイルなど）の QUEUED 描画も消去
             ClearQueuedDisplayInternal();
 
             _isShowingAttackableRange = false;
@@ -213,34 +229,31 @@ namespace Frontier.Entities
             LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
             var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
             if( tile == null ) { return; }
-            tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey() );
-            _queuedDisplayTileIndices.Add( tileIndex );
+            tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey(), TileMapType.QUEUED );
+            _readOnlyActionableTileData.Value.AddQueuedTile( tileIndex );
         }
 
         private void ClearQueuedDisplayInternal()
         {
-            foreach( var tileIndex in _queuedDisplayTileIndices )
+            CharacterKey ownerKey = _owner.GetCharacterKey();
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.QUEUED ) )
             {
-                var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
-                tile?.ClearTileMesh( _owner.GetCharacterKey() );
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                tile?.ClearTileMesh( ownerKey, TileMapType.QUEUED );
             }
-            _queuedDisplayTileIndices.Clear();
+            _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
             _isDisplayingQueuedRange = false;
         }
 
-        /// <summary>
-        /// 危険領域を描画します
-        /// </summary>
-        /// <param name="color"></param>
         private void DrawDangerRange( in UnityEngine.Color color )
         {
-            foreach( var data in _readOnlyActionableTileData.Value.AttackableTileMap )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
             {
                 TileMesh tileMesh = null;
                 LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in color, _owner.GetCharacterKey() );
+                tile.DrawTileMesh( tileMesh, in color, _owner.GetCharacterKey(), TileMapType.ATTACKABLE );
             }
         }
     }

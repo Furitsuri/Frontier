@@ -1,64 +1,84 @@
 ﻿using Frontier.Stage;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using UnityEngine;
 
 namespace Frontier.Entities
 {
     /// <summary>
-    /// アクション(移動や攻撃など)可能なタイルの情報
+    /// アクション(移動や攻撃など)可能なタイルの情報。
+    /// TileMapType enum でインデックスされた配列でタイルマップを管理します。
     /// </summary>
     public class ActionableTileData
     {
-        // キャラクターが移動可能なタイルの情報を保持するマップ
-        private Dictionary<int, TileDynamicData> _moveableTileMap    = new Dictionary<int, TileDynamicData>();
-        // キャラクターが攻撃可能なタイルの情報を保持するマップ
-        private Dictionary<int, TileDynamicData> _attackableTileMap  = new Dictionary<int, TileDynamicData>();
-        // 攻撃可能なタイルのうち、実際に攻撃対象として選択されているタイルの情報を保持するマップ
-        // MEMO : _attackableTileMapの要素を抽出しているようにみえるが、
-        //        ExpandTargetableTilesWithPartOfRangeを見ると分かるが、起点は_attackableTileMap内の要素だが、
-        //        そこからさらに条件を満たすタイルを探索しているため、_attackableTileMapの要素全てが_targetableTileMapに含まれるわけではない。
-        private Dictionary<int, TileDynamicData> _targetableTileMap  = new Dictionary<int, TileDynamicData>();
-        private List<int> _attackTargetTileIndicies                  = new List<int>();
-        public Dictionary<int, TileDynamicData> MoveableTileMap { get { return _moveableTileMap; } }
-        public Dictionary<int, TileDynamicData> AttackableTileMap { get { return _attackableTileMap; } }
-        public Dictionary<int, TileDynamicData> TargetableTileMap { get { return _targetableTileMap; } }
-        public ReadOnlyCollection<int> RefAttackTargetTileIndicies { get { return new ReadOnlyCollection<int>( _attackTargetTileIndicies ); } }
+        private const int TILE_MAP_COUNT = 4;
+
+        private readonly Dictionary<int, TileDynamicData>[] _tileMaps
+            = new Dictionary<int, TileDynamicData>[TILE_MAP_COUNT]
+            {
+                new Dictionary<int, TileDynamicData>(),  // MOVEABLE
+                new Dictionary<int, TileDynamicData>(),  // ATTACKABLE
+                new Dictionary<int, TileDynamicData>(),  // TARGETABLE
+                new Dictionary<int, TileDynamicData>(),  // QUEUED
+            };
+
+        private List<int> _attackTargetTileIndicies = new List<int>();
+
+        // 後方互換プロパティ
+        public Dictionary<int, TileDynamicData> MoveableTileMap   => GetTileMap( TileMapType.MOVEABLE );
+        public Dictionary<int, TileDynamicData> AttackableTileMap => GetTileMap( TileMapType.ATTACKABLE );
+        public Dictionary<int, TileDynamicData> TargetableTileMap => GetTileMap( TileMapType.TARGETABLE );
+        public ReadOnlyCollection<int> RefAttackTargetTileIndicies => new ReadOnlyCollection<int>( _attackTargetTileIndicies );
+
+        /// <summary>
+        /// 指定タイプのタイルマップを返します（単一ビット値のみ有効）
+        /// </summary>
+        public Dictionary<int, TileDynamicData> GetTileMap( TileMapType type )
+            => _tileMaps[TileMapTypeToIndex( type )];
 
         public void Init()
         {
-            _moveableTileMap.Clear();
-            _attackableTileMap.Clear();
-            _targetableTileMap.Clear();
+            for( int i = 0; i < TILE_MAP_COUNT; ++i )
+            {
+                _tileMaps[i].Clear();
+            }
             _attackTargetTileIndicies.Clear();
         }
 
         public void Dispose()
         {
             _attackTargetTileIndicies.Clear();
-            _targetableTileMap.Clear();
-            _attackableTileMap.Clear();
-            _moveableTileMap.Clear();
-
-            _attackTargetTileIndicies   = null;
-            _targetableTileMap          = null;
-            _attackableTileMap          = null;
-            _moveableTileMap            = null;
+            _attackTargetTileIndicies = null;
+            for( int i = 0; i < TILE_MAP_COUNT; ++i )
+            {
+                _tileMaps[i]?.Clear();
+            }
         }
 
         public void AddMoveableTile( int index, TileDynamicData addTileData )
         {
-            _moveableTileMap[index] = addTileData;
+            _tileMaps[TileMapTypeToIndex( TileMapType.MOVEABLE )][index] = addTileData;
         }
 
         public void AddAttackableTile( int index, TileDynamicData addTileDData )
         {
-            _attackableTileMap[index] = addTileDData;
+            _tileMaps[TileMapTypeToIndex( TileMapType.ATTACKABLE )][index] = addTileDData;
         }
 
         public void AddTargetableTile( int index, TileDynamicData addTileData )
         {
-            _targetableTileMap[index] = addTileData;
+            _tileMaps[TileMapTypeToIndex( TileMapType.TARGETABLE )][index] = addTileData;
+        }
+
+        /// <summary>予約済み表示タイルを登録します（TileDynamicData は不要のため null）</summary>
+        public void AddQueuedTile( int index )
+        {
+            _tileMaps[TileMapTypeToIndex( TileMapType.QUEUED )][index] = null;
+        }
+
+        /// <summary>指定タイプのタイルマップをクリアします（単一ビット値のみ有効）</summary>
+        public void ClearTileMap( TileMapType type )
+        {
+            _tileMaps[TileMapTypeToIndex( type )].Clear();
         }
 
         public void AddAttackTargetTileIndex( int index )
@@ -68,7 +88,7 @@ namespace Frontier.Entities
 
         public void ClearTargetableTile()
         {
-            _targetableTileMap.Clear();
+            _tileMaps[TileMapTypeToIndex( TileMapType.TARGETABLE )].Clear();
         }
 
         public void ClearAttackTargetTileIndicies()
@@ -78,7 +98,7 @@ namespace Frontier.Entities
 
         public void DeleteTargetableTile( int index )
         {
-            _targetableTileMap.Remove( index );
+            _tileMaps[TileMapTypeToIndex( TileMapType.TARGETABLE )].Remove( index );
         }
 
         public void DeleteAttackTargetTileIndex( int index )
@@ -88,21 +108,30 @@ namespace Frontier.Entities
 
         public bool IsEmpty()
         {
-            return _moveableTileMap.Count <= 0 && _attackableTileMap.Count <= 0;
+            return MoveableTileMap.Count <= 0 && AttackableTileMap.Count <= 0;
         }
 
         public TileDynamicData GetMoveableTile( int index )
         {
-            if( !_moveableTileMap.ContainsKey( index ) ) { return null; }
-
-            return _moveableTileMap[index];
+            var map = GetTileMap( TileMapType.MOVEABLE );
+            return map.TryGetValue( index, out var data ) ? data : null;
         }
 
         public TileDynamicData GetAttackableTile( int index )
         {
-            if( !_attackableTileMap.ContainsKey( index ) ) { return null; }
+            var map = GetTileMap( TileMapType.ATTACKABLE );
+            return map.TryGetValue( index, out var data ) ? data : null;
+        }
 
-            return _attackableTileMap[index];
+        /// <summary>
+        /// TileMapType の単一ビット値を配列インデックスに変換します
+        /// </summary>
+        public static int TileMapTypeToIndex( TileMapType type )
+        {
+            int v = (int)type;
+            int idx = 0;
+            while( v > 1 ) { v >>= 1; ++idx; }
+            return idx;
         }
     }
 }

@@ -60,10 +60,7 @@ namespace Frontier.Stage
             _gridLineMesh?.Dispose();
             ClearTileMeshes();
 
-            if( _renderer != null )
-            {
-                Destroy( _renderer );
-            }
+            if( _renderer != null ) { Destroy( _renderer ); }
 
             Destroy( gameObject );
             Destroy( this );
@@ -87,8 +84,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 指定オーナーキーのタイルメッシュを削除します。
-        /// 削除後は残りのタイルメッシュの Y オフセットを再設定します。
+        /// 指定オーナーキーのタイルメッシュを削除します（タイプ問わず）
         /// </summary>
         public void ClearTileMesh( CharacterKey ownerKey )
         {
@@ -98,7 +94,22 @@ namespace Frontier.Stage
             tileMesh.Remove();
             _tileMeshes.Remove( ownerKey );
 
-            ReDrawTileMeshes(); // 残りのタイルメッシュの Y 座標を再設定
+            ReDrawTileMeshes();
+        }
+
+        /// <summary>
+        /// 指定オーナーキーかつ指定タイプに一致するタイルメッシュを削除します
+        /// </summary>
+        public void ClearTileMesh( CharacterKey ownerKey, TileMapType types )
+        {
+            if( !_tileMeshes.TryGetValue( ownerKey, out var tileMesh ) ) { return; }
+            if( ( ( int ) tileMesh.MapType & ( int ) types ) == 0 ) { return; }
+
+            tileMesh.ClearDraw();
+            tileMesh.Remove();
+            _tileMeshes.Remove( ownerKey );
+
+            ReDrawTileMeshes();
         }
 
         /// <summary>
@@ -122,9 +133,6 @@ namespace Frontier.Stage
             _renderer.material.color = Color.white;
         }
 
-        /// <summary>
-        /// 指定オーナーキーに対応するタイルメッシュを返します。存在しない場合は null を返します。
-        /// </summary>
         public TileMesh GetTileMeshByOwnerKey( CharacterKey ownerKey )
         {
             _tileMeshes.TryGetValue( ownerKey, out var tileMesh );
@@ -132,14 +140,13 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// タイルメッシュを描画します。
-        /// 同一キャラクターの既存メッシュが存在する場合は置き換えます（一キャラクター一メッシュを保証）。
+        /// タイルメッシュを描画します。同一キャラクターの既存メッシュが存在する場合は置き換えます。
+        /// mapType に TileMapType を指定することで TileMesh と種別を紐づけます。
         /// </summary>
-        public void DrawTileMesh( TileMesh tileMesh, in Color color, CharacterKey ownerKey )
+        public void DrawTileMesh( TileMesh tileMesh, in Color color, CharacterKey ownerKey, TileMapType mapType )
         {
             if( _tileMeshes.TryGetValue( ownerKey, out var existing ) )
             {
-                // 既存メッシュの挿入順インデックスを保持したまま置き換える
                 int idx = GetEntryIndex( ownerKey );
                 existing.ClearDraw();
                 existing.Remove();
@@ -148,11 +155,11 @@ namespace Frontier.Stage
             }
             else
             {
-                // 新規追加: 現在の件数から Y オフセットを決定してから辞書に挿入
                 float yOffset = GetTileMeshPosYOffset();
                 _tileMeshes[ownerKey] = tileMesh;
                 tileMesh.DrawTileMesh( transform.position, yOffset, in color );
             }
+            tileMesh.MapType = mapType;
         }
 
         public float GetTileMeshPosYOffset()
@@ -168,6 +175,8 @@ namespace Frontier.Stage
         /// <summary>
         /// タイルのグリッド線メッシュを生成します
         /// </summary>
+        /// <param name="tileBhv"></param>
+        /// <returns></returns>
         public GridLineMesh CreateGridLineMesh( Tile tileBhv )
         {
             GridLineMesh retLineMesh = _hierarchyBld.CreateComponentNestedParentWithDiContainer<GridLineMesh>( tileBhv.gameObject, true, false, "TileMesh" );
@@ -177,7 +186,7 @@ namespace Frontier.Stage
                 return null;
             }
 
-            Vector3 meshPos = tileBhv.transform.position;
+            Vector3 meshPos      = tileBhv.transform.position;
             float tileHalfHeight = 0.5f * tileBhv.transform.localScale.y;    // タイルの高さの半分をY座標に加算して、タイルの中心に配置
             retLineMesh.Init( true, meshPos, tileHalfHeight );
             retLineMesh.DrawMesh();
@@ -188,6 +197,10 @@ namespace Frontier.Stage
         /// <summary>
         /// 複製したクラスを生成します
         /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <param name="colIndex"></param>
+        /// <param name="prefabs"></param>
+        /// <returns></returns>
         public Tile Clone( int colIndex, int rowIndex, GameObject[] prefabs )
         {
             var ret = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( prefabs[0], true, false, $"Tile_X{colIndex}_Y{rowIndex}" );
@@ -199,6 +212,7 @@ namespace Frontier.Stage
         /// <summary>
         /// 保持しているデータをタイルのセーブデータに加工して返します
         /// </summary>
+        /// <returns></returns>
         public TileSaveData ToSaveData()
         {
             return new TileSaveData
@@ -210,7 +224,7 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 残存するタイルメッシュの Y 座標を挿入順に再設定して再描画します
+        /// タイルメッシュを再描画します
         /// </summary>
         private void ReDrawTileMeshes()
         {
@@ -219,13 +233,11 @@ namespace Frontier.Stage
             {
                 entry.Value.ClearDraw();
                 entry.Value.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( i + 1 ), entry.Value.GetColor() );
+                // MapType は DrawTileMesh でリセットされないため保持される
                 ++i;
             }
         }
 
-        /// <summary>
-        /// 指定キーの辞書内挿入順インデックスを返します
-        /// </summary>
         private int GetEntryIndex( CharacterKey ownerKey )
         {
             int idx = 0;
