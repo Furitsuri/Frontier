@@ -13,12 +13,9 @@ namespace Frontier.Stage
     {
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
-        private CharacterKey _ownerKey;
         private Coroutine _blinkCoroutine = null;
 
         private const float BLINK_INTERVAL = 0.35f;
-
-        public CharacterKey OwnerKey => _ownerKey;
 
         void Awake()
         {
@@ -33,11 +30,11 @@ namespace Frontier.Stage
         /// <param name="collectedPosY"></param>
         /// <param name="tileSize"></param>
         /// <param name="color"></param>
-        public void DrawTileMesh( in Vector3 position, float collectedPosY, in Color color, in CharacterKey ownerKey )
+        public void DrawTileMesh( in Vector3 position, float collectedPosY, in Color color )
         {
             var mesh        = new Mesh();
             float halfSize  = 0.5f * TILE_SIZE;
-            // 頂点座標配列をメッシュにセット  
+            // 頂点座標配列をメッシュにセット
             mesh.SetVertices( new Vector3[] {
                 new Vector3 (position.x - halfSize, position.y + collectedPosY, position.z - halfSize),
                 new Vector3 (position.x - halfSize, position.y + collectedPosY, position.z + halfSize),
@@ -45,14 +42,13 @@ namespace Frontier.Stage
                 new Vector3 (position.x + halfSize, position.y + collectedPosY, position.z - halfSize),
             } );
 
-            // インデックス配列をメッシュにセット  
+            // インデックス配列をメッシュにセット
             mesh.SetTriangles( new int[]
             { 0, 1, 2, 0, 2, 3}, 0
             );
 
-            _meshRenderer.material.color    = color;
-            _meshFilter.sharedMesh          = mesh;  // MeshFilterを通してメッシュをMeshRendererにセット  
-            _ownerKey                       = ownerKey;
+            _meshRenderer.material.color = color;
+            _meshFilter.sharedMesh       = mesh;  // MeshFilterを通してメッシュをMeshRendererにセット
         }
 
         /// <summary>
