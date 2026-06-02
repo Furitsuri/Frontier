@@ -41,7 +41,7 @@ namespace Frontier.Entities
         protected FieldLogicBase _fieldLogic                                                = null;
         protected BattleLogicBase _battleLogic                                              = null;
         protected BattleAnimationEventReceiver _animReceiver                                = null;
-        protected GhostObject _ghostObject                                                   = null;
+        protected GhostObject _ghostObject                                                  = null;
         protected TransformHandler _transformHdlr                                           = null;     // キャラクターのTransform操作を行うクラス
         protected AnimationController _animCtrl                                             = null;     // アニメーションコントローラ
         protected Bullet _bullet                                                            = null;     // 矢などの弾

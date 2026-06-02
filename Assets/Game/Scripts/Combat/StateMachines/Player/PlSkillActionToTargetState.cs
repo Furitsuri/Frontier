@@ -47,6 +47,7 @@ namespace Frontier.Battle
         private SequenceFacade _sequenceFcd                         = null;
         private SkillActionReservationQueue _reservationQueue       = null;
         private List<CharacterKey> _attackTargetCharaKeys           = null;
+        private List<Character> _blinkingAttackers                  = new List<Character>();
         private ChangeDirectionCallback[] _changeDirectionCallbacks;
         private RefreshTargetCallback[] _refreshFocusTargetCallbacks;
         private TryAdjustRangeCallback[] _tryAdjustRangeCallbacks;
@@ -116,6 +117,8 @@ namespace Frontier.Battle
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
+            _blinkingAttackers.Clear();
+            RefreshBlink();
         }
 
         public override bool Update()
@@ -157,6 +160,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
+            StopAllBlink();
             OnExitStateAfterCombat( _plOwner, _targetCharacter );
 
             if( _isSkillQueued )
@@ -223,6 +227,11 @@ namespace Frontier.Battle
                     case USE_SKILL_OPTION_TAG.COOPERATIVE:
                         // TODO: 連携処理（次フェーズで実装）
                         break;
+
+                    default:
+                        // キャンセル時: ターゲット選択に戻るため点滅状態を再評価
+                        RefreshBlink();
+                        break;
                 }
             }
         }
@@ -280,6 +289,8 @@ namespace Frontier.Battle
             _changeDirectionCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, context.Cursor, _isMovingSkill, ref _currentRange, _maxRange );
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke( targetingContext, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
 
+            RefreshBlink();
+
             return true;
         }
 
@@ -324,6 +335,47 @@ namespace Frontier.Battle
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// 現在のターゲット選択に応じて連携候補の攻撃範囲点滅を更新します。
+        /// 連携不可スキルの場合は点滅を停止します。
+        /// </summary>
+        private void RefreshBlink()
+        {
+            if( !SkillsData.data[( int ) _useSkillID].IsCooperative )
+            {
+                StopAllBlink();
+                return;
+            }
+
+            var newAttackers = FindCooperativeAttackers();
+
+            foreach( var attacker in _blinkingAttackers )
+            {
+                if( !newAttackers.Contains( attacker ) )
+                {
+                    attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( false );
+                }
+            }
+            foreach( var attacker in newAttackers )
+            {
+                if( !_blinkingAttackers.Contains( attacker ) )
+                {
+                    attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( true );
+                }
+            }
+
+            _blinkingAttackers = newAttackers;
+        }
+
+        private void StopAllBlink()
+        {
+            foreach( var attacker in _blinkingAttackers )
+            {
+                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( false );
+            }
+            _blinkingAttackers.Clear();
         }
 
         private void ExecuteSkill()
@@ -451,7 +503,9 @@ namespace Frontier.Battle
 
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
             var callback = _tryAdjustRangeCallbacks[( int ) _targetingMode];
-            return callback != null && callback( targetingContext, -1, ref _currentRange, _maxRange, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
+            bool adjusted = callback != null && callback( targetingContext, -1, ref _currentRange, _maxRange, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
+            if( adjusted ) { RefreshBlink(); }
+            return adjusted;
         }
 
         protected override bool AcceptSub4( InputContext context )
@@ -460,7 +514,9 @@ namespace Frontier.Battle
 
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
             var callback = _tryAdjustRangeCallbacks[( int ) _targetingMode];
-            return callback != null && callback( targetingContext, +1, ref _currentRange, _maxRange, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
+            bool adjusted = callback != null && callback( targetingContext, +1, ref _currentRange, _maxRange, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
+            if( adjusted ) { RefreshBlink(); }
+            return adjusted;
         }
 
         private void AcceptSub( Direction dir )

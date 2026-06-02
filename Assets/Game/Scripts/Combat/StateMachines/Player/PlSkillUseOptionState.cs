@@ -1,5 +1,4 @@
 ﻿using Frontier.Combat;
-using Frontier.Entities;
 using System.Collections.Generic;
 using static Constants;
 
@@ -32,8 +31,6 @@ namespace Frontier.Battle
             _commandList.Init( ref commandIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
             _presenter.InitUseSkillOptionView( this, options );
-
-            StartBlinkCooperativeAttackers();
         }
 
         public override bool Update()
@@ -45,7 +42,6 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            StopBlinkCooperativeAttackers();
             _presenter.ExitUseSkillOptionView();
 
             return base.ExitState();
@@ -88,24 +84,6 @@ namespace Frontier.Battle
                 USE_SKILL_OPTION_TAG.EXECUTION,
                 USE_SKILL_OPTION_TAG.QUEUE,
             };
-        }
-
-        private void StartBlinkCooperativeAttackers()
-        {
-            if( _context?.CooperativeAttackers == null ) { return; }
-            foreach( var attacker in _context.CooperativeAttackers )
-            {
-                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( true );
-            }
-        }
-
-        private void StopBlinkCooperativeAttackers()
-        {
-            if( _context?.CooperativeAttackers == null ) { return; }
-            foreach( var attacker in _context.CooperativeAttackers )
-            {
-                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( false );
-            }
         }
     }
 }
