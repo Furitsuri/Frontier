@@ -283,8 +283,15 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            _isWaitingForOptionResult = true;
-            TransitState( ( int ) TransitTag.USE_SKILL_OPTION );
+            if( SkillsData.data[( int ) _useSkillID].IsCooperative )
+            {
+                _isWaitingForOptionResult = true;
+                TransitState( ( int ) TransitTag.USE_SKILL_OPTION );
+            }
+            else
+            {
+                ExecuteSkill();
+            }
 
             return true;
         }

@@ -25,6 +25,7 @@ namespace Frontier.Combat
             public TargetingMode TargetingMode;     // レンジ内選択モード
             public int TargetingRange;              // レンジ内選択モードに用いる範囲値
             public bool IsMovingSkill;              // 移動を伴うスキルか否か
+            public bool IsCooperative;              // 連携コマンドとして使用可能か
             public float AddAtkMag;                 // 攻撃力倍率加算値
             public float AddDefMag;                 // 防御力倍率加算値
             public int AddAtkNum;                   // 攻撃回数加算値
