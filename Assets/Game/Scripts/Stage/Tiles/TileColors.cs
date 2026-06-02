@@ -12,7 +12,7 @@ public static class TileColors
         new Color(1f,   0f,     0f, 0.65f),     // 敵が攻撃可能なタイル( ENEMIES_ATTACKABLE )
         new Color(0.5f, 0.5f, 0.5f, 0.65f),     // 第三勢力が攻撃可能なタイル( OTHERS_ATTACKABLE )
         new Color(1f,   1f,   0.1f, 0.95f),     // 攻撃の実行範囲( TARGETABLE )
-        new Color(0.1f,   0.1f, 1.0f, 0.80f),   // QUEUEに詰められている攻撃の実行範囲( TARGETABLE_QUEUE )
+        new Color(0.1f,   0.1f, 1.0f, 0.80f),   // QUEUEに詰められている攻撃の実行範囲( QUEUED )
         new Color(0.5f, 0.5f,   0,  0.65f),     // 配置可能( DEPLOYABLE )
     };
 }

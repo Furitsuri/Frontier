@@ -50,11 +50,11 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 移動可能領域を描画します
+        /// Characterの持つActionableTileDataのうち、指定されたTileMapTypeに該当する範囲を描画します
         /// </summary>
-        public void DrawMoveableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
+        public void DrawRange( TileMapType tileMapType, Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.MOVEABLE ) )
+            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( tileMapType ) )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
 
@@ -66,52 +66,17 @@ namespace Frontier.Entities
                         LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), TileMapType.MOVEABLE );
+                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), tileMapType );
 
                         break;
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// 攻撃可能領域を描画します
-        /// </summary>
-        public void DrawAttackableRange( Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
-        {
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
-            {
-                var meshTypeAndConditions = conditionBuilder( data.Value );
-
-                for( int i = 0; i < meshTypeAndConditions.Length; ++i )
-                {
-                    if( meshTypeAndConditions[i].condition )
-                    {
-                        TileMesh tileMesh = null;
-                        LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
-
-                        var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), TileMapType.ATTACKABLE );
-
-                        break;
-                    }
-                }
-            }
-
-            // ターゲット可能なタイルがあれば、上記のタイルメッシュよりも上に描画
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
-            {
-                TileMesh tileMesh = null;
-                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
-
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE], _owner.GetCharacterKey(), TileMapType.TARGETABLE );
             }
         }
 
         /// <summary>
         /// TargetableTileMap の既存描画を消去した後、オーナーのタイルと TargetableTileMap を
-        /// TARGETABLE_QUEUE 色で描画し、タイルインデックスを ActionableTileData の QUEUED マップに記録します。
+        /// QUEUED 色で描画し、タイルインデックスを ActionableTileData の QUEUED マップに記録します。
         /// </summary>
         public void DrawTargetableRangeAsQueued()
         {
@@ -229,7 +194,7 @@ namespace Frontier.Entities
             LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
             var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
             if( tile == null ) { return; }
-            tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey(), TileMapType.QUEUED );
+            tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.QUEUED], _owner.GetCharacterKey(), TileMapType.QUEUED );
             _readOnlyActionableTileData.Value.AddQueuedTile( tileIndex );
         }
 
