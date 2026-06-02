@@ -138,10 +138,10 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
-        public void InitUseSkillOptionView( PlSkillUseOptionState script )
+        public void InitUseSkillOptionView( PlSkillUseOptionState script, List<USE_SKILL_OPTION_TAG> options )
         {
             _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
-            _uiSystem.BattleUi.PlCommandWindow.SetUseSkillOptionList();
+            _uiSystem.BattleUi.PlCommandWindow.SetUseSkillOptionList( options );
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 

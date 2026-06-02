@@ -219,6 +219,10 @@ namespace Frontier.Battle
                         CleanupEnqueuedAction();
                         Back();
                         break;
+
+                    case USE_SKILL_OPTION_TAG.COOPERATIVE:
+                        // TODO: 連携処理（次フェーズで実装）
+                        break;
                 }
             }
         }
@@ -285,6 +289,12 @@ namespace Frontier.Battle
 
             if( SkillsData.data[( int ) _useSkillID].IsCooperative )
             {
+                var cooperativeAttackers = FindCooperativeAttackers();
+                var options = ( cooperativeAttackers.Count > 0 )
+                    ? new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.COOPERATIVE, USE_SKILL_OPTION_TAG.QUEUE }
+                    : new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.EXECUTION,   USE_SKILL_OPTION_TAG.QUEUE };
+
+                SetSendTransitionContext( new SkillUseOptionContext( options, cooperativeAttackers ) );
                 _isWaitingForOptionResult = true;
                 TransitState( ( int ) TransitTag.USE_SKILL_OPTION );
             }
@@ -294,6 +304,26 @@ namespace Frontier.Battle
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// キュー内から現在の攻撃対象と重複するターゲットを持つアクションの攻撃者リストを返します
+        /// </summary>
+        private List<Character> FindCooperativeAttackers()
+        {
+            var result = new List<Character>();
+            foreach( var reservation in _reservationQueue.GetAll() )
+            {
+                bool hasCommonTarget = reservation.AttackTargetCharaKeys.Any( key => _attackTargetCharaKeys.Contains( key ) );
+                if( !hasCommonTarget ) { continue; }
+
+                var attacker = _btlRtnCtrl.BtlCharaCdr.GetCharacter( reservation.AttackerKey );
+                if( attacker != null && !result.Contains( attacker ) )
+                {
+                    result.Add( attacker );
+                }
+            }
+            return result;
         }
 
         private void ExecuteSkill()

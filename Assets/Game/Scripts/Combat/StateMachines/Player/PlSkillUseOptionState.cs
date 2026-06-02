@@ -1,4 +1,5 @@
 ﻿using Frontier.Combat;
+using Frontier.Entities;
 using System.Collections.Generic;
 using static Constants;
 
@@ -8,6 +9,7 @@ namespace Frontier.Battle
     {
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
+        private SkillUseOptionContext _context = null;
 
         public USE_SKILL_OPTION_TAG SelectedOption { get; private set; } = USE_SKILL_OPTION_TAG.NONE;
 
@@ -16,17 +18,22 @@ namespace Frontier.Battle
             base.Init( context );
 
             SelectedOption = USE_SKILL_OPTION_TAG.NONE;
+            _context       = null;
+            ReceiveContext( ref _context, context );
 
             _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
 
+            var options        = GetOptions();
             var commandIndices = new List<int>();
-            for( int i = 0; i < ( int ) USE_SKILL_OPTION_TAG.NUM; ++i )
+            foreach( var option in options )
             {
-                commandIndices.Add( i );
+                commandIndices.Add( ( int ) option );
             }
             _commandList.Init( ref commandIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            _presenter.InitUseSkillOptionView( this );
+            _presenter.InitUseSkillOptionView( this, options );
+
+            StartBlinkCooperativeAttackers();
         }
 
         public override bool Update()
@@ -38,6 +45,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
+            StopBlinkCooperativeAttackers();
             _presenter.ExitUseSkillOptionView();
 
             return base.ExitState();
@@ -69,6 +77,35 @@ namespace Frontier.Battle
             Back();
 
             return true;
+        }
+
+        private List<USE_SKILL_OPTION_TAG> GetOptions()
+        {
+            if( _context?.Options != null ) { return _context.Options; }
+
+            return new List<USE_SKILL_OPTION_TAG>
+            {
+                USE_SKILL_OPTION_TAG.EXECUTION,
+                USE_SKILL_OPTION_TAG.QUEUE,
+            };
+        }
+
+        private void StartBlinkCooperativeAttackers()
+        {
+            if( _context?.CooperativeAttackers == null ) { return; }
+            foreach( var attacker in _context.CooperativeAttackers )
+            {
+                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( true );
+            }
+        }
+
+        private void StopBlinkCooperativeAttackers()
+        {
+            if( _context?.CooperativeAttackers == null ) { return; }
+            foreach( var attacker in _context.CooperativeAttackers )
+            {
+                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.SetBlinkTargetableRange( false );
+            }
         }
     }
 }

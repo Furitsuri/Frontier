@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using static Constants;
 
 namespace Frontier.Stage
@@ -13,6 +14,9 @@ namespace Frontier.Stage
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private CharacterKey _ownerKey;
+        private Coroutine _blinkCoroutine = null;
+
+        private const float BLINK_INTERVAL = 0.35f;
 
         public CharacterKey OwnerKey => _ownerKey;
 
@@ -71,6 +75,39 @@ namespace Frontier.Stage
         public Color GetColor()
         {
             return _meshRenderer.material.color;
+        }
+
+        /// <summary>
+        /// タイルメッシュの点滅を開始・停止します。
+        /// 停止時はレンダラーを可視状態に戻します。
+        /// </summary>
+        public void SetBlink( bool isBlink )
+        {
+            if( isBlink )
+            {
+                if( _blinkCoroutine == null )
+                {
+                    _blinkCoroutine = StartCoroutine( BlinkCoroutine() );
+                }
+            }
+            else
+            {
+                if( _blinkCoroutine != null )
+                {
+                    StopCoroutine( _blinkCoroutine );
+                    _blinkCoroutine = null;
+                }
+                _meshRenderer.enabled = true;
+            }
+        }
+
+        private IEnumerator BlinkCoroutine()
+        {
+            while( true )
+            {
+                _meshRenderer.enabled = !_meshRenderer.enabled;
+                yield return new WaitForSeconds( BLINK_INTERVAL );
+            }
         }
     }
 }

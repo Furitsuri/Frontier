@@ -39,8 +39,9 @@ namespace Frontier
 
             _useSkillOptionTextKeys = new string[( int ) USE_SKILL_OPTION_TAG.NUM]
             {
-                "UI_CMD_USE_SKILL_OPTION_EXECUTION",
-                "UI_CMD_USE_SKILL_OPTION_QUEUE"
+                "UI_CMD_USE_SKILL_OPTION_EXECUTION",    // EXECUTION
+                "UI_CMD_USE_SKILL_OPTION_QUEUE",        // QUEUE
+                "UI_CMD_USE_SKILL_OPTION_COOPERATIVE",  // COOPERATIVE
             };
             Debug.Assert( _useSkillOptionTextKeys.Length == ( int ) USE_SKILL_OPTION_TAG.NUM );
         }
@@ -93,9 +94,10 @@ namespace Frontier
         }
 
         /// <summary>
-        /// スキル使用オプションのリストをUIに設定します
+        /// スキル使用オプションのリストをUIに設定します。
+        /// 表示する選択肢を options で指定します。
         /// </summary>
-        public void SetUseSkillOptionList()
+        public void SetUseSkillOptionList( List<USE_SKILL_OPTION_TAG> options )
         {
             float fontSize = 0;
 
@@ -105,18 +107,18 @@ namespace Frontier
             }
             _commandItems.Clear();
 
-            for( int i = 0; i < _useSkillOptionTextKeys.Length; ++i )
+            for( int i = 0; i < options.Count; ++i )
             {
                 CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "option_" + i );
                 commandItem.Setup();
                 commandItem.transform.SetParent( this.gameObject.transform, false );
-                commandItem.SetTextKey( _useSkillOptionTextKeys[i] );
+                commandItem.SetTextKey( _useSkillOptionTextKeys[( int ) options[i]] );
                 _commandItems.Add( commandItem );
 
                 fontSize = commandItem.GetFontSize();
             }
 
-            ResizeUIBaseRectTransform( fontSize, _useSkillOptionTextKeys.Length );
+            ResizeUIBaseRectTransform( fontSize, options.Count );
         }
 
         /// <summary>

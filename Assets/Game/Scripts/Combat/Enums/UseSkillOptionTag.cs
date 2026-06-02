@@ -4,8 +4,9 @@
     {
         NONE = -1,
 
-        EXECUTION,  // 即時発動
-        QUEUE,      // 予約発動
+        EXECUTION,    // 即時発動
+        QUEUE,        // 予約発動
+        COOPERATIVE,  // 連携する
 
         NUM,
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Frontier.Battle
 {
@@ -37,5 +38,8 @@ namespace Frontier.Battle
         {
             _queue.Clear();
         }
+
+        /// <summary>キュー内の全データを列挙します（読み取り専用）</summary>
+        public IEnumerable<SkillActionReservationData> GetAll() => _queue;
     }
 }

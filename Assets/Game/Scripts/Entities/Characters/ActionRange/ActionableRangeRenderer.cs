@@ -15,14 +15,17 @@ namespace Frontier.Entities
         [Inject] private IStageDataProvider _stageDataProvider  = null;
 
         private bool _isShowingAttackableRange                  = false;
+        private bool _isDisplayingQueuedRange                   = false;
         private Character _owner                                = null;
         private ReadOnlyReference<ActionableTileData> _readOnlyActionableTileData;
 
-        public bool IsShowingAttackableRange => _isShowingAttackableRange;
+        public bool IsShowingAttackableRange  => _isShowingAttackableRange;
+        public bool IsDisplayingQueuedRange   => _isDisplayingQueuedRange;
 
         public void Init( Character owner, ActionableTileData actionableTileMap )
         {
             _isShowingAttackableRange   = false;
+            _isDisplayingQueuedRange    = false;
             _owner                      = owner;
             _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
         }
@@ -118,7 +121,7 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ターゲット可能範囲を指定色で描画します
+        /// ターゲット可能範囲を予約済み色で描画します。
         /// </summary>
         public void DrawTargetableRangeAsQueued()
         {
@@ -128,6 +131,21 @@ namespace Frontier.Entities
                 LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.TARGETABLE_QUEUE], _owner.GetCharacterKey() );
+            }
+            _isDisplayingQueuedRange = true;
+        }
+
+        /// <summary>
+        /// 予約済み攻撃範囲のタイルメッシュを点滅させます。
+        /// DrawTargetableRangeAsQueued() で描画済みの状態で呼ぶことを想定しています。
+        /// </summary>
+        public void SetBlinkTargetableRange( bool isBlink )
+        {
+            foreach( var data in _readOnlyActionableTileData.Value.TargetableTileMap )
+            {
+                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
+                if( tile == null ) { continue; }
+                tile.GetTileMeshByOwnerKey( _owner.GetCharacterKey() )?.SetBlink( isBlink );
             }
         }
 
@@ -156,6 +174,7 @@ namespace Frontier.Entities
             }
 
             _isShowingAttackableRange = false;
+            _isDisplayingQueuedRange  = false;
         }
 
         /// <summary>

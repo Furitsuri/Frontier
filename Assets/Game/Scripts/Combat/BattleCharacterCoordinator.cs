@@ -95,13 +95,16 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// すべてのキャラクターのタイルメッシュをクリアします
+        /// すべてのキャラクターのタイルメッシュをクリアします。
+        /// 予約済みアクションの攻撃範囲を表示中のキャラクターはスキップします。
         /// </summary>
         public void ClearAllTileMeshes()
         {
             foreach( var character in _characterDict.GetAllCharacters() )
             {
-                character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshes();
+                var renderer = character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr;
+                if( renderer.IsDisplayingQueuedRange ) { continue; }
+                renderer.ClearTileMeshes();
             }
         }
 

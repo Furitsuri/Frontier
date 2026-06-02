@@ -127,6 +127,18 @@ namespace Frontier.Stage
             _renderer.material.color = Color.white;
         }
 
+        /// <summary>
+        /// 指定オーナーキーに対応するタイルメッシュを返します。存在しない場合は null を返します。
+        /// </summary>
+        public TileMesh GetTileMeshByOwnerKey( CharacterKey ownerKey )
+        {
+            foreach( var tileMesh in _tileMeshes )
+            {
+                if( tileMesh.OwnerKey.Equals( ownerKey ) ) { return tileMesh; }
+            }
+            return null;
+        }
+
         public void DrawTileMesh( TileMesh tileMesh, in Color color, CharacterKey ownerKey )
         {
             _tileMeshes.Add( tileMesh );
