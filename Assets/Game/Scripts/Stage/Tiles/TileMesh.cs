@@ -17,6 +17,9 @@ namespace Frontier.Stage
 
         private const float BLINK_INTERVAL = 0.35f;
 
+        /// <summary>このタイルメッシュが属するタイルマップ種別</summary>
+        public TileMapType MapType { get; set; } = TileMapType.NONE;
+
         void Awake()
         {
             _meshFilter      = GetComponent<MeshFilter>();
