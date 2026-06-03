@@ -417,12 +417,12 @@ namespace Frontier.Battle
         private void CleanupEnqueuedAction()
         {
             _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+            _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
             _plOwner.ClearCommandHistory();
 
             _stageCtrl.SetActiveGridCursor( false );
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
         }
 
         private TargetingRangeContext BuildTargetingContext()
