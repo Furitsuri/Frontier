@@ -31,11 +31,23 @@ namespace Frontier.UI
         /// <param name="onComplete">自動非表示後に呼ばれるコールバック。duration が負の値の場合は呼ばれません。</param>
         public void Show( SkillID skillId, float duration = -1f, Action onComplete = null )
         {
-            string skillName = SkillsData.data[( int ) skillId].Name;
-            _commandNameText.text = skillName;
+            Show( SkillsData.data[( int ) skillId].Name, duration, onComplete );
+        }
+
+        /// <summary>
+        /// 任意のコマンド名を表示します。
+        /// duration が 0 以上の場合、指定秒数後に自動で非表示にします。
+        /// duration が負の値の場合は自動非表示を行わず、Hide() による明示的な非表示が必要です。
+        /// </summary>
+        /// <param name="commandName">表示するコマンド名</param>
+        /// <param name="duration">自動非表示までの秒数。負の値で無効。</param>
+        /// <param name="onComplete">自動非表示後に呼ばれるコールバック。duration が負の値の場合は呼ばれません。</param>
+        public void Show( string commandName, float duration = -1f, Action onComplete = null )
+        {
+            _commandNameText.text = commandName;
 
             var sizeDelta = _rectTransform.sizeDelta;
-            sizeDelta.x = skillName.Length * CHAR_WIDTH;
+            sizeDelta.x = commandName.Length * CHAR_WIDTH;
             _rectTransform.sizeDelta = sizeDelta;
 
             if( _autoHideCoroutine != null )

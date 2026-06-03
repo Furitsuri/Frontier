@@ -1,16 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using Frontier.UI;
+using System.Collections.Generic;
+using Zenject;
 using static Constants;
 
 namespace Frontier.Sequences
 {
     /// <summary>
     /// 連携スキルシーケンス。
-    /// 各エントリのスキルを COOPERATIVE_SKILL_STAGGER_INTERVAL 秒の間隔で順番に発動し、
-    /// 全エントリの発動が完了したら終了します。
+    /// コマンド名を表示した後、各エントリのスキルを COOPERATIVE_SKILL_STAGGER_INTERVAL 秒の
+    /// 間隔で順番に発動し、全エントリが完了したら終了します。
     /// </summary>
     public class CooperativeSkillSequence : ISequence
     {
-        private enum Phase { ACTIVATING, FINISHING }
+        private enum Phase { SHOW_COMMAND_NAME, ACTIVATING, FINISHING }
+
+        private const string COOPERATIVE_COMMAND_NAME     = "Cooperation Attack";
+        private const float  COOPERATIVE_COMMAND_DURATION = 0.85f;
+
+        [Inject] private IUiSystem _uiSystem = null;
 
         private readonly List<CooperativeSkillEntry> _entries;
 
@@ -26,16 +33,30 @@ namespace Frontier.Sequences
 
         public void Start()
         {
-            _phase                 = Phase.ACTIVATING;
             _nextStartIndex        = 0;
             _elapsedSinceLastStart = 0f;
             _finished              = new bool[_entries.Count];
+            _phase                 = Phase.SHOW_COMMAND_NAME;
 
-            ActivateEntry( 0 );
+            // コマンド名表示前に全エントリのゴーストを非表示
+            foreach( var entry in _entries )
+            {
+                entry.SkillAction.OnBeforeNameDisplay();
+            }
+
+            _uiSystem.BattleUi.CommandNameView.Show( COOPERATIVE_COMMAND_NAME, COOPERATIVE_COMMAND_DURATION, () => _phase = Phase.ACTIVATING );
         }
 
         public bool Update()
         {
+            if( _phase == Phase.SHOW_COMMAND_NAME ) { return false; }
+
+            // ACTIVATING に入った最初のフレームで先頭エントリを即時発動
+            if( _phase == Phase.ACTIVATING && _nextStartIndex == 0 )
+            {
+                ActivateEntry( 0 );
+            }
+
             for( int i = 0; i < _nextStartIndex; ++i )
             {
                 if( _finished[i] ) { continue; }
@@ -81,9 +102,7 @@ namespace Frontier.Sequences
 
         private void ActivateEntry( int index )
         {
-            var entry = _entries[index];
-            entry.SkillAction.OnBeforeNameDisplay();
-            entry.SkillAction.Start();
+            _entries[index].SkillAction.Start();
             _nextStartIndex = index + 1;
         }
     }
