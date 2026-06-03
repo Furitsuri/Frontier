@@ -391,7 +391,7 @@ namespace Frontier.Battle
                     attacker.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
                 }
 
-                entries.Add( _sequenceFcd.CreateCooperativeEntry( data.UseSkillID, attacker, new List<CharacterKey>( data.AttackTargetCharaKeys ) ) );
+                entries.Add( _sequenceFcd.CreateCooperativeEntry( data.UseSkillID, attacker, target, new List<CharacterKey>( data.AttackTargetCharaKeys ) ) );
             }
 
             _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
@@ -407,7 +407,7 @@ namespace Frontier.Battle
                 _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
             }
 
-            entries.Add( _sequenceFcd.CreateCooperativeEntry( _useSkillID, _plOwner, _targetSelector.AttackTargetCharaKeys ) );
+            entries.Add( _sequenceFcd.CreateCooperativeEntry( _useSkillID, _plOwner, _targetSelector.TargetCharacter, _targetSelector.AttackTargetCharaKeys ) );
 
             _sequenceFcd.RegistCooperativeSkillAction( entries );
 

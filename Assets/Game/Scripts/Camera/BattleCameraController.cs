@@ -19,6 +19,7 @@ namespace Frontier
         {
             FOLLOWING = 0,      // 選択グリッド追跡状態
             ATTACK_SEQUENCE,    // 戦闘状態
+            COOPERATIVE_SEQUENCE, // 連携スキル演出状態
 
             NUM
         }
@@ -52,6 +53,11 @@ namespace Frontier
             public float Pitch;
             public float Yaw;
         }
+
+        [Header("連携スキルシーケンス用カメラパラメータ")]
+        [SerializeField] private float _coopCameraXZDistance   = 5.0f;  // XZ平面での攻撃者からカメラまでの距離
+        [SerializeField] private float _coopCameraHeight       = 4.0f;  // Y軸方向の高さオフセット
+        [SerializeField] private float _coopCameraLerpDuration = 0.5f;  // カメラ遷移にかける時間
 
         [Header("XZ平面上のカメラの移動をスライドで行わせる場合はチェックを入れてください")]
         [SerializeField] private bool _cameraXZSlide = false;
@@ -102,6 +108,11 @@ namespace Frontier
         private Vector3 _offset;
         // カメラ移動遷移に用いるフェイズのインデックス値
         private int _cameraPhaseIndex = 0;
+        private float   _coopLerpElapsed          = 0f;
+        private Vector3 _coopTargetCameraPosition = Vector3.zero;
+        private Vector3 _prevCoopLookAtPosition   = Vector3.zero;
+        private Vector3 _coopLookAtPosition       = Vector3.zero;
+
         private float _followElapsedTime    = 0.0f;
         private float _fadeElapsedTime      = 0.0f;
         private float _length               = 0.0f;
@@ -147,6 +158,10 @@ namespace Frontier
                     UpdateAttackSequenceCamera();
                     break;
 
+                case CameraMode.COOPERATIVE_SEQUENCE:
+                    UpdateCooperativeSequenceCamera();
+                    break;
+
                 default:
                     break;
             }
@@ -182,7 +197,7 @@ namespace Frontier
         /// <param name="pos">カメラ対象座標</param>
         public void SetLookAtBasedOnSelectCursor( in Vector3 pos )
         {
-            if( _mode == CameraMode.ATTACK_SEQUENCE ) { return; }
+            if( _mode == CameraMode.ATTACK_SEQUENCE || _mode == CameraMode.COOPERATIVE_SEQUENCE ) { return; }
 
             if( _cameraSliding ) { return; }
 
@@ -280,6 +295,60 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 連携スキルシーケンス開始時のカメラ設定を行います。
+        /// 最初に攻撃するキャラクターを基点に、XZ 平面で左後方・Y 軸上方のカメラ座標へ遷移します。
+        /// </summary>
+        /// <param name="attacker">最初に攻撃するキャラクター</param>
+        /// <param name="target">攻撃対象キャラクター</param>
+        public void StartCooperativeSkillSequence( Character attacker, Character target )
+        {
+            if( attacker == null || target == null ) { return; }
+
+            _mode                     = CameraMode.COOPERATIVE_SEQUENCE;
+            _prevCameraPosition       = _mainCamera.transform.position;
+            _prevCoopLookAtPosition   = _lookAtPosition;
+            _coopTargetCameraPosition = CalcCoopCameraPosition( attacker, target );
+            _coopLookAtPosition       = CalcCoopLookAtPosition( attacker, target );
+            _coopLerpElapsed          = 0f;
+
+            _uiSystem.BattleUi.SetActiveLeftParameterWindow( false );
+            _uiSystem.BattleUi.SetActiveRightParameterWindow( false );
+        }
+
+        /// <summary>
+        /// 連携スキルの次の攻撃者へカメラを滑らかに遷移させます。
+        /// </summary>
+        /// <param name="nextAttacker">次に攻撃するキャラクター</param>
+        /// <param name="target">攻撃対象キャラクター</param>
+        public void TransitToNextCooperativeAttacker( Character nextAttacker, Character target )
+        {
+            if( nextAttacker == null || target == null ) { return; }
+
+            _prevCameraPosition       = _mainCamera.transform.position;
+            _prevCoopLookAtPosition   = _coopLookAtPosition;
+            _coopTargetCameraPosition = CalcCoopCameraPosition( nextAttacker, target );
+            _coopLookAtPosition       = CalcCoopLookAtPosition( nextAttacker, target );
+            _coopLerpElapsed          = 0f;
+        }
+
+        /// <summary>
+        /// 連携スキルシーケンス終了後のカメラ後処理を行い、通常追跡モードへ戻します。
+        /// </summary>
+        /// <param name="lastAttacker">最後に攻撃したキャラクター</param>
+        public void EndCooperativeSkillSequence( Character lastAttacker )
+        {
+            _prevCameraPosition = _mainCamera.transform.position;
+            _lookAtPosition     = lastAttacker != null ? lastAttacker.transform.position : _mainCamera.transform.position + _mainCamera.transform.forward;
+            _followingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _lookAtPosition;
+            _followElapsedTime  = 0f;
+
+            _uiSystem.BattleUi.SetActiveLeftParameterWindow( true );
+            _uiSystem.BattleUi.SetActiveRightParameterWindow( true );
+
+            _mode = CameraMode.FOLLOWING;
+        }
+
+        /// <summary>
         /// 次のカメラパラメータインデックス情報に遷移します
         /// </summary>
         /// <param name="nextBase">遷移先のカメラ位置対象</param>
@@ -316,6 +385,47 @@ namespace Frontier
         public bool IsFadeEnd()
         {
             return _mode == CameraMode.FOLLOWING;
+        }
+
+        /// <summary>
+        /// 連携スキルシーケンスにおけるカメラ更新を行います。
+        /// _prevCameraPosition から _coopTargetCameraPosition へ _coopCameraLerpDuration 秒かけて補間します。
+        /// </summary>
+        private void UpdateCooperativeSequenceCamera()
+        {
+            _coopLerpElapsed = Mathf.Clamp( _coopLerpElapsed + DeltaTimeProvider.DeltaTime, 0f, _coopCameraLerpDuration );
+            float t = _coopCameraLerpDuration > 0f ? _coopLerpElapsed / _coopCameraLerpDuration : 1f;
+
+            _mainCamera.transform.position = Vector3.Lerp( _prevCameraPosition, _coopTargetCameraPosition, t );
+            var lookAt = Vector3.Lerp( _prevCoopLookAtPosition, _coopLookAtPosition, t );
+            _mainCamera.transform.LookAt( lookAt );
+        }
+
+        /// <summary>
+        /// 攻撃者と攻撃対象をもとに、XZ 平面で左後方・Y 軸上方の連携攻撃用カメラ座標を算出します。
+        /// </summary>
+        private Vector3 CalcCoopCameraPosition( Character attacker, Character target )
+        {
+            Vector3 atkPos = attacker.transform.position;
+
+            // 攻撃者 → 攻撃対象 の XZ 平面方向
+            Vector3 forwardXZ = target.transform.position - atkPos;
+            forwardXZ.y = 0f;
+            if( forwardXZ.sqrMagnitude < 0.0001f ) { forwardXZ = Vector3.forward; }
+            forwardXZ.Normalize();
+
+            Vector3 rightXZ     = Vector3.Cross( forwardXZ, Vector3.up );
+            Vector3 dirToCamera = ( -forwardXZ - rightXZ ).normalized;  // 左後方
+
+            return atkPos + dirToCamera * _coopCameraXZDistance + Vector3.up * _coopCameraHeight;
+        }
+
+        /// <summary>
+        /// 攻撃者と攻撃対象の中点を視点座標として返します。
+        /// </summary>
+        private Vector3 CalcCoopLookAtPosition( Character attacker, Character target )
+        {
+            return ( attacker.transform.position + target.transform.position ) * 0.5f;
         }
 
         /// <summary>
@@ -431,7 +541,7 @@ namespace Frontier
         /// <returns></returns>
         private bool CanAcceptCamera()
         {
-            return ( _mode != CameraMode.ATTACK_SEQUENCE && !_cameraSliding );
+            return ( _mode != CameraMode.ATTACK_SEQUENCE && _mode != CameraMode.COOPERATIVE_SEQUENCE && !_cameraSliding );
         }
 
         private bool AcceptCameraInput( InputContext context )

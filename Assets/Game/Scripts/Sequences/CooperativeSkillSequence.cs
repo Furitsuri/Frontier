@@ -1,4 +1,5 @@
-﻿using Frontier.UI;
+﻿using Frontier.Battle;
+using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
 using static Constants;
@@ -9,6 +10,7 @@ namespace Frontier.Sequences
     /// 連携スキルシーケンス。
     /// コマンド名を表示した後、各エントリのスキルを COOPERATIVE_SKILL_STAGGER_INTERVAL 秒の
     /// 間隔で順番に発動し、全エントリが完了したら終了します。
+    /// 各エントリの発動タイミングで BattleCameraController にカメラ遷移を通知します。
     /// </summary>
     public class CooperativeSkillSequence : ISequence
     {
@@ -17,7 +19,8 @@ namespace Frontier.Sequences
         private const string COOPERATIVE_COMMAND_NAME     = "Cooperation Attack";
         private const float  COOPERATIVE_COMMAND_DURATION = 0.85f;
 
-        [Inject] private IUiSystem _uiSystem = null;
+        [Inject] private IUiSystem               _uiSystem    = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl  = null;
 
         private readonly List<CooperativeSkillEntry> _entries;
 
@@ -98,11 +101,26 @@ namespace Frontier.Sequences
             {
                 entry.SkillAction.End();
             }
+
+            var lastEntry = _entries.Count > 0 ? _entries[_entries.Count - 1] : null;
+            _btlRtnCtrl.GetBtlCameraCtrl.EndCooperativeSkillSequence( lastEntry?.Attacker );
         }
 
         private void ActivateEntry( int index )
         {
-            _entries[index].SkillAction.Start();
+            var entry   = _entries[index];
+            var camCtrl = _btlRtnCtrl.GetBtlCameraCtrl;
+
+            if( index == 0 )
+            {
+                camCtrl.StartCooperativeSkillSequence( entry.Attacker, entry.Target );
+            }
+            else
+            {
+                camCtrl.TransitToNextCooperativeAttacker( entry.Attacker, entry.Target );
+            }
+
+            entry.SkillAction.Start();
             _nextStartIndex = index + 1;
         }
     }

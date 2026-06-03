@@ -55,12 +55,14 @@ namespace Frontier.Sequences
         /// <summary>
         /// 連携スキルの 1 エントリを生成します。
         /// </summary>
-        public CooperativeSkillEntry CreateCooperativeEntry( SkillID skillID, Character attacker, List<CharacterKey> attackTargetCharaKeys )
+        public CooperativeSkillEntry CreateCooperativeEntry( SkillID skillID, Character attacker, Character target, List<CharacterKey> attackTargetCharaKeys )
         {
             return new CooperativeSkillEntry
             {
                 SkillID     = skillID,
                 SkillAction = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld ),
+                Attacker    = attacker,
+                Target      = target,
             };
         }
 
