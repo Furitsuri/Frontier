@@ -52,6 +52,29 @@ namespace Frontier.Sequences
             _handler.Regist( selfBuffSeq );
         }
 
+        /// <summary>
+        /// 連携スキルの 1 エントリを生成します。
+        /// </summary>
+        public CooperativeSkillEntry CreateCooperativeEntry( SkillID skillID, Character attacker, List<CharacterKey> attackTargetCharaKeys )
+        {
+            return new CooperativeSkillEntry
+            {
+                SkillID     = skillID,
+                SkillAction = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld ),
+            };
+        }
+
+        /// <summary>
+        /// 連携スキルシーケンスをハンドラに登録します。
+        /// </summary>
+        public void RegistCooperativeSkillAction( List<CooperativeSkillEntry> entries )
+        {
+            var factory   = _hierarchyBld.InstantiateWithDiContainer<CooperativeSkillSequenceCreator>( false );
+            var param     = _hierarchyBld.InstantiateWithDiContainer<CooperativeSkillSequenceParam>( false );
+            param.Entries = entries;
+            _handler.Regist( factory.CreateSequence( param ) );
+        }
+
         public bool IsEmptySequence()
         {
             return _handler.GetSequencesCount() == 0;

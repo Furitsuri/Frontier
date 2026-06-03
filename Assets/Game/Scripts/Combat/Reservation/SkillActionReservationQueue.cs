@@ -41,5 +41,25 @@ namespace Frontier.Battle
 
         /// <summary>キュー内の全データを列挙します（読み取り専用）</summary>
         public IEnumerable<SkillActionReservationData> GetAll() => _queue;
+
+        /// <summary>
+        /// 指定攻撃者キーに一致する最初の予約データをキューから取り出します。
+        /// 見つからなかった場合は false を返します。
+        /// </summary>
+        public bool TryDequeueByAttackerKey( CharacterKey key, out SkillActionReservationData result )
+        {
+            var list = _queue.ToList();
+            int idx  = list.FindIndex( d => d.AttackerKey.Equals( key ) );
+            if( idx < 0 )
+            {
+                result = null;
+                return false;
+            }
+            result = list[idx];
+            list.RemoveAt( idx );
+            _queue.Clear();
+            foreach( var item in list ) { _queue.Enqueue( item ); }
+            return true;
+        }
     }
 }

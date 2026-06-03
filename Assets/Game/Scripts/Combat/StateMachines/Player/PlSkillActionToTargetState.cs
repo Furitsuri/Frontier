@@ -160,7 +160,7 @@ namespace Frontier.Battle
                         break;
 
                     case USE_SKILL_OPTION_TAG.COOPERATIVE:
-                        // TODO: 連携処理（次フェーズで実装）
+                        ExecuteCooperativeSkill();
                         break;
 
                     // PlSkillUseOptionStateの選択をキャンセルされた場合
@@ -354,6 +354,64 @@ namespace Frontier.Battle
             );
 
             _reservationQueue.Enqueue( data );
+        }
+
+        private void ExecuteCooperativeSkill()
+        {
+            var cooperativeAttackers = _blinkController.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
+            var entries = new List<CooperativeSkillEntry>( cooperativeAttackers.Count + 1 );
+
+            foreach( var attacker in cooperativeAttackers )
+            {
+                if( !_reservationQueue.TryDequeueByAttackerKey( attacker.GetCharacterKey(), out var data ) ) { continue; }
+
+                if( data.GhostTileIndex >= 0 )
+                {
+                    var ghost = attacker.GetGhostObject();
+                    ghost.TileIndex          = data.GhostTileIndex;
+                    ghost.transform.position = _stageCtrl.GetTileStaticData( data.GhostTileIndex ).CharaStandPos;
+                }
+
+                for( int i = 0; i < data.AttackerSkillsToggledON.Length; ++i )
+                {
+                    attacker.BattleParams.TmpParam.IsSkillsToggledON[i] = data.AttackerSkillsToggledON[i];
+                }
+                attacker.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
+
+                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.QUEUED );
+                attacker.BattleLogic.ConsumeActionGaugeForSkill();
+
+                var target = data.FocusedTargetCharaKey.IsValid()
+                    ? _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.FocusedTargetCharaKey )
+                    : null;
+                if( target != null ) { target.BattleLogic.ConsumeActionGauge(); }
+
+                if( attacker.BattleLogic.RegistSelfBuffSequences() )
+                {
+                    attacker.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+                }
+
+                entries.Add( _sequenceFcd.CreateCooperativeEntry( data.UseSkillID, attacker, new List<CharacterKey>( data.AttackTargetCharaKeys ) ) );
+            }
+
+            _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+            _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
+            _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();
+
+            _stageCtrl.SetActiveGridCursor( false );
+            _stageCtrl.SetActiveTargetCursor( false );
+            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
+
+            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+            {
+                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+            }
+
+            entries.Add( _sequenceFcd.CreateCooperativeEntry( _useSkillID, _plOwner, _targetSelector.AttackTargetCharaKeys ) );
+
+            _sequenceFcd.RegistCooperativeSkillAction( entries );
+
+            _phase = PlSkillActionPhase.PL_SKILL_ACTION_EXECUTE;
         }
 
         private void CleanupEnqueuedAction()
