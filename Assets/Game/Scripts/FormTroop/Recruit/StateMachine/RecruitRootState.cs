@@ -90,10 +90,12 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptDirection()
         {
+            if( _presenter.IsSlideAnimationPlaying ) { return false; }
+
             _presenter.SetActiveLeftInputArrow( CanInputDirectionLeftOnDeploymentList() );
             _presenter.SetActiveRightInputArrow( CanInputDirectionRightOnDeploymentList() );
 
-            return true;    // 方向入力は常に受け付ける
+            return true;
         }
 
         protected override bool CanAcceptConfirm()

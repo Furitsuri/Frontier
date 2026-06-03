@@ -18,7 +18,8 @@ public class CharacterSelectionPresenter : PhasePresenterBase
     private Action<SlideDirection> _onCompletedeSlideAnimation;
     private ReadOnlyReference<bool> _refIsSlideLoop = null;
 
-    public bool RefIsSlideLoop => _refIsSlideLoop.Value;
+    public bool RefIsSlideLoop        => _refIsSlideLoop.Value;
+    public bool IsSlideAnimationPlaying => _isSlideAnimationPlaying;
 
     [Inject] public CharacterSelectionPresenter( CharacterSelectionUI characterSelectionUI, int focusCandidatesArrayLength, bool isNeededParamWinCamera, HierarchyBuilderBase hierarchyBld )
     {

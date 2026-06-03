@@ -19,6 +19,7 @@ namespace Frontier.UI
         private CharacterCamera _characterCamera    = null;
         private CharacterCandidate _candidate       = null;
         private RawImage _backGround                = null;
+        private Vector2 _initialAnchoredPosition;
         private Vector2 _slideStartPosition;
         private Vector2 _slideGoalPosition;
 
@@ -33,12 +34,13 @@ namespace Frontier.UI
 
         public void InitAnchoredPosition( float posX )
         {
-            _rectTransform.anchoredPosition = new Vector2( posX, 0f );
+            _initialAnchoredPosition        = new Vector2( posX, 0f );
+            _rectTransform.anchoredPosition = _initialAnchoredPosition;
         }
 
         public void ResetAnchoredPosition()
         {
-            _rectTransform.anchoredPosition = _slideStartPosition;
+            _rectTransform.anchoredPosition = _initialAnchoredPosition;
         }
 
         public void StartSlide( in Vector2 goalPos )
@@ -57,7 +59,7 @@ namespace Frontier.UI
         {
             _slideCurrentTime = Mathf.Clamp( _slideCurrentTime + DeltaTimeProvider.DeltaTime, 0f, _slideTime );
             var lerpRate = _slideCurrentTime / _slideTime;
-            _rectTransform.anchoredPosition = Vector2.Lerp( _rectTransform.anchoredPosition, _slideStartPosition + _slideGoalPosition, lerpRate );
+            _rectTransform.anchoredPosition = Vector2.Lerp( _slideStartPosition, _slideStartPosition + _slideGoalPosition, lerpRate );
 
             return ( 1f <= lerpRate );
         }
