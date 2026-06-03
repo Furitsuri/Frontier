@@ -112,7 +112,7 @@ namespace Frontier.Battle
             foreach( var character in _characterDict.GetAllCharacters() )
             {
                 var renderer = character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr;
-                renderer.ClearTileMeshes();
+                renderer.ClearTileMeshesAllType();
             }
         }
 

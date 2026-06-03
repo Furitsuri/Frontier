@@ -116,7 +116,7 @@ namespace Frontier.Entities
 
         public void ClearActionableRangeDataWithRender()
         {
-            _actionableRangeRdr.ClearTileMeshes();
+            _actionableRangeRdr.ClearTileMeshesAllType();
 
             ClearActionableRangeData();
         }
@@ -130,7 +130,7 @@ namespace Frontier.Entities
             }
 
             // 描画されている攻撃範囲のメッシュを一度全てクリアする
-            _actionableRangeRdr.ClearTileMeshes();
+            _actionableRangeRdr.ClearTileMeshesAllType();
             // ターゲット対象タイルのインデックスを一度クリアする
             _actionableTileData.ClearAttackTargetTileIndicies();
             // ターゲット可能タイルのインデックスを一度クリアする
@@ -207,7 +207,7 @@ namespace Frontier.Entities
 
         public void ReDrawAttackableRange()
         {
-            _actionableRangeRdr.ClearTileMeshes();
+            _actionableRangeRdr.ClearTileMeshesAllType();
             DrawAttackableRange();
         }
 

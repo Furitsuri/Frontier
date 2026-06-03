@@ -43,7 +43,7 @@ namespace Frontier.Entities
             _isShowingAttackableRange = isShow;
 
             if( _isShowingAttackableRange ) { DrawDangerRange( in color ); }
-            else { ClearTileMeshes(); }
+            else { ClearTileMeshesAllType(); }
         }
 
         /// <summary>
@@ -119,33 +119,9 @@ namespace Frontier.Entities
         /// <summary>
         /// 各タイルに登録したタイルメッシュの描画を全て消去します
         /// </summary>
-        public void ClearTileMeshes()
+        public void ClearTileMeshesAllType()
         {
-            CharacterKey ownerKey = _owner.GetCharacterKey();
-
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
-            {
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( ownerKey );
-            }
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
-            {
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( ownerKey );
-            }
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.MOVEABLE ) )
-            {
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                NullCheck.AssertNotNull( tile, nameof( tile ) );
-                tile.ClearTileMesh( ownerKey );
-            }
-
-            // ActionableTileData 外（オーナータイルなど）の QUEUED 描画も消去
-            ClearTileMeshesByType( TileMapType.QUEUED );
-
-            _isShowingAttackableRange = false;
+            ClearTileMeshesByType( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
         }
 
         private void DrawDangerRange( in UnityEngine.Color color )
