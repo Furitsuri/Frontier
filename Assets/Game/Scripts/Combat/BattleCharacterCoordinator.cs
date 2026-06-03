@@ -94,12 +94,12 @@ namespace Frontier.Battle
             chara.OnBattleExit();
         }
 
-        public void ClearTileMeshesByType( TileMapType type )
+        public void ClearTileMeshesByType( TileMapType types )
         {
             foreach( var character in _characterDict.GetAllCharacters() )
             {
                 var renderer = character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr;
-                renderer.ClearTileMeshesByType( type );
+                renderer.ClearTileMeshesByType( types );
             }
         }
 

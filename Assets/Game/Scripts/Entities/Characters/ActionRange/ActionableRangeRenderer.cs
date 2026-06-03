@@ -72,28 +72,18 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// DrawTargetableRangeAsQueued() で描画した予約済み表示を消去します。
-        /// キューに積まれたスキルの実行時に呼んでください。
-        /// </summary>
-        public void ClearQueuedRangeDisplay()
-        {
-            ClearQueuedDisplayInternal();
-        }
-
-        /// <summary>
         /// 指定した TileMapType（複数可）に該当するタイルの描画を消去します。
         /// ビットフラグで複数種を同時に指定できます。
         /// </summary>
         public void ClearTileMeshesByType( TileMapType types )
         {
             CharacterKey ownerKey = _owner.GetCharacterKey();
-            int typeValue         = ( int ) types;
 
-            for( int bit = 1; bit <= ( int ) TileMapType.QUEUED; bit <<= 1 )
+            foreach( TileMapType singleType in Enum.GetValues( typeof( TileMapType ) ) )
             {
-                if( ( typeValue & bit ) == 0 ) { continue; }
+                if( singleType == TileMapType.NONE ) { continue; }
+                if( !types.HasFlag( singleType ) ) { continue; }
 
-                var singleType = ( TileMapType ) bit;
                 foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( singleType ) )
                 {
                     var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
@@ -153,20 +143,9 @@ namespace Frontier.Entities
             }
 
             // ActionableTileData 外（オーナータイルなど）の QUEUED 描画も消去
-            ClearQueuedDisplayInternal();
+            ClearTileMeshesByType( TileMapType.QUEUED );
 
             _isShowingAttackableRange = false;
-        }
-
-        private void ClearQueuedDisplayInternal()
-        {
-            CharacterKey ownerKey = _owner.GetCharacterKey();
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.QUEUED ) )
-            {
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile?.ClearTileMesh( ownerKey, TileMapType.QUEUED );
-            }
-            _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
         }
 
         private void DrawDangerRange( in UnityEngine.Color color )
