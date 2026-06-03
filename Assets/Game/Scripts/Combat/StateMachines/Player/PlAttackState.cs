@@ -251,14 +251,13 @@ namespace Frontier.Battle
 			// 選択したキャラクターが敵である場合は攻撃開始
 			if( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
             {
-                // キャラクターのアクションゲージを消費
-                _plOwner.BattleLogic.ConsumeActionGauge();
+                _plOwner.BattleLogic.ConsumeActionGauge();  // キャラクターのアクションゲージを消費
+                _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
 
                 _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
                 _stageCtrl.SetActiveTargetCursor( false );                                    // ターゲットカーソルを一時非表示
                 _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
-                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                                 // タイルメッシュの描画をすべてクリア
                 UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
 
                 // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)

@@ -60,7 +60,8 @@ namespace Frontier.Battle
                 targetChara.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             }
 
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();   // タイルメッシュの描画をすべてクリア
+            // タイルメッシュの描画をすべてクリア
+            ownerChara.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
         }
     }
 }

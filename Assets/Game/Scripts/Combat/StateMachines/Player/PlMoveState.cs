@@ -136,8 +136,10 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            _stageCtrl.SetActiveGridCursor( true );               // 選択グリッドを表示
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                   // タイルメッシュの描画をすべてクリア
+            // 選択グリッドを表示
+            _stageCtrl.SetActiveGridCursor( true );    
+            // QUEUED以外のタイルメッシュ描画をすべてクリア
+            _btlRtnCtrl.BtlCharaCdr.ClearTileMeshesByType( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE );
 
             // 攻撃に直接遷移しない場合のみに限定される処理
             if( !IsTransitAttackOnMoveState() )

@@ -94,6 +94,15 @@ namespace Frontier.Battle
             chara.OnBattleExit();
         }
 
+        public void ClearTileMeshesByType( TileMapType type )
+        {
+            foreach( var character in _characterDict.GetAllCharacters() )
+            {
+                var renderer = character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr;
+                renderer.ClearTileMeshesByType( type );
+            }
+        }
+
         /// <summary>
         /// すべてのキャラクターのタイルメッシュをクリアします。
         /// 予約済みアクションの攻撃範囲を表示中のキャラクターはスキップします。
@@ -103,7 +112,6 @@ namespace Frontier.Battle
             foreach( var character in _characterDict.GetAllCharacters() )
             {
                 var renderer = character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr;
-                if( renderer.IsDisplayingQueuedRange ) { continue; }
                 renderer.ClearTileMeshes();
             }
         }

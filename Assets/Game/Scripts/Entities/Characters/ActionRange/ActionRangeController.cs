@@ -199,7 +199,7 @@ namespace Frontier.Entities
                 ( MeshType.ATTACKABLE,              Methods.HasAnyFlag(tileData.Flag, TileBitFlag.ATTACKABLE) && tileData.EstimatedMoveRange < 0 )
             } );
 
-            _actionableRangeRdr.DrawRange( TileMapType.TARGETABLE, tileData => new (MeshType, bool)[]
+            _actionableRangeRdr.DrawRange( TileMapType.TARGETABLE, _ => new (MeshType, bool)[]
             {
                 ( MeshType.TARGETABLE, true ),
             } );
@@ -211,9 +211,24 @@ namespace Frontier.Entities
             DrawAttackableRange();
         }
 
+        /// <summary>
+        /// TARGETABLE タイルとオーナーのタイルを QUEUED として ActionableTileData に記録し、
+        /// ActionableRangeRenderer で QUEUED 範囲を描画します。
+        /// </summary>
         public void DrawTargetableRangeAsQueued()
         {
-            _actionableRangeRdr.DrawTargetableRangeAsQueued();
+            _actionableTileData.ClearTileMap( TileMapType.QUEUED );
+            _actionableTileData.AddQueuedTile( _owner.BattleParams.TmpParam.CurrentTileIndex );
+
+            foreach( var data in _actionableTileData.GetTileMap( TileMapType.TARGETABLE ) )
+            {
+                _actionableTileData.AddQueuedTile( data.Key );
+            }
+
+            _actionableRangeRdr.DrawRange( TileMapType.QUEUED, _ => new (MeshType, bool)[]
+            {
+                ( MeshType.QUEUED, true ),
+            } );
         }
 
         /// <summary>

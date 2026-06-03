@@ -15,17 +15,14 @@ namespace Frontier.Entities
         [Inject] private IStageDataProvider _stageDataProvider  = null;
 
         private bool _isShowingAttackableRange = false;
-        private bool _isDisplayingQueuedRange  = false;
         private Character _owner               = null;
         private ReadOnlyReference<ActionableTileData> _readOnlyActionableTileData;
 
         public bool IsShowingAttackableRange => _isShowingAttackableRange;
-        public bool IsDisplayingQueuedRange  => _isDisplayingQueuedRange;
 
         public void Init( Character owner, ActionableTileData actionableTileMap )
         {
             _isShowingAttackableRange   = false;
-            _isDisplayingQueuedRange    = false;
             _owner                      = owner;
             _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
         }
@@ -75,32 +72,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// TargetableTileMap の既存描画を消去した後、オーナーのタイルと TargetableTileMap を
-        /// QUEUED 色で描画し、タイルインデックスを ActionableTileData の QUEUED マップに記録します。
-        /// </summary>
-        public void DrawTargetableRangeAsQueued()
-        {
-            // TargetableTileMap の既存描画を消去
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
-            {
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile?.ClearTileMesh( _owner.GetCharacterKey() );
-            }
-            _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
-
-            // オーナーの現在タイルを QUEUED として描画・記録
-            DrawQueuedTile( _owner.BattleParams.TmpParam.CurrentTileIndex );
-
-            // TargetableTileMap のタイルを QUEUED として描画・記録
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.TARGETABLE ) )
-            {
-                DrawQueuedTile( data.Key );
-            }
-
-            _isDisplayingQueuedRange = true;
-        }
-
-        /// <summary>
         /// DrawTargetableRangeAsQueued() で描画した予約済み表示を消去します。
         /// キューに積まれたスキルの実行時に呼んでください。
         /// </summary>
@@ -132,7 +103,6 @@ namespace Frontier.Entities
                 if( singleType == TileMapType.QUEUED )
                 {
                     _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
-                    _isDisplayingQueuedRange = false;
                 }
             }
 
@@ -188,16 +158,6 @@ namespace Frontier.Entities
             _isShowingAttackableRange = false;
         }
 
-        private void DrawQueuedTile( int tileIndex )
-        {
-            TileMesh tileMesh = null;
-            LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
-            var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
-            if( tile == null ) { return; }
-            tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) MeshType.QUEUED], _owner.GetCharacterKey(), TileMapType.QUEUED );
-            _readOnlyActionableTileData.Value.AddQueuedTile( tileIndex );
-        }
-
         private void ClearQueuedDisplayInternal()
         {
             CharacterKey ownerKey = _owner.GetCharacterKey();
@@ -207,7 +167,6 @@ namespace Frontier.Entities
                 tile?.ClearTileMesh( ownerKey, TileMapType.QUEUED );
             }
             _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
-            _isDisplayingQueuedRange = false;
         }
 
         private void DrawDangerRange( in UnityEngine.Color color )

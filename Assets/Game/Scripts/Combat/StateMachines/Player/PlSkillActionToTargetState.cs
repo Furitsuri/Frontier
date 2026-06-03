@@ -163,7 +163,9 @@ namespace Frontier.Battle
                         // TODO: 連携処理（次フェーズで実装）
                         break;
 
+                    // PlSkillUseOptionStateの選択をキャンセルされた場合
                     default:
+                        _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
                         _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
                         break;
                 }
@@ -223,6 +225,9 @@ namespace Frontier.Battle
                 var options = ( cooperativeAttackers.Count > 0 )
                     ? new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.COOPERATIVE, USE_SKILL_OPTION_TAG.QUEUE }
                     : new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.EXECUTION,   USE_SKILL_OPTION_TAG.QUEUE };
+
+                // 選択した攻撃範囲以外のタイル描画を全てクリアする
+                _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE | TileMapType.ATTACKABLE );
 
                 SetSendTransitionContext( new SkillUseOptionContext( options, cooperativeAttackers ) );
                 _isWaitingForOptionResult = true;
@@ -299,12 +304,12 @@ namespace Frontier.Battle
         private void ExecuteSkill()
         {
             _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+            _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
             _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();
 
             _stageCtrl.SetActiveGridCursor( false );
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
 
             if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
             {
