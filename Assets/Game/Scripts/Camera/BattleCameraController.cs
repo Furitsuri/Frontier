@@ -221,6 +221,8 @@ namespace Frontier
 
         private void OnSequenceFinished()
         {
+            _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
+            _followElapsedTime = _followDuration;
             _activeSequence = null;
         }
 
