@@ -416,7 +416,7 @@ namespace Frontier.Battle
 
         private void CleanupEnqueuedAction()
         {
-            _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+            _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.QUEUED_SKILL, true );
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
             _plOwner.ClearCommandHistory();
 

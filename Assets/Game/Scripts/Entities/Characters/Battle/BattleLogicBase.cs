@@ -55,6 +55,7 @@ namespace Frontier.Entities
             Command.IsExecutableMoveCommand,
             Command.IsExecutableAttackCommand,
             Command.IsExecutableSkillCommand,
+            ( _, __ ) => false, // COMMAND_TAG.QUEUED_SKILL — 選択不可の内部フラグ
             Command.IsExecutableWaitCommand,
         };
 
@@ -68,12 +69,17 @@ namespace Frontier.Entities
 
         void Update()
         {
-            // 移動と攻撃、もしくはスキルが終了していれば、行動不可に遷移
             var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.IsEndCommand;
             if( endCommand[( int ) COMMAND_TAG.MOVE] &&
                 ( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] ) )
             {
+                // 移動後に攻撃またはスキル実行済み → グレー化して行動不可
                 BeImpossibleAction();
+            }
+            else if( endCommand[( int ) COMMAND_TAG.MOVE] && endCommand[( int ) COMMAND_TAG.QUEUED_SKILL] )
+            {
+                // 移動後にスキルをキュー積み済み → グレー化せず待機フラグのみ立てて行動不可
+                _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.WAIT, true );
             }
         }
 

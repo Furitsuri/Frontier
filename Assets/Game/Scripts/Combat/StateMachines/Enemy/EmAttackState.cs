@@ -145,7 +145,7 @@ namespace Frontier.Battle
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );
             // タイルメッシュの描画をすべてクリア
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、
             //   その後プレイヤーに選択グリッドが移るという状況になります。
@@ -201,7 +201,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveGridCursor( false );                            // 選択グリッドを一時非表示
             _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );           // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );            // ダメージ予測表示UIを非表示
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();                       // タイルメッシュの描画をすべてクリア
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();                       // タイルメッシュの描画をすべてクリア
 
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除
 

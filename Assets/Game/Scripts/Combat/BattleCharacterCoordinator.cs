@@ -104,15 +104,14 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// すべてのキャラクターのタイルメッシュをクリアします。
-        /// 予約済みアクションの攻撃範囲を表示中のキャラクターはスキップします。
+        /// すべてのキャラクターのタイルメッシュとゴーストをクリアします。
         /// </summary>
-        public void ClearAllTileMeshes()
+        public void ClearAllTileMeshesAndGhosts()
         {
             foreach( var character in _characterDict.GetAllCharacters() )
             {
-                var renderer = character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr;
-                renderer.ClearTileMeshesAllType();
+                character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
+                character.CleanupGhost();
             }
         }
 

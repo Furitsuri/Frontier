@@ -26,10 +26,11 @@ namespace Frontier.Entities
 
             _revertCommandStateFuncs = new Action[( int ) COMMAND_TAG.NUM]
             {
-                RevertBeforeMoving,         // COMMAND_TAG.MOVE
-                null,                       // COMMAND_TAG.ATTACK
-                RevertUsedSkills,       // COMMAND_TAG.SKILL
-                null,                       // COMMAND_TAG.WAIT
+                RevertBeforeMoving, // COMMAND_TAG.MOVE
+                null,               // COMMAND_TAG.ATTACK
+                RevertUsedSkills,   // COMMAND_TAG.SKILL
+                null,               // COMMAND_TAG.QUEUED_SKILL
+                null,               // COMMAND_TAG.WAIT
             };
 
             _baseAi.Init( _readOnlyOwner.Value );

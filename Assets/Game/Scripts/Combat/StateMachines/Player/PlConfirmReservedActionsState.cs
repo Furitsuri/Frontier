@@ -22,12 +22,14 @@ namespace Frontier.Battle
         [Inject] private StageController             _stageCtrl        = null;
 
         private ExecutionPhase _execPhase;
+        private Character      _lastExecutedAttacker;
 
         public override void Init( object context )
         {
             base.Init( context );
 
-            _execPhase = ExecutionPhase.CONFIRM;
+            _execPhase            = ExecutionPhase.CONFIRM;
+            _lastExecutedAttacker = null;
 
             ( _confirmPresenter as BattleRoutinePresenter )?.SetConfirmMessage(
                 "There are queued actions that have not been executed.\nExecute all and transition to the enemy phase?" );
@@ -38,6 +40,8 @@ namespace Frontier.Battle
             if( _execPhase == ExecutionPhase.EXECUTING )
             {
                 if( !_sequenceFcd.IsEmptySequence() ) { return IsBack(); }
+
+                _lastExecutedAttacker?.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
 
                 if( !_reservationQueue.IsEmpty )
                 {
@@ -69,6 +73,9 @@ namespace Frontier.Battle
             {
                 _confirmPresenter.SetActiveConfirmUI( false );
                 _execPhase = ExecutionPhase.EXECUTING;
+
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
+
                 ExecuteNextQueuedAction();
             }
             else
@@ -84,6 +91,9 @@ namespace Frontier.Battle
             var data     = _reservationQueue.Dequeue();
             var attacker = _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.AttackerKey );
             if( attacker == null ) { return; }
+
+            _lastExecutedAttacker = attacker;
+            _stageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( attacker );
 
             Character target = null;
             if( data.FocusedTargetCharaKey.IsValid() )
