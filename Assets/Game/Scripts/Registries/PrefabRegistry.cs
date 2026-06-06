@@ -23,6 +23,7 @@ namespace Frontier.Registries
         [SerializeField] private GameObject _gridCursorObject;          // GridCursorプレハブ
         [SerializeField] private GameObject tileMeshObject;             // TileMeshプレハブ
         [SerializeField] private GameObject[] _tilePrefabs;             // タイルプレハブ配列
+        [SerializeField] private GameObject[] _moveDirectionPrefabs;    // 移動方向プレハブ配列
 
         [Header( "Effect関連" )]
         [SerializeField] public GameObject BuffCirclePrefab;            // バフサークル用プレハブ
@@ -38,5 +39,6 @@ namespace Frontier.Registries
         public GameObject GridCursorPrefab => _gridCursorObject;
         public GameObject TileMeshPrefab => tileMeshObject;
         public GameObject[] TilePrefabs => _tilePrefabs;
+        public GameObject[] MoveDirectionPrefabs => _moveDirectionPrefabs;
     }
 }

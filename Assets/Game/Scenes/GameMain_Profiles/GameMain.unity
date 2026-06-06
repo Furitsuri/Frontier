@@ -6124,6 +6124,13 @@ MonoBehaviour:
   tileMeshObject: {fileID: 6355896551463938733, guid: 4294bf778974ff345b7ba066d1ac9979, type: 3}
   _tilePrefabs:
   - {fileID: 1062838171624191041, guid: db69ba040f2ba074bbe071a615964f70, type: 3}
+  _moveDirectionPrefabs:
+  - {fileID: 6426142291294725243, guid: e677b73a386b75049a79c7bc00485c24, type: 3}
+  - {fileID: 8840359390848766770, guid: 4492771aa8a94194fba16ca8875f3228, type: 3}
+  - {fileID: 1056158008486960356, guid: a39ba48d6327f6045a4ab1a48e40a480, type: 3}
+  - {fileID: 3031794303955203918, guid: 46a378ce0a22cc1419360d7bb4669b0a, type: 3}
+  - {fileID: 344701643484161572, guid: 013ba61ab1329b34d9e8e3bb1785d99b, type: 3}
+  - {fileID: 4823171488380538497, guid: efa4b96ed25f5d741ba6ef932c287529, type: 3}
   BuffCirclePrefab: {fileID: 734234413312254984, guid: b67ad43873ab11e48940c652bb691bd9, type: 3}
   BuffAuraPrefab: {fileID: 2444267416405518009, guid: e2b3834c3f8e1c745a453b6d4636a971, type: 3}
 --- !u!1 &799412078

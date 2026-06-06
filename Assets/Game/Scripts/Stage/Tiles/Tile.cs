@@ -17,8 +17,10 @@ namespace Frontier.Stage
         private TileDynamicData _baseDynamicData    = null;
         private MeshRenderer _renderer;
 
-        // CharacterKey をキーとして各キャラクター固有の TileMesh を一意に管理します
-        private Dictionary<CharacterKey, TileMesh> _tileMeshes = new Dictionary<CharacterKey, TileMesh>();
+        // CharacterKey をキーとして各キャラクターの行動範囲を示すTileMeshを一意に管理します
+        private Dictionary<CharacterKey, TileMesh> _tileMeshes              = new Dictionary<CharacterKey, TileMesh>();
+        // CharacterKey をキーとして各キャラクターの移動方向を一意に管理します
+        private Dictionary<CharacterKey, MoveDirectionType> _moveDirections = new Dictionary<CharacterKey, MoveDirectionType>();
 
         public TileStaticData StaticData() => _tileStaticData;
         public TileDynamicData DynamicData() => _tileDynamicData;
