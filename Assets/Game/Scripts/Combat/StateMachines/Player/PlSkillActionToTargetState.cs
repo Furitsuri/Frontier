@@ -103,7 +103,7 @@ namespace Frontier.Battle
 
             if( _isSkillQueued )
             {
-                _plOwner.BattleLogic.ActionRangeCtrl.DrawTargetableRangeAsQueued();
+                _plOwner.BattleLogic.ActionRangeCtrl.DrawTargetableRangeAsQueued( _plOwner.GhostObj?.TileIndex ?? -1 );
             }
             else
             {

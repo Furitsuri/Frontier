@@ -17,6 +17,9 @@ namespace Frontier.Stage
     {
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+
+        private MoveDirectionArrowPlacer _moveDirectionArrowPlacer = null;
 
         private delegate void RegisterAttackableTileCallback( TileDynamicData[] tiles, int l, int m, int n, CHARACTER_TAG tag, ActionableTileData map );
 
@@ -37,9 +40,13 @@ namespace Frontier.Stage
             };
         }
 
+        public MoveDirectionArrowPlacer MoveDirectionArrowPlacer => _moveDirectionArrowPlacer;
+
         public void Init()
         {
             // コンストラクタ時点ではCurrentDataがnullのため、Initで初期化
+            LazyInject.GetOrCreate( ref _moveDirectionArrowPlacer, () => _hierarchyBld.InstantiateWithDiContainer<MoveDirectionArrowPlacer>( false ) );
+
             _directionOffsets = new int[( int ) Direction.NUM]
             {
                 _stageDataProvider.CurrentData.TileColNum,  // Direction.FORWARD
@@ -255,9 +262,140 @@ namespace Frontier.Stage
             return ( _stageDataProvider.CurrentData.GetTileStaticData( index ), _stageDataProvider.CurrentData.GetTileDynamicData( index ) );
         }
 
+        /// <summary>
+        /// 直線移動スキル用。出発タイルから目的タイルまでの直線経路に沿って進行方向矢印を配置します。
+        /// destinationTileIndex が負の場合は矢印をクリアします。
+        /// </summary>
+        public void PlaceMoveDirectionArrows( in CharacterKey charaKey, int departureTileIndex, int destinationTileIndex )
+        {
+            if ( destinationTileIndex < 0 || destinationTileIndex == departureTileIndex )
+            {
+                _moveDirectionArrowPlacer.ClearArrows( charaKey );
+                return;
+            }
+
+            int colNum = _stageDataProvider.CurrentData.TileColNum;
+            int delta  = destinationTileIndex - departureTileIndex;
+
+            int step, dx, dz;
+            if ( delta % colNum == 0 )
+            {
+                int sign = Math.Sign( delta / colNum );
+                step = colNum * sign;
+                dx = 0; dz = sign;
+            }
+            else
+            {
+                int sign = Math.Sign( delta );
+                step = sign;
+                dx = sign; dz = 0;
+            }
+
+            int tileCount = Math.Abs( delta / step );
+            var rotation  = Quaternion.LookRotation( new Vector3( dx, 0f, dz ) );
+            var entries   = new List<MoveDirectionArrowPlacer.Entry>( tileCount );
+
+            for ( int i = 1; i < tileCount; ++i )
+            {
+                int  tileIndex = departureTileIndex + step * i;
+                bool isLast    = ( i == tileCount - 1 );
+                var  dirType   = isLast ? MoveDirectionType.ARROW_STRAIGHT : MoveDirectionType.ARROW_BODY;
+                entries.Add( new MoveDirectionArrowPlacer.Entry( tileIndex, dirType, rotation ) );
+            }
+
+            _moveDirectionArrowPlacer.PlaceArrows( charaKey, entries );
+        }
+
+        /// <summary>
+        /// キャラクターの移動経路(ProposedMovePath)に沿って各タイルに進行方向矢印を配置します。
+        /// </summary>
+        /// <param name="charaKey">対象キャラクターのキー</param>
+        /// <param name="currentTileIndex">キャラクターの現在地タイルインデックス</param>
+        /// <param name="proposedMovePath">移動経路(出発地点を含まず、目的地を末尾に持つ)</param>
+        public void PlaceMoveDirectionArrows( in CharacterKey charaKey, int currentTileIndex, List<WaypointInformation> proposedMovePath )
+        {
+            if ( proposedMovePath == null || proposedMovePath.Count == 0 )
+            {
+                _moveDirectionArrowPlacer.ClearArrows( charaKey );
+                return;
+            }
+
+            int colNum    = _stageDataProvider.CurrentData.TileColNum;
+            int pathCount = proposedMovePath.Count;
+            var entries   = new List<MoveDirectionArrowPlacer.Entry>( pathCount );
+
+            for ( int i = 0; i < pathCount; ++i )
+            {
+                int prevTileIndex = ( i == 0 ) ? currentTileIndex : proposedMovePath[i - 1].TileIndex;
+                int thisTileIndex = proposedMovePath[i].TileIndex;
+
+                ( int inDx, int inDz ) = IndexDeltaToXZ( thisTileIndex - prevTileIndex, colNum );
+
+                MoveDirectionType dirType;
+                Quaternion        rotation;
+
+                if ( i == pathCount - 1 )
+                {
+                    // 目的地タイル: 先端矢印(ARROW_*)
+                    if ( i == 0 )
+                    {
+                        dirType = MoveDirectionType.ARROW_STRAIGHT;
+                    }
+                    else
+                    {
+                        int prevPrevIndex = ( i == 1 ) ? currentTileIndex : proposedMovePath[i - 2].TileIndex;
+                        ( int ppDx, int ppDz ) = IndexDeltaToXZ( prevTileIndex - prevPrevIndex, colNum );
+                        int cross = ppDx * inDz - ppDz * inDx;
+                        dirType   = cross == 0 ? MoveDirectionType.ARROW_STRAIGHT
+                                  : cross  > 0 ? MoveDirectionType.ARROW_TURN_LEFT
+                                               : MoveDirectionType.ARROW_TURN_RIGHT;
+                    }
+                    rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                }
+                else
+                {
+                    // 経路途中タイル: 胴体(ARROW_BODY_*)
+                    int nextTileIndex = proposedMovePath[i + 1].TileIndex;
+                    ( int outDx, int outDz ) = IndexDeltaToXZ( nextTileIndex - thisTileIndex, colNum );
+                    int cross = inDx * outDz - inDz * outDx;
+                    if ( cross == 0 )
+                    {
+                        dirType  = MoveDirectionType.ARROW_BODY;
+                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
+                    }
+                    else if ( cross > 0 )
+                    {
+                        dirType  = MoveDirectionType.ARROW_BODY_TURN_LEFT;
+                        rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                    }
+                    else
+                    {
+                        dirType  = MoveDirectionType.ARROW_BODY_TURN_RIGHT;
+                        rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                    }
+                }
+
+                entries.Add( new MoveDirectionArrowPlacer.Entry( thisTileIndex, dirType, rotation ) );
+            }
+
+            _moveDirectionArrowPlacer.PlaceArrows( charaKey, entries );
+        }
+
         #endregion PUBLIC_METHOD
 
         #region PRIVATE_METHOD
+
+        /// <summary>
+        /// タイルインデックスの差分をグリッド上のXZ方向ベクトルに変換します
+        /// </summary>
+        private static ( int dx, int dz ) IndexDeltaToXZ( int delta, int colNum )
+        {
+            if ( delta ==  colNum ) return ( 0,  1 );   // FORWARD
+            if ( delta == -colNum ) return ( 0, -1 );   // BACK
+            if ( delta ==  1      ) return ( 1,  0 );   // RIGHT
+            if ( delta == -1      ) return (-1,  0 );   // LEFT
+            return ( 0, 0 );
+        }
 
         private void ExpandTargetableTilesWithPartOfRange( TileDynamicData[] tileDynamicDatas, int tileIndex, int expandRange, CHARACTER_TAG ownerTag, ActionableTileData actionableTileData )
         {

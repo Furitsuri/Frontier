@@ -215,7 +215,11 @@ namespace Frontier.Entities
         /// TARGETABLE タイルとオーナーのタイルを QUEUED として ActionableTileData に記録し、
         /// ActionableRangeRenderer で QUEUED 範囲を描画します。
         /// </summary>
-        public void DrawTargetableRangeAsQueued()
+        /// <summary>
+        /// スキルキュー時の QUEUED 範囲を描画し、直線移動スキルの場合は進行方向矢印を配置します。
+        /// skillDestinationTileIndex に -1 を渡すと矢印はクリアされます（移動なしスキル）。
+        /// </summary>
+        public void DrawTargetableRangeAsQueued( int skillDestinationTileIndex = -1 )
         {
             _actionableTileData.ClearTileMap( TileMapType.QUEUED );
             _actionableTileData.AddQueuedTile( _owner.BattleParams.TmpParam.CurrentTileIndex );
@@ -229,6 +233,12 @@ namespace Frontier.Entities
             {
                 ( MeshType.QUEUED, true ),
             } );
+
+            _stageCtrl.TileDataHdlr().PlaceMoveDirectionArrows(
+                _owner.GetCharacterKey(),
+                _owner.BattleParams.TmpParam.CurrentTileIndex,
+                skillDestinationTileIndex
+            );
         }
 
         /// <summary>
