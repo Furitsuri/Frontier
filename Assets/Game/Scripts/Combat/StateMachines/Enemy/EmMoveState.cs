@@ -34,16 +34,20 @@ namespace Frontier.Battle
             _emOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert( _emOwner != null );
             var param = _emOwner.GetStatusRef;
+            var path = _emOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath;
 
             // 移動目標地点が、現在地点であった場合は即時終了
-            if( _emOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
+            if( path.Count <= 0 )
             {
                 _Phase = EmMovePhase.EM_MOVE_END;
             }
             // 移動前処理
             else
             {
-                _stageCtrl.SetActiveGridCursor( true ); // 選択グリッドを表示
+                var currentTileIndex = _emOwner.BattleParams.TmpParam.CurrentTileIndex;
+
+                _stageCtrl.SetActiveGridCursor( true );                                                     // 選択グリッドを表示
+                _emOwner.BattleLogic.ActionRangeCtrl.PlaceMoveDirectionArrows( currentTileIndex, path );    // 移動方向を矢印で表示
 
                 _Phase = EmMovePhase.EM_MOVE_WAIT;
             }
@@ -80,9 +84,10 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            _stageCtrl.ApplyGridCursor2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
+            _stageCtrl.ApplyGridCursor2CharacterTile( _emOwner );                               // 敵の位置に選択グリッドを合わせる
             _stageCtrl.SetActiveGridCursor( true );                                             // 選択グリッドを表示
             _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();   // タイルメッシュの描画をクリア
+            _emOwner.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();                    // 移動方向の矢印をクリア
 
             return base.ExitState();
         }

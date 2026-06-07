@@ -1,6 +1,7 @@
 ﻿using Frontier.Registries;
 using Frontier.Stage;
 using System;
+using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.Entities
@@ -18,6 +19,10 @@ namespace Frontier.Entities
         private Character _owner               = null;
         private ReadOnlyReference<ActionableTileData> _readOnlyActionableTileData;
 
+        // DrawRange で実際に描画したタイルインデックスを TileMapType 別に記録します。
+        // ActionableTileData がリセットされても確実にクリアできるようにするために使用します。
+        private readonly Dictionary<TileMapType, HashSet<int>> _drawnTileIndices = new Dictionary<TileMapType, HashSet<int>>();
+
         public bool IsShowingAttackableRange => _isShowingAttackableRange;
 
         public void Init( Character owner, ActionableTileData actionableTileMap )
@@ -25,6 +30,7 @@ namespace Frontier.Entities
             _isShowingAttackableRange   = false;
             _owner                      = owner;
             _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
+            _drawnTileIndices.Clear();
         }
 
         public void Dispose()
@@ -51,6 +57,11 @@ namespace Frontier.Entities
         /// </summary>
         public void DrawRange( TileMapType tileMapType, Func<TileDynamicData, (MeshType meshType, bool condition)[]> conditionBuilder )
         {
+            if( !_drawnTileIndices.ContainsKey( tileMapType ) )
+            {
+                _drawnTileIndices[tileMapType] = new HashSet<int>();
+            }
+
             foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( tileMapType ) )
             {
                 var meshTypeAndConditions = conditionBuilder( data.Value );
@@ -64,6 +75,7 @@ namespace Frontier.Entities
 
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                         tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), tileMapType );
+                        _drawnTileIndices[tileMapType].Add( data.Key );
 
                         break;
                     }
@@ -84,10 +96,16 @@ namespace Frontier.Entities
                 if( singleType == TileMapType.NONE ) { continue; }
                 if( !types.HasFlag( singleType ) ) { continue; }
 
-                foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( singleType ) )
+                // ActionableTileData がリセットされていても確実にクリアできるよう、
+                // 実際に描画したタイルインデックスのレコードを参照してクリアします。
+                if( _drawnTileIndices.TryGetValue( singleType, out var drawnIndices ) )
                 {
-                    var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                    tile?.ClearTileMesh( ownerKey, singleType );
+                    foreach( int tileIndex in drawnIndices )
+                    {
+                        var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
+                        tile?.ClearTileMesh( ownerKey, singleType );
+                    }
+                    drawnIndices.Clear();
                 }
 
                 if( singleType == TileMapType.QUEUED )
@@ -126,6 +144,11 @@ namespace Frontier.Entities
 
         private void DrawDangerRange( in UnityEngine.Color color )
         {
+            if( !_drawnTileIndices.ContainsKey( TileMapType.ATTACKABLE ) )
+            {
+                _drawnTileIndices[TileMapType.ATTACKABLE] = new HashSet<int>();
+            }
+
             foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
             {
                 TileMesh tileMesh = null;
@@ -133,6 +156,7 @@ namespace Frontier.Entities
 
                 var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
                 tile.DrawTileMesh( tileMesh, in color, _owner.GetCharacterKey(), TileMapType.ATTACKABLE );
+                _drawnTileIndices[TileMapType.ATTACKABLE].Add( data.Key );
             }
         }
     }
