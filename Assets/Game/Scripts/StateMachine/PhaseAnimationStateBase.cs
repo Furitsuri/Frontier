@@ -25,6 +25,8 @@ namespace Frontier.StateMachine
 
         public override void Init( object context )
         {
+            base.Init( context );   // _transitIndex を -1 にリセット
+
             _btlUi = _uiSystem.BattleUi;
 
             StartPhaseAnim();   // フェーズアニメーションの開始

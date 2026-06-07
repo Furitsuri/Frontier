@@ -5,6 +5,7 @@ using UnityEngine;
 public class PhaseUI : UiMonoBehaviour
 {
     private int _currentTurnTypeIndex;
+    private bool _isAnimStarted = false;
     private Animator _animator;
     [SerializeField] private string[] _animNames;
     [SerializeField] private TextMeshProUGUI[] _phaseText;
@@ -14,6 +15,7 @@ public class PhaseUI : UiMonoBehaviour
     /// </summary>
     public void StartAnim()
     {
+        _isAnimStarted = true;
         gameObject.SetActive( true );
         _animator.SetTrigger( _animNames[_currentTurnTypeIndex] );
     }
@@ -33,6 +35,7 @@ public class PhaseUI : UiMonoBehaviour
     /// </summary>
     public void Deactivate()
     {
+        _isAnimStarted = false;
         gameObject.SetActive( false );
         _phaseText[_currentTurnTypeIndex].gameObject.SetActive( false );
     }
@@ -43,18 +46,14 @@ public class PhaseUI : UiMonoBehaviour
     }
 
     /// <summary>
-    /// アニメーションが再生されているかどうかを判定します
+    /// アニメーションが再生されているかどうかを判定します。
+    /// StartAnim() の呼び出しで true になり、アニメーションイベントの
+    /// Deactivate() が呼ばれた時点で false になります。
     /// </summary>
     /// <returns>再生されているか否か</returns>
     public bool IsPlayingAnim()
     {
-        var info = _animator.GetCurrentAnimatorStateInfo( 0 );
-        if( 0f < info.length && info.normalizedTime < 1f )
-        {
-            return true;
-        }
-
-        return false;
+        return _isAnimStarted;
     }
 
     public override void Setup()
