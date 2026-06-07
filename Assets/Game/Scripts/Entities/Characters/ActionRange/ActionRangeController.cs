@@ -271,10 +271,10 @@ namespace Frontier.Entities
             var rotation  = Quaternion.LookRotation( new Vector3( dx, 0f, dz ) );
             var entries   = new List<MoveDirectionArrowPlacer.Entry>( tileCount );
 
-            for ( int i = 1; i <= tileCount; ++i )
+            for ( int i = 1; i < tileCount; ++i )
             {
                 int  tileIndex = departureTileIndex + step * i;
-                bool isLast    = ( i == tileCount );
+                bool isLast    = ( i == tileCount - 1 );
                 var  dirType   = isLast ? MoveDirectionType.ARROW_STRAIGHT : MoveDirectionType.ARROW_BODY;
                 entries.Add( new MoveDirectionArrowPlacer.Entry( tileIndex, dirType, rotation ) );
             }

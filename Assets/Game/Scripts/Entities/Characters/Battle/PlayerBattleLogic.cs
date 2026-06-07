@@ -29,7 +29,6 @@ namespace Frontier.Entities
                 RevertBeforeMoving, // COMMAND_TAG.MOVE
                 null,               // COMMAND_TAG.ATTACK
                 RevertUsedSkills,   // COMMAND_TAG.SKILL
-                null,               // COMMAND_TAG.QUEUED_SKILL
                 null,               // COMMAND_TAG.WAIT
             };
 

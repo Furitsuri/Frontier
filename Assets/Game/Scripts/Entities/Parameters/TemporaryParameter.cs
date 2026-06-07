@@ -10,6 +10,8 @@ namespace Frontier.Entities
     {
         // 該当コマンドの終了フラグ
         public bool[] IsEndCommand;
+        // スキルをキューに積んだ状態か（選択コマンドではなく内部状態フラグ）
+        public bool IsSkillQueued;
         // 該当スキルの切替フラグ
         public bool[] IsSkillsToggledON;
         // 該当スキルの使用フラグ
@@ -50,6 +52,7 @@ namespace Frontier.Entities
                 IsUseableSkill[i]       = false;
             }
 
+            IsSkillQueued = false;
             TotalExpectedHpChange = ExpectedHpChange = ActGaugeConsumption = 0;
         }
 

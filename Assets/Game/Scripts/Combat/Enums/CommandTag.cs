@@ -7,7 +7,6 @@
         MOVE = 0,
         ATTACK,
         SKILL,
-        QUEUED_SKILL,
         WAIT,
 
         NUM,

@@ -4,7 +4,6 @@ using Frontier.Registries;
 using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Zenject;
 
 /// <summary>
@@ -95,7 +94,6 @@ public class MoveDirectionArrowPlacer
     /// <summary>
     /// CharacterKey から矢印の表示色を決定します。
     /// CHARACTER_TAG ごとに色相帯を割り当て、CharacterIndex で帯内の色相を30°ずつずらします。
-    /// alpha=0.6 の半透明色を返します。
     /// </summary>
     private static Color ResolveArrowColor( in CharacterKey charaKey )
     {
@@ -107,30 +105,20 @@ public class MoveDirectionArrowPlacer
             _                    =>  60f,
         };
 
-        float hue = ( ( baseHue + charaKey.CharacterIndex * 30f ) % 360f ) / 360f;
-        Color rgb  = Color.HSVToRGB( hue, 0.85f, 1.0f );
-        return new Color( rgb.r, rgb.g, rgb.b, 0.6f );
+        float hue = ( ( baseHue + charaKey.CharacterIndex * 10f ) % 360f ) / 360f;
+         return Color.HSVToRGB( hue, 0.85f, 1.0f );
     }
 
     /// <summary>
     /// GameObject 以下の全 Renderer にマテリアルインスタンスを生成し、
-    /// URP 透明設定と指定色を適用します。
+    /// シェーダー種別を自動判定したうえで不透明色を適用します。
     /// </summary>
     private static void ApplyArrowColor( GameObject obj, Color color )
     {
         foreach ( var renderer in obj.GetComponentsInChildren<Renderer>() )
         {
             var mat = new Material( renderer.sharedMaterial );
-
-            mat.SetFloat( "_Surface",  1f );
-            mat.SetFloat( "_Blend",    0f );
-            mat.SetInt(   "_SrcBlend", (int)BlendMode.SrcAlpha );
-            mat.SetInt(   "_DstBlend", (int)BlendMode.OneMinusSrcAlpha );
-            mat.SetInt(   "_ZWrite",   0 );
-            mat.EnableKeyword( "_SURFACE_TYPE_TRANSPARENT" );
-            mat.renderQueue = (int)RenderQueue.Transparent;
-            mat.SetColor( "_BaseColor", color );
-
+            MaterialHelper.ApplyOpaqueColor( mat, color );
             renderer.material = mat;
         }
     }
