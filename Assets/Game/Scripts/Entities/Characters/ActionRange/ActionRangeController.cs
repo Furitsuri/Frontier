@@ -11,12 +11,13 @@ namespace Frontier.Entities
 {
     public class ActionRangeController
     {
-        private BattleRoutineController _btlRtnCtrl         = null;
-        private StageController _stageCtrl                  = null;
-        private Character _owner                            = null;
-        private MovePathHandler _movePathHandler            = null;
-        private ActionableTileData _actionableTileData      = null;
-        private ActionableRangeRenderer _actionableRangeRdr = null;
+        private BattleRoutineController  _btlRtnCtrl              = null;
+        private StageController          _stageCtrl               = null;
+        private Character                _owner                   = null;
+        private MovePathHandler          _movePathHandler         = null;
+        private ActionableTileData       _actionableTileData      = null;
+        private ActionableRangeRenderer  _actionableRangeRdr     = null;
+        private MoveDirectionArrowPlacer _moveDirectionArrowPlacer = null;
         private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         public MovePathHandler MovePathHdlr => _movePathHandler;
@@ -25,12 +26,13 @@ namespace Frontier.Entities
 
         [Inject] public ActionRangeController( HierarchyBuilderBase hierarchyBld, BattleRoutineController btlRtnCtrl, StageController stageCtrl )
         {
-            _btlRtnCtrl    = btlRtnCtrl;
-            _stageCtrl      = stageCtrl;
+            _btlRtnCtrl = btlRtnCtrl;
+            _stageCtrl  = stageCtrl;
 
-            LazyInject.GetOrCreate( ref _actionableTileData, () => hierarchyBld.InstantiateWithDiContainer<ActionableTileData>( false ) );
-            LazyInject.GetOrCreate( ref _movePathHandler, () => hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
-            LazyInject.GetOrCreate( ref _actionableRangeRdr, () => hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
+            LazyInject.GetOrCreate( ref _actionableTileData,       () => hierarchyBld.InstantiateWithDiContainer<ActionableTileData>( false ) );
+            LazyInject.GetOrCreate( ref _movePathHandler,          () => hierarchyBld.InstantiateWithDiContainer<MovePathHandler>( false ) );
+            LazyInject.GetOrCreate( ref _actionableRangeRdr,       () => hierarchyBld.InstantiateWithDiContainer<ActionableRangeRenderer>( false ) );
+            LazyInject.GetOrCreate( ref _moveDirectionArrowPlacer, () => hierarchyBld.InstantiateWithDiContainer<MoveDirectionArrowPlacer>( false ) );
 
             RefreshTargetableRangeCallbacks = new Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[( int ) TargetingMode.NUM]
             {
@@ -48,6 +50,7 @@ namespace Frontier.Entities
             _actionableTileData.Init();
             _movePathHandler.Init( owner );
             _actionableRangeRdr.Init( owner, _actionableTileData );
+            _moveDirectionArrowPlacer.Init( owner.GetCharacterKey() );
         }
 
         public void Dispose()
@@ -55,11 +58,13 @@ namespace Frontier.Entities
             _actionableRangeRdr.Dispose();
             _actionableTileData.Dispose();
             _movePathHandler.Dispose();
+            _moveDirectionArrowPlacer.ClearArrows();
 
-            _owner                      = null;
-            _actionableRangeRdr         = null;
-            _actionableTileData         = null;
-            _movePathHandler            = null;
+            _owner                    = null;
+            _actionableRangeRdr       = null;
+            _actionableTileData       = null;
+            _movePathHandler          = null;
+            _moveDirectionArrowPlacer = null;
         }
         public void SetupActionableRangeData( int dprtTileIdx, float dprtTileHeight )
         {
@@ -212,10 +217,6 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// TARGETABLE タイルとオーナーのタイルを QUEUED として ActionableTileData に記録し、
-        /// ActionableRangeRenderer で QUEUED 範囲を描画します。
-        /// </summary>
-        /// <summary>
         /// スキルキュー時の QUEUED 範囲を描画し、直線移動スキルの場合は進行方向矢印を配置します。
         /// skillDestinationTileIndex に -1 を渡すと矢印はクリアされます（移動なしスキル）。
         /// </summary>
@@ -234,11 +235,129 @@ namespace Frontier.Entities
                 ( MeshType.QUEUED, true ),
             } );
 
-            _stageCtrl.TileDataHdlr().PlaceMoveDirectionArrows(
-                _owner.GetCharacterKey(),
-                _owner.BattleParams.TmpParam.CurrentTileIndex,
-                skillDestinationTileIndex
-            );
+            PlaceMoveDirectionArrows( _owner.BattleParams.TmpParam.CurrentTileIndex, skillDestinationTileIndex );
+        }
+
+        /// <summary>
+        /// 直線移動スキル用。出発タイルから目的タイルまでの直線経路に進行方向矢印を配置します。
+        /// destinationTileIndex が負の場合は矢印をクリアします。
+        /// </summary>
+        public void PlaceMoveDirectionArrows( int departureTileIndex, int destinationTileIndex )
+        {
+            if ( destinationTileIndex < 0 || destinationTileIndex == departureTileIndex )
+            {
+                _moveDirectionArrowPlacer.ClearArrows();
+                return;
+            }
+
+            int colNum = _stageCtrl.GetGridNumsXZ().Item2;
+            int delta  = destinationTileIndex - departureTileIndex;
+
+            int step, dx, dz;
+            if ( delta % colNum == 0 )
+            {
+                int sign = Math.Sign( delta / colNum );
+                step = colNum * sign;
+                dx = 0; dz = sign;
+            }
+            else
+            {
+                int sign = Math.Sign( delta );
+                step = sign;
+                dx = sign; dz = 0;
+            }
+
+            int tileCount = Math.Abs( delta / step );
+            var rotation  = Quaternion.LookRotation( new Vector3( dx, 0f, dz ) );
+            var entries   = new List<MoveDirectionArrowPlacer.Entry>( tileCount );
+
+            for ( int i = 1; i <= tileCount; ++i )
+            {
+                int  tileIndex = departureTileIndex + step * i;
+                bool isLast    = ( i == tileCount );
+                var  dirType   = isLast ? MoveDirectionType.ARROW_STRAIGHT : MoveDirectionType.ARROW_BODY;
+                entries.Add( new MoveDirectionArrowPlacer.Entry( tileIndex, dirType, rotation ) );
+            }
+
+            _moveDirectionArrowPlacer.PlaceArrows( entries );
+        }
+
+        /// <summary>
+        /// NPC移動用。ProposedMovePath に沿って各タイルに進行方向矢印を配置します。
+        /// </summary>
+        public void PlaceMoveDirectionArrows( int currentTileIndex, List<WaypointInformation> proposedMovePath )
+        {
+            if ( proposedMovePath == null || proposedMovePath.Count == 0 )
+            {
+                _moveDirectionArrowPlacer.ClearArrows();
+                return;
+            }
+
+            int colNum    = _stageCtrl.GetGridNumsXZ().Item2;
+            int pathCount = proposedMovePath.Count;
+            var entries   = new List<MoveDirectionArrowPlacer.Entry>( pathCount );
+
+            for ( int i = 0; i < pathCount; ++i )
+            {
+                int prevTileIndex = ( i == 0 ) ? currentTileIndex : proposedMovePath[i - 1].TileIndex;
+                int thisTileIndex = proposedMovePath[i].TileIndex;
+
+                ( int inDx, int inDz ) = IndexDeltaToXZ( thisTileIndex - prevTileIndex, colNum );
+
+                MoveDirectionType dirType;
+                Quaternion        rotation;
+
+                if ( i == pathCount - 1 )
+                {
+                    if ( i == 0 )
+                    {
+                        dirType = MoveDirectionType.ARROW_STRAIGHT;
+                    }
+                    else
+                    {
+                        int prevPrevIndex = ( i == 1 ) ? currentTileIndex : proposedMovePath[i - 2].TileIndex;
+                        ( int ppDx, int ppDz ) = IndexDeltaToXZ( prevTileIndex - prevPrevIndex, colNum );
+                        int cross = ppDx * inDz - ppDz * inDx;
+                        dirType   = cross == 0 ? MoveDirectionType.ARROW_STRAIGHT
+                                  : cross  > 0 ? MoveDirectionType.ARROW_TURN_LEFT
+                                               : MoveDirectionType.ARROW_TURN_RIGHT;
+                    }
+                    rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                }
+                else
+                {
+                    int nextTileIndex         = proposedMovePath[i + 1].TileIndex;
+                    ( int outDx, int outDz )  = IndexDeltaToXZ( nextTileIndex - thisTileIndex, colNum );
+                    int cross                 = inDx * outDz - inDz * outDx;
+                    if ( cross == 0 )
+                    {
+                        dirType  = MoveDirectionType.ARROW_BODY;
+                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
+                    }
+                    else if ( cross > 0 )
+                    {
+                        dirType  = MoveDirectionType.ARROW_BODY_TURN_LEFT;
+                        rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                    }
+                    else
+                    {
+                        dirType  = MoveDirectionType.ARROW_BODY_TURN_RIGHT;
+                        rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                    }
+                }
+
+                entries.Add( new MoveDirectionArrowPlacer.Entry( thisTileIndex, dirType, rotation ) );
+            }
+
+            _moveDirectionArrowPlacer.PlaceArrows( entries );
+        }
+
+        /// <summary>
+        /// このキャラクターの移動方向矢印をすべて破棄します。
+        /// </summary>
+        public void ClearMoveDirectionArrows()
+        {
+            _moveDirectionArrowPlacer.ClearArrows();
         }
 
         /// <summary>
@@ -281,6 +400,15 @@ namespace Frontier.Entities
                 targetKeys.Add( tileData.CharaKey );
             }
             return targetKeys;
+        }
+
+        private static ( int dx, int dz ) IndexDeltaToXZ( int delta, int colNum )
+        {
+            if ( delta ==  colNum ) return ( 0,  1 );
+            if ( delta == -colNum ) return ( 0, -1 );
+            if ( delta ==  1      ) return ( 1,  0 );
+            if ( delta == -1      ) return (-1,  0 );
+            return ( 0, 0 );
         }
 
     }

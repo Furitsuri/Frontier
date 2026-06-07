@@ -75,6 +75,7 @@ namespace Frontier.Battle
                 _execPhase = ExecutionPhase.EXECUTING;
 
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
+                _btlRtnCtrl.BtlCharaCdr.ClearAllMoveDirectionArrows();
 
                 ExecuteNextQueuedAction();
             }

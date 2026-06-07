@@ -115,6 +115,14 @@ namespace Frontier.Battle
             }
         }
 
+        public void ClearAllMoveDirectionArrows()
+        {
+            foreach( var character in _characterDict.GetAllCharacters() )
+            {
+                character.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
+            }
+        }
+
         /// <summary>
         /// キャラクターをリストから順番に取得します
         /// </summary>

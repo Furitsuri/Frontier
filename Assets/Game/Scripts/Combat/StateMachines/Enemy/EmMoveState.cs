@@ -1,6 +1,5 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
-using Frontier.StateMachine;
 using UnityEngine;
 using static Constants;
 
@@ -82,8 +81,8 @@ namespace Frontier.Battle
         public override object ExitState()
         {
             _stageCtrl.ApplyGridCursor2CharacterTile( _emOwner );          // 敵の位置に選択グリッドを合わせる
-            _stageCtrl.SetActiveGridCursor( true );               // 選択グリッドを表示
-            _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();  // タイルメッシュの描画をクリア
+            _stageCtrl.SetActiveGridCursor( true );                                             // 選択グリッドを表示
+            _emOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();   // タイルメッシュの描画をクリア
 
             return base.ExitState();
         }
