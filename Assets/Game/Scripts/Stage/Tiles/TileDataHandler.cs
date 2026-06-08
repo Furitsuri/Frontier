@@ -464,6 +464,10 @@ namespace Frontier.Stage
         {
             if( !RegisterAttackableTile( tileDynamicDatas, dprtIdx, tgtTileIdx, ref atkRng, charaTag, actionableTileMap ) ) { return; }
 
+            int colNum = _stageDataProvider.CurrentData.TileColNum;
+            // 左端または右端であれば終了 ( dirの方向に線状に展開するため、左端で左方向、右端で右方向に展開することはない )
+            if( 0 == tgtTileIdx % colNum || colNum - 1 == tgtTileIdx % colNum ) { return; }
+
             tgtTileIdx += _directionOffsets[( int ) dir]; // 次のタイルインデックスを設定
 
             RegisterAttackableTilesLinearly( tileDynamicDatas, dprtIdx, tgtTileIdx, atkRng, dir, charaTag, actionableTileMap );  // 現在のtargetTileIndexの地点から更に四方に展開
