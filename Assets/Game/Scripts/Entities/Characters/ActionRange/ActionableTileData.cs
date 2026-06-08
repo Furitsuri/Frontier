@@ -96,9 +96,9 @@ namespace Frontier.Entities
             _attackTargetTileIndicies.Clear();
         }
 
-        public void DeleteTargetableTile( int index )
+        public void DeleteTileMap( TileMapType type, int index )
         {
-            _tileMaps[TileMapTypeToIndex( TileMapType.TARGETABLE )].Remove( index );
+            _tileMaps[TileMapTypeToIndex( type )].Remove( index );
         }
 
         public void DeleteAttackTargetTileIndex( int index )

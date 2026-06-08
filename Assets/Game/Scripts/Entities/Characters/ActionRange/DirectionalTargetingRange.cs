@@ -153,48 +153,50 @@ namespace Frontier.Entities
 
         static private void AdjustRangeForMove( TargetingRangeContext context, int tileIndex, ActionableTileData actionableTileData )
         {
-            int farthestMoveableIdx      = -1;
-            TileDynamicData farthestData = null;
+            // スキル固有リゾルバがあればそれを使い、なければデフォルト（最遠の空きタイル）でゴーストを決定する
+            int ghostTileIdx = context.GhostResolver != null
+                ? context.GhostResolver( tileIndex, actionableTileData, context.StageCtrl )
+                : ResolveDefaultGhostTile( tileIndex, actionableTileData, context.StageCtrl );
 
-            // ターゲット可能タイルをtileIndexから近い順にソート
-            var sortedTargetableMap = actionableTileData.TargetableTileMap
-                .OrderBy( pair => context.StageCtrl.CalculateTotalRange( tileIndex, pair.Key ) );
-
-            // ターゲット可能タイルのうち、最も遠い移動可能なタイルを探す(ゴーストの表示位置)
-            foreach( var targetableMap in sortedTargetableMap )
+            // ゴースト位置より遠いタイルをターゲット可能マップおよび攻撃対象から除外する
+            if( 0 <= ghostTileIdx )
             {
-                // キャラクターが存在する場合は移動不可
-                if( targetableMap.Value.IsExistCharacter() )
-                {
-                    // actionableTileData.DeleteTargetableTile( targetableMap.Key );
-                    continue;
-                }
-
-                farthestMoveableIdx = targetableMap.Key;
-                farthestData        = targetableMap.Value;
-            }
-
-            // ゴースト位置より遠い敵タイルを攻撃対象から除外する
-            if( 0 <= farthestMoveableIdx )
-            {
-                int ghostRange = context.StageCtrl.CalculateTotalRange( tileIndex, farthestMoveableIdx );
-                var toRemove = actionableTileData.RefAttackTargetTileIndicies
+                int ghostRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostTileIdx );
+                var toRemove = actionableTileData.TargetableTileMap.Keys
                     .Where( idx => context.StageCtrl.CalculateTotalRange( tileIndex, idx ) > ghostRange )
                     .ToList();
                 foreach( int idx in toRemove )
                 {
                     actionableTileData.DeleteAttackTargetTileIndex( idx );
+                    actionableTileData.DeleteTileMap( TileMapType.TARGETABLE, idx );
                 }
             }
-
-            if( farthestMoveableIdx < 0  )
+            else
             {
                 actionableTileData.ClearTargetableTile();
                 actionableTileData.ClearAttackTargetTileIndicies();
             }
 
             // ゴーストのプレビューを更新
-            RefreshGhostPreview( context, farthestMoveableIdx );
+            RefreshGhostPreview( context, ghostTileIdx );
+        }
+
+        /// <summary>
+        /// デフォルトのゴーストタイル決定ロジック。ターゲット可能タイルのうち最も遠い空きタイルを返します。
+        /// </summary>
+        static private int ResolveDefaultGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl )
+        {
+            int ghostTileIdx = -1;
+            var sortedTargetableMap = actionableTileData.TargetableTileMap
+                .OrderBy( pair => stageCtrl.CalculateTotalRange( tileIndex, pair.Key ) );
+
+            foreach( var targetableMap in sortedTargetableMap )
+            {
+                if( targetableMap.Value.IsExistCharacter() ) { continue; }
+                ghostTileIdx = targetableMap.Key;
+            }
+
+            return ghostTileIdx;
         }
 
         static private void RefreshAfterCurrentRangeChanged( TargetingRangeContext context, int currentRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter )

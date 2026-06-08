@@ -22,6 +22,12 @@ namespace Frontier.Stage
 
         public delegate void AttackableDataPostProcessor( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData );
 
+        /// <summary>
+        /// 移動を伴うスキルのゴースト（着地点）タイルインデックスを決定するスキル固有デリゲート。
+        /// nullの場合は DirectionalTargetingRange のデフォルト（最遠の空きタイル）が使用されます。
+        /// </summary>
+        public delegate int GhostTileResolver( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl );
+
         private int[] _directionOffsets;
         private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
 

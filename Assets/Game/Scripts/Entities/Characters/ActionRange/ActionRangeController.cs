@@ -18,6 +18,7 @@ namespace Frontier.Entities
         private ActionableTileData       _actionableTileData      = null;
         private ActionableRangeRenderer  _actionableRangeRdr     = null;
         private MoveDirectionArrowPlacer _moveDirectionArrowPlacer = null;
+        private TileDataHandler.GhostTileResolver _ghostTileResolver = null;
         private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         public MovePathHandler MovePathHdlr => _movePathHandler;
@@ -111,6 +112,7 @@ namespace Frontier.Entities
 
             _actionableTileData.Init();
             var postProcessor = ( useSkillID == SkillID.DASH_SLASH ) ? DashSlashSA.FilterAttackTargets : null;
+            _ghostTileResolver = null;
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData, postProcessor );
         }
 
@@ -141,7 +143,7 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl };
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _ghostTileResolver };
             RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();
