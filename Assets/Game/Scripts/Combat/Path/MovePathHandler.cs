@@ -136,8 +136,12 @@ public class MovePathHandler
     /// <param name="adjustTargetPath">調整対象のパス</param>
     public void AdjustPathToRangeAndSet(  int range, int jumpForce, in List<WaypointInformation> adjustTargetPath )
     {
+        _proposedMovePath.Clear();
+
+        if( adjustTargetPath == null || adjustTargetPath.Count <= 0 ) { return; }
+
         int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
-        int reachableTileIndex  = 0;
+        int reachableTileIndex  = -1;  // 未発見を示す無効値
 
         // 得られたルートのうち、移動可能なインデックス値を辿る
         foreach ( WaypointInformation p in adjustTargetPath )
@@ -150,6 +154,9 @@ public class MovePathHandler
             // グリッド上にキャラクターが存在しないことを確認して更新
             if ( !_stageCtrl.GetTileDynamicData( p.TileIndex ).IsExistCharacter() ) { reachableTileIndex = p.TileIndex; }
         }
+
+        // 移動可能なタイルが1つも見つからなかった場合はパスを空のまま返す
+        if( reachableTileIndex < 0 ) { return; }
 
         // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
         int removeBaseIndex = adjustTargetPath.FindIndex(item => item.TileIndex == reachableTileIndex) + 1;

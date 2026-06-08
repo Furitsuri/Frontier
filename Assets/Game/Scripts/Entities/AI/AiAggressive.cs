@@ -162,7 +162,11 @@ namespace Frontier.Entities.Ai
 
             // 得られたルートのパスをキャラクターの移動レンジ分に調整する
             _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.AdjustPathToRangeAndSet( _owner.GetStatusRef.moveRange, _owner.GetStatusRef.jumpForce, in maxEvaluateRoute.path );
-            _destinationTileIndex = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath[^1].TileIndex;
+            var proposedPath = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath;
+            if( 0 < proposedPath.Count )
+            {
+                _destinationTileIndex = proposedPath[^1].TileIndex;
+            }
         }
     }
 }
