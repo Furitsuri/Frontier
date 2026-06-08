@@ -56,6 +56,8 @@ namespace Frontier.Battle
              *                      ｜
              *                      ├─ EmAttackState
              *                      ｜
+             *                      ├─ EmSkillState
+             *                      ｜
              *                      └─ EmWaitState
              */
 
@@ -63,6 +65,7 @@ namespace Frontier.Battle
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSelectState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
         }
     }

@@ -40,6 +40,13 @@ namespace Frontier.Battle
                 return true;
             }
 
+            if( ShouldTransitionToWait( _currentEnemy ) )
+            {
+                TransitStateWithExit( ( int ) COMMAND_TAG.WAIT );
+
+                return true;
+            }
+
             return false;
         }
 
@@ -113,6 +120,16 @@ namespace Frontier.Battle
             if( !_isValidTarget ) return false;
 
             if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ) return false;
+
+            return true;
+        }
+
+        private bool ShouldTransitionToWait( Enemy em )
+        {
+            if( _isValidDestination || _isValidTarget ) { return false; }
+
+            if( !em.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.MOVE] &&
+                !em.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ) { return false; }
 
             return true;
         }
