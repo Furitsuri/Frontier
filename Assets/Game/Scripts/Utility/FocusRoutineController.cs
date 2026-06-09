@@ -15,24 +15,30 @@ public class FocusRoutineController : MonoBehaviour
     [Header( "上記で挿入したもののうち、最初に実行するルーチンのインデックス値を指定してください" )]
     private int _firstRoutineIndex = 0;
 
-    private IFocusRoutine[] _routines = new IFocusRoutine[( int ) FocusRoutinePriority.NUM];
+    private IFocusRoutine[] _routines = null;
+
+    /// <summary>
+    /// このコントローラが必要とするルーチン数を返します。
+    /// サブクラスでオーバーライドしない場合は、Inspectorで設定されたルーチン数をそのまま使用します。
+    /// </summary>
+    protected virtual int GetRequiredRoutineCount() => _focusRoutineBhvs != null ? _focusRoutineBhvs.Length : 0;
 
     /// <summary>
     /// 優先度からルーチンを取得します
-    /// 配列のインデックスとFocusRoutinePriorityの値は逆順になっているため、( ( int ) FocusRoutinePriority.NUM - 1 ) - (int) pでアクセスします
     /// </summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    protected FocusRoutineBase GetFocusRoutine( FocusRoutinePriority p ) => _focusRoutineBhvs[/*( ( int ) FocusRoutinePriority.NUM - 1 ) - */(int) p];
+    protected FocusRoutineBase GetFocusRoutine( FocusRoutinePriority p ) => _focusRoutineBhvs[(int) p];
 
     /// <summary>
     /// 初期化します
     /// </summary>
     public void Init()
     {
-        Debug.Assert( _focusRoutineBhvs.Length == (int) FocusRoutinePriority.NUM, 
+        Debug.Assert( _focusRoutineBhvs.Length == GetRequiredRoutineCount(),
             "挿入されたルーチンの数とルーチンの定義数が一致していません。\n確認してください。" );
 
+        _routines = new IFocusRoutine[GetRequiredRoutineCount()];
         _currentRoutine = null;
 
         for( int i = 0; i < _routines.Length; i++ )
@@ -95,7 +101,7 @@ public class FocusRoutineController : MonoBehaviour
     /// <param name="p">登録するルーチンの優先度</param>
     private void Register( IFocusRoutine routine, int p )
     {
-        if( p < 0 || ( int ) FocusRoutinePriority.NUM <= p || _routines[p] != null ) return;
+        if( p < 0 || _routines.Length <= p || _routines[p] != null ) return;
         _routines[p] = routine;
     }
 
@@ -106,7 +112,7 @@ public class FocusRoutineController : MonoBehaviour
     private void RunRoutineAndPauseOthers( FocusRoutinePriority priority )
     {
         int p = ( int ) priority;
-        if( p < 0 || ( int ) FocusRoutinePriority.NUM <= p || _routines[p] == null )
+        if( p < 0 || _routines.Length <= p || _routines[p] == null )
         {
             LogHelper.LogError( "Invalid priority" );
             return;

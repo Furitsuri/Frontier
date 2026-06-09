@@ -35,6 +35,8 @@ namespace Frontier
 
         static public GameMain instance = null;
 
+        protected override int GetRequiredRoutineCount() => (int)FocusRoutinePriority.NUM;
+
         void Awake()
         {
             if( instance == null )

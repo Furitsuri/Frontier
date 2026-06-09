@@ -81,6 +81,7 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _gridCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursor" ) );
 
             _btlCamCtrl.Setup( false );
+            _inputFcd.Setup();
 
             InitCallbacks();
 
