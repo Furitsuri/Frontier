@@ -23,6 +23,63 @@ namespace Frontier.DebugTools.StageEditor
             public int SelectedType         = 0;                            // 選択中のタイルタイプ
             public float SelectedHeight     = 0;                            // 選択中のタイル高さ
 
+            // --- 敵配置テンプレート ---
+            public int EnemyLevel         = 1;
+            public int EnemyMaxHP         = 100;
+            public int EnemyAtk           = 10;
+            public int EnemyDef           = 5;
+            public int EnemyMoveRange     = 4;
+            public int EnemyJumpForce     = 2;
+            public int EnemyAtkRange      = 1;
+            public int EnemyActGaugeMax   = 100;
+            public int EnemyActRecovery   = 10;
+            public int EnemyPrefab        = 0;
+            public int EnemyThinkType     = 0;
+            public int EnemyInitGridIndex = 0;
+            public int EnemyInitDir       = 0;
+            public int SelectedEnemyParamIndex = 0;
+
+            public static readonly string[] EnemyParamNames =
+            {
+                "Level", "MaxHP", "Atk", "Def", "MoveRange",
+                "JumpForce", "AtkRange", "ActGaugeMax", "ActRecovery",
+                "Prefab", "ThinkType", "InitGridIndex", "InitDir"
+            };
+
+            public int GetEnemyParamValue( int index )
+            {
+                return index switch
+                {
+                    0  => EnemyLevel,
+                    1  => EnemyMaxHP,
+                    2  => EnemyAtk,
+                    3  => EnemyDef,
+                    4  => EnemyMoveRange,
+                    5  => EnemyJumpForce,
+                    6  => EnemyAtkRange,
+                    7  => EnemyActGaugeMax,
+                    8  => EnemyActRecovery,
+                    9  => EnemyPrefab,
+                    10 => EnemyThinkType,
+                    11 => EnemyInitGridIndex,
+                    12 => EnemyInitDir,
+                    _  => 0,
+                };
+            }
+
+            /// <summary>
+            /// パラメータの表示用文字列を返します。
+            /// InitDir (index=12) は Direction の enum 名で返します。
+            /// </summary>
+            public string GetEnemyParamDisplayString( int index )
+            {
+                if ( index == 12 )
+                {
+                    return ( ( Direction ) EnemyInitDir ).ToString();
+                }
+                return GetEnemyParamValue( index ).ToString();
+            }
+
             /// <summary>
             /// ステージデータの内容を適応させます
             /// </summary>
@@ -65,6 +122,10 @@ namespace Frontier.DebugTools.StageEditor
         private Vector3 offset                          = new Vector3(0, 5, -5);    // ターゲットからの相対位置
         private Func<int, int>[] _gridDirectionMoveCallbacks;
 
+        // 登録済み敵ステータスデータ一覧
+        private System.Collections.Generic.List<Frontier.Loaders.BattleFileLoader.CharacterStatusData> _enemyStatusList
+            = new System.Collections.Generic.List<Frontier.Loaders.BattleFileLoader.CharacterStatusData>();
+
         public Holder<string> EditFileName => _editFileName;
 
         /// <summary>
@@ -95,7 +156,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
 
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, SaveStage, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
             _btlCamCtrl.Init();
@@ -240,6 +301,34 @@ namespace Frontier.DebugTools.StageEditor
 
             data.GetTile( context.X, context.Y ).StaticData().IsDeployable = !data.GetTile( context.X, context.Y ).StaticData().IsDeployable;
             data.GetTile( context.X, context.Y ).ApplyDeployableColor();
+        }
+
+        /// <summary>
+        /// 敵ステータスデータをテンプレートから生成してリストに登録します
+        /// </summary>
+        private void PlaceEnemy( EditActionContext context )
+        {
+            var data = new Frontier.Loaders.BattleFileLoader.CharacterStatusData
+            {
+                CharacterTag    = ( int ) Frontier.Entities.CHARACTER_TAG.ENEMY,
+                CharacterIndex  = _enemyStatusList.Count,
+                Level           = _refParams.EnemyLevel,
+                MaxHP           = _refParams.EnemyMaxHP,
+                Atk             = _refParams.EnemyAtk,
+                Def             = _refParams.EnemyDef,
+                MoveRange       = _refParams.EnemyMoveRange,
+                JumpForce       = _refParams.EnemyJumpForce,
+                AtkRange        = _refParams.EnemyAtkRange,
+                ActGaugeMax     = _refParams.EnemyActGaugeMax,
+                ActRecovery     = _refParams.EnemyActRecovery,
+                Prefab          = _refParams.EnemyPrefab,
+                ThinkType       = _refParams.EnemyThinkType,
+                InitGridIndex   = _refParams.EnemyInitGridIndex,
+                InitDir         = _refParams.EnemyInitDir,
+            };
+
+            _enemyStatusList.Add( data );
+            Debug.Log( $"[StageEditor] 敵を登録しました (Index={data.CharacterIndex} Prefab={data.Prefab} Level={data.Level})" );
         }
 
         /// <summary>

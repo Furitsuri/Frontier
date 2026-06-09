@@ -76,6 +76,15 @@ public class TransformHandler
         _readOnlyTransform.Value.rotation = rotation;
     }
 
+    /// <summary>
+    /// Direction 値に対応した向き（Y軸 90°刻み）を即時設定します。
+    /// FORWARD=0°, RIGHT=90°, BACK=180°, LEFT=270°
+    /// </summary>
+    public void SetRotation( Direction direction )
+    {
+        _readOnlyTransform.Value.rotation = Quaternion.AngleAxis( ( int ) direction * 90f, Vector3.up );
+    }
+
     public void ResetVelocityAcceleration()
     {
         _velocity   = new Vector3( 0, 0, 0 );

@@ -27,6 +27,7 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> PlaceTileCallback;
         private Action<EditActionContext> ResizeTileGridCallback;
         private Action<EditActionContext> ToggleDeployableCallback;
+        private Action<EditActionContext> PlaceEnemyCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
         private StageEditorEditBase _currentEdit            = null;
@@ -38,11 +39,12 @@ namespace Frontier.DebugTools.StageEditor
 
         public GameObject[] tilePrefabs;
 
-        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
             ToggleDeployableCallback    = toggleDeployableCb;
+            PlaceEnemyCallback          = placeEnemyCb;
             ChangeEditModeCallback      = changeEditModeCb;
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
@@ -56,14 +58,16 @@ namespace Frontier.DebugTools.StageEditor
             {
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditTileInformation>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
-                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false)
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false),
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemy>(false),
             };
 
             _editCallbacks = new Action<EditActionContext>[( int ) StageEditMode.NUM]
             {
                 PlaceTileCallback,
                 ResizeTileGridCallback,
-                ToggleDeployableCallback
+                ToggleDeployableCallback,
+                PlaceEnemyCallback,
             };
 
             _currentEdit = _editClasses[(int)_editMode];
@@ -73,16 +77,18 @@ namespace Frontier.DebugTools.StageEditor
 
             _sub1sub2InputCode = new InputCode[( int )StageEditMode.NUM]
             {
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nMATERIAL", new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nROW NUM",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nDEPLOYABLE COUNT",  new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nMATERIAL",         new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nROW NUM",           new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },               new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nDEPLOYABLE COUNT", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },               new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "PREV/NEXT\nPARAM",         new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },               new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
             };
 
             _sub3sub4InputCode = new InputCode[( int )StageEditMode.NUM]
             {
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nHEIGHT",       new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nCOLUMN NUM",   new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nHEIGHT",     new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nCOLUMN NUM", new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
                 (null),
+                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "DEC/INC\nVALUE",    new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
             };
         }
 
@@ -145,6 +151,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( base.AcceptTool( context ) )
             {
+                _currentEdit.Exit();
                 _editMode = ChangeEditModeCallback( -1 );
                 _inputFcd.UnregisterInputCodes();
                 RegisterInputCodes();
@@ -165,6 +172,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
+            _currentEdit.Exit();
             _editMode = ChangeEditModeCallback( 1 );
             _inputFcd.UnregisterInputCodes();
             RegisterInputCodes();

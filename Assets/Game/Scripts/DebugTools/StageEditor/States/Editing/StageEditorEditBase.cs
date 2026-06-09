@@ -22,6 +22,11 @@ namespace Frontier.DebugTools.StageEditor
             _context.Setup();
         }
 
+        virtual public void Exit()
+        {
+
+        }
+
         virtual public void Update()
         {
 
