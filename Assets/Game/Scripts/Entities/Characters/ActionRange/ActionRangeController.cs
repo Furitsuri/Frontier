@@ -18,7 +18,8 @@ namespace Frontier.Entities
         private ActionableTileData       _actionableTileData      = null;
         private ActionableRangeRenderer  _actionableRangeRdr     = null;
         private MoveDirectionArrowPlacer _moveDirectionArrowPlacer = null;
-        private TileDataHandler.GhostTileResolver _ghostTileResolver = null;
+        private TileDataHandler.GhostTileResolver    _ghostTileResolver    = null;
+        private TileDataHandler.RangeAdjustmentFilter _rangeAdjustmentFilter = null;
         private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         public MovePathHandler MovePathHdlr => _movePathHandler;
@@ -112,15 +113,17 @@ namespace Frontier.Entities
 
             _actionableTileData.Init();
             TileDataHandler.AttackableDataPostProcessor postProcessor = null;
+            _ghostTileResolver    = null;
+            _rangeAdjustmentFilter = null;
             if( useSkillID == SkillID.DASH_SLASH )
             {
                 postProcessor = DashSlashSA.FilterAttackTargets;
             }
             else if( useSkillID == SkillID.JUMP_SLASH )
             {
-                postProcessor = JumpSlashSA.CreateFilterAttackTargets( _stageCtrl );
+                postProcessor          = JumpSlashSA.CreateFilterAttackTargets( _stageCtrl );
+                _rangeAdjustmentFilter = JumpSlashSA.CreateRangeAdjustmentFilter();
             }
-            _ghostTileResolver = null;
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData, postProcessor );
         }
 
@@ -151,7 +154,7 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _ghostTileResolver };
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _ghostTileResolver, RangeAdjustmentFilter = _rangeAdjustmentFilter };
             RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();

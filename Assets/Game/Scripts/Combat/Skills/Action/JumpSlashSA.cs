@@ -19,6 +19,15 @@ namespace Frontier.Combat
                 FilterAttackTargetsImpl( dprtIdx, atkRng, colNum, actionableTileData, stageCtrl );
         }
 
+        // ゴースト距離より遠いタイルの保持・除外を判定するスキル固有フィルタ
+        // ゴーストの直後 1 マスかつ攻撃対象フラグがある場合のみ保持する
+        public static TileDataHandler.RangeAdjustmentFilter CreateRangeAdjustmentFilter()
+        {
+            return ( candidateIdx, ghostRange, candidateDist, candidateTileData ) =>
+                candidateDist == ghostRange + 1 &&
+                Methods.HasAnyFlag( candidateTileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );
+        }
+
         private static void FilterAttackTargetsImpl( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData, StageController stageCtrl )
         {
             int[] dirOffsets = { colNum, 1, -colNum, -1 };

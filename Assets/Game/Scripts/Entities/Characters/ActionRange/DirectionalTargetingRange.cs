@@ -159,16 +159,19 @@ namespace Frontier.Entities
                 : ResolveDefaultGhostTile( tileIndex, actionableTileData, context.StageCtrl );
 
             // ゴースト位置より遠いタイルをターゲット可能マップおよび攻撃対象から除外する
-            // ただし、ATTACKABLE_TARGET_EXIST を持つタイルは除外しない
-            // (JumpSlash 等、着地点より遠くに攻撃対象が存在するスキルへの対応)
+            // スキル固有フィルタ (context.RangeAdjustmentFilter) がある場合はそれに委譲し、
+            // ない場合はデフォルト（ゴースト距離より遠いタイルをすべて除外）を適用する
             if( 0 <= ghostTileIdx )
             {
                 int ghostRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostTileIdx );
+                var rangeFilter = context.RangeAdjustmentFilter;
                 var toRemove = actionableTileData.TargetableTileMap.Keys
                     .Where( idx =>
                     {
-                        if( context.StageCtrl.CalculateTotalRange( tileIndex, idx ) <= ghostRange ) { return false; }
-                        return !Methods.HasAnyFlag( actionableTileData.TargetableTileMap[idx].Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );
+                        int dist = context.StageCtrl.CalculateTotalRange( tileIndex, idx );
+                        if( dist <= ghostRange ) { return false; }
+                        // スキル固有フィルタがあれば委譲、なければデフォルト（全除外）
+                        return rangeFilter == null || !rangeFilter( idx, ghostRange, dist, actionableTileData.TargetableTileMap[idx] );
                     } )
                     .ToList();
                 foreach( int idx in toRemove )

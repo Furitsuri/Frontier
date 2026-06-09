@@ -28,6 +28,15 @@ namespace Frontier.Stage
         /// </summary>
         public delegate int GhostTileResolver( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl );
 
+        /// <summary>
+        /// ゴースト距離より遠いタイルを除外するかどうかをスキル固有に判定するデリゲート。
+        /// 引数: candidateIdx=候補タイルインデックス, ghostRange=ゴーストの距離,
+        ///       candidateDist=候補タイルの距離, candidateTileData=候補タイルの動的データ
+        /// 戻り値: true=保持する / false=除外する
+        /// nullの場合はデフォルト（ゴースト距離より遠いタイルをすべて除外）が適用されます。
+        /// </summary>
+        public delegate bool RangeAdjustmentFilter( int candidateIdx, int ghostRange, int candidateDist, TileDynamicData candidateTileData );
+
         private int[] _directionOffsets;
         private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
 
