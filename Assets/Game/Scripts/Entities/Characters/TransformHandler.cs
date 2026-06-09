@@ -138,7 +138,11 @@ public class TransformHandler
         _orderdRotation = rotation;
     }
 
-    public void StartJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )
+    /// <summary>
+    /// タイル間移動専用のジャンプ Y 成分を設定します。
+    /// 高低差がある場合のみ意図通りの弧を描きます。XZ 速度は事前に SetVelocityAndAcceleration で設定しておく必要があります。
+    /// </summary>
+    public void StartTileMoveJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )
     {
         var diffPosition    = destinationPosition - departingPosition;
         var diffPositionXZ  = diffPosition.XZ();
@@ -171,6 +175,31 @@ public class TransformHandler
             // 0.5 * g * t^2 + v0 * t - h = 0 より、 g = 2 * ( - v0 * t + h ) / t^2
             _accel.y = 2 * ( - _velocity.y * arrivalTime + diffHeight ) / ( arrivalTime * arrivalTime );
         }
+    }
+
+    /// <summary>
+    /// スキル攻撃専用の放物運動 Y 成分を設定します。
+    /// 高低差がゼロの場合でも常に JUMP_SKILL_PEAK_HEIGHT 分の弧を描きます。
+    /// XZ 速度は事前に SetVelocityAndAcceleration で設定しておく必要があります。
+    /// </summary>
+    public void StartSkillJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )
+    {
+        var diffPositionXZ  = ( destinationPosition - departingPosition ).XZ();
+        float diffHeight    = destinationPosition.y - departingPosition.y;
+        float arrivalTime   = diffPositionXZ.magnitude / ( moveSpeedRate * Constants.CHARACTER_MOVE_SPEED );
+
+        // MEMO : 高低差に関わらず必ず弧を描くよう、出発点・着地点のうち高い方を基準に
+        //        JUMP_SKILL_PEAK_HEIGHT 分だけ上乗せした相対高さを目標頂点とする
+        // 対称弧（頂点を t = T/2 と仮定）から v0 を求め、到達高さ条件から g を求める
+        //   対称弧の場合 : pos(T/2) = peakRelHeight → v0*(T/2) + 0.5*g*(T/2)^2 = peakRelHeight
+        //   t=T/2 が頂点ならば v0 + g*(T/2) = 0 → v0 = -g*(T/2)
+        //   代入すると : -g*(T/2)^2 + 0.5*g*(T/2)^2 = peakRelHeight → -0.5*g*(T/2)^2 = peakRelHeight
+        //   → v0 = 4 * peakRelHeight / T
+        float peakRelHeight = Mathf.Max( departingPosition.y, destinationPosition.y ) - departingPosition.y + Constants.JUMP_SKILL_PEAK_HEIGHT;
+        _velocity.y = 4f * peakRelHeight / arrivalTime;
+
+        // 到達時の高さ条件: diffHeight = v0*T + 0.5*g*T^2 → g = 2*(diffHeight - v0*T) / T^2
+        _accel.y = 2f * ( diffHeight - _velocity.y * arrivalTime ) / ( arrivalTime * arrivalTime );
     }
 
     public Direction GetDirection()

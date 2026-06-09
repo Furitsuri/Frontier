@@ -136,13 +136,13 @@ namespace Frontier.Combat
             switch( _state )
             {
                 case DashSlashState.START:
-                    _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_ATTACK_INITIAL );
+                    _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_INITIAL );
                     _state = DashSlashState.WAIT_SLASH;
                     break;
                 case DashSlashState.WAIT_SLASH:
-                    if( _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_ATTACK_INITIAL ) )
+                    if( _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_INITIAL ) )
                     {
-                        _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_ATTACK_LATTER );
+                        _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
                         _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, Vector3.zero );
                         _state = DashSlashState.SLASHING;
                     }
@@ -208,7 +208,7 @@ namespace Frontier.Combat
         {
             if( !_isAttackAnimEnded )
             {
-                _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_ATTACK_LATTER );
+                _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
             }
         }
 

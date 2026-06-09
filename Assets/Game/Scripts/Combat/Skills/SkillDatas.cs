@@ -56,6 +56,7 @@ namespace Frontier.Combat
                 () => sharedNotifier,                                                       // SKILL_DOUBLE_STRIKE
                 () => sharedNotifier,                                                       // SKILL_TRIPLE_STRIKE
                 () => sharedNotifier,                                                       // SKILL_DASH_SLASH
+                () => sharedNotifier,                                                       // SKILL_JUMP_SLASH
             };
 
             SkillNotifierFactory = factories;
@@ -75,6 +76,12 @@ namespace Frontier.Combat
                     object[] args = { owner, targetCharaKeys };
                     return hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( args, false );
                 }
+                case SkillID.JUMP_SLASH:
+                {
+                    object[] args = { owner, targetCharaKeys };
+                    return hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( args, false );
+                }
+
                 default:
                     return sharedAction;
             }

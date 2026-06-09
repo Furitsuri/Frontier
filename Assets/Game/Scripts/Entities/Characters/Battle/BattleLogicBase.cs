@@ -437,7 +437,7 @@ namespace Frontier.Entities
                 // 高低差が一定以上ある場合はジャンプ動作を開始
                 if( NEED_JUMP_HEIGHT_DIFFERENCE <= ( int ) Math.Abs( destHeight - dprtHeight ) )
                 {
-                    _readonlyTransform.Value.StartJump( in dprtPos, in destPos, moveSpeedRate );
+                    _readonlyTransform.Value.StartTileMoveJump( in dprtPos, in destPos, moveSpeedRate );
                 }
             };
 

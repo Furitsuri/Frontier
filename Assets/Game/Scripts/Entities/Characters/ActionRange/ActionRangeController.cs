@@ -111,7 +111,15 @@ namespace Frontier.Entities
             var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
             _actionableTileData.Init();
-            var postProcessor = ( useSkillID == SkillID.DASH_SLASH ) ? DashSlashSA.FilterAttackTargets : null;
+            TileDataHandler.AttackableDataPostProcessor postProcessor = null;
+            if( useSkillID == SkillID.DASH_SLASH )
+            {
+                postProcessor = DashSlashSA.FilterAttackTargets;
+            }
+            else if( useSkillID == SkillID.JUMP_SLASH )
+            {
+                postProcessor = JumpSlashSA.CreateFilterAttackTargets( _stageCtrl );
+            }
             _ghostTileResolver = null;
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData, postProcessor );
         }

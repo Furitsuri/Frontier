@@ -99,6 +99,8 @@ static public class Constants
     public const float JUMP_POSITIVE_Y_ACCELERATION = 10f;
     // ジャンプ動作時に対象のタイル位置が相対的に負のY座標に存在する場合の垂直方向の初速度
     public const float JUMP_NEGATIVE_Y_VELOCITY = 3f;
+    // スキルジャンプ時に、出発点・着地点のうち高い方からさらに上乗せする頂点高さ
+    public const float JUMP_SKILL_PEAK_HEIGHT = 1.0f;
     // 敵が移動範囲を表示した後、実際に移動するまでの待ち時間
     public const float ENEMY_SHOW_MOVE_RANGE_TIME = 0.35f;
     public const float STAGE_EDITOR_CONFIRM_WIN_WIDTH   = 400f;
@@ -146,6 +148,8 @@ static public class Constants
 
     // ダッシュスラッシュ: ダッシュ開始時の前方向速度
     public const float DASH_SLASH_INITIAL_SPEED             = 10f;
+    // ジャンプスラッシュ: ジャンプ開始時の前方向速度
+    public const float JUMP_SLASH_INITIAL_SPEED             = 3.33f;
     // ダッシュスラッシュ: ターゲット不在時に前方へ進むゴール距離
     public const float DASH_SLASH_FALLBACK_GOAL_DISTANCE    = 3f;
     // ダッシュスラッシュ: 攻撃判定を発動するターゲットとの距離閾値

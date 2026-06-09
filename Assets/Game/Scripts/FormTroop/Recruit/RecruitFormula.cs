@@ -43,7 +43,7 @@ namespace Frontier.FormTroop
             statusData.Skills[0] = ( int ) SkillID.PARRY;           // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
             statusData.Skills[1] = ( int ) SkillID.DOUBLE_STRIKE;   // 同上
             statusData.Skills[2] = ( int ) SkillID.DASH_SLASH;      // 同上
-            statusData.Skills[3] = ( int ) SkillID.BUILD_UP;        // 同上
+            statusData.Skills[3] = ( int ) SkillID.JUMP_SLASH;      // 同上
 
             int employmentCost = CalcurateEmploymentCost( unitTypeIndex, statusData.Level, hpRandValue, atkRandValue, defRandValue, actMaxRandValue, actRecovRandValue );
 
