@@ -37,7 +37,7 @@ namespace Frontier.DebugTools.StageEditor
             public int EnemyPrefab        = 0;
             public int EnemyThinkType     = 0;
             public int EnemyInitGridIndex = 0;
-            public int EnemyInitDir       = 0;
+            public int EnemyInitDir       = ( int ) Direction.BACK;
             public int SelectedEnemyParamIndex = 0;
 
             /// <summary>配置済み敵の (グリッドインデックス → _enemyStatusList インデックス) マップ</summary>
@@ -357,8 +357,17 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( context.ExtraIntValues.Count == 0 ) return;
 
-            int gridIndex = context.ExtraIntValues[0];
-            if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIndex ) ) return;
+            int oldGridIndex = context.ExtraIntValues[0];
+            int newGridIndex = context.ExtraIntValues.Count >= 2 ? context.ExtraIntValues[1] : oldGridIndex;
+
+            if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( oldGridIndex, out int listIndex ) ) return;
+
+            // グリッドインデックスが変わった場合は辞書キーを更新
+            if ( newGridIndex != oldGridIndex )
+            {
+                _refParams.GridIndexToEnemyListIndex.Remove( oldGridIndex );
+                _refParams.GridIndexToEnemyListIndex[newGridIndex] = listIndex;
+            }
 
             var data = _enemyStatusList[listIndex];
             data.Level         = _refParams.EnemyLevel;
@@ -372,11 +381,11 @@ namespace Frontier.DebugTools.StageEditor
             data.ActRecovery   = _refParams.EnemyActRecovery;
             data.Prefab        = _refParams.EnemyPrefab;
             data.ThinkType     = _refParams.EnemyThinkType;
-            data.InitGridIndex = _refParams.EnemyInitGridIndex;
+            data.InitGridIndex = newGridIndex;
             data.InitDir       = _refParams.EnemyInitDir;
             _enemyStatusList[listIndex] = data;
 
-            Debug.Log( $"[StageEditor] 敵を更新しました (ListIndex={listIndex} GridIndex={gridIndex})" );
+            Debug.Log( $"[StageEditor] 敵を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
         }
 
         /// <summary>
