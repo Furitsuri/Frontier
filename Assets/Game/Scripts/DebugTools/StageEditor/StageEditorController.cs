@@ -1,6 +1,7 @@
 ﻿using Frontier.Registries;
 using Frontier.Stage;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -38,6 +39,21 @@ namespace Frontier.DebugTools.StageEditor
             public int EnemyInitGridIndex = 0;
             public int EnemyInitDir       = 0;
             public int SelectedEnemyParamIndex = 0;
+
+            /// <summary>配置済み敵の (グリッドインデックス → _enemyStatusList インデックス) マップ</summary>
+            public Dictionary<int, int> GridIndexToEnemyListIndex = new Dictionary<int, int>();
+
+            /// <summary>現在編集中の既存敵のグリッドインデックス。EditExisting サブモードでのみ有効。</summary>
+            public int EditingEnemyGridIndex = -1;
+
+            /// <summary>グリッドインデックスから敵データを _refParams に読み込むコールバック。Controller が設定します。</summary>
+            public Func<int, bool> TryLoadEnemyAtGridIndex = null;
+
+            /// <summary>NewPlacement / EditExisting サブモード中は true。EditParam パネルの表示制御に使用。</summary>
+            public bool EnemySubModeActive = false;
+
+            /// <summary>カーソル下に配置済み敵がいる場合 true。EnemyParamList パネルの表示制御に使用。</summary>
+            public bool EnemyAtCursor = false;
 
             public static readonly string[] EnemyParamNames =
             {
@@ -156,7 +172,8 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
 
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, SaveStage, LoadStage, ChangeEditMode );
+            _refParams.TryLoadEnemyAtGridIndex = TryLoadEnemyAtGridIndex;
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
             _btlCamCtrl.Init();
@@ -328,7 +345,62 @@ namespace Frontier.DebugTools.StageEditor
             };
 
             _enemyStatusList.Add( data );
+            _refParams.GridIndexToEnemyListIndex[data.InitGridIndex] = data.CharacterIndex;
             Debug.Log( $"[StageEditor] 敵を登録しました (Index={data.CharacterIndex} Prefab={data.Prefab} Level={data.Level})" );
+        }
+
+        /// <summary>
+        /// 配置済み敵のステータスデータを現在の _refParams 値で更新します。
+        /// context.ExtraIntValues[0] に対象敵のグリッドインデックスが格納されていることを前提とします。
+        /// </summary>
+        private void EditEnemy( EditActionContext context )
+        {
+            if ( context.ExtraIntValues.Count == 0 ) return;
+
+            int gridIndex = context.ExtraIntValues[0];
+            if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIndex ) ) return;
+
+            var data = _enemyStatusList[listIndex];
+            data.Level         = _refParams.EnemyLevel;
+            data.MaxHP         = _refParams.EnemyMaxHP;
+            data.Atk           = _refParams.EnemyAtk;
+            data.Def           = _refParams.EnemyDef;
+            data.MoveRange     = _refParams.EnemyMoveRange;
+            data.JumpForce     = _refParams.EnemyJumpForce;
+            data.AtkRange      = _refParams.EnemyAtkRange;
+            data.ActGaugeMax   = _refParams.EnemyActGaugeMax;
+            data.ActRecovery   = _refParams.EnemyActRecovery;
+            data.Prefab        = _refParams.EnemyPrefab;
+            data.ThinkType     = _refParams.EnemyThinkType;
+            data.InitGridIndex = _refParams.EnemyInitGridIndex;
+            data.InitDir       = _refParams.EnemyInitDir;
+            _enemyStatusList[listIndex] = data;
+
+            Debug.Log( $"[StageEditor] 敵を更新しました (ListIndex={listIndex} GridIndex={gridIndex})" );
+        }
+
+        /// <summary>
+        /// 指定グリッドインデックスに配置されている敵データを _refParams に読み込みます。
+        /// </summary>
+        private bool TryLoadEnemyAtGridIndex( int gridIndex )
+        {
+            if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIndex ) ) return false;
+
+            var data = _enemyStatusList[listIndex];
+            _refParams.EnemyLevel         = data.Level;
+            _refParams.EnemyMaxHP         = data.MaxHP;
+            _refParams.EnemyAtk           = data.Atk;
+            _refParams.EnemyDef           = data.Def;
+            _refParams.EnemyMoveRange     = data.MoveRange;
+            _refParams.EnemyJumpForce     = data.JumpForce;
+            _refParams.EnemyAtkRange      = data.AtkRange;
+            _refParams.EnemyActGaugeMax   = data.ActGaugeMax;
+            _refParams.EnemyActRecovery   = data.ActRecovery;
+            _refParams.EnemyPrefab        = data.Prefab;
+            _refParams.EnemyThinkType     = data.ThinkType;
+            _refParams.EnemyInitGridIndex = data.InitGridIndex;
+            _refParams.EnemyInitDir       = data.InitDir;
+            return true;
         }
 
         /// <summary>

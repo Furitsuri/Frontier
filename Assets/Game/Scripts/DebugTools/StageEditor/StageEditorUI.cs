@@ -63,20 +63,23 @@ namespace Frontier.DebugTools.StageEditor
         /// <param name="index">エディットモードのインデックス値</param>
         public void SwitchEditParamView( StageEditMode mode )
         {
-            _editParamImage.SetActive( true );
-
             int index = ( int ) mode;
 
             for ( int i = 0; i < _editParams.Length; ++i )
             {
-                if ( i == index ) { _editParams[index].SetActive( true ); }
-                else { _editParams[i].SetActive( false ); }
+                _editParams[i].SetActive( i == index );
             }
 
-            // 敵パラメータ一覧ウィンドウは EDIT_ENEMY モード時のみ表示
-            if ( _enemyParamListPanel != null )
+            if ( mode == StageEditMode.EDIT_ENEMY )
             {
-                _enemyParamListPanel.SetActive( mode == StageEditMode.EDIT_ENEMY );
+                // EDIT_ENEMY はサブモードに応じて UpdateModeText で毎フレーム制御するため初期は非表示
+                _editParamImage.SetActive( false );
+                if ( _enemyParamListPanel != null ) _enemyParamListPanel.SetActive( false );
+            }
+            else
+            {
+                _editParamImage.SetActive( true );
+                if ( _enemyParamListPanel != null ) _enemyParamListPanel.SetActive( false );
             }
         }
 
@@ -159,10 +162,16 @@ namespace Frontier.DebugTools.StageEditor
                 _secondParamTextMesh[modeIndex].text = secondParamText[modeIndex];
             }
 
-            // EDIT_ENEMY モード中は敵パラメータ一覧もリアルタイム更新
+            // EDIT_ENEMY モード中はサブモードに応じてパネル表示を切り替える
             if ( mode == StageEditMode.EDIT_ENEMY )
             {
-                UpdateEnemyParamListView( refParams );
+                bool showEditParam = refParams.EnemySubModeActive;
+                bool showParamList = refParams.EnemySubModeActive || refParams.EnemyAtCursor;
+
+                _editParamImage.SetActive( showEditParam );
+                if ( _enemyParamListPanel != null ) _enemyParamListPanel.SetActive( showParamList );
+
+                if ( showParamList ) UpdateEnemyParamListView( refParams );
             }
         }
 

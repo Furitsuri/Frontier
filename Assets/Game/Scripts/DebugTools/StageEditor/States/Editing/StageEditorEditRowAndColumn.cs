@@ -18,6 +18,9 @@ namespace Frontier.DebugTools.StageEditor
             base.Update();
         }
 
+        public override string GetSub12Label() => "CHANGE\nROW NUM";
+        public override string GetSub34Label() => "CHANGE\nCOLUMN NUM";
+
         public override bool CanAcceptConfirm() { return CanAcceptInputAlways(); }
         public override bool CanAcceptCancel() { return false; }
         public override bool CanAcceptSub1() { return TILE_ROW_MIN_NUM < _refParams.Row; }

@@ -5,6 +5,8 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditDeployableTile : StageEditorEditBase
     {
+        public override string GetSub12Label() => "CHANGE\nDEPLOYABLE COUNT";
+
         public override void Init( Action<EditActionContext> callback )
         {
             base.Init( callback );

@@ -28,23 +28,23 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> ResizeTileGridCallback;
         private Action<EditActionContext> ToggleDeployableCallback;
         private Action<EditActionContext> PlaceEnemyCallback;
+        private Action<EditActionContext> EditEnemyCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
         private StageEditorEditBase _currentEdit            = null;
         private StageEditorEditBase[] _editClasses          = null;
-        private Action<EditActionContext>[]  _editCallbacks = null;
-        private InputCode[] _sub1sub2InputCode              = null;
-        private InputCode[] _sub3sub4InputCode              = null;
+        private Action<EditActionContext>[]  _editCallbacks  = null;
         private StageEditMode _editMode                     = StageEditMode.NONE;
 
         public GameObject[] tilePrefabs;
 
-        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
             ToggleDeployableCallback    = toggleDeployableCb;
             PlaceEnemyCallback          = placeEnemyCb;
+            EditEnemyCallback           = editEnemyCb;
             ChangeEditModeCallback      = changeEditModeCb;
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
@@ -59,37 +59,24 @@ namespace Frontier.DebugTools.StageEditor
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditTileInformation>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false),
-                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemy>(false),
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyCursor>(false),
             };
+
+            // EDIT_ENEMY の StageEditorEditEnemyCursor に両コールバックを渡す
+            var enemyCursor = (StageEditorEditEnemyCursor)_editClasses[( int ) StageEditMode.EDIT_ENEMY];
+            enemyCursor.SetEnemyCallbacks( PlaceEnemyCallback, EditEnemyCallback );
 
             _editCallbacks = new Action<EditActionContext>[( int ) StageEditMode.NUM]
             {
                 PlaceTileCallback,
                 ResizeTileGridCallback,
                 ToggleDeployableCallback,
-                PlaceEnemyCallback,
+                PlaceEnemyCallback,     // カーソルクラスは内部で使わないが配列は維持
             };
 
             _currentEdit = _editClasses[(int)_editMode];
+            SetCurrentEditRefreshCallback();
             _currentEdit.Init( _editCallbacks[( int ) _editMode] );
-
-            int hashCode = GetInputCodeHash();
-
-            _sub1sub2InputCode = new InputCode[( int )StageEditMode.NUM]
-            {
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nMATERIAL",         new EnableCallback[] { CanAcceptInputAlways, CanAcceptInputAlways }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nROW NUM",           new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },               new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "CHANGE\nDEPLOYABLE COUNT", new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },               new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, "PREV/NEXT\nPARAM",         new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },               new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) }, 0.0f, hashCode),
-            };
-
-            _sub3sub4InputCode = new InputCode[( int )StageEditMode.NUM]
-            {
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nHEIGHT",     new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "CHANGE\nCOLUMN NUM", new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
-                (null),
-                (new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, "DEC/INC\nVALUE",    new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 }, new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) }, 0.0f, hashCode),
-            };
         }
 
         public override bool Update()
@@ -103,20 +90,43 @@ namespace Frontier.DebugTools.StageEditor
         {
             int hashCode = GetInputCodeHash();
 
+            string sub12Label = _currentEdit.GetSub12Label();
+            string sub34Label = _currentEdit.GetSub34Label();
+
+            InputCode sub12Code = sub12Label != null
+                ? (InputCode)(new GuideIcon[] { GuideIcon.SUB1, GuideIcon.SUB2 }, sub12Label,
+                    new EnableCallback[] { CanAcceptSub1, CanAcceptSub2 },
+                    new IAcceptInputBase[] { new AcceptContextInput( AcceptSub1 ), new AcceptContextInput( AcceptSub2 ) },
+                    0.0f, hashCode)
+                : null;
+
+            InputCode sub34Code = sub34Label != null
+                ? (InputCode)(new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, sub34Label,
+                    new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 },
+                    new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) },
+                    0.0f, hashCode)
+                : null;
+
+            InputCode cancelCode = _currentEdit.CanAcceptCancel()
+                ? (InputCode)(GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+                : null;
+
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptInputAlways, new AcceptContextInput( AcceptDirection ), 0.1f, hashCode),
                 (GuideIcon.CONFIRM, "APPLY",        CanAcceptInputAlways, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                 (new GuideIcon[] { GuideIcon.TOOL, GuideIcon.INFO }, "MODE\nCHANGE", new EnableCallback[] { CanAcceptTool, CanAcceptInfo }, new IAcceptInputBase[] { new AcceptContextInput( AcceptTool ), new AcceptContextInput( AcceptInfo ) }, 0.0f, hashCode),
                 (GuideIcon.OPT1, "LOAD",            CanAcceptInputAlways, new AcceptContextInput( AcceptOptional1 ), 0.0f, hashCode),
                 (GuideIcon.OPT2, "SAVE",            CanAcceptInputAlways, new AcceptContextInput( AcceptOptional2 ), 0.0f, hashCode),
-                _sub1sub2InputCode[(int)_editMode]?.Clone(),    // _sub1sub2InputCode[(int)_editMode]がnullの場合は、そのままnullを渡す
-                _sub3sub4InputCode[(int)_editMode]?.Clone(),
+                sub12Code,
+                sub34Code,
+                cancelCode,
                 (GuideIcon.DEBUG_MENU, "FILE\nNAME", CanAcceptInputAlways, new AcceptContextInput( AcceptDebugTransition ), 0.0f, hashCode)
             );
         }
 
         protected override bool CanAcceptTool() { return 0 < (int)_editMode ; }
         protected override bool CanAcceptInfo() { return ( int )_editMode < (int)StageEditMode.NUM - 1; }
+        protected override bool CanAcceptCancel() { return _currentEdit.CanAcceptCancel(); }
         protected override bool CanAcceptSub1() { return _currentEdit.CanAcceptSub1(); }
         protected override bool CanAcceptSub2() { return _currentEdit.CanAcceptSub2(); }
         protected override bool CanAcceptSub3() { return _currentEdit.CanAcceptSub3(); }
@@ -143,6 +153,14 @@ namespace Frontier.DebugTools.StageEditor
         }
 
         /// <summary>
+        /// キャンセル入力を受け取った際の処理を行います（サブモードからカーソルモードへ戻ります）
+        /// </summary>
+        protected override bool AcceptCancel( InputContext context )
+        {
+            return _currentEdit.AcceptCancel( context );
+        }
+
+        /// <summary>
         /// エディットモードを一つ前のモードに変更します
         /// </summary>
         /// <param name="isInput"></param>
@@ -154,9 +172,10 @@ namespace Frontier.DebugTools.StageEditor
                 _currentEdit.Exit();
                 _editMode = ChangeEditModeCallback( -1 );
                 _inputFcd.UnregisterInputCodes();
-                RegisterInputCodes();
                 _currentEdit = _editClasses[( int )_editMode];
+                SetCurrentEditRefreshCallback();
                 _currentEdit.Init( _editCallbacks[( int )_editMode] );
+                RegisterInputCodes();
                 return true;
             }
 
@@ -175,9 +194,10 @@ namespace Frontier.DebugTools.StageEditor
             _currentEdit.Exit();
             _editMode = ChangeEditModeCallback( 1 );
             _inputFcd.UnregisterInputCodes();
-            RegisterInputCodes();
             _currentEdit = _editClasses[( int ) _editMode];
+            SetCurrentEditRefreshCallback();
             _currentEdit.Init( _editCallbacks[( int ) _editMode] );
+            RegisterInputCodes();
             return true;
         }
 
@@ -225,6 +245,18 @@ namespace Frontier.DebugTools.StageEditor
 
             TransitState( ( int ) TransitTag.EditFileName );
             return true;
+        }
+
+        /// <summary>
+        /// 現在の _currentEdit に入力コード再登録コールバックを設定します
+        /// </summary>
+        private void SetCurrentEditRefreshCallback()
+        {
+            _currentEdit.RefreshInputCodes = () =>
+            {
+                _inputFcd.UnregisterInputCodes();
+                RegisterInputCodes();
+            };
         }
     }
 }

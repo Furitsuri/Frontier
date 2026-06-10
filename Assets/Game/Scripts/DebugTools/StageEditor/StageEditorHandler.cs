@@ -10,19 +10,21 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> ResizeTileGridCallback;
         private Action<EditActionContext> ToggleDeployableCallback;
         private Action<EditActionContext> PlaceEnemyCallback;
+        private Action<EditActionContext> EditEnemyCallback;
         private Func<string, bool> SaveStageCallback;
         private Func<string, bool> LoadStageCallback;
         private Func<int, StageEditMode> ChangeEditModeCallback;
 
         private StageEditorUI _stageEditorView   = null;
 
-        public void Init( StageEditorUI stageEditorView, Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void Init( StageEditorUI stageEditorView, Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
             _stageEditorView            = stageEditorView;
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
             ToggleDeployableCallback    = toggleDeployableCb;
             PlaceEnemyCallback          = placeEnemyCb;
+            EditEnemyCallback           = editEnemyCb;
             SaveStageCallback           = saveStageCb;
             LoadStageCallback           = loadStageCb;
             ChangeEditModeCallback      = changeEditModeCb;
@@ -44,7 +46,7 @@ namespace Frontier.DebugTools.StageEditor
              */
 
             var stageEditorEditingState = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditingState>(false);
-            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback, PlaceEnemyCallback, ChangeEditModeCallback);
+            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback, PlaceEnemyCallback, EditEnemyCallback, ChangeEditModeCallback);
 
             var stageEditorSaveState = _hierarchyBld.InstantiateWithDiContainer<StageEditorSaveState>(false);
             stageEditorSaveState.SetCallbacks( SaveStageCallback, _stageEditorView.SetMessageWord );

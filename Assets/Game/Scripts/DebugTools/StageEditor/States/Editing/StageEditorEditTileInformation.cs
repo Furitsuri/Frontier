@@ -20,10 +20,13 @@ namespace Frontier.DebugTools.StageEditor
             base.Update();
         }
 
+        public override string GetSub12Label() => "CHANGE\nMATERIAL";
+        public override string GetSub34Label() => "CHANGE\nHEIGHT";
+
         public override bool CanAcceptConfirm() { return CanAcceptInputAlways(); }
         public override bool CanAcceptCancel() { return false; }
-        public override bool CanAcceptSub1() { return false; }
-        public override bool CanAcceptSub2() { return false; }
+        public override bool CanAcceptSub1() { return true; }
+        public override bool CanAcceptSub2() { return true; }
         public override bool CanAcceptSub3() { return 0f < _refParams.SelectedHeight; }
         public override bool CanAcceptSub4() { return _refParams.SelectedHeight < TILE_MAX_HEIGHT; }
 
