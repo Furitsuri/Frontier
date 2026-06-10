@@ -158,6 +158,7 @@ namespace Frontier.DebugTools.StageEditor
                 _previewCharacter.gameObject.name = $"[EnemyPlaced_{placedIndex}]";
                 _placedCharacters.Add( _previewCharacter );
                 _placedCharacterMap[_refParams.EnemyInitGridIndex] = _previewCharacter;
+                _refParams.GridIndexToCharacter[_refParams.EnemyInitGridIndex] = _previewCharacter;
                 _previewCharacter = null;
                 _shownPrefabIndex = -1;
             }
@@ -169,25 +170,22 @@ namespace Frontier.DebugTools.StageEditor
         {
             foreach ( var c in _placedCharacters )
             {
-                if ( c != null ) GameObject.Destroy( c.gameObject );
+                if ( c == null ) continue;
+
+                // 共通マップからも除去
+                foreach ( var kvp in new Dictionary<int, Character>( _refParams.GridIndexToCharacter ) )
+                {
+                    if ( kvp.Value == c )
+                    {
+                        _refParams.GridIndexToCharacter.Remove( kvp.Key );
+                        break;
+                    }
+                }
+
+                GameObject.Destroy( c.gameObject );
             }
             _placedCharacters.Clear();
             _placedCharacterMap.Clear();
-        }
-
-        /// <summary>グリッドインデックスに対応する配置済みキャラクターを返します。存在しない場合は null。</summary>
-        public Character GetPlacedCharacterAt( int gridIndex )
-        {
-            return _placedCharacterMap.TryGetValue( gridIndex, out var c ) ? c : null;
-        }
-
-        /// <summary>キャラクターマップのキーを旧インデックスから新インデックスへ更新します。</summary>
-        public void UpdatePlacedCharacterGridIndex( int oldIndex, int newIndex )
-        {
-            if ( oldIndex == newIndex ) return;
-            if ( !_placedCharacterMap.TryGetValue( oldIndex, out var c ) ) return;
-            _placedCharacterMap.Remove( oldIndex );
-            _placedCharacterMap[newIndex] = c;
         }
 
         // ──── 入力受付判定 ────────────────────────────────────────────────

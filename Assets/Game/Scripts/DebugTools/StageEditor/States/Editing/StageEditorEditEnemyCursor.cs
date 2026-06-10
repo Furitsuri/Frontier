@@ -215,19 +215,28 @@ namespace Frontier.DebugTools.StageEditor
             _existingEdit.RefreshInputCodes = RefreshInputCodes;
             _existingEdit.OnCompleted = () =>
             {
-                // Confirm 後: キャラクターマップと GridIndexToEnemyListIndex を新位置に更新
+                // Confirm 後: 各マップのキーを新グリッドインデックスへ更新
                 int newGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
-                _newEdit?.UpdatePlacedCharacterGridIndex( gridIndex, newGridIndex );
-                if ( newGridIndex != gridIndex && _refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIdx ) )
+                if ( newGridIndex != gridIndex )
                 {
-                    _refParams.GridIndexToEnemyListIndex.Remove( gridIndex );
-                    _refParams.GridIndexToEnemyListIndex[newGridIndex] = listIdx;
+                    // GridIndexToCharacter のキーを更新
+                    if ( _refParams.GridIndexToCharacter.TryGetValue( gridIndex, out var movedChar ) )
+                    {
+                        _refParams.GridIndexToCharacter.Remove( gridIndex );
+                        _refParams.GridIndexToCharacter[newGridIndex] = movedChar;
+                    }
+                    // GridIndexToEnemyListIndex のキーを更新
+                    if ( _refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIdx ) )
+                    {
+                        _refParams.GridIndexToEnemyListIndex.Remove( gridIndex );
+                        _refParams.GridIndexToEnemyListIndex[newGridIndex] = listIdx;
+                    }
                 }
                 ReturnToCursor();
             };
 
-            // 配置済みキャラクターをカーソルにバインド
-            var boundChar = _newEdit?.GetPlacedCharacterAt( gridIndex );
+            // 配置済み・ロード済みキャラクターを共通マップから取得してカーソルにバインド
+            _refParams.GridIndexToCharacter.TryGetValue( gridIndex, out var boundChar );
             _existingEdit.SetBoundCharacter( boundChar );
             _existingEdit.Init( _editEnemyCallback );
             SyncRefParamsFlags();

@@ -1,4 +1,5 @@
-﻿using Frontier.Registries;
+﻿using Frontier.Entities;
+using Frontier.Registries;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
@@ -42,6 +43,9 @@ namespace Frontier.DebugTools.StageEditor
 
             /// <summary>配置済み敵の (グリッドインデックス → _enemyStatusList インデックス) マップ</summary>
             public Dictionary<int, int> GridIndexToEnemyListIndex = new Dictionary<int, int>();
+
+            /// <summary>配置済み・ロード済み敵の (グリッドインデックス → Character) マップ。ビジュアル管理に使用。</summary>
+            public Dictionary<int, Character> GridIndexToCharacter = new Dictionary<int, Character>();
 
             /// <summary>現在編集中の既存敵のグリッドインデックス。EditExisting サブモードでのみ有効。</summary>
             public int EditingEnemyGridIndex = -1;
@@ -125,6 +129,7 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private InputFacade _inputFcd                  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
+        [Inject] private CharacterFactory _characterFactory     = null;
 
         private BattleCameraController _btlCamCtrl      = null;
         private Camera _mainCamera;
@@ -139,8 +144,11 @@ namespace Frontier.DebugTools.StageEditor
         private Func<int, int>[] _gridDirectionMoveCallbacks;
 
         // 登録済み敵ステータスデータ一覧
-        private System.Collections.Generic.List<Frontier.Loaders.BattleFileLoader.CharacterStatusData> _enemyStatusList
-            = new System.Collections.Generic.List<Frontier.Loaders.BattleFileLoader.CharacterStatusData>();
+        private List<Frontier.Loaders.BattleFileLoader.CharacterStatusData> _enemyStatusList
+            = new List<Frontier.Loaders.BattleFileLoader.CharacterStatusData>();
+
+        // ロード時に生成した敵ビジュアル一覧（エディター終了・再ロード時に破棄）
+        private List<Character> _loadedEnemyVisuals = new List<Character>();
 
         public Holder<string> EditFileName => _editFileName;
 
@@ -342,6 +350,7 @@ namespace Frontier.DebugTools.StageEditor
                 ThinkType       = _refParams.EnemyThinkType,
                 InitGridIndex   = _refParams.EnemyInitGridIndex,
                 InitDir         = _refParams.EnemyInitDir,
+                Skills          = new int[] { -1, -1, -1, -1 },
             };
 
             _enemyStatusList.Add( data );
@@ -470,6 +479,12 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
+            // 敵キャラクターデータを保存
+            if( !EnemyDataSerializer.Save( _enemyStatusList, fileName ) )
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -480,14 +495,79 @@ namespace Frontier.DebugTools.StageEditor
         /// <returns>読込の成否</returns>
         private bool LoadStage( string fileName )
         {
-            if( _stageFileLoader.Load( fileName ) )
+            if( !_stageFileLoader.Load( fileName ) )
             {
-                _gridCursor.Init( 0, _gridDirectionMoveCallbacks );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
-
-                return true;
+                return false;
             }
 
-            return false;
+            _gridCursor.Init( 0, _gridDirectionMoveCallbacks );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
+
+            // 敵キャラクターデータをロード
+            var loadedEnemies = EnemyDataSerializer.Load( fileName );
+            if ( loadedEnemies != null )
+            {
+                DestroyLoadedEnemyVisuals();
+                _enemyStatusList.Clear();
+                _refParams.GridIndexToEnemyListIndex.Clear();
+
+                foreach ( var enemy in loadedEnemies )
+                {
+                    int listIndex = _enemyStatusList.Count;
+                    _enemyStatusList.Add( enemy );
+                    _refParams.GridIndexToEnemyListIndex[enemy.InitGridIndex] = listIndex;
+                }
+
+                SpawnLoadedEnemyVisuals();
+            }
+
+            return true;
+        }
+
+        /// <summary>ロードした敵データに対応するモデルを生成してシーンに配置します。</summary>
+        private void SpawnLoadedEnemyVisuals()
+        {
+            if ( _characterFactory == null ) return;
+
+            foreach ( var data in _enemyStatusList )
+            {
+                var chara = _characterFactory.CreateCharacter( CHARACTER_TAG.ENEMY, data.Prefab );
+                if ( chara == null ) continue;
+
+                chara.gameObject.name = $"[EnemyLoaded_{data.CharacterIndex}]";
+
+                var offsetY = _stageDataProvider.CurrentData.GetTile( data.InitGridIndex ).GetTileMeshPosYOffset();
+                var pos     = _stageDataProvider.CurrentData.GetTileStaticData( data.InitGridIndex ).CharaStandPos
+                              + new Vector3( 0f, offsetY, 0f );
+                chara.GetTransformHandler.SetPosition( pos );
+                chara.GetTransformHandler.SetRotation( ( Direction ) data.InitDir );
+
+                _loadedEnemyVisuals.Add( chara );
+                _refParams.GridIndexToCharacter[data.InitGridIndex] = chara;
+            }
+        }
+
+        /// <summary>ロード時に生成した敵モデルをすべて破棄します。</summary>
+        private void DestroyLoadedEnemyVisuals()
+        {
+            foreach ( var c in _loadedEnemyVisuals )
+            {
+                if ( c != null ) GameObject.Destroy( c.gameObject );
+            }
+            _loadedEnemyVisuals.Clear();
+
+            // refParams マップからもロード分を除去（NewPlacement 分はそのまま）
+            foreach ( var kvp in new Dictionary<int, Character>( _refParams.GridIndexToCharacter ) )
+            {
+                if ( !_loadedEnemyVisuals.Contains( kvp.Value ) )
+                {
+                    // ロード済みモデルは既にリストが空になっているので、
+                    // 対応するキャラクターが Destroy されていれば除去する
+                    if ( kvp.Value == null )
+                    {
+                        _refParams.GridIndexToCharacter.Remove( kvp.Key );
+                    }
+                }
+            }
         }
     }
 } // namespace Frontier.DebugTools.StageEditor

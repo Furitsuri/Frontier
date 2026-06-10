@@ -38,6 +38,7 @@ namespace Frontier.DebugTools
         private void ToggleConfirmState()
         {
             _currentState = State.CONFIRM;
+            _confirmUi.SetActiveAlternativeText( true );
             SetMessageCallback( _confirmMessage[( int ) State.CONFIRM] );   // メッセージを確認中に設定
             _uiSystem.DebugUi.StageEditorView.RefreshConfirmWindowSize( _confirmWinSize );
         }
@@ -52,9 +53,9 @@ namespace Frontier.DebugTools
 
         public override void Init( object context )
         {
-            ToggleConfirmState();
+            base.Init( context );
 
-            base.Init( context);
+            ToggleConfirmState();
         }
 
         protected override bool CanAcceptDirection()
