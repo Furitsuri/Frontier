@@ -13,6 +13,9 @@ namespace Frontier.Registries
         [Header( "第三勢力キャラクター" )]
         [SerializeField] private GameObject[] _otherGameObjects;
 
+        [Header("ステージアセット")]
+        [SerializeField] private GameObject _stagePropObject;
+
         [Header( "Battle関連" )]
         [SerializeField] private GameObject _battleFileLoaderObject;    // BattleFileLoaderプレハブ
         [SerializeField] private GameObject _battleCameraObject;
