@@ -41,10 +41,10 @@ public class CharacterFactory
     /// </summary>
     /// <param name="tag"></param>
     /// <param name="prefabIndex"></param>
-    /// <param name="statusData"></param>
+    /// <param name="deployData"></param>
     /// <param name="level"></param>
     /// <returns></returns>
-    public Character CreateCharacter( CHARACTER_TAG tag, int prefabIndex, BattleFileLoader.CharacterDeployData statusData, int level = 1 )
+    public Character CreateCharacter( CHARACTER_TAG tag, int prefabIndex, BattleFileLoader.CharacterDeployData deployData, int level = 1 )
     {
         Character chara = CreateCharacter( tag, prefabIndex, level );
         if( null == chara ) {
@@ -53,12 +53,12 @@ public class CharacterFactory
         }
 
         chara.Init();
-        chara.Apply( statusData ); // ステータスデータを適応
+        chara.Apply( deployData ); // ステータスデータを適応
 
         if( tag != CHARACTER_TAG.PLAYER )
         {
             var npc = chara as Npc;
-            npc.ThinkingType = ( ( ThinkingType ) statusData.ThinkType );
+            npc.ThinkingType = ( ( ThinkingType ) deployData.ThinkType );
         }
 
         return chara;

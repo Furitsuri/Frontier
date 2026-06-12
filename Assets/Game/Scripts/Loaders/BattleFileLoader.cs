@@ -31,9 +31,18 @@ namespace Frontier.Loaders
         [Inject] private BattleRoutineController _btlRtnCtrl = null;
         [Inject] private CharacterFactory _characterFactory = null;
 
+        private void Awake()
+        {
+            int fieldCount = typeof( CharacterDeployData ).GetFields().Length;
+            Debug.Assert(
+                fieldCount == ( int ) CharacterDeployParamTag.NUM,
+                $"CharacterDeployData のフィールド数 ({fieldCount}) が CharacterDeployParamTag.NUM ({( int ) CharacterDeployParamTag.NUM}) と一致しません。" );
+        }
+
         [Serializable]
         public struct CharacterDeployData
         {
+            public int Prefab;
             public int CharacterTag;
             public int CharacterIndex;
             public string Name;
@@ -48,7 +57,6 @@ namespace Frontier.Loaders
             public int ActRecovery;
             public int InitGridIndex;
             public int InitDir;
-            public int Prefab;
             public int ThinkType;
             public int[] Skills;
         }

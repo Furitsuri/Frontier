@@ -330,10 +330,10 @@ namespace Frontier.FormTroop
         /// <returns></returns>
         private Player CreateEmploymentCandidate( int level, int characterIndex )
         {
-            ( int unitTypeIndex, int cost, CharacterDeployData statusData ) =
+            ( int unitTypeIndex, int cost, CharacterDeployData deployData ) =
                 RecruitFormula.GenerateEmploymentCandidateData( level, characterIndex, _unitLevelStatsContainer, _employmentCandidates );
 
-            Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, unitTypeIndex, statusData ) as Player;
+            Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, unitTypeIndex, deployData ) as Player;
             player.OnRecruitEnter( cost );
 
             return player;
