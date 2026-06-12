@@ -29,6 +29,8 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> ToggleDeployableCallback;
         private Action<EditActionContext> PlaceEnemyCallback;
         private Action<EditActionContext> EditEnemyCallback;
+        private Action<EditActionContext> PlaceStagePropCallback;
+        private Action<EditActionContext> EditStagePropCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
         private StageEditorEditBase _currentEdit            = null;
@@ -38,13 +40,15 @@ namespace Frontier.DebugTools.StageEditor
 
         public GameObject[] tilePrefabs;
 
-        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> placeStagePropCb, Action<EditActionContext> editStagePropCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
             ToggleDeployableCallback    = toggleDeployableCb;
             PlaceEnemyCallback          = placeEnemyCb;
             EditEnemyCallback           = editEnemyCb;
+            PlaceStagePropCallback      = placeStagePropCb;
+            EditStagePropCallback       = editStagePropCb;
             ChangeEditModeCallback      = changeEditModeCb;
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
@@ -60,18 +64,24 @@ namespace Frontier.DebugTools.StageEditor
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditRowAndColumn>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyCursor>(false),
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditStagePropCursor>(false),
             };
 
             // EDIT_ENEMY の StageEditorEditEnemyCursor に両コールバックを渡す
             var enemyCursor = (StageEditorEditEnemyCursor)_editClasses[( int ) StageEditMode.EDIT_ENEMY];
             enemyCursor.SetEnemyCallbacks( PlaceEnemyCallback, EditEnemyCallback );
 
+            // EDIT_STAGE_PROP の StageEditorEditStagePropCursor に両コールバックを渡す
+            var stagePropCursor = (StageEditorEditStagePropCursor)_editClasses[( int ) StageEditMode.EDIT_STAGE_PROP];
+            stagePropCursor.SetStagePropCallbacks( PlaceStagePropCallback, EditStagePropCallback );
+
             _editCallbacks = new Action<EditActionContext>[( int ) StageEditMode.NUM]
             {
                 PlaceTileCallback,
                 ResizeTileGridCallback,
                 ToggleDeployableCallback,
-                PlaceEnemyCallback,     // カーソルクラスは内部で使わないが配列は維持
+                PlaceEnemyCallback,         // カーソルクラスは内部で使わないが配列は維持
+                PlaceStagePropCallback,     // カーソルクラスは内部で使わないが配列は維持
             };
 
             _currentEdit = _editClasses[(int)_editMode];

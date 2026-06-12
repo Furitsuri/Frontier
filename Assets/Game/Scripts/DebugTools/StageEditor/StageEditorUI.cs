@@ -27,6 +27,12 @@ namespace Frontier.DebugTools.StageEditor
         [SerializeField] private TextMeshProUGUI[] _enemyParamValueTexts;      // 各行の値テキスト  (11要素)
         [SerializeField] private GameObject[] _enemyParamIndicators;           // 各行の選択インジケーター (11要素)
 
+        [Header( "StageProp パラメータ一覧ウィンドウ" )]
+        [SerializeField] private GameObject _stagePropParamListPanel;          // StagePropParamList ルート
+        [SerializeField] private TextMeshProUGUI[] _stagePropParamNameTexts;   // 各行の名前テキスト (3要素)
+        [SerializeField] private TextMeshProUGUI[] _stagePropParamValueTexts;  // 各行の値テキスト  (3要素)
+        [SerializeField] private GameObject[] _stagePropParamIndicators;       // 各行の選択インジケーター (3要素)
+
         private static readonly Color ColorParamSelected   = new Color( 1.0f, 0.95f, 0.2f, 1.0f );  // 選択中：黄
         private static readonly Color ColorParamUnselected = new Color( 0.55f, 0.55f, 0.55f, 1.0f ); // 非選択：グレー
         private static readonly Color ColorValueSelected   = new Color( 0.2f, 1.0f, 0.6f,  1.0f );  // 選択中値：緑
@@ -74,12 +80,21 @@ namespace Frontier.DebugTools.StageEditor
             {
                 // EDIT_ENEMY はサブモードに応じて UpdateModeText で毎フレーム制御するため初期は非表示
                 _editParamImage.SetActive( false );
-                if ( _enemyParamListPanel != null ) _enemyParamListPanel.SetActive( false );
+                if ( _enemyParamListPanel != null )      _enemyParamListPanel.SetActive( false );
+                if ( _stagePropParamListPanel != null )  _stagePropParamListPanel.SetActive( false );
+            }
+            else if ( mode == StageEditMode.EDIT_STAGE_PROP )
+            {
+                // EDIT_STAGE_PROP はサブモードに応じて UpdateModeText で毎フレーム制御するため初期は非表示
+                _editParamImage.SetActive( false );
+                if ( _enemyParamListPanel != null )      _enemyParamListPanel.SetActive( false );
+                if ( _stagePropParamListPanel != null )  _stagePropParamListPanel.SetActive( false );
             }
             else
             {
                 _editParamImage.SetActive( true );
-                if ( _enemyParamListPanel != null ) _enemyParamListPanel.SetActive( false );
+                if ( _enemyParamListPanel != null )      _enemyParamListPanel.SetActive( false );
+                if ( _stagePropParamListPanel != null )  _stagePropParamListPanel.SetActive( false );
             }
         }
 
@@ -139,7 +154,8 @@ namespace Frontier.DebugTools.StageEditor
                 ( ( TileType )refParams.SelectedType ).ToString(),
                 refParams.Col.ToString(),
                 refParams.MaxDeployableUnits.ToString(),
-                StageEditRefParams.EnemyParamNames[refParams.SelectedEnemyParamIndex],  // 選択中パラメータ名
+                StageEditRefParams.EnemyParamNames[refParams.SelectedEnemyParamIndex],              // 選択中パラメータ名
+                StageEditRefParams.StagePropParamNames[refParams.SelectedStagePropParamIndex],      // 選択中パラメータ名
             };
 
             string[] secondParamText = new string[( int ) StageEditMode.NUM]
@@ -147,7 +163,8 @@ namespace Frontier.DebugTools.StageEditor
                 refParams.SelectedHeight.ToString(),
                 refParams.Row.ToString(),
                 "",
-                refParams.GetEnemyParamDisplayString( refParams.SelectedEnemyParamIndex ),   // 選択中パラメータ値
+                refParams.GetEnemyParamDisplayString( refParams.SelectedEnemyParamIndex ),          // 選択中パラメータ値
+                refParams.GetStagePropParamDisplayString( refParams.SelectedStagePropParamIndex ),  // 選択中パラメータ値
             };
 
             _editModeTextMesh.text = mode.ToString().Replace( '_', ' ' );
@@ -172,6 +189,18 @@ namespace Frontier.DebugTools.StageEditor
                 if ( _enemyParamListPanel != null ) _enemyParamListPanel.SetActive( showParamList );
 
                 if ( showParamList ) UpdateEnemyParamListView( refParams );
+            }
+
+            // EDIT_STAGE_PROP モード中はサブモードに応じてパネル表示を切り替える
+            if ( mode == StageEditMode.EDIT_STAGE_PROP )
+            {
+                bool showEditParam = refParams.StagePropSubModeActive;
+                bool showParamList = refParams.StagePropSubModeActive || refParams.StagePropAtCursor;
+
+                _editParamImage.SetActive( showEditParam );
+                if ( _stagePropParamListPanel != null ) _stagePropParamListPanel.SetActive( showParamList );
+
+                if ( showParamList ) UpdateStagePropParamListView( refParams );
             }
         }
 
@@ -205,6 +234,37 @@ namespace Frontier.DebugTools.StageEditor
                 if ( i < _enemyParamIndicators.Length && _enemyParamIndicators[i] != null )
                 {
                     _enemyParamIndicators[i].SetActive( isSelected );
+                }
+            }
+        }
+
+        /// <summary>
+        /// StageProp パラメータ一覧ウィンドウの全行テキストと選択ハイライトを更新します。
+        /// </summary>
+        public void UpdateStagePropParamListView( StageEditRefParams refParams )
+        {
+            if ( _stagePropParamValueTexts == null || _stagePropParamNameTexts == null ) return;
+
+            int selected = refParams.SelectedStagePropParamIndex;
+
+            for ( int i = 0; i < StageEditRefParams.StagePropParamNames.Length; i++ )
+            {
+                bool isSelected = ( i == selected );
+
+                if ( i < _stagePropParamValueTexts.Length && _stagePropParamValueTexts[i] != null )
+                {
+                    _stagePropParamValueTexts[i].text  = refParams.GetStagePropParamDisplayString( i );
+                    _stagePropParamValueTexts[i].color = isSelected ? ColorValueSelected : ColorValueUnselected;
+                }
+
+                if ( i < _stagePropParamNameTexts.Length && _stagePropParamNameTexts[i] != null )
+                {
+                    _stagePropParamNameTexts[i].color = isSelected ? ColorParamSelected : ColorParamUnselected;
+                }
+
+                if ( _stagePropParamIndicators != null && i < _stagePropParamIndicators.Length && _stagePropParamIndicators[i] != null )
+                {
+                    _stagePropParamIndicators[i].SetActive( isSelected );
                 }
             }
         }

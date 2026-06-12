@@ -14,7 +14,7 @@ namespace Frontier.Registries
         [SerializeField] private GameObject[] _otherGameObjects;
 
         [Header("ステージアセット")]
-        [SerializeField] private GameObject _stagePropObject;
+        [SerializeField] private GameObject[] _stagePropObjects;
 
         [Header( "Battle関連" )]
         [SerializeField] private GameObject _battleFileLoaderObject;    // BattleFileLoaderプレハブ
@@ -32,6 +32,7 @@ namespace Frontier.Registries
         [SerializeField] public GameObject BuffCirclePrefab;            // バフサークル用プレハブ
         [SerializeField] public GameObject BuffAuraPrefab;              // バフオーラ用プレハブ
 
+        public GameObject[] StagePropPrefabs => _stagePropObjects;
         public GameObject[] PlayerPrefabs => _playerGameObjects;
         public GameObject[] EnemyPrefabs => _enemyGameObjects;
         public GameObject[] OtherPrefabs => _otherGameObjects;

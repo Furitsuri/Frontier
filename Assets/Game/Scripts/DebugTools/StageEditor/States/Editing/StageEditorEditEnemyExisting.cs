@@ -127,6 +127,8 @@ namespace Frontier.DebugTools.StageEditor
         {
             _params.Clear();
             // EnemyParamNames と同じ順・同じインデックスで 13 エントリを揃える
+            // Prefab: 既存キャラクターのプレハブ変更は非対応のため読み取り専用
+            _params.Add( new ParamDescriptor { Name = "Prefab",       Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyPrefab,       Setter = v => { } } );
             _params.Add( new ParamDescriptor { Name = "Level",        Min = 1,            Max = 99,           Getter = () => _refParams.EnemyLevel,        Setter = v => _refParams.EnemyLevel        = v } );
             _params.Add( new ParamDescriptor { Name = "MaxHP",        Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyMaxHP,        Setter = v => _refParams.EnemyMaxHP        = v } );
             _params.Add( new ParamDescriptor { Name = "Atk",          Min = 0,            Max = 999,          Getter = () => _refParams.EnemyAtk,          Setter = v => _refParams.EnemyAtk          = v } );
@@ -136,8 +138,6 @@ namespace Frontier.DebugTools.StageEditor
             _params.Add( new ParamDescriptor { Name = "AtkRange",     Min = 1,            Max = 10,           Getter = () => _refParams.EnemyAtkRange,     Setter = v => _refParams.EnemyAtkRange     = v } );
             _params.Add( new ParamDescriptor { Name = "ActGaugeMax",  Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyActGaugeMax,  Setter = v => _refParams.EnemyActGaugeMax  = v } );
             _params.Add( new ParamDescriptor { Name = "ActRecovery",  Min = 0,            Max = 999,          Getter = () => _refParams.EnemyActRecovery,  Setter = v => _refParams.EnemyActRecovery  = v } );
-            // Prefab: 既存キャラクターのプレハブ変更は非対応のため読み取り専用
-            _params.Add( new ParamDescriptor { Name = "Prefab",       Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyPrefab,       Setter = v => { } } );
             _params.Add( new ParamDescriptor { Name = "ThinkType",    Min = 0,            Max = 10,           Getter = () => _refParams.EnemyThinkType,    Setter = v => _refParams.EnemyThinkType    = v } );
             // InitGridIndex: カーソル位置から自動設定されるため読み取り専用
             _params.Add( new ParamDescriptor { Name = "InitGridIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyInitGridIndex, Setter = v => { } } );

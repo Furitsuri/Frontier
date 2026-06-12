@@ -59,27 +59,67 @@ namespace Frontier.DebugTools.StageEditor
             /// <summary>カーソル下に配置済み敵がいる場合 true。EnemyParamList パネルの表示制御に使用。</summary>
             public bool EnemyAtCursor = false;
 
+            // --- StageProp 配置テンプレート ---
+            public int StagePropPrefab    = 0;
+            public int StagePropTileIndex = 0;
+            public int StagePropDirection = ( int ) Direction.BACK;
+            public int SelectedStagePropParamIndex = 0;
+
+            /// <summary>配置済み StageProp の (グリッドインデックス → _stagePropList インデックス) マップ</summary>
+            public Dictionary<int, int> GridIndexToStagePropListIndex = new Dictionary<int, int>();
+
+            /// <summary>配置済み・ロード済み StageProp の (グリッドインデックス → StageProp) マップ。ビジュアル管理に使用。</summary>
+            public Dictionary<int, Frontier.Entities.StageProp> GridIndexToStageProp = new Dictionary<int, Frontier.Entities.StageProp>();
+
+            /// <summary>現在編集中の既存 StageProp のグリッドインデックス。EditExisting サブモードでのみ有効。</summary>
+            public int EditingStagePropGridIndex = -1;
+
+            /// <summary>グリッドインデックスから StageProp データを _refParams に読み込むコールバック。Controller が設定します。</summary>
+            public Func<int, bool> TryLoadStagePropAtGridIndex = null;
+
+            /// <summary>NewPlacement / EditExisting サブモード中は true。EditParam パネルの表示制御に使用。</summary>
+            public bool StagePropSubModeActive = false;
+
+            /// <summary>カーソル下に配置済み StageProp がある場合 true。StagePropParamList パネルの表示制御に使用。</summary>
+            public bool StagePropAtCursor = false;
+
+            public static readonly string[] StagePropParamNames =
+            {
+                "Prefab", "TileIndex", "Direction"
+            };
+
+            public string GetStagePropParamDisplayString( int index )
+            {
+                return index switch
+                {
+                    0 => ( ( Frontier.Entities.STAGE_PROPS ) StagePropPrefab ).ToString(),
+                    1 => StagePropTileIndex.ToString(),
+                    2 => ( ( Direction ) StagePropDirection ).ToString(),
+                    _ => "",
+                };
+            }
+
             public static readonly string[] EnemyParamNames =
             {
-                "Level", "MaxHP", "Atk", "Def", "MoveRange",
+                "Prefab", "Level", "MaxHP", "Atk", "Def", "MoveRange",
                 "JumpForce", "AtkRange", "ActGaugeMax", "ActRecovery",
-                "Prefab", "ThinkType", "InitGridIndex", "InitDir"
+                "ThinkType", "InitGridIndex", "InitDir"
             };
 
             public int GetEnemyParamValue( int index )
             {
                 return index switch
                 {
-                    0  => EnemyLevel,
-                    1  => EnemyMaxHP,
-                    2  => EnemyAtk,
-                    3  => EnemyDef,
-                    4  => EnemyMoveRange,
-                    5  => EnemyJumpForce,
-                    6  => EnemyAtkRange,
-                    7  => EnemyActGaugeMax,
-                    8  => EnemyActRecovery,
-                    9  => EnemyPrefab,
+                    0  => EnemyPrefab,
+                    1  => EnemyLevel,
+                    2  => EnemyMaxHP,
+                    3  => EnemyAtk,
+                    4  => EnemyDef,
+                    5  => EnemyMoveRange,
+                    6  => EnemyJumpForce,
+                    7  => EnemyAtkRange,
+                    8  => EnemyActGaugeMax,
+                    9  => EnemyActRecovery,
                     10 => EnemyThinkType,
                     11 => EnemyInitGridIndex,
                     12 => EnemyInitDir,
@@ -89,14 +129,12 @@ namespace Frontier.DebugTools.StageEditor
 
             /// <summary>
             /// パラメータの表示用文字列を返します。
-            /// InitDir (index=12) は Direction の enum 名で返します。
+            /// Prefab (index=0) は ENEMIES の enum 名、InitDir (index=12) は Direction の enum 名で返します。
             /// </summary>
             public string GetEnemyParamDisplayString( int index )
             {
-                if ( index == 12 )
-                {
-                    return ( ( Direction ) EnemyInitDir ).ToString();
-                }
+                if ( index == 0  ) return ( ( ENEMIES ) EnemyPrefab ).ToString();
+                if ( index == 12 ) return ( ( Direction ) EnemyInitDir ).ToString();
                 return GetEnemyParamValue( index ).ToString();
             }
 
@@ -150,6 +188,13 @@ namespace Frontier.DebugTools.StageEditor
         // ロード時に生成した敵ビジュアル一覧（エディター終了・再ロード時に破棄）
         private List<Character> _loadedEnemyVisuals = new List<Character>();
 
+        // 登録済み StageProp データ一覧
+        private List<StagePropDataSerializer.StagePropStatusData> _stagePropList
+            = new List<StagePropDataSerializer.StagePropStatusData>();
+
+        // ロード時に生成した StageProp ビジュアル一覧（エディター終了・再ロード時に破棄）
+        private List<Frontier.Entities.StageProp> _loadedStagePropVisuals = new List<Frontier.Entities.StageProp>();
+
         public Holder<string> EditFileName => _editFileName;
 
         /// <summary>
@@ -180,8 +225,9 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
 
-            _refParams.TryLoadEnemyAtGridIndex = TryLoadEnemyAtGridIndex;
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, SaveStage, LoadStage, ChangeEditMode );
+            _refParams.TryLoadEnemyAtGridIndex      = TryLoadEnemyAtGridIndex;
+            _refParams.TryLoadStagePropAtGridIndex  = TryLoadStagePropAtGridIndex;
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
             _btlCamCtrl.Init();
@@ -485,6 +531,12 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
+            // StageProp データを保存
+            if( !StagePropDataSerializer.Save( _stagePropList, fileName ) )
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -520,7 +572,125 @@ namespace Frontier.DebugTools.StageEditor
                 SpawnLoadedEnemyVisuals();
             }
 
+            // StageProp データをロード
+            var loadedProps = StagePropDataSerializer.Load( fileName );
+            if ( loadedProps != null )
+            {
+                DestroyLoadedStagePropVisuals();
+                _stagePropList.Clear();
+                _refParams.GridIndexToStagePropListIndex.Clear();
+
+                foreach ( var prop in loadedProps )
+                {
+                    int listIndex = _stagePropList.Count;
+                    _stagePropList.Add( prop );
+                    _refParams.GridIndexToStagePropListIndex[prop.TileIndex] = listIndex;
+                }
+
+                SpawnLoadedStagePropVisuals();
+            }
+
             return true;
+        }
+
+        /// <summary>
+        /// StageProp データをテンプレートから生成してリストに登録します。
+        /// </summary>
+        private void PlaceStageProp( EditActionContext context )
+        {
+            var data = new StagePropDataSerializer.StagePropStatusData
+            {
+                Prefab    = _refParams.StagePropPrefab,
+                TileIndex = _refParams.StagePropTileIndex,
+                Direction = _refParams.StagePropDirection,
+            };
+
+            _stagePropList.Add( data );
+            _refParams.GridIndexToStagePropListIndex[data.TileIndex] = _stagePropList.Count - 1;
+            Debug.Log( $"[StageEditor] StageProp を登録しました (TileIndex={data.TileIndex} Prefab={(Frontier.Entities.STAGE_PROPS)data.Prefab})" );
+        }
+
+        /// <summary>
+        /// 配置済み StageProp データを現在の _refParams 値で更新します。
+        /// context.ExtraIntValues[0] に旧グリッドインデックス、[1] に新グリッドインデックスが格納されていることを前提とします。
+        /// </summary>
+        private void EditStageProp( EditActionContext context )
+        {
+            if ( context.ExtraIntValues.Count == 0 ) return;
+
+            int oldGridIndex = context.ExtraIntValues[0];
+            int newGridIndex = context.ExtraIntValues.Count >= 2 ? context.ExtraIntValues[1] : oldGridIndex;
+
+            if ( !_refParams.GridIndexToStagePropListIndex.TryGetValue( oldGridIndex, out int listIndex ) ) return;
+
+            if ( newGridIndex != oldGridIndex )
+            {
+                _refParams.GridIndexToStagePropListIndex.Remove( oldGridIndex );
+                _refParams.GridIndexToStagePropListIndex[newGridIndex] = listIndex;
+            }
+
+            var data = _stagePropList[listIndex];
+            data.TileIndex = newGridIndex;
+            data.Direction = _refParams.StagePropDirection;
+            _stagePropList[listIndex] = data;
+
+            Debug.Log( $"[StageEditor] StageProp を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
+        }
+
+        /// <summary>
+        /// 指定グリッドインデックスに配置されている StageProp データを _refParams に読み込みます。
+        /// </summary>
+        private bool TryLoadStagePropAtGridIndex( int gridIndex )
+        {
+            if ( !_refParams.GridIndexToStagePropListIndex.TryGetValue( gridIndex, out int listIndex ) ) return false;
+
+            var data = _stagePropList[listIndex];
+            _refParams.StagePropPrefab    = data.Prefab;
+            _refParams.StagePropTileIndex = data.TileIndex;
+            _refParams.StagePropDirection = data.Direction;
+            return true;
+        }
+
+        /// <summary>ロードした StageProp データに対応するモデルを生成してシーンに配置します。</summary>
+        private void SpawnLoadedStagePropVisuals()
+        {
+            if ( _prefabReg?.StagePropPrefabs == null ) return;
+
+            foreach ( var data in _stagePropList )
+            {
+                if ( data.Prefab < 0 || _prefabReg.StagePropPrefabs.Length <= data.Prefab ) continue;
+
+                var prop = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Frontier.Entities.StageProp>(
+                    _prefabReg.StagePropPrefabs[data.Prefab], true, true, $"[StagePropLoaded_{data.TileIndex}]" );
+                if ( prop == null ) continue;
+
+                var offsetY = _stageDataProvider.CurrentData.GetTile( data.TileIndex ).GetTileMeshPosYOffset();
+                var pos     = _stageDataProvider.CurrentData.GetTileStaticData( data.TileIndex ).CharaStandPos
+                              + new Vector3( 0f, offsetY, 0f );
+                prop.GetTransformHandler.SetPosition( pos );
+                prop.GetTransformHandler.SetRotation( ( Direction ) data.Direction );
+
+                _loadedStagePropVisuals.Add( prop );
+                _refParams.GridIndexToStageProp[data.TileIndex] = prop;
+            }
+        }
+
+        /// <summary>ロード時に生成した StageProp モデルをすべて破棄します。</summary>
+        private void DestroyLoadedStagePropVisuals()
+        {
+            foreach ( var p in _loadedStagePropVisuals )
+            {
+                if ( p != null ) GameObject.Destroy( p.gameObject );
+            }
+            _loadedStagePropVisuals.Clear();
+
+            foreach ( var kvp in new Dictionary<int, Frontier.Entities.StageProp>( _refParams.GridIndexToStageProp ) )
+            {
+                if ( kvp.Value == null )
+                {
+                    _refParams.GridIndexToStageProp.Remove( kvp.Key );
+                }
+            }
         }
 
         /// <summary>ロードした敵データに対応するモデルを生成してシーンに配置します。</summary>

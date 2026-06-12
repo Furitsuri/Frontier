@@ -75,20 +75,20 @@ namespace Frontier.DebugTools.StageEditor
                 : 0;
 
             _params.Clear();
-            _params.Add( new ParamDescriptor { Name = "Level",       Min = 1,         Max = 99,        Getter = () => _refParams.EnemyLevel,       Setter = v => _refParams.EnemyLevel       = v } );
-            _params.Add( new ParamDescriptor { Name = "MaxHP",       Min = 1,         Max = 9999,      Getter = () => _refParams.EnemyMaxHP,       Setter = v => _refParams.EnemyMaxHP       = v } );
-            _params.Add( new ParamDescriptor { Name = "Atk",         Min = 0,         Max = 999,       Getter = () => _refParams.EnemyAtk,         Setter = v => _refParams.EnemyAtk         = v } );
-            _params.Add( new ParamDescriptor { Name = "Def",         Min = 0,         Max = 999,       Getter = () => _refParams.EnemyDef,         Setter = v => _refParams.EnemyDef         = v } );
-            _params.Add( new ParamDescriptor { Name = "MoveRange",   Min = 1,         Max = 10,        Getter = () => _refParams.EnemyMoveRange,   Setter = v => _refParams.EnemyMoveRange   = v } );
-            _params.Add( new ParamDescriptor { Name = "JumpForce",   Min = 0,         Max = 10,        Getter = () => _refParams.EnemyJumpForce,   Setter = v => _refParams.EnemyJumpForce   = v } );
-            _params.Add( new ParamDescriptor { Name = "AtkRange",    Min = 1,         Max = 10,        Getter = () => _refParams.EnemyAtkRange,    Setter = v => _refParams.EnemyAtkRange    = v } );
-            _params.Add( new ParamDescriptor { Name = "ActGaugeMax", Min = 1,         Max = 9999,      Getter = () => _refParams.EnemyActGaugeMax, Setter = v => _refParams.EnemyActGaugeMax = v } );
-            _params.Add( new ParamDescriptor { Name = "ActRecovery", Min = 0,         Max = 999,       Getter = () => _refParams.EnemyActRecovery, Setter = v => _refParams.EnemyActRecovery = v } );
-            _params.Add( new ParamDescriptor { Name = "Prefab",      Min = 0,         Max = maxPrefab, Getter = () => _refParams.EnemyPrefab,      Setter = v => _refParams.EnemyPrefab      = v } );
-            _params.Add( new ParamDescriptor { Name = "ThinkType",      Min = 0,            Max = 10,           Getter = () => _refParams.EnemyThinkType,   Setter = v => _refParams.EnemyThinkType   = v } );
+            _params.Add( new ParamDescriptor { Name = "Prefab",      Min = 0,            Max = maxPrefab,    Getter = () => _refParams.EnemyPrefab,      Setter = v => _refParams.EnemyPrefab      = v } );
+            _params.Add( new ParamDescriptor { Name = "Level",       Min = 1,            Max = 99,           Getter = () => _refParams.EnemyLevel,       Setter = v => _refParams.EnemyLevel       = v } );
+            _params.Add( new ParamDescriptor { Name = "MaxHP",       Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyMaxHP,       Setter = v => _refParams.EnemyMaxHP       = v } );
+            _params.Add( new ParamDescriptor { Name = "Atk",         Min = 0,            Max = 999,          Getter = () => _refParams.EnemyAtk,         Setter = v => _refParams.EnemyAtk         = v } );
+            _params.Add( new ParamDescriptor { Name = "Def",         Min = 0,            Max = 999,          Getter = () => _refParams.EnemyDef,         Setter = v => _refParams.EnemyDef         = v } );
+            _params.Add( new ParamDescriptor { Name = "MoveRange",   Min = 1,            Max = 10,           Getter = () => _refParams.EnemyMoveRange,   Setter = v => _refParams.EnemyMoveRange   = v } );
+            _params.Add( new ParamDescriptor { Name = "JumpForce",   Min = 0,            Max = 10,           Getter = () => _refParams.EnemyJumpForce,   Setter = v => _refParams.EnemyJumpForce   = v } );
+            _params.Add( new ParamDescriptor { Name = "AtkRange",    Min = 1,            Max = 10,           Getter = () => _refParams.EnemyAtkRange,    Setter = v => _refParams.EnemyAtkRange    = v } );
+            _params.Add( new ParamDescriptor { Name = "ActGaugeMax", Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyActGaugeMax, Setter = v => _refParams.EnemyActGaugeMax = v } );
+            _params.Add( new ParamDescriptor { Name = "ActRecovery", Min = 0,            Max = 999,          Getter = () => _refParams.EnemyActRecovery, Setter = v => _refParams.EnemyActRecovery = v } );
+            _params.Add( new ParamDescriptor { Name = "ThinkType",   Min = 0,            Max = 10,           Getter = () => _refParams.EnemyThinkType,   Setter = v => _refParams.EnemyThinkType   = v } );
             // InitGridIndex はカーソル位置から UpdatePreviewPosition() で自動設定。Sub3/Sub4 は無効。
             _params.Add( new ParamDescriptor { Name = "InitGridIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyInitGridIndex, Setter = v => { } } );
-            _params.Add( new ParamDescriptor { Name = "InitDir",       Min = 0,            Max = 3,            Getter = () => _refParams.EnemyInitDir,     Setter = v => _refParams.EnemyInitDir     = v } );
+            _params.Add( new ParamDescriptor { Name = "InitDir",     Min = 0,            Max = 3,            Getter = () => _refParams.EnemyInitDir,     Setter = v => _refParams.EnemyInitDir     = v } );
         }
 
         // ──── 毎フレーム更新 ──────────────────────────────────────────────
