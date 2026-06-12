@@ -44,7 +44,7 @@ public class CharacterFactory
     /// <param name="statusData"></param>
     /// <param name="level"></param>
     /// <returns></returns>
-    public Character CreateCharacter( CHARACTER_TAG tag, int prefabIndex, BattleFileLoader.CharacterStatusData statusData, int level = 1 )
+    public Character CreateCharacter( CHARACTER_TAG tag, int prefabIndex, BattleFileLoader.CharacterDeployData statusData, int level = 1 )
     {
         Character chara = CreateCharacter( tag, prefabIndex, level );
         if( null == chara ) {

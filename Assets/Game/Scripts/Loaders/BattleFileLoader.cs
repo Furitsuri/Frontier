@@ -32,7 +32,7 @@ namespace Frontier.Loaders
         [Inject] private CharacterFactory _characterFactory = null;
 
         [Serializable]
-        public struct CharacterStatusData
+        public struct CharacterDeployData
         {
             public int CharacterTag;
             public int CharacterIndex;
@@ -56,13 +56,13 @@ namespace Frontier.Loaders
         [System.Serializable]
         public class PlayerParamContainer
         {
-            public CharacterStatusData[] CharacterStatus;
+            public CharacterDeployData[] CharacterStatus;
         }
 
         [System.Serializable]
         public class CharacterStatusContainer
         {
-            public CharacterStatusData[] CharacterStatuses;
+            public CharacterDeployData[] CharacterStatuses;
         }
 
         [System.Serializable]

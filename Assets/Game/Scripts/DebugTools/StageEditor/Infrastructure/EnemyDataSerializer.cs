@@ -18,7 +18,7 @@ namespace Frontier.DebugTools.StageEditor
         [System.Serializable]
         private class SaveContainer
         {
-            public BattleFileLoader.CharacterStatusData[] CharacterStatuses;
+            public BattleFileLoader.CharacterDeployData[] CharacterStatuses;
         }
 
         private static string GetFilePath( string fileName )
@@ -33,7 +33,7 @@ namespace Frontier.DebugTools.StageEditor
         /// 敵ステータスリストを JSON として保存します。
         /// フォルダが存在しない場合は警告を出して false を返します。
         /// </summary>
-        static public bool Save( List<BattleFileLoader.CharacterStatusData> enemyList, string fileName )
+        static public bool Save( List<BattleFileLoader.CharacterDeployData> enemyList, string fileName )
         {
             string path = GetFilePath( fileName );
             string dir  = Path.GetDirectoryName( path );
@@ -78,7 +78,7 @@ namespace Frontier.DebugTools.StageEditor
         /// JSON から敵ステータスリストを読み込みます。
         /// ファイルが存在しない場合は null を返します。
         /// </summary>
-        static public List<BattleFileLoader.CharacterStatusData> Load( string fileName )
+        static public List<BattleFileLoader.CharacterDeployData> Load( string fileName )
         {
             string path = GetFilePath( fileName );
 
@@ -95,7 +95,7 @@ namespace Frontier.DebugTools.StageEditor
                 if ( container == null || container.CharacterStatuses == null ) return null;
 
                 Debug.Log( $"[EnemyDataSerializer] 敵データを読み込みました ({container.CharacterStatuses.Length} 体): {path}" );
-                return new List<BattleFileLoader.CharacterStatusData>( container.CharacterStatuses );
+                return new List<BattleFileLoader.CharacterDeployData>( container.CharacterStatuses );
             }
             catch ( Exception e )
             {

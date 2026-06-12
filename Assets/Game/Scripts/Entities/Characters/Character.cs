@@ -80,7 +80,7 @@ namespace Frontier.Entities
             ElapsedTime = 0;
         }
 
-        public void Apply( BattleFileLoader.CharacterStatusData statusData )
+        public void Apply( BattleFileLoader.CharacterDeployData statusData )
         {
             Status.ApplyParams( ref _status, in statusData );
 

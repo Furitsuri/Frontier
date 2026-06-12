@@ -15,7 +15,7 @@ namespace Frontier.FormTroop
         /// <param name="stageLevel"></param>
         /// <param name="candidatedMercenaries"></param>
         /// <returns></returns>
-        static public ( int unitTypeIndex, int cost, CharacterStatusData statusData ) GenerateEmploymentCandidateData( int level, int characterIndex, UnitLevelStatsContainer unitLevelStats, List<CharacterCandidate> candidatedMercenaries )
+        static public ( int unitTypeIndex, int cost, CharacterDeployData statusData ) GenerateEmploymentCandidateData( int level, int characterIndex, UnitLevelStatsContainer unitLevelStats, List<CharacterCandidate> candidatedMercenaries )
         {
             int unitTypeIndex       = SelectBalancedTypeIndex( candidatedMercenaries );
             int levelIndex          = Mathf.Clamp( level, 0, 10 );
@@ -27,7 +27,7 @@ namespace Frontier.FormTroop
             int actMaxRandValue     = Random.Range( 4, 6 );
             int actRecovRandValue   = Random.Range( 0, 2 );
 
-            CharacterStatusData statusData = unitLevelStats.Stats[unitTypeIndex].StatusDatas[levelIndex];
+            CharacterDeployData statusData = unitLevelStats.Stats[unitTypeIndex].StatusDatas[levelIndex];
 
             // TODO : 仮実装
             string[] names = new string[] { "Joseph", "Micky", "Mark", "Tarner" };

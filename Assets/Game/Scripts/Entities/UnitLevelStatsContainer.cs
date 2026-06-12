@@ -6,7 +6,7 @@ namespace Frontier
     [System.Serializable]
     public class UnitStatusData
     {
-        public CharacterStatusData[] StatusDatas;
+        public CharacterDeployData[] StatusDatas;
     }
 
     [System.Serializable]

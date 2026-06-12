@@ -182,8 +182,8 @@ namespace Frontier.DebugTools.StageEditor
         private Func<int, int>[] _gridDirectionMoveCallbacks;
 
         // 登録済み敵ステータスデータ一覧
-        private List<Frontier.Loaders.BattleFileLoader.CharacterStatusData> _enemyStatusList
-            = new List<Frontier.Loaders.BattleFileLoader.CharacterStatusData>();
+        private List<Frontier.Loaders.BattleFileLoader.CharacterDeployData> _enemyStatusList
+            = new List<Frontier.Loaders.BattleFileLoader.CharacterDeployData>();
 
         // ロード時に生成した敵ビジュアル一覧（エディター終了・再ロード時に破棄）
         private List<Character> _loadedEnemyVisuals = new List<Character>();
@@ -379,7 +379,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         private void PlaceEnemy( EditActionContext context )
         {
-            var data = new Frontier.Loaders.BattleFileLoader.CharacterStatusData
+            var data = new Frontier.Loaders.BattleFileLoader.CharacterDeployData
             {
                 CharacterTag    = ( int ) Frontier.Entities.CHARACTER_TAG.ENEMY,
                 CharacterIndex  = _enemyStatusList.Count,
