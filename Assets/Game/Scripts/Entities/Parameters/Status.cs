@@ -25,8 +25,6 @@ namespace Frontier.Entities
         public int maxActionGauge;          // アクションゲージ最大値
         public int CurActionGauge;          // アクションゲージ現在値
         public int recoveryActionGauge;     // アクションゲージ回復値
-        public int initGridIndex;           // ステージ開始時グリッド座標(インデックス)
-        public Direction initDir;           // ステージ開始時向き
         public SkillID[] EquipSkills;       // 装備しているスキル
 
         /// <summary>
@@ -47,9 +45,6 @@ namespace Frontier.Entities
             status.attackRange          = fdata.AtkRange;
             status.CurActionGauge       = status.maxActionGauge = fdata.ActGaugeMax;
             status.recoveryActionGauge  = fdata.ActRecovery;
-            status.initGridIndex        = fdata.InitGridIndex;
-            status.initDir              = ( Direction ) fdata.InitDir;
-
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 status.EquipSkills[i] = ( SkillID ) fdata.Skills[i];
@@ -77,8 +72,7 @@ namespace Frontier.Entities
             maxActionGauge      = 0;
             CurActionGauge      = 0;
             recoveryActionGauge = 0;
-            initGridIndex       = 0;
-            initDir             = Direction.NONE;
+
         }
 
         /// <summary>
@@ -99,9 +93,6 @@ namespace Frontier.Entities
             this.attackRange            = fdata.AtkRange;
             this.CurActionGauge         = this.maxActionGauge = fdata.ActGaugeMax;
             this.recoveryActionGauge    = fdata.ActRecovery;
-            this.initGridIndex          = fdata.InitGridIndex;
-            this.initDir                = ( Direction ) fdata.InitDir;
-
             for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 this.EquipSkills[i] = ( SkillID ) fdata.Skills[i];

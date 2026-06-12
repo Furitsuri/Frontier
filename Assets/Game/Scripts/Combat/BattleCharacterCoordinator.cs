@@ -41,7 +41,7 @@ namespace Frontier.Battle
         /// キャラクターをリストとハッシュに登録します
         /// </summary>
         /// <status name="chara">登録対象のキャラクター</status>
-        public void AddCharacterToList( Character chara )
+        public void AddCharacterToList( Character chara, int initGridIndex, Direction initDir )
         {
             Action<Character>[] addActionsByType = new Action<Character>[]
             {
@@ -69,7 +69,7 @@ namespace Frontier.Battle
             Debug.Assert( addActionsByType.Length == ( int ) CHARACTER_TAG.NUM, "配列数とキャラクターのタグ数が合致していません。" );
 
             chara.OnBattleEnter( _btlRtnCtrl.GetBtlCameraCtrl );
-            PlaceCharacterAtStartPosition( chara );
+            PlaceCharacterAtStartPosition( chara, initGridIndex, initDir );
             addActionsByType[( int ) chara.GetStatusRef.characterTag]( chara );
         }
 
@@ -510,7 +510,7 @@ namespace Frontier.Battle
             }
         }
 
-        private void PlaceCharacterAtStartPosition( Character chara )
+        private void PlaceCharacterAtStartPosition( Character chara, int initGridIndex, Direction initDir )
         {
             // 向きの値を設定
             Quaternion[] rot = new Quaternion[( int ) Direction.NUM];
@@ -519,11 +519,10 @@ namespace Frontier.Battle
                 rot[i] = Quaternion.AngleAxis( 90 * i, Vector3.up );
             }
 
-            int gridIndex = chara.GetStatusRef.initGridIndex;                                               // ステージ開始時のプレイヤー立ち位置(インデックス)をキャッシュ
-            chara.BattleParams.TmpParam.CurrentTileIndex = gridIndex;                                       // ステージ上のグリッド位置の設定
-            chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( gridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
-            chara.GetTransformHandler.SetRotation( rot[( int ) chara.GetStatusRef.initDir] );               // 向きを設定
-            _stgCtrl.GetTileDynamicData( gridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
+            chara.BattleParams.TmpParam.CurrentTileIndex = initGridIndex;                                       // ステージ上のグリッド位置の設定
+            chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( initGridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
+            chara.GetTransformHandler.SetRotation( rot[( int ) initDir] );                                      // 向きを設定
+            _stgCtrl.GetTileDynamicData( initGridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
         }
     }
 }

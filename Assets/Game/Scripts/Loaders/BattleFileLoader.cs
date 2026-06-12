@@ -110,7 +110,7 @@ namespace Frontier.Loaders
                     Character chara = _characterFactory.CreateCharacter( ( CHARACTER_TAG ) i, prefabIndex, status );
                     if( null == chara ) { continue; }
 
-                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( chara );
+                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( chara, status.InitGridIndex, ( Direction ) status.InitDir );
                 }
             }
         }
@@ -147,7 +147,7 @@ namespace Frontier.Loaders
                 player.Init();
                 player.GetStatusRef = param;
 
-                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( player );
+                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( player, 0, Direction.NONE );
             }
             else
             {
@@ -157,7 +157,7 @@ namespace Frontier.Loaders
                 enemy.Init();
                 enemy.GetStatusRef = param;
 
-                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( enemy );
+                _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( enemy, 0, Direction.NONE );
             }
         }
 #endif  // DEVELOPMENT_BUILD || UNITY_EDITOR
