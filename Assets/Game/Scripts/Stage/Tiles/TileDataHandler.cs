@@ -405,7 +405,7 @@ namespace Frontier.Stage
 
             // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
             int tileTypeIndex           = Convert.ToInt32( staticData.TileType );
-            int currentMoveRange        = mvRng - tileCosts[tileTypeIndex] - heightCost;
+            int currentMoveRange        = mvRng - tileCosts[tileTypeIndex] * staticData.MoveResist - heightCost;
             tileDynamicData.EstimatedMoveRange = currentMoveRange;
 
             // 負の値であれば終了

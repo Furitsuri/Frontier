@@ -64,6 +64,16 @@ namespace Frontier.Stage
                 }
             }
 
+            // StageProp が配置されたタイルは移動不可にする
+            var props = StagePropDataSerializer.Load( fileName );
+            if ( props != null )
+            {
+                foreach ( var prop in props )
+                {
+                    _stageDataProvider.CurrentData.GetTileStaticData( prop.TileIndex ).MoveResist = short.MaxValue;
+                }
+            }
+
             return true;
         }
 

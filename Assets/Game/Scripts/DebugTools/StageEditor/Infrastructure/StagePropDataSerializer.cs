@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-#if UNITY_EDITOR
-
 namespace Frontier.DebugTools.StageEditor
 {
     /// <summary>
     /// ステージエディターで配置した StageProp データの保存・読込を行うクラス。
-    /// 保存先: Assets/Resources/CharactersData/{fileName}/Frontier_{fileName}_StagePropData.json
+    /// 保存先 (Editor): Assets/Resources/CharactersData/{fileName}/Frontier_{fileName}_StagePropData.json
+    /// 保存先 (Runtime): Application.persistentDataPath/StageData/{fileName}/Frontier_{fileName}_StagePropData.json
     /// </summary>
     static public class StagePropDataSerializer
     {
@@ -27,6 +26,7 @@ namespace Frontier.DebugTools.StageEditor
             public StagePropStatusData[] StagePropStatuses;
         }
 
+#if UNITY_EDITOR
         private static string GetFilePath( string fileName )
         {
             return Path.Combine(
@@ -64,6 +64,15 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
         }
+#else
+        private static string GetFilePath( string fileName )
+        {
+            return Path.Combine(
+                Application.persistentDataPath,
+                "StageData", fileName,
+                $"Frontier_{fileName}_StagePropData.json" );
+        }
+#endif // UNITY_EDITOR
 
         static public List<StagePropStatusData> Load( string fileName )
         {
@@ -91,5 +100,3 @@ namespace Frontier.DebugTools.StageEditor
         }
     }
 }
-
-#endif // UNITY_EDITOR

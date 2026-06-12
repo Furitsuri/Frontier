@@ -19,7 +19,7 @@ namespace Frontier.Stage
         {
             IsDeployable            = isDeployable;
             Height                  = height;
-            MoveResist              = -1;
+            MoveResist              = 1;
             float charaPosCorrext   = 0.5f * TILE_SIZE;                     // グリッド位置からキャラの立ち位置への補正値
             float posX              = x * TILE_SIZE + charaPosCorrext;
             float posZ              = y * TILE_SIZE + charaPosCorrext;
