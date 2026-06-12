@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Registries;
 using Frontier.Stage;
 using System;
@@ -39,6 +40,10 @@ namespace Frontier.DebugTools.StageEditor
             public int EnemyThinkType     = 0;
             public int EnemyInitGridIndex = 0;
             public int EnemyInitDir       = ( int ) Direction.BACK;
+            public int EnemySkill1        = ( int ) SkillID.NONE;
+            public int EnemySkill2        = ( int ) SkillID.NONE;
+            public int EnemySkill3        = ( int ) SkillID.NONE;
+            public int EnemySkill4        = ( int ) SkillID.NONE;
             public int SelectedEnemyParamIndex = 0;
 
             /// <summary>配置済み敵の (グリッドインデックス → _enemyStatusList インデックス) マップ</summary>
@@ -103,38 +108,47 @@ namespace Frontier.DebugTools.StageEditor
             {
                 "Prefab", "Level", "MaxHP", "Atk", "Def", "MoveRange",
                 "JumpForce", "AtkRange", "ActGaugeMax", "ActRecovery",
-                "ThinkType", "InitGridIndex", "InitDir"
+                "ThinkType", "InitGridIndex", "InitDir",
+                "Skill1", "Skill2", "Skill3", "Skill4"
             };
 
             public int GetEnemyParamValue( int index )
             {
                 return index switch
                 {
-                    0  => EnemyPrefab,
-                    1  => EnemyLevel,
-                    2  => EnemyMaxHP,
-                    3  => EnemyAtk,
-                    4  => EnemyDef,
-                    5  => EnemyMoveRange,
-                    6  => EnemyJumpForce,
-                    7  => EnemyAtkRange,
-                    8  => EnemyActGaugeMax,
-                    9  => EnemyActRecovery,
-                    10 => EnemyThinkType,
-                    11 => EnemyInitGridIndex,
-                    12 => EnemyInitDir,
-                    _  => 0,
+                    ( int ) EditorEnemyParamTag.PREFAB         => EnemyPrefab,
+                    ( int ) EditorEnemyParamTag.LEVEL          => EnemyLevel,
+                    ( int ) EditorEnemyParamTag.MAX_HP         => EnemyMaxHP,
+                    ( int ) EditorEnemyParamTag.ATK            => EnemyAtk,
+                    ( int ) EditorEnemyParamTag.DEF            => EnemyDef,
+                    ( int ) EditorEnemyParamTag.MOVE_RANGE     => EnemyMoveRange,
+                    ( int ) EditorEnemyParamTag.JUMP_FORCE     => EnemyJumpForce,
+                    ( int ) EditorEnemyParamTag.ATK_RANGE      => EnemyAtkRange,
+                    ( int ) EditorEnemyParamTag.ACT_GAUGE_MAX  => EnemyActGaugeMax,
+                    ( int ) EditorEnemyParamTag.ACT_RECOVERY   => EnemyActRecovery,
+                    ( int ) EditorEnemyParamTag.THINK_TYPE     => EnemyThinkType,
+                    ( int ) EditorEnemyParamTag.INIT_GRID_INDEX => EnemyInitGridIndex,
+                    ( int ) EditorEnemyParamTag.INIT_DIR       => EnemyInitDir,
+                    ( int ) EditorEnemyParamTag.SKILL_1        => EnemySkill1,
+                    ( int ) EditorEnemyParamTag.SKILL_2        => EnemySkill2,
+                    ( int ) EditorEnemyParamTag.SKILL_3        => EnemySkill3,
+                    ( int ) EditorEnemyParamTag.SKILL_4        => EnemySkill4,
+                    _                                          => 0,
                 };
             }
 
             /// <summary>
             /// パラメータの表示用文字列を返します。
-            /// Prefab (index=0) は ENEMIES の enum 名、InitDir (index=12) は Direction の enum 名で返します。
+            /// Prefab は ENEMIES の enum 名、InitDir は Direction の enum 名、Skill1~4 は SkillID の enum 名で返します。
             /// </summary>
             public string GetEnemyParamDisplayString( int index )
             {
-                if ( index == 0  ) return ( ( ENEMIES ) EnemyPrefab ).ToString();
-                if ( index == 12 ) return ( ( Direction ) EnemyInitDir ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.PREFAB   ) return ( ( ENEMIES ) EnemyPrefab ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.INIT_DIR ) return ( ( Direction ) EnemyInitDir ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.SKILL_1  ) return ( ( SkillID ) EnemySkill1 ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.SKILL_2  ) return ( ( SkillID ) EnemySkill2 ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.SKILL_3  ) return ( ( SkillID ) EnemySkill3 ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.SKILL_4  ) return ( ( SkillID ) EnemySkill4 ).ToString();
                 return GetEnemyParamValue( index ).ToString();
             }
 
@@ -396,7 +410,7 @@ namespace Frontier.DebugTools.StageEditor
                 ThinkType       = _refParams.EnemyThinkType,
                 InitGridIndex   = _refParams.EnemyInitGridIndex,
                 InitDir         = _refParams.EnemyInitDir,
-                Skills          = new int[] { -1, -1, -1, -1 },
+                Skills          = new int[] { _refParams.EnemySkill1, _refParams.EnemySkill2, _refParams.EnemySkill3, _refParams.EnemySkill4 },
             };
 
             _enemyStatusList.Add( data );
@@ -438,6 +452,7 @@ namespace Frontier.DebugTools.StageEditor
             data.ThinkType     = _refParams.EnemyThinkType;
             data.InitGridIndex = newGridIndex;
             data.InitDir       = _refParams.EnemyInitDir;
+            data.Skills        = new int[] { _refParams.EnemySkill1, _refParams.EnemySkill2, _refParams.EnemySkill3, _refParams.EnemySkill4 };
             _enemyStatusList[listIndex] = data;
 
             Debug.Log( $"[StageEditor] 敵を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
@@ -464,6 +479,10 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.EnemyThinkType     = data.ThinkType;
             _refParams.EnemyInitGridIndex = data.InitGridIndex;
             _refParams.EnemyInitDir       = data.InitDir;
+            _refParams.EnemySkill1        = data.Skills != null && data.Skills.Length > 0 ? data.Skills[0] : ( int ) SkillID.NONE;
+            _refParams.EnemySkill2        = data.Skills != null && data.Skills.Length > 1 ? data.Skills[1] : ( int ) SkillID.NONE;
+            _refParams.EnemySkill3        = data.Skills != null && data.Skills.Length > 2 ? data.Skills[2] : ( int ) SkillID.NONE;
+            _refParams.EnemySkill4        = data.Skills != null && data.Skills.Length > 3 ? data.Skills[3] : ( int ) SkillID.NONE;
             return true;
         }
 

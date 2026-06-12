@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,6 +38,7 @@ namespace Frontier.DebugTools.StageEditor
         private int     _snapMoveRange, _snapJumpForce, _snapAtkRange;
         private int     _snapActGaugeMax, _snapActRecovery, _snapPrefab;
         private int     _snapThinkType, _snapInitGridIndex, _snapInitDir;
+        private int     _snapSkill1, _snapSkill2, _snapSkill3, _snapSkill4;
 
         public override string GetSub12Label() => "PREV/NEXT\nPARAM";
         public override string GetSub34Label() => "DEC/INC\nVALUE";
@@ -68,6 +70,10 @@ namespace Frontier.DebugTools.StageEditor
             _snapThinkType     = _refParams.EnemyThinkType;
             _snapInitGridIndex = _refParams.EnemyInitGridIndex;
             _snapInitDir       = _refParams.EnemyInitDir;
+            _snapSkill1            = _refParams.EnemySkill1;
+            _snapSkill2            = _refParams.EnemySkill2;
+            _snapSkill3            = _refParams.EnemySkill3;
+            _snapSkill4            = _refParams.EnemySkill4;
             _snapCursorTileIndex   = _gridCursor != null ? _gridCursor.CurrentTileIndex : 0;
             _snapCharacterPosition = _boundCharacter != null
                 ? _boundCharacter.transform.position
@@ -91,7 +97,11 @@ namespace Frontier.DebugTools.StageEditor
                 _refParams.EnemyPrefab       = _snapPrefab;
                 _refParams.EnemyThinkType    = _snapThinkType;
                 _refParams.EnemyInitGridIndex = _snapInitGridIndex;
-                _refParams.EnemyInitDir      = _snapInitDir;
+                _refParams.EnemyInitDir       = _snapInitDir;
+                _refParams.EnemySkill1        = _snapSkill1;
+                _refParams.EnemySkill2        = _snapSkill2;
+                _refParams.EnemySkill3        = _snapSkill3;
+                _refParams.EnemySkill4        = _snapSkill4;
 
                 if ( _boundCharacter != null )
                 {
@@ -141,7 +151,11 @@ namespace Frontier.DebugTools.StageEditor
             _params.Add( new ParamDescriptor { Name = "ThinkType",    Min = 0,            Max = 10,           Getter = () => _refParams.EnemyThinkType,    Setter = v => _refParams.EnemyThinkType    = v } );
             // InitGridIndex: カーソル位置から自動設定されるため読み取り専用
             _params.Add( new ParamDescriptor { Name = "InitGridIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyInitGridIndex, Setter = v => { } } );
-            _params.Add( new ParamDescriptor { Name = "InitDir",      Min = 0,            Max = 3,            Getter = () => _refParams.EnemyInitDir,      Setter = v => _refParams.EnemyInitDir      = v } );
+            _params.Add( new ParamDescriptor { Name = "InitDir",  Min = 0,                    Max = 3,                    Getter = () => _refParams.EnemyInitDir,  Setter = v => _refParams.EnemyInitDir  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill1",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill1,  Setter = v => _refParams.EnemySkill1  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill2",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill2,  Setter = v => _refParams.EnemySkill2  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill3",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill3,  Setter = v => _refParams.EnemySkill3  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill4",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill4,  Setter = v => _refParams.EnemySkill4  = v } );
         }
 
         public override bool CanAcceptConfirm() { return true; }
