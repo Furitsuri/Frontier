@@ -22,6 +22,7 @@ namespace Frontier.Stage
         private PrefabRegistry _prefabReg               = null;
         private IStageDataProvider _stageDataProvider   = null;
         private int _atkTargetIndex                     = 0;
+        private int _gridCursorSize                     = 1;
         private GridCursor[] _gridCursors               = new GridCursor[( int ) CursorType.NUM];
         private ReadOnlyCollection<int> _refAttackableTileIndices;
         private Func<int, int>[] _directionMoveCallbacks;
@@ -44,6 +45,17 @@ namespace Frontier.Stage
             _gridCursors[(int)CursorType.GRID_CURSOR].Init( initIndex, _directionMoveCallbacks );
             _gridCursors[(int)CursorType.TARGET_CURSOR].Init( initIndex, _directionAttackTargetCallbacks );
             _gridCursors[(int)CursorType.TARGET_CURSOR].SetActive( false );
+        }
+
+        /// <summary>
+        /// グリッドカーソルのサイズを変更します（1/2/3 タイル幅）。
+        /// 移動コールバックを再生成してカーソルに反映します。
+        /// </summary>
+        public void SetGridCursorSize( int size )
+        {
+            _gridCursorSize = size;
+            InitCallbacks();
+            _gridCursors[( int ) CursorType.GRID_CURSOR].SetCursorSize( size, _directionMoveCallbacks );
         }
 
         public void ApplyGridCursor2CharacterTile( Character character, CursorType cursorType, bool isFocusCamera )
@@ -184,48 +196,53 @@ namespace Frontier.Stage
 
         private void InitCallbacks()
         {
+            int s = _gridCursorSize;
+
             _directionMoveCallbacks = new Func<int, int>[( int ) Direction.NUM]
             {
-                // Direction.FORWARD
+                // Direction.FORWARD（行を +1）
                 ( tileIndex ) =>
                 {
-                    tileIndex += _stageDataProvider.CurrentData.TileColNum;
-                    if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tileIndex )
-                    {
-                        tileIndex = tileIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
-                    }
-
-                    return tileIndex;
+                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
+                    int totalNum = _stageDataProvider.CurrentData.GetTileTotalNum();
+                    int rowNum  = totalNum / colNum;
+                    int row     = tileIndex / colNum;
+                    int col     = tileIndex % colNum;
+                    row++;
+                    if( row + s - 1 >= rowNum ) row = 0;
+                    return row * colNum + col;
                 },
-                // Direction.RIGHT
+                // Direction.RIGHT（列を +1）
                 ( tileIndex ) =>
                 {
-                    tileIndex++;
-                    if( tileIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
-                    {
-                        tileIndex -= _stageDataProvider.CurrentData.TileColNum;
-                    }
-                    return tileIndex;
+                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
+                    int row     = tileIndex / colNum;
+                    int col     = tileIndex % colNum;
+                    col++;
+                    if( col + s - 1 >= colNum ) col = 0;
+                    return row * colNum + col;
                 },
-                // Direction.BACK
+                // Direction.BACK（行を -1）
                 ( tileIndex ) =>
                 {
-                    tileIndex -= _stageDataProvider.CurrentData.TileColNum;
-                    if( tileIndex < 0 )
-                    {
-                        tileIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
-                    }
-                    return tileIndex;
+                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
+                    int totalNum = _stageDataProvider.CurrentData.GetTileTotalNum();
+                    int rowNum  = totalNum / colNum;
+                    int row     = tileIndex / colNum;
+                    int col     = tileIndex % colNum;
+                    row--;
+                    if( row < 0 ) row = rowNum - s;
+                    return row * colNum + col;
                 },
-                // Direction.LEFT
+                // Direction.LEFT（列を -1）
                 ( tileIndex ) =>
                 {
-                    tileIndex--;
-                    if( ( tileIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
-                    {
-                        tileIndex += _stageDataProvider.CurrentData.TileColNum;
-                    }
-                    return tileIndex;
+                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
+                    int row     = tileIndex / colNum;
+                    int col     = tileIndex % colNum;
+                    col--;
+                    if( col < 0 ) col = colNum - s;
+                    return row * colNum + col;
                 }
             };
 

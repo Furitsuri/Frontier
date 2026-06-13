@@ -19,6 +19,7 @@ namespace Frontier.Stage
         private BattleCameraController _btlCamCtrl     = null;
 
         private int _tileIndex              = 0;
+        private int _cursorSize             = 1;
         private float _totalTime            = 0;
         private bool _isFocusCamera         = false;
         private GridCursorState _gridState  = GridCursorState.NONE;
@@ -32,6 +33,7 @@ namespace Frontier.Stage
         public int CurrentTileIndex => _tileIndex;
         public GridCursorState GridState => _gridState;
         public Character BindCharacter => _bindCharacter;
+        public int CursorSize => _cursorSize;
 
         [Inject] public void Construct( Color color, bool isFocusCamera, IStageDataProvider stageDataProvider, BattleCameraController btlCamCtrl )
         {
@@ -87,6 +89,38 @@ namespace Frontier.Stage
         public void SetTileIndex( int index )
         {
             _tileIndex = index;
+        }
+
+        /// <summary>
+        /// カーソルサイズと移動コールバックを同時に更新します。
+        /// サイズ変更時は GridCursorController.SetGridCursorSize() 経由で呼ぶこと。
+        /// </summary>
+        public void SetCursorSize( int size, Func<int, int>[] moveCallbacks )
+        {
+            _cursorSize    = size;
+            _moveCallbacks = moveCallbacks;
+        }
+
+        /// <summary>
+        /// カーソルが占有している全タイルインデックスを返します。
+        /// size=1 なら要素1つ、size=2 なら 2×2=4 つ、size=3 なら 9 つ。
+        /// </summary>
+        public int[] GetOccupiedTileIndices()
+        {
+            int colNum  = _stageDataProvider.CurrentData.TileColNum;
+            int count   = _cursorSize * _cursorSize;
+            int[] result = new int[count];
+
+            int i = 0;
+            for( int dy = 0; dy < _cursorSize; dy++ )
+            {
+                for( int dx = 0; dx < _cursorSize; dx++ )
+                {
+                    result[i++] = _tileIndex + dx + dy * colNum;
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -156,8 +190,8 @@ namespace Frontier.Stage
         /// <summary>
         /// 指定した位置(centralPos)に四角形ラインを描画します
         /// </summary>
-        /// <param name="gridSize">1グリッドのサイズ</param>
-        /// <param name="centralPos">指定グリッドの中心位置</param>
+        /// <param name="gridSize">描画する正方形のサイズ</param>
+        /// <param name="centralPos">中心位置</param>
         private void DrawSquareLine( float gridSize, in Vector3 centralPos )
         {
             float halfSize = 0.5f * gridSize;
@@ -186,7 +220,7 @@ namespace Frontier.Stage
 
         private void SetCameraLookAtPosAndDrawCursor( in Vector3 pos )
         {
-            DrawSquareLine( TILE_SIZE, pos );
+            DrawSquareLine( TILE_SIZE * _cursorSize, pos );
 
             // カメラがグリッドを注視する設定の場合、グリッドの位置に基づいてカメラの注視点を更新する
             if( _isFocusCamera )
@@ -196,15 +230,37 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// グリッドの現在座標を取得します
+        /// グリッドの目標座標を取得します。
+        /// size=1 の場合はアンカータイルの座標、size>1 の場合は占有タイル群の XZ 中心 + Y 最大値。
         /// </summary>
-        /// <returns>グリッドの現在座標</returns>
         private Vector3 GetGoalPosition()
         {
-            var offsetY = _stageDataProvider.CurrentData.GetTile( _tileIndex ).GetTileMeshPosYOffset();
-            var goalPos = _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
+            if( _cursorSize == 1 )
+            {
+                var offsetY = _stageDataProvider.CurrentData.GetTile( _tileIndex ).GetTileMeshPosYOffset();
+                return _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
+            }
 
-            return goalPos;
+            int colNum      = _stageDataProvider.CurrentData.TileColNum;
+            Vector3 sumPos  = Vector3.zero;
+            float maxY      = float.MinValue;
+
+            for( int dy = 0; dy < _cursorSize; dy++ )
+            {
+                for( int dx = 0; dx < _cursorSize; dx++ )
+                {
+                    int idx         = _tileIndex + dx + dy * colNum;
+                    float offsetY   = _stageDataProvider.CurrentData.GetTile( idx ).GetTileMeshPosYOffset();
+                    var pos         = _stageDataProvider.CurrentData.GetTileStaticData( idx ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
+                    sumPos          += pos;
+                    if( pos.y > maxY ) maxY = pos.y;
+                }
+            }
+
+            int count       = _cursorSize * _cursorSize;
+            Vector3 center  = sumPos / count;
+            center.y        = maxY;
+            return center;
         }
     }
 }

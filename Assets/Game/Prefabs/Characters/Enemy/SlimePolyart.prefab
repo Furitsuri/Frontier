@@ -435,8 +435,6 @@ MonoBehaviour:
     maxActionGauge: 0
     CurActionGauge: 0
     recoveryActionGauge: 0
-    initGridIndex: 0
-    initDir: 0
     EquipSkills: 
   _btlParams:
     _modifiedParam:
