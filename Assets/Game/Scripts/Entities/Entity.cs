@@ -25,9 +25,7 @@ namespace Frontier.Entities
         public void RotateToPosition( in Vector3 targetPos )                                    => _transformHdlr.RotateToPosition( targetPos );
         public void EstablishBaseRotation()                                                     => _transformHdlr.EstablishBaseRotation();
         public void AddPosition( in Vector3 position )                                          => _transformHdlr.AddPosition( position );
-        public void StartTileMoveJump( in Vector3 departing, in Vector3 destination, float rate ) => _transformHdlr.StartTileMoveJump( departing, destination, rate );
-        public void StartSkillJump( in Vector3 departing, in Vector3 destination, float rate )  => _transformHdlr.StartSkillJump( departing, destination, rate );
-        public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
+public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
         public Vector3 GetPreviousPosition()                                                    => _transformHdlr.GetPreviousPosition();
         public Quaternion GetRotation()                                                         => _transformHdlr.GetRotation();
         public Vector3 GetOrderedForward()                                                      => _transformHdlr.GetOrderedForward();

@@ -153,67 +153,13 @@ public class TransformHandler
     }
 
     /// <summary>
-    /// タイル間移動専用のジャンプ Y 成分を設定します。
-    /// 高低差がある場合のみ意図通りの弧を描きます。XZ 速度は事前に SetVelocityAndAcceleration で設定しておく必要があります。
+    /// 速度・加速度の Y 成分のみを設定します。XZ 成分は維持されます。
+    /// ジャンプ計算など、Y 方向の運動のみを上書きしたい場合に使用します。
     /// </summary>
-    public void StartTileMoveJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )
+    public void SetVerticalMotion( float velocityY, float accelY )
     {
-        var diffPosition    = destinationPosition - departingPosition;
-        var diffPositionXZ  = diffPosition.XZ();
-        float diffHeight    = diffPosition.y;
-        float arrivalTime   = diffPositionXZ.magnitude / ( moveSpeedRate * Constants.CHARACTER_MOVE_SPEED );
-
-        if( 0 < diffHeight )
-        {
-            // MEMO : 放物運動によって、一度最高点まで上昇し、そこから目的地まで落下する動作を実装する
-            // 到達時刻TはXZ平面上の動きが等速であることから既に定められているため、ここでは初速度と落下加速度を求める
-
-            // 1. 落下加速度gを求める( 基本公式 : h = v0 * t + 0.5 * g * t^2 → 0.5 * g * t^2 + v0 * t - h = 0 )
-            //    解の和と積より、 t1 + t2 = - 2 * v0 / g, t1 * t2 = - 2 * h / g → t1 = - 2 * h / ( g * t2 ) より v0 = h / t2 - 0.5 * g * t2
-            //    t1 < t2 であることが前提のため、上記 t1 = - 2 * h / ( g * t2 ) に t1 < t2 を代入したとき、
-            //    - 2 * h / ( g * t2 ) < t2 → g < - 2 * h / t2^2 となる(gは負の値であることが分かっているため、等号は反対となる)
-            //    よって、g = - 2 * h / t2^2 とし、そこに任意の負の値を加えることで、t1 < t2 を満たす g を求めることができる
-            _accel.y = -2 * diffHeight / Mathf.Pow( arrivalTime, 2f );
-            _accel.y -= JUMP_POSITIVE_Y_ACCELERATION; // t1 < t2 を満たすために、任意の負の値を加える
-
-            // 2. 初速度v0を求める( 1における導出より v0 = h / t2 - 0.5 * g * t2 )
-            _velocity.y = diffHeight / arrivalTime - 0.5f * _accel.y * arrivalTime;
-        }
-        else
-        {
-            // MEMO : 目的地が出発地点よりも低い場合は、単純に等加速度運動で落下する動作を実装する
-
-            // h = v0 * t + 0.5 * g * t^2 が成り立つ
-            // 0 < v0 が前提であり、それを満たす g を求める。v0には任意の正の値を代入する
-            _velocity.y = JUMP_NEGATIVE_Y_VELOCITY;
-            // 0.5 * g * t^2 + v0 * t - h = 0 より、 g = 2 * ( - v0 * t + h ) / t^2
-            _accel.y = 2 * ( - _velocity.y * arrivalTime + diffHeight ) / ( arrivalTime * arrivalTime );
-        }
-    }
-
-    /// <summary>
-    /// スキル攻撃専用の放物運動 Y 成分を設定します。
-    /// 高低差がゼロの場合でも常に JUMP_SKILL_PEAK_HEIGHT 分の弧を描きます。
-    /// XZ 速度は事前に SetVelocityAndAcceleration で設定しておく必要があります。
-    /// </summary>
-    public void StartSkillJump( in Vector3 departingPosition, in Vector3 destinationPosition, float moveSpeedRate )
-    {
-        var diffPositionXZ  = ( destinationPosition - departingPosition ).XZ();
-        float diffHeight    = destinationPosition.y - departingPosition.y;
-        float arrivalTime   = diffPositionXZ.magnitude / ( moveSpeedRate * Constants.CHARACTER_MOVE_SPEED );
-
-        // MEMO : 高低差に関わらず必ず弧を描くよう、出発点・着地点のうち高い方を基準に
-        //        JUMP_SKILL_PEAK_HEIGHT 分だけ上乗せした相対高さを目標頂点とする
-        // 対称弧（頂点を t = T/2 と仮定）から v0 を求め、到達高さ条件から g を求める
-        //   対称弧の場合 : pos(T/2) = peakRelHeight → v0*(T/2) + 0.5*g*(T/2)^2 = peakRelHeight
-        //   t=T/2 が頂点ならば v0 + g*(T/2) = 0 → v0 = -g*(T/2)
-        //   代入すると : -g*(T/2)^2 + 0.5*g*(T/2)^2 = peakRelHeight → -0.5*g*(T/2)^2 = peakRelHeight
-        //   → v0 = 4 * peakRelHeight / T
-        float peakRelHeight = Mathf.Max( departingPosition.y, destinationPosition.y ) - departingPosition.y + Constants.JUMP_SKILL_PEAK_HEIGHT;
-        _velocity.y = 4f * peakRelHeight / arrivalTime;
-
-        // 到達時の高さ条件: diffHeight = v0*T + 0.5*g*T^2 → g = 2*(diffHeight - v0*T) / T^2
-        _accel.y = 2f * ( diffHeight - _velocity.y * arrivalTime ) / ( arrivalTime * arrivalTime );
+        _velocity.y = velocityY;
+        _accel.y    = accelY;
     }
 
     public Direction GetDirection()
