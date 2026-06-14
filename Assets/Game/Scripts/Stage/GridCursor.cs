@@ -235,32 +235,7 @@ namespace Frontier.Stage
         /// </summary>
         private Vector3 GetGoalPosition()
         {
-            if( _cursorSize == 1 )
-            {
-                var offsetY = _stageDataProvider.CurrentData.GetTile( _tileIndex ).GetTileMeshPosYOffset();
-                return _stageDataProvider.CurrentData.GetTileStaticData( _tileIndex ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
-            }
-
-            int colNum      = _stageDataProvider.CurrentData.TileColNum;
-            Vector3 sumPos  = Vector3.zero;
-            float maxY      = float.MinValue;
-
-            for( int dy = 0; dy < _cursorSize; dy++ )
-            {
-                for( int dx = 0; dx < _cursorSize; dx++ )
-                {
-                    int idx         = _tileIndex + dx + dy * colNum;
-                    float offsetY   = _stageDataProvider.CurrentData.GetTile( idx ).GetTileMeshPosYOffset();
-                    var pos         = _stageDataProvider.CurrentData.GetTileStaticData( idx ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
-                    sumPos          += pos;
-                    if( pos.y > maxY ) maxY = pos.y;
-                }
-            }
-
-            int count       = _cursorSize * _cursorSize;
-            Vector3 center  = sumPos / count;
-            center.y        = maxY;
-            return center;
+            return GridPositionUtility.CalcSizeAwareCenter( _tileIndex, _cursorSize, _stageDataProvider );
         }
     }
 }
