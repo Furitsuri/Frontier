@@ -69,10 +69,11 @@ namespace Frontier.DebugTools.StageEditor
             int maxPrefab = (int)STAGE_PROPS.NUM - 1;
 
             _params.Clear();
-            _params.Add( new ParamDescriptor { Name = "Prefab",    Min = 0,            Max = maxPrefab,    Getter = () => _refParams.StagePropPrefab,    Setter = v => _refParams.StagePropPrefab    = v } );
+            _params.Add( new ParamDescriptor { Name = "Prefab",    Min = 0,                       Max = maxPrefab,            Getter = () => _refParams.StagePropPrefab,    Setter = v => _refParams.StagePropPrefab    = v } );
+            _params.Add( new ParamDescriptor { Name = "Size",      Min = Constants.GRID_SIZE_MIN, Max = Constants.GRID_SIZE_MAX, Getter = () => _refParams.StagePropSize,   Setter = v => _refParams.StagePropSize      = v } );
             // TileIndex: カーソル位置から自動設定されるため読み取り専用
-            _params.Add( new ParamDescriptor { Name = "TileIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.StagePropTileIndex, Setter = v => { } } );
-            _params.Add( new ParamDescriptor { Name = "Direction", Min = 0,            Max = 3,            Getter = () => _refParams.StagePropDirection, Setter = v => _refParams.StagePropDirection = v } );
+            _params.Add( new ParamDescriptor { Name = "TileIndex", Min = int.MaxValue,             Max = int.MinValue,          Getter = () => _refParams.StagePropTileIndex, Setter = v => { } } );
+            _params.Add( new ParamDescriptor { Name = "Direction", Min = 0,                        Max = 3,                     Getter = () => _refParams.StagePropDirection, Setter = v => _refParams.StagePropDirection = v } );
         }
 
         // ──── 毎フレーム更新 ──────────────────────────────────────────────
@@ -121,6 +122,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( _previewProp == null ) return;
 
             _shownPrefabIndex = prefabIdx;
+            _previewProp.SetSize( _refParams.StagePropSize );
             UpdatePreviewPosition();
         }
 
@@ -210,6 +212,7 @@ namespace Frontier.DebugTools.StageEditor
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() - 1, p.Min, p.Max ) );
             if ( p.Name == "Prefab" ) RefreshPreview();
+            if ( p.Name == "Size"   ) _previewProp?.SetSize( _refParams.StagePropSize );
             return true;
         }
 
@@ -219,6 +222,7 @@ namespace Frontier.DebugTools.StageEditor
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() + 1, p.Min, p.Max ) );
             if ( p.Name == "Prefab" ) RefreshPreview();
+            if ( p.Name == "Size"   ) _previewProp?.SetSize( _refParams.StagePropSize );
             return true;
         }
     }

@@ -18,6 +18,7 @@ namespace Frontier.DebugTools.StageEditor
             public int Prefab;
             public int TileIndex;
             public int Direction;
+            public int Size = Constants.GRID_SIZE_MIN;
         }
 
         [System.Serializable]

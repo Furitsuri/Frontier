@@ -66,6 +66,7 @@ namespace Frontier.DebugTools.StageEditor
 
             // --- StageProp 配置テンプレート ---
             public int StagePropPrefab    = 0;
+            public int StagePropSize      = Constants.GRID_SIZE_MIN;
             public int StagePropTileIndex = 0;
             public int StagePropDirection = ( int ) Direction.BACK;
             public int SelectedStagePropParamIndex = 0;
@@ -90,7 +91,7 @@ namespace Frontier.DebugTools.StageEditor
 
             public static readonly string[] StagePropParamNames =
             {
-                "Prefab", "TileIndex", "Direction"
+                "Prefab", "Size", "TileIndex", "Direction"
             };
 
             public string GetStagePropParamDisplayString( int index )
@@ -98,8 +99,9 @@ namespace Frontier.DebugTools.StageEditor
                 return index switch
                 {
                     0 => ( ( Frontier.Entities.STAGE_PROPS ) StagePropPrefab ).ToString(),
-                    1 => StagePropTileIndex.ToString(),
-                    2 => ( ( Direction ) StagePropDirection ).ToString(),
+                    1 => StagePropSize.ToString(),
+                    2 => StagePropTileIndex.ToString(),
+                    3 => ( ( Direction ) StagePropDirection ).ToString(),
                     _ => "",
                 };
             }
@@ -620,6 +622,7 @@ namespace Frontier.DebugTools.StageEditor
             var data = new StagePropDataSerializer.StagePropStatusData
             {
                 Prefab    = _refParams.StagePropPrefab,
+                Size      = _refParams.StagePropSize,
                 TileIndex = _refParams.StagePropTileIndex,
                 Direction = _refParams.StagePropDirection,
             };
@@ -651,6 +654,7 @@ namespace Frontier.DebugTools.StageEditor
             var data = _stagePropList[listIndex];
             data.TileIndex = newGridIndex;
             data.Direction = _refParams.StagePropDirection;
+            data.Size      = _refParams.StagePropSize;
             _stagePropList[listIndex] = data;
 
             Debug.Log( $"[StageEditor] StageProp を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
@@ -665,6 +669,7 @@ namespace Frontier.DebugTools.StageEditor
 
             var data = _stagePropList[listIndex];
             _refParams.StagePropPrefab    = data.Prefab;
+            _refParams.StagePropSize      = data.Size;
             _refParams.StagePropTileIndex = data.TileIndex;
             _refParams.StagePropDirection = data.Direction;
             return true;
@@ -688,6 +693,7 @@ namespace Frontier.DebugTools.StageEditor
                               + new Vector3( 0f, offsetY, 0f );
                 prop.SetPosition( pos );
                 prop.SetRotation( ( Direction ) data.Direction );
+                prop.SetSize( data.Size );
 
                 _loadedStagePropVisuals.Add( prop );
                 _refParams.GridIndexToStageProp[data.TileIndex] = prop;

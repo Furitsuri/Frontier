@@ -29,9 +29,9 @@ namespace Frontier.DebugTools.StageEditor
 
         [Header( "StageProp パラメータ一覧ウィンドウ" )]
         [SerializeField] private GameObject _stagePropParamListPanel;          // StagePropParamList ルート
-        [SerializeField] private TextMeshProUGUI[] _stagePropParamNameTexts;   // 各行の名前テキスト (3要素)
-        [SerializeField] private TextMeshProUGUI[] _stagePropParamValueTexts;  // 各行の値テキスト  (3要素)
-        [SerializeField] private GameObject[] _stagePropParamIndicators;       // 各行の選択インジケーター (3要素)
+        [SerializeField] private TextMeshProUGUI[] _stagePropParamNameTexts;   // 各行の名前テキスト (4要素)
+        [SerializeField] private TextMeshProUGUI[] _stagePropParamValueTexts;  // 各行の値テキスト  (4要素)
+        [SerializeField] private GameObject[] _stagePropParamIndicators;       // 各行の選択インジケーター (4要素)
 
         private static readonly Color ColorParamSelected   = new Color( 1.0f, 0.95f, 0.2f, 1.0f );  // 選択中：黄
         private static readonly Color ColorParamUnselected = new Color( 0.55f, 0.55f, 0.55f, 1.0f ); // 非選択：グレー

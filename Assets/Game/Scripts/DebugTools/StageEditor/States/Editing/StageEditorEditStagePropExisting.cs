@@ -33,6 +33,7 @@ namespace Frontier.DebugTools.StageEditor
         private Vector3 _snapPropPosition;
         private int     _snapCursorTileIndex;
         private int     _snapPrefab;
+        private int     _snapSize;
         private int     _snapTileIndex;
         private int     _snapDirection;
 
@@ -51,6 +52,7 @@ namespace Frontier.DebugTools.StageEditor
 
             // 編集前の状態をスナップショット
             _snapPrefab          = _refParams.StagePropPrefab;
+            _snapSize            = _refParams.StagePropSize;
             _snapTileIndex       = _refParams.StagePropTileIndex;
             _snapDirection       = _refParams.StagePropDirection;
             _snapCursorTileIndex = _gridCursor != null ? _gridCursor.CurrentTileIndex : 0;
@@ -63,6 +65,7 @@ namespace Frontier.DebugTools.StageEditor
             {
                 // Cancel による退出: パラメータとプロップ位置を編集前に戻す
                 _refParams.StagePropPrefab    = _snapPrefab;
+                _refParams.StagePropSize      = _snapSize;
                 _refParams.StagePropTileIndex = _snapTileIndex;
                 _refParams.StagePropDirection = _snapDirection;
 
@@ -70,6 +73,7 @@ namespace Frontier.DebugTools.StageEditor
                 {
                     _boundProp.SetPosition( _snapPropPosition );
                     _boundProp.SetRotation( ( Direction ) _snapDirection );
+                    _boundProp.SetSize( _snapSize );
                 }
 
                 if ( _gridCursor != null )
@@ -100,10 +104,11 @@ namespace Frontier.DebugTools.StageEditor
         {
             _params.Clear();
             // Prefab: 既存プロップのプレハブ変更は非対応のため読み取り専用
-            _params.Add( new ParamDescriptor { Name = "Prefab",    Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.StagePropPrefab,    Setter = v => { } } );
+            _params.Add( new ParamDescriptor { Name = "Prefab",    Min = int.MaxValue,             Max = int.MinValue,            Getter = () => _refParams.StagePropPrefab,    Setter = v => { } } );
+            _params.Add( new ParamDescriptor { Name = "Size",      Min = Constants.GRID_SIZE_MIN,  Max = Constants.GRID_SIZE_MAX, Getter = () => _refParams.StagePropSize,      Setter = v => _refParams.StagePropSize      = v } );
             // TileIndex: カーソル位置から自動設定されるため読み取り専用
-            _params.Add( new ParamDescriptor { Name = "TileIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.StagePropTileIndex, Setter = v => { } } );
-            _params.Add( new ParamDescriptor { Name = "Direction", Min = 0,            Max = 3,            Getter = () => _refParams.StagePropDirection, Setter = v => _refParams.StagePropDirection = v } );
+            _params.Add( new ParamDescriptor { Name = "TileIndex", Min = int.MaxValue,             Max = int.MinValue,            Getter = () => _refParams.StagePropTileIndex, Setter = v => { } } );
+            _params.Add( new ParamDescriptor { Name = "Direction", Min = 0,                        Max = 3,                       Getter = () => _refParams.StagePropDirection, Setter = v => _refParams.StagePropDirection = v } );
         }
 
         public override bool CanAcceptConfirm() { return true; }
@@ -158,6 +163,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptSub3( context ) ) return false;
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() - 1, p.Min, p.Max ) );
+            if ( p.Name == "Size" ) _boundProp?.SetSize( _refParams.StagePropSize );
             return true;
         }
 
@@ -166,6 +172,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptSub4( context ) ) return false;
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() + 1, p.Min, p.Max ) );
+            if ( p.Name == "Size" ) _boundProp?.SetSize( _refParams.StagePropSize );
             return true;
         }
     }
