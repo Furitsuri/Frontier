@@ -53,9 +53,9 @@ namespace Frontier.Stage
         /// </summary>
         public void SetGridCursorSize( int size )
         {
-            _gridCursorSize = size;
+            _gridCursorSize = Mathf.Clamp( size, Constants.GRID_SIZE_MIN, Constants.GRID_SIZE_MAX );
             InitCallbacks();
-            _gridCursors[( int ) CursorType.GRID_CURSOR].SetCursorSize( size, _directionMoveCallbacks );
+            _gridCursors[( int ) CursorType.GRID_CURSOR].SetCursorSize( _gridCursorSize, _directionMoveCallbacks );
         }
 
         public void ApplyGridCursor2CharacterTile( Character character, CursorType cursorType, bool isFocusCamera )

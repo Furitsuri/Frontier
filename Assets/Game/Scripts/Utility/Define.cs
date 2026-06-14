@@ -63,6 +63,9 @@ static public class Constants
     public const int COEFFICIENT_RECRUIT_COST_ACT_MAX   = 5;
     public const int COEFFICIENT_RECRUIT_COST_ACT_RECOV = 8;
 
+    // グリッドサイズ（カーソル・エンティティスケール共通の値域）
+    public const int GRID_SIZE_MIN = 1;
+    public const int GRID_SIZE_MAX = 3;
     // タイルの一辺の長さ(タイルはすべて正方形)
     public const float TILE_SIZE = 1.0f;
     // タイルの厚みの最小値

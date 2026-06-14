@@ -61,6 +61,11 @@ public class TransformHandler
         _accel      = accel;
     }
 
+    public void SetScale( float scale )
+    {
+        _readOnlyTransform.Value.localScale = Vector3.one * scale;
+    }
+
     public void SetPosition( in Vector3 position )
     {
         _readOnlyTransform.Value.position = position;

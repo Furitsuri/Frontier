@@ -38,6 +38,15 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// エンティティのスケールを設定します。値域は Constants.GRID_SIZE_MIN ～ GRID_SIZE_MAX に制限されます。
+        /// </summary>
+        public void SetScale( int scale )
+        {
+            int clamped = Mathf.Clamp( scale, Constants.GRID_SIZE_MIN, Constants.GRID_SIZE_MAX );
+            _transformHdlr.SetScale( ( float ) clamped );
+        }
+
+        /// <summary>
         /// 状態を初期値に戻します。バトル開始など再利用時にも呼ばれます。
         /// </summary>
         public virtual void Init()
