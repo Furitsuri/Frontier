@@ -49,15 +49,15 @@ namespace Frontier.Entities
 
             if( null != prevTargetCharacter )
             {
-                prevTargetCharacter.GetTransformHandler.ResetRotationOrder();
+                prevTargetCharacter.ResetRotationOrder();
             }
 
             if( targetCharacter != null )
             {
                 var targetTileData   = context.StageCtrl.GetTileStaticData( targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
                 var attackerTileData = context.StageCtrl.GetTileStaticData( context.Owner.BattleParams.TmpParam.CurrentTileIndex );
-                context.Owner.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
-                targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
+                context.Owner.RotateToPosition( targetTileData.CharaStandPos );
+                targetCharacter.RotateToPosition( attackerTileData.CharaStandPos );
 
                 targetCharacter.RefreshUseableSkillFlags( SituationType.DEFENCE, Methods.ToBit( ActionType.BUFF ) | Methods.ToBit( ActionType.SPECIAL ) );
                 targetCharacter.BattleLogic.SelectUseSkills( SituationType.DEFENCE );

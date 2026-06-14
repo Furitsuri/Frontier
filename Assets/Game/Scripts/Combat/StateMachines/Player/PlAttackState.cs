@@ -283,7 +283,7 @@ namespace Frontier.Battle
             // 攻撃対象キャラクターの向きをリセット
             if( null != _targetCharacter )
             {
-                _targetCharacter.GetTransformHandler.ResetRotationOrder();
+                _targetCharacter.ResetRotationOrder();
             }
             // 全てのスキルの使用フラグをOFFにする
             _plOwner.BattleLogic.RevertSkillsToggledOn();

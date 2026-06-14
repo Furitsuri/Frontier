@@ -37,9 +37,6 @@ namespace Frontier.Sequences
         private Character _attackCharacter = null;
         private Character _targetCharacter = null;
         private Character _diedCharacter = null;
-        // Transformは遅いためキャッシュ
-        private TransformHandler _atkCharaTransform = null;
-        private TransformHandler _tgtCharaTransform = null;
         private Vector3 _departure = Vector3.zero;
         private Vector3 _destination = Vector3.zero;
         private Quaternion _atkCharaInitialRot = Quaternion.identity;
@@ -61,10 +58,8 @@ namespace Frontier.Sequences
             _elapsedTime    = 0f;
             _phase          = Phase.START;
 
-            _atkCharaTransform = _attackCharacter.GetTransformHandler;
-            _tgtCharaTransform = _targetCharacter.GetTransformHandler;
-            _atkCharaInitialRot = _atkCharaTransform.GetRotation();
-            _tgtCharaInitialRot = _tgtCharaTransform.GetRotation();
+            _atkCharaInitialRot = _attackCharacter.GetRotation();
+            _tgtCharaInitialRot = _targetCharacter.GetRotation();
 
             // 対戦相手として設定
             _attackCharacter.BattleLogic.SetOpponentCharacter( _targetCharacter );
@@ -100,10 +95,10 @@ namespace Frontier.Sequences
                     float t = Mathf.Clamp01( _elapsedTime / Constants.ATTACK_ROTATIION_TIME );
                     t = Mathf.SmoothStep( 0f, 1f, t );
 
-                    Quaternion destAttackerRot  = Quaternion.LookRotation( _tgtCharaTransform.GetPosition() - _atkCharaTransform.GetPosition() );
-                    Quaternion destTargetRot    = Quaternion.LookRotation( _atkCharaTransform.GetPosition() - _tgtCharaTransform.GetPosition() );
-                    _atkCharaTransform.SetRotation( Quaternion.Lerp( _atkCharaInitialRot, destAttackerRot, t ) );
-                    _tgtCharaTransform.SetRotation( Quaternion.Lerp( _tgtCharaInitialRot, destTargetRot, t ) );
+                    Quaternion destAttackerRot  = Quaternion.LookRotation( _targetCharacter.GetPosition() - _attackCharacter.GetPosition() );
+                    Quaternion destTargetRot    = Quaternion.LookRotation( _attackCharacter.GetPosition() - _targetCharacter.GetPosition() );
+                    _attackCharacter.SetRotation( Quaternion.Lerp( _atkCharaInitialRot, destAttackerRot, t ) );
+                    _targetCharacter.SetRotation( Quaternion.Lerp( _tgtCharaInitialRot, destTargetRot, t ) );
 
                     if( _btlCamCtrl.IsFadeAttack() )
                     {

@@ -686,8 +686,8 @@ namespace Frontier.DebugTools.StageEditor
                 var offsetY = _stageDataProvider.CurrentData.GetTile( data.TileIndex ).GetTileMeshPosYOffset();
                 var pos     = _stageDataProvider.CurrentData.GetTileStaticData( data.TileIndex ).CharaStandPos
                               + new Vector3( 0f, offsetY, 0f );
-                prop.GetTransformHandler.SetPosition( pos );
-                prop.GetTransformHandler.SetRotation( ( Direction ) data.Direction );
+                prop.SetPosition( pos );
+                prop.SetRotation( ( Direction ) data.Direction );
 
                 _loadedStagePropVisuals.Add( prop );
                 _refParams.GridIndexToStageProp[data.TileIndex] = prop;
@@ -727,8 +727,8 @@ namespace Frontier.DebugTools.StageEditor
                 var offsetY = _stageDataProvider.CurrentData.GetTile( data.InitGridIndex ).GetTileMeshPosYOffset();
                 var pos     = _stageDataProvider.CurrentData.GetTileStaticData( data.InitGridIndex ).CharaStandPos
                               + new Vector3( 0f, offsetY, 0f );
-                chara.GetTransformHandler.SetPosition( pos );
-                chara.GetTransformHandler.SetRotation( ( Direction ) data.InitDir );
+                chara.SetPosition( pos );
+                chara.SetRotation( ( Direction ) data.InitDir );
 
                 _loadedEnemyVisuals.Add( chara );
                 _refParams.GridIndexToCharacter[data.InitGridIndex] = chara;

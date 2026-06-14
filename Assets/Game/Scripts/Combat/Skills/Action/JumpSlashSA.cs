@@ -174,12 +174,12 @@ namespace Frontier.Combat
 
                         // 着地タイルへの放物運動を開始する
                         // XZ 方向の速度を設定した後、StartSkillJump で Y 方向の初速・加速度を上書きする
-                        var startPos = _owner.GetTransformHandler.GetPosition();
+                        var startPos = _owner.GetPosition();
                         var xzDir = ( _goalPosition - startPos ).XZ().normalized;
                         _xzVelocity = xzDir * Constants.JUMP_SLASH_INITIAL_SPEED;
-                        _owner.GetTransformHandler.SetVelocityAndAcceleration( _xzVelocity, Vector3.zero );
+                        _owner.SetVelocityAndAcceleration( _xzVelocity, Vector3.zero );
                         float speedRate = Constants.JUMP_SLASH_INITIAL_SPEED / Constants.CHARACTER_MOVE_SPEED;
-                        _owner.GetTransformHandler.StartSkillJump( startPos, _goalPosition, speedRate );
+                        _owner.StartSkillJump( startPos, _goalPosition, speedRate );
 
                         _state = JumpSlashState.JUMPING;
                         break;
@@ -189,8 +189,8 @@ namespace Frontier.Combat
                         // 前フレームより Y 座標が下がった時点を放物運動の頂点通過とみなし、アニメーションを切り替える
                         if( !_isAtLatter )
                         {
-                            float curY = _owner.GetTransformHandler.GetPosition().y;
-                            float prevY = _owner.GetTransformHandler.GetPreviousPosition().y;
+                            float curY = _owner.GetPosition().y;
+                            float prevY = _owner.GetPreviousPosition().y;
                             if( curY < prevY )
                             {
                                 _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
@@ -201,12 +201,12 @@ namespace Frontier.Combat
                         // UpdateAttack2TargetCharacters();
                         UpdateSlashAnimEnd();
 
-                        if( Methods.IsPassedPosition( _owner.GetTransformHandler.GetPosition(), _goalPosition, _xzVelocity ) )
+                        if( Methods.IsPassedPosition( _owner.GetPosition(), _goalPosition, _xzVelocity ) )
                         {
                             UpdateAttack2TargetCharacters();
 
-                            _owner.GetTransformHandler.ResetVelocityAcceleration();
-                            _owner.GetTransformHandler.SetPosition( _goalPosition );
+                            _owner.ResetVelocityAcceleration();
+                            _owner.SetPosition( _goalPosition );
                             _owner.BattleParams.TmpParam.CurrentTileIndex = _goalTileIndex;
                             _state = JumpSlashState.WAIT_END;
                         }
@@ -244,11 +244,11 @@ namespace Frontier.Combat
 
         private void SortTargetCharactersByDistance()
         {
-            Vector3 ownerPos = _owner.GetTransformHandler.GetPosition();
+            Vector3 ownerPos = _owner.GetPosition();
             _targetCharacters.Sort( ( a, b ) =>
             {
-                float distA = ( a.GetTransformHandler.GetPosition() - ownerPos ).XZ().sqrMagnitude;
-                float distB = ( b.GetTransformHandler.GetPosition() - ownerPos ).XZ().sqrMagnitude;
+                float distA = ( a.GetPosition() - ownerPos ).XZ().sqrMagnitude;
+                float distB = ( b.GetPosition() - ownerPos ).XZ().sqrMagnitude;
                 return distA.CompareTo( distB );
             } );
         }
@@ -256,8 +256,8 @@ namespace Frontier.Combat
         // スキル使用者と攻撃対象の Y 座標の差が 1.0f 未満になった際を攻撃判定タイミングとする
         private bool IsInAttackRange( Character target )
         {
-            float ownerY  = _owner.GetTransformHandler.GetPosition().y;
-            float targetY = target.GetTransformHandler.GetPosition().y;
+            float ownerY  = _owner.GetPosition().y;
+            float targetY = target.GetPosition().y;
             return Mathf.Abs( ownerY - targetY ) < 1.0f;
         }
 

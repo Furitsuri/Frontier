@@ -110,8 +110,8 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.EnemyInitGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
 
             if ( _previewCharacter == null ) return;
-            _previewCharacter.GetTransformHandler.SetPosition( _gridCursor.GetPosition() );
-            _previewCharacter.GetTransformHandler.SetRotation( ( Direction ) _refParams.EnemyInitDir );
+            _previewCharacter.SetPosition( _gridCursor.GetPosition() );
+            _previewCharacter.SetRotation( ( Direction ) _refParams.EnemyInitDir );
         }
 
         // ──── プレビュー管理 ──────────────────────────────────────────────

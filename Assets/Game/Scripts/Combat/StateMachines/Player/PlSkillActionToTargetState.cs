@@ -245,7 +245,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
-            _targetSelector.TargetCharacter?.GetTransformHandler.ResetRotationOrder();
+            _targetSelector.TargetCharacter?.ResetRotationOrder();
 
             return true;
         }

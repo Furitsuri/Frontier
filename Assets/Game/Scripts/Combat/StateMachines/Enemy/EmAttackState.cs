@@ -72,9 +72,9 @@ namespace Frontier.Battle
 
             // 攻撃者の向きを設定
             var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
-            _attackCharacter.GetTransformHandler.RotateToPosition( targetTileData.CharaStandPos );
+            _attackCharacter.RotateToPosition( targetTileData.CharaStandPos );
             var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.BattleParams.TmpParam.CurrentTileIndex );
-            _targetCharacter.GetTransformHandler.RotateToPosition( attackerTileData.CharaStandPos );
+            _targetCharacter.RotateToPosition( attackerTileData.CharaStandPos );
 
             // パラメータビューにキャラクターを割り当て
             var leftWindowLayerMaskIndex    = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );

@@ -15,14 +15,14 @@ namespace Frontier.Entities
             var actionRangeCtrl = context.Owner.BattleLogic.ActionRangeCtrl;
             currentRange = maxRange;    // 方向指定を受け入れたタイミングでは最大レンジに設定しておき、以降の調整で有効なレンジを探す
 
-            context.Owner.GetTransformHandler.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
+            context.Owner.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
             actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, context.Owner.BattleParams.TmpParam.CurrentTileIndex, currentRange );
         }
 
 		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isMovingSkill, int tileIndex, int range, ActionableTileData actionableTileData )
 		{
 			Vector3 basePos = context.StageCtrl.GetTileStaticData( context.Owner.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
-			Vector3 baseForward = context.Owner.GetTransformHandler.GetOrderedForward();
+			Vector3 baseForward = context.Owner.GetOrderedForward();
 			baseForward.y = 0f;
 			baseForward = baseForward.normalized;
 
@@ -261,7 +261,7 @@ namespace Frontier.Entities
             var ghostObject = context.Owner.GetGhostObject();
             var targetTile  = context.StageCtrl.GetTileStaticData( tileIdx );
             var originalRot = Quaternion.LookRotation( Vector3.forward, Vector3.up );
-            var rotatedRot  = Quaternion.LookRotation( context.Owner.GetTransformHandler.GetOrderedForward(), Vector3.up );
+            var rotatedRot  = Quaternion.LookRotation( context.Owner.GetOrderedForward(), Vector3.up );
             ghostObject.TileIndex = tileIdx;
             ghostObject.transform.SetPositionAndRotation( targetTile.CharaStandPos, rotatedRot * Quaternion.Inverse( originalRot ) );
 
@@ -295,7 +295,7 @@ namespace Frontier.Entities
             if( newIdx < 0 ) { return false; }
             if( prevIdx < 0 ) { return true; }
 
-            Vector3 ownerPos = context.Owner.GetTransformHandler.GetPosition();
+            Vector3 ownerPos = context.Owner.GetPosition();
             float newDist  = Vector3.Distance( ownerPos, context.StageCtrl.GetTileStaticData( newIdx ).CharaStandPos );
             float prevDist = Vector3.Distance( ownerPos, context.StageCtrl.GetTileStaticData( prevIdx ).CharaStandPos );
             return newDist > prevDist;

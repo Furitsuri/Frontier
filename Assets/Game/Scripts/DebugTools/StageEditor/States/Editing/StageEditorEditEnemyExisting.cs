@@ -105,8 +105,8 @@ namespace Frontier.DebugTools.StageEditor
 
                 if ( _boundCharacter != null )
                 {
-                    _boundCharacter.GetTransformHandler.SetPosition( _snapCharacterPosition );
-                    _boundCharacter.GetTransformHandler.SetRotation( ( Direction ) _snapInitDir );
+                    _boundCharacter.SetPosition( _snapCharacterPosition );
+                    _boundCharacter.SetRotation( ( Direction ) _snapInitDir );
                 }
 
                 if ( _gridCursor != null )
@@ -129,8 +129,8 @@ namespace Frontier.DebugTools.StageEditor
             }
 
             if ( _boundCharacter == null || _gridCursor == null ) return;
-            _boundCharacter.GetTransformHandler.SetPosition( _gridCursor.GetPosition() );
-            _boundCharacter.GetTransformHandler.SetRotation( ( Direction ) _refParams.EnemyInitDir );
+            _boundCharacter.SetPosition( _gridCursor.GetPosition() );
+            _boundCharacter.SetRotation( ( Direction ) _refParams.EnemyInitDir );
         }
 
         private void BuildParamDescriptors()

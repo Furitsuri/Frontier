@@ -28,15 +28,15 @@ public class EntitySnapshot
 
         // 2. カメラをキャラに向ける(必要に応じて位置調整)
         var originalActiveSelf = targetCharacter.gameObject.activeSelf;
-        var originalPos = targetCharacter.GetTransformHandler.GetPosition();
+        var originalPos = targetCharacter.GetPosition();
         targetCharacter.gameObject.SetActive( true );
-        targetCharacter.GetTransformHandler.SetPosition( new Vector3( ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_X, ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Y, ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Z ) );
+        targetCharacter.SetPosition( new Vector3( ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_X, ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Y, ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Z ) );
         if( isSnapAnimation || animTag != AnimDatas.AnimeConditionsTag.NONE )
         {
             // SnapToCharacterAnimation( targetCharacter, animTag );
         }
-        _captureCamera.transform.position = targetCharacter.GetTransformHandler.GetPosition() + new Vector3( 0, 1.2f, 2f );
-        _captureCamera.transform.LookAt( targetCharacter.GetTransformHandler.GetPosition() + new Vector3( 0, 0.45f, 0f ) );
+        _captureCamera.transform.position = targetCharacter.GetPosition() + new Vector3( 0, 1.2f, 2f );
+        _captureCamera.transform.LookAt( targetCharacter.GetPosition() + new Vector3( 0, 0.45f, 0f ) );
 
         // 3. カメラでレンダリング実行
         _captureCamera.Render();
@@ -51,7 +51,7 @@ public class EntitySnapshot
         if( isSnapAnimation || animTag != AnimDatas.AnimeConditionsTag.NONE ) {
             // targetCharacter.AnimCtrl.RestartAnimator();
         }
-        targetCharacter.GetTransformHandler.SetPosition( originalPos );
+        targetCharacter.SetPosition( originalPos );
         targetCharacter.gameObject.SetActive( originalActiveSelf );
         _captureCamera.targetTexture = null;
         RenderTexture.active = null;

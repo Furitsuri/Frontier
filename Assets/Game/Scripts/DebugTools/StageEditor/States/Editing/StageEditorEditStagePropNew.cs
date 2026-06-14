@@ -88,8 +88,8 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.StagePropTileIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
 
             if ( _previewProp == null ) return;
-            _previewProp.GetTransformHandler.SetPosition( _gridCursor.GetPosition() );
-            _previewProp.GetTransformHandler.SetRotation( ( Direction ) _refParams.StagePropDirection );
+            _previewProp.SetPosition( _gridCursor.GetPosition() );
+            _previewProp.SetRotation( ( Direction ) _refParams.StagePropDirection );
         }
 
         // ──── プレビュー管理 ──────────────────────────────────────────────

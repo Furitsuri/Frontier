@@ -26,8 +26,7 @@ namespace Frontier.Entities
         protected bool _isPrevMoving                                        = false;
         protected int[] _tileCostTable                                      = null;                 // タイル移動時のコストテーブル(並列計算する可能性があるため、キャラ毎に保持)
         protected ReadOnlyReference<Character> _readOnlyOwner               = null;
-        protected ReadOnlyReference<TransformHandler> _readonlyTransform    = null;
-        protected Character _opponent                                       = null;
+protected Character _opponent                                       = null;
         protected ActionRangeController _actionRangeCtrl                    = null;                 // 行動範囲管理クラス
         protected BaseAi _baseAi                                            = null;                 // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
         protected SkillNotifierBase[] _skillNotifier                        = null;                 // スキル使用通知
@@ -90,7 +89,6 @@ namespace Frontier.Entities
         public void Regist( Character owner )
         {
             _readOnlyOwner = new ReadOnlyReference<Character>( owner );
-            _readonlyTransform = new ReadOnlyReference<TransformHandler>( owner.GetTransformHandler );
         }
 
         /// <summary>
@@ -101,8 +99,8 @@ namespace Frontier.Entities
         public void SetPositionOnStage( int tileIndex, in Quaternion dir )
         {
             _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex = tileIndex;
-            _readonlyTransform.Value.SetPosition( _stageCtrl.GetTileStaticData( tileIndex ).CharaStandPos );
-            _readonlyTransform.Value.SetRotation( dir );
+            _readOnlyOwner.Value.SetPosition( _stageCtrl.GetTileStaticData( tileIndex ).CharaStandPos );
+            _readOnlyOwner.Value.SetRotation( dir );
         }
 
         /// <summary>
@@ -358,7 +356,7 @@ namespace Frontier.Entities
         {
             _isPrevMoving = false;
             _actionRangeCtrl.MovePathHdlr.ClearMovePath();
-            _readonlyTransform.Value.ResetVelocityAcceleration();
+            _readOnlyOwner.Value.ResetVelocityAcceleration();
             _readOnlyOwner.Value.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, false );
         }
 
@@ -430,22 +428,22 @@ namespace Frontier.Entities
             bool toggleAnimation = false;
             var focusedTileData = pathHdlr.GetFocusedTileStaticData();
             var focusedTilePos = focusedTileData.CharaStandPos;
-            Vector3 prevDirXZ = ( focusedTilePos - _readonlyTransform.Value.GetPreviousPosition() ).XZ().normalized;
-            Vector3 focusDirXZ = ( focusedTilePos - _readonlyTransform.Value.GetPosition() ).XZ().normalized;
+            Vector3 prevDirXZ = ( focusedTilePos - _readOnlyOwner.Value.GetPreviousPosition() ).XZ().normalized;
+            Vector3 focusDirXZ = ( focusedTilePos - _readOnlyOwner.Value.GetPosition() ).XZ().normalized;
             Action<float, float, Vector3, Vector3> jumpAction = ( float dprtHeight, float destHeight, Vector3 dprtPos, Vector3 destPos ) =>
             {
                 // 高低差が一定以上ある場合はジャンプ動作を開始
                 if( NEED_JUMP_HEIGHT_DIFFERENCE <= ( int ) Math.Abs( destHeight - dprtHeight ) )
                 {
-                    _readonlyTransform.Value.StartTileMoveJump( in dprtPos, in destPos, moveSpeedRate );
+                    _readOnlyOwner.Value.StartTileMoveJump( in dprtPos, in destPos, moveSpeedRate );
                 }
             };
 
             // 現在の目標タイルに到達している場合はインデックス値をインクリメントすることで目標タイルを更新する
             if( Vector3.Dot( prevDirXZ, focusDirXZ ) <= 0 )
             {
-                _readonlyTransform.Value.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
-                _readonlyTransform.Value.ResetVelocityAcceleration();     // 速度、加速度をリセット
+                _readOnlyOwner.Value.SetPosition( focusedTilePos );   // 位置を目標タイルに合わせる
+                _readOnlyOwner.Value.ResetVelocityAcceleration();     // 速度、加速度をリセット
                 _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex = pathHdlr.GetFocusedWaypointIndex();    // キャラクターが保持するタイルインデックスを更新
                 pathHdlr.IncrementFocusedWaypointIndex();                            // 目標インデックス値をインクリメントして次の目標タイルに更新
 
@@ -461,10 +459,10 @@ namespace Frontier.Entities
                 {
                     var nextTileData = pathHdlr.GetFocusedTileStaticData();
                     var nextTilePos = nextTileData.CharaStandPos;
-                    Vector3 nextDirXZ = ( nextTilePos - _readonlyTransform.Value.GetPosition() ).XZ().normalized;
+                    Vector3 nextDirXZ = ( nextTilePos - _readOnlyOwner.Value.GetPosition() ).XZ().normalized;
 
-                    _readonlyTransform.Value.SetVelocityAndAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
-                    _readonlyTransform.Value.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
+                    _readOnlyOwner.Value.SetVelocityAndAcceleration( nextDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _readOnlyOwner.Value.SetRotation( Quaternion.LookRotation( nextDirXZ ) );
 
                     jumpAction( focusedTileData.Height, nextTileData.Height, focusedTilePos, nextTilePos );
                 }
@@ -476,8 +474,8 @@ namespace Frontier.Entities
                 {
                     var currentTileData = _stageCtrl.GetTileStaticData( _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex );
 
-                    _readonlyTransform.Value.SetVelocityAndAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
-                    _readonlyTransform.Value.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
+                    _readOnlyOwner.Value.SetVelocityAndAcceleration( focusDirXZ * CHARACTER_MOVE_SPEED * moveSpeedRate, Vector3.zero );
+                    _readOnlyOwner.Value.SetRotation( Quaternion.LookRotation( focusDirXZ ) );
                     toggleAnimation = true;
 
                     jumpAction( currentTileData.Height, focusedTileData.Height, currentTileData.CharaStandPos, focusedTilePos );

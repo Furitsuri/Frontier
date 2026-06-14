@@ -41,7 +41,7 @@ namespace Frontier.Entities
         public void HoldBeforeMoveInfo()
         {
             _prevMoveInfo.tmpParam  = _readOnlyOwner.Value.BattleParams.TmpParam.Clone();
-            _prevMoveInfo.rotDir    = _readonlyTransform.Value.GetRotation();
+            _prevMoveInfo.rotDir    = _readOnlyOwner.Value.GetRotation();
         }
 
         public void PushCommandHistory( COMMAND_TAG commandTag )

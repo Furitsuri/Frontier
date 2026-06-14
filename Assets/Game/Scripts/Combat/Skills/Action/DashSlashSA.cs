@@ -117,7 +117,7 @@ namespace Frontier.Combat
                 _btlCharaCdr.ApplyDamageExpect( _owner, target );
             }
 
-            _velocity = _owner.GetTransformHandler.GetOrderedForward() * Constants.DASH_SLASH_INITIAL_SPEED;
+            _velocity = _owner.GetOrderedForward() * Constants.DASH_SLASH_INITIAL_SPEED;
 
             // ゴーストの位置が移動目標地点
             var ghostObject = _owner.GetGhostObject();
@@ -143,7 +143,7 @@ namespace Frontier.Combat
                     if( _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_INITIAL ) )
                     {
                         _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
-                        _owner.GetTransformHandler.SetVelocityAndAcceleration( _velocity, Vector3.zero );
+                        _owner.SetVelocityAndAcceleration( _velocity, Vector3.zero );
                         _state = DashSlashState.SLASHING;
                     }
                     break;
@@ -151,9 +151,9 @@ namespace Frontier.Combat
                     UpdateAttack2TargetCharacters();
                     UpdateSlashAnimEnd();
 
-                    if( Methods.IsPassedPosition( _owner.GetTransformHandler.GetPosition(), _goalPosition, _velocity ) )
+                    if( Methods.IsPassedPosition( _owner.GetPosition(), _goalPosition, _velocity ) )
                     {
-                        _owner.GetTransformHandler.ResetVelocityAcceleration();
+                        _owner.ResetVelocityAcceleration();
                         _owner.BattleParams.TmpParam.CurrentTileIndex = _goalTileIndex;
                         _state = DashSlashState.WAIT_END;
                     }
@@ -188,19 +188,19 @@ namespace Frontier.Combat
 
         private void SortTargetCharactersByDistance()
         {
-            Vector3 ownerPos = _owner.GetTransformHandler.GetPosition();
+            Vector3 ownerPos = _owner.GetPosition();
             _targetCharacters.Sort( ( a, b ) =>
             {
-                float distA = ( a.GetTransformHandler.GetPosition() - ownerPos ).XZ().sqrMagnitude;
-                float distB = ( b.GetTransformHandler.GetPosition() - ownerPos ).XZ().sqrMagnitude;
+                float distA = ( a.GetPosition() - ownerPos ).XZ().sqrMagnitude;
+                float distB = ( b.GetPosition() - ownerPos ).XZ().sqrMagnitude;
                 return distA.CompareTo( distB );
             } );
         }
 
         private bool IsInAttackRange( Character target )
         {
-            Vector3 ownerPos  = _owner.GetTransformHandler.GetPosition();
-            Vector3 targetPos = target.GetTransformHandler.GetPosition();
+            Vector3 ownerPos  = _owner.GetPosition();
+            Vector3 targetPos = target.GetPosition();
             return ( targetPos - ownerPos ).XZ().magnitude <= Constants.DASH_SLASH_ATTACK_TRIGGER_DISTANCE;
         }
 

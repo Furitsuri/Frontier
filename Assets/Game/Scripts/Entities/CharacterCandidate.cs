@@ -22,7 +22,7 @@ namespace Frontier.Entities
 
             _character.gameObject.SetActive( null == snapShotImg );
             var reservePos = new Vector3( CHARACTER_SELECTION_SPACING_X * _character.GetStatusRef.characterIndex, CHARACTER_SELECTION_OFFSET_Y, CHARACTER_SELECTION_OFFSET_Z );
-            _character.GetTransformHandler.SetPosition( reservePos );
+            _character.SetPosition( reservePos );
         }
     }
 }

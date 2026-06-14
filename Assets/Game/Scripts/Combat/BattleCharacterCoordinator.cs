@@ -482,7 +482,7 @@ namespace Frontier.Battle
                 foreach( var c in _characterDict.GetCharacterList( ( CHARACTER_TAG ) i ) )
                 {
                     c.BattleLogic.BePossibleAction();
-                    c.GetTransformHandler.EstablishBaseRotation();
+                    c.EstablishBaseRotation();
                 }
             }
         }
@@ -520,8 +520,8 @@ namespace Frontier.Battle
             }
 
             chara.BattleParams.TmpParam.CurrentTileIndex = initGridIndex;                                       // ステージ上のグリッド位置の設定
-            chara.GetTransformHandler.SetPosition( _stgCtrl.GetTileStaticData( initGridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
-            chara.GetTransformHandler.SetRotation( rot[( int ) initDir] );                                      // 向きを設定
+            chara.SetPosition( _stgCtrl.GetTileStaticData( initGridIndex ).CharaStandPos ); // プレイヤーの画面上の位置を設定
+            chara.SetRotation( rot[( int ) initDir] );                                      // 向きを設定
             _stgCtrl.GetTileDynamicData( initGridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
         }
     }

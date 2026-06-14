@@ -68,8 +68,8 @@ namespace Frontier.DebugTools.StageEditor
 
                 if ( _boundProp != null )
                 {
-                    _boundProp.GetTransformHandler.SetPosition( _snapPropPosition );
-                    _boundProp.GetTransformHandler.SetRotation( ( Direction ) _snapDirection );
+                    _boundProp.SetPosition( _snapPropPosition );
+                    _boundProp.SetRotation( ( Direction ) _snapDirection );
                 }
 
                 if ( _gridCursor != null )
@@ -92,8 +92,8 @@ namespace Frontier.DebugTools.StageEditor
             }
 
             if ( _boundProp == null || _gridCursor == null ) return;
-            _boundProp.GetTransformHandler.SetPosition( _gridCursor.GetPosition() );
-            _boundProp.GetTransformHandler.SetRotation( ( Direction ) _refParams.StagePropDirection );
+            _boundProp.SetPosition( _gridCursor.GetPosition() );
+            _boundProp.SetRotation( ( Direction ) _refParams.StagePropDirection );
         }
 
         private void BuildParamDescriptors()

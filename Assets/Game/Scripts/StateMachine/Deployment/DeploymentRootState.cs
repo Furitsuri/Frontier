@@ -199,7 +199,7 @@ namespace Frontier.StateMachine
             candidate.IsSelected = true;
             var focusCharacter = candidate.Character;
             focusCharacter.gameObject.SetActive( true );
-            focusCharacter.GetTransformHandler.SetPosition( _stageCtrl.GetCurrentGridPosition() );
+            focusCharacter.SetPosition( _stageCtrl.GetCurrentGridPosition() );
             focusCharacter.BattleParams.TmpParam.CurrentTileIndex = _stageCtrl.GetCurrentGridIndex();
 
             _presenter.RefreshGridCursorSelectCharacter();
@@ -342,7 +342,7 @@ namespace Frontier.StateMachine
                 // 見えない位置に退避
                 charaOnSelectTile.BattleParams.TmpParam.CurrentTileIndex = -1;
                 var reservePos = new Vector3( DEPLOYMENT_CHARACTER_SPACING_X * charaOnSelectTile.GetStatusRef.characterIndex, DEPLOYMENT_CHARACTER_OFFSET_Y, DEPLOYMENT_CHARACTER_OFFSET_Z );
-                charaOnSelectTile.GetTransformHandler.SetPosition( reservePos );
+                charaOnSelectTile.SetPosition( reservePos );
 
                 return true;
             }

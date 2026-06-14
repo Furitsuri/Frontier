@@ -51,12 +51,30 @@ namespace Frontier.Entities
         public AnimationController AnimCtrl => _animCtrl;                           // アニメーションコントローラの取得
         public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
         public BattleParameters BattleParams => _btlParams;                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
-        public TransformHandler GetTransformHandler => _transformHdlr;              // Transform操作クラスの取得
-        public BattleLogicBase BattleLogic => _battleLogic;
+public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
         public GhostObject GhostObj => _ghostObject;
         public ref Status GetStatusRef => ref _status;
         public ref CameraParameter CameraParam => ref _camParam;
+
+        public void SetPosition( in Vector3 position )                                          => _transformHdlr.SetPosition( position );
+        public void SetPositionXZ( in Vector3 position )                                        => _transformHdlr.SetPositionXZ( position );
+        public void SetRotation( in Quaternion rotation )                                       => _transformHdlr.SetRotation( rotation );
+        public void SetRotation( Direction direction )                                          => _transformHdlr.SetRotation( direction );
+        public void SetVelocityAndAcceleration( in Vector3 velocity, in Vector3 accel )        => _transformHdlr.SetVelocityAndAcceleration( velocity, accel );
+        public void ResetVelocityAcceleration()                                                 => _transformHdlr.ResetVelocityAcceleration();
+        public void ResetRotationOrder()                                                        => _transformHdlr.ResetRotationOrder();
+        public void OrderRotate( in Quaternion rotation )                                       => _transformHdlr.OrderRotate( rotation );
+        public void RotateToPosition( in Vector3 targetPos )                                    => _transformHdlr.RotateToPosition( targetPos );
+        public void EstablishBaseRotation()                                                     => _transformHdlr.EstablishBaseRotation();
+        public void AddPosition( in Vector3 position )                                          => _transformHdlr.AddPosition( position );
+        public void StartTileMoveJump( in Vector3 departing, in Vector3 destination, float rate ) => _transformHdlr.StartTileMoveJump( departing, destination, rate );
+        public void StartSkillJump( in Vector3 departing, in Vector3 destination, float rate )  => _transformHdlr.StartSkillJump( departing, destination, rate );
+        public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
+        public Vector3 GetPreviousPosition()                                                    => _transformHdlr.GetPreviousPosition();
+        public Quaternion GetRotation()                                                         => _transformHdlr.GetRotation();
+        public Vector3 GetOrderedForward()                                                      => _transformHdlr.GetOrderedForward();
+        public Direction GetDirection()                                                         => _transformHdlr.GetDirection();
 
         void Update()
         {
