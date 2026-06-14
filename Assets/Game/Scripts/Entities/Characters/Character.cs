@@ -11,7 +11,7 @@ using static Constants;
 namespace Frontier.Entities
 {
     [SerializeField]
-    public class Character : MonoBehaviour
+    public class Character : Entity
     {
         [Header( "弾オブジェクト" )]
         [SerializeField] private GameObject _bulletObject;
@@ -31,7 +31,6 @@ namespace Frontier.Entities
         [SerializeField] private CameraParameter _camParam;
 
         [Inject] protected IUiSystem _uiSystem                              = null;
-        [Inject] protected HierarchyBuilderBase _hierarchyBld               = null;
         [Inject] protected PrefabRegistry _prefabReg                        = null;
         [Inject] protected TimeScaleController _timeScaleCtrl               = null;
 
@@ -42,7 +41,6 @@ namespace Frontier.Entities
         protected BattleLogicBase _battleLogic                                              = null;
         protected BattleAnimationEventReceiver _animReceiver                                = null;
         protected GhostObject _ghostObject                                                  = null;
-        protected TransformHandler _transformHdlr                                           = null;     // キャラクターのTransform操作を行うクラス
         protected AnimationController _animCtrl                                             = null;     // アニメーションコントローラ
         protected Bullet _bullet                                                            = null;     // 矢などの弾
 
@@ -57,37 +55,8 @@ public BattleLogicBase BattleLogic => _battleLogic;
         public ref Status GetStatusRef => ref _status;
         public ref CameraParameter CameraParam => ref _camParam;
 
-        public void SetPosition( in Vector3 position )                                          => _transformHdlr.SetPosition( position );
-        public void SetPositionXZ( in Vector3 position )                                        => _transformHdlr.SetPositionXZ( position );
-        public void SetRotation( in Quaternion rotation )                                       => _transformHdlr.SetRotation( rotation );
-        public void SetRotation( Direction direction )                                          => _transformHdlr.SetRotation( direction );
-        public void SetVelocityAndAcceleration( in Vector3 velocity, in Vector3 accel )        => _transformHdlr.SetVelocityAndAcceleration( velocity, accel );
-        public void ResetVelocityAcceleration()                                                 => _transformHdlr.ResetVelocityAcceleration();
-        public void ResetRotationOrder()                                                        => _transformHdlr.ResetRotationOrder();
-        public void OrderRotate( in Quaternion rotation )                                       => _transformHdlr.OrderRotate( rotation );
-        public void RotateToPosition( in Vector3 targetPos )                                    => _transformHdlr.RotateToPosition( targetPos );
-        public void EstablishBaseRotation()                                                     => _transformHdlr.EstablishBaseRotation();
-        public void AddPosition( in Vector3 position )                                          => _transformHdlr.AddPosition( position );
-        public void StartTileMoveJump( in Vector3 departing, in Vector3 destination, float rate ) => _transformHdlr.StartTileMoveJump( departing, destination, rate );
-        public void StartSkillJump( in Vector3 departing, in Vector3 destination, float rate )  => _transformHdlr.StartSkillJump( departing, destination, rate );
-        public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
-        public Vector3 GetPreviousPosition()                                                    => _transformHdlr.GetPreviousPosition();
-        public Quaternion GetRotation()                                                         => _transformHdlr.GetRotation();
-        public Vector3 GetOrderedForward()                                                      => _transformHdlr.GetOrderedForward();
-        public Direction GetDirection()                                                         => _transformHdlr.GetDirection();
-
-        void Update()
-        {
-            _transformHdlr.Update( DeltaTimeProvider.DeltaTime ); // TransformHandlerの更新
-        }
-
         void LateUpdate()
         {
-        }
-
-        void OnDestroy()
-        {
-            Dispose();
         }
 
         /// <summary>
@@ -253,17 +222,15 @@ public BattleLogicBase BattleLogic => _battleLogic;
         {
             LazyInject.GetOrCreate( ref _btlParams, () => _hierarchyBld.InstantiateWithDiContainer<BattleParameters>( false ) );
             LazyInject.GetOrCreate( ref _animCtrl, () => _hierarchyBld.InstantiateWithDiContainer<AnimationController>( false ) );
-            LazyInject.GetOrCreate( ref _transformHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TransformHandler>( false ) );
 
             if( _bulletObject != null )
             {
                 LazyInject.GetOrCreate( ref _bullet, () => _hierarchyBld.CreateComponentNestedNewDirectoryWithDiContainer<Bullet>( _bulletObject, this.gameObject, "Bullet", false, false ) );
             }
-            
+
             _status.Setup();
             _btlParams.Setup();
 
-            _transformHdlr.Regist( this.transform );
             _animCtrl.Regist( GetComponent<Animator>() );   // アニメーションコントローラにプレハブに登録されたアニメーションを登録
             _timeScaleCtrl.Regist( _timeScale );            // 戦闘時間管理クラスに自身の時間管理クラスを登録
         }
@@ -271,12 +238,12 @@ public BattleLogicBase BattleLogic => _battleLogic;
         /// <summary>
         /// 初期化処理を行います
         /// </summary>
-        virtual public void Init()
+        public override void Init()
         {
+            base.Init();
             _status.Init();
             _btlParams.Init();
             _camParam.Init();
-            _transformHdlr.Init();
 
             _timeScale.OnValueChange = AnimCtrl.UpdateTimeScale;
 
@@ -288,7 +255,7 @@ public BattleLogicBase BattleLogic => _battleLogic;
         /// <summary>
         /// 破棄処理を行います
         /// </summary>
-        virtual public void Dispose()
+        public override void Dispose()
         {
             // 戦闘時間管理クラスの登録を解除（DI未注入のゴーストオブジェクトからも呼ばれる可能性があるため null チェック）
             _timeScaleCtrl?.Unregist( _timeScale );
@@ -302,8 +269,7 @@ public BattleLogicBase BattleLogic => _battleLogic;
             _fieldLogic?.Dispose();
             _battleLogic?.Dispose();
 
-            Destroy( gameObject );
-            Destroy( this );
+            base.Dispose();
         }
 
         virtual public void OnFieldEnter() { }
