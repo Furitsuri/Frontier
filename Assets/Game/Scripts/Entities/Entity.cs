@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using Zenject;
 
 namespace Frontier.Entities
@@ -9,10 +10,19 @@ namespace Frontier.Entities
     /// </summary>
     public abstract class Entity : MonoBehaviour, IDisposer
     {
-        protected HierarchyBuilderBase _hierarchyBld = null;
-        protected TransformHandler     _transformHdlr = null;
+        protected HierarchyBuilderBase _hierarchyBld    = null;
+        protected TransformHandler     _transformHdlr   = null;
+        protected int _size                             = Constants.GRID_SIZE_MIN; // グリッドサイズ(Constants.GRID_SIZE_MIN～Constants.GRID_SIZE_MAX)
+
+        private List<int> _occupiedTileIndices = new List<int>();
 
         protected TransformHandler GetTransformHandler => _transformHdlr;
+
+        /// <summary>
+        /// このエンティティが現在占有しているタイルインデックスの一覧（読み取り専用）。
+        /// RefreshOccupiedTileIndices を呼ぶまで更新されません。
+        /// </summary>
+        public IReadOnlyList<int> OccupiedTileIndices => _occupiedTileIndices;
 
         public void SetPosition( in Vector3 position )                                          => _transformHdlr.SetPosition( position );
         public void SetPositionXZ( in Vector3 position )                                        => _transformHdlr.SetPositionXZ( position );
@@ -25,7 +35,7 @@ namespace Frontier.Entities
         public void RotateToPosition( in Vector3 targetPos )                                    => _transformHdlr.RotateToPosition( targetPos );
         public void EstablishBaseRotation()                                                     => _transformHdlr.EstablishBaseRotation();
         public void AddPosition( in Vector3 position )                                          => _transformHdlr.AddPosition( position );
-public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
+        public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
         public Vector3 GetPreviousPosition()                                                    => _transformHdlr.GetPreviousPosition();
         public Quaternion GetRotation()                                                         => _transformHdlr.GetRotation();
         public Vector3 GetOrderedForward()                                                      => _transformHdlr.GetOrderedForward();
@@ -55,12 +65,33 @@ public Vector3 GetPosition()                                                    
         }
 
         /// <summary>
-        /// エンティティのスケールを設定します。値域は Constants.GRID_SIZE_MIN ～ GRID_SIZE_MAX に制限されます。
+        /// エンティティのサイズを設定します。値域は Constants.GRID_SIZE_MIN ～ GRID_SIZE_MAX に制限されます。
         /// </summary>
-        public void SetScale( int scale )
+        public void SetSize( int size )
         {
-            int clamped = Mathf.Clamp( scale, Constants.GRID_SIZE_MIN, Constants.GRID_SIZE_MAX );
-            _transformHdlr.SetScale( ( float ) clamped );
+            _size = Mathf.Clamp( size, Constants.GRID_SIZE_MIN, Constants.GRID_SIZE_MAX );
+
+            _transformHdlr.SetScale( ( float ) _size );
+        }
+
+        /// <summary>
+        /// 占有タイルインデックスリストを再計算します。
+        /// _size × _size の矩形フットプリントで baseTileIndex を左上として計算します。
+        /// GridCursorController.SetGridCursorSize / GridCursor.SetCursorSize と同じ座標系を想定しています。
+        /// </summary>
+        /// <param name="baseTileIndex">エンティティの基準タイルインデックス（左上隅）</param>
+        /// <param name="columnCount">ステージ1行あたりのタイル数</param>
+        public void RefreshOccupiedTileIndices( int baseTileIndex, int columnCount )
+        {
+            _occupiedTileIndices.Clear();
+
+            for( int row = 0; row < _size; ++row )
+            {
+                for( int col = 0; col < _size; ++col )
+                {
+                    _occupiedTileIndices.Add( baseTileIndex + col + row * columnCount );
+                }
+            }
         }
 
         /// <summary>
