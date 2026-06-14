@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.Registries;
+using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,8 +28,9 @@ namespace Frontier.DebugTools.StageEditor
             public Action<int> Setter;
         }
 
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private PrefabRegistry       _prefabReg    = null;
+        [Inject] private HierarchyBuilderBase  _hierarchyBld      = null;
+        [Inject] private PrefabRegistry        _prefabReg         = null;
+        [Inject] private IStageDataProvider    _stageDataProvider = null;
 
         private List<ParamDescriptor>  _params          = new List<ParamDescriptor>();
         private StageProp              _previewProp     = null;
@@ -47,6 +49,7 @@ namespace Frontier.DebugTools.StageEditor
             base.Init( callback );
             BuildParamDescriptors();
             _refParams.SelectedStagePropParamIndex = 0;
+            _refParams.SetGridCursorSize?.Invoke( _refParams.StagePropSize );
             ShowPreview();
         }
 
@@ -89,7 +92,9 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.StagePropTileIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
 
             if ( _previewProp == null ) return;
-            _previewProp.SetPosition( _gridCursor.GetPosition() );
+            var center = GridPositionUtility.CalcSizeAwareCenter(
+                _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
+            _previewProp.SetPosition( center );
             _previewProp.SetRotation( ( Direction ) _refParams.StagePropDirection );
         }
 
@@ -122,7 +127,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( _previewProp == null ) return;
 
             _shownPrefabIndex = prefabIdx;
-            _previewProp.SetSize( _refParams.StagePropSize );
+            ApplySizeToPreview();
             UpdatePreviewPosition();
         }
 
@@ -212,7 +217,7 @@ namespace Frontier.DebugTools.StageEditor
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() - 1, p.Min, p.Max ) );
             if ( p.Name == "Prefab" ) RefreshPreview();
-            if ( p.Name == "Size"   ) _previewProp?.SetSize( _refParams.StagePropSize );
+            if ( p.Name == "Size"   ) ApplySizeToPreview();
             return true;
         }
 
@@ -222,8 +227,18 @@ namespace Frontier.DebugTools.StageEditor
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() + 1, p.Min, p.Max ) );
             if ( p.Name == "Prefab" ) RefreshPreview();
-            if ( p.Name == "Size"   ) _previewProp?.SetSize( _refParams.StagePropSize );
+            if ( p.Name == "Size"   ) ApplySizeToPreview();
             return true;
+        }
+
+        private void ApplySizeToPreview()
+        {
+            if ( _previewProp == null ) return;
+            _previewProp.SetSize( _refParams.StagePropSize );
+            _refParams.SetGridCursorSize?.Invoke( _refParams.StagePropSize );
+            var center = GridPositionUtility.CalcSizeAwareCenter(
+                _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
+            _previewProp.SetPosition( center );
         }
     }
 }

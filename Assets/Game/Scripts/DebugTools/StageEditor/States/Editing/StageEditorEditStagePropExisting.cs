@@ -1,7 +1,9 @@
 ﻿using Frontier.Entities;
+using Frontier.Stage;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 #if UNITY_EDITOR
 
@@ -24,6 +26,8 @@ namespace Frontier.DebugTools.StageEditor
             public Func<int>   Getter;
             public Action<int> Setter;
         }
+
+        [Inject] private IStageDataProvider _stageDataProvider = null;
 
         private List<ParamDescriptor> _params    = new List<ParamDescriptor>();
         private StageProp             _boundProp = null;
@@ -50,6 +54,8 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.SelectedStagePropParamIndex = 0;
             _confirmed = false;
 
+            _refParams.SetGridCursorSize?.Invoke( _refParams.StagePropSize );
+
             // 編集前の状態をスナップショット
             _snapPrefab          = _refParams.StagePropPrefab;
             _snapSize            = _refParams.StagePropSize;
@@ -69,11 +75,13 @@ namespace Frontier.DebugTools.StageEditor
                 _refParams.StagePropTileIndex = _snapTileIndex;
                 _refParams.StagePropDirection = _snapDirection;
 
+                _refParams.SetGridCursorSize?.Invoke( _snapSize );
+
                 if ( _boundProp != null )
                 {
+                    _boundProp.SetSize( _snapSize );
                     _boundProp.SetPosition( _snapPropPosition );
                     _boundProp.SetRotation( ( Direction ) _snapDirection );
-                    _boundProp.SetSize( _snapSize );
                 }
 
                 if ( _gridCursor != null )
@@ -96,7 +104,9 @@ namespace Frontier.DebugTools.StageEditor
             }
 
             if ( _boundProp == null || _gridCursor == null ) return;
-            _boundProp.SetPosition( _gridCursor.GetPosition() );
+            var center = GridPositionUtility.CalcSizeAwareCenter(
+                _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
+            _boundProp.SetPosition( center );
             _boundProp.SetRotation( ( Direction ) _refParams.StagePropDirection );
         }
 
@@ -163,7 +173,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptSub3( context ) ) return false;
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() - 1, p.Min, p.Max ) );
-            if ( p.Name == "Size" ) _boundProp?.SetSize( _refParams.StagePropSize );
+            if ( p.Name == "Size" ) ApplySizeToBoundProp();
             return true;
         }
 
@@ -172,8 +182,18 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptSub4( context ) ) return false;
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() + 1, p.Min, p.Max ) );
-            if ( p.Name == "Size" ) _boundProp?.SetSize( _refParams.StagePropSize );
+            if ( p.Name == "Size" ) ApplySizeToBoundProp();
             return true;
+        }
+
+        private void ApplySizeToBoundProp()
+        {
+            if ( _boundProp == null ) return;
+            _boundProp.SetSize( _refParams.StagePropSize );
+            _refParams.SetGridCursorSize?.Invoke( _refParams.StagePropSize );
+            var center = GridPositionUtility.CalcSizeAwareCenter(
+                _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
+            _boundProp.SetPosition( center );
         }
     }
 }

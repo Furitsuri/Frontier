@@ -83,6 +83,9 @@ namespace Frontier.DebugTools.StageEditor
             /// <summary>グリッドインデックスから StageProp データを _refParams に読み込むコールバック。Controller が設定します。</summary>
             public Func<int, bool> TryLoadStagePropAtGridIndex = null;
 
+            /// <summary>グリッドカーソルのサイズを変更するコールバック。Controller が設定します。</summary>
+            public Action<int> SetGridCursorSize = null;
+
             /// <summary>NewPlacement / EditExisting サブモード中は true。EditParam パネルの表示制御に使用。</summary>
             public bool StagePropSubModeActive = false;
 
@@ -185,17 +188,16 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private PrefabRegistry _prefabReg              = null;
         [Inject] private CharacterFactory _characterFactory     = null;
 
-        private BattleCameraController _btlCamCtrl      = null;
+        private BattleCameraController _btlCamCtrl          = null;
         private Camera _mainCamera;
-        private StageEditorHandler _stageEditorHandler  = null;
-        private StageEditorUI _stageEditorView          = null;
-        private StageFileLoader _stageFileLoader        = null;
-        private GridCursor _gridCursor                  = null;
-        private StageEditRefParams _refParams           = null;
-        private Holder<string> _editFileName            = null;
-        private StageEditMode _editMode                 = StageEditMode.EDIT_TILE;
-        private Vector3 offset                          = new Vector3(0, 5, -5);    // ターゲットからの相対位置
-        private Func<int, int>[] _gridDirectionMoveCallbacks;
+        private StageEditorHandler _stageEditorHandler      = null;
+        private StageEditorUI _stageEditorView              = null;
+        private StageFileLoader _stageFileLoader            = null;
+        private GridCursorController _gridCursorCtrl        = null;
+        private StageEditRefParams _refParams               = null;
+        private Holder<string> _editFileName                = null;
+        private StageEditMode _editMode                     = StageEditMode.EDIT_TILE;
+        private Vector3 offset                              = new Vector3(0, 5, -5);
 
         // 登録済み敵ステータスデータ一覧
         private List<Frontier.Loaders.BattleFileLoader.CharacterDeployData> _enemyStatusList
@@ -224,25 +226,23 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
             LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
             LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
-            LazyInject.GetOrCreate( ref _gridCursor, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( cursorPrefab, new object[] { Color.yellow, true }, true, true, "GridCursor" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( false ) );
 
             _btlCamCtrl.Setup( false );
             _inputFcd.Setup();
-
-            InitCallbacks();
-
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
             _stageDataProvider.CurrentData = CreateDefaultStage();         // プロバイダーに登録
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
 
-            _gridCursor.Init( 0, _gridDirectionMoveCallbacks );
+            _gridCursorCtrl.Init( 0 );
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
 
             _refParams.TryLoadEnemyAtGridIndex      = TryLoadEnemyAtGridIndex;
             _refParams.TryLoadStagePropAtGridIndex  = TryLoadStagePropAtGridIndex;
+            _refParams.SetGridCursorSize            = size => _gridCursorCtrl.SetGridCursorSize( size );
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
@@ -255,62 +255,14 @@ namespace Frontier.DebugTools.StageEditor
         {
             _stageEditorHandler.Update();
 
-            UpdateCamera( _gridCursor.X(), _gridCursor.Y() );
-            UpdateTileVisual( _gridCursor.X(), _gridCursor.Y() );
+            UpdateCamera( _gridCursorCtrl.GetGridCursorX(), _gridCursorCtrl.GetGridCursorY() );
+            UpdateTileVisual( _gridCursorCtrl.GetGridCursorX(), _gridCursorCtrl.GetGridCursorY() );
             _stageEditorView.UpdateModeText( _editMode, _refParams );
         }
 
         public override void LateUpdateRoutine()
         {
             _stageEditorHandler.LateUpdate();
-        }
-
-        private void InitCallbacks()
-        {
-            _gridDirectionMoveCallbacks = new Func<int, int>[( int ) Direction.NUM]
-            {
-                // Direction.FORWARD
-                ( tileIndex ) =>
-                {
-                    tileIndex += _stageDataProvider.CurrentData.TileColNum;
-                    if( _stageDataProvider.CurrentData.GetTileTotalNum() <= tileIndex )
-                    {
-                        tileIndex = tileIndex % ( _stageDataProvider.CurrentData.GetTileTotalNum() );
-                    }
-
-                    return tileIndex;
-                },
-                // Direction.RIGHT
-                ( tileIndex ) =>
-                {
-                    tileIndex++;
-                    if( tileIndex % _stageDataProvider.CurrentData.TileColNum == 0 )
-                    {
-                        tileIndex -= _stageDataProvider.CurrentData.TileColNum;
-                    }
-                    return tileIndex;
-                },
-                // Direction.BACK
-                ( tileIndex ) =>
-                {
-                    tileIndex -= _stageDataProvider.CurrentData.TileColNum;
-                    if( tileIndex < 0 )
-                    {
-                        tileIndex += _stageDataProvider.CurrentData.GetTileTotalNum();
-                    }
-                    return tileIndex;
-                },
-                // Direction.LEFT
-                ( tileIndex ) =>
-                {
-                    tileIndex--;
-                    if( ( tileIndex + 1 ) % _stageDataProvider.CurrentData.TileColNum == 0 )
-                    {
-                        tileIndex += _stageDataProvider.CurrentData.TileColNum;
-                    }
-                    return tileIndex;
-                }
-            };
         }
 
         /// <summary>
@@ -368,7 +320,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageDataProvider.CurrentData.Dispose();
             _stageDataProvider.CurrentData = resizeStageData;      // 作成したデータを保持
 
-            _gridCursor.Init( 0, _gridDirectionMoveCallbacks );  // グリッドカーソル位置を初期化
+            _gridCursorCtrl.Init( 0 );  // グリッドカーソル位置を初期化
         }
 
         /// <summary>
@@ -496,10 +448,9 @@ namespace Frontier.DebugTools.StageEditor
         private void UpdateCamera(int x, int y)
         {
             if (_mainCamera == null) return;
-            // カメラの位置を更新
-            Vector3 targetPosition = _gridCursor.GetPosition() + offset;
+            Vector3 targetPosition = _gridCursorCtrl.GetGridCursorPosition() + offset;
             _mainCamera.transform.position = targetPosition;
-            _mainCamera.transform.LookAt(_gridCursor.GetPosition());
+            _mainCamera.transform.LookAt(_gridCursorCtrl.GetGridCursorPosition());
         }
 
         private void UpdateTileVisual(int x, int y)
@@ -573,7 +524,7 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
-            _gridCursor.Init( 0, _gridDirectionMoveCallbacks );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
+            _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
 
             // 敵キャラクターデータをロード
             var loadedEnemies = EnemyDataSerializer.Load( fileName );
@@ -688,12 +639,10 @@ namespace Frontier.DebugTools.StageEditor
                     _prefabReg.StagePropPrefabs[data.Prefab], true, true, $"[StagePropLoaded_{data.TileIndex}]" );
                 if ( prop == null ) continue;
 
-                var offsetY = _stageDataProvider.CurrentData.GetTile( data.TileIndex ).GetTileMeshPosYOffset();
-                var pos     = _stageDataProvider.CurrentData.GetTileStaticData( data.TileIndex ).CharaStandPos
-                              + new Vector3( 0f, offsetY, 0f );
+                prop.SetSize( data.Size );
+                var pos = GridPositionUtility.CalcSizeAwareCenter( data.TileIndex, data.Size, _stageDataProvider );
                 prop.SetPosition( pos );
                 prop.SetRotation( ( Direction ) data.Direction );
-                prop.SetSize( data.Size );
 
                 _loadedStagePropVisuals.Add( prop );
                 _refParams.GridIndexToStageProp[data.TileIndex] = prop;

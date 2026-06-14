@@ -34,8 +34,8 @@ namespace Frontier.Stage
             _prefabReg          = prefabReg;
             _stageDataProvider  = stageDataProvider;
 
-            LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.GRID_CURSOR],   () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.yellow, true  }, true, true, "GridCursor"      ) );
-            LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.TARGET_CURSOR], () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.red,    false }, true, true, "TargetGridCursor" ) );
+            LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.GRID_CURSOR],   () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.yellow, true  }, true, true,  "GridCursor"      ) );
+            LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.TARGET_CURSOR], () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.red,    false }, true, false, "TargetGridCursor" ) );
         }
 
         public void Init( int initIndex )
@@ -135,6 +135,21 @@ namespace Frontier.Stage
             return _gridCursors[(int)CursorType.GRID_CURSOR].CurrentTileIndex;
         }
 
+        public int GetGridCursorX()
+        {
+            return _gridCursors[( int ) CursorType.GRID_CURSOR].X();
+        }
+
+        public int GetGridCursorY()
+        {
+            return _gridCursors[( int ) CursorType.GRID_CURSOR].Y();
+        }
+
+        public Vector3 GetGridCursorPosition()
+        {
+            return _gridCursors[( int ) CursorType.GRID_CURSOR].GetPosition();
+        }
+
         public int GetCurrentTargetIndex()
         {
             return _gridCursors[( int ) CursorType.TARGET_CURSOR].CurrentTileIndex;
@@ -194,20 +209,20 @@ namespace Frontier.Stage
             return ( atkTargetIndex + 1 ) % _refAttackableTileIndices.Count;
         }
 
-        private void InitCallbacks()
+        private static Func<int, int>[] CreateDirectionMoveCallbacks( int size, IStageDataProvider stageDataProvider )
         {
-            int s = _gridCursorSize;
+            int s = size;
 
-            _directionMoveCallbacks = new Func<int, int>[( int ) Direction.NUM]
+            return new Func<int, int>[( int ) Direction.NUM]
             {
                 // Direction.FORWARD（行を +1）
                 ( tileIndex ) =>
                 {
-                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
-                    int totalNum = _stageDataProvider.CurrentData.GetTileTotalNum();
-                    int rowNum  = totalNum / colNum;
-                    int row     = tileIndex / colNum;
-                    int col     = tileIndex % colNum;
+                    int colNum   = stageDataProvider.CurrentData.TileColNum;
+                    int totalNum = stageDataProvider.CurrentData.GetTileTotalNum();
+                    int rowNum   = totalNum / colNum;
+                    int row      = tileIndex / colNum;
+                    int col      = tileIndex % colNum;
                     row++;
                     if( row + s - 1 >= rowNum ) row = 0;
                     return row * colNum + col;
@@ -215,9 +230,9 @@ namespace Frontier.Stage
                 // Direction.RIGHT（列を +1）
                 ( tileIndex ) =>
                 {
-                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
-                    int row     = tileIndex / colNum;
-                    int col     = tileIndex % colNum;
+                    int colNum = stageDataProvider.CurrentData.TileColNum;
+                    int row    = tileIndex / colNum;
+                    int col    = tileIndex % colNum;
                     col++;
                     if( col + s - 1 >= colNum ) col = 0;
                     return row * colNum + col;
@@ -225,11 +240,11 @@ namespace Frontier.Stage
                 // Direction.BACK（行を -1）
                 ( tileIndex ) =>
                 {
-                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
-                    int totalNum = _stageDataProvider.CurrentData.GetTileTotalNum();
-                    int rowNum  = totalNum / colNum;
-                    int row     = tileIndex / colNum;
-                    int col     = tileIndex % colNum;
+                    int colNum   = stageDataProvider.CurrentData.TileColNum;
+                    int totalNum = stageDataProvider.CurrentData.GetTileTotalNum();
+                    int rowNum   = totalNum / colNum;
+                    int row      = tileIndex / colNum;
+                    int col      = tileIndex % colNum;
                     row--;
                     if( row < 0 ) row = rowNum - s;
                     return row * colNum + col;
@@ -237,14 +252,19 @@ namespace Frontier.Stage
                 // Direction.LEFT（列を -1）
                 ( tileIndex ) =>
                 {
-                    int colNum  = _stageDataProvider.CurrentData.TileColNum;
-                    int row     = tileIndex / colNum;
-                    int col     = tileIndex % colNum;
+                    int colNum = stageDataProvider.CurrentData.TileColNum;
+                    int row    = tileIndex / colNum;
+                    int col    = tileIndex % colNum;
                     col--;
                     if( col < 0 ) col = colNum - s;
                     return row * colNum + col;
                 }
             };
+        }
+
+        private void InitCallbacks()
+        {
+            _directionMoveCallbacks = CreateDirectionMoveCallbacks( _gridCursorSize, _stageDataProvider );
 
             _directionAttackTargetCallbacks = new Func<int, int>[( int ) Direction.NUM]
             {
