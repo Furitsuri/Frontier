@@ -24,6 +24,8 @@ namespace Frontier.Entities
         /// </summary>
         public IReadOnlyList<int> OccupiedTileIndices => _occupiedTileIndices;
 
+        public int Size => _size;
+
         public void SetPosition( in Vector3 position )                                          => _transformHdlr.SetPosition( position );
         public void SetPositionXZ( in Vector3 position )                                        => _transformHdlr.SetPositionXZ( position );
         public void SetRotation( in Quaternion rotation )                                       => _transformHdlr.SetRotation( rotation );

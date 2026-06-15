@@ -21,8 +21,8 @@ namespace Frontier.DebugTools.StageEditor
             EditFileName,
         }
 
-        [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
-        [Inject] private GridCursorController _gridCursorCtrl       = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld   = null;
+        [Inject] private GridCursorController _gridCursorCtrl = null;
 
         private Action<EditActionContext> PlaceTileCallback;
         private Action<EditActionContext> ResizeTileGridCallback;

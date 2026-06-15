@@ -28,6 +28,12 @@ namespace Frontier.Stage
         private Func<int, int>[] _directionMoveCallbacks;
         private Func<int, int>[] _directionAttackTargetCallbacks;
 
+        /// <summary>
+        /// グリッドカーソルが移動した際に発火します。引数は移動後のタイルインデックスです。
+        /// StageController / StageEditorController がサイズ自動調整などのドメイン固有処理を登録します。
+        /// </summary>
+        public Action<int> OnGridCursorMoved = null;
+
         [Inject] public void Construct( HierarchyBuilderBase hierarchyBld, PrefabRegistry prefabReg, IStageDataProvider stageDataProvider )
         {
             _hierarchyBld       = hierarchyBld;
@@ -113,6 +119,7 @@ namespace Frontier.Stage
             if( direction == Direction.NONE ) { return false; }
 
             _gridCursors[(int)CursorType.GRID_CURSOR].Move( direction );
+            OnGridCursorMoved?.Invoke( GetCurrentGridIndex() );
 
             return true;
         }

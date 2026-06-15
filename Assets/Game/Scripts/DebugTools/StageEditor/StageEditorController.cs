@@ -75,7 +75,7 @@ namespace Frontier.DebugTools.StageEditor
             public Dictionary<int, int> GridIndexToStagePropListIndex = new Dictionary<int, int>();
 
             /// <summary>配置済み・ロード済み StageProp の (グリッドインデックス → StageProp) マップ。ビジュアル管理に使用。</summary>
-            public Dictionary<int, Frontier.Entities.StageProp> GridIndexToStageProp = new Dictionary<int, Frontier.Entities.StageProp>();
+            public Dictionary<int, StageProp> GridIndexToStageProp = new Dictionary<int, StageProp>();
 
             /// <summary>現在編集中の既存 StageProp のグリッドインデックス。EditExisting サブモードでのみ有効。</summary>
             public int EditingStagePropGridIndex = -1;
@@ -194,6 +194,7 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditorUI _stageEditorView              = null;
         private StageFileLoader _stageFileLoader            = null;
         private GridCursorController _gridCursorCtrl        = null;
+        private GridCursorSizeAdjuster _sizeAdjuster        = null;
         private StageEditRefParams _refParams               = null;
         private Holder<string> _editFileName                = null;
         private StageEditMode _editMode                     = StageEditMode.EDIT_TILE;
@@ -226,7 +227,8 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _refParams, () => _hierarchyBld.InstantiateWithDiContainer<StageEditRefParams>( true ) );
             LazyInject.GetOrCreate( ref _editFileName, () => new Holder<string>( "NewStage" ) );
             LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
-            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( false ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( true ) );
+            LazyInject.GetOrCreate( ref _sizeAdjuster,  () => _hierarchyBld.InstantiateWithDiContainer<GridCursorSizeAdjuster>( false ) );
 
             _btlCamCtrl.Setup( false );
             _inputFcd.Setup();
@@ -239,6 +241,9 @@ namespace Frontier.DebugTools.StageEditor
             _gridCursorCtrl.Init( 0 );
             _stageEditorView.Init( EditFileName );
             _stageFileLoader.Init( tilePrefabs );
+
+            _sizeAdjuster.SetGridCursorController( _gridCursorCtrl );
+            _gridCursorCtrl.OnGridCursorMoved       = AutoAdjustCursorSizeForTile;
 
             _refParams.TryLoadEnemyAtGridIndex      = TryLoadEnemyAtGridIndex;
             _refParams.TryLoadStagePropAtGridIndex  = TryLoadStagePropAtGridIndex;
@@ -369,6 +374,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _enemyStatusList.Add( data );
             _refParams.GridIndexToEnemyListIndex[data.InitGridIndex] = data.CharacterIndex;
+            _sizeAdjuster.RegisterCharacterOccupied( data.InitGridIndex, Constants.GRID_SIZE_MIN );
             Debug.Log( $"[StageEditor] 敵を登録しました (Index={data.CharacterIndex} Prefab={data.Prefab} Level={data.Level})" );
         }
 
@@ -385,12 +391,16 @@ namespace Frontier.DebugTools.StageEditor
 
             if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( oldGridIndex, out int listIndex ) ) return;
 
+            _sizeAdjuster.UnregisterCharacterOccupied( oldGridIndex, Constants.GRID_SIZE_MIN );
+
             // グリッドインデックスが変わった場合は辞書キーを更新
             if ( newGridIndex != oldGridIndex )
             {
                 _refParams.GridIndexToEnemyListIndex.Remove( oldGridIndex );
                 _refParams.GridIndexToEnemyListIndex[newGridIndex] = listIndex;
             }
+
+            _sizeAdjuster.RegisterCharacterOccupied( newGridIndex, Constants.GRID_SIZE_MIN );
 
             var data = _enemyStatusList[listIndex];
             data.Level         = _refParams.EnemyLevel;
@@ -533,6 +543,7 @@ namespace Frontier.DebugTools.StageEditor
                 DestroyLoadedEnemyVisuals();
                 _enemyStatusList.Clear();
                 _refParams.GridIndexToEnemyListIndex.Clear();
+                _sizeAdjuster.ClearCharacterOccupied();
 
                 foreach ( var enemy in loadedEnemies )
                 {
@@ -551,6 +562,7 @@ namespace Frontier.DebugTools.StageEditor
                 DestroyLoadedStagePropVisuals();
                 _stagePropList.Clear();
                 _refParams.GridIndexToStagePropListIndex.Clear();
+                _sizeAdjuster.ClearStagePropOccupied();
 
                 foreach ( var prop in loadedProps )
                 {
@@ -580,6 +592,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _stagePropList.Add( data );
             _refParams.GridIndexToStagePropListIndex[data.TileIndex] = _stagePropList.Count - 1;
+            _sizeAdjuster.RegisterStagePropOccupied( data.TileIndex, data.Size );
             Debug.Log( $"[StageEditor] StageProp を登録しました (TileIndex={data.TileIndex} Prefab={(Frontier.Entities.STAGE_PROPS)data.Prefab})" );
         }
 
@@ -596,6 +609,9 @@ namespace Frontier.DebugTools.StageEditor
 
             if ( !_refParams.GridIndexToStagePropListIndex.TryGetValue( oldGridIndex, out int listIndex ) ) return;
 
+            int oldSize = _stagePropList[listIndex].Size;
+            _sizeAdjuster.UnregisterStagePropOccupied( oldGridIndex, oldSize );
+
             if ( newGridIndex != oldGridIndex )
             {
                 _refParams.GridIndexToStagePropListIndex.Remove( oldGridIndex );
@@ -607,6 +623,10 @@ namespace Frontier.DebugTools.StageEditor
             data.Direction = _refParams.StagePropDirection;
             data.Size      = _refParams.StagePropSize;
             _stagePropList[listIndex] = data;
+
+            _sizeAdjuster.RegisterStagePropOccupied( newGridIndex, data.Size );
+            if ( _refParams.GridIndexToStageProp.TryGetValue( newGridIndex, out var editedProp ) )
+                editedProp.RefreshOccupiedTileIndices( newGridIndex, _stageDataProvider.CurrentData.TileColNum );
 
             Debug.Log( $"[StageEditor] StageProp を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
         }
@@ -626,6 +646,13 @@ namespace Frontier.DebugTools.StageEditor
             return true;
         }
 
+        /// <summary>サブモード中はスキップし、それ以外は adjuster にサイズ調整を委譲します。</summary>
+        private void AutoAdjustCursorSizeForTile( int tileIndex )
+        {
+            if ( _refParams.StagePropSubModeActive || _refParams.EnemySubModeActive ) return;
+            _sizeAdjuster.AdjustCursorSizeForTile( tileIndex );
+        }
+
         /// <summary>ロードした StageProp データに対応するモデルを生成してシーンに配置します。</summary>
         private void SpawnLoadedStagePropVisuals()
         {
@@ -643,9 +670,11 @@ namespace Frontier.DebugTools.StageEditor
                 var pos = GridPositionUtility.CalcSizeAwareCenter( data.TileIndex, data.Size, _stageDataProvider );
                 prop.SetPosition( pos );
                 prop.SetRotation( ( Direction ) data.Direction );
+                prop.RefreshOccupiedTileIndices( data.TileIndex, _stageDataProvider.CurrentData.TileColNum );
 
                 _loadedStagePropVisuals.Add( prop );
                 _refParams.GridIndexToStageProp[data.TileIndex] = prop;
+                _sizeAdjuster.RegisterStagePropOccupied( data.TileIndex, data.Size );
             }
         }
 
@@ -685,8 +714,11 @@ namespace Frontier.DebugTools.StageEditor
                 chara.SetPosition( pos );
                 chara.SetRotation( ( Direction ) data.InitDir );
 
+                chara.RefreshOccupiedTileIndices( data.InitGridIndex, _stageDataProvider.CurrentData.TileColNum );
+
                 _loadedEnemyVisuals.Add( chara );
                 _refParams.GridIndexToCharacter[data.InitGridIndex] = chara;
+                _sizeAdjuster.RegisterCharacterOccupied( data.InitGridIndex, Constants.GRID_SIZE_MIN );
             }
         }
 
