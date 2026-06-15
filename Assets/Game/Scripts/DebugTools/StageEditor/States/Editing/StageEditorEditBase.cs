@@ -8,8 +8,8 @@ namespace Frontier.DebugTools.StageEditor
 {
     public class StageEditorEditBase
     {
-        [Inject] protected GridCursor _gridCursor                 = null;
-        [Inject] protected StageEditorController.StageEditRefParams _refParams  = null;
+        [Inject] protected GridCursorController _gridCursorCtrl                    = null;
+        [Inject] protected StageEditorController.StageEditRefParams _refParams      = null;
 
         protected EditActionContext _context;
         protected Action<EditActionContext> OwnCallback;

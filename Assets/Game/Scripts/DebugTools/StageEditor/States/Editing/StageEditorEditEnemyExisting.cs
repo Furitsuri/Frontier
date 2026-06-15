@@ -74,7 +74,7 @@ namespace Frontier.DebugTools.StageEditor
             _snapSkill2            = _refParams.EnemySkill2;
             _snapSkill3            = _refParams.EnemySkill3;
             _snapSkill4            = _refParams.EnemySkill4;
-            _snapCursorTileIndex   = _gridCursor != null ? _gridCursor.CurrentTileIndex : 0;
+            _snapCursorTileIndex   = _gridCursorCtrl != null ? _gridCursorCtrl.GetCurrentGridIndex() : 0;
             _snapCharacterPosition = _boundCharacter != null
                 ? _boundCharacter.transform.position
                 : Vector3.zero;
@@ -109,10 +109,10 @@ namespace Frontier.DebugTools.StageEditor
                     _boundCharacter.SetRotation( ( Direction ) _snapInitDir );
                 }
 
-                if ( _gridCursor != null )
+                if ( _gridCursorCtrl != null )
                 {
-                    _gridCursor.SetTileIndex( _snapCursorTileIndex );
-                    _gridCursor.SyncPositionToTile();
+                    _gridCursorCtrl.SetGridCursorTileIndex( _snapCursorTileIndex );
+                    _gridCursorCtrl.SyncGridCursorPosition();
                 }
             }
             _boundCharacter = null;
@@ -123,13 +123,13 @@ namespace Frontier.DebugTools.StageEditor
             base.Update();
 
             // カーソル位置から InitGridIndex をリアルタイム更新して表示に反映
-            if ( _gridCursor != null && _refParams != null )
+            if ( _gridCursorCtrl != null && _refParams != null )
             {
-                _refParams.EnemyInitGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+                _refParams.EnemyInitGridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             }
 
-            if ( _boundCharacter == null || _gridCursor == null ) return;
-            _boundCharacter.SetPosition( _gridCursor.GetPosition() );
+            if ( _boundCharacter == null || _gridCursorCtrl == null ) return;
+            _boundCharacter.SetPosition( _gridCursorCtrl.GetGridCursorPosition() );
             _boundCharacter.SetRotation( ( Direction ) _refParams.EnemyInitDir );
         }
 
@@ -189,7 +189,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptConfirm( context ) ) return false;
 
             _confirmed = true;
-            int newGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+            int newGridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             _context.ExtraIntValues.Clear();
             _context.ExtraIntValues.Add( _refParams.EditingEnemyGridIndex );  // [0] 旧グリッドインデックス
             _context.ExtraIntValues.Add( newGridIndex );                       // [1] 新グリッドインデックス

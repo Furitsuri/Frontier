@@ -207,7 +207,7 @@ namespace Frontier.DebugTools.StageEditor
 
         private void EnterEditExisting()
         {
-            int gridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+            int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             _refParams.TryLoadEnemyAtGridIndex?.Invoke( gridIndex );
             _refParams.EditingEnemyGridIndex = gridIndex;
 
@@ -216,7 +216,7 @@ namespace Frontier.DebugTools.StageEditor
             _existingEdit.OnCompleted = () =>
             {
                 // Confirm 後: 各マップのキーを新グリッドインデックスへ更新
-                int newGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+                int newGridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
                 if ( newGridIndex != gridIndex )
                 {
                     // GridIndexToCharacter のキーを更新
@@ -264,8 +264,8 @@ namespace Frontier.DebugTools.StageEditor
 
         private bool IsEnemyAtCursor()
         {
-            if ( _refParams == null || _gridCursor == null ) return false;
-            int gridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+            if ( _refParams == null || _gridCursorCtrl == null ) return false;
+            int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             return _refParams.GridIndexToEnemyListIndex.ContainsKey( gridIndex );
         }
     }

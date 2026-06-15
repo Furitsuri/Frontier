@@ -34,8 +34,8 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            _context.X = _gridCursor.X();
-            _context.Y = _gridCursor.Y();
+            _context.X = _gridCursorCtrl.GetGridCursorX();
+            _context.Y = _gridCursorCtrl.GetGridCursorY();
 
             OwnCallback( _context );
 

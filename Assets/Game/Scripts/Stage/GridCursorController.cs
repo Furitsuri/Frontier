@@ -34,7 +34,7 @@ namespace Frontier.Stage
             _prefabReg          = prefabReg;
             _stageDataProvider  = stageDataProvider;
 
-            LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.GRID_CURSOR],   () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.yellow, true  }, true, true,  "GridCursor"      ) );
+            LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.GRID_CURSOR],   () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.yellow, true  }, true, false,  "GridCursor"      ) );
             LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.TARGET_CURSOR], () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.red,    false }, true, false, "TargetGridCursor" ) );
         }
 
@@ -148,6 +148,16 @@ namespace Frontier.Stage
         public Vector3 GetGridCursorPosition()
         {
             return _gridCursors[( int ) CursorType.GRID_CURSOR].GetPosition();
+        }
+
+        public void SetGridCursorTileIndex( int index )
+        {
+            _gridCursors[( int ) CursorType.GRID_CURSOR].SetTileIndex( index );
+        }
+
+        public void SyncGridCursorPosition()
+        {
+            _gridCursors[( int ) CursorType.GRID_CURSOR].SyncPositionToTile();
         }
 
         public int GetCurrentTargetIndex()

@@ -107,10 +107,10 @@ namespace Frontier.DebugTools.StageEditor
         private void UpdatePreviewPosition()
         {
             // カーソル位置から InitGridIndex をリアルタイム更新
-            _refParams.EnemyInitGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+            _refParams.EnemyInitGridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
 
             if ( _previewCharacter == null ) return;
-            _previewCharacter.SetPosition( _gridCursor.GetPosition() );
+            _previewCharacter.SetPosition( _gridCursorCtrl.GetGridCursorPosition() );
             _previewCharacter.SetRotation( ( Direction ) _refParams.EnemyInitDir );
         }
 
@@ -230,8 +230,8 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( !base.AcceptConfirm( context ) ) return false;
 
-            _context.X = _gridCursor.X();
-            _context.Y = _gridCursor.Y();
+            _context.X = _gridCursorCtrl.GetGridCursorX();
+            _context.Y = _gridCursorCtrl.GetGridCursorY();
             OwnCallback( _context );
 
             // 配置済みキャラクターとして現プレビューを固定し、次の配置用プレビューを生成

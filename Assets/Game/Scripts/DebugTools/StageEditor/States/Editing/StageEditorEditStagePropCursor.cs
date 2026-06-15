@@ -201,7 +201,7 @@ namespace Frontier.DebugTools.StageEditor
 
         private void EnterEditExisting()
         {
-            int gridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+            int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             _refParams.TryLoadStagePropAtGridIndex?.Invoke( gridIndex );
             _refParams.EditingStagePropGridIndex = gridIndex;
 
@@ -209,7 +209,7 @@ namespace Frontier.DebugTools.StageEditor
             _existingEdit.RefreshInputCodes = RefreshInputCodes;
             _existingEdit.OnCompleted = () =>
             {
-                int newGridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+                int newGridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
                 if ( newGridIndex != gridIndex )
                 {
                     if ( _refParams.GridIndexToStageProp.TryGetValue( gridIndex, out var movedProp ) )
@@ -250,8 +250,8 @@ namespace Frontier.DebugTools.StageEditor
 
         private bool IsStagePropAtCursor()
         {
-            if ( _refParams == null || _gridCursor == null ) return false;
-            int gridIndex = _gridCursor.X() + _gridCursor.Y() * _refParams.Col;
+            if ( _refParams == null || _gridCursorCtrl == null ) return false;
+            int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             return _refParams.GridIndexToStagePropListIndex.ContainsKey( gridIndex );
         }
     }
