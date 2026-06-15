@@ -79,13 +79,12 @@ namespace Frontier.Stage
         {
             var ( anchor, size ) = GetAnchorAndSize( tileIndex );
 
+            _gridCursorCtrl.SetGridCursorSize( size );
+
             if ( anchor >= 0 && anchor != tileIndex )
             {
                 _gridCursorCtrl.SetGridCursorTileIndex( anchor );
-                _gridCursorCtrl.SyncGridCursorPosition();
             }
-
-            _gridCursorCtrl.SetGridCursorSize( size );
         }
 
         // ──── 内部: エンティティ対応移動コールバック ─────────────────────────
