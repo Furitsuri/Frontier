@@ -19,7 +19,7 @@ public class KeyboardInput : IInput
 
     public bool IsConfirmPressed()
     {
-        return Input.GetKeyUp( KeyCode.Tab );
+        return Input.GetKeyUp( KeyCode.Return );
     }
 
     public bool IsCancelPressed()
@@ -29,42 +29,42 @@ public class KeyboardInput : IInput
 
     public bool IsToolPressed()
     {
-        return Input.GetKeyUp( KeyCode.LeftControl );
+        return Input.GetKeyUp( KeyCode.F );
     }
 
     public bool IsInfoPressed()
     {
-        return Input.GetKeyUp( KeyCode.LeftShift );
+        return Input.GetKeyUp( KeyCode.R );
     }
 
     public bool IsOptions1Pressed()
     {
-        return Input.GetKeyUp( KeyCode.LeftAlt );
+        return Input.GetKeyUp( KeyCode.P );
     }
 
     public bool IsOptions2Pressed()
     {
-        return Input.GetKeyUp( KeyCode.Space );
+        return Input.GetKeyUp( KeyCode.Tab );
     }
 
     public bool IsSub1Pressed()
     {
-        return Input.GetKeyUp( KeyCode.Alpha1 );
+        return Input.GetKeyUp( KeyCode.Q );
     }
 
     public bool IsSub2Pressed()
     {
-        return Input.GetKeyUp( KeyCode.Alpha2 );
+        return Input.GetKeyUp( KeyCode.E );
     }
 
     public bool IsSub3Pressed()
     {
-        return Input.GetKeyUp( KeyCode.Alpha3 );
+        return Input.GetKeyUp( KeyCode.Z );
     }
 
     public bool IsSub4Pressed()
     {
-        return Input.GetKeyUp( KeyCode.Alpha4 );
+        return Input.GetKeyUp( KeyCode.C );
     }
 
     public bool IsPointerLeftPress()

@@ -37,16 +37,16 @@ public sealed class InputGuidePresenter
             "_alpha_309",   // ALL_CURSOR
             "_alpha_315",   // VERTICAL
             "_alpha_314",   // HORIZONTAL
-            "_alpha_263",   // CONFIRM(Tab)
+            "_alpha_265",   // CONFIRM(Enter)
             "_alpha_259",   // CANCEL(Esc)
-            "_alpha_202",   // TOOL(Ctrl)
-            "_alpha_204",   // INFO(Shift)
-            "_alpha_203",   // OPTION1(Alt)
-            "_alpha_201",   // OPTION2(Space)
-            "_alpha_94",    // SUB1(1)
-            "_alpha_95",    // SUB2(2)
-            "_alpha_96",    // SUB3(3)
-            "_alpha_97",    // SUB4(4)
+            "_alpha_192",   // TOOL('F')
+            "_alpha_138",   // INFO('R')
+            "_alpha_144",   // OPTION1('P')
+            "_alpha_263",   // OPTION2(Tab)
+            "_alpha_135",   // SUB1('Q')
+            "_alpha_137",   // SUB2('E')
+            "_alpha_243",   // SUB3('Z')
+            "_alpha_245",   // SUB4('C')
             "_alpha_298",   // POINTER_MOVE
             "_alpha_300",   // POINTER_LEFT
             "_alpha_301",   // POINTER_RIGHT
