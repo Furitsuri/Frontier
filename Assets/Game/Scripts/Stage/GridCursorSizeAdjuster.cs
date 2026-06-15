@@ -1,12 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
 namespace Frontier.Stage
 {
     /// <summary>
-    /// エンティティの占有タイル情報を管理し、グリッドカーソルのサイズを自動調整するクラスです。
+    /// エンティティの占有タイル情報を管理し、グリッドカーソルのサイズと位置を自動調整するクラスです。
     /// StageController（ゲーム）と StageEditorController（エディター）の両方から使用されます。
+    ///
+    /// [移動ルール]
+    ///   サイズ s のエンティティ（アンカー位置）からの移動:
+    ///     FORWARD / RIGHT: アンカーから +s（遠い端を越える）
+    ///     BACK   / LEFT  : アンカーから -1（近い端から出る）
+    ///   移動先が別エンティティの非アンカータイルの場合、そのエンティティのアンカーへスナップします。
     /// </summary>
     public class GridCursorSizeAdjuster
     {
@@ -14,74 +21,168 @@ namespace Frontier.Stage
 
         private GridCursorController _gridCursorCtrl = null;
 
-        /// <summary>StageProp が占有するタイルインデックス → そのサイズ の逆引きマップ</summary>
-        private Dictionary<int, int> _stagePropOccupiedTileToSize = new Dictionary<int, int>();
+        // StageProp: 占有タイル → アンカー、アンカー → サイズ
+        private Dictionary<int, int> _stagePropOccupiedTileToAnchor = new Dictionary<int, int>();
+        private Dictionary<int, int> _stagePropAnchorToSize         = new Dictionary<int, int>();
 
-        /// <summary>Character が占有するタイルインデックス → そのサイズ の逆引きマップ</summary>
-        private Dictionary<int, int> _characterOccupiedTileToSize = new Dictionary<int, int>();
+        // Character: 占有タイル → アンカー、アンカー → サイズ
+        private Dictionary<int, int> _characterOccupiedTileToAnchor = new Dictionary<int, int>();
+        private Dictionary<int, int> _characterAnchorToSize         = new Dictionary<int, int>();
 
-        /// <summary>GridCursorController を設定します。Init / Construct 後に呼んでください。</summary>
+        // ──── 初期化 ──────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// GridCursorController を設定し、エンティティ対応の移動コールバックを登録します。
+        /// GridCursorController.Init() の後に呼んでください。
+        /// </summary>
         public void SetGridCursorController( GridCursorController gridCursorCtrl )
         {
             _gridCursorCtrl = gridCursorCtrl;
+            _gridCursorCtrl.SetDirectionMoveCallbacks( CreateEntityAwareDirectionCallbacks() );
         }
 
-        // ──── StageProp ──────────────────────────────────────────────────────
+        // ──── StageProp 登録 / 解除 ──────────────────────────────────────────
 
         public void RegisterStagePropOccupied( int anchor, int size )
-            => RegisterOccupiedTiles( anchor, size, _stagePropOccupiedTileToSize );
+            => RegisterOccupiedTiles( anchor, size, _stagePropOccupiedTileToAnchor, _stagePropAnchorToSize );
 
         public void UnregisterStagePropOccupied( int anchor, int size )
-            => UnregisterOccupiedTiles( anchor, size, _stagePropOccupiedTileToSize );
+            => UnregisterOccupiedTiles( anchor, size, _stagePropOccupiedTileToAnchor, _stagePropAnchorToSize );
 
         public void ClearStagePropOccupied()
-            => _stagePropOccupiedTileToSize.Clear();
+        {
+            _stagePropOccupiedTileToAnchor.Clear();
+            _stagePropAnchorToSize.Clear();
+        }
 
-        // ──── Character ──────────────────────────────────────────────────────
+        // ──── Character 登録 / 解除 ──────────────────────────────────────────
 
         public void RegisterCharacterOccupied( int anchor, int size )
-            => RegisterOccupiedTiles( anchor, size, _characterOccupiedTileToSize );
+            => RegisterOccupiedTiles( anchor, size, _characterOccupiedTileToAnchor, _characterAnchorToSize );
 
         public void UnregisterCharacterOccupied( int anchor, int size )
-            => UnregisterOccupiedTiles( anchor, size, _characterOccupiedTileToSize );
+            => UnregisterOccupiedTiles( anchor, size, _characterOccupiedTileToAnchor, _characterAnchorToSize );
 
         public void ClearCharacterOccupied()
-            => _characterOccupiedTileToSize.Clear();
+        {
+            _characterOccupiedTileToAnchor.Clear();
+            _characterAnchorToSize.Clear();
+        }
 
-        // ──── サイズ調整 ──────────────────────────────────────────────────────
+        // ──── サイズ・位置調整 ────────────────────────────────────────────────
 
         /// <summary>
-        /// 指定タイルに存在するエンティティのサイズに合わせてグリッドカーソルのサイズを変更します。
-        /// 何も存在しない場合は GRID_SIZE_MIN にリセットします。
+        /// 指定タイルのエンティティに合わせてカーソルのサイズを調整し、
+        /// 非アンカータイルに着地した場合はアンカーへスナップします。
         /// </summary>
         public void AdjustCursorSizeForTile( int tileIndex )
         {
-            int size = GRID_SIZE_MIN;
+            var ( anchor, size ) = GetAnchorAndSize( tileIndex );
 
-            if ( _stagePropOccupiedTileToSize.TryGetValue( tileIndex, out int propSize ) )
-                size = propSize;
-            else if ( _characterOccupiedTileToSize.TryGetValue( tileIndex, out int charSize ) )
-                size = charSize;
+            if ( anchor >= 0 && anchor != tileIndex )
+            {
+                _gridCursorCtrl.SetGridCursorTileIndex( anchor );
+                _gridCursorCtrl.SyncGridCursorPosition();
+            }
 
-            _gridCursorCtrl?.SetGridCursorSize( size );
+            _gridCursorCtrl.SetGridCursorSize( size );
         }
 
-        // ──── 内部ヘルパー ────────────────────────────────────────────────────
+        // ──── 内部: エンティティ対応移動コールバック ─────────────────────────
 
-        private void RegisterOccupiedTiles( int anchor, int size, Dictionary<int, int> map )
+        private Func<int, int>[] CreateEntityAwareDirectionCallbacks()
+        {
+            return new Func<int, int>[( int ) Direction.NUM]
+            {
+                // Direction.FORWARD（行 +size or +1）
+                ( tileIndex ) =>
+                {
+                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
+                    int rowNum   = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+                    var ( anchor, size ) = GetAnchorAndSize( tileIndex );
+                    int baseIdx  = anchor >= 0 ? anchor : tileIndex;
+                    int row      = baseIdx / colNum;
+                    int col      = baseIdx % colNum;
+                    row += size;
+                    if ( row >= rowNum ) row = 0;
+                    return row * colNum + col;
+                },
+                // Direction.RIGHT（列 +size or +1）
+                ( tileIndex ) =>
+                {
+                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
+                    var ( anchor, size ) = GetAnchorAndSize( tileIndex );
+                    int baseIdx  = anchor >= 0 ? anchor : tileIndex;
+                    int row      = baseIdx / colNum;
+                    int col      = baseIdx % colNum;
+                    col += size;
+                    if ( col >= colNum ) col = 0;
+                    return row * colNum + col;
+                },
+                // Direction.BACK（行 -1）
+                ( tileIndex ) =>
+                {
+                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
+                    int rowNum   = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+                    var ( anchor, size ) = GetAnchorAndSize( tileIndex );
+                    int baseIdx  = anchor >= 0 ? anchor : tileIndex;
+                    int row      = baseIdx / colNum;
+                    int col      = baseIdx % colNum;
+                    row--;
+                    if ( row < 0 ) row = rowNum - 1;
+                    return row * colNum + col;
+                },
+                // Direction.LEFT（列 -1）
+                ( tileIndex ) =>
+                {
+                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
+                    var ( anchor, size ) = GetAnchorAndSize( tileIndex );
+                    int baseIdx  = anchor >= 0 ? anchor : tileIndex;
+                    int row      = baseIdx / colNum;
+                    int col      = baseIdx % colNum;
+                    col--;
+                    if ( col < 0 ) col = colNum - 1;
+                    return row * colNum + col;
+                },
+            };
+        }
+
+        // ──── 内部: ルックアップ ──────────────────────────────────────────────
+
+        /// <summary>タイルインデックスからアンカーとサイズを返します。エンティティがない場合は (-1, GRID_SIZE_MIN)。</summary>
+        private ( int anchor, int size ) GetAnchorAndSize( int tileIndex )
+        {
+            if ( _stagePropOccupiedTileToAnchor.TryGetValue( tileIndex, out int propAnchor ) &&
+                 _stagePropAnchorToSize.TryGetValue( propAnchor, out int propSize ) )
+                return ( propAnchor, propSize );
+
+            if ( _characterOccupiedTileToAnchor.TryGetValue( tileIndex, out int charAnchor ) &&
+                 _characterAnchorToSize.TryGetValue( charAnchor, out int charSize ) )
+                return ( charAnchor, charSize );
+
+            return ( -1, GRID_SIZE_MIN );
+        }
+
+        // ──── 内部: マップ操作 ────────────────────────────────────────────────
+
+        private void RegisterOccupiedTiles( int anchor, int size,
+            Dictionary<int, int> occupiedTileToAnchor, Dictionary<int, int> anchorToSize )
         {
             int colNum = _stageDataProvider.CurrentData.TileColNum;
             for ( int row = 0; row < size; row++ )
                 for ( int col = 0; col < size; col++ )
-                    map[anchor + col + row * colNum] = size;
+                    occupiedTileToAnchor[anchor + col + row * colNum] = anchor;
+            anchorToSize[anchor] = size;
         }
 
-        private void UnregisterOccupiedTiles( int anchor, int size, Dictionary<int, int> map )
+        private void UnregisterOccupiedTiles( int anchor, int size,
+            Dictionary<int, int> occupiedTileToAnchor, Dictionary<int, int> anchorToSize )
         {
             int colNum = _stageDataProvider.CurrentData.TileColNum;
             for ( int row = 0; row < size; row++ )
                 for ( int col = 0; col < size; col++ )
-                    map.Remove( anchor + col + row * colNum );
+                    occupiedTileToAnchor.Remove( anchor + col + row * colNum );
+            anchorToSize.Remove( anchor );
         }
     }
 }

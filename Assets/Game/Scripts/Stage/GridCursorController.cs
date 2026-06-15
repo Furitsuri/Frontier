@@ -18,15 +18,15 @@ namespace Frontier.Stage
             NUM,
         }
 
-        private HierarchyBuilderBase _hierarchyBld      = null;
-        private PrefabRegistry _prefabReg               = null;
-        private IStageDataProvider _stageDataProvider   = null;
-        private int _atkTargetIndex                     = 0;
+        private HierarchyBuilderBase _hierarchyBld  = null;
+        private PrefabRegistry _prefabReg           = null;
+        private int _atkTargetIndex                 = 0;
         private int _gridCursorSize                     = 1;
         private GridCursor[] _gridCursors               = new GridCursor[( int ) CursorType.NUM];
         private ReadOnlyCollection<int> _refAttackableTileIndices;
         private Func<int, int>[] _directionMoveCallbacks;
         private Func<int, int>[] _directionAttackTargetCallbacks;
+        private Func<int, int>[] _entityAwareCallbacks = null;
 
         /// <summary>
         /// グリッドカーソルが移動した際に発火します。引数は移動後のタイルインデックスです。
@@ -34,11 +34,10 @@ namespace Frontier.Stage
         /// </summary>
         public Action<int> OnGridCursorMoved = null;
 
-        [Inject] public void Construct( HierarchyBuilderBase hierarchyBld, PrefabRegistry prefabReg, IStageDataProvider stageDataProvider )
+        [Inject] public void Construct( HierarchyBuilderBase hierarchyBld, PrefabRegistry prefabReg )
         {
-            _hierarchyBld       = hierarchyBld;
-            _prefabReg          = prefabReg;
-            _stageDataProvider  = stageDataProvider;
+            _hierarchyBld = hierarchyBld;
+            _prefabReg    = prefabReg;
 
             LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.GRID_CURSOR],   () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.yellow, true  }, true, false,  "GridCursor"      ) );
             LazyInject.GetOrCreate( ref _gridCursors[(int)CursorType.TARGET_CURSOR], () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<GridCursor>( _prefabReg.GridCursorPrefab, new object[] { Color.red,    false }, true, false, "TargetGridCursor" ) );
@@ -55,12 +54,22 @@ namespace Frontier.Stage
 
         /// <summary>
         /// グリッドカーソルのサイズを変更します（1/2/3 タイル幅）。
-        /// 移動コールバックを再生成してカーソルに反映します。
+        /// エンティティ対応コールバックが設定済みの場合は移動コールバックを再生成しません。
         /// </summary>
         public void SetGridCursorSize( int size )
         {
             _gridCursorSize = Mathf.Clamp( size, Constants.GRID_SIZE_MIN, Constants.GRID_SIZE_MAX );
-            InitCallbacks();
+            _gridCursors[( int ) CursorType.GRID_CURSOR].SetCursorSize( _gridCursorSize, _directionMoveCallbacks );
+        }
+
+        /// <summary>
+        /// エンティティ対応の移動コールバックを設定します。
+        /// 設定後は Init / SetGridCursorSize を呼んでもコールバックは上書きされません。
+        /// </summary>
+        public void SetDirectionMoveCallbacks( Func<int, int>[] callbacks )
+        {
+            _entityAwareCallbacks  = callbacks;
+            _directionMoveCallbacks = callbacks;
             _gridCursors[( int ) CursorType.GRID_CURSOR].SetCursorSize( _gridCursorSize, _directionMoveCallbacks );
         }
 
@@ -226,62 +235,9 @@ namespace Frontier.Stage
             return ( atkTargetIndex + 1 ) % _refAttackableTileIndices.Count;
         }
 
-        private static Func<int, int>[] CreateDirectionMoveCallbacks( int size, IStageDataProvider stageDataProvider )
-        {
-            int s = size;
-
-            return new Func<int, int>[( int ) Direction.NUM]
-            {
-                // Direction.FORWARD（行を +1）
-                ( tileIndex ) =>
-                {
-                    int colNum   = stageDataProvider.CurrentData.TileColNum;
-                    int totalNum = stageDataProvider.CurrentData.GetTileTotalNum();
-                    int rowNum   = totalNum / colNum;
-                    int row      = tileIndex / colNum;
-                    int col      = tileIndex % colNum;
-                    row++;
-                    if( row + s - 1 >= rowNum ) row = 0;
-                    return row * colNum + col;
-                },
-                // Direction.RIGHT（列を +1）
-                ( tileIndex ) =>
-                {
-                    int colNum = stageDataProvider.CurrentData.TileColNum;
-                    int row    = tileIndex / colNum;
-                    int col    = tileIndex % colNum;
-                    col++;
-                    if( col + s - 1 >= colNum ) col = 0;
-                    return row * colNum + col;
-                },
-                // Direction.BACK（行を -1）
-                ( tileIndex ) =>
-                {
-                    int colNum   = stageDataProvider.CurrentData.TileColNum;
-                    int totalNum = stageDataProvider.CurrentData.GetTileTotalNum();
-                    int rowNum   = totalNum / colNum;
-                    int row      = tileIndex / colNum;
-                    int col      = tileIndex % colNum;
-                    row--;
-                    if( row < 0 ) row = rowNum - s;
-                    return row * colNum + col;
-                },
-                // Direction.LEFT（列を -1）
-                ( tileIndex ) =>
-                {
-                    int colNum = stageDataProvider.CurrentData.TileColNum;
-                    int row    = tileIndex / colNum;
-                    int col    = tileIndex % colNum;
-                    col--;
-                    if( col < 0 ) col = colNum - s;
-                    return row * colNum + col;
-                }
-            };
-        }
-
         private void InitCallbacks()
         {
-            _directionMoveCallbacks = CreateDirectionMoveCallbacks( _gridCursorSize, _stageDataProvider );
+            _directionMoveCallbacks = _entityAwareCallbacks;
 
             _directionAttackTargetCallbacks = new Func<int, int>[( int ) Direction.NUM]
             {
