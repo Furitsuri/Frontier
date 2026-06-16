@@ -45,6 +45,13 @@ namespace Frontier.Stage
             _stageFileLoader.Load( 0 );
             _sizeAdjuster.SetGridCursorController( _gridCursorCtrl );
             _gridCursorCtrl.OnGridCursorMoved = ( idx ) => _sizeAdjuster.AdjustCursorSizeForTile( idx );
+            if ( _stageFileLoader.LastLoadedStagePropData != null )
+            {
+                foreach ( var prop in _stageFileLoader.LastLoadedStagePropData )
+                {
+                    _sizeAdjuster.RegisterStagePropOccupied( prop.TileIndex, prop.Size );
+                }
+            }
             _gridCursorCtrl.Init( 0 );
             _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );

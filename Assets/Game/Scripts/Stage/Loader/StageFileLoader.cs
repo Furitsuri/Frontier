@@ -1,5 +1,6 @@
-﻿using Frontier.Combat.Skill;
-using Frontier.DebugTools.StageEditor;
+﻿using Frontier.DebugTools.StageEditor;
+using Frontier.Entities;
+using Frontier.Registries;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -12,8 +13,13 @@ namespace Frontier.Stage
 
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
+        [Inject] private PrefabRegistry _prefabReg              = null;
 
         private GameObject[] _tilePrefabs;
+
+        /// <summary>直近のロードで生成した StageProp 一覧。StageController が占有タイル登録に使用します。</summary>
+        public IReadOnlyList<StagePropDataSerializer.StagePropStatusData> LastLoadedStagePropData => _lastLoadedStagePropData;
+        private List<StagePropDataSerializer.StagePropStatusData> _lastLoadedStagePropData = null;
 
         /// <summary>
         /// 初期化します
@@ -64,13 +70,14 @@ namespace Frontier.Stage
                 }
             }
 
-            // StageProp が配置されたタイルは移動不可にする
-            var props = StagePropDataSerializer.Load( fileName );
-            if ( props != null )
+            // StageProp を配置し、占有タイルを移動不可にする
+            _lastLoadedStagePropData = StagePropDataSerializer.Load( fileName );
+            if ( _lastLoadedStagePropData != null )
             {
-                foreach ( var prop in props )
+                foreach ( var prop in _lastLoadedStagePropData )
                 {
                     _stageDataProvider.CurrentData.GetTileStaticData( prop.TileIndex ).MoveResist = short.MaxValue;
+                    SpawnStageProp( prop );
                 }
             }
 
@@ -85,6 +92,21 @@ namespace Frontier.Stage
         public bool Load( int stageNameIdx )
         {
             return Load( _stageNames[stageNameIdx] );
+        }
+
+        private void SpawnStageProp( StagePropDataSerializer.StagePropStatusData data )
+        {
+            if ( _prefabReg?.StagePropPrefabs == null ) return;
+            if ( data.Prefab < 0 || _prefabReg.StagePropPrefabs.Length <= data.Prefab ) return;
+
+            var prop = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageProp>(
+                _prefabReg.StagePropPrefabs[data.Prefab], true, true, $"[StageProp_{data.TileIndex}]" );
+            if ( prop == null ) return;
+
+            prop.SetSize( data.Size );
+            var pos = GridPositionUtility.CalcSizeAwareCenter( data.TileIndex, data.Size, _stageDataProvider );
+            prop.SetPosition( pos );
+            prop.SetRotation( ( Direction ) data.Direction );
         }
     }
 }

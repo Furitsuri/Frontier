@@ -21,6 +21,14 @@ namespace Frontier
         public GameObject _otherObj;
     }
 
+    [System.Serializable]
+    public class StageAssets
+    {
+        [SerializeField]
+        [Header( "プロップ" )]
+        public GameObject _propObj;
+    }
+
     /// <summary>
     /// オブジェクト・コンポーネント作成クラス
     /// </summary>
@@ -33,6 +41,10 @@ namespace Frontier
         [SerializeField]
         [Header("キャラクターオブジェクト")]
         private CharacterGroup _characterObjGrp;
+
+        [SerializeField]
+        [Header( "ステージアセットオブジェクト" )]
+        private StageAssets _stageAssetGrp;
 
         [SerializeField]
         [Header("コントローラオブジェクト")]
@@ -53,6 +65,7 @@ namespace Frontier
                 _cameraObj != null ||
                 _characterObjGrp._playerObj != null ||
                 _characterObjGrp._enemyObj != null ||
+                _stageAssetGrp._propObj != null ||
                 _controllerObj != null ||
                 _managerObj != null,
                 "Required object reference is missing.");
@@ -84,6 +97,7 @@ namespace Frontier
                     Other => _characterObjGrp._otherObj,
                     Player => _characterObjGrp._playerObj,
                     Enemy => _characterObjGrp._enemyObj,
+                    StageProp => _stageAssetGrp._propObj,
                     _ => this.gameObject
                 },
                 "Controller" => _controllerObj,
