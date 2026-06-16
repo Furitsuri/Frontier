@@ -176,6 +176,8 @@ namespace Frontier.Stage
             _gridCursors[( int ) CursorType.GRID_CURSOR].SyncPositionToTile();
         }
 
+        public int GetGridCursorSize() => _gridCursorSize;
+
         public int GetCurrentTargetIndex()
         {
             return _gridCursors[( int ) CursorType.TARGET_CURSOR].CurrentTileIndex;

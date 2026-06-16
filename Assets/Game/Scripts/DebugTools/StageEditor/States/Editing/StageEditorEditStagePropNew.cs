@@ -89,13 +89,26 @@ namespace Frontier.DebugTools.StageEditor
 
         private void UpdatePreviewPosition()
         {
-            _refParams.StagePropTileIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
+            _refParams.StagePropTileIndex = CalcClampedTileIndex( _refParams.StagePropSize );
 
             if ( _previewProp == null ) return;
             var center = GridPositionUtility.CalcSizeAwareCenter(
                 _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
             _previewProp.SetPosition( center );
             _previewProp.SetRotation( ( Direction ) _refParams.StagePropDirection );
+        }
+
+        /// <summary>
+        /// カーソル位置をサイズ考慮でクランプしたタイルインデックスを返します。
+        /// size >= 2 のとき最終行・列からはみ出さないよう補正します。
+        /// </summary>
+        private int CalcClampedTileIndex( int size )
+        {
+            int colNum = _stageDataProvider.CurrentData.TileColNum;
+            int rowNum = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+            int x = Mathf.Clamp( _gridCursorCtrl.GetGridCursorX(), 0, Mathf.Max( 0, colNum - size ) );
+            int y = Mathf.Clamp( _gridCursorCtrl.GetGridCursorY(), 0, Mathf.Max( 0, rowNum - size ) );
+            return x + y * colNum;
         }
 
         // ──── プレビュー管理 ──────────────────────────────────────────────
@@ -236,6 +249,7 @@ namespace Frontier.DebugTools.StageEditor
             if ( _previewProp == null ) return;
             _previewProp.SetSize( _refParams.StagePropSize );
             _refParams.SetGridCursorSize?.Invoke( _refParams.StagePropSize );
+            _refParams.StagePropTileIndex = CalcClampedTileIndex( _refParams.StagePropSize );
             var center = GridPositionUtility.CalcSizeAwareCenter(
                 _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
             _previewProp.SetPosition( center );

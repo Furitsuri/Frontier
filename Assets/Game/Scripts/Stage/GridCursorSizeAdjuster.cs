@@ -96,51 +96,55 @@ namespace Frontier.Stage
                 // Direction.FORWARD（行 +size or +1）
                 ( tileIndex ) =>
                 {
-                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
-                    int rowNum   = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+                    int colNum     = _stageDataProvider.CurrentData.TileColNum;
+                    int rowNum     = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+                    int cursorSize = _gridCursorCtrl.GetGridCursorSize();
                     var ( anchor, size ) = GetAnchorAndSize( tileIndex );
                     int baseIdx  = anchor >= 0 ? anchor : tileIndex;
                     int row      = baseIdx / colNum;
                     int col      = baseIdx % colNum;
                     row += size;
-                    if ( row >= rowNum ) row = 0;
+                    if ( row + cursorSize > rowNum ) row = 0;
                     return row * colNum + col;
                 },
                 // Direction.RIGHT（列 +size or +1）
                 ( tileIndex ) =>
                 {
-                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
+                    int colNum     = _stageDataProvider.CurrentData.TileColNum;
+                    int cursorSize = _gridCursorCtrl.GetGridCursorSize();
                     var ( anchor, size ) = GetAnchorAndSize( tileIndex );
                     int baseIdx  = anchor >= 0 ? anchor : tileIndex;
                     int row      = baseIdx / colNum;
                     int col      = baseIdx % colNum;
                     col += size;
-                    if ( col >= colNum ) col = 0;
+                    if ( col + cursorSize > colNum ) col = 0;
                     return row * colNum + col;
                 },
                 // Direction.BACK（行 -1）
                 ( tileIndex ) =>
                 {
-                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
-                    int rowNum   = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+                    int colNum     = _stageDataProvider.CurrentData.TileColNum;
+                    int rowNum     = _stageDataProvider.CurrentData.GetTileTotalNum() / colNum;
+                    int cursorSize = _gridCursorCtrl.GetGridCursorSize();
                     var ( anchor, size ) = GetAnchorAndSize( tileIndex );
                     int baseIdx  = anchor >= 0 ? anchor : tileIndex;
                     int row      = baseIdx / colNum;
                     int col      = baseIdx % colNum;
                     row--;
-                    if ( row < 0 ) row = rowNum - 1;
+                    if ( row < 0 ) row = rowNum - cursorSize;
                     return row * colNum + col;
                 },
                 // Direction.LEFT（列 -1）
                 ( tileIndex ) =>
                 {
-                    int colNum   = _stageDataProvider.CurrentData.TileColNum;
+                    int colNum     = _stageDataProvider.CurrentData.TileColNum;
+                    int cursorSize = _gridCursorCtrl.GetGridCursorSize();
                     var ( anchor, size ) = GetAnchorAndSize( tileIndex );
                     int baseIdx  = anchor >= 0 ? anchor : tileIndex;
                     int row      = baseIdx / colNum;
                     int col      = baseIdx % colNum;
                     col--;
-                    if ( col < 0 ) col = colNum - 1;
+                    if ( col < 0 ) col = colNum - cursorSize;
                     return row * colNum + col;
                 },
             };

@@ -534,6 +534,7 @@ namespace Frontier.DebugTools.StageEditor
                 return false;
             }
 
+            _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // ロード後に列・行数を同期
             _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
 
             // 敵キャラクターデータをロード
