@@ -16,6 +16,7 @@ namespace Frontier.Stage
         [Inject] private PrefabRegistry _prefabReg              = null;
 
         private GridCursorController _gridCursorCtrl;
+        private GridCursorSizeAdjuster _sizeAdjuster;
         private StageFileLoader _stageFileLoader;
         private StageDirectionConverter _directionConverter;
         private TileDataHandler _tileDataHdlr;
@@ -26,10 +27,11 @@ namespace Frontier.Stage
         {
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 
-            LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( false ) );
-            LazyInject.GetOrCreate( ref _stageFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
+            LazyInject.GetOrCreate( ref _gridCursorCtrl,   () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( false ) );
+            LazyInject.GetOrCreate( ref _sizeAdjuster,     () => _hierarchyBld.InstantiateWithDiContainer<GridCursorSizeAdjuster>( false ) );
+            LazyInject.GetOrCreate( ref _stageFileLoader,  () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _directionConverter, () => _hierarchyBld.InstantiateWithDiContainer<StageDirectionConverter>( false ) );
-            LazyInject.GetOrCreate( ref _tileDataHdlr, () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
+            LazyInject.GetOrCreate( ref _tileDataHdlr,    () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
         }
 
         #region PUBLIC_METHOD
@@ -41,6 +43,8 @@ namespace Frontier.Stage
         {
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
+            _sizeAdjuster.SetGridCursorController( _gridCursorCtrl );
+            _gridCursorCtrl.OnGridCursorMoved = ( idx ) => _sizeAdjuster.AdjustCursorSizeForTile( idx );
             _gridCursorCtrl.Init( 0 );
             _tileDataHdlr.Init();
             _directionConverter.Regist( btlCameraCtrl );
@@ -229,6 +233,21 @@ namespace Frontier.Stage
         public Character GetBindCharacterFromGridCursor()
         {
             return _gridCursorCtrl.GetBindCharacterFromGridCursor();
+        }
+
+        public void RegisterCharacterOccupied( int anchor, int size )
+        {
+            _sizeAdjuster.RegisterCharacterOccupied( anchor, size );
+        }
+
+        public void UnregisterCharacterOccupied( int anchor, int size )
+        {
+            _sizeAdjuster.UnregisterCharacterOccupied( anchor, size );
+        }
+
+        public void ClearCharacterOccupied()
+        {
+            _sizeAdjuster.ClearCharacterOccupied();
         }
 
         public TileStaticData GetTileStaticData( int index )
