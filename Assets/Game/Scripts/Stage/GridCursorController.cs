@@ -78,7 +78,9 @@ namespace Frontier.Stage
             var tileIndex   = character.BattleParams.TmpParam.CurrentTileIndex;
 
             _gridCursors[( int )cursorType].SetTileIndex( tileIndex );
+            OnGridCursorMoved?.Invoke( tileIndex );
             SetActiveGridCursor( true, cursorType );
+
             if( isFocusCamera )
             {
                 SetCameraFocusType( cursorType );

@@ -79,9 +79,6 @@ namespace Frontier.Entities
             ForcedStopMoving();
             _readOnlyOwner.Value.BattleParams.TmpParam = _prevMoveInfo.tmpParam;
             SetPositionOnStage( _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex, _prevMoveInfo.rotDir );
-
-            _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();
-            _stageCtrl.ApplyGridCursor2CharacterTile( _readOnlyOwner.Value );
         }
 
         /// <summary>
