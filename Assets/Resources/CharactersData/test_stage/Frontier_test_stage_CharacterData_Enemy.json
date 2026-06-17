@@ -1,0 +1,124 @@
+{
+    "CharacterStatuses": [
+        {
+            "Prefab": 0,
+            "CharacterTag": 1,
+            "CharacterIndex": 0,
+            "Name": "",
+            "Level": 1,
+            "MaxHP": 100,
+            "Atk": 10,
+            "Def": 5,
+            "MoveRange": 4,
+            "JumpForce": 2,
+            "AtkRange": 1,
+            "ActGaugeMax": 100,
+            "ActRecovery": 10,
+            "InitGridIndex": 24,
+            "InitDir": 2,
+            "ThinkType": 1,
+            "Skills": [
+                -1,
+                -1,
+                -1,
+                -1
+            ]
+        },
+        {
+            "Prefab": 0,
+            "CharacterTag": 1,
+            "CharacterIndex": 1,
+            "Name": "",
+            "Level": 1,
+            "MaxHP": 100,
+            "Atk": 10,
+            "Def": 5,
+            "MoveRange": 4,
+            "JumpForce": 2,
+            "AtkRange": 1,
+            "ActGaugeMax": 100,
+            "ActRecovery": 10,
+            "InitGridIndex": 26,
+            "InitDir": 2,
+            "ThinkType": 1,
+            "Skills": [
+                -1,
+                -1,
+                -1,
+                -1
+            ]
+        },
+        {
+            "Prefab": 0,
+            "CharacterTag": 1,
+            "CharacterIndex": 2,
+            "Name": "",
+            "Level": 1,
+            "MaxHP": 100,
+            "Atk": 10,
+            "Def": 5,
+            "MoveRange": 4,
+            "JumpForce": 2,
+            "AtkRange": 1,
+            "ActGaugeMax": 100,
+            "ActRecovery": 10,
+            "InitGridIndex": 5,
+            "InitDir": 2,
+            "ThinkType": 1,
+            "Skills": [
+                -1,
+                -1,
+                -1,
+                -1
+            ]
+        },
+        {
+            "Prefab": 0,
+            "CharacterTag": 1,
+            "CharacterIndex": 3,
+            "Name": "",
+            "Level": 1,
+            "MaxHP": 100,
+            "Atk": 10,
+            "Def": 5,
+            "MoveRange": 4,
+            "JumpForce": 2,
+            "AtkRange": 1,
+            "ActGaugeMax": 100,
+            "ActRecovery": 10,
+            "InitGridIndex": 45,
+            "InitDir": 2,
+            "ThinkType": 1,
+            "Skills": [
+                -1,
+                -1,
+                -1,
+                -1
+            ]
+        },
+        {
+            "Prefab": 1,
+            "CharacterTag": 1,
+            "CharacterIndex": 4,
+            "Name": "",
+            "Level": 1,
+            "MaxHP": 100,
+            "Atk": 10,
+            "Def": 5,
+            "MoveRange": 4,
+            "JumpForce": 2,
+            "AtkRange": 1,
+            "ActGaugeMax": 100,
+            "ActRecovery": 10,
+            "InitGridIndex": 25,
+            "InitDir": 2,
+            "ThinkType": 1,
+            "Skills": [
+                -1,
+                -1,
+                -1,
+                -1
+            ]
+        }
+    ]
+}

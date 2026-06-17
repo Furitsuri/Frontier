@@ -1,0 +1,10 @@
+{
+    "StagePropStatuses": [
+        {
+            "Prefab": 0,
+            "TileIndex": 27,
+            "Direction": 2,
+            "Size": 2
+        }
+    ]
+}
