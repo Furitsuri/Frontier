@@ -148,8 +148,9 @@ namespace Frontier.DebugTools.StageEditor
             /// </summary>
             public string GetEnemyParamDisplayString( int index )
             {
-                if ( index == ( int ) EditorEnemyParamTag.PREFAB   ) return ( ( ENEMIES ) EnemyPrefab ).ToString();
-                if ( index == ( int ) EditorEnemyParamTag.INIT_DIR ) return ( ( Direction ) EnemyInitDir ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.PREFAB      ) return ( ( ENEMIES ) EnemyPrefab ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.THINK_TYPE  ) return ( ( ThinkingType ) EnemyThinkType ).ToString();
+                if ( index == ( int ) EditorEnemyParamTag.INIT_DIR    ) return ( ( Direction ) EnemyInitDir ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.SKILL_1  ) return ( ( SkillID ) EnemySkill1 ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.SKILL_2  ) return ( ( SkillID ) EnemySkill2 ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.SKILL_3  ) return ( ( SkillID ) EnemySkill3 ).ToString();
