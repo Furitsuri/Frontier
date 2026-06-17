@@ -145,6 +145,7 @@ namespace Frontier.Battle
             if( !IsTransitAttackOnMoveState() )
             {
                 _stageCtrl.UnbindGridCursor();           // 操作対象データをリセット
+                _presenter.CharaParamView( ParameterWindowType.Right ).ClearCharacter();   // 右側のパラメータビューをクリア
             }
 
             return base.ExitState();

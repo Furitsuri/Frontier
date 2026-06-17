@@ -93,6 +93,17 @@ public class CharacterParameterPresenter : PhasePresenterBase
         RefreshParamRender( _character, _character.GetStatusRef, _character.BattleParams.ModifiedParam );
     }
 
+    public void ClearCharacter()
+    {
+        if( null != _character )
+        {
+            _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+            _character = null;
+        }
+
+        SetActive( false );
+    }
+
     public void SetSkillBoxToUsing( int skillIndex )
     {
         _parameterUI.SkillBoxes[skillIndex].SetUsing();
