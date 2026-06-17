@@ -4,6 +4,9 @@ namespace Frontier.Registries
 {
     public class FilePathRegistry : MonoBehaviour
     {
+        [Header( "各ステージデータの参照先" )]
+        [SerializeField] private string[] _stageNames;
+
         [Header( "各味方キャラクターのパラメータ参照先" )]
         [SerializeField] private string[] _playerParamFilePath;
 
@@ -22,6 +25,7 @@ namespace Frontier.Registries
         [Header( "遠隔攻撃時のカメラパラメータの参照先" )]
         [SerializeField] private string _rangedAtkCameraParamFilePath;
 
+        public string[] StageNames => _stageNames;
         public string[] PlayerParamFilePath => _playerParamFilePath;
         public string[] EnemyParamFilePath => _enemyParamFilePath;
         public string[] OtherParamFilePath => _otherParamFilePath;

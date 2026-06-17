@@ -46,8 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerParamFilePath:
   - Assets/Resources/CharactersData/Stage1/Frontier_Stage1_CharacterData_Player.json
-  EnemyParamFilePath:
-  - Assets/Resources/CharactersData/Stage1/Frontier_Stage1_CharacterData_Enemy.json
   OtherParamFilePath: []
   CloseAtkCameraParamFilePath: Assets/Resources/CameraData/Frontier_CharacterAttack_CameraParam_CloseAtk.json
   RangedAtkCameraParamFilePath: Assets/Resources/CameraData/Frontier_CharacterAttack_CameraParam_RangedAtk.json

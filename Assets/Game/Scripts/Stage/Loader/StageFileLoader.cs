@@ -9,11 +9,10 @@ namespace Frontier.Stage
 {
     public sealed class StageFileLoader : MonoBehaviour
     {
-        [SerializeField] private List<string> _stageNames;
-
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
+        [Inject] private FilePathRegistry _filePathReg          = null;
 
         private GameObject[] _tilePrefabs;
 
@@ -91,7 +90,7 @@ namespace Frontier.Stage
         /// <returns>読込の成否</returns>
         public bool Load( int stageNameIdx )
         {
-            return Load( _stageNames[stageNameIdx] );
+            return Load( _filePathReg.StageNames[stageNameIdx] );
         }
 
         private void SpawnStageProp( StagePropDataSerializer.StagePropStatusData data )

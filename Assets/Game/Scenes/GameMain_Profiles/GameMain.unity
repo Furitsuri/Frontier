@@ -15096,6 +15096,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70719dfdbac4aba4597176f839030780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stageNames:
+  - test_stage
   _playerParamFilePath: []
   _enemyParamFilePath:
   - C:\Users\tssm4\Unity\FRONTIER\Assets\Resources\CharactersData\test_stage\Frontier_test_stage_CharacterData_Enemy.json
