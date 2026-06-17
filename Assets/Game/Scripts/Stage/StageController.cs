@@ -72,6 +72,16 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 巻き戻し後にタイル動的データとグリッドカーソルをキャラクターの位置へ同期します
+        /// </summary>
+        /// <param name="character">同期対象キャラクター</param>
+        public void SyncGridCursorAfterRevert( Character character )
+        {
+            _tileDataHdlr.UpdateTileDynamicDatas();
+            _gridCursorCtrl.ApplyGridCursor2CharacterTile( character, GridCursorController.CursorType.GRID_CURSOR, false );
+        }
+
+        /// <summary>
         /// ターゲットカーソルの位置を、攻撃可能キャラクターが存在するタイル位置に設定します
         /// </summary>
         /// <param name="isToggleCamera">カメラの切り替えフラグ</param>

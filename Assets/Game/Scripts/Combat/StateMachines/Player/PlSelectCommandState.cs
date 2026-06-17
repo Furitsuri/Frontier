@@ -137,9 +137,7 @@ namespace Frontier.Battle
             // 以前の状態に巻き戻せる場合は状態を巻き戻す
             if( _plOwner.IsEnableRevertState() )
             {
-                // 巻き戻したコマンドを再度実行できるように、コマンドの状態を巻き戻す
-                var commandTag = _plOwner.PopCommandHistory();
-                _plOwner.BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
+                RevertCommandHistory();
                 // コマンド選択状態を終了させる必要はないため、初期化した後にfalseを返す
                 Init( null );
                 return false;

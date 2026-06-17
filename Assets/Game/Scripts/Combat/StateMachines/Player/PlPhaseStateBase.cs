@@ -17,8 +17,17 @@ namespace Frontier.Battle
             if ( _plOwner == null ) { return; }
 
             _plOwner.RevertBeforeMoving();
-            _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();    // グリッド情報を更新
-            _stageCtrl.ApplyGridCursor2CharacterTile( _plOwner );
+            _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
+        }
+
+        /// <summary>
+        /// コマンド履歴から直前のコマンドを取り消し、グリッドカーソルを元の位置へ同期します
+        /// </summary>
+        protected void RevertCommandHistory()
+        {
+            var commandTag = _plOwner.PopCommandHistory();
+            _plOwner.BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
+            _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
         }
 
         public override void Init( object context )
