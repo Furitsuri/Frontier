@@ -19,13 +19,17 @@ namespace Frontier.Registries
         [Header( "各スキルデータのパラメータ参照先" )]
         [SerializeField] private string _skillDataFilePath;
 
+        [Header( "フィールドデータのID一覧" )]
+        [SerializeField] private string[] _fieldIds;
+
         [Header( "近接攻撃時のカメラパラメータの参照先" )]
         [SerializeField] private string _closeAtkCameraParamFilePath;
 
         [Header( "遠隔攻撃時のカメラパラメータの参照先" )]
         [SerializeField] private string _rangedAtkCameraParamFilePath;
 
-        public string[] StageNames => _stageNames;
+        public string[] StageNames  => _stageNames;
+        public string[] FieldIds    => _fieldIds;
         public string[] PlayerParamFilePath => _playerParamFilePath;
         public string[] EnemyParamFilePath => _enemyParamFilePath;
         public string[] OtherParamFilePath => _otherParamFilePath;
