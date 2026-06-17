@@ -709,9 +709,8 @@ namespace Frontier.DebugTools.StageEditor
 
                 chara.gameObject.name = $"[EnemyLoaded_{data.CharacterIndex}]";
 
-                var offsetY = _stageDataProvider.CurrentData.GetTile( data.InitGridIndex ).GetTileMeshPosYOffset();
-                var pos     = _stageDataProvider.CurrentData.GetTileStaticData( data.InitGridIndex ).CharaStandPos
-                              + new Vector3( 0f, offsetY, 0f );
+                var pos = _stageDataProvider.CurrentData.GetTileStaticData( data.InitGridIndex ).CharaStandPos;
+
                 chara.SetPosition( pos );
                 chara.SetRotation( ( Direction ) data.InitDir );
 

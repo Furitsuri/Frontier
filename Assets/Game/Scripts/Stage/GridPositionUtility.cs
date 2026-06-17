@@ -23,8 +23,7 @@ namespace Frontier.Stage
 
             if ( size == 1 )
             {
-                float offsetY = data.GetTile( baseTileIndex ).GetTileMeshPosYOffset();
-                return data.GetTileStaticData( baseTileIndex ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
+                return data.GetTileStaticData( baseTileIndex ).CharaStandPos;
             }
 
             int     colNum  = data.TileColNum;
@@ -36,8 +35,7 @@ namespace Frontier.Stage
                 for ( int dx = 0; dx < size; dx++ )
                 {
                     int   idx     = baseTileIndex + dx + dy * colNum;
-                    float offsetY = data.GetTile( idx ).GetTileMeshPosYOffset();
-                    var   pos     = data.GetTileStaticData( idx ).CharaStandPos + new Vector3( 0f, offsetY, 0f );
+                    var   pos     = data.GetTileStaticData( idx ).CharaStandPos;
                     sumPos += pos;
                     if ( pos.y > maxY ) maxY = pos.y;
                 }

@@ -153,20 +153,20 @@ namespace Frontier.Stage
                 existing.ClearDraw();
                 existing.Remove();
                 _tileMeshes[ownerKey] = tileMesh;
-                tileMesh.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( idx + 1 ), in color );
+                tileMesh.DrawTileMesh( _tileStaticData.CharaStandPos, GetTileMeshDrawYOffset( idx ), in color );
             }
             else
             {
-                float yOffset = GetTileMeshPosYOffset();
+                int slotIndex = _tileMeshes.Count;
                 _tileMeshes[ownerKey] = tileMesh;
-                tileMesh.DrawTileMesh( transform.position, yOffset, in color );
+                tileMesh.DrawTileMesh( _tileStaticData.CharaStandPos, GetTileMeshDrawYOffset( slotIndex ), in color );
             }
             tileMesh.MapType = mapType;
         }
 
-        public float GetTileMeshPosYOffset()
+        private float GetTileMeshDrawYOffset( int slotIndex )
         {
-            return ADD_TILE_POS_Y * ( _tileMeshes.Count + 1 );
+            return ADD_TILE_POS_Y * ( slotIndex + 1 );
         }
 
         public Vector3 GetScale()
@@ -234,7 +234,7 @@ namespace Frontier.Stage
             foreach( var entry in _tileMeshes )
             {
                 entry.Value.ClearDraw();
-                entry.Value.DrawTileMesh( transform.position, ADD_TILE_POS_Y * ( i + 1 ), entry.Value.GetColor() );
+                entry.Value.DrawTileMesh( _tileStaticData.CharaStandPos, GetTileMeshDrawYOffset( i ), entry.Value.GetColor() );
                 // MapType は DrawTileMesh でリセットされないため保持される
                 ++i;
             }
