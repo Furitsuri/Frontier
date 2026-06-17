@@ -2,6 +2,7 @@
 using Frontier.Combat;
 using Frontier.Combat.Skill;
 using Frontier.Entities;
+using Frontier.Registries;
 using UnityEngine;
 using System;
 using System.IO;
@@ -16,9 +17,6 @@ namespace Frontier.Loaders
         [Header( "各味方キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] PlayerParamFilePath;
 
-        [Header( "各敵キャラクターのパラメータ参照先" )]
-        [SerializeField] public string[] EnemyParamFilePath;
-
         [Header( "各第三軍勢キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] OtherParamFilePath;
 
@@ -30,6 +28,7 @@ namespace Frontier.Loaders
 
         [Inject] private BattleRoutineController _btlRtnCtrl = null;
         [Inject] private CharacterFactory _characterFactory = null;
+        [Inject] private FilePathRegistry _filePathReg      = null;
 
         private void Awake()
         {
@@ -88,7 +87,7 @@ namespace Frontier.Loaders
             List<string>[] ParamFilePaths = new List<string>[]
             {
                 new List<string>(PlayerParamFilePath),
-                new List<string>(EnemyParamFilePath),
+                new List<string>(_filePathReg.EnemyParamFilePath),
                 new List<string>(OtherParamFilePath),
             };
 

@@ -8889,7 +8889,7 @@ Transform:
   m_GameObject: {fileID: 1255128978}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5.838997, y: -3.964284, z: -2.9745283}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15097,7 +15097,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerParamFilePath: []
-  _enemyParamFilePath: []
+  _enemyParamFilePath:
+  - C:\Users\tssm4\Unity\FRONTIER\Assets\Resources\CharactersData\test_stage\Frontier_test_stage_CharacterData_Enemy.json
   _otherParamFilePath: []
   _skillDataFilePath: Assets/Resources/SkillData/SkillData.json
   _closeAtkCameraParamFilePath: 
