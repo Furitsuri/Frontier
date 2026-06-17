@@ -204,6 +204,8 @@ namespace Frontier.DebugTools.StageEditor
             int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
             _refParams.TryLoadStagePropAtGridIndex?.Invoke( gridIndex );
             _refParams.EditingStagePropGridIndex = gridIndex;
+            // 編集中は占有マップから除去してカーソル移動が size 分スキップされるのを防ぐ
+            _refParams.UnregisterStagePropOccupied?.Invoke( gridIndex, _refParams.StagePropSize );
 
             _subMode = SubMode.EditExisting;
             _existingEdit.RefreshInputCodes = RefreshInputCodes;

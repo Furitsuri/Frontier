@@ -83,6 +83,12 @@ namespace Frontier.DebugTools.StageEditor
             /// <summary>グリッドインデックスから StageProp データを _refParams に読み込むコールバック。Controller が設定します。</summary>
             public Func<int, bool> TryLoadStagePropAtGridIndex = null;
 
+            /// <summary>編集開始時に StageProp の占有タイルをアジャスターから除去するコールバック。Controller が設定します。</summary>
+            public Action<int, int> UnregisterStagePropOccupied = null;
+
+            /// <summary>キャンセル時に StageProp の占有タイルをアジャスターへ復元するコールバック。Controller が設定します。</summary>
+            public Action<int, int> RestoreStagePropOccupied = null;
+
             /// <summary>グリッドカーソルのサイズを変更するコールバック。Controller が設定します。</summary>
             public Action<int> SetGridCursorSize = null;
 
@@ -246,9 +252,11 @@ namespace Frontier.DebugTools.StageEditor
             _sizeAdjuster.SetGridCursorController( _gridCursorCtrl );
             _gridCursorCtrl.OnGridCursorMoved       = AutoAdjustCursorSizeForTile;
 
-            _refParams.TryLoadEnemyAtGridIndex      = TryLoadEnemyAtGridIndex;
-            _refParams.TryLoadStagePropAtGridIndex  = TryLoadStagePropAtGridIndex;
-            _refParams.SetGridCursorSize            = size => _gridCursorCtrl.SetGridCursorSize( size );
+            _refParams.TryLoadEnemyAtGridIndex        = TryLoadEnemyAtGridIndex;
+            _refParams.TryLoadStagePropAtGridIndex    = TryLoadStagePropAtGridIndex;
+            _refParams.UnregisterStagePropOccupied    = ( anchor, size ) => _sizeAdjuster.UnregisterStagePropOccupied( anchor, size );
+            _refParams.RestoreStagePropOccupied       = ( anchor, size ) => _sizeAdjuster.RegisterStagePropOccupied( anchor, size );
+            _refParams.SetGridCursorSize              = size => _gridCursorCtrl.SetGridCursorSize( size );
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 

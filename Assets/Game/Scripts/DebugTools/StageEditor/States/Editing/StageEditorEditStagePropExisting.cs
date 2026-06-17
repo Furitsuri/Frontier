@@ -84,6 +84,9 @@ namespace Frontier.DebugTools.StageEditor
                     _boundProp.SetRotation( ( Direction ) _snapDirection );
                 }
 
+                // 編集開始時に除去した占有情報を元の位置・サイズで復元する
+                _refParams.RestoreStagePropOccupied?.Invoke( _snapTileIndex, _snapSize );
+
                 if ( _gridCursorCtrl != null )
                 {
                     _gridCursorCtrl.SetGridCursorTileIndex( _snapCursorTileIndex );
