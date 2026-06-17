@@ -18,9 +18,10 @@ namespace Frontier.DebugTools.StageEditor
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        private SubMode                       _subMode      = SubMode.Cursor;
-        private StageEditorEditEnemyNew      _newEdit       = null;
-        private StageEditorEditEnemyExisting _existingEdit  = null;
+        private SubMode                       _subMode          = SubMode.Cursor;
+        private StageEditorEditEnemyNew      _newEdit           = null;
+        private StageEditorEditEnemyExisting _existingEdit      = null;
+        private int                          _prevCursorIndex   = -1;
 
         private Action<EditActionContext> _placeEnemyCallback = null;
         private Action<EditActionContext> _editEnemyCallback  = null;
@@ -40,9 +41,10 @@ namespace Frontier.DebugTools.StageEditor
             _context = new EditActionContext();
             _context.Setup();
 
-            _subMode      = SubMode.Cursor;
-            _newEdit      = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyNew>( false );
-            _existingEdit = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyExisting>( false );
+            _subMode         = SubMode.Cursor;
+            _prevCursorIndex = -1;
+            _newEdit         = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyNew>( false );
+            _existingEdit    = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyExisting>( false );
 
             SyncRefParamsFlags();
         }
@@ -63,6 +65,20 @@ namespace Frontier.DebugTools.StageEditor
 
             // カーソル位置の敵有無をフレームごとに更新
             if ( _refParams != null ) _refParams.EnemyAtCursor = IsEnemyAtCursor();
+
+            // カーソルモード中、カーソルが敵の上に移動したタイミングでパラメータ表示を更新
+            if ( _subMode == SubMode.Cursor && _refParams != null && _gridCursorCtrl != null )
+            {
+                int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
+                if ( gridIndex != _prevCursorIndex )
+                {
+                    _prevCursorIndex = gridIndex;
+                    if ( _refParams.GridIndexToEnemyListIndex.ContainsKey( gridIndex ) )
+                    {
+                        _refParams.TryLoadEnemyAtGridIndex?.Invoke( gridIndex );
+                    }
+                }
+            }
         }
 
         // ──── ラベル ──────────────────────────────────────────────────────
@@ -248,7 +264,8 @@ namespace Frontier.DebugTools.StageEditor
             // NewPlacement から戻る場合は配置済みキャラクターを保持したまま遷移
             if ( _subMode == SubMode.NewPlacement )      _newEdit?.ExitKeepPlaced();
             else if ( _subMode == SubMode.EditExisting ) _existingEdit?.Exit();
-            _subMode = SubMode.Cursor;
+            _subMode         = SubMode.Cursor;
+            _prevCursorIndex = -1;
             SyncRefParamsFlags();
             RefreshInputCodes?.Invoke();
         }
