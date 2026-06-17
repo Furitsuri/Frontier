@@ -573,6 +573,8 @@ namespace Frontier.DebugTools.StageEditor
                     _refParams.GridIndexToStagePropListIndex[prop.TileIndex] = listIndex;
                 }
 
+                // StageFileLoader が生成したモデルを破棄してエディタ管理モデルと重複しないようにする
+                _stageFileLoader.DestroySpawnedStagePropVisuals();
                 SpawnLoadedStagePropVisuals();
             }
 

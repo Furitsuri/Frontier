@@ -16,9 +16,13 @@ namespace Frontier.Stage
 
         private GameObject[] _tilePrefabs;
 
-        /// <summary>直近のロードで生成した StageProp 一覧。StageController が占有タイル登録に使用します。</summary>
+        /// <summary>直近のロードで生成した StageProp データ一覧。StageController が占有タイル登録に使用します。</summary>
         public IReadOnlyList<StagePropDataSerializer.StagePropStatusData> LastLoadedStagePropData => _lastLoadedStagePropData;
         private List<StagePropDataSerializer.StagePropStatusData> _lastLoadedStagePropData = null;
+
+        /// <summary>直近のロードで生成した StageProp モデル一覧。エディタが独自モデルを管理する場合はこれを破棄して重複を防ぎます。</summary>
+        public IReadOnlyList<StageProp> SpawnedStagePropVisuals => _spawnedStagePropVisuals;
+        private List<StageProp> _spawnedStagePropVisuals = new List<StageProp>();
 
         /// <summary>
         /// 初期化します
@@ -93,6 +97,19 @@ namespace Frontier.Stage
             return Load( _filePathReg.StageNames[stageNameIdx] );
         }
 
+        /// <summary>
+        /// ロード時に生成した StageProp モデルをすべて破棄します。
+        /// エディタが独自の管理用モデルを使用する場合に呼び出してください。
+        /// </summary>
+        public void DestroySpawnedStagePropVisuals()
+        {
+            foreach ( var prop in _spawnedStagePropVisuals )
+            {
+                if ( prop != null ) UnityEngine.Object.Destroy( prop.gameObject );
+            }
+            _spawnedStagePropVisuals.Clear();
+        }
+
         private void SpawnStageProp( StagePropDataSerializer.StagePropStatusData data )
         {
             if ( _prefabReg?.StagePropPrefabs == null ) return;
@@ -106,6 +123,7 @@ namespace Frontier.Stage
             var pos = GridPositionUtility.CalcSizeAwareCenter( data.TileIndex, data.Size, _stageDataProvider );
             prop.SetPosition( pos );
             prop.SetRotation( ( Direction ) data.Direction );
+            _spawnedStagePropVisuals.Add( prop );
         }
     }
 }
