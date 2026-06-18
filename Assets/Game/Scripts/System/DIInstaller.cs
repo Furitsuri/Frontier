@@ -26,7 +26,7 @@ namespace Frontier
             Container.Bind<SkillActionReservationQueue>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
-            Container.Bind<UserDomain>().AsSingle();
+            Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsSingle();
 
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
 

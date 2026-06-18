@@ -24,6 +24,8 @@ namespace Frontier.Battle
         [Inject] private PrefabRegistry _prefabReg                  = null;
 
         private int _currentStageIndex                  = 0;
+
+        public void SetStageIndex( int stageIndex ) { _currentStageIndex = stageIndex; }
         private BattlePhaseType _currentPhase           = BattlePhaseType.Deployment;
         private BattleFileLoader _btlFileLoader         = null;
         private BattleCameraController _btlCameraCtrl   = null;

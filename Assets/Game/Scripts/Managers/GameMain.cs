@@ -39,21 +39,12 @@ namespace Frontier
 
         void Awake()
         {
-            if( instance == null )
-            {
-                instance = this;
-            }
-            else if( instance != this )
-            {
-                Destroy( gameObject );
-            }
+            instance = this;
 
             if( transform.parent != null )
             {
-                transform.SetParent( null ); // ルートに移動
+                transform.SetParent( null );
             }
-
-            DontDestroyOnLoad( gameObject );
 
             Debug.Assert( _hierarchyBld != null, "Error : インスタンスの生成管理を行うオブジェクトが設定されていません。" );
             Debug.Assert( _inputFcd != null, "Error : 入力窓口のオブジェクトが設定されていません。" );
@@ -72,6 +63,11 @@ namespace Frontier
             _inputFcd.Setup();
             _sequenceFcd.Setup( GetFocusRoutine( FocusRoutinePriority.SEQUENCE ) );
             _tutorialFcd.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
+        }
+
+        void OnDestroy()
+        {
+            if( instance == this ) instance = null;
         }
 
         // Start is called before the first frame update

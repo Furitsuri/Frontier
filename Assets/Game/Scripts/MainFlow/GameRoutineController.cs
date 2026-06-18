@@ -1,7 +1,9 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Field;
 using Frontier.FormTroop;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Zenject;
 using static Frontier.Loaders.BattleFileLoader;
 
@@ -18,9 +20,13 @@ namespace Frontier
         private StartMode _startMode = StartMode.NEW_GAME;
         private SubRoutineController _current;
 
-        public void StartBattle()
+        private const string FieldSceneName = "FieldScene";
+
+        public void StartBattle( int stageIndex = 0 )
         {
-            SwitchTo( _hierarchyBld.InstantiateWithDiContainer<BattleRoutineController>( true ) );
+            var battle = _hierarchyBld.InstantiateWithDiContainer<BattleRoutineController>( true );
+            battle.SetStageIndex( stageIndex );
+            SwitchTo( battle );
         }
 
         public void StartRecruit()
@@ -48,8 +54,15 @@ namespace Frontier
                 StartNewGame();
             }
 
-            StartRecruit();
-            // StartBattle();
+            if ( FieldTransitionContext.IsFromField )
+            {
+                StartBattle( FieldTransitionContext.StageIndex );
+            }
+            else
+            {
+                StartRecruit();
+                // StartBattle();
+            }
         }
 
         public override void UpdateRoutine()
@@ -57,13 +70,20 @@ namespace Frontier
             _current.Update();
         }
 
-        public override void LateUpdateRoutine() 
+        public override void LateUpdateRoutine()
         {
             if( _current.LateUpdate() )
             {
                 if( _current is BattleRoutineController )
                 {
-                    StartRecruit();
+                    if ( FieldTransitionContext.IsFromField )
+                    {
+                        SceneManager.LoadScene( FieldSceneName );
+                    }
+                    else
+                    {
+                        StartRecruit();
+                    }
                 }
                 else if( _current is FormTroopRoutineController )
                 {
