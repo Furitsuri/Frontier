@@ -75,6 +75,13 @@ namespace Frontier.UI
         /// </summary>
         public void Hide( float fadeDuration = 0.2f, Action onComplete = null )
         {
+            // すでに非表示の場合はコルーチンを開始できない(非アクティブなGameObject)ため何もしない
+            if ( !gameObject.activeSelf )
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
             StartFade( 0f, fadeDuration, () =>
             {
                 _canvasGroup.blocksRaycasts = false;

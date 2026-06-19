@@ -12,19 +12,38 @@ namespace Frontier
     [DefaultExecutionOrder( -100 )]
     public class GameSession : MonoBehaviour
     {
-        public static GameSession Instance { get; private set; }
+        private static GameSession _instance = null;
+
+        /// <summary>
+        /// インスタンスが存在しない場合は実行時に生成します。
+        /// MonoBehaviourのAwake()実行順に依存せず、DIコンテナの初期化など
+        /// シーンロード直後の早いタイミングから参照しても必ず存在することを保証します。
+        /// </summary>
+        public static GameSession Instance
+        {
+            get
+            {
+                if ( _instance == null )
+                {
+                    var go = new GameObject( nameof( GameSession ) );
+                    _instance = go.AddComponent<GameSession>();
+                    DontDestroyOnLoad( go );
+                }
+                return _instance;
+            }
+        }
 
         public UserDomain    UserDomain    { get; private set; } = new UserDomain();
         public FieldProgress FieldProgress { get; set; }         = null;
 
         private void Awake()
         {
-            if ( Instance == null )
+            if ( _instance == null )
             {
-                Instance = this;
+                _instance = this;
                 DontDestroyOnLoad( gameObject );
             }
-            else if ( Instance != this )
+            else if ( _instance != this )
             {
                 Destroy( gameObject );
             }
@@ -32,7 +51,7 @@ namespace Frontier
 
         private void OnDestroy()
         {
-            if ( Instance == this ) Instance = null;
+            if ( _instance == this ) _instance = null;
         }
     }
 }
