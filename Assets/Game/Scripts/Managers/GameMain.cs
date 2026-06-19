@@ -3,6 +3,7 @@ using Frontier.Loaders;
 using Frontier.Registries;
 using Frontier.Sequences;
 using Frontier.Tutorial;
+using Frontier.UI;
 using System.Collections;
 using UnityEngine;
 using Zenject;
@@ -40,6 +41,9 @@ namespace Frontier
         void Awake()
         {
             instance = this;
+
+            // 起動シーンに依らずローディング画面の存在を保証する
+            LoadingScreenController.EnsureInstance();
 
             if( transform.parent != null )
             {
@@ -127,6 +131,9 @@ namespace Frontier
             yield return new WaitUntil( () => tutorialLoadTask.IsCompleted );
 
             base.Init();
+
+            // 初期化完了。フィールドシーンから遷移してきた場合の暗転を解除する
+            LoadingScreenController.Instance?.Hide();
 
             enabled = true; // 読込完了したため、Update()などを有効に
         }

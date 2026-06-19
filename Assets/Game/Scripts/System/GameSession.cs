@@ -9,6 +9,7 @@ namespace Frontier
     /// 保持するのは「自軍データ」と「フィールド進行状態」のみ。
     /// 戦闘・UI などシーンごとに初期化すべきものはここに置かない。
     /// </summary>
+    [DefaultExecutionOrder( -100 )]
     public class GameSession : MonoBehaviour
     {
         public static GameSession Instance { get; private set; }

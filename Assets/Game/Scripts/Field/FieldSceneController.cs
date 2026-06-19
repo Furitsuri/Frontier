@@ -1,4 +1,6 @@
 ﻿using Frontier;
+using Frontier.UI;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,16 +22,32 @@ namespace Frontier.Field
         [Header( "ノードを配置する親トランスフォーム" )]
         [SerializeField] private Transform _nodeContainer = null;
 
+        [Header( "経路描画コンポーネント" )]
+        [SerializeField] private FieldPathRenderer _pathRenderer = null;
+
+        [Header( "プレイヤーアイコン" )]
+        [SerializeField] private FieldPlayerView _playerView = null;
+
         [Header( "デバッグ用: 起動時に読み込むフィールドID" )]
         [SerializeField] private string _debugFieldId = "field_01";
 
-        private FieldData                      _fieldData  = null;
-        private Dictionary<int, FieldNodeView> _nodeViews  = new Dictionary<int, FieldNodeView>();
+        private FieldData                      _fieldData    = null;
+        private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
+        private Dictionary<int, Vector3>       _nodePositions = new Dictionary<int, Vector3>();
 
         private FieldProgress Progress => GameSession.Instance?.FieldProgress;
 
+        private void Awake()
+        {
+            // 起動シーンに依らずローディング画面の存在を保証する
+            LoadingScreenController.EnsureInstance();
+        }
+
         private void Start()
         {
+            // 戦闘シーンからの遷移時に暗転したままになっている場合に解除する
+            LoadingScreenController.Instance?.Hide();
+
             // 戦闘から帰還した場合はクリア済みノードを反映してから進行状態を復元
             if ( FieldTransitionContext.IsFromField )
             {
@@ -91,13 +109,31 @@ namespace Frontier.Field
                 Destroy( child.gameObject );
             }
             _nodeViews.Clear();
+            _nodePositions.Clear();
 
             foreach ( var nodeData in _fieldData.Nodes )
             {
+                var pos  = new Vector3( nodeData.PosX, nodeData.PosY, 0f );
                 var view = Instantiate( _nodePrefab, _nodeContainer );
-                view.transform.position = new Vector3( nodeData.PosX, nodeData.PosY, 0f );
+                view.transform.position = pos;
                 view.Setup( nodeData, isReachable: false, onSelected: OnNodeSelected );
-                _nodeViews[nodeData.Id] = view;
+                _nodeViews[nodeData.Id]     = view;
+                _nodePositions[nodeData.Id] = pos;
+            }
+
+            if ( _pathRenderer != null )
+            {
+                _pathRenderer.Build( _fieldData, _nodePositions );
+            }
+
+            if ( _playerView != null )
+            {
+                var progress    = Progress;
+                int currentId   = progress != null ? progress.CurrentNodeId : _fieldData.StartNodeId;
+                if ( _nodePositions.TryGetValue( currentId, out var startPos ) )
+                {
+                    _playerView.Setup( startPos );
+                }
             }
         }
 
@@ -106,7 +142,8 @@ namespace Frontier.Field
             if ( _fieldData == null ) return;
 
             var progress     = Progress;
-            var currentNode  = progress != null ? FindNode( progress.CurrentNodeId ) : null;
+            int currentId    = progress != null ? progress.CurrentNodeId : _fieldData.StartNodeId;
+            var currentNode  = FindNode( currentId );
             var reachableIds = currentNode?.NextIds ?? new int[0];
 
             foreach ( var (id, view) in _nodeViews )
@@ -122,14 +159,33 @@ namespace Frontier.Field
             var node = FindNode( nodeId );
             if ( node == null ) return;
 
+            // すべてのノードタイプで先にアイコンを移動させ、到着後に処理する
+            if ( _playerView != null && _nodePositions.TryGetValue( nodeId, out var targetPos ) )
+            {
+                _playerView.MoveTo( targetPos, () => OnPlayerArrived( node ) );
+            }
+            else
+            {
+                OnPlayerArrived( node );
+            }
+        }
+
+        private void OnPlayerArrived( FieldNodeData node )
+        {
+            // 進行状態を更新してから到達可能ノードを再評価
+            var progress = Progress;
+            if ( progress != null ) progress.CurrentNodeId = node.Id;
+            RefreshReachability();
+
             var nodeType = ( FieldNodeType ) node.Type;
-            Debug.Log( $"[FieldSceneController] ノード選択: Id={nodeId} Type={nodeType}" );
+            Debug.Log( $"[FieldSceneController] ノード到達: Id={node.Id} Type={nodeType}" );
 
             switch ( nodeType )
             {
                 case FieldNodeType.Battle:
                 case FieldNodeType.Boss:
-                    TransitionToBattle( node );
+                    FieldTransitionContext.SetupBattleTransition( node.StageIndex, node.Id );
+                    TransitionToBattleScene();
                     break;
 
                 case FieldNodeType.Recruit:
@@ -147,12 +203,35 @@ namespace Frontier.Field
             }
         }
 
-        private void TransitionToBattle( FieldNodeData node )
+        /// <summary>
+        /// ローディング画面を表示してからバトルシーンへ遷移します。
+        /// 暗転が完了するまで旧シーンを破棄しないことで、初期化前のGame画面が一瞬映る問題を防ぎます。
+        /// </summary>
+        private void TransitionToBattleScene()
         {
-            var progress = Progress;
-            if ( progress != null ) progress.CurrentNodeId = node.Id;
-            FieldTransitionContext.SetupBattleTransition( node.StageIndex, node.Id );
-            SceneManager.LoadScene( BattleSceneName );
+            var loadingScreen = LoadingScreenController.EnsureInstance();
+            if ( loadingScreen != null )
+            {
+                loadingScreen.Show( onComplete: () => StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName ) ) );
+            }
+            else
+            {
+                StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName ) );
+            }
+        }
+
+        private IEnumerator LoadSceneAsyncRoutine( string sceneName )
+        {
+            var op = SceneManager.LoadSceneAsync( sceneName );
+            op.allowSceneActivation = false;
+
+            // 読込完了後もアクティベートを保留し、暗転中にシーンを切り替える
+            while ( op.progress < 0.9f )
+            {
+                yield return null;
+            }
+
+            op.allowSceneActivation = true;
         }
 
         private FieldNodeData FindNode( int nodeId )
