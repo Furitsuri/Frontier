@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 namespace Frontier.UI
@@ -11,31 +12,38 @@ namespace Frontier.UI
     [DefaultExecutionOrder( -1000 )]
     public class LoadingScreenController : MonoBehaviour
     {
-        private const string PrefabResourcePath = "UI/LoadingScreenController";
+        private const string ConfigResourcePath = "Config/LoadingScreenResourceConfig";
+        private const string LoadingMessage      = "NOW LOADING";
+        private const float  PulseCycleDuration  = 1.5f; // 暗→明→暗 一往復にかかる時間(秒)
+        private const float  MinAlpha            = 0.2f;
+        private const float  MaxAlpha            = 1.0f;
 
         public static LoadingScreenController Instance { get; private set; }
 
         [SerializeField] private CanvasGroup _canvasGroup = null;
+        [SerializeField] private TMP_Text     _loadingText = null;
 
-        private Coroutine _fadeCoroutine = null;
+        private Coroutine _fadeCoroutine        = null;
+        private Coroutine _loadingTextCoroutine = null;
 
         /// <summary>
-        /// インスタンスが存在しない場合は Resources からプレハブを生成して確保します。
+        /// インスタンスが存在しない場合は Resources 配下の参照アセット経由でプレハブを取得し生成します。
+        /// プレハブ本体は Assets/Game/Prefabs 以下に置き、Resources には参照アセットのみを置く構成です。
         /// シーン開始時に必ず呼び出すことで、起動シーンに依らずローディング画面の存在を保証します。
         /// </summary>
         public static LoadingScreenController EnsureInstance()
         {
             if ( Instance != null ) return Instance;
 
-            var prefab = Resources.Load<LoadingScreenController>( PrefabResourcePath );
-            if ( prefab == null )
+            var config = Resources.Load<LoadingScreenResourceConfig>( ConfigResourcePath );
+            if ( config == null || config.Prefab == null )
             {
-                Debug.LogError( $"[LoadingScreenController] プレハブが見つかりません: Resources/{PrefabResourcePath}" );
+                Debug.LogError( $"[LoadingScreenController] 参照アセットまたはプレハブが見つかりません: Resources/{ConfigResourcePath}" );
                 return null;
             }
 
-            var instance = Instantiate( prefab );
-            instance.name = prefab.name;
+            var instance = Instantiate( config.Prefab );
+            instance.name = config.Prefab.name;
             return instance;
         }
 
@@ -58,6 +66,41 @@ namespace Frontier.UI
         private void OnDestroy()
         {
             if ( Instance == this ) Instance = null;
+        }
+
+        // 表示中(SetActive(true))の間だけ「NOW LOADING」のアルファ値を滑らかに変化させ続ける
+        private void OnEnable()
+        {
+            if ( _loadingText == null ) return;
+            _loadingText.text = LoadingMessage;
+            _loadingTextCoroutine = StartCoroutine( AnimateLoadingTextRoutine() );
+        }
+
+        private void OnDisable()
+        {
+            if ( _loadingTextCoroutine != null )
+            {
+                StopCoroutine( _loadingTextCoroutine );
+                _loadingTextCoroutine = null;
+            }
+            if ( _loadingText != null )
+            {
+                _loadingText.text = string.Empty;
+                _loadingText.alpha = MaxAlpha;
+            }
+        }
+
+        private IEnumerator AnimateLoadingTextRoutine()
+        {
+            float elapsed = 0f;
+            while ( true )
+            {
+                elapsed += Time.unscaledDeltaTime;
+                // sin波を 0~1 に正規化して MinAlpha~MaxAlpha の範囲でなめらかに往復させる
+                float t = ( Mathf.Sin( elapsed / PulseCycleDuration * Mathf.PI * 2f ) + 1f ) * 0.5f;
+                _loadingText.alpha = Mathf.Lerp( MinAlpha, MaxAlpha, t );
+                yield return null;
+            }
         }
 
         /// <summary>
