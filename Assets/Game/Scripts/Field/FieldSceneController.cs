@@ -1,5 +1,6 @@
 ﻿using Frontier;
 using Frontier.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,10 @@ namespace Frontier.Field
         [Header( "デバッグ用: 起動時に読み込むフィールドID" )]
         [SerializeField] private string _debugFieldId = "field_01";
 
+        [Header( "ランダム生成" )]
+        [SerializeField] private bool                  _useRandomGeneration = true;
+        [SerializeField] private FieldGenerationConfig  _generationConfig    = null;
+
         private FieldData                      _fieldData    = null;
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
         private Dictionary<int, Vector3>       _nodePositions = new Dictionary<int, Vector3>();
@@ -61,21 +66,36 @@ namespace Frontier.Field
 
         public void Load( string fieldId )
         {
-            _fieldData = FieldDataSerializer.Load( fieldId );
-            if ( _fieldData == null )
+            var template = FieldDataSerializer.Load( fieldId );
+            if ( template == null )
             {
                 Debug.LogWarning( $"[FieldSceneController] フィールドデータの読み込みに失敗しました: {fieldId}" );
                 return;
             }
 
-            // GameSession に FieldProgress がなければ新規作成
-            if ( GameSession.Instance != null && GameSession.Instance.FieldProgress == null )
+            // GameSession に FieldProgress がなければ新規作成。既存の場合は生成シードを引き継いで同じマップを再現する
+            var progress     = GameSession.Instance?.FieldProgress;
+            bool isNewProgress = progress == null;
+            if ( isNewProgress && GameSession.Instance != null )
             {
-                GameSession.Instance.FieldProgress = new FieldProgress
-                {
-                    FieldId       = fieldId,
-                    CurrentNodeId = _fieldData.StartNodeId,
-                };
+                progress = new FieldProgress { FieldId = fieldId };
+                GameSession.Instance.FieldProgress = progress;
+            }
+
+            if ( _useRandomGeneration && _generationConfig != null )
+            {
+                int seed = isNewProgress ? Guid.NewGuid().GetHashCode() : progress.GenerationSeed;
+                if ( progress != null ) progress.GenerationSeed = seed;
+                _fieldData = FieldGenerator.Generate( template, _generationConfig, seed );
+            }
+            else
+            {
+                _fieldData = template;
+            }
+
+            if ( isNewProgress && progress != null )
+            {
+                progress.CurrentNodeId = _fieldData.StartNodeId;
             }
 
             BuildNodes();

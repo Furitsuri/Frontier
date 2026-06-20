@@ -265,6 +265,8 @@ MonoBehaviour:
   _pathRenderer: {fileID: 568307148}
   _playerView: {fileID: 780593024}
   _debugFieldId: field_01
+  _useRandomGeneration: 1
+  _generationConfig: {fileID: 11400000, guid: adf0d10d149ae6348bb383ebe7bb898d, type: 2}
 --- !u!4 &529011160
 Transform:
   m_ObjectHideFlags: 0
