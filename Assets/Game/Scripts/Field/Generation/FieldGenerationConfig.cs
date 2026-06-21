@@ -3,13 +3,13 @@
 namespace Frontier.Field
 {
     /// <summary>
-    /// フィールドの中間ノード生成パラメータ。Inspector で調整する。
-    /// Start/Boss ノードは生成対象外（テンプレートの値をそのまま使用）。
+    /// フィールドのレイヤー(Free レイヤー)生成パラメータ。Inspector で調整する。
+    /// ノードの Layer がファイルで明示された Fixed レイヤーは生成対象外（テンプレートの値をそのまま使用）。
     /// </summary>
     [CreateAssetMenu( fileName = "FieldGenerationConfig", menuName = "Frontier/Field/FieldGenerationConfig" )]
     public class FieldGenerationConfig : ScriptableObject
     {
-        [Header( "Start〜Boss間の中間レイヤー数(段数)" )]
+        [Header( "Bossのレイヤー番号の範囲(Bossノードでファイル側にLayerが未指定の場合のみ使用)" )]
         [SerializeField] private Vector2Int _layerCountRange = new Vector2Int( 3, 5 );
 
         [Header( "1レイヤーあたりのノード数" )]

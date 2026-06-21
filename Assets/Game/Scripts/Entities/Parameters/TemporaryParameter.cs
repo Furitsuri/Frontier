@@ -47,7 +47,7 @@ namespace Frontier.Entities
 
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                IsSkillsToggledON[i]     = false;
+                IsSkillsToggledON[i]    = false;
                 IsSkillsUsed[i]         = false;
                 IsUseableSkill[i]       = false;
             }
