@@ -55,7 +55,7 @@ public class InputHandler : MonoBehaviour
         UpdateInputDevice();
         UpdateInputCodes();
 
-        _inputGuideView.Update();
+        _inputGuideView?.Update();
     }
 
     /// <summary>

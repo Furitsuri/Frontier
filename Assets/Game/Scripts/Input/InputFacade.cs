@@ -1,28 +1,53 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Zenject;
+using UnityEngine;
 
+/// <summary>
+/// 入力処理全体のファサード。シーンを跨いで永続化するシングルトン。
+/// 実体である InputHandler は初回の Setup() でのみ生成し、DontDestroyOnLoad で保持する。
+/// 入力ガイドUI(InputGuidePresenter)は IUiSystem を持つシーン(GameMain等)でのみ DI 経由で生成して渡す想定で、
+/// 渡さない場合(IUiSystem を持たないシーン)はガイド表示なしで入力処理のみ行う。
+/// </summary>
 public class InputFacade
 {
-    [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+    private static InputFacade _instance = null;
+    public static InputFacade Instance => _instance ??= new InputFacade();
 
-    private InputGuidePresenter _inputGuideView = null;
     private InputHandler _inputHdlr             = null;
+    private InputGuidePresenter _inputGuideView = null;
     private List<InputCode> _inputCodes         = new List<InputCode>();
 
-    public void Setup()
+    private InputFacade() { }
+
+    /// <summary>
+    /// 入力処理本体をセットアップします。
+    /// </summary>
+    /// <param name="inputGuideView">
+    /// 入力ガイドUIの表示制御クラス。IUiSystem を持つシーンから DI 経由で生成して渡す。
+    /// 渡さない(null)場合は入力ガイドを表示せず、入力処理のみ行う。
+    /// </param>
+    public void Setup( InputGuidePresenter inputGuideView = null )
     {
-        LazyInject.GetOrCreate( ref _inputHdlr, () => _hierarchyBld.CreateComponentAndOrganize<InputHandler>( true, "InputHandler" ) );
-        LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
-        _inputHdlr.Setup();
-        _inputGuideView.Setup();
+        // シーン切り替えをまたいで古い入力コードが残らないようにする
+        UnregisterInputCodes();
+
+        if ( _inputHdlr == null )
+        {
+            var go = new GameObject( nameof( InputHandler ) );
+            Object.DontDestroyOnLoad( go );
+            _inputHdlr = go.AddComponent<InputHandler>();
+            _inputHdlr.Setup();
+        }
+
+        _inputGuideView = inputGuideView;
+        _inputGuideView?.Setup();
     }
-    
+
     public void Init()
     {
         // 入力コード情報を受け渡す
         _inputHdlr.Init( _inputGuideView, _inputCodes );
-        _inputGuideView.Init( _inputCodes );
+        _inputGuideView?.Init( _inputCodes );
     }
 
     /// <summary>
@@ -85,7 +110,7 @@ public class InputFacade
         _inputCodes.Sort( ( a, b ) => a.Icons.First().CompareTo( b.Icons.First() ) );
 
         // ガイドアイコンを登録
-        _inputGuideView.RegisterInputGuides();
+        _inputGuideView?.RegisterInputGuides();
     }
 
     /// <summary>

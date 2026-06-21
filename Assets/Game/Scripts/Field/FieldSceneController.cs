@@ -50,6 +50,12 @@ namespace Frontier.Field
 
         private void Start()
         {
+            // InputFacade はシーンを跨いで永続化されるシングルトン。
+            // FieldScene には IUiSystem が無いため、入力ガイドUIは渡さず入力処理のみ行う
+            // (キー割り当ては別途 RegisterInputCodes() で追加する想定)
+            InputFacade.Instance.Setup();
+            InputFacade.Instance.Init();
+
             // 戦闘シーンからの遷移時に暗転したままになっている場合に解除する
             LoadingScreenController.Instance?.Hide();
 

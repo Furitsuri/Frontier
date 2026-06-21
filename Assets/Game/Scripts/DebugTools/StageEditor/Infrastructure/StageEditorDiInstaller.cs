@@ -13,7 +13,7 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         public override void InstallBindings()
         {
-            Container.Bind<InputFacade>().AsSingle();
+            Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();
 
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);

@@ -204,6 +204,7 @@ namespace Frontier.DebugTools.StageEditor
         private GridCursorSizeAdjuster _sizeAdjuster        = null;
         private StageEditRefParams _refParams               = null;
         private Holder<string> _editFileName                = null;
+        private InputGuidePresenter _inputGuideView         = null;
         private StageEditMode _editMode                     = StageEditMode.EDIT_TILE;
         private Vector3 offset                              = new Vector3(0, 5, -5);
 
@@ -237,8 +238,11 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( true ) );
             LazyInject.GetOrCreate( ref _sizeAdjuster,  () => _hierarchyBld.InstantiateWithDiContainer<GridCursorSizeAdjuster>( false ) );
 
+            LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
+
             _btlCamCtrl.Setup( false );
-            _inputFcd.Setup();
+            // InputFacade はシーンを跨いで永続化されるシングルトン。入力ガイドUIはこのシーンの IUiSystem に紐づくため渡し直す
+            _inputFcd.Setup( _inputGuideView );
             _inputFcd.Init();           // 入力ファサードの初期化
             TileMaterialLibrary.Init(); // タイルマテリアルの初期化
 

@@ -29,6 +29,7 @@ namespace Frontier
 
         private GameObject _stageImage;
         private GeneralFileLoader _generalFileLoader;
+        private InputGuidePresenter _inputGuideView;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
         private DebugEditorMonoDriver _debugEditorMonoDrv;
@@ -64,7 +65,11 @@ namespace Frontier
             LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
 #endif // UNITY_EDITOR
 
-            _inputFcd.Setup();
+            LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
+
+            // InputFacade はシーンを跨いで永続化されるシングルトン。
+            // 入力ガイドUIはこのシーン(GameMain)の IUiSystem に紐づくため、シーンに入る度に渡し直す
+            _inputFcd.Setup( _inputGuideView );
             _sequenceFcd.Setup( GetFocusRoutine( FocusRoutinePriority.SEQUENCE ) );
             _tutorialFcd.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
         }
