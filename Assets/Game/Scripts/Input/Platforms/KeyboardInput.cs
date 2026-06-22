@@ -80,10 +80,12 @@ public class KeyboardInput : IInput
         return Input.GetMouseButton( INPUT_INDEX_MOUSE_MIDDLE_CLICK );
     }
 
+    /// <summary>
+    /// マウスの移動量を返します。
+    /// どのボタンと組み合わせて使うか(左ドラッグ/右ドラッグ等)は呼び出し側で context.GetButton(...) を見て判定してください。
+    /// </summary>
     public Vector2 GetVectorPressed()
     {
-        if( !Input.GetMouseButton( INPUT_INDEX_MOUSE_RIGHT_CLICK ) ) { return Vector2.zero; }
-
         float mouseX = Input.GetAxis( "Mouse X" );
         float mouseY = Input.GetAxis( "Mouse Y" );
 
