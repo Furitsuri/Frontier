@@ -23,16 +23,18 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditorEditEnemyExisting _existingEdit      = null;
         private int                          _prevCursorIndex   = -1;
 
-        private Action<EditActionContext> _placeEnemyCallback = null;
-        private Action<EditActionContext> _editEnemyCallback  = null;
+        private Action<EditActionContext> _placeEnemyCallback  = null;
+        private Action<EditActionContext> _editEnemyCallback   = null;
+        private Action<EditActionContext> _deleteEnemyCallback = null;
 
         // ──── 初期化 ──────────────────────────────────────────────────────
 
-        /// <summary>新規配置・既存編集それぞれのコールバックを設定します。Init() より前に呼んでください。</summary>
-        public void SetEnemyCallbacks( Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb )
+        /// <summary>新規配置・既存編集・削除それぞれのコールバックを設定します。Init() より前に呼んでください。</summary>
+        public void SetEnemyCallbacks( Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> deleteEnemyCb )
         {
-            _placeEnemyCallback = placeEnemyCb;
-            _editEnemyCallback  = editEnemyCb;
+            _placeEnemyCallback  = placeEnemyCb;
+            _editEnemyCallback   = editEnemyCb;
+            _deleteEnemyCallback = deleteEnemyCb;
         }
 
         public override void Init( Action<EditActionContext> callback )
@@ -87,7 +89,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             return _subMode switch
             {
-                SubMode.Cursor       => "NEW\nPLACE",
+                SubMode.Cursor       => "NEW /\nDELETE",
                 SubMode.NewPlacement => _newEdit?.GetSub12Label(),
                 SubMode.EditExisting => _existingEdit?.GetSub12Label(),
                 _                    => null,
@@ -130,7 +132,7 @@ namespace Frontier.DebugTools.StageEditor
 
         public override bool CanAcceptSub2()
         {
-            if ( _subMode == SubMode.Cursor )            return false;  // Cursor モードでは Confirm で EditExisting へ遷移
+            if ( _subMode == SubMode.Cursor )            return IsEnemyAtCursor();  // カーソル下に敵がいれば削除可能
             if ( _subMode == SubMode.NewPlacement )      return _newEdit?.CanAcceptSub2() ?? false;
             if ( _subMode == SubMode.EditExisting )      return _existingEdit?.CanAcceptSub2() ?? false;
             return false;
@@ -187,12 +189,34 @@ namespace Frontier.DebugTools.StageEditor
             return false;
         }
 
-        /// <summary>カーソルモード: 無効（EditExisting 遷移は Confirm に変更）。その他: 次のパラメータへ。</summary>
+        /// <summary>カーソルモード: カーソル下の配置済み敵を削除。その他: 次のパラメータへ。</summary>
         public override bool AcceptSub2( InputContext context )
         {
+            if ( _subMode == SubMode.Cursor )
+            {
+                if ( !context.GetButton( GameButton.Sub2 ) ) return false;
+                if ( !IsEnemyAtCursor() )                    return false;
+                DeleteEnemyAtCursor();
+                return true;
+            }
             if ( _subMode == SubMode.NewPlacement )      return _newEdit?.AcceptSub2( context ) ?? false;
             if ( _subMode == SubMode.EditExisting )      return _existingEdit?.AcceptSub2( context ) ?? false;
             return false;
+        }
+
+        /// <summary>カーソル下に配置されている敵を削除コールバック経由で削除します。</summary>
+        private void DeleteEnemyAtCursor()
+        {
+            int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
+
+            _context.ExtraIntValues.Clear();
+            _context.ExtraIntValues.Add( gridIndex );   // [0] 削除対象のグリッドインデックス
+            _deleteEnemyCallback?.Invoke( _context );
+
+            // 削除によりカーソル下の敵有無・パラメータ表示・ボタン活性が変わるため更新
+            _prevCursorIndex = -1;
+            if ( _refParams != null ) _refParams.EnemyAtCursor = IsEnemyAtCursor();
+            RefreshInputCodes?.Invoke();
         }
 
         public override bool AcceptSub3( InputContext context )

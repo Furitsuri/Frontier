@@ -11,6 +11,7 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> ToggleDeployableCallback;
         private Action<EditActionContext> PlaceEnemyCallback;
         private Action<EditActionContext> EditEnemyCallback;
+        private Action<EditActionContext> DeleteEnemyCallback;
         private Action<EditActionContext> PlaceStagePropCallback;
         private Action<EditActionContext> EditStagePropCallback;
         private Func<string, bool> SaveStageCallback;
@@ -19,7 +20,7 @@ namespace Frontier.DebugTools.StageEditor
 
         private StageEditorUI _stageEditorView   = null;
 
-        public void Init( StageEditorUI stageEditorView, Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> placeStagePropCb, Action<EditActionContext> editStagePropCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
+        public void Init( StageEditorUI stageEditorView, Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> deleteEnemyCb, Action<EditActionContext> placeStagePropCb, Action<EditActionContext> editStagePropCb, Func<string, bool> saveStageCb, Func<string, bool> loadStageCb, Func<int, StageEditMode> changeEditModeCb )
         {
             _stageEditorView            = stageEditorView;
             PlaceTileCallback           = placeTileCb;
@@ -27,6 +28,7 @@ namespace Frontier.DebugTools.StageEditor
             ToggleDeployableCallback    = toggleDeployableCb;
             PlaceEnemyCallback          = placeEnemyCb;
             EditEnemyCallback           = editEnemyCb;
+            DeleteEnemyCallback         = deleteEnemyCb;
             PlaceStagePropCallback      = placeStagePropCb;
             EditStagePropCallback       = editStagePropCb;
             SaveStageCallback           = saveStageCb;
@@ -50,7 +52,7 @@ namespace Frontier.DebugTools.StageEditor
              */
 
             var stageEditorEditingState = _hierarchyBld.InstantiateWithDiContainer<StageEditorEditingState>(false);
-            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback, PlaceEnemyCallback, EditEnemyCallback, PlaceStagePropCallback, EditStagePropCallback, ChangeEditModeCallback);
+            stageEditorEditingState.SetCallbacks(PlaceTileCallback, ResizeTileGridCallback, ToggleDeployableCallback, PlaceEnemyCallback, EditEnemyCallback, DeleteEnemyCallback, PlaceStagePropCallback, EditStagePropCallback, ChangeEditModeCallback);
 
             var stageEditorSaveState = _hierarchyBld.InstantiateWithDiContainer<StageEditorSaveState>(false);
             stageEditorSaveState.SetCallbacks( SaveStageCallback, _stageEditorView.SetMessageWord );

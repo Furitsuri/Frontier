@@ -2,7 +2,13 @@
     "StagePropStatuses": [
         {
             "Prefab": 0,
-            "TileIndex": 27,
+            "TileIndex": 13,
+            "Direction": 2,
+            "Size": 2
+        },
+        {
+            "Prefab": 0,
+            "TileIndex": 21,
             "Direction": 2,
             "Size": 2
         }

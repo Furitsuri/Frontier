@@ -262,7 +262,7 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.UnregisterStagePropOccupied    = ( anchor, size ) => _sizeAdjuster.UnregisterStagePropOccupied( anchor, size );
             _refParams.RestoreStagePropOccupied       = ( anchor, size ) => _sizeAdjuster.RegisterStagePropOccupied( anchor, size );
             _refParams.SetGridCursorSize              = size => _gridCursorCtrl.SetGridCursorSize( size );
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, DeleteEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
             _btlCamCtrl.Init();
@@ -472,6 +472,48 @@ namespace Frontier.DebugTools.StageEditor
             _enemyStatusList[listIndex] = data;
 
             Debug.Log( $"[StageEditor] 敵を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
+        }
+
+        /// <summary>
+        /// 配置済みの敵を削除します。
+        /// context.ExtraIntValues[0] に対象敵のグリッドインデックスが格納されていることを前提とします。
+        /// リストを詰めたうえで、各マップと CharacterIndex を再構築します。
+        /// </summary>
+        private void DeleteEnemy( EditActionContext context )
+        {
+            if ( context.ExtraIntValues.Count == 0 ) return;
+
+            int gridIndex = context.ExtraIntValues[0];
+            if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIndex ) ) return;
+
+            // ビジュアル（キャラクターモデル）を破棄
+            if ( _refParams.GridIndexToCharacter.TryGetValue( gridIndex, out var chara ) )
+            {
+                if ( chara != null )
+                {
+                    _loadedEnemyVisuals.Remove( chara );
+                    GameObject.Destroy( chara.gameObject );
+                }
+                _refParams.GridIndexToCharacter.Remove( gridIndex );
+            }
+
+            // 占有タイル登録を解除
+            _sizeAdjuster.UnregisterCharacterOccupied( gridIndex, Constants.GRID_SIZE_MIN );
+
+            // データ本体をリストから削除（以降の要素が前へ詰まる）
+            _enemyStatusList.RemoveAt( listIndex );
+
+            // リストを詰めたことでインデックスがずれるため、マップと CharacterIndex を再構築する
+            _refParams.GridIndexToEnemyListIndex.Clear();
+            for ( int i = 0; i < _enemyStatusList.Count; ++i )
+            {
+                var d = _enemyStatusList[i];
+                d.CharacterIndex = i;               // CharacterDeployData は構造体のため書き戻す
+                _enemyStatusList[i] = d;
+                _refParams.GridIndexToEnemyListIndex[d.InitGridIndex] = i;
+            }
+
+            Debug.Log( $"[StageEditor] 敵を削除しました (GridIndex={gridIndex})" );
         }
 
         /// <summary>
