@@ -73,6 +73,9 @@ namespace Frontier.Stage
                 }
             }
 
+            // 全タイルのタイプが確定したので、側面マスク（面カリング）を適用する
+            _stageDataProvider.CurrentData.ApplyTileSideFaceMasks();
+
             // StageProp を配置し、占有タイルを移動不可にする
             _lastLoadedStagePropData = StagePropDataSerializer.Load( fileName );
             if ( _lastLoadedStagePropData != null )

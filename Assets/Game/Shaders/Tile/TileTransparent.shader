@@ -22,10 +22,16 @@ Shader "Frontier/TileTransparent"
         // Water の水面らしさを出すため、デフォルトは 0.6（やや透明）
         _TopAlpha ("上面の不透明度", Range(0.0, 1.0)) = 0.6
 
-        // 側面・底面の不透明度（0=完全透明, 1=完全不透明）
-        // デフォルト 0: 隣り合う水タイル間の仕切りが見えなくなりシームレスな水面になる。
-        // 端のタイルで側壁を見せたい場合は値を上げて調整する。
-        _SideAlpha ("側面の不透明度", Range(0.0, 1.0)) = 0.0
+        // 露出している（隣にタイルが無い）側面・底面の不透明度（0=完全透明, 1=完全不透明）
+        // デフォルト 1: 端の水タイルでは側壁（水中）がしっかり見えるようにする。
+        _SideAlpha ("露出側面の不透明度", Range(0.0, 1.0)) = 1.0
+
+        // 4方向それぞれの側面を表示するか否かのマスク (1=表示, 0=非表示)
+        //   x = +X(右), y = -X(左), z = +Z(前), w = -Z(後)
+        // 隣に水タイルがある方向を 0 にすることで、水タイル同士の仕切りが消え
+        // シームレスな水面になる（マインクラフトの面カリングと同じ考え方）。
+        // Tile 側（StageData.ApplyWaterSideFaceMasks）から隣接状況に応じて書き込まれる。
+        _SideAlphaDirs ("側面表示マスク (xPos,xNeg,zPos,zNeg)", Vector) = (1,1,1,1)
 
         // 乗算カラー。Tile.cs の ApplyDeployableColor() から書き込まれる。
         // 配置不可タイルは (0.5, 0.5, 0.5, 1.0) で50%暗転する。
@@ -53,6 +59,7 @@ Shader "Frontier/TileTransparent"
         float     _TopSideFraction;
         float     _TopAlpha;
         float     _SideAlpha;
+        float4    _SideAlphaDirs;
         fixed4    _Color;
 
         // =====================================================================
@@ -86,6 +93,20 @@ Shader "Frontier/TileTransparent"
             bool isTopFace = IN.worldNormal.y > 0.5;
 
             // ------------------------------------------------------------------
+            // Step 1.5: この側面が「どの方向を向いた面か」から表示マスクを取得
+            //   隣に水タイルがある方向のマスクは 0 になっており、その面は消える。
+            //   上面（isTopFace）には適用しない（水面は常に描画する）。
+            // ------------------------------------------------------------------
+            float sideMask = 1.0;
+            if (!isTopFace)
+            {
+                if      (IN.worldNormal.x >  0.5) sideMask = _SideAlphaDirs.x; // +X(右)
+                else if (IN.worldNormal.x < -0.5) sideMask = _SideAlphaDirs.y; // -X(左)
+                else if (IN.worldNormal.z >  0.5) sideMask = _SideAlphaDirs.z; // +Z(前)
+                else if (IN.worldNormal.z < -0.5) sideMask = _SideAlphaDirs.w; // -Z(後)
+            }
+
+            // ------------------------------------------------------------------
             // Step 2: 側面の上部N割を TopTex で塗る領域かを判定
             // ------------------------------------------------------------------
             float sideTopThreshold = 0.5 - _TopSideFraction;
@@ -100,23 +121,30 @@ Shader "Frontier/TileTransparent"
             // ------------------------------------------------------------------
             // Step 4: 領域に応じて色と透明度を決定
             //
-            //   上面・側面上部 → topColor に _TopAlpha を掛けて半透明（水面）
-            //   側面下部・底面 → sideColor に _SideAlpha を掛ける
-            //                    _SideAlpha=0 なら側面が完全透明 → 隣接タイル間の仕切りが消える
+            //   上面          → topColor に _TopAlpha を掛けて半透明（水面）。常に描画。
+            //   側面上部       → topColor に _TopAlpha と sideMask を掛ける（露出時のみ水面の縁が見える）
+            //   側面下部・底面 → sideColor に _SideAlpha と sideMask を掛ける
+            //                    sideMask=0（隣が水）なら側面が消えてシームレスな水面に、
+            //                    sideMask=1（露出）なら _SideAlpha の不透明度で側壁が見える。
             //
             // _Color.a は ApplyDeployableColor() では常に 1.0 なので
             // topColor.a = テクスチャのアルファ × 1.0 = テクスチャのアルファ
             // ------------------------------------------------------------------
             fixed4 finalColor;
-            if (isTopFace || isSideTopArea)
+            if (isTopFace)
             {
                 finalColor   = topColor;
-                finalColor.a = topColor.a * _TopAlpha;  // _TopAlpha で水面の透明度を制御
+                finalColor.a = topColor.a * _TopAlpha;             // 水面（常に描画）
+            }
+            else if (isSideTopArea)
+            {
+                finalColor   = topColor;
+                finalColor.a = topColor.a * _TopAlpha * sideMask;  // 側面上部の水面の縁
             }
             else
             {
                 finalColor   = sideColor;
-                finalColor.a = sideColor.a * _SideAlpha; // _SideAlpha で側面の透明度を制御
+                finalColor.a = sideColor.a * _SideAlpha * sideMask; // 側壁（水中）
             }
 
             // ------------------------------------------------------------------

@@ -16,6 +16,7 @@ namespace Frontier.Stage
         private GridLineMesh _gridLineMesh          = null; // 各タイルの縁を示すグリッド線
         private TileDynamicData _baseDynamicData    = null;
         private MeshRenderer _renderer;
+        private TileProfile _profile                = null; // タイプごとの見た目・挙動プロファイル
 
         // CharacterKey をキーとして各キャラクターの行動範囲を示すTileMeshを一意に管理します
         private Dictionary<CharacterKey, TileMesh> _tileMeshes              = new Dictionary<CharacterKey, TileMesh>();
@@ -43,16 +44,23 @@ namespace Frontier.Stage
             _baseDynamicData.Init();
             _tileMeshes.Clear();
 
+            _profile = TileMaterialLibrary.GetProfile( type );
+
+            // 見た目の沈み量。底面は他タイルと揃えたまま「上面だけ」を下げる（＝背を低くする）。
+            // 厚みを超えて沈めると形状が反転するため、高さの範囲内にクランプする。
+            float visualDrop = Mathf.Min( _profile.VisualHeightOffset, height );
+
             Vector3 position = new Vector3(
-                x * TILE_SIZE + 0.5f * TILE_SIZE,   // X座標はグリッドの中心に配置
-                0.5f * height - TILE_MIN_THICKNESS, // Y座標はタイルの高さ(タイルの厚みの最小値は減算する)
-                y * TILE_SIZE + 0.5f * TILE_SIZE    // Z座標はグリッドの中心に配置
+                x * TILE_SIZE + 0.5f * TILE_SIZE,                           // X座標はグリッドの中心に配置
+                0.5f * height - TILE_MIN_THICKNESS - 0.5f * visualDrop,     // Y座標(底面は他タイルと揃え、上面のみ visualDrop 分下げるため中心を半分だけ下げる)
+                y * TILE_SIZE + 0.5f * TILE_SIZE                            // Z座標はグリッドの中心に配置
             );
 
             transform.position   = position;
-            transform.localScale = new Vector3( TILE_SIZE, height + TILE_MIN_THICKNESS, TILE_SIZE );
+            // 上面を下げた分だけ厚みを縮める → 底面位置は他タイルと同じまま（下に出っ張らない）
+            transform.localScale = new Vector3( TILE_SIZE, height + TILE_MIN_THICKNESS - visualDrop, TILE_SIZE );
             transform.rotation   = Quaternion.identity;
-            _renderer.material   = TileMaterialLibrary.GetMaterial( type );
+            _renderer.material   = _profile.Material;
 
             ApplyDeployableColor();
         }
@@ -75,6 +83,22 @@ namespace Frontier.Stage
         {
             if( StaticData().IsDeployable ) { _renderer.material.color = Color.white; }
             else { _renderer.material.color = new Color( 0.5f, 0.5f, 0.5f, 1f ); }
+        }
+
+        /// <summary>このタイルが側面カリング（同種隣接面の非表示）を使用するかを返します。</summary>
+        public bool UsesSideFaceCulling => _profile != null && _profile.UseSideFaceCulling;
+
+        /// <summary>
+        /// 側面表示マスクをマテリアルに適用します。
+        /// dirs の各成分 (x=+X右, y=-X左, z=+Z前, w=-Z後) は
+        /// 1=側面を表示 / 0=側面を非表示（同種が隣接しシームレスにする）を表します。
+        /// 側面カリングを使用しないタイプには何もしません。
+        /// </summary>
+        public void ApplySideFaceMask( Vector4 dirs )
+        {
+            if( !UsesSideFaceCulling ) { return; }
+
+            _renderer.material.SetVector( "_SideAlphaDirs", dirs );
         }
 
         /// <summary>

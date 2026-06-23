@@ -294,6 +294,9 @@ namespace Frontier.DebugTools.StageEditor
             data.GetTile( context.X, context.Y ).Dispose();
             data.SetTile( context.X, context.Y, _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<Tile>( tilePrefabs[0], true, false, $"Tile_X{context.X}_Y{context.Y}" ) );
             data.GetTile( context.X, context.Y ).Init( context.X, context.Y, isDeployable, _refParams.SelectedHeight, ( TileType ) _refParams.SelectedType );
+
+            // タイルの追加・変更で隣接関係が変わるため、側面マスク（面カリング）を再計算する
+            data.ApplyTileSideFaceMasks();
         }
 
         /// <summary>

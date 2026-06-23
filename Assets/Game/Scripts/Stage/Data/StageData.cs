@@ -75,6 +75,48 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 側面カリングを使用するタイル（水など）について、隣接4方向に同種タイルがあるかを調べ、
+        /// 同種同士で接している面は非表示（シームレス）、露出している面は表示するよう
+        /// 側面マスクをマテリアルへ適用します。
+        /// マインクラフトのブロック面カリングと同じ考え方で、
+        /// 「隣に何も無いタイルの側面が透けてしまう」問題を解消します。
+        /// 全タイルのタイプ確定後（ロード完了後）に一度だけ呼び出してください。
+        /// </summary>
+        public void ApplyTileSideFaceMasks()
+        {
+            for( int y = 0; y < _tileRowNum; y++ )
+            {
+                for( int x = 0; x < _tileColNum; x++ )
+                {
+                    var tile = GetTile( x, y );
+                    if( !tile.UsesSideFaceCulling ) { continue; }
+
+                    TileType type = tile.StaticData().TileType;
+
+                    // 隣が同種なら 0（面を消す）、そうでなければ 1（面を見せる）
+                    Vector4 dirs = new Vector4(
+                        IsSameTypeTileAt( x + 1, y, type ) ? 0f : 1f,   // +X(右)
+                        IsSameTypeTileAt( x - 1, y, type ) ? 0f : 1f,   // -X(左)
+                        IsSameTypeTileAt( x, y + 1, type ) ? 0f : 1f,   // +Z(前)
+                        IsSameTypeTileAt( x, y - 1, type ) ? 0f : 1f    // -Z(後)
+                    );
+
+                    tile.ApplySideFaceMask( dirs );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 指定グリッド座標が範囲内かつ指定タイプのタイルであるかを返します（範囲外は false）
+        /// </summary>
+        private bool IsSameTypeTileAt( int x, int y, TileType type )
+        {
+            if( x < 0 || _tileColNum <= x || y < 0 || _tileRowNum <= y ) { return false; }
+
+            return GetTile( x, y ).StaticData().TileType == type;
+        }
+
+        /// <summary>
         /// セーブ用データをセットアップします
         /// </summary>
         public void SetupSaveData()

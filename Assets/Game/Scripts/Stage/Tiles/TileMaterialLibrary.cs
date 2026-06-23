@@ -7,7 +7,8 @@ namespace Frontier.Stage
 {
     static public class TileMaterialLibrary
     {
-        private static Dictionary<TileType, Material> _materials;
+        // タイルタイプごとのプロファイル（マテリアル＋見た目/挙動の差分）
+        private static Dictionary<TileType, TileProfile> _profiles;
 
         static public void Init()
         {
@@ -23,17 +24,19 @@ namespace Frontier.Stage
                 "Forest"
             };
 
-            _materials = new Dictionary<TileType, Material>();
+            _profiles = new Dictionary<TileType, TileProfile>();
 
             for (int i = 0; i < (int)TileType.NUM; i++)
             {
+                TileType type = (TileType)i;
+
                 if (i == (int)TileType.None)
                 {
-                    _materials[TileType.None] = new Material(Shader.Find("Standard"));  // TODO : URPに適応した場合は、"Universal Render Pipeline/Lit"に変更する必要がある
+                    // TODO : URPに適応した場合は、"Universal Render Pipeline/Lit"に変更する必要がある
+                    _profiles[type] = CreateProfile(type, new Material(Shader.Find("Standard")));
                     continue;
                 }
 
-                TileType type = (TileType)i;
                 string materialPath = $"{Constants.TILE_MATERIALS_FOLDER_PASS}{strings[i]}";
                 Material material = Resources.Load<Material>(materialPath);
 
@@ -43,13 +46,36 @@ namespace Frontier.Stage
                     continue;
                 }
 
-                _materials[type] = material;
+                _profiles[type] = CreateProfile(type, material);
             }
+        }
+
+        /// <summary>
+        /// タイプごとのプロファイルを生成します。
+        /// 特殊仕様を持つタイルはここに分岐を1つ足すだけで定義できます。
+        /// </summary>
+        private static TileProfile CreateProfile(TileType type, Material material)
+        {
+            switch (type)
+            {
+                // 水：見た目を少しだけ低く沈ませ、水同士の側面はカリングしてシームレスにする
+                case TileType.Water:
+                    return new TileProfile(material, WATER_VISUAL_HEIGHT_OFFSET, useSideFaceCulling: true);
+
+                // それ以外：通常の不透明タイル（沈み無し・カリング無し）
+                default:
+                    return new TileProfile(material, 0f, useSideFaceCulling: false);
+            }
+        }
+
+        static public TileProfile GetProfile(TileType type)
+        {
+            return _profiles[type];
         }
 
         static public Material GetMaterial(TileType type)
         {
-            return _materials[type];
+            return _profiles[type].Material;
         }
 
         static public Vector3 GetDefaultTileScale()
