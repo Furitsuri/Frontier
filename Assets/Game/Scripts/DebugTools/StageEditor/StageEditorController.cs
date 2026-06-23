@@ -196,7 +196,6 @@ namespace Frontier.DebugTools.StageEditor
         [Inject] private CharacterFactory _characterFactory     = null;
 
         private BattleCameraController _btlCamCtrl          = null;
-        private Camera _mainCamera;
         private StageEditorHandler _stageEditorHandler      = null;
         private StageEditorUI _stageEditorView              = null;
         private StageFileLoader _stageFileLoader            = null;
@@ -206,7 +205,6 @@ namespace Frontier.DebugTools.StageEditor
         private Holder<string> _editFileName                = null;
         private InputGuidePresenter _inputGuideView         = null;
         private StageEditMode _editMode                     = StageEditMode.EDIT_TILE;
-        private Vector3 offset                              = new Vector3(0, 5, -5);
 
         // 登録済み敵ステータスデータ一覧
         private List<Frontier.Loaders.BattleFileLoader.CharacterDeployData> _enemyStatusList
@@ -265,16 +263,15 @@ namespace Frontier.DebugTools.StageEditor
             _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, DeleteEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
-            _btlCamCtrl.Init();
-
-            _mainCamera = Camera.main;
+            // StageEditor では独自のオービットカメラ（StageEditorEditingState）でカメラを制御するため、
+            // BattleCameraController は無効化して制御の競合を防ぐ（Camera 自体はプレハブが提供し続ける）。
+            _btlCamCtrl.enabled = false;
         }
 
         public override void UpdateRoutine()
         {
             _stageEditorHandler.Update();
 
-            UpdateCamera( _gridCursorCtrl.GetGridCursorX(), _gridCursorCtrl.GetGridCursorY() );
             UpdateTileVisual( _gridCursorCtrl.GetGridCursorX(), _gridCursorCtrl.GetGridCursorY() );
             _stageEditorView.UpdateModeText( _editMode, _refParams );
         }
@@ -542,19 +539,6 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.EnemySkill3        = data.Skills != null && data.Skills.Length > 2 ? data.Skills[2] : ( int ) SkillID.NONE;
             _refParams.EnemySkill4        = data.Skills != null && data.Skills.Length > 3 ? data.Skills[3] : ( int ) SkillID.NONE;
             return true;
-        }
-
-        /// <summary>
-        /// カメラの更新処理です
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        private void UpdateCamera(int x, int y)
-        {
-            if (_mainCamera == null) return;
-            Vector3 targetPosition = _gridCursorCtrl.GetGridCursorPosition() + offset;
-            _mainCamera.transform.position = targetPosition;
-            _mainCamera.transform.LookAt(_gridCursorCtrl.GetGridCursorPosition());
         }
 
         private void UpdateTileVisual(int x, int y)

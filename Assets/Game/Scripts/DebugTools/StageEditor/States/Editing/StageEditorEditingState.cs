@@ -39,6 +39,11 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext>[]  _editCallbacks  = null;
         private StageEditMode _editMode                     = StageEditMode.NONE;
 
+        // オービットカメラ（注視点=グリッドカーソルを中心に回り込む）の状態
+        private Camera _camera        = null;
+        private float  _cameraYaw     = STAGE_EDITOR_CAMERA_YAW_DEFAULT;    // 水平角(Y軸回り)
+        private float  _cameraPitch   = STAGE_EDITOR_CAMERA_PITCH_DEFAULT;  // 上下角(X軸回り)
+
         public GameObject[] tilePrefabs;
 
         public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> deleteEnemyCb, Action<EditActionContext> placeStagePropCb, Action<EditActionContext> editStagePropCb, Func<int, StageEditMode> changeEditModeCb )
@@ -89,13 +94,53 @@ namespace Frontier.DebugTools.StageEditor
             _currentEdit = _editClasses[(int)_editMode];
             SetCurrentEditRefreshCallback();
             _currentEdit.Init( _editCallbacks[( int ) _editMode] );
+
+            // オービットカメラを初期化（カメラは BattleCameraController プレハブが提供する Camera.main）
+            _camera      = Camera.main;
+            _cameraYaw   = STAGE_EDITOR_CAMERA_YAW_DEFAULT;
+            _cameraPitch = STAGE_EDITOR_CAMERA_PITCH_DEFAULT;
         }
 
         public override bool Update()
         {
             _currentEdit.Update();
 
+            UpdateCameraTransform();
+
             return (0 <= TransitIndex);
+        }
+
+        /// <summary>
+        /// 注視点（グリッドカーソル）を中心に、現在の角度・距離でカメラを配置します。
+        /// </summary>
+        private void UpdateCameraTransform()
+        {
+            if( _camera == null ) { return; }
+
+            Vector3 target = _gridCursorCtrl.GetGridCursorPosition();
+            _camera.transform.position = Quaternion.Euler( _cameraPitch, _cameraYaw, 0f ) * Vector3.back * STAGE_EDITOR_CAMERA_DISTANCE + target;
+            _camera.transform.LookAt( target );
+        }
+
+        /// <summary>カメラのオービット操作を受け付け可能かを返します。</summary>
+        private bool CanAcceptCamera()
+        {
+            return _camera != null;
+        }
+
+        /// <summary>
+        /// 右ポインタ入力で注視点を中心にカメラをオービットさせます。
+        /// BattleCameraController.AcceptCameraInput を参考にした実装です。
+        /// </summary>
+        private bool AcceptCameraInput( InputContext context )
+        {
+            if( !context.GetButton( GameButton.PointerRight ) ) { return false; }
+            if( context.Stick.SqrMagnitude() <= 0f )            { return false; }
+
+            _cameraYaw   += context.Stick.x * STAGE_EDITOR_CAMERA_ROT_SPEED;
+            _cameraPitch  = Mathf.Clamp( _cameraPitch - context.Stick.y * STAGE_EDITOR_CAMERA_ROT_SPEED,
+                                         STAGE_EDITOR_CAMERA_PITCH_MIN, STAGE_EDITOR_CAMERA_PITCH_MAX );
+            return true;
         }
 
         public override void RegisterInputCodes()
@@ -123,6 +168,9 @@ namespace Frontier.DebugTools.StageEditor
                 ? (InputCode)(GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
                 : null;
 
+            // 注視点中心のオービットカメラ操作（モード変更で入力コードが再登録されても維持されるようここで登録する）
+            InputCode cameraCode = (InputCode)(new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_RIGHT }, "CAMERA\nMOVE", CanAcceptCamera, new AcceptContextInput( AcceptCameraInput ), 0.0f, hashCode);
+
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptInputAlways, new AcceptContextInput( AcceptDirection ), 0.1f, hashCode),
                 (GuideIcon.CONFIRM, "APPLY",        CanAcceptInputAlways, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
@@ -132,6 +180,7 @@ namespace Frontier.DebugTools.StageEditor
                 sub12Code,
                 sub34Code,
                 cancelCode,
+                cameraCode,
                 (GuideIcon.DEBUG_MENU, "FILE\nNAME", CanAcceptInputAlways, new AcceptContextInput( AcceptDebugTransition ), 0.0f, hashCode)
             );
         }

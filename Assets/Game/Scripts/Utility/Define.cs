@@ -114,6 +114,13 @@ static public class Constants
     public const float STAGE_EDITOR_CONFIRM_WIN_HEIGHT  = 280f;
     public const float STAGE_EDITOR_NOTIFY_WIN_WIDTH    = 400f;
     public const float STAGE_EDITOR_NOTIFY_WIN_HEIGHT   = 180f;
+    // StageEditor のオービットカメラ設定（注視点=グリッドカーソルを中心に回り込む）
+    public const float STAGE_EDITOR_CAMERA_DISTANCE      = 7.07f;   // 注視点からの距離(オービット半径) ≒ |offset(0,5,-5)|
+    public const float STAGE_EDITOR_CAMERA_YAW_DEFAULT   = 0f;      // 初期の水平角(Y軸回り)
+    public const float STAGE_EDITOR_CAMERA_PITCH_DEFAULT = 45f;     // 初期の上下角(X軸回り)。offset(0,5,-5)相当
+    public const float STAGE_EDITOR_CAMERA_PITCH_MIN     = 30f;     // 上下角の下限
+    public const float STAGE_EDITOR_CAMERA_PITCH_MAX     = 80f;     // 上下角の上限
+    public const float STAGE_EDITOR_CAMERA_ROT_SPEED     = 3f;      // 入力に対する回転速度係数
     // 自身にバフをかける処理の待ち時間
     public const float SELF_BUFF_DISP_NAME_TIME = 0.5f;
     public const float SELF_BUFF_EXE_TIME = 0.75f;

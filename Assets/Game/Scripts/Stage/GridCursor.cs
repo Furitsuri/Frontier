@@ -235,7 +235,8 @@ namespace Frontier.Stage
         /// </summary>
         private Vector3 GetGoalPosition()
         {
-            return GridPositionUtility.CalcSizeAwareCenter( _tileIndex, _cursorSize, _stageDataProvider );
+            // グリッドカーソルは高さ補正（水で沈む等）を含まない素のタイル高さに配置する
+            return GridPositionUtility.CalcSizeAwareCenter( _tileIndex, _cursorSize, _stageDataProvider, useCursorStandPos: true );
         }
     }
 }

@@ -17,13 +17,15 @@ namespace Frontier.Stage
         /// <param name="baseTileIndex">左上隅となる基準タイルインデックス</param>
         /// <param name="size">エンティティサイズ（1〜GRID_SIZE_MAX）</param>
         /// <param name="stageDataProvider">ステージデータプロバイダー</param>
-        public static Vector3 CalcSizeAwareCenter( int baseTileIndex, int size, IStageDataProvider stageDataProvider )
+        /// <param name="useCursorStandPos">true の場合、高さ補正を含まない CursorStandPos を使用します（グリッドカーソル用）。既定 false はキャラ用 CharaStandPos。</param>
+        public static Vector3 CalcSizeAwareCenter( int baseTileIndex, int size, IStageDataProvider stageDataProvider, bool useCursorStandPos = false )
         {
             var data = stageDataProvider.CurrentData;
 
             if ( size == 1 )
             {
-                return data.GetTileStaticData( baseTileIndex ).CharaStandPos;
+                var baseData = data.GetTileStaticData( baseTileIndex );
+                return useCursorStandPos ? baseData.CursorStandPos : baseData.CharaStandPos;
             }
 
             int     colNum  = data.TileColNum;
@@ -34,8 +36,9 @@ namespace Frontier.Stage
             {
                 for ( int dx = 0; dx < size; dx++ )
                 {
-                    int   idx     = baseTileIndex + dx + dy * colNum;
-                    var   pos     = data.GetTileStaticData( idx ).CharaStandPos;
+                    int   idx       = baseTileIndex + dx + dy * colNum;
+                    var   tileData  = data.GetTileStaticData( idx );
+                    var   pos       = useCursorStandPos ? tileData.CursorStandPos : tileData.CharaStandPos;
                     sumPos += pos;
                     if ( pos.y > maxY ) maxY = pos.y;
                 }
