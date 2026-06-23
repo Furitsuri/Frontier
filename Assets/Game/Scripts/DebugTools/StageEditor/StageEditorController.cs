@@ -248,6 +248,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _stageDataProvider.CurrentData = CreateDefaultStage();         // プロバイダーに登録
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
+            ApplyDeployableColoringForCurrentMode();                       // 初期モード(EDIT_TILE)では配置可否グレーを表示しない
 
             _gridCursorCtrl.Init( 0 );
             _stageEditorView.Init( EditFileName );
@@ -297,6 +298,9 @@ namespace Frontier.DebugTools.StageEditor
 
             // タイルの追加・変更で隣接関係が変わるため、側面マスク（面カリング）を再計算する
             data.ApplyTileSideFaceMasks();
+
+            // Init で配置可否カラーが付くため、現在モードに応じた色味へ補正する
+            ApplyDeployableColoringForCurrentMode( data.GetTile( context.X, context.Y ) );
         }
 
         /// <summary>
@@ -342,6 +346,7 @@ namespace Frontier.DebugTools.StageEditor
             _stageDataProvider.CurrentData = resizeStageData;      // 作成したデータを保持
 
             _gridCursorCtrl.Init( 0 );  // グリッドカーソル位置を初期化
+            ApplyDeployableColoringForCurrentMode();   // 再生成したタイルへ現在モードの色味を反映
         }
 
         /// <summary>
@@ -361,6 +366,37 @@ namespace Frontier.DebugTools.StageEditor
 
             data.GetTile( context.X, context.Y ).StaticData().IsDeployable = !data.GetTile( context.X, context.Y ).StaticData().IsDeployable;
             data.GetTile( context.X, context.Y ).ApplyDeployableColor();
+        }
+
+        /// <summary>
+        /// 現在の編集モードに応じて、全タイルの配置可否カラー（グレー表示）を切り替えます。
+        /// 配置可否のグレー表示は EDIT_CHARACTER_DEPLOYMENT_TILE モードのときだけ行い、
+        /// それ以外のモードでは本来の色味で表示します。
+        /// </summary>
+        private void ApplyDeployableColoringForCurrentMode()
+        {
+            var data = _stageDataProvider.CurrentData;
+            if( data == null ) { return; }
+
+            for( int i = 0; i < data.GetTileTotalNum(); ++i )
+            {
+                ApplyDeployableColoringForCurrentMode( data.GetTile( i ) );
+            }
+        }
+
+        /// <summary>
+        /// 指定タイル1枚について、現在の編集モードに応じた配置可否カラーを適用します。
+        /// </summary>
+        private void ApplyDeployableColoringForCurrentMode( Tile tile )
+        {
+            if( _editMode == StageEditMode.EDIT_CHARACTER_DEPLOYMENT_TILE )
+            {
+                tile.ApplyDeployableColor();    // 配置不可タイルをグレーにする
+            }
+            else
+            {
+                tile.ClearUndeployableColor();  // 他モードでは本来の色味に戻す
+            }
         }
 
         /// <summary>
@@ -507,6 +543,7 @@ namespace Frontier.DebugTools.StageEditor
             _editMode       = ( StageEditMode )nextMode;
 
             _stageEditorView.SwitchEditParamView( _editMode );   // モードに応じたパラメータを表示
+            ApplyDeployableColoringForCurrentMode();             // 配置可否のグレー表示はこのモードのときだけにする
 
             return _editMode;
         }
@@ -552,6 +589,7 @@ namespace Frontier.DebugTools.StageEditor
 
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // ロード後に列・行数を同期
             _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
+            ApplyDeployableColoringForCurrentMode();   // ロードしたタイルへ現在モードの色味を反映
 
             // 敵キャラクターデータをロード
             var loadedEnemies = EnemyDataSerializer.Load( fileName );
