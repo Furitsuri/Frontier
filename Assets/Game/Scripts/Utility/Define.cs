@@ -76,6 +76,8 @@ static public class Constants
     public const float ADD_TILE_POS_Y       = 0.02f;
     // 水タイルの見た目を通常タイルより少しだけ低く沈ませる量（見た目のみ。論理高さは変えない）
     public const float WATER_VISUAL_HEIGHT_OFFSET = 0.12f;
+    // 水タイル上のキャラクターの立ち位置Yに加算する補正値（負=水に浸かって沈む）
+    public const float WATER_CHARA_STAND_HEIGHT_OFFSET = -0.35f;
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
     // 配置フェーズにおけるキャラクターの配置前座標

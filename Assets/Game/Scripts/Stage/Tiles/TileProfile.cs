@@ -27,11 +27,18 @@ namespace Frontier.Stage
         /// </summary>
         public bool UseSideFaceCulling { get; }
 
-        public TileProfile( Material material, float visualHeightOffset, bool useSideFaceCulling )
+        /// <summary>
+        /// このタイル上に立つキャラクターの立ち位置 Y に加算する補正値。
+        /// 負の値にするとキャラクターが沈み、水に浸かっている表現などに使えます（0=補正なし）。
+        /// </summary>
+        public float CharaStandHeightOffset { get; }
+
+        public TileProfile( Material material, float visualHeightOffset, bool useSideFaceCulling, float charaStandHeightOffset )
         {
-            Material            = material;
-            VisualHeightOffset  = visualHeightOffset;
-            UseSideFaceCulling  = useSideFaceCulling;
+            Material                = material;
+            VisualHeightOffset      = visualHeightOffset;
+            UseSideFaceCulling      = useSideFaceCulling;
+            CharaStandHeightOffset  = charaStandHeightOffset;
         }
     }
 }

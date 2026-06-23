@@ -23,7 +23,9 @@ namespace Frontier.Stage
             float charaPosCorrext   = 0.5f * TILE_SIZE;                     // グリッド位置からキャラの立ち位置への補正値
             float posX              = x * TILE_SIZE + charaPosCorrext;
             float posZ              = y * TILE_SIZE + charaPosCorrext;
-            CharaStandPos           = new Vector3( posX, Height, posZ );    // 上記の値から各グリッドのキャラの立ち位置を決定
+            // タイプごとの立ち位置Y補正（水なら負の値で沈み、水に浸かった表現になる）
+            float charaStandY       = Height + TileMaterialLibrary.GetProfile( tileType ).CharaStandHeightOffset;
+            CharaStandPos           = new Vector3( posX, charaStandY, posZ ); // 上記の値から各グリッドのキャラの立ち位置を決定
             TileType                = tileType;
         }
     }

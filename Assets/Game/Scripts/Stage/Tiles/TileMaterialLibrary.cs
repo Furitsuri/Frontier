@@ -58,13 +58,14 @@ namespace Frontier.Stage
         {
             switch (type)
             {
-                // 水：見た目を少しだけ低く沈ませ、水同士の側面はカリングしてシームレスにする
+                // 水：見た目を少しだけ低く沈ませ、水同士の側面はカリングしてシームレスにし、
+                //     立つキャラクターも水に浸かって沈むようにする
                 case TileType.Water:
-                    return new TileProfile(material, WATER_VISUAL_HEIGHT_OFFSET, useSideFaceCulling: true);
+                    return new TileProfile(material, WATER_VISUAL_HEIGHT_OFFSET, useSideFaceCulling: true, charaStandHeightOffset: WATER_CHARA_STAND_HEIGHT_OFFSET);
 
-                // それ以外：通常の不透明タイル（沈み無し・カリング無し）
+                // それ以外：通常の不透明タイル（沈み無し・カリング無し・立ち位置補正無し）
                 default:
-                    return new TileProfile(material, 0f, useSideFaceCulling: false);
+                    return new TileProfile(material, 0f, useSideFaceCulling: false, charaStandHeightOffset: 0f);
             }
         }
 
