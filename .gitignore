@@ -27,3 +27,7 @@
 /Assets/Unity.VisualScripting.Generated.meta
 /.vs
 /.vsconfig
+
+# Claude Code: マシン固有の設定と自動生成物は除外（共有設定 .claude/skills, scripts, agents, .mcp.json はコミットする）
+.claude/settings.local.json
+/.uloop/
