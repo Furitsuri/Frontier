@@ -260,7 +260,7 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.UnregisterStagePropOccupied    = ( anchor, size ) => _sizeAdjuster.UnregisterStagePropOccupied( anchor, size );
             _refParams.RestoreStagePropOccupied       = ( anchor, size ) => _sizeAdjuster.RegisterStagePropOccupied( anchor, size );
             _refParams.SetGridCursorSize              = size => _gridCursorCtrl.SetGridCursorSize( size );
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, DeleteEnemy, PlaceStageProp, EditStageProp, SaveStage, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, DeleteEnemy, PlaceStageProp, EditStageProp, DeleteStageProp, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
             // StageEditor では独自のオービットカメラ（StageEditorEditingState）でカメラを制御するため、
@@ -705,6 +705,7 @@ namespace Frontier.DebugTools.StageEditor
             data.TileIndex = newGridIndex;
             data.Direction = _refParams.StagePropDirection;
             data.Size      = _refParams.StagePropSize;
+            data.Prefab    = _refParams.StagePropPrefab;   // プレハブ変更を反映
             _stagePropList[listIndex] = data;
 
             _sizeAdjuster.RegisterStagePropOccupied( newGridIndex, data.Size );
@@ -712,6 +713,45 @@ namespace Frontier.DebugTools.StageEditor
                 editedProp.RefreshOccupiedTileIndices( newGridIndex, _stageDataProvider.CurrentData.TileColNum );
 
             Debug.Log( $"[StageEditor] StageProp を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
+        }
+
+        /// <summary>
+        /// 配置済み StageProp を削除します。
+        /// context.ExtraIntValues[0] に対象プロップのグリッドインデックスが格納されていることを前提とします。
+        /// リストを詰めたうえで、グリッド→リストインデックスのマップを再構築します。
+        /// </summary>
+        private void DeleteStageProp( EditActionContext context )
+        {
+            if ( context.ExtraIntValues.Count == 0 ) return;
+
+            int gridIndex = context.ExtraIntValues[0];
+            if ( !_refParams.GridIndexToStagePropListIndex.TryGetValue( gridIndex, out int listIndex ) ) return;
+
+            // ビジュアル（モデル）を破棄
+            if ( _refParams.GridIndexToStageProp.TryGetValue( gridIndex, out var prop ) )
+            {
+                if ( prop != null )
+                {
+                    _loadedStagePropVisuals.Remove( prop );
+                    GameObject.Destroy( prop.gameObject );
+                }
+                _refParams.GridIndexToStageProp.Remove( gridIndex );
+            }
+
+            // 占有タイル登録を解除
+            _sizeAdjuster.UnregisterStagePropOccupied( gridIndex, _stagePropList[listIndex].Size );
+
+            // データ本体をリストから削除（以降の要素が前へ詰まる）
+            _stagePropList.RemoveAt( listIndex );
+
+            // リストを詰めたことでインデックスがずれるため、グリッド→リストインデックスを再構築する
+            _refParams.GridIndexToStagePropListIndex.Clear();
+            for ( int i = 0; i < _stagePropList.Count; ++i )
+            {
+                _refParams.GridIndexToStagePropListIndex[_stagePropList[i].TileIndex] = i;
+            }
+
+            Debug.Log( $"[StageEditor] StageProp を削除しました (GridIndex={gridIndex})" );
         }
 
         /// <summary>

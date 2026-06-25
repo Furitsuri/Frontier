@@ -22,16 +22,18 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditorEditStagePropNew      _newEdit      = null;
         private StageEditorEditStagePropExisting _existingEdit = null;
 
-        private Action<EditActionContext> _placeStagePropCallback = null;
-        private Action<EditActionContext> _editStagePropCallback  = null;
+        private Action<EditActionContext> _placeStagePropCallback  = null;
+        private Action<EditActionContext> _editStagePropCallback   = null;
+        private Action<EditActionContext> _deleteStagePropCallback = null;
 
         // ──── 初期化 ──────────────────────────────────────────────────────
 
-        /// <summary>新規配置・既存編集それぞれのコールバックを設定します。Init() より前に呼んでください。</summary>
-        public void SetStagePropCallbacks( Action<EditActionContext> placeCb, Action<EditActionContext> editCb )
+        /// <summary>新規配置・既存編集・削除それぞれのコールバックを設定します。Init() より前に呼んでください。</summary>
+        public void SetStagePropCallbacks( Action<EditActionContext> placeCb, Action<EditActionContext> editCb, Action<EditActionContext> deleteCb )
         {
-            _placeStagePropCallback = placeCb;
-            _editStagePropCallback  = editCb;
+            _placeStagePropCallback  = placeCb;
+            _editStagePropCallback   = editCb;
+            _deleteStagePropCallback = deleteCb;
         }
 
         public override void Init( Action<EditActionContext> callback )
@@ -69,7 +71,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             return _subMode switch
             {
-                SubMode.Cursor       => "NEW\nPLACE",
+                SubMode.Cursor       => "NEW /\nDELETE",
                 SubMode.NewPlacement => _newEdit?.GetSub12Label(),
                 SubMode.EditExisting => _existingEdit?.GetSub12Label(),
                 _                    => null,
@@ -109,7 +111,7 @@ namespace Frontier.DebugTools.StageEditor
 
         public override bool CanAcceptSub2()
         {
-            if ( _subMode == SubMode.Cursor )            return false;
+            if ( _subMode == SubMode.Cursor )            return IsStagePropAtCursor();  // カーソル下にプロップがあれば削除可能
             if ( _subMode == SubMode.NewPlacement )      return _newEdit?.CanAcceptSub2() ?? false;
             if ( _subMode == SubMode.EditExisting )      return _existingEdit?.CanAcceptSub2() ?? false;
             return false;
@@ -168,9 +170,30 @@ namespace Frontier.DebugTools.StageEditor
 
         public override bool AcceptSub2( InputContext context )
         {
+            if ( _subMode == SubMode.Cursor )
+            {
+                if ( !context.GetButton( GameButton.Sub2 ) ) return false;
+                if ( !IsStagePropAtCursor() )                return false;
+                DeleteStagePropAtCursor();
+                return true;
+            }
             if ( _subMode == SubMode.NewPlacement )      return _newEdit?.AcceptSub2( context ) ?? false;
             if ( _subMode == SubMode.EditExisting )      return _existingEdit?.AcceptSub2( context ) ?? false;
             return false;
+        }
+
+        /// <summary>カーソル下に配置されている StageProp を削除コールバック経由で削除します。</summary>
+        private void DeleteStagePropAtCursor()
+        {
+            int gridIndex = _gridCursorCtrl.GetGridCursorX() + _gridCursorCtrl.GetGridCursorY() * _refParams.Col;
+
+            _context.ExtraIntValues.Clear();
+            _context.ExtraIntValues.Add( gridIndex );   // [0] 削除対象のグリッドインデックス
+            _deleteStagePropCallback?.Invoke( _context );
+
+            // 削除によりカーソル下の有無・ボタン活性が変わるため更新
+            if ( _refParams != null ) _refParams.StagePropAtCursor = IsStagePropAtCursor();
+            RefreshInputCodes?.Invoke();
         }
 
         public override bool AcceptSub3( InputContext context )

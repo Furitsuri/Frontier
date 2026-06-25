@@ -6196,6 +6196,7 @@ MonoBehaviour:
   _otherGameObjects: []
   _stagePropObjects:
   - {fileID: 1869644667065694923, guid: b25aa5825349a0b418501765d4416ccc, type: 3}
+  - {fileID: 1869644667065694923, guid: d6f41beaf46c06f4a8304cca0f437761, type: 3}
   _battleFileLoaderObject: {fileID: 242638392536068251, guid: 50ecdac321897ff428051ad4b4815b18, type: 3}
   _battleCameraObject: {fileID: 2865494705789143224, guid: f715f0bb9637f444b9d6008e0721d848, type: 3}
   _stageFileLoaderPrefab: {fileID: 8217035742773568413, guid: c92f4c8677661b14e8030b1457b65368, type: 3}

@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Registries;
 using Frontier.Stage;
 using System;
 using System.Collections.Generic;
@@ -27,11 +28,14 @@ namespace Frontier.DebugTools.StageEditor
             public Action<int> Setter;
         }
 
-        [Inject] private IStageDataProvider _stageDataProvider = null;
+        [Inject] private IStageDataProvider    _stageDataProvider = null;
+        [Inject] private HierarchyBuilderBase  _hierarchyBld      = null;
+        [Inject] private PrefabRegistry        _prefabReg         = null;
 
-        private List<ParamDescriptor> _params    = new List<ParamDescriptor>();
-        private StageProp             _boundProp = null;
-        private bool                  _confirmed = false;
+        private List<ParamDescriptor> _params      = new List<ParamDescriptor>();
+        private StageProp             _boundProp   = null;
+        private bool                  _confirmed   = false;
+        private int                   _builtPrefab = -1;   // 現在ビジュアルとして生成しているプレハブのインデックス
 
         // Cancel 時に復元するためのスナップショット
         private Vector3 _snapPropPosition;
@@ -52,7 +56,8 @@ namespace Frontier.DebugTools.StageEditor
             base.Init( callback );
             BuildParamDescriptors();
             _refParams.SelectedStagePropParamIndex = 0;
-            _confirmed = false;
+            _confirmed   = false;
+            _builtPrefab = _refParams.StagePropPrefab;   // 編集開始時のビジュアルはロード済みデータのプレハブ
 
             _refParams.SetGridCursorSize?.Invoke( _refParams.StagePropSize );
 
@@ -76,6 +81,9 @@ namespace Frontier.DebugTools.StageEditor
                 _refParams.StagePropDirection = _snapDirection;
 
                 _refParams.SetGridCursorSize?.Invoke( _snapSize );
+
+                // プレハブを変更していた場合はビジュアルも編集前のプレハブへ戻す
+                RebuildBoundProp();
 
                 if ( _boundProp != null )
                 {
@@ -116,8 +124,8 @@ namespace Frontier.DebugTools.StageEditor
         private void BuildParamDescriptors()
         {
             _params.Clear();
-            // Prefab: 既存プロップのプレハブ変更は非対応のため読み取り専用
-            _params.Add( new ParamDescriptor { Name = "Prefab",    Min = int.MaxValue,             Max = int.MinValue,            Getter = () => _refParams.StagePropPrefab,    Setter = v => { } } );
+            // Prefab: 変更可能。値変更時に RebuildBoundProp() でビジュアルを差し替える
+            _params.Add( new ParamDescriptor { Name = "Prefab",    Min = 0,                        Max = (int)STAGE_PROPS.NUM - 1, Getter = () => _refParams.StagePropPrefab,    Setter = v => _refParams.StagePropPrefab    = v } );
             _params.Add( new ParamDescriptor { Name = "Size",      Min = Constants.GRID_SIZE_MIN,  Max = Constants.GRID_SIZE_MAX, Getter = () => _refParams.StagePropSize,      Setter = v => _refParams.StagePropSize      = v } );
             // TileIndex: カーソル位置から自動設定されるため読み取り専用
             _params.Add( new ParamDescriptor { Name = "TileIndex", Min = int.MaxValue,             Max = int.MinValue,            Getter = () => _refParams.StagePropTileIndex, Setter = v => { } } );
@@ -176,7 +184,8 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptSub3( context ) ) return false;
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() - 1, p.Min, p.Max ) );
-            if ( p.Name == "Size" ) ApplySizeToBoundProp();
+            if ( p.Name == "Size"   ) ApplySizeToBoundProp();
+            if ( p.Name == "Prefab" ) RebuildBoundProp();
             return true;
         }
 
@@ -185,8 +194,39 @@ namespace Frontier.DebugTools.StageEditor
             if ( !base.AcceptSub4( context ) ) return false;
             var p = _params[_refParams.SelectedStagePropParamIndex];
             p.Setter( Math.Clamp( p.Getter() + 1, p.Min, p.Max ) );
-            if ( p.Name == "Size" ) ApplySizeToBoundProp();
+            if ( p.Name == "Size"   ) ApplySizeToBoundProp();
+            if ( p.Name == "Prefab" ) RebuildBoundProp();
             return true;
+        }
+
+        /// <summary>
+        /// 選択中プレハブに合わせて、編集中プロップのビジュアル（モデル）を作り直します。
+        /// 旧モデルを破棄し、新プレハブから生成して共通マップ(GridIndexToStageProp)も差し替えます。
+        /// </summary>
+        private void RebuildBoundProp()
+        {
+            if ( _prefabReg?.StagePropPrefabs == null ) return;
+            int idx = _refParams.StagePropPrefab;
+            if ( idx < 0 || _prefabReg.StagePropPrefabs.Length <= idx ) return;
+            if ( idx == _builtPrefab ) return;   // 変化なし
+
+            int gridIndex = _refParams.EditingStagePropGridIndex;
+            if ( _boundProp != null ) GameObject.Destroy( _boundProp.gameObject );
+
+            _boundProp = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageProp>(
+                _prefabReg.StagePropPrefabs[idx], true, true, "[StagePropEditing]" );
+            _builtPrefab = idx;
+            if ( _boundProp == null ) return;
+
+            // 共通マップを新しいビジュアルへ差し替え（カーソル/削除/Confirm 後処理が参照する）
+            _refParams.GridIndexToStageProp[gridIndex] = _boundProp;
+
+            // 現在のサイズ・位置・向きを反映
+            _boundProp.SetSize( _refParams.StagePropSize );
+            var center = GridPositionUtility.CalcSizeAwareCenter(
+                _refParams.StagePropTileIndex, _refParams.StagePropSize, _stageDataProvider );
+            _boundProp.SetPosition( center );
+            _boundProp.SetRotation( ( Direction ) _refParams.StagePropDirection );
         }
 
         private void ApplySizeToBoundProp()
