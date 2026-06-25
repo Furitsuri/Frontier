@@ -2,7 +2,13 @@
 
 namespace Frontier.Registries
 {
-    public class PrefabRegistry : MonoBehaviour
+    /// <summary>
+    /// プレハブ参照を一元管理するレジストリ。全シーンで同一の内容を共有するため
+    /// MonoBehaviour ではなく ScriptableObject（単一アセット）として保持します。
+    /// DI へは各 installer が Resources の "PrefabRegistry" アセットをバインドします。
+    /// </summary>
+    [CreateAssetMenu( fileName = "PrefabRegistry", menuName = "Frontier/PrefabRegistry" )]
+    public class PrefabRegistry : ScriptableObject
     {
         [Header( "味方キャラクター" )]
         [SerializeField] private GameObject[] _playerGameObjects;

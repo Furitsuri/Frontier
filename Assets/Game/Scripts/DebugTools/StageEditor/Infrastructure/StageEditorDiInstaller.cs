@@ -18,7 +18,8 @@ namespace Frontier.DebugTools.StageEditor
 
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);
 
-            Container.Bind<PrefabRegistry>().FromComponentInHierarchy().AsCached();
+            // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する
+            Container.Bind<PrefabRegistry>().FromInstance( UnityEngine.Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageEditorController>().FromComponentInHierarchy().AsCached();
             Container.Bind<IUiSystem>().To<EditorUiSystem>().FromComponentInHierarchy().AsCached();
