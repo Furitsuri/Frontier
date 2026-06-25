@@ -15,6 +15,7 @@ namespace Frontier.StateMachine
     {
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private UserDomain _userDomain                 = null;
+        [Inject] private CharacterFactory _characterFactory     = null;
 
         private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot  = null;
@@ -299,6 +300,9 @@ namespace Frontier.StateMachine
         /// </summary>
         private void SetupDeploymentCandidates()
         {
+            // 雇用を一切行わずに戦闘へ来たケースの保険：味方が1体もいなければデフォルトキャラを割り当てる
+            EnsureFallbackMemberIfEmpty();
+
             _deploymentCandidates.Clear();
 
             foreach( var player in _userDomain.Members )
@@ -313,6 +317,27 @@ namespace Frontier.StateMachine
                 candidate.Init( player, candidateSnapshot );
                 _deploymentCandidates.Add( candidate );
             }
+        }
+
+        /// <summary>
+        /// 雇用済みの味方が1体もいない場合、デフォルトステータスのプレイヤーを1体生成して
+        /// UserDomain に登録します（雇用せず戦闘へ遷移したケースの保険）。
+        /// ステータスは <see cref="DefaultCharacterStatus"/> を参照し、装備スキルは持ちません。
+        /// </summary>
+        private void EnsureFallbackMemberIfEmpty()
+        {
+            if( 0 < _userDomain.Members.Count ) { return; }
+
+            var deployData = DefaultCharacterStatus.CreatePlayerDeployData();
+            Player fallback = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, deployData.Prefab, deployData ) as Player;
+            if( null == fallback )
+            {
+                Debug.LogError( "[Deployment] デフォルトキャラクターの生成に失敗しました。" );
+                return;
+            }
+
+            _userDomain.RecruitMember( fallback );
+            Debug.Log( "[Deployment] 雇用済みの味方がいないため、デフォルトキャラクターを1体アサインしました。" );
         }
 
         /// <summary>
