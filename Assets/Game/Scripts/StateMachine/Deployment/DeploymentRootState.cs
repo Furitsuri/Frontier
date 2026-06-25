@@ -15,7 +15,9 @@ namespace Frontier.StateMachine
     {
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private UserDomain _userDomain                 = null;
-        [Inject] private CharacterFactory _characterFactory     = null;
+#if UNITY_EDITOR
+        [Inject] private CharacterFactory _characterFactory     = null;   // エディタ限定の保険(EnsureFallbackMemberIfEmpty)でのみ使用
+#endif
 
         private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot  = null;
@@ -320,14 +322,17 @@ namespace Frontier.StateMachine
         }
 
         /// <summary>
-        /// 雇用済みの味方が1体もいない場合、デフォルトステータスのプレイヤーを1体生成して
-        /// UserDomain に登録します（雇用せず戦闘へ遷移したケースの保険）。
-        /// ステータスは <see cref="DefaultCharacterStatus"/> を参照し、装備スキルは持ちません。
+        /// 雇用済みの味方が1体もいない場合の処理。
+        /// 開発時（エディタ実行）のみ、デフォルトステータスのプレイヤーを1体生成して進行可能にする保険を適用します。
+        /// ビルド（製品）では保険を適用せず、不正状態としてエラーログで顕在化させます。
         /// </summary>
         private void EnsureFallbackMemberIfEmpty()
         {
             if( 0 < _userDomain.Members.Count ) { return; }
 
+#if UNITY_EDITOR
+            // 開発時(エディタ)専用の保険：味方ゼロでもデフォルトキャラを1体アサインして進行可能にする。
+            // ステータスは DefaultCharacterStatus を参照し、装備スキルは持たない。
             var deployData = DefaultCharacterStatus.CreatePlayerDeployData();
             Player fallback = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, deployData.Prefab, deployData ) as Player;
             if( null == fallback )
@@ -337,7 +342,11 @@ namespace Frontier.StateMachine
             }
 
             _userDomain.RecruitMember( fallback );
-            Debug.Log( "[Deployment] 雇用済みの味方がいないため、デフォルトキャラクターを1体アサインしました。" );
+            Debug.Log( "[Deployment] (Editor限定の保険) 雇用済みの味方がいないため、デフォルトキャラクターを1体アサインしました。" );
+#else
+            // 製品ビルドでは保険を使わない。味方ゼロでの戦闘遷移は不正な状態のため、明示的にエラーを出して顕在化させる。
+            Debug.LogError( "[Deployment] 味方が1体も存在しない状態で戦闘へ遷移しました（雇用フローを確認してください）。" );
+#endif
         }
 
         /// <summary>

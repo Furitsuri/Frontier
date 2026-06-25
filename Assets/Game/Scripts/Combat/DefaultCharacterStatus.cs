@@ -1,4 +1,5 @@
-﻿using Frontier.Combat;
+﻿#if UNITY_EDITOR
+using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Loaders;
 using static Constants;
@@ -55,3 +56,4 @@ namespace Frontier
         }
     }
 }
+#endif // UNITY_EDITOR
