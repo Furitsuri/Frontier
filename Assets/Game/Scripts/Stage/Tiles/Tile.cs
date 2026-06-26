@@ -177,13 +177,13 @@ namespace Frontier.Stage
                 existing.ClearDraw();
                 existing.Remove();
                 _tileMeshes[ownerKey] = tileMesh;
-                tileMesh.DrawTileMesh( _tileStaticData.CharaStandPos, GetTileMeshDrawYOffset( idx ), in color );
+                tileMesh.DrawTileMesh( _tileStaticData.CursorStandPos, GetTileMeshDrawYOffset( idx ), in color );
             }
             else
             {
                 int slotIndex = _tileMeshes.Count;
                 _tileMeshes[ownerKey] = tileMesh;
-                tileMesh.DrawTileMesh( _tileStaticData.CharaStandPos, GetTileMeshDrawYOffset( slotIndex ), in color );
+                tileMesh.DrawTileMesh( _tileStaticData.CursorStandPos, GetTileMeshDrawYOffset( slotIndex ), in color );
             }
             tileMesh.MapType = mapType;
         }
