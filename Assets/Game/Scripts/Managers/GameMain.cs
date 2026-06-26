@@ -88,6 +88,7 @@ namespace Frontier
 
             // 入力関連の初期化
             _inputFcd.Init();
+
             // チュートリアル関連の初期化
             _tutorialFcd.Init();
 
@@ -139,6 +140,14 @@ namespace Frontier
 
             // 初期化完了。フィールドシーンから遷移してきた場合の暗転を解除する
             LoadingScreenController.Instance?.Hide();
+
+            // フィールドから遷移してきた場合、遷移開始〜完了(この暗転解除)までの所要時間をログ出力する
+            if( Frontier.Field.FieldTransitionContext.TransitionStartTime >= 0.0 )
+            {
+                double elapsed = Time.realtimeSinceStartupAsDouble - Frontier.Field.FieldTransitionContext.TransitionStartTime;
+                Debug.Log( $"[SceneTransition] Field→GameMain(Battle) 遷移所要時間: {elapsed:F3} 秒" );
+                Frontier.Field.FieldTransitionContext.ClearTransitionStartTime();
+            }
 
             enabled = true; // 読込完了したため、Update()などを有効に
         }

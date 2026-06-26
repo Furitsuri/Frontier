@@ -242,24 +242,31 @@ namespace Frontier.Field
         /// </summary>
         private void TransitionToBattleScene()
         {
+            // 遷移開始時刻を記録（GameMain 側で遷移完了時に所要時間をログ出力する）
+            FieldTransitionContext.MarkBattleTransitionStart();
+
             var loadingScreen = LoadingScreenController.EnsureInstance();
             if ( loadingScreen != null )
             {
-                loadingScreen.Show( onComplete: () => StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName ) ) );
+                // 暗転フェードと非同期ロードを「並行」させ、両方完了後にシーンを活性化する。
+                // （allowSceneActivation=false のため暗転中の裏読込でチラつきは起きない。フェード時間を遷移時間から実質ゼロにする狙い）
+                bool fadeDone = false;
+                loadingScreen.Show( onComplete: () => fadeDone = true );
+                StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName, () => fadeDone ) );
             }
             else
             {
-                StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName ) );
+                StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName, () => true ) );
             }
         }
 
-        private IEnumerator LoadSceneAsyncRoutine( string sceneName )
+        private IEnumerator LoadSceneAsyncRoutine( string sceneName, System.Func<bool> isFadeComplete )
         {
             var op = SceneManager.LoadSceneAsync( sceneName );
             op.allowSceneActivation = false;
 
-            // 読込完了後もアクティベートを保留し、暗転中にシーンを切り替える
-            while ( op.progress < 0.9f )
+            // 「ロード完了(0.9)」かつ「暗転完了」の両方が揃ってから活性化する
+            while ( op.progress < 0.9f || !isFadeComplete() )
             {
                 yield return null;
             }
