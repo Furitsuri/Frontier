@@ -15070,6 +15070,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _stageNames:
+  - NewStage
   - test_stage
   _playerParamFilePath: []
   _enemyParamFilePath:

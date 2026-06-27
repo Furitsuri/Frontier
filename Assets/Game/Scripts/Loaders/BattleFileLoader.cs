@@ -17,9 +17,6 @@ namespace Frontier.Loaders
         [Header( "各味方キャラクターのパラメータ参照先" )]
         [SerializeField] public string[] PlayerParamFilePath;
 
-        [Header( "各第三軍勢キャラクターのパラメータ参照先" )]
-        [SerializeField] public string[] OtherParamFilePath;
-
         [Header( "近接攻撃時のカメラパラメータの参照先" )]
         [SerializeField] public string CloseAtkCameraParamFilePath;
 
@@ -87,17 +84,19 @@ namespace Frontier.Loaders
             List<string>[] ParamFilePaths = new List<string>[]
             {
                 new List<string>(PlayerParamFilePath),
-                new List<string>(_filePathReg.EnemyParamFilePath),
-                new List<string>(OtherParamFilePath),
+                new List<string> { _filePathReg.GetEnemyParamFilePath( stageIndex ) },
+                new List<string> { _filePathReg.GetOtherParamFilePath( stageIndex ) },
             };
 
             // プレイヤーは既に生成されているためスキップ
             for( int i = ( int ) CHARACTER_TAG.PLAYER + 1; i < ( int ) CHARACTER_TAG.NUM; ++i )
             {
                 if( ParamFilePaths[i].Count <= 0 ) continue;
+                // そのステージに該当陣営のキャラクターが配置されていない場合はスキップ
+                if( !File.Exists( ParamFilePaths[i][0] ) ) continue;
 
                 // JSONファイルの読み込み
-                string json = File.ReadAllText( ParamFilePaths[i][stageIndex] );
+                string json = File.ReadAllText( ParamFilePaths[i][0] );
                 // JSONデータのデシリアライズ
                 var dataContainer = JsonUtility.FromJson<CharacterStatusContainer>( json );
                 if( dataContainer == null ) { return; }

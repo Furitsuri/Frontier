@@ -16,7 +16,12 @@ namespace Frontier.DebugTools.StageEditor
     /// </remarks>
     static public class StageDataSerializer
     {
-        private static string FolderPath => Path.Combine( Application.persistentDataPath, "StageData" );
+        private static string GetFilePath( string fileName )
+        {
+            return Path.Combine(
+                "Assets", "Resources", "StageData",
+                $"{fileName}.json" );
+        }
 
         static public bool Save( StageData data, string fileName )
         {
@@ -24,11 +29,12 @@ namespace Frontier.DebugTools.StageEditor
             {
                 data.SetupSaveData(); // 保存用データのセットアップ
 
-                Directory.CreateDirectory( FolderPath );
+                string path = GetFilePath( fileName );
+                Directory.CreateDirectory( Path.GetDirectoryName( path ) );
                 string json = JsonUtility.ToJson( data, true );
-                File.WriteAllText( Path.Combine( FolderPath, $"{fileName}.json" ), json );
+                File.WriteAllText( path, json );
 
-                Debug.Log( JsonUtility.ToJson( data, true ) );
+                Debug.Log( json );
 
                 return true; // 成功
             }
@@ -42,7 +48,7 @@ namespace Frontier.DebugTools.StageEditor
 
         static public StageData Load( string fileName )
         {
-            string path = Path.Combine( FolderPath, $"{fileName}.json" );
+            string path = GetFilePath( fileName );
             if( !File.Exists( path ) ) return null;
             string json = File.ReadAllText( path );
             return JsonUtility.FromJson<StageData>( json );

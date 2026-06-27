@@ -1,0 +1,507 @@
+{
+    "_maxDeployableUnits": 5,
+    "_tileRowNum": 10,
+    "_tileColNum": 10,
+    "_tileSaveDatas": [
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": true,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.0,
+            "TileType": 0
+        }
+    ]
+}
