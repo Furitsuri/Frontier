@@ -16,7 +16,7 @@ namespace Frontier.Field
     /// </summary>
     public class FieldSceneController : MonoBehaviour
     {
-        private const string BattleSceneName  = "GameMain";
+        private const string BattleSceneName  = "BattleScene";
         private const string RecruitSceneName = "RecruitScene";
 
         [Header( "ノードのプレハブ" )]

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Overlays;
 using UnityEngine;
@@ -20,7 +20,7 @@ public class TitleInfo : MonoBehaviour
     {
         overlay.SetActive(false);
         // mainListener.enabled = true;
-        SceneManager.LoadScene("GameMain");
+        SceneManager.LoadScene("BattleScene");
         Time.timeScale = 1f;
     }
 }
