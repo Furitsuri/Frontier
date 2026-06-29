@@ -1,7 +1,6 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
 using Frontier.Field;
-using Frontier.FormTroop;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -15,7 +14,6 @@ namespace Frontier
         [SerializeField] private GameObject _skillCtrlObject;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
-        [Inject] private UserDomain _userDomain                     = null;
 
         private StartMode _startMode = StartMode.NEW_GAME;
         private SubRoutineController _current;
@@ -27,14 +25,6 @@ namespace Frontier
             var battle = _hierarchyBld.InstantiateWithDiContainer<BattleRoutineController>( true );
             battle.SetStageIndex( stageIndex );
             SwitchTo( battle );
-        }
-
-        public void StartRecruit()
-        {
-            // TODO : 仮実装
-            _userDomain.AddMoney( 1000 );
-
-            SwitchTo( _hierarchyBld.InstantiateWithDiContainer<FormTroopRoutineController>( false ) );
         }
 
         private void SwitchTo( SubRoutineController routine )
@@ -60,8 +50,7 @@ namespace Frontier
             }
             else
             {
-                StartRecruit();
-                // StartBattle();
+                StartBattle();
             }
         }
 
@@ -74,20 +63,9 @@ namespace Frontier
         {
             if( _current.LateUpdate() )
             {
-                if( _current is BattleRoutineController )
+                if( _current is BattleRoutineController && FieldTransitionContext.IsFromField )
                 {
-                    if ( FieldTransitionContext.IsFromField )
-                    {
-                        SceneManager.LoadScene( FieldSceneName );
-                    }
-                    else
-                    {
-                        StartRecruit();
-                    }
-                }
-                else if( _current is FormTroopRoutineController )
-                {
-                    StartBattle();
+                    SceneManager.LoadScene( FieldSceneName );
                 }
             }
         }

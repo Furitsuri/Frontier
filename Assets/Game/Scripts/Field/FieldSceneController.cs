@@ -16,7 +16,8 @@ namespace Frontier.Field
     /// </summary>
     public class FieldSceneController : MonoBehaviour
     {
-        private const string BattleSceneName = "GameMain";
+        private const string BattleSceneName  = "GameMain";
+        private const string RecruitSceneName = "RecruitScene";
 
         [Header( "ノードのプレハブ" )]
         [SerializeField] private FieldNodeView _nodePrefab = null;
@@ -66,10 +67,10 @@ namespace Frontier.Field
             // 戦闘シーンからの遷移時に暗転したままになっている場合に解除する
             LoadingScreenController.Instance?.Hide();
 
-            // 戦闘から帰還した場合はクリア済みノードを反映してから進行状態を復元
+            // 戦闘・雇用などから帰還した場合はクリア済みノードを反映してから進行状態を復元
             if ( FieldTransitionContext.IsFromField )
             {
-                RestoreAfterBattle();
+                RestoreAfterFieldExit();
             }
             else
             {
@@ -115,9 +116,9 @@ namespace Frontier.Field
             RefreshReachability();
         }
 
-        // ── 戦闘帰還 ────────────────────────────────────────────────────────
+        // ── 戦闘・雇用帰還 ────────────────────────────────────────────────────
 
-        private void RestoreAfterBattle()
+        private void RestoreAfterFieldExit()
         {
             int clearedNodeId = FieldTransitionContext.ClearedNodeId;
             FieldTransitionContext.Clear();
@@ -217,13 +218,13 @@ namespace Frontier.Field
             {
                 case FieldNodeType.Battle:
                 case FieldNodeType.Boss:
-                    FieldTransitionContext.SetupBattleTransition( node.StageIndex, node.Id );
-                    TransitionToBattleScene();
+                    FieldTransitionContext.SetupFieldExitTransition( node.Id, node.StageIndex );
+                    TransitionToScene( BattleSceneName );
                     break;
 
                 case FieldNodeType.Recruit:
-                    // TODO: 雇用シーンが分離されたら遷移を実装
-                    Debug.Log( "[FieldSceneController] Recruit は未実装です。" );
+                    FieldTransitionContext.SetupFieldExitTransition( node.Id );
+                    TransitionToScene( RecruitSceneName );
                     break;
 
                 case FieldNodeType.Rest:
@@ -237,12 +238,12 @@ namespace Frontier.Field
         }
 
         /// <summary>
-        /// ローディング画面を表示してからバトルシーンへ遷移します。
+        /// ローディング画面を表示してから指定シーンへ遷移します。
         /// 暗転が完了するまで旧シーンを破棄しないことで、初期化前のGame画面が一瞬映る問題を防ぎます。
         /// </summary>
-        private void TransitionToBattleScene()
+        private void TransitionToScene( string sceneName )
         {
-            // 遷移開始時刻を記録（GameMain 側で遷移完了時に所要時間をログ出力する）
+            // 遷移開始時刻を記録（遷移先シーン側で遷移完了時に所要時間をログ出力する）
             FieldTransitionContext.MarkBattleTransitionStart();
 
             var loadingScreen = LoadingScreenController.EnsureInstance();
@@ -252,11 +253,11 @@ namespace Frontier.Field
                 // （allowSceneActivation=false のため暗転中の裏読込でチラつきは起きない。フェード時間を遷移時間から実質ゼロにする狙い）
                 bool fadeDone = false;
                 loadingScreen.Show( onComplete: () => fadeDone = true );
-                StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName, () => fadeDone ) );
+                StartCoroutine( LoadSceneAsyncRoutine( sceneName, () => fadeDone ) );
             }
             else
             {
-                StartCoroutine( LoadSceneAsyncRoutine( BattleSceneName, () => true ) );
+                StartCoroutine( LoadSceneAsyncRoutine( sceneName, () => true ) );
             }
         }
 

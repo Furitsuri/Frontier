@@ -26,6 +26,7 @@ namespace Frontier.FormTroop
         {
             base.Init();
 
+            _recruitmentUI.gameObject.SetActive( true );
             _recruitmentUI.Init();
         }
 
@@ -40,6 +41,7 @@ namespace Frontier.FormTroop
             base.Exit();
 
             _recruitmentUI.Exit();
+            _recruitmentUI.gameObject.SetActive( false );
         }
 
         public override void SetFocusCharacters( int focusCharaIndex )

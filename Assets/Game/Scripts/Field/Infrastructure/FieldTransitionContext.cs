@@ -35,8 +35,8 @@ namespace Frontier.Field
         /// <summary>クリアしたノードのId。GameMain 終了後に FieldScene が読み取る。</summary>
         public static int ClearedNodeId { get; private set; } = -1;
 
-        /// <summary>フィールドから戦闘シーンへ遷移する前に呼ぶ。</summary>
-        public static void SetupBattleTransition( int stageIndex, int nodeId )
+        /// <summary>フィールドから戦闘・雇用などの別シーンへ遷移する前に呼ぶ。</summary>
+        public static void SetupFieldExitTransition( int nodeId, int stageIndex = 0 )
         {
             IsFromField   = true;
             StageIndex    = stageIndex;
