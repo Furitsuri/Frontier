@@ -27,6 +27,12 @@ public class UserDomain
         Members.Add( member );
     }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void Debug_SetMoney( int value )       => Money = value;
+    public void Debug_SetStageLevel( int value )  => StageLevel = value;
+    public void Debug_ClearMembers()              => Members.Clear();
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+
     /*
     public IReadOnlyList<Unit> Units => _units;
 

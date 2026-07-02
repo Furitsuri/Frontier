@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Zenject;
 
 namespace Frontier.Field
 {
     /// <summary>
-    /// フィールドシーンのエントリポイント。
+    /// フィールドのロジックを担当します。
     /// FieldData をロードしてノードを配置し、プレイヤーの選択を管理します。
+    /// シーンのエントリポイントは FieldMain が担当します。
     /// </summary>
-    public class FieldSceneController : MonoBehaviour
+    public class FieldSceneController : FocusRoutineBase
     {
         private const string BattleSceneName  = "BattleScene";
         private const string RecruitSceneName = "RecruitScene";
@@ -38,29 +38,11 @@ namespace Frontier.Field
         [SerializeField] private bool                  _useRandomGeneration = true;
         [SerializeField] private FieldGenerationConfig  _generationConfig    = null;
 
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-
         private FieldData                      _fieldData    = null;
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
         private Dictionary<int, Vector3>       _nodePositions = new Dictionary<int, Vector3>();
-        private InputGuidePresenter            _inputGuideView = null;
 
         private FieldProgress Progress => GameSession.Instance?.FieldProgress;
-
-        private void Awake()
-        {
-            // 起動シーンに依らずローディング画面の存在を保証する
-            LoadingScreenController.EnsureInstance();
-
-            LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
-
-            // InputFacade はシーンを跨いで永続化されるシングルトン。
-            // 入力ガイドUIはこのシーン(FieldScene)の IUiSystem に紐づくため渡し直す
-            // Setup() は内部で入力コードをクリアするため、他オブジェクトの Start() で登録される前に
-            // 必ず終えておく必要がある(UnityはAwake()が全オブジェクトで完了してからStart()が呼ばれるため、ここで呼ぶ)
-            InputFacade.Instance.Setup( _inputGuideView );
-            InputFacade.Instance.Init();
-        }
 
         private void Start()
         {

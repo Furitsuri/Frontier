@@ -15,6 +15,10 @@ namespace Frontier.FormTroop
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private InputFacade _inputFcd              = null;
         [Inject] private TutorialFacade _tutorialFcd        = null;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        [Inject] private UserDomain _userDomain             = null;
+        [Inject] private CharacterFactory _characterFactory = null;
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
         private InputGuidePresenter _inputGuideView;
         private GeneralFileLoader _generalFileLoader;
@@ -62,6 +66,10 @@ namespace Frontier.FormTroop
         private IEnumerator InitGame()
         {
             enabled = false;    // 読込処理完了までUpdate()などを無効にする
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain, _characterFactory );
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
             _tutorialFcd.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
 

@@ -1,0 +1,21 @@
+{
+  "money": 9999,
+  "stageLevel": 0,
+  "overrideMembers": true,
+  "members": [
+    {
+      "prefabIndex": 0,
+      "name": "Debug Knight",
+      "level": 1,
+      "maxHP": 30,
+      "atk": 10,
+      "def": 5,
+      "moveRange": 4,
+      "jumpForce": 2,
+      "attackRange": 1,
+      "maxActionGauge": 100,
+      "recoveryActionGauge": 10,
+      "equipSkills": [-1, -1, -1, -1]
+    }
+  ]
+}
