@@ -7,10 +7,10 @@
             "Size": 2
         },
         {
-            "Prefab": 0,
+            "Prefab": 1,
             "TileIndex": 21,
             "Direction": 2,
-            "Size": 2
+            "Size": 1
         }
     ]
 }

@@ -1,70 +1,76 @@
 {
     "CharacterParams": [
         {
-            "CharacterTag": 0,
-            "CharacterIndex": 1,
-            "MaxHP": 14,
-            "Atk": 8,
-            "Def": 5,
-            "MoveRange": 5,
-            "JumpForce": 3,
-            "AtkRange": 1,
-            "ActGaugeMax": 2,
-            "ActRecovery": 1,
+            "status": {
+                "characterTag": 0,
+                "characterIndex": 1,
+                "MaxHP": 14,
+                "Atk": 8,
+                "Def": 5,
+                "moveRange": 5,
+                "jumpForce": 3,
+                "attackRange": 1,
+                "maxActionGauge": 2,
+                "recoveryActionGauge": 1,
+                "PrefabIndex": 0,
+                "EquipSkills": [
+                    0,
+                    -1,
+                    -1,
+                    -1
+                ]
+            },
             "InitGridIndex": 14,
             "InitDir": 0,
-            "Prefab": 0,
-            "ThinkType": -1,
-            "Skills": [
-                0,
-                -1,
-                -1,
-                -1
-            ]
+            "ThinkType": -1
         },
         {
-            "CharacterTag": 0,
-            "CharacterIndex": 2,
-            "MaxHP": 12,
-            "Atk": 6,
-            "Def": 3,
-            "MoveRange": 4,
-            "JumpForce": 4,
-            "AtkRange": 3,
-            "ActGaugeMax": 3,
-            "ActRecovery": 2,
+            "status": {
+                "characterTag": 0,
+                "characterIndex": 2,
+                "MaxHP": 12,
+                "Atk": 6,
+                "Def": 3,
+                "moveRange": 4,
+                "jumpForce": 4,
+                "attackRange": 3,
+                "maxActionGauge": 3,
+                "recoveryActionGauge": 2,
+                "PrefabIndex": 1,
+                "EquipSkills": [
+                    3,
+                    -1,
+                    -1,
+                    -1
+                ]
+            },
             "InitGridIndex": 3,
             "InitDir": 0,
-            "Prefab": 1,
-            "ThinkType": -1,
-            "Skills": [
-                3,
-                -1,
-                -1,
-                -1
-            ]
+            "ThinkType": -1
         },
         {
-            "CharacterTag": 0,
-            "CharacterIndex": 3,
-            "MaxHP": 16,
-            "Atk": 7,
-            "Def": 6,
-            "MoveRange": 2,
-            "JumpForce": 2,
-            "AtkRange": 1,
-            "ActGaugeMax": 3,
-            "ActRecovery": 1,
+            "status": {
+                "characterTag": 0,
+                "characterIndex": 3,
+                "MaxHP": 16,
+                "Atk": 7,
+                "Def": 6,
+                "moveRange": 2,
+                "jumpForce": 2,
+                "attackRange": 1,
+                "maxActionGauge": 3,
+                "recoveryActionGauge": 1,
+                "PrefabIndex": 0,
+                "EquipSkills": [
+                    1,
+                    2,
+                    -1,
+                    -1
+                ]
+            },
             "InitGridIndex": 5,
             "InitDir": 0,
-            "Prefab": 0,
-            "ThinkType": -1,
-            "Skills": [
-                1,
-                2,
-                -1,
-                -1
-            ]
+            "ThinkType": -1
         }
     ]
 }

@@ -1,70 +1,100 @@
 {
     "CharacterStatuses": [
-        {
-            "CharacterTag": 1,
-            "CharacterIndex": 1,
-            "MaxHP": 8,
-            "Atk": 7,
-            "Def": 3,
-            "MoveRange": 2,
-            "JumpForce": 2,
-            "AtkRange": 1,
-            "ActGaugeMax": 0,
-            "ActRecovery": 0,
-            "InitGridIndex": 53,
-            "InitDir": 2,
-            "Prefab": 0,
+    	{
+            "status": {
+                "characterTag": 1,
+                "characterIndex": 2,
+                "PrefabIndex": 0,
+                "MaxHP": 8,
+                "Atk": 7,
+                "Def": 3,
+                "moveRange": 2,
+                "jumpForce": 2,
+                "attackRange": 1,
+                "maxActionGauge": 0,
+                "recoveryActionGauge": 0,
+                "EquipSkills": [
+                    -1,
+                    -1,
+                    -1,
+                    -1
+                ]
+            },
             "ThinkType": 1,
-            "Skills": [
-                -1,
-                -1,
-                -1,
-                -1
-            ]
+            "InitGridIndex": 52,
+            "InitDir": 2
         },
         {
-            "CharacterTag": 1,
-            "CharacterIndex": 2,
-            "MaxHP": 8,
-            "Atk": 7,
-            "Def": 3,
-            "MoveRange": 2,
-            "JumpForce": 2,
-            "AtkRange": 1,
-            "ActGaugeMax": 0,
-            "ActRecovery": 0,
+            "status": {
+                "characterTag": 1,
+                "characterIndex": 3,
+                "PrefabIndex": 0,
+                "MaxHP": 8,
+                "Atk": 7,
+                "Def": 3,
+                "moveRange": 2,
+                "jumpForce": 2,
+                "attackRange": 1,
+                "maxActionGauge": 0,
+                "recoveryActionGauge": 0,
+                "EquipSkills": [
+                    -1,
+                    -1,
+                    -1,
+                    -1
+                ]
+            },
+            "ThinkType": 1,
+            "InitGridIndex": 54,
+            "InitDir": 2
+        },
+        {
+            "status": {
+                "characterTag": 1,
+                "characterIndex": 4,
+                "PrefabIndex": 0,
+                "MaxHP": 8,
+                "Atk": 7,
+                "Def": 3,
+                "moveRange": 2,
+                "jumpForce": 2,
+                "attackRange": 1,
+                "maxActionGauge": 0,
+                "recoveryActionGauge": 0,
+                "EquipSkills": [
+                    -1,
+                    -1,
+                    -1,
+                    -1
+                ]
+            },
+            "ThinkType": 1,
             "InitGridIndex": 55,
-            "InitDir": 2,
-            "Prefab": 0,
-            "ThinkType": 1,
-            "Skills": [
-                -1,
-                -1,
-                -1,
-                -1
-            ]
+            "InitDir": 2
         },
         {
-            "CharacterTag": 1,
-            "CharacterIndex": 3,
-            "MaxHP": 10,
-            "Atk": 6,
-            "Def": 5,
-            "MoveRange": 3,
-            "JumpForce": 3,
-            "AtkRange": 1,
-            "ActGaugeMax": 2,
-            "ActRecovery": 1,
-            "InitGridIndex": 64,
-            "InitDir": 2,
-            "Prefab": 1,
+            "status": {
+                "characterTag": 1,
+                "characterIndex": 5,
+                "PrefabIndex": 1,
+                "MaxHP": 10,
+                "Atk": 6,
+                "Def": 5,
+                "moveRange": 3,
+                "jumpForce": 3,
+                "attackRange": 1,
+                "maxActionGauge": 2,
+                "recoveryActionGauge": 1,
+                "EquipSkills": [
+                    1,
+                    -1,
+                    -1,
+                    -1
+                ]
+            },
             "ThinkType": 1,
-            "Skills": [
-                1,
-                -1,
-                -1,
-                -1
-            ]
+            "InitGridIndex": 64,
+            "InitDir": 2
         }
     ]
 }
