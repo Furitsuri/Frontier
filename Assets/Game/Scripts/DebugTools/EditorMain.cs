@@ -8,7 +8,9 @@ namespace Frontier.DebugTools
 {
     public class EditorMain : FocusRoutineController
     {
-        private HierarchyBuilderBase _hierarchyBld;
+        // 基底クラス(FocusRoutineController)の InputFacade / TutorialFacade セットアップは
+        // このシーン(StageEditorScene)では不要なため、Awake() をあえてオーバーライドせず隠蔽する
+        private new HierarchyBuilderBase _hierarchyBld;
 
         [Inject]
         public void Construct( HierarchyBuilderBase hierarchyBld )
@@ -16,8 +18,8 @@ namespace Frontier.DebugTools
             _hierarchyBld = hierarchyBld;
         }
 
-        void Awake()
-        {   
+        new void Awake()
+        {
             if (null == _hierarchyBld)
             {
                 LogHelper.LogError("HierarchyBuilder is null. Please check the DI container setup.");

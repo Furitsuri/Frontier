@@ -22,10 +22,7 @@ namespace Frontier
         [SerializeField] private float stageStartDelay = 2f;
 
         [Inject] private DiContainer _diContainer           = null;
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private InputFacade _inputFcd              = null;
         [Inject] private SequenceFacade _sequenceFcd        = null;
-        [Inject] private TutorialFacade _tutorialFcd        = null;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         [Inject] private UserDomain _userDomain             = null;
         [Inject] private CharacterFactory _characterFactory = null;
@@ -33,7 +30,6 @@ namespace Frontier
 
         private GameObject _stageImage;
         private GeneralFileLoader _generalFileLoader;
-        private InputGuidePresenter _inputGuideView;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
         private DebugEditorMonoDriver _debugEditorMonoDrv;
@@ -43,12 +39,9 @@ namespace Frontier
 
         protected override int GetRequiredRoutineCount() => (int)FocusRoutinePriority.NUM;
 
-        void Awake()
+        protected override void Awake()
         {
             instance = this;
-
-            // 起動シーンに依らずローディング画面の存在を保証する
-            LoadingScreenController.EnsureInstance();
 
             if( transform.parent != null )
             {
@@ -69,13 +62,9 @@ namespace Frontier
             LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
 #endif // UNITY_EDITOR
 
-            LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
+            base.Awake();   // InputFacade / TutorialFacade の共通セットアップ
 
-            // InputFacade はシーンを跨いで永続化されるシングルトン。
-            // 入力ガイドUIはこのシーン(GameMain)の IUiSystem に紐づくため、シーンに入る度に渡し直す
-            _inputFcd.Setup( _inputGuideView );
             _sequenceFcd.Setup( GetFocusRoutine( FocusRoutinePriority.SEQUENCE ) );
-            _tutorialFcd.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
         }
 
         void OnDestroy()
@@ -89,12 +78,6 @@ namespace Frontier
             StartCoroutine( Bootstrap() );
 
             _generalFileLoader.LoadSkillsData();
-
-            // 入力関連の初期化
-            _inputFcd.Init();
-
-            // チュートリアル関連の初期化
-            _tutorialFcd.Init();
 
             StartCoroutine( InitGame() );
         }
@@ -141,21 +124,7 @@ namespace Frontier
                 Invoke( "StageLevelImage", stageStartDelay );
             }
 
-            var tutorialLoadTask = _tutorialFcd.LoadTutorialData();   // チュートリアルデータの読込待ち
-            yield return new WaitUntil( () => tutorialLoadTask.IsCompleted );
-
-            base.Init();
-
-            // 初期化完了。フィールドシーンから遷移してきた場合の暗転を解除する
-            LoadingScreenController.Instance?.Hide();
-
-            // フィールドから遷移してきた場合、遷移開始〜完了(この暗転解除)までの所要時間をログ出力する
-            if( Frontier.Field.FieldTransitionContext.TransitionStartTime >= 0.0 )
-            {
-                double elapsed = Time.realtimeSinceStartupAsDouble - Frontier.Field.FieldTransitionContext.TransitionStartTime;
-                Debug.Log( $"[SceneTransition] Field→GameMain(Battle) 遷移所要時間: {elapsed:F3} 秒" );
-                Frontier.Field.FieldTransitionContext.ClearTransitionStartTime();
-            }
+            yield return StartCoroutine( InitCommonRoutine() );   // InputFacade / TutorialFacade の初期化、ルーチン起動、ローディング画面解除
 
             enabled = true; // 読込完了したため、Update()などを有効に
         }

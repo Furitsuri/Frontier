@@ -1,4 +1,5 @@
 ﻿using Frontier.Registries;
+using Frontier.Tutorial;
 using Frontier.UI;
 using UnityEngine;
 using Zenject;
@@ -18,6 +19,11 @@ namespace Frontier.Field
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
+
+            // FocusRoutineController共通処理(TutorialFacade)が必要とする依存関係
+            Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
+            Container.Bind<ISaveHandler<TutorialSaveData>>().To<TutorialSaveHandler>().AsSingle();
+            Container.Bind<TutorialFacade>().AsSingle();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // DebugUserDataLoader.TryApply() が必要とする依存関係

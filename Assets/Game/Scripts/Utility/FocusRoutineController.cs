@@ -1,10 +1,23 @@
-﻿using UnityEngine;
+﻿using Frontier.Tutorial;
+using Frontier.UI;
+using System.Collections;
+using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// FocusRoutineをその優先度毎に制御するクラス
+/// 各シーンのエントリポイント(GameMain, RecruitMain, FieldMain等)の共通基底クラスであり、
+/// InputFacade / TutorialFacade のセットアップなど、シーンを問わず必要な初期化処理をここに集約します。
 /// </summary>
 public class FocusRoutineController : MonoBehaviour
 {
+    [Inject] protected HierarchyBuilderBase _hierarchyBld = null;
+    [Inject] protected InputFacade _inputFcd              = null;
+    // EditorMain(StageEditorScene) 等、チュートリアル機構を持たないシーンでは未バインドのため Optional にする
+    [Inject( Optional = true )] protected TutorialFacade _tutorialFcd = null;
+
+    private InputGuidePresenter _inputGuideView = null;
+
     IFocusRoutine _currentRoutine = null;
 
     [SerializeField]
@@ -16,6 +29,51 @@ public class FocusRoutineController : MonoBehaviour
     private int _firstRoutineIndex = 0;
 
     private IFocusRoutine[] _routines = null;
+
+    /// <summary>
+    /// シーンを問わず共通のAwake処理です。派生クラスでオーバーライドする場合は必ず base.Awake() を最初に呼んでください。
+    /// </summary>
+    protected virtual void Awake()
+    {
+        // 起動シーンに依らずローディング画面の存在を保証する
+        LoadingScreenController.EnsureInstance();
+
+        LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
+
+        // InputFacade はシーンを跨いで永続化されるシングルトン。
+        // 入力ガイドUIはこのシーンの IUiSystem に紐づくため、シーンに入る度に渡し直す
+        // Setup()/Init() は内部で入力コードをクリア・再セットアップするため、他オブジェクトの Start() で
+        // RegisterInputCodes() が呼ばれる前に必ず終えておく必要がある
+        // (UnityはAwake()が全オブジェクトで完了してからStart()が呼ばれるため、両方をここで呼ぶ)
+        _inputFcd.Setup( _inputGuideView );
+        _inputFcd.Init();
+        _tutorialFcd?.Setup( GetFocusRoutine( FocusRoutinePriority.TUTORIAL ) );
+    }
+
+    /// <summary>
+    /// シーンを問わず共通の初期化処理です。派生クラスの初期化コルーチンから yield return で呼び出してください。
+    /// TutorialFacade の初期化、ルーチンの起動、ローディング画面の解除までを担います。
+    /// </summary>
+    protected IEnumerator InitCommonRoutine()
+    {
+        var tutorialLoadTask = _tutorialFcd.LoadTutorialData();   // チュートリアルデータの読込待ち
+        yield return new WaitUntil( () => tutorialLoadTask.IsCompleted );
+
+        _tutorialFcd.Init();
+
+        Init();
+
+        // 初期化完了。フィールドシーンから遷移してきた場合の暗転を解除する
+        LoadingScreenController.Instance?.Hide();
+
+        // フィールドから遷移してきた場合、遷移開始〜完了(この暗転解除)までの所要時間をログ出力する
+        if( Frontier.Field.FieldTransitionContext.TransitionStartTime >= 0.0 )
+        {
+            double elapsed = Time.realtimeSinceStartupAsDouble - Frontier.Field.FieldTransitionContext.TransitionStartTime;
+            Debug.Log( $"[SceneTransition] Field→{gameObject.scene.name} 遷移所要時間: {elapsed:F3} 秒" );
+            Frontier.Field.FieldTransitionContext.ClearTransitionStartTime();
+        }
+    }
 
     /// <summary>
     /// このコントローラが必要とするルーチン数を返します。
