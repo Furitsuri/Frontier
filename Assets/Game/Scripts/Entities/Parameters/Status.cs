@@ -13,6 +13,7 @@ namespace Frontier.Entities
     {
         public CHARACTER_TAG characterTag;  // キャラクタータグ
         public int characterIndex;          // キャラクター番号
+        public int PrefabIndex;             // 使用するプレハブのインデックス
         public string Name;                 // キャラクター名
         public int Level;                   // レベル
         public int MaxHP;                   // 最大HP
@@ -35,20 +36,9 @@ namespace Frontier.Entities
         /// <param name="fdata">適応元のキャラクターパラメータ</param>
         static public void ApplyParams( ref Status status, in BattleFileLoader.CharacterDeployData fdata )
         {
-            status.characterTag         = ( CHARACTER_TAG ) fdata.CharacterTag;
-            status.characterIndex       = fdata.CharacterIndex;
-            status.CurHP                = status.MaxHP = fdata.MaxHP;
-            status.Atk                  = fdata.Atk;
-            status.Def                  = fdata.Def;
-            status.moveRange            = fdata.MoveRange;
-            status.jumpForce            = fdata.JumpForce;
-            status.attackRange          = fdata.AtkRange;
-            status.CurActionGauge       = status.maxActionGauge = fdata.ActGaugeMax;
-            status.recoveryActionGauge  = fdata.ActRecovery;
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                status.EquipSkills[i] = ( SkillID ) fdata.Skills[i];
-            }
+            status = fdata.status;
+            status.CurHP           = status.MaxHP;
+            status.CurActionGauge  = status.maxActionGauge;
         }
 
         public void Setup()
@@ -73,30 +63,6 @@ namespace Frontier.Entities
             CurActionGauge      = 0;
             recoveryActionGauge = 0;
 
-        }
-
-        /// <summary>
-        /// 外部からパラメータを適用させます
-        /// </summary>
-        /// <param name="fdata">適応元のキャラクターパラメータ</param>
-        public void Apply( in BattleFileLoader.CharacterDeployData fdata )
-        {
-            this.characterTag           = ( CHARACTER_TAG ) fdata.CharacterTag;
-            this.characterIndex         = fdata.CharacterIndex;
-            this.Name                   = fdata.Name;
-            this.Level                  = fdata.Level;
-            this.CurHP                  = this.MaxHP = fdata.MaxHP;
-            this.Atk                    = fdata.Atk;
-            this.Def                    = fdata.Def;
-            this.moveRange              = fdata.MoveRange;
-            this.jumpForce              = fdata.JumpForce;
-            this.attackRange            = fdata.AtkRange;
-            this.CurActionGauge         = this.maxActionGauge = fdata.ActGaugeMax;
-            this.recoveryActionGauge    = fdata.ActRecovery;
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                this.EquipSkills[i] = ( SkillID ) fdata.Skills[i];
-            }
         }
 
         /// <summary>

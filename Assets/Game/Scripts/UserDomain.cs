@@ -8,7 +8,7 @@ public class UserDomain
 {
     [SerializeField] public int Money { get; private set; } = 0;
     [SerializeField] public int StageLevel { get; private set; } = 0;   // 0オリジンのため、0はステージレベル1を表します
-    [SerializeField] public List<Player> Members { get; private set; } = new List<Player>();
+    [SerializeField] public List<Status> Members { get; private set; } = new List<Status>();
 
     public void AddMoney( int amount )
     {
@@ -20,11 +20,15 @@ public class UserDomain
         StageLevel++;
     }
 
-    public void RecruitMember( Player member )
+    /// <summary>
+    /// 味方を編成に加えます。
+    /// シーンをまたいで永続化するデータのため、Character(Player)ではなく値型のStatusとして保持します。
+    /// </summary>
+    public void RecruitMember( Status status )
     {
-        member.GetStatusRef.characterIndex = Members.Count; // characterIndexは0オリジンのため、カウント数がそのままIndexになります
+        status.characterIndex = Members.Count; // characterIndexは0オリジンのため、カウント数がそのままIndexになります
 
-        Members.Add( member );
+        Members.Add( status );
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

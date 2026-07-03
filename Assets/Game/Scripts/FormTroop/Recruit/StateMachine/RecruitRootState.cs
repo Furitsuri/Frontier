@@ -240,7 +240,7 @@ namespace Frontier.FormTroop
             {
                 var player = candidate.Character as Player;
                 if( !player.RecruitLogic.IsEmployed ) { continue; }
-                _userDomain.RecruitMember( player );
+                _userDomain.RecruitMember( player.GetStatusRef );
             }
         }
 

@@ -401,30 +401,34 @@ namespace Frontier.DebugTools.StageEditor
         /// </summary>
         private void PlaceEnemy( EditActionContext context )
         {
+            var status = new Frontier.Entities.Status();
+            status.Setup();
+            status.characterTag        = Frontier.Entities.CHARACTER_TAG.ENEMY;
+            status.characterIndex      = _enemyStatusList.Count;
+            status.Level                = _refParams.EnemyLevel;
+            status.CurHP                = status.MaxHP = _refParams.EnemyMaxHP;
+            status.Atk                  = _refParams.EnemyAtk;
+            status.Def                  = _refParams.EnemyDef;
+            status.moveRange            = _refParams.EnemyMoveRange;
+            status.jumpForce            = _refParams.EnemyJumpForce;
+            status.attackRange          = _refParams.EnemyAtkRange;
+            status.CurActionGauge       = status.maxActionGauge = _refParams.EnemyActGaugeMax;
+            status.recoveryActionGauge  = _refParams.EnemyActRecovery;
+            status.PrefabIndex          = _refParams.EnemyPrefab;
+            status.EquipSkills          = new SkillID[] { ( SkillID ) _refParams.EnemySkill1, ( SkillID ) _refParams.EnemySkill2, ( SkillID ) _refParams.EnemySkill3, ( SkillID ) _refParams.EnemySkill4 };
+
             var data = new Frontier.Loaders.BattleFileLoader.CharacterDeployData
             {
-                CharacterTag    = ( int ) Frontier.Entities.CHARACTER_TAG.ENEMY,
-                CharacterIndex  = _enemyStatusList.Count,
-                Level           = _refParams.EnemyLevel,
-                MaxHP           = _refParams.EnemyMaxHP,
-                Atk             = _refParams.EnemyAtk,
-                Def             = _refParams.EnemyDef,
-                MoveRange       = _refParams.EnemyMoveRange,
-                JumpForce       = _refParams.EnemyJumpForce,
-                AtkRange        = _refParams.EnemyAtkRange,
-                ActGaugeMax     = _refParams.EnemyActGaugeMax,
-                ActRecovery     = _refParams.EnemyActRecovery,
-                Prefab          = _refParams.EnemyPrefab,
-                ThinkType       = _refParams.EnemyThinkType,
-                InitGridIndex   = _refParams.EnemyInitGridIndex,
-                InitDir         = _refParams.EnemyInitDir,
-                Skills          = new int[] { _refParams.EnemySkill1, _refParams.EnemySkill2, _refParams.EnemySkill3, _refParams.EnemySkill4 },
+                status        = status,
+                ThinkType     = _refParams.EnemyThinkType,
+                InitGridIndex = _refParams.EnemyInitGridIndex,
+                InitDir       = _refParams.EnemyInitDir,
             };
 
             _enemyStatusList.Add( data );
-            _refParams.GridIndexToEnemyListIndex[data.InitGridIndex] = data.CharacterIndex;
+            _refParams.GridIndexToEnemyListIndex[data.InitGridIndex] = data.status.characterIndex;
             _sizeAdjuster.RegisterCharacterOccupied( data.InitGridIndex, Constants.GRID_SIZE_MIN );
-            Debug.Log( $"[StageEditor] 敵を登録しました (Index={data.CharacterIndex} Prefab={data.Prefab} Level={data.Level})" );
+            Debug.Log( $"[StageEditor] 敵を登録しました (Index={data.status.characterIndex} Prefab={data.status.PrefabIndex} Level={data.status.Level})" );
         }
 
         /// <summary>
@@ -452,20 +456,20 @@ namespace Frontier.DebugTools.StageEditor
             _sizeAdjuster.RegisterCharacterOccupied( newGridIndex, Constants.GRID_SIZE_MIN );
 
             var data = _enemyStatusList[listIndex];
-            data.Level         = _refParams.EnemyLevel;
-            data.MaxHP         = _refParams.EnemyMaxHP;
-            data.Atk           = _refParams.EnemyAtk;
-            data.Def           = _refParams.EnemyDef;
-            data.MoveRange     = _refParams.EnemyMoveRange;
-            data.JumpForce     = _refParams.EnemyJumpForce;
-            data.AtkRange      = _refParams.EnemyAtkRange;
-            data.ActGaugeMax   = _refParams.EnemyActGaugeMax;
-            data.ActRecovery   = _refParams.EnemyActRecovery;
-            data.Prefab        = _refParams.EnemyPrefab;
+            data.status.Level               = _refParams.EnemyLevel;
+            data.status.CurHP               = data.status.MaxHP = _refParams.EnemyMaxHP;
+            data.status.Atk                 = _refParams.EnemyAtk;
+            data.status.Def                 = _refParams.EnemyDef;
+            data.status.moveRange           = _refParams.EnemyMoveRange;
+            data.status.jumpForce           = _refParams.EnemyJumpForce;
+            data.status.attackRange         = _refParams.EnemyAtkRange;
+            data.status.CurActionGauge      = data.status.maxActionGauge = _refParams.EnemyActGaugeMax;
+            data.status.recoveryActionGauge = _refParams.EnemyActRecovery;
+            data.status.PrefabIndex         = _refParams.EnemyPrefab;
             data.ThinkType     = _refParams.EnemyThinkType;
             data.InitGridIndex = newGridIndex;
             data.InitDir       = _refParams.EnemyInitDir;
-            data.Skills        = new int[] { _refParams.EnemySkill1, _refParams.EnemySkill2, _refParams.EnemySkill3, _refParams.EnemySkill4 };
+            data.status.EquipSkills = new SkillID[] { ( SkillID ) _refParams.EnemySkill1, ( SkillID ) _refParams.EnemySkill2, ( SkillID ) _refParams.EnemySkill3, ( SkillID ) _refParams.EnemySkill4 };
             _enemyStatusList[listIndex] = data;
 
             Debug.Log( $"[StageEditor] 敵を更新しました (ListIndex={listIndex} GridIndex={oldGridIndex}→{newGridIndex})" );
@@ -505,7 +509,7 @@ namespace Frontier.DebugTools.StageEditor
             for ( int i = 0; i < _enemyStatusList.Count; ++i )
             {
                 var d = _enemyStatusList[i];
-                d.CharacterIndex = i;               // CharacterDeployData は構造体のため書き戻す
+                d.status.characterIndex = i;        // CharacterDeployData は構造体のため書き戻す
                 _enemyStatusList[i] = d;
                 _refParams.GridIndexToEnemyListIndex[d.InitGridIndex] = i;
             }
@@ -521,23 +525,24 @@ namespace Frontier.DebugTools.StageEditor
             if ( !_refParams.GridIndexToEnemyListIndex.TryGetValue( gridIndex, out int listIndex ) ) return false;
 
             var data = _enemyStatusList[listIndex];
-            _refParams.EnemyLevel         = data.Level;
-            _refParams.EnemyMaxHP         = data.MaxHP;
-            _refParams.EnemyAtk           = data.Atk;
-            _refParams.EnemyDef           = data.Def;
-            _refParams.EnemyMoveRange     = data.MoveRange;
-            _refParams.EnemyJumpForce     = data.JumpForce;
-            _refParams.EnemyAtkRange      = data.AtkRange;
-            _refParams.EnemyActGaugeMax   = data.ActGaugeMax;
-            _refParams.EnemyActRecovery   = data.ActRecovery;
-            _refParams.EnemyPrefab        = data.Prefab;
+            _refParams.EnemyLevel         = data.status.Level;
+            _refParams.EnemyMaxHP         = data.status.MaxHP;
+            _refParams.EnemyAtk           = data.status.Atk;
+            _refParams.EnemyDef           = data.status.Def;
+            _refParams.EnemyMoveRange     = data.status.moveRange;
+            _refParams.EnemyJumpForce     = data.status.jumpForce;
+            _refParams.EnemyAtkRange      = data.status.attackRange;
+            _refParams.EnemyActGaugeMax   = data.status.maxActionGauge;
+            _refParams.EnemyActRecovery   = data.status.recoveryActionGauge;
+            _refParams.EnemyPrefab        = data.status.PrefabIndex;
             _refParams.EnemyThinkType     = data.ThinkType;
             _refParams.EnemyInitGridIndex = data.InitGridIndex;
             _refParams.EnemyInitDir       = data.InitDir;
-            _refParams.EnemySkill1        = data.Skills != null && data.Skills.Length > 0 ? data.Skills[0] : ( int ) SkillID.NONE;
-            _refParams.EnemySkill2        = data.Skills != null && data.Skills.Length > 1 ? data.Skills[1] : ( int ) SkillID.NONE;
-            _refParams.EnemySkill3        = data.Skills != null && data.Skills.Length > 2 ? data.Skills[2] : ( int ) SkillID.NONE;
-            _refParams.EnemySkill4        = data.Skills != null && data.Skills.Length > 3 ? data.Skills[3] : ( int ) SkillID.NONE;
+            var skills = data.status.EquipSkills;
+            _refParams.EnemySkill1        = skills != null && skills.Length > 0 ? ( int ) skills[0] : ( int ) SkillID.NONE;
+            _refParams.EnemySkill2        = skills != null && skills.Length > 1 ? ( int ) skills[1] : ( int ) SkillID.NONE;
+            _refParams.EnemySkill3        = skills != null && skills.Length > 2 ? ( int ) skills[2] : ( int ) SkillID.NONE;
+            _refParams.EnemySkill4        = skills != null && skills.Length > 3 ? ( int ) skills[3] : ( int ) SkillID.NONE;
             return true;
         }
 
@@ -826,10 +831,10 @@ namespace Frontier.DebugTools.StageEditor
 
             foreach ( var data in _enemyStatusList )
             {
-                var chara = _characterFactory.CreateCharacter( CHARACTER_TAG.ENEMY, data.Prefab );
+                var chara = _characterFactory.CreateCharacter( CHARACTER_TAG.ENEMY, data.status.PrefabIndex );
                 if ( chara == null ) continue;
 
-                chara.gameObject.name = $"[EnemyLoaded_{data.CharacterIndex}]";
+                chara.gameObject.name = $"[EnemyLoaded_{data.status.characterIndex}]";
 
                 var pos = _stageDataProvider.CurrentData.GetTileStaticData( data.InitGridIndex ).CharaStandPos;
 

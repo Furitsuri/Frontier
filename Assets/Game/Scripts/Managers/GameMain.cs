@@ -25,7 +25,6 @@ namespace Frontier
         [Inject] private SequenceFacade _sequenceFcd        = null;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         [Inject] private UserDomain _userDomain             = null;
-        [Inject] private CharacterFactory _characterFactory = null;
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
         private GameObject _stageImage;
@@ -105,7 +104,7 @@ namespace Frontier
             enabled = false;    // 読込処理完了までUpdate()などを無効にする
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain, _characterFactory );
+            Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain );
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
             AnimDatas.Init();   // アニメーションデータの初期化

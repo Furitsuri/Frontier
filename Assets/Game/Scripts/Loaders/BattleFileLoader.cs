@@ -27,34 +27,17 @@ namespace Frontier.Loaders
         [Inject] private CharacterFactory _characterFactory = null;
         [Inject] private FilePathRegistry _filePathReg      = null;
 
-        private void Awake()
-        {
-            int fieldCount = typeof( CharacterDeployData ).GetFields().Length;
-            Debug.Assert(
-                fieldCount == ( int ) CharacterDeployParamTag.NUM,
-                $"CharacterDeployData のフィールド数 ({fieldCount}) が CharacterDeployParamTag.NUM ({( int ) CharacterDeployParamTag.NUM}) と一致しません。" );
-        }
-
+        /// <summary>
+        /// キャラクターの配置データです。基礎パラメータは Status に集約し、
+        /// 配置時にのみ必要となる要素(初期座標・向き・思考タイプ)だけをここに追加します。
+        /// </summary>
         [Serializable]
         public struct CharacterDeployData
         {
-            public int Prefab;
-            public int CharacterTag;
-            public int CharacterIndex;
-            public string Name;
-            public int Level;
-            public int MaxHP;
-            public int Atk;
-            public int Def;
-            public int MoveRange;
-            public int JumpForce;
-            public int AtkRange;
-            public int ActGaugeMax;
-            public int ActRecovery;
+            public Status status;
             public int InitGridIndex;
             public int InitDir;
             public int ThinkType;
-            public int[] Skills;
         }
 
         [System.Serializable]
@@ -102,13 +85,13 @@ namespace Frontier.Loaders
                 if( dataContainer == null ) { return; }
 
                 // デシリアライズされたデータを配列に格納
-                foreach( var status in dataContainer.CharacterStatuses )
+                foreach( var deployData in dataContainer.CharacterStatuses )
                 {
-                    int prefabIndex = status.Prefab;
-                    Character chara = _characterFactory.CreateCharacter( ( CHARACTER_TAG ) i, prefabIndex, status );
+                    int prefabIndex = deployData.status.PrefabIndex;
+                    Character chara = _characterFactory.CreateCharacter( ( CHARACTER_TAG ) i, prefabIndex, deployData );
                     if( null == chara ) { continue; }
 
-                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( chara, status.InitGridIndex, ( Direction ) status.InitDir );
+                    _btlRtnCtrl.BtlCharaCdr.AddCharacterToList( chara, deployData.InitGridIndex, ( Direction ) deployData.InitDir );
                 }
             }
         }

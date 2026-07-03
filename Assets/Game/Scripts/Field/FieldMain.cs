@@ -10,7 +10,6 @@ namespace Frontier.Field
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         [Inject] private UserDomain _userDomain             = null;
-        [Inject] private CharacterFactory _characterFactory = null;
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
         protected override int GetRequiredRoutineCount() => (int)FocusRoutinePriority.NUM;
@@ -32,7 +31,7 @@ namespace Frontier.Field
             enabled = false;    // 読込処理完了までUpdate()などを無効にする
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain, _characterFactory );
+            Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain );
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
             yield return StartCoroutine( InitCommonRoutine() );   // InputFacade / TutorialFacade の初期化、ルーチン起動、ローディング画面解除

@@ -15,6 +15,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<IStageDataProvider>().To<StageDataProvider>().AsSingle();
+            Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
 
             Container.Bind<IInstaller>().To<StageEditorDiInstaller>().FromInstance(this);
 

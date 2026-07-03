@@ -74,7 +74,14 @@ namespace Frontier.StateMachine
                 // 親がフェーズアニメーションステート、または親が存在しない場合はフェーズ遷移完了とみなす
                 if( CurrentNode.IsEndedPhase || null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase )
                 {
-                    CurrentNode.ExitState();
+                    // CurrentNodeから根まで、すべての祖先のExitState()を呼ぶ。
+                    // (CurrentNodeのExitState()だけを呼ぶと、親States(RootState等)が保持しているクリーンアップ処理・確定処理が呼ばれないまま終了してしまう)
+                    var node = CurrentNode;
+                    while( node != null )
+                    {
+                        node.ExitState();
+                        node = node.GetParent<PhaseStateBase>();
+                    }
                     return true;
                 }
 

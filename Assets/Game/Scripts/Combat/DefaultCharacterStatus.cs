@@ -25,34 +25,30 @@ namespace Frontier
         public const int ActRecovery = 10;
 
         /// <summary>
-        /// デフォルトステータスを反映した PLAYER 用 CharacterDeployData を生成して返します。
+        /// デフォルトステータスを反映した PLAYER 用 Status を生成して返します。
         /// 装備スキルはすべて SkillID.NONE（無し）です。
         /// </summary>
-        public static BattleFileLoader.CharacterDeployData CreatePlayerDeployData()
+        public static Status CreatePlayerStatus()
         {
-            var skills = new int[EQUIPABLE_SKILL_MAX_NUM];
-            for( int i = 0; i < skills.Length; ++i ) { skills[i] = ( int ) SkillID.NONE; }
+            var status = new Status();
+            status.Setup();
 
-            return new BattleFileLoader.CharacterDeployData
-            {
-                Prefab        = Prefab,
-                CharacterTag  = ( int ) CHARACTER_TAG.PLAYER,
-                CharacterIndex= 0,                          // UserDomain.RecruitMember で正しい値へ上書きされる
-                Name          = "Default",
-                Level         = Level,
-                MaxHP         = MaxHP,
-                Atk           = Atk,
-                Def           = Def,
-                MoveRange     = MoveRange,
-                JumpForce     = JumpForce,
-                AtkRange      = AtkRange,
-                ActGaugeMax   = ActGaugeMax,
-                ActRecovery   = ActRecovery,
-                InitGridIndex = 0,
-                InitDir       = ( int ) Direction.BACK,
-                ThinkType     = 0,                          // PLAYER では未使用
-                Skills        = skills,
-            };
+            status.characterTag        = CHARACTER_TAG.PLAYER;
+            status.characterIndex      = 0;                 // UserDomain.RecruitMember で正しい値へ上書きされる
+            status.PrefabIndex         = Prefab;
+            status.Name                = "Default";
+            status.Level               = Level;
+            status.CurHP               = status.MaxHP = MaxHP;
+            status.Atk                 = Atk;
+            status.Def                 = Def;
+            status.moveRange           = MoveRange;
+            status.jumpForce           = JumpForce;
+            status.attackRange         = AtkRange;
+            status.CurActionGauge      = status.maxActionGauge = ActGaugeMax;
+            status.recoveryActionGauge = ActRecovery;
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = SkillID.NONE; }
+
+            return status;
         }
     }
 }

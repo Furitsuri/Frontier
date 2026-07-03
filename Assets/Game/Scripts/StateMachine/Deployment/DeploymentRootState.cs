@@ -15,9 +15,7 @@ namespace Frontier.StateMachine
     {
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private UserDomain _userDomain                 = null;
-#if UNITY_EDITOR
-        [Inject] private CharacterFactory _characterFactory     = null;   // エディタ限定の保険(EnsureFallbackMemberIfEmpty)でのみ使用
-#endif
+        [Inject] private CharacterFactory _characterFactory     = null;   // UserDomain.Members(Status)からPlayerを再構築するために使用
 
         private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot  = null;
@@ -307,8 +305,12 @@ namespace Frontier.StateMachine
 
             _deploymentCandidates.Clear();
 
-            foreach( var player in _userDomain.Members )
+            foreach( var status in _userDomain.Members )
             {
+                // 永続化されているのはStatus(値データ)のみのため、表示・配置用にPlayerをこの場で再構築する
+                Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, status ) as Player;
+                if( null == player ) { continue; }
+
                 // UI表示用に各キャラクターのスナップショットを撮影
                 var size = _presenter.GetCharacterSelectionDisplaySize();
                 Texture2D candidateSnapshot = null;
@@ -333,15 +335,7 @@ namespace Frontier.StateMachine
 #if UNITY_EDITOR
             // 開発時(エディタ)専用の保険：味方ゼロでもデフォルトキャラを1体アサインして進行可能にする。
             // ステータスは DefaultCharacterStatus を参照し、装備スキルは持たない。
-            var deployData = DefaultCharacterStatus.CreatePlayerDeployData();
-            Player fallback = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, deployData.Prefab, deployData ) as Player;
-            if( null == fallback )
-            {
-                Debug.LogError( "[Deployment] デフォルトキャラクターの生成に失敗しました。" );
-                return;
-            }
-
-            _userDomain.RecruitMember( fallback );
+            _userDomain.RecruitMember( DefaultCharacterStatus.CreatePlayerStatus() );
             Debug.Log( "[Deployment] (Editor限定の保険) 雇用済みの味方がいないため、デフォルトキャラクターを1体アサインしました。" );
 #else
             // 製品ビルドでは保険を使わない。味方ゼロでの戦闘遷移は不正な状態のため、明示的にエラーを出して顕在化させる。

@@ -1,7 +1,5 @@
-﻿using Frontier.Registries;
-using Frontier.Tutorial;
+﻿using Frontier.Tutorial;
 using Frontier.UI;
-using UnityEngine;
 using Zenject;
 
 namespace Frontier.Field
@@ -28,9 +26,6 @@ namespace Frontier.Field
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // DebugUserDataLoader.TryApply() が必要とする依存関係
             Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsCached();
-            Container.Bind<TimeScaleController>().AsSingle();
-            Container.Bind<CharacterFactory>().AsSingle();
-            Container.Bind<PrefabRegistry>().FromInstance( Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
             Container.Bind<IInstaller>().To<FieldDiInstaller>().FromInstance( this );

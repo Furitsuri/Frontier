@@ -42,36 +42,33 @@ namespace Frontier.DebugTools
             /// </summary>
             public int[] equipSkills = new int[EQUIPABLE_SKILL_MAX_NUM];
 
-            public BattleFileLoader.CharacterDeployData ToDeployData()
+            public Status ToStatus()
             {
-                var skills = new int[EQUIPABLE_SKILL_MAX_NUM];
+                var status = new Status();
+                status.Setup();
+
+                status.characterTag        = CHARACTER_TAG.PLAYER;
+                status.characterIndex      = 0;        // RecruitMember() で正しい値に上書きされる
+                status.PrefabIndex         = prefabIndex;
+                status.Name                = name;
+                status.Level                = level;
+                status.CurHP                = status.MaxHP = maxHP;
+                status.Atk                  = atk;
+                status.Def                  = def;
+                status.moveRange            = moveRange;
+                status.jumpForce            = jumpForce;
+                status.attackRange          = attackRange;
+                status.CurActionGauge       = status.maxActionGauge = maxActionGauge;
+                status.recoveryActionGauge  = recoveryActionGauge;
+
                 for ( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; i++ )
                 {
-                    skills[i] = ( equipSkills != null && i < equipSkills.Length )
-                        ? equipSkills[i]
-                        : (int) SkillID.NONE;
+                    status.EquipSkills[i] = ( equipSkills != null && i < equipSkills.Length )
+                        ? (SkillID) equipSkills[i]
+                        : SkillID.NONE;
                 }
 
-                return new BattleFileLoader.CharacterDeployData
-                {
-                    Prefab         = prefabIndex,
-                    CharacterTag   = (int) CHARACTER_TAG.PLAYER,
-                    CharacterIndex = 0,        // RecruitMember() で正しい値に上書きされる
-                    Name           = name,
-                    Level          = level,
-                    MaxHP          = maxHP,
-                    Atk            = atk,
-                    Def            = def,
-                    MoveRange      = moveRange,
-                    JumpForce      = jumpForce,
-                    AtkRange       = attackRange,
-                    ActGaugeMax    = maxActionGauge,
-                    ActRecovery    = recoveryActionGauge,
-                    InitGridIndex  = 0,
-                    InitDir        = (int) Direction.BACK,
-                    ThinkType      = 0,
-                    Skills         = skills,
-                };
+                return status;
             }
         }
     }

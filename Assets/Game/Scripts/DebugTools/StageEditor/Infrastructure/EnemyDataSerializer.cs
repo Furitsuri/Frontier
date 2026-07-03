@@ -50,13 +50,15 @@ namespace Frontier.DebugTools.StageEditor
 
             try
             {
-                // Skills が null のエントリを補完してからシリアライズ
+                // EquipSkills が null のエントリを補完してからシリアライズ
                 var entries = enemyList.ToArray();
                 for ( int i = 0; i < entries.Length; i++ )
                 {
-                    if ( entries[i].Skills == null )
+                    if ( entries[i].status.EquipSkills == null )
                     {
-                        entries[i].Skills = new int[] { -1, -1, -1, -1 };
+                        var e = entries[i];
+                        e.status.EquipSkills = new Frontier.Combat.SkillID[] { Frontier.Combat.SkillID.NONE, Frontier.Combat.SkillID.NONE, Frontier.Combat.SkillID.NONE, Frontier.Combat.SkillID.NONE };
+                        entries[i] = e;
                     }
                 }
 

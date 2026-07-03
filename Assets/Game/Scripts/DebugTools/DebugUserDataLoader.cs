@@ -21,7 +21,7 @@ namespace Frontier.DebugTools
         /// プレイセッション中に1度だけ実行されます（2回目以降は即リターン）。
         /// ファイルが存在しない場合は何もしません（通常の起動フローで代替されます）。
         /// </summary>
-        public static void TryApply( UserDomain userDomain, CharacterFactory characterFactory )
+        public static void TryApply( UserDomain userDomain )
         {
             if ( _hasApplied ) return;
             _hasApplied = true;
@@ -49,14 +49,7 @@ namespace Frontier.DebugTools
 
                 foreach ( var entry in data.members )
                 {
-                    var deployData = entry.ToDeployData();
-                    var player = characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, entry.prefabIndex, deployData ) as Player;
-                    if ( player == null )
-                    {
-                        Debug.LogWarning( $"[DebugUserDataLoader] Player の生成に失敗しました (prefabIndex={entry.prefabIndex})" );
-                        continue;
-                    }
-                    userDomain.RecruitMember( player );
+                    userDomain.RecruitMember( entry.ToStatus() );
                 }
 
                 Debug.Log( $"[DebugUserDataLoader] デバッグデータを適用しました。Money={data.money} StageLevel={data.stageLevel} Members={data.members.Count}体" );

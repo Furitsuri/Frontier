@@ -63,4 +63,28 @@ public class CharacterFactory
 
         return chara;
     }
+
+    /// <summary>
+    /// Statusを指定してキャラクターを作成します。
+    /// UserDomain.Members(List&lt;Status&gt;)からキャラクターを再構築する用途を想定しています。
+    /// プレハブは Status.PrefabIndex を使用します。
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="status"></param>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    public Character CreateCharacter( CHARACTER_TAG tag, Status status, int level = 1 )
+    {
+        Character chara = CreateCharacter( tag, status.PrefabIndex, level );
+        if( null == chara )
+        {
+            Debug.LogError( $"キャラクターの生成に失敗しました タグ:{tag} プレハブインデックス:{status.PrefabIndex}" );
+            return null;
+        }
+
+        chara.Init();
+        chara.GetStatusRef = status;
+
+        return chara;
+    }
 }
