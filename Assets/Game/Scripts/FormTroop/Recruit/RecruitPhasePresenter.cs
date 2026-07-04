@@ -79,6 +79,15 @@ namespace Frontier.FormTroop
             _recruitmentUI.ConfirmEmploymentUI.gameObject.SetActive( isActive );
         }
 
+        /// <summary>
+        /// 確認ダイアログに表示するメッセージを設定します
+        /// </summary>
+        /// <param name="message">表示するメッセージ</param>
+        public void SetConfirmMessage( string message )
+        {
+            _recruitmentUI.ConfirmEmploymentUI.SetMessageText( message );
+        }
+
         public void ApplyColor2Options( int selectIndex )
         {
             _recruitmentUI.ConfirmEmploymentUI.ApplyTextColor( selectIndex );

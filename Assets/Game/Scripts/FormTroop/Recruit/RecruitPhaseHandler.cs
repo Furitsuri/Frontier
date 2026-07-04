@@ -48,17 +48,20 @@ namespace Frontier.FormTroop
 
             /*
              *  親子図
-             * 
+             *
              *      RecruitRootState
              *              ｜
              *              ├─ CharacterStatusViewState
              *              ｜
-             *              └─ RecruitConfirmCompletedState
-             *              
+             *              ├─ RecruitConfirmCompletedState
+             *              ｜
+             *              └─ RecruitConfirmCancelState
+             *
              */
             RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitRootState>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
+            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCancelState>( false ) );
 
             CurrentNode = RootNode;
         }
