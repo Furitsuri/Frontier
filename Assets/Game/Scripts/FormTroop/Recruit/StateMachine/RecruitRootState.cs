@@ -90,8 +90,6 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptDirection()
         {
-            if( _presenter.IsSlideAnimationPlaying ) { return false; }
-
             _presenter.SetActiveLeftInputArrow( CanInputDirectionLeftOnDeploymentList() );
             _presenter.SetActiveRightInputArrow( CanInputDirectionRightOnDeploymentList() );
 
