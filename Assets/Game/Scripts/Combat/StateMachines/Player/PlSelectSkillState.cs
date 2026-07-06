@@ -232,7 +232,7 @@ namespace Frontier.Battle
             bool isTransitionSkillActionType    = SkillsData.IsTransitionSkillActionType( skillData.ActionType );
 
             _plOwner.BattleLogic.ToggleEquipSkill( index );
-            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );  // 使用可能スキルの更新
+            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, useableActionTypeBit : 0xff );  // 使用可能スキルの更新
 
             // 場面遷移が必要なアクションスキルが選択されている場合
             if( isTransitionSkillActionType )

@@ -157,7 +157,7 @@ public BattleLogicBase BattleLogic => _battleLogic;
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
                 SkillID skillID = GetEquipSkillID( i );
-                if( !SkillsData.IsValidSkill( skillID ) ) { return; }
+                if( !SkillsData.IsValidSkill( skillID ) ) { continue; }
                 var skillData = SkillsData.data[( int ) skillID];
 
                 // スキル使用ONの状態であればOFFにするだけなので、チェックする必要がない
