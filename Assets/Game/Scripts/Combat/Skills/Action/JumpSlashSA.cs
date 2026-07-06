@@ -217,6 +217,7 @@ namespace Frontier.Combat
                         UpdateSlashAnimEnd();
                         if( _isAttackAnimEnded )
                         {
+                            _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.WAIT );
                             _state = JumpSlashState.END;
                         }
                         break;
