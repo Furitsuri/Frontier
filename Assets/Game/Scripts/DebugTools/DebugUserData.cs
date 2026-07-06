@@ -58,7 +58,7 @@ namespace Frontier.DebugTools
                 status.moveRange            = moveRange;
                 status.jumpForce            = jumpForce;
                 status.attackRange          = attackRange;
-                status.CurActionGauge       = status.maxActionGauge = maxActionGauge;
+                status.CurActionGauge       = status.maxActionGauge = Math.Min( maxActionGauge, Constants.ACTION_GAUGE_MAX );
                 status.recoveryActionGauge  = recoveryActionGauge;
 
                 for ( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; i++ )

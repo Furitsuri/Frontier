@@ -2,6 +2,7 @@
 using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Loaders;
+using System;
 using static Constants;
 
 namespace Frontier
@@ -44,7 +45,7 @@ namespace Frontier
             status.moveRange           = MoveRange;
             status.jumpForce           = JumpForce;
             status.attackRange         = AtkRange;
-            status.CurActionGauge      = status.maxActionGauge = ActGaugeMax;
+            status.CurActionGauge      = status.maxActionGauge = Math.Min( ActGaugeMax, Constants.ACTION_GAUGE_MAX );
             status.recoveryActionGauge = ActRecovery;
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = SkillID.NONE; }
 

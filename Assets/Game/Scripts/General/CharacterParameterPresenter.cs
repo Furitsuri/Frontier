@@ -174,7 +174,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
                     elem.color = Color.green;
 
                     // アクションゲージ使用時の点滅開始
-                    if( ( status.CurActionGauge - selectCharacter.BattleParams.TmpParam.ActGaugeConsumption ) <= i )
+                    if( IsValidBlinkGaugeElement( i, status.CurActionGauge, selectCharacter.BattleParams.TmpParam.ActGaugeConsumption ) )
                     {
                         _blinkingElapsedTime = 0f;
                     }
@@ -236,11 +236,15 @@ public class CharacterParameterPresenter : PhasePresenterBase
                 if( i <= status.CurActionGauge - 1 )
                 {
                     // アクションゲージ使用時は点滅させる
-                    if( ( status.CurActionGauge - selectCharacter.BattleParams.TmpParam.ActGaugeConsumption ) <= i )
+                    if( IsValidBlinkGaugeElement( i, status.CurActionGauge, selectCharacter.BattleParams.TmpParam.ActGaugeConsumption ) )
                     {
                         _blinkingElapsedTime += DeltaTimeProvider.DeltaTime;
                         _alpha      = Mathf.PingPong( _blinkingElapsedTime / _blinkingDuration, 1.0f );
                         elem.color  = new Color( 0, 1, 0, _alpha );
+                    }
+                    else
+                    {
+                        elem.color = Color.green;
                     }
                 }
             }
@@ -251,5 +255,10 @@ public class CharacterParameterPresenter : PhasePresenterBase
         {
             _parameterUI.SkillBoxes[i].UpdateImageFlick();
         }
+    }
+
+    private bool IsValidBlinkGaugeElement( int elemIndex, int currentActionGauge, int actGaugeConsumption )
+    {
+        return ( currentActionGauge - actGaugeConsumption ) <= elemIndex;
     }
 }

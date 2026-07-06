@@ -412,7 +412,7 @@ namespace Frontier.DebugTools.StageEditor
             status.moveRange            = _refParams.EnemyMoveRange;
             status.jumpForce            = _refParams.EnemyJumpForce;
             status.attackRange          = _refParams.EnemyAtkRange;
-            status.CurActionGauge       = status.maxActionGauge = _refParams.EnemyActGaugeMax;
+            status.CurActionGauge       = status.maxActionGauge = Math.Min( _refParams.EnemyActGaugeMax, Constants.ACTION_GAUGE_MAX );
             status.recoveryActionGauge  = _refParams.EnemyActRecovery;
             status.PrefabIndex          = _refParams.EnemyPrefab;
             status.EquipSkills          = new SkillID[] { ( SkillID ) _refParams.EnemySkill1, ( SkillID ) _refParams.EnemySkill2, ( SkillID ) _refParams.EnemySkill3, ( SkillID ) _refParams.EnemySkill4 };
@@ -463,7 +463,7 @@ namespace Frontier.DebugTools.StageEditor
             data.status.moveRange           = _refParams.EnemyMoveRange;
             data.status.jumpForce           = _refParams.EnemyJumpForce;
             data.status.attackRange         = _refParams.EnemyAtkRange;
-            data.status.CurActionGauge      = data.status.maxActionGauge = _refParams.EnemyActGaugeMax;
+            data.status.CurActionGauge      = data.status.maxActionGauge = Math.Min( _refParams.EnemyActGaugeMax, Constants.ACTION_GAUGE_MAX );
             data.status.recoveryActionGauge = _refParams.EnemyActRecovery;
             data.status.PrefabIndex         = _refParams.EnemyPrefab;
             data.ThinkType     = _refParams.EnemyThinkType;
