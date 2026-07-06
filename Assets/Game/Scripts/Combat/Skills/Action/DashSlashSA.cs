@@ -117,14 +117,17 @@ namespace Frontier.Combat
                 _btlCharaCdr.ApplyDamageExpect( _owner, target );
             }
 
-            _velocity = _owner.GetOrderedForward() * Constants.DASH_SLASH_INITIAL_SPEED;
-
             // ゴーストの位置が移動目標地点
             var ghostObject = _owner.GetGhostObject();
             Debug.Assert( ghostObject != null );
             _goalTileIndex  = ghostObject.TileIndex;
             _goalPosition   = ghostObject.transform.position;
             _owner.CleanupGhost();
+
+            // 向き(GetOrderedForward)ではなく、実座標から算出した目標地点への方向を用いることで、
+            // 向きの補間誤差(CHARACTER_ROT_THRESHOLD等)による直線からのズレを防ぐ
+            var dirXZ = ( _goalPosition - _owner.GetPosition() ).XZ().normalized;
+            _velocity = dirXZ * Constants.DASH_SLASH_INITIAL_SPEED;
 
             _state = DashSlashState.START;
         }
@@ -154,6 +157,7 @@ namespace Frontier.Combat
                     if( Methods.IsPassedPosition( _owner.GetPosition(), _goalPosition, _velocity ) )
                     {
                         _owner.ResetVelocityAcceleration();
+                        _owner.SetPosition( _goalPosition );
                         _owner.BattleParams.TmpParam.CurrentTileIndex = _goalTileIndex;
                         _state = DashSlashState.WAIT_END;
                     }
