@@ -68,15 +68,14 @@ protected Character _opponent                                       = null;
         void Update()
         {
             var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.IsEndCommand;
-            if( endCommand[( int ) COMMAND_TAG.MOVE] &&
-                ( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] ) )
+            if( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] )
             {
-                // 移動後に攻撃またはスキル実行済み → グレー化して行動不可
+                // 攻撃またはスキル実行済み(移動の有無を問わない) → グレー化して行動不可
                 BeImpossibleAction();
             }
-            else if( endCommand[( int ) COMMAND_TAG.MOVE] && _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillQueued )
+            else if( _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillQueued )
             {
-                // 移動後にスキルをキュー積み済み → グレー化せず待機フラグのみ立てて行動不可
+                // スキルをキュー積み済み(移動の有無を問わない) → グレー化せず待機フラグのみ立てて行動不可
                 _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.WAIT, true );
             }
         }
