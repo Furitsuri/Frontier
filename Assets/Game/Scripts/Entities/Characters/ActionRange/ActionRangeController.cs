@@ -322,19 +322,9 @@ namespace Frontier.Entities
 
                 if ( i == pathCount - 1 )
                 {
-                    if ( i == 0 )
-                    {
-                        dirType = MoveDirectionType.ARROW_STRAIGHT;
-                    }
-                    else
-                    {
-                        int prevPrevIndex = ( i == 1 ) ? currentTileIndex : proposedMovePath[i - 2].TileIndex;
-                        ( int ppDx, int ppDz ) = IndexDeltaToXZ( prevTileIndex - prevPrevIndex, colNum );
-                        int cross = ppDx * inDz - ppDz * inDx;
-                        dirType   = cross == 0 ? MoveDirectionType.ARROW_STRAIGHT
-                                  : cross  > 0 ? MoveDirectionType.ARROW_TURN_LEFT
-                                               : MoveDirectionType.ARROW_TURN_RIGHT;
-                    }
+                    // 最終タイルは常に直進のみ有効。曲がり角は必ず直前のタイル(ARROW_BODY_TURN_*)側で
+                    // 既に表現されているため、ここで折れ曲がりを判定すると同じ曲がり角を二重に検出してしまう
+                    dirType  = MoveDirectionType.ARROW_STRAIGHT;
                     rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
                 }
                 else
@@ -350,12 +340,12 @@ namespace Frontier.Entities
                     else if ( cross > 0 )
                     {
                         dirType  = MoveDirectionType.ARROW_BODY_TURN_LEFT;
-                        rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
                     }
                     else
                     {
                         dirType  = MoveDirectionType.ARROW_BODY_TURN_RIGHT;
-                        rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
                     }
                 }
 
