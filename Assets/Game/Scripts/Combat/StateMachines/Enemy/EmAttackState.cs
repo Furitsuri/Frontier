@@ -127,6 +127,8 @@ namespace Frontier.Battle
         {
             //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
             Character diedCharacter = null;
+            if( _attackCharacter.GetStatusRef.IsDead() ) { diedCharacter = _attackCharacter; }
+            if( _targetCharacter != null && _targetCharacter.GetStatusRef.IsDead() ) { diedCharacter = _targetCharacter; }
             if( diedCharacter != null )
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
