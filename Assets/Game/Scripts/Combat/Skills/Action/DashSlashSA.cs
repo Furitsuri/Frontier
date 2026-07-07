@@ -124,6 +124,9 @@ namespace Frontier.Combat
             _goalPosition   = ghostObject.transform.position;
             _owner.CleanupGhost();
 
+            // 着地予定地を予約し、他キャラクターが移動中に留まれないようにする（EndActionで解除）
+            _stageCtrl.TileDataHdlr().ReserveTile( _goalTileIndex );
+
             // 向き(GetOrderedForward)ではなく、実座標から算出した目標地点への方向を用いることで、
             // 向きの補間誤差(CHARACTER_ROT_THRESHOLD等)による直線からのズレを防ぐ
             var dirXZ = ( _goalPosition - _owner.GetPosition() ).XZ().normalized;
@@ -179,6 +182,8 @@ namespace Frontier.Combat
         protected override void EndAction()
         {
             base.EndAction();
+
+            _stageCtrl.TileDataHdlr().ReleaseTile( _goalTileIndex ); // 着地予定地の予約を解除
 
             _stageCtrl.UnbindGridCursor();                          // アタッカーキャラクターの設定を解除
             _stageCtrl.ApplyGridCursor2CharacterTile( _owner );

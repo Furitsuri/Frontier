@@ -18,6 +18,10 @@ namespace Frontier.Stage
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
 
+        // 移動を伴うスキルの着地予定地として予約されているタイルインデックスの集合。
+        // UpdateTileDynamicDatas() の毎フレーム再構築時に、この集合の内容を RESERVED フラグとして反映し直す。
+        private readonly HashSet<int> _reservedTileIndices = new HashSet<int>();
+
         private delegate void RegisterAttackableTileCallback( TileDynamicData[] tiles, int l, int m, int n, CHARACTER_TAG tag, ActionableTileData map );
 
         public delegate void AttackableDataPostProcessor( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData );
@@ -79,6 +83,35 @@ namespace Frontier.Stage
                     tileData.CharaKey   = new CharacterKey( chara.GetStatusRef.characterTag, chara.GetStatusRef.characterIndex );
                 }
             }
+
+            // 予約済みタイルにRESERVEDフラグを立て直す（ResetTileDynamicDatasで消えているため）
+            foreach( var tileIndex in _reservedTileIndices )
+            {
+                var tileData = _stageDataProvider.CurrentData.GetTileDynamicData( tileIndex );
+                Methods.SetBitFlag( ref tileData.Flag, TileBitFlag.RESERVED );
+            }
+        }
+
+        /// <summary>
+        /// 移動を伴うスキルの着地予定地としてタイルを予約し、他キャラクターが留まれないようにします。
+        /// </summary>
+        /// <param name="tileIndex">予約するタイルインデックス（負の場合は何もしません）</param>
+        public void ReserveTile( int tileIndex )
+        {
+            if( tileIndex < 0 ) { return; }
+
+            _reservedTileIndices.Add( tileIndex );
+        }
+
+        /// <summary>
+        /// ReserveTileで行ったタイルの予約を解除します。
+        /// </summary>
+        /// <param name="tileIndex">解除するタイルインデックス（負の場合は何もしません）</param>
+        public void ReleaseTile( int tileIndex )
+        {
+            if( tileIndex < 0 ) { return; }
+
+            _reservedTileIndices.Remove( tileIndex );
         }
 
         public void BeginExpandTargetableTilesWithPartOfRange( int baseTileIndex, int expandRange, CHARACTER_TAG ownerTag, ActionableTileData actionableTileData )

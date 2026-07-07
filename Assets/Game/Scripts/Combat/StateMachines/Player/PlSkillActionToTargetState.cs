@@ -420,6 +420,10 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
             _plOwner.ClearCommandHistory();
 
+            // 移動を伴うスキルの着地予定地を予約し、実行されるまで他キャラクターが留まれないようにする
+            // (解除は実際の実行時、DashSlashSA/JumpSlashSA等のEndActionで行われる)
+            _stageCtrl.TileDataHdlr().ReserveTile( _plOwner.GhostObj?.TileIndex ?? -1 );
+
             _stageCtrl.SetActiveGridCursor( false );
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );

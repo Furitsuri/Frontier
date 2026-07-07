@@ -159,6 +159,9 @@ namespace Frontier.Combat
             _goalPosition  = ghostObject.transform.position;
             _owner.CleanupGhost();
 
+            // 着地予定地を予約し、他キャラクターが移動中に留まれないようにする（EndActionで解除）
+            _stageCtrl.TileDataHdlr().ReserveTile( _goalTileIndex );
+
             _state = JumpSlashState.START;
         }
 
@@ -231,6 +234,8 @@ namespace Frontier.Combat
         protected override void EndAction()
         {
             base.EndAction();
+
+            _stageCtrl.TileDataHdlr().ReleaseTile( _goalTileIndex ); // 着地予定地の予約を解除
 
             _stageCtrl.UnbindGridCursor();
             _stageCtrl.ApplyGridCursor2CharacterTile( _owner );
