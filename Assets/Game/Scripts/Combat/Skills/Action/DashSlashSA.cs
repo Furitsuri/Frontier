@@ -1,15 +1,15 @@
-﻿using Frontier.Battle;
+﻿
+using Frontier.Battle;
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.UI;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Frontier.Combat
 {
-    public class DashSlashSA : SkillActionBase
+    public class DashSlashSA : MovingSkillActionBase
     {
         // SkillID.SKILL_DASH_SLASHが選択されたとき、攻撃範囲の後処理として
         // ActionRangeController.SetupAttackableRangeData から渡されるコールバック
@@ -74,58 +74,20 @@ namespace Frontier.Combat
             END
         }
 
-        private IUiSystem _uiSystem                     = null;
-        private BattleCharacterCoordinator _btlCharaCdr = null;
-        private StageController _stageCtrl              = null;
-
         private DashSlashState _state;
-        private bool _isAttackAnimEnded;
-        private int _goalTileIndex = -1;
         private Vector3 _velocity;
-        private Vector3 _goalPosition;
-        private List<Character> _targetCharacters = null;
 
         [Inject]
-        public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner )
+        public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem )
+            : base( owner, targetCharaKeys, btlRtnCtrl, stageCtrl, uiSystem )
         {
-            _targetCharacters   = new List<Character>();
-            _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
-            _stageCtrl          = stageCtrl;
-            _uiSystem           = uiSystem;
-
-            foreach( var key in targetCharaKeys )
-            {
-                var targetCharacter = _btlCharaCdr.GetCharacter( key );
-                if( null != targetCharacter )
-                {
-                    _targetCharacters.Add( targetCharacter );
-                }
-            }
+            _attackAnimTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
         }
 
         protected override void StartAction()
         {
             base.StartAction();
             Debug.Log( "DashSlashSA: StartAction" );
-
-            _isAttackAnimEnded = false;
-            SortTargetCharactersByDistance();
-
-            // 全ターゲットのダメージ予測を計算
-            foreach( var target in _targetCharacters )
-            {
-                _btlCharaCdr.ApplyDamageExpect( _owner, target );
-            }
-
-            // ゴーストの位置が移動目標地点
-            var ghostObject = _owner.GetGhostObject();
-            Debug.Assert( ghostObject != null );
-            _goalTileIndex  = ghostObject.TileIndex;
-            _goalPosition   = ghostObject.transform.position;
-            _owner.CleanupGhost();
-
-            // 着地予定地を予約し、他キャラクターが移動中に留まれないようにする（EndActionで解除）
-            _stageCtrl.TileDataHdlr().ReserveTile( _goalTileIndex );
 
             // 向き(GetOrderedForward)ではなく、実座標から算出した目標地点への方向を用いることで、
             // 向きの補間誤差(CHARACTER_ROT_THRESHOLD等)による直線からのズレを防ぐ
@@ -155,7 +117,7 @@ namespace Frontier.Combat
                     break;
                 case DashSlashState.SLASHING:
                     UpdateAttack2TargetCharacters();
-                    UpdateSlashAnimEnd();
+                    UpdateAttackAnimEnd();
 
                     if( Methods.IsPassedPosition( _owner.GetPosition(), _goalPosition, _velocity ) )
                     {
@@ -166,7 +128,7 @@ namespace Frontier.Combat
                     }
                     break;
                 case DashSlashState.WAIT_END:
-                    UpdateSlashAnimEnd();
+                    UpdateAttackAnimEnd();
                     if( _isAttackAnimEnded )
                     {
                         _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.WAIT );
@@ -179,83 +141,16 @@ namespace Frontier.Combat
             }
         }
 
-        protected override void EndAction()
-        {
-            base.EndAction();
-
-            _stageCtrl.TileDataHdlr().ReleaseTile( _goalTileIndex ); // 着地予定地の予約を解除
-
-            _stageCtrl.UnbindGridCursor();                          // アタッカーキャラクターの設定を解除
-            _stageCtrl.ApplyGridCursor2CharacterTile( _owner );
-            _stageCtrl.SetActiveGridCursor( true );                 // 選択グリッドを表示
-            _stageCtrl.SetActiveTargetCursor( false );              // ターゲットカーソルを非表示
-        }
-
         protected override bool IsFinished()
         {
             return _state == DashSlashState.END;
         }
 
-        private void SortTargetCharactersByDistance()
-        {
-            Vector3 ownerPos = _owner.GetPosition();
-            _targetCharacters.Sort( ( a, b ) =>
-            {
-                float distA = ( a.GetPosition() - ownerPos ).XZ().sqrMagnitude;
-                float distB = ( b.GetPosition() - ownerPos ).XZ().sqrMagnitude;
-                return distA.CompareTo( distB );
-            } );
-        }
-
-        private bool IsInAttackRange( Character target )
+        protected override bool IsInAttackRange( Character target )
         {
             Vector3 ownerPos  = _owner.GetPosition();
             Vector3 targetPos = target.GetPosition();
             return ( targetPos - ownerPos ).XZ().magnitude <= Constants.DASH_SLASH_ATTACK_TRIGGER_DISTANCE;
-        }
-
-        private void UpdateSlashAnimEnd()
-        {
-            if( !_isAttackAnimEnded )
-            {
-                _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
-            }
-        }
-
-        private bool UpdateAttack2TargetCharacters()
-        {
-            bool attacked = false;
-            for( int i = _targetCharacters.Count - 1; i >= 0; --i )
-            {
-                if( IsInAttackRange( _targetCharacters[i] ) )
-                {
-                    ApplyDamageToTarget( _targetCharacters[i] );
-                    _targetCharacters.RemoveAt( i );
-                    attacked = true;
-                }
-            }
-            return attacked;
-        }
-
-        private void ApplyDamageToTarget( Character target )
-        {
-            int hpChange = target.BattleParams.TmpParam.ExpectedHpChange;
-            target.GetStatusRef.CurHP += hpChange;
-
-            if( hpChange != 0 )
-            {
-                if( target.GetStatusRef.CurHP <= 0 )
-                {
-                    target.GetStatusRef.CurHP = 0;
-                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
-                }
-                else
-                {
-                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );
-                }
-            }
-
-            _uiSystem.BattleUi.ShowDamageOnCharacter( target, 1f );
         }
     }
 }

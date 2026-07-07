@@ -1,4 +1,5 @@
-﻿using Frontier.Battle;
+﻿
+using Frontier.Battle;
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.UI;
@@ -8,7 +9,7 @@ using Zenject;
 
 namespace Frontier.Combat
 {
-    public class JumpSlashSA : SkillActionBase
+    public class JumpSlashSA : MovingSkillActionBase
     {
         // SkillID.SKILL_JUMP_SLASHが選択されたとき、攻撃範囲の後処理として
         // ActionRangeController.SetupAttackableRangeData から渡されるコールバックを生成する
@@ -110,57 +111,22 @@ namespace Frontier.Combat
             END
         }
 
-        private IUiSystem _uiSystem                     = null;
-        private BattleCharacterCoordinator _btlCharaCdr = null;
-        private StageController _stageCtrl              = null;
-
         private JumpSlashState _state;
-        private bool _isAttackAnimEnded;
         private bool _isAtLatter;
-        private int _goalTileIndex = -1;
         private Vector3 _xzVelocity;
-        private Vector3 _goalPosition;
-        private List<Character> _targetCharacters = null;
 
         [Inject]
-        public JumpSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner )
+        public JumpSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem )
+            : base( owner, targetCharaKeys, btlRtnCtrl, stageCtrl, uiSystem )
         {
-            _targetCharacters   = new List<Character>();
-            _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
-            _stageCtrl          = stageCtrl;
-            _uiSystem           = uiSystem;
-
-            foreach( var key in targetCharaKeys )
-            {
-                var targetCharacter = _btlCharaCdr.GetCharacter( key );
-                if( null != targetCharacter )
-                {
-                    _targetCharacters.Add( targetCharacter );
-                }
-            }
+            _attackAnimTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
         }
 
         protected override void StartAction()
         {
             base.StartAction();
 
-            _isAttackAnimEnded = false;
-            _isAtLatter        = false;
-            SortTargetCharactersByDistance();
-
-            foreach( var target in _targetCharacters )
-            {
-                _btlCharaCdr.ApplyDamageExpect( _owner, target );
-            }
-
-            var ghostObject = _owner.GetGhostObject();
-            Debug.Assert( ghostObject != null );
-            _goalTileIndex = ghostObject.TileIndex;
-            _goalPosition  = ghostObject.transform.position;
-            _owner.CleanupGhost();
-
-            // 着地予定地を予約し、他キャラクターが移動中に留まれないようにする（EndActionで解除）
-            _stageCtrl.TileDataHdlr().ReserveTile( _goalTileIndex );
+            _isAtLatter = false;
 
             _state = JumpSlashState.START;
         }
@@ -202,7 +168,7 @@ namespace Frontier.Combat
                         }
 
                         // UpdateAttack2TargetCharacters();
-                        UpdateSlashAnimEnd();
+                        UpdateAttackAnimEnd();
 
                         if( Methods.IsPassedPosition( _owner.GetPosition(), _goalPosition, _xzVelocity ) )
                         {
@@ -217,7 +183,7 @@ namespace Frontier.Combat
                     }
                 case JumpSlashState.WAIT_END:
                     {
-                        UpdateSlashAnimEnd();
+                        UpdateAttackAnimEnd();
                         if( _isAttackAnimEnded )
                         {
                             _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.WAIT );
@@ -231,84 +197,17 @@ namespace Frontier.Combat
             }
         }
 
-        protected override void EndAction()
-        {
-            base.EndAction();
-
-            _stageCtrl.TileDataHdlr().ReleaseTile( _goalTileIndex ); // 着地予定地の予約を解除
-
-            _stageCtrl.UnbindGridCursor();
-            _stageCtrl.ApplyGridCursor2CharacterTile( _owner );
-            _stageCtrl.SetActiveGridCursor( true );
-            _stageCtrl.SetActiveTargetCursor( false );
-        }
-
         protected override bool IsFinished()
         {
             return _state == JumpSlashState.END;
         }
 
-        private void SortTargetCharactersByDistance()
-        {
-            Vector3 ownerPos = _owner.GetPosition();
-            _targetCharacters.Sort( ( a, b ) =>
-            {
-                float distA = ( a.GetPosition() - ownerPos ).XZ().sqrMagnitude;
-                float distB = ( b.GetPosition() - ownerPos ).XZ().sqrMagnitude;
-                return distA.CompareTo( distB );
-            } );
-        }
-
         // スキル使用者と攻撃対象の Y 座標の差が 1.0f 未満になった際を攻撃判定タイミングとする
-        private bool IsInAttackRange( Character target )
+        protected override bool IsInAttackRange( Character target )
         {
             float ownerY  = _owner.GetPosition().y;
             float targetY = target.GetPosition().y;
             return Mathf.Abs( ownerY - targetY ) < 1.0f;
-        }
-
-        private void UpdateSlashAnimEnd()
-        {
-            if( !_isAttackAnimEnded )
-            {
-                _isAttackAnimEnded = _owner.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
-            }
-        }
-
-        private bool UpdateAttack2TargetCharacters()
-        {
-            bool attacked = false;
-            for( int i = _targetCharacters.Count - 1; i >= 0; --i )
-            {
-                if( IsInAttackRange( _targetCharacters[i] ) )
-                {
-                    ApplyDamageToTarget( _targetCharacters[i] );
-                    _targetCharacters.RemoveAt( i );
-                    attacked = true;
-                }
-            }
-            return attacked;
-        }
-
-        private void ApplyDamageToTarget( Character target )
-        {
-            int hpChange = target.BattleParams.TmpParam.ExpectedHpChange;
-            target.GetStatusRef.CurHP += hpChange;
-
-            if( hpChange != 0 )
-            {
-                if( target.GetStatusRef.CurHP <= 0 )
-                {
-                    target.GetStatusRef.CurHP = 0;
-                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
-                }
-                else
-                {
-                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );
-                }
-            }
-
-            _uiSystem.BattleUi.ShowDamageOnCharacter( target, 1f );
         }
     }
 }
