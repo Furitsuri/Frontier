@@ -103,6 +103,25 @@ namespace Frontier.Entities
             _readOnlyOwner.Value.GetStatusRef.CurActionGauge += totalCost;
         }
 
+        /// <summary>
+        /// プレイヤーは移動の有無を問わず、攻撃またはスキルを実行した時点で行動終了とみなします。
+        /// (コマンド選択で移動をせずに攻撃・スキルを選んだ場合でも、その場で行動を終了させるため)
+        /// </summary>
+        protected override void UpdateActionEndState()
+        {
+            var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.IsEndCommand;
+            if( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] )
+            {
+                // 攻撃またはスキル実行済み(移動の有無を問わない) → グレー化して行動不可
+                BeImpossibleAction();
+            }
+            else if( _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillQueued )
+            {
+                // スキルをキュー積み済み(移動の有無を問わない) → グレー化せず待機フラグのみ立てて行動不可
+                _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.WAIT, true );
+            }
+        }
+
         public bool IsContainsCommandHistory( COMMAND_TAG commandTag )
         {
             return _commandHistory.Contains( commandTag );

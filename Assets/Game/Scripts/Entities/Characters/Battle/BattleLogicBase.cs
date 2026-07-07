@@ -67,15 +67,27 @@ protected Character _opponent                                       = null;
 
         void Update()
         {
+            UpdateActionEndState();
+        }
+
+        /// <summary>
+        /// 行動終了判定を更新します。
+        /// 敵・その他キャラクターはAIが「攻撃対象なし」等の理由でATTACK/SKILLを移動前に済み扱いにすることがあるため、
+        /// 既定では移動(MOVE)も完了して初めて行動終了とみなします。
+        /// プレイヤーは移動の有無を問わず攻撃・スキル実行時点で行動終了とみなすため、PlayerBattleLogicでoverrideしています。
+        /// </summary>
+        protected virtual void UpdateActionEndState()
+        {
             var endCommand = _readOnlyOwner.Value.BattleParams.TmpParam.IsEndCommand;
-            if( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] )
+            if( endCommand[( int ) COMMAND_TAG.MOVE] &&
+                ( endCommand[( int ) COMMAND_TAG.ATTACK] || endCommand[( int ) COMMAND_TAG.SKILL] ) )
             {
-                // 攻撃またはスキル実行済み(移動の有無を問わない) → グレー化して行動不可
+                // 移動後に攻撃またはスキル実行済み → グレー化して行動不可
                 BeImpossibleAction();
             }
-            else if( _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillQueued )
+            else if( endCommand[( int ) COMMAND_TAG.MOVE] && _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillQueued )
             {
-                // スキルをキュー積み済み(移動の有無を問わない) → グレー化せず待機フラグのみ立てて行動不可
+                // 移動後にスキルをキュー積み済み → グレー化せず待機フラグのみ立てて行動不可
                 _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.WAIT, true );
             }
         }
