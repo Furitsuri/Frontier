@@ -1,6 +1,9 @@
 ﻿
 using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Sequences;
+using Frontier.Stage;
+using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
 using static Constants;
@@ -8,19 +11,34 @@ using static Constants;
 namespace Frontier.Battle
 {
     /// <summary>
-    /// スキルを予約済みのキャラクターを選択した際に表示する、予約に対する操作(即時実行等)を選ぶステートです。
-    /// PlSelectCommandStateと同様に、選択した項目の値をそのまま子ステートへの遷移先インデックスとして用います。
+    /// スキルを予約済みのキャラクターを選択した際に表示する、予約に対する操作(即時実行等)を選び、
+    /// そのまま実行までを行うステートです。
+    /// PlAttackStateやPlSkillActionToTargetStateと同様、フェーズをまたいでも同一ステート内に留まることで、
+    /// SequenceFacadeによる実行が終わるまでCanAcceptDefaultが入力を拒否し、入力ガイドの表示も自動的に消えます。
     /// </summary>
     public class PlSelectReservedActionState : PlPhaseStateBase, ICommandCursorProvider
     {
+        private enum Phase
+        {
+            SELECT_OPTION = 0,
+            EXECUTING,
+            END,
+        }
+
+        [Inject] private SequenceFacade _sequenceFcd                   = null;
         [Inject] private SkillActionReservationQueue _reservationQueue = null;
 
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
+        private Phase _phase;
+        private Character _target;
 
         public override void Init( object context )
         {
             base.Init( context );
+
+            _phase  = Phase.SELECT_OPTION;
+            _target = null;
 
             _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
 
@@ -35,21 +53,40 @@ namespace Frontier.Battle
             _presenter.InitReservedActionOptionView( this, options );
         }
 
-        protected override void OnActivated()
+        public override bool Update()
         {
-            base.OnActivated();
+            if( base.Update() ) { return true; }
 
-            // 子ステートで予約が実行済み(キューから取り除かれている)であれば、
-            // このキャラクターの行動は完了しているためタイル選択ステートまで戻る
-            if( !_reservationQueue.ContainsAttackerKey( _plOwner.GetCharacterKey() ) )
+            switch( _phase )
             {
-                Back();
+                case Phase.SELECT_OPTION:
+                    break;
+                case Phase.EXECUTING:
+                    // スキルアクションが完了するまでは行動終了状態にしない(完了前にグレー化してしまうのを防ぐ)
+                    if( !_sequenceFcd.IsEmptySequence() ) { break; }
+
+                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+                    _plOwner.ClearCommandHistory();
+
+                    _phase = Phase.END;
+                    break;
+                case Phase.END:
+                    Back();
+                    return true;
             }
+
+            return false;
         }
 
         public override object ExitState()
         {
             _presenter.ExitReservedActionOptionView();
+
+            // 実行フェーズまで進んでいた場合のみ、戦闘後の後始末(カーソル復帰、カメラフォーカス等)を行う
+            if( _phase != Phase.SELECT_OPTION )
+            {
+                OnExitStateAfterCombat( _plOwner, _target );
+            }
 
             return base.ExitState();
         }
@@ -75,6 +112,15 @@ namespace Frontier.Battle
             );
         }
 
+        /// <summary>
+        /// 選択肢実行フェーズに入ってからは、カメラ操作とデバッグ遷移以外の入力を受け付けない
+        /// </summary>
+        protected override bool CanAcceptDefault()
+        {
+            if( _phase != Phase.SELECT_OPTION ) { return false; }
+            return base.CanAcceptDefault();
+        }
+
         public int GetCurrentIndex() => _cmdIdxVal.index;
 
         protected override bool AcceptDirection( InputContext context )
@@ -86,9 +132,68 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            TransitStateWithExit( _cmdIdxVal.value );
+            ExecuteSelectedOption( ( RESERVED_ACTION_OPTION_TAG ) _cmdIdxVal.value );
 
             return true;
+        }
+
+        private void ExecuteSelectedOption( RESERVED_ACTION_OPTION_TAG option )
+        {
+            switch( option )
+            {
+                case RESERVED_ACTION_OPTION_TAG.EXECUTE:
+                    ExecuteReservedAction();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 予約中のスキルアクションをその場で即時実行します
+        /// </summary>
+        private void ExecuteReservedAction()
+        {
+            // 移動を伴うスキルの経路表示矢印は、即時実行を選んだ時点で不要になるため消去する
+            _plOwner.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
+
+            if( !_reservationQueue.TryDequeueByAttackerKey( _plOwner.GetCharacterKey(), out var data ) )
+            {
+                _phase = Phase.END;
+                return;
+            }
+
+            if( data.FocusedTargetCharaKey.IsValid() )
+            {
+                _target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.FocusedTargetCharaKey );
+            }
+
+            // ゴーストを使用するスキル（ダッシュ斬りなど）のためにゴーストを再構築する
+            if( data.GhostTileIndex >= 0 )
+            {
+                var ghost = _plOwner.GetGhostObject();
+                ghost.TileIndex          = data.GhostTileIndex;
+                ghost.transform.position = _stageCtrl.GetTileStaticData( data.GhostTileIndex ).CharaStandPos;
+            }
+
+            for( int i = 0; i < data.AttackerSkillsToggledON.Length; ++i )
+            {
+                _plOwner.BattleParams.TmpParam.IsSkillsToggledON[i] = data.AttackerSkillsToggledON[i];
+            }
+            _plOwner.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
+
+            _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.QUEUED );
+
+            _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+            if( _target != null ) { _target.BattleLogic.ConsumeActionGauge(); }
+
+            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+            {
+                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+            }
+
+            var attackTargetKeys = new List<CharacterKey>( data.AttackTargetCharaKeys );
+            _sequenceFcd.RegistSkillAction( _plOwner, _target, data.UseSkillID, attackTargetKeys );
+
+            _phase = Phase.EXECUTING;
         }
 
         private List<RESERVED_ACTION_OPTION_TAG> GetOptions()
