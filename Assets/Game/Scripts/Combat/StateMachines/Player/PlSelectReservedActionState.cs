@@ -82,10 +82,10 @@ namespace Frontier.Battle
         {
             _presenter.ExitReservedActionOptionView();
 
-            // 実行フェーズまで進んでいた場合のみ、戦闘後の後始末(カーソル復帰、カメラフォーカス等)を行う
+            // 実行フェーズまで進んでいた場合のみ、対象選択の後始末(カーソル復帰、カメラフォーカス等)を行う
             if( _phase != Phase.SELECT_OPTION )
             {
-                OnExitStateAfterCombat( _plOwner, _target );
+                CleanupTargetSelectionState( _plOwner, _target );
             }
 
             return base.ExitState();

@@ -31,7 +31,11 @@ namespace Frontier.Battle
             _btlRtnCtrl.BtlCharaCdr.RemoveCharacterFromList( characterKey );
         }
 
-        protected void OnExitStateAfterCombat( Character ownerChara, Character targetChara )
+        /// <summary>
+        /// 攻撃・スキルの対象選択ステートから退出する際の共通後始末を行います。
+        /// キャンセルされて実行に至らなかった場合でも(ExitStateを通る限り)呼ばれることに注意してください。
+        /// </summary>
+        protected void CleanupTargetSelectionState( Character ownerChara, Character targetChara )
         {
             _stageCtrl.UnbindGridCursor();                                          // アタッカーキャラクターの設定を解除
             _stageCtrl.SetActiveTargetCursor( false );                              // ターゲットカーソルを非表示

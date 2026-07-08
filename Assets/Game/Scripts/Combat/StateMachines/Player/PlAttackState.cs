@@ -110,7 +110,7 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            OnExitStateAfterCombat( _plOwner, _targetCharacter );
+            CleanupTargetSelectionState( _plOwner, _targetCharacter );
 
             return base.ExitState();
         }

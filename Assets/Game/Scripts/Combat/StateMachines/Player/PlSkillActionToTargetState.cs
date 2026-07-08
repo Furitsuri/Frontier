@@ -99,7 +99,7 @@ namespace Frontier.Battle
         public override object ExitState()
         {
             _blinkController.StopAll();
-            OnExitStateAfterCombat( _plOwner, _targetSelector.TargetCharacter );
+            CleanupTargetSelectionState( _plOwner, _targetSelector.TargetCharacter );
 
             if( _isSkillQueued )
             {
