@@ -13,6 +13,7 @@ namespace Frontier.Battle
             CHARACTER_COMMAND = 0,
             CHARACTER_STATUS,
             TURN_END,
+            SELECT_RESERVED_ACTION,
         }
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
@@ -119,6 +120,12 @@ namespace Frontier.Battle
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
             if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
+                // スキル予約済みの場合は、行動終了状態でも予約実行のために選択可能とする
+                if( character.BattleParams.TmpParam.IsSkillQueued )
+                {
+                    return true;
+                }
+
                 return !character.BattleParams.TmpParam.IsEndAction();
             }
             // 敵キャラクター、その他のキャラクターの場合、レンジ表示を行うため常に選択可能
@@ -169,6 +176,13 @@ namespace Frontier.Battle
             // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
             if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
+                // スキル予約済みの場合は、予約に対する操作(即時実行等)の選択画面へ遷移する
+                if( character.BattleParams.TmpParam.IsSkillQueued )
+                {
+                    TransitStateWithExit( ( int ) TransitTag.SELECT_RESERVED_ACTION );
+                    return true;
+                }
+
                 TransitStateWithExit( ( int ) TransitTag.CHARACTER_COMMAND );
                 // コマンドを開くことをチュートリアルへ通知
                 TutorialFacade.Notify( TriggerType.OpenBattleCommand );

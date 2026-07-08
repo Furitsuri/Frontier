@@ -21,6 +21,7 @@ namespace Frontier
         private ICommandCursorProvider _activeCommandScript;
         private string[] _commandTextKeys;
         private string[] _useSkillOptionTextKeys;
+        private string[] _reservedActionOptionTextKeys;
 
         /// <summary>
         /// コマンドの文字列を初期化します
@@ -44,6 +45,12 @@ namespace Frontier
                 "UI_CMD_USE_SKILL_OPTION_COOPERATIVE",  // COOPERATIVE
             };
             Debug.Assert( _useSkillOptionTextKeys.Length == ( int ) USE_SKILL_OPTION_TAG.NUM );
+
+            _reservedActionOptionTextKeys = new string[( int ) RESERVED_ACTION_OPTION_TAG.NUM]
+            {
+                "UI_CMD_RESERVED_ACTION_EXECUTE",  // EXECUTE
+            };
+            Debug.Assert( _reservedActionOptionTextKeys.Length == ( int ) RESERVED_ACTION_OPTION_TAG.NUM );
         }
 
         // Update is called once per frame
@@ -113,6 +120,34 @@ namespace Frontier
                 commandItem.Setup();
                 commandItem.transform.SetParent( this.gameObject.transform, false );
                 commandItem.SetTextKey( _useSkillOptionTextKeys[( int ) options[i]] );
+                _commandItems.Add( commandItem );
+
+                fontSize = commandItem.GetFontSize();
+            }
+
+            ResizeUIBaseRectTransform( fontSize, options.Count );
+        }
+
+        /// <summary>
+        /// スキル予約に対する操作の選択肢リストをUIに設定します。
+        /// 表示する選択肢を options で指定します。
+        /// </summary>
+        public void SetReservedActionOptionList( List<RESERVED_ACTION_OPTION_TAG> options )
+        {
+            float fontSize = 0;
+
+            foreach( var command in _commandItems )
+            {
+                Destroy( command.gameObject );
+            }
+            _commandItems.Clear();
+
+            for( int i = 0; i < options.Count; ++i )
+            {
+                CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "option_" + i );
+                commandItem.Setup();
+                commandItem.transform.SetParent( this.gameObject.transform, false );
+                commandItem.SetTextKey( _reservedActionOptionTextKeys[( int ) options[i]] );
                 _commandItems.Add( commandItem );
 
                 fontSize = commandItem.GetFontSize();

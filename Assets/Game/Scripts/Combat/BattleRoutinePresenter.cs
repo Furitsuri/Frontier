@@ -151,6 +151,19 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetPlayerCommandActive( false );
         }
 
+        public void InitReservedActionOptionView( PlSelectReservedActionState script, List<RESERVED_ACTION_OPTION_TAG> options )
+        {
+            _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
+            _uiSystem.BattleUi.PlCommandWindow.SetReservedActionOptionList( options );
+            _uiSystem.BattleUi.SetPlayerCommandActive( true );
+        }
+
+        public void ExitReservedActionOptionView()
+        {
+            _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( null );
+            _uiSystem.BattleUi.SetPlayerCommandActive( false );
+        }
+
         public void SetConfirmMessage( string message )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.SetMessageText( message );

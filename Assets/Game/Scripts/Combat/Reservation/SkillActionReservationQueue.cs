@@ -42,6 +42,9 @@ namespace Frontier.Battle
         /// <summary>キュー内の全データを列挙します（読み取り専用）</summary>
         public IEnumerable<SkillActionReservationData> GetAll() => _queue;
 
+        /// <summary>指定攻撃者キーの予約がキュー内に存在するかを取得します</summary>
+        public bool ContainsAttackerKey( CharacterKey key ) => _queue.Any( d => d.AttackerKey.Equals( key ) );
+
         /// <summary>
         /// 指定攻撃者キーに一致する最初の予約データをキューから取り出します。
         /// 見つからなかった場合は false を返します。

@@ -90,6 +90,10 @@ namespace Frontier.Battle
              *              ｜       ｜
              *              ｜       ├─ PlConfrimTurnEnd
              *              ｜       ｜
+             *              ｜       ├─ PlSelectReservedActionState (予約に対する操作選択)
+             *              ｜       ｜        ｜
+             *              ｜       ｜        └─ PlExecuteReservedActionState (index 0 : 即時実行)
+             *              ｜       ｜
              *              ｜       └─ PlSelectCommandState
              *              ｜                    ｜
              *              ｜                    ├─ PlWaitState
@@ -118,6 +122,9 @@ namespace Frontier.Battle
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
+            // Children[0].Children[3]はPlSelectReservedActionState。その子にPlExecuteReservedActionStateを追加(index 0 : 即時実行)
+            RootNode.Children[0].Children[3].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlExecuteReservedActionState>( false ) );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );
