@@ -955,6 +955,7 @@ MonoBehaviour:
   _status:
     characterTag: 0
     characterIndex: 0
+    PrefabIndex: 0
     Name: 
     Level: 0
     MaxHP: 0

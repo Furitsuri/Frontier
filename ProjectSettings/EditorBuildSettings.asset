@@ -5,11 +5,17 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Game/Scenes/GameMain_Profiles/Title.unity
     guid: 953f86bc2aa89764888a733a9bd69dbf
   - enabled: 1
-    path: Assets/Game/Scenes/GameMain_Profiles/GameMain.unity
+    path: Assets/Game/Scenes/GameMain_Profiles/BattleScene.unity
     guid: 7613ab97bd0724444b5c6df1a2916c3b
+  - enabled: 1
+    path: Assets/Game/Scenes/Field/FieldScene.unity
+    guid: ab8ab8df5421b3a4fa183ff25ba59067
+  - enabled: 1
+    path: Assets/Game/Scenes/GameMain_Profiles/RecruitScene.unity
+    guid: 50b31a2e512e4ee48873eedfdc7f60c3
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 216fbf96f8526074f929527d6de65639, type: 2}

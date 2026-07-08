@@ -47,6 +47,7 @@ MonoBehaviour:
   _coopCameraXZDistance: 5
   _coopCameraHeight: 4
   _coopCameraLerpDuration: 0.5
+  _vortexIntroZoomOutFactor: 2
   _fadeDuration: 0.5
   _atkCameraLerpDuration: 0.33
   _mosaicStartFadeRate: 0
