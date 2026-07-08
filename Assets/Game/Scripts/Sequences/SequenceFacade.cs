@@ -68,12 +68,27 @@ namespace Frontier.Sequences
 
         /// <summary>
         /// 連携スキルシーケンスをハンドラに登録します。
+        /// 発動前に、参加キャラクターへ順番に渦巻きエフェクトを表示する演出シーケンスを先に登録します。
         /// </summary>
         public void RegistCooperativeSkillAction( List<CooperativeSkillEntry> entries )
         {
+            var participants = entries.ConvertAll( entry => entry.Attacker );
+            RegistCooperativeVortexIntro( participants );
+
             var factory   = _hierarchyBld.InstantiateWithDiContainer<CooperativeSkillSequenceCreator>( false );
             var param     = _hierarchyBld.InstantiateWithDiContainer<CooperativeSkillSequenceParam>( false );
             param.Entries = entries;
+            _handler.Regist( factory.CreateSequence( param ) );
+        }
+
+        /// <summary>
+        /// 連携攻撃発動前の渦巻きエフェクト演出シーケンスをハンドラに登録します。
+        /// </summary>
+        private void RegistCooperativeVortexIntro( List<Character> participants )
+        {
+            var factory        = _hierarchyBld.InstantiateWithDiContainer<CooperativeVortexIntroSequenceCreator>( false );
+            var param          = _hierarchyBld.InstantiateWithDiContainer<CooperativeVortexIntroSequenceParam>( false );
+            param.Participants = participants;
             _handler.Regist( factory.CreateSequence( param ) );
         }
 

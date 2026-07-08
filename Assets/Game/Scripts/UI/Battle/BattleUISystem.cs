@@ -34,6 +34,9 @@ namespace Frontier.UI
         [Header( "DamageUI" )]
         public DamageUI DamageValue;              // ダメージ表記（テンプレート兼第1インスタンス）
 
+        [Header( "CooperativeVortexUI" )]
+        public CooperativeVortexUI CooperativeVortex; // 連携演出用渦巻きエフェクト（テンプレート兼第1インスタンス）
+
         [Header( "PhaseUI" )]
         public PhaseUI Phase;                     // フェーズ表記UI
 
@@ -49,6 +52,9 @@ namespace Frontier.UI
         // キャラクターInstanceID → DamageUI のマッピング（キャラクター毎に個別管理）
         private Dictionary<int, DamageUI> _damageUIByCharaId = new Dictionary<int, DamageUI>();
 
+        // キャラクターInstanceID → CooperativeVortexUI のマッピング（キャラクター毎に個別管理）
+        private Dictionary<int, CooperativeVortexUI> _cooperativeVortexUIByCharaId = new Dictionary<int, CooperativeVortexUI>();
+
         public void Setup()
         {
             LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
@@ -58,12 +64,14 @@ namespace Frontier.UI
             PlCommandWindow?.Setup();
             ConfirmTurnEnd?.Setup();
             DamageValue?.Setup();
+            CooperativeVortex?.Setup();
             Phase?.Setup();
             StageClear?.Setup();
             GameOver?.Setup();
             CommandNameView?.Setup();
 
             DamageValue.Init( _rectTransform, _uiCamera );
+            CooperativeVortex.Init( _rectTransform, _uiCamera );
         }
 
         public void SetActiveLeftParameterWindow( bool isActive )
@@ -150,6 +158,46 @@ namespace Frontier.UI
             {
                 ui.Hide();
             }
+        }
+
+        /// <summary>
+        /// 連携演出用の渦巻きエフェクトを、指定キャラクターの画面上の位置に表示します。
+        /// duration 秒かけて縮小しながら回転し、経過後に自動的に非表示になります。
+        /// </summary>
+        /// <param name="initialScale">縮小開始時の拡大率(等倍=1)</param>
+        public void ShowCooperativeVortexOnCharacter( Character chara, float duration, float initialScale = 1f )
+        {
+            var ui = GetOrCreateCooperativeVortexUI( chara );
+            ui.CharacterTransform = chara.transform;
+            ui.Play( duration, initialScale );
+        }
+
+        /// <summary>
+        /// 生成したすべての CooperativeVortexUI インスタンスを破棄し、管理辞書をクリアします。
+        /// </summary>
+        public void CleanupCooperativeVortexUIs()
+        {
+            foreach( var ui in _cooperativeVortexUIByCharaId.Values )
+            {
+                if( ui != null ) { Destroy( ui.gameObject ); }
+            }
+            _cooperativeVortexUIByCharaId.Clear();
+        }
+
+        /// <summary>
+        /// キャラクターに対応する CooperativeVortexUI インスタンスを返します。
+        /// 存在しない場合は CooperativeVortex をテンプレートとして新規生成します。
+        /// </summary>
+        private CooperativeVortexUI GetOrCreateCooperativeVortexUI( Character chara )
+        {
+            int id = chara.GetInstanceID();
+            if( !_cooperativeVortexUIByCharaId.TryGetValue( id, out CooperativeVortexUI ui ) )
+            {
+                ui = Instantiate( CooperativeVortex, CooperativeVortex.transform.parent );
+                ui.Init( _rectTransform, _uiCamera );
+                _cooperativeVortexUIByCharaId[id] = ui;
+            }
+            return ui;
         }
 
         public void SetTurnType( TurnType turntype )

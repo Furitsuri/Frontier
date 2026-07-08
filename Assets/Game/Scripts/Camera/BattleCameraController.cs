@@ -25,6 +25,10 @@ namespace Frontier
         [SerializeField] private float _coopCameraHeight       = 4.0f;
         [SerializeField] private float _coopCameraLerpDuration = 0.5f;
 
+        // --- 連携演出(渦巻きエフェクト)用カメラパラメータ ---
+        [Header("連携演出(渦巻きエフェクト)用カメラパラメータ")]
+        [SerializeField] private float _vortexIntroZoomOutFactor = 2.0f;   // キャラクター間の広がりに対するカメラを引く量の係数
+
         // --- 攻撃シーケンス用カメラパラメータ ---
         [Header("攻撃シーケンス用カメラパラメータ")]
         [SerializeField] private float _fadeDuration            = 0.4f;
@@ -186,6 +190,36 @@ namespace Frontier
 
         /// <summary>フェードアウトが完了し FOLLOWING モードに戻ったかを返します。</summary>
         public bool IsFadeEnd()    => _activeSequence == null;
+
+        // -----------------------------------------------------------------------
+        // 連携演出(渦巻きエフェクト) API（CooperativeVortexIntroSequence から呼ばれる）
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// 連携演出(渦巻きエフェクト)の開始前に、参加キャラクター全員がカメラに収まるようカメラを引きます。
+        /// </summary>
+        public void FitCharactersForCooperativeVortex( List<Character> characters )
+        {
+            if( characters == null || characters.Count == 0 ) { return; }
+
+            Vector3 center = Vector3.zero;
+            foreach( var chara in characters ) { center += chara.transform.position; }
+            center /= characters.Count;
+
+            float maxDistFromCenter = 0f;
+            foreach( var chara in characters )
+            {
+                float dist = Vector3.Distance( chara.transform.position, center );
+                if( dist > maxDistFromCenter ) { maxDistFromCenter = dist; }
+            }
+
+            float requiredOffset = Mathf.Max( _offsetLength, maxDistFromCenter * _vortexIntroZoomOutFactor );
+
+            _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
+            _sharedState.LookAtPosition     = center;
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * requiredOffset + center;
+            _followElapsedTime              = 0f;
+        }
 
         // -----------------------------------------------------------------------
         // 連携スキルシーケンス API（CooperativeSkillSequence から呼ばれる）

@@ -138,6 +138,14 @@ static public class Constants
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
     // 連携スキルシーケンスにおける各スキル発動の間隔
     public const float COOPERATIVE_SKILL_STAGGER_INTERVAL = 0.3f;
+    // 連携演出(渦巻きエフェクト)の1キャラクターあたりの表示時間
+    public const float COOPERATIVE_VORTEX_DURATION = 0.7f;
+    // 連携演出(渦巻きエフェクト)において、次のキャラクターの表示を開始するタイミング(表示時間に対する割合)
+    public const float COOPERATIVE_VORTEX_NEXT_START_RATE = 0.9f;
+    // 連携演出(渦巻きエフェクト)における1人目の初期スケール(等倍)
+    public const float COOPERATIVE_VORTEX_BASE_SCALE = 1.0f;
+    // 連携演出(渦巻きエフェクト)において、キャラクター1人ごとに初期スケールへ加算する量
+    public const float COOPERATIVE_VORTEX_SCALE_STEP = 0.2f;
     // 毒ダメージの割合
     public const float POISON_DAMAGE_RATE = 0.1f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
