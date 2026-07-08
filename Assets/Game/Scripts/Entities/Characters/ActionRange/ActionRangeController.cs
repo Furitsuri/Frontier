@@ -310,43 +310,35 @@ namespace Frontier.Entities
             int pathCount = proposedMovePath.Count;
             var entries   = new List<MoveDirectionArrowPlacer.Entry>( pathCount );
 
-            for ( int i = 0; i < pathCount; ++i )
+            // 移動目的地となる最終タイルには矢印を配置しないため、pathCount - 1 までを走査する
+            for ( int i = 0; i < pathCount - 1; ++i )
             {
                 int prevTileIndex = ( i == 0 ) ? currentTileIndex : proposedMovePath[i - 1].TileIndex;
                 int thisTileIndex = proposedMovePath[i].TileIndex;
+                int nextTileIndex = proposedMovePath[i + 1].TileIndex;
 
-                ( int inDx, int inDz ) = IndexDeltaToXZ( thisTileIndex - prevTileIndex, colNum );
+                ( int inDx, int inDz )   = IndexDeltaToXZ( thisTileIndex - prevTileIndex, colNum );
+                ( int outDx, int outDz ) = IndexDeltaToXZ( nextTileIndex - thisTileIndex, colNum );
+                int cross                = inDx * outDz - inDz * outDx;
+
+                // 目的地直前のタイル(次で目的地に到達するタイル)は先端に矢印がある種別、
+                // それより前のタイルは胴体の種別を用いる
+                bool isTileBeforeDestination = ( i == pathCount - 2 );
 
                 MoveDirectionType dirType;
-                Quaternion        rotation;
+                Quaternion        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
 
-                if ( i == pathCount - 1 )
+                if ( cross == 0 )
                 {
-                    // 最終タイルは常に直進のみ有効。曲がり角は必ず直前のタイル(ARROW_BODY_TURN_*)側で
-                    // 既に表現されているため、ここで折れ曲がりを判定すると同じ曲がり角を二重に検出してしまう
-                    dirType  = MoveDirectionType.ARROW_STRAIGHT;
-                    rotation = Quaternion.LookRotation( new Vector3( inDx, 0f, inDz ) );
+                    dirType = isTileBeforeDestination ? MoveDirectionType.ARROW_STRAIGHT : MoveDirectionType.ARROW_BODY;
+                }
+                else if ( cross > 0 )
+                {
+                    dirType = isTileBeforeDestination ? MoveDirectionType.ARROW_TURN_LEFT : MoveDirectionType.ARROW_BODY_TURN_LEFT;
                 }
                 else
                 {
-                    int nextTileIndex         = proposedMovePath[i + 1].TileIndex;
-                    ( int outDx, int outDz )  = IndexDeltaToXZ( nextTileIndex - thisTileIndex, colNum );
-                    int cross                 = inDx * outDz - inDz * outDx;
-                    if ( cross == 0 )
-                    {
-                        dirType  = MoveDirectionType.ARROW_BODY;
-                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
-                    }
-                    else if ( cross > 0 )
-                    {
-                        dirType  = MoveDirectionType.ARROW_BODY_TURN_LEFT;
-                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
-                    }
-                    else
-                    {
-                        dirType  = MoveDirectionType.ARROW_BODY_TURN_RIGHT;
-                        rotation = Quaternion.LookRotation( new Vector3( outDx, 0f, outDz ) );
-                    }
+                    dirType = isTileBeforeDestination ? MoveDirectionType.ARROW_TURN_RIGHT : MoveDirectionType.ARROW_BODY_TURN_RIGHT;
                 }
 
                 entries.Add( new MoveDirectionArrowPlacer.Entry( thisTileIndex, dirType, rotation ) );
