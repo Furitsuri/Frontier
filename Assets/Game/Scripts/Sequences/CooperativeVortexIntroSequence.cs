@@ -58,12 +58,14 @@ namespace Frontier.Sequences
 
         /// <summary>
         /// 移動を伴うスキルで連携する場合に残っている、移動先のゴーストと移動経路の矢印表示を消します。
+        /// ゴーストはこの後 MovingSkillActionBase.StartAction() が TileIndex を読み取ってから破棄するため、
+        /// ここでは非表示にするだけに留め、CleanupGhost() で破棄(TileIndexの消失)しないようにします。
         /// </summary>
         private void ClearMoveAssistDisplays()
         {
             foreach( var chara in _participants )
             {
-                chara.CleanupGhost();
+                chara.SetGhostActive( false );
                 chara.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
             }
         }
