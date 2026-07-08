@@ -95,10 +95,8 @@ namespace Frontier.Battle
 
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
-                    // 攻撃したキャラクターの攻撃コマンドを選択不可にする
-                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
-                    // 攻撃コマンド以外も選択不可にする（攻撃後は移動やスキルも使用できないようにするため）
-                    _plOwner.ClearCommandHistory();
+                    // 攻撃コマンドを実行完了として確定する（以前の状態には戻せなくなる）
+                    _plOwner.FinalizeCommand( COMMAND_TAG.ATTACK );
                     // コマンド選択に戻る
                     Back();
 

@@ -21,8 +21,8 @@ namespace Frontier.Battle
         [Inject] private SequenceFacade              _sequenceFcd      = null;
         [Inject] private StageController             _stageCtrl        = null;
 
-        private ExecutionPhase _execPhase;
-        private Character      _lastExecutedAttacker;
+        private ExecutionPhase  _execPhase;
+        private Player          _lastExecutedAttacker;
 
         public override void Init( object context )
         {
@@ -41,7 +41,7 @@ namespace Frontier.Battle
             {
                 if( !_sequenceFcd.IsEmptySequence() ) { return IsBack(); }
 
-                _lastExecutedAttacker?.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
+                _lastExecutedAttacker ?.FinalizeCommand( COMMAND_TAG.SKILL );
 
                 if( !_reservationQueue.IsEmpty )
                 {
@@ -90,7 +90,7 @@ namespace Frontier.Battle
         private void ExecuteNextQueuedAction()
         {
             var data     = _reservationQueue.Dequeue();
-            var attacker = _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.AttackerKey );
+            var attacker = _btlRtnCtrl.BtlCharaCdr.GetPlayer( data.AttackerKey );
             if( attacker == null ) { return; }
 
             _lastExecutedAttacker = attacker;

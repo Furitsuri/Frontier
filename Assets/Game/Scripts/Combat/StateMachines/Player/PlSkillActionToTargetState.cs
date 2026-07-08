@@ -85,8 +85,7 @@ namespace Frontier.Battle
                     _phase = PlSkillActionPhase.PL_SKILL_ACTION_END;
                     break;
                 case PlSkillActionPhase.PL_SKILL_ACTION_END:
-                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
-                    _plOwner.ClearCommandHistory();
+                    _plOwner.FinalizeCommand( COMMAND_TAG.SKILL );
                     Back();
                     return true;
                 default:

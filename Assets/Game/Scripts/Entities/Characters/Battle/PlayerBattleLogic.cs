@@ -64,6 +64,16 @@ namespace Frontier.Entities
             _commandHistory.Clear();
         }
 
+        /// <summary>
+        /// 指定コマンドを実行完了として確定します。以前の状態には戻せなくなるため、
+        /// 攻撃・スキルなど実行し終えたコマンドに対して呼び出してください。
+        /// </summary>
+        public void FinalizeCommand( COMMAND_TAG commandTag )
+        {
+            _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( commandTag, true );
+            ClearCommandHistory();
+        }
+
         public void RevertToPreviousExecCommand( COMMAND_TAG commandTag )
         {
             if( _revertCommandStateFuncs[( int ) commandTag] == null ) { return; }

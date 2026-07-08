@@ -179,6 +179,8 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            // ターゲット選択に遷移するスキルタイプのものがONになっている場合は、ターゲット選択に遷移
+            // それ以外の場合(自身へのバフスキル等)は、スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
             if( SkillID.NONE == _transitTargetSelectSkillID )
             {
                 // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす

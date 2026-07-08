@@ -65,8 +65,7 @@ namespace Frontier.Battle
                     // スキルアクションが完了するまでは行動終了状態にしない(完了前にグレー化してしまうのを防ぐ)
                     if( !_sequenceFcd.IsEmptySequence() ) { break; }
 
-                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );
-                    _plOwner.ClearCommandHistory();
+                    _plOwner.FinalizeCommand( COMMAND_TAG.SKILL );
 
                     _phase = Phase.END;
                     break;

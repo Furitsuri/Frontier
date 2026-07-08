@@ -62,6 +62,15 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 指定コマンドを実行完了として確定します。以前の状態には戻せなくなるため、
+        /// 攻撃・スキルなど実行し終えたコマンドに対して呼び出してください。
+        /// </summary>
+        public void FinalizeCommand( COMMAND_TAG commandTag )
+        {
+            ( ( PlayerBattleLogic ) _battleLogic ).FinalizeCommand( commandTag );
+        }
+
+        /// <summary>
         /// コマンドの可否や位置を以前の状態に巻き戻します
         /// </summary>
         public void RevertBeforeMoving()
