@@ -399,31 +399,10 @@ namespace Frontier.Battle
             {
                 if( !_reservationQueue.TryDequeueByAttackerKey( attacker.GetCharacterKey(), out var data ) ) { continue; }
 
-                if( data.GhostTileIndex >= 0 )
-                {
-                    var ghost = attacker.GetGhostObject();
-                    ghost.TileIndex          = data.GhostTileIndex;
-                    ghost.transform.position = _stageCtrl.GetTileStaticData( data.GhostTileIndex ).CharaStandPos;
-                }
+                var target = ReservedSkillActionApplier.Apply( data, attacker, _stageCtrl, _btlRtnCtrl.BtlCharaCdr );
 
-                for( int i = 0; i < data.AttackerSkillsToggledON.Length; ++i )
-                {
-                    attacker.BattleParams.TmpParam.IsSkillsToggledON[i] = data.AttackerSkillsToggledON[i];
-                }
-                attacker.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
-
-                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.QUEUED );
-                attacker.BattleLogic.ConsumeActionGaugeForSkill();
-
-                var target = data.FocusedTargetCharaKey.IsValid()
-                    ? _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.FocusedTargetCharaKey )
-                    : null;
-                if( target != null ) { target.BattleLogic.ConsumeActionGauge(); }
-
-                if( attacker.BattleLogic.RegistSelfBuffSequences() )
-                {
-                    attacker.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
-                }
+                // 連携に参加した予約側キャラクターも行動終了として確定する(_plOwner分はUpdate()のPL_SKILL_ACTION_ENDで確定される)
+                ( attacker as Player )?.FinalizeCommand( COMMAND_TAG.SKILL );
 
                 entries.Add( _sequenceFcd.CreateCooperativeEntry( data.UseSkillID, attacker, target, new List<CharacterKey>( data.AttackTargetCharaKeys ) ) );
             }

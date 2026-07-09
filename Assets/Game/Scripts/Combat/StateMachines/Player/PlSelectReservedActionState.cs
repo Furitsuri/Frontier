@@ -159,34 +159,7 @@ namespace Frontier.Battle
                 return;
             }
 
-            if( data.FocusedTargetCharaKey.IsValid() )
-            {
-                _target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.FocusedTargetCharaKey );
-            }
-
-            // ゴーストを使用するスキル（ダッシュ斬りなど）のためにゴーストを再構築する
-            if( data.GhostTileIndex >= 0 )
-            {
-                var ghost = _plOwner.GetGhostObject();
-                ghost.TileIndex          = data.GhostTileIndex;
-                ghost.transform.position = _stageCtrl.GetTileStaticData( data.GhostTileIndex ).CharaStandPos;
-            }
-
-            for( int i = 0; i < data.AttackerSkillsToggledON.Length; ++i )
-            {
-                _plOwner.BattleParams.TmpParam.IsSkillsToggledON[i] = data.AttackerSkillsToggledON[i];
-            }
-            _plOwner.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
-
-            _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.QUEUED );
-
-            _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
-            if( _target != null ) { _target.BattleLogic.ConsumeActionGauge(); }
-
-            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
-            {
-                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
-            }
+            _target = ReservedSkillActionApplier.Apply( data, _plOwner, _stageCtrl, _btlRtnCtrl.BtlCharaCdr );
 
             var attackTargetKeys = new List<CharacterKey>( data.AttackTargetCharaKeys );
             _sequenceFcd.RegistSkillAction( _plOwner, _target, data.UseSkillID, attackTargetKeys );

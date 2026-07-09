@@ -96,36 +96,9 @@ namespace Frontier.Battle
             _lastExecutedAttacker = attacker;
             _stageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( attacker );
 
-            Character target = null;
-            if( data.FocusedTargetCharaKey.IsValid() )
-            {
-                target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( data.FocusedTargetCharaKey );
-            }
-
-            // ゴーストを使用するスキル（ダッシュ斬りなど）のためにゴーストを再構築する。
-            // ExitState で CleanupGhost が呼ばれているため、キュー実行時点ではゴーストが存在しない。
-            if( data.GhostTileIndex >= 0 )
-            {
-                var ghost = attacker.GetGhostObject();
-                ghost.TileIndex              = data.GhostTileIndex;
-                ghost.transform.position     = _stageCtrl.GetTileStaticData( data.GhostTileIndex ).CharaStandPos;
-            }
-
-            for( int i = 0; i < data.AttackerSkillsToggledON.Length; ++i )
-            {
-                attacker.BattleParams.TmpParam.IsSkillsToggledON[i] = data.AttackerSkillsToggledON[i];
-            }
-            attacker.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
-
-            attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.QUEUED );
-
-            attacker.BattleLogic.ConsumeActionGaugeForSkill();
-            if( target != null ) { target.BattleLogic.ConsumeActionGauge(); }
-
-            if( attacker.BattleLogic.RegistSelfBuffSequences() )
-            {
-                attacker.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
-            }
+            // ExitState で CleanupGhost が呼ばれているため、キュー実行時点ではゴーストが存在しない
+            // (ReservedSkillActionApplier.Apply内でGhostTileIndexを基に再構築される)
+            var target = ReservedSkillActionApplier.Apply( data, attacker, _stageCtrl, _btlRtnCtrl.BtlCharaCdr );
 
             var attackTargetKeys = new List<CharacterKey>( data.AttackTargetCharaKeys );
             _sequenceFcd.RegistSkillAction( attacker, target, data.UseSkillID, attackTargetKeys );

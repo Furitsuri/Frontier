@@ -90,6 +90,7 @@ namespace Frontier.Battle
                 attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
                 _stageCtrl.TileDataHdlr().ReleaseTile( reservation.GhostTileIndex );
 
+                attacker.BattleParams.TmpParam.IsSkillQueued = false;
                 attacker.BattleParams.TmpParam.EndAction();
                 attacker.ClearCommandHistory();
             }
