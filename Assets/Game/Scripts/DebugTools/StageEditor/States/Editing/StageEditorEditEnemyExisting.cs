@@ -1,8 +1,10 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Registries;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 using static Frontier.DebugTools.StageEditor.StageEditorController;
 
 #if UNITY_EDITOR
@@ -26,6 +28,9 @@ namespace Frontier.DebugTools.StageEditor
             public Func<int>     Getter;
             public Action<int>   Setter;
         }
+
+        [Inject] private PrefabRegistry   _prefabReg        = null;
+        [Inject] private CharacterFactory _characterFactory = null;
 
         private List<ParamDescriptor> _params         = new List<ParamDescriptor>();
         private Character             _boundCharacter = null;
@@ -84,6 +89,8 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( !_confirmed )
             {
+                bool prefabChanged = _refParams.EnemyPrefab != _snapPrefab;
+
                 // Cancel による退出: パラメータとキャラクター位置を編集前に戻す
                 _refParams.EnemyLevel        = _snapLevel;
                 _refParams.EnemyMaxHP        = _snapMaxHP;
@@ -103,7 +110,12 @@ namespace Frontier.DebugTools.StageEditor
                 _refParams.EnemySkill3        = _snapSkill3;
                 _refParams.EnemySkill4        = _snapSkill4;
 
-                if ( _boundCharacter != null )
+                if ( prefabChanged )
+                {
+                    // Prefabが変更されていた場合はモデル自体を元のPrefabで再生成する
+                    RegenerateBoundCharacter( _snapPrefab, _snapCharacterPosition, ( Direction ) _snapInitDir );
+                }
+                else if ( _boundCharacter != null )
                 {
                     _boundCharacter.SetPosition( _snapCharacterPosition );
                     _boundCharacter.SetRotation( ( Direction ) _snapInitDir );
@@ -135,10 +147,14 @@ namespace Frontier.DebugTools.StageEditor
 
         private void BuildParamDescriptors()
         {
+            int maxPrefab = ( _prefabReg != null && _prefabReg.EnemyPrefabs != null )
+                ? Mathf.Max( 0, _prefabReg.EnemyPrefabs.Length - 1 )
+                : 0;
+
             _params.Clear();
             // EnemyParamNames と同じ順・同じインデックスで 13 エントリを揃える
-            // Prefab: 既存キャラクターのプレハブ変更は非対応のため読み取り専用
-            _params.Add( new ParamDescriptor { Name = "Prefab",       Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyPrefab,       Setter = v => { } } );
+            // Prefab を変更した場合、AcceptSub3/4 側で _boundCharacter を新しいPrefabで再生成する
+            _params.Add( new ParamDescriptor { Name = "Prefab",       Min = 0,            Max = maxPrefab,    Getter = () => _refParams.EnemyPrefab,       Setter = v => _refParams.EnemyPrefab       = v } );
             _params.Add( new ParamDescriptor { Name = "Level",        Min = 1,            Max = 99,           Getter = () => _refParams.EnemyLevel,        Setter = v => _refParams.EnemyLevel        = v } );
             _params.Add( new ParamDescriptor { Name = "MaxHP",        Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyMaxHP,        Setter = v => _refParams.EnemyMaxHP        = v } );
             _params.Add( new ParamDescriptor { Name = "Atk",          Min = 0,            Max = 999,          Getter = () => _refParams.EnemyAtk,          Setter = v => _refParams.EnemyAtk          = v } );
@@ -221,6 +237,8 @@ namespace Frontier.DebugTools.StageEditor
 
             var p = _params[_refParams.SelectedEnemyParamIndex];
             p.Setter( Math.Clamp( p.Getter() - 1, p.Min, p.Max ) );
+
+            if ( p.Name == "Prefab" ) RegenerateBoundCharacterAtCurrentPosition();
             return true;
         }
 
@@ -230,7 +248,43 @@ namespace Frontier.DebugTools.StageEditor
 
             var p = _params[_refParams.SelectedEnemyParamIndex];
             p.Setter( Math.Clamp( p.Getter() + 1, p.Min, p.Max ) );
+
+            if ( p.Name == "Prefab" ) RegenerateBoundCharacterAtCurrentPosition();
             return true;
+        }
+
+        /// <summary>
+        /// _boundCharacter の現在位置・向きを引き継いだ状態で、変更後のPrefabで再生成します。
+        /// </summary>
+        private void RegenerateBoundCharacterAtCurrentPosition()
+        {
+            Vector3 position = _boundCharacter != null ? _boundCharacter.transform.position : _snapCharacterPosition;
+            Direction dir     = ( Direction ) _refParams.EnemyInitDir;
+
+            RegenerateBoundCharacter( _refParams.EnemyPrefab, position, dir );
+        }
+
+        /// <summary>
+        /// _boundCharacter を破棄し、指定Prefab・位置・向きで新しいCharacterを生成して差し替えます。
+        /// GridIndexToCharacter の参照も新しいインスタンスへ更新します。
+        /// (Prefabごとにモデルが異なるため、既存インスタンスの見た目を後から変更することは出来ません)
+        /// </summary>
+        private void RegenerateBoundCharacter( int prefabIdx, Vector3 position, Direction dir )
+        {
+            if ( _characterFactory == null )                                     return;
+            if ( _prefabReg == null || _prefabReg.EnemyPrefabs == null )          return;
+            if ( prefabIdx < 0 || _prefabReg.EnemyPrefabs.Length <= prefabIdx )   return;
+
+            if ( _boundCharacter != null ) GameObject.Destroy( _boundCharacter.gameObject );
+
+            _boundCharacter = _characterFactory.CreateCharacter( CHARACTER_TAG.ENEMY, prefabIdx );
+            if ( _boundCharacter == null ) return;
+
+            _boundCharacter.gameObject.name = $"[EnemyEditing_{_refParams.EditingEnemyGridIndex}]";
+            _boundCharacter.SetPosition( position );
+            _boundCharacter.SetRotation( dir );
+
+            _refParams.GridIndexToCharacter[_refParams.EditingEnemyGridIndex] = _boundCharacter;
         }
     }
 }
