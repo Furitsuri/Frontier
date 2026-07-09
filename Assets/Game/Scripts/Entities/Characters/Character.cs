@@ -49,7 +49,7 @@ namespace Frontier.Entities
         public AnimationController AnimCtrl => _animCtrl;                           // アニメーションコントローラの取得
         public TimeScale GetTimeScale => _timeScale;                                // タイムスケールの取得
         public BattleParameters BattleParams => _btlParams;                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
-public BattleLogicBase BattleLogic => _battleLogic;
+        public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
         public GhostObject GhostObj => _ghostObject;
         public ref Status GetStatusRef => ref _status;
@@ -326,6 +326,8 @@ public BattleLogicBase BattleLogic => _battleLogic;
         /// </summary>
         public override void Dispose()
         {
+            if( _isDisposed ) { return; }
+
             // 戦闘時間管理クラスの登録を解除（DI未注入のゴーストオブジェクトからも呼ばれる可能性があるため null チェック）
             _timeScaleCtrl?.Unregist( _timeScale );
 
@@ -336,7 +338,9 @@ public BattleLogicBase BattleLogic => _battleLogic;
             }
 
             _fieldLogic?.Dispose();
+            _fieldLogic = null;
             _battleLogic?.Dispose();
+            _battleLogic = null;
 
             base.Dispose();
         }

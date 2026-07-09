@@ -13,6 +13,8 @@ namespace Frontier.Entities
         protected HierarchyBuilderBase _hierarchyBld    = null;
         protected TransformHandler     _transformHdlr   = null;
         protected int _size                             = Constants.GRID_SIZE_MIN; // グリッドサイズ(Constants.GRID_SIZE_MIN～Constants.GRID_SIZE_MAX)
+        // Dispose()の二重実行を防ぐためのフラグ(明示的なDispose呼び出しの後、Destroy(gameObject)経由でOnDestroyからも呼ばれるため)
+        protected bool _isDisposed                      = false;
 
         private List<int> _occupiedTileIndices = new List<int>();
 
@@ -109,6 +111,9 @@ namespace Frontier.Entities
         /// </summary>
         public virtual void Dispose()
         {
+            if( _isDisposed ) { return; }
+            _isDisposed = true;
+
             Destroy( gameObject );
             Destroy( this );
         }
