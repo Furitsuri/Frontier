@@ -7,19 +7,19 @@
 public interface IInput
 {
     public Direction GetDirectionalPress();
-    public bool IsConfirmPressed();
-    public bool IsCancelPressed();
-    public bool IsToolPressed();
-    public bool IsInfoPressed();
-    public bool IsOptions1Pressed();
-    public bool IsOptions2Pressed();
-    public bool IsSub1Pressed();
-    public bool IsSub2Pressed();
-    public bool IsSub3Pressed();
-    public bool IsSub4Pressed();
-    public bool IsPointerLeftPress();
-    public bool IsPointerRightPress();
-    public bool IsPointerMiddlePress();
+    public bool IsConfirmPressed( InputTriggerMode mode );
+    public bool IsCancelPressed( InputTriggerMode mode );
+    public bool IsToolPressed( InputTriggerMode mode );
+    public bool IsInfoPressed( InputTriggerMode mode );
+    public bool IsOptions1Pressed( InputTriggerMode mode );
+    public bool IsOptions2Pressed( InputTriggerMode mode );
+    public bool IsSub1Pressed( InputTriggerMode mode );
+    public bool IsSub2Pressed( InputTriggerMode mode );
+    public bool IsSub3Pressed( InputTriggerMode mode );
+    public bool IsSub4Pressed( InputTriggerMode mode );
+    public bool IsPointerLeftPress( InputTriggerMode mode );
+    public bool IsPointerRightPress( InputTriggerMode mode );
+    public bool IsPointerMiddlePress( InputTriggerMode mode );
     public Vector2 GetVectorPressed();
-    public bool IsDebugMenuPressed();
+    public bool IsDebugMenuPressed( InputTriggerMode mode );
 }

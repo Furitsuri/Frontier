@@ -154,6 +154,8 @@ static public class Constants
     public const float CONFIRM_INPUT_INTERVAL           = 0.0f;
     public const float CANCEL_INPUT_INTERVAL            = 0.0f;
     public const float OPTIONAL_INPUT_INTERVAL          = 0.0f;
+    // StageEditorでパラメータ値を押しっぱなしで増減させる際のインターバル時間
+    public const float STAGE_EDITOR_VALUE_REPEAT_INTERVAL = 0.1f;
     public const float GUIDE_TEXT_MIN_SIZE              = 10f;
     public const float GUIDE_TEXT_MAX_SIZE              = 20f;
     // ツールチップウィンドウを表示する際に用いるスペース

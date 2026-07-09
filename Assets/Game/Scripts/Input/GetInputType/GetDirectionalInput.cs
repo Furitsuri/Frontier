@@ -19,7 +19,7 @@
         return GetGenericInput();
     }
 
-    public void Apply( InputContext context )
+    public void Apply( InputContext context, InputTriggerMode mode )
     {
         context.Cursor = _callback();
     }

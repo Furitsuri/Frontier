@@ -178,7 +178,7 @@ public class InputHandler : MonoBehaviour
             if( !enable ) { continue; }
 
             InputContext inputContext = new InputContext();
-            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext );
+            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext, code.TriggerMode );
             if( code.ExecuteAcceptInputCallback( inputContext, i ) ) { return true; }   // 入力があった場合は必ずブレークする
         }
 
@@ -194,7 +194,7 @@ public class InputHandler : MonoBehaviour
 
         for( int i = 0; i < iconNum; ++i )
         {
-            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext );
+            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext, code.TriggerMode );
         }
         if( code.ExecuteAcceptSimultaneousInputCallback( inputContext ) ) { return true; }
 

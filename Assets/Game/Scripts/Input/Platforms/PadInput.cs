@@ -15,54 +15,67 @@ public class PadInput : IInput
         return Direction.NONE;
     }
 
-    public bool IsConfirmPressed()
+    /// <summary>
+    /// InputTriggerModeに応じてGetButtonDown(Down)/GetButton(DownRepeat)/GetButtonUp(Up)を出し分けます
+    /// </summary>
+    private static bool GetButtonByMode( string buttonName, InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "Jump" );
+        return mode switch
+        {
+            InputTriggerMode.Down       => Input.GetButtonDown( buttonName ),
+            InputTriggerMode.DownRepeat => Input.GetButton( buttonName ),
+            _                           => Input.GetButtonUp( buttonName ),
+        };
     }
 
-    public bool IsCancelPressed()
+    public bool IsConfirmPressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "Cancel" );
+        return GetButtonByMode( "Jump", mode );
     }
 
-    public bool IsToolPressed()
+    public bool IsCancelPressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "Jump" );
+        return GetButtonByMode( "Cancel", mode );
     }
 
-    public bool IsInfoPressed()
+    public bool IsToolPressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "Cancel" ); ;
+        return GetButtonByMode( "Jump", mode );
     }
 
-    public bool IsOptions1Pressed()
+    public bool IsInfoPressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "Submit" );
+        return GetButtonByMode( "Cancel", mode );
     }
 
-    public bool IsOptions2Pressed()
+    public bool IsOptions1Pressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "Submit" );
+        return GetButtonByMode( "Submit", mode );
     }
 
-    public bool IsSub1Pressed()
+    public bool IsOptions2Pressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "joystick button 4" );
+        return GetButtonByMode( "Submit", mode );
     }
 
-    public bool IsSub2Pressed()
+    public bool IsSub1Pressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "joystick button 5" );
+        return GetButtonByMode( "joystick button 4", mode );
     }
 
-    public bool IsSub3Pressed()
+    public bool IsSub2Pressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "joystick button 6" );
+        return GetButtonByMode( "joystick button 5", mode );
     }
 
-    public bool IsSub4Pressed()
+    public bool IsSub3Pressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "joystick button 7" );
+        return GetButtonByMode( "joystick button 6", mode );
+    }
+
+    public bool IsSub4Pressed( InputTriggerMode mode )
+    {
+        return GetButtonByMode( "joystick button 7", mode );
     }
 
     public Vector2 GetVectorPressed()
@@ -74,23 +87,23 @@ public class PadInput : IInput
     /// パッド操作におけるポインター入力(マウスクリックに該当)は常時ONとしています
     /// </summary>
     /// <returns></returns>
-    public bool IsPointerLeftPress()
+    public bool IsPointerLeftPress( InputTriggerMode mode )
     {
         return true;
     }
 
-    public bool IsPointerRightPress()
+    public bool IsPointerRightPress( InputTriggerMode mode )
     {
         return true;
     }
 
-    public bool IsPointerMiddlePress()
+    public bool IsPointerMiddlePress( InputTriggerMode mode )
     {
         return true;
     }
 
-    public bool IsDebugMenuPressed()
+    public bool IsDebugMenuPressed( InputTriggerMode mode )
     {
-        return Input.GetButtonUp( "joystick button 8" );
+        return GetButtonByMode( "joystick button 8", mode );
     }
 }

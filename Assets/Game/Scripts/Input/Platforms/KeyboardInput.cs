@@ -17,65 +17,78 @@ public class KeyboardInput : IInput
         return Direction.NONE;
     }
 
-    public bool IsConfirmPressed()
+    /// <summary>
+    /// InputTriggerModeに応じてGetKeyDown(Down)/GetKey(DownRepeat)/GetKeyUp(Up)を出し分けます
+    /// </summary>
+    private static bool GetKeyByMode( KeyCode key, InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.Return );
+        return mode switch
+        {
+            InputTriggerMode.Down       => Input.GetKeyDown( key ),
+            InputTriggerMode.DownRepeat => Input.GetKey( key ),
+            _                           => Input.GetKeyUp( key ),
+        };
     }
 
-    public bool IsCancelPressed()
+    public bool IsConfirmPressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.Escape );
+        return GetKeyByMode( KeyCode.Return, mode );
     }
 
-    public bool IsToolPressed()
+    public bool IsCancelPressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.F );
+        return GetKeyByMode( KeyCode.Escape, mode );
     }
 
-    public bool IsInfoPressed()
+    public bool IsToolPressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.R );
+        return GetKeyByMode( KeyCode.F, mode );
     }
 
-    public bool IsOptions1Pressed()
+    public bool IsInfoPressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.P );
+        return GetKeyByMode( KeyCode.R, mode );
     }
 
-    public bool IsOptions2Pressed()
+    public bool IsOptions1Pressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.Tab );
+        return GetKeyByMode( KeyCode.P, mode );
     }
 
-    public bool IsSub1Pressed()
+    public bool IsOptions2Pressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.Q );
+        return GetKeyByMode( KeyCode.Tab, mode );
     }
 
-    public bool IsSub2Pressed()
+    public bool IsSub1Pressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.E );
+        return GetKeyByMode( KeyCode.Q, mode );
     }
 
-    public bool IsSub3Pressed()
+    public bool IsSub2Pressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.Z );
+        return GetKeyByMode( KeyCode.E, mode );
     }
 
-    public bool IsSub4Pressed()
+    public bool IsSub3Pressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.C );
+        return GetKeyByMode( KeyCode.Z, mode );
     }
 
-    public bool IsPointerLeftPress()
+    public bool IsSub4Pressed( InputTriggerMode mode )
+    {
+        return GetKeyByMode( KeyCode.C, mode );
+    }
+
+    public bool IsPointerLeftPress( InputTriggerMode mode )
     {
         return Input.GetMouseButton( INPUT_INDEX_MOUSE_LEFT_CLICK );
     }
-    public bool IsPointerRightPress()
+    public bool IsPointerRightPress( InputTriggerMode mode )
     {
         return Input.GetMouseButton( INPUT_INDEX_MOUSE_RIGHT_CLICK );
     }
-    public bool IsPointerMiddlePress()
+    public bool IsPointerMiddlePress( InputTriggerMode mode )
     {
         return Input.GetMouseButton( INPUT_INDEX_MOUSE_MIDDLE_CLICK );
     }
@@ -92,8 +105,8 @@ public class KeyboardInput : IInput
         return new Vector2( mouseX, mouseY );
     }
 
-    public bool IsDebugMenuPressed()
+    public bool IsDebugMenuPressed( InputTriggerMode mode )
     {
-        return Input.GetKeyUp( KeyCode.F12 );
+        return GetKeyByMode( KeyCode.F12, mode );
     }
 }

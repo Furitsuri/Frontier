@@ -21,7 +21,7 @@ public class GetVectorInput : IGetInputBase, IGetGenericInput<Vector2>
         return GetGenericInput();
     }
 
-    public void Apply( InputContext context )
+    public void Apply( InputContext context, InputTriggerMode mode )
     {
         context.Stick = _callback();
     }

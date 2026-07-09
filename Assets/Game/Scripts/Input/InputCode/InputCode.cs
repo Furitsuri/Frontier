@@ -18,6 +18,7 @@ public class InputCode
     public float InputInterval;                 // 入力処理を有効にするインターバル
     public int RegisterClassHashCode;           // 入力コード登録を行ったクラスのハッシュ値
     public bool IsSimultaneousInput;            // 同時入力か否か
+    public InputTriggerMode TriggerMode;        // ボタン系入力の判定タイミング(Up/Down/DownRepeat)
     private float _inputLastTime;               // 入力処理を行った最後の時間
 
     /// <summary>
@@ -31,7 +32,8 @@ public class InputCode
     /// <param name="acceptInputs">入力時のコールバック</param>
     /// <param name="interval">入力受付のインターバル時間</param>
     /// <param name="hashCode">コード登録を行ったクラスのハッシュ値</param>
-    public InputCode( GuideIcon[] icons, InputCodeStringWrapper explwrapper, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode )
+    /// <param name="triggerMode">ボタン系入力の判定タイミング(既定はUp)</param>
+    public InputCode( GuideIcon[] icons, InputCodeStringWrapper explwrapper, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode, InputTriggerMode triggerMode = InputTriggerMode.Up )
     {
         Icons                   = icons;
         Explanation             = explwrapper;
@@ -41,12 +43,13 @@ public class InputCode
         RegisterClassHashCode   = hashCode;
         _inputLastTime          = 0f;
         IsSimultaneousInput     = false;
+        TriggerMode             = triggerMode;
     }
 
     /// <summary>
     /// 上記と同様ですが、説明文を直接文字列で指定します
     /// </summary>
-    public InputCode( GuideIcon[] icons, string expl, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode )
+    public InputCode( GuideIcon[] icons, string expl, EnableCallback[] enableCbs, IAcceptInputBase[] acceptInputs, float interval, int hashCode, InputTriggerMode triggerMode = InputTriggerMode.Up )
     {
         Icons                   = icons;
         Explanation             = new InputCodeStringWrapper( expl );
@@ -56,13 +59,14 @@ public class InputCode
         RegisterClassHashCode   = hashCode;
         _inputLastTime          = 0f;
         IsSimultaneousInput     = false;
+        TriggerMode             = triggerMode;
     }
 
     /// <summary>
     /// ガイドアイコン及び入力受付関数が単一ケースの入力コードを設定します
     /// 説明文はラッパークラスを使用してください
     /// </summary>
-    public InputCode( GuideIcon icon, InputCodeStringWrapper explwrapper, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
+    public InputCode( GuideIcon icon, InputCodeStringWrapper explwrapper, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode, InputTriggerMode triggerMode = InputTriggerMode.Up )
     {
         Icons           = new GuideIcon[1];
         EnableCbs       = new EnableCallback[1];
@@ -76,12 +80,13 @@ public class InputCode
         RegisterClassHashCode   = hashCode;
         _inputLastTime          = 0f;
         IsSimultaneousInput     = false;
+        TriggerMode             = triggerMode;
     }
 
     /// <summary>
     /// 単一のアイコン、入力受付関数を用い、説明文を直接文字列で指定したい場合に用います
     /// </summary>
-    public InputCode( GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
+    public InputCode( GuideIcon icon, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode, InputTriggerMode triggerMode = InputTriggerMode.Up )
     {
         Icons           = new GuideIcon[1];
         EnableCbs       = new EnableCallback[1];
@@ -95,13 +100,14 @@ public class InputCode
         RegisterClassHashCode   = hashCode;
         _inputLastTime          = 0f;
         IsSimultaneousInput     = false;
+        TriggerMode             = triggerMode;
     }
 
     /// <summary>
     /// 主に同時入力を受付させる場合に用います
     /// 複数のガイドアイコンを設定可能で、説明文や入力受付関数については単一のものを使用します
     /// </summary>
-    public InputCode( GuideIcon[] icons, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode )
+    public InputCode( GuideIcon[] icons, string expl, EnableCallback enableCb, IAcceptInputBase acceptInput, float interval, int hashCode, InputTriggerMode triggerMode = InputTriggerMode.Up )
     {
         EnableCbs = new EnableCallback[1];
         AcceptInputs = new IAcceptInputBase[1];
@@ -114,10 +120,11 @@ public class InputCode
         RegisterClassHashCode   = hashCode;
         _inputLastTime          = 0f;
         IsSimultaneousInput     = true;
+        TriggerMode             = triggerMode;
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     public InputCode Clone()
@@ -129,7 +136,8 @@ public class InputCode
             this.EnableCbs,
             this.AcceptInputs,
             this.InputInterval,
-            this.RegisterClassHashCode
+            this.RegisterClassHashCode,
+            this.TriggerMode
         );
     }
 
@@ -160,6 +168,35 @@ public class InputCode
     static public implicit operator InputCode( (GuideIcon[], string, EnableCallback, IAcceptInputBase, float, int) tuple )
     {
         return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6 );
+    }
+
+    /// <summary>
+    /// 上記に加え、末尾にTriggerModeを指定できる7要素タプル版です。
+    /// 押しっぱなしでの連続受付(DownRepeat)等、Up以外のモードを使いたい場合に利用してください。
+    /// </summary>
+    static public implicit operator InputCode( (GuideIcon[], InputCodeStringWrapper, EnableCallback[], IAcceptInputBase[], float, int, InputTriggerMode) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7 );
+    }
+
+    static public implicit operator InputCode( (GuideIcon[], string, EnableCallback[], IAcceptInputBase[], float, int, InputTriggerMode) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7 );
+    }
+
+    static public implicit operator InputCode( (GuideIcon, InputCodeStringWrapper, EnableCallback, IAcceptInputBase, float, int, InputTriggerMode) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7 );
+    }
+
+    static public implicit operator InputCode( (GuideIcon, string, EnableCallback, IAcceptInputBase, float, int, InputTriggerMode) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7 );
+    }
+
+    static public implicit operator InputCode( (GuideIcon[], string, EnableCallback, IAcceptInputBase, float, int, InputTriggerMode) tuple )
+    {
+        return new InputCode( tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7 );
     }
 
     /// <summary>

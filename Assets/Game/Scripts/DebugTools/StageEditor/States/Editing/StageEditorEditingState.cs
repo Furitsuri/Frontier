@@ -159,11 +159,12 @@ namespace Frontier.DebugTools.StageEditor
                     0.0f, hashCode)
                 : null;
 
+            // 値の増減(Sub3/Sub4)は押しっぱなしでも受け付けられるよう、DownRepeatモード+インターバルで登録する
             InputCode sub34Code = sub34Label != null
                 ? (InputCode)(new GuideIcon[] { GuideIcon.SUB3, GuideIcon.SUB4 }, sub34Label,
                     new EnableCallback[] { CanAcceptSub3, CanAcceptSub4 },
                     new IAcceptInputBase[] { new AcceptContextInput( AcceptSub3 ), new AcceptContextInput( AcceptSub4 ) },
-                    0.0f, hashCode)
+                    STAGE_EDITOR_VALUE_REPEAT_INTERVAL, hashCode, InputTriggerMode.DownRepeat)
                 : null;
 
             InputCode cancelCode = _currentEdit.CanAcceptCancel()

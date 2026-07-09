@@ -10,12 +10,12 @@ public class TouchInput : IInput
         return Direction.NONE;
     }
 
-    public bool IsConfirmPressed()
+    public bool IsConfirmPressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsCancelPressed()
+    public bool IsCancelPressed( InputTriggerMode mode )
     {
         return false;
     }
@@ -25,42 +25,42 @@ public class TouchInput : IInput
         return false;
     }
 
-    public bool IsToolPressed()
+    public bool IsToolPressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsInfoPressed()
+    public bool IsInfoPressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsOptions1Pressed()
+    public bool IsOptions1Pressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsOptions2Pressed()
+    public bool IsOptions2Pressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsSub1Pressed()
+    public bool IsSub1Pressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsSub2Pressed()
+    public bool IsSub2Pressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsSub3Pressed()
+    public bool IsSub3Pressed( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsSub4Pressed()
+    public bool IsSub4Pressed( InputTriggerMode mode )
     {
         return false;
     }
@@ -70,22 +70,22 @@ public class TouchInput : IInput
         return Vector2.zero;
     }
 
-    public bool IsPointerLeftPress()
+    public bool IsPointerLeftPress( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsPointerRightPress()
+    public bool IsPointerRightPress( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsPointerMiddlePress()
+    public bool IsPointerMiddlePress( InputTriggerMode mode )
     {
         return false;
     }
 
-    public bool IsDebugMenuPressed()
+    public bool IsDebugMenuPressed( InputTriggerMode mode )
     {
         return false;
     }
