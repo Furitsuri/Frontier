@@ -23,6 +23,7 @@ namespace Frontier.Battle
         private enum TransitTag
         {
             CHARACTER_STATUS = 0,
+            CONFIRM_KILL_RESERVED_TARGET = 1,
         }
 
         [Inject] private SequenceFacade _sequenceFcd = null;
@@ -32,6 +33,7 @@ namespace Frontier.Battle
         protected string[] _playerSkillNames = null;
         protected Character _targetCharacter = null;
         protected Func<InputContext, bool>[] AccespuSubs;
+        protected bool _isWaitingForKillConfirmResult;
 
         protected void PlPhaseStateInit()
         {
@@ -49,6 +51,7 @@ namespace Frontier.Battle
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _stageCtrl.GetCurrentGridIndex();
             _targetCharacter    = null;
+            _isWaitingForKillConfirmResult = false;
             AccespuSubs         = new Func<InputContext, bool>[]
             {
                 ( context ) => base.AcceptSub1( context ),
@@ -163,6 +166,52 @@ namespace Frontier.Battle
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            if( _isWaitingForKillConfirmResult )
+            {
+                _isWaitingForKillConfirmResult = false;
+                var confirmState = GetChildren<PlConfirmKillReservedTargetState>( ( int ) TransitTag.CONFIRM_KILL_RESERVED_TARGET );
+                if( confirmState != null && confirmState.Confirmed )
+                {
+                    ExecuteAttack();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 対象が他キャラクターの攻撃予約対象であり、かつこの攻撃で倒してしまうかを判定します。
+        /// </summary>
+        protected bool IsLethalToReservedTarget( Character target )
+        {
+            if( target == null || target.GetStatusRef.characterTag != CHARACTER_TAG.ENEMY ) { return false; }
+            if( !_reservationQueue.HasReservationTargeting( target.GetCharacterKey() ) ) { return false; }
+
+            return target.GetStatusRef.CurHP + target.BattleParams.TmpParam.TotalExpectedHpChange <= 0;
+        }
+
+        /// <summary>
+        /// 攻撃を実際に実行します（致死確認が不要な場合、または確認でYESが選ばれた場合に呼ばれます）
+        /// </summary>
+        private void ExecuteAttack()
+        {
+            _plOwner.BattleLogic.ConsumeActionGauge();  // キャラクターのアクションゲージを消費
+            _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
+            _targetCharacter.BattleLogic.ConsumeActionGauge();
+
+            _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
+            _stageCtrl.SetActiveTargetCursor( false );                                    // ターゲットカーソルを一時非表示
+            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
+            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
+
+            // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
+            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+            {
+                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+            }
+
+            _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始
+
+            _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
         }
 
         /// <summary>
@@ -249,24 +298,14 @@ namespace Frontier.Battle
 			// 選択したキャラクターが敵である場合は攻撃開始
 			if( _targetCharacter != null && _targetCharacter.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
             {
-                _plOwner.BattleLogic.ConsumeActionGauge();  // キャラクターのアクションゲージを消費
-                _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
-                _targetCharacter.BattleLogic.ConsumeActionGauge();
-
-                _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
-                _stageCtrl.SetActiveTargetCursor( false );                                    // ターゲットカーソルを一時非表示
-                _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
-                UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
-
-                // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)
-                if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+                if( IsLethalToReservedTarget( _targetCharacter ) )
                 {
-                    _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+                    _isWaitingForKillConfirmResult = true;
+                    TransitState( ( int ) TransitTag.CONFIRM_KILL_RESERVED_TARGET );
+                    return true;
                 }
 
-                _sequenceFcd.RegistAttack( _plOwner, _targetCharacter );          // 攻撃シーケンスの開始
-
-                _phase = PlAttackPhase.PL_ATTACK_EXECUTE;
+                ExecuteAttack();
 
                 return true;
             }

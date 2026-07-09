@@ -28,6 +28,7 @@ namespace Frontier.Battle
             _phase              = PlAttackPhase.PL_ATTACK_SELECT_GRID;
             _curentGridIndex    = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             _targetCharacter    = null;
+            _isWaitingForKillConfirmResult = false;
             AccespuSubs         = new Func<InputContext, bool>[]
             {
                 ( context ) => AcceptSub1Core( context ),

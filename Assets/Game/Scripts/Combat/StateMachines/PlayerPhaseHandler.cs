@@ -129,13 +129,19 @@ namespace Frontier.Battle
             // Children[0].Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)
             RootNode.Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>( false ) );
             RootNode.Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
-            // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateを追加
+            // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateとPlConfirmKillReservedTargetStateを追加
             RootNode.Children[0].Children[0].Children[1].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.Children[0].Children[0].Children[1].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
+            // Children[0].Children[0].Children[0].Children[0]はPlAttackOnMoveState。TransitTag.CONFIRM_KILL_RESERVED_TARGET(=1、PlAttackState側と共通)と
+            // インデックスを揃えるため、CharacterStatusViewStateをChildren[0]として先に追加してからPlConfirmKillReservedTargetStateを追加する
+            RootNode.Children[0].Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.Children[0].Children[0].Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
             // Children[0].Children[0].Children[2]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
             RootNode.Children[0].Children[0].Children[2].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
-            // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewStateとPlSkillUseOptionStateを追加
+            // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewState・PlSkillUseOptionState・PlConfirmKillReservedTargetStateを追加
             RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillUseOptionState>( false ) );
+            RootNode.Children[0].Children[0].Children[2].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
         }
     }
 }

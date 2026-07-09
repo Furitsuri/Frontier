@@ -174,6 +174,21 @@ protected Character _opponent                                       = null;
         }
 
         /// <summary>
+        /// 指定した量のアクションゲージを直接消費させます。
+        /// 予約データ等、既に確定している消費量をそのまま反映したい場合に使用してください
+        /// （現在のTmpParam.ActGaugeConsumptionには依存しません）。
+        /// </summary>
+        public void ConsumeActionGauge( int amount )
+        {
+            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= amount;
+
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            {
+                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).StopFlick();
+            }
+        }
+
+        /// <summary>
         /// スキルによるアクションゲージの消費を反映し、ゲージのUIの表示を更新します
         /// </summary>
         public void ConsumeActionGaugeForSkill()

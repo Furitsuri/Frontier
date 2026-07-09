@@ -13,6 +13,7 @@ namespace Frontier.Battle
     {
         [Inject] protected BattleRoutineController _btlRtnCtrl  = null;
         [Inject] protected StageController _stageCtrl           = null;
+        [Inject] protected SkillActionReservationQueue _reservationQueue = null;
 
         protected BattleRoutinePresenter _presenter = null;
 
@@ -49,6 +50,7 @@ namespace Frontier.Battle
             {
                 var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
                 NorifyCharacterDied( key );
+                ForceEndExhaustedReservations( key );
                 diedCharacter.Dispose();    // 破棄
             }
 
@@ -66,6 +68,31 @@ namespace Frontier.Battle
 
             // タイルメッシュの描画をすべてクリア
             ownerChara.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
+        }
+
+        /// <summary>
+        /// 死亡したキャラクターを攻撃対象としていた予約のうち、攻撃対象が全滅したものを強制的に行動終了させます。
+        /// 予約していたスキルは実行されず、その場でゲージのみ消費して行動を終えます
+        /// （攻撃対象の一部のみが死亡し、他に生存対象が残っている予約はそのまま継続されます）。
+        /// </summary>
+        private void ForceEndExhaustedReservations( in CharacterKey deadTargetKey )
+        {
+            var exhausted = _reservationQueue.RemoveDeadTargetFromAll( deadTargetKey );
+            foreach( var reservation in exhausted )
+            {
+                var attacker = _btlRtnCtrl.BtlCharaCdr.GetPlayer( reservation.AttackerKey );
+                if( attacker == null ) { continue; }
+
+                attacker.BattleLogic.ConsumeActionGauge( reservation.ActGaugeConsumption );
+
+                attacker.SetGhostActive( false );
+                attacker.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
+                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
+                _stageCtrl.TileDataHdlr().ReleaseTile( reservation.GhostTileIndex );
+
+                attacker.BattleParams.TmpParam.EndAction();
+                attacker.ClearCommandHistory();
+            }
         }
     }
 }

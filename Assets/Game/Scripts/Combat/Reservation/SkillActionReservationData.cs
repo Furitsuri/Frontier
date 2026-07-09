@@ -1,6 +1,7 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Frontier.Battle
 {
@@ -49,6 +50,9 @@ namespace Frontier.Battle
 
         /// <summary>フォーカス中のターゲットキー（対象なしの場合 CharacterKey.Invalid）</summary>
         public CharacterKey FocusedTargetCharaKey { get; }
+
+        /// <summary>攻撃対象が1体以上残っているか</summary>
+        public bool HasAnyTarget => AttackTargetCharaKeys.Count > 0;
 
         // --- 予測ダメージ ---
 
@@ -106,6 +110,26 @@ namespace Frontier.Battle
             TargetExpectedHpChange        = targetExpectedHpChange;
             TargetTotalExpectedHpChange   = targetTotalExpectedHpChange;
             GhostTileIndex                = ghostTileIndex;
+        }
+
+        /// <summary>
+        /// 指定したキャラクターキーを攻撃対象リストから除外した新しいインスタンスを返します。
+        /// フォーカス対象が除外された場合は、残っている対象の先頭を新たなフォーカス対象とします
+        /// （残っている対象がない場合は CharacterKey.Invalid）。
+        /// </summary>
+        public SkillActionReservationData WithTargetRemoved( CharacterKey deadTargetKey )
+        {
+            var remainingTargets = AttackTargetCharaKeys.Where( key => key != deadTargetKey ).ToList();
+            var newFocusedKey    = ( FocusedTargetCharaKey == deadTargetKey )
+                ? ( remainingTargets.Count > 0 ? remainingTargets[0] : CharacterKey.Invalid )
+                : FocusedTargetCharaKey;
+
+            return new SkillActionReservationData(
+                AttackerKey, AttackerTileIndex, AttackerSkillsToggledON, ActGaugeConsumption,
+                UseSkillID, TargetingMode, CurrentRange, MaxRange, IsAdjustableRange, IsMovingSkill,
+                remainingTargets, newFocusedKey,
+                AttackerExpectedHpChange, AttackerTotalExpectedHpChange, TargetExpectedHpChange, TargetTotalExpectedHpChange,
+                GhostTileIndex );
         }
     }
 }

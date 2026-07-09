@@ -26,7 +26,6 @@ namespace Frontier.Battle
         }
 
         [Inject] private SequenceFacade _sequenceFcd                   = null;
-        [Inject] private SkillActionReservationQueue _reservationQueue = null;
 
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;

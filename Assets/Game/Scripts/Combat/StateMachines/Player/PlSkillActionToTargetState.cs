@@ -16,6 +16,7 @@ namespace Frontier.Battle
         {
             CHARACTER_STATUS = 0,
             USE_SKILL_OPTION  = 1,
+            CONFIRM_KILL_RESERVED_TARGET = 2,
         }
 
         protected enum PlSkillActionPhase : int
@@ -26,12 +27,12 @@ namespace Frontier.Battle
         }
 
         private bool _isWaitingForOptionResult;
+        private bool _isWaitingForKillConfirmResult;
         private bool _isSkillQueued;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
 
         private SequenceFacade _sequenceFcd                   = null;
-        private SkillActionReservationQueue _reservationQueue = null;
         private SkillTargetSelector _targetSelector           = null;
         private CooperativeBlinkController _blinkController   = null;
 
@@ -53,7 +54,8 @@ namespace Frontier.Battle
         {
             base.Init( context );
 
-            _isWaitingForOptionResult = false;
+            _isWaitingForOptionResult      = false;
+            _isWaitingForKillConfirmResult = false;
             _isSkillQueued            = false;
 
             ReceiveContext( ref _useSkillID, context );
@@ -148,7 +150,7 @@ namespace Frontier.Battle
                 switch( optionState?.SelectedOption )
                 {
                     case USE_SKILL_OPTION_TAG.EXECUTION:
-                        ExecuteSkill();
+                        TryExecuteSkillWithKillConfirm();
                         break;
 
                     case USE_SKILL_OPTION_TAG.QUEUE:
@@ -167,6 +169,15 @@ namespace Frontier.Battle
                         _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
                         _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
                         break;
+                }
+            }
+            else if( _isWaitingForKillConfirmResult )
+            {
+                _isWaitingForKillConfirmResult = false;
+                var confirmState = GetChildren<PlConfirmKillReservedTargetState>( ( int ) TransitTag.CONFIRM_KILL_RESERVED_TARGET );
+                if( confirmState != null && confirmState.Confirmed )
+                {
+                    ExecuteSkill();
                 }
             }
         }
@@ -234,7 +245,7 @@ namespace Frontier.Battle
             }
             else
             {
-                ExecuteSkill();
+                TryExecuteSkillWithKillConfirm();
             }
 
             return true;
@@ -298,6 +309,30 @@ namespace Frontier.Battle
                 _targetSelector.UpdateFocusedTarget( _btlRtnCtrl.BtlCharaCdr.GetTargetCharacter() );
                 _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetSelector.TargetCharacter );
             }
+        }
+
+        /// <summary>
+        /// 対象が他キャラクターの攻撃予約対象であり、かつこの攻撃で倒してしまう場合は確認ダイアログを挟みます。
+        /// 該当しない場合はそのままスキルを実行します。
+        /// </summary>
+        private void TryExecuteSkillWithKillConfirm()
+        {
+            if( IsLethalToReservedTarget( _targetSelector.TargetCharacter ) )
+            {
+                _isWaitingForKillConfirmResult = true;
+                TransitState( ( int ) TransitTag.CONFIRM_KILL_RESERVED_TARGET );
+                return;
+            }
+
+            ExecuteSkill();
+        }
+
+        private bool IsLethalToReservedTarget( Character target )
+        {
+            if( target == null || target.GetStatusRef.characterTag != CHARACTER_TAG.ENEMY ) { return false; }
+            if( !_reservationQueue.HasReservationTargeting( target.GetCharacterKey() ) ) { return false; }
+
+            return target.GetStatusRef.CurHP + target.BattleParams.TmpParam.TotalExpectedHpChange <= 0;
         }
 
         private void ExecuteSkill()
