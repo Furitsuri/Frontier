@@ -38,10 +38,8 @@ namespace Frontier.Entities.Ai
                 var tileIndex = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.ElementAt( i ).Key;
                 var tileDynamicData = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.ElementAt( i ).Value;
 
-                // 移動可能地点、かつキャラクターが存在しておらず(自分自身は有効)、他キャラクターの着地予約(RESERVED)もされていないタイルを取得
-                if( 0 <= tileDynamicData.EstimatedMoveRange
-                    && ( !tileDynamicData.CharaKey.IsValid() || tileDynamicData.CharaKey == ownerKey )
-                    && !Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.RESERVED ) )
+                // 移動可能地点、かつ自身が立てるタイルを取得
+                if( 0 <= tileDynamicData.EstimatedMoveRange && tileDynamicData.IsStandableBy( ownerKey ) )
                 {
                     // タイルの十字方向に存在する敵対キャラクターを抽出
                     List<CharacterKey> opponentKeys;

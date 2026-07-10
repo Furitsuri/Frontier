@@ -55,6 +55,16 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 指定したキャラクターがこのタイルに立てる(移動先・着地先として選択できる)かどうかを判定します。
+        /// 占有者がいない、または占有者が自分自身であり、かつ他キャラクターの着地予約(RESERVED)がされていないことを条件とします。
+        /// </summary>
+        /// <param name="selfKey">判定を行うキャラクター自身のキー(自分自身が占有しているタイルには留まれるようにするため)</param>
+        public bool IsStandableBy( CharacterKey selfKey )
+        {
+            return ( CharaKey == selfKey || !CharaKey.IsValid() ) && !Methods.HasAnyFlag( Flag, TileBitFlag.RESERVED );
+        }
+
+        /// <summary>
         /// 現在の状態をクローンして対象に渡します
         /// </summary>
         /// <returns>クローンオブジェクト</returns>

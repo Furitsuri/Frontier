@@ -151,9 +151,9 @@ public class MovePathHandler
 
             // 移動レンジを超えれば終了
             if ( range < 0 ) { break; }
-            // グリッド上にキャラクターが存在せず、かつ他キャラクターの着地予約(RESERVED)もされていないことを確認して更新
+            // 立てるタイルであることを確認して更新
             var tileData = _stageCtrl.GetTileDynamicData( p.TileIndex );
-            if ( !tileData.IsExistCharacter() && !Methods.HasAnyFlag( tileData.Flag, TileBitFlag.RESERVED ) ) { reachableTileIndex = p.TileIndex; }
+            if ( tileData.IsStandableBy( _owner.GetCharacterKey() ) ) { reachableTileIndex = p.TileIndex; }
         }
 
         // 移動可能なタイルが1つも見つからなかった場合はパスを空のまま返す
@@ -175,10 +175,7 @@ public class MovePathHandler
     /// <returns>留まることの可否</returns>
     public bool CanStandOnTile( TileDynamicData tileDynamicData )
     {
-        // 有効 かつ 自身以外のCharacterが存在せず、かつ他キャラクターの着地予約(RESERVED)もされていない
-        return ( null != tileDynamicData )
-            && ( tileDynamicData.CharaKey == _owner.GetCharacterKey() || !tileDynamicData.CharaKey.IsValid() )
-            && !Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.RESERVED );
+        return ( null != tileDynamicData ) && tileDynamicData.IsStandableBy( _owner.GetCharacterKey() );
     }
 
     public TileStaticData GetFocusedTileStaticData()

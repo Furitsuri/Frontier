@@ -156,7 +156,7 @@ namespace Frontier.Entities
             // スキル固有リゾルバがあればそれを使い、なければデフォルト（最遠の空きタイル）でゴーストを決定する
             int ghostTileIdx = context.GhostResolver != null
                 ? context.GhostResolver( tileIndex, actionableTileData, context.StageCtrl )
-                : ResolveDefaultGhostTile( tileIndex, actionableTileData, context.StageCtrl );
+                : ResolveDefaultGhostTile( tileIndex, actionableTileData, context.StageCtrl, context.Owner.GetCharacterKey() );
 
             // ゴースト位置より遠いタイルをターゲット可能マップおよび攻撃対象から除外する
             // スキル固有フィルタ (context.RangeAdjustmentFilter) がある場合はそれに委譲し、
@@ -193,7 +193,7 @@ namespace Frontier.Entities
         /// <summary>
         /// デフォルトのゴーストタイル決定ロジック。ターゲット可能タイルのうち最も遠い空きタイルを返します。
         /// </summary>
-        static private int ResolveDefaultGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl )
+        static private int ResolveDefaultGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey )
         {
             int ghostTileIdx = -1;
             var sortedTargetableMap = actionableTileData.TargetableTileMap
@@ -201,8 +201,8 @@ namespace Frontier.Entities
 
             foreach( var targetableMap in sortedTargetableMap )
             {
-                // 生存キャラクターが存在するタイル、および他キャラクターが着地予約(RESERVED)しているタイルは候補から除外する
-                if( targetableMap.Value.IsExistCharacter() || Methods.HasAnyFlag( targetableMap.Value.Flag, TileBitFlag.RESERVED ) ) { continue; }
+                // 立てないタイル(生存キャラクターが存在する、または他キャラクターが着地予約(RESERVED)している)は候補から除外する
+                if( !targetableMap.Value.IsStandableBy( selfKey ) ) { continue; }
                 ghostTileIdx = targetableMap.Key;
             }
 
@@ -283,9 +283,8 @@ namespace Frontier.Entities
 
             if( targetableTileMap.Count <= 0 ) { return -1; }
 
-            // 生存キャラクターが存在するタイル、および他キャラクターが着地予約(RESERVED)しているタイルは候補としない
-            var lastTile = targetableTileMap.Last().Value;
-            if( lastTile.IsExistCharacter() || Methods.HasAnyFlag( lastTile.Flag, TileBitFlag.RESERVED ) )
+            // 立てないタイル(生存キャラクターが存在する、または他キャラクターが着地予約(RESERVED)している)は候補としない
+            if( !targetableTileMap.Last().Value.IsStandableBy( context.Owner.GetCharacterKey() ) )
             {
                 return -1;
             }
