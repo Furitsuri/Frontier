@@ -11,13 +11,17 @@ public class DamageUI : UiMonoBehaviour
 
     void Update()
     {
-        if( CharacterTransform == null ) { return; }
-
-        var pos         = Vector2.zero;
-        var worldCamera = Camera.main;
-        var screenPos   = RectTransformUtility.WorldToScreenPoint( worldCamera, CharacterTransform.position );
-        RectTransformUtility.ScreenPointToLocalPointInRectangle( _btlUiRectTransform, screenPos, _btlUiCamera, out pos );
-        GetComponent<RectTransform>().localPosition = pos;
+        // 対象キャラクターが破棄され CharacterTransform が null になった後も、
+        // 自動非表示のカウントダウン(_remainingTime)は進める必要があるため、
+        // 位置追従処理とは独立して進行させる
+        if( CharacterTransform != null )
+        {
+            var pos         = Vector2.zero;
+            var worldCamera = Camera.main;
+            var screenPos   = RectTransformUtility.WorldToScreenPoint( worldCamera, CharacterTransform.position );
+            RectTransformUtility.ScreenPointToLocalPointInRectangle( _btlUiRectTransform, screenPos, _btlUiCamera, out pos );
+            GetComponent<RectTransform>().localPosition = pos;
+        }
 
         if( _remainingTime > 0f )
         {
