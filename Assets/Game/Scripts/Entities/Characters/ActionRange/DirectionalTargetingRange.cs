@@ -201,7 +201,8 @@ namespace Frontier.Entities
 
             foreach( var targetableMap in sortedTargetableMap )
             {
-                if( targetableMap.Value.IsExistCharacter() ) { continue; }
+                // 生存キャラクターが存在するタイル、および他キャラクターが着地予約(RESERVED)しているタイルは候補から除外する
+                if( targetableMap.Value.IsExistCharacter() || Methods.HasAnyFlag( targetableMap.Value.Flag, TileBitFlag.RESERVED ) ) { continue; }
                 ghostTileIdx = targetableMap.Key;
             }
 
@@ -269,8 +270,9 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ターゲット可能範囲内で敵が存在しないタイルのうち、スキル使用者から最も遠いタイルのインデックスを返します。
-        /// 敵が存在しない有効なタイルが1つもない場合は -1 を返します。
+        /// ターゲット可能範囲内で敵・他キャラクターの着地予約(RESERVED)が存在しないタイルのうち、
+        /// スキル使用者から最も遠いタイルのインデックスを返します。
+        /// 該当する有効なタイルが1つもない場合は -1 を返します。
         /// isMovingSkillがtrueの場合はキャラクターの存在有無で判定します。
         /// (AdjustRangeForMoveが攻撃対象インデックスを変更するため、attackTargetIndicesは信頼できないため)
         /// </summary>
@@ -279,7 +281,11 @@ namespace Frontier.Entities
             var actionableTileData  = actionRangeCtrl.ActionableTileData;
             var targetableTileMap   = actionableTileData.TargetableTileMap;
 
-            if( targetableTileMap.Count <= 0 || targetableTileMap.Last().Value.IsExistCharacter() )
+            if( targetableTileMap.Count <= 0 ) { return -1; }
+
+            // 生存キャラクターが存在するタイル、および他キャラクターが着地予約(RESERVED)しているタイルは候補としない
+            var lastTile = targetableTileMap.Last().Value;
+            if( lastTile.IsExistCharacter() || Methods.HasAnyFlag( lastTile.Flag, TileBitFlag.RESERVED ) )
             {
                 return -1;
             }
