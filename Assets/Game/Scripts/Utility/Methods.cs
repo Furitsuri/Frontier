@@ -1,13 +1,11 @@
-﻿using Frontier.Entities;
-using Newtonsoft.Json;
-using System;
-using System.Diagnostics;
-using System.Text.Json;
-using Unity.VisualScripting.Dependencies.Sqlite;
+﻿using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 
+/// <summary>
+/// プロジェクトに関係なく使用可能な汎用的なメソッドをまとめたクラスです
+/// プロジェクトに依存する要素を含むメソッドはこちらには定義せず、プロジェクト固有の名前空間に定義することを推奨します
+/// </summary>
 static public class Methods
 {
     /// <summary>
@@ -251,39 +249,6 @@ static public class Methods
         // MEMO : vecの値によって向きが変わる可能性があるため、EulerではなくAngleAxisを用いる
         var rotateQuat = Quaternion.AngleAxis( roll, rollAxis ) * Quaternion.AngleAxis( pitch, pitchAxis ) * Quaternion.AngleAxis( yaw, yawAxis );
         return rotateQuat * vec;
-    }
-
-    /// <summary>
-    /// より味方に近いキャラクターを比較して返します
-    /// </summary>
-    /// <param name="former">前者</param>
-    /// <param name="latter">後者</param>
-    /// <returns>前者と後者のうち、より味方に近い側</returns>
-    static public Character CompareAllyCharacter( Character former, Character latter )
-    {
-        var formerTag = former.GetStatusRef.characterTag;
-        var latterTag = latter.GetStatusRef.characterTag;
-
-        if ( formerTag != CHARACTER_TAG.PLAYER )
-        {
-            if( latterTag == CHARACTER_TAG.PLAYER )
-            {
-                return latter;
-            }
-            else
-            {
-                if( formerTag == CHARACTER_TAG.OTHER )
-                {
-                    return former;
-                }
-                else
-                {
-                    return latter;
-                }
-            }
-        }
-
-        return former;
     }
 
     /// <summary>
