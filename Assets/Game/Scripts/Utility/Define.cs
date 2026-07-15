@@ -139,7 +139,7 @@ static public class Constants
     // 連携スキルシーケンスにおける各スキル発動の間隔
     public const float COOPERATIVE_SKILL_STAGGER_INTERVAL = 0.3f;
     // 連携演出(渦巻きエフェクト)の1キャラクターあたりの表示時間
-    public const float COOPERATIVE_VORTEX_DURATION = 0.7f;
+    public const float COOPERATIVE_VORTEX_DURATION = 1.0f;
     // 連携演出(渦巻きエフェクト)において、次のキャラクターの表示を開始するタイミング(表示時間に対する割合)
     public const float COOPERATIVE_VORTEX_NEXT_START_RATE = 0.9f;
     // 連携演出(渦巻きエフェクト)における1人目の初期スケール(等倍)

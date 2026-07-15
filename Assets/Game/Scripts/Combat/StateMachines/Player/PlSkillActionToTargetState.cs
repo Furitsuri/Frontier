@@ -29,6 +29,7 @@ namespace Frontier.Battle
         private bool _isWaitingForOptionResult;
         private bool _isWaitingForKillConfirmResult;
         private bool _isSkillQueued;
+        private bool _isCooperativeSkill;
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
 
@@ -57,6 +58,7 @@ namespace Frontier.Battle
             _isWaitingForOptionResult      = false;
             _isWaitingForKillConfirmResult = false;
             _isSkillQueued            = false;
+            _isCooperativeSkill       = false;
 
             ReceiveContext( ref _useSkillID, context );
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
@@ -87,7 +89,8 @@ namespace Frontier.Battle
                     _phase = PlSkillActionPhase.PL_SKILL_ACTION_END;
                     break;
                 case PlSkillActionPhase.PL_SKILL_ACTION_END:
-                    _plOwner.FinalizeCommand( COMMAND_TAG.SKILL );
+                    // 連携攻撃の場合、行動終了の確定は CooperativeSkillSequence.End() で参加キャラクター全員分まとめて行う
+                    if( !_isCooperativeSkill ) { _plOwner.FinalizeCommand( COMMAND_TAG.SKILL ); }
                     Back();
                     return true;
                 default:
@@ -392,6 +395,8 @@ namespace Frontier.Battle
 
         private void ExecuteCooperativeSkill()
         {
+            _isCooperativeSkill = true;
+
             var cooperativeAttackers = _blinkController.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
             var entries = new List<CooperativeSkillEntry>( cooperativeAttackers.Count + 1 );
 
@@ -401,8 +406,7 @@ namespace Frontier.Battle
 
                 var target = ReservedSkillActionApplier.Apply( data, attacker, _stageCtrl, _btlRtnCtrl.BtlCharaCdr );
 
-                // 連携に参加した予約側キャラクターも行動終了として確定する(_plOwner分はUpdate()のPL_SKILL_ACTION_ENDで確定される)
-                ( attacker as Player )?.FinalizeCommand( COMMAND_TAG.SKILL );
+                // 行動終了の確定は、連携攻撃が完全に終わったタイミングで参加キャラクター全員分まとめて CooperativeSkillSequence.End() で行う
 
                 entries.Add( _sequenceFcd.CreateCooperativeEntry( data.UseSkillID, attacker, target, new List<CharacterKey>( data.AttackTargetCharaKeys ) ) );
             }

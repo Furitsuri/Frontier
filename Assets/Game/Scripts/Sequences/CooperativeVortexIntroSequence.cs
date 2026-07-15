@@ -1,7 +1,9 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Registries;
 using Frontier.UI;
 using System.Collections.Generic;
+using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -14,8 +16,10 @@ namespace Frontier.Sequences
     /// </summary>
     public class CooperativeVortexIntroSequence : ISequence
     {
-        [Inject] private IUiSystem               _uiSystem   = null;
-        [Inject] private BattleRoutineController _btlRtnCtrl = null;
+        [Inject] private IUiSystem               _uiSystem    = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl  = null;
+        [Inject] private HierarchyBuilderBase    _hierarchyBld = null;
+        [Inject] private PrefabRegistry          _prefabReg   = null;
 
         private readonly List<Character> _participants;
 
@@ -73,9 +77,22 @@ namespace Frontier.Sequences
         private void StartNext()
         {
             float initialScale = COOPERATIVE_VORTEX_BASE_SCALE + _nextStartIndex * COOPERATIVE_VORTEX_SCALE_STEP;
-            _uiSystem.BattleUi.ShowCooperativeVortexOnCharacter( _participants[_nextStartIndex], COOPERATIVE_VORTEX_DURATION, initialScale );
+            var chara = _participants[_nextStartIndex];
+            _uiSystem.BattleUi.ShowCooperativeVortexOnCharacter( chara, COOPERATIVE_VORTEX_DURATION, initialScale );
+            PlayConvergingLines( chara );
             ++_nextStartIndex;
             _elapsedSinceCurrentStart = 0f;
+        }
+
+        /// <summary>
+        /// キャラクターの足元に、中心に向かって収束する集中線パーティクルを再生します。
+        /// パーティクル側の Stop Action(Destroy)により、再生完了後は自動的に破棄されます。
+        /// </summary>
+        private void PlayConvergingLines( Character chara )
+        {
+            var linesObj = _hierarchyBld.CreateGameObject( _prefabReg.CooperativeConvergingLinesPrefab, true, "CooperativeConvergingLines" );
+            linesObj.transform.SetParent( chara.transform, false );
+            linesObj.GetComponent<ParticleSystem>().Play();
         }
     }
 }

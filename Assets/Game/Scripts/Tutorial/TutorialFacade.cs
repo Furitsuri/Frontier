@@ -14,6 +14,7 @@ namespace Frontier.Tutorial
         private TutorialHandler _handler = null;
         private TutorialSaveData _saveData = null;  // 表示済みのトリガータイプ
         private TutorialPresenter _presenter = null;
+        private Task _tutorialDataLoadTask = null;
 
         public void Setup( FocusRoutineBase handler )
         {
@@ -37,6 +38,9 @@ namespace Frontier.Tutorial
         /// </summary>
         public void TryShowTutorial()
         {
+            // チュートリアルデータの読込が完了するまでは表示を保留する
+            if( _tutorialDataLoadTask == null || !_tutorialDataLoadTask.IsCompleted ) { return; }
+
             for( int i = 0; i < _pendingTriggers.Count; ++i )
             {
                 if( _saveData._shownTriggers.Contains( _pendingTriggers[i] ) )
@@ -57,9 +61,9 @@ namespace Frontier.Tutorial
             }
         }
 
-        public Task LoadTutorialData()
+        public void LoadTutorialData()
         {
-            return _handler.LoadTutorialData();
+            _tutorialDataLoadTask = _handler.LoadTutorialData();
         }
 
         /// <summary>

@@ -37,6 +37,7 @@ namespace Frontier.Registries
         [Header( "Effect関連" )]
         [SerializeField] public GameObject BuffCirclePrefab;            // バフサークル用プレハブ
         [SerializeField] public GameObject BuffAuraPrefab;              // バフオーラ用プレハブ
+        [SerializeField] public GameObject CooperativeConvergingLinesPrefab; // 連携演出用集中線プレハブ
 
         public GameObject[] StagePropPrefabs => _stagePropObjects;
         public GameObject[] PlayerPrefabs => _playerGameObjects;

@@ -56,8 +56,10 @@ public class FocusRoutineController : MonoBehaviour
     /// </summary>
     protected IEnumerator InitCommonRoutine()
     {
-        var tutorialLoadTask = _tutorialFcd.LoadTutorialData();   // チュートリアルデータの読込待ち
-        yield return new WaitUntil( () => tutorialLoadTask.IsCompleted );
+        // チュートリアルデータの読込を開始する。実際に表示が必要になるタイミング(TryShowTutorial)までに
+        // 完了していれば良いため、ここでは完了を待たずに進める(読込完了前にトリガーが発火した場合は
+        // TutorialFacade.TryShowTutorial 側で読込完了まで表示を保留する)
+        _tutorialFcd.LoadTutorialData();
 
         _tutorialFcd.Init();
 
@@ -73,6 +75,8 @@ public class FocusRoutineController : MonoBehaviour
             Debug.Log( $"[SceneTransition] Field→{gameObject.scene.name} 遷移所要時間: {elapsed:F3} 秒" );
             Frontier.Field.FieldTransitionContext.ClearTransitionStartTime();
         }
+
+        yield break;
     }
 
     /// <summary>

@@ -39,3 +39,4 @@ MonoBehaviour:
   - {fileID: 4823171488380538497, guid: efa4b96ed25f5d741ba6ef932c287529, type: 3}
   BuffCirclePrefab: {fileID: 734234413312254984, guid: b67ad43873ab11e48940c652bb691bd9, type: 3}
   BuffAuraPrefab: {fileID: 2444267416405518009, guid: e2b3834c3f8e1c745a453b6d4636a971, type: 3}
+  CooperativeConvergingLinesPrefab: {fileID: 1902869444003645472, guid: ab9f576b60059f648839937b3d500179, type: 3}

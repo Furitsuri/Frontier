@@ -1,4 +1,6 @@
 ﻿using Frontier.Battle;
+using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
@@ -100,6 +102,12 @@ namespace Frontier.Sequences
             foreach( var entry in _entries )
             {
                 entry.SkillAction.End();
+            }
+
+            // 連携に参加した全キャラクターの行動終了を、連携攻撃が完全に終わったこのタイミングでまとめて確定する
+            foreach( var entry in _entries )
+            {
+                ( entry.Attacker as Player )?.FinalizeCommand( COMMAND_TAG.SKILL );
             }
 
             var lastEntry = _entries.Count > 0 ? _entries[_entries.Count - 1] : null;
