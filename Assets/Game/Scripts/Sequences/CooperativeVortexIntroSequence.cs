@@ -80,6 +80,7 @@ namespace Frontier.Sequences
             var chara = _participants[_nextStartIndex];
             _uiSystem.BattleUi.ShowCooperativeVortexOnCharacter( chara, COOPERATIVE_VORTEX_DURATION, initialScale );
             PlayConvergingLines( chara );
+            _btlRtnCtrl.GetBtlCameraCtrl.FocusCharacterForCooperativeVortex( chara );
             ++_nextStartIndex;
             _elapsedSinceCurrentStart = 0f;
         }

@@ -28,6 +28,7 @@ namespace Frontier
         // --- 連携演出(渦巻きエフェクト)用カメラパラメータ ---
         [Header("連携演出(渦巻きエフェクト)用カメラパラメータ")]
         [SerializeField] private float _vortexIntroZoomOutFactor = 2.0f;   // キャラクター間の広がりに対するカメラを引く量の係数
+        [SerializeField] private bool  _enableVortexCharacterFocus = true; // true: 各キャラクターの演出開始時にカメラをフォーカスする(試験実装) / false: 従来通りカメラは動かさない
 
         // --- 攻撃シーケンス用カメラパラメータ ---
         [Header("攻撃シーケンス用カメラパラメータ")]
@@ -70,6 +71,9 @@ namespace Frontier
         private IBattleCameraSequence           _activeSequence;
         private AttackSequenceCameraHandler     _attackSeqHandler;
         private CooperativeSequenceCameraHandler _coopSeqHandler;
+
+        // --- 連携演出(渦巻きエフェクト)用フィールド ---
+        private float _vortexOffsetLength; // FitCharactersForCooperativeVortex で決定したカメラ距離(FocusCharacterForCooperativeVortex で使い回す)
 
         public float InitialAngleXZ => _initialValueAngleXZ;
         public float AngleXZ        => _angleXZ;
@@ -214,10 +218,27 @@ namespace Frontier
             }
 
             float requiredOffset = Mathf.Max( _offsetLength, maxDistFromCenter * _vortexIntroZoomOutFactor );
+            _vortexOffsetLength  = requiredOffset;
 
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _sharedState.LookAtPosition     = center;
             _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * requiredOffset + center;
+            _followElapsedTime              = 0f;
+        }
+
+        /// <summary>
+        /// 連携演出(渦巻きエフェクト)中、各キャラクターの演出開始タイミングでカメラをそのキャラクターへフォーカスします。
+        /// FitCharactersForCooperativeVortex で決定したカメラ距離は変更せず、パン(平行移動)のみで連続的に遷移します。
+        /// _enableVortexCharacterFocus が false の場合は何もせず、従来通りカメラは固定されたままになります。
+        /// </summary>
+        public void FocusCharacterForCooperativeVortex( Character chara )
+        {
+            if( !_enableVortexCharacterFocus ) { return; }
+            if( chara == null || _activeSequence != null ) { return; }
+
+            _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
+            _sharedState.LookAtPosition     = chara.transform.position;
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _vortexOffsetLength + chara.transform.position;
             _followElapsedTime              = 0f;
         }
 
