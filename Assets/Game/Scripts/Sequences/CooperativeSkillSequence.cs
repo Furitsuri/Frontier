@@ -43,6 +43,8 @@ namespace Frontier.Sequences
             _finished              = new bool[_entries.Count];
             _phase                 = Phase.SHOW_COMMAND_NAME;
 
+            AssignRemainingCooperativeHits();
+
             // コマンド名表示前に全エントリのゴーストを非表示
             foreach( var entry in _entries )
             {
@@ -50,6 +52,31 @@ namespace Frontier.Sequences
             }
 
             _uiSystem.BattleUi.CommandNameView.Show( COOPERATIVE_COMMAND_NAME, COOPERATIVE_COMMAND_DURATION, () => _phase = Phase.ACTIVATING );
+        }
+
+        /// <summary>
+        /// 全エントリの攻撃対象を集計し、対象キャラクターごとに連携全体で予定されているヒット数を設定します。
+        /// 最後のヒットまでは死亡判定を行わず被弾モーションを再生させるために使用します(SkillActionBase.ApplyDamageToTarget 参照)。
+        /// </summary>
+        private void AssignRemainingCooperativeHits()
+        {
+            var hitCounts = new Dictionary<CharacterKey, int>();
+            foreach( var entry in _entries )
+            {
+                if( entry.AttackTargetCharaKeys == null ) { continue; }
+
+                foreach( var targetKey in entry.AttackTargetCharaKeys )
+                {
+                    hitCounts.TryGetValue( targetKey, out int count );
+                    hitCounts[targetKey] = count + 1;
+                }
+            }
+
+            foreach( var pair in hitCounts )
+            {
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( pair.Key );
+                target?.BattleParams.TmpParam.SetRemainingCooperativeHits( pair.Value );
+            }
         }
 
         public bool Update()

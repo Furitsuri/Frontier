@@ -10,6 +10,7 @@ namespace Frontier.Sequences
         public SkillActionBase SkillAction;
         public Character Attacker;
         public Character Target;
+        public List<CharacterKey> AttackTargetCharaKeys;
     }
 
     public class CooperativeSkillSequenceParam

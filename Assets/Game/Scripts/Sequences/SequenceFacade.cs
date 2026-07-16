@@ -59,10 +59,11 @@ namespace Frontier.Sequences
         {
             return new CooperativeSkillEntry
             {
-                SkillID     = skillID,
-                SkillAction = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld ),
-                Attacker    = attacker,
-                Target      = target,
+                SkillID               = skillID,
+                SkillAction           = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld ),
+                Attacker              = attacker,
+                Target                = target,
+                AttackTargetCharaKeys = attackTargetCharaKeys,
             };
         }
 

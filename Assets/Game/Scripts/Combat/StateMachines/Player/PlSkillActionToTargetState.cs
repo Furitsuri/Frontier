@@ -239,6 +239,8 @@ namespace Frontier.Battle
                     ? new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.COOPERATIVE, USE_SKILL_OPTION_TAG.QUEUE }
                     : new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.EXECUTION,   USE_SKILL_OPTION_TAG.QUEUE };
 
+                if( cooperativeAttackers.Count > 0 ) { ApplyCooperativeTotalDamagePreview(); }
+
                 // 選択した攻撃範囲以外のタイル描画を全てクリアする
                 _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE | TileMapType.ATTACKABLE );
 
@@ -391,6 +393,40 @@ namespace Frontier.Battle
             );
 
             _reservationQueue.Enqueue( data );
+        }
+
+        /// <summary>
+        /// 連携攻撃確定前に、参加する全攻撃(自分自身の現在の攻撃 + 各連携攻撃者の予約)を
+        /// 対象キャラクターごとに合算し、確認画面でのパラメータ表示(TotalExpectedHpChange)に反映します。
+        /// MEMO : 予約データの予測値はフォーカス中の対象1体分のみのため、1回の攻撃が複数対象に同時ヒットする場合、
+        ///        フォーカス対象以外への予測値はこの集計に含まれません。
+        /// </summary>
+        private void ApplyCooperativeTotalDamagePreview()
+        {
+            var totalDamageByTarget = new Dictionary<CharacterKey, int>();
+
+            if( _targetSelector.TargetCharacter != null )
+            {
+                var key = _targetSelector.TargetCharacter.GetCharacterKey();
+                totalDamageByTarget[key] = _targetSelector.TargetCharacter.BattleParams.TmpParam.TotalExpectedHpChange;
+            }
+
+            foreach( var reservation in _blinkController.GetCooperativeReservations( _targetSelector.AttackTargetCharaKeys ) )
+            {
+                if( !reservation.FocusedTargetCharaKey.IsValid() ) { continue; }
+
+                totalDamageByTarget.TryGetValue( reservation.FocusedTargetCharaKey, out int current );
+                totalDamageByTarget[reservation.FocusedTargetCharaKey] = current + reservation.TargetTotalExpectedHpChange;
+            }
+
+            foreach( var pair in totalDamageByTarget )
+            {
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( pair.Key );
+                if( target == null ) { continue; }
+
+                int single = target.BattleParams.TmpParam.ExpectedHpChange;
+                target.BattleParams.TmpParam.SetExpectedHpChange( single, pair.Value );
+            }
         }
 
         private void ExecuteCooperativeSkill()

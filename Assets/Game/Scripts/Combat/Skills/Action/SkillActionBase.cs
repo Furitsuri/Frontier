@@ -65,15 +65,20 @@ namespace Frontier.Combat
 
         /// <summary>
         /// 対象キャラクターにダメージを適用し、HPに応じて死亡/被弾アニメーションを再生します。
+        /// 連携攻撃中でまだ後続のヒットが予定されている場合(RemainingCooperativeHits参照)は、
+        /// HPが0以下でも死亡アニメーションを再生させず、連携最後のヒットまで被弾アニメーションを再生します。
         /// </summary>
         protected void ApplyDamageToTarget( Character target )
         {
             int hpChange = target.BattleParams.TmpParam.ExpectedHpChange;
             target.GetStatusRef.CurHP += hpChange;
 
+            target.BattleParams.TmpParam.ConsumeCooperativeHit();
+            bool isFinalHit = target.BattleParams.TmpParam.RemainingCooperativeHits <= 0;
+
             if( hpChange != 0 )
             {
-                if( target.GetStatusRef.CurHP <= 0 )
+                if( isFinalHit && target.GetStatusRef.CurHP <= 0 )
                 {
                     target.GetStatusRef.CurHP = 0;
                     target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );

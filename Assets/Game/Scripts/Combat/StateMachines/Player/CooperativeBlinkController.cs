@@ -74,19 +74,36 @@ namespace Frontier.Battle
             return FindCooperativeAttackers( attackTargetCharaKeys );
         }
 
+        /// <summary>
+        /// 指定の攻撃対象リストと重複する予約済みアクションのデータ一覧を返します。
+        /// 連携攻撃確定前の合計ダメージ集計などに使用します。
+        /// </summary>
+        public List<SkillActionReservationData> GetCooperativeReservations( List<CharacterKey> attackTargetCharaKeys )
+        {
+            return FindCooperativeReservations( attackTargetCharaKeys );
+        }
+
         private List<Character> FindCooperativeAttackers( List<CharacterKey> attackTargetCharaKeys )
         {
             var result = new List<Character>();
-            foreach( var reservation in _reservationQueue.GetAll() )
+            foreach( var reservation in FindCooperativeReservations( attackTargetCharaKeys ) )
             {
-                bool hasCommonTarget = reservation.AttackTargetCharaKeys.Any( key => attackTargetCharaKeys.Contains( key ) );
-                if( !hasCommonTarget ) { continue; }
-
                 var attacker = _btlRtnCtrl.BtlCharaCdr.GetCharacter( reservation.AttackerKey );
                 if( attacker != null && !result.Contains( attacker ) )
                 {
                     result.Add( attacker );
                 }
+            }
+            return result;
+        }
+
+        private List<SkillActionReservationData> FindCooperativeReservations( List<CharacterKey> attackTargetCharaKeys )
+        {
+            var result = new List<SkillActionReservationData>();
+            foreach( var reservation in _reservationQueue.GetAll() )
+            {
+                bool hasCommonTarget = reservation.AttackTargetCharaKeys.Any( key => attackTargetCharaKeys.Contains( key ) );
+                if( hasCommonTarget ) { result.Add( reservation ); }
             }
             return result;
         }

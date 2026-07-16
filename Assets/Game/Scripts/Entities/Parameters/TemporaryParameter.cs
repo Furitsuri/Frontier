@@ -26,6 +26,8 @@ namespace Frontier.Entities
         public int ExpectedHpChange;
         // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
         public int TotalExpectedHpChange;
+        // 連携攻撃において、このキャラクターに予定されている残りヒット数(0なら通常攻撃、または連携攻撃対象外)
+        public int RemainingCooperativeHits;
 
         public void Setup()
         {
@@ -54,6 +56,7 @@ namespace Frontier.Entities
 
             IsSkillQueued = false;
             TotalExpectedHpChange = ExpectedHpChange = ActGaugeConsumption = 0;
+            RemainingCooperativeHits = 0;
         }
 
         /// <summary>
@@ -128,6 +131,22 @@ namespace Frontier.Entities
         public void SetEndCommandStatus( COMMAND_TAG cmdTag, bool isEnd )
         {
             IsEndCommand[( int ) cmdTag] = isEnd;
+        }
+
+        /// <summary>
+        /// 連携攻撃における残りヒット数を設定します
+        /// </summary>
+        public void SetRemainingCooperativeHits( int count )
+        {
+            RemainingCooperativeHits = count;
+        }
+
+        /// <summary>
+        /// 連携攻撃における残りヒット数を1消費します(0未満にはなりません)
+        /// </summary>
+        public void ConsumeCooperativeHit()
+        {
+            if( 0 < RemainingCooperativeHits ) { --RemainingCooperativeHits; }
         }
 
         public void SetUseableSkillFlag( int index, bool isUseable )
