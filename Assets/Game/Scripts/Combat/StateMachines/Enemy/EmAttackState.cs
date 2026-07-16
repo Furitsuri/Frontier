@@ -125,17 +125,9 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            //死亡判定を通知(相手のカウンターによって倒される可能性もあるため、攻撃者と被攻撃者の両方を判定)
-            Character diedCharacter = null;
-            if( _attackCharacter.GetStatusRef.IsDead() ) { diedCharacter = _attackCharacter; }
-            if( _targetCharacter != null && _targetCharacter.GetStatusRef.IsDead() ) { diedCharacter = _targetCharacter; }
-            if( diedCharacter != null )
-            {
-                var key = new CharacterKey( diedCharacter.GetStatusRef.characterTag, diedCharacter.GetStatusRef.characterIndex );
-                NorifyCharacterDied( key );
-                // 破棄
-                diedCharacter.Dispose();
-            }
+            // MEMO : 死亡判定・除去はキャラクター自身が死亡アニメーション完了時に通知する形に一本化されているため
+            //        (BattleAnimationEventReceiver.DieOnAnimEvent → BattleCharacterCoordinator.NotifyCharacterDied)、
+            //        ここでは行いません。
 
             // アタッカーキャラクターの設定を解除
             _stageCtrl.UnbindGridCursor();

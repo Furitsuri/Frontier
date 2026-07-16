@@ -14,8 +14,9 @@ namespace Frontier.Battle
     /// </summary>
     public class BattleCharacterCoordinator
     {
-        [Inject] private BattleRoutineController _btlRtnCtrl    = null;
-        [Inject] private StageController _stgCtrl               = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl               = null;
+        [Inject] private StageController _stgCtrl                          = null;
+        [Inject] private SkillActionReservationQueue _reservationQueue     = null;
 
         private CharacterDictionary _characterDict      = null; // キャラクターハッシュテーブル(あくまで戦闘用のインスタンスであるため、DiContainerで定義されているものとは別のインスタンスです)
         
@@ -92,6 +93,48 @@ namespace Frontier.Battle
 
             _characterDict.Remove( in charaKey );
             chara.OnBattleExit();
+        }
+
+        /// <summary>
+        /// キャラクターの死亡を通知します。リストからの除去・関連予約の強制終了・破棄までを一括で行います。
+        /// 各キャラクターの死亡アニメーション完了時(BattleAnimationEventReceiver.DieOnAnimEvent)から呼ばれることを想定しており、
+        /// 攻撃の種類(単独攻撃・複数体を巻き込むスキル・連携攻撃など)に関わらず、死亡したキャラクター自身が通知する形になります。
+        /// </summary>
+        public void NotifyCharacterDied( in CharacterKey characterKey )
+        {
+            var chara = _characterDict.Get( characterKey );
+            if( chara == null ) { return; } // 既に処理済みなどで多重通知になった場合はここで防止
+
+            SetDiedCharacterKey( characterKey );
+            RemoveCharacterFromList( characterKey );
+            ForceEndExhaustedReservations( characterKey );
+            chara.Dispose();
+        }
+
+        /// <summary>
+        /// 死亡したキャラクターを攻撃対象としていた予約のうち、攻撃対象が全滅したものを強制的に行動終了させます。
+        /// 予約していたスキルは実行されず、その場でゲージのみ消費して行動を終えます
+        /// （攻撃対象の一部のみが死亡し、他に生存対象が残っている予約はそのまま継続されます）。
+        /// </summary>
+        private void ForceEndExhaustedReservations( in CharacterKey deadTargetKey )
+        {
+            var exhausted = _reservationQueue.RemoveDeadTargetFromAll( deadTargetKey );
+            foreach( var reservation in exhausted )
+            {
+                var attacker = GetPlayer( reservation.AttackerKey );
+                if( attacker == null ) { continue; }
+
+                attacker.BattleLogic.ConsumeActionGauge( reservation.ActGaugeConsumption );
+
+                attacker.SetGhostActive( false );
+                attacker.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
+                attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
+                _stgCtrl.TileDataHdlr().ReleaseTile( reservation.GhostTileIndex );
+
+                attacker.BattleParams.TmpParam.IsSkillQueued = false;
+                attacker.BattleParams.TmpParam.EndAction();
+                attacker.ClearCommandHistory();
+            }
         }
 
         public void ClearTileMeshesByType( TileMapType types )

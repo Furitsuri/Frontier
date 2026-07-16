@@ -1,4 +1,5 @@
-﻿using Frontier.Combat;
+﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Stage;
 using UnityEngine;
 using Zenject;
@@ -11,6 +12,7 @@ namespace Frontier.Entities
         [Inject] private IUiSystem _uiSystem                                = null;
         [Inject] private StageController _stageCtrl                         = null;
         [Inject] private CombatSkillEventController _combatSkillEventCtrl   = null;
+        [Inject] private BattleRoutineController _btlRtnCtrl                = null;
 
         // 攻撃用アニメーションタグ
         static public AnimDatas.AnimeConditionsTag[] AttackAnimTags = new AnimDatas.AnimeConditionsTag[]
@@ -52,10 +54,17 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 死亡処理を開始します
-        /// ※各キャラクターのアニメーションから呼ばれます
+        /// ※各キャラクターのアニメーションから呼ばれます(DIEアニメーションの最終フレーム付近)
+        /// 単独攻撃・複数体を巻き込むスキル・連携攻撃・カウンターなど、死因を問わず
+        /// キャラクター自身がここで死亡を通知する形になっているため、呼び出し側で個別に死亡判定を行う必要はありません。
         /// </summary>
         public void DieOnAnimEvent()
         {
+            var owner = _readOnlyOwner.Value;
+            if( owner == null ) { return; }
+
+            var key = new CharacterKey( owner.GetStatusRef.characterTag, owner.GetStatusRef.characterIndex );
+            _btlRtnCtrl.BtlCharaCdr.NotifyCharacterDied( key );
         }
 
         /// <summary>
