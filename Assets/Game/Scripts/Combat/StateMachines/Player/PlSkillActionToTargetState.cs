@@ -33,9 +33,10 @@ namespace Frontier.Battle
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
 
-        private SequenceFacade _sequenceFcd                   = null;
-        private SkillTargetSelector _targetSelector           = null;
-        private CooperativeBlinkController _blinkController   = null;
+        private SequenceFacade _sequenceFcd                     = null;
+        private SkillTargetSelector _targetSelector             = null;
+        private CooperativeBlinkController _blinkController     = null;
+        private CooperativeCandidateFinder _candidateFinder     = null;
 
         [Inject] public PlSkillActionToTargetState( BattleRoutineController btlRtnCtrl, SequenceFacade sequenceFcd, SkillActionReservationQueue reservationQueue )
         {
@@ -45,6 +46,7 @@ namespace Frontier.Battle
 
             _targetSelector   = new SkillTargetSelector();
             _blinkController  = new CooperativeBlinkController( reservationQueue, btlRtnCtrl );
+            _candidateFinder  = new CooperativeCandidateFinder( reservationQueue, btlRtnCtrl );
         }
 
         /// <summary>
@@ -234,7 +236,7 @@ namespace Frontier.Battle
 
             if( SkillsData.data[( int ) _useSkillID].IsCooperative )
             {
-                var cooperativeAttackers = _blinkController.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
+                var cooperativeAttackers = _candidateFinder.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
                 var options = ( cooperativeAttackers.Count > 0 )
                     ? new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.COOPERATIVE, USE_SKILL_OPTION_TAG.QUEUE }
                     : new List<USE_SKILL_OPTION_TAG> { USE_SKILL_OPTION_TAG.EXECUTION,   USE_SKILL_OPTION_TAG.QUEUE };
@@ -411,7 +413,7 @@ namespace Frontier.Battle
                 totalDamageByTarget[key] = _targetSelector.TargetCharacter.BattleParams.TmpParam.TotalExpectedHpChange;
             }
 
-            foreach( var reservation in _blinkController.GetCooperativeReservations( _targetSelector.AttackTargetCharaKeys ) )
+            foreach( var reservation in _candidateFinder.GetCooperativeReservations( _targetSelector.AttackTargetCharaKeys ) )
             {
                 if( !reservation.FocusedTargetCharaKey.IsValid() ) { continue; }
 
@@ -433,7 +435,7 @@ namespace Frontier.Battle
         {
             _isCooperativeSkill = true;
 
-            var cooperativeAttackers = _blinkController.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
+            var cooperativeAttackers = _candidateFinder.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
             var entries = new List<CooperativeSkillEntry>( cooperativeAttackers.Count + 1 );
 
             foreach( var attacker in cooperativeAttackers )
