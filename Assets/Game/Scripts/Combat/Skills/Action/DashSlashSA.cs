@@ -52,8 +52,8 @@ namespace Frontier.Combat
                 }
                 else
                 {
-                    // 味方など通過・着地不可なキャラクターが存在 → 以降の走査を中断
-                    break;
+                    // 味方が存在しているなど着地不可なタイル → 次のタイルを走査
+                    continue;
                 }
             }
 
