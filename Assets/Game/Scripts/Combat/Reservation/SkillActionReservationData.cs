@@ -62,11 +62,11 @@ namespace Frontier.Battle
         /// <summary>攻撃者への複数回攻撃を考慮した予測 HP 総変動量</summary>
         public int AttackerTotalExpectedHpChange { get; }
 
-        /// <summary>ターゲットへの単発予測 HP 変動量</summary>
-        public int TargetExpectedHpChange { get; }
+        /// <summary>攻撃対象キャラクターごとの単発予測 HP 変動量</summary>
+        public IReadOnlyDictionary<CharacterKey, int> TargetExpectedHpChange { get; }
 
-        /// <summary>ターゲットへの複数回攻撃を考慮した予測 HP 総変動量</summary>
-        public int TargetTotalExpectedHpChange { get; }
+        /// <summary>攻撃対象キャラクターごとの複数回攻撃を考慮した予測 HP 総変動量</summary>
+        public IReadOnlyDictionary<CharacterKey, int> TargetTotalExpectedHpChange { get; }
 
         /// <summary>
         /// 移動を伴うスキル（ダッシュ斬りなど）のゴースト目標タイルインデックス。
@@ -89,8 +89,8 @@ namespace Frontier.Battle
             CharacterKey            focusedTargetCharaKey,
             int                     attackerExpectedHpChange,
             int                     attackerTotalExpectedHpChange,
-            int                     targetExpectedHpChange,
-            int                     targetTotalExpectedHpChange,
+            IDictionary<CharacterKey, int> targetExpectedHpChange,
+            IDictionary<CharacterKey, int> targetTotalExpectedHpChange,
             int                     ghostTileIndex = -1 )
         {
             AttackerKey                   = attackerKey;
@@ -107,8 +107,8 @@ namespace Frontier.Battle
             FocusedTargetCharaKey         = focusedTargetCharaKey;
             AttackerExpectedHpChange      = attackerExpectedHpChange;
             AttackerTotalExpectedHpChange = attackerTotalExpectedHpChange;
-            TargetExpectedHpChange        = targetExpectedHpChange;
-            TargetTotalExpectedHpChange   = targetTotalExpectedHpChange;
+            TargetExpectedHpChange        = new Dictionary<CharacterKey, int>( targetExpectedHpChange );
+            TargetTotalExpectedHpChange   = new Dictionary<CharacterKey, int>( targetTotalExpectedHpChange );
             GhostTileIndex                = ghostTileIndex;
         }
 
@@ -116,6 +116,7 @@ namespace Frontier.Battle
         /// 指定したキャラクターキーを攻撃対象リストから除外した新しいインスタンスを返します。
         /// フォーカス対象が除外された場合は、残っている対象の先頭を新たなフォーカス対象とします
         /// （残っている対象がない場合は CharacterKey.Invalid）。
+        /// 予測ダメージのマップからも、除外した対象のエントリを取り除きます。
         /// </summary>
         public SkillActionReservationData WithTargetRemoved( CharacterKey deadTargetKey )
         {
@@ -124,11 +125,14 @@ namespace Frontier.Battle
                 ? ( remainingTargets.Count > 0 ? remainingTargets[0] : CharacterKey.Invalid )
                 : FocusedTargetCharaKey;
 
+            var remainingExpectedHpChange      = TargetExpectedHpChange.Where( pair => pair.Key != deadTargetKey ).ToDictionary( pair => pair.Key, pair => pair.Value );
+            var remainingTotalExpectedHpChange = TargetTotalExpectedHpChange.Where( pair => pair.Key != deadTargetKey ).ToDictionary( pair => pair.Key, pair => pair.Value );
+
             return new SkillActionReservationData(
                 AttackerKey, AttackerTileIndex, AttackerSkillsToggledON, ActGaugeConsumption,
                 UseSkillID, TargetingMode, CurrentRange, MaxRange, IsAdjustableRange, IsMovingSkill,
                 remainingTargets, newFocusedKey,
-                AttackerExpectedHpChange, AttackerTotalExpectedHpChange, TargetExpectedHpChange, TargetTotalExpectedHpChange,
+                AttackerExpectedHpChange, AttackerTotalExpectedHpChange, remainingExpectedHpChange, remainingTotalExpectedHpChange,
                 GhostTileIndex );
         }
     }

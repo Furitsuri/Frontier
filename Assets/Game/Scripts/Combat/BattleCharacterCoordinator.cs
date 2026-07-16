@@ -508,11 +508,24 @@ namespace Frontier.Battle
                 return;
             }
 
+            var ( single, total ) = CalculateExpectedHpChange( attacker, target );
+            target.BattleParams.TmpParam.SetExpectedHpChange( single, total );
+        }
+
+        /// <summary>
+        /// attacker が target を攻撃した場合の予測HP変動量を計算します(target側への副作用はありません)。
+        /// 複数対象への予測値をまとめて算出したい場合などに使用してください。
+        /// </summary>
+        /// <returns>単発攻撃の予測変動量、複数回攻撃を考慮した予測総変動量</returns>
+        public ( int single, int total ) CalculateExpectedHpChange( Character attacker, Character target )
+        {
             int targetDef   = target.GetStatusRef.Def + target.BattleParams.ModifiedParam.Def;
             int attackerAtk = attacker.GetStatusRef.Atk + attacker.BattleParams.ModifiedParam.Atk;
             int changeHP    = ( targetDef - attackerAtk );
 
-            target.BattleParams.TmpParam.SetExpectedHpChange( Mathf.Min( changeHP, 0 ), Mathf.Min( changeHP * ( 1 + attacker.BattleParams.SkillModifiedParam.AddAtkNum ), 0 ) );
+            int single = Mathf.Min( changeHP, 0 );
+            int total  = Mathf.Min( changeHP * ( 1 + attacker.BattleParams.SkillModifiedParam.AddAtkNum ), 0 );
+            return ( single, total );
         }
 
         /// <summary>

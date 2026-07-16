@@ -366,12 +366,19 @@ namespace Frontier.Battle
         {
             _plOwner.BattleParams.TmpParam.AssignExpectedHpChange( out int attackerHpChange, out int attackerTotalHpChange );
 
-            int targetHpChange = 0, targetTotalHpChange = 0;
-            var focusedTargetKey = CharacterKey.Invalid;
-            if( _targetSelector.TargetCharacter != null )
+            var focusedTargetKey = _targetSelector.TargetCharacter?.GetCharacterKey() ?? CharacterKey.Invalid;
+
+            // 攻撃対象全員分の予測ダメージを、フォーカス中かどうかに関わらず算出して保持する
+            var targetHpChangeMap      = new Dictionary<CharacterKey, int>();
+            var targetTotalHpChangeMap = new Dictionary<CharacterKey, int>();
+            foreach( var targetKey in _targetSelector.AttackTargetCharaKeys )
             {
-                _targetSelector.TargetCharacter.BattleParams.TmpParam.AssignExpectedHpChange( out targetHpChange, out targetTotalHpChange );
-                focusedTargetKey = _targetSelector.TargetCharacter.GetCharacterKey();
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( targetKey );
+                if( target == null ) { continue; }
+
+                var ( single, total ) = _btlRtnCtrl.BtlCharaCdr.CalculateExpectedHpChange( _plOwner, target );
+                targetHpChangeMap[targetKey]      = single;
+                targetTotalHpChangeMap[targetKey] = total;
             }
 
             var data = new SkillActionReservationData(
@@ -389,8 +396,8 @@ namespace Frontier.Battle
                 focusedTargetKey,
                 attackerHpChange,
                 attackerTotalHpChange,
-                targetHpChange,
-                targetTotalHpChange,
+                targetHpChangeMap,
+                targetTotalHpChangeMap,
                 _plOwner.GhostObj?.TileIndex ?? -1
             );
 
@@ -400,25 +407,30 @@ namespace Frontier.Battle
         /// <summary>
         /// 連携攻撃確定前に、参加する全攻撃(自分自身の現在の攻撃 + 各連携攻撃者の予約)を
         /// 対象キャラクターごとに合算し、確認画面でのパラメータ表示(TotalExpectedHpChange)に反映します。
-        /// MEMO : 予約データの予測値はフォーカス中の対象1体分のみのため、1回の攻撃が複数対象に同時ヒットする場合、
-        ///        フォーカス対象以外への予測値はこの集計に含まれません。
+        /// 予約データが対象キャラクターごとの予測値を保持しているため、フォーカス対象以外への予測値も正しく集計されます。
         /// </summary>
         private void ApplyCooperativeTotalDamagePreview()
         {
             var totalDamageByTarget = new Dictionary<CharacterKey, int>();
 
-            if( _targetSelector.TargetCharacter != null )
+            // 自分自身の現在の攻撃分。TmpParamの値はフォーカス対象以外は更新されていない可能性があるため、その場で全対象分を計算する
+            foreach( var targetKey in _targetSelector.AttackTargetCharaKeys )
             {
-                var key = _targetSelector.TargetCharacter.GetCharacterKey();
-                totalDamageByTarget[key] = _targetSelector.TargetCharacter.BattleParams.TmpParam.TotalExpectedHpChange;
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( targetKey );
+                if( target == null ) { continue; }
+
+                var ( _, total ) = _btlRtnCtrl.BtlCharaCdr.CalculateExpectedHpChange( _plOwner, target );
+                totalDamageByTarget[targetKey] = total;
             }
 
+            // 各連携攻撃者の予約分(対象キャラクターごとの予測値をそのまま合算できる)
             foreach( var reservation in _candidateFinder.GetCooperativeReservations( _targetSelector.AttackTargetCharaKeys ) )
             {
-                if( !reservation.FocusedTargetCharaKey.IsValid() ) { continue; }
-
-                totalDamageByTarget.TryGetValue( reservation.FocusedTargetCharaKey, out int current );
-                totalDamageByTarget[reservation.FocusedTargetCharaKey] = current + reservation.TargetTotalExpectedHpChange;
+                foreach( var pair in reservation.TargetTotalExpectedHpChange )
+                {
+                    totalDamageByTarget.TryGetValue( pair.Key, out int current );
+                    totalDamageByTarget[pair.Key] = current + pair.Value;
+                }
             }
 
             foreach( var pair in totalDamageByTarget )
