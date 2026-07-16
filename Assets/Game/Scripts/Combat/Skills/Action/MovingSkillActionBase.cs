@@ -15,7 +15,6 @@ namespace Frontier.Combat
     /// </summary>
     public abstract class MovingSkillActionBase : SkillActionBase
     {
-        protected IUiSystem _uiSystem                     = null;
         protected BattleCharacterCoordinator _btlCharaCdr = null;
         protected StageController _stageCtrl              = null;
 
@@ -28,12 +27,11 @@ namespace Frontier.Combat
         // サブクラスのコンストラクタで適切なタグを代入すること
         protected AnimDatas.AnimeConditionsTag _attackAnimTag = AnimDatas.AnimeConditionsTag.NONE;
 
-        public MovingSkillActionBase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner )
+        public MovingSkillActionBase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner, uiSystem )
         {
             _targetCharacters   = new List<Character>();
             _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
             _stageCtrl          = stageCtrl;
-            _uiSystem           = uiSystem;
 
             foreach( var key in targetCharaKeys )
             {
@@ -118,27 +116,6 @@ namespace Frontier.Combat
                 }
             }
             return attacked;
-        }
-
-        protected void ApplyDamageToTarget( Character target )
-        {
-            int hpChange = target.BattleParams.TmpParam.ExpectedHpChange;
-            target.GetStatusRef.CurHP += hpChange;
-
-            if( hpChange != 0 )
-            {
-                if( target.GetStatusRef.CurHP <= 0 )
-                {
-                    target.GetStatusRef.CurHP = 0;
-                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
-                }
-                else
-                {
-                    target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );
-                }
-            }
-
-            _uiSystem.BattleUi.ShowDamageOnCharacter( target, 1f );
         }
     }
 }
