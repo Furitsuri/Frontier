@@ -120,6 +120,7 @@ namespace Frontier.Combat
             : base( owner, targetCharaKeys, btlRtnCtrl, stageCtrl, uiSystem )
         {
             _attackAnimTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
+            _skillID       = SkillID.JUMP_SLASH;
         }
 
         protected override void StartAction()
@@ -164,6 +165,9 @@ namespace Frontier.Combat
                             {
                                 _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
                                 _isAtLatter = true;
+
+                                // 頂点を過ぎて降下(＝被弾)に転じるタイミングでカメラを寄りアングルへ遷移させる
+                                _cameraProcess?.TransitNextPhase();
                             }
                         }
 

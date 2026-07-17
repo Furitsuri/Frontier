@@ -22,6 +22,14 @@ namespace Frontier
         void Begin( BattleCameraSharedState sharedState, Vector3 fromPosition, Quaternion fromRotation );
 
         /// <summary>
+        /// 次のフェーズへ遷移します。呼び出しタイミングはスキル側の判断に委ねられます
+        /// (例: 被弾直前に寄りのアングルへ切り替える、など)。呼ばれた瞬間の実際のカメラ姿勢を起点に
+        /// 連続的に遷移するため、いつ呼んでも不自然な繋がりにはなりません。
+        /// 複数フェーズを持たない実装では何もしなくて構いません。最終フェーズで呼ばれた場合も何もしません。
+        /// </summary>
+        void TransitNextPhase();
+
+        /// <summary>
         /// カメラ演出を終了します。次の演出(次のスキルや連携終了後のFOLLOWING復帰など)への
         /// 引き継ぎは呼び出し側(BattleCameraController)が行うため、ここでは自身の後始末のみ行ってください。
         /// </summary>

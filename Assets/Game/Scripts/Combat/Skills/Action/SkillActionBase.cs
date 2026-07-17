@@ -121,27 +121,29 @@ namespace Frontier.Combat
 
         /// <summary>
         /// skillID に対応するカメラデータを読み込み、target を注視するオフセット型カメラ演出(TargetOffsetCameraProcess)を
-        /// _cameraProcess に設定します。データファイルが存在しない場合は既定値(現行の連携攻撃と同じ数値)を使用します。
+        /// _cameraProcess に設定します。データファイルが存在しない場合は既定値(現行の連携攻撃と同じ数値)1フェーズ分を使用します。
+        /// データが複数フェーズを持つ場合、継承先が任意のタイミングで _cameraProcess.TransitNextPhase() を呼ぶことで
+        /// 次フェーズ(例: 被弾直前の寄りアングル)へ連続的に遷移できます。
         /// 継承先は読み込むスキルIDと注視対象キャラクターを指定するだけで済みます。
         /// </summary>
         protected void SetupCameraProcess( SkillID skillID, Character target )
         {
             if( target == null ) { return; }
 
-            float xzDistance = DEFAULT_CAMERA_XZ_DISTANCE;
-            float height     = DEFAULT_CAMERA_HEIGHT;
-            float duration   = DEFAULT_CAMERA_DURATION;
-
             var camParams = _btlFileLoader?.LoadSkillCameraParams( skillID );
-            if( camParams != null && camParams.Count > 0 && camParams[0].Length > 0 )
-            {
-                var data   = camParams[0][0];
-                xzDistance = data.XZDistance;
-                height     = data.Height;
-                duration   = data.Duration;
-            }
+            BattleCameraController.CameraParamData[] phases = ( camParams != null && camParams.Count > 0 && camParams[0].Length > 0 )
+                ? camParams[0]
+                : new[]
+                {
+                    new BattleCameraController.CameraParamData
+                    {
+                        XZDistance = DEFAULT_CAMERA_XZ_DISTANCE,
+                        Height     = DEFAULT_CAMERA_HEIGHT,
+                        Duration   = DEFAULT_CAMERA_DURATION,
+                    }
+                };
 
-            _cameraProcess = new TargetOffsetCameraProcess( _owner, target, xzDistance, height, duration );
+            _cameraProcess = new TargetOffsetCameraProcess( _owner, target, phases );
         }
     }
 }

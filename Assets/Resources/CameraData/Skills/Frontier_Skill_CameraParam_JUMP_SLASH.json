@@ -1,0 +1,26 @@
+{
+    "CameraParams": [
+        [
+            {
+                "Phase": "wide",
+                "Length": 0.0,
+                "Roll": 0.0,
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "XZDistance": 6.0,
+                "Height": 5.0,
+                "Duration": 0.3
+            },
+            {
+                "Phase": "close",
+                "Length": 0.0,
+                "Roll": 0.0,
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "XZDistance": 3.0,
+                "Height": 2.5,
+                "Duration": 0.2
+            }
+        ]
+    ]
+}
