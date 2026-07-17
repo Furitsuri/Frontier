@@ -12,11 +12,17 @@ namespace Frontier
         [System.Serializable]
         public struct CameraParamData
         {
+            // --- AttackSequenceCameraHandler方式(キャラクター自身の向き基準の球面座標)で使用 ---
             public string Phase;
             public float Length;
             public float Roll;
             public float Pitch;
             public float Yaw;
+
+            // --- CooperativeSequenceCameraHandler方式(攻撃者→対象方向基準の固定オフセット)で使用 ---
+            public float XZDistance;
+            public float Height;
+
             // このフェーズへの遷移にかける秒数。0以下の場合は呼び出し側の既定値を使用する(既存のCloseAtk/RangedAtkデータとの後方互換のため)
             public float Duration;
         }

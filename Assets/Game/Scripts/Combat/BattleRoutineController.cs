@@ -36,6 +36,7 @@ namespace Frontier.Battle
 
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
         public BattleCameraController GetBtlCameraCtrl => _btlCameraCtrl;
+        public BattleFileLoader GetBtlFileLoader => _btlFileLoader;
         public BattleRoutinePresenter BtlPresenter => _presenter;
 
         public IEnumerator Battle()

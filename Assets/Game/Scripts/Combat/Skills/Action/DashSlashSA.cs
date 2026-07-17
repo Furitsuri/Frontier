@@ -82,6 +82,7 @@ namespace Frontier.Combat
             : base( owner, targetCharaKeys, btlRtnCtrl, stageCtrl, uiSystem )
         {
             _attackAnimTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
+            _skillID       = SkillID.DASH_SLASH;
         }
 
         protected override void StartAction()

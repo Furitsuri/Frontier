@@ -27,7 +27,8 @@ namespace Frontier.Combat
         // サブクラスのコンストラクタで適切なタグを代入すること
         protected AnimDatas.AnimeConditionsTag _attackAnimTag = AnimDatas.AnimeConditionsTag.NONE;
 
-        public MovingSkillActionBase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner, uiSystem, btlRtnCtrl.GetBtlCameraCtrl )
+        public MovingSkillActionBase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem )
+            : base( owner, uiSystem, btlRtnCtrl.GetBtlCameraCtrl, btlRtnCtrl.GetBtlFileLoader )
         {
             _targetCharacters   = new List<Character>();
             _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
@@ -54,6 +55,12 @@ namespace Frontier.Combat
             foreach( var target in _targetCharacters )
             {
                 _btlCharaCdr.ApplyDamageExpect( _owner, target );
+            }
+
+            // _skillID が設定されている(SkillID.NONE でない)場合のみ、距離順で最も近い対象へのカメラ演出を自動セットアップする
+            if( _skillID != SkillID.NONE )
+            {
+                SetupCameraProcess( _skillID, _targetCharacters.Count > 0 ? _targetCharacters[0] : null );
             }
 
             // ゴーストの位置が移動目標地点

@@ -24,7 +24,8 @@ namespace Frontier.Combat
         private List<Character> _targetCharacters = null;
 
         [Inject]
-        public PartOfRangeSABase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner, uiSystem, btlRtnCtrl.GetBtlCameraCtrl )
+        public PartOfRangeSABase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem )
+            : base( owner, uiSystem, btlRtnCtrl.GetBtlCameraCtrl, btlRtnCtrl.GetBtlFileLoader )
         {
             _targetCharacters   = new List<Character>();
             _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;

@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Loaders;
 using Frontier.Sequences;
 using Frontier.UI;
 
@@ -6,12 +7,25 @@ namespace Frontier.Combat
 {
     public class SkillActionBase : ISequence
     {
-        protected Character             _owner       = null;
-        protected IUiSystem             _uiSystem    = null;
-        protected BattleCameraController _btlCamCtrl = null;
+        // スキル用カメラデータ(Assets/Resources/CameraData/Skills/)が未整備の場合に使う既定値。
+        // 現行の連携攻撃(BattleCameraController._coopCameraXZDistance等)と同じ値にしてあります
+        private const float DEFAULT_CAMERA_XZ_DISTANCE = 5.0f;
+        private const float DEFAULT_CAMERA_HEIGHT      = 4.0f;
+        private const float DEFAULT_CAMERA_DURATION    = 0.5f;
+
+        protected Character              _owner        = null;
+        protected IUiSystem              _uiSystem     = null;
+        protected BattleCameraController _btlCamCtrl   = null;
+        protected BattleFileLoader       _btlFileLoader = null;
 
         /// <summary>
-        /// このスキル実行中のカメラ演出。継承先のコンストラクタや StartAction() 内で設定してください。
+        /// このスキルのID。継承先のコンストラクタで設定してください(例: _skillID = SkillID.DASH_SLASH;)。
+        /// SkillID.NONE のままであれば、カメラ演出の自動セットアップは行われません。
+        /// </summary>
+        protected SkillID _skillID = SkillID.NONE;
+
+        /// <summary>
+        /// このスキル実行中のカメラ演出。SetupCameraProcess() などで設定してください。
         /// null のままであれば、カメラ演出は行われず既定の挙動(FOLLOWINGモードなど)のままになります。
         /// </summary>
         protected ISkillCameraProcess _cameraProcess = null;
@@ -21,11 +35,12 @@ namespace Frontier.Combat
             _owner = owner;
         }
 
-        public SkillActionBase( Character owner, IUiSystem uiSystem, BattleCameraController btlCamCtrl )
+        public SkillActionBase( Character owner, IUiSystem uiSystem, BattleCameraController btlCamCtrl, BattleFileLoader btlFileLoader )
         {
-            _owner      = owner;
-            _uiSystem   = uiSystem;
-            _btlCamCtrl = btlCamCtrl;
+            _owner         = owner;
+            _uiSystem      = uiSystem;
+            _btlCamCtrl    = btlCamCtrl;
+            _btlFileLoader = btlFileLoader;
         }
 
         public void Start()
@@ -102,6 +117,31 @@ namespace Frontier.Combat
             }
 
             _uiSystem.BattleUi.ShowDamageOnCharacter( target, 1f );
+        }
+
+        /// <summary>
+        /// skillID に対応するカメラデータを読み込み、target を注視するオフセット型カメラ演出(TargetOffsetCameraProcess)を
+        /// _cameraProcess に設定します。データファイルが存在しない場合は既定値(現行の連携攻撃と同じ数値)を使用します。
+        /// 継承先は読み込むスキルIDと注視対象キャラクターを指定するだけで済みます。
+        /// </summary>
+        protected void SetupCameraProcess( SkillID skillID, Character target )
+        {
+            if( target == null ) { return; }
+
+            float xzDistance = DEFAULT_CAMERA_XZ_DISTANCE;
+            float height     = DEFAULT_CAMERA_HEIGHT;
+            float duration   = DEFAULT_CAMERA_DURATION;
+
+            var camParams = _btlFileLoader?.LoadSkillCameraParams( skillID );
+            if( camParams != null && camParams.Count > 0 && camParams[0].Length > 0 )
+            {
+                var data   = camParams[0][0];
+                xzDistance = data.XZDistance;
+                height     = data.Height;
+                duration   = data.Duration;
+            }
+
+            _cameraProcess = new TargetOffsetCameraProcess( _owner, target, xzDistance, height, duration );
         }
     }
 }
