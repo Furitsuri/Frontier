@@ -17,6 +17,8 @@ namespace Frontier
             public float Roll;
             public float Pitch;
             public float Yaw;
+            // このフェーズへの遷移にかける秒数。0以下の場合は呼び出し側の既定値を使用する(既存のCloseAtk/RangedAtkデータとの後方互換のため)
+            public float Duration;
         }
 
         // --- 連携スキルシーケンス用カメラパラメータ ---

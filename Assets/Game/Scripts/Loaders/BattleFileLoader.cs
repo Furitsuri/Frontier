@@ -114,6 +114,20 @@ namespace Frontier.Loaders
             cameraController.SetCameraParamDatas( closeParams, rangedParams );
         }
 
+        /// <summary>
+        /// 指定スキルのカメラパラメータを読み込みます。データファイルが存在しない場合は null を返します
+        /// (＝そのスキルにはまだカメラ演出用データが用意されていない、という扱いになります)。
+        /// </summary>
+        public List<BattleCameraController.CameraParamData[]> LoadSkillCameraParams( SkillID skillID )
+        {
+            string path = _filePathReg.GetSkillCameraParamFilePath( skillID );
+            if( !File.Exists( path ) ) { return null; }
+
+            string json = File.ReadAllText( path );
+            var dataContainer = JsonConvert.DeserializeObject<CameraParamContainer>( json );
+            return dataContainer?.CameraParams;
+        }
+
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
         /// <summary>
         /// デバッグ用にユニットを生成します

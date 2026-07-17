@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Frontier.Combat;
+using System.IO;
 using UnityEngine;
 
 namespace Frontier.Registries
@@ -39,6 +40,13 @@ namespace Frontier.Registries
         /// 指定ステージの第三軍勢キャラクターパラメータファイルのパスを、StageNamesから導出して取得します
         /// </summary>
         public string GetOtherParamFilePath( int stageIndex ) => BuildCharacterDataPath( stageIndex, "Other" );
+
+        /// <summary>
+        /// 指定スキルのカメラパラメータファイルのパスを、SkillIDから導出して取得します。
+        /// スキルごとにInspectorへ個別のパスを設定する必要がないよう、SkillID名から一意に導出する方式にしています。
+        /// </summary>
+        public string GetSkillCameraParamFilePath( SkillID skillID ) =>
+            Path.Combine( "Assets", "Resources", "CameraData", "Skills", $"Frontier_Skill_CameraParam_{skillID}.json" );
 
         // _stageNames[stageIndex] を冠にしたディレクトリ・ファイル名を組み立てる。
         // _enemyParamFilePath/_otherParamFilePath を個別配列として持つと、_stageNamesとのインデックス対応が崩れるため、
