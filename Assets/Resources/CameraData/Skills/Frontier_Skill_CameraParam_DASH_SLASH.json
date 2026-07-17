@@ -1,0 +1,16 @@
+{
+    "CameraParams": [
+        [
+            {
+                "Phase": "dash",
+                "Length": 0.0,
+                "Roll": 0.0,
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "XZDistance": 5.0,
+                "Height": 4.0,
+                "Duration": 0.5
+            }
+        ]
+    ]
+}
