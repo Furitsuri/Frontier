@@ -271,6 +271,43 @@ namespace Frontier
         }
 
         // -----------------------------------------------------------------------
+        // スキル用カメラ処理 API（SkillActionBase から呼ばれる）
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// スキル固有のカメラ処理を開始します。開始時点の実際のカメラ姿勢を渡すため、
+        /// 直前に何が動かしていたか(前のスキル・連携演出・通常のFOLLOWINGモードなど)に関わらず、
+        /// そこから連続的に繋がります。
+        /// </summary>
+        public void StartSkillCameraProcess( ISkillCameraProcess process )
+        {
+            if( process == null ) { return; }
+
+            var fromPosition = _sharedState.MainCamera.transform.position;
+            var fromRotation = _sharedState.MainCamera.transform.rotation;
+
+            process.Begin( _sharedState, fromPosition, fromRotation );
+            _activeSequence = process;
+        }
+
+        /// <summary>
+        /// スキル固有のカメラ処理を終了します。連携などで続けて次のスキルのカメラ処理を開始する場合は、
+        /// 同じフレーム内で StartSkillCameraProcess を呼べば、FOLLOWINGモードへ実際に戻ることなく
+        /// 連続的に繋がります。
+        /// </summary>
+        public void EndSkillCameraProcess()
+        {
+            if( !( _activeSequence is ISkillCameraProcess process ) ) { return; }
+
+            process.End();
+
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+            _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
+            _followElapsedTime              = 0f;
+            _activeSequence                 = null;
+        }
+
+        // -----------------------------------------------------------------------
         // 内部処理
         // -----------------------------------------------------------------------
 

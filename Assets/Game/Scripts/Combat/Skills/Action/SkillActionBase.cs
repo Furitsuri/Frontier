@@ -6,28 +6,40 @@ namespace Frontier.Combat
 {
     public class SkillActionBase : ISequence
     {
-        protected Character  _owner     = null;
-        protected IUiSystem  _uiSystem  = null;
+        protected Character             _owner       = null;
+        protected IUiSystem             _uiSystem    = null;
+        protected BattleCameraController _btlCamCtrl = null;
+
+        /// <summary>
+        /// このスキル実行中のカメラ演出。継承先のコンストラクタや StartAction() 内で設定してください。
+        /// null のままであれば、カメラ演出は行われず既定の挙動(FOLLOWINGモードなど)のままになります。
+        /// </summary>
+        protected ISkillCameraProcess _cameraProcess = null;
 
         public SkillActionBase( Character owner )
         {
             _owner = owner;
         }
 
-        public SkillActionBase( Character owner, IUiSystem uiSystem )
+        public SkillActionBase( Character owner, IUiSystem uiSystem, BattleCameraController btlCamCtrl )
         {
-            _owner    = owner;
-            _uiSystem = uiSystem;
+            _owner      = owner;
+            _uiSystem   = uiSystem;
+            _btlCamCtrl = btlCamCtrl;
         }
 
         public void Start()
         {
             StartAction();
+
+            if( _cameraProcess != null ) { _btlCamCtrl?.StartSkillCameraProcess( _cameraProcess ); }
         }
 
         public void End()
         {
             EndAction();
+
+            if( _cameraProcess != null ) { _btlCamCtrl?.EndSkillCameraProcess(); }
         }
 
         public bool Update()

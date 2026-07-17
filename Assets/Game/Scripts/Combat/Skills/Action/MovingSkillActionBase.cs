@@ -27,7 +27,7 @@ namespace Frontier.Combat
         // サブクラスのコンストラクタで適切なタグを代入すること
         protected AnimDatas.AnimeConditionsTag _attackAnimTag = AnimDatas.AnimeConditionsTag.NONE;
 
-        public MovingSkillActionBase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner, uiSystem )
+        public MovingSkillActionBase( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem ) : base( owner, uiSystem, btlRtnCtrl.GetBtlCameraCtrl )
         {
             _targetCharacters   = new List<Character>();
             _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
