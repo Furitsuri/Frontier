@@ -26,6 +26,14 @@ public class CommandItem : UIMonoBehaviourIncludingText
         return _commandName.fontSize;
     }
 
+    /// <summary>
+    /// 現在設定されているテキストを1行で表示するために必要な幅を返します
+    /// </summary>
+    public float GetPreferredWidth()
+    {
+        return _commandName.GetPreferredValues().x;
+    }
+
     public override void Setup()
     {
         _commandName = this.GetComponent<TextMeshProUGUI>();

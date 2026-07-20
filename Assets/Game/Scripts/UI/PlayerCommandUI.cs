@@ -18,6 +18,7 @@ namespace Frontier
         private List<CommandItem> _commandItems = new List<CommandItem>();
         private RectTransform _commandUIBaseRectTransform;
         private VerticalLayoutGroup _cmdTextVerticalLayout;
+        private float _defaultWidth; // Setup()時点の幅。表示するコマンドの文字列がこれより狭い場合はこの幅を下限として使う
         private ICommandCursorProvider _activeCommandScript;
         private string[] _commandTextKeys;
         private string[] _useSkillOptionTextKeys;
@@ -80,15 +81,24 @@ namespace Frontier
         }
 
         /// <summary>
-        /// プレイヤーコマンドの選択UIの下地となるRectTransformの大きさを更新します
+        /// プレイヤーコマンドの選択UIの下地となるRectTransformの大きさを更新します。
+        /// 幅は _commandItems の中で最も長い文字列に合わせて自動調整します(_defaultWidthを下限とする)。
         /// </summary>
         /// <param name="PLCommands">プレイヤーのコマンド構造体配列</param>
         void ResizeUIBaseRectTransform( float fontSize, int executableCmdNum )
         {
-            float marginSize = _cmdTextVerticalLayout.padding.top * 2f;  // 上下のマージンサイズが存在するため2倍の値
+            float marginSize   = _cmdTextVerticalLayout.padding.top * 2f;  // 上下のマージンサイズが存在するため2倍の値
             float intervalSize = _cmdTextVerticalLayout.spacing;
+            float horizontalMarginSize = _cmdTextVerticalLayout.padding.left + _cmdTextVerticalLayout.padding.right;
 
-            _commandUIBaseRectTransform.sizeDelta = new Vector2( _commandUIBaseRectTransform.sizeDelta.x, marginSize + ( fontSize + intervalSize ) * executableCmdNum - intervalSize );
+            float maxTextWidth = 0f;
+            foreach( var item in _commandItems )
+            {
+                maxTextWidth = Mathf.Max( maxTextWidth, item.GetPreferredWidth() );
+            }
+            float width = Mathf.Max( _defaultWidth, maxTextWidth + horizontalMarginSize );
+
+            _commandUIBaseRectTransform.sizeDelta = new Vector2( width, marginSize + ( fontSize + intervalSize ) * executableCmdNum - intervalSize );
         }
 
         /// <summary>
@@ -195,6 +205,12 @@ namespace Frontier
             _commandUIBaseRectTransform     = gameObject.GetComponent<RectTransform>();
             _cmdTextVerticalLayout          = gameObject.GetComponent<VerticalLayoutGroup>();
             TextMeshProUGUI[] commandNames  = gameObject.GetComponentsInChildren<TextMeshProUGUI>();
+            _defaultWidth                   = _commandUIBaseRectTransform.sizeDelta.x;
+
+            // childControlWidthがfalseだと、下地(_commandUIBaseRectTransform)の幅を変更しても
+            // 各CommandItemの幅は追従しないため、テキストが折り返されたままになってしまう。
+            // trueにすることでchildForceExpandWidthと合わせて下地の幅に子要素の幅が追従するようにする
+            _cmdTextVerticalLayout.childControlWidth = true;
 
             InitCommandStrings();   // コマンド文字列を初期化
         }
