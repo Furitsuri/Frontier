@@ -24,6 +24,7 @@ namespace Frontier.Field
             Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
             Container.Bind<ISaveHandler<TutorialSaveData>>().To<TutorialSaveHandler>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
+            Container.Bind<ISaveHandler<OptionSaveData>>().To<OptionSaveHandler>().AsSingle();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // DebugUserDataLoader.TryApply() が必要とする依存関係

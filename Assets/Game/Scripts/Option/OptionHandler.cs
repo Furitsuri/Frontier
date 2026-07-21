@@ -14,24 +14,25 @@ namespace Frontier.Option
     {
         [Inject] private InputFacade _inputFcd = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private ISaveHandler<OptionSaveData> _saveHdlr = null;
 
         private OptionPresenter _presenter = null;
-
-        // TODO: 実際の音量への反映・設定の永続化は、音響システム側の実装に合わせて別途対応する
-        private float _bgmVolume = 100f;
-        private float _seVolume = 100f;
-        // TODO: 設定の永続化は別途対応する
-        private bool _isInputGuideVisible = true;
+        private OptionSaveData _saveData = null;
 
         void Start()
         {
+            _saveData = _saveHdlr.Load();
+
+            // 読み込んだ設定をすぐさま反映する(BGM/SEは音響システム側の実装に合わせて別途対応する)
+            _inputFcd.SetGuideVisible( _saveData.IsInputGuideVisible );
+
             var items = new List<IOptionItem>
             {
-                new SliderOptionItem( "BGM", 0f, 100f, _bgmVolume, value => _bgmVolume = value ),
-                new SliderOptionItem( "SE",  0f, 100f, _seVolume,  value => _seVolume  = value ),
-                new ToggleOptionItem( "INPUT GUIDE", _isInputGuideVisible, value =>
+                new SliderOptionItem( "BGM", 0f, 100f, _saveData.BgmVolume, value => _saveData.BgmVolume = value ),
+                new SliderOptionItem( "SE",  0f, 100f, _saveData.SeVolume,  value => _saveData.SeVolume  = value ),
+                new ToggleOptionItem( "INPUT GUIDE", _saveData.IsInputGuideVisible, value =>
                 {
-                    _isInputGuideVisible = value;
+                    _saveData.IsInputGuideVisible = value;
                     _inputFcd.SetGuideVisible( value );
                 } ),
             };
@@ -111,13 +112,14 @@ namespace Frontier.Option
 
         /// <summary>
         /// IFocusRoutineの実装です
-        /// 処理を停止します
+        /// 処理を停止します。この時点の設定内容を保存します
         /// </summary>
         public override void Exit()
         {
             base.Exit();
 
             _presenter.Hide();
+            _saveHdlr.Save( _saveData );
 
             _inputFcd.UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
         }
