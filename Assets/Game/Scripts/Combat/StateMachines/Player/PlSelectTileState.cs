@@ -1,13 +1,17 @@
 ﻿using Frontier.Entities;
+using Frontier.Option;
 using Frontier.Stage;
 using Frontier.Tutorial;
 using Frontier.UI;
+using Zenject;
 using static Constants;
 
 namespace Frontier.Battle
 {
     public class PlSelectTileState : PlPhaseStateBase
     {
+        [Inject] private OptionHandler _optionHandler = null;
+
         private enum TransitTag
         {
             CHARACTER_COMMAND = 0,
@@ -99,6 +103,7 @@ namespace Frontier.Battle
                (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT1, "OPTION", CanAcceptDefault, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode),
                (GuideIcon.OPT2, "TURN\nEND", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
@@ -244,6 +249,19 @@ namespace Frontier.Battle
             SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             TransitState( ( int ) TransitTag.CHARACTER_STATUS );
+
+            return true;
+        }
+
+        /// <summary>
+        /// OPT1入力を受けた際にオプション画面を開きます
+        /// </summary>
+        /// <returns>入力実行の有無</returns>
+        protected override bool AcceptOpt1( InputContext context )
+        {
+            if( !base.AcceptOpt1( context ) ) { return false; }
+
+            _optionHandler.ScheduleRun();
 
             return true;
         }

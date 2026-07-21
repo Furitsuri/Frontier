@@ -18,6 +18,9 @@ namespace Frontier
         [Header( "ToolTip" )]
         public TooltipUI ToolTipView;               // ツールチップUI
 
+        [Header( "Option" )]
+        public OptionUI OptionView;                 // オプションUI
+
         void Awake()
         {
             if( null == GetComponent<Canvas>() )
@@ -32,6 +35,7 @@ namespace Frontier
             TutorialView?.Setup();
             CharacterStatusView?.Setup();
             ToolTipView?.Setup();
+            OptionView?.Setup();
         }
 
         public Vector2 GetScreenSize()

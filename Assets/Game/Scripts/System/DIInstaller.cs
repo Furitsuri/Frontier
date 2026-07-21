@@ -7,6 +7,7 @@ using Zenject;
 using Frontier.Registries;
 using Frontier.Tutorial;
 using Frontier.Sequences;
+using Frontier.Option;
 
 namespace Frontier
 {
@@ -34,6 +35,7 @@ namespace Frontier
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
+            Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();
             // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する
             Container.Bind<PrefabRegistry>().FromInstance( UnityEngine.Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
 #if UNITY_EDITOR

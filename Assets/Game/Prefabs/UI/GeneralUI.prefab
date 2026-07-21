@@ -123,6 +123,7 @@ MonoBehaviour:
   TutorialView: {fileID: 890886349967027424}
   CharacterStatusView: {fileID: 7704652322240115763}
   ToolTipView: {fileID: 2167286667489173865}
+  OptionView: {fileID: 9029527107768093871}
 --- !u!1 &219689767459343845
 GameObject:
   m_ObjectHideFlags: 0
@@ -2909,6 +2910,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5466284304833921319}
+  - component: {fileID: 9029527107768093871}
   m_Layer: 5
   m_Name: Option
   m_TagString: Untagged
@@ -2942,6 +2944,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 720, y: 460}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &9029527107768093871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3409144392453290703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d577ab410f4eff944ac7efc147d63aa0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bgmSlider: {fileID: 6625819892099776599}
+  _seSlider: {fileID: 907491387892108741}
+  _closeButton: {fileID: 7378507496192960653}
 --- !u!1 &3463192225572388719
 GameObject:
   m_ObjectHideFlags: 0

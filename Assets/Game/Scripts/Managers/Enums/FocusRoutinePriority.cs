@@ -10,6 +10,7 @@ public enum FocusRoutinePriority
     DEBUG_MENU,         // デバッグメニュー
     EVENT,              // イベント
     TUTORIAL,           // チュートリアル
+    OPTIONS,            // オプション
     BATTLE_SKILL_EVENT, // 戦闘スキルイベント
     SEQUENCE,           // シーケンス
     MAIN_FLOW,          // メインフロー
