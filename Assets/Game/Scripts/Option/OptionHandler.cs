@@ -1,4 +1,5 @@
-﻿using Zenject;
+﻿using System.Collections.Generic;
+using Zenject;
 
 namespace Frontier.Option
 {
@@ -16,18 +17,22 @@ namespace Frontier.Option
 
         private OptionPresenter _presenter = null;
 
-        // TODO: BGM/SE音量の永続化・実際の音量への反映は、音響システム側の実装に合わせて別途対応する
-        private float _bgmVolume = 1.0f;
-        private float _seVolume = 1.0f;
+        // TODO: 実際の音量への反映・設定の永続化は、音響システム側の実装に合わせて別途対応する
+        private float _bgmVolume = 100f;
+        private float _seVolume = 100f;
 
         void Start()
         {
+            var items = new List<IOptionItem>
+            {
+                new SliderOptionItem( "BGM", 0f, 100f, _bgmVolume, value => _bgmVolume = value ),
+                new SliderOptionItem( "SE",  0f, 100f, _seVolume,  value => _seVolume  = value ),
+            };
+
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<OptionPresenter>( false ) );
-            _presenter.Init();
+            _presenter.Init( items );
 
             _presenter.OnCloseRequested += HandleCloseRequested;
-            _presenter.OnBgmVolumeChanged += value => _bgmVolume = value;
-            _presenter.OnSeVolumeChanged += value => _seVolume = value;
 
             base.Init();
         }
@@ -72,7 +77,7 @@ namespace Frontier.Option
         {
             base.Run();
 
-            _presenter.Show( _bgmVolume, _seVolume );
+            _presenter.Show();
 
             RegisterActiveInputCode();
         }
@@ -81,7 +86,7 @@ namespace Frontier.Option
         {
             base.Restart();
 
-            _presenter.Show( _bgmVolume, _seVolume );
+            _presenter.Show();
 
             RegisterActiveInputCode();
         }

@@ -5,16 +5,15 @@ namespace Frontier.UI
 {
     /// <summary>
     /// オプション画面の最小限のView。
-    /// 個々のUI部品の参照を公開するのみで、それらを用いた機能の提供はOptionPresenterが担います。
+    /// 個々の設定項目UIを並べるコンテナと閉じるボタンの参照を公開するのみで、
+    /// 項目の生成・操作はOptionPresenterが担います。
     /// </summary>
     public class OptionUI : UiMonoBehaviour
     {
-        [SerializeField] private Slider _bgmSlider;
-        [SerializeField] private Slider _seSlider;
+        [SerializeField] private Transform _contentRoot;
         [SerializeField] private Button _closeButton;
 
-        public Slider BgmSlider => _bgmSlider;
-        public Slider SeSlider => _seSlider;
+        public Transform ContentRoot => _contentRoot;
         public Button CloseButton => _closeButton;
     }
 }

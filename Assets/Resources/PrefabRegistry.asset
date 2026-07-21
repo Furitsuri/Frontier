@@ -40,3 +40,5 @@ MonoBehaviour:
   BuffCirclePrefab: {fileID: 734234413312254984, guid: b67ad43873ab11e48940c652bb691bd9, type: 3}
   BuffAuraPrefab: {fileID: 2444267416405518009, guid: e2b3834c3f8e1c745a453b6d4636a971, type: 3}
   CooperativeConvergingLinesPrefab: {fileID: 1902869444003645472, guid: ab9f576b60059f648839937b3d500179, type: 3}
+  SliderOptionItemPrefab: {fileID: 4966168016440332519, guid: 503815c979ede584f8181e61a9cf4df9, type: 3}
+  ToggleOptionItemPrefab: {fileID: 614780745541198877, guid: 0b1160da8d79ccf4699e8c61b893d0ba, type: 3}

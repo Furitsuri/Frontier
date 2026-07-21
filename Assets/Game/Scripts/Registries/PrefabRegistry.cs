@@ -39,6 +39,10 @@ namespace Frontier.Registries
         [SerializeField] public GameObject BuffAuraPrefab;              // バフオーラ用プレハブ
         [SerializeField] public GameObject CooperativeConvergingLinesPrefab; // 連携演出用集中線プレハブ
 
+        [Header( "Option関連" )]
+        [SerializeField] public GameObject SliderOptionItemPrefab;      // スライダー形式のオプション項目プレハブ
+        [SerializeField] public GameObject ToggleOptionItemPrefab;      // トグル形式のオプション項目プレハブ
+
         public GameObject[] StagePropPrefabs => _stagePropObjects;
         public GameObject[] PlayerPrefabs => _playerGameObjects;
         public GameObject[] EnemyPrefabs => _enemyGameObjects;
