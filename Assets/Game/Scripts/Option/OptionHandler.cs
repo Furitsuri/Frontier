@@ -20,6 +20,8 @@ namespace Frontier.Option
         // TODO: 実際の音量への反映・設定の永続化は、音響システム側の実装に合わせて別途対応する
         private float _bgmVolume = 100f;
         private float _seVolume = 100f;
+        // TODO: 設定の永続化は別途対応する
+        private bool _isInputGuideVisible = true;
 
         void Start()
         {
@@ -27,6 +29,11 @@ namespace Frontier.Option
             {
                 new SliderOptionItem( "BGM", 0f, 100f, _bgmVolume, value => _bgmVolume = value ),
                 new SliderOptionItem( "SE",  0f, 100f, _seVolume,  value => _seVolume  = value ),
+                new ToggleOptionItem( "INPUT GUIDE", _isInputGuideVisible, value =>
+                {
+                    _isInputGuideVisible = value;
+                    _inputFcd.SetGuideVisible( value );
+                } ),
             };
 
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<OptionPresenter>( false ) );

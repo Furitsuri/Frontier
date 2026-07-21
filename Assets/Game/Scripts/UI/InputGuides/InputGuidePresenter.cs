@@ -28,6 +28,7 @@ public sealed class InputGuidePresenter
     private float _fadeTime                 = 0f;                                                           // 現在の時間
     private Sprite[] _sprites;                                                                              // ガイド上に表示可能なスプライト群
     private InputGuideBarUI _inputGuideBar = null;                                                          // ガイドバーUI
+    private bool _isGuideVisible            = true;                                                         // オプション設定によるガイドバー全体の表示可否
     private Dictionary<InputCode, InputGuideUI> _guideUIDict = new Dictionary<InputCode, InputGuideUI>();   // 入力コードとガイドUIの対応表
     private ReadOnlyCollection<InputCode> _inputCodes;                                                      // InputFacadeで管理している入力コード情報の参照
     private static readonly string[] spriteTailNoString =                                                   // 各スプライトファイル名の末尾の番号
@@ -121,9 +122,27 @@ public sealed class InputGuidePresenter
         }
 
         TransitFadeMode();  // フェード状態の遷移
-        _inputGuideBar.gameObject.SetActive( EvaluateActiveGuideUiCount() > 0 ); // ガイドUIが1つでもあればガイドバーを表示
+        ApplyGuideBarVisibility();
+    }
 
-        
+    /// <summary>
+    /// オプション設定からガイドバー全体の表示可否を切り替えます
+    /// 入力コードの登録・受付処理自体には影響しません
+    /// </summary>
+    /// <param name="visible">表示するか</param>
+    public void SetGuideVisible( bool visible )
+    {
+        _isGuideVisible = visible;
+
+        ApplyGuideBarVisibility();
+    }
+
+    /// <summary>
+    /// オプション設定とガイドUIの登録数を踏まえ、ガイドバー全体の表示可否を反映します
+    /// </summary>
+    private void ApplyGuideBarVisibility()
+    {
+        _inputGuideBar.gameObject.SetActive( _isGuideVisible && EvaluateActiveGuideUiCount() > 0 ); // ガイドUIが1つでもあり、かつ表示設定が有効であればガイドバーを表示
     }
 
     /// <summary>

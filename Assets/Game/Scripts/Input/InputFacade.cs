@@ -145,4 +145,14 @@ public class InputFacade
     {
         return true;
     }
+
+    /// <summary>
+    /// 入力ガイドバー全体の表示可否を切り替えます(オプション設定用)。
+    /// 入力コードの登録・受付処理自体には影響しません。
+    /// </summary>
+    /// <param name="visible">表示するか</param>
+    public void SetGuideVisible( bool visible )
+    {
+        _inputGuideView?.SetGuideVisible( visible );
+    }
 }
