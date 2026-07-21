@@ -10,6 +10,7 @@ namespace Frontier.Option
     /// オプション画面の表示・操作を担うPresenter。
     /// IOptionItemのリストから、種類に応じたUI項目を動的に生成してOptionUIに配置し、
     /// 値変更を各項目のApply()へ橋渡しします。
+    /// また、キーボード・パッドによるカーソル選択(項目一覧 + 閉じるボタン)を管理します。
     /// </summary>
     public class OptionPresenter
     {
@@ -19,6 +20,10 @@ namespace Frontier.Option
 
         private OptionUI _optionUI = null;
         private List<IOptionItem> _items = null;
+        private List<OptionItemUIBase> _itemUIs = new List<OptionItemUIBase>();
+
+        // カーソル位置。0〜(_itemUIs.Count-1)は各設定項目、_itemUIs.Countは閉じるボタンを示す
+        private int _selectedIndex = 0;
 
         public event Action OnCloseRequested;
 
@@ -38,11 +43,14 @@ namespace Frontier.Option
         }
 
         /// <summary>
-        /// オプション画面を表示します
+        /// オプション画面を表示し、カーソルを先頭項目にリセットします
         /// </summary>
         public void Show()
         {
             _optionUI.gameObject.SetActive( true );
+
+            _selectedIndex = 0;
+            UpdateSelectionVisuals();
         }
 
         /// <summary>
@@ -51,6 +59,57 @@ namespace Frontier.Option
         public void Hide()
         {
             _optionUI.gameObject.SetActive( false );
+        }
+
+        /// <summary>
+        /// カーソルを上下に移動します(末尾・先頭で循環します)
+        /// </summary>
+        /// <param name="delta">移動量(-1で前の項目、+1で次の項目)</param>
+        public void MoveSelection( int delta )
+        {
+            int count = _itemUIs.Count + 1; // +1 は閉じるボタンの分
+            _selectedIndex = ( _selectedIndex + delta + count ) % count;
+
+            UpdateSelectionVisuals();
+        }
+
+        /// <summary>
+        /// 現在選択中の項目を確定操作します(トグルの切替・閉じるボタンの実行)。
+        /// スライダー選択時は何も行いません(左右入力で調整するため)
+        /// </summary>
+        public void ConfirmSelection()
+        {
+            if( _selectedIndex == _itemUIs.Count )
+            {
+                OnCloseRequested?.Invoke();
+                return;
+            }
+
+            if( _itemUIs[_selectedIndex] is ToggleOptionItemUI toggleUI )
+            {
+                toggleUI.Toggle();
+            }
+        }
+
+        /// <summary>
+        /// 現在選択中の項目がスライダーであれば、値をdelta分調整します
+        /// </summary>
+        public void AdjustSelectedSlider( float delta )
+        {
+            if( _selectedIndex >= _itemUIs.Count ) { return; }
+
+            if( _itemUIs[_selectedIndex] is SliderOptionItemUI sliderUI )
+            {
+                sliderUI.AdjustValue( delta );
+            }
+        }
+
+        /// <summary>
+        /// 現在選択中の項目がスライダーかどうかを返します
+        /// </summary>
+        public bool IsSliderSelected()
+        {
+            return _selectedIndex < _itemUIs.Count && _itemUIs[_selectedIndex] is SliderOptionItemUI;
         }
 
         /// <summary>
@@ -85,6 +144,8 @@ namespace Frontier.Option
             itemUI.SetRange( item.MinValue, item.MaxValue );
             itemUI.SetValueWithoutNotify( item.CurrentValue );
             itemUI.OnValueChanged += item.Apply;
+
+            _itemUIs.Add( itemUI );
         }
 
         private void BuildToggleItemUI( ToggleOptionItem item )
@@ -97,6 +158,21 @@ namespace Frontier.Option
             itemUI.SetLabel( item.Label );
             itemUI.SetValueWithoutNotify( item.CurrentValue );
             itemUI.OnValueChanged += item.Apply;
+
+            _itemUIs.Add( itemUI );
+        }
+
+        /// <summary>
+        /// 現在のカーソル位置を各項目・閉じるボタンの表示に反映します
+        /// </summary>
+        private void UpdateSelectionVisuals()
+        {
+            for( int i = 0; i < _itemUIs.Count; ++i )
+            {
+                _itemUIs[i].SetSelected( i == _selectedIndex );
+            }
+
+            _optionUI.SetCloseSelected( _selectedIndex == _itemUIs.Count );
         }
     }
 }

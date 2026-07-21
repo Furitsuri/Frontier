@@ -15,5 +15,13 @@ namespace Frontier.UI
         {
             _label.text = text;
         }
+
+        /// <summary>
+        /// カーソルによる選択状態を表示に反映します
+        /// </summary>
+        public void SetSelected( bool isSelected )
+        {
+            _label.color = isSelected ? Color.red : Color.white;
+        }
     }
 }

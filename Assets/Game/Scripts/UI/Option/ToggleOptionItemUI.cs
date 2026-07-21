@@ -24,5 +24,13 @@ namespace Frontier.UI
         {
             _toggle.SetIsOnWithoutNotify( value );
         }
+
+        /// <summary>
+        /// ON/OFFを反転します。キーボード・パッドからの操作に用います
+        /// </summary>
+        public void Toggle()
+        {
+            _toggle.isOn = !_toggle.isOn;
+        }
     }
 }

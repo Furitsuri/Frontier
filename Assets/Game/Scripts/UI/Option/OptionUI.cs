@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Frontier.UI
@@ -12,8 +13,17 @@ namespace Frontier.UI
     {
         [SerializeField] private Transform _contentRoot;
         [SerializeField] private Button _closeButton;
+        [SerializeField] private TextMeshProUGUI _closeButtonText;
 
         public Transform ContentRoot => _contentRoot;
         public Button CloseButton => _closeButton;
+
+        /// <summary>
+        /// カーソルによる選択状態を閉じるボタンの表示に反映します
+        /// </summary>
+        public void SetCloseSelected( bool isSelected )
+        {
+            _closeButtonText.color = isSelected ? Color.red : Color.white;
+        }
     }
 }

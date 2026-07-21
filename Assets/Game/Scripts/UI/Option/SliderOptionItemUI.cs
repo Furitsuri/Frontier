@@ -36,6 +36,15 @@ namespace Frontier.UI
             UpdateValueText( value );
         }
 
+        /// <summary>
+        /// 現在値からdelta分だけ変更します(範囲内にクランプされます)。
+        /// キーボード・パッドからの操作に用います
+        /// </summary>
+        public void AdjustValue( float delta )
+        {
+            _slider.value = Mathf.Clamp( _slider.value + delta, _slider.minValue, _slider.maxValue );
+        }
+
         private void OnSliderValueChanged( float value )
         {
             UpdateValueText( value );

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Zenject;
+using static Constants;
 
 namespace Frontier.Option
 {
@@ -53,13 +54,84 @@ namespace Frontier.Option
             int hashCode = Hash.GetStableHash( GetType().Name );
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.CANCEL, "CLOSE", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.VERTICAL_CURSOR,   "SELECT",  CanAcceptVertical,   new AcceptContextInput( AcceptVertical ),   MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                (GuideIcon.HORIZONTAL_CURSOR, "ADJUST",  CanAcceptHorizontal, new AcceptContextInput( AcceptHorizontal ), 0.06f, hashCode),
+                (GuideIcon.CONFIRM,           "CONFIRM", CanAcceptConfirm,    new AcceptContextInput( AcceptConfirm ),    0.0f, hashCode),
+                (GuideIcon.CANCEL,            "CLOSE",   CanAcceptCancel,     new AcceptContextInput( AcceptCancel ),     0.0f, hashCode)
              );
+        }
+
+        private bool CanAcceptVertical()
+        {
+            return IsMatchFocusState( FocusState.RUN );
+        }
+
+        /// <summary>
+        /// 現在選択中の項目がスライダーの場合のみ、左右入力を受け付けます
+        /// </summary>
+        private bool CanAcceptHorizontal()
+        {
+            return IsMatchFocusState( FocusState.RUN ) && _presenter.IsSliderSelected();
+        }
+
+        private bool CanAcceptConfirm()
+        {
+            return IsMatchFocusState( FocusState.RUN );
         }
 
         private bool CanAcceptCancel()
         {
             return IsMatchFocusState( FocusState.RUN );
+        }
+
+        /// <summary>
+        /// 上下入力を受け、選択中の項目を移動します(末尾・先頭で循環)
+        /// </summary>
+        private bool AcceptVertical( InputContext context )
+        {
+            switch( context.Cursor )
+            {
+                case Direction.FORWARD:
+                    _presenter.MoveSelection( -1 );
+                    return true;
+
+                case Direction.BACK:
+                    _presenter.MoveSelection( 1 );
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 左右入力を受け、選択中のスライダーの値を調整します
+        /// </summary>
+        private bool AcceptHorizontal( InputContext context )
+        {
+            switch( context.Cursor )
+            {
+                case Direction.LEFT:
+                    _presenter.AdjustSelectedSlider( -1f );
+                    return true;
+
+                case Direction.RIGHT:
+                    _presenter.AdjustSelectedSlider( 1f );
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 決定入力を受け、選択中の項目を確定操作します(トグルの切替・閉じるボタンの実行)
+        /// </summary>
+        private bool AcceptConfirm( InputContext context )
+        {
+            if( !context.GetButton( GameButton.Confirm ) ) { return false; }
+
+            _presenter.ConfirmSelection();
+
+            return true;
         }
 
         private bool AcceptCancel( InputContext context )
