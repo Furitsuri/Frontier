@@ -29,7 +29,7 @@ namespace Frontier.Entities
 protected Character _opponent                                       = null;
         protected ActionRangeController _actionRangeCtrl                    = null;                 // 行動範囲管理クラス
         protected BaseAi _baseAi                                            = null;                 // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
-        protected SkillNotifierBase[] _skillNotifier                        = null;                 // スキル使用通知
+        protected Dictionary<SkillID, SkillNotifierBase> _reactiveNotifiers = new Dictionary<SkillID, SkillNotifierBase>();  // リアクション型スキルの通知(装備しているスキルのうち該当するものだけ格納)
         protected ThinkingType _thikType                                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                                   = PARRY_PHASE.NONE;
         protected ParameterWindowType _paramWinType;
@@ -45,7 +45,13 @@ protected Character _opponent                                       = null;
 		public BaseAi GetAi() => _baseAi;                                           // AIの取得
         public Character GetOpponent() => _opponent;
         public ActionRangeController ActionRangeCtrl => _actionRangeCtrl;           // 行動範囲管理クラスの取得
-        public SkillNotifierBase SkillNotifier( int idx ) => _skillNotifier[idx];   // スキル通知処理の取得
+        /// <summary>
+        /// 指定スキルのリアクション通知処理を取得します。装備していない、またはリアクション型でないスキルの場合はnullを返します
+        /// </summary>
+        public T GetSkillNotifier<T>( SkillID skillID ) where T : SkillNotifierBase
+        {
+            return _reactiveNotifiers.TryGetValue( skillID, out var notifier ) ? notifier as T : null;
+        }
 
         private delegate bool IsExecutableCommand( Character character, StageController stageCtrl );
 
@@ -389,7 +395,7 @@ protected Character _opponent                                       = null;
         virtual public void Setup()
         {
             LazyInject.GetOrCreate( ref _actionRangeCtrl, () => _hierarchyBld.InstantiateWithDiContainer<ActionRangeController>( false ) );
-            _skillNotifier          = new SkillNotifierBase[EQUIPABLE_SKILL_MAX_NUM];
+            _reactiveNotifiers.Clear();
 
             IsDeclaredDead = false;
             _animSeqfactories = new Func<ICombatAnimationSequence>[]
@@ -516,17 +522,20 @@ protected Character _opponent                                       = null;
         }
 
         /// <summary>
-        /// 所有しているスキルの通知クラスを初期化します
+        /// 装備しているスキルのうち、リアクション型のもの(パリィ等)のみ通知クラスを初期化します
         /// </summary>
         private void InitSkillNotifier()
         {
+            _reactiveNotifiers.Clear();
+
             for( int i = 0; i < ( int ) EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                int skillID = ( int ) _readOnlyOwner.Value.GetEquipSkillID( i );
-                if( skillID < 0 ) { continue; }
+                SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
+                if( !SkillsData.ReactiveSkillNotifierFactory.TryGetValue( skillID, out var factory ) ) { continue; }
 
-                _skillNotifier[i] = SkillsData.SkillNotifierFactory[skillID]();
-                _skillNotifier[i].Init( _readOnlyOwner.Value );
+                var notifier = factory();
+                notifier.Init( _readOnlyOwner.Value );
+                _reactiveNotifiers[skillID] = notifier;
             }
         }
 

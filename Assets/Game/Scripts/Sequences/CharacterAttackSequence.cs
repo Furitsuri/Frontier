@@ -114,14 +114,13 @@ namespace Frontier.Sequences
                     {
                         _elapsedTime = 0f;
                         StartAttack( _attackCharacter, _targetCharacter );
-                        int parryIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY );
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if( 0 <= parryIdx )
+                        if( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) )
                         {
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
-                            _parryNotifier = _targetCharacter.BattleLogic.SkillNotifier( parryIdx ) as ParrySkillNotifier;
+                            _parryNotifier = _targetCharacter.BattleLogic.GetSkillNotifier<ParrySkillNotifier>( SkillID.PARRY );
                             NullCheck.AssertNotNull( _parryNotifier, nameof( _parryNotifier ) );
                             _phase = Phase.WAIT_PARRY_RESULT;
                         }

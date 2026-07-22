@@ -37,29 +37,19 @@ namespace Frontier.Combat
         }
 
         static public Data[] data = new Data[( int ) SkillID.NUM];
-        static public Func<SkillNotifierBase>[] SkillNotifierFactory    = null;
-        static private readonly SkillNotifierBase sharedNotifier        = new SkillNotifierBase();  // 使いまわし前提のため静的読み取り専用
+        // MEMO : 攻撃を受けた際に反応するパリィのような「リアクション型」のスキルのみを登録します。
+        //        大半のスキルはリアクションを必要としないため、ここには登録しません(登録が無ければ通知処理自体が存在しません)。
+        static public Dictionary<SkillID, Func<SkillNotifierBase>> ReactiveSkillNotifierFactory = null;
         static private readonly SkillActionBase sharedAction            = new SkillActionBase(null);    // 使いまわし前提のため静的読み取り専用
 
         static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {
-            if( SkillNotifierFactory != null ) { return; }
+            if( ReactiveSkillNotifierFactory != null ) { return; }
 
-            // MEMO : バフなどのDataのみで対応可能なものは何もする必要がないため、
-            //        ベースクラスであるSkillNotifierBaseで対応しています。
-            Func<SkillNotifierBase>[] factories = new Func<SkillNotifierBase>[( int ) SkillID.NUM]
+            ReactiveSkillNotifierFactory = new Dictionary<SkillID, Func<SkillNotifierBase>>
             {
-                () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false),   // SKILL_PARRY
-                () => sharedNotifier,                                                       // SKILL_GUARD
-                () => sharedNotifier,                                                       // SKILL_BUILD_UP
-                () => sharedNotifier,                                                       // SKILL_COUNTER
-                () => sharedNotifier,                                                       // SKILL_DOUBLE_STRIKE
-                () => sharedNotifier,                                                       // SKILL_TRIPLE_STRIKE
-                () => sharedNotifier,                                                       // SKILL_DASH_SLASH
-                () => sharedNotifier,                                                       // SKILL_JUMP_SLASH
+                { SkillID.PARRY, () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false) },
             };
-
-            SkillNotifierFactory = factories;
         }
 
         static public SkillActionBase CreateSkillAction( SkillID skillID, Character owner, List<CharacterKey> targetCharaKeys, HierarchyBuilderBase hierarchyBld )

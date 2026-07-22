@@ -177,9 +177,10 @@ namespace Frontier.Entities
         /// </summary>
         public void StartParryOnAnimEvent()
         {
-            int parrySkillIdx = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY );
-            if( parrySkillIdx < 0 ) { return; }
-            var parrySkillNotifier = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.SkillNotifier( parrySkillIdx ) as ParrySkillNotifier;
+            var opponentBattleLogic = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic;
+            if( opponentBattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) { return; }
+
+            var parrySkillNotifier = opponentBattleLogic.GetSkillNotifier<ParrySkillNotifier>( SkillID.PARRY );
             NullCheck.AssertNotNull( parrySkillNotifier, nameof( parrySkillNotifier ) );
 
             parrySkillNotifier.StartParryJudgeEvent();
@@ -191,9 +192,10 @@ namespace Frontier.Entities
         /// </summary>
         public void ParryAttackOnAnimEvent()
         {
-            int parrySkillIdx = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY );
-            if( parrySkillIdx < 0 ) { return; }
-            var parrySkillNotifier = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.SkillNotifier( parrySkillIdx ) as ParrySkillNotifier;
+            var opponentBattleLogic = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic;
+            if( opponentBattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) { return; }
+
+            var parrySkillNotifier = opponentBattleLogic.GetSkillNotifier<ParrySkillNotifier>( SkillID.PARRY );
             NullCheck.AssertNotNull( parrySkillNotifier, nameof( parrySkillNotifier ) );
 
             parrySkillNotifier.ParryOpponentEvent();

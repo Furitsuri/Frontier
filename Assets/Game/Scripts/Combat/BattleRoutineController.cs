@@ -57,7 +57,7 @@ namespace Frontier.Battle
             LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr,   () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
 
-            if( SkillsData.SkillNotifierFactory == null )
+            if( SkillsData.ReactiveSkillNotifierFactory == null )
             {
                 SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
             }
