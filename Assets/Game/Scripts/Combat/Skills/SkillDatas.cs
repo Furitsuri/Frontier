@@ -42,6 +42,16 @@ namespace Frontier.Combat
         static public Dictionary<SkillID, Func<SkillNotifierBase>> ReactiveSkillNotifierFactory = null;
         static private readonly SkillActionBase sharedAction            = new SkillActionBase(null);    // 使いまわし前提のため静的読み取り専用
 
+        // MEMO : データだけでは表現できない固有の手続き(移動・アニメーション制御等)を持つスキルのみを登録します。
+        //        登録が無いスキルはsharedAction(汎用実装、Dataの数値を元にダメージ計算等を行う)を使用します。
+        static private Dictionary<SkillID, Func<Character, List<CharacterKey>, HierarchyBuilderBase, SkillActionBase>> _skillActionFactory =
+            new Dictionary<SkillID, Func<Character, List<CharacterKey>, HierarchyBuilderBase, SkillActionBase>>
+            {
+                { SkillID.DOUBLE_STRIKE, ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<PartOfRangeSABase>( new object[] { owner, targets }, false ) },
+                { SkillID.DASH_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( new object[] { owner, targets }, false ) },
+                { SkillID.JUMP_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( new object[] { owner, targets }, false ) },
+            };
+
         static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {
             if( ReactiveSkillNotifierFactory != null ) { return; }
@@ -54,27 +64,9 @@ namespace Frontier.Combat
 
         static public SkillActionBase CreateSkillAction( SkillID skillID, Character owner, List<CharacterKey> targetCharaKeys, HierarchyBuilderBase hierarchyBld )
         {
-            switch( skillID )
-            {
-                case SkillID.DOUBLE_STRIKE:
-                {
-                    object[] args = { owner, targetCharaKeys };
-                    return hierarchyBld.InstantiateWithDiContainer<PartOfRangeSABase>( args, false );
-                }
-                case SkillID.DASH_SLASH:
-                {
-                    object[] args = { owner, targetCharaKeys };
-                    return hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( args, false );
-                }
-                case SkillID.JUMP_SLASH:
-                {
-                    object[] args = { owner, targetCharaKeys };
-                    return hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( args, false );
-                }
-
-                default:
-                    return sharedAction;
-            }
+            return _skillActionFactory.TryGetValue( skillID, out var factory )
+                ? factory( owner, targetCharaKeys, hierarchyBld )
+                : sharedAction;
         }
 
         static public bool IsValidSkill( SkillID skillID )
