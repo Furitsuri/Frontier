@@ -83,6 +83,18 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 入力を受付るかを取得します。
+        /// PlSelectSkillStateをキャンセルで戻った直後は、SkillBoxUIの元位置への復帰アニメーションが
+        /// 再生中の場合があるため、その間は入力を受け付けない
+        /// </summary>
+        protected override bool CanAcceptDefault()
+        {
+            if( _presenter.IsSkillBoxLayoutAnimating ) { return false; }
+
+            return base.CanAcceptDefault();
+        }
+
+        /// <summary>
         /// 操作対象のプレイヤーを設定します
         /// </summary>
         protected override void AdaptSelectPlayer()

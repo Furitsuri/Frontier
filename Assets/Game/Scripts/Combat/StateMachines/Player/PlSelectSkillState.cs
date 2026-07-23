@@ -135,6 +135,7 @@ namespace Frontier.Battle
         protected override bool CanAcceptConfirm()
         {
             if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+            if( _presenter.IsSkillBoxLayoutAnimating ) { return false; }
 
             bool isExistTransitionSkillActionType = false;
             bool isExistToggledOnSkill = false;
@@ -169,6 +170,7 @@ namespace Frontier.Battle
         protected override bool CanAcceptCancel()
         {
             if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+            if( _presenter.IsSkillBoxLayoutAnimating ) { return false; }
 
             return true;
         }
@@ -227,6 +229,7 @@ namespace Frontier.Battle
         private bool CanAcceptSub( int index )
         {
             if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL )      { return false; }
+            if( _presenter.IsSkillBoxLayoutAnimating )              { return false; }
             if( _playerSkillNames[index].Length <= 0 )              { return false; }
 
             return _plOwner.BattleParams.TmpParam.IsUseableSkill[index];

@@ -13,6 +13,12 @@ namespace Frontier.UI
         private const float MOVE_DURATION = 0.1f;    // 移動アニメーションにかける時間(全SkillBox共通)
 
         private Vector2[] _originalPositions;   // AnimateToSelectionLayout時点でのSkillBox毎の元の位置
+        private float _animationEndTime = -1.0f;   // 現在再生中のアニメーションが完了する時刻(Time.time基準)
+
+        /// <summary>
+        /// SkillBoxの移動アニメーション(並び替え・元位置への復帰のいずれか)が再生中かどうかを取得します
+        /// </summary>
+        public bool IsAnimating => Time.time < _animationEndTime;
 
         /// <summary>
         /// SkillBoxを、1つ目のSkillBoxのY軸30程度下を基点とした縦一列に並び替えます
@@ -41,6 +47,8 @@ namespace Frontier.UI
                 rect.DOKill();
                 rect.DOAnchorPos( targetPos, MOVE_DURATION );
             }
+
+            _animationEndTime = Time.time + MOVE_DURATION;
         }
 
         /// <summary>
@@ -58,6 +66,8 @@ namespace Frontier.UI
                 rect.DOKill();
                 rect.DOAnchorPos( _originalPositions[i], MOVE_DURATION );
             }
+
+            _animationEndTime = Time.time + MOVE_DURATION;
         }
     }
 }

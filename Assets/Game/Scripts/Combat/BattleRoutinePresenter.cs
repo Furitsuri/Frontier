@@ -127,6 +127,11 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// SkillBoxUIの並び替え・元位置への復帰アニメーションが再生中かどうかを取得します
+        /// </summary>
+        public bool IsSkillBoxLayoutAnimating => _skillBoxLayoutAnimator.IsAnimating;
+
+        /// <summary>
         /// PlSelectSkillState遷移時、SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動させます
         /// </summary>
         public void AnimateSkillBoxesForSelection( ParameterWindowType winType )
