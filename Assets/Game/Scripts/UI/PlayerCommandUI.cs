@@ -23,6 +23,7 @@ namespace Frontier
         private string[] _commandTextKeys;
         private string[] _useSkillOptionTextKeys;
         private string[] _reservedActionOptionTextKeys;
+        private string[] _tileMenuOptionTextKeys;
 
         /// <summary>
         /// コマンドの文字列を初期化します
@@ -52,6 +53,13 @@ namespace Frontier
                 "UI_CMD_RESERVED_ACTION_EXECUTE",  // EXECUTE
             };
             Debug.Assert( _reservedActionOptionTextKeys.Length == ( int ) RESERVED_ACTION_OPTION_TAG.NUM );
+
+            _tileMenuOptionTextKeys = new string[( int ) TILE_MENU_OPTION_TAG.NUM]
+            {
+                "UI_CMD_OPTION",    // OPTION
+                "UI_CMD_TURN_END",  // TURN_END
+            };
+            Debug.Assert( _tileMenuOptionTextKeys.Length == ( int ) TILE_MENU_OPTION_TAG.NUM );
         }
 
         // Update is called once per frame
@@ -158,6 +166,33 @@ namespace Frontier
                 commandItem.Setup();
                 commandItem.transform.SetParent( this.gameObject.transform, false );
                 commandItem.SetTextKey( _reservedActionOptionTextKeys[( int ) options[i]] );
+                _commandItems.Add( commandItem );
+
+                fontSize = commandItem.GetFontSize();
+            }
+
+            ResizeUIBaseRectTransform( fontSize, options.Count );
+        }
+
+        /// <summary>
+        /// タイルメニュー(Option/Turn End)の選択肢リストをUIに設定します。
+        /// </summary>
+        public void SetTileMenuOptionList( List<TILE_MENU_OPTION_TAG> options )
+        {
+            float fontSize = 0;
+
+            foreach( var command in _commandItems )
+            {
+                Destroy( command.gameObject );
+            }
+            _commandItems.Clear();
+
+            for( int i = 0; i < options.Count; ++i )
+            {
+                CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "option_" + i );
+                commandItem.Setup();
+                commandItem.transform.SetParent( this.gameObject.transform, false );
+                commandItem.SetTextKey( _tileMenuOptionTextKeys[( int ) options[i]] );
                 _commandItems.Add( commandItem );
 
                 fontSize = commandItem.GetFontSize();

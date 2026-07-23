@@ -92,6 +92,8 @@ namespace Frontier.Battle
              *              ｜       ｜
              *              ｜       ├─ PlSelectReservedActionState (予約に対する操作選択、実行まで行う)
              *              ｜       ｜
+             *              ｜       ├─ PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー)
+             *              ｜       ｜
              *              ｜       └─ PlSelectCommandState
              *              ｜                    ｜
              *              ｜                    ├─ PlWaitState
@@ -121,6 +123,7 @@ namespace Frontier.Battle
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );

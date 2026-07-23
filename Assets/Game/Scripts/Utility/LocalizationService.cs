@@ -26,6 +26,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_USE_SKILL_OPTION_QUEUE", "Queue" },
                 { "UI_CMD_USE_SKILL_OPTION_COOPERATIVE", "Cooperative" },
                 { "UI_CMD_RESERVED_ACTION_EXECUTE", "Execute" },
+                { "UI_CMD_OPTION", "Option" },
+                { "UI_CMD_TURN_END", "Turn End" },
             }
         },
         {
@@ -48,6 +50,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_USE_SKILL_OPTION_QUEUE", "連携予約" },
                 { "UI_CMD_USE_SKILL_OPTION_COOPERATIVE", "連携" },
                 { "UI_CMD_RESERVED_ACTION_EXECUTE", "実行" },
+                { "UI_CMD_OPTION", "オプション" },
+                { "UI_CMD_TURN_END", "ターン終了" },
             }
         }
     };

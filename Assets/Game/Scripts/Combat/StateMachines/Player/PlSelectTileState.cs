@@ -1,5 +1,4 @@
 ﻿using Frontier.Entities;
-using Frontier.Option;
 using Frontier.Stage;
 using Frontier.Tutorial;
 using Frontier.UI;
@@ -10,17 +9,17 @@ namespace Frontier.Battle
 {
     public class PlSelectTileState : PlPhaseStateBase
     {
-        [Inject] private OptionHandler _optionHandler = null;
-
         private enum TransitTag
         {
             CHARACTER_COMMAND = 0,
             CHARACTER_STATUS,
             TURN_END,
             SELECT_RESERVED_ACTION,
+            SELECT_TILE_MENU,
         }
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
+        private bool _isWaitingForTileMenuResult;
         private string[] _inputConfirmStrings;
         private string[] _inputToolStrings;
         private InputCodeStringWrapper _inputConfirmStrWrapper;
@@ -33,7 +32,8 @@ namespace Frontier.Battle
         {
             base.Init( context );
 
-            _isShowingAllDangerRange = false;
+            _isShowingAllDangerRange    = false;
+            _isWaitingForTileMenuResult = false;
             _stageCtrl.SetActiveGridCursor( true );   // グリッド選択を有効化
 
             // Confirmアイコンの文字列を設定
@@ -103,8 +103,7 @@ namespace Frontier.Battle
                (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT1, "OPTION", CanAcceptDefault, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode),
-               (GuideIcon.OPT2, "TURN\nEND", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
+               (GuideIcon.OPT2, "MENU", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 
@@ -254,30 +253,32 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// OPT1入力を受けた際にオプション画面を開きます
+        /// OPT2入力を受けた際にタイルメニュー(Option/Turn End)へ遷移させます
         /// </summary>
-        /// <returns>入力実行の有無</returns>
-        protected override bool AcceptOpt1( InputContext context )
-        {
-            if( !base.AcceptOpt1( context ) ) { return false; }
-
-            _optionHandler.ScheduleRun();
-
-            return true;
-        }
-
-        /// <summary>
-        /// OPTION入力を受けた際にターン終了へ遷移させます
-        /// </summary>
-        /// <param name="isOptional"></param>
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptOpt2( InputContext context )
         {
             if( !base.AcceptOpt2( context ) ) { return false; }
 
-            TransitState( ( int ) TransitTag.TURN_END );
+            _isWaitingForTileMenuResult = true;
+            TransitState( ( int ) TransitTag.SELECT_TILE_MENU );
 
             return true;
+        }
+
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            if( _isWaitingForTileMenuResult )
+            {
+                _isWaitingForTileMenuResult = false;
+                var menuState = GetChildren<PlSelectMenuState>( ( int ) TransitTag.SELECT_TILE_MENU );
+                if( menuState != null && menuState.IsTurnEndSelected )
+                {
+                    TransitState( ( int ) TransitTag.TURN_END );
+                }
+            }
         }
 
         private void RefreshDispParameterView()

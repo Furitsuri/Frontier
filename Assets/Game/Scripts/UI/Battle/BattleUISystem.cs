@@ -22,6 +22,9 @@ namespace Frontier.UI
         [Header( "PlayerCommand" )]
         public PlayerCommandUI PlCommandWindow;   // プレイヤーの選択コマンドUI
 
+        [Header( "TileMenu" )]
+        public PlayerCommandUI TileMenuWindow;    // PlSelectTileState用のタイルメニュー(Option/Turn End)専用UI
+
         [Header("SelectableCharaParam")]
         public SelectableCharaParamUI SelectableCharaParam;   // 選択可能なキャラクターパラメータ表示
 
@@ -62,6 +65,7 @@ namespace Frontier.UI
 
             ParameterView?.Setup();
             PlCommandWindow?.Setup();
+            TileMenuWindow?.Setup();
             ConfirmTurnEnd?.Setup();
             DamageValue?.Setup();
             CooperativeVortex?.Setup();
@@ -97,6 +101,11 @@ namespace Frontier.UI
         public void SetPlayerCommandActive( bool isActive )
         {
             PlCommandWindow.gameObject.SetActive( isActive );
+        }
+
+        public void SetTileMenuActive( bool isActive )
+        {
+            TileMenuWindow.gameObject.SetActive( isActive );
         }
 
         public void SetActiveActionResultExpect( bool isActive )
