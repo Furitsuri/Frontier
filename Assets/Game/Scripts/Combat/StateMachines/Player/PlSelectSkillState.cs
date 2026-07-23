@@ -49,6 +49,9 @@ namespace Frontier.Battle
 
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, 0xff );
+
+            // SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動
+            _presenter.AnimateSkillBoxesForSelection( ParameterWindowType.Left );
         }
 
         public override bool Update()
@@ -183,6 +186,9 @@ namespace Frontier.Battle
             // それ以外の場合(自身へのバフスキル等)は、スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
             if( SkillID.NONE == _transitTargetSelectSkillID )
             {
+                // この場合はターゲット選択やオプション選択を挟まずそのまま実行が確定するため、この時点でSkillBoxUIを元の位置に戻す
+                _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );
+
                 // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
                 // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
                 _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
@@ -205,9 +211,10 @@ namespace Frontier.Battle
         protected override bool AcceptCancel( InputContext context )
         {
             if( !base.AcceptCancel( context ) ) { return false; }
-            
+
             _plOwner.BattleLogic.RevertSkillsToggledOn();                               // 全てのスキルの使用フラグをOFFにする
             _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();  // 攻撃可能範囲の描画と範囲データをクリアする
+            _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );       // SkillBoxUIを元の位置に戻す
 
             return true;
         }

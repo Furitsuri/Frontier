@@ -344,6 +344,9 @@ namespace Frontier.Battle
 
         private void ExecuteSkill()
         {
+            // 連携攻撃ではない通常攻撃・非連携スキルは、キル確認を挟む場合も含めここが実行確定のタイミングとなるため、SkillBoxUIを元の位置に戻す
+            _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );
+
             _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
             _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();

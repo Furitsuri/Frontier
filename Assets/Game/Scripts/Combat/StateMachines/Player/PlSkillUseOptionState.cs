@@ -1,4 +1,5 @@
 ﻿using Frontier.Combat;
+using Frontier.UI;
 using System.Collections.Generic;
 using static Constants;
 
@@ -70,6 +71,10 @@ namespace Frontier.Battle
             if( !base.AcceptConfirm( context ) ) { return false; }
 
             SelectedOption = ( USE_SKILL_OPTION_TAG ) _cmdIdxVal.value;
+
+            // 選択肢(EXECUTION/QUEUE/COOPERATIVE)を選んだ時点でSkillBoxUIを元の位置に戻す
+            _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );
+
             Back();
 
             return true;

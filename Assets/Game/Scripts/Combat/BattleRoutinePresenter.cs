@@ -18,6 +18,7 @@ namespace Frontier.Battle
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
         private Action<bool>[] SetActiveActionDirectionCallbacks;
         static private int[] _layerMaskIndecies;
+        private SkillBoxLayoutAnimator _skillBoxLayoutAnimator = new SkillBoxLayoutAnimator();
         public CharacterParameterPresenter CharaParamView( ParameterWindowType winType ) => _parameterPresenters[( int ) winType];
 
         public void Setup()
@@ -123,6 +124,22 @@ namespace Frontier.Battle
         public void ShowCommandNameUI( SkillID skillId, float duration = 2.0f )
         {
             _uiSystem.BattleUi.CommandNameView.Show( skillId, duration );
+        }
+
+        /// <summary>
+        /// PlSelectSkillState遷移時、SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動させます
+        /// </summary>
+        public void AnimateSkillBoxesForSelection( ParameterWindowType winType )
+        {
+            _skillBoxLayoutAnimator.AnimateToSelectionLayout( _parameterPresenters[( int ) winType].GetSkillBoxes() );
+        }
+
+        /// <summary>
+        /// AnimateSkillBoxesForSelectionで移動させたSkillBoxUIを元の位置へアニメーション移動させます
+        /// </summary>
+        public void RevertSkillBoxesFromSelection( ParameterWindowType winType )
+        {
+            _skillBoxLayoutAnimator.RevertToOriginalLayout( _parameterPresenters[( int ) winType].GetSkillBoxes() );
         }
 
         public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )

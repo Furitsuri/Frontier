@@ -109,6 +109,11 @@ public class CharacterParameterPresenter : PhasePresenterBase
         _parameterUI.SkillBoxes[skillIndex].SetUsing();
     }
 
+    public SkillBoxUI[] GetSkillBoxes()
+    {
+        return _parameterUI.SkillBoxes;
+    }
+
     public void RefreshParamRender( Character selectCharacter, in Status status, in ModifiedParameter modifiedParam )
     {
         Debug.Assert( selectCharacter.BattleParams.TmpParam.ActGaugeConsumption <= status.CurActionGauge );
