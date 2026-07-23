@@ -114,6 +114,18 @@ public class CharacterParameterPresenter : PhasePresenterBase
         return _parameterUI.SkillBoxes;
     }
 
+    /// <summary>
+    /// 指定インデックスのSkillBoxUIのみをカーソルハイライト状態にします(-1で全解除)
+    /// </summary>
+    public void SetSkillBoxCursorIndex( int index )
+    {
+        var skillBoxes = _parameterUI.SkillBoxes;
+        for( int i = 0; i < skillBoxes.Length; ++i )
+        {
+            skillBoxes[i].SetCursorHighlighted( i == index );
+        }
+    }
+
     public void RefreshParamRender( Character selectCharacter, in Status status, in ModifiedParameter modifiedParam )
     {
         Debug.Assert( selectCharacter.BattleParams.TmpParam.ActGaugeConsumption <= status.CurActionGauge );

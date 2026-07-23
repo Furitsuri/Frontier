@@ -5,8 +5,7 @@ using Frontier.Entities;
 using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
-using System;
-using UnityEngine.TextCore.Text;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
@@ -30,7 +29,9 @@ namespace Frontier.Battle
         private SkillID _transitTargetSelectSkillID = SkillID.NONE;
         private string[] _playerSkillNames          = null;
         private PlSelectSkillPhase _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
-        private Func<InputContext, bool>[] AcceptSubs;
+
+        private CommandList _commandList = new CommandList();
+        private CommandList.CommandIndexedValue _cmdIdxVal;
 
         public override void Init( object context )
         {
@@ -39,19 +40,22 @@ namespace Frontier.Battle
             _transitTargetSelectSkillID     = SkillID.NONE;
             _playerSkillNames               = _plOwner.GetStatusRef.GetEquipSkillNames();
 
-            AcceptSubs = new Func<InputContext, bool>[]
+            // 装備されているスキルの枠のみをカーソル移動対象にする
+            var equippedIndices = new List<int>();
+            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                ( context ) => base.AcceptSub1( context ),
-                ( context ) => base.AcceptSub2( context ),
-                ( context ) => base.AcceptSub3( context ),
-                ( context ) => base.AcceptSub4( context )
-            };
+                if( 0 < _playerSkillNames[i].Length ) { equippedIndices.Add( i ); }
+            }
+
+            _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
+            _commandList.Init( ref equippedIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, 0xff );
 
             // SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動
             _presenter.AnimateSkillBoxesForSelection( ParameterWindowType.Left );
+            _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, _cmdIdxVal.value );
         }
 
         public override bool Update()
@@ -81,6 +85,9 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
+            // カーソルハイライトを解除する
+            _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, -1 );
+
             return base.ExitState();
         }
 
@@ -90,12 +97,10 @@ namespace Frontier.Battle
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.SUB1, _playerSkillNames[0], CanAcceptSub1, new AcceptContextInput( AcceptSub1 ), 0.0f, hashCode),
-               (GuideIcon.SUB2, _playerSkillNames[1], CanAcceptSub2, new AcceptContextInput( AcceptSub2 ), 0.0f, hashCode),
-               (GuideIcon.SUB3, _playerSkillNames[2], CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode),
-               (GuideIcon.SUB4, _playerSkillNames[3], CanAcceptSub4, new AcceptContextInput( AcceptSub4 ), 0.0f, hashCode)
+               (GuideIcon.VERTICAL_CURSOR, "SELECT",  CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,         "CONFIRM", CanAcceptConfirm,   new AcceptContextInput( AcceptConfirm ),   0.0f, hashCode),
+               (GuideIcon.CANCEL,          "BACK",    CanAcceptCancel,    new AcceptContextInput( AcceptCancel ),    0.0f, hashCode),
+               (GuideIcon.SUB1,            "TOGGLE",  CanAcceptSub1,      new AcceptContextInput( AcceptSub1 ),      0.0f, hashCode)
             );
         }
 
@@ -175,10 +180,21 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool CanAcceptSub1() => CanAcceptSub( 0 );
-        protected override bool CanAcceptSub2() => CanAcceptSub( 1 );
-        protected override bool CanAcceptSub3() => CanAcceptSub( 2 );
-        protected override bool CanAcceptSub4() => CanAcceptSub( 3 );
+        protected override bool CanAcceptDirection()
+        {
+            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+            if( _presenter.IsSkillBoxLayoutAnimating ) { return false; }
+
+            return true;
+        }
+
+        protected override bool CanAcceptSub1()
+        {
+            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL ) { return false; }
+            if( _presenter.IsSkillBoxLayoutAnimating ) { return false; }
+
+            return _plOwner.BattleParams.TmpParam.IsUseableSkill[_cmdIdxVal.value];
+        }
 
         protected override bool AcceptConfirm( InputContext context )
         {
@@ -221,24 +237,23 @@ namespace Frontier.Battle
             return true;
         }
 
-        protected override bool AcceptSub1( InputContext context ) => AcceptSub( 0, context );
-        protected override bool AcceptSub2( InputContext context ) => AcceptSub( 1, context );
-        protected override bool AcceptSub3( InputContext context ) => AcceptSub( 2, context );
-        protected override bool AcceptSub4( InputContext context ) => AcceptSub( 3, context );
-
-        private bool CanAcceptSub( int index )
+        protected override bool AcceptDirection( InputContext context )
         {
-            if( _phase != PlSelectSkillPhase.PL_SELECT_SKILL )      { return false; }
-            if( _presenter.IsSkillBoxLayoutAnimating )              { return false; }
-            if( _playerSkillNames[index].Length <= 0 )              { return false; }
+            bool moved = _commandList.OperateListCursor( context.Cursor );
 
-            return _plOwner.BattleParams.TmpParam.IsUseableSkill[index];
+            if( moved )
+            {
+                _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, _cmdIdxVal.value );
+            }
+
+            return moved;
         }
 
-        private bool AcceptSub( int index, InputContext context )
+        protected override bool AcceptSub1( InputContext context )
         {
-            if( !AcceptSubs[index]( context ) ) { return false; }
+            if( !base.AcceptSub1( context ) ) { return false; }
 
+            int index                           = _cmdIdxVal.value;
             var skillID                         = _plOwner.GetEquipSkillID( index );
             var skillData                       = SkillsData.data[( int ) skillID];
             bool isTransitionSkillActionType    = SkillsData.IsTransitionSkillActionType( skillData.ActionType );

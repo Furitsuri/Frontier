@@ -140,6 +140,14 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 指定インデックスのSkillBoxUIのみをカーソルハイライト状態にします(-1で全解除)
+        /// </summary>
+        public void SetSkillBoxCursorIndex( ParameterWindowType winType, int index )
+        {
+            _parameterPresenters[( int ) winType].SetSkillBoxCursorIndex( index );
+        }
+
+        /// <summary>
         /// AnimateSkillBoxesForSelectionで移動させたSkillBoxUIを元の位置へアニメーション移動させます
         /// </summary>
         public void RevertSkillBoxesFromSelection( ParameterWindowType winType )

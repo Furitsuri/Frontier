@@ -55,6 +55,16 @@ namespace Frontier
             _uiImage.color = Color.white;
         }
 
+        private static readonly Vector3 CURSOR_HIGHLIGHT_SCALE = new Vector3( 1.1f, 1.1f, 1.1f );
+
+        /// <summary>
+        /// カーソルが現在この項目を指しているかどうかを見た目(拡大表示)で示します
+        /// </summary>
+        public void SetCursorHighlighted( bool isHighlighted )
+        {
+            transform.localScale = isHighlighted ? CURSOR_HIGHLIGHT_SCALE : Vector3.one;
+        }
+
         /// <summary>
         /// 拝啓イメージのカラーをフリックするか否かを設定します
         /// </summary>
