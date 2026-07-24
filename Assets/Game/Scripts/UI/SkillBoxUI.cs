@@ -15,6 +15,7 @@ namespace Frontier
         [SerializeField] private RectTransform PanelTransform;
         [SerializeField] private RawImage ActGaugeElemImage;
         [SerializeField] private Image CurtainImage;
+        [SerializeField] private GameObject CursorFrame;
 
         private string _tooltipText;
         private ColorFlicker<ImageColorAdapter> _imageFlicker;
@@ -58,11 +59,12 @@ namespace Frontier
         private static readonly Vector3 CURSOR_HIGHLIGHT_SCALE = new Vector3( 1.1f, 1.1f, 1.1f );
 
         /// <summary>
-        /// カーソルが現在この項目を指しているかどうかを見た目(拡大表示)で示します
+        /// カーソルが現在この項目を指しているかどうかを見た目(拡大表示・黄色い外枠)で示します
         /// </summary>
         public void SetCursorHighlighted( bool isHighlighted )
         {
             transform.localScale = isHighlighted ? CURSOR_HIGHLIGHT_SCALE : Vector3.one;
+            CursorFrame?.SetActive( isHighlighted );
         }
 
         /// <summary>
