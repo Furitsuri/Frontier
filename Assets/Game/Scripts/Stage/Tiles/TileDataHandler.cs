@@ -506,9 +506,13 @@ namespace Frontier.Stage
         {
             if( !RegisterAttackableTile( tileDynamicDatas, dprtIdx, tgtTileIdx, ref atkRng, charaTag, actionableTileMap ) ) { return; }
 
-            int colNum = _stageDataProvider.CurrentData.TileColNum;
-            // 左端または右端であれば終了 ( dirの方向に線状に展開するため、左端で左方向、右端で右方向に展開することはない )
-            if( 0 == tgtTileIdx % colNum || colNum - 1 == tgtTileIdx % colNum ) { return; }
+            // 左右方向の展開時のみ、列の左端・右端に達したら終了する
+            // ( 前後方向の展開では列位置は無関係であり、範囲外への到達はRegisterAttackableTile内のインデックス範囲チェックでカバーされる )
+            if( dir == Direction.LEFT || dir == Direction.RIGHT )
+            {
+                int colNum = _stageDataProvider.CurrentData.TileColNum;
+                if( 0 == tgtTileIdx % colNum || colNum - 1 == tgtTileIdx % colNum ) { return; }
+            }
 
             tgtTileIdx += _directionOffsets[( int ) dir]; // 次のタイルインデックスを設定
 
