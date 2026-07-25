@@ -8,6 +8,7 @@ namespace Frontier.Battle
     public class PlayerPhaseHandler : TroopPhaseHandler
     {
         [Inject] private SkillActionReservationQueue _reservationQueue = null;
+        [Inject] private GroupMoveRegistrationList _groupMoveRegistrationList = null;
 
         private PlConfirmReservedActionsState _confirmReservedActionsState = null;
 
@@ -68,6 +69,16 @@ namespace Frontier.Battle
                 npc.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
             }
 
+            // グループ移動の登録が残っていた場合、フェーズをまたいで半透明のまま残留しないよう後始末する
+            if( !_groupMoveRegistrationList.IsEmpty )
+            {
+                foreach( var key in _groupMoveRegistrationList.GetAll() )
+                {
+                    _btlRtnCtrl.BtlCharaCdr.GetPlayer( key )?.RestoreMaterialsOriginalColor();
+                }
+                _groupMoveRegistrationList.Clear();
+            }
+
             base.Exit();
         }
 
@@ -93,6 +104,8 @@ namespace Frontier.Battle
              *              ｜       ├─ PlSelectReservedActionState (予約に対する操作選択、実行まで行う)
              *              ｜       ｜
              *              ｜       ├─ PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー)
+             *              ｜       ｜
+             *              ｜       ├─ PlGroupMoveState (OPT1でのキャラクター登録時に自動遷移するグループ移動プレビュー・実行。PlSelectTileStateを継承し、カーソル移動のたびにプレビューを更新する)
              *              ｜       ｜
              *              ｜       └─ PlSelectCommandState
              *              ｜                    ｜
@@ -124,6 +137,7 @@ namespace Frontier.Battle
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
             RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
+            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false ) );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.Children[0].Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );

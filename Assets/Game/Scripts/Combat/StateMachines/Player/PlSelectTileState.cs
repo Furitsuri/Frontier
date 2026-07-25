@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.Tutorial;
 using Frontier.UI;
@@ -16,14 +17,19 @@ namespace Frontier.Battle
             TURN_END,
             SELECT_RESERVED_ACTION,
             SELECT_TILE_MENU,
+            GROUP_MOVE,
         }
+
+        [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
         private bool _isWaitingForTileMenuResult;
         private string[] _inputConfirmStrings;
         private string[] _inputToolStrings;
+        private string[] _inputOpt1Strings;
         private InputCodeStringWrapper _inputConfirmStrWrapper;
         private InputCodeStringWrapper _inputToolStrWrapper;
+        protected InputCodeStringWrapper _inputOpt1StrWrapper;
 
         /// <summary>
         /// 遷移先を示すタグ
@@ -49,9 +55,16 @@ namespace Frontier.Battle
                 "SHOW\nDANGER RANGE", // 危険領域表示
                 "HIDE\nDANGER RANGE", // 危険領域非表示
             };
+            // OPT1アイコンの文字列を設定
+            _inputOpt1Strings = new string[]
+            {
+                "REGISTER",   // グループ移動未登録
+                "UNREGISTER", // グループ移動登録済み
+            };
 
             _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
             _inputToolStrWrapper    = new InputCodeStringWrapper( _inputToolStrings[0] );
+            _inputOpt1StrWrapper    = new InputCodeStringWrapper( _inputOpt1Strings[0] );
 
             foreach( Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER ) )
             {
@@ -88,6 +101,16 @@ namespace Frontier.Battle
             // TOOLアイコンの文字列を更新
             _inputToolStrWrapper.Explanation = _isShowingAllDangerRange ? _inputToolStrings[1] : _inputToolStrings[0];
 
+            // OPT1アイコンの文字列を更新(カーソル上のキャラクターが登録済みかどうかで切り替え)
+            Character cursorChara = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null != cursorChara && cursorChara.GetCharacterTag() == CHARACTER_TAG.PLAYER )
+            {
+                _inputOpt1StrWrapper.Explanation = _groupMoveRegistrationList.Contains( cursorChara ) ? _inputOpt1Strings[1] : _inputOpt1Strings[0];
+            }
+
+            // グループ移動登録者のうち、行動終了等で対象外になったキャラクターを除去する
+            PruneIneligibleRegistrations();
+
             return ( 0 <= TransitIndex );
         }
 
@@ -103,6 +126,7 @@ namespace Frontier.Battle
                (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.OPT1, _inputOpt1StrWrapper, CanAcceptOpt1, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode),
                (GuideIcon.OPT2, "MENU", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
@@ -264,6 +288,79 @@ namespace Frontier.Battle
             TransitState( ( int ) TransitTag.SELECT_TILE_MENU );
 
             return true;
+        }
+
+        /// <summary>
+        /// OPT1入力を受け付けるかどうかを判定します(カーソル上がプレイヤーかつ移動コマンド実行可能な場合のみ)
+        /// </summary>
+        protected virtual bool CanAcceptOpt1()
+        {
+            Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null == character || character.GetCharacterTag() != CHARACTER_TAG.PLAYER ) { return false; }
+
+            return Command.IsExecutableMoveCommand( character, _stageCtrl );
+        }
+
+        /// <summary>
+        /// カーソル上のキャラクターのグループ移動登録・解除を切り替えます
+        /// </summary>
+        /// <param name="character">対象キャラクター</param>
+        /// <param name="wasEmpty">切り替え前にリストが空だったかどうか</param>
+        protected void ToggleGroupMoveRegistration( Character character, out bool wasEmpty )
+        {
+            wasEmpty = _groupMoveRegistrationList.IsEmpty;
+
+            if( _groupMoveRegistrationList.Contains( character ) )
+            {
+                _groupMoveRegistrationList.Remove( character );
+                character.RestoreMaterialsOriginalColor();
+            }
+            else
+            {
+                _groupMoveRegistrationList.Add( character );
+                character.SetMaterialsSemiTransparent();
+            }
+        }
+
+        /// <summary>
+        /// OPT1入力を受けた際、カーソル上のキャラクターのグループ移動登録・解除を切り替えます。
+        /// この操作によって登録者が0人から1人になった場合は、グループ移動プレビューステートへ自動的に遷移します。
+        /// </summary>
+        protected override bool AcceptOpt1( InputContext context )
+        {
+            if( !base.AcceptOpt1( context ) ) { return false; }
+
+            Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+            if( null == character ) { return false; }
+
+            ToggleGroupMoveRegistration( character, out bool wasEmpty );
+
+            if( wasEmpty && !_groupMoveRegistrationList.IsEmpty )
+            {
+                TransitState( ( int ) TransitTag.GROUP_MOVE );
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// グループ移動登録者のうち、行動終了等によって対象外になったキャラクターを登録解除します
+        /// </summary>
+        private void PruneIneligibleRegistrations()
+        {
+            if( _groupMoveRegistrationList.IsEmpty ) { return; }
+
+            var registeredKeys = _groupMoveRegistrationList.GetAll();
+            for( int i = registeredKeys.Count - 1; 0 <= i; --i )
+            {
+                CharacterKey key    = registeredKeys[i];
+                Player character    = _btlRtnCtrl.BtlCharaCdr.GetPlayer( key );
+
+                if( null != character && Command.IsExecutableMoveCommand( character, _stageCtrl ) ) { continue; }
+
+                character?.RestoreMaterialsOriginalColor();
+                _groupMoveRegistrationList.Remove( key );
+            }
         }
 
         protected override void OnActivated()

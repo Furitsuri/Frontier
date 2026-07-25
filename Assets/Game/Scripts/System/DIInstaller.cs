@@ -26,6 +26,7 @@ namespace Frontier
             Container.Bind<TimeScaleController>().AsSingle();
             Container.Bind<SequenceFacade>().AsSingle();
             Container.Bind<SkillActionReservationQueue>().AsSingle();
+            Container.Bind<GroupMoveRegistrationList>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsSingle();
