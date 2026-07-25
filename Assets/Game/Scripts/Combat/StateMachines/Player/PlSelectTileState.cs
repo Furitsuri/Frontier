@@ -21,6 +21,7 @@ namespace Frontier.Battle
         }
 
         [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
+        [Inject] protected HoveredCharacterRangeDisplay _hoveredRangeDisplay = null;
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
         private bool _isWaitingForTileMenuResult;
@@ -184,6 +185,7 @@ namespace Frontier.Battle
             if( isAcceptDirection )
             {
                 RefreshDispParameterView();
+                _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
             }
 
             return isAcceptDirection;
@@ -367,6 +369,9 @@ namespace Frontier.Battle
         {
             base.OnActivated();
 
+            // 新規開始・中断からの再開いずれの場合も、現在のカーソル位置に応じてホバー範囲表示を同期する
+            _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+
             if( _isWaitingForTileMenuResult )
             {
                 _isWaitingForTileMenuResult = false;
@@ -376,6 +381,22 @@ namespace Frontier.Battle
                     TransitState( ( int ) TransitTag.TURN_END );
                 }
             }
+        }
+
+        /// <summary>
+        /// このステートから退避する際のホバー範囲表示の後始末を行います。
+        /// CHARACTER_COMMANDやSELECT_RESERVED_ACTIONへの遷移(TransitIndexが設定されている場合)は
+        /// 同じキャラクターに対する操作の延長であるため、表示はそのまま維持します。
+        /// フェーズ終了によるBack()での退避(TransitIndexが未設定)の場合のみ非表示にします。
+        /// </summary>
+        public override object ExitState()
+        {
+            if( TransitIndex < 0 )
+            {
+                _hoveredRangeDisplay.Clear();
+            }
+
+            return base.ExitState();
         }
 
         private void RefreshDispParameterView()

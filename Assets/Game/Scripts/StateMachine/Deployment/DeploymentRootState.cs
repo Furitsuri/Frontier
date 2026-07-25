@@ -16,6 +16,7 @@ namespace Frontier.StateMachine
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private UserDomain _userDomain                 = null;
         [Inject] private CharacterFactory _characterFactory     = null;   // UserDomain.Members(Status)からPlayerを再構築するために使用
+        [Inject] private HoveredCharacterRangeDisplay _hoveredRangeDisplay = null;
 
         private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot  = null;
@@ -44,6 +45,8 @@ namespace Frontier.StateMachine
             _presenter.RefreshGridCursorSelectCharacter();
             _presenter.RefreshFocusDeploymentCharacter();
             RefreshRemainingDeployableOnPresenter();
+
+            _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
         }
 
         public override bool Update()
@@ -56,6 +59,8 @@ namespace Frontier.StateMachine
 
         public override object ExitState()
         {
+            _hoveredRangeDisplay.Clear();
+
             return base.ExitState();
         }
 
@@ -180,7 +185,11 @@ namespace Frontier.StateMachine
         {
             bool isOperated = _stageCtrl.OperateGridCursorBasedOnCamera( ref context.Cursor );
 
-            if( isOperated ) { _presenter.RefreshGridCursorSelectCharacter(); }
+            if( isOperated )
+            {
+                _presenter.RefreshGridCursorSelectCharacter();
+                _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            }
 
             return isOperated;
         }
@@ -212,6 +221,9 @@ namespace Frontier.StateMachine
             }
 
             RefreshRemainingDeployableOnPresenter();
+            // GetSelectCharacter()はタイル動的データ(UpdateTileDynamicDatas)の更新を経て初めて反映されるため、
+            // 配置直後のこのタイミングでは参照せず、既知の配置キャラクターを直接渡す
+            _hoveredRangeDisplay.Refresh( focusCharacter );
 
             return true;
         }
@@ -224,6 +236,10 @@ namespace Frontier.StateMachine
         protected override bool AcceptCancel( InputContext context )
         {
             if( !base.AcceptCancel( context ) ) { return false; }
+
+            // UndoDeploymentCandidates()内でキャラクターが管理リストから除去されるとGetCharacter()で
+            // 参照できなくなり、後からのClear()ではメッシュを消去出来ない。除去される前に消去しておく
+            _hoveredRangeDisplay.Clear();
 
             if( UndoDeploymentCandidates() )
             {
