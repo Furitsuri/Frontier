@@ -384,17 +384,13 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// このステートから退避する際のホバー範囲表示の後始末を行います。
-        /// CHARACTER_COMMANDやSELECT_RESERVED_ACTIONへの遷移(TransitIndexが設定されている場合)は
-        /// 同じキャラクターに対する操作の延長であるため、表示はそのまま維持します。
-        /// フェーズ終了によるBack()での退避(TransitIndexが未設定)の場合のみ非表示にします。
+        /// このステートから退避する際、ホバー範囲表示を非表示にします。
+        /// CHARACTER_COMMANDへの遷移先であるPlSelectCommandStateは選択中コマンドに応じた
+        /// 範囲表示を自前で行うため、ここで一旦消去しても問題ありません。
         /// </summary>
         public override object ExitState()
         {
-            if( TransitIndex < 0 )
-            {
-                _hoveredRangeDisplay.Clear();
-            }
+            _hoveredRangeDisplay.Clear();
 
             return base.ExitState();
         }

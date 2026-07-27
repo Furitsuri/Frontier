@@ -21,12 +21,16 @@ namespace Frontier.Battle
             // 可能な行動が全て終了している場合は即終了
             if( _plOwner.BattleParams.TmpParam.IsEndAction() )
             {
+                _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
                 return;
             }
             // 使用可能スキルを更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, 0xff );
             // 実行可能なコマンドを設定
             SetupExecutableCommands();
+
+            // 現在選択中のコマンドに応じた範囲を表示する
+            RefreshCommandRangeDisplay();
         }
 
         /// <summary>
@@ -63,6 +67,7 @@ namespace Frontier.Battle
                 _plOwner.HoldBeforeMoveInfo();
             }
 
+            _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
             _presenter.ExitPLCommandView();
 
             return base.ExitState();
@@ -112,6 +117,41 @@ namespace Frontier.Battle
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            // 子ステート(PlMoveState等)からBack()で復帰した場合、子ステート側で表示していた範囲描画が
+            // 残っている、または消えている場合があるため、選択中コマンドに応じて表示を仕切り直す。
+            // ただし行動が全て終了している場合はInit()でコマンドリストが構築されておらず
+            // GetCommandValue()が参照できないため対象外とする
+            if( !_plOwner.BattleParams.TmpParam.IsEndAction() )
+            {
+                RefreshCommandRangeDisplay();
+            }
+        }
+
+        /// <summary>
+        /// 現在選択中のコマンドに応じて行動可能範囲の表示を切り替えます。
+        /// MOVEなら移動+攻撃範囲、ATTACKなら攻撃範囲のみ、SKILL・WAIT等はレンジという概念を持たないため
+        /// 何も表示しません(スキルの効果範囲はSKILL選択時点では未確定のため)。
+        /// </summary>
+        private void RefreshCommandRangeDisplay()
+        {
+            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
+            actionRangeCtrl.ClearActionableRangeDataWithRender();
+
+            int dprtIdx = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
+            switch( ( COMMAND_TAG ) GetCommandValue() )
+            {
+                case COMMAND_TAG.MOVE:
+                    float dprtHeight = _stageCtrl.GetTileStaticData( dprtIdx ).Height;
+                    actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
+                    actionRangeCtrl.DrawActionableRange();
+                    break;
+
+                case COMMAND_TAG.ATTACK:
+                    actionRangeCtrl.SetupAttackableRangeData( dprtIdx );
+                    actionRangeCtrl.DrawAttackableRange();
+                    break;
+            }
         }
 
         /// <summary>
@@ -121,7 +161,14 @@ namespace Frontier.Battle
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            return _commandList.OperateListCursor( context.Cursor );
+            bool isChanged = _commandList.OperateListCursor( context.Cursor );
+
+            if( isChanged )
+            {
+                RefreshCommandRangeDisplay();
+            }
+
+            return isChanged;
         }
 
         /// <summary>

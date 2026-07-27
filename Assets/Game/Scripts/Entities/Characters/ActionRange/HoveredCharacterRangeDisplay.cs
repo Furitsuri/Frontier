@@ -1,6 +1,8 @@
 ﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Stage;
 using Zenject;
+using static Constants;
 
 namespace Frontier.Entities
 {
@@ -37,11 +39,22 @@ namespace Frontier.Entities
             if( newKey.IsValid() )
             {
                 int dprtIdx         = hoveredCharacter.BattleParams.TmpParam.CurrentTileIndex;
-                float dprtHeight    = _stageCtrl.GetTileStaticData( dprtIdx ).Height;
                 var actionRangeCtrl = hoveredCharacter.BattleLogic.ActionRangeCtrl;
 
-                actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
-                actionRangeCtrl.DrawActionableRange();
+                // 移動コマンドを既に使用済みの場合、SetupActionableRangeDataはステータス上の移動力を
+                // そのまま使って範囲を計算してしまい、実際には移動出来ないのに移動可能であるかのような
+                // 範囲が表示されてしまう。その場合は攻撃範囲のみを表示する
+                if( hoveredCharacter.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.MOVE] )
+                {
+                    actionRangeCtrl.SetupAttackableRangeData( dprtIdx );
+                    actionRangeCtrl.DrawAttackableRange();
+                }
+                else
+                {
+                    float dprtHeight = _stageCtrl.GetTileStaticData( dprtIdx ).Height;
+                    actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
+                    actionRangeCtrl.DrawActionableRange();
+                }
             }
 
             _currentKey = newKey;
