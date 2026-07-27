@@ -174,7 +174,16 @@ namespace Frontier.Entities
                     !Methods.HasAnyFlag( useableActionTypeBit, skillData.ActionType ) ||                                      // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
                     ( 0 <= equipSkillIndexTransitAction && SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) ||  // 対象選択に遷移するスキルの使用フラグがONの状態では、同様のスキルは使用不可
                     _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost )                       // コストが現在のアクションゲージ値を越えていないかをチェック
-                { 
+                {
+                    continue;
+                }
+
+                // ターゲット選択に遷移するタイプのスキル(攻撃系)は、実際に効果範囲内に攻撃対象が存在する場合のみ使用可能とする
+                // ( BattleLogicがまだ設定されていない場合(戦闘開始前のステータス反映時など)は、位置情報が不定のため判定をスキップする )
+                if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) &&
+                    null != _battleLogic &&
+                    !_battleLogic.ActionRangeCtrl.HasAttackTargetForSkill( BattleParams.TmpParam.CurrentTileIndex, skillID ) )
+                {
                     continue;
                 }
 

@@ -100,31 +100,61 @@ namespace Frontier.Entities
         /// <param name="useSkillID"></param>
         public void SetupAttackableRangeData( int dprtTileIdx, SkillID useSkillID )
         {
-            SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
-            if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
+            if( !SkillsData.IsTransitionSkillActionType( SkillsData.data[( int ) useSkillID].ActionType ) )
             {
                 Debug.LogError( "攻撃用のスキル以外のスキルが指定されています。" );
 
                 return;
             }
 
+            _ghostTileResolver     = null;
+            _rangeAdjustmentFilter = ( useSkillID == SkillID.JUMP_SLASH ) ? JumpSlashSA.CreateRangeAdjustmentFilter() : null;
+
+            ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, ref _actionableTileData );
+        }
+
+        /// <summary>
+        /// 表示用のActionableTileData(及びゴースト表示関連のフィールド)には影響を与えず、
+        /// 指定スキルの攻撃範囲内に攻撃対象が存在するかどうかのみを判定します。
+        /// スキル選択画面などで、範囲プレビューを崩さずに使用可否を判定したい場合に使用します。
+        /// </summary>
+        public bool HasAttackTargetForSkill( int dprtTileIdx, SkillID useSkillID )
+        {
+            if( !SkillsData.IsTransitionSkillActionType( SkillsData.data[( int ) useSkillID].ActionType ) ) { return false; }
+
+            var tempTileData = new ActionableTileData();
+            ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, ref tempTileData );
+
+            foreach( var data in tempTileData.AttackableTileMap )
+            {
+                if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 指定スキルの攻撃可能範囲を、渡されたActionableTileDataへ計算します
+        /// (SetupAttackableRangeData(int,SkillID)とHasAttackTargetForSkillの共通処理)
+        /// </summary>
+        private void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, ref ActionableTileData targetTileData )
+        {
+            SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
+
             // スキルの効果範囲に負の値が設定されている場合は、キャラクターの攻撃レンジをそのまま用いる
             var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
-            _actionableTileData.Init();
+            targetTileData.Init();
             TileDataHandler.AttackableDataPostProcessor postProcessor = null;
-            _ghostTileResolver    = null;
-            _rangeAdjustmentFilter = null;
             if( useSkillID == SkillID.DASH_SLASH )
             {
                 postProcessor = DashSlashSA.FilterAttackTargets;
             }
             else if( useSkillID == SkillID.JUMP_SLASH )
             {
-                postProcessor          = JumpSlashSA.CreateFilterAttackTargets( _stageCtrl );
-                _rangeAdjustmentFilter = JumpSlashSA.CreateRangeAdjustmentFilter();
+                postProcessor = JumpSlashSA.CreateFilterAttackTargets( _stageCtrl );
             }
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref _actionableTileData, postProcessor );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref targetTileData, postProcessor );
         }
 
         public void ClearActionableRangeData()
