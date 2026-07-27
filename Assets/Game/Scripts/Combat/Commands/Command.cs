@@ -61,17 +61,7 @@ namespace Frontier.Combat
                 return false;
             }
 
-            bool isExecutable = false;
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                if( tmpParam.IsUseableSkill[i] )
-                {
-                    isExecutable = true;
-                    break;
-                }
-            }
-
-            return isExecutable;
+            return true;
         }
 
         static public bool IsExecutableWaitCommand( Character character, StageController stageCtrl )
