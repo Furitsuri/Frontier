@@ -93,14 +93,42 @@ namespace Frontier.Field
 
         private IEnumerator MoveRoutine( Vector3 target, Action onComplete )
         {
+            _character?.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE );
+
             while ( Vector3.Distance( transform.position, target ) > 0.01f )
             {
+                UpdateFacingToward( target );
                 transform.position = Vector3.MoveTowards( transform.position, target, _moveSpeed * Time.deltaTime );
                 yield return null;
             }
             transform.position = target;
             _moveCoroutine = null;
+
+            // 移動完了後は待機アニメーションに戻し、画面正面(定義された既定の向き)に向き直す
+            _character?.SetRotation( _facingDirection );
+            _character?.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.WAIT );
+
             onComplete?.Invoke();
+        }
+
+        /// <summary>
+        /// 現在位置から目標位置へのXY平面上の移動ベクトルに応じて、キャラクターの向きを更新します。
+        /// フィールドはXY平面上の2D的な図であるため、画面X方向をワールドX、画面Y方向をワールドZに
+        /// 割り当てて3Dモデルの水平(Y軸)回転として再構成します(画面奥へ移動=+Z、画面右へ移動=+X)。
+        /// 斜め移動の場合はX・Y成分がそのまま合成されるため、自然に斜めの向きになります。
+        /// </summary>
+        private void UpdateFacingToward( Vector3 target )
+        {
+            if ( _character == null ) return;
+
+            Vector3 diff = target - transform.position;
+            Vector2 dir2D = new Vector2( diff.x, diff.y );
+            if ( dir2D.sqrMagnitude < 0.0001f ) return;
+
+            dir2D.Normalize();
+
+            Vector3 worldForward = new Vector3( dir2D.x, 0f, dir2D.y );
+            _character.SetRotation( Quaternion.LookRotation( worldForward, Vector3.up ) );
         }
     }
 }
