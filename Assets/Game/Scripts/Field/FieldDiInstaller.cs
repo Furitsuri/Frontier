@@ -1,4 +1,5 @@
 ﻿using Frontier.Option;
+using Frontier.Registries;
 using Frontier.Tutorial;
 using Frontier.UI;
 using Zenject;
@@ -19,6 +20,12 @@ namespace Frontier.Field
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();
+
+            // フィールド上にキャラクターの3Dモデルを表示する FieldPlayerCharacterView が必要とする依存関係
+            // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する
+            Container.Bind<PrefabRegistry>().FromInstance( UnityEngine.Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
+            Container.Bind<TimeScaleController>().AsSingle();
+            Container.Bind<CharacterFactory>().AsSingle();
 
             // FocusRoutineController共通処理(TutorialFacade)が必要とする依存関係
             Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 namespace Frontier.Field
 {
@@ -28,7 +29,7 @@ namespace Frontier.Field
         [Header( "経路描画コンポーネント" )]
         [SerializeField] private FieldPathRenderer _pathRenderer = null;
 
-        [Header( "プレイヤーアイコン" )]
+        [Header( "プレイヤーアイコン(3Dモデル導入に伴い非表示化)" )]
         [SerializeField] private FieldPlayerView _playerView = null;
 
         [Header( "デバッグ用: 起動時に読み込むフィールドID" )]
@@ -38,9 +39,12 @@ namespace Frontier.Field
         [SerializeField] private bool                  _useRandomGeneration = true;
         [SerializeField] private FieldGenerationConfig  _generationConfig    = null;
 
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
         private FieldData                      _fieldData    = null;
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
         private Dictionary<int, Vector3>       _nodePositions = new Dictionary<int, Vector3>();
+        private FieldPlayerCharacterView       _playerCharacterView = null;
 
         private FieldProgress Progress => GameSession.Instance?.FieldProgress;
 
@@ -142,15 +146,28 @@ namespace Frontier.Field
                 _pathRenderer.Build( _fieldData, _nodePositions );
             }
 
-            if ( _playerView != null )
             {
                 var progress    = Progress;
                 int currentId   = progress != null ? progress.CurrentNodeId : _fieldData.StartNodeId;
                 if ( _nodePositions.TryGetValue( currentId, out var startPos ) )
                 {
-                    _playerView.Setup( startPos );
+                    // 3Dモデル表示に置き換えたため、旧アイコンは非表示にする
+                    if ( _playerView != null ) { _playerView.gameObject.SetActive( false ); }
+
+                    EnsurePlayerCharacterView();
+                    _playerCharacterView?.Setup( startPos );
                 }
             }
+        }
+
+        /// <summary>
+        /// フィールド上に自身を表す3Dキャラクターモデルのビューを生成します(一度だけ)。
+        /// </summary>
+        private void EnsurePlayerCharacterView()
+        {
+            if ( _playerCharacterView != null || _hierarchyBld == null ) return;
+
+            _playerCharacterView = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<FieldPlayerCharacterView>( true, false, nameof( FieldPlayerCharacterView ) );
         }
 
         private void RefreshReachability()
@@ -175,10 +192,10 @@ namespace Frontier.Field
             var node = FindNode( nodeId );
             if ( node == null ) return;
 
-            // すべてのノードタイプで先にアイコンを移動させ、到着後に処理する
-            if ( _playerView != null && _nodePositions.TryGetValue( nodeId, out var targetPos ) )
+            // すべてのノードタイプで先にモデルを移動させ、到着後に処理する
+            if ( _playerCharacterView != null && _nodePositions.TryGetValue( nodeId, out var targetPos ) )
             {
-                _playerView.MoveTo( targetPos, () => OnPlayerArrived( node ) );
+                _playerCharacterView.MoveTo( targetPos, () => OnPlayerArrived( node ) );
             }
             else
             {
