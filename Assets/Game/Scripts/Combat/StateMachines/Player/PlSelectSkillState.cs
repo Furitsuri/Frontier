@@ -56,6 +56,9 @@ namespace Frontier.Battle
             // SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動
             _presenter.AnimateSkillBoxesForSelection( ParameterWindowType.Left );
             _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, _cmdIdxVal.value );
+
+            // カーソル位置のスキルに応じた効果範囲を表示する
+            RefreshSkillRangeDisplay();
         }
 
         public override bool Update()
@@ -87,6 +90,8 @@ namespace Frontier.Battle
         {
             // カーソルハイライトを解除する
             _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, -1 );
+            // 効果範囲表示を消去する(AcceptCancel以外の退避経路でも確実にクリアするため)
+            _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
 
             return base.ExitState();
         }
@@ -129,12 +134,9 @@ namespace Frontier.Battle
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
 
-            // 遷移スキルが設定されていれば、キャンセル後に攻撃範囲を再描画する
-            if( _transitTargetSelectSkillID != SkillID.NONE )
-            {
-                _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _transitTargetSelectSkillID );
-                _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
-            }
+            // 子ステート(PlSkillActionToTargetState)からBack()で復帰した場合、範囲描画が消えている
+            // 場合があるため、カーソル位置のスキルに応じて表示を仕切り直す
+            RefreshSkillRangeDisplay();
         }
 
         protected override bool CanAcceptConfirm()
@@ -244,9 +246,31 @@ namespace Frontier.Battle
             if( moved )
             {
                 _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, _cmdIdxVal.value );
+                RefreshSkillRangeDisplay();
             }
 
             return moved;
+        }
+
+        /// <summary>
+        /// カーソルが指しているスキルに応じて効果範囲の表示を切り替えます。
+        /// ターゲット選択に遷移するタイプのスキル(攻撃系)は効果範囲を表示し、
+        /// 自己バフ等それ以外のスキルは範囲という概念を持たないため何も表示しません。
+        /// ON/OFFの切替状態には関わらず、あくまでカーソル位置のプレビューとして表示します。
+        /// </summary>
+        private void RefreshSkillRangeDisplay()
+        {
+            var actionRangeCtrl = _plOwner.BattleLogic.ActionRangeCtrl;
+            actionRangeCtrl.ClearActionableRangeDataWithRender();
+
+            var skillID = _plOwner.GetEquipSkillID( _cmdIdxVal.value );
+            if( SkillID.NONE == skillID ) { return; }
+
+            var skillData = SkillsData.data[( int ) skillID];
+            if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return; }
+
+            actionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID );
+            actionRangeCtrl.DrawAttackableRange();
         }
 
         protected override bool AcceptSub1( InputContext context )
@@ -264,13 +288,12 @@ namespace Frontier.Battle
             // 場面遷移が必要なアクションスキルが選択されている場合
             if( isTransitionSkillActionType )
             {
-                // スキル使用フラグが立っている場合はその攻撃範囲などを描画し、
-                // その範囲内に攻撃対象が存在している場合のみ、遷移可能なスキルとして保持する
+                _transitTargetSelectSkillID = SkillID.NONE;
+
+                // 効果範囲の表示自体はカーソル位置に応じてRefreshSkillRangeDisplay()で既に描画済みのため、
+                // ここではスキル使用フラグが立っている場合に、その範囲内に攻撃対象が存在するかどうかのみ判定する
                 if( _plOwner.BattleParams.TmpParam.IsSkillsToggledON[index] )
                 {
-                    _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID );
-                    _plOwner.BattleLogic.ActionRangeCtrl.DrawAttackableRange();
-
                     foreach( var data in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
                     {
                         if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
@@ -279,12 +302,6 @@ namespace Frontier.Battle
                             break;
                         }
                     }
-                }
-                else
-                {
-                    _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
-                    _transitTargetSelectSkillID = SkillID.NONE;
-
                 }
             }
 
