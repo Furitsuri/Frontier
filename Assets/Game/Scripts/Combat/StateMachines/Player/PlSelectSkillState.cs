@@ -50,8 +50,8 @@ namespace Frontier.Battle
             _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
             _commandList.Init( ref equippedIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            // 使用可能スキルの更新
-            _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, 0xff );
+            // 使用可能スキルの更新(このスキル選択画面内でのみ、対象不在のスキルを使用不可として扱う)
+            _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, 0xff, checkAttackTarget: true );
 
             // SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動
             _presenter.AnimateSkillBoxesForSelection( ParameterWindowType.Left );
@@ -283,7 +283,8 @@ namespace Frontier.Battle
             bool isTransitionSkillActionType    = SkillsData.IsTransitionSkillActionType( skillData.ActionType );
 
             _plOwner.BattleLogic.ToggleEquipSkill( index );
-            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, useableActionTypeBit : 0xff );  // 使用可能スキルの更新
+            // 使用可能スキルの更新(このスキル選択画面内でのみ、対象不在のスキルを使用不可として扱う)
+            _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, useableActionTypeBit : 0xff, checkAttackTarget : true );
 
             // 場面遷移が必要なアクションスキルが選択されている場合
             if( isTransitionSkillActionType )

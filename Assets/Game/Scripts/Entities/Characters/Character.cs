@@ -149,7 +149,13 @@ namespace Frontier.Entities
             _parameterPresenter = presenter;
         }
 
-        public void RefreshUseableSkillFlags( SituationType situationType, int useableActionTypeBit = 0xff )
+        /// <param name="checkAttackTarget">
+        /// trueの場合、対象選択に遷移するタイプのスキル(攻撃系)について、効果範囲内に実際に攻撃対象が
+        /// 存在するかどうかも使用可否判定に含めます。配置画面やステータス表示など、位置に関わらず
+        /// 装備状況そのものを示したい場面ではfalse(既定)のままにしてください。PlSelectSkillStateの
+        /// スキル選択画面のように、その場でのプレビュー・選択可否を示したい場合にのみtrueを指定します。
+        /// </param>
+        public void RefreshUseableSkillFlags( SituationType situationType, int useableActionTypeBit = 0xff, bool checkAttackTarget = false )
         {
             int equipSkillIndexTransitAction = -1;
             _battleLogic?.IsSkillToggledTransitActionState( out equipSkillIndexTransitAction );
@@ -178,9 +184,11 @@ namespace Frontier.Entities
                     continue;
                 }
 
-                // ターゲット選択に遷移するタイプのスキル(攻撃系)は、実際に効果範囲内に攻撃対象が存在する場合のみ使用可能とする
+                // checkAttackTarget指定時のみ、ターゲット選択に遷移するタイプのスキル(攻撃系)について
+                // 実際に効果範囲内に攻撃対象が存在する場合のみ使用可能とする
                 // ( BattleLogicがまだ設定されていない場合(戦闘開始前のステータス反映時など)は、位置情報が不定のため判定をスキップする )
-                if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) &&
+                if( checkAttackTarget &&
+                    SkillsData.IsTransitionSkillActionType( skillData.ActionType ) &&
                     null != _battleLogic &&
                     !_battleLogic.ActionRangeCtrl.HasAttackTargetForSkill( BattleParams.TmpParam.CurrentTileIndex, skillID ) )
                 {
