@@ -31,6 +31,9 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_STATUS", "Status" },
                 { "UI_CMD_SAVE", "Save" },
                 { "UI_CMD_EXIT_GAME", "Exit Game" },
+                { "UI_CONFIRM_EXIT_GAME_MESSAGE", "Quit the game?" },
+                { "UI_CONFIRM_YES", "Yes" },
+                { "UI_CONFIRM_NO", "No" },
             }
         },
         {
@@ -58,6 +61,9 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_STATUS", "ステータス" },
                 { "UI_CMD_SAVE", "セーブ" },
                 { "UI_CMD_EXIT_GAME", "ゲーム終了" },
+                { "UI_CONFIRM_EXIT_GAME_MESSAGE", "ゲームを終了しますか？" },
+                { "UI_CONFIRM_YES", "はい" },
+                { "UI_CONFIRM_NO", "いいえ" },
             }
         }
     };

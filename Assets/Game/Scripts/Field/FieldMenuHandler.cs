@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Frontier;
+using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -13,10 +14,12 @@ namespace Frontier.Field
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        private FieldMenuPresenter       _presenter           = null;
-        private FieldPlayerCharacterView _playerCharacterView = null;
+        private FieldMenuPresenter        _presenter           = null;
+        private FieldExitConfirmPresenter _exitConfirmPresenter = null;
+        private FieldPlayerCharacterView  _playerCharacterView = null;
         private int _openHashCode;
         private int _navHashCode;
+        private int _exitConfirmHashCode;
 
         /// <summary>メニューが開いているかどうか。</summary>
         public bool IsOpen => _presenter != null && _presenter.IsOpen;
@@ -94,17 +97,19 @@ namespace Frontier.Field
         {
             if ( !context.GetButton( GameButton.Confirm ) ) return false;
 
-            // OPTION選択時など、オプション画面等のサブ画面へ処理を譲る場合がある。
-            // その場合IsOpenは維持したままパネルと入力コードのみ一時的に解除する
-            // (NotifySceneResumed()により復帰時に自動的に再表示される)
-            if ( _presenter.ConfirmSelection() )
+            switch ( _presenter.ConfirmSelection() )
             {
-                _presenter.SetPanelVisible( false );
+                // OPTION選択時、オプション画面へ処理を譲る。IsOpenは維持したままパネルと入力コードのみ
+                // 一時的に解除する(NotifySceneResumed()により復帰時に自動的に再表示される)
+                case FieldMenuConfirmResult.SuspendForOption:
+                    SuspendMenuForSubScreen();
+                    break;
 
-                InputFacade.Instance.UnregisterInputCodes( _navHashCode );
-
-                // UnregisterInputCodesだけでは入力ガイド表示が更新されないため、空登録でガイドの再描画を促す
-                InputFacade.Instance.RegisterInputCodes();
+                // EXIT_GAME選択時、終了確認ダイアログを表示する
+                case FieldMenuConfirmResult.RequestExitGameConfirm:
+                    SuspendMenuForSubScreen();
+                    OpenExitConfirm();
+                    break;
             }
 
             return true;
@@ -127,6 +132,86 @@ namespace Frontier.Field
 
             // UnregisterInputCodesだけでは入力ガイド表示が更新されないため、空登録でガイドの再描画を促す
             InputFacade.Instance.RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// メニュー自体は開いたまま(IsOpen維持)、パネルとナビゲーション入力コードのみ一時的に解除します。
+        /// オプション画面・終了確認ダイアログ等のサブ画面へ処理を譲る際に使用します。
+        /// </summary>
+        private void SuspendMenuForSubScreen()
+        {
+            _presenter.SetPanelVisible( false );
+
+            InputFacade.Instance.UnregisterInputCodes( _navHashCode );
+
+            // UnregisterInputCodesだけでは入力ガイド表示が更新されないため、空登録でガイドの再描画を促す
+            InputFacade.Instance.RegisterInputCodes();
+        }
+
+        // ── ゲーム終了確認ダイアログ ─────────────────────────────────────────
+
+        private void EnsureExitConfirmPresenter()
+        {
+            if ( _exitConfirmPresenter != null ) return;
+
+            _exitConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<FieldExitConfirmPresenter>( false );
+            _exitConfirmPresenter.Init();
+        }
+
+        private void OpenExitConfirm()
+        {
+            EnsureExitConfirmPresenter();
+
+            _exitConfirmPresenter.Show();
+
+            _exitConfirmHashCode = Hash.GetStableHash( nameof( FieldMenuHandler ) + "_ExitConfirm" );
+            InputFacade.Instance.RegisterInputCodes(
+                ( GuideIcon.HORIZONTAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptExitConfirmDirection ), MENU_DIRECTION_INPUT_INTERVAL, _exitConfirmHashCode ),
+                ( GuideIcon.CONFIRM,           "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptExitConfirmConfirm ),   0.0f, _exitConfirmHashCode ),
+                ( GuideIcon.CANCEL,            "BACK",    InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptExitConfirmCancel ),    0.0f, _exitConfirmHashCode )
+            );
+        }
+
+        private bool AcceptExitConfirmDirection( InputContext context )
+        {
+            return _exitConfirmPresenter.MoveSelection( context.Cursor );
+        }
+
+        private bool AcceptExitConfirmConfirm( InputContext context )
+        {
+            if ( !context.GetButton( GameButton.Confirm ) ) return false;
+
+            if ( _exitConfirmPresenter.IsYesSelected() )
+            {
+                GameQuitService.Quit();
+            }
+            else
+            {
+                CloseExitConfirmAndReturnToMenu();
+            }
+
+            return true;
+        }
+
+        private bool AcceptExitConfirmCancel( InputContext context )
+        {
+            if ( !context.GetButton( GameButton.Cancel ) ) return false;
+
+            CloseExitConfirmAndReturnToMenu();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 終了確認ダイアログを閉じ、フィールドメニューへ戻ります(「いいえ」及びキャンセル共通の処理)。
+        /// </summary>
+        private void CloseExitConfirmAndReturnToMenu()
+        {
+            _exitConfirmPresenter.Hide();
+            InputFacade.Instance.UnregisterInputCodes( _exitConfirmHashCode );
+
+            _presenter.SetPanelVisible( true );
+            RegisterNavInputCodes();
         }
     }
 }

@@ -89,11 +89,8 @@ namespace Frontier.Field
         /// <summary>
         /// 現在選択中の項目を確定操作します。
         /// </summary>
-        /// <returns>
-        /// この確定操作によりオプション画面等のサブ画面へ処理を譲り、フィールドメニューを
-        /// 一時的に非表示にすべき場合はtrue(IsOpen自体はtrueのまま維持し、復帰時に同じ状態で再表示する)。
-        /// </returns>
-        public bool ConfirmSelection()
+        /// <returns>この確定操作によって以降FieldMenuHandlerが行うべき処理。</returns>
+        public FieldMenuConfirmResult ConfirmSelection()
         {
             var option = ( FIELD_MENU_OPTION_TAG ) _cmdIdxVal.value;
             switch ( option )
@@ -102,12 +99,15 @@ namespace Frontier.Field
                 // OptionHandlerへ実行を委譲する(表示・入力操作はOptionHandler/OptionPresenter側が担う)
                 case FIELD_MENU_OPTION_TAG.OPTION:
                     _optionHandler.ScheduleRun();
-                    return true;
+                    return FieldMenuConfirmResult.SuspendForOption;
+
+                case FIELD_MENU_OPTION_TAG.EXIT_GAME:
+                    return FieldMenuConfirmResult.RequestExitGameConfirm;
 
                 default:
                     // MEMO: 他の項目からの遷移処理は未実装
                     UnityEngine.Debug.Log( $"[FieldMenuPresenter] {option} は未実装です。" );
-                    return false;
+                    return FieldMenuConfirmResult.None;
             }
         }
     }
