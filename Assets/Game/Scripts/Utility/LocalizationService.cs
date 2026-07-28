@@ -28,6 +28,9 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_RESERVED_ACTION_EXECUTE", "Execute" },
                 { "UI_CMD_OPTION", "Option" },
                 { "UI_CMD_TURN_END", "Turn End" },
+                { "UI_CMD_STATUS", "Status" },
+                { "UI_CMD_SAVE", "Save" },
+                { "UI_CMD_EXIT_GAME", "Exit Game" },
             }
         },
         {
@@ -52,6 +55,9 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_RESERVED_ACTION_EXECUTE", "実行" },
                 { "UI_CMD_OPTION", "オプション" },
                 { "UI_CMD_TURN_END", "ターン終了" },
+                { "UI_CMD_STATUS", "ステータス" },
+                { "UI_CMD_SAVE", "セーブ" },
+                { "UI_CMD_EXIT_GAME", "ゲーム終了" },
             }
         }
     };

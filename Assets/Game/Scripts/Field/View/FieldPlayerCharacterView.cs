@@ -24,6 +24,9 @@ namespace Frontier.Field
         private Character _character     = null;
         private Coroutine  _moveCoroutine = null;
 
+        /// <summary>ノード間の移動アニメーション中かどうか。</summary>
+        public bool IsMoving => _moveCoroutine != null;
+
         /// <summary>
         /// 指定ノード位置にモデルを配置します(未生成の場合はここで生成します)。
         /// </summary>

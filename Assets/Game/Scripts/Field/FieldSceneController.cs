@@ -45,6 +45,8 @@ namespace Frontier.Field
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
         private Dictionary<int, Vector3>       _nodePositions = new Dictionary<int, Vector3>();
         private FieldPlayerCharacterView       _playerCharacterView = null;
+        private FieldMenuUI                    _fieldMenuUI = null;
+        private FieldCameraController          _cameraController = null;
 
         private FieldProgress Progress => GameSession.Instance?.FieldProgress;
 
@@ -156,6 +158,12 @@ namespace Frontier.Field
 
                     EnsurePlayerCharacterView();
                     _playerCharacterView?.Setup( startPos );
+
+                    EnsureFieldMenuUI();
+
+                    // シーン遷移(初回配置・戦闘/雇用からの帰還)直後は、カメラの焦点をキャラクターに合わせる
+                    EnsureCameraController();
+                    _cameraController?.SetFollowTarget( _playerCharacterView );
                 }
             }
         }
@@ -168,6 +176,27 @@ namespace Frontier.Field
             if ( _playerCharacterView != null || _hierarchyBld == null ) return;
 
             _playerCharacterView = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<FieldPlayerCharacterView>( true, false, nameof( FieldPlayerCharacterView ) );
+        }
+
+        /// <summary>
+        /// シーン内のフィールドカメラ制御コンポーネントを取得します(一度だけ)。
+        /// </summary>
+        private void EnsureCameraController()
+        {
+            if ( _cameraController != null ) return;
+
+            _cameraController = FindFirstObjectByType<FieldCameraController>();
+        }
+
+        /// <summary>
+        /// OPT2入力で開く画面左のメニューUIを生成します(一度だけ)。
+        /// </summary>
+        private void EnsureFieldMenuUI()
+        {
+            if ( _fieldMenuUI != null || _hierarchyBld == null || _playerCharacterView == null ) return;
+
+            _fieldMenuUI = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<FieldMenuUI>( true, false, nameof( FieldMenuUI ) );
+            _fieldMenuUI.Setup( _playerCharacterView );
         }
 
         private void RefreshReachability()
@@ -189,6 +218,9 @@ namespace Frontier.Field
 
         private void OnNodeSelected( int nodeId )
         {
+            // メニュー表示中はノード選択を受け付けない
+            if ( _fieldMenuUI != null && _fieldMenuUI.IsOpen ) return;
+
             var node = FindNode( nodeId );
             if ( node == null ) return;
 
