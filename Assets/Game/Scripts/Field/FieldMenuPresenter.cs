@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Frontier.Option;
+using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.Field
@@ -11,6 +12,7 @@ namespace Frontier.Field
     public class FieldMenuPresenter
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private OptionHandler _optionHandler        = null;
 
         private FieldMenuUI _menuUI = null;
         private CommandList _commandList = new CommandList();
@@ -55,6 +57,24 @@ namespace Frontier.Field
         }
 
         /// <summary>
+        /// IsOpen(メニューを開いた状態)は変更せず、パネルの表示のみ切り替えます。
+        /// オプション画面などのサブ画面に一時的に処理を譲る際、復帰後に同じ選択状態のまま
+        /// 再表示できるようにするために使用します(完全に閉じたい場合はHide()を使用してください)。
+        /// </summary>
+        public void SetPanelVisible( bool visible )
+        {
+            if ( visible )
+            {
+                _menuUI.SetSelectedIndex( _cmdIdxVal.index );
+                _menuUI.Show();
+            }
+            else
+            {
+                _menuUI.Hide();
+            }
+        }
+
+        /// <summary>
         /// カーソルを移動します。移動できた場合はtrueを返します。
         /// </summary>
         public bool MoveSelection( Direction dir )
@@ -69,11 +89,26 @@ namespace Frontier.Field
         /// <summary>
         /// 現在選択中の項目を確定操作します。
         /// </summary>
-        public void ConfirmSelection()
+        /// <returns>
+        /// この確定操作によりオプション画面等のサブ画面へ処理を譲り、フィールドメニューを
+        /// 一時的に非表示にすべき場合はtrue(IsOpen自体はtrueのまま維持し、復帰時に同じ状態で再表示する)。
+        /// </returns>
+        public bool ConfirmSelection()
         {
-            // MEMO: 各項目からの遷移処理は未実装。リストへの項目挿入のみ先行対応する
             var option = ( FIELD_MENU_OPTION_TAG ) _cmdIdxVal.value;
-            UnityEngine.Debug.Log( $"[FieldMenuPresenter] {option} は未実装です。" );
+            switch ( option )
+            {
+                // PlSelectMenuStateのTILE_MENU_OPTION_TAG.OPTION処理を参考に、
+                // OptionHandlerへ実行を委譲する(表示・入力操作はOptionHandler/OptionPresenter側が担う)
+                case FIELD_MENU_OPTION_TAG.OPTION:
+                    _optionHandler.ScheduleRun();
+                    return true;
+
+                default:
+                    // MEMO: 他の項目からの遷移処理は未実装
+                    UnityEngine.Debug.Log( $"[FieldMenuPresenter] {option} は未実装です。" );
+                    return false;
+            }
         }
     }
 }
