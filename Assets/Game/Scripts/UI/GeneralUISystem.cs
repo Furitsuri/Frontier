@@ -21,6 +21,9 @@ namespace Frontier
         [Header( "Option" )]
         public OptionUI OptionView;                 // オプションUI
 
+        [Header( "SaveLoad" )]
+        public SaveLoadUI SaveLoadView;              // セーブ/ロードUI
+
         void Awake()
         {
             if( null == GetComponent<Canvas>() )
@@ -36,6 +39,7 @@ namespace Frontier
             CharacterStatusView?.Setup();
             ToolTipView?.Setup();
             OptionView?.Setup();
+            SaveLoadView?.Setup();
         }
 
         public Vector2 GetScreenSize()
