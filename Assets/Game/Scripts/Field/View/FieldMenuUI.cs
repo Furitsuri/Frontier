@@ -3,15 +3,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-using static Constants;
 
 namespace Frontier.Field
 {
     /// <summary>
-    /// フィールド上でOPT2入力により画面左に表示するメニューリスト。
-    /// 移動していない(ノードに静止している)場合に限り開くことができる。
+    /// フィールドメニュー(OPT2)の見た目のみを担当する最小限のビュー。
+    /// 開閉・カーソル位置・確定処理などの状態管理は FieldMenuPresenter が行い、
+    /// このクラスは表示指示(Show/Hide/SetSelectedIndex)を受けて反映するだけに留める。
     /// 戦闘シーンのPlCommandWindow/TileMenuWindowとは独立させ、専用のCanvasを実行時に構築して表示する。
-    /// 文字列は LocalizationService を経由するため、言語切替に追従する。
     /// </summary>
     public class FieldMenuUI : MonoBehaviour
     {
@@ -31,35 +30,16 @@ namespace Frontier.Field
 
         [Inject] private ILocalizationService _localization = null;
 
-        private FieldPlayerCharacterView _playerView = null;
-        private CommandList _commandList = new CommandList();
-        private CommandList.CommandIndexedValue _cmdIdxVal;
         private List<TextMeshProUGUI> _optionTexts = new List<TextMeshProUGUI>();
         private GameObject _panel;
-        private int _baseHashCode;
-        private int _menuHashCode;
 
-        /// <summary>メニューが開いているかどうか。</summary>
-        public bool IsOpen { get; private set; }
-
-        /// <summary>
-        /// メニューUIを構築し、OPT2入力の受付を開始します。
-        /// </summary>
-        /// <param name="playerView">移動中かどうかの判定に用いる、自身を表す3Dモデルのビュー</param>
-        public void Setup( FieldPlayerCharacterView playerView )
+        /// <summary>UIを構築します。初期状態は非表示です。</summary>
+        public void Setup()
         {
-            _playerView   = playerView;
-            _baseHashCode = Hash.GetStableHash( nameof( FieldMenuUI ) + "_Base" );
-            _menuHashCode = Hash.GetStableHash( nameof( FieldMenuUI ) + "_Menu" );
-
             BuildUI();
-            _panel.SetActive( false );
+            Hide();
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshAllTexts; }
-
-            InputFacade.Instance.RegisterInputCodes(
-                ( GuideIcon.OPT2, "MENU", CanOpenMenu, new AcceptContextInput( AcceptOpen ), 0.0f, _baseHashCode )
-            );
         }
 
         private void OnDestroy()
@@ -67,87 +47,16 @@ namespace Frontier.Field
             if ( _localization != null ) { _localization.OnLanguageChanged -= RefreshAllTexts; }
         }
 
-        /// <summary>
-        /// メニューを開けるかどうかを判定します。移動中、及び既にメニューが開いている場合は開けません。
-        /// </summary>
-        private bool CanOpenMenu()
-        {
-            return !IsOpen && _playerView != null && !_playerView.IsMoving;
-        }
+        public void Show() => _panel.SetActive( true );
 
-        private bool AcceptOpen( InputContext context )
-        {
-            if ( !context.GetButton( GameButton.Opt2 ) ) return false;
+        public void Hide() => _panel.SetActive( false );
 
-            OpenMenu();
-
-            return true;
-        }
-
-        private void OpenMenu()
-        {
-            IsOpen = true;
-            _panel.SetActive( true );
-
-            var indices = new List<int>();
-            for ( int i = 0; i < ( int ) FIELD_MENU_OPTION_TAG.NUM; ++i ) { indices.Add( i ); }
-
-            _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
-            _commandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
-            RefreshCursorColor();
-
-            InputFacade.Instance.RegisterInputCodes(
-                ( GuideIcon.VERTICAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, _menuHashCode ),
-                ( GuideIcon.CONFIRM,         "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptConfirm ),   0.0f, _menuHashCode ),
-                ( GuideIcon.CANCEL,          "BACK",    InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptCancel ),    0.0f, _menuHashCode )
-            );
-        }
-
-        private void CloseMenu()
-        {
-            IsOpen = false;
-            _panel.SetActive( false );
-
-            InputFacade.Instance.UnregisterInputCodes( _menuHashCode );
-
-            // UnregisterInputCodesだけでは入力ガイド表示が更新されないため、空登録でガイドの再描画を促す
-            InputFacade.Instance.RegisterInputCodes();
-        }
-
-        private bool AcceptDirection( InputContext context )
-        {
-            if ( !_commandList.OperateListCursor( context.Cursor ) ) return false;
-
-            RefreshCursorColor();
-
-            return true;
-        }
-
-        private bool AcceptConfirm( InputContext context )
-        {
-            if ( !context.GetButton( GameButton.Confirm ) ) return false;
-
-            // MEMO: 各項目からの遷移処理は未実装。リストへの項目挿入のみ先行対応する
-            var option = ( FIELD_MENU_OPTION_TAG ) _cmdIdxVal.value;
-            Debug.Log( $"[FieldMenuUI] {option} は未実装です。" );
-
-            return true;
-        }
-
-        private bool AcceptCancel( InputContext context )
-        {
-            if ( !context.GetButton( GameButton.Cancel ) ) return false;
-
-            CloseMenu();
-
-            return true;
-        }
-
-        private void RefreshCursorColor()
+        /// <summary>選択中の項目インデックスを表示(色)に反映します。</summary>
+        public void SetSelectedIndex( int index )
         {
             for ( int i = 0; i < _optionTexts.Count; ++i )
             {
-                _optionTexts[i].color = ( i == _cmdIdxVal.index ) ? _selectedColor : _normalColor;
+                _optionTexts[i].color = ( i == index ) ? _selectedColor : _normalColor;
             }
         }
 
