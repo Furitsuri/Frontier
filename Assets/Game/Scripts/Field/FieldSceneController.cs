@@ -7,7 +7,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
-using static Constants;
 
 namespace Frontier.Field
 {
@@ -46,10 +45,8 @@ namespace Frontier.Field
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
         private Dictionary<int, Vector3>       _nodePositions = new Dictionary<int, Vector3>();
         private FieldPlayerCharacterView       _playerCharacterView = null;
-        private FieldMenuPresenter             _fieldMenuPresenter = null;
+        private FieldMenuHandler               _fieldMenuHandler = null;
         private FieldCameraController          _cameraController = null;
-        private int                            _menuOpenHashCode;
-        private int                            _menuNavHashCode;
 
         private FieldProgress Progress => GameSession.Instance?.FieldProgress;
 
@@ -168,7 +165,7 @@ namespace Frontier.Field
                     EnsurePlayerCharacterView();
                     _playerCharacterView?.Setup( startPos );
 
-                    EnsureFieldMenuPresenter();
+                    EnsureFieldMenuHandler();
 
                     // シーン遷移(初回配置・戦闘/雇用からの帰還)直後は、カメラの焦点をキャラクターに合わせる
                     EnsureCameraController();
@@ -198,116 +195,26 @@ namespace Frontier.Field
         }
 
         /// <summary>
-        /// OPT2入力で開くフィールドメニューのPresenterを生成し、入力コードを登録します(一度だけ)。
+        /// OPT2入力で開くフィールドメニューのハンドラを生成します(一度だけ)。
+        /// 入力コードの登録・Presenter呼び出し等はすべてFieldMenuHandlerが担う。
         /// </summary>
-        private void EnsureFieldMenuPresenter()
+        private void EnsureFieldMenuHandler()
         {
-            if ( _fieldMenuPresenter != null || _hierarchyBld == null || _playerCharacterView == null ) return;
+            if ( _fieldMenuHandler != null || _hierarchyBld == null || _playerCharacterView == null ) return;
 
-            _fieldMenuPresenter = _hierarchyBld.InstantiateWithDiContainer<FieldMenuPresenter>( false );
-            _fieldMenuPresenter.Init();
-
-            _menuOpenHashCode = Hash.GetStableHash( nameof( FieldSceneController ) + "_MenuOpen" );
-            InputFacade.Instance.RegisterInputCodes(
-                ( GuideIcon.OPT2, "MENU", CanOpenFieldMenu, new AcceptContextInput( AcceptOpenFieldMenu ), 0.0f, _menuOpenHashCode )
-            );
-        }
-
-        // ── フィールドメニュー(OPT2) ─────────────────────────────────────────
-
-        /// <summary>
-        /// フィールドメニューを開けるかどうかを判定します。
-        /// 移動中、既にメニューが開いている場合、及びオプション画面等の優先度の高いルーチンが
-        /// 実行中で自身が中断されている場合(gameObject.activeInHierarchy == false)は開けません。
-        /// </summary>
-        private bool CanOpenFieldMenu()
-        {
-            return gameObject.activeInHierarchy &&
-                   _fieldMenuPresenter != null && !_fieldMenuPresenter.IsOpen &&
-                   _playerCharacterView != null && !_playerCharacterView.IsMoving;
-        }
-
-        private bool AcceptOpenFieldMenu( InputContext context )
-        {
-            if ( !context.GetButton( GameButton.Opt2 ) ) return false;
-
-            _fieldMenuPresenter.Show();
-            RegisterFieldMenuNavInputCodes();
-
-            return true;
-        }
-
-        /// <summary>
-        /// フィールドメニュー内でのカーソル移動・決定・キャンセルに対応する入力コードを登録します。
-        /// 初回オープン時に加え、オプション画面等のサブ画面から復帰した際の再登録にも使用します。
-        /// </summary>
-        private void RegisterFieldMenuNavInputCodes()
-        {
-            _menuNavHashCode = Hash.GetStableHash( nameof( FieldSceneController ) + "_MenuNav" );
-            InputFacade.Instance.RegisterInputCodes(
-                ( GuideIcon.VERTICAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptFieldMenuDirection ), MENU_DIRECTION_INPUT_INTERVAL, _menuNavHashCode ),
-                ( GuideIcon.CONFIRM,         "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptFieldMenuConfirm ),   0.0f, _menuNavHashCode ),
-                ( GuideIcon.CANCEL,          "BACK",    InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptFieldMenuCancel ),    0.0f, _menuNavHashCode )
-            );
-        }
-
-        private bool AcceptFieldMenuDirection( InputContext context )
-        {
-            return _fieldMenuPresenter.MoveSelection( context.Cursor );
-        }
-
-        private bool AcceptFieldMenuConfirm( InputContext context )
-        {
-            if ( !context.GetButton( GameButton.Confirm ) ) return false;
-
-            // OPTION選択時など、オプション画面等のサブ画面へ処理を譲る場合がある。
-            // その場合フィールドメニュー自体は開いたままとし(IsOpenは維持)、Restart()で自動的に再表示する
-            if ( _fieldMenuPresenter.ConfirmSelection() )
-            {
-                _fieldMenuPresenter.SetPanelVisible( false );
-
-                InputFacade.Instance.UnregisterInputCodes( _menuNavHashCode );
-
-                // UnregisterInputCodesだけでは入力ガイド表示が更新されないため、空登録でガイドの再描画を促す
-                InputFacade.Instance.RegisterInputCodes();
-            }
-
-            return true;
-        }
-
-        private bool AcceptFieldMenuCancel( InputContext context )
-        {
-            if ( !context.GetButton( GameButton.Cancel ) ) return false;
-
-            CloseFieldMenu();
-
-            return true;
-        }
-
-        private void CloseFieldMenu()
-        {
-            _fieldMenuPresenter.Hide();
-
-            InputFacade.Instance.UnregisterInputCodes( _menuNavHashCode );
-
-            // UnregisterInputCodesだけでは入力ガイド表示が更新されないため、空登録でガイドの再描画を促す
-            InputFacade.Instance.RegisterInputCodes();
+            _fieldMenuHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<FieldMenuHandler>( true, false, nameof( FieldMenuHandler ) );
+            _fieldMenuHandler.Setup( _playerCharacterView );
         }
 
         /// <summary>
         /// オプション画面等のサブ画面から復帰した際に呼ばれます。
-        /// フィールドメニューが開いたまま(IsOpen == true)であれば、同じ選択状態でパネルと
-        /// 入力コードを復帰させます。
+        /// フィールドメニューが開いたままであれば、FieldMenuHandler側で同じ選択状態のまま再表示します。
         /// </summary>
         public override void Restart()
         {
             base.Restart();
 
-            if ( _fieldMenuPresenter != null && _fieldMenuPresenter.IsOpen )
-            {
-                _fieldMenuPresenter.SetPanelVisible( true );
-                RegisterFieldMenuNavInputCodes();
-            }
+            _fieldMenuHandler?.NotifySceneResumed();
         }
 
         private void RefreshReachability()
@@ -335,7 +242,7 @@ namespace Frontier.Field
             if ( !gameObject.activeInHierarchy ) return;
 
             // メニュー表示中はノード選択を受け付けない
-            if ( _fieldMenuPresenter != null && _fieldMenuPresenter.IsOpen ) return;
+            if ( _fieldMenuHandler != null && _fieldMenuHandler.IsOpen ) return;
 
             var node = FindNode( nodeId );
             if ( node == null ) return;
