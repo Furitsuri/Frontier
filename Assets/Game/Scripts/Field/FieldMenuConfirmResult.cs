@@ -14,5 +14,8 @@
 
         /// <summary>EXIT_GAMEが選択された。ゲーム終了確認ダイアログを表示する。</summary>
         RequestExitGameConfirm,
+
+        /// <summary>SAVEが選択された。セーブ画面を表示する。</summary>
+        RequestSaveScreen,
     }
 }

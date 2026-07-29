@@ -1,4 +1,5 @@
 ﻿using Frontier;
+using Frontier.SaveLoad;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -16,6 +17,7 @@ namespace Frontier.Field
 
         private FieldMenuPresenter        _presenter           = null;
         private FieldExitConfirmPresenter _exitConfirmPresenter = null;
+        private SaveLoadHandler           _saveHandler          = null;
         private FieldPlayerCharacterView  _playerCharacterView = null;
         private int _openHashCode;
         private int _navHashCode;
@@ -109,6 +111,12 @@ namespace Frontier.Field
                 case FieldMenuConfirmResult.RequestExitGameConfirm:
                     SuspendMenuForSubScreen();
                     OpenExitConfirm();
+                    break;
+
+                // SAVE選択時、セーブ画面を表示する
+                case FieldMenuConfirmResult.RequestSaveScreen:
+                    SuspendMenuForSubScreen();
+                    OpenSaveScreen();
                     break;
             }
 
@@ -210,6 +218,32 @@ namespace Frontier.Field
             _exitConfirmPresenter.Hide();
             InputFacade.Instance.UnregisterInputCodes( _exitConfirmHashCode );
 
+            ReturnToFieldMenu();
+        }
+
+        // ── セーブ画面 ───────────────────────────────────────────────────────
+
+        private void EnsureSaveHandler()
+        {
+            if ( _saveHandler != null ) return;
+
+            _saveHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<SaveLoadHandler>( true, false, nameof( SaveLoadHandler ) );
+            _saveHandler.Setup();
+        }
+
+        private void OpenSaveScreen()
+        {
+            EnsureSaveHandler();
+
+            _saveHandler.Show( ReturnToFieldMenu );
+        }
+
+        /// <summary>
+        /// サブ画面(オプション画面を除く。オプションはFocusRoutineの復帰でNotifySceneResumed()が担う)
+        /// を閉じてフィールドメニューへ戻ります。パネルと入力コードを同じ選択状態のまま再表示します。
+        /// </summary>
+        private void ReturnToFieldMenu()
+        {
             _presenter.SetPanelVisible( true );
             RegisterNavInputCodes();
         }
