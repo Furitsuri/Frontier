@@ -15,6 +15,8 @@ namespace Frontier.SaveLoad
     public class SaveLoadHandler : MonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private UserDomain _userDomain = null;
+        [Inject] private ISlotSaveHandler<UserSaveData> _saveHdlr = null;
 
         private SaveLoadPresenter _presenter = null;
         private Action _onClosed = null;
@@ -59,10 +61,28 @@ namespace Frontier.SaveLoad
 
             // MEMO: 現状はSAVE画面からのみ開かれるため、常に保存動作として扱う。
             // ロード画面としての切り替え・ロード確定時の処理は別途実装が必要(タイトル引数と合わせて後日対応)。
-            if ( !_presenter.SaveCurrentSelection() )
+            if ( !TrySaveToSelectedSlot() )
             {
                 Debug.Log( "[SaveLoadHandler] オートセーブ枠は手動で保存できません。" );
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 現在選択中のスロットへ、現在のプレイ状況を保存します。
+        /// オートセーブ枠(USER_SAVE_AUTO_SLOT_INDEX)は手動保存の対象外のため、保存を行わずfalseを返します。
+        /// </summary>
+        /// <returns>実際に保存を行った場合はtrue。</returns>
+        private bool TrySaveToSelectedSlot()
+        {
+            int slot = _presenter.GetSelectedSlotIndex();
+            if ( slot == USER_SAVE_AUTO_SLOT_INDEX ) return false;
+
+            var data = _userDomain.ToSaveData( GameSession.Instance.FieldProgress );
+            _saveHdlr.Save( slot, data );
+
+            _presenter.RefreshSlotContents();
 
             return true;
         }
