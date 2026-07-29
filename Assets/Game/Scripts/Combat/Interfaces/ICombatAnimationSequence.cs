@@ -1,6 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
+using Frontier.Entities;
 
-namespace Frontier.Entities
+namespace Frontier.Combat
 {
     public interface ICombatAnimationSequence
     {

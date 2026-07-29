@@ -1,6 +1,7 @@
 ﻿using Frontier.Battle;
 using UnityEngine;
 using Zenject;
+using Frontier.Combat;
 using Frontier.Combat.Skill;
 
 namespace Frontier.Entities
