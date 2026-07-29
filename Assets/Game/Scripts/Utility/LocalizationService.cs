@@ -34,6 +34,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CONFIRM_EXIT_GAME_MESSAGE", "Quit the game?" },
                 { "UI_CONFIRM_YES", "Yes" },
                 { "UI_CONFIRM_NO", "No" },
+                { "UI_CMD_NEW_GAME", "New Game" },
+                { "UI_CMD_LOAD_GAME", "Load Game" },
             }
         },
         {
@@ -64,6 +66,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CONFIRM_EXIT_GAME_MESSAGE", "ゲームを終了しますか？" },
                 { "UI_CONFIRM_YES", "はい" },
                 { "UI_CONFIRM_NO", "いいえ" },
+                { "UI_CMD_NEW_GAME", "はじめから" },
+                { "UI_CMD_LOAD_GAME", "つづきから" },
             }
         }
     };
