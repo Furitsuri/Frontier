@@ -33,10 +33,9 @@ namespace Frontier.Field
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<ISaveHandler<OptionSaveData>>().To<OptionSaveHandler>().AsSingle();
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            // DebugUserDataLoader.TryApply() が必要とする依存関係
+            // SaveLoadPresenter(セーブ画面)、DebugUserDataLoader.TryApply() 等が必要とする依存関係
             Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsCached();
-#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+            Container.Bind<ISlotSaveHandler<UserSaveData>>().To<UserSaveHandler>().AsSingle();
 
             Container.Bind<IInstaller>().To<FieldDiInstaller>().FromInstance( this );
         }

@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Field;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,31 +38,30 @@ public class UserDomain
     public void Debug_ClearMembers()              => Members.Clear();
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
-    /*
-    public IReadOnlyList<Unit> Units => _units;
-
-    private List<Unit> _units;
-
-    public void HireUnit( Unit master )
+    /// <summary>
+    /// 現在の状態をセーブデータ(DTO)へ変換します。
+    /// FieldProgressはUserDomainが保持していないため、呼び出し側(GameSession等)から渡します。
+    /// </summary>
+    public UserSaveData ToSaveData( FieldProgress fieldProgress )
     {
-        if( Money < master.Cost ) return;
-        Money -= master.Cost;
-        _units.Add( new Unit( master ) );
-    }
-
-    public UserData ToSaveData()
-    {
-        return new PlayerSaveData
+        return new UserSaveData
         {
-            Money = Money,
-            OwnedUnits = _units.Select( u => u.ToSaveData() ).ToList()
+            SavedAt       = DateTime.Now.ToString( "yyyy/MM/dd HH:mm" ),
+            Money         = Money,
+            StageLevel    = StageLevel,
+            Members       = new List<Status>( Members ),
+            FieldProgress = fieldProgress,
         };
     }
 
-    public void Load( UserData data )
+    /// <summary>
+    /// セーブデータ(DTO)の内容を反映します。FieldProgressの反映は呼び出し側の責務とします。
+    /// </summary>
+    public void ApplySaveData( UserSaveData data )
     {
-        Money = data.Money;
-        _units = data.OwnedUnits.Select( Unit.FromSaveData ).ToList();
+        Money      = data.Money;
+        StageLevel = data.StageLevel;
+        Members.Clear();
+        Members.AddRange( data.Members );
     }
-    */
 }

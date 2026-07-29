@@ -185,6 +185,10 @@ static public class Constants
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
     public const string GUIDE_SPRITE_FOLDER_PASS            = "Sprites/Originals/UI/InputGuide/";
     public const string TILE_MATERIALS_FOLDER_PASS          = "Materials/Tile/";
+
+    // セーブスロット数(オートセーブ1 + ユーザーセーブ3)。オートセーブ枠はインデックス0固定。
+    public const int USER_SAVE_SLOT_COUNT      = 4;
+    public const int USER_SAVE_AUTO_SLOT_INDEX = 0;
 #if UNITY_EDITOR
     public const string DEBUG_TRANSION_INPUT_HASH_STRING    = "DEBUG";
     public const string GUIDE_SPRITE_FILE_NAME              = "Preview Keyboard & Mouse";

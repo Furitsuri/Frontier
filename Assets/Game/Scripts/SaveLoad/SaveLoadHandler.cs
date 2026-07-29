@@ -57,8 +57,12 @@ namespace Frontier.SaveLoad
         {
             if ( !context.GetButton( GameButton.Confirm ) ) return false;
 
-            // MEMO: 実際のセーブ・ロード処理は未実装(セーブスロットの概念が未確定のため)
-            Debug.Log( "[SaveLoadHandler] セーブ/ロードの実処理は未実装です。" );
+            // MEMO: 現状はSAVE画面からのみ開かれるため、常に保存動作として扱う。
+            // ロード画面としての切り替え・ロード確定時の処理は別途実装が必要(タイトル引数と合わせて後日対応)。
+            if ( !_presenter.SaveCurrentSelection() )
+            {
+                Debug.Log( "[SaveLoadHandler] オートセーブ枠は手動で保存できません。" );
+            }
 
             return true;
         }

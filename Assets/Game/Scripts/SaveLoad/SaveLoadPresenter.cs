@@ -1,17 +1,20 @@
 ﻿using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
+using static Constants;
 
 namespace Frontier.SaveLoad
 {
     /// <summary>
     /// セーブ/ロード画面(SaveLoadUI)の表示・選択状態を管理するPresenter。
     /// SaveLoadHandler は本クラスを介してのみ SaveLoadUI を操作する。
-    /// 実際のセーブ・ロード処理(ファイルI/O)はまだ実装しない(セーブスロットの概念が未確定のため)。
+    /// 実際のセーブ・ロード処理(ファイルI/O)は ISlotSaveHandler{UserSaveData} に委譲する。
     /// </summary>
     public class SaveLoadPresenter
     {
         [Inject] private IUiSystem _uiSystem = null;
+        [Inject] private UserDomain _userDomain = null;
+        [Inject] private ISlotSaveHandler<UserSaveData> _saveHdlr = null;
 
         private SaveLoadUI _view = null;
         private List<SaveSlotItemUI> _slots = null;
@@ -44,6 +47,7 @@ namespace Frontier.SaveLoad
 
             _view.gameObject.SetActive( true );
             RefreshSelection();
+            RefreshSlotContents();
         }
 
         /// <summary>
@@ -78,6 +82,44 @@ namespace Frontier.SaveLoad
         private void ClearSelection()
         {
             foreach ( var slot in _slots ) { slot.SetSelected( false ); }
+        }
+
+        /// <summary>
+        /// 各スロットの表示内容(ステージ・日時)を、実際のセーブデータの有無に応じて更新します。
+        /// </summary>
+        private void RefreshSlotContents()
+        {
+            for ( int i = 0; i < _slots.Count; ++i )
+            {
+                var data = _saveHdlr.Load( i );
+                if ( data == null )
+                {
+                    _slots[i].SetStageText( "NO DATA" );
+                    _slots[i].SetDateText( "" );
+                    continue;
+                }
+
+                _slots[i].SetStageText( $"STAGE {data.StageLevel + 1}" );
+                _slots[i].SetDateText( data.SavedAt );
+            }
+        }
+
+        /// <summary>
+        /// 現在選択中のスロットへ、現在のプレイ状況を保存します。
+        /// オートセーブ枠(USER_SAVE_AUTO_SLOT_INDEX)は手動保存の対象外のため、保存を行わずfalseを返します。
+        /// </summary>
+        /// <returns>実際に保存を行った場合はtrue。</returns>
+        public bool SaveCurrentSelection()
+        {
+            int slot = _cmdIdxVal.index;
+            if ( slot == USER_SAVE_AUTO_SLOT_INDEX ) return false;
+
+            var data = _userDomain.ToSaveData( GameSession.Instance.FieldProgress );
+            _saveHdlr.Save( slot, data );
+
+            RefreshSlotContents();
+
+            return true;
         }
     }
 }
