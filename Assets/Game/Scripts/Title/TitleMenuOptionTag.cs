@@ -8,6 +8,8 @@
     {
         NEW_GAME = 0,
         LOAD_GAME,
+        OPTION,
+        EXIT_GAME,
 
         NUM
     }

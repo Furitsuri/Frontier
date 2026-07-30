@@ -4,13 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
-namespace Frontier.Field
+namespace Frontier
 {
     /// <summary>
-    /// フィールドメニューの「Exit Game」選択時に表示する終了確認ダイアログの見た目のみを担当する最小限のビュー。
-    /// 開閉・カーソル位置の管理は FieldExitConfirmPresenter が行い、このクラスは表示指示を受けて反映するだけに留める。
+    /// 「Exit Game」選択時に表示する終了確認ダイアログの見た目のみを担当する最小限のビュー。
+    /// 開閉・カーソル位置の管理は ExitConfirmPresenter が行い、このクラスは表示指示を受けて反映するだけに留める。
+    /// Field/Title等、複数のシーンから共通して利用される。
     /// </summary>
-    public class FieldExitConfirmUI : MonoBehaviour
+    public class ExitConfirmUI : MonoBehaviour
     {
         private static readonly string[] OptionTextKeys =
         {
@@ -72,16 +73,16 @@ namespace Frontier.Field
 
         /// <summary>
         /// 画面中央に確認メッセージとYES/NOの横並びメニューを実行時に構築します。
-        /// 専用のCanvasを新規生成するため、フィールドシーン側の既存Canvas設定に依存しません。
+        /// 専用のCanvasを新規生成するため、呼び出し元シーン側の既存Canvas設定に依存しません。
         /// </summary>
         private void BuildUI()
         {
-            var canvasGO = new GameObject( "FieldExitConfirmCanvas", typeof( RectTransform ) );
+            var canvasGO = new GameObject( "ExitConfirmCanvas", typeof( RectTransform ) );
             canvasGO.transform.SetParent( transform, false );
 
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 110; // フィールドメニュー(100)より手前に表示する
+            canvas.sortingOrder = 210; // メニュー(100〜200)より手前に表示する
 
             var scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -89,7 +90,7 @@ namespace Frontier.Field
 
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            _panel = new GameObject( "FieldExitConfirmPanel", typeof( RectTransform ) );
+            _panel = new GameObject( "ExitConfirmPanel", typeof( RectTransform ) );
             _panel.transform.SetParent( canvasGO.transform, false );
 
             var panelRect = _panel.GetComponent<RectTransform>();

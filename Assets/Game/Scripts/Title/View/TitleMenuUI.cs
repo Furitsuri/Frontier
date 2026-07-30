@@ -19,6 +19,8 @@ namespace Frontier.Title
         {
             "UI_CMD_NEW_GAME",   // NEW_GAME
             "UI_CMD_LOAD_GAME",  // LOAD_GAME
+            "UI_CMD_OPTION",     // OPTION
+            "UI_CMD_EXIT_GAME",  // EXIT_GAME
         };
 
         private const string FontResourcePath = "Fonts & Materials/Electronic Highway Sign SDF";
@@ -95,15 +97,18 @@ namespace Frontier.Title
             panel.transform.SetParent( canvasGO.transform, false );
 
             var panelRect = panel.GetComponent<RectTransform>();
-            // 既存のTitle Info側UI(VISIT TUTORIALボタン・Show At Startトグル)と重ならないよう、画面下部に配置する
-            panelRect.anchorMin        = new Vector2( 0.5f, 0.14f );
-            panelRect.anchorMax        = new Vector2( 0.5f, 0.14f );
+            // 既存のTitle Info側UI(VISIT TUTORIALボタン・Show At Startトグル、実画面y=228〜335px)と
+            // 重ならないよう、それより下の隙間(実画面y=10〜228px)に収める。
+            // CanvasScalerがreferenceResolution(800x600)を実解像度(1920x1080)の幅基準でスケールするため、
+            // ここで指定するローカル単位は実画面上で約2.4倍として描画される点に注意。
+            panelRect.anchorMin        = new Vector2( 0.5f, 0.11f );
+            panelRect.anchorMax        = new Vector2( 0.5f, 0.11f );
             panelRect.pivot            = new Vector2( 0.5f, 0.5f );
             panelRect.anchoredPosition = Vector2.zero;
 
             var layout = panel.AddComponent<VerticalLayoutGroup>();
-            layout.padding                = new RectOffset( 16, 16, 12, 12 );
-            layout.spacing                = 8f;
+            layout.padding                = new RectOffset( 16, 16, 4, 4 );
+            layout.spacing                = 3f;
             layout.childAlignment         = TextAnchor.MiddleCenter;
             layout.childControlWidth      = true;
             layout.childControlHeight     = true;
@@ -123,7 +128,7 @@ namespace Frontier.Title
 
                 var text = itemGO.AddComponent<TextMeshProUGUI>();
                 if ( font != null ) { text.font = font; }
-                text.fontSize  = 28;
+                text.fontSize  = 15;
                 text.text      = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i];
                 text.color     = _normalColor;
                 text.alignment = TextAlignmentOptions.Midline;
@@ -132,7 +137,7 @@ namespace Frontier.Title
 
                 var le = itemGO.AddComponent<LayoutElement>();
                 le.minWidth  = 220f;
-                le.minHeight = 40f;
+                le.minHeight = 18f;
 
                 _optionTexts.Add( text );
             }

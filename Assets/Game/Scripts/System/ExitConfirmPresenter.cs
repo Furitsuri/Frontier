@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using Zenject;
 
-namespace Frontier.Field
+namespace Frontier
 {
     /// <summary>
-    /// フィールドメニューの「Exit Game」選択時に表示する終了確認ダイアログのPresenter。
+    /// 「Exit Game」選択時に表示する終了確認ダイアログのPresenter。
     /// ConfirmPhaseStateBase(二者択一の確認画面)と同じ考え方(CommandListのHORIZONTAL方向、
-    /// 誤操作を避けるためデフォルト選択はNO)を踏襲しつつ、State木構造を持たないフィールドシーン向けに
-    /// 軽量な実装としている。
+    /// 誤操作を避けるためデフォルト選択はNO)を踏襲しつつ、State木構造を持たないシーン向けに
+    /// 軽量な実装としている。Field/Title等、複数のシーンから共通して利用される。
     /// </summary>
-    public class FieldExitConfirmPresenter
+    public class ExitConfirmPresenter
     {
         private enum ConfirmTag
         {
@@ -21,7 +21,7 @@ namespace Frontier.Field
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        private FieldExitConfirmUI _confirmUI = null;
+        private ExitConfirmUI _confirmUI = null;
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
@@ -30,7 +30,7 @@ namespace Frontier.Field
         /// </summary>
         public void Init()
         {
-            _confirmUI = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<FieldExitConfirmUI>( true, false, nameof( FieldExitConfirmUI ) );
+            _confirmUI = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<ExitConfirmUI>( true, false, nameof( ExitConfirmUI ) );
             _confirmUI.Setup();
         }
 

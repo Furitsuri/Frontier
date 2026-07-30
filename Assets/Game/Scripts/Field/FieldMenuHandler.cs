@@ -16,7 +16,7 @@ namespace Frontier.Field
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private FieldMenuPresenter        _presenter           = null;
-        private FieldExitConfirmPresenter _exitConfirmPresenter = null;
+        private ExitConfirmPresenter      _exitConfirmPresenter = null;
         private SaveLoadHandler           _saveHandler          = null;
         private FieldPlayerCharacterView  _playerCharacterView = null;
         private int _openHashCode;
@@ -162,7 +162,7 @@ namespace Frontier.Field
         {
             if ( _exitConfirmPresenter != null ) return;
 
-            _exitConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<FieldExitConfirmPresenter>( false );
+            _exitConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<ExitConfirmPresenter>( false );
             _exitConfirmPresenter.Init();
         }
 

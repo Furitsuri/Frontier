@@ -32,8 +32,8 @@
       "equipSkills": [6, 7, -1, -1]
     },
     {
-      "prefabIndex": 1,
-      "name": "Debug Aracher",
+      "prefabIndex": 0,
+      "name": "Debug Knight3",
       "level": 1,
       "maxHP": 1,
       "atk": 10,

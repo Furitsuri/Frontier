@@ -20,7 +20,9 @@ namespace Frontier.Title
         [Inject] private ISlotSaveHandler<UserSaveData> _saveHdlr = null;
 
         private TitleMenuPresenter _presenter = null;
+        private ExitConfirmPresenter _exitConfirmPresenter = null;
         private int _navHashCode;
+        private int _exitConfirmHashCode;
 
         /// <summary>
         /// FocusRoutine優先度制御用。MAIN_FLOWとして登録する。
@@ -34,11 +36,33 @@ namespace Frontier.Title
 
             _presenter.Show( CheckHasAnySaveData() );
 
-            _navHashCode = Hash.GetStableHash( nameof( TitleMenuHandler ) + "_Nav" );
-            InputFacade.Instance.RegisterInputCodes(
-                ( GuideIcon.VERTICAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, _navHashCode ),
-                ( GuideIcon.CONFIRM,         "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptConfirm ),   0.0f, _navHashCode )
-            );
+            RegisterNavInputCodes();
+        }
+
+        /// <summary>
+        /// オプション画面等、優先度の高いルーチンに処理が移った際にFocusRoutineControllerから
+        /// 自動的に呼ばれます。パネルと入力コードを一時的に隠します。
+        /// </summary>
+        public override void Pause()
+        {
+            base.Pause();
+
+            _presenter.SetPanelVisible( false );
+
+            InputFacade.Instance.UnregisterInputCodes( _navHashCode );
+            InputFacade.Instance.RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// オプション画面等から復帰した際にFocusRoutineControllerから自動的に呼ばれます。
+        /// 同じ選択状態のままメニューを再表示します。
+        /// </summary>
+        public override void Restart()
+        {
+            base.Restart();
+
+            _presenter.SetPanelVisible( true );
+            RegisterNavInputCodes();
         }
 
         /// <summary>
@@ -54,6 +78,19 @@ namespace Frontier.Title
             return false;
         }
 
+        /// <summary>
+        /// メニュー内でのカーソル移動・決定に対応する入力コードを登録します。
+        /// 初回起動時に加え、サブ画面から復帰した際の再登録にも使用します。
+        /// </summary>
+        private void RegisterNavInputCodes()
+        {
+            _navHashCode = Hash.GetStableHash( nameof( TitleMenuHandler ) + "_Nav" );
+            InputFacade.Instance.RegisterInputCodes(
+                ( GuideIcon.VERTICAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, _navHashCode ),
+                ( GuideIcon.CONFIRM,         "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptConfirm ),   0.0f, _navHashCode )
+            );
+        }
+
         private bool AcceptDirection( InputContext context )
         {
             return _presenter.MoveSelection( context.Cursor );
@@ -63,15 +100,25 @@ namespace Frontier.Title
         {
             if ( !context.GetButton( GameButton.Confirm ) ) return false;
 
-            switch ( _presenter.GetSelectedOption() )
+            switch ( _presenter.ConfirmSelection() )
             {
-                case TITLE_MENU_OPTION_TAG.NEW_GAME:
+                case TitleMenuConfirmResult.RequestNewGame:
                     StartNewGame();
                     break;
 
-                case TITLE_MENU_OPTION_TAG.LOAD_GAME:
+                case TitleMenuConfirmResult.RequestLoadGame:
                     // MEMO: セーブデータの反映・シーン遷移は未実装(今回は表示/非表示判定のみが対応範囲のため)
                     Debug.Log( "[TitleMenuHandler] LOAD GAMEの実処理は未実装です。" );
+                    break;
+
+                // OPTION選択時のパネル・入力コードの中断/復帰は、Pause()/Restart()のオーバーライドが
+                // FocusRoutineControllerの優先度制御から自動的に呼ばれることで行われるため、ここでは何もしない
+                case TitleMenuConfirmResult.SuspendForOption:
+                    break;
+
+                case TitleMenuConfirmResult.RequestExitGameConfirm:
+                    SuspendMenuForSubScreen();
+                    OpenExitConfirm();
                     break;
             }
 
@@ -81,6 +128,91 @@ namespace Frontier.Title
         private void StartNewGame()
         {
             SceneManager.LoadScene( "BattleScene" );
+        }
+
+        /// <summary>
+        /// パネルと入力コードのみ一時的に解除します(終了確認ダイアログ等のサブ画面へ処理を譲る際に使用)。
+        /// </summary>
+        private void SuspendMenuForSubScreen()
+        {
+            _presenter.SetPanelVisible( false );
+
+            InputFacade.Instance.UnregisterInputCodes( _navHashCode );
+            InputFacade.Instance.RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// 終了確認ダイアログを閉じてタイトルメニューへ戻ります。パネルと入力コードを同じ選択状態のまま再表示します。
+        /// </summary>
+        private void ReturnToTitleMenu()
+        {
+            _presenter.SetPanelVisible( true );
+            RegisterNavInputCodes();
+        }
+
+        // ── ゲーム終了確認ダイアログ ─────────────────────────────────────────
+
+        private void EnsureExitConfirmPresenter()
+        {
+            if ( _exitConfirmPresenter != null ) return;
+
+            _exitConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<ExitConfirmPresenter>( false );
+            _exitConfirmPresenter.Init();
+        }
+
+        private void OpenExitConfirm()
+        {
+            EnsureExitConfirmPresenter();
+
+            _exitConfirmPresenter.Show();
+
+            _exitConfirmHashCode = Hash.GetStableHash( nameof( TitleMenuHandler ) + "_ExitConfirm" );
+            InputFacade.Instance.RegisterInputCodes(
+                ( GuideIcon.HORIZONTAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptExitConfirmDirection ), MENU_DIRECTION_INPUT_INTERVAL, _exitConfirmHashCode ),
+                ( GuideIcon.CONFIRM,           "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptExitConfirmConfirm ),   0.0f, _exitConfirmHashCode ),
+                ( GuideIcon.CANCEL,            "BACK",    InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptExitConfirmCancel ),    0.0f, _exitConfirmHashCode )
+            );
+        }
+
+        private bool AcceptExitConfirmDirection( InputContext context )
+        {
+            return _exitConfirmPresenter.MoveSelection( context.Cursor );
+        }
+
+        private bool AcceptExitConfirmConfirm( InputContext context )
+        {
+            if ( !context.GetButton( GameButton.Confirm ) ) return false;
+
+            if ( _exitConfirmPresenter.IsYesSelected() )
+            {
+                GameQuitService.Quit();
+            }
+            else
+            {
+                CloseExitConfirmAndReturnToMenu();
+            }
+
+            return true;
+        }
+
+        private bool AcceptExitConfirmCancel( InputContext context )
+        {
+            if ( !context.GetButton( GameButton.Cancel ) ) return false;
+
+            CloseExitConfirmAndReturnToMenu();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 終了確認ダイアログを閉じ、タイトルメニューへ戻ります(「いいえ」及びキャンセル共通の処理)。
+        /// </summary>
+        private void CloseExitConfirmAndReturnToMenu()
+        {
+            _exitConfirmPresenter.Hide();
+            InputFacade.Instance.UnregisterInputCodes( _exitConfirmHashCode );
+
+            ReturnToTitleMenu();
         }
     }
 }

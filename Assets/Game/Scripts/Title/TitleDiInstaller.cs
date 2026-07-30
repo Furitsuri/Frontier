@@ -1,4 +1,6 @@
-﻿using Frontier.UI;
+﻿using Frontier.Option;
+using Frontier.Registries;
+using Frontier.UI;
 using Zenject;
 
 namespace Frontier.Title
@@ -19,6 +21,11 @@ namespace Frontier.Title
             Container.Bind<ISlotSaveHandler<UserSaveData>>().To<UserSaveHandler>().AsSingle();
             // FocusRoutineController.Awake()が構築するInputGuidePresenter(入力ガイドバー)が必要とする依存関係
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
+            // タイトルメニューのOPTION項目(OptionHandler)が必要とする依存関係
+            Container.Bind<ISaveHandler<OptionSaveData>>().To<OptionSaveHandler>().AsSingle();
+            Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();
+            // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する
+            Container.Bind<PrefabRegistry>().FromInstance( UnityEngine.Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
 
             Container.Bind<IInstaller>().To<TitleDiInstaller>().FromInstance( this );
         }
