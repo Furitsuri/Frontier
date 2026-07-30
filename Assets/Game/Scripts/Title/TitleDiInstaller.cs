@@ -1,4 +1,5 @@
-﻿using Zenject;
+﻿using Frontier.UI;
+using Zenject;
 
 namespace Frontier.Title
 {
@@ -16,6 +17,8 @@ namespace Frontier.Title
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
             Container.Bind<ISlotSaveHandler<UserSaveData>>().To<UserSaveHandler>().AsSingle();
+            // FocusRoutineController.Awake()が構築するInputGuidePresenter(入力ガイドバー)が必要とする依存関係
+            Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
 
             Container.Bind<IInstaller>().To<TitleDiInstaller>().FromInstance( this );
         }

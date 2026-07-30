@@ -11,7 +11,6 @@ public class TitleInfo : MonoBehaviour
 
     private void Awake()
     {
-        Time.timeScale = 0f;
         // mainListener.enabled = false;
         overlay.SetActive(true);
     }
@@ -21,6 +20,5 @@ public class TitleInfo : MonoBehaviour
         overlay.SetActive(false);
         // mainListener.enabled = true;
         SceneManager.LoadScene("BattleScene");
-        Time.timeScale = 1f;
     }
 }

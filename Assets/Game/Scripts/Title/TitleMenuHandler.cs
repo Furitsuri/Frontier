@@ -7,17 +7,25 @@ namespace Frontier.Title
 {
     /// <summary>
     /// タイトルメニューの入力受付とライフサイクルを担当するハンドラ。
+    /// TitleMainのFocusRoutineController配下でMAIN_FLOWとして登録されるFocusRoutineBase。
+    /// InputFacadeのセットアップはTitleMain(FocusRoutineController.Awake())が行うため、
+    /// このクラスではRegisterInputCodes()のみを行う。
     /// 起動時にセーブデータの有無を確認し、いずれかのスロットにデータが存在する場合のみ
     /// LOAD GAME項目を表示します。
     /// MEMO: LOAD GAME選択後の実際のロード処理・シーン遷移は今回のスコープ外(表示/非表示の判定のみ対応)。
     /// </summary>
-    public class TitleMenuHandler : MonoBehaviour
+    public class TitleMenuHandler : FocusRoutineBase
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private ISlotSaveHandler<UserSaveData> _saveHdlr = null;
 
         private TitleMenuPresenter _presenter = null;
         private int _navHashCode;
+
+        /// <summary>
+        /// FocusRoutine優先度制御用。MAIN_FLOWとして登録する。
+        /// </summary>
+        public override int GetPriority() => ( int ) FocusRoutinePriority.MAIN_FLOW;
 
         private void Start()
         {
