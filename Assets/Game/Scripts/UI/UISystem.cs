@@ -20,20 +20,6 @@ namespace Frontier.UI
         public DebugUISystem DebugUi => _debugUi;
 #endif // UNITY_EDITOR
 
-        /// <summary>
-        /// UIのカテゴリを示すインデックス値です
-        /// </summary>
-        enum ChildIndex
-        {
-            General = 0,
-            Recruit,
-            Deployment,
-            Battle,
-#if UNITY_EDITOR
-            Debug,
-#endif // UNITY_EDITOR
-        }
-
         // Start is called before the first frame update
         void Awake()
         {
@@ -43,7 +29,7 @@ namespace Frontier.UI
         public void InitializeUiSystem()
         {
 #if UNITY_EDITOR
-            LazyInject.GetOrCreate( ref _debugUi, () => transform.GetChild( ( int ) ChildIndex.Debug ).GetComponent<DebugUISystem>() );
+            LazyInject.GetOrCreate( ref _debugUi, () => GetComponentInChildren<DebugUISystem>() );
 #endif // UNITY_EDITOR
 
             _generalUi?.Setup();
