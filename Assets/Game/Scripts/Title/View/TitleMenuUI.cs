@@ -84,7 +84,7 @@ namespace Frontier.Title
 
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
-            // 既存のTitle Info側Canvas(sortingOrder=100)より確実に手前に描画するため、高めの値にする
+            // タイトルシーン内の他のCanvas(TitleUI: sortingOrder=5)より確実に手前に描画するため、高めの値にする
             canvas.sortingOrder = 200;
 
             var scaler = canvasGO.AddComponent<CanvasScaler>();
@@ -97,12 +97,9 @@ namespace Frontier.Title
             panel.transform.SetParent( canvasGO.transform, false );
 
             var panelRect = panel.GetComponent<RectTransform>();
-            // 既存のTitle Info側UI(VISIT TUTORIALボタン・Show At Startトグル、実画面y=228〜335px)と
-            // 重ならないよう、それより下の隙間(実画面y=10〜228px)に収める。
-            // CanvasScalerがreferenceResolution(800x600)を実解像度(1920x1080)の幅基準でスケールするため、
-            // ここで指定するローカル単位は実画面上で約2.4倍として描画される点に注意。
-            panelRect.anchorMin        = new Vector2( 0.5f, 0.11f );
-            panelRect.anchorMax        = new Vector2( 0.5f, 0.11f );
+            // ロゴ・タイトルテキスト(画面上部)と下部の入力ガイドバーの間、中央よりやや下寄りに配置する
+            panelRect.anchorMin        = new Vector2( 0.5f, 0.4f );
+            panelRect.anchorMax        = new Vector2( 0.5f, 0.4f );
             panelRect.pivot            = new Vector2( 0.5f, 0.5f );
             panelRect.anchoredPosition = Vector2.zero;
 
