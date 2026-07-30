@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Zenject;
 using static Constants;
 
@@ -10,7 +11,6 @@ namespace Frontier.SaveLoad
     /// フィールドに限らず、複数のシーン・呼び出し元から共通して開かれる可能性があるため、
     /// 特定のシーンに紐づかない独立したクラスとしている。
     /// 呼び出し元からShow()で開かれ、閉じた際はコールバックで呼び出し元へ通知する。
-    /// 実際のセーブ・ロード処理(ファイルI/O)はまだ実装しない(セーブスロットの概念が未確定のため)。
     /// </summary>
     public class SaveLoadHandler : MonoBehaviour
     {
@@ -72,9 +72,7 @@ namespace Frontier.SaveLoad
                     break;
 
                 case SaveLoadMode.Load:
-                    // MEMO: 実際のロード処理(DTOの内容をUserDomain/GameSession等へ反映し、シーン遷移する)は
-                    // 未実装。反映すべき要素を洗い出した上で別途実装する。
-                    Debug.Log( "[SaveLoadHandler] LOADの実処理は未実装です。" );
+                    TryLoadSelectedSlot();
                     break;
             }
 
@@ -92,11 +90,33 @@ namespace Frontier.SaveLoad
             if ( slot == USER_SAVE_AUTO_SLOT_INDEX ) return false;
 
             var data = _userDomain.ToSaveData( GameSession.Instance.FieldProgress );
+            data.SceneName = SceneManager.GetActiveScene().name;
             _saveHdlr.Save( slot, data );
 
             _presenter.RefreshSlotContents();
 
             return true;
+        }
+
+        /// <summary>
+        /// 現在選択中のスロットのセーブデータを読み込み、UserDomain/GameSession.FieldProgressへ反映した上で、
+        /// 保存時のシーンへ遷移します。データが存在しない場合は何も行いません。
+        /// </summary>
+        private void TryLoadSelectedSlot()
+        {
+            int slot = _presenter.GetSelectedSlotIndex();
+            var data = _saveHdlr.Load( slot );
+            if ( data == null )
+            {
+                Debug.Log( "[SaveLoadHandler] このスロットにはセーブデータがありません。" );
+                return;
+            }
+
+            _userDomain.ApplySaveData( data );
+            GameSession.Instance.FieldProgress = data.FieldProgress;
+            GameSession.Instance.IsResumedFromSave = true;
+
+            SceneManager.LoadScene( data.SceneName );
         }
 
         private bool AcceptCancel( InputContext context )

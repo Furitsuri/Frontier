@@ -36,6 +36,13 @@ namespace Frontier
         public UserDomain    UserDomain    { get; private set; } = new UserDomain();
         public FieldProgress FieldProgress { get; set; }         = null;
 
+        /// <summary>
+        /// セーブデータのロードによってこのセッションが開始されたかどうか。
+        /// UNITY_EDITOR/DEVELOPMENT_BUILDのデバッグ用初期値ローダー(DebugUserDataLoader)が、
+        /// ロードした内容を上書きしてしまわないようにするための判定に使用する。
+        /// </summary>
+        public bool IsResumedFromSave { get; set; } = false;
+
         private void Awake()
         {
             if ( _instance == null )

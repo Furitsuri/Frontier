@@ -46,7 +46,11 @@ namespace Frontier.FormTroop
             enabled = false;    // 読込処理完了までUpdate()などを無効にする
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain );
+            // セーブデータをロードして遷移してきた場合は、デバッグ用の初期値で上書きしない
+            if ( !GameSession.Instance.IsResumedFromSave )
+            {
+                Frontier.DebugTools.DebugUserDataLoader.TryApply( _userDomain );
+            }
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
             yield return StartCoroutine( InitCommonRoutine() );   // InputFacade / TutorialFacade の初期化、ルーチン起動、ローディング画面解除

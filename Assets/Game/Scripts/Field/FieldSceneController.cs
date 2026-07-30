@@ -68,7 +68,10 @@ namespace Frontier.Field
             }
             else
             {
-                Load( _debugFieldId );
+                // セーブデータのロード等で既にFieldProgressが存在する場合は、そのFieldIdを優先する
+                // (存在しない場合はデバッグ用の既定フィールドで新規開始する)
+                string fieldId = GameSession.Instance?.FieldProgress?.FieldId ?? _debugFieldId;
+                Load( fieldId );
             }
         }
 
