@@ -40,6 +40,7 @@ namespace Frontier.Field
         [SerializeField] private FieldGenerationConfig  _generationConfig    = null;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private UserDomain _userDomain             = null;
 
         private FieldData                      _fieldData    = null;
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
@@ -125,9 +126,22 @@ namespace Frontier.Field
             var progress = Progress;
             if ( progress != null && clearedNodeId >= 0 )
             {
+                // ステージレベルは「Battle/Bossノードの初回クリア」でのみ進行させる(Recruit等の帰還や再クリアではカウントしない)
+                bool isFirstClear = !progress.IsNodeCleared( clearedNodeId );
+                var  clearedNode  = FindNode( clearedNodeId );
+
                 progress.MarkCleared( clearedNodeId );
                 progress.CurrentNodeId = clearedNodeId;
                 RefreshReachability();
+
+                if ( isFirstClear && clearedNode != null )
+                {
+                    var nodeType = ( FieldNodeType ) clearedNode.Type;
+                    if ( nodeType == FieldNodeType.Battle || nodeType == FieldNodeType.Boss )
+                    {
+                        _userDomain?.IncreaseStageLevel();
+                    }
+                }
             }
         }
 
