@@ -26,6 +26,8 @@ namespace Frontier.Title
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();
             // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する
             Container.Bind<PrefabRegistry>().FromInstance( UnityEngine.Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
+            // タイトルメニューのLOAD GAME項目(SaveLoadHandler)が必要とする依存関係
+            Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsCached();
 
             Container.Bind<IInstaller>().To<TitleDiInstaller>().FromInstance( this );
         }

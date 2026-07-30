@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Frontier.SaveLoad;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
 using static Constants;
@@ -12,7 +13,8 @@ namespace Frontier.Title
     /// このクラスではRegisterInputCodes()のみを行う。
     /// 起動時にセーブデータの有無を確認し、いずれかのスロットにデータが存在する場合のみ
     /// LOAD GAME項目を表示します。
-    /// MEMO: LOAD GAME選択後の実際のロード処理・シーン遷移は今回のスコープ外(表示/非表示の判定のみ対応)。
+    /// MEMO: LOAD GAME選択後の実際のロード処理(DTOの内容を反映してのシーン遷移)は未実装。
+    /// 画面表示・スロット選択までを今回のスコープとする。
     /// </summary>
     public class TitleMenuHandler : FocusRoutineBase
     {
@@ -21,6 +23,7 @@ namespace Frontier.Title
 
         private TitleMenuPresenter _presenter = null;
         private ExitConfirmPresenter _exitConfirmPresenter = null;
+        private SaveLoadHandler _saveLoadHandler = null;
         private int _navHashCode;
         private int _exitConfirmHashCode;
 
@@ -107,8 +110,8 @@ namespace Frontier.Title
                     break;
 
                 case TitleMenuConfirmResult.RequestLoadGame:
-                    // MEMO: セーブデータの反映・シーン遷移は未実装(今回は表示/非表示判定のみが対応範囲のため)
-                    Debug.Log( "[TitleMenuHandler] LOAD GAMEの実処理は未実装です。" );
+                    SuspendMenuForSubScreen();
+                    OpenLoadScreen();
                     break;
 
                 // OPTION選択時のパネル・入力コードの中断/復帰は、Pause()/Restart()のオーバーライドが
@@ -148,6 +151,23 @@ namespace Frontier.Title
         {
             _presenter.SetPanelVisible( true );
             RegisterNavInputCodes();
+        }
+
+        // ── ロード画面 ───────────────────────────────────────────────────────
+
+        private void EnsureSaveLoadHandler()
+        {
+            if ( _saveLoadHandler != null ) return;
+
+            _saveLoadHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<SaveLoadHandler>( true, false, nameof( SaveLoadHandler ) );
+            _saveLoadHandler.Setup();
+        }
+
+        private void OpenLoadScreen()
+        {
+            EnsureSaveLoadHandler();
+
+            _saveLoadHandler.Show( SaveLoadMode.Load, ReturnToTitleMenu );
         }
 
         // ── ゲーム終了確認ダイアログ ─────────────────────────────────────────

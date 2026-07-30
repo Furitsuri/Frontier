@@ -20,6 +20,7 @@ namespace Frontier.SaveLoad
 
         private SaveLoadPresenter _presenter = null;
         private Action _onClosed = null;
+        private SaveLoadMode _mode = SaveLoadMode.Save;
         private int _navHashCode;
 
         /// <summary>
@@ -32,15 +33,17 @@ namespace Frontier.SaveLoad
         }
 
         /// <summary>
-        /// セーブ画面を開き、入力コードの受付を開始します。
+        /// セーブ/ロード画面を開き、入力コードの受付を開始します。
         /// </summary>
+        /// <param name="mode">セーブ画面/ロード画面のどちらとして開くか</param>
         /// <param name="onClosed">画面を閉じた際に呼ばれるコールバック(呼び出し元がメニューへ戻る処理を行う)</param>
-        public void Show( Action onClosed )
+        public void Show( SaveLoadMode mode, Action onClosed )
         {
+            _mode = mode;
             _onClosed = onClosed;
 
-            // MEMO: ロード画面への切り替えは未実装。差分はタイトル表示のみのため、後日引数化する
-            _presenter.Show( "SAVE" );
+            string titleKey = ( mode == SaveLoadMode.Save ) ? "UI_CMD_SAVE" : "UI_CMD_LOAD";
+            _presenter.Show( titleKey );
 
             _navHashCode = Hash.GetStableHash( nameof( SaveLoadHandler ) + "_Nav" );
             InputFacade.Instance.RegisterInputCodes(
@@ -59,11 +62,20 @@ namespace Frontier.SaveLoad
         {
             if ( !context.GetButton( GameButton.Confirm ) ) return false;
 
-            // MEMO: 現状はSAVE画面からのみ開かれるため、常に保存動作として扱う。
-            // ロード画面としての切り替え・ロード確定時の処理は別途実装が必要(タイトル引数と合わせて後日対応)。
-            if ( !TrySaveToSelectedSlot() )
+            switch ( _mode )
             {
-                Debug.Log( "[SaveLoadHandler] オートセーブ枠は手動で保存できません。" );
+                case SaveLoadMode.Save:
+                    if ( !TrySaveToSelectedSlot() )
+                    {
+                        Debug.Log( "[SaveLoadHandler] オートセーブ枠は手動で保存できません。" );
+                    }
+                    break;
+
+                case SaveLoadMode.Load:
+                    // MEMO: 実際のロード処理(DTOの内容をUserDomain/GameSession等へ反映し、シーン遷移する)は
+                    // 未実装。反映すべき要素を洗い出した上で別途実装する。
+                    Debug.Log( "[SaveLoadHandler] LOADの実処理は未実装です。" );
+                    break;
             }
 
             return true;

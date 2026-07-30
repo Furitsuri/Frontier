@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier.UI
 {
@@ -14,6 +15,10 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI  _titleText;
         [SerializeField] private SaveSlotItemUI   _autoSaveSlot;
         [SerializeField] private SaveSlotItemUI[] _manualSaveSlots;
+
+        [Inject] private ILocalizationService _localization = null;
+
+        private string _titleKey = "";
 
         public SaveSlotItemUI   AutoSaveSlot    => _autoSaveSlot;
         public SaveSlotItemUI[] ManualSaveSlots => _manualSaveSlots;
@@ -33,15 +38,28 @@ namespace Frontier.UI
                 slot.gameObject.SetActive( true );
                 slot.SetAutoLabelVisible( false );
             }
+
+            if ( _localization != null ) { _localization.OnLanguageChanged += RefreshTitleText; }
+        }
+
+        private void OnDestroy()
+        {
+            if ( _localization != null ) { _localization.OnLanguageChanged -= RefreshTitleText; }
         }
 
         /// <summary>
-        /// 画面上部のタイトルを設定します(例: "SAVE" / "LOAD")。
+        /// 画面上部のタイトルを設定します。ローカライズキーを渡してください(例: "UI_CMD_SAVE" / "UI_CMD_LOAD")。
         /// セーブ画面とロード画面の差分はこれのみです。
         /// </summary>
-        public void SetTitle( string text )
+        public void SetTitle( string localizationKey )
         {
-            _titleText.text = text;
+            _titleKey = localizationKey;
+            RefreshTitleText();
+        }
+
+        private void RefreshTitleText()
+        {
+            _titleText.text = _localization != null ? _localization.Get( _titleKey ) : _titleKey;
         }
     }
 }

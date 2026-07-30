@@ -32,11 +32,12 @@ namespace Frontier.SaveLoad
         }
 
         /// <summary>
-        /// 画面を表示します。タイトルにはセーブ画面/ロード画面の別を渡してください(例: "SAVE" / "LOAD")。
+        /// 画面を表示します。titleKeyにはセーブ画面/ロード画面の別を示すローカライズキーを渡してください
+        /// (例: "UI_CMD_SAVE" / "UI_CMD_LOAD")。
         /// </summary>
-        public void Show( string title )
+        public void Show( string titleKey )
         {
-            _view.SetTitle( title );
+            _view.SetTitle( titleKey );
 
             var indices = new List<int>();
             for ( int i = 0; i < _slots.Count; ++i ) { indices.Add( i ); }

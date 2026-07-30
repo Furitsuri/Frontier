@@ -36,6 +36,7 @@ public class LocalizationService : ILocalizationService
                 { "UI_CONFIRM_NO", "No" },
                 { "UI_CMD_NEW_GAME", "New Game" },
                 { "UI_CMD_LOAD_GAME", "Load Game" },
+                { "UI_CMD_LOAD", "Load" },
             }
         },
         {
@@ -68,6 +69,7 @@ public class LocalizationService : ILocalizationService
                 { "UI_CONFIRM_NO", "いいえ" },
                 { "UI_CMD_NEW_GAME", "はじめから" },
                 { "UI_CMD_LOAD_GAME", "つづきから" },
+                { "UI_CMD_LOAD", "ロード" },
             }
         }
     };

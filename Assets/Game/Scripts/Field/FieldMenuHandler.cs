@@ -235,7 +235,7 @@ namespace Frontier.Field
         {
             EnsureSaveHandler();
 
-            _saveHandler.Show( ReturnToFieldMenu );
+            _saveHandler.Show( SaveLoadMode.Save, ReturnToFieldMenu );
         }
 
         /// <summary>
