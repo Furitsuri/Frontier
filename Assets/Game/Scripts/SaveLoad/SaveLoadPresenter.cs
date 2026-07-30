@@ -32,15 +32,21 @@ namespace Frontier.SaveLoad
         }
 
         /// <summary>
-        /// 画面を表示します。titleKeyにはセーブ画面/ロード画面の別を示すローカライズキーを渡してください
-        /// (例: "UI_CMD_SAVE" / "UI_CMD_LOAD")。
+        /// 画面を表示します。セーブ画面の場合、オートセーブ枠(USER_SAVE_AUTO_SLOT_INDEX)は
+        /// ユーザーが任意で保存できる対象ではないため、カーソル移動の対象から除外します
+        /// (内容の確認は引き続きできます)。ロード画面ではすべてのスロットが選択対象になります。
         /// </summary>
-        public void Show( string titleKey )
+        public void Show( SaveLoadMode mode )
         {
+            string titleKey = ( mode == SaveLoadMode.Save ) ? "UI_CMD_SAVE" : "UI_CMD_LOAD";
             _view.SetTitle( titleKey );
 
             var indices = new List<int>();
-            for ( int i = 0; i < _slots.Count; ++i ) { indices.Add( i ); }
+            for ( int i = 0; i < _slots.Count; ++i )
+            {
+                if ( mode == SaveLoadMode.Save && i == USER_SAVE_AUTO_SLOT_INDEX ) continue;
+                indices.Add( i );
+            }
 
             _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
             _commandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
@@ -73,9 +79,11 @@ namespace Frontier.SaveLoad
 
         private void RefreshSelection()
         {
+            // セーブ画面ではオートセーブ枠が除外されリストが詰められているため、
+            // リスト上の位置(index)ではなく実際のスロット番号(value)で判定する
             for ( int i = 0; i < _slots.Count; ++i )
             {
-                _slots[i].SetSelected( i == _cmdIdxVal.index );
+                _slots[i].SetSelected( i == _cmdIdxVal.value );
             }
         }
 
@@ -87,7 +95,7 @@ namespace Frontier.SaveLoad
         /// <summary>
         /// 現在選択中のスロットのインデックスを返します。
         /// </summary>
-        public int GetSelectedSlotIndex() => _cmdIdxVal.index;
+        public int GetSelectedSlotIndex() => _cmdIdxVal.value;
 
         /// <summary>
         /// 各スロットの表示内容(ステージ・日時)を、実際のセーブデータの有無に応じて更新します。

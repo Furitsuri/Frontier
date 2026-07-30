@@ -42,8 +42,7 @@ namespace Frontier.SaveLoad
             _mode = mode;
             _onClosed = onClosed;
 
-            string titleKey = ( mode == SaveLoadMode.Save ) ? "UI_CMD_SAVE" : "UI_CMD_LOAD";
-            _presenter.Show( titleKey );
+            _presenter.Show( mode );
 
             _navHashCode = Hash.GetStableHash( nameof( SaveLoadHandler ) + "_Nav" );
             InputFacade.Instance.RegisterInputCodes(
@@ -65,10 +64,7 @@ namespace Frontier.SaveLoad
             switch ( _mode )
             {
                 case SaveLoadMode.Save:
-                    if ( !TrySaveToSelectedSlot() )
-                    {
-                        Debug.Log( "[SaveLoadHandler] オートセーブ枠は手動で保存できません。" );
-                    }
+                    SaveToSelectedSlot();
                     break;
 
                 case SaveLoadMode.Load:
@@ -81,21 +77,18 @@ namespace Frontier.SaveLoad
 
         /// <summary>
         /// 現在選択中のスロットへ、現在のプレイ状況を保存します。
-        /// オートセーブ枠(USER_SAVE_AUTO_SLOT_INDEX)は手動保存の対象外のため、保存を行わずfalseを返します。
+        /// オートセーブ枠(USER_SAVE_AUTO_SLOT_INDEX)はSaveLoadPresenter.Show()の時点でカーソル移動の
+        /// 対象から除外されているため、ここで選択されることはない。
         /// </summary>
-        /// <returns>実際に保存を行った場合はtrue。</returns>
-        private bool TrySaveToSelectedSlot()
+        private void SaveToSelectedSlot()
         {
             int slot = _presenter.GetSelectedSlotIndex();
-            if ( slot == USER_SAVE_AUTO_SLOT_INDEX ) return false;
 
             var data = _userDomain.ToSaveData( GameSession.Instance.FieldProgress );
             data.SceneName = SceneManager.GetActiveScene().name;
             _saveHdlr.Save( slot, data );
 
             _presenter.RefreshSlotContents();
-
-            return true;
         }
 
         /// <summary>
