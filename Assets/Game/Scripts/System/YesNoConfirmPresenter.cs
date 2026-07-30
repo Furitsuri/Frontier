@@ -4,12 +4,13 @@ using Zenject;
 namespace Frontier
 {
     /// <summary>
-    /// 「Exit Game」選択時に表示する終了確認ダイアログのPresenter。
+    /// 二者択一(YES/NO)の確認ダイアログのPresenter。
     /// ConfirmPhaseStateBase(二者択一の確認画面)と同じ考え方(CommandListのHORIZONTAL方向、
     /// 誤操作を避けるためデフォルト選択はNO)を踏襲しつつ、State木構造を持たないシーン向けに
-    /// 軽量な実装としている。Field/Title等、複数のシーンから共通して利用される。
+    /// 軽量な実装としている。Field/Title等、複数のシーン・複数の確認用途(ゲーム終了、セーブデータ削除等)
+    /// から共通して利用される。
     /// </summary>
-    public class ExitConfirmPresenter
+    public class YesNoConfirmPresenter
     {
         private enum ConfirmTag
         {
@@ -21,7 +22,7 @@ namespace Frontier
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        private ExitConfirmUI _confirmUI = null;
+        private YesNoConfirmUI _confirmUI = null;
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
@@ -30,19 +31,22 @@ namespace Frontier
         /// </summary>
         public void Init()
         {
-            _confirmUI = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<ExitConfirmUI>( true, false, nameof( ExitConfirmUI ) );
+            _confirmUI = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<YesNoConfirmUI>( true, false, nameof( YesNoConfirmUI ) );
             _confirmUI.Setup();
         }
 
         /// <summary>
         /// ダイアログを表示し、カーソルをNO(誤操作防止のための既定値)にリセットします。
         /// </summary>
-        public void Show()
+        /// <param name="messageKey">確認メッセージのローカライズキー(例: "UI_CONFIRM_EXIT_GAME_MESSAGE")</param>
+        public void Show( string messageKey )
         {
+            _confirmUI.SetMessage( messageKey );
+
             var indices = new List<int>();
             for ( int i = 0; i < ( int ) ConfirmTag.NUM; ++i ) { indices.Add( i ); }
 
-            // ConfirmPhaseStateBaseと同様、既定選択はNOにする(誤ってゲームを終了しないようにするため)。
+            // ConfirmPhaseStateBaseと同様、既定選択はNOにする(誤操作防止のため)。
             // CommandList.Init()はlastNodeStart(第3引数)でカーソルの初期位置(先頭/末尾)を決定し、
             // 渡したCommandIndexedValueの初期値はその位置に応じて上書きされるため、
             // ここではlastNodeStart=trueを指定してリスト末尾(NO)から開始させる。

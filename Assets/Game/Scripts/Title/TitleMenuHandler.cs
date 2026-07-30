@@ -22,7 +22,7 @@ namespace Frontier.Title
         [Inject] private ISlotSaveHandler<UserSaveData> _saveHdlr = null;
 
         private TitleMenuPresenter _presenter = null;
-        private ExitConfirmPresenter _exitConfirmPresenter = null;
+        private YesNoConfirmPresenter _exitConfirmPresenter = null;
         private SaveLoadHandler _saveLoadHandler = null;
         private int _navHashCode;
         private int _exitConfirmHashCode;
@@ -176,7 +176,7 @@ namespace Frontier.Title
         {
             if ( _exitConfirmPresenter != null ) return;
 
-            _exitConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<ExitConfirmPresenter>( false );
+            _exitConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<YesNoConfirmPresenter>( false );
             _exitConfirmPresenter.Init();
         }
 
@@ -184,7 +184,7 @@ namespace Frontier.Title
         {
             EnsureExitConfirmPresenter();
 
-            _exitConfirmPresenter.Show();
+            _exitConfirmPresenter.Show( "UI_CONFIRM_EXIT_GAME_MESSAGE" );
 
             _exitConfirmHashCode = Hash.GetStableHash( nameof( TitleMenuHandler ) + "_ExitConfirm" );
             InputFacade.Instance.RegisterInputCodes(

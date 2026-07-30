@@ -37,6 +37,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_NEW_GAME", "New Game" },
                 { "UI_CMD_LOAD_GAME", "Load Game" },
                 { "UI_CMD_LOAD", "Load" },
+                { "UI_CMD_DELETE", "Delete" },
+                { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "Delete this save data?" },
             }
         },
         {
@@ -70,6 +72,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_NEW_GAME", "はじめから" },
                 { "UI_CMD_LOAD_GAME", "つづきから" },
                 { "UI_CMD_LOAD", "ロード" },
+                { "UI_CMD_DELETE", "削除" },
+                { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "このセーブデータを削除しますか？" },
             }
         }
     };

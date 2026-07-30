@@ -7,11 +7,12 @@ using Zenject;
 namespace Frontier
 {
     /// <summary>
-    /// 「Exit Game」選択時に表示する終了確認ダイアログの見た目のみを担当する最小限のビュー。
-    /// 開閉・カーソル位置の管理は ExitConfirmPresenter が行い、このクラスは表示指示を受けて反映するだけに留める。
-    /// Field/Title等、複数のシーンから共通して利用される。
+    /// 二者択一(YES/NO)の確認ダイアログの見た目のみを担当する最小限のビュー。
+    /// 開閉・カーソル位置の管理は YesNoConfirmPresenter が行い、このクラスは表示指示を受けて反映するだけに留める。
+    /// メッセージはSetMessage()でローカライズキーを渡すことで、ゲーム終了確認・セーブデータ削除確認等、
+    /// 複数の用途に使い回せる。
     /// </summary>
-    public class ExitConfirmUI : MonoBehaviour
+    public class YesNoConfirmUI : MonoBehaviour
     {
         private static readonly string[] OptionTextKeys =
         {
@@ -20,13 +21,13 @@ namespace Frontier
         };
 
         private const string FontResourcePath = "Fonts & Materials/Electronic Highway Sign SDF";
-        private const string MessageTextKey   = "UI_CONFIRM_EXIT_GAME_MESSAGE";
 
         [SerializeField] private Color _normalColor   = Color.white;
         [SerializeField] private Color _selectedColor = Color.red;
 
         [Inject] private ILocalizationService _localization = null;
 
+        private string _messageKey = "";
         private TextMeshProUGUI _messageText = null;
         private List<TextMeshProUGUI> _optionTexts = new List<TextMeshProUGUI>();
         private GameObject _panel;
@@ -49,6 +50,16 @@ namespace Frontier
 
         public void Hide() => _panel.SetActive( false );
 
+        /// <summary>
+        /// 確認メッセージを設定します。ローカライズキーを渡してください
+        /// (例: "UI_CONFIRM_EXIT_GAME_MESSAGE" / "UI_CONFIRM_DELETE_SAVE_MESSAGE")。
+        /// </summary>
+        public void SetMessage( string messageKey )
+        {
+            _messageKey = messageKey;
+            RefreshAllTexts();
+        }
+
         /// <summary>選択中の項目インデックス(0:YES, 1:NO)を表示(色)に反映します。</summary>
         public void SetSelectedIndex( int index )
         {
@@ -63,11 +74,14 @@ namespace Frontier
         /// </summary>
         private void RefreshAllTexts()
         {
-            _messageText.text = _localization.Get( MessageTextKey );
+            if ( _messageText != null )
+            {
+                _messageText.text = ( _localization != null && !string.IsNullOrEmpty( _messageKey ) ) ? _localization.Get( _messageKey ) : _messageKey;
+            }
 
             for ( int i = 0; i < _optionTexts.Count; ++i )
             {
-                _optionTexts[i].text = _localization.Get( OptionTextKeys[i] );
+                _optionTexts[i].text = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i];
             }
         }
 
@@ -77,7 +91,7 @@ namespace Frontier
         /// </summary>
         private void BuildUI()
         {
-            var canvasGO = new GameObject( "ExitConfirmCanvas", typeof( RectTransform ) );
+            var canvasGO = new GameObject( "YesNoConfirmCanvas", typeof( RectTransform ) );
             canvasGO.transform.SetParent( transform, false );
 
             var canvas = canvasGO.AddComponent<Canvas>();
@@ -90,7 +104,7 @@ namespace Frontier
 
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            _panel = new GameObject( "ExitConfirmPanel", typeof( RectTransform ) );
+            _panel = new GameObject( "YesNoConfirmPanel", typeof( RectTransform ) );
             _panel.transform.SetParent( canvasGO.transform, false );
 
             var panelRect = _panel.GetComponent<RectTransform>();
@@ -124,7 +138,7 @@ namespace Frontier
             _messageText = messageGO.AddComponent<TextMeshProUGUI>();
             if ( font != null ) { _messageText.font = font; }
             _messageText.fontSize   = 24;
-            _messageText.text       = _localization != null ? _localization.Get( MessageTextKey ) : MessageTextKey;
+            _messageText.text       = "";
             _messageText.color      = _normalColor;
             _messageText.alignment  = TextAlignmentOptions.Center;
             _messageText.enableWordWrapping = false;
