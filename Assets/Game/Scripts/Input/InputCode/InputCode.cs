@@ -19,6 +19,7 @@ public class InputCode
     public int RegisterClassHashCode;           // 入力コード登録を行ったクラスのハッシュ値
     public bool IsSimultaneousInput;            // 同時入力か否か
     public InputTriggerMode TriggerMode;        // ボタン系入力の判定タイミング(Up/Down/DownRepeat)
+    public bool IsGuideVisible = true;          // 入力ガイドとして画面に表示するか(falseの場合、入力受付は行うがガイド表示は行わない)
     private float _inputLastTime;               // 入力処理を行った最後の時間
 
     /// <summary>
@@ -129,7 +130,7 @@ public class InputCode
     /// <returns></returns>
     public InputCode Clone()
     {
-        return new InputCode
+        var clone = new InputCode
         (
             this.Icons,
             this.Explanation,
@@ -139,6 +140,10 @@ public class InputCode
             this.RegisterClassHashCode,
             this.TriggerMode
         );
+
+        clone.IsGuideVisible = this.IsGuideVisible;
+
+        return clone;
     }
 
     /// <summary>

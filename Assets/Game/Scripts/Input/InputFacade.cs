@@ -114,6 +114,26 @@ public class InputFacade
     }
 
     /// <summary>
+    /// 既に登録済みの入力コードはそのままに、
+    /// 現在のゲーム遷移において有効にしたい入力コードを登録します。
+    /// isGuideVisible に false を指定した場合、入力受付は通常通り行いますが、
+    /// 画面上への入力ガイドの表示は行いません。
+    /// </summary>
+    /// <param name="isGuideVisible">登録する入力コードのガイドを画面に表示するか</param>
+    /// <param name="args">登録するアイコン、その説明文、及び押下時に対応する処理の関数コールバック</param>
+    public void RegisterInputCodes( bool isGuideVisible, params InputCode[] args )
+    {
+        foreach( var arg in args )
+        {
+            if( arg == null ) { continue; }
+
+            arg.IsGuideVisible = isGuideVisible;
+        }
+
+        RegisterInputCodes( args );
+    }
+
+    /// <summary>
     /// 登録している入力コードを初期化した上で、
     /// 現在のゲーム遷移において有効とする操作入力を画面上に表示するガイドUIと併せて登録します。
     /// また、そのキーを押下した際の処理をコールバックとして登録します。

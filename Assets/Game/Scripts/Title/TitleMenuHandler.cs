@@ -89,6 +89,7 @@ namespace Frontier.Title
         {
             _navHashCode = Hash.GetStableHash( nameof( TitleMenuHandler ) + "_Nav" );
             InputFacade.Instance.RegisterInputCodes(
+                isGuideVisible : false, 
                 ( GuideIcon.VERTICAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, _navHashCode ),
                 ( GuideIcon.CONFIRM,         "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptConfirm ),   0.0f, _navHashCode )
             );

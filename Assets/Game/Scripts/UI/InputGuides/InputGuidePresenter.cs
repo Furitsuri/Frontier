@@ -109,7 +109,7 @@ public sealed class InputGuidePresenter
 
         foreach( var code in _inputCodes )
         {
-            if( code.Icons == null || code.Icons.Length == 0 ) { continue; }
+            if( code.Icons == null || code.Icons.Length == 0 || !code.IsGuideVisible ) { continue; }
 
             InputGuideUI guideUi = _hierarchyBld.CreateComponentWithNestedParent<InputGuideUI>( _inputGuideBar.GuideUIPrefab, _inputGuideBar.gameObject, true );
             if( guideUi == null ) { continue; }
