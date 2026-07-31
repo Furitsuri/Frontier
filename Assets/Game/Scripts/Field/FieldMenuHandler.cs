@@ -121,7 +121,7 @@ namespace Frontier.Field
                     OpenSaveScreen();
                     break;
 
-                // STATUS選択時、部隊編集画面を表示する
+                // TROOPS選択時、部隊編集画面を表示する
                 case FieldMenuConfirmResult.RequestTroopEditScreen:
                     SuspendMenuForSubScreen();
                     OpenTroopEditScreen();

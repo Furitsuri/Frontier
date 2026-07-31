@@ -17,7 +17,7 @@ namespace Frontier.Field
         // FIELD_MENU_OPTION_TAG の並び順と対応させること
         private static readonly string[] OptionTextKeys =
         {
-            "UI_CMD_STATUS",     // STATUS
+            "UI_CMD_TROOPS",     // TROOPS
             "UI_CMD_OPTION",     // OPTION
             "UI_CMD_SAVE",       // SAVE
             "UI_CMD_EXIT_GAME",  // EXIT_GAME

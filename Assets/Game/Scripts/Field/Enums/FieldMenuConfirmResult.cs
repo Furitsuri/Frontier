@@ -18,7 +18,7 @@
         /// <summary>SAVEが選択された。セーブ画面を表示する。</summary>
         RequestSaveScreen,
 
-        /// <summary>STATUSが選択された。部隊編集画面を表示する。</summary>
+        /// <summary>TROOPSが選択された。部隊編集画面を表示する。</summary>
         RequestTroopEditScreen,
     }
 }

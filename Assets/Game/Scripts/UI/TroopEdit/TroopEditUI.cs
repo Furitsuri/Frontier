@@ -15,7 +15,7 @@ namespace Frontier.UI
     /// </summary>
     public class TroopEditUI : UiMonoBehaviour
     {
-        private const string TitleLocalizationKey = "UI_CMD_STATUS";
+        private const string TitleLocalizationKey = "UI_CMD_TROOPS";
 
         [Header( "タイトルテキスト" )]
         [SerializeField] private TextMeshProUGUI _titleText;
