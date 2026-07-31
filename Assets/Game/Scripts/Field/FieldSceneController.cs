@@ -209,6 +209,9 @@ namespace Frontier.Field
                     // シーン遷移(初回配置・戦闘/雇用からの帰還)直後は、カメラの焦点をキャラクターに合わせる
                     EnsureCameraController();
                     _cameraController?.SetFollowTarget( _playerCharacterView );
+
+                    // フィールドメニュー(及びそのサブ画面)表示中はカメラのパン操作を受け付けないようにする
+                    _cameraController?.SetFieldMenuHandler( _fieldMenuHandler );
                 }
             }
         }

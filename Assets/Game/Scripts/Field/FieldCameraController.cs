@@ -16,6 +16,7 @@ namespace Frontier.Field
 
         private FieldPlayerCharacterView _followTarget   = null;
         private Vector3                  _followVelocity = Vector3.zero;  // SmoothDamp用の内部速度(呼び出し元で参照する必要はない)
+        private FieldMenuHandler         _fieldMenuHandler = null;
 
         private void Awake()
         {
@@ -42,7 +43,16 @@ namespace Frontier.Field
 
             InputFacade.Instance.RegisterInputCodes(
                 ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_LEFT }, "FIELD\nMOVE",
-                  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptPanInput ), 0.0f, hashCode ) );
+                  CanAcceptPan, new AcceptContextInput( AcceptPanInput ), 0.0f, hashCode ) );
+        }
+
+        /// <summary>
+        /// フィールドメニュー(及びそこから開くOption/Save/部隊編集等のサブ画面)が開いている間は、
+        /// 画面操作と競合しないようパン入力・ガイド表示ともに受け付けません。
+        /// </summary>
+        private bool CanAcceptPan()
+        {
+            return _fieldMenuHandler == null || !_fieldMenuHandler.IsOpen;
         }
 
         /// <summary>
@@ -54,6 +64,15 @@ namespace Frontier.Field
             _followTarget   = target;
             _followVelocity = Vector3.zero;
             SnapToFollowTargetImmediate();
+        }
+
+        /// <summary>
+        /// フィールドメニューの開閉状態を参照するためのハンドラを設定します。
+        /// FieldSceneController.EnsureFieldMenuHandler()生成直後に一度だけ呼び出してください。
+        /// </summary>
+        public void SetFieldMenuHandler( FieldMenuHandler fieldMenuHandler )
+        {
+            _fieldMenuHandler = fieldMenuHandler;
         }
 
         /// <summary>
