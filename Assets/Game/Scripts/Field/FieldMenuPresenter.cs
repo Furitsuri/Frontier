@@ -107,6 +107,9 @@ namespace Frontier.Field
                 case FIELD_MENU_OPTION_TAG.SAVE:
                     return FieldMenuConfirmResult.RequestSaveScreen;
 
+                case FIELD_MENU_OPTION_TAG.STATUS:
+                    return FieldMenuConfirmResult.RequestTroopEditScreen;
+
                 default:
                     // MEMO: 他の項目からの遷移処理は未実装
                     UnityEngine.Debug.Log( $"[FieldMenuPresenter] {option} は未実装です。" );

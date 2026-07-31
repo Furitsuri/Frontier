@@ -1,5 +1,6 @@
 ﻿using Frontier;
 using Frontier.SaveLoad;
+using Frontier.TroopEdit;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -18,6 +19,7 @@ namespace Frontier.Field
         private FieldMenuPresenter        _presenter           = null;
         private YesNoConfirmPresenter     _exitConfirmPresenter = null;
         private SaveLoadHandler           _saveHandler          = null;
+        private TroopEditHandler          _troopEditHandler     = null;
         private FieldPlayerCharacterView  _playerCharacterView = null;
         private int _openHashCode;
         private int _navHashCode;
@@ -117,6 +119,12 @@ namespace Frontier.Field
                 case FieldMenuConfirmResult.RequestSaveScreen:
                     SuspendMenuForSubScreen();
                     OpenSaveScreen();
+                    break;
+
+                // STATUS選択時、部隊編集画面を表示する
+                case FieldMenuConfirmResult.RequestTroopEditScreen:
+                    SuspendMenuForSubScreen();
+                    OpenTroopEditScreen();
                     break;
             }
 
@@ -236,6 +244,23 @@ namespace Frontier.Field
             EnsureSaveHandler();
 
             _saveHandler.Show( SaveLoadMode.Save, ReturnToFieldMenu );
+        }
+
+        // ── 部隊編集画面 ─────────────────────────────────────────────────────
+
+        private void EnsureTroopEditHandler()
+        {
+            if ( _troopEditHandler != null ) return;
+
+            _troopEditHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<TroopEditHandler>( true, false, nameof( TroopEditHandler ) );
+            _troopEditHandler.Setup();
+        }
+
+        private void OpenTroopEditScreen()
+        {
+            EnsureTroopEditHandler();
+
+            _troopEditHandler.Show( ReturnToFieldMenu );
         }
 
         /// <summary>
