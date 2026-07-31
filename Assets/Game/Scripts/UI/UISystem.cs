@@ -29,7 +29,7 @@ namespace Frontier.UI
         public void InitializeUiSystem()
         {
 #if UNITY_EDITOR
-            LazyInject.GetOrCreate( ref _debugUi, () => GetComponentInChildren<DebugUISystem>() );
+            LazyInject.GetOrCreate( ref _debugUi, () => GetComponentInChildren<DebugUISystem>( true ) );
 #endif // UNITY_EDITOR
 
             _generalUi?.Setup();
