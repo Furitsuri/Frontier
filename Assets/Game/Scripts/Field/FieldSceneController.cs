@@ -85,7 +85,7 @@ namespace Frontier.Field
                 return;
             }
 
-            // GameSession に FieldProgress がなければ新規作成。既存の場合は生成シードを引き継いで同じマップを再現する
+            // GameSession に FieldProgress がなければ新規作成
             var progress     = GameSession.Instance?.FieldProgress;
             bool isNewProgress = progress == null;
             if ( isNewProgress && GameSession.Instance != null )
@@ -94,15 +94,24 @@ namespace Frontier.Field
                 GameSession.Instance.FieldProgress = progress;
             }
 
-            if ( _useRandomGeneration && _generationConfig != null )
+            // 既にノードグラフを保持している場合(セーブロード・戦闘/雇用からの帰還)はそれをそのまま復元する。
+            // 未生成の場合(新規ゲーム・初回訪問)のみ生成し、結果をProgressへ保持しておく。
+            bool hasStoredNodes = progress != null && progress.FieldId == fieldId &&
+                                  progress.Nodes != null && progress.Nodes.Length > 0;
+
+            if ( hasStoredNodes )
             {
-                int seed = isNewProgress ? Guid.NewGuid().GetHashCode() : progress.GenerationSeed;
-                if ( progress != null ) progress.GenerationSeed = seed;
-                _fieldData = FieldGenerator.Generate( template, _generationConfig, seed );
+                _fieldData = new FieldData { FieldId = fieldId, Nodes = progress.Nodes, StartNodeId = progress.StartNodeId, BossNodeId = progress.BossNodeId };
+            }
+            else if ( _useRandomGeneration && _generationConfig != null )
+            {
+                _fieldData = FieldGenerator.Generate( template, _generationConfig, Guid.NewGuid().GetHashCode() );
+                StoreGeneratedNodes( progress );
             }
             else
             {
                 _fieldData = template;
+                StoreGeneratedNodes( progress );
             }
 
             if ( isNewProgress && progress != null )
@@ -112,6 +121,19 @@ namespace Frontier.Field
 
             BuildNodes();
             RefreshReachability();
+        }
+
+        /// <summary>
+        /// 生成(またはテンプレートそのまま採用)したノードグラフをProgressへ保持します。
+        /// 以降のセーブ/戦闘帰還時等は、ここに保持された内容がランダム生成をやり直さずそのまま復元されます。
+        /// </summary>
+        private void StoreGeneratedNodes( FieldProgress progress )
+        {
+            if ( progress == null ) return;
+
+            progress.Nodes       = _fieldData.Nodes;
+            progress.StartNodeId = _fieldData.StartNodeId;
+            progress.BossNodeId  = _fieldData.BossNodeId;
         }
 
         // ── 戦闘・雇用帰還 ────────────────────────────────────────────────────

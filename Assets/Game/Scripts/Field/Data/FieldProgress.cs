@@ -14,10 +14,13 @@ namespace Frontier.Field
         public List<int>   ClearedNodeIds = new List<int>();
 
         /// <summary>
-        /// フィールド生成に使用したシード値。
-        /// 戦闘帰還などで再読込する際にこの値で再生成することで、同じマップ構成を再現する。
+        /// 生成されたノードグラフそのもの(各ノードの位置・種類・繋がり等)。
+        /// セーブ/ロードや戦闘・雇用からの帰還時はランダム生成をやり直さず、これをそのまま復元することで
+        /// 元のマップ構成を完全に再現する。
         /// </summary>
-        public int GenerationSeed;
+        public FieldNodeData[] Nodes;
+        public int             StartNodeId;
+        public int             BossNodeId;
 
         public bool IsNodeCleared( int nodeId ) => ClearedNodeIds.Contains( nodeId );
 
