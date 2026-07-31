@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -8,14 +9,20 @@ namespace Frontier.UI
     /// <summary>
     /// 部隊編集画面のグリッド上に並ぶ、キャラクター1体分のセル。
     /// CharacterSelectionDisplayと同様、CharacterCameraでキャラクターの3Dモデルを
-    /// リアルタイムに描画してRawImageへ反映する。スライドやフォーカス切替等の
-    /// 選択演出は持たず、割り当てられたキャラクターを常時表示するだけの最小構成。
+    /// リアルタイムに描画してRawImageへ反映する。下部にはLv.と名前を表示する。
+    /// スライドやフォーカス切替等の選択演出は持たず、割り当てられたキャラクターを
+    /// 常時表示するだけの最小構成。
     /// </summary>
     public class TroopMemberCellUI : UiMonoBehaviour
     {
+        [Header( "キャラクターの3Dモデルを映すRawImage" )]
+        [SerializeField] private RawImage _portrait;
+
+        [Header( "Lv.と名前を表示するテキスト" )]
+        [SerializeField] private TextMeshProUGUI _nameLevelText;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
-        private RawImage _portrait = null;
         private CharacterCamera _characterCamera = null;
         private Character _character = null;
 
@@ -24,13 +31,6 @@ namespace Frontier.UI
             if ( _character == null ) return;
 
             _characterCamera?.Update( _character.CameraParam );
-        }
-
-        public override void Setup()
-        {
-            base.Setup();
-
-            LazyInject.GetOrCreate( ref _portrait, () => GetComponent<RawImage>() );
         }
 
         /// <summary>
@@ -44,6 +44,9 @@ namespace Frontier.UI
             _characterCamera.Setup( gameObject, "TroopMemberCamera" );
             _characterCamera.Init( "TroopMemberCamera", _character.gameObject.layer, 0f, ref _portrait );
             _characterCamera.AssignCharacter( _character, _character.gameObject.layer );
+
+            var status = _character.GetStatusRef;
+            _nameLevelText.text = $"Lv.{status.Level}  {status.Name}";
         }
 
         /// <summary>

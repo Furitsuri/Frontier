@@ -38,6 +38,7 @@ namespace Frontier.TroopEdit
             BuildTroopCharacters();
 
             _view.DisplayMembers( _spawnedCharacters );
+            _view.SetHeaderInfo( _userDomain.Money, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
             _view.Show();
         }
 

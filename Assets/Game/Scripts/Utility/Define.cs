@@ -15,6 +15,8 @@ static public class Constants
     public const int DEPLOYMENT_SHOWABLE_CHARACTERS_NUM = 5;
     // プレイヤー、敵それぞれのキャラクター最大数
     public const int CHARACTER_MAX_NUM = 16;
+    // 部隊(UserDomain.Members)に加入させられる最大人数
+    public const int TROOP_MAX_MEMBERS = 20;
     // キャラクターが装備出来るスキルの最大数
     public const int EQUIPABLE_SKILL_MAX_NUM = 4;
     // キャラクターのアクションゲージの最大数

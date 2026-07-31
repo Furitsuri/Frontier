@@ -26,6 +26,12 @@ namespace Frontier.UI
         [Header( "キャラクター1体分のセルプレハブ(非アクティブなテンプレート)" )]
         [SerializeField] private TroopMemberCellUI _cellPrefab;
 
+        [Header( "所持金テキスト" )]
+        [SerializeField] private TextMeshProUGUI _moneyText;
+
+        [Header( "部隊人数(現在数/上限数)テキスト" )]
+        [SerializeField] private TextMeshProUGUI _memberCountText;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private ILocalizationService _localization = null;
 
@@ -54,6 +60,15 @@ namespace Frontier.UI
             if ( _titleText == null ) return;
 
             _titleText.text = _localization != null ? _localization.Get( TitleLocalizationKey ) : TitleLocalizationKey;
+        }
+
+        /// <summary>
+        /// 画面右上の所持金・部隊人数(現在数/上限数)表示を更新します。
+        /// </summary>
+        public void SetHeaderInfo( int money, int currentMemberNum, int maxMemberNum )
+        {
+            _moneyText.text = money.ToString();
+            _memberCountText.text = $"{currentMemberNum}/{maxMemberNum}";
         }
 
         /// <summary>
