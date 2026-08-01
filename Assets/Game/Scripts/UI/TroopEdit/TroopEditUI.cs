@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace Frontier.UI
@@ -31,6 +32,9 @@ namespace Frontier.UI
 
         [Header( "部隊人数(現在数/上限数)テキスト" )]
         [SerializeField] private TextMeshProUGUI _memberCountText;
+
+        [Header( "選択中のセルに追従するカーソル(GridLayoutGroupの対象外に設定済み)" )]
+        [SerializeField] private RectTransform _selectCursor;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private ILocalizationService _localization = null;
@@ -89,6 +93,33 @@ namespace Frontier.UI
 
                 _cells.Add( cell );
             }
+
+            // GridLayoutGroupによる配置はレイアウトパス(次フレーム以降)まで反映されないため、
+            // SetSelectedIndex()で各セルの位置を正しく参照できるよう、ここで強制的に確定させる
+            LayoutRebuilder.ForceRebuildLayoutImmediate( ( RectTransform ) _gridContent );
+        }
+
+        /// <summary>
+        /// 選択カーソルを指定インデックスのセルへ移動します。
+        /// index が範囲外(セルが1つも無い場合は-1を渡す)の場合はカーソルを非表示にします。
+        /// </summary>
+        public void SetSelectedIndex( int index )
+        {
+            if ( _selectCursor == null ) return;
+
+            if ( index < 0 || index >= _cells.Count )
+            {
+                _selectCursor.gameObject.SetActive( false );
+                return;
+            }
+
+            var targetRect = ( RectTransform ) _cells[index].transform;
+
+            _selectCursor.gameObject.SetActive( true );
+            _selectCursor.anchorMin = targetRect.anchorMin;
+            _selectCursor.anchorMax = targetRect.anchorMax;
+            _selectCursor.pivot = targetRect.pivot;
+            _selectCursor.anchoredPosition = targetRect.anchoredPosition;
         }
 
         /// <summary>
