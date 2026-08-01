@@ -23,6 +23,7 @@ namespace Frontier.TroopEdit
         [Inject] private CharacterFactory _characterFactory = null;
 
         private TroopEditPresenter _presenter = null;
+        private CharacterParameterPresenter _paramPresenter = null;
         private List<Character> _spawnedCharacters = new List<Character>();
         private int _selectedIndex = 0;
         private Action _onClosed = null;
@@ -35,6 +36,11 @@ namespace Frontier.TroopEdit
         {
             _presenter = _hierarchyBld.InstantiateWithDiContainer<TroopEditPresenter>( false );
             _presenter.Init();
+
+            // isNeedCamera:false ... 選択中キャラクターの3Dモデル描画は行わない(枠外の一覧グリッド側で表示済みのため)
+            _paramPresenter = _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(
+                new object[] { _presenter.CharacterParamUI, false }, false );
+            _paramPresenter.Init();
         }
 
         /// <summary>
@@ -55,6 +61,7 @@ namespace Frontier.TroopEdit
             _presenter.DisplayMembers( _spawnedCharacters );
             _presenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
             _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            RefreshCharacterParamDisplay();
 
             RegisterNavInputCodes();
         }
@@ -113,8 +120,36 @@ namespace Frontier.TroopEdit
 
             _selectedIndex = newIndex;
             _presenter.SetSelectedIndex( _selectedIndex );
+            RefreshCharacterParamDisplay();
 
             return true;
+        }
+
+        /// <summary>
+        /// 選択中キャラクターのパラメータ表示を更新し、カーソルと対角となる画面の角へ再配置します。
+        /// 対角判定は、グリッド上の行・列がそれぞれ画面の上下・左右どちら側にあるかで行います。
+        /// </summary>
+        private void RefreshCharacterParamDisplay()
+        {
+            if ( _spawnedCharacters.Count == 0 ) { _paramPresenter.ClearCharacter(); return; }
+
+            var character = _spawnedCharacters[_selectedIndex];
+            _paramPresenter.AssignCharacter( character, LAYER_MASK_INDEX_CHARACTER );
+            _paramPresenter.SetActive( true );
+
+            // パネルはカーソルから離れた対角の角に表示されるため、誰の情報かを明示するヘッダーを付ける
+            var status = character.GetStatusRef;
+            _presenter.SetCharacterParamName( $"Lv.{status.Level}  {status.Name}" );
+
+            int totalRows = ( _spawnedCharacters.Count + TROOP_EDIT_GRID_COLUMNS - 1 ) / TROOP_EDIT_GRID_COLUMNS;
+            int row = _selectedIndex / TROOP_EDIT_GRID_COLUMNS;
+            int col = _selectedIndex % TROOP_EDIT_GRID_COLUMNS;
+
+            bool cursorIsLeft = col < TROOP_EDIT_GRID_COLUMNS / 2f;
+            bool cursorIsTop  = row < totalRows / 2f;
+
+            // カーソルと対角の角(逆側)へパネルを表示する
+            _presenter.SetCharacterParamCorner( isRight: cursorIsLeft, isBottom: cursorIsTop );
         }
 
         /// <summary>
@@ -148,6 +183,7 @@ namespace Frontier.TroopEdit
         {
             _presenter.Hide();
             _presenter.ClearMembers();
+            _paramPresenter.ClearCharacter();
 
             DestroySpawnedCharacters();
 

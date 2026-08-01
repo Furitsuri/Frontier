@@ -36,16 +36,31 @@ namespace Frontier.UI
         [Header( "選択中のセルに追従するカーソル(GridLayoutGroupの対象外に設定済み)" )]
         [SerializeField] private RectTransform _selectCursor;
 
+        [Header( "選択中キャラクターのパラメータ表示(カーソルの対角の角へ再配置される)" )]
+        [SerializeField] private CharacterParameterUI _characterParamUI;
+
+        [Header( "パラメータ表示上部の「Lv.名前」ヘッダーテキスト" )]
+        [SerializeField] private TextMeshProUGUI _characterParamNameText;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private ILocalizationService _localization = null;
 
+        // キャラクターパラメータパネルの画面端からの余白(px)。
+        // 上下はタイトル/所持金・人数表示、入力ガイドバーと重ならないよう実測して決めた値。
+        private const float CharacterParamSideMargin   = 40f;
+        private const float CharacterParamTopMargin    = 130f;
+        private const float CharacterParamBottomMargin = 120f;
+
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
+
+        public CharacterParameterUI CharacterParamUI => _characterParamUI;
 
         public override void Setup()
         {
             base.Setup();
 
             RefreshTitleText();
+            _characterParamUI?.Setup();
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshTitleText; }
         }
@@ -120,6 +135,41 @@ namespace Frontier.UI
             _selectCursor.anchorMax = targetRect.anchorMax;
             _selectCursor.pivot = targetRect.pivot;
             _selectCursor.anchoredPosition = targetRect.anchoredPosition;
+        }
+
+        /// <summary>
+        /// キャラクターパラメータパネルを、カーソルと対角となる画面の角へ再配置します。
+        /// isRight/isBottomにはカーソルが位置する側と逆側(パネルを表示したい側)を渡してください。
+        /// 各角のマージンは、タイトル/所持金・人数表示(上)、入力ガイドバー(下)と重ならないよう
+        /// あらかじめ実測して決めています。
+        /// </summary>
+        public void SetCharacterParamCorner( bool isRight, bool isBottom )
+        {
+            if ( _characterParamUI == null ) return;
+
+            var rect = ( RectTransform ) _characterParamUI.transform;
+
+            float anchor = isRight ? 1f : 0f;
+            float anchorY = isBottom ? 0f : 1f;
+            rect.anchorMin = new Vector2( anchor, anchorY );
+            rect.anchorMax = new Vector2( anchor, anchorY );
+            rect.pivot = new Vector2( anchor, anchorY );
+
+            float posX = isRight ? -CharacterParamSideMargin : CharacterParamSideMargin;
+            float posY = isBottom ? CharacterParamBottomMargin : -CharacterParamTopMargin;
+            rect.anchoredPosition = new Vector2( posX, posY );
+        }
+
+        /// <summary>
+        /// パラメータ表示上部の「Lv.名前」ヘッダーテキストを更新します。
+        /// パネルの位置がカーソルから離れた対角の角になるため、どのキャラクターの情報かを
+        /// 明示するために表示します。
+        /// </summary>
+        public void SetCharacterParamName( string text )
+        {
+            if ( _characterParamNameText == null ) return;
+
+            _characterParamNameText.text = text;
         }
 
         /// <summary>

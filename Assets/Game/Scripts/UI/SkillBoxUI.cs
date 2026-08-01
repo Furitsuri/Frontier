@@ -114,7 +114,8 @@ namespace Frontier
         {
             Color[] typeColor = new Color[( int ) SituationType.NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
 
-            TMPSkillName.text = name.Replace( "_", Environment.NewLine );
+            // SkillsData側で名前が未設定(null)のスキルでも表示自体はクラッシュさせない
+            TMPSkillName.text = name?.Replace( "_", Environment.NewLine ) ?? "";
             TMPSkillName.color = typeColor[( int ) type];
         }
 
@@ -157,7 +158,8 @@ namespace Frontier
 
         public void SetTooltipText( string textKey )
         {
-            _tooltipText = _localization.Get( textKey );
+            // SkillsData側で説明文キーが未設定(null)のスキルでも表示自体はクラッシュさせない
+            _tooltipText = string.IsNullOrEmpty( textKey ) ? "" : _localization.Get( textKey );
         }
 
         public string GetTooltipText()

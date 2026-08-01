@@ -35,5 +35,15 @@ namespace Frontier.TroopEdit
         public void SetSelectedIndex( int index ) => _view.SetSelectedIndex( index );
 
         public void SetHeaderInfo( int money, int currentMemberNum, int maxMemberNum ) => _view.SetHeaderInfo( money, currentMemberNum, maxMemberNum );
+
+        /// <summary>
+        /// 選択中キャラクターのパラメータ表示に使うCharacterParameterUIへの参照。
+        /// TroopEditHandlerがCharacterParameterPresenterを構築する際に一度だけ取得します。
+        /// </summary>
+        public CharacterParameterUI CharacterParamUI => _view.CharacterParamUI;
+
+        public void SetCharacterParamCorner( bool isRight, bool isBottom ) => _view.SetCharacterParamCorner( isRight, isBottom );
+
+        public void SetCharacterParamName( string text ) => _view.SetCharacterParamName( text );
     }
 }
