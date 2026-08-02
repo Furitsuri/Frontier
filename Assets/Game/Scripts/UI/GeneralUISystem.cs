@@ -27,6 +27,9 @@ namespace Frontier
         [Header( "TroopEdit" )]
         public TroopEditUI TroopEditView;            // 部隊編集UI
 
+        [Header( "CharacterEdit" )]
+        public CharacterEditUI CharacterEditView;    // キャラクター編集UI
+
         void Awake()
         {
             if( null == GetComponent<Canvas>() )
@@ -44,6 +47,7 @@ namespace Frontier
             OptionView?.Setup();
             SaveLoadView?.Setup();
             TroopEditView?.Setup();
+            CharacterEditView?.Setup();
         }
 
         public Vector2 GetScreenSize()

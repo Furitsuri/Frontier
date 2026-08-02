@@ -157,7 +157,7 @@ static public class Constants
     public const float MENU_DIRECTION_INPUT_INTERVAL    = 0.23f;
     public const float CONFIRM_INPUT_INTERVAL           = 0.0f;
     // 方向キーを押しっぱなしにした際、リピート入力(インターバル間隔での連続受付)が始まるまでの遅延時間
-    public const float DIRECTION_INPUT_REPEAT_DELAY     = 0.35f;
+    public const float DIRECTION_INPUT_REPEAT_DELAY     = 0.8f;
     public const float CANCEL_INPUT_INTERVAL            = 0.0f;
     public const float OPTIONAL_INPUT_INTERVAL          = 0.0f;
     // StageEditorでパラメータ値を押しっぱなしで増減させる際のインターバル時間
