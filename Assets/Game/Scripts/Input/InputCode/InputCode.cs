@@ -20,7 +20,9 @@ public class InputCode
     public bool IsSimultaneousInput;            // 同時入力か否か
     public InputTriggerMode TriggerMode;        // ボタン系入力の判定タイミング(Up/Down/DownRepeat)
     public bool IsGuideVisible = true;          // 入力ガイドとして画面に表示するか(falseの場合、入力受付は行うがガイド表示は行わない)
+    public float RepeatDelay = 0f;              // 押しっぱなし状態でリピート入力(インターバル間隔での連続受付)を開始するまでの遅延時間(秒)。0の場合は遅延なし(押した瞬間からインターバル間隔で受け付ける、従来の挙動)
     private float _inputLastTime;               // 入力処理を行った最後の時間
+    private float _pressStartTime = -1f;        // 現在の連続押下(hold)が開始した時刻。-1は「押されていない」ことを表す
 
     /// <summary>
     /// 入力コードを設定します
@@ -142,6 +144,7 @@ public class InputCode
         );
 
         clone.IsGuideVisible = this.IsGuideVisible;
+        clone.RepeatDelay    = this.RepeatDelay;
 
         return clone;
     }
@@ -282,6 +285,36 @@ public class InputCode
     public bool IsIntervalTimePassed()
     {
         return ( InputInterval <= Time.time - _inputLastTime );
+    }
+
+    /// <summary>
+    /// 生の入力状態(isHeld: そのフレームで対応するキー・ボタンが押されているか)を渡し、
+    /// このフレームでAccept処理を実行してよいかを判定します。
+    /// 押されていなければ連続押下の起点をリセットしfalseを返します。
+    /// 押された瞬間はRepeatDelayを待たず、インターバルのみを考慮して受け付けます
+    /// (これにより単発のタップ操作が意図せず2回受け付けられることを防ぎます)。
+    /// 押しっぱなしの場合は、RepeatDelay経過後、InputIntervalの間隔で繰り返し受け付けます。
+    /// RepeatDelayが0の場合は遅延無し(押した瞬間からインターバル間隔で受け付ける、従来の挙動)です。
+    /// </summary>
+    /// <param name="isHeld">このフレームで対応する入力が押されている状態かどうか</param>
+    /// <returns>このフレームでAcceptを実行してよいか</returns>
+    public bool UpdateHoldState( bool isHeld )
+    {
+        if ( !isHeld )
+        {
+            _pressStartTime = -1f;
+            return false;
+        }
+
+        bool isNewPress = ( _pressStartTime < 0f );
+        if ( isNewPress ) { _pressStartTime = Time.time; }
+
+        if ( !IsIntervalTimePassed() ) { return false; }
+
+        // 押しっぱなし2回目以降の受付は、RepeatDelayが経過するまで待つ
+        if ( !isNewPress && 0f < RepeatDelay && ( Time.time - _pressStartTime ) < RepeatDelay ) { return false; }
+
+        return true;
     }
 
     /// <summary>

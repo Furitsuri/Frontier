@@ -148,15 +148,17 @@ public class InputHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// 入力情報の判定・走査を更新します
+    /// 入力情報の判定・走査を更新します。
+    /// インターバル・リピート遅延の判定はInputCode.UpdateHoldState()に委譲するため、ここでは
+    /// インターバル未経過を理由にスキップしません(離した瞬間を毎フレーム検知する必要があるため)。
     /// </summary>
     private void UpdateInputCodes()
     {
         // コールバック関数が設定されている場合は動作させる
         foreach( var code in _inputCodes )
         {
-            // 有効判定コールバックが登録されていない or インターバル時間が過ぎていない場合は無効
-            if( code.EnableCbs == null || !code.IsIntervalTimePassed() ) { continue; }
+            // 有効判定コールバックが登録されていない場合は無効
+            if( code.EnableCbs == null ) { continue; }
 
             // 同時入力設定の場合は先頭のガイドアイコンに対応する入力可否関数、及び入力受付関数を参照する
             if( code.IsSimultaneousInput )
@@ -175,10 +177,16 @@ public class InputHandler : MonoBehaviour
         for( int i = 0; i < code.Icons.Length; ++i )
         {
             bool enable = ( code.EnableCbs[i] != null && code.EnableCbs[i]() );
-            if( !enable ) { continue; }
 
+            var inputForIcon = _inputForIcons[( int ) code.Icons[i]];
             InputContext inputContext = new InputContext();
-            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext, code.TriggerMode );
+            inputForIcon.Apply( inputContext, code.TriggerMode );
+
+            // 有効判定コールバックがfalseの場合は「押されていない」ものとして扱う
+            // (再度有効になった際、押しっぱなし継続ではなく新規の押下として扱われるようにするため)
+            bool isHeld = enable && inputForIcon.IsHeld( inputContext );
+            if( !code.UpdateHoldState( isHeld ) ) { continue; }
+
             if( code.ExecuteAcceptInputCallback( inputContext, i ) ) { return true; }   // 入力があった場合は必ずブレークする
         }
 
@@ -187,15 +195,21 @@ public class InputHandler : MonoBehaviour
 
     private bool UpdateSimultaneousInput( InputCode code )
     {
-        if( !code.EnableCbs[0]() ) { return false; }
+        bool enable = code.EnableCbs[0]();
 
         int iconNum = code.Icons.Length;
         InputContext inputContext = new InputContext();
+        bool isHeld = enable;
 
         for( int i = 0; i < iconNum; ++i )
         {
-            _inputForIcons[( int ) code.Icons[i]].Apply( inputContext, code.TriggerMode );
+            var inputForIcon = _inputForIcons[( int ) code.Icons[i]];
+            inputForIcon.Apply( inputContext, code.TriggerMode );
+            isHeld &= inputForIcon.IsHeld( inputContext );
         }
+
+        if( !code.UpdateHoldState( isHeld ) ) { return false; }
+
         if( code.ExecuteAcceptSimultaneousInputCallback( inputContext ) ) { return true; }
 
         return false;

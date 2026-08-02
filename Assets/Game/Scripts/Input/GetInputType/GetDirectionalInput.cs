@@ -23,4 +23,9 @@
     {
         context.Cursor = _callback();
     }
+
+    public bool IsHeld( InputContext context )
+    {
+        return context.Cursor != Direction.NONE;
+    }
 }

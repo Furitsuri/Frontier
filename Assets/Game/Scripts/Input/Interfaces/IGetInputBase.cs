@@ -10,4 +10,8 @@ public interface IGetInputBase
 
     // modeはボタン系入力(GetBooleanInput)でのみ使用します。連続値系(方向・ベクトル)では無視されます
     void Apply( InputContext context, InputTriggerMode mode );
+
+    // Apply()適用後のInputContextを見て、このフレームで対応する入力が「押されている状態」かどうかを返します
+    // (InputCode.UpdateHoldState()でのリピート遅延判定に使用します)
+    bool IsHeld( InputContext context );
 }

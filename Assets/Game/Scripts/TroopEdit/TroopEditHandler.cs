@@ -73,7 +73,7 @@ namespace Frontier.TroopEdit
         {
             _navHashCode = Hash.GetStableHash( nameof( TroopEditHandler ) + "_Nav" );
             InputFacade.Instance.RegisterInputCodes(
-                ( GuideIcon.ALL_CURSOR, "SELECT", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, _navHashCode ),
+                new InputCode( GuideIcon.ALL_CURSOR, "SELECT", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, _navHashCode ) { RepeatDelay = DIRECTION_INPUT_REPEAT_DELAY },
                 ( GuideIcon.CANCEL,     "BACK",   InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptCancel ),    0.0f, _navHashCode )
             );
         }

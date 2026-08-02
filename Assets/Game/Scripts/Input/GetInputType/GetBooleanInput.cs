@@ -25,4 +25,9 @@
     {
         context.SetButton( _button, _callback( mode ) );
     }
+
+    public bool IsHeld( InputContext context )
+    {
+        return context.GetButton( _button );
+    }
 }
