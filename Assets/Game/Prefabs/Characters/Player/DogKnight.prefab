@@ -1327,6 +1327,7 @@ MonoBehaviour:
     PrefabIndex: 0
     Name: 
     Level: 0
+    Exp: 0
     MaxHP: 0
     CurHP: 0
     Atk: 0

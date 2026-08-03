@@ -137,6 +137,13 @@ public class CharacterParameterPresenter : PhasePresenterBase
         _parameterUI.TMPMovValue.text           = $"{status.moveRange}";
         _parameterUI.TMPJmpValue.text           = $"{status.jumpForce}";
 
+        if( null != _parameterUI.TMPExpValue )
+        {
+            _parameterUI.TMPExpValue.text = LevelExpData.IsMaxLevel( status.Level )
+                ? "MAX"
+                : $"{LevelExpData.GetExpToNextLevel( status.Level, status.Exp )} Exp";
+        }
+
         if( null != _parameterUI.TMPAddAtkValue )
         {
             int addAtkValue                     = ( int ) ( modifiedParam.Atk );

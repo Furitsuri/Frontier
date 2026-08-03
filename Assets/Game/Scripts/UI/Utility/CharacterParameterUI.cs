@@ -25,6 +25,7 @@ namespace Frontier.UI
         [SerializeField] public TextMeshProUGUI TMPAddDefValue;
         [SerializeField] public TextMeshProUGUI TMPDiffHPValue;
         [SerializeField] public TextMeshProUGUI TMPActRecoveryValue;
+        [SerializeField] public TextMeshProUGUI TMPExpValue;
         [SerializeField] public RawImage TargetImage;
         [SerializeField] public RawImage ActGaugeElemImage;
         [SerializeField] public RectTransform PanelTransform;
