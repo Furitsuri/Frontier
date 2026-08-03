@@ -175,8 +175,10 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
-        /// 選択中キャラクターのパラメータ表示を更新し、カーソルと対角となる画面の角へ再配置します。
-        /// 対角判定は、グリッド上の行・列がそれぞれ画面の上下・左右どちら側にあるかで行います。
+        /// 選択中キャラクターのパラメータ表示を更新し、画面左側へ再配置します。
+        /// カーソルの行に関わらず、常にグリッド最終行の下(入力ガイドバーぎりぎり)への
+        /// 配置を優先します。タイトルとグリッド1行目の間はほぼ余白が無いため、
+        /// 下側に収まらない場合のみタイトルぎりぎりの上側へ配置します。
         /// </summary>
         private void RefreshCharacterParamDisplay()
         {
@@ -186,19 +188,11 @@ namespace Frontier.TroopEdit
             _paramPresenter.AssignCharacter( character, LAYER_MASK_INDEX_CHARACTER );
             _paramPresenter.SetActive( true );
 
-            // パネルはカーソルから離れた対角の角に表示されるため、誰の情報かを明示するヘッダーを付ける
+            // パネルはカーソルから離れた位置に表示されるため、誰の情報かを明示するヘッダーを付ける
             var status = character.GetStatusRef;
             _presenter.SetCharacterParamName( $"Lv.{status.Level}  {status.Name}" );
 
-            int totalRows = ( _spawnedCharacters.Count + TROOP_EDIT_GRID_COLUMNS - 1 ) / TROOP_EDIT_GRID_COLUMNS;
-            int row = _selectedIndex / TROOP_EDIT_GRID_COLUMNS;
-            int col = _selectedIndex % TROOP_EDIT_GRID_COLUMNS;
-
-            bool cursorIsLeft = col < TROOP_EDIT_GRID_COLUMNS / 2f;
-            bool cursorIsTop  = row < totalRows / 2f;
-
-            // カーソルと対角の角(逆側)へパネルを表示する
-            _presenter.SetCharacterParamCorner( isRight: cursorIsLeft, isBottom: cursorIsTop );
+            _presenter.SetCharacterParamCorner( _spawnedCharacters.Count - 1 );
         }
 
         /// <summary>

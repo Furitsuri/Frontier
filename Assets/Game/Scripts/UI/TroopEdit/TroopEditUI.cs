@@ -45,13 +45,18 @@ namespace Frontier.UI
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private ILocalizationService _localization = null;
 
-        // キャラクターパラメータパネルの画面端からの余白(px)。
-        // 上下はタイトル/所持金・人数表示、入力ガイドバーと重ならないよう実測して決めた値。
-        private const float CharacterParamSideMargin   = 40f;
-        private const float CharacterParamTopMargin    = 130f;
-        private const float CharacterParamBottomMargin = 120f;
+        // キャラクターパラメータパネルの画面左端からの余白(px)。
+        private const float CharacterParamSideMargin = 40f;
+        // パネルとカーソル行との間に確保する余白(px)。
+        private const float CharacterParamRowGap = 8f;
+        // パネルとタイトル/入力ガイドバーとの間に確保する最低限の余白(px)。
+        private const float CharacterParamEdgeGap = 8f;
+        // タイトルテキストの下端・入力ガイドバーの上端のY座標(px、キャンバス中心基準)。実測して決めた値。
+        private const float CharacterParamTitleBottomY = 250f;
+        private const float CharacterParamGuideTopY    = -305f;
 
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
+        private RectTransform _canvasRect;
 
         public CharacterParameterUI CharacterParamUI => _characterParamUI;
 
@@ -61,6 +66,7 @@ namespace Frontier.UI
 
             RefreshTitleText();
             _characterParamUI?.Setup();
+            _canvasRect = ( RectTransform ) GetComponentInParent<Canvas>().transform;
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshTitleText; }
         }
@@ -138,26 +144,57 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// キャラクターパラメータパネルを、カーソルと対角となる画面の角へ再配置します。
-        /// isRight/isBottomにはカーソルが位置する側と逆側(パネルを表示したい側)を渡してください。
-        /// 各角のマージンは、タイトル/所持金・人数表示(上)、入力ガイドバー(下)と重ならないよう
-        /// あらかじめ実測して決めています。
+        /// キャラクターパラメータパネルを画面左側へ再配置します。カーソルの行に関わらず、
+        /// 常に入力ガイドバーぎりぎりの下側へ配置することを優先します(グリッド最終行との間に
+        /// 余白を確保できる場合)。タイトルとグリッド1行目の間はほぼ余白が無いため、下側に
+        /// 収まらない場合のみ、タイトルぎりぎりの上側へ配置します。
         /// </summary>
-        public void SetCharacterParamCorner( bool isRight, bool isBottom )
+        /// <param name="lastIndex">グリッド最終セルのインデックス(-1の場合は要素なし)。最終行の下端の算出に使用します</param>
+        public void SetCharacterParamCorner( int lastIndex )
         {
             if ( _characterParamUI == null ) return;
 
             var rect = ( RectTransform ) _characterParamUI.transform;
+            float panelHeight = rect.sizeDelta.y;
 
-            float anchor = isRight ? 1f : 0f;
-            float anchorY = isBottom ? 0f : 1f;
-            rect.anchorMin = new Vector2( anchor, anchorY );
-            rect.anchorMax = new Vector2( anchor, anchorY );
-            rect.pivot = new Vector2( anchor, anchorY );
+            float guideFloor   = CharacterParamGuideTopY + CharacterParamEdgeGap;
+            float titleCeiling = CharacterParamTitleBottomY - CharacterParamEdgeGap;
 
-            float posX = isRight ? -CharacterParamSideMargin : CharacterParamSideMargin;
-            float posY = isBottom ? CharacterParamBottomMargin : -CharacterParamTopMargin;
-            rect.anchoredPosition = new Vector2( posX, posY );
+            float topY;
+            float bottomY;
+
+            float? lastRowBottomY = GetCellBottomY( lastIndex );
+            bool fitsBelowGrid = lastRowBottomY.HasValue && ( guideFloor + panelHeight ) <= ( lastRowBottomY.Value - CharacterParamRowGap );
+
+            if ( fitsBelowGrid )
+            {
+                bottomY = guideFloor;
+                topY = bottomY + panelHeight;
+            }
+            else
+            {
+                topY = titleCeiling;
+                bottomY = topY - panelHeight;
+            }
+
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.zero;
+            rect.pivot = Vector2.zero;
+            rect.anchoredPosition = new Vector2( CharacterParamSideMargin, bottomY - _canvasRect.rect.y );
+        }
+
+        /// <summary>
+        /// 指定インデックスのセルの下端Y座標(キャンバス中心基準)を返します。
+        /// セルが存在しない場合はnullを返します。
+        /// </summary>
+        private float? GetCellBottomY( int index )
+        {
+            if ( index < 0 || index >= _cells.Count ) return null;
+
+            var cellRect = ( RectTransform ) _cells[index].transform;
+            var corners = new Vector3[4]; // 0:左下 1:左上 2:右上 3:右下
+            cellRect.GetWorldCorners( corners );
+            return _canvasRect.InverseTransformPoint( corners[0] ).y;
         }
 
         /// <summary>

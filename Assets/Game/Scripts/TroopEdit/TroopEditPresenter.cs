@@ -42,7 +42,7 @@ namespace Frontier.TroopEdit
         /// </summary>
         public CharacterParameterUI CharacterParamUI => _view.CharacterParamUI;
 
-        public void SetCharacterParamCorner( bool isRight, bool isBottom ) => _view.SetCharacterParamCorner( isRight, isBottom );
+        public void SetCharacterParamCorner( int lastIndex ) => _view.SetCharacterParamCorner( lastIndex );
 
         public void SetCharacterParamName( string text ) => _view.SetCharacterParamName( text );
     }
