@@ -16,6 +16,7 @@ namespace Frontier.Entities
         public int PrefabIndex;             // 使用するプレハブのインデックス
         public string Name;                 // キャラクター名
         public int Level;                   // レベル
+        public int Exp;                     // 累計取得経験値(LevelExpDataと突き合わせて次のレベルまでの必要経験値を算出する)
         public int MaxHP;                   // 最大HP
         public int CurHP;                   // 現在HP
         public int Atk;                     // 攻撃力
@@ -52,6 +53,7 @@ namespace Frontier.Entities
             characterIndex      = 0;
             Name                = "";
             Level               = 1;
+            Exp                 = 0;
             MaxHP               = 0;
             CurHP               = 0;
             Atk                 = 0;

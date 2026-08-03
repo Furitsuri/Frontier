@@ -39,6 +39,7 @@ namespace Frontier
             status.PrefabIndex         = Prefab;
             status.Name                = "Default";
             status.Level               = Level;
+            status.Exp                 = 0;
             status.CurHP               = status.MaxHP = MaxHP;
             status.Atk                 = Atk;
             status.Def                 = Def;
