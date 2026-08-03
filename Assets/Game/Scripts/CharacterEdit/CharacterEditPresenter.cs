@@ -46,6 +46,12 @@ namespace Frontier.CharacterEdit
         public void Hide() => _view.Hide();
 
         /// <summary>
+        /// 選択中キャラクターのパラメータ表示に使うCharacterParameterUIへの参照。
+        /// CharacterEditHandlerがCharacterParameterPresenterを構築する際に一度だけ取得します。
+        /// </summary>
+        public CharacterParameterUI CharacterParamUI => _view.CharacterParamUI;
+
+        /// <summary>
         /// L1/R1でキャラクターが切り替わった際、上部のキャラクター情報表示のみを更新します
         /// (メニューの選択状態はそのまま維持します)。
         /// </summary>

@@ -18,6 +18,7 @@ namespace Frontier.CharacterEdit
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private CharacterEditPresenter _presenter = null;
+        private CharacterParameterPresenter _paramPresenter = null;
         private CharacterEditContext _context = null;
         private Action<int> _onClosed = null;
         private int _navHashCode;
@@ -30,6 +31,11 @@ namespace Frontier.CharacterEdit
         {
             _presenter = _hierarchyBld.InstantiateWithDiContainer<CharacterEditPresenter>( false );
             _presenter.Init();
+
+            // isNeedCamera:false ... 上部のパラメータ表示では3Dモデルの描画は行わない(TroopEdit画面と同じ方針)
+            _paramPresenter = _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(
+                new object[] { _presenter.CharacterParamUI, false }, false );
+            _paramPresenter.Init();
         }
 
         /// <summary>
@@ -43,9 +49,16 @@ namespace Frontier.CharacterEdit
             _onClosed = onClosed;
 
             _presenter.Show( _context.CurrentCharacter );
+            RefreshCharacterParamDisplay();
 
             RegisterCharacterSwitchInputCodes();
             RegisterNavInputCodes();
+        }
+
+        private void RefreshCharacterParamDisplay()
+        {
+            _paramPresenter.AssignCharacter( _context.CurrentCharacter, LAYER_MASK_INDEX_CHARACTER );
+            _paramPresenter.SetActive( true );
         }
 
         /// <summary>
@@ -68,6 +81,7 @@ namespace Frontier.CharacterEdit
 
             _context.MovePrevious();
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
+            RefreshCharacterParamDisplay();
 
             return true;
         }
@@ -78,6 +92,7 @@ namespace Frontier.CharacterEdit
 
             _context.MoveNext();
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
+            RefreshCharacterParamDisplay();
 
             return true;
         }
@@ -149,6 +164,7 @@ namespace Frontier.CharacterEdit
         private void Close()
         {
             _presenter.Hide();
+            _paramPresenter.ClearCharacter();
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
             InputFacade.Instance.UnregisterInputCodes( _switchHashCode );

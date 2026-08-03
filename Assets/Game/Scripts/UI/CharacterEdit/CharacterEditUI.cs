@@ -7,9 +7,9 @@ namespace Frontier.UI
 {
     /// <summary>
     /// キャラクター編集画面の見た目のみを担当するView。左側にメニュー(レベルアップ/装備スキル設定)、
-    /// 上部に編集対象キャラクターの簡易情報(Lv.名前)を表示する。レベルアップ/装備スキル設定の
-    /// 実際の内容は、右側に重ねて表示される別パネル(LevelUpUI/SkillEquipUI、未実装)が担う想定で、
-    /// このメニュー自体は画面遷移後も表示したままにする(選択中項目のハイライトは維持される)。
+    /// 上部に編集対象キャラクターのパラメータ表示(Lv.名前・HP/ATK/DEF/MOV/JMP/ACT/スキル)を表示する。
+    /// レベルアップ/装備スキル設定の実際の内容は、右側に重ねて表示される別パネル(LevelUpUI/SkillEquipUI、
+    /// 未実装)が担う想定で、このメニュー自体は画面遷移後も表示したままにする(選択中項目のハイライトは維持される)。
     /// 開閉や選択状態の管理はCharacterEditPresenterが行い、このクラスは表示指示を受けて
     /// 反映するだけに留める。
     /// </summary>
@@ -21,8 +21,11 @@ namespace Frontier.UI
             "UI_CMD_SKILL_EQUIP",  // SKILL_EQUIP
         };
 
-        [Header( "上部キャラクター情報(Lv.名前)テキスト" )]
-        [SerializeField] private TextMeshProUGUI _characterInfoText;
+        [Header( "上部キャラクターパラメータ表示(HP/ATK/DEF/MOV/JMP/ACT/スキル)" )]
+        [SerializeField] private CharacterParameterUI _characterParamUI;
+
+        [Header( "パラメータ表示内の「Lv.名前」ヘッダーテキスト" )]
+        [SerializeField] private TextMeshProUGUI _characterParamNameText;
 
         [Header( "左メニュー項目テキスト(CHARACTER_EDIT_MENU_OPTION_TAGの並び順と一致させること)" )]
         [SerializeField] private TextMeshProUGUI[] _menuItemTexts;
@@ -32,11 +35,14 @@ namespace Frontier.UI
 
         [Inject] private ILocalizationService _localization = null;
 
+        public CharacterParameterUI CharacterParamUI => _characterParamUI;
+
         public override void Setup()
         {
             base.Setup();
 
             RefreshMenuTexts();
+            _characterParamUI?.Setup();
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshMenuTexts; }
         }
@@ -63,14 +69,14 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 上部のキャラクター情報(Lv.名前)を更新します。L1/R1でキャラクターを切り替えた際に呼ばれます。
+        /// パラメータ表示内の「Lv.名前」ヘッダーを更新します。L1/R1でキャラクターを切り替えた際に呼ばれます。
         /// </summary>
         public void SetCharacterInfo( Character character )
         {
-            if ( _characterInfoText == null ) return;
+            if ( _characterParamNameText == null ) return;
 
             var status = character.GetStatusRef;
-            _characterInfoText.text = $"Lv.{status.Level}  {status.Name}";
+            _characterParamNameText.text = $"Lv.{status.Level}  {status.Name}";
         }
 
         private void RefreshMenuTexts()
