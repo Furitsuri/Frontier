@@ -1,0 +1,304 @@
+{
+    "Levels": [
+        {
+            "RequiredTotalExp": 0
+        },
+        {
+            "RequiredTotalExp": 0
+        },
+        {
+            "RequiredTotalExp": 100
+        },
+        {
+            "RequiredTotalExp": 200
+        },
+        {
+            "RequiredTotalExp": 300
+        },
+        {
+            "RequiredTotalExp": 400
+        },
+        {
+            "RequiredTotalExp": 500
+        },
+        {
+            "RequiredTotalExp": 600
+        },
+        {
+            "RequiredTotalExp": 700
+        },
+        {
+            "RequiredTotalExp": 800
+        },
+        {
+            "RequiredTotalExp": 900
+        },
+        {
+            "RequiredTotalExp": 1000
+        },
+        {
+            "RequiredTotalExp": 1100
+        },
+        {
+            "RequiredTotalExp": 1200
+        },
+        {
+            "RequiredTotalExp": 1300
+        },
+        {
+            "RequiredTotalExp": 1400
+        },
+        {
+            "RequiredTotalExp": 1500
+        },
+        {
+            "RequiredTotalExp": 1600
+        },
+        {
+            "RequiredTotalExp": 1700
+        },
+        {
+            "RequiredTotalExp": 1800
+        },
+        {
+            "RequiredTotalExp": 1900
+        },
+        {
+            "RequiredTotalExp": 2000
+        },
+        {
+            "RequiredTotalExp": 2100
+        },
+        {
+            "RequiredTotalExp": 2200
+        },
+        {
+            "RequiredTotalExp": 2300
+        },
+        {
+            "RequiredTotalExp": 2400
+        },
+        {
+            "RequiredTotalExp": 2500
+        },
+        {
+            "RequiredTotalExp": 2600
+        },
+        {
+            "RequiredTotalExp": 2700
+        },
+        {
+            "RequiredTotalExp": 2800
+        },
+        {
+            "RequiredTotalExp": 2900
+        },
+        {
+            "RequiredTotalExp": 3000
+        },
+        {
+            "RequiredTotalExp": 3100
+        },
+        {
+            "RequiredTotalExp": 3200
+        },
+        {
+            "RequiredTotalExp": 3300
+        },
+        {
+            "RequiredTotalExp": 3400
+        },
+        {
+            "RequiredTotalExp": 3500
+        },
+        {
+            "RequiredTotalExp": 3600
+        },
+        {
+            "RequiredTotalExp": 3700
+        },
+        {
+            "RequiredTotalExp": 3800
+        },
+        {
+            "RequiredTotalExp": 3900
+        },
+        {
+            "RequiredTotalExp": 4000
+        },
+        {
+            "RequiredTotalExp": 4100
+        },
+        {
+            "RequiredTotalExp": 4200
+        },
+        {
+            "RequiredTotalExp": 4300
+        },
+        {
+            "RequiredTotalExp": 4400
+        },
+        {
+            "RequiredTotalExp": 4500
+        },
+        {
+            "RequiredTotalExp": 4600
+        },
+        {
+            "RequiredTotalExp": 4700
+        },
+        {
+            "RequiredTotalExp": 4800
+        },
+        {
+            "RequiredTotalExp": 4900
+        },
+        {
+            "RequiredTotalExp": 5000
+        },
+        {
+            "RequiredTotalExp": 5100
+        },
+        {
+            "RequiredTotalExp": 5200
+        },
+        {
+            "RequiredTotalExp": 5300
+        },
+        {
+            "RequiredTotalExp": 5400
+        },
+        {
+            "RequiredTotalExp": 5500
+        },
+        {
+            "RequiredTotalExp": 5600
+        },
+        {
+            "RequiredTotalExp": 5700
+        },
+        {
+            "RequiredTotalExp": 5800
+        },
+        {
+            "RequiredTotalExp": 5900
+        },
+        {
+            "RequiredTotalExp": 6000
+        },
+        {
+            "RequiredTotalExp": 6100
+        },
+        {
+            "RequiredTotalExp": 6200
+        },
+        {
+            "RequiredTotalExp": 6300
+        },
+        {
+            "RequiredTotalExp": 6400
+        },
+        {
+            "RequiredTotalExp": 6500
+        },
+        {
+            "RequiredTotalExp": 6600
+        },
+        {
+            "RequiredTotalExp": 6700
+        },
+        {
+            "RequiredTotalExp": 6800
+        },
+        {
+            "RequiredTotalExp": 6900
+        },
+        {
+            "RequiredTotalExp": 7000
+        },
+        {
+            "RequiredTotalExp": 7100
+        },
+        {
+            "RequiredTotalExp": 7200
+        },
+        {
+            "RequiredTotalExp": 7300
+        },
+        {
+            "RequiredTotalExp": 7400
+        },
+        {
+            "RequiredTotalExp": 7500
+        },
+        {
+            "RequiredTotalExp": 7600
+        },
+        {
+            "RequiredTotalExp": 7700
+        },
+        {
+            "RequiredTotalExp": 7800
+        },
+        {
+            "RequiredTotalExp": 7900
+        },
+        {
+            "RequiredTotalExp": 8000
+        },
+        {
+            "RequiredTotalExp": 8100
+        },
+        {
+            "RequiredTotalExp": 8200
+        },
+        {
+            "RequiredTotalExp": 8300
+        },
+        {
+            "RequiredTotalExp": 8400
+        },
+        {
+            "RequiredTotalExp": 8500
+        },
+        {
+            "RequiredTotalExp": 8600
+        },
+        {
+            "RequiredTotalExp": 8700
+        },
+        {
+            "RequiredTotalExp": 8800
+        },
+        {
+            "RequiredTotalExp": 8900
+        },
+        {
+            "RequiredTotalExp": 9000
+        },
+        {
+            "RequiredTotalExp": 9100
+        },
+        {
+            "RequiredTotalExp": 9200
+        },
+        {
+            "RequiredTotalExp": 9300
+        },
+        {
+            "RequiredTotalExp": 9400
+        },
+        {
+            "RequiredTotalExp": 9500
+        },
+        {
+            "RequiredTotalExp": 9600
+        },
+        {
+            "RequiredTotalExp": 9700
+        },
+        {
+            "RequiredTotalExp": 9800
+        }
+    ]
+}

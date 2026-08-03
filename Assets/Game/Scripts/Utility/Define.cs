@@ -21,6 +21,8 @@ static public class Constants
     public const int TROOP_EDIT_GRID_COLUMNS = 5;
     // キャラクターが装備出来るスキルの最大数
     public const int EQUIPABLE_SKILL_MAX_NUM = 4;
+    // キャラクターレベルの最大値
+    public const int MAX_LEVEL = 99;
     // キャラクターのアクションゲージの最大数
     public const int ACTION_GAUGE_MAX = 10;
     // 1グリッドに隣接するグリッドの最大数
