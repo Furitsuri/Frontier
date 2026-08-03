@@ -36,7 +36,7 @@ namespace Frontier.UI
         [Header( "選択中のセルに追従するカーソル(GridLayoutGroupの対象外に設定済み)" )]
         [SerializeField] private RectTransform _selectCursor;
 
-        [Header( "選択中キャラクターのパラメータ表示(カーソルの対角の角へ再配置される)" )]
+        [Header( "選択中キャラクターのパラメータ表示(位置はPresenterが決定する)" )]
         [SerializeField] private CharacterParameterUI _characterParamUI;
 
         [Header( "パラメータ表示上部の「Lv.名前」ヘッダーテキスト" )]
@@ -44,16 +44,6 @@ namespace Frontier.UI
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private ILocalizationService _localization = null;
-
-        // キャラクターパラメータパネルの画面左端からの余白(px)。
-        private const float CharacterParamSideMargin = 40f;
-        // パネルとカーソル行との間に確保する余白(px)。
-        private const float CharacterParamRowGap = 8f;
-        // パネルとタイトル/入力ガイドバーとの間に確保する最低限の余白(px)。
-        private const float CharacterParamEdgeGap = 8f;
-        // タイトルテキストの下端・入力ガイドバーの上端のY座標(px、キャンバス中心基準)。実測して決めた値。
-        private const float CharacterParamTitleBottomY = 250f;
-        private const float CharacterParamGuideTopY    = -305f;
 
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
         private RectTransform _canvasRect;
@@ -144,50 +134,10 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// キャラクターパラメータパネルを画面左側へ再配置します。カーソルの行に関わらず、
-        /// 常に入力ガイドバーぎりぎりの下側へ配置することを優先します(グリッド最終行との間に
-        /// 余白を確保できる場合)。タイトルとグリッド1行目の間はほぼ余白が無いため、下側に
-        /// 収まらない場合のみ、タイトルぎりぎりの上側へ配置します。
+        /// 指定インデックスのセルの下端Y座標(キャンバス中心基準のローカル座標)を返します。
+        /// セルが存在しない場合はnullを返します。判断は行わず、事実を返すだけです。
         /// </summary>
-        /// <param name="lastIndex">グリッド最終セルのインデックス(-1の場合は要素なし)。最終行の下端の算出に使用します</param>
-        public void SetCharacterParamCorner( int lastIndex )
-        {
-            if ( _characterParamUI == null ) return;
-
-            var rect = ( RectTransform ) _characterParamUI.transform;
-            float panelHeight = rect.sizeDelta.y;
-
-            float guideFloor   = CharacterParamGuideTopY + CharacterParamEdgeGap;
-            float titleCeiling = CharacterParamTitleBottomY - CharacterParamEdgeGap;
-
-            float topY;
-            float bottomY;
-
-            float? lastRowBottomY = GetCellBottomY( lastIndex );
-            bool fitsBelowGrid = lastRowBottomY.HasValue && ( guideFloor + panelHeight ) <= ( lastRowBottomY.Value - CharacterParamRowGap );
-
-            if ( fitsBelowGrid )
-            {
-                bottomY = guideFloor;
-                topY = bottomY + panelHeight;
-            }
-            else
-            {
-                topY = titleCeiling;
-                bottomY = topY - panelHeight;
-            }
-
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.zero;
-            rect.pivot = Vector2.zero;
-            rect.anchoredPosition = new Vector2( CharacterParamSideMargin, bottomY - _canvasRect.rect.y );
-        }
-
-        /// <summary>
-        /// 指定インデックスのセルの下端Y座標(キャンバス中心基準)を返します。
-        /// セルが存在しない場合はnullを返します。
-        /// </summary>
-        private float? GetCellBottomY( int index )
+        public float? GetCellBottomY( int index )
         {
             if ( index < 0 || index >= _cells.Count ) return null;
 
@@ -198,8 +148,35 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// キャラクターパラメータパネルの高さを返します。判断は行わず、事実を返すだけです。
+        /// </summary>
+        public float GetCharacterParamPanelHeight()
+        {
+            if ( _characterParamUI == null ) return 0f;
+
+            return ( ( RectTransform ) _characterParamUI.transform ).sizeDelta.y;
+        }
+
+        /// <summary>
+        /// キャラクターパラメータパネルを、指定したキャンバス基準ローカル座標(左下ピボット)へ
+        /// 配置します。どこに置くべきかの判断は行わず、指定された位置をそのまま適用するだけです。
+        /// </summary>
+        /// <param name="x">画面左端からのオフセット(px)</param>
+        /// <param name="bottomY">パネル下端のキャンバス中心基準Y座標(px)</param>
+        public void SetCharacterParamPosition( float x, float bottomY )
+        {
+            if ( _characterParamUI == null ) return;
+
+            var rect = ( RectTransform ) _characterParamUI.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.zero;
+            rect.pivot = Vector2.zero;
+            rect.anchoredPosition = new Vector2( x, bottomY - _canvasRect.rect.y );
+        }
+
+        /// <summary>
         /// パラメータ表示上部の「Lv.名前」ヘッダーテキストを更新します。
-        /// パネルの位置がカーソルから離れた対角の角になるため、どのキャラクターの情報かを
+        /// パネルの位置がカーソルから離れた場所になり得るため、どのキャラクターの情報かを
         /// 明示するために表示します。
         /// </summary>
         public void SetCharacterParamName( string text )
