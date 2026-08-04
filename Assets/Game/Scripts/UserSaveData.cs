@@ -23,6 +23,7 @@ public class UserSaveData
     public string SceneName = "";
 
     public int          Money;
+    public int          Exp;
     public int          StageLevel;
     public List<Status> Members = new List<Status>();
 

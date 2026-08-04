@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Frontier.Entities;
+using System;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -16,13 +17,16 @@ namespace Frontier.CharacterEdit
     public class CharacterEditHandler : MonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private UserDomain _userDomain = null;
 
         private CharacterEditPresenter _presenter = null;
         private CharacterParameterPresenter _paramPresenter = null;
+        private YesNoConfirmPresenter _levelUpConfirmPresenter = null;
         private CharacterEditContext _context = null;
         private Action<int> _onClosed = null;
         private int _navHashCode;
         private int _switchHashCode;
+        private int _levelUpConfirmHashCode;
 
         /// <summary>
         /// Presenterを生成します(一度だけ呼び出してください)。
@@ -135,12 +139,83 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// TODO: LevelUpHandlerを実装したら、ここでナビゲーション入力(_navHashCode)を一時解除して
-        /// メニューのハイライトはそのまま維持しつつ、LevelUpHandler.Show( _context, onClosed: メニューへ入力復帰 ) を呼ぶ。
+        /// レベルアップ確認ダイアログを開きます。以下の条件を満たさない場合は何も行いません。
+        /// 1. キャラクターのレベルが最大に達していないこと
+        /// 2. 部隊で共有する経験値ポイント(UserDomain.Exp)が、レベルアップに必要な量以上あること
+        /// ※UserDomain.Expは所持金(Money)とは別の、部隊で共有しキャラクター個別のレベルアップに
+        /// 割り振れるポイント(名称は仮のもの)。
         /// </summary>
         private void OpenLevelUpScreen()
         {
-            Debug.Log( "[CharacterEditHandler] レベルアップ画面は未実装です。" );
+            var status = _context.CurrentCharacter.GetStatusRef;
+
+            if ( LevelExpData.IsMaxLevel( status.Level ) ) { return; }
+
+            int cost = LevelExpData.GetExpToNextLevel( status.Level, status.Exp );
+            if ( _userDomain.Exp < cost ) { return; }
+
+            EnsureLevelUpConfirmPresenter();
+
+            int expAfter = _userDomain.Exp - cost;
+            _levelUpConfirmPresenter.Show( "UI_CONFIRM_LEVEL_UP_MESSAGE", $"{_userDomain.Exp} → {expAfter}" );
+
+            InputFacade.Instance.UnregisterInputCodes( _navHashCode );
+
+            _levelUpConfirmHashCode = Hash.GetStableHash( nameof( CharacterEditHandler ) + "_LevelUpConfirm" );
+            InputFacade.Instance.RegisterInputCodes(
+                ( GuideIcon.HORIZONTAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptLevelUpConfirmDirection ), MENU_DIRECTION_INPUT_INTERVAL, _levelUpConfirmHashCode ),
+                ( GuideIcon.CONFIRM,           "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptLevelUpConfirmConfirm ),   0.0f, _levelUpConfirmHashCode ),
+                ( GuideIcon.CANCEL,            "BACK",    InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptLevelUpConfirmCancel ),    0.0f, _levelUpConfirmHashCode )
+            );
+        }
+
+        private void EnsureLevelUpConfirmPresenter()
+        {
+            if ( _levelUpConfirmPresenter != null ) return;
+
+            _levelUpConfirmPresenter = _hierarchyBld.InstantiateWithDiContainer<YesNoConfirmPresenter>( false );
+            _levelUpConfirmPresenter.Init();
+        }
+
+        private bool AcceptLevelUpConfirmDirection( InputContext context )
+        {
+            return _levelUpConfirmPresenter.MoveSelection( context.Cursor );
+        }
+
+        private bool AcceptLevelUpConfirmConfirm( InputContext context )
+        {
+            if ( !context.GetButton( GameButton.Confirm ) ) return false;
+
+            if ( _levelUpConfirmPresenter.IsYesSelected() )
+            {
+                // TODO: レベルアップ確定処理(経験値消費・ステータス上昇)は未実装。
+                Debug.Log( "[CharacterEditHandler] レベルアップ確定処理は未実装です。" );
+            }
+
+            CloseLevelUpConfirmAndReturnToMenu();
+
+            return true;
+        }
+
+        private bool AcceptLevelUpConfirmCancel( InputContext context )
+        {
+            if ( !context.GetButton( GameButton.Cancel ) ) return false;
+
+            CloseLevelUpConfirmAndReturnToMenu();
+
+            return true;
+        }
+
+        /// <summary>
+        /// レベルアップ確認ダイアログを閉じ、キャラクター編集メニューへ入力を戻します
+        /// (「いいえ」及びキャンセル、そして現時点では未実装の「はい」でも共通の処理)。
+        /// </summary>
+        private void CloseLevelUpConfirmAndReturnToMenu()
+        {
+            _levelUpConfirmPresenter.Hide();
+            InputFacade.Instance.UnregisterInputCodes( _levelUpConfirmHashCode );
+
+            RegisterNavInputCodes();
         }
 
         /// <summary>
