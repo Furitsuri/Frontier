@@ -12,6 +12,7 @@ namespace Frontier.DebugTools
     public class DebugUserData
     {
         public int money = 0;
+        public int exp = 0;
         public int stageLevel = 0;
 
         /// <summary>

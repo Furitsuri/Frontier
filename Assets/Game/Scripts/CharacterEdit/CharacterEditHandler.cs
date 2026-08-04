@@ -53,6 +53,7 @@ namespace Frontier.CharacterEdit
             _onClosed = onClosed;
 
             _presenter.Show( _context.CurrentCharacter );
+            _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp );
             RefreshCharacterParamDisplay();
 
             RegisterCharacterSwitchInputCodes();

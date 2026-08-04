@@ -30,6 +30,9 @@ namespace Frontier.UI
         [Header( "所持金テキスト" )]
         [SerializeField] private TextMeshProUGUI _moneyText;
 
+        [Header( "部隊共有経験値(仮称)テキスト" )]
+        [SerializeField] private TextMeshProUGUI _expText;
+
         [Header( "部隊人数(現在数/上限数)テキスト" )]
         [SerializeField] private TextMeshProUGUI _memberCountText;
 
@@ -78,11 +81,12 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 画面右上の所持金・部隊人数(現在数/上限数)表示を更新します。
+        /// 画面右上の所持金・部隊共有経験値(仮称)・部隊人数(現在数/上限数)表示を更新します。
         /// </summary>
-        public void SetHeaderInfo( int money, int currentMemberNum, int maxMemberNum )
+        public void SetHeaderInfo( int money, int exp, int currentMemberNum, int maxMemberNum )
         {
             _moneyText.text = money.ToString();
+            _expText.text = exp.ToString();
             _memberCountText.text = $"{currentMemberNum}/{maxMemberNum}";
         }
 

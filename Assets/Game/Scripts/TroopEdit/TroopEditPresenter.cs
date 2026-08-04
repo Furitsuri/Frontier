@@ -46,7 +46,7 @@ namespace Frontier.TroopEdit
 
         public void SetSelectedIndex( int index ) => _view.SetSelectedIndex( index );
 
-        public void SetHeaderInfo( int money, int currentMemberNum, int maxMemberNum ) => _view.SetHeaderInfo( money, currentMemberNum, maxMemberNum );
+        public void SetHeaderInfo( int money, int exp, int currentMemberNum, int maxMemberNum ) => _view.SetHeaderInfo( money, exp, currentMemberNum, maxMemberNum );
 
         /// <summary>
         /// 選択中キャラクターのパラメータ表示に使うCharacterParameterUIへの参照。

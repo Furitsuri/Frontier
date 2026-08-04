@@ -41,6 +41,7 @@ namespace Frontier.DebugTools
             }
 
             userDomain.Debug_SetMoney( data.money );
+            userDomain.Debug_SetExp( data.exp );
             userDomain.Debug_SetStageLevel( data.stageLevel );
 
             if ( data.overrideMembers )
