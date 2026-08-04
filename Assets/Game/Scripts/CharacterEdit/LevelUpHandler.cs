@@ -95,6 +95,7 @@ namespace Frontier.CharacterEdit
         /// <summary>
         /// 仮の割り振り結果をCharacter.Status/UserDomain.Expへ反映します。
         /// MaxHPを上げた分だけCurHPも同時に回復させます(不足分をそのまま維持する形)。
+        /// レベルが実際に上がった場合は、Status.Exp(現在のレベル内での取得経験値)を0にリセットします。
         /// </summary>
         private void Commit()
         {
@@ -108,6 +109,13 @@ namespace Frontier.CharacterEdit
             status.CurHP += addMaxHp;
             status.Atk   += addAtk;
             status.Def   += addDef;
+
+            // レベルが実際に上がった場合のみ、そのレベル内での取得経験値を0にリセットする
+            // (割り振らずにOKを押した場合、既存の取得経験値はそのまま維持する)
+            if ( _context.TentativeLevel != _context.OriginalLevel )
+            {
+                status.Exp = 0;
+            }
 
             _userDomain.AddExp( _context.TentativeExp - _context.OriginalExp );
         }

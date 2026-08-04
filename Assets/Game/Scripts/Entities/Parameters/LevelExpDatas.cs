@@ -66,18 +66,21 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 現在のレベル・累計経験値を基に、次のレベルまでに必要な残り経験値を返します。
+        /// 現在のレベル・そのレベル内での取得経験値を基に、次のレベルまでに必要な残り経験値を返します。
         /// 既に最大レベルに到達している場合は0を返します。
+        /// ※currentExpはレベルアップの都度0にリセットされる想定の値です(累計ではありません)。
+        /// そのため必要量は「次のレベルに到達するための累計経験値」ではなく、
+        /// 「現在のレベルから次のレベルへ上がるためだけに必要な経験値(1レベル分)」を基準にします。
         /// </summary>
         /// <param name="level">現在のレベル</param>
-        /// <param name="currentExp">現在の累計取得経験値</param>
+        /// <param name="currentExp">現在のレベル内で取得済みの経験値(レベルアップ時に0リセットされる想定)</param>
         static public int GetExpToNextLevel( int level, int currentExp )
         {
             if ( IsMaxLevel( level ) ) { return 0; }
 
-            int requiredExpForNextLevel = data[level + 1].RequiredTotalExp;
+            int requiredExpForThisLevel = data[level + 1].RequiredTotalExp - data[level].RequiredTotalExp;
 
-            return Mathf.Max( 0, requiredExpForNextLevel - currentExp );
+            return Mathf.Max( 0, requiredExpForThisLevel - currentExp );
         }
     }
 }
