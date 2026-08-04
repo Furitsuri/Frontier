@@ -19,6 +19,11 @@ public class UserDomain
         Money += amount;
     }
 
+    public void AddExp( int amount )
+    {
+        Exp += amount;
+    }
+
     public void IncreaseStageLevel()
     {
         StageLevel++;

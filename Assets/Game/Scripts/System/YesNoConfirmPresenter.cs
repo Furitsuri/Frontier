@@ -39,11 +39,9 @@ namespace Frontier
         /// ダイアログを表示し、カーソルをNO(誤操作防止のための既定値)にリセットします。
         /// </summary>
         /// <param name="messageKey">確認メッセージのローカライズキー(例: "UI_CONFIRM_EXIT_GAME_MESSAGE")</param>
-        /// <param name="detailText">メッセージの下に表示する詳細テキスト(例: 所持金の増減 "1000 → 900")。不要な場合はnullのままでよい</param>
-        public void Show( string messageKey, string detailText = null )
+        public void Show( string messageKey )
         {
             _confirmUI.SetMessage( messageKey );
-            _confirmUI.SetDetailText( detailText );
 
             var indices = new List<int>();
             for ( int i = 0; i < ( int ) ConfirmTag.NUM; ++i ) { indices.Add( i ); }

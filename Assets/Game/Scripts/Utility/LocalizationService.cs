@@ -41,7 +41,6 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_LOAD", "Load" },
                 { "UI_CMD_DELETE", "Delete" },
                 { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "Delete this save data?" },
-                { "UI_CONFIRM_LEVEL_UP_MESSAGE", "Level up this character?" },
             }
         },
         {
@@ -79,7 +78,6 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_LOAD", "ロード" },
                 { "UI_CMD_DELETE", "削除" },
                 { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "このセーブデータを削除しますか？" },
-                { "UI_CONFIRM_LEVEL_UP_MESSAGE", "このキャラクターをレベルアップさせますか？" },
             }
         }
     };

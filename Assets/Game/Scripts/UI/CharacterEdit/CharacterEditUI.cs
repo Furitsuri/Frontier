@@ -36,12 +36,16 @@ namespace Frontier.UI
         [Header( "部隊共有経験値(仮称)テキスト(TroopEdit画面と同じ位置に表示する)" )]
         [SerializeField] private TextMeshProUGUI _expText;
 
+        [Header( "レベルアップ項目選択時に右側へ表示するレベルアップ画面" )]
+        [SerializeField] private LevelUpUI _levelUpView;
+
         [SerializeField] private Color _normalColor = Color.white;
         [SerializeField] private Color _selectedColor = Color.red;
 
         [Inject] private ILocalizationService _localization = null;
 
         public CharacterParameterUI CharacterParamUI => _characterParamUI;
+        public LevelUpUI LevelUpView => _levelUpView;
 
         public override void Setup()
         {
@@ -49,6 +53,7 @@ namespace Frontier.UI
 
             RefreshMenuTexts();
             _characterParamUI?.Setup();
+            _levelUpView?.Setup();
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshMenuTexts; }
         }

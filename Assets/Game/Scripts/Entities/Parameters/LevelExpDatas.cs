@@ -4,7 +4,8 @@ namespace Frontier.Entities
 {
     /// <summary>
     /// レベル毎の必要累計経験値のテーブルです。Resources/LevelExpData/LevelExpData.json から読み込みます。
-    /// 現状のJSONの中身は仮のデータ(レベルに比例して増加するだけの単純な値)です。今後バランス調整時に差し替えてください。
+    /// 現状のJSONの中身は仮のデータ(RequiredTotalExp = 50 × Level × (Level - 1)。
+    /// レベルが上がるほど1レベルあたりの必要量も増えていく単純な二次式)です。今後バランス調整時に差し替えてください。
     /// </summary>
     static public class LevelExpData
     {

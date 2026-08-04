@@ -29,7 +29,6 @@ namespace Frontier
 
         private string _messageKey = "";
         private TextMeshProUGUI _messageText = null;
-        private TextMeshProUGUI _detailText = null;
         private List<TextMeshProUGUI> _optionTexts = new List<TextMeshProUGUI>();
         private GameObject _panel;
 
@@ -59,19 +58,6 @@ namespace Frontier
         {
             _messageKey = messageKey;
             RefreshAllTexts();
-        }
-
-        /// <summary>
-        /// メッセージの下に表示する詳細テキスト(例: 所持金の増減 "1000 → 900")を設定します。
-        /// nullまたは空文字列を渡した場合は非表示にします(既定では非表示のため、使用しない呼び出し元には影響しません)。
-        /// </summary>
-        public void SetDetailText( string text )
-        {
-            if ( _detailText == null ) return;
-
-            bool show = !string.IsNullOrEmpty( text );
-            _detailText.gameObject.SetActive( show );
-            if ( show ) { _detailText.text = text; }
         }
 
         /// <summary>選択中の項目インデックス(0:YES, 1:NO)を表示(色)に反映します。</summary>
@@ -161,25 +147,6 @@ namespace Frontier
             var messageLe = messageGO.AddComponent<LayoutElement>();
             messageLe.minWidth  = 320f;
             messageLe.minHeight = 36f;
-
-            // 詳細テキスト(例: 所持金の増減表示)。既定では非表示で、使用する場合はSetDetailText()で表示する
-            var detailGO = new GameObject( "Detail", typeof( RectTransform ) );
-            detailGO.transform.SetParent( _panel.transform, false );
-
-            _detailText = detailGO.AddComponent<TextMeshProUGUI>();
-            if ( font != null ) { _detailText.font = font; }
-            _detailText.fontSize   = 24;
-            _detailText.text       = "";
-            _detailText.color      = _normalColor;
-            _detailText.alignment  = TextAlignmentOptions.Center;
-            _detailText.enableWordWrapping = false;
-            _detailText.overflowMode       = TextOverflowModes.Overflow;
-
-            var detailLe = detailGO.AddComponent<LayoutElement>();
-            detailLe.minWidth  = 320f;
-            detailLe.minHeight = 36f;
-
-            detailGO.SetActive( false );
 
             // YES/NOの横並び行
             var rowGO = new GameObject( "Options", typeof( RectTransform ) );

@@ -57,6 +57,12 @@ namespace Frontier.CharacterEdit
         public CharacterParameterUI CharacterParamUI => _view.CharacterParamUI;
 
         /// <summary>
+        /// レベルアップ項目選択時に表示するLevelUpUIへの参照。
+        /// CharacterEditHandlerがLevelUpHandlerを構築する際に一度だけ取得します。
+        /// </summary>
+        public LevelUpUI LevelUpView => _view.LevelUpView;
+
+        /// <summary>
         /// L1/R1でキャラクターが切り替わった際、上部のキャラクター情報表示のみを更新します
         /// (メニューの選択状態はそのまま維持します)。
         /// </summary>
