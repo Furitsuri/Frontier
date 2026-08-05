@@ -1,0 +1,8 @@
+{
+    "MaxHP": 1,
+    "Atk": 2,
+    "Def": 2,
+    "moveRange": 10,
+    "jumpForce": 8,
+    "maxActionGauge": 5
+}

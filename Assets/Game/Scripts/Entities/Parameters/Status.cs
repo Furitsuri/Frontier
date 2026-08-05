@@ -17,6 +17,7 @@ namespace Frontier.Entities
         public string Name;                 // キャラクター名
         public int Level;                   // レベル
         public int Exp;                     // 現在のレベル内で取得済みの経験値(レベルアップ時に0リセットされる。LevelExpDataと突き合わせて次のレベルまでの必要経験値を算出する)
+        public int StatusPoint;             // 未使用の成長ポイント(レベルアップ時に加算され、任意のステータスへ割り振れる。0〜Constants.STATUS_POINT_MAX)
         public int MaxHP;                   // 最大HP
         public int CurHP;                   // 現在HP
         public int Atk;                     // 攻撃力
@@ -54,6 +55,7 @@ namespace Frontier.Entities
             Name                = "";
             Level               = 1;
             Exp                 = 0;
+            StatusPoint         = 0;
             MaxHP               = 0;
             CurHP               = 0;
             Atk                 = 0;
@@ -77,12 +79,21 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="damage"></param>
         public void AddDamage( int damage )
         {
             CurHP = Mathf.Clamp( CurHP - damage, 0, MaxHP );
+        }
+
+        /// <summary>
+        /// 未使用の成長ポイントを増減させます(負の値を渡すことでステータスへの割り振り消費にも使えます)。
+        /// </summary>
+        /// <param name="amount">増減させる量</param>
+        public void AddStatusPoint( int amount )
+        {
+            StatusPoint = Mathf.Clamp( StatusPoint + amount, 0, Constants.STATUS_POINT_MAX );
         }
 
         /// <summary>
