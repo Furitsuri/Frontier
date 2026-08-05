@@ -1,8 +1,9 @@
 {
-    "MaxHP": 1,
-    "Atk": 2,
-    "Def": 2,
-    "moveRange": 10,
-    "jumpForce": 8,
-    "maxActionGauge": 5
+    "MaxHP": { "Cost": 1, "Min": 1, "Max": 99 },
+    "Atk": { "Cost": 2, "Min": 1, "Max": 99 },
+    "Def": { "Cost": 2, "Min": 1, "Max": 99 },
+    "moveRange": { "Cost": 10, "Min": 1, "Max": 8 },
+    "jumpForce": { "Cost": 8, "Min": 1, "Max": 8 },
+    "maxActionGauge": { "Cost": 5, "Min": 0, "Max": 10 },
+    "recoveryActionGauge": { "Cost": 6, "Min": 0, "Max": 10 }
 }

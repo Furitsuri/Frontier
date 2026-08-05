@@ -63,6 +63,12 @@ namespace Frontier.CharacterEdit
         public LevelUpUI LevelUpView => _view.LevelUpView;
 
         /// <summary>
+        /// ステータス上昇項目選択時に表示するStatusUpUIへの参照。
+        /// CharacterEditHandlerがStatusUpHandlerを構築する際に一度だけ取得します。
+        /// </summary>
+        public StatusUpUI StatusUpView => _view.StatusUpView;
+
+        /// <summary>
         /// L1/R1でキャラクターが切り替わった際、上部のキャラクター情報表示のみを更新します
         /// (メニューの選択状態はそのまま維持します)。
         /// </summary>
@@ -90,6 +96,9 @@ namespace Frontier.CharacterEdit
             {
                 case CHARACTER_EDIT_MENU_OPTION_TAG.LEVEL_UP:
                     return CharacterEditConfirmResult.RequestLevelUpScreen;
+
+                case CHARACTER_EDIT_MENU_OPTION_TAG.STATUS_UP:
+                    return CharacterEditConfirmResult.RequestStatusUpScreen;
 
                 case CHARACTER_EDIT_MENU_OPTION_TAG.SKILL_EQUIP:
                     return CharacterEditConfirmResult.RequestSkillEquipScreen;

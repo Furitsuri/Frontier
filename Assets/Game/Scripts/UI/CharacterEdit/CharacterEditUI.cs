@@ -18,6 +18,7 @@ namespace Frontier.UI
         private static readonly string[] MenuItemLocalizationKeys =
         {
             "UI_CMD_LEVEL_UP",     // LEVEL_UP
+            "UI_CMD_STATUS_UP",    // STATUS_UP
             "UI_CMD_SKILL_EQUIP",  // SKILL_EQUIP
         };
 
@@ -39,6 +40,9 @@ namespace Frontier.UI
         [Header( "レベルアップ項目選択時に右側へ表示するレベルアップ画面" )]
         [SerializeField] private LevelUpUI _levelUpView;
 
+        [Header( "ステータス上昇項目選択時に右側へ表示するステータス上昇画面" )]
+        [SerializeField] private StatusUpUI _statusUpView;
+
         [SerializeField] private Color _normalColor = Color.white;
         [SerializeField] private Color _selectedColor = Color.red;
 
@@ -46,6 +50,7 @@ namespace Frontier.UI
 
         public CharacterParameterUI CharacterParamUI => _characterParamUI;
         public LevelUpUI LevelUpView => _levelUpView;
+        public StatusUpUI StatusUpView => _statusUpView;
 
         public override void Setup()
         {
@@ -54,6 +59,7 @@ namespace Frontier.UI
             RefreshMenuTexts();
             _characterParamUI?.Setup();
             _levelUpView?.Setup();
+            _statusUpView?.Setup();
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshMenuTexts; }
         }

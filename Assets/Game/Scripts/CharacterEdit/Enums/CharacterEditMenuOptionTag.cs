@@ -6,6 +6,7 @@
     public enum CHARACTER_EDIT_MENU_OPTION_TAG
     {
         LEVEL_UP = 0,
+        STATUS_UP,
         SKILL_EQUIP,
 
         NUM,

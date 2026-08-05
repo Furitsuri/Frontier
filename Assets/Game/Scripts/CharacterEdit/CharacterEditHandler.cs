@@ -23,6 +23,7 @@ namespace Frontier.CharacterEdit
         private CharacterEditPresenter _presenter = null;
         private CharacterParameterPresenter _paramPresenter = null;
         private LevelUpHandler _levelUpHandler = null;
+        private StatusUpHandler _statusUpHandler = null;
         private CharacterEditContext _context = null;
         private Action<int> _onClosed = null;
         private int _navHashCode;
@@ -154,6 +155,10 @@ namespace Frontier.CharacterEdit
                     OpenLevelUpScreen();
                     break;
 
+                case CharacterEditConfirmResult.RequestStatusUpScreen:
+                    OpenStatusUpScreen();
+                    break;
+
                 case CharacterEditConfirmResult.RequestSkillEquipScreen:
                     OpenSkillEquipScreen();
                     break;
@@ -194,6 +199,43 @@ namespace Frontier.CharacterEdit
         {
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
             _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp );
+            RefreshCharacterParamDisplay();
+
+            RegisterCharacterSwitchInputCodes();
+            RegisterNavInputCodes();
+        }
+
+        /// <summary>
+        /// ステータス上昇画面を開きます。メニューのナビゲーション入力に加え、L1/R1による
+        /// キャラクター切り替えも一時的に無効化します(仮の割り振り状態が特定の1体に紐づくため、
+        /// 割り振り中に対象キャラクターが切り替わる事態を避けるため)。
+        /// </summary>
+        private void OpenStatusUpScreen()
+        {
+            EnsureStatusUpHandler();
+
+            InputFacade.Instance.UnregisterInputCodes( _navHashCode );
+            InputFacade.Instance.UnregisterInputCodes( _switchHashCode );
+
+            _statusUpHandler.Show( _context.CurrentCharacter, OnStatusUpClosed );
+        }
+
+        private void EnsureStatusUpHandler()
+        {
+            if ( _statusUpHandler != null ) return;
+
+            _statusUpHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StatusUpHandler>( true, false, nameof( StatusUpHandler ) );
+            _statusUpHandler.Setup( _presenter.StatusUpView );
+        }
+
+        /// <summary>
+        /// ステータス上昇画面が閉じた際に呼ばれます。決定・キャンセルいずれの場合も、
+        /// ステータス・所持StatusPointが変化した可能性があるため表示を更新した上で、
+        /// メニューのナビゲーション入力・L1/R1切り替えを復帰させます。
+        /// </summary>
+        private void OnStatusUpClosed()
+        {
+            _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
             RefreshCharacterParamDisplay();
 
             RegisterCharacterSwitchInputCodes();

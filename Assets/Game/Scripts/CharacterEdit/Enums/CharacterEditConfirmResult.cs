@@ -12,6 +12,9 @@
         /// <summary>レベルアップが選択された。レベルアップ画面を表示する。</summary>
         RequestLevelUpScreen,
 
+        /// <summary>ステータス上昇が選択された。ステータス上昇画面を表示する。</summary>
+        RequestStatusUpScreen,
+
         /// <summary>装備スキル設定が選択された。装備スキル設定画面を表示する。</summary>
         RequestSkillEquipScreen,
     }
