@@ -36,6 +36,40 @@ namespace Frontier.Combat
             public string ExplainTextKey;           // スキル説明文のテキストキー
         }
 
+        [System.Serializable]
+        private struct FileData
+        {
+            public string Name;
+            public int Cost;
+            public int SituationType;
+            public int ActionType;
+            public int Flags;
+            public int Duration;
+            public int RangeShape;
+            public int RangeValue;
+            public int IsAdjustableRange;
+            public int TargetingMode;
+            public int TargetingRange;
+            public int IsMovingSkill;
+            public int IsCooperative;
+            public float AddAtkMag;
+            public float AddDefMag;
+            public int AddAtkNum;
+            public float Param1;
+            public float Param2;
+            public float Param3;
+            public float Param4;
+            public string ExplainTextKey;
+        }
+
+        [System.Serializable]
+        private class SkillDataContainer
+        {
+            public FileData[] SkillsData;
+        }
+
+        private const string ResourcesPath = "SkillData/SkillData";
+
         static public Data[] data = new Data[( int ) SkillID.NUM];
         // MEMO : 攻撃を受けた際に反応するパリィのような「リアクション型」のスキルのみを登録します。
         //        大半のスキルはリアクションを必要としないため、ここには登録しません(登録が無ければ通知処理自体が存在しません)。
@@ -51,6 +85,63 @@ namespace Frontier.Combat
                 { SkillID.DASH_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( new object[] { owner, targets }, false ) },
                 { SkillID.JUMP_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( new object[] { owner, targets }, false ) },
             };
+
+        static SkillsData()
+        {
+            Load();
+        }
+
+        /// <summary>
+        /// Resources/SkillData/SkillData.json からスキルデータを読み込みます。
+        /// どのシーンから起動しても最初のアクセス時に一度だけ読み込まれ、以後はシーンを跨いで保持されます。
+        /// </summary>
+        static private void Load()
+        {
+            var asset = Resources.Load<TextAsset>( ResourcesPath );
+            if ( asset == null )
+            {
+                Debug.LogWarning( $"[SkillsData] スキルデータが見つかりません: Resources/{ResourcesPath}.json" );
+                return;
+            }
+
+            var container = JsonUtility.FromJson<SkillDataContainer>( asset.text );
+            if ( container == null || container.SkillsData == null )
+            {
+                Debug.LogWarning( "[SkillsData] スキルデータの読み込みに失敗しました" );
+                return;
+            }
+
+            int count = Mathf.Min( container.SkillsData.Length, data.Length );
+            for ( int i = 0; i < count; ++i )
+            {
+                ApplyFileData( ref data[i], container.SkillsData[i] );
+            }
+        }
+
+        static private void ApplyFileData( ref Data data, in FileData fdata )
+        {
+            data.Name               = fdata.Name;
+            data.Cost                = fdata.Cost;
+            data.SituationType      = ( SituationType ) fdata.SituationType;
+            data.ActionType          = ( ActionType ) fdata.ActionType;
+            data.Flags               = ( SkillBitFlag ) fdata.Flags;
+            data.Duration            = fdata.Duration;
+            data.RangeShape          = ( RangeShape ) fdata.RangeShape;
+            data.RangeValue          = fdata.RangeValue;
+            data.IsAdjustableRange   = ( 0 < fdata.IsAdjustableRange );
+            data.TargetingMode      = ( TargetingMode ) fdata.TargetingMode;
+            data.TargetingRange      = fdata.TargetingRange;
+            data.IsMovingSkill       = ( 0 < fdata.IsMovingSkill );
+            data.IsCooperative       = ( 0 < fdata.IsCooperative );
+            data.AddAtkMag           = fdata.AddAtkMag;
+            data.AddDefMag           = fdata.AddDefMag;
+            data.AddAtkNum           = fdata.AddAtkNum;
+            data.Param1              = fdata.Param1;
+            data.Param2              = fdata.Param2;
+            data.Param3              = fdata.Param3;
+            data.Param4              = fdata.Param4;
+            data.ExplainTextKey      = fdata.ExplainTextKey ?? "";
+        }
 
         static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )
         {

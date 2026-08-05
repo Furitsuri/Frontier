@@ -1,5 +1,4 @@
-﻿using Frontier.Loaders;
-using System.Collections;
+﻿using System.Collections;
 using Zenject;
 
 namespace Frontier.FormTroop
@@ -13,13 +12,8 @@ namespace Frontier.FormTroop
         [Inject] private UserDomain _userDomain             = null;
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
-        private GeneralFileLoader _generalFileLoader;
-
         void Start()
         {
-            LazyInject.GetOrCreate( ref _generalFileLoader, () => _hierarchyBld.InstantiateWithDiContainer<GeneralFileLoader>( true ) );
-            _generalFileLoader.LoadSkillsData();
-
             StartCoroutine( InitGame() );
         }
 

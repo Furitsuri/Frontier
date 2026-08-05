@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Registries;
 using System.Collections.Generic;
 using UnityEngine;
@@ -84,6 +85,10 @@ public class CharacterFactory
 
         chara.Init();
         chara.GetStatusRef = status;
+
+        // 装備スキルの使用可否フラグを反映する(位置に関わらない装備状況そのものの表示のため、
+        // Character.Apply()と同様にSituationType.NONE/全ActionType許可で判定する)
+        chara.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
 
         return chara;
     }

@@ -1,6 +1,4 @@
 ﻿using Frontier.DebugTools.DebugMenu;
-using Frontier.Loaders;
-using Frontier.Registries;
 using Frontier.Sequences;
 using Frontier.Tutorial;
 using Frontier.UI;
@@ -28,7 +26,6 @@ namespace Frontier
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
         private GameObject _stageImage;
-        private GeneralFileLoader _generalFileLoader;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
         private DebugEditorMonoDriver _debugEditorMonoDrv;
@@ -55,7 +52,6 @@ namespace Frontier
                 _hierarchyBld.CreateComponentAndOrganize<ManagerProvider>( _managerProvider, true );
             }
 
-            LazyInject.GetOrCreate( ref _generalFileLoader, () => _hierarchyBld.InstantiateWithDiContainer<GeneralFileLoader>( true ) );
 #if UNITY_EDITOR
             LazyInject.GetOrCreate( ref _debugMenuFcd, () => _hierarchyBld.InstantiateWithDiContainer<DebugMenuFacade>( false ) );
             LazyInject.GetOrCreate( ref _debugEditorMonoDrv, () => _diContainer.Resolve<DebugEditorMonoDriver>() );
@@ -75,8 +71,6 @@ namespace Frontier
         void Start()
         {
             StartCoroutine( Bootstrap() );
-
-            _generalFileLoader.LoadSkillsData();
 
             StartCoroutine( InitGame() );
         }

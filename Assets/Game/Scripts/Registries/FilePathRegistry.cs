@@ -12,9 +12,6 @@ namespace Frontier.Registries
         [Header( "各味方キャラクターのパラメータ参照先" )]
         [SerializeField] private string[] _playerParamFilePath;
 
-        [Header( "各スキルデータのパラメータ参照先" )]
-        [SerializeField] private string _skillDataFilePath;
-
         [Header( "フィールドデータのID一覧" )]
         [SerializeField] private string[] _fieldIds;
 
@@ -27,7 +24,6 @@ namespace Frontier.Registries
         public string[] StageNames  => _stageNames;
         public string[] FieldIds    => _fieldIds;
         public string[] PlayerParamFilePath => _playerParamFilePath;
-        public string SkillDataFilePath => _skillDataFilePath;
         public string CloseAtkCameraParamFilePath => _closeAtkCameraParamFilePath;
         public string RangedAtkCameraParamFilePath => _rangedAtkCameraParamFilePath;
 
