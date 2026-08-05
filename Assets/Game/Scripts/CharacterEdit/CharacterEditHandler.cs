@@ -58,9 +58,38 @@ namespace Frontier.CharacterEdit
             _presenter.Show( _context.CurrentCharacter );
             _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp );
             RefreshCharacterParamDisplay();
+            UpdatePreview();
 
             RegisterCharacterSwitchInputCodes();
             RegisterNavInputCodes();
+        }
+
+        /// <summary>
+        /// 現在カーソルが当たっているメニュー項目に応じて、右側のプレビュー表示を切り替えます
+        /// (LEVEL UPならレベルアップ画面、STATUS UPならステータス上昇画面、それ以外(装備スキル設定は
+        /// 未実装)は何も表示しない)。まだ確定操作は行っていない、カーソル移動だけの状態で呼ばれる想定。
+        /// </summary>
+        private void UpdatePreview()
+        {
+            switch ( _presenter.SelectedOption )
+            {
+                case CHARACTER_EDIT_MENU_OPTION_TAG.LEVEL_UP:
+                    EnsureLevelUpHandler();
+                    _statusUpHandler?.HidePreview();
+                    _levelUpHandler.ShowPreview( _context.CurrentCharacter );
+                    break;
+
+                case CHARACTER_EDIT_MENU_OPTION_TAG.STATUS_UP:
+                    EnsureStatusUpHandler();
+                    _levelUpHandler?.HidePreview();
+                    _statusUpHandler.ShowPreview( _context.CurrentCharacter );
+                    break;
+
+                default:
+                    _levelUpHandler?.HidePreview();
+                    _statusUpHandler?.HidePreview();
+                    break;
+            }
         }
 
         private void RefreshCharacterParamDisplay()
@@ -110,6 +139,7 @@ namespace Frontier.CharacterEdit
             _context.MovePrevious();
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
             SlideCharacterParamDisplay( fromCharacter, SlideDirection.RIGHT );
+            UpdatePreview();
 
             return true;
         }
@@ -122,6 +152,7 @@ namespace Frontier.CharacterEdit
             _context.MoveNext();
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
             SlideCharacterParamDisplay( fromCharacter, SlideDirection.LEFT );
+            UpdatePreview();
 
             return true;
         }
@@ -142,7 +173,11 @@ namespace Frontier.CharacterEdit
 
         private bool AcceptDirection( InputContext context )
         {
-            return _presenter.MoveSelection( context.Cursor );
+            if ( !_presenter.MoveSelection( context.Cursor ) ) return false;
+
+            UpdatePreview();
+
+            return true;
         }
 
         private bool AcceptConfirm( InputContext context )
@@ -178,6 +213,7 @@ namespace Frontier.CharacterEdit
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
             InputFacade.Instance.UnregisterInputCodes( _switchHashCode );
+            _presenter.LockMenu();
 
             _levelUpHandler.Show( _context.CurrentCharacter, OnLevelUpClosed );
         }
@@ -200,6 +236,8 @@ namespace Frontier.CharacterEdit
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
             _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp );
             RefreshCharacterParamDisplay();
+            _presenter.UnlockMenu();
+            UpdatePreview();
 
             RegisterCharacterSwitchInputCodes();
             RegisterNavInputCodes();
@@ -216,6 +254,7 @@ namespace Frontier.CharacterEdit
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
             InputFacade.Instance.UnregisterInputCodes( _switchHashCode );
+            _presenter.LockMenu();
 
             _statusUpHandler.Show( _context.CurrentCharacter, OnStatusUpClosed );
         }
@@ -237,6 +276,8 @@ namespace Frontier.CharacterEdit
         {
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
             RefreshCharacterParamDisplay();
+            _presenter.UnlockMenu();
+            UpdatePreview();
 
             RegisterCharacterSwitchInputCodes();
             RegisterNavInputCodes();
@@ -264,6 +305,8 @@ namespace Frontier.CharacterEdit
         {
             _presenter.Hide();
             _paramPresenter.ClearCharacter();
+            _levelUpHandler?.HidePreview();
+            _statusUpHandler?.HidePreview();
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
             InputFacade.Instance.UnregisterInputCodes( _switchHashCode );

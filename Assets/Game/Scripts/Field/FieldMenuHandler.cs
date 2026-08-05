@@ -1,6 +1,7 @@
 ﻿using Frontier;
 using Frontier.SaveLoad;
 using Frontier.TroopEdit;
+using Frontier.UI;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -15,6 +16,8 @@ namespace Frontier.Field
     public class FieldMenuHandler : MonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private UserDomain _userDomain             = null;
+        [Inject] private IUiSystem _uiSystem                = null;
 
         private FieldMenuPresenter        _presenter           = null;
         private YesNoConfirmPresenter     _exitConfirmPresenter = null;
@@ -271,6 +274,11 @@ namespace Frontier.Field
         {
             _presenter.SetPanelVisible( true );
             RegisterNavInputCodes();
+
+            // 部隊編集画面(レベルアップ/ステータス上昇含む)から戻った際、所持金・SP・部隊人数が
+            // 変化している可能性があるため、フィールド画面右上のHUDを最新の値に更新する
+            var headerView = _uiSystem?.GeneralUi?.FieldHeaderView;
+            headerView?.SetHeaderInfo( _userDomain.Money, _userDomain.Exp, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
+using static Constants;
 
 namespace Frontier.Field
 {
@@ -41,6 +42,7 @@ namespace Frontier.Field
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private UserDomain _userDomain             = null;
+        [Inject] private IUiSystem _uiSystem                = null;
 
         private FieldData                      _fieldData    = null;
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
@@ -61,6 +63,8 @@ namespace Frontier.Field
         {
             // 戦闘シーンからの遷移時に暗転したままになっている場合に解除する
             LoadingScreenController.Instance?.Hide();
+
+            RefreshFieldHeader();
 
             // 戦闘・雇用などから帰還した場合はクリア済みノードを反映してから進行状態を復元
             if ( FieldTransitionContext.IsFromField )
@@ -217,6 +221,19 @@ namespace Frontier.Field
         }
 
         /// <summary>
+        /// フィールド画面右上の常時表示HUD(所持金・SP・部隊人数)を最新の値で更新し、表示します。
+        /// TroopEdit画面のヘッダーと同じ情報・同じ位置に揃えている。
+        /// </summary>
+        private void RefreshFieldHeader()
+        {
+            var headerView = _uiSystem?.GeneralUi?.FieldHeaderView;
+            if ( headerView == null || _userDomain == null ) return;
+
+            headerView.SetHeaderInfo( _userDomain.Money, _userDomain.Exp, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            headerView.Show();
+        }
+
+        /// <summary>
         /// フィールド上に自身を表す3Dキャラクターモデルのビューを生成します(一度だけ)。
         /// </summary>
         private void EnsurePlayerCharacterView()
@@ -257,6 +274,7 @@ namespace Frontier.Field
             base.Restart();
 
             _fieldMenuHandler?.NotifySceneResumed();
+            RefreshFieldHeader();
         }
 
         private void RefreshReachability()

@@ -13,7 +13,7 @@ namespace Frontier.UI
     /// 開閉や選択状態の管理はCharacterEditPresenterが行い、このクラスは表示指示を受けて
     /// 反映するだけに留める。
     /// </summary>
-    public class CharacterEditUI : UiMonoBehaviour
+    public class CharacterEditUI : UiMonoBehaviour, ISelectableMenuView
     {
         private static readonly string[] MenuItemLocalizationKeys =
         {
@@ -45,6 +45,7 @@ namespace Frontier.UI
 
         [SerializeField] private Color _normalColor = Color.white;
         [SerializeField] private Color _selectedColor = Color.red;
+        [SerializeField] private Color _lockedColor = Color.gray;
 
         [Inject] private ILocalizationService _localization = null;
 
@@ -74,14 +75,26 @@ namespace Frontier.UI
         public void Hide() => gameObject.SetActive( false );
 
         /// <summary>
-        /// 選択中の項目インデックスを表示(色)に反映します。
-        /// サブ画面(レベルアップ等)を開いている間もこの値を変更しなければ、ハイライトは維持されます。
+        /// 選択中の項目インデックスを表示(色)に反映します(ISelectableMenuView実装)。
+        /// ロック状態(SetLockedIndex)の解除にも使用します。
         /// </summary>
         public void SetSelectedIndex( int index )
         {
             for ( int i = 0; i < _menuItemTexts.Length; ++i )
             {
                 _menuItemTexts[i].color = ( i == index ) ? _selectedColor : _normalColor;
+            }
+        }
+
+        /// <summary>
+        /// activeIndexの項目が確定されている間、他の項目をグレーアウトします(ISelectableMenuView実装)。
+        /// 表現方法(現状は文字色)を変更したくなった場合は、この実装のみを差し替えれば良い。
+        /// </summary>
+        public void SetLockedIndex( int activeIndex )
+        {
+            for ( int i = 0; i < _menuItemTexts.Length; ++i )
+            {
+                _menuItemTexts[i].color = ( i == activeIndex ) ? _selectedColor : _lockedColor;
             }
         }
 

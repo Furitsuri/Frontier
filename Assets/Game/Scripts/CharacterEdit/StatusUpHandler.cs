@@ -47,6 +47,21 @@ namespace Frontier.CharacterEdit
             RegisterNavInputCodes();
         }
 
+        /// <summary>
+        /// 入力受付は開始せず、指定キャラクターの内容をプレビュー表示のみ行います
+        /// (キャラクター編集画面のメニューでSTATUS UP項目にカーソルが当たっている間の表示用)。
+        /// 決定・キャンセル操作は受け付けないため、割り振り状態は変更されません。
+        /// </summary>
+        public void ShowPreview( Character character )
+        {
+            _presenter.Show( new StatusUpContext( character ) );
+        }
+
+        /// <summary>
+        /// ShowPreview()で表示したプレビューを非表示にします。
+        /// </summary>
+        public void HidePreview() => _presenter.Hide();
+
         private void RegisterNavInputCodes()
         {
             _navHashCode = Hash.GetStableHash( nameof( StatusUpHandler ) + "_Nav" );

@@ -30,6 +30,9 @@ namespace Frontier
         [Header( "CharacterEdit" )]
         public CharacterEditUI CharacterEditView;    // キャラクター編集UI
 
+        [Header( "FieldHeader" )]
+        public FieldHeaderUI FieldHeaderView;        // フィールド画面右上の常時表示HUD
+
         void Awake()
         {
             if( null == GetComponent<Canvas>() )
@@ -48,6 +51,7 @@ namespace Frontier
             SaveLoadView?.Setup();
             TroopEditView?.Setup();
             CharacterEditView?.Setup();
+            FieldHeaderView?.Setup();
         }
 
         public Vector2 GetScreenSize()

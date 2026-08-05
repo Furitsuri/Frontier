@@ -87,6 +87,22 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
+        /// 現在カーソルが当たっている項目(未確定でも、確定済みでも、その時点の値)。
+        /// カーソル移動に応じて右側のプレビュー表示を切り替える際に参照します。
+        /// </summary>
+        public CHARACTER_EDIT_MENU_OPTION_TAG SelectedOption => ( CHARACTER_EDIT_MENU_OPTION_TAG ) _cmdIdxVal.value;
+
+        /// <summary>
+        /// 現在選択中の項目を確定し、他の項目を選択不可の見た目(グレーアウト)にします。
+        /// </summary>
+        public void LockMenu() => _view.SetLockedIndex( _cmdIdxVal.index );
+
+        /// <summary>
+        /// ロック状態を解除し、通常のカーソル選択表示に戻します。
+        /// </summary>
+        public void UnlockMenu() => _view.SetSelectedIndex( _cmdIdxVal.index );
+
+        /// <summary>
         /// 現在選択中の項目を確定操作します。
         /// </summary>
         public CharacterEditConfirmResult ConfirmSelection()
