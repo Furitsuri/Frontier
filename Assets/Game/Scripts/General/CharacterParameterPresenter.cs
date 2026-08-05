@@ -263,6 +263,11 @@ public class CharacterParameterPresenter : PhasePresenterBase
                 : $"{LevelExpData.GetExpToNextLevel( status.Level, status.Exp )} Exp";
         }
 
+        if( null != _parameterUI.TMPStatusPointValue )
+        {
+            _parameterUI.TMPStatusPointValue.text = $"{status.StatusPoint}";
+        }
+
         if( null != _parameterUI.TMPAddAtkValue )
         {
             int addAtkValue                     = ( int ) ( modifiedParam.Atk );
