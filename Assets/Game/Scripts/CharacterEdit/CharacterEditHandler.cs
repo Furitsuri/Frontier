@@ -36,9 +36,11 @@ namespace Frontier.CharacterEdit
             _presenter = _hierarchyBld.InstantiateWithDiContainer<CharacterEditPresenter>( false );
             _presenter.Init();
 
-            // isNeedCamera:false ... 上部のパラメータ表示では3Dモデルの描画は行わない(TroopEdit画面と同じ方針)
+            // isNeedCamera:true ... 上部のパラメータ表示の左側にキャラクター3Dモデルを表示する
+            // (TroopEditのグリッド一覧側で既に個々のポートレートを表示しているため、
+            // TroopEdit側のパラメータパネルではisNeedCamera:falseのまま据え置く)
             _paramPresenter = _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(
-                new object[] { _presenter.CharacterParamUI, false }, false );
+                new object[] { _presenter.CharacterParamUI, true }, false );
             _paramPresenter.Init();
         }
 
@@ -64,6 +66,14 @@ namespace Frontier.CharacterEdit
         {
             _paramPresenter.AssignCharacter( _context.CurrentCharacter, LAYER_MASK_INDEX_CHARACTER );
             _paramPresenter.SetActive( true );
+        }
+
+        // isNeedCamera:trueで生成したCharacterParameterPresenterは、カメラのRenderを
+        // 毎フレーム能動的に呼び出さない限りポートレートが更新されない(BattleRoutinePresenter/
+        // DeploymentPhasePresenter等、他の呼び出し元も同様に自身のUpdate内で呼び出している)。
+        private void Update()
+        {
+            _paramPresenter?.Update();
         }
 
         /// <summary>

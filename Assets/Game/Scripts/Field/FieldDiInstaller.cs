@@ -20,6 +20,7 @@ namespace Frontier.Field
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();
+            Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
 
             // フィールド上にキャラクターの3Dモデルを表示する FieldPlayerCharacterView が必要とする依存関係
             // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する

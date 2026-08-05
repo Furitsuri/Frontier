@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Frontier.Loaders;
+using System.Collections;
 using Zenject;
 
 namespace Frontier.Field
@@ -12,10 +13,15 @@ namespace Frontier.Field
         [Inject] private UserDomain _userDomain             = null;
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
+        private GeneralFileLoader _generalFileLoader;
+
         protected override int GetRequiredRoutineCount() => (int)FocusRoutinePriority.NUM;
 
         void Start()
         {
+            LazyInject.GetOrCreate( ref _generalFileLoader, () => _hierarchyBld.InstantiateWithDiContainer<GeneralFileLoader>( true ) );
+            _generalFileLoader.LoadSkillsData();
+
             StartCoroutine( InitGame() );
         }
 
