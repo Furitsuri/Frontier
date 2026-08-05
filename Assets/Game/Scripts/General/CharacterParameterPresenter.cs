@@ -23,6 +23,18 @@ public class CharacterParameterPresenter : PhasePresenterBase
     private float _alpha;
     private float _blinkingElapsedTime;
 
+    // キャラクター切替スライド演出用(IncomingTargetImageが割り当てられている画面でのみ使用する)。
+    // _characterCamera/TargetImageは「切替前」のキャラクターを表示し続け、
+    // _incomingCharacterCamera/IncomingTargetImageが「切替後」のキャラクターを表示しながら、
+    // 両者のRawImageをUI座標上でスライドさせる。完了後、_characterCamera側を切替後のキャラクターへ
+    // retargetして定位置に戻すことで、常にTargetImage側が「静止状態の表示」であるようにしている。
+    private CharacterCamera _incomingCharacterCamera;
+    private Character _slideOutgoingCharacter;
+    private bool _isPortraitSliding;
+    private float _slideElapsed;
+    private float _slideDuration;
+    private SlideDirection _slideDirection;
+
     [Inject] public CharacterParameterPresenter( CharacterParameterUI parameterUI, bool isNeedCamera, HierarchyBuilderBase hierarchyBld )
     {
         _hierarchyBld       = hierarchyBld;
@@ -65,7 +77,14 @@ public class CharacterParameterPresenter : PhasePresenterBase
     {
         if( null == _character ) { return; }
 
-        _characterCamera?.Update( _character.CameraParam );
+        if( _isPortraitSliding )
+        {
+            UpdatePortraitSlide();
+        }
+        else
+        {
+            _characterCamera?.Update( _character.CameraParam );
+        }
 
         UpdateParamRender( _character, _character.GetStatusRef, _character.BattleParams.ModifiedParam, _character.BattleParams.SkillModifiedParam );
     }
@@ -93,8 +112,108 @@ public class CharacterParameterPresenter : PhasePresenterBase
         RefreshParamRender( _character, _character.GetStatusRef, _character.BattleParams.ModifiedParam );
     }
 
+    /// <summary>
+    /// 表示中の3Dモデルをスライドさせながらキャラクターを切り替えます(数値パラメータは即時反映)。
+    /// カメラ未使用(isNeedCamera:false)、またはIncomingTargetImage未設定の画面では
+    /// AssignCharacterと同じ即時切替になります。
+    /// </summary>
+    /// <param name="direction">
+    /// 切替前(fromCharacter)のモデルが移動していく向き。RIGHTなら現在のモデルが右へ、
+    /// 次のモデルが左から入ってくる。LEFTならその逆。
+    /// </param>
+    public void AssignCharacterWithSlide( Character fromCharacter, Character toCharacter, int layerMaskIndex, SlideDirection direction )
+    {
+        if( null == _characterCamera || null == _parameterUI.IncomingTargetImage )
+        {
+            AssignCharacter( toCharacter, layerMaskIndex );
+            return;
+        }
+
+        EnsureIncomingCharacterCamera();
+
+        _slideOutgoingCharacter = fromCharacter;
+        _isPortraitSliding      = true;
+        _slideDirection         = direction;
+        _slideElapsed           = 0f;
+        _slideDuration          = Constants.CHARACTER_PARAM_PORTRAIT_SLIDE_DURATION;
+
+        // 数値パラメータ・レイヤー・カーソル対象は即座に切り替える(3Dモデルの表示のみアニメーションさせる)
+        if( null != _character && _character != toCharacter )
+        {
+            _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+        }
+        _character = toCharacter;
+        _character.RegistParameterPresenter( this );
+        _character.gameObject.SetActive( true );
+
+        _incomingCharacterCamera.AssignCharacter( toCharacter, layerMaskIndex );
+
+        float width = _parameterUI.TargetImage.rectTransform.rect.width;
+        float sign  = ( direction == SlideDirection.RIGHT ) ? 1f : -1f;
+        _parameterUI.TargetImage.rectTransform.anchoredPosition         = Vector2.zero;
+        _parameterUI.IncomingTargetImage.gameObject.SetActive( true );
+        _parameterUI.IncomingTargetImage.rectTransform.anchoredPosition = new Vector2( -sign * width, 0f );
+
+        RefreshParamRender( _character, _character.GetStatusRef, _character.BattleParams.ModifiedParam );
+    }
+
+    private void EnsureIncomingCharacterCamera()
+    {
+        if( null != _incomingCharacterCamera ) { return; }
+
+        LazyInject.GetOrCreate( ref _incomingCharacterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
+        _incomingCharacterCamera.Setup( _parameterUI.gameObject, "CharacterParameterCameraIncoming" );
+
+        var layerToName = LayerMask.LayerToName( _layerMaskIndex );
+        _incomingCharacterCamera.Init( "CharaParamCamera_" + layerToName + "_Incoming", _layerMaskIndex, _cameraAngleY, ref _parameterUI.IncomingTargetImage );
+    }
+
+    private void UpdatePortraitSlide()
+    {
+        _characterCamera.Update( _slideOutgoingCharacter.CameraParam );
+        _incomingCharacterCamera.Update( _character.CameraParam );
+
+        _slideElapsed += DeltaTimeProvider.DeltaTime;
+        float rawT = Mathf.Clamp01( _slideElapsed / _slideDuration );
+        float t    = rawT * rawT * ( 3f - 2f * rawT );    // smoothstep
+
+        float width = _parameterUI.TargetImage.rectTransform.rect.width;
+        float sign  = ( _slideDirection == SlideDirection.RIGHT ) ? 1f : -1f;
+
+        _parameterUI.TargetImage.rectTransform.anchoredPosition         = new Vector2( sign * width * t, 0f );
+        _parameterUI.IncomingTargetImage.rectTransform.anchoredPosition = new Vector2( -sign * width * ( 1f - t ), 0f );
+
+        if( 1f <= rawT )
+        {
+            CompletePortraitSlide();
+        }
+    }
+
+    private void CompletePortraitSlide()
+    {
+        _isPortraitSliding = false;
+
+        // 主系統(TargetImage/_characterCamera)を切替後のキャラクターへretargetし、定位置に戻す
+        _characterCamera.AssignCharacter( _character, _layerMaskIndex );
+        _parameterUI.TargetImage.rectTransform.anchoredPosition = Vector2.zero;
+
+        _slideOutgoingCharacter.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+        _slideOutgoingCharacter = null;
+
+        _parameterUI.IncomingTargetImage.gameObject.SetActive( false );
+    }
+
     public void ClearCharacter()
     {
+        if( _isPortraitSliding )
+        {
+            _isPortraitSliding = false;
+            _slideOutgoingCharacter?.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );
+            _slideOutgoingCharacter = null;
+            _parameterUI.TargetImage.rectTransform.anchoredPosition = Vector2.zero;
+            _parameterUI.IncomingTargetImage?.gameObject.SetActive( false );
+        }
+
         if( null != _character )
         {
             _character.gameObject.SetLayerRecursively( Constants.LAYER_MASK_INDEX_CHARACTER );

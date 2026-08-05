@@ -27,6 +27,8 @@ namespace Frontier.UI
         [SerializeField] public TextMeshProUGUI TMPActRecoveryValue;
         [SerializeField] public TextMeshProUGUI TMPExpValue;
         [SerializeField] public RawImage TargetImage;
+        [Header( "TargetImageと同サイズのマスク内に配置する、キャラクター切替スライド演出専用のRawImage(未使用のシーンではnullで構いません)" )]
+        [SerializeField] public RawImage IncomingTargetImage;
         [SerializeField] public RawImage ActGaugeElemImage;
         [SerializeField] public RectTransform PanelTransform;
         [SerializeField] public SkillBoxUI[] SkillBoxes;

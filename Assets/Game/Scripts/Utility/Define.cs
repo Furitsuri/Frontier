@@ -98,6 +98,8 @@ static public class Constants
     public const float CHARACTER_SELECTION_SPACING_X    = 50f;
     public const float CHARACTER_SELECTION_OFFSET_Y     = 0f;
     public const float CHARACTER_SELECTION_OFFSET_Z     = -1000f;
+    // キャラクター編集画面でL1/R1切替時にパラメータパネルの3Dモデルをスライドさせる際の所要時間(秒)
+    public const float CHARACTER_PARAM_PORTRAIT_SLIDE_DURATION = 0.25f;
     // 配置フェーズにおいて表示するキャラクター画像のX座標オフセット値
     public const float DEPLOYMENT_CHARACTER_IMAGE_OFFSET_X = 180f;
     // キャラクターの移動速度

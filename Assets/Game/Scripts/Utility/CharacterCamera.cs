@@ -10,7 +10,7 @@ public class CharacterCamera
     private RawImage _refTargetImage;
     private Camera _camera;
     private RenderTexture _targetTexture;
-    private Character _dispCharacter;   // 表示中のキャラクター  
+    private Character _dispCharacter;   // 表示中のキャラクター
     private float _angleY = 30.0f;
 
     public void Setup( GameObject parentObj,  string cameraName )

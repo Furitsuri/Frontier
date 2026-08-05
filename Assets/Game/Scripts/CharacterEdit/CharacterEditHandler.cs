@@ -68,6 +68,17 @@ namespace Frontier.CharacterEdit
             _paramPresenter.SetActive( true );
         }
 
+        /// <summary>
+        /// L1/R1でのキャラクター切替時、3DモデルをfromCharacterから現在のキャラクターへスライドさせながら表示します
+        /// (TroopEdit/CharacterEditのキャラクターはいずれも常駐しており、切替前後で見た目が同一だと
+        /// 切り替わったこと自体が分かりづらいための演出)。
+        /// </summary>
+        private void SlideCharacterParamDisplay( Character fromCharacter, SlideDirection direction )
+        {
+            _paramPresenter.AssignCharacterWithSlide( fromCharacter, _context.CurrentCharacter, LAYER_MASK_INDEX_CHARACTER, direction );
+            _paramPresenter.SetActive( true );
+        }
+
         // isNeedCamera:trueで生成したCharacterParameterPresenterは、カメラのRenderを
         // 毎フレーム能動的に呼び出さない限りポートレートが更新されない(BattleRoutinePresenter/
         // DeploymentPhasePresenter等、他の呼び出し元も同様に自身のUpdate内で呼び出している)。
@@ -94,9 +105,10 @@ namespace Frontier.CharacterEdit
         {
             if ( !context.GetButton( GameButton.Sub1 ) ) return false;
 
+            var fromCharacter = _context.CurrentCharacter;
             _context.MovePrevious();
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
-            RefreshCharacterParamDisplay();
+            SlideCharacterParamDisplay( fromCharacter, SlideDirection.RIGHT );
 
             return true;
         }
@@ -105,9 +117,10 @@ namespace Frontier.CharacterEdit
         {
             if ( !context.GetButton( GameButton.Sub2 ) ) return false;
 
+            var fromCharacter = _context.CurrentCharacter;
             _context.MoveNext();
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
-            RefreshCharacterParamDisplay();
+            SlideCharacterParamDisplay( fromCharacter, SlideDirection.LEFT );
 
             return true;
         }
