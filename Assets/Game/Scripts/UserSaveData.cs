@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Field;
 
@@ -26,6 +27,7 @@ public class UserSaveData
     public int          Exp;
     public int          StageLevel;
     public List<Status> Members = new List<Status>();
+    public List<SkillInventoryEntry> SkillInventory = new List<SkillInventoryEntry>();
 
     public FieldProgress FieldProgress;
 }
