@@ -23,10 +23,6 @@ static public class Constants
     public const int EQUIPABLE_SKILL_MAX_NUM = 4;
     // キャラクターレベルの最大値
     public const int MAX_LEVEL = 99;
-    // レベルアップ画面で能力値を1ポイント割り振った際の成長量(仮の値。今後バランス調整時に差し替えてください)
-    public const int LEVEL_UP_GROWTH_MAX_HP = 1;
-    public const int LEVEL_UP_GROWTH_ATK    = 1;
-    public const int LEVEL_UP_GROWTH_DEF    = 1;
     // Status.StatusPoint(未使用の成長ポイント)の最大値
     public const int STATUS_POINT_MAX = 999;
     // キャラクターのアクションゲージの最大数

@@ -6,8 +6,8 @@ namespace Frontier.CharacterEdit
 {
     /// <summary>
     /// レベルアップ画面のViewへの窓口となるPresenter。
-    /// 割り振り状態の実データ(仮のレベル・ポイント・能力値)はLevelUpContext(LevelUpHandlerが所有)が持ち、
-    /// このクラスはメニューカーソル(MaxHP/Atk/Def/OKの4項目、その場限りの添字)をCommandListで管理しつつ、
+    /// 割り振り状態の実データ(仮のレベル・EXP・StatusPoint)はLevelUpContext(LevelUpHandlerが所有)が持ち、
+    /// このクラスはメニューカーソル(LEVEL/OKの2項目、その場限りの添字)をCommandListで管理しつつ、
     /// 画面のどこに何を表示するかの判断(不足時の赤色表示等)を行う。Viewは指示された内容を
     /// そのまま適用するだけの薄い層とする。
     /// </summary>
@@ -15,9 +15,7 @@ namespace Frontier.CharacterEdit
     {
         private enum Row
         {
-            MaxHP = 0,
-            Atk,
-            Def,
+            Level = 0,
             OK,
 
             NUM,
@@ -35,7 +33,7 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 画面を表示し、メニューカーソルを先頭項目(MaxHP)にリセットします。
+        /// 画面を表示し、メニューカーソルを先頭項目(LEVEL)にリセットします。
         /// </summary>
         public void Show( LevelUpContext context )
         {
@@ -66,12 +64,12 @@ namespace Frontier.CharacterEdit
         public bool IsOkSelected() => ( Row ) _cmdIdxVal.value == Row.OK;
 
         /// <summary>
-        /// 選択中の能力値に1ポイント割り振ります(OK選択中は何もしません)。
+        /// 仮レベルを1つ上げます(OK選択中は何もしません)。
         /// </summary>
         public bool Increase()
         {
             if ( IsOkSelected() ) return false;
-            if ( !_context.Increase( ToStatKind( ( Row ) _cmdIdxVal.value ) ) ) return false;
+            if ( !_context.Increase() ) return false;
 
             RefreshAll();
 
@@ -79,42 +77,27 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 選択中の能力値への割り振りを1ポイント取り消します(OK選択中は何もしません)。
+        /// 仮レベルを1つ下げます(OK選択中は何もしません)。
         /// </summary>
         public bool Decrease()
         {
             if ( IsOkSelected() ) return false;
-            if ( !_context.Decrease( ToStatKind( ( Row ) _cmdIdxVal.value ) ) ) return false;
+            if ( !_context.Decrease() ) return false;
 
             RefreshAll();
 
             return true;
         }
 
-        private static LevelUpContext.StatKind ToStatKind( Row row )
-        {
-            switch ( row )
-            {
-                case Row.MaxHP: return LevelUpContext.StatKind.MaxHP;
-                case Row.Atk:   return LevelUpContext.StatKind.Atk;
-                case Row.Def:   return LevelUpContext.StatKind.Def;
-                default:        return LevelUpContext.StatKind.MaxHP;
-            }
-        }
-
         private void RefreshAll()
         {
-            var status = _context.Character.GetStatusRef;
-
             _view.SetLevelValues( _context.OriginalLevel, _context.TentativeLevel );
             _view.SetExpValues( _context.OriginalExp, _context.TentativeExp );
 
             int cost = _context.GetNextLevelCost();
             _view.SetRequiredCost( cost, _context.TentativeExp < cost );
 
-            _view.SetMaxHpValues( status.MaxHP, _context.GetTentativeStatValue( LevelUpContext.StatKind.MaxHP ) );
-            _view.SetAtkValues( status.Atk, _context.GetTentativeStatValue( LevelUpContext.StatKind.Atk ) );
-            _view.SetDefValues( status.Def, _context.GetTentativeStatValue( LevelUpContext.StatKind.Def ) );
+            _view.SetStatusPointValues( _context.OriginalStatusPoint, _context.TentativeStatusPoint );
         }
     }
 }

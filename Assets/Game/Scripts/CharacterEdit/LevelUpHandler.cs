@@ -74,8 +74,8 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 上下でメニューカーソル(MaxHP/Atk/Def/OK)を移動し、左右で選択中の能力値の仮割り振りを
-        /// 増減します(OK選択中は左右とも無効)。
+        /// 上下でメニューカーソル(LEVEL/OK)を移動し、左右で仮レベルを増減します
+        /// (OK選択中は左右とも無効)。
         /// </summary>
         private bool AcceptDirection( InputContext context )
         {
@@ -108,29 +108,24 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 仮の割り振り結果をCharacter.Status/UserDomain.Expへ反映します。
-        /// MaxHPを上げた分だけCurHPも同時に回復させます(不足分をそのまま維持する形)。
+        /// 仮のレベルアップ結果をCharacter.Status/UserDomain.Expへ反映します。
+        /// 能力値(MaxHP/Atk/Def等)はステータス上昇画面の役割のためここでは変更せず、
+        /// レベル到達で得られるStatusPointのみをCharacter.Status.StatusPointへ加算します。
         /// レベルが実際に上がった場合は、Status.Exp(現在のレベル内での取得経験値)を0にリセットします。
         /// </summary>
         private void Commit()
         {
-            int addMaxHp = _context.GetAllocated( LevelUpContext.StatKind.MaxHP ) * LevelUpContext.GetGrowthPerPoint( LevelUpContext.StatKind.MaxHP );
-            int addAtk   = _context.GetAllocated( LevelUpContext.StatKind.Atk ) * LevelUpContext.GetGrowthPerPoint( LevelUpContext.StatKind.Atk );
-            int addDef   = _context.GetAllocated( LevelUpContext.StatKind.Def ) * LevelUpContext.GetGrowthPerPoint( LevelUpContext.StatKind.Def );
-
             ref var status = ref _context.Character.GetStatusRef;
-            status.Level  = _context.TentativeLevel;
-            status.MaxHP += addMaxHp;
-            status.CurHP += addMaxHp;
-            status.Atk   += addAtk;
-            status.Def   += addDef;
+            status.Level = _context.TentativeLevel;
 
             // レベルが実際に上がった場合のみ、そのレベル内での取得経験値を0にリセットする
-            // (割り振らずにOKを押した場合、既存の取得経験値はそのまま維持する)
+            // (レベルを上げずにOKを押した場合、既存の取得経験値はそのまま維持する)
             if ( _context.TentativeLevel != _context.OriginalLevel )
             {
                 status.Exp = 0;
             }
+
+            status.AddStatusPoint( _context.TentativeStatusPoint - _context.OriginalStatusPoint );
 
             _userDomain.AddExp( _context.TentativeExp - _context.OriginalExp );
         }
