@@ -35,18 +35,53 @@ namespace Frontier
 
         public void ApplySkill( Character chara, int skillIdx )
         {
-            SkillID skillID     = chara.GetEquipSkillID( skillIdx );
-            bool isValid        = SkillsData.IsValidSkill( skillID );
+            ApplySkill( chara.GetEquipSkillID( skillIdx ) );
+        }
+
+        /// <summary>
+        /// 指定したSkillIDの内容を表示します。無効なSkillIDの場合はゲームオブジェクト自体を非表示にします
+        /// (戦闘中のパラメータ表示等、未装備のスキル枠を詰めて表示したい場面向け)。
+        /// 装備スキル設定画面のように、空枠であっても選択できるよう表示を維持したい場合はApplySkillForEditingを使用してください。
+        /// </summary>
+        public void ApplySkill( SkillID skillID )
+        {
+            bool isValid = SkillsData.IsValidSkill( skillID );
             gameObject.SetActive( isValid );
             if( !isValid ) { return; }
 
-            var skillData       = SkillsData.data[( int ) chara.GetEquipSkillID( skillIdx )];
-            string skillName    = skillData.Name;
-            var situationType   = skillData.SituationType;
-            _textKey            = skillData.ExplainTextKey;
+            ApplySkillContent( skillID );
+        }
+
+        /// <summary>
+        /// 指定したSkillIDの内容を表示します。ApplySkillと異なり、無効なSkillID(未装備枠)の場合も
+        /// ゲームオブジェクトは非表示にせず、空枠として表示します(装備スキル設定画面で、
+        /// 未装備の枠にもカーソルを合わせて新しくスキルを装備できるようにするため)。
+        /// </summary>
+        public void ApplySkillForEditing( SkillID skillID )
+        {
+            gameObject.SetActive( true );
+
+            if( !SkillsData.IsValidSkill( skillID ) )
+            {
+                SetSkillName( "", SituationType.ATTACK );
+                SetTooltipText( "" );
+                ShowSkillCostImage( 0 );
+                EnableRefreshText();
+                return;
+            }
+
+            ApplySkillContent( skillID );
+        }
+
+        private void ApplySkillContent( SkillID skillID )
+        {
+            var skillData      = SkillsData.data[( int ) skillID];
+            string skillName   = skillData.Name;
+            var situationType  = skillData.SituationType;
+            _textKey           = skillData.ExplainTextKey;
             SetSkillName( skillName, situationType );
             SetTooltipText( _textKey );
-            ShowSkillCostImage( SkillsData.data[( int ) chara.GetEquipSkillID( skillIdx )].Cost );
+            ShowSkillCostImage( skillData.Cost );
 
             EnableRefreshText();
         }
@@ -64,7 +99,11 @@ namespace Frontier
         public void SetCursorHighlighted( bool isHighlighted )
         {
             transform.localScale = isHighlighted ? CURSOR_HIGHLIGHT_SCALE : Vector3.one;
-            CursorFrame?.SetActive( isHighlighted );
+
+            // CursorFrameは未アサインの場合があり、その際はUnityの「フェイクnull」参照になるため、
+            // ?.(null条件演算子)ではなく!=nullで判定する(?.は生のC#参照比較になり、
+            // 未アサイン状態を正しくnull扱いできずSetActive呼び出しで例外になるため)。
+            if( CursorFrame != null ) { CursorFrame.SetActive( isHighlighted ); }
         }
 
         /// <summary>

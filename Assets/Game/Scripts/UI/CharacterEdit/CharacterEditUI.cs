@@ -43,6 +43,9 @@ namespace Frontier.UI
         [Header( "ステータス上昇項目選択時に右側へ表示するステータス上昇画面" )]
         [SerializeField] private StatusUpUI _statusUpView;
 
+        [Header( "装備スキル設定項目選択時に右側へ表示する装備スキル設定画面" )]
+        [SerializeField] private SkillEquipUI _skillEquipView;
+
         [SerializeField] private Color _normalColor = Color.white;
         [SerializeField] private Color _selectedColor = Color.red;
         [SerializeField] private Color _lockedColor = Color.gray;
@@ -52,6 +55,7 @@ namespace Frontier.UI
         public CharacterParameterUI CharacterParamUI => _characterParamUI;
         public LevelUpUI LevelUpView => _levelUpView;
         public StatusUpUI StatusUpView => _statusUpView;
+        public SkillEquipUI SkillEquipView => _skillEquipView;
 
         public override void Setup()
         {
@@ -61,6 +65,7 @@ namespace Frontier.UI
             _characterParamUI?.Setup();
             _levelUpView?.Setup();
             _statusUpView?.Setup();
+            _skillEquipView?.Setup();
 
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshMenuTexts; }
         }

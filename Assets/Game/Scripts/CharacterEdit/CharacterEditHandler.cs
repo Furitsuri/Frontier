@@ -11,9 +11,8 @@ namespace Frontier.CharacterEdit
     /// ライフサイクルを担当するハンドラ。SaveLoadHandler/TroopEditHandlerと同様、
     /// 特定のシーンに紐づかない独立したクラスとしている(TroopEdit以外からも呼び出せる)。
     /// 編集対象のキャラクター一覧・現在のindexはCharacterEditContext(参照型)で管理する。
-    /// レベルアップ画面(LevelUpHandler)を開いている間は、割り振り状態が特定の1体に紐づくため
-    /// L1/R1によるキャラクター切り替えを一時的に無効化する(今後実装するSkillEquipHandlerは
-    /// 対象キャラクターに依存しない想定であれば、切り替えを維持したまま実装してよい)。
+    /// レベルアップ/ステータス上昇/装備スキル設定画面を開いている間は、割り振り状態が特定の1体に
+    /// 紐づくため、L1/R1によるキャラクター切り替えを一時的に無効化する。
     /// </summary>
     public class CharacterEditHandler : MonoBehaviour
     {
@@ -24,6 +23,7 @@ namespace Frontier.CharacterEdit
         private CharacterParameterPresenter _paramPresenter = null;
         private LevelUpHandler _levelUpHandler = null;
         private StatusUpHandler _statusUpHandler = null;
+        private SkillEquipHandler _skillEquipHandler = null;
         private CharacterEditContext _context = null;
         private Action<int> _onClosed = null;
         private int _navHashCode;
@@ -66,8 +66,8 @@ namespace Frontier.CharacterEdit
 
         /// <summary>
         /// 現在カーソルが当たっているメニュー項目に応じて、右側のプレビュー表示を切り替えます
-        /// (LEVEL UPならレベルアップ画面、STATUS UPならステータス上昇画面、それ以外(装備スキル設定は
-        /// 未実装)は何も表示しない)。まだ確定操作は行っていない、カーソル移動だけの状態で呼ばれる想定。
+        /// (LEVEL UPならレベルアップ画面、STATUS UPならステータス上昇画面、EQUIP SKILLSなら
+        /// 装備スキル設定画面を表示する)。まだ確定操作は行っていない、カーソル移動だけの状態で呼ばれる想定。
         /// </summary>
         private void UpdatePreview()
         {
@@ -76,18 +76,28 @@ namespace Frontier.CharacterEdit
                 case CHARACTER_EDIT_MENU_OPTION_TAG.LEVEL_UP:
                     EnsureLevelUpHandler();
                     _statusUpHandler?.HidePreview();
+                    _skillEquipHandler?.HidePreview();
                     _levelUpHandler.ShowPreview( _context.CurrentCharacter );
                     break;
 
                 case CHARACTER_EDIT_MENU_OPTION_TAG.STATUS_UP:
                     EnsureStatusUpHandler();
                     _levelUpHandler?.HidePreview();
+                    _skillEquipHandler?.HidePreview();
                     _statusUpHandler.ShowPreview( _context.CurrentCharacter );
+                    break;
+
+                case CHARACTER_EDIT_MENU_OPTION_TAG.SKILL_EQUIP:
+                    EnsureSkillEquipHandler();
+                    _levelUpHandler?.HidePreview();
+                    _statusUpHandler?.HidePreview();
+                    _skillEquipHandler.ShowPreview( _context.CurrentCharacter );
                     break;
 
                 default:
                     _levelUpHandler?.HidePreview();
                     _statusUpHandler?.HidePreview();
+                    _skillEquipHandler?.HidePreview();
                     break;
             }
         }
@@ -284,12 +294,43 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// TODO: SkillEquipHandlerを実装したら、ここでナビゲーション入力(_navHashCode)を一時解除して
-        /// メニューのハイライトはそのまま維持しつつ、SkillEquipHandler.Show( _context, onClosed: メニューへ入力復帰 ) を呼ぶ。
+        /// 装備スキル設定画面を開きます。メニューのナビゲーション入力に加え、L1/R1による
+        /// キャラクター切り替えも一時的に無効化します(仮の割り振り状態が特定の1体に紐づくため、
+        /// 割り振り中に対象キャラクターが切り替わる事態を避けるため)。
         /// </summary>
         private void OpenSkillEquipScreen()
         {
-            Debug.Log( "[CharacterEditHandler] 装備スキル設定画面は未実装です。" );
+            EnsureSkillEquipHandler();
+
+            InputFacade.Instance.UnregisterInputCodes( _navHashCode );
+            InputFacade.Instance.UnregisterInputCodes( _switchHashCode );
+            _presenter.LockMenu();
+
+            _skillEquipHandler.Show( _context.CurrentCharacter, OnSkillEquipClosed );
+        }
+
+        private void EnsureSkillEquipHandler()
+        {
+            if ( _skillEquipHandler != null ) return;
+
+            _skillEquipHandler = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<SkillEquipHandler>( true, false, nameof( SkillEquipHandler ) );
+            _skillEquipHandler.Setup( _presenter.SkillEquipView );
+        }
+
+        /// <summary>
+        /// 装備スキル設定画面が閉じた際に呼ばれます。決定・キャンセルいずれの場合も、
+        /// 装備スキルや所持数が変化した可能性があるため表示を更新した上で、
+        /// メニューのナビゲーション入力・L1/R1切り替えを復帰させます。
+        /// </summary>
+        private void OnSkillEquipClosed()
+        {
+            _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
+            RefreshCharacterParamDisplay();
+            _presenter.UnlockMenu();
+            UpdatePreview();
+
+            RegisterCharacterSwitchInputCodes();
+            RegisterNavInputCodes();
         }
 
         private bool AcceptCancel( InputContext context )
@@ -307,6 +348,7 @@ namespace Frontier.CharacterEdit
             _paramPresenter.ClearCharacter();
             _levelUpHandler?.HidePreview();
             _statusUpHandler?.HidePreview();
+            _skillEquipHandler?.HidePreview();
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
             InputFacade.Instance.UnregisterInputCodes( _switchHashCode );

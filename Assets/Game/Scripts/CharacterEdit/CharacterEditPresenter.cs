@@ -69,6 +69,12 @@ namespace Frontier.CharacterEdit
         public StatusUpUI StatusUpView => _view.StatusUpView;
 
         /// <summary>
+        /// 装備スキル設定項目選択時に表示するSkillEquipUIへの参照。
+        /// CharacterEditHandlerがSkillEquipHandlerを構築する際に一度だけ取得します。
+        /// </summary>
+        public SkillEquipUI SkillEquipView => _view.SkillEquipView;
+
+        /// <summary>
         /// L1/R1でキャラクターが切り替わった際、上部のキャラクター情報表示のみを更新します
         /// (メニューの選択状態はそのまま維持します)。
         /// </summary>
