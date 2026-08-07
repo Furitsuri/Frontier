@@ -94,11 +94,16 @@ namespace Frontier
         private static readonly Vector3 CURSOR_HIGHLIGHT_SCALE = new Vector3( 1.1f, 1.1f, 1.1f );
 
         /// <summary>
-        /// カーソルが現在この項目を指しているかどうかを見た目(拡大表示・黄色い外枠)で示します
+        /// カーソルが現在この項目を指しているかどうかを見た目(外枠、及び任意で拡大表示)で示します。
+        /// scaleUpをfalseにすると拡大表示を行わず、外枠のみで示します(装備スキル設定画面のように、
+        /// 枠のサイズを他の要因(初期スケール等)で固定しておきたい場面向け)。
         /// </summary>
-        public void SetCursorHighlighted( bool isHighlighted )
+        public void SetCursorHighlighted( bool isHighlighted, bool scaleUp = true )
         {
-            transform.localScale = isHighlighted ? CURSOR_HIGHLIGHT_SCALE : Vector3.one;
+            if( scaleUp )
+            {
+                transform.localScale = isHighlighted ? CURSOR_HIGHLIGHT_SCALE : Vector3.one;
+            }
 
             // CursorFrameは未アサインの場合があり、その際はUnityの「フェイクnull」参照になるため、
             // ?.(null条件演算子)ではなく!=nullで判定する(?.は生のC#参照比較になり、

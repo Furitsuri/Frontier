@@ -11,11 +11,14 @@ namespace Frontier.UI
     /// より大きいサイズで表示)+OK、右側に「スキルを外す」(常に一番上に固定)+所持スキル一覧
     /// (ID順、所持数0や選択中枠と同じスキルは選択不可の見た目にする)を表示する。
     /// フォーカス中のスキルUIはSkillBoxUI.CursorFrame/各行のFrameオブジェクトを使って
-    /// 外枠を縁取ることで示す(PlSelectSkillState等、戦闘中のスキル選択と同じ仕組み)。
+    /// 外枠を縁取ることで示す(PlSelectSkillState等、戦闘中のスキル選択と同じ仕組み。
+    /// 拡大表示は行わず、外枠のみで示す)。
+    /// 右側ウィンドウへ遷移した際、左側のどの枠が編集対象かを示すため、ISelectableMenuViewを
+    /// 実装し編集対象の枠のみ通常表示・他はグレーアウトする(CharacterEditUIに次ぐ実装)。
     /// 開閉・選択状態・割り振りの判断はSkillEquipPresenterが行い、このクラスは表示指示を
     /// 受けて反映するだけに留める。
     /// </summary>
-    public class SkillEquipUI : UiMonoBehaviour
+    public class SkillEquipUI : UiMonoBehaviour, ISelectableMenuView
     {
         [Header( "左側: 装備枠(EQUIPABLE_SKILL_MAX_NUM個)" )]
         [SerializeField] private SkillBoxUI[] _slotBoxes;
@@ -40,6 +43,7 @@ namespace Frontier.UI
         [SerializeField] private Color _normalColor       = Color.white;
         [SerializeField] private Color _selectedColor     = Color.red;
         [SerializeField] private Color _unavailableColor  = Color.gray;
+        [SerializeField] private Color _lockedColor       = Color.gray;
 
         [Inject] private ILocalizationService _localization = null;
 
@@ -76,17 +80,36 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 左側(装備枠+OK)の選択状態を反映します(0〜3:装備枠、4:OK、-1:左側は非選択(右側が選択中、
-        /// またはまだ画面へ遷移していないプレビュー表示中))。
+        /// 左側(装備枠+OK)の通常のカーソル選択状態を反映します(0〜3:装備枠、4:OK、
+        /// -1:左側は非選択(右側が選択中、またはまだ画面へ遷移していないプレビュー表示中))。
+        /// ロック状態(SetLockedIndex)の解除にも使用します(ISelectableMenuView実装)。
         /// </summary>
-        public void SetLeftSelectedRow( int rowIndex )
+        public void SetSelectedIndex( int index )
         {
             for ( int i = 0; i < _slotBoxes.Length; ++i )
             {
-                _slotBoxes[i].SetCursorHighlighted( i == rowIndex );
+                _slotBoxes[i].SetCursorHighlighted( i == index, scaleUp: false );
+                _slotBoxes[i].SetUseableOrNot( true );
             }
 
-            _okLabelText.color = ( rowIndex == _slotBoxes.Length ) ? _selectedColor : _normalColor;
+            _okLabelText.color = ( index == _slotBoxes.Length ) ? _selectedColor : _normalColor;
+        }
+
+        /// <summary>
+        /// activeIndexの装備枠のみ通常表示のまま、他の枠(及びOK)をグレーアウトします
+        /// (ISelectableMenuView実装。右側ウィンドウへ遷移した際、左側でどの枠が編集対象かを
+        /// 分かりやすくするために使用します)。
+        /// </summary>
+        public void SetLockedIndex( int activeIndex )
+        {
+            for ( int i = 0; i < _slotBoxes.Length; ++i )
+            {
+                bool isActive = ( i == activeIndex );
+                _slotBoxes[i].SetCursorHighlighted( isActive, scaleUp: false );
+                _slotBoxes[i].SetUseableOrNot( isActive );
+            }
+
+            _okLabelText.color = _lockedColor;
         }
 
         /// <summary>
