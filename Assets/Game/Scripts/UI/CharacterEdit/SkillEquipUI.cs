@@ -13,12 +13,14 @@ namespace Frontier.UI
     /// フォーカス中のスキルUIはSkillBoxUI.CursorFrame/各行のFrameオブジェクトを使って
     /// 外枠を縁取ることで示す(PlSelectSkillState等、戦闘中のスキル選択と同じ仕組み。
     /// 拡大表示は行わず、外枠のみで示す)。
-    /// 右側ウィンドウへ遷移した際、左側のどの枠が編集対象かを示すため、ISelectableMenuViewを
-    /// 実装し編集対象の枠のみ通常表示・他はグレーアウトする(CharacterEditUIに次ぐ実装)。
+    /// 右側ウィンドウへ遷移した際は、左側のどの枠が編集対象かを示すため、対象の枠のみ通常表示・
+    /// 他はグレーアウトする(SetLockedSlot)。この左右ペイン切り替えは同一画面内の遷移であり、
+    /// ISelectableMenuView(CharacterEditUI等、確定して別画面へ遷移する「メニュー」向け)とは
+    /// 意味合いが異なるため、あえて実装せずSkillEquipUI固有のメソッドとしている。
     /// 開閉・選択状態・割り振りの判断はSkillEquipPresenterが行い、このクラスは表示指示を
     /// 受けて反映するだけに留める。
     /// </summary>
-    public class SkillEquipUI : UiMonoBehaviour, ISelectableMenuView
+    public class SkillEquipUI : UiMonoBehaviour
     {
         [Header( "左側: 装備枠(EQUIPABLE_SKILL_MAX_NUM個)" )]
         [SerializeField] private SkillBoxUI[] _slotBoxes;
@@ -82,29 +84,28 @@ namespace Frontier.UI
         /// <summary>
         /// 左側(装備枠+OK)の通常のカーソル選択状態を反映します(0〜3:装備枠、4:OK、
         /// -1:左側は非選択(右側が選択中、またはまだ画面へ遷移していないプレビュー表示中))。
-        /// ロック状態(SetLockedIndex)の解除にも使用します(ISelectableMenuView実装)。
+        /// ロック状態(SetLockedSlot)の解除にも使用します。
         /// </summary>
-        public void SetSelectedIndex( int index )
+        public void SetSelectedSlot( int slotIndex )
         {
             for ( int i = 0; i < _slotBoxes.Length; ++i )
             {
-                _slotBoxes[i].SetCursorHighlighted( i == index, scaleUp: false );
+                _slotBoxes[i].SetCursorHighlighted( i == slotIndex, scaleUp: false );
                 _slotBoxes[i].SetUseableOrNot( true );
             }
 
-            _okLabelText.color = ( index == _slotBoxes.Length ) ? _selectedColor : _normalColor;
+            _okLabelText.color = ( slotIndex == _slotBoxes.Length ) ? _selectedColor : _normalColor;
         }
 
         /// <summary>
-        /// activeIndexの装備枠のみ通常表示のまま、他の枠(及びOK)をグレーアウトします
-        /// (ISelectableMenuView実装。右側ウィンドウへ遷移した際、左側でどの枠が編集対象かを
-        /// 分かりやすくするために使用します)。
+        /// activeSlotIndexの装備枠のみ通常表示のまま、他の枠(及びOK)をグレーアウトします。
+        /// 右側ウィンドウへ遷移した際、左側でどの枠が編集対象かを分かりやすくするために使用します。
         /// </summary>
-        public void SetLockedIndex( int activeIndex )
+        public void SetLockedSlot( int activeSlotIndex )
         {
             for ( int i = 0; i < _slotBoxes.Length; ++i )
             {
-                bool isActive = ( i == activeIndex );
+                bool isActive = ( i == activeSlotIndex );
                 _slotBoxes[i].SetCursorHighlighted( isActive, scaleUp: false );
                 _slotBoxes[i].SetUseableOrNot( isActive );
             }

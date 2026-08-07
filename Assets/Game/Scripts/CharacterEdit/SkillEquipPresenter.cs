@@ -65,7 +65,7 @@ namespace Frontier.CharacterEdit
             _leftCommandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _leftCmdIdxVal );
 
             RefreshLeftSlots();
-            _view.SetSelectedIndex( _leftCmdIdxVal.index );
+            _view.SetSelectedSlot( _leftCmdIdxVal.index );
             RefreshRightList();
             _view.SetRightSelectedRow( -2 );
             RefreshExplanation();
@@ -83,7 +83,7 @@ namespace Frontier.CharacterEdit
             _editingSlotIndex = -1;
 
             RefreshLeftSlots();
-            _view.SetSelectedIndex( -1 );
+            _view.SetSelectedSlot( -1 );
             RefreshRightList();
             _view.SetRightSelectedRow( -2 );
             _view.HideExplanation();
@@ -100,7 +100,7 @@ namespace Frontier.CharacterEdit
             if ( IsLeftPane )
             {
                 moved = _leftCommandList.OperateListCursor( dir );
-                if ( moved ) { _view.SetSelectedIndex( _leftCmdIdxVal.index ); }
+                if ( moved ) { _view.SetSelectedSlot( _leftCmdIdxVal.index ); }
             }
             else
             {
@@ -137,7 +137,7 @@ namespace Frontier.CharacterEdit
             _rightCommandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _rightCmdIdxVal );
 
             // 左側は編集対象の枠のみ通常表示のまま、他をグレーアウトして「どの枠を編集中か」を示す
-            _view.SetLockedIndex( _editingSlotIndex );
+            _view.SetLockedSlot( _editingSlotIndex );
             RefreshRightSelectionDisplay();
             RefreshExplanation();
 
@@ -153,7 +153,7 @@ namespace Frontier.CharacterEdit
             _editingSlotIndex = -1;
 
             _view.SetRightSelectedRow( -2 );
-            _view.SetSelectedIndex( _leftCmdIdxVal.index );
+            _view.SetSelectedSlot( _leftCmdIdxVal.index );
             RefreshRightList();
             RefreshExplanation();
         }
