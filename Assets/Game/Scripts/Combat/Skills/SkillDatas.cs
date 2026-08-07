@@ -36,6 +36,9 @@ namespace Frontier.Combat
             public string ExplainTextKey;           // スキル説明文のテキストキー
         }
 
+        // JsonUtility.FromJson()によるJSONデシリアライズでのみ値が設定されるフィールドのため、
+        // C#コード上では代入箇所が無くCS0649(未割り当て)警告が出る。意図的なものとして抑制する。
+#pragma warning disable 0649
         [System.Serializable]
         private struct FileData
         {
@@ -67,6 +70,7 @@ namespace Frontier.Combat
         {
             public FileData[] SkillsData;
         }
+#pragma warning restore 0649
 
         private const string ResourcesPath = "SkillData/SkillData";
 

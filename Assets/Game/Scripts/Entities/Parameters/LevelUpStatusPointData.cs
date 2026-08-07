@@ -15,11 +15,15 @@ namespace Frontier.Entities
             public int GrantedStatusPoint;  // そのレベルに到達した際に得られるStatusPoint
         }
 
+        // JsonUtility.FromJson()によるJSONデシリアライズでのみ値が設定されるフィールドのため、
+        // C#コード上では代入箇所が無くCS0649(未割り当て)警告が出る。意図的なものとして抑制する。
+#pragma warning disable 0649
         [System.Serializable]
         private class LevelUpStatusPointDataContainer
         {
             public Data[] Levels;
         }
+#pragma warning restore 0649
 
         private const string ResourcesPath = "LevelUpStatusPointData/LevelUpStatusPointData";
 

@@ -15,11 +15,15 @@ namespace Frontier.Entities
             public int RequiredTotalExp;  // このレベルに到達するために必要な累計経験値
         }
 
+        // JsonUtility.FromJson()によるJSONデシリアライズでのみ値が設定されるフィールドのため、
+        // C#コード上では代入箇所が無くCS0649(未割り当て)警告が出る。意図的なものとして抑制する。
+#pragma warning disable 0649
         [System.Serializable]
         private class LevelExpDataContainer
         {
             public Data[] Levels;
         }
+#pragma warning restore 0649
 
         private const string ResourcesPath = "LevelExpData/LevelExpData";
 
