@@ -139,7 +139,8 @@
             "Param1": null,
             "Param2": null,
             "Param3": null,
-            "Param4": null
+            "Param4": null,
+            "ExplainTextKey": "EXPL_SKILL_DASH_SLASH"
         },
         {
             "Name": "JUMP_SLASH",
@@ -160,7 +161,8 @@
             "Param1": null,
             "Param2": null,
             "Param3": null,
-            "Param4": null
+            "Param4": null,
+            "ExplainTextKey": "EXPL_SKILL_JUMP_SLASH"
         }
     ]
 }

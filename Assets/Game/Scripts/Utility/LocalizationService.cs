@@ -43,6 +43,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_LOAD", "Load" },
                 { "UI_CMD_DELETE", "Delete" },
                 { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "Delete this save data?" },
+                { "EXPL_SKILL_DASH_SLASH", "Dash Attack" },
+                { "EXPL_SKILL_JUMP_SLASH", "Jump Attack" },
             }
         },
         {
@@ -82,6 +84,8 @@ public class LocalizationService : ILocalizationService
                 { "UI_CMD_LOAD", "ロード" },
                 { "UI_CMD_DELETE", "削除" },
                 { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "このセーブデータを削除しますか？" },
+                { "EXPL_SKILL_DASH_SLASH", "複数マスを移動しつつ、相手を斬りつけます" },
+                { "EXPL_SKILL_JUMP_SLASH", "跳躍して相手を斬りつけます。より高い位置から攻撃することでダメージが増加します" },
             }
         }
     };
