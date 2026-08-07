@@ -20,7 +20,11 @@ public class InputCode
     public bool IsSimultaneousInput;            // 同時入力か否か
     public InputTriggerMode TriggerMode;        // ボタン系入力の判定タイミング(Up/Down/DownRepeat)
     public bool IsGuideVisible = true;          // 入力ガイドとして画面に表示するか(falseの場合、入力受付は行うがガイド表示は行わない)
-    public float RepeatDelay = 0f;              // 押しっぱなし状態でリピート入力(インターバル間隔での連続受付)を開始するまでの遅延時間(秒)。0の場合は遅延なし(押した瞬間からインターバル間隔で受け付ける、従来の挙動)
+    // 押しっぱなし状態でリピート入力(インターバル間隔での連続受付)を開始するまでの遅延時間(秒)。
+    // 既定でDIRECTION_INPUT_REPEAT_DELAYを持たせることで、明示設定しない入力コードにも
+    // 「本当に押しっぱなしか」を判断する猶予期間が自動的に効くようにしている。
+    // 0を明示指定した場合は、押しっぱなし継続中の受付を一切行わない(単発の新規押下のみ受け付ける)。
+    public float RepeatDelay = DIRECTION_INPUT_REPEAT_DELAY;
     private float _inputLastTime;               // 入力処理を行った最後の時間
     private float _pressStartTime = -1f;        // 現在の連続押下(hold)が開始した時刻。-1は「押されていない」ことを表す
 
@@ -291,10 +295,12 @@ public class InputCode
     /// 生の入力状態(isHeld: そのフレームで対応するキー・ボタンが押されているか)を渡し、
     /// このフレームでAccept処理を実行してよいかを判定します。
     /// 押されていなければ連続押下の起点をリセットしfalseを返します。
-    /// 押された瞬間はRepeatDelayを待たず、インターバルのみを考慮して受け付けます
-    /// (これにより単発のタップ操作が意図せず2回受け付けられることを防ぎます)。
-    /// 押しっぱなしの場合は、RepeatDelay経過後、InputIntervalの間隔で繰り返し受け付けます。
-    /// RepeatDelayが0の場合は遅延無し(押した瞬間からインターバル間隔で受け付ける、従来の挙動)です。
+    /// 新規の押下(離した状態から押した、または押し直した瞬間)は、インターバル・RepeatDelayのいずれも
+    /// 待たずに即座に受け付けます(離して押し直す動作は都度独立した入力であり、直前の入力からの
+    /// 経過時間で間引くべきではないため)。
+    /// 押しっぱなしが継続している間は、RepeatDelay経過後、InputIntervalの間隔で繰り返し受け付けます。
+    /// RepeatDelayが0(明示指定時のみ。既定値はDIRECTION_INPUT_REPEAT_DELAY)の場合は、
+    /// 押しっぱなし継続中の受付を一切行いません(単発の新規押下のみ受け付ける)。
     /// </summary>
     /// <param name="isHeld">このフレームで対応する入力が押されている状態かどうか</param>
     /// <returns>このフレームでAcceptを実行してよいか</returns>
@@ -307,14 +313,19 @@ public class InputCode
         }
 
         bool isNewPress = ( _pressStartTime < 0f );
-        if ( isNewPress ) { _pressStartTime = Time.time; }
+        if ( isNewPress )
+        {
+            _pressStartTime = Time.time;
+            return true;
+        }
 
-        if ( !IsIntervalTimePassed() ) { return false; }
+        // RepeatDelayが0(明示指定)の場合は、押しっぱなし継続中の受付を一切行わない
+        if ( RepeatDelay <= 0f ) { return false; }
 
-        // 押しっぱなし2回目以降の受付は、RepeatDelayが経過するまで待つ
-        if ( !isNewPress && 0f < RepeatDelay && ( Time.time - _pressStartTime ) < RepeatDelay ) { return false; }
+        // 押しっぱなし継続中は、RepeatDelay経過するまで次の受付を待つ
+        if ( ( Time.time - _pressStartTime ) < RepeatDelay ) { return false; }
 
-        return true;
+        return IsIntervalTimePassed();
     }
 
     /// <summary>
