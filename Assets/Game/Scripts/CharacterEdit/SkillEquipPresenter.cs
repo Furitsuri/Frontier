@@ -159,17 +159,35 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 右側ウィンドウで選択中の項目を確定します。「スキルを外す」が選択されていれば編集中の枠を
-        /// 空にし、所持スキルが選択されていればそのスキルを編集中の枠へ装備します。選択不可(グレー表示)
-        /// の項目や在庫が無い場合は何もせずfalseを返します。成功した場合は左側ウィンドウへ戻ります。
+        /// 右側ウィンドウで現在フォーカスしている項目を確定できるかどうかを判定します。
+        /// SkillEquipHandler.CanAcceptConfirm()が、右側ウィンドウにいる間CONFIRM入力そのものを
+        /// 受け付けるべきかの判断に使用するほか、ConfirmRightSelection()自身もこれを内部で使い、
+        /// 「選択不可の項目は確定できない」条件を一箇所にまとめている。
         /// </summary>
-        public bool ConfirmRightSelection()
+        public bool CanConfirmRightSelection()
         {
             if ( IsLeftPane ) return false;
 
+            if ( _rightCmdIdxVal.value == REMOVE_ROW_VALUE ) return !IsRemoveRowUnavailable();
+
+            int skillIndex = _rightCmdIdxVal.value - 1;
+            if ( skillIndex < 0 || _rightSkillIds.Count <= skillIndex ) return false;
+
+            return !IsRowUnavailable( _rightSkillIds[skillIndex] );
+        }
+
+        /// <summary>
+        /// 右側ウィンドウで選択中の項目を確定します。「スキルを外す」が選択されていれば編集中の枠を
+        /// 空にし、所持スキルが選択されていればそのスキルを編集中の枠へ装備します。選択不可(グレー表示)
+        /// の項目や在庫が無い場合は何もせずfalseを返します(CanConfirmRightSelection()参照)。
+        /// 成功した場合は左側ウィンドウへ戻ります。
+        /// </summary>
+        public bool ConfirmRightSelection()
+        {
+            if ( !CanConfirmRightSelection() ) return false;
+
             if ( _rightCmdIdxVal.value == REMOVE_ROW_VALUE )
             {
-                if ( IsRemoveRowUnavailable() ) return false;
                 if ( !_context.UnequipSkill( _editingSlotIndex ) ) return false;
 
                 RefreshLeftSlots();
@@ -178,11 +196,7 @@ namespace Frontier.CharacterEdit
                 return true;
             }
 
-            int skillIndex = _rightCmdIdxVal.value - 1;
-            if ( skillIndex < 0 || _rightSkillIds.Count <= skillIndex ) return false;
-
-            var skillID = _rightSkillIds[skillIndex];
-            if ( IsRowUnavailable( skillID ) ) return false;
+            var skillID = _rightSkillIds[_rightCmdIdxVal.value - 1];
             if ( !_context.EquipSkill( _editingSlotIndex, skillID ) ) return false;
 
             RefreshLeftSlots();

@@ -68,9 +68,21 @@ namespace Frontier.CharacterEdit
             _navHashCode = Hash.GetStableHash( nameof( SkillEquipHandler ) + "_Nav" );
             InputFacade.Instance.RegisterInputCodes(
                 ( GuideIcon.VERTICAL_CURSOR, "SELECT",  InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, _navHashCode ),
-                ( GuideIcon.CONFIRM,         "CONFIRM", InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptConfirm ),   0.0f, _navHashCode ),
+                ( GuideIcon.CONFIRM,         "CONFIRM", CanAcceptConfirm,              new AcceptContextInput( AcceptConfirm ),   0.0f, _navHashCode ),
                 ( GuideIcon.CANCEL,          "BACK",    InputFacade.CanBeAcceptAlways, new AcceptContextInput( AcceptCancel ),    0.0f, _navHashCode )
             );
+        }
+
+        /// <summary>
+        /// CONFIRMの入力受付可否を判定します。左側ウィンドウでは常に受付可能ですが、右側ウィンドウでは
+        /// 現在フォーカスしている項目(スキルを外す/所持スキル)が実際に選択可能な場合のみ受け付けます
+        /// (在庫が無い、編集中の枠と同じスキル、外す対象の枠が元々未装備、等の場合は受け付けません)。
+        /// </summary>
+        private bool CanAcceptConfirm()
+        {
+            if ( _presenter.IsLeftPane ) return true;
+
+            return _presenter.CanConfirmRightSelection();
         }
 
         /// <summary>
