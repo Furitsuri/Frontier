@@ -246,9 +246,8 @@ namespace Frontier.CharacterEdit
             for ( int i = 0; i < _rightSkillIds.Count; ++i )
             {
                 var skillID = _rightSkillIds[i];
-                var skillData = SkillsData.data[( int ) skillID];
                 int count = _context.GetTentativeCount( skillID );
-                _view.SetInventoryRow( i, skillData.Name, skillData.SituationType, count, IsRowUnavailable( skillID ) );
+                _view.SetInventoryRow( i, skillID, count, IsRowUnavailable( skillID ) );
             }
         }
 

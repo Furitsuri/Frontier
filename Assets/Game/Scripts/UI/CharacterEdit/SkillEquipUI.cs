@@ -10,9 +10,10 @@ namespace Frontier.UI
     /// 左側に選択中キャラクターの装備枠(SkillBoxUIを流用し、上部パラメータ表示と同じ見た目・
     /// より大きいサイズで表示)+OK、右側に「スキルを外す」(常に一番上に固定)+所持スキル一覧
     /// (ID順、所持数0や選択中枠と同じスキルは選択不可の見た目にする)を表示する。
-    /// フォーカス中のスキルUIはSkillBoxUI.CursorFrame/各行のFrameオブジェクトを使って
-    /// 外枠を縁取ることで示す(PlSelectSkillState等、戦闘中のスキル選択と同じ仕組み。
-    /// 拡大表示は行わず、外枠のみで示す)。
+    /// 右側の所持スキル一覧もSkillBoxUIを流用しており、コスト等の情報を見た目だけでもある程度
+    /// 把握できるようにしている(名前とカウントのみのプレーンテキストは廃止)。
+    /// フォーカス中のスキルUIはSkillBoxUI.CursorFrameを使って外枠を縁取ることで示す
+    /// (PlSelectSkillState等、戦闘中のスキル選択と同じ仕組み。拡大表示は行わず、外枠のみで示す)。
     /// 右側ウィンドウへ遷移した際は、左側のどの枠が編集対象かを示すため、対象の枠のみ通常表示・
     /// 他はグレーアウトする(SetLockedSlot)。この左右ペイン切り替えは同一画面内の遷移であり、
     /// ISelectableMenuView(CharacterEditUI等、確定して別画面へ遷移する「メニュー」向け)とは
@@ -32,11 +33,9 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _removeRowText;
         [SerializeField] private GameObject _removeRowFrame;
 
-        [Header( "右側: 所持スキル一覧の行(SkillID.NUM個分をあらかじめ用意し、使わない行は非表示にする)" )]
-        [SerializeField] private GameObject[] _inventoryRows;
-        [SerializeField] private TextMeshProUGUI[] _inventoryNameTexts;
+        [Header( "右側: 所持スキル一覧(SkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
+        [SerializeField] private SkillBoxUI[] _inventorySkillBoxes;
         [SerializeField] private TextMeshProUGUI[] _inventoryCountTexts;
-        [SerializeField] private GameObject[] _inventoryRowFrames;
 
         [Header( "選択中スキルの説明文" )]
         [SerializeField] private GameObject _explanationPanel;
@@ -54,6 +53,7 @@ namespace Frontier.UI
             base.Setup();
 
             foreach ( var box in _slotBoxes ) { box.Setup(); }
+            foreach ( var box in _inventorySkillBoxes ) { box.Setup(); }
 
             RefreshRemoveRowText();
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshRemoveRowText; }
@@ -130,9 +130,9 @@ namespace Frontier.UI
         {
             if ( _removeRowFrame != null ) { _removeRowFrame.SetActive( inventoryRowIndex == -1 ); }
 
-            for ( int i = 0; i < _inventoryRowFrames.Length; ++i )
+            for ( int i = 0; i < _inventorySkillBoxes.Length; ++i )
             {
-                if ( _inventoryRowFrames[i] != null ) { _inventoryRowFrames[i].SetActive( i == inventoryRowIndex ); }
+                _inventorySkillBoxes[i].SetCursorHighlighted( i == inventoryRowIndex, scaleUp: false );
             }
         }
 
@@ -142,25 +142,24 @@ namespace Frontier.UI
         /// </summary>
         public void SetInventoryRowCount( int visibleCount )
         {
-            for ( int i = 0; i < _inventoryRows.Length; ++i )
+            for ( int i = 0; i < _inventorySkillBoxes.Length; ++i )
             {
-                _inventoryRows[i].SetActive( i < visibleCount );
+                _inventorySkillBoxes[i].gameObject.SetActive( i < visibleCount );
             }
         }
 
         /// <summary>
         /// 右側の指定行の内容を設定します。unavailableがtrueの場合(所持数0、または左側で
-        /// 選択中の枠と同じスキルの場合)はグレー表示にします。
+        /// 選択中の枠と同じスキルの場合)はSkillBoxUI.SetUseableOrNot(false)でグレー表示にします
+        /// (戦闘中の使用不可スキルと同じ暗転表現)。
         /// </summary>
-        public void SetInventoryRow( int rowIndex, string skillName, SituationType situationType, int count, bool unavailable )
+        public void SetInventoryRow( int rowIndex, SkillID skillID, int count, bool unavailable )
         {
-            Color[] typeColor = { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
+            _inventorySkillBoxes[rowIndex].ApplySkillForEditing( skillID );
+            _inventorySkillBoxes[rowIndex].SetUseableOrNot( !unavailable );
 
-            var color = unavailable ? _unavailableColor : typeColor[( int ) situationType];
-            _inventoryNameTexts[rowIndex].text  = skillName?.Replace( "_", " " ) ?? "";
-            _inventoryNameTexts[rowIndex].color = color;
             _inventoryCountTexts[rowIndex].text  = count.ToString();
-            _inventoryCountTexts[rowIndex].color = color;
+            _inventoryCountTexts[rowIndex].color = unavailable ? _unavailableColor : _normalColor;
         }
 
         /// <summary>
