@@ -87,6 +87,21 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
+        /// 指定枠の装備を仮に解除します。装備されていたスキルの所持数を1戻します。
+        /// 元々未装備だった場合は何もせずfalseを返します。
+        /// </summary>
+        public bool UnequipSkill( int slotIndex )
+        {
+            var oldSkillID = _tentativeEquipSkills[slotIndex];
+            if ( !SkillsData.IsValidSkill( oldSkillID ) ) { return false; }
+
+            _tentativeCounts[oldSkillID] = GetTentativeCount( oldSkillID ) + 1;
+            _tentativeEquipSkills[slotIndex] = SkillID.NONE;
+
+            return true;
+        }
+
+        /// <summary>
         /// 仮の装備構成・所持数をCharacter.Status.EquipSkills/UserDomain.SkillInventoryへ反映します。
         /// </summary>
         public void Commit()

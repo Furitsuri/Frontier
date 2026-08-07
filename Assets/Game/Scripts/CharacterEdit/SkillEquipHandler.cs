@@ -55,7 +55,7 @@ namespace Frontier.CharacterEdit
         /// </summary>
         public void ShowPreview( Character character )
         {
-            _presenter.Show( new SkillEquipContext( character, _userDomain ) );
+            _presenter.ShowPreview( new SkillEquipContext( character, _userDomain ) );
         }
 
         /// <summary>

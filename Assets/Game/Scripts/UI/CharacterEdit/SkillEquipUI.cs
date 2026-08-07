@@ -1,14 +1,17 @@
 ﻿using Frontier.Combat;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace Frontier.UI
 {
     /// <summary>
     /// キャラクター編集画面から遷移する装備スキル設定画面の見た目のみを担当するView。
     /// 左側に選択中キャラクターの装備枠(SkillBoxUIを流用し、上部パラメータ表示と同じ見た目・
-    /// より大きいサイズで表示)+OK、右側に所持スキル一覧(ID順、所持数0や選択中枠と同じスキルは
-    /// 選択不可の見た目にする)を表示する。
+    /// より大きいサイズで表示)+OK、右側に「スキルを外す」(常に一番上に固定)+所持スキル一覧
+    /// (ID順、所持数0や選択中枠と同じスキルは選択不可の見た目にする)を表示する。
+    /// フォーカス中のスキルUIはSkillBoxUI.CursorFrame/各行のFrameオブジェクトを使って
+    /// 外枠を縁取ることで示す(PlSelectSkillState等、戦闘中のスキル選択と同じ仕組み)。
     /// 開閉・選択状態・割り振りの判断はSkillEquipPresenterが行い、このクラスは表示指示を
     /// 受けて反映するだけに留める。
     /// </summary>
@@ -20,20 +23,44 @@ namespace Frontier.UI
         [Header( "左側: 決定(OK)項目" )]
         [SerializeField] private TextMeshProUGUI _okLabelText;
 
+        [Header( "右側: 「スキルを外す」項目(常に一番上に固定表示)" )]
+        [SerializeField] private TextMeshProUGUI _removeRowText;
+        [SerializeField] private GameObject _removeRowFrame;
+
         [Header( "右側: 所持スキル一覧の行(SkillID.NUM個分をあらかじめ用意し、使わない行は非表示にする)" )]
         [SerializeField] private GameObject[] _inventoryRows;
         [SerializeField] private TextMeshProUGUI[] _inventoryNameTexts;
         [SerializeField] private TextMeshProUGUI[] _inventoryCountTexts;
+        [SerializeField] private GameObject[] _inventoryRowFrames;
+
+        [Header( "選択中スキルの説明文" )]
+        [SerializeField] private GameObject _explanationPanel;
+        [SerializeField] private TextMeshProUGUI _explanationText;
 
         [SerializeField] private Color _normalColor       = Color.white;
         [SerializeField] private Color _selectedColor     = Color.red;
         [SerializeField] private Color _unavailableColor  = Color.gray;
+
+        [Inject] private ILocalizationService _localization = null;
 
         public override void Setup()
         {
             base.Setup();
 
             foreach ( var box in _slotBoxes ) { box.Setup(); }
+
+            RefreshRemoveRowText();
+            if ( _localization != null ) { _localization.OnLanguageChanged += RefreshRemoveRowText; }
+        }
+
+        private void OnDestroy()
+        {
+            if ( _localization != null ) { _localization.OnLanguageChanged -= RefreshRemoveRowText; }
+        }
+
+        private void RefreshRemoveRowText()
+        {
+            _removeRowText.text = _localization.Get( "UI_CMD_SKILL_REMOVE" );
         }
 
         public void Show() => gameObject.SetActive( true );
@@ -49,7 +76,8 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 左側(装備枠+OK)の選択状態を反映します(0〜3:装備枠、4:OK、-1:左側は非選択(右側が選択中))。
+        /// 左側(装備枠+OK)の選択状態を反映します(0〜3:装備枠、4:OK、-1:左側は非選択(右側が選択中、
+        /// またはまだ画面へ遷移していないプレビュー表示中))。
         /// </summary>
         public void SetLeftSelectedRow( int rowIndex )
         {
@@ -59,6 +87,29 @@ namespace Frontier.UI
             }
 
             _okLabelText.color = ( rowIndex == _slotBoxes.Length ) ? _selectedColor : _normalColor;
+        }
+
+        /// <summary>
+        /// 「スキルを外す」項目のグレー表示(編集中の枠が元々未装備で、外す対象が無い場合)を切り替えます。
+        /// </summary>
+        public void SetRemoveRowUnavailable( bool unavailable )
+        {
+            _removeRowText.color = unavailable ? _unavailableColor : _normalColor;
+        }
+
+        /// <summary>
+        /// 右側ウィンドウの選択状態(フォーカス外枠)を反映します
+        /// (-1:「スキルを外す」を選択中、0以上:所持スキル一覧の行index、
+        /// どちらでもない場合(左側が選択中)はSetRightSelectedRow(-2)相当として全て非表示にしてください)。
+        /// </summary>
+        public void SetRightSelectedRow( int inventoryRowIndex )
+        {
+            if ( _removeRowFrame != null ) { _removeRowFrame.SetActive( inventoryRowIndex == -1 ); }
+
+            for ( int i = 0; i < _inventoryRowFrames.Length; ++i )
+            {
+                if ( _inventoryRowFrames[i] != null ) { _inventoryRowFrames[i].SetActive( i == inventoryRowIndex ); }
+            }
         }
 
         /// <summary>
@@ -89,17 +140,17 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 右側一覧の選択状態を反映します(-1で非選択(左側が選択中))。
-        /// 選択中行は文字色を選択色にします(unavailableな行が選択されることは想定していません)。
+        /// 指定スキルの説明文を表示します。無効なSkillIDの場合は非表示にします。
         /// </summary>
-        public void SetInventorySelectedRow( int rowIndex )
+        public void SetExplanation( SkillID skillID )
         {
-            for ( int i = 0; i < _inventoryRows.Length; ++i )
-            {
-                bool isSelected = ( i == rowIndex );
-                _inventoryNameTexts[i].fontStyle = isSelected ? FontStyles.Underline : FontStyles.Normal;
-                _inventoryCountTexts[i].fontStyle = isSelected ? FontStyles.Underline : FontStyles.Normal;
-            }
+            if ( !SkillsData.IsValidSkill( skillID ) ) { HideExplanation(); return; }
+
+            var textKey = SkillsData.data[( int ) skillID].ExplainTextKey;
+            _explanationText.text = string.IsNullOrEmpty( textKey ) ? "" : _localization.Get( textKey );
+            _explanationPanel.SetActive( true );
         }
+
+        public void HideExplanation() => _explanationPanel.SetActive( false );
     }
 }
