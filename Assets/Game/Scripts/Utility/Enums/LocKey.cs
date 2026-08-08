@@ -1,0 +1,50 @@
+﻿/// <summary>
+/// ローカライズ文字列を参照するためのキーです。
+/// 実際の文言はResources/Localization/以下のJSONに定義されます。
+/// </summary>
+public enum LocKey
+{
+    None,
+
+    // ステータス
+    UI_STATUS_LEVEL,
+    UI_STATUS_HP,
+    UI_STATUS_MOVE,
+    UI_STATUS_JUMP,
+    UI_STATUS_ACTION,
+    UI_STATUS_ATTACK,
+    UI_STATUS_DEFFENCE,
+
+    // コマンド
+    UI_CMD_MOVE,
+    UI_CMD_ATTACK,
+    UI_CMD_SKILL,
+    UI_CMD_WAIT,
+    UI_CMD_USE_SKILL_OPTION_EXECUTION,
+    UI_CMD_USE_SKILL_OPTION_QUEUE,
+    UI_CMD_USE_SKILL_OPTION_COOPERATIVE,
+    UI_CMD_RESERVED_ACTION_EXECUTE,
+    UI_CMD_OPTION,
+    UI_CMD_TURN_END,
+    UI_CMD_TROOPS,
+    UI_CMD_LEVEL_UP,
+    UI_CMD_STATUS_UP,
+    UI_CMD_SKILL_EQUIP,
+    UI_CMD_SKILL_REMOVE,
+    UI_CMD_SAVE,
+    UI_CMD_LOAD,
+    UI_CMD_DELETE,
+    UI_CMD_EXIT_GAME,
+    UI_CMD_NEW_GAME,
+    UI_CMD_LOAD_GAME,
+
+    // 確認ダイアログ
+    UI_CONFIRM_YES,
+    UI_CONFIRM_NO,
+    UI_CONFIRM_EXIT_GAME_MESSAGE,
+    UI_CONFIRM_DELETE_SAVE_MESSAGE,
+
+    // スキル説明文
+    EXPL_SKILL_DASH_SLASH,
+    EXPL_SKILL_JUMP_SLASH,
+}
