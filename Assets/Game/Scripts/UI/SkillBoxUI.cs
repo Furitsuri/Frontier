@@ -64,7 +64,7 @@ namespace Frontier
             if( !SkillsData.IsValidSkill( skillID ) )
             {
                 SetSkillName( "", SituationType.ATTACK );
-                SetTooltipText( "" );
+                SetTooltipText( LocKey.None );
                 ShowSkillCostImage( 0 );
                 EnableRefreshText();
                 return;
@@ -200,10 +200,10 @@ namespace Frontier
 
         #region ITooltipContent implementation
 
-        public void SetTooltipText( string textKey )
+        public void SetTooltipText( LocKey textKey )
         {
-            // SkillsData側で説明文キーが未設定(null)のスキルでも表示自体はクラッシュさせない
-            _tooltipText = string.IsNullOrEmpty( textKey ) ? "" : _localization.Get( textKey );
+            // SkillsData側で説明文キーが未設定(None)のスキルでも表示自体はクラッシュさせない
+            _tooltipText = textKey == LocKey.None ? "" : _localization.Get( textKey );
         }
 
         public string GetTooltipText()

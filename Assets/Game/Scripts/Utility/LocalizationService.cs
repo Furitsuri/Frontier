@@ -1,104 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using UnityEngine;
 
 public class LocalizationService : ILocalizationService
 {
-    private Language _currentLanguage = Language.English;
-    private Dictionary<Language, Dictionary<string, string>> _table = new()
-    {
-        {
-            Language.English, new Dictionary<string, string>
-            {
-                { "", "Hello" },
-                { "_", "Goodbye" },
-                { "UI_STATUS_LEVEL", "Level" },
-                { "UI_STATUS_HP", "HP" },
-                { "UI_STATUS_MOVE", "Move" },
-                { "UI_STATUS_JUMP", "Jump" },
-                { "UI_STATUS_ACTION", "Action" },
-                { "UI_STATUS_ATTACK", "Attack" },
-                { "UI_STATUS_DEFFENCE", "Defence" },
-                { "UI_CMD_MOVE", "Move" },
-                { "UI_CMD_ATTACK", "Attack" },
-                { "UI_CMD_SKILL", "Skill" },
-                { "UI_CMD_WAIT", "Wait" },
-                { "UI_CMD_USE_SKILL_OPTION_EXECUTION", "Execution" },
-                { "UI_CMD_USE_SKILL_OPTION_QUEUE", "Queue" },
-                { "UI_CMD_USE_SKILL_OPTION_COOPERATIVE", "Cooperative" },
-                { "UI_CMD_RESERVED_ACTION_EXECUTE", "Execute" },
-                { "UI_CMD_OPTION", "Option" },
-                { "UI_CMD_TURN_END", "Turn End" },
-                { "UI_CMD_TROOPS", "Troops" },
-                { "UI_CMD_LEVEL_UP", "Level Up" },
-                { "UI_CMD_STATUS_UP", "Status Up" },
-                { "UI_CMD_SKILL_EQUIP", "Equip Skills" },
-                { "UI_CMD_SKILL_REMOVE", "Remove Skill" },
-                { "UI_CMD_SAVE", "Save" },
-                { "UI_CMD_EXIT_GAME", "Exit Game" },
-                { "UI_CONFIRM_EXIT_GAME_MESSAGE", "Quit the game?" },
-                { "UI_CONFIRM_YES", "Yes" },
-                { "UI_CONFIRM_NO", "No" },
-                { "UI_CMD_NEW_GAME", "New Game" },
-                { "UI_CMD_LOAD_GAME", "Load Game" },
-                { "UI_CMD_LOAD", "Load" },
-                { "UI_CMD_DELETE", "Delete" },
-                { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "Delete this save data?" },
-                { "EXPL_SKILL_DASH_SLASH", "Dash Attack" },
-                { "EXPL_SKILL_JUMP_SLASH", "Jump Attack" },
-            }
-        },
-        {
-            Language.Japanese, new Dictionary<string, string>
-            {
-                { "", "Hola" },
-                { "_", "Adiós" },
-                { "UI_STATUS_LEVEL", "レベル" },
-                { "UI_STATUS_HP", "体力" },
-                { "UI_STATUS_MOVE", "移動力" },
-                { "UI_STATUS_JUMP", "ジャンプ力" },
-                { "UI_STATUS_ACTION", "アクション" },
-                { "UI_STATUS_ATTACK", "攻撃力" },
-                { "UI_STATUS_DEFFENCE", "防御力" },
-                { "UI_CMD_MOVE", "移動" },
-                { "UI_CMD_ATTACK", "攻撃" },
-                { "UI_CMD_SKILL", "スキル" },
-                { "UI_CMD_WAIT", "待機" },
-                { "UI_CMD_USE_SKILL_OPTION_EXECUTION", "実行" },
-                { "UI_CMD_USE_SKILL_OPTION_QUEUE", "連携予約" },
-                { "UI_CMD_USE_SKILL_OPTION_COOPERATIVE", "連携" },
-                { "UI_CMD_RESERVED_ACTION_EXECUTE", "実行" },
-                { "UI_CMD_OPTION", "オプション" },
-                { "UI_CMD_TURN_END", "ターン終了" },
-                { "UI_CMD_TROOPS", "ステータス" },
-                { "UI_CMD_LEVEL_UP", "レベルアップ" },
-                { "UI_CMD_STATUS_UP", "ステータス上昇" },
-                { "UI_CMD_SKILL_EQUIP", "装備スキル設定" },
-                { "UI_CMD_SKILL_REMOVE", "スキルを外す" },
-                { "UI_CMD_SAVE", "セーブ" },
-                { "UI_CMD_EXIT_GAME", "ゲーム終了" },
-                { "UI_CONFIRM_EXIT_GAME_MESSAGE", "ゲームを終了しますか？" },
-                { "UI_CONFIRM_YES", "はい" },
-                { "UI_CONFIRM_NO", "いいえ" },
-                { "UI_CMD_NEW_GAME", "はじめから" },
-                { "UI_CMD_LOAD_GAME", "つづきから" },
-                { "UI_CMD_LOAD", "ロード" },
-                { "UI_CMD_DELETE", "削除" },
-                { "UI_CONFIRM_DELETE_SAVE_MESSAGE", "このセーブデータを削除しますか？" },
-                { "EXPL_SKILL_DASH_SLASH", "複数マスを移動しつつ、相手を斬りつけます" },
-                { "EXPL_SKILL_JUMP_SLASH", "跳躍して相手を斬りつけます。より高い位置から攻撃することでダメージが増加します" },
-            }
-        }
-    };
+    // Get()でキーが見つからない場合に最終的にフォールバックする基準言語。
+    // プロジェクトの一次データが日本語であるため日本語を基準とする。
+    private const Language BaseLanguage = Language.Japanese;
+
+    private readonly Dictionary<Language, Dictionary<LocKey, string>> _tables = new();
+
+    public Language CurrentLanguage { get; private set; } = Language.English;
+
     public event Action OnLanguageChanged;
+
+    public LocalizationService()
+    {
+        GetOrLoadTable( CurrentLanguage );
+    }
 
     public void ChangeLanguage( Language lang )
     {
-        _currentLanguage = lang;
+        if ( lang == CurrentLanguage ) return;
+
+        CurrentLanguage = lang;
+        GetOrLoadTable( lang );
         OnLanguageChanged?.Invoke();
     }
 
-    public string Get( string key )
+    public string Get( LocKey key )
     {
-        return _table[_currentLanguage][key];
+        var currentTable = GetOrLoadTable( CurrentLanguage );
+        if ( currentTable.TryGetValue( key, out var value ) )
+        {
+            return value;
+        }
+
+        if ( CurrentLanguage != BaseLanguage )
+        {
+            var baseTable = GetOrLoadTable( BaseLanguage );
+            if ( baseTable.TryGetValue( key, out var baseValue ) )
+            {
+                Debug.LogWarning( $"[Localization] key not found: {key} ({CurrentLanguage}). {BaseLanguage}の文言で代替しました。" );
+                return baseValue;
+            }
+        }
+
+        Debug.LogWarning( $"[Localization] key not found: {key} ({CurrentLanguage}, {BaseLanguage})" );
+        return key.ToString();
+    }
+
+    private Dictionary<LocKey, string> GetOrLoadTable( Language lang )
+    {
+        if ( _tables.TryGetValue( lang, out var table ) ) return table;
+
+        table = LoadTable( lang );
+        _tables[lang] = table;
+        return table;
+    }
+
+    private Dictionary<LocKey, string> LoadTable( Language lang )
+    {
+        var path  = $"Localization/{lang}";
+        var asset = Resources.Load<TextAsset>( path );
+        if ( asset == null )
+        {
+            Debug.LogWarning( $"[Localization] ローカライズデータが見つかりません: Resources/{path}.json" );
+            return new Dictionary<LocKey, string>();
+        }
+
+        var table = JsonConvert.DeserializeObject<Dictionary<LocKey, string>>( asset.text );
+        return table ?? new Dictionary<LocKey, string>();
     }
 }

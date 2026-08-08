@@ -20,10 +20,10 @@ namespace Frontier
         private VerticalLayoutGroup _cmdTextVerticalLayout;
         private float _defaultWidth; // Setup()時点の幅。表示するコマンドの文字列がこれより狭い場合はこの幅を下限として使う
         private ICommandCursorProvider _activeCommandScript;
-        private string[] _commandTextKeys;
-        private string[] _useSkillOptionTextKeys;
-        private string[] _reservedActionOptionTextKeys;
-        private string[] _tileMenuOptionTextKeys;
+        private LocKey[] _commandTextKeys;
+        private LocKey[] _useSkillOptionTextKeys;
+        private LocKey[] _reservedActionOptionTextKeys;
+        private LocKey[] _tileMenuOptionTextKeys;
 
         /// <summary>
         /// コマンドの文字列を初期化します
@@ -31,33 +31,33 @@ namespace Frontier
         /// </summary>
         void InitCommandStrings()
         {
-            _commandTextKeys = new string[( int ) COMMAND_TAG.NUM]
+            _commandTextKeys = new LocKey[( int ) COMMAND_TAG.NUM]
             {
-                "UI_CMD_MOVE",
-                "UI_CMD_ATTACK",
-                "UI_CMD_SKILL",
-                "UI_CMD_WAIT"
+                LocKey.UI_CMD_MOVE,
+                LocKey.UI_CMD_ATTACK,
+                LocKey.UI_CMD_SKILL,
+                LocKey.UI_CMD_WAIT
             };
             Debug.Assert( _commandTextKeys.Length == ( int ) COMMAND_TAG.NUM );
 
-            _useSkillOptionTextKeys = new string[( int ) USE_SKILL_OPTION_TAG.NUM]
+            _useSkillOptionTextKeys = new LocKey[( int ) USE_SKILL_OPTION_TAG.NUM]
             {
-                "UI_CMD_USE_SKILL_OPTION_EXECUTION",    // EXECUTION
-                "UI_CMD_USE_SKILL_OPTION_QUEUE",        // QUEUE
-                "UI_CMD_USE_SKILL_OPTION_COOPERATIVE",  // COOPERATIVE
+                LocKey.UI_CMD_USE_SKILL_OPTION_EXECUTION,    // EXECUTION
+                LocKey.UI_CMD_USE_SKILL_OPTION_QUEUE,        // QUEUE
+                LocKey.UI_CMD_USE_SKILL_OPTION_COOPERATIVE,  // COOPERATIVE
             };
             Debug.Assert( _useSkillOptionTextKeys.Length == ( int ) USE_SKILL_OPTION_TAG.NUM );
 
-            _reservedActionOptionTextKeys = new string[( int ) RESERVED_ACTION_OPTION_TAG.NUM]
+            _reservedActionOptionTextKeys = new LocKey[( int ) RESERVED_ACTION_OPTION_TAG.NUM]
             {
-                "UI_CMD_RESERVED_ACTION_EXECUTE",  // EXECUTE
+                LocKey.UI_CMD_RESERVED_ACTION_EXECUTE,  // EXECUTE
             };
             Debug.Assert( _reservedActionOptionTextKeys.Length == ( int ) RESERVED_ACTION_OPTION_TAG.NUM );
 
-            _tileMenuOptionTextKeys = new string[( int ) TILE_MENU_OPTION_TAG.NUM]
+            _tileMenuOptionTextKeys = new LocKey[( int ) TILE_MENU_OPTION_TAG.NUM]
             {
-                "UI_CMD_OPTION",    // OPTION
-                "UI_CMD_TURN_END",  // TURN_END
+                LocKey.UI_CMD_OPTION,    // OPTION
+                LocKey.UI_CMD_TURN_END,  // TURN_END
             };
             Debug.Assert( _tileMenuOptionTextKeys.Length == ( int ) TILE_MENU_OPTION_TAG.NUM );
         }

@@ -2,7 +2,7 @@
 
 public interface ITooltipContent
 {
-    public void SetTooltipText( string text )
+    public void SetTooltipText( LocKey text )
     {
         // デフォルト実装は何もしない
     }

@@ -10,7 +10,7 @@ public class CommandItem : UIMonoBehaviourIncludingText
     /// </summary>
     void OnEnable() { }
 
-    public void SetTextKey( string key )
+    public void SetTextKey( LocKey key )
     {
         _textKey = key;
         EnableRefreshText();

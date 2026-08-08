@@ -699,7 +699,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_LEVEL
+  _textKey: 1
   _valueText: {fileID: 1051829797663587588}
 --- !u!1 &1639334176670180347
 GameObject:
@@ -751,7 +751,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_MOVE
+  _textKey: 3
   _valueText: {fileID: 3587037771282644311}
 --- !u!1 &1741649144091968169
 GameObject:
@@ -1339,7 +1339,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_HP
+  _textKey: 2
   _valueText: {fileID: 2557374018286260558}
 --- !u!1 &2023164934882426271
 GameObject:
@@ -1865,7 +1865,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_ACTION
+  _textKey: 5
   _valueText: {fileID: 1478803773036783391}
 --- !u!1 &2703963378633116525
 GameObject:
@@ -2742,7 +2742,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_JUMP
+  _textKey: 4
   _valueText: {fileID: 2767785401270945074}
 --- !u!1 &4778953595374550889
 GameObject:
@@ -2944,7 +2944,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_ATTACK
+  _textKey: 6
   _valueText: {fileID: 5347743967020127860}
 --- !u!1 &5006690185263158221
 GameObject:
@@ -3321,7 +3321,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4be40c203f5824409476416da01794a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: UI_STATUS_DEFFENCE
+  _textKey: 7
   _valueText: {fileID: 1124679610838053556}
 --- !u!1 &5561118488556372545
 GameObject:

@@ -2,6 +2,9 @@
 
 public interface ILocalizationService
 {
-    string Get( string key );
+    Language CurrentLanguage { get; }
+
+    string Get( LocKey key );
+    void ChangeLanguage( Language lang );
     event Action OnLanguageChanged;
 }

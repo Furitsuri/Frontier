@@ -38,8 +38,8 @@ namespace Frontier
         /// <summary>
         /// ダイアログを表示し、カーソルをNO(誤操作防止のための既定値)にリセットします。
         /// </summary>
-        /// <param name="messageKey">確認メッセージのローカライズキー(例: "UI_CONFIRM_EXIT_GAME_MESSAGE")</param>
-        public void Show( string messageKey )
+        /// <param name="messageKey">確認メッセージのローカライズキー(例: LocKey.UI_CONFIRM_EXIT_GAME_MESSAGE)</param>
+        public void Show( LocKey messageKey )
         {
             _confirmUI.SetMessage( messageKey );
 

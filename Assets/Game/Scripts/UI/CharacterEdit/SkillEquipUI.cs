@@ -66,7 +66,7 @@ namespace Frontier.UI
 
         private void RefreshRemoveRowText()
         {
-            _removeRowText.text = _localization.Get( "UI_CMD_SKILL_REMOVE" );
+            _removeRowText.text = _localization.Get( LocKey.UI_CMD_SKILL_REMOVE );
         }
 
         public void Show() => gameObject.SetActive( true );
@@ -170,7 +170,7 @@ namespace Frontier.UI
             if ( !SkillsData.IsValidSkill( skillID ) ) { HideExplanation(); return; }
 
             var textKey = SkillsData.data[( int ) skillID].ExplainTextKey;
-            _explanationText.text = string.IsNullOrEmpty( textKey ) ? "" : _localization.Get( textKey );
+            _explanationText.text = textKey == LocKey.None ? "" : _localization.Get( textKey );
             _explanationPanel.SetActive( true );
         }
 

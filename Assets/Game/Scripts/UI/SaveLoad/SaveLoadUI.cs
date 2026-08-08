@@ -18,7 +18,7 @@ namespace Frontier.UI
 
         [Inject] private ILocalizationService _localization = null;
 
-        private string _titleKey = "";
+        private LocKey _titleKey = LocKey.None;
 
         public SaveSlotItemUI   AutoSaveSlot    => _autoSaveSlot;
         public SaveSlotItemUI[] ManualSaveSlots => _manualSaveSlots;
@@ -48,10 +48,10 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 画面上部のタイトルを設定します。ローカライズキーを渡してください(例: "UI_CMD_SAVE" / "UI_CMD_LOAD")。
+        /// 画面上部のタイトルを設定します。ローカライズキーを渡してください(例: LocKey.UI_CMD_SAVE / LocKey.UI_CMD_LOAD)。
         /// セーブ画面とロード画面の差分はこれのみです。
         /// </summary>
-        public void SetTitle( string localizationKey )
+        public void SetTitle( LocKey localizationKey )
         {
             _titleKey = localizationKey;
             RefreshTitleText();
@@ -59,7 +59,7 @@ namespace Frontier.UI
 
         private void RefreshTitleText()
         {
-            _titleText.text = _localization != null ? _localization.Get( _titleKey ) : _titleKey;
+            _titleText.text = _localization != null ? _localization.Get( _titleKey ) : _titleKey.ToString();
         }
     }
 }

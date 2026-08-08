@@ -14,10 +14,10 @@ namespace Frontier
     /// </summary>
     public class YesNoConfirmUI : MonoBehaviour
     {
-        private static readonly string[] OptionTextKeys =
+        private static readonly LocKey[] OptionTextKeys =
         {
-            "UI_CONFIRM_YES",
-            "UI_CONFIRM_NO",
+            LocKey.UI_CONFIRM_YES,
+            LocKey.UI_CONFIRM_NO,
         };
 
         private const string FontResourcePath = "Fonts & Materials/Electronic Highway Sign SDF";
@@ -27,7 +27,7 @@ namespace Frontier
 
         [Inject] private ILocalizationService _localization = null;
 
-        private string _messageKey = "";
+        private LocKey _messageKey = LocKey.None;
         private TextMeshProUGUI _messageText = null;
         private List<TextMeshProUGUI> _optionTexts = new List<TextMeshProUGUI>();
         private GameObject _panel;
@@ -52,9 +52,9 @@ namespace Frontier
 
         /// <summary>
         /// 確認メッセージを設定します。ローカライズキーを渡してください
-        /// (例: "UI_CONFIRM_EXIT_GAME_MESSAGE" / "UI_CONFIRM_DELETE_SAVE_MESSAGE")。
+        /// (例: LocKey.UI_CONFIRM_EXIT_GAME_MESSAGE / LocKey.UI_CONFIRM_DELETE_SAVE_MESSAGE)。
         /// </summary>
-        public void SetMessage( string messageKey )
+        public void SetMessage( LocKey messageKey )
         {
             _messageKey = messageKey;
             RefreshAllTexts();
@@ -76,12 +76,12 @@ namespace Frontier
         {
             if ( _messageText != null )
             {
-                _messageText.text = ( _localization != null && !string.IsNullOrEmpty( _messageKey ) ) ? _localization.Get( _messageKey ) : _messageKey;
+                _messageText.text = ( _localization != null && _messageKey != LocKey.None ) ? _localization.Get( _messageKey ) : _messageKey.ToString();
             }
 
             for ( int i = 0; i < _optionTexts.Count; ++i )
             {
-                _optionTexts[i].text = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i];
+                _optionTexts[i].text = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i].ToString();
             }
         }
 
@@ -172,7 +172,7 @@ namespace Frontier
                 var text = itemGO.AddComponent<TextMeshProUGUI>();
                 if ( font != null ) { text.font = font; }
                 text.fontSize  = 24;
-                text.text      = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i];
+                text.text      = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i].ToString();
                 text.color     = _normalColor;
                 text.alignment = TextAlignmentOptions.Center;
                 text.enableWordWrapping = false;

@@ -24,7 +24,7 @@ namespace Frontier.UI
             EnableRefreshText();
         }
 
-        public void SetTooltipText( string text )
+        public void SetTooltipText( LocKey text )
         {
             _tooltipText = _localization.Get( _textKey );
         }

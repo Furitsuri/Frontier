@@ -33,7 +33,7 @@ namespace Frontier.Combat
             public float Param2;                    // 汎用パラメータ2
             public float Param3;                    // 汎用パラメータ3
             public float Param4;                    // 汎用パラメータ4
-            public string ExplainTextKey;           // スキル説明文のテキストキー
+            public LocKey ExplainTextKey;           // スキル説明文のテキストキー
         }
 
         // JsonUtility.FromJson()によるJSONデシリアライズでのみ値が設定されるフィールドのため、
@@ -144,7 +144,19 @@ namespace Frontier.Combat
             data.Param2              = fdata.Param2;
             data.Param3              = fdata.Param3;
             data.Param4              = fdata.Param4;
-            data.ExplainTextKey      = fdata.ExplainTextKey ?? "";
+            data.ExplainTextKey      = ParseExplainTextKey( fdata.ExplainTextKey );
+        }
+
+        // MEMO : ExplainTextKeyはJSON上では可読性のためキー名の文字列(例: "EXPL_SKILL_DASH_SLASH")で保持しており、
+        //        他のenumフィールドのようなint格納とは意図的に統一していない。
+        static private LocKey ParseExplainTextKey( string keyName )
+        {
+            if ( string.IsNullOrEmpty( keyName ) ) { return LocKey.None; }
+
+            if ( Enum.TryParse<LocKey>( keyName, out var key ) ) { return key; }
+
+            Debug.LogWarning( $"[SkillsData] ExplainTextKeyが不正です: {keyName}" );
+            return LocKey.None;
         }
 
         static public void BuildSkillNotifierFactory( HierarchyBuilderBase hierarchyBld )

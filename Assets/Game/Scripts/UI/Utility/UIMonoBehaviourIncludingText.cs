@@ -9,7 +9,7 @@ using Zenject;
 /// </summary>
 public class UIMonoBehaviourIncludingText : UiMonoBehaviour, ILocalizedText
 {
-    [SerializeField] protected string _textKey = string.Empty;
+    [SerializeField] protected LocKey _textKey = LocKey.None;
 
     [Inject] protected ILocalizationService _localization = null;
 

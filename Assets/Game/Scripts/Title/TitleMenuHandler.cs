@@ -185,7 +185,7 @@ namespace Frontier.Title
         {
             EnsureExitConfirmPresenter();
 
-            _exitConfirmPresenter.Show( "UI_CONFIRM_EXIT_GAME_MESSAGE" );
+            _exitConfirmPresenter.Show( LocKey.UI_CONFIRM_EXIT_GAME_MESSAGE );
 
             _exitConfirmHashCode = Hash.GetStableHash( nameof( TitleMenuHandler ) + "_ExitConfirm" );
             InputFacade.Instance.RegisterInputCodes(

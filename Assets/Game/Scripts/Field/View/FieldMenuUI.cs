@@ -15,12 +15,12 @@ namespace Frontier.Field
     public class FieldMenuUI : MonoBehaviour
     {
         // FIELD_MENU_OPTION_TAG の並び順と対応させること
-        private static readonly string[] OptionTextKeys =
+        private static readonly LocKey[] OptionTextKeys =
         {
-            "UI_CMD_TROOPS",     // TROOPS
-            "UI_CMD_OPTION",     // OPTION
-            "UI_CMD_SAVE",       // SAVE
-            "UI_CMD_EXIT_GAME",  // EXIT_GAME
+            LocKey.UI_CMD_TROOPS,     // TROOPS
+            LocKey.UI_CMD_OPTION,     // OPTION
+            LocKey.UI_CMD_SAVE,       // SAVE
+            LocKey.UI_CMD_EXIT_GAME,  // EXIT_GAME
         };
 
         private const string FontResourcePath = "Fonts & Materials/Electronic Highway Sign SDF";
@@ -125,7 +125,7 @@ namespace Frontier.Field
                 var text = itemGO.AddComponent<TextMeshProUGUI>();
                 if ( font != null ) { text.font = font; }
                 text.fontSize  = 24;
-                text.text      = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i];
+                text.text      = _localization != null ? _localization.Get( OptionTextKeys[i] ) : OptionTextKeys[i].ToString();
                 text.color     = _normalColor;
                 text.alignment = TextAlignmentOptions.MidlineLeft;
                 text.enableWordWrapping = false;

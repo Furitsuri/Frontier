@@ -189,7 +189,7 @@ namespace Frontier.SaveLoad
         {
             EnsureDeleteConfirmPresenter();
 
-            _deleteConfirmPresenter.Show( "UI_CONFIRM_DELETE_SAVE_MESSAGE" );
+            _deleteConfirmPresenter.Show( LocKey.UI_CONFIRM_DELETE_SAVE_MESSAGE );
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
 

@@ -38,7 +38,7 @@ namespace Frontier.SaveLoad
         /// </summary>
         public void Show( SaveLoadMode mode )
         {
-            string titleKey = ( mode == SaveLoadMode.Save ) ? "UI_CMD_SAVE" : "UI_CMD_LOAD";
+            LocKey titleKey = ( mode == SaveLoadMode.Save ) ? LocKey.UI_CMD_SAVE : LocKey.UI_CMD_LOAD;
             _view.SetTitle( titleKey );
 
             var indices = new List<int>();

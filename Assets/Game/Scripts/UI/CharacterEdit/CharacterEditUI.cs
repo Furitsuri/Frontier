@@ -15,11 +15,11 @@ namespace Frontier.UI
     /// </summary>
     public class CharacterEditUI : UiMonoBehaviour, ISelectableMenuView
     {
-        private static readonly string[] MenuItemLocalizationKeys =
+        private static readonly LocKey[] MenuItemLocalizationKeys =
         {
-            "UI_CMD_LEVEL_UP",     // LEVEL_UP
-            "UI_CMD_STATUS_UP",    // STATUS_UP
-            "UI_CMD_SKILL_EQUIP",  // SKILL_EQUIP
+            LocKey.UI_CMD_LEVEL_UP,     // LEVEL_UP
+            LocKey.UI_CMD_STATUS_UP,    // STATUS_UP
+            LocKey.UI_CMD_SKILL_EQUIP,  // SKILL_EQUIP
         };
 
         [Header( "上部キャラクターパラメータ表示(HP/ATK/DEF/MOV/JMP/ACT/スキル)" )]
@@ -127,7 +127,7 @@ namespace Frontier.UI
         {
             for ( int i = 0; i < _menuItemTexts.Length; ++i )
             {
-                _menuItemTexts[i].text = _localization != null ? _localization.Get( MenuItemLocalizationKeys[i] ) : MenuItemLocalizationKeys[i];
+                _menuItemTexts[i].text = _localization != null ? _localization.Get( MenuItemLocalizationKeys[i] ) : MenuItemLocalizationKeys[i].ToString();
             }
         }
     }
