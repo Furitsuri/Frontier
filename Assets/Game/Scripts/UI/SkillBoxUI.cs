@@ -63,6 +63,10 @@ namespace Frontier
 
             if( !SkillsData.IsValidSkill( skillID ) )
             {
+                // _textKeyも明示的にクリアする。ApplySkillForEditingは同一インスタンスが枠の使い回しで
+                // 再利用されるため、ここを省略すると直後のEnableRefreshText()が古い_textKeyを読み直し、
+                // 前に表示していたスキルの説明文でツールチップを上書きしてしまう。
+                _textKey = LocKey.None;
                 SetSkillName( "", SituationType.ATTACK );
                 SetTooltipText( LocKey.None );
                 ShowSkillCostImage( 0 );
