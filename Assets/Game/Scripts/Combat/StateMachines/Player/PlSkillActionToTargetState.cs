@@ -346,6 +346,8 @@ namespace Frontier.Battle
         {
             // 連携攻撃ではない通常攻撃・非連携スキルは、キル確認を挟む場合も含めここが実行確定のタイミングとなるため、SkillBoxUIを元の位置に戻す
             _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );
+            // カーソルハイライト(黄色の外枠フレーム)を解除する(元の位置に戻った後も枠が残ったままにならないようにするため)
+            _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, -1 );
 
             _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );

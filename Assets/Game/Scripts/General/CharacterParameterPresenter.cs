@@ -235,13 +235,14 @@ public class CharacterParameterPresenter : PhasePresenterBase
 
     /// <summary>
     /// 指定インデックスのSkillBoxUIのみをカーソルハイライト状態にします(-1で全解除)
+    /// 外枠表示のみで示すため、拡大表示は行いません
     /// </summary>
     public void SetSkillBoxCursorIndex( int index )
     {
         var skillBoxes = _parameterUI.SkillBoxes;
         for( int i = 0; i < skillBoxes.Length; ++i )
         {
-            skillBoxes[i].SetCursorHighlighted( i == index );
+            skillBoxes[i].SetCursorHighlighted( i == index, scaleUp: false );
         }
     }
 
