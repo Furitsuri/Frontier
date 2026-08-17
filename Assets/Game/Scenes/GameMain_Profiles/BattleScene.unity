@@ -1321,7 +1321,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 483643138}
   PanelTransform: {fileID: 2011735483}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -6978,7 +6978,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1983097973}
   PanelTransform: {fileID: 301102574}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -8122,6 +8122,94 @@ Transform:
   - {fileID: 3038686465927936996}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1385645462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1385645463}
+  - component: {fileID: 1385645466}
+  - component: {fileID: 1385645465}
+  - component: {fileID: 1385645464}
+  m_Layer: 5
+  m_Name: SkillDetail
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1385645463
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385645462}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6019870887901591306}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -351, y: 90}
+  m_SizeDelta: {x: 220, y: 260}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &1385645464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385645462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9088f6ddff90974d9befedb4be6a613, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1385645465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385645462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.435, g: 0.435, b: 0.435, a: 0.867}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1385645466
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385645462}
+  m_CullTransparentMesh: 1
 --- !u!1 &1419653043
 GameObject:
   m_ObjectHideFlags: 0
@@ -8847,7 +8935,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 2001274917}
   PanelTransform: {fileID: 1969250881}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -9914,7 +10002,10 @@ MonoBehaviour:
   TMPAddDefValue: {fileID: 0}
   TMPDiffHPValue: {fileID: 460023100}
   TMPActRecoveryValue: {fileID: 731702679}
+  TMPExpValue: {fileID: 0}
+  TMPStatusPointValue: {fileID: 0}
   TargetImage: {fileID: 0}
+  IncomingTargetImage: {fileID: 0}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   PanelTransform: {fileID: 1977418670}
   SkillBoxes:
@@ -12345,7 +12436,6 @@ MonoBehaviour:
   - NewStage
   - test_stage
   _playerParamFilePath: []
-  _skillDataFilePath: Assets/Resources/SkillData/SkillData.json
   _fieldIds: []
   _closeAtkCameraParamFilePath: 
   _rangedAtkCameraParamFilePath: 
@@ -12621,7 +12711,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1738003653}
   PanelTransform: {fileID: 1478547445}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -13938,7 +14028,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 3616982245438150406}
   PanelTransform: {fileID: 9218412622684403407}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -25294,7 +25384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1588835097779544032}
   PanelTransform: {fileID: 6616023536185802281}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -31605,7 +31695,10 @@ MonoBehaviour:
   TMPAddDefValue: {fileID: 0}
   TMPDiffHPValue: {fileID: 5950143827301976222}
   TMPActRecoveryValue: {fileID: 7810105338854438249}
+  TMPExpValue: {fileID: 0}
+  TMPStatusPointValue: {fileID: 0}
   TargetImage: {fileID: 0}
+  IncomingTargetImage: {fileID: 0}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   PanelTransform: {fileID: 424562848778817280}
   SkillBoxes:
@@ -32139,6 +32232,7 @@ RectTransform:
   - {fileID: 6048716429127682804}
   - {fileID: 949485668}
   - {fileID: 483007110}
+  - {fileID: 1385645463}
   m_Father: {fileID: 3764484913681331009}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -32356,6 +32450,7 @@ MonoBehaviour:
   TileMenuWindow: {fileID: 144247359}
   SelectableCharaParam: {fileID: 1444827673}
   CommandNameView: {fileID: 1323666753}
+  SkillDetail: {fileID: 1385645464}
   ConfirmTurnEnd: {fileID: 6171524841852902559}
   DamageValue: {fileID: 1401124153645319502}
   CooperativeVortex: {fileID: 483007111}
@@ -32683,7 +32778,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 8858204773204945868}
   PanelTransform: {fileID: 3977471282548836869}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -34437,7 +34532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 6399298380893331251}
   PanelTransform: {fileID: 1518457138161778426}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}

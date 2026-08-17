@@ -127,6 +127,14 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// PlSelectSkillState中のスキル詳細情報パネルの表示・非表示を切り替えます
+        /// </summary>
+        public void SetActiveSkillDetail( bool isActive )
+        {
+            _uiSystem.BattleUi.SetSkillDetailActive( isActive );
+        }
+
+        /// <summary>
         /// SkillBoxUIの並び替え・元位置への復帰アニメーションが再生中かどうかを取得します
         /// </summary>
         public bool IsSkillBoxLayoutAnimating => _skillBoxLayoutAnimator.IsAnimating;

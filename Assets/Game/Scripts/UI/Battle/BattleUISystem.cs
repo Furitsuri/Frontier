@@ -31,6 +31,9 @@ namespace Frontier.UI
         [Header( "CommandNameUI" )]
         public CommandNameUI CommandNameView;   // コマンド名表示UI
 
+        [Header( "SkillDetailUI" )]
+        public SkillDetailUI SkillDetail;       // PlSelectSkillState中のスキル詳細情報パネル
+
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
@@ -73,6 +76,7 @@ namespace Frontier.UI
             StageClear?.Setup();
             GameOver?.Setup();
             CommandNameView?.Setup();
+            SkillDetail?.Setup();
 
             DamageValue.Init( _rectTransform, _uiCamera );
             CooperativeVortex.Init( _rectTransform, _uiCamera );
@@ -106,6 +110,11 @@ namespace Frontier.UI
         public void SetTileMenuActive( bool isActive )
         {
             TileMenuWindow.gameObject.SetActive( isActive );
+        }
+
+        public void SetSkillDetailActive( bool isActive )
+        {
+            SkillDetail.gameObject.SetActive( isActive );
         }
 
         public void SetActiveActionResultExpect( bool isActive )

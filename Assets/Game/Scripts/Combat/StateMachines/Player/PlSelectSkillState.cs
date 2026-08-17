@@ -57,6 +57,9 @@ namespace Frontier.Battle
             _presenter.AnimateSkillBoxesForSelection( ParameterWindowType.Left );
             _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, _cmdIdxVal.value );
 
+            // スキル詳細情報パネルを表示する
+            _presenter.SetActiveSkillDetail( true );
+
             // カーソル位置のスキルに応じた効果範囲を表示する
             RefreshSkillRangeDisplay();
         }
@@ -92,6 +95,8 @@ namespace Frontier.Battle
             _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, -1 );
             // 効果範囲表示を消去する(AcceptCancel以外の退避経路でも確実にクリアするため)
             _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
+            // スキル詳細情報パネルを非表示にする
+            _presenter.SetActiveSkillDetail( false );
 
             return base.ExitState();
         }
@@ -133,6 +138,9 @@ namespace Frontier.Battle
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            // 子ステート(PlSkillActionToTargetState)からBack()で復帰した場合、ExitStateで非表示にされているため再表示する
+            _presenter.SetActiveSkillDetail( true );
 
             // 子ステート(PlSkillActionToTargetState)からBack()で復帰した場合、範囲描画が消えている
             // 場合があるため、カーソル位置のスキルに応じて表示を仕切り直す
