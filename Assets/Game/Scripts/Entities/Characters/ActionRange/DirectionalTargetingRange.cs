@@ -13,10 +13,19 @@ namespace Frontier.Entities
         static public void AcceptDirection( TargetingRangeContext context, Direction dir, bool isMovingSkill, ref int currentRange, int maxRange )
         {
             var actionRangeCtrl = context.Owner.BattleLogic.ActionRangeCtrl;
+            int tileIndex        = context.Owner.BattleParams.TmpParam.CurrentTileIndex;
             currentRange = maxRange;    // 方向指定を受け入れたタイミングでは最大レンジに設定しておき、以降の調整で有効なレンジを探す
 
             context.Owner.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) );
-            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, context.Owner.BattleParams.TmpParam.CurrentTileIndex, currentRange );
+            actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, false, isMovingSkill, tileIndex, currentRange );
+
+            // isMovingSkillの場合、壁やステージ端でゴーストがmaxRangeより手前に制限されることがある。
+            // ここでcurrentRangeを実際のゴースト距離に同期しておかないと、次回のTryAdjustRangeが
+            // 「名目上のレンジ」を基準に動いてしまい、1回目の縮小操作が見た目に反映されない不具合が起きる
+            if( isMovingSkill )
+            {
+                SnapRangeToGhostDistance( context, tileIndex, ref currentRange );
+            }
         }
 
 		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isMovingSkill, int tileIndex, int range, ActionableTileData actionableTileData )
@@ -96,9 +105,12 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// step方向にcurrentRangeを調整します。ゴーストが敵位置と重なるレンジは飛ばし、有効なレンジが見つかれば更新します。
+        /// step方向にcurrentRangeを調整します。有効なレンジが見つかれば更新します。
         /// 有効なレンジが存在しない場合は元の状態を復元してfalseを返します。
-        /// 拡大時(step>0)はゴーストが現在より遠くなるレンジのみ有効とし、縮小時(step<0)は非敵タイルが1つでもあれば有効とします。
+        /// isMovingSkillの場合、候補レンジをトリミングした後(AdjustRangeForMove適用後)に
+        /// 攻撃対象が1体以上残っているかどうかを有効性の条件とします。
+        /// スキル選択時点(PlSelectSkillState)で対象0体のスキルは選択不可としているのと同じ基準であり、
+        /// 着地先(ゴースト)の有無だけでは「立てるが誰も攻撃できない」レンジを弾けないため、この基準を用います。
         /// </summary>
         static public bool TryAdjustRange( TargetingRangeContext context, int step, ref int currentRange, int maxRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter )
         {
@@ -107,7 +119,6 @@ namespace Frontier.Entities
 
             int limit           = ( step < 0 ) ? 1 : maxRange;
             int candidate       = currentRange + step;
-            int currentGhostIdx = ( isMovingSkill ) ? FindGhostTileIndex( context, actionRangeCtrl ) : -1;
 
             while( ( step < 0 ) ? ( candidate >= limit ) : ( candidate <= limit ) )
             {
@@ -115,11 +126,7 @@ namespace Frontier.Entities
 
                 if( isMovingSkill )
                 {
-                    int newGhostIdx = FindGhostTileIndex( context, actionRangeCtrl );
-
-                    bool isValid = ( step < 0 )
-                        ? 0 <= newGhostIdx
-                        : IsGhostFartherThan( context, newGhostIdx, currentGhostIdx );
+                    bool isValid = 0 < actionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count;
 
                     if( isValid )
                     {
@@ -127,12 +134,8 @@ namespace Frontier.Entities
                         RefreshAfterCurrentRangeChanged( context, currentRange, isMovingSkill, ref attackTargets, ref targetCharacter );
                         // isMovingSkillの場合、AdjustRangeForMoveによってゴーストが候補レンジより近い位置に
                         // 制限されることがある。currentRangeをゴーストの実効レンジに合わせて更新する。
-                        var ghostObj = context.Owner.GhostObj;
-                        if( ghostObj != null && ghostObj.gameObject.activeSelf )
-                        {
-                            currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
-                        }
-                        
+                        SnapRangeToGhostDistance( context, tileIndex, ref currentRange );
+
                         return true;
                     }
 
@@ -270,40 +273,17 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// ターゲット可能範囲内で敵・他キャラクターの着地予約(RESERVED)が存在しないタイルのうち、
-        /// スキル使用者から最も遠いタイルのインデックスを返します。
-        /// 該当する有効なタイルが1つもない場合は -1 を返します。
-        /// isMovingSkillがtrueの場合はキャラクターの存在有無で判定します。
-        /// (AdjustRangeForMoveが攻撃対象インデックスを変更するため、attackTargetIndicesは信頼できないため)
+        /// currentRangeを、実際に配置されているゴーストのタイルまでの距離に同期します。
+        /// AdjustRangeForMoveは壁やステージ端でゴーストを候補レンジより手前に制限することがあるため、
+        /// 名目上のレンジ値のまま次の調整を行うと「実際には変化のない縮小・拡大」が発生してしまいます。
         /// </summary>
-        static private int FindGhostTileIndex( TargetingRangeContext context, ActionRangeController actionRangeCtrl )
+        static private void SnapRangeToGhostDistance( TargetingRangeContext context, int tileIndex, ref int currentRange )
         {
-            var actionableTileData  = actionRangeCtrl.ActionableTileData;
-            var targetableTileMap   = actionableTileData.TargetableTileMap;
-
-            if( targetableTileMap.Count <= 0 ) { return -1; }
-
-            // 立てないタイル(生存キャラクターが存在する、または他キャラクターが着地予約(RESERVED)している)は候補としない
-            if( !targetableTileMap.Last().Value.IsStandableBy( context.Owner.GetCharacterKey() ) )
+            var ghostObj = context.Owner.GhostObj;
+            if( ghostObj != null && ghostObj.gameObject.activeSelf )
             {
-                return -1;
+                currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
             }
-
-            return targetableTileMap.Last().Key;
-        }
-
-        /// <summary>
-        /// newIdxのタイルがprevIdxのタイルよりオーナーから遠い位置にあるか判定します。
-        /// </summary>
-        static private bool IsGhostFartherThan( TargetingRangeContext context, int newIdx, int prevIdx )
-        {
-            if( newIdx < 0 ) { return false; }
-            if( prevIdx < 0 ) { return true; }
-
-            Vector3 ownerPos = context.Owner.GetPosition();
-            float newDist  = Vector3.Distance( ownerPos, context.StageCtrl.GetTileStaticData( newIdx ).CharaStandPos );
-            float prevDist = Vector3.Distance( ownerPos, context.StageCtrl.GetTileStaticData( prevIdx ).CharaStandPos );
-            return newDist > prevDist;
         }
 
         static private bool IsExistOpponent( TileDynamicData tileDynamicData, CHARACTER_TAG ownerTag )

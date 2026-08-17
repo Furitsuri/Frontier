@@ -75,9 +75,21 @@ namespace Frontier.Battle
             _isMovingSkill     = skillData.IsMovingSkill;
             _targetCharacter   = null;
 
+            int tileIndex = context.Owner.BattleParams.TmpParam.CurrentTileIndex;
             context.Owner.BattleLogic.ActionRangeCtrl.RefreshTargetableRange(
-                _targetingMode, true, _isMovingSkill,
-                context.Owner.BattleParams.TmpParam.CurrentTileIndex, _currentRange );
+                _targetingMode, true, _isMovingSkill, tileIndex, _currentRange );
+
+            // isMovingSkillの場合、壁やステージ端でゴーストがmaxRangeより手前に制限されることがある。
+            // ここで_currentRangeを実際のゴースト距離に同期しないと、最初のレンジ調整操作が
+            // 「名目上のレンジ」を基準に動いてしまい、見た目に変化しない不具合が起きる
+            if( _isMovingSkill )
+            {
+                var ghostObj = context.Owner.GhostObj;
+                if( ghostObj != null && ghostObj.gameObject.activeSelf )
+                {
+                    _currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
+                }
+            }
 
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke(
                 context, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
