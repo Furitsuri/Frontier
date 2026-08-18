@@ -2,6 +2,7 @@
 using Frontier.Entities;
 using Frontier.StateMachine;
 using Frontier.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,12 @@ public class CharacterParameterPresenter : PhasePresenterBase
     private List<RawImage> _actGaugeElems = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
     private float _alpha;
     private float _blinkingElapsedTime;
+
+    // 背景色をキャラクターに応じて決定する処理。呼び出し元(戦闘画面ならBattleRoutinePresenter等)が
+    // SetBackgroundColorResolverで差し込む。未設定(null)の画面ではHierarchy側の既定の背景色のまま変更しない。
+    // CharacterParameterPresenterは配置画面のカルーセルや編成・キャラ編集画面など他の多くの画面でも
+    // 使い回されているため、「勢力」や「戦闘」の概念をこのクラス自身は一切知らないようにする。
+    private Func<Character, Color> _backgroundColorResolver = null;
 
     // キャラクター切替スライド演出用(IncomingTargetImageが割り当てられている画面でのみ使用する)。
     // _characterCamera/TargetImageは「切替前」のキャラクターを表示し続け、
@@ -94,6 +101,15 @@ public class CharacterParameterPresenter : PhasePresenterBase
         _parameterUI.gameObject.SetActive( isActive );
     }
 
+    /// <summary>
+    /// 背景色をキャラクターに応じて決定する処理を差し込みます。未設定(null)のままなら背景色は変更しません。
+    /// 「勢力」や「戦闘」といった概念はこのクラスの外(呼び出し元)で完結させてください。
+    /// </summary>
+    public void SetBackgroundColorResolver( Func<Character, Color> resolver )
+    {
+        _backgroundColorResolver = resolver;
+    }
+
     public void AssignCharacter( Character character, int layerMaskIndex )
     {
         // 以前ディスプレイに設定していたキャラクターのレイヤーマスクを元に戻す
@@ -108,8 +124,21 @@ public class CharacterParameterPresenter : PhasePresenterBase
         _character.gameObject.SetActive( true );
         _characterCamera?.AssignCharacter( character, layerMaskIndex );
 
+        // 背景色を反映(resolver未設定の画面では何もしない)
+        ApplyBackgroundColor( character );
+
         // キャラクターのパラメータを反映
         RefreshParamRender( _character, _character.GetStatusRef, _character.BattleParams.ModifiedParam );
+    }
+
+    /// <summary>
+    /// SetBackgroundColorResolverで差し込まれた処理を使って背景色を適用します。
+    /// </summary>
+    private void ApplyBackgroundColor( Character character )
+    {
+        if( null == _backgroundColorResolver || null == _parameterUI.Background ) { return; }
+
+        _parameterUI.Background.color = _backgroundColorResolver( character );
     }
 
     /// <summary>
@@ -145,6 +174,9 @@ public class CharacterParameterPresenter : PhasePresenterBase
         _character = toCharacter;
         _character.RegistParameterPresenter( this );
         _character.gameObject.SetActive( true );
+
+        // 背景色を反映(resolver未設定の画面では何もしない)
+        ApplyBackgroundColor( toCharacter );
 
         _incomingCharacterCamera.AssignCharacter( toCharacter, layerMaskIndex );
 

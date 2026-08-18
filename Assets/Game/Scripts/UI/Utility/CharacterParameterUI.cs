@@ -35,6 +35,12 @@ namespace Frontier.UI
         [SerializeField] public SkillBoxUI[] SkillBoxes;
 
         /// <summary>
+        /// このUIのルートに付いている背景Image。勢力に応じた色はBattleRoutinePresenter側で決定し、
+        /// このプロパティ経由でscriptから適用する(Hierarchy側では色を設定しない)
+        /// </summary>
+        public Image Background { get; private set; }
+
+        /// <summary>
         /// テキストの色を反映します
         /// </summary>
         /// <param name="changeHP">HPの変動量</param>
@@ -53,6 +59,8 @@ namespace Frontier.UI
         public override void Setup()
         {
             base.Setup();
+
+            Background = GetComponent<Image>();
 
             foreach( var item in SkillBoxes )
             {

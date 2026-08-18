@@ -1,10 +1,12 @@
 ﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEngine;
 using Zenject;
 using static Constants;
 
@@ -28,6 +30,12 @@ namespace Frontier.Battle
                 _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.PlayerParameter, true }, false ),
                 _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.EnemyParameter, true }, false ),
             };
+
+            // グラデーション用マテリアルを設定済みのPlayerParameter/EnemyParameterにのみ、勢力に応じた背景色決定処理を差し込む
+            foreach( var parameterPresenter in _parameterPresenters )
+            {
+                parameterPresenter.SetBackgroundColorResolver( c => GetParameterBackgroundColor( c.GetStatusRef.characterTag ) );
+            }
 
             SetActiveActionDirectionCallbacks = new Action<bool>[( int ) ParameterWindowType.NUM]
             {
@@ -236,6 +244,26 @@ namespace Frontier.Battle
         static public int GetLayerMaskIndexFromWinType( ParameterWindowType winType )
         {
             return _layerMaskIndecies[( int ) winType];
+        }
+
+        /// <summary>
+        /// キャラクターパラメータUIの背景色を、キャラクターの勢力に応じて返します。
+        /// アルファ値は従来ヒエラルキー側で設定していた値(221/255)を踏襲します。
+        /// </summary>
+        static public Color GetParameterBackgroundColor( CHARACTER_TAG characterTag )
+        {
+            const float alpha = 221f / 255f;
+
+            switch( characterTag )
+            {
+                case CHARACTER_TAG.PLAYER:
+                    return new Color( 0.20f, 0.40f, 0.85f, alpha );
+                case CHARACTER_TAG.ENEMY:
+                    return new Color( 0.80f, 0.20f, 0.20f, alpha );
+                default:
+                    // OTHER(第三勢力)、および想定外のタグはデフォルトとして緑を用いる
+                    return new Color( 0.20f, 0.70f, 0.30f, alpha );
+            }
         }
     }
 }

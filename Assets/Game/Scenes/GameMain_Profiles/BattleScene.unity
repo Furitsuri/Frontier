@@ -13467,6 +13467,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: 3be42e4fc7c696b45b02cf85a54bd0f3, type: 2}
     - target: {fileID: 5626079772233172074, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
       propertyPath: _side
       value: 1
@@ -32589,6 +32609,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154385743617761614, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: 213bbeb155b03bf46b64ea087cbcdb8f, type: 2}
     - target: {fileID: 3554077870809365091, guid: 7cb3d5227d3e2984c9591af805d255a6, type: 3}
       propertyPath: CursorFrame
       value: 
