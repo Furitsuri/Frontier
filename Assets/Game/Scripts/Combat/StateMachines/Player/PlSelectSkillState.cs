@@ -101,6 +101,18 @@ namespace Frontier.Battle
             return base.ExitState();
         }
 
+        /// <summary>
+        /// 子ステート(PlSkillActionToTargetState等)へ遷移する際に呼ばれます。
+        /// TransitState経由の遷移ではExitStateを通らないため、ここでスキル詳細情報パネルを非表示にしないと
+        /// 子ステート側でも表示されっぱなしになってしまいます。再表示はOnActivated()で行います。
+        /// </summary>
+        public override object PauseState()
+        {
+            _presenter.SetActiveSkillDetail( false );
+
+            return base.PauseState();
+        }
+
         public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
@@ -139,7 +151,8 @@ namespace Frontier.Battle
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
 
-            // 子ステート(PlSkillActionToTargetState)からBack()で復帰した場合、ExitStateで非表示にされているため再表示する
+            // 初回起動時、または子ステート(PlSkillActionToTargetState)からBack()で復帰した場合、
+            // PauseStateで非表示にされているため再表示する
             _presenter.SetActiveSkillDetail( true );
 
             // 子ステート(PlSkillActionToTargetState)からBack()で復帰した場合、範囲描画が消えている
