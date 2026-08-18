@@ -133,12 +133,23 @@ public class CharacterParameterPresenter : PhasePresenterBase
 
     /// <summary>
     /// SetBackgroundColorResolverで差し込まれた処理を使って背景色を適用します。
+    /// パネル本体だけでなく、各SkillBoxUIの背景にも同じ色を反映します。
     /// </summary>
     private void ApplyBackgroundColor( Character character )
     {
-        if( null == _backgroundColorResolver || null == _parameterUI.Background ) { return; }
+        if( null == _backgroundColorResolver ) { return; }
 
-        _parameterUI.Background.color = _backgroundColorResolver( character );
+        var color = _backgroundColorResolver( character );
+
+        if( null != _parameterUI.Background )
+        {
+            _parameterUI.Background.color = color;
+        }
+
+        foreach( var skillBox in _parameterUI.SkillBoxes )
+        {
+            skillBox.SetBaseColor( color );
+        }
     }
 
     /// <summary>

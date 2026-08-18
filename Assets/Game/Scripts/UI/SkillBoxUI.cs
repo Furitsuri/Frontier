@@ -95,6 +95,16 @@ namespace Frontier
             _uiImage.color = Color.white;
         }
 
+        /// <summary>
+        /// この枠の背景色(基準色)を設定します。SetFlickEnabled(false)等での復帰先にもなるため、
+        /// _initialColorも合わせて更新します。
+        /// </summary>
+        public void SetBaseColor( Color color )
+        {
+            _uiImage.color = color;
+            _initialColor  = color;
+        }
+
         private static readonly Vector3 CURSOR_HIGHLIGHT_SCALE = new Vector3( 1.1f, 1.1f, 1.1f );
 
         /// <summary>
