@@ -44,23 +44,29 @@ namespace Frontier.Combat
             }
         }
 
-        protected override void StartAction()
+        protected override void PrepareCameraProcess()
         {
-            base.StartAction();
+            base.PrepareCameraProcess();
 
-            _isAttackAnimEnded = false;
             SortTargetCharactersByDistance();
-
-            // 全ターゲットのダメージ予測を計算
-            foreach( var target in _targetCharacters )
-            {
-                _btlCharaCdr.ApplyDamageExpect( _owner, target );
-            }
 
             // _skillID が設定されている(SkillID.NONE でない)場合のみ、距離順で最も近い対象へのカメラ演出を自動セットアップする
             if( _skillID != SkillID.NONE )
             {
                 SetupCameraProcess( _skillID, _targetCharacters.Count > 0 ? _targetCharacters[0] : null );
+            }
+        }
+
+        protected override void StartAction()
+        {
+            base.StartAction();
+
+            _isAttackAnimEnded = false;
+
+            // 全ターゲットのダメージ予測を計算
+            foreach( var target in _targetCharacters )
+            {
+                _btlCharaCdr.ApplyDamageExpect( _owner, target );
             }
 
             // ゴーストの位置が移動目標地点

@@ -46,8 +46,6 @@ namespace Frontier.Combat
         public void Start()
         {
             StartAction();
-
-            if( _cameraProcess != null ) { _btlCamCtrl?.StartSkillCameraProcess( _cameraProcess ); }
         }
 
         public void End()
@@ -65,12 +63,27 @@ namespace Frontier.Combat
         }
 
         /// <summary>
-        /// スキル名表示の直前に呼ばれます。デフォルトではゴーストを非表示にします。
+        /// スキル名表示の直前に呼ばれます。デフォルトではゴーストを非表示にした上で、
+        /// PrepareCameraProcess() が設定した _cameraProcess があればこの時点でカメラ演出を開始します。
+        /// これにより、スキル名表示中からカメラが対象へ向き始めます。
         /// ゴーストの参照は保持されるため、サブクラスは StartAction() 内で引き続き参照できます。
         /// </summary>
         public virtual void OnBeforeNameDisplay()
         {
             _owner?.GhostObj?.gameObject.SetActive( false );
+
+            PrepareCameraProcess();
+
+            if( _cameraProcess != null ) { _btlCamCtrl?.StartSkillCameraProcess( _cameraProcess ); }
+        }
+
+        /// <summary>
+        /// OnBeforeNameDisplay() から呼ばれます。カメラ演出を使うスキルはここで SetupCameraProcess() を
+        /// 呼び出し、_cameraProcess を設定してください(対象キャラクターの決定など、StartAction() を待たずに
+        /// 行える処理はここで済ませます)。
+        /// </summary>
+        protected virtual void PrepareCameraProcess()
+        {
         }
 
         protected virtual void StartAction()
