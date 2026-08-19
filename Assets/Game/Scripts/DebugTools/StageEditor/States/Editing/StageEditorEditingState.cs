@@ -33,6 +33,7 @@ namespace Frontier.DebugTools.StageEditor
         private Action<EditActionContext> PlaceStagePropCallback;
         private Action<EditActionContext> EditStagePropCallback;
         private Action<EditActionContext> DeleteStagePropCallback;
+        private Action<EditActionContext> ApplyBackgroundColorCallback;
         private Func <int, StageEditMode> ChangeEditModeCallback;
 
         private StageEditorEditBase _currentEdit            = null;
@@ -47,7 +48,7 @@ namespace Frontier.DebugTools.StageEditor
 
         public GameObject[] tilePrefabs;
 
-        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> deleteEnemyCb, Action<EditActionContext> placeStagePropCb, Action<EditActionContext> editStagePropCb, Action<EditActionContext> deleteStagePropCb, Func<int, StageEditMode> changeEditModeCb )
+        public void SetCallbacks( Action<EditActionContext> placeTileCb, Action<EditActionContext> risizeTileGridCb, Action<EditActionContext> toggleDeployableCb, Action<EditActionContext> placeEnemyCb, Action<EditActionContext> editEnemyCb, Action<EditActionContext> deleteEnemyCb, Action<EditActionContext> placeStagePropCb, Action<EditActionContext> editStagePropCb, Action<EditActionContext> deleteStagePropCb, Action<EditActionContext> applyBackgroundColorCb, Func<int, StageEditMode> changeEditModeCb )
         {
             PlaceTileCallback           = placeTileCb;
             ResizeTileGridCallback      = risizeTileGridCb;
@@ -58,6 +59,7 @@ namespace Frontier.DebugTools.StageEditor
             PlaceStagePropCallback      = placeStagePropCb;
             EditStagePropCallback       = editStagePropCb;
             DeleteStagePropCallback     = deleteStagePropCb;
+            ApplyBackgroundColorCallback = applyBackgroundColorCb;
             ChangeEditModeCallback      = changeEditModeCb;
             _editMode                   = ChangeEditModeCallback(0);  // コールバック設定の際に0を指定してコールすることで現在のeditModeを設定
         }
@@ -74,6 +76,7 @@ namespace Frontier.DebugTools.StageEditor
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditDeployableTile>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditEnemyCursor>(false),
                 _hierarchyBld.InstantiateWithDiContainer<StageEditorEditStagePropCursor>(false),
+                _hierarchyBld.InstantiateWithDiContainer<StageEditorEditBackgroundColor>(false),
             };
 
             // EDIT_ENEMY の StageEditorEditEnemyCursor に配置・編集・削除コールバックを渡す
@@ -91,6 +94,7 @@ namespace Frontier.DebugTools.StageEditor
                 ToggleDeployableCallback,
                 PlaceEnemyCallback,         // カーソルクラスは内部で使わないが配列は維持
                 PlaceStagePropCallback,     // カーソルクラスは内部で使わないが配列は維持
+                ApplyBackgroundColorCallback,
             };
 
             _currentEdit = _editClasses[(int)_editMode];

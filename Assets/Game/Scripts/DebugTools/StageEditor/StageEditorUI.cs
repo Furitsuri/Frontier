@@ -73,6 +73,9 @@ namespace Frontier.DebugTools.StageEditor
 
             for ( int i = 0; i < _editParams.Length; ++i )
             {
+                // EDIT_STAGE_PROP 等、専用の小パネルを持たないモードは要素が null のままなのでスキップする
+                if ( _editParams[i] == null ) { continue; }
+
                 _editParams[i].SetActive( i == index );
             }
 
@@ -156,6 +159,7 @@ namespace Frontier.DebugTools.StageEditor
                 refParams.MaxDeployableUnits.ToString(),
                 StageEditRefParams.EnemyParamNames[refParams.SelectedEnemyParamIndex],              // 選択中パラメータ名
                 StageEditRefParams.StagePropParamNames[refParams.SelectedStagePropParamIndex],      // 選択中パラメータ名
+                StageEditRefParams.BackgroundColorParamNames[refParams.SelectedBackgroundColorParamIndex], // 選択中チャンネル名
             };
 
             string[] secondParamText = new string[( int ) StageEditMode.NUM]
@@ -165,6 +169,7 @@ namespace Frontier.DebugTools.StageEditor
                 "",
                 refParams.GetEnemyParamDisplayString( refParams.SelectedEnemyParamIndex ),          // 選択中パラメータ値
                 refParams.GetStagePropParamDisplayString( refParams.SelectedStagePropParamIndex ),  // 選択中パラメータ値
+                refParams.GetBackgroundColorParamDisplayString( refParams.SelectedBackgroundColorParamIndex ), // 選択中チャンネル値
             };
 
             _editModeTextMesh.text = mode.ToString().Replace( '_', ' ' );

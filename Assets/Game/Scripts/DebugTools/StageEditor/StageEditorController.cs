@@ -115,6 +115,69 @@ namespace Frontier.DebugTools.StageEditor
                 };
             }
 
+            // --- 背景(Skybox)グラデーション編集用(0-255) ---
+            public int BgTopR    = Mathf.RoundToInt( StageBackgroundGradientController.DefaultTopColor.r    * 255f );
+            public int BgTopG    = Mathf.RoundToInt( StageBackgroundGradientController.DefaultTopColor.g    * 255f );
+            public int BgTopB    = Mathf.RoundToInt( StageBackgroundGradientController.DefaultTopColor.b    * 255f );
+            public int BgMiddleR = Mathf.RoundToInt( StageBackgroundGradientController.DefaultMiddleColor.r * 255f );
+            public int BgMiddleG = Mathf.RoundToInt( StageBackgroundGradientController.DefaultMiddleColor.g * 255f );
+            public int BgMiddleB = Mathf.RoundToInt( StageBackgroundGradientController.DefaultMiddleColor.b * 255f );
+            public int BgBottomR = Mathf.RoundToInt( StageBackgroundGradientController.DefaultBottomColor.r * 255f );
+            public int BgBottomG = Mathf.RoundToInt( StageBackgroundGradientController.DefaultBottomColor.g * 255f );
+            public int BgBottomB = Mathf.RoundToInt( StageBackgroundGradientController.DefaultBottomColor.b * 255f );
+            public int SelectedBackgroundColorParamIndex = 0;
+
+            public Color BgTopColor    => new Color( BgTopR    / 255f, BgTopG    / 255f, BgTopB    / 255f );
+            public Color BgMiddleColor => new Color( BgMiddleR / 255f, BgMiddleG / 255f, BgMiddleB / 255f );
+            public Color BgBottomColor => new Color( BgBottomR / 255f, BgBottomG / 255f, BgBottomB / 255f );
+
+            /// <summary>
+            /// ステージデータ(またはデフォルト値)から背景色編集用パラメータを同期します。
+            /// </summary>
+            public void AdaptBackgroundGradient( in Color topColor, in Color middleColor, in Color bottomColor )
+            {
+                BgTopR    = Mathf.RoundToInt( topColor.r    * 255f );
+                BgTopG    = Mathf.RoundToInt( topColor.g    * 255f );
+                BgTopB    = Mathf.RoundToInt( topColor.b    * 255f );
+                BgMiddleR = Mathf.RoundToInt( middleColor.r * 255f );
+                BgMiddleG = Mathf.RoundToInt( middleColor.g * 255f );
+                BgMiddleB = Mathf.RoundToInt( middleColor.b * 255f );
+                BgBottomR = Mathf.RoundToInt( bottomColor.r * 255f );
+                BgBottomG = Mathf.RoundToInt( bottomColor.g * 255f );
+                BgBottomB = Mathf.RoundToInt( bottomColor.b * 255f );
+            }
+
+            /// <summary>上段/中段/下段の3グループ。背景色編集は色ごとにまとめて行う(R/G/B個別ではない)。</summary>
+            public static readonly string[] BackgroundColorParamNames = { "Top", "Middle", "Bottom" };
+
+            /// <summary>指定グループの色を "(R, G, B)" 形式の文字列で返します。</summary>
+            public string GetBackgroundColorParamDisplayString( int groupIndex )
+            {
+                return groupIndex switch
+                {
+                    0 => $"({BgTopR}, {BgTopG}, {BgTopB})",
+                    1 => $"({BgMiddleR}, {BgMiddleG}, {BgMiddleB})",
+                    _ => $"({BgBottomR}, {BgBottomG}, {BgBottomB})",
+                };
+            }
+
+            /// <summary>
+            /// 指定グループ(上段/中段/下段)へ、色をまとめて設定します。カラーピッカーでの一括編集用です。
+            /// </summary>
+            public void SetBackgroundColorGroup( int groupIndex, in Color color )
+            {
+                int r = Mathf.RoundToInt( color.r * 255f );
+                int g = Mathf.RoundToInt( color.g * 255f );
+                int b = Mathf.RoundToInt( color.b * 255f );
+
+                switch( groupIndex )
+                {
+                    case 0: BgTopR    = r; BgTopG    = g; BgTopB    = b; break;
+                    case 1: BgMiddleR = r; BgMiddleG = g; BgMiddleB = b; break;
+                    case 2: BgBottomR = r; BgBottomG = g; BgBottomB = b; break;
+                }
+            }
+
             public static readonly string[] EnemyParamNames =
             {
                 "Prefab", "Level", "MaxHP", "Atk", "Def", "MoveRange",
@@ -204,6 +267,7 @@ namespace Frontier.DebugTools.StageEditor
         private StageEditRefParams _refParams               = null;
         private Holder<string> _editFileName                = null;
         private InputGuidePresenter _inputGuideView         = null;
+        private StageBackgroundGradientController _bgGradientCtrl = null;
         private StageEditMode _editMode                     = StageEditMode.EDIT_TILE;
 
         // 登録済み敵ステータスデータ一覧
@@ -235,10 +299,12 @@ namespace Frontier.DebugTools.StageEditor
             LazyInject.GetOrCreate( ref _btlCamCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _gridCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<GridCursorController>( true ) );
             LazyInject.GetOrCreate( ref _sizeAdjuster,  () => _hierarchyBld.InstantiateWithDiContainer<GridCursorSizeAdjuster>( false ) );
+            LazyInject.GetOrCreate( ref _bgGradientCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StageBackgroundGradientController>( false ) );
 
             LazyInject.GetOrCreate( ref _inputGuideView, () => _hierarchyBld.InstantiateWithDiContainer<InputGuidePresenter>( false ) );
 
             _btlCamCtrl.Setup( false );
+            _bgGradientCtrl.Setup();
             // InputFacade はシーンを跨いで永続化されるシングルトン。入力ガイドUIはこのシーンの IUiSystem に紐づくため渡し直す
             _inputFcd.Setup( _inputGuideView );
             _inputFcd.Init();           // 入力ファサードの初期化
@@ -246,6 +312,8 @@ namespace Frontier.DebugTools.StageEditor
 
             _stageDataProvider.CurrentData = CreateDefaultStage();         // プロバイダーに登録
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // 作成したステージデータの内容を参照パラメータに適応
+            _refParams.AdaptBackgroundGradient( _stageDataProvider.CurrentData.BgTopColor, _stageDataProvider.CurrentData.BgMiddleColor, _stageDataProvider.CurrentData.BgBottomColor );
+            _bgGradientCtrl.ApplyGradient( _refParams.BgTopColor, _refParams.BgMiddleColor, _refParams.BgBottomColor );
             ApplyDeployableColoringForCurrentMode();                       // 初期モード(EDIT_TILE)では配置可否グレーを表示しない
 
             _gridCursorCtrl.Init( 0 );
@@ -260,7 +328,7 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.UnregisterStagePropOccupied    = ( anchor, size ) => _sizeAdjuster.UnregisterStagePropOccupied( anchor, size );
             _refParams.RestoreStagePropOccupied       = ( anchor, size ) => _sizeAdjuster.RegisterStagePropOccupied( anchor, size );
             _refParams.SetGridCursorSize              = size => _gridCursorCtrl.SetGridCursorSize( size );
-            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, DeleteEnemy, PlaceStageProp, EditStageProp, DeleteStageProp, SaveStage, LoadStage, ChangeEditMode );
+            _stageEditorHandler.Init( _stageEditorView, PlaceTile, ResizeTileGrid, ToggleDeployable, PlaceEnemy, EditEnemy, DeleteEnemy, PlaceStageProp, EditStageProp, DeleteStageProp, ApplyBackgroundColor, SaveStage, LoadStage, ChangeEditMode );
             _stageEditorHandler.Enter();
 
             // StageEditor では独自のオービットカメラ（StageEditorEditingState）でカメラを制御するため、
@@ -363,6 +431,16 @@ namespace Frontier.DebugTools.StageEditor
 
             data.GetTile( context.X, context.Y ).StaticData().IsDeployable = !data.GetTile( context.X, context.Y ).StaticData().IsDeployable;
             data.GetTile( context.X, context.Y ).ApplyDeployableColor();
+        }
+
+        /// <summary>
+        /// 現在の _refParams の背景色を Skybox とステージデータへ即座に反映します。
+        /// EDIT_BACKGROUND_COLOR モードで値を変更するたびに呼ばれ、リアルタイムプレビューを実現します。
+        /// </summary>
+        private void ApplyBackgroundColor( EditActionContext context )
+        {
+            _bgGradientCtrl.ApplyGradient( _refParams.BgTopColor, _refParams.BgMiddleColor, _refParams.BgBottomColor );
+            _stageDataProvider.CurrentData.SetBackgroundGradient( _refParams.BgTopColor, _refParams.BgMiddleColor, _refParams.BgBottomColor );
         }
 
         /// <summary>
@@ -560,6 +638,7 @@ namespace Frontier.DebugTools.StageEditor
             NullCheck.AssertNotNull( stageData, nameof(stageData) );
             stageData.Init( _refParams.MaxDeployableUnits, _refParams.Row, _refParams.Col );
             stageData.CreateDefaultTiles( tilePrefabs );
+            stageData.SetBackgroundGradient( _refParams.BgTopColor, _refParams.BgMiddleColor, _refParams.BgBottomColor );
 
             return stageData;
         }
@@ -621,6 +700,19 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.AdaptStageData( _stageDataProvider.CurrentData );    // ロード後に列・行数を同期
             _gridCursorCtrl.Init( 0 );  // グリッドカーソルの位置をタイル番号0の地点に合わせる
             ApplyDeployableColoringForCurrentMode();   // ロードしたタイルへ現在モードの色味を反映
+
+            // 背景色を同期。本項目に未対応の古いステージデータの場合は既定配色にフォールバックする
+            var loadedData = _stageDataProvider.CurrentData;
+            if( loadedData.HasBackgroundGradient )
+            {
+                _refParams.AdaptBackgroundGradient( loadedData.BgTopColor, loadedData.BgMiddleColor, loadedData.BgBottomColor );
+            }
+            else
+            {
+                _refParams.AdaptBackgroundGradient( StageBackgroundGradientController.DefaultTopColor, StageBackgroundGradientController.DefaultMiddleColor, StageBackgroundGradientController.DefaultBottomColor );
+                loadedData.SetBackgroundGradient( _refParams.BgTopColor, _refParams.BgMiddleColor, _refParams.BgBottomColor );
+            }
+            _bgGradientCtrl.ApplyGradient( _refParams.BgTopColor, _refParams.BgMiddleColor, _refParams.BgBottomColor );
 
             // 敵キャラクターデータをロード
             var loadedEnemies = EnemyDataSerializer.Load( fileName );

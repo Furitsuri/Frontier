@@ -18,6 +18,13 @@ namespace Frontier.Stage
         [SerializeField] private TileSaveData[] _tileSaveDatas = null;      // タイル内データのうち保存する必要のあるデータ
 #endif // DEVELOPMENT_BUILD || UNITY_EDITOR
 
+        // 背景(Skybox)グラデーションの上段・中段・下段カラー。
+        // 未設定(このステージデータが本項目に対応する前に保存された等)の場合は alpha=0 のままになるため、
+        // 参照側(StageController)はそれを「未設定」の目印として既定配色にフォールバックします。
+        [SerializeField] private Color _bgTopColor;
+        [SerializeField] private Color _bgMiddleColor;
+        [SerializeField] private Color _bgBottomColor;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private Tile[] _tiles = null;           // タイル
@@ -25,6 +32,19 @@ namespace Frontier.Stage
         public int MaxDeployableUnits => _maxDeployableUnits;
         public int TileRowNum => _tileRowNum;
         public int TileColNum => _tileColNum;
+        public Color BgTopColor => _bgTopColor;
+        public Color BgMiddleColor => _bgMiddleColor;
+        public Color BgBottomColor => _bgBottomColor;
+
+        /// <summary>背景グラデーションの色が保存済みかどうかを返します(alpha=0 は未設定を表します)。</summary>
+        public bool HasBackgroundGradient => 0f < _bgTopColor.a;
+
+        public void SetBackgroundGradient( in Color topColor, in Color middleColor, in Color bottomColor )
+        {
+            _bgTopColor    = topColor;
+            _bgMiddleColor = middleColor;
+            _bgBottomColor = bottomColor;
+        }
 
         public void Init( int maxDeployableUnits, int tileRowNum, int tileColumnNum )
         {

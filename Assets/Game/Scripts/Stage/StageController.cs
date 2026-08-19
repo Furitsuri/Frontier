@@ -47,7 +47,18 @@ namespace Frontier.Stage
         {
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
-            _bgGradientCtrl.ApplyDefaultGradient();  // TODO: ステージデータが背景色に対応したら、読み込んだ配色をここで適用する
+
+            // 背景色を適用。本項目に未対応の古いステージデータの場合は既定配色にフォールバックする
+            var stageData = _stageDataProvider.CurrentData;
+            if( stageData.HasBackgroundGradient )
+            {
+                _bgGradientCtrl.ApplyGradient( stageData.BgTopColor, stageData.BgMiddleColor, stageData.BgBottomColor );
+            }
+            else
+            {
+                _bgGradientCtrl.ApplyDefaultGradient();
+            }
+
             _sizeAdjuster.SetGridCursorController( _gridCursorCtrl );
             _gridCursorCtrl.OnGridCursorMoved = ( idx ) => _sizeAdjuster.AdjustCursorSizeForTile( idx );
             if ( _stageFileLoader.LastLoadedStagePropData != null )

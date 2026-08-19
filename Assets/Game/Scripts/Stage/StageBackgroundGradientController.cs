@@ -6,16 +6,15 @@ namespace Frontier.Stage
 {
     /// <summary>
     /// 戦闘ステージの背景(Skybox)に、上段・中段・下段の3色グラデーションを適用します。
-    /// 現時点ではステージデータが背景色に対応していないため、固定の既定配色を使用します。
-    /// 将来的にステージデータへ配色情報を追加する際は、StageController.Init() のステージ読込直後で
-    /// ApplyGradient() を呼び出す想定です。
+    /// 色情報を持たない(または未対応の)ステージデータを読み込んだ場合は ApplyDefaultGradient() の既定配色を使用します。
+    /// StageEditor 側の背景色編集モードからも同じ既定色を初期値として参照するため公開しています。
     /// </summary>
     public class StageBackgroundGradientController
     {
-        // ステージデータが背景色に対応するまでの暫定既定配色
-        private static readonly Color DefaultTopColor    = Color.white;
-        private static readonly Color DefaultMiddleColor = new Color( 0.29f, 0.56f, 0.85f );
-        private static readonly Color DefaultBottomColor = Color.black;
+        // ステージデータに背景色が保存されていない場合の既定配色
+        public static readonly Color DefaultTopColor    = Color.white;
+        public static readonly Color DefaultMiddleColor = new Color( 0.29f, 0.56f, 0.85f );
+        public static readonly Color DefaultBottomColor = Color.black;
 
         private static readonly int TopColorId    = Shader.PropertyToID( "_TopColor" );
         private static readonly int MiddleColorId = Shader.PropertyToID( "_MiddleColor" );
