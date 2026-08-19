@@ -20,6 +20,7 @@ namespace Frontier.Stage
         private StageFileLoader _stageFileLoader;
         private StageDirectionConverter _directionConverter;
         private TileDataHandler _tileDataHdlr;
+        private StageBackgroundGradientController _bgGradientCtrl;
 
 		public TileDataHandler TileDataHdlr() => _tileDataHdlr;
 
@@ -32,6 +33,9 @@ namespace Frontier.Stage
             LazyInject.GetOrCreate( ref _stageFileLoader,  () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<StageFileLoader>( _prefabReg.StageFileLoaderPrefab, true, false, "StageFileLoader" ) );
             LazyInject.GetOrCreate( ref _directionConverter, () => _hierarchyBld.InstantiateWithDiContainer<StageDirectionConverter>( false ) );
             LazyInject.GetOrCreate( ref _tileDataHdlr,    () => _hierarchyBld.InstantiateWithDiContainer<TileDataHandler>( false ) );
+            LazyInject.GetOrCreate( ref _bgGradientCtrl,  () => _hierarchyBld.InstantiateWithDiContainer<StageBackgroundGradientController>( false ) );
+
+            _bgGradientCtrl.Setup();
         }
 
         #region PUBLIC_METHOD
@@ -43,6 +47,7 @@ namespace Frontier.Stage
         {
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
             _stageFileLoader.Load( 0 );
+            _bgGradientCtrl.ApplyDefaultGradient();  // TODO: ステージデータが背景色に対応したら、読み込んだ配色をここで適用する
             _sizeAdjuster.SetGridCursorController( _gridCursorCtrl );
             _gridCursorCtrl.OnGridCursorMoved = ( idx ) => _sizeAdjuster.AdjustCursorSizeForTile( idx );
             if ( _stageFileLoader.LastLoadedStagePropData != null )

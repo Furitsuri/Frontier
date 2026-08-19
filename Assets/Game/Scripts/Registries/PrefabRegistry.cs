@@ -33,6 +33,7 @@ namespace Frontier.Registries
         [SerializeField] private GameObject tileMeshObject;             // TileMeshプレハブ
         [SerializeField] private GameObject[] _tilePrefabs;             // タイルプレハブ配列
         [SerializeField] private GameObject[] _moveDirectionPrefabs;    // 移動方向プレハブ配列
+        [SerializeField] private Material _stageBackgroundGradientMaterial; // ステージ背景(Skybox)グラデーション用マテリアル
 
         [Header( "Effect関連" )]
         [SerializeField] public GameObject BuffCirclePrefab;            // バフサークル用プレハブ
@@ -55,5 +56,6 @@ namespace Frontier.Registries
         public GameObject TileMeshPrefab => tileMeshObject;
         public GameObject[] TilePrefabs => _tilePrefabs;
         public GameObject[] MoveDirectionPrefabs => _moveDirectionPrefabs;
+        public Material StageBackgroundGradientMaterial => _stageBackgroundGradientMaterial;
     }
 }
