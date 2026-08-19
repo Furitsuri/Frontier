@@ -172,7 +172,9 @@ namespace Frontier.DebugTools.StageEditor
                 : null;
 
             // 注視点中心のオービットカメラ操作（モード変更で入力コードが再登録されても維持されるようここで登録する）
+            // マウスドラッグによる連続操作のため、押しっぱなし継続時もRepeatDelayによる待ちを発生させず即座に反映させる
             InputCode cameraCode = (InputCode)(new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_RIGHT }, "CAMERA\nMOVE", CanAcceptCamera, new AcceptContextInput( AcceptCameraInput ), 0.0f, hashCode);
+            cameraCode.RepeatDelay = 0f;
 
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR, "SELECT",    CanAcceptInputAlways, new AcceptContextInput( AcceptDirection ), 0.1f, hashCode),
