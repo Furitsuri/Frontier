@@ -23,7 +23,9 @@ public class InputCode
     // 押しっぱなし状態でリピート入力(インターバル間隔での連続受付)を開始するまでの遅延時間(秒)。
     // 既定でDIRECTION_INPUT_REPEAT_DELAYを持たせることで、明示設定しない入力コードにも
     // 「本当に押しっぱなしか」を判断する猶予期間が自動的に効くようにしている。
-    // 0を明示指定した場合は、押しっぱなし継続中の受付を一切行わない(単発の新規押下のみ受け付ける)。
+    // 0を明示指定した場合は遅延なしで即座にリピートを行う(マウスドラッグ等、押下継続がそのまま
+    // 連続的な入力になるべきものに使用する)。負の値を明示指定した場合は、押しっぱなし継続中の
+    // 受付を一切行わない(単発の新規押下のみ受け付ける)。
     public float RepeatDelay = DIRECTION_INPUT_REPEAT_DELAY;
     private float _inputLastTime;               // 入力処理を行った最後の時間
     private float _pressStartTime = -1f;        // 現在の連続押下(hold)が開始した時刻。-1は「押されていない」ことを表す
@@ -299,7 +301,8 @@ public class InputCode
     /// 待たずに即座に受け付けます(離して押し直す動作は都度独立した入力であり、直前の入力からの
     /// 経過時間で間引くべきではないため)。
     /// 押しっぱなしが継続している間は、RepeatDelay経過後、InputIntervalの間隔で繰り返し受け付けます。
-    /// RepeatDelayが0(明示指定時のみ。既定値はDIRECTION_INPUT_REPEAT_DELAY)の場合は、
+    /// RepeatDelayが0(明示指定)の場合は遅延なしで即座にリピートを開始します(マウスドラッグ等の連続入力向け)。
+    /// RepeatDelayが負の値(明示指定時のみ。既定値はDIRECTION_INPUT_REPEAT_DELAY)の場合は、
     /// 押しっぱなし継続中の受付を一切行いません(単発の新規押下のみ受け付ける)。
     /// </summary>
     /// <param name="isHeld">このフレームで対応する入力が押されている状態かどうか</param>
@@ -319,10 +322,10 @@ public class InputCode
             return true;
         }
 
-        // RepeatDelayが0(明示指定)の場合は、押しっぱなし継続中の受付を一切行わない
-        if ( RepeatDelay <= 0f ) { return false; }
+        // RepeatDelayが負の値(明示指定)の場合は、押しっぱなし継続中の受付を一切行わない
+        if ( RepeatDelay < 0f ) { return false; }
 
-        // 押しっぱなし継続中は、RepeatDelay経過するまで次の受付を待つ
+        // 押しっぱなし継続中は、RepeatDelay経過するまで次の受付を待つ(0の場合は待たずに即座に次へ進む)
         if ( ( Time.time - _pressStartTime ) < RepeatDelay ) { return false; }
 
         return IsIntervalTimePassed();

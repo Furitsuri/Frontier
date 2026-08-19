@@ -337,7 +337,10 @@ namespace Frontier
         private void RegisterInputCodes()
         {
             int hashCode = Hash.GetStableHash( Constants.INPUT_CAMERA_STRING );
-            _inputFcd.RegisterInputCodes( ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_RIGHT }, "CAMERA\nMOVE", CanAcceptCamera, new AcceptContextInput( AcceptCameraInput ), 0.0f, hashCode ) );
+            // マウスドラッグによる連続操作のため、押しっぱなし継続時もRepeatDelayによる待ちを発生させず即座に反映させる
+            InputCode cameraCode = ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_RIGHT }, "CAMERA\nMOVE", CanAcceptCamera, new AcceptContextInput( AcceptCameraInput ), 0.0f, hashCode );
+            cameraCode.RepeatDelay = 0f;
+            _inputFcd.RegisterInputCodes( cameraCode );
         }
 
         private bool CanAcceptCamera()
