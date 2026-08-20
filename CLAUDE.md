@@ -22,6 +22,15 @@ $converted = $content -replace "(?<!\r)\n", "`r`n"
 [System.IO.File]::WriteAllText($file, $converted, $utf8Bom)
 ```
 
+### マテリアルの配置ルール
+
+`Assets/Resources/Materials` と `Assets/Game/Materials` の2箇所が存在するのは意図的です。
+
+- `Assets/Resources/Materials` — `Resources.Load<Material>(path)` でパス文字列から動的ロードされる素材（例: `TileMaterialLibrary`, `ParryRingEffect`）
+- `Assets/Game/Materials` — `PrefabRegistry` 等の `[SerializeField]` を通じて Inspector 上で直接参照される素材。`Resources.Load` からは参照されない
+
+新規マテリアルを追加する際は、実行時に文字列パスでロードする必要があるかどうかで配置先を決めること。
+
 ## ビルド・テスト
 
 Unity プロジェクトのため、CLI によるビルドコマンドはありません。Unity Editor (2022 LTS) でプロジェクトを開いてください。テストは Unity 組み込みの Test Runner (Window > General > Test Runner) から実行します。
