@@ -16,6 +16,9 @@ namespace Frontier.DebugTools.StageEditor
     /// UnityEditor.ColorPicker.Show() は internal のため、公開APIのみで同じ体験を実現するための構成です)。
     /// 値を変更するたびに OwnCallback を呼び、Controller 側でリアルタイムに Skybox へ反映させます。
     /// Confirm はユーザーがウィンドウを閉じてしまった場合の再オープン用に残しています。
+    /// ピッカーがフォーカスを持っている間は Q/E(色の前後切替)に加え F/R(モードの前後切替)も
+    /// ColorPickerWindow 自身の Event.current 経由で拾い、StageEditorEditingState.GoToPreviousMode/
+    /// GoToNextMode(StageEditRefParams 経由で公開)を直接呼び出します。
     /// </summary>
     public class StageEditorEditBackgroundColor : StageEditorEditBase
     {
@@ -27,9 +30,9 @@ namespace Frontier.DebugTools.StageEditor
         /// 既に開いている場合はウィンドウを閉じ直さず、色とコールバックだけを差し替えます(位置が飛ばないようにするため)。
         ///
         /// このウィンドウが Game View から OS キーボードフォーカスを奪っている間、旧Input Manager経由の
-        /// Q/E(Sub1/Sub2)はゲーム側に届かなくなる(Game Viewがフォーカスを失うため)。
-        /// そこでこのウィンドウ自身の OnGUI 内で Event.current を見て Q/E を直接検知し、
-        /// onPrevColor/onNextColor 経由でフォーカスに関係なく色の切替を反映させる。
+        /// Q/E(Sub1/Sub2)やF/R(Tool/Info=モード切替)はゲーム側に届かなくなる(Game Viewがフォーカスを失うため)。
+        /// そこでこのウィンドウ自身の OnGUI 内で Event.current を見て Q/E/F/R を直接検知し、
+        /// onPrevColor/onNextColor/onPrevMode/onNextMode 経由でフォーカスに関係なく反映させる。
         /// </summary>
         private class ColorPickerWindow : EditorWindow
         {
@@ -37,8 +40,10 @@ namespace Frontier.DebugTools.StageEditor
             private Action<Color> _onChanged;
             private Action _onPrevColor;
             private Action _onNextColor;
+            private Action _onPrevMode;
+            private Action _onNextMode;
 
-            public static void Open( string label, in Color initialColor, Action<Color> onChanged, Action onPrevColor, Action onNextColor )
+            public static void Open( string label, in Color initialColor, Action<Color> onChanged, Action onPrevColor, Action onNextColor, Action onPrevMode, Action onNextMode )
             {
                 var existingWindows = Resources.FindObjectsOfTypeAll<ColorPickerWindow>();
                 var window = existingWindows.Length > 0 ? existingWindows[0] : null;
@@ -55,6 +60,8 @@ namespace Frontier.DebugTools.StageEditor
                 window._onChanged   = onChanged;
                 window._onPrevColor = onPrevColor;
                 window._onNextColor = onNextColor;
+                window._onPrevMode  = onPrevMode;
+                window._onNextMode  = onNextMode;
                 window.Repaint();
             }
 
@@ -83,23 +90,20 @@ namespace Frontier.DebugTools.StageEditor
             }
 
             /// <summary>
-            /// このウィンドウがフォーカスを持っている間は旧Input Manager(Game View依存)がQ/Eを拾えないため、
-            /// Event.current から直接キー入力を検知して色の前後切替を発火させる。
+            /// このウィンドウがフォーカスを持っている間は旧Input Manager(Game View依存)がQ/E/F/Rを拾えないため、
+            /// Event.current から直接キー入力を検知して色の前後切替・モード前後切替を発火させる。
             /// </summary>
             private void HandleKeyboardShortcuts()
             {
                 var e = Event.current;
                 if( e.type != EventType.KeyDown ) { return; }
 
-                if( e.keyCode == KeyCode.Q )
+                switch( e.keyCode )
                 {
-                    _onPrevColor?.Invoke();
-                    e.Use();
-                }
-                else if( e.keyCode == KeyCode.E )
-                {
-                    _onNextColor?.Invoke();
-                    e.Use();
+                    case KeyCode.Q: _onPrevColor?.Invoke(); e.Use(); break;
+                    case KeyCode.E: _onNextColor?.Invoke(); e.Use(); break;
+                    case KeyCode.F: _onPrevMode?.Invoke();  e.Use(); break;
+                    case KeyCode.R: _onNextMode?.Invoke();  e.Use(); break;
                 }
             }
         }
@@ -197,7 +201,9 @@ namespace Frontier.DebugTools.StageEditor
                     OwnCallback( _context );
                 },
                 onPrevColor: SelectPreviousColor,
-                onNextColor: SelectNextColor );
+                onNextColor: SelectNextColor,
+                onPrevMode: _refParams.GoToPreviousMode,
+                onNextMode: _refParams.GoToNextMode );
         }
     }
 }

@@ -23,6 +23,7 @@ namespace Frontier.DebugTools.StageEditor
 
         [Inject] private HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] private GridCursorController _gridCursorCtrl = null;
+        [Inject] private StageEditorController.StageEditRefParams _refParams = null;
 
         private Action<EditActionContext> PlaceTileCallback;
         private Action<EditActionContext> ResizeTileGridCallback;
@@ -96,6 +97,11 @@ namespace Frontier.DebugTools.StageEditor
                 PlaceStagePropCallback,     // カーソルクラスは内部で使わないが配列は維持
                 ApplyBackgroundColorCallback,
             };
+
+            // 前/次モードへの切替コールバックを公開する。ColorPickerWindow等、Game Viewのフォーカスに
+            // 依存しない経路(EditorWindow自身のEvent.current等)からモード切替を呼べるようにするため。
+            _refParams.GoToPreviousMode = GoToPreviousMode;
+            _refParams.GoToNextMode     = GoToNextMode;
 
             _currentEdit = _editClasses[(int)_editMode];
             SetCurrentEditRefreshCallback();
@@ -232,19 +238,10 @@ namespace Frontier.DebugTools.StageEditor
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptTool( InputContext context )
         {
-            if ( base.AcceptTool( context ) )
-            {
-                _currentEdit.Exit();
-                _editMode = ChangeEditModeCallback( -1 );
-                _inputFcd.UnregisterInputCodes();
-                _currentEdit = _editClasses[( int )_editMode];
-                SetCurrentEditRefreshCallback();
-                _currentEdit.Init( _editCallbacks[( int )_editMode] );
-                RegisterInputCodes();
-                return true;
-            }
+            if( !base.AcceptTool( context ) ) { return false; }
 
-            return false;
+            GoToPreviousMode();
+            return true;
         }
 
         /// <summary>
@@ -256,14 +253,44 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
+            GoToNextMode();
+            return true;
+        }
+
+        /// <summary>
+        /// エディットモードを一つ前のモードに変更します。
+        /// AcceptTool(通常のTool/Fボタン入力)から呼ばれる他、ColorPickerWindow等、
+        /// Game Viewのフォーカスに依存しない経路からも直接呼び出せるよう public にしています。
+        /// 境界(先頭モード)にいる場合は何もしません。
+        /// </summary>
+        public void GoToPreviousMode()
+        {
+            if( !CanAcceptTool() ) { return; }
+
+            _currentEdit.Exit();
+            _editMode = ChangeEditModeCallback( -1 );
+            _inputFcd.UnregisterInputCodes();
+            _currentEdit = _editClasses[( int )_editMode];
+            SetCurrentEditRefreshCallback();
+            _currentEdit.Init( _editCallbacks[( int )_editMode] );
+            RegisterInputCodes();
+        }
+
+        /// <summary>
+        /// エディットモードを一つ後ろのモードに変更します。GoToPreviousMode の逆方向版です。
+        /// 境界(末尾モード)にいる場合は何もしません。
+        /// </summary>
+        public void GoToNextMode()
+        {
+            if( !CanAcceptInfo() ) { return; }
+
             _currentEdit.Exit();
             _editMode = ChangeEditModeCallback( 1 );
             _inputFcd.UnregisterInputCodes();
-            _currentEdit = _editClasses[( int ) _editMode];
+            _currentEdit = _editClasses[( int )_editMode];
             SetCurrentEditRefreshCallback();
-            _currentEdit.Init( _editCallbacks[( int ) _editMode] );
+            _currentEdit.Init( _editCallbacks[( int )_editMode] );
             RegisterInputCodes();
-            return true;
         }
 
         /// <summary>

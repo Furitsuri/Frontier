@@ -26,6 +26,15 @@ namespace Frontier.DebugTools.StageEditor
             public int SelectedType         = 0;                            // 選択中のタイルタイプ
             public float SelectedHeight     = 0;                            // 選択中のタイル高さ
 
+            /// <summary>
+            /// 前/次モードへの切替コールバック。StageEditorEditingState が Init 時に設定します。
+            /// ColorPickerWindow のような、Game View から OS キーボードフォーカスを奪う EditorWindow から、
+            /// 通常の Tool/Info 入力(Game Viewフォーカス依存の旧Input Manager経由)を介さずに
+            /// 直接モード切替を呼び出すための経路です。
+            /// </summary>
+            public Action GoToPreviousMode = null;
+            public Action GoToNextMode     = null;
+
             // --- 敵配置テンプレート ---
             public int EnemyLevel         = 1;
             public int EnemyMaxHP         = 100;
