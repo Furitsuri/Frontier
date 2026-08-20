@@ -61,6 +61,7 @@ namespace Frontier.Stage
             var row             = loadData.TileRowNum;
             var col             = loadData.TileColNum;
             _stageDataProvider.CurrentData.Init( deployableNum, row, col ); // 新しいステージデータを初期化
+            _stageDataProvider.CurrentData.SetBackgroundGradient( loadData.BgTopColor, loadData.BgMiddleColor, loadData.BgBottomColor ); // 背景色を復元(未対応の古いデータの場合はalpha=0のまま=未設定として扱われる)
 
             for( int x = 0; x < col; x++ )
             {
