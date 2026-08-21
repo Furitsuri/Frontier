@@ -40,8 +40,7 @@ namespace Frontier.DebugTools
                 return;
             }
 
-            userDomain.Debug_SetMoney( data.money );
-            userDomain.Debug_SetExp( data.exp );
+            userDomain.Debug_SetAnima( data.anima );
             userDomain.Debug_SetStageLevel( data.stageLevel );
 
             if ( data.overrideMembers )
@@ -53,11 +52,11 @@ namespace Frontier.DebugTools
                     userDomain.RecruitMember( entry.ToStatus() );
                 }
 
-                Debug.Log( $"[DebugUserDataLoader] デバッグデータを適用しました。Money={data.money} StageLevel={data.stageLevel} Members={data.members.Count}体" );
+                Debug.Log( $"[DebugUserDataLoader] デバッグデータを適用しました。Anima={data.anima} StageLevel={data.stageLevel} Members={data.members.Count}体" );
             }
             else
             {
-                Debug.Log( $"[DebugUserDataLoader] デバッグデータを適用しました。Money={data.money} StageLevel={data.stageLevel} (Members は上書きなし)" );
+                Debug.Log( $"[DebugUserDataLoader] デバッグデータを適用しました。Anima={data.anima} StageLevel={data.stageLevel} (Members は上書きなし)" );
             }
         }
     }

@@ -11,7 +11,7 @@ namespace Frontier.CharacterEdit
     /// キャラクター編集画面の「レベルアップ」項目から遷移するレベルアップ画面の入力受付・
     /// ライフサイクルを担当するハンドラ。CharacterEditHandlerと同様、特定のシーンに紐づかない
     /// 独立したクラスとしている。割り振りの実データ(LevelUpContext)はここが保持し、
-    /// 決定(OK)操作が行われた際にのみCharacter.Status/UserDomain.Expへ反映する
+    /// 決定(OK)操作が行われた際にのみCharacter.Status/UserDomain.Animaへ反映する
     /// (それまでは全て仮の値であり、キャンセルすれば破棄される)。
     /// </summary>
     public class LevelUpHandler : MonoBehaviour
@@ -40,7 +40,7 @@ namespace Frontier.CharacterEdit
         /// <param name="onClosed">画面を閉じた際(決定・キャンセルいずれも)に呼ばれるコールバック</param>
         public void Show( Character character, Action onClosed )
         {
-            _context = new LevelUpContext( character, _userDomain.Exp );
+            _context = new LevelUpContext( character, _userDomain.Anima );
             _onClosed = onClosed;
 
             _presenter.Show( _context );
@@ -55,7 +55,7 @@ namespace Frontier.CharacterEdit
         /// </summary>
         public void ShowPreview( Character character )
         {
-            _presenter.Show( new LevelUpContext( character, _userDomain.Exp ) );
+            _presenter.Show( new LevelUpContext( character, _userDomain.Anima ) );
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 仮のレベルアップ結果をCharacter.Status/UserDomain.Expへ反映します。
+        /// 仮のレベルアップ結果をCharacter.Status/UserDomain.Animaへ反映します。
         /// 能力値(MaxHP/Atk/Def等)はステータス上昇画面の役割のためここでは変更せず、
         /// レベル到達で得られるStatusPointのみをCharacter.Status.StatusPointへ加算します。
         /// レベルが実際に上がった場合は、Status.Exp(現在のレベル内での取得経験値)を0にリセットします。
@@ -127,7 +127,7 @@ namespace Frontier.CharacterEdit
 
             status.AddStatusPoint( _context.TentativeStatusPoint - _context.OriginalStatusPoint );
 
-            _userDomain.AddExp( _context.TentativeExp - _context.OriginalExp );
+            _userDomain.AddAnima( _context.TentativeAnima - _context.OriginalAnima );
         }
 
         private bool AcceptCancel( InputContext context )

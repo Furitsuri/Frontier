@@ -6,7 +6,7 @@ namespace Frontier.UI
     /// <summary>
     /// キャラクター編集画面から遷移するレベルアップ画面の見た目のみを担当するView。
     /// 能力値の成長はステータス上昇画面(StatusUpUI)の役割のため、このウィンドウは
-    /// レベル・所持EXP・次のレベルに必要なEXP・そのレベルまで上げた場合のStatusPointのみを扱う。
+    /// レベル・所持アニマ・次のレベルに必要なアニマ・そのレベルまで上げた場合のStatusPointのみを扱う。
     /// カーソルで選択できるのはLEVEL行のみで、左右で仮のレベルを上げ下げする
     /// (現在の実レベルより下げることはできず、最大レベルは99)。
     /// 開閉・選択状態・割り振りの判断はLevelUpPresenterが行い、このクラスは表示指示を
@@ -19,11 +19,11 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _levelCurrentText;
         [SerializeField] private TextMeshProUGUI _levelTentativeText;
 
-        [Header( "所持EXP(現在/仮)" )]
+        [Header( "所持アニマ(現在/仮)" )]
         [SerializeField] private TextMeshProUGUI _expCurrentText;
         [SerializeField] private TextMeshProUGUI _expTentativeText;
 
-        [Header( "次のレベルに必要なEXP(不足時は赤色にする)" )]
+        [Header( "次のレベルに必要なアニマ(不足時は赤色にする)" )]
         [SerializeField] private TextMeshProUGUI _requiredCostText;
 
         [Header( "StatusPoint(現在/仮)" )]
@@ -47,14 +47,14 @@ namespace Frontier.UI
             _levelTentativeText.text = tentative.ToString();
         }
 
-        public void SetExpValues( int current, int tentative )
+        public void SetAnimaValues( int current, int tentative )
         {
             _expCurrentText.text   = current.ToString();
             _expTentativeText.text = tentative.ToString();
         }
 
         /// <summary>
-        /// 次のレベルに必要なEXPを表示します。所持EXPが不足している場合は赤色にします。
+        /// 次のレベルに必要なアニマを表示します。所持アニマが不足している場合は赤色にします。
         /// </summary>
         public void SetRequiredCost( int cost, bool insufficient )
         {

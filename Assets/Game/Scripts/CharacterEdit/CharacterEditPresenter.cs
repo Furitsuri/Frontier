@@ -46,9 +46,9 @@ namespace Frontier.CharacterEdit
         public void Hide() => _view.Hide();
 
         /// <summary>
-        /// 画面右上の所持金・部隊共有経験値(仮称)表示を更新します(TroopEdit画面と同じ位置)。
+        /// 画面右上の所持アニマ表示を更新します(TroopEdit画面と同じ位置)。
         /// </summary>
-        public void SetHeaderInfo( int money, int exp ) => _view.SetHeaderInfo( money, exp );
+        public void SetHeaderInfo( int anima ) => _view.SetHeaderInfo( anima );
 
         /// <summary>
         /// 選択中キャラクターのパラメータ表示に使うCharacterParameterUIへの参照。

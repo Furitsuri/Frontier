@@ -11,13 +11,12 @@ namespace Frontier.DebugTools
     [Serializable]
     public class DebugUserData
     {
-        public int money = 0;
-        public int exp = 0;
+        public int anima = 0;
         public int stageLevel = 0;
 
         /// <summary>
         /// true の場合、UserDomain.Members を members の内容で上書きします。
-        /// false の場合、money / stageLevel のみ反映し、Members はそのままにします。
+        /// false の場合、anima / stageLevel のみ反映し、Members はそのままにします。
         /// </summary>
         public bool overrideMembers = false;
 

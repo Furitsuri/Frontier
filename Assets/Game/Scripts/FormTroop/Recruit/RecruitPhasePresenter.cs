@@ -32,7 +32,7 @@ namespace Frontier.FormTroop
 
         public void Update()
         {
-            _recruitmentUI.SetMoneyValue( _userDomain.Money );  // 所持金の更新
+            _recruitmentUI.SetAnimaValue( _userDomain.Anima );  // 所持アニマの更新
             UpdateSlideAnimation();
         }
 

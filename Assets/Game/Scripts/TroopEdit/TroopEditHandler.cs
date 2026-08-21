@@ -62,7 +62,7 @@ namespace Frontier.TroopEdit
             _presenter.Show();
             _presenter.DisplayMembers( _spawnedCharacters );
             _presenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
-            _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            _presenter.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
             RefreshCharacterParamDisplay();
 
             RegisterNavInputCodes();

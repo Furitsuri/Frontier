@@ -31,10 +31,10 @@ namespace Frontier.UI
         [Header( "左メニュー項目テキスト(CHARACTER_EDIT_MENU_OPTION_TAGの並び順と一致させること)" )]
         [SerializeField] private TextMeshProUGUI[] _menuItemTexts;
 
-        [Header( "所持金テキスト(TroopEdit画面と同じ位置に表示する)" )]
+        [Header( "所持アニマテキスト(TroopEdit画面と同じ位置に表示する)" )]
         [SerializeField] private TextMeshProUGUI _moneyText;
 
-        [Header( "部隊共有経験値(仮称)テキスト(TroopEdit画面と同じ位置に表示する)" )]
+        [Header( "所持アニマテキスト(暫定的にもう1箇所へも表示する。TroopEdit画面と同じ位置に表示する)" )]
         [SerializeField] private TextMeshProUGUI _expText;
 
         [Header( "レベルアップ項目選択時に右側へ表示するレベルアップ画面" )]
@@ -115,12 +115,12 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 画面右上の所持金・部隊共有経験値(仮称)表示を更新します(TroopEdit画面と同じ位置)。
+        /// 画面右上の所持アニマ表示を更新します(TroopEdit画面と同じ位置)。
         /// </summary>
-        public void SetHeaderInfo( int money, int exp )
+        public void SetHeaderInfo( int anima )
         {
-            _moneyText.text = money.ToString();
-            _expText.text = exp.ToString();
+            _moneyText.text = anima.ToString();
+            _expText.text = anima.ToString();
         }
 
         private void RefreshMenuTexts()

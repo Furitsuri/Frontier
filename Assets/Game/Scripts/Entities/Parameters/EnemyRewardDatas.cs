@@ -3,19 +3,18 @@
 namespace Frontier.Entities
 {
     /// <summary>
-    /// 敵種別ごとの撃破報酬(お金)テーブルです。Resources/EnemyRewardData/EnemyRewardData.json から読み込みます。
+    /// 敵種別ごとの撃破報酬(アニマ)テーブルです。Resources/EnemyRewardData/EnemyRewardData.json から読み込みます。
     /// 配列のインデックスは PrefabRegistry.EnemyPrefabs の並びと対応する敵種別を表します
     /// (Status.PrefabIndexは CHARACTER_TAG.ENEMY の場合にこの敵種別を指します)。
-    /// 報酬値はレベルに対して線形に算出します : BaseMoney + MoneyPerLevel × (Level - 1)
-    /// MEMO : レベルアップ時の触媒とお店で使用する触媒が同一のため、経験値とお金を区別せずMoneyとして一本化しています。
+    /// 報酬値はレベルに対して線形に算出します : BaseAnima + AnimaPerLevel × (Level - 1)
     /// </summary>
     static public class EnemyRewardData
     {
         [System.Serializable]
         public struct Data
         {
-            public int BaseMoney;        // Lv1時点の基礎お金
-            public float MoneyPerLevel;  // レベル1上昇あたりのお金増加量
+            public int BaseAnima;        // Lv1時点の基礎アニマ
+            public float AnimaPerLevel;  // レベル1上昇あたりのアニマ増加量
         }
 
         // JsonUtility.FromJson()によるJSONデシリアライズでのみ値が設定されるフィールドのため、
@@ -60,16 +59,16 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 指定した敵種別・レベルを撃破した際に得られるお金を算出します。
+        /// 指定した敵種別・レベルを撃破した際に得られるアニマを算出します。
         /// </summary>
         /// <param name="enemyPrefabIndex">敵のプレハブインデックス(Status.PrefabIndex)</param>
         /// <param name="level">敵のレベル(Status.Level)</param>
-        static public int CalcMoney( int enemyPrefabIndex, int level )
+        static public int CalcAnima( int enemyPrefabIndex, int level )
         {
             if ( !IsValidIndex( enemyPrefabIndex ) ) { return 0; }
 
             var d = data[enemyPrefabIndex];
-            return Mathf.FloorToInt( d.BaseMoney + d.MoneyPerLevel * ( level - 1 ) );
+            return Mathf.FloorToInt( d.BaseAnima + d.AnimaPerLevel * ( level - 1 ) );
         }
 
         static private bool IsValidIndex( int enemyPrefabIndex )

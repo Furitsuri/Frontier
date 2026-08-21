@@ -56,7 +56,7 @@ namespace Frontier.CharacterEdit
             _onClosed = onClosed;
 
             _presenter.Show( _context.CurrentCharacter );
-            _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp );
+            _presenter.SetHeaderInfo( _userDomain.Anima );
             RefreshCharacterParamDisplay();
             UpdatePreview();
 
@@ -244,7 +244,7 @@ namespace Frontier.CharacterEdit
         private void OnLevelUpClosed()
         {
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
-            _presenter.SetHeaderInfo( _userDomain.Money, _userDomain.Exp );
+            _presenter.SetHeaderInfo( _userDomain.Anima );
             RefreshCharacterParamDisplay();
             _presenter.UnlockMenu();
             UpdatePreview();

@@ -23,8 +23,7 @@ public class UserSaveData
     /// </summary>
     public string SceneName = "";
 
-    public int          Money;
-    public int          Exp;
+    public int          Anima;
     public int          StageLevel;
     public List<Status> Members = new List<Status>();
     public List<SkillInventoryEntry> SkillInventory = new List<SkillInventoryEntry>();

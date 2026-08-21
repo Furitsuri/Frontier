@@ -75,7 +75,7 @@ namespace Frontier.FormTroop
         {
             if( _isCancelled )
             {
-                // キャンセル時は雇用予約を全て取り消し、消費した所持金を払い戻す
+                // キャンセル時は雇用予約を全て取り消し、消費した所持アニマを払い戻す
                 CancelAllEmployment();
             }
             else
@@ -117,8 +117,8 @@ namespace Frontier.FormTroop
             // 既に雇用チェックされている場合は雇用前の状態に戻すことができる
             if( player.RecruitLogic.IsEmployed ) { return true; }
 
-            // 所持金が足りているかチェック
-            if( player.RecruitLogic.Cost <= _userDomain.Money ) { return true; }
+            // 所持アニマが足りているかチェック
+            if( player.RecruitLogic.Cost <= _userDomain.Anima ) { return true; }
 
             return false;
         }
@@ -179,19 +179,19 @@ namespace Frontier.FormTroop
 			var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
 
-            // 既に雇用チェックされている場合は所持金とユニットを雇用前の状態に戻す
+            // 既に雇用チェックされている場合は所持アニマとユニットを雇用前の状態に戻す
             if( player.RecruitLogic.IsEmployed )
             {
                 player.RecruitLogic.SetEmployed( false );
-                _userDomain.AddMoney( player.RecruitLogic.Cost );
+                _userDomain.AddAnima( player.RecruitLogic.Cost );
             }
             else
             {
-                // 所持金チェック
-                if( _userDomain.Money < player.RecruitLogic.Cost )　{　return false;　}
+                // 所持アニマチェック
+                if( _userDomain.Anima < player.RecruitLogic.Cost )　{　return false;　}
 
-                // 所持金を減算して雇用確定
-                _userDomain.AddMoney( - player.RecruitLogic.Cost );
+                // 所持アニマを減算して雇用確定
+                _userDomain.AddAnima( - player.RecruitLogic.Cost );
                 player.RecruitLogic.SetEmployed( true );
             }
 
@@ -276,7 +276,7 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 雇用予約を全て取り消し、消費した所持金を払い戻します
+        /// 雇用予約を全て取り消し、消費した所持アニマを払い戻します
         /// </summary>
         private void CancelAllEmployment()
         {
@@ -285,7 +285,7 @@ namespace Frontier.FormTroop
                 var player = candidate.Character as Player;
                 if( !player.RecruitLogic.IsEmployed ) { continue; }
 
-                _userDomain.AddMoney( player.RecruitLogic.Cost );
+                _userDomain.AddAnima( player.RecruitLogic.Cost );
                 player.RecruitLogic.SetEmployed( false );
             }
         }

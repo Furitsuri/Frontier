@@ -275,10 +275,10 @@ namespace Frontier.Field
             _presenter.SetPanelVisible( true );
             RegisterNavInputCodes();
 
-            // 部隊編集画面(レベルアップ/ステータス上昇含む)から戻った際、所持金・SP・部隊人数が
+            // 部隊編集画面(レベルアップ/ステータス上昇含む)から戻った際、所持アニマ・部隊人数が
             // 変化している可能性があるため、フィールド画面右上のHUDを最新の値に更新する
             var headerView = _uiSystem?.GeneralUi?.FieldHeaderView;
-            headerView?.SetHeaderInfo( _userDomain.Money, _userDomain.Exp, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            headerView?.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
         }
     }
 }

@@ -221,7 +221,7 @@ namespace Frontier.Field
         }
 
         /// <summary>
-        /// フィールド画面右上の常時表示HUD(所持金・SP・部隊人数)を最新の値で更新し、表示します。
+        /// フィールド画面右上の常時表示HUD(所持アニマ・部隊人数)を最新の値で更新し、表示します。
         /// TroopEdit画面のヘッダーと同じ情報・同じ位置に揃えている。
         /// </summary>
         private void RefreshFieldHeader()
@@ -229,7 +229,7 @@ namespace Frontier.Field
             var headerView = _uiSystem?.GeneralUi?.FieldHeaderView;
             if ( headerView == null || _userDomain == null ) return;
 
-            headerView.SetHeaderInfo( _userDomain.Money, _userDomain.Exp, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            headerView.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
             headerView.Show();
         }
 

@@ -8,24 +8,19 @@ using UnityEngine;
 [Serializable]
 public class UserDomain
 {
-    [SerializeField] public int Money { get; private set; } = 0;
-    // 部隊で共有し、キャラクター個別のレベルアップに割り振れるポイント。
-    // 名称は仮のもの(「経験値」という呼び方は個人が貯めるものという印象を与えるため、後日変更予定)。
-    [SerializeField] public int Exp { get; private set; } = 0;
+    // 敵撃破報酬・雇用・スキル購入・キャラクターのレベルアップ等、あらゆる用途で共有される単一の触媒。
+    // 元は所持金(Money)とキャラクター個別のレベルアップに割り振れるポイント(Exp)に分かれていたが、
+    // ゲーム内では両者を区別する必要が無いため統合した。
+    [SerializeField] public int Anima { get; private set; } = 0;
     [SerializeField] public int StageLevel { get; private set; } = 0;   // 0オリジンのため、0はステージレベル1を表します
     [SerializeField] public List<Status> Members { get; private set; } = new List<Status>();
     // 所持しているスキルとその個数(ステージ攻略報酬・店購入等で増える想定)。
     // 同じスキルを複数所持することで、複数のキャラクターに同時に装備させられる。
     [SerializeField] public List<SkillInventoryEntry> SkillInventory { get; private set; } = new List<SkillInventoryEntry>();
 
-    public void AddMoney( int amount )
+    public void AddAnima( int amount )
     {
-        Money += amount;
-    }
-
-    public void AddExp( int amount )
-    {
-        Exp += amount;
+        Anima += amount;
     }
 
     public void IncreaseStageLevel()
@@ -81,8 +76,7 @@ public class UserDomain
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-    public void Debug_SetMoney( int value )       => Money = value;
-    public void Debug_SetExp( int value )         => Exp = value;
+    public void Debug_SetAnima( int value )        => Anima = value;
     public void Debug_SetStageLevel( int value )  => StageLevel = value;
     public void Debug_ClearMembers()              => Members.Clear();
     public void Debug_ClearSkillInventory()       => SkillInventory.Clear();
@@ -97,8 +91,7 @@ public class UserDomain
         return new UserSaveData
         {
             SavedAt        = DateTime.Now.ToString( "yyyy/MM/dd HH:mm" ),
-            Money          = Money,
-            Exp            = Exp,
+            Anima          = Anima,
             StageLevel     = StageLevel,
             Members        = new List<Status>( Members ),
             SkillInventory = new List<SkillInventoryEntry>( SkillInventory ),
@@ -111,8 +104,7 @@ public class UserDomain
     /// </summary>
     public void ApplySaveData( UserSaveData data )
     {
-        Money      = data.Money;
-        Exp        = data.Exp;
+        Anima      = data.Anima;
         StageLevel = data.StageLevel;
         Members.Clear();
         Members.AddRange( data.Members );

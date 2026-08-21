@@ -5,7 +5,7 @@ namespace Frontier.UI
 {
     public sealed class RecruitUISystem : MonoBehaviour
     {
-        [Header( "所持金UI" )]
+        [Header( "所持アニマUI" )]
         [SerializeField] private GameObject _moneyUI;
 
         [Header( "雇用ユニット選択UI" )]
@@ -43,7 +43,7 @@ namespace Frontier.UI
             _moneyValueText = _moneyUI.GetComponentInChildren<TextMeshProUGUI>();
         }
 
-        public void SetMoneyValue( float value )
+        public void SetAnimaValue( float value )
         {
             _moneyValueText.text = value.ToString();
         }

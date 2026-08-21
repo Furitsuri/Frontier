@@ -6,7 +6,7 @@ namespace Frontier.CharacterEdit
 {
     /// <summary>
     /// レベルアップ画面のViewへの窓口となるPresenter。
-    /// 割り振り状態の実データ(仮のレベル・EXP・StatusPoint)はLevelUpContext(LevelUpHandlerが所有)が持ち、
+    /// 割り振り状態の実データ(仮のレベル・アニマ・StatusPoint)はLevelUpContext(LevelUpHandlerが所有)が持ち、
     /// このクラスはメニューカーソル(LEVEL/OKの2項目、その場限りの添字)をCommandListで管理しつつ、
     /// 画面のどこに何を表示するかの判断(不足時の赤色表示等)を行う。Viewは指示された内容を
     /// そのまま適用するだけの薄い層とする。
@@ -92,10 +92,10 @@ namespace Frontier.CharacterEdit
         private void RefreshAll()
         {
             _view.SetLevelValues( _context.OriginalLevel, _context.TentativeLevel );
-            _view.SetExpValues( _context.OriginalExp, _context.TentativeExp );
+            _view.SetAnimaValues( _context.OriginalAnima, _context.TentativeAnima );
 
             int cost = _context.GetNextLevelCost();
-            _view.SetRequiredCost( cost, _context.TentativeExp < cost );
+            _view.SetRequiredCost( cost, _context.TentativeAnima < cost );
 
             _view.SetStatusPointValues( _context.OriginalStatusPoint, _context.TentativeStatusPoint );
         }
