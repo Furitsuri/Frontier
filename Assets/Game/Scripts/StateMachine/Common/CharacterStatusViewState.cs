@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.Presenter;
+using Zenject;
 using static Constants;
 
 namespace Frontier.StateMachine
@@ -9,6 +10,9 @@ namespace Frontier.StateMachine
     /// </summary>
     public class CharacterStatusViewState : PhaseStateBase
     {
+        // RecruitPhaseHandler(雇用・編成フェーズ)等、戦闘用カメラが存在しない文脈でも本ステートは使われるため Optional にする
+        [Inject( Optional = true )] private BattleCameraController _btlCameraCtrl = null;
+
         private string[] _inputInfoStrings;
         private Character _targetChara = null;
         private StatusPresenter _statusPresenter = null;
@@ -33,6 +37,9 @@ namespace Frontier.StateMachine
             NullCheck.AssertNotNull( _targetChara, nameof( _targetChara ) );
             _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER_STATUS );
             _statusPresenter.OpenCharacterStatus( _targetChara );
+
+            // ステータス画面表示中はステージ上のカメラ操作と競合させない
+            _btlCameraCtrl?.SetInputEnabled( false );
         }
 
         public override bool Update()
@@ -48,6 +55,9 @@ namespace Frontier.StateMachine
             _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER );
             _statusPresenter.CloseCharacterStatus();
             _targetChara = null;
+
+            // カメラ操作の受付を再開する
+            _btlCameraCtrl?.SetInputEnabled( true );
 
             return base.ExitState();
         }

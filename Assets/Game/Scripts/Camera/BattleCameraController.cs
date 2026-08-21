@@ -83,6 +83,9 @@ namespace Frontier
         // --- 連携演出(渦巻きエフェクト)用フィールド ---
         private float _vortexOffsetLength; // FitCharactersForCooperativeVortex で決定したカメラ距離(FocusCharacterForCooperativeVortex で使い回す)
 
+        // --- カメラ入力の一時無効化用フィールド ---
+        private bool _inputEnabled = true; // ステータス画面表示中等、外部要因によりカメラ操作入力を一時的に無効化するためのフラグ
+
         public float InitialAngleXZ => _initialValueAngleXZ;
         public float AngleXZ        => _angleXZ;
 
@@ -345,7 +348,16 @@ namespace Frontier
 
         private bool CanAcceptCamera()
         {
-            return _activeSequence == null && !_cameraSliding;
+            return _inputEnabled && _activeSequence == null && !_cameraSliding;
+        }
+
+        /// <summary>
+        /// カメラの操作入力の受付可否を切り替えます。
+        /// ステータス画面表示中等、他の操作と競合させたくない場面で呼び出してください。
+        /// </summary>
+        public void SetInputEnabled( bool enabled )
+        {
+            _inputEnabled = enabled;
         }
 
         private bool AcceptCameraInput( InputContext context )
