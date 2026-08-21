@@ -1,0 +1,12 @@
+{
+    "Enemies": [
+        {
+            "BaseMoney": 10,
+            "MoneyPerLevel": 2.0
+        },
+        {
+            "BaseMoney": 12,
+            "MoneyPerLevel": 2.5
+        }
+    ]
+}
