@@ -73,6 +73,14 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.gameObject.SetActive( isActive );
         }
 
+        /// <summary>
+        /// 戦闘中に獲得したアニマの表示を更新します
+        /// </summary>
+        public void SetBattleAnimaDisplay( int anima )
+        {
+            _uiSystem.BattleUi.SetBattleAnima( anima );
+        }
+
         public void SetActiveConfirmUI( bool isActive )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.gameObject.SetActive( isActive );

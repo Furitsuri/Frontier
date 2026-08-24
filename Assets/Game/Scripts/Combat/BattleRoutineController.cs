@@ -27,6 +27,9 @@ namespace Frontier.Battle
 
         public void SetStageIndex( int stageIndex ) { _currentStageIndex = stageIndex; }
         private BattlePhaseType _currentPhase           = BattlePhaseType.Deployment;
+        // 戦闘開始後に敵を倒して得たアニマの累計値。戦闘開始前から所持していたUserDomain.Animaとは別に、
+        // 戦闘中のみ0からカウントする(戦闘開始時にInit()でリセットされる)。
+        private int _battleAnima                        = 0;
         private BattleFileLoader _btlFileLoader         = null;
         private BattleCameraController _btlCameraCtrl   = null;
         private BattleCharacterCoordinator _btlCharaCdr = null;
@@ -38,6 +41,16 @@ namespace Frontier.Battle
         public BattleCameraController GetBtlCameraCtrl => _btlCameraCtrl;
         public BattleFileLoader GetBtlFileLoader => _btlFileLoader;
         public BattleRoutinePresenter BtlPresenter => _presenter;
+        public int BattleAnima => _battleAnima;
+
+        /// <summary>
+        /// 戦闘中に獲得したアニマを加算し、表示を更新します
+        /// </summary>
+        public void AddBattleAnima( int amount )
+        {
+            _battleAnima += amount;
+            _presenter.SetBattleAnimaDisplay( _battleAnima );
+        }
 
         public IEnumerator Battle()
         {
@@ -84,6 +97,9 @@ namespace Frontier.Battle
             _btlCameraCtrl.Init();
             _btlCharaCdr.Init();
             _stgCtrl.Init( _btlCameraCtrl );
+
+            _battleAnima = 0;                           // 戦闘開始時に戦闘中アニマをリセット
+            _presenter.SetBattleAnimaDisplay( _battleAnima );
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR

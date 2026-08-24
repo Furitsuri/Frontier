@@ -46,6 +46,9 @@ namespace Frontier.UI
         [Header( "PhaseUI" )]
         public PhaseUI Phase;                     // フェーズ表記UI
 
+        [Header( "BattleAnimaUI" )]
+        public BattleAnimaUI BattleAnima;         // 戦闘中に獲得したアニマの常時表示
+
         [Header( "StageClearUI" )]
         public StageClearUI StageClear;           // ステージクリアUI
 
@@ -73,6 +76,7 @@ namespace Frontier.UI
             DamageValue?.Setup();
             CooperativeVortex?.Setup();
             Phase?.Setup();
+            BattleAnima?.Setup();
             StageClear?.Setup();
             GameOver?.Setup();
             CommandNameView?.Setup();
@@ -221,6 +225,14 @@ namespace Frontier.UI
         public void SetTurnType( TurnType turntype )
         {
             Phase.SetTurnType( turntype );
+        }
+
+        /// <summary>
+        /// 戦闘中に獲得したアニマの表示を更新します
+        /// </summary>
+        public void SetBattleAnima( int anima )
+        {
+            BattleAnima.SetAnima( anima );
         }
 
         public void StartAnimPhaseUI()

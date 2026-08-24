@@ -105,6 +105,13 @@ namespace Frontier.Battle
             var chara = _characterDict.Get( characterKey );
             if( chara == null ) { return; } // 既に処理済みなどで多重通知になった場合はここで防止
 
+            // 倒した敵からアニマを獲得する(戦闘中の累計値。UserDomain.Animaへの反映は別途行う)
+            if( chara.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
+            {
+                var status = chara.GetStatusRef;
+                _btlRtnCtrl.AddBattleAnima( EnemyRewardData.CalcAnima( status.PrefabIndex, status.Level ) );
+            }
+
             SetDiedCharacterKey( characterKey );
             RemoveCharacterFromList( characterKey );
             ForceEndExhaustedReservations( characterKey );

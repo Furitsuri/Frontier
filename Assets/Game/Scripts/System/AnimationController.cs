@@ -9,11 +9,11 @@ namespace Frontier
     /// </summary>
     public class AnimationController
     {
-        ReadOnlyReference<Animator> _readOnlyeAnimator = null;
+        ReadOnlyReference<Animator> _readOnlyAnimator = null;
 
         public void Regist( Animator animator )
         {
-            _readOnlyeAnimator = new ReadOnlyReference<Animator>( animator );
+            _readOnlyAnimator = new ReadOnlyReference<Animator>( animator );
         }
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace Frontier
         /// <param name="timeScale">スケール値</param>
         public void UpdateTimeScale( float timeScale )
         {
-            _readOnlyeAnimator.Value.speed = timeScale;
+            _readOnlyAnimator.Value.speed = timeScale;
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Frontier
         /// <param name="animTag">アニメーションタグ</param>
         public void SetAnimator( AnimDatas.AnimeConditionsTag animTag )
         {
-            _readOnlyeAnimator.Value.SetTrigger( AnimDatas.AnimNameHashList[( int ) animTag] );
+            _readOnlyAnimator.Value.SetTrigger( AnimDatas.AnimNameHashList[( int ) animTag] );
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Frontier
         /// <param name="b">トリガーアニメーションに対して使用</param>
         public void SetAnimator( AnimDatas.AnimeConditionsTag animTag, bool b )
         {
-            _readOnlyeAnimator.Value.SetBool( AnimDatas.AnimNameHashList[( int ) animTag], b );
+            _readOnlyAnimator.Value.SetBool( AnimDatas.AnimNameHashList[( int ) animTag], b );
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Frontier
         /// </summary>
         public void RestartAnimator()
         {
-            _readOnlyeAnimator.Value.enabled = true;
+            _readOnlyAnimator.Value.enabled = true;
         }
 
         /// <summary>
@@ -60,28 +60,28 @@ namespace Frontier
             if( animTag == AnimDatas.AnimeConditionsTag.NONE )
             {
                 int hash;
-                if( _readOnlyeAnimator.Value.IsInTransition( 0 ) )
+                if( _readOnlyAnimator.Value.IsInTransition( 0 ) )
                 {
                     // 遷移中なら遷移先
-                    hash = _readOnlyeAnimator.Value.GetNextAnimatorStateInfo( 0 ).fullPathHash;
+                    hash = _readOnlyAnimator.Value.GetNextAnimatorStateInfo( 0 ).fullPathHash;
                 }
                 else
                 {
                     // 通常時なら現在
-                    hash = _readOnlyeAnimator.Value.GetCurrentAnimatorStateInfo( 0 ).fullPathHash;
+                    hash = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 ).fullPathHash;
                 }
 
-                _readOnlyeAnimator.Value.Play( hash, 0, 0f );
+                _readOnlyAnimator.Value.Play( hash, 0, 0f );
             }
             else
             {
-                _readOnlyeAnimator.Value.Play( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag], 0, 0f );
+                _readOnlyAnimator.Value.Play( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag], 0, 0f );
             }
 
             // 強制反映
-            _readOnlyeAnimator.Value.Update( Time.deltaTime );
+            _readOnlyAnimator.Value.Update( Time.deltaTime );
 
-            _readOnlyeAnimator.Value.enabled = false;
+            _readOnlyAnimator.Value.enabled = false;
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Frontier
         /// <returns>true : 再生中, false : 再生していない</returns>
         public bool IsPlayingAnimationOnConditionTag( AnimDatas.AnimeConditionsTag animTag )
         {
-            AnimatorStateInfo stateInfo = _readOnlyeAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
+            AnimatorStateInfo stateInfo = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
             if( stateInfo.IsName( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag] ) && stateInfo.normalizedTime < 1f )
@@ -104,7 +104,7 @@ namespace Frontier
 
         public bool IsEndCurrentAnimation()
         {
-            AnimatorStateInfo stateInfo = _readOnlyeAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
+            AnimatorStateInfo stateInfo = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
             if( 1f <= stateInfo.normalizedTime )
@@ -122,7 +122,7 @@ namespace Frontier
         /// <returns>true : 終了, false : 未終了</returns>
         public bool IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag animTag )
         {
-            AnimatorStateInfo stateInfo = _readOnlyeAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
+            AnimatorStateInfo stateInfo = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
             if( stateInfo.IsName( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag] ) && 1f <= stateInfo.normalizedTime )
@@ -139,7 +139,7 @@ namespace Frontier
         /// <returns>true : 終了, false : 未終了</returns>
         public bool IsEndAnimationOnStateName( string stateName )
         {
-            AnimatorStateInfo stateInfo = _readOnlyeAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
+            AnimatorStateInfo stateInfo = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
             if( stateInfo.IsName( stateName ) && 1f <= stateInfo.normalizedTime )
