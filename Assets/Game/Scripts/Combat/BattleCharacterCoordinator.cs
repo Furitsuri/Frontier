@@ -23,6 +23,9 @@ namespace Frontier.Battle
         private CharacterKey _diedCharacterKey;
         private CharacterKey _battleBossCharacterKey;
         private CharacterKey _escortTargetCharacterKey;
+        // NotifyCharacterDied() で死亡通知を受けたが、まだ実体(GameObject)を破棄していないキャラクターの一覧。
+        // DisposePendingDeadCharacters() でまとめて破棄されるまでの間、シーケンス側からの参照に応え続けられるよう保持する。
+        private List<Character> _pendingDisposalCharacters = new List<Character>();
 
         public delegate void StageAnim();
 
@@ -34,6 +37,7 @@ namespace Frontier.Battle
             _diedCharacterKey           = new CharacterKey( CHARACTER_TAG.NONE, -1 );
             _battleBossCharacterKey     = new CharacterKey( CHARACTER_TAG.NONE, -1 );
             _escortTargetCharacterKey   = new CharacterKey( CHARACTER_TAG.NONE, -1 );
+            _pendingDisposalCharacters.Clear();
 
             LazyInject.GetOrCreate( ref _characterDict, () => new CharacterDictionary() );
         }
@@ -96,9 +100,12 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// キャラクターの死亡を通知します。リストからの除去・関連予約の強制終了・破棄までを一括で行います。
+        /// キャラクターの死亡を通知します。リストからの除去・関連予約の強制終了までを一括で行います。
         /// 各キャラクターの死亡アニメーション完了時(BattleAnimationEventReceiver.DieOnAnimEvent)から呼ばれることを想定しており、
         /// 攻撃の種類(単独攻撃・複数体を巻き込むスキル・連携攻撃など)に関わらず、死亡したキャラクター自身が通知する形になります。
+        /// 通知時点ではまだ実体(GameObject)は破棄しません。攻撃・スキルシーケンス側がカメラ演出等で
+        /// このキャラクターの参照を使い続けている可能性があるため、破棄待ちリストに積むだけに留め、
+        /// 実際の破棄は DisposePendingDeadCharacters() (シーケンス完全終了時) にまとめて行います。
         /// </summary>
         public void NotifyCharacterDied( in CharacterKey characterKey )
         {
@@ -115,7 +122,23 @@ namespace Frontier.Battle
             SetDiedCharacterKey( characterKey );
             RemoveCharacterFromList( characterKey );
             ForceEndExhaustedReservations( characterKey );
-            chara.Dispose();
+            _pendingDisposalCharacters.Add( chara );
+        }
+
+        /// <summary>
+        /// NotifyCharacterDied() で死亡通知を受けたキャラクターのうち、まだ実体(GameObject)を
+        /// 破棄していないものをまとめて破棄します。シーケンス(攻撃・スキル等)が完全に終了したタイミングで
+        /// 呼び出すことを想定しており、実体の破棄責任はこのクラスに一本化しています。
+        /// </summary>
+        public void DisposePendingDeadCharacters()
+        {
+            if( _pendingDisposalCharacters.Count <= 0 ) { return; }
+
+            foreach( var chara in _pendingDisposalCharacters )
+            {
+                chara.Dispose();
+            }
+            _pendingDisposalCharacters.Clear();
         }
 
         /// <summary>
