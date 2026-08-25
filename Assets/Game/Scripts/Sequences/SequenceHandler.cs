@@ -1,15 +1,11 @@
-﻿using Frontier.Battle;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Zenject;
 
 namespace Frontier.Sequences
 {
     public class SequenceHandler : FocusRoutineBase
     {
-        [Inject] private BattleRoutineController _btlRtnCtrl = null;
-
         bool _isReservedExitOnCurrentRoutine = false;
         List<ISequence> _sequences = new List<ISequence>();
 
@@ -39,10 +35,6 @@ namespace Frontier.Sequences
             {
                 _sequences[0].End();
                 _sequences.RemoveAt( 0 );
-
-                // シーケンスが対象キャラクターの参照を使い終えたタイミングで、
-                // 死亡していたキャラクターの実体(GameObject)を破棄する
-                _btlRtnCtrl.BtlCharaCdr.DisposePendingDeadCharacters();
 
                 // 実行するシーケンスがなくなった場合は終了を予約
                 if( _sequences.Count <= 0 )

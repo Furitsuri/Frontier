@@ -137,6 +137,12 @@ namespace Frontier.Battle
 
         public override bool LateUpdate()
         {
+            // 死亡していたキャラクターの実体(GameObject)を破棄する。
+            // 攻撃・スキルシーケンス実行中はSequenceHandlerにフォーカスが移りGameRoutineController自体が
+            // Pauseされるため、このLateUpdate()はシーケンスが完全に終了した後でなければ呼ばれない。
+            // そのため、ここに到達した時点でシーケンス側のキャラクター参照の使用は必ず完了しており安全に破棄できる。
+            _btlCharaCdr.DisposePendingDeadCharacters();
+
             if( _presenter.IsActiveStageClearAnimation() )  { return false; }  // ステージクリア時のUIアニメーションが再生中の場合は終了
             if( _presenter.IsActiveGameOverAnimation() )    { return false; }  // ゲーム―オーバー時のUIアニメーションが再生中の場合は終了
 
