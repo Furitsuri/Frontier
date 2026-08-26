@@ -56,6 +56,9 @@ namespace Frontier.UI
         [Header( "StageClearUI" )]
         public StageClearUI StageClear;           // ステージクリアUI
 
+        [Header( "StageResultUI" )]
+        public StageResultUI StageResult;         // ステージクリア時のリザルト画面(獲得アニマ等)
+
         [Header( "GameOver" )]
         public GameOverUI GameOver;               // ゲームオーバー画面
 
@@ -87,6 +90,7 @@ namespace Frontier.UI
             BattleAnima?.Setup();
             AnimaRewardEffect?.Setup();
             StageClear?.Setup();
+            StageResult?.Setup();
             GameOver?.Setup();
             CommandNameView?.Setup();
             SkillDetail?.Setup();
@@ -300,9 +304,25 @@ namespace Frontier.UI
             StageClear.gameObject.SetActive( isActive );
         }
 
+        /// <summary>
+        /// ステージクリア時のリザルト画面(獲得アニマ)を表示します。
+        /// </summary>
+        public void ShowStageResult( int anima )
+        {
+            StageResult.SetAnima( anima );
+            StageResult.Show();
+        }
+
+        /// <summary>
+        /// ステージクリア演出を開始し、あわせて戦闘中アニマ表示・味方/敵のバトルパラメータUIを
+        /// 非表示にします(演出中に余計なHUDが写り込まないようにするため)。
+        /// </summary>
         public void StartStageClearAnim()
         {
             StageClear.StartAnim();
+            BattleAnima.Hide();
+            SetActiveLeftParameterWindow( false );
+            SetActiveRightParameterWindow( false );
         }
 
         public void ToggleGameOverUI( bool isActive )

@@ -27,5 +27,13 @@ namespace Frontier.UI
         {
             _animaText.text = anima.ToString();
         }
+
+        /// <summary>
+        /// ステージクリア時など、この表示を明示的に隠したい場面で呼び出します。
+        /// </summary>
+        public void Hide()
+        {
+            gameObject.SetActive( false );
+        }
     }
 }

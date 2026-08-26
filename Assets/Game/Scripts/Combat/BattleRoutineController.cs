@@ -36,6 +36,10 @@ namespace Frontier.Battle
         private BattleRoutinePresenter _presenter       = null;
         private StageController _stgCtrl                = null;
         private Dictionary<BattlePhaseType, PhaseHandlerBase> _phaseHandlers;
+        // ステージクリア判定後、「STAGE CLEAR」演出の開始からリザルト画面表示までを一貫して担う専用ステート。
+        // 通常のフェーズ循環(_phaseHandlers)には含めず、ここから直接駆動する。
+        private StageClearState _stageClearState        = null;
+        private bool _isShowingStageClear                = false;
 
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
         public BattleCameraController GetBtlCameraCtrl => _btlCameraCtrl;
@@ -69,6 +73,7 @@ namespace Frontier.Battle
             LazyInject.GetOrCreate( ref _btlFileLoader, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleFileLoader>( _prefabReg.BattleFileLoaderPrefab, true, false, typeof( BattleFileLoader ).Name ) );
             LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr,   () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
+            LazyInject.GetOrCreate( ref _stageClearState, () => _hierarchyBld.InstantiateWithDiContainer<StageClearState>( false ) );
 
             if( SkillsData.ReactiveSkillNotifierFactory == null )
             {
@@ -100,6 +105,7 @@ namespace Frontier.Battle
 
             _battleAnima = 0;                           // 戦闘開始時に戦闘中アニマをリセット
             _presenter.SetBattleAnimaDisplay( _battleAnima );
+            _isShowingStageClear = false;
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -128,7 +134,7 @@ namespace Frontier.Battle
             }
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if( _presenter.IsActiveStageClearAnimation() || _presenter.IsActiveGameOverAnimation() ) { return; }
+            if( _isShowingStageClear || _presenter.IsActiveGameOverAnimation() ) { return; }
 
             _phaseHandlers[_currentPhase].Update();
 
@@ -151,11 +157,27 @@ namespace Frontier.Battle
                 _presenter.PlayAnimaRewardEffect( position, () => AddBattleAnima( amount ) );
             } );
 
-            if( _presenter.IsActiveStageClearAnimation() )  { return false; }  // ステージクリア時のUIアニメーションが再生中の場合は終了
+            // ステージクリア判定後、「STAGE CLEAR」演出の開始・終了・CONFIRM入力待ちを経てリザルト画面を
+            // 表示するまでは、専用ステートの更新のみを行い、通常のフェーズ進行やシーン遷移(return true)は行わない。
+            if( _isShowingStageClear )
+            {
+                _stageClearState.Update();
+                return false;
+            }
+
             if( _presenter.IsActiveGameOverAnimation() )    { return false; }  // ゲーム―オーバー時のUIアニメーションが再生中の場合は終了
 
             // 勝利、全滅チェックを行う
-            if( _btlCharaCdr.CheckVictoryOrDefeat( _presenter.StartStageClearAnim, _presenter.StartGameOverAnim ) ) { return true; }
+            if( _btlCharaCdr.CheckVictoryOrDefeat( () =>
+                {
+                    // 現在のフェーズが登録している入力コード(CONFIRM等)を解除してから
+                    // StageClearStateの入力コードを登録しないと、アイコンの重複登録エラーが発生する
+                    _phaseHandlers[_currentPhase].Pause();
+
+                    _isShowingStageClear = true;
+                    _stageClearState.Begin( _battleAnima );
+                },
+                _presenter.StartGameOverAnim ) ) { return true; }
 
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )

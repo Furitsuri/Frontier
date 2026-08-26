@@ -118,26 +118,12 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// ステージクリア時のUIとアニメーションを表示します
-        /// </summary>
-        public void StartStageClearAnim()
-        {
-            _uiSystem.BattleUi.ToggleStageClearUI( true );
-            _uiSystem.BattleUi.StartStageClearAnim();
-        }
-
-        /// <summary>
         /// ゲームオーバー時のUIとアニメーションを表示します
         /// </summary>
         public void StartGameOverAnim()
         {
             _uiSystem.BattleUi.ToggleGameOverUI( true );
             _uiSystem.BattleUi.StartGameOverAnim();
-        }
-
-        public bool IsActiveStageClearAnimation()
-        {
-            return _uiSystem.BattleUi.StageClear.isActiveAndEnabled;
         }
 
         public bool IsActiveGameOverAnimation()
