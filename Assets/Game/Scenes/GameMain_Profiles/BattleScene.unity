@@ -2557,7 +2557,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &375703677
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2592,6 +2592,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f997efe9f1d1422498c8fe1975021827, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _textKey: 35
+  _labelText: {fileID: 539806285}
   _animaText: {fileID: 637400458}
 --- !u!1 &390606221
 GameObject:
@@ -4055,7 +4057,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ANIMA
+  m_text: Label
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}

@@ -8,13 +8,15 @@ namespace Frontier.UI
     /// 戦闘開始時に0リセットされる戦闘専用の累計値であり、戦闘開始前から所持していたアニマ
     /// (UserDomain.Anima)は含まない。入力ガイドバーの左端付近に配置する想定。
     /// </summary>
-    public class BattleAnimaUI : UiMonoBehaviour
+    public class BattleAnimaUI : UIMonoBehaviourIncludingText
     {
+        [SerializeField] private TextMeshProUGUI _labelText;
         [SerializeField] private TextMeshProUGUI _animaText;
 
         /// <summary>
         /// UiMonoBehaviour.Setup()の既定実装はgameObjectを非表示にするため、
         /// 常時表示としたいこのUIではSetup完了時点で明示的に表示状態へ戻す。
+        /// SetActive(true)によりOnEnable()が呼ばれ、ラベルのローカライズ文言も併せて反映される。
         /// </summary>
         public override void Setup()
         {
@@ -35,5 +37,14 @@ namespace Frontier.UI
         {
             gameObject.SetActive( false );
         }
+
+        #region ILocalizedText implementation
+
+        public override void RefreshText()
+        {
+            _labelText.text = _localization.Get( _textKey );
+        }
+
+        #endregion  // ILocalizedText implementation
     }
 }

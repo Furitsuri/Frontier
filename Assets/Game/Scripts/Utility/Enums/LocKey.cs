@@ -47,4 +47,7 @@ public enum LocKey
     // スキル説明文
     EXPL_SKILL_DASH_SLASH,
     EXPL_SKILL_JUMP_SLASH,
+
+    // 戦闘UI
+    UI_BATTLE_ANIMA,
 }
