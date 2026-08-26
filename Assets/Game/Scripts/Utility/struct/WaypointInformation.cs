@@ -1,4 +1,4 @@
-public struct WaypointInformation
+﻿public struct WaypointInformation
 {
     public WaypointInformation( int index, int cost )
     {

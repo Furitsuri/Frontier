@@ -1,11 +1,11 @@
-using Frontier.Stage;
+﻿using Frontier.Stage;
 namespace Frontier.Stage
 {
     /// <summary>
-    /// �X�e�[�W�f�[�^�񋟃C���^�[�t�F�[�X
-    /// �X�e�[�W�f�[�^�𒼐ڎ擾�o����悤�ɂ���ƁA
-    /// C#�̎d�l��A�X�e�[�W��ҏW�E�Ǎ�����ۂɐV�����f�[�^�ւƍ����ւ��邱�Ƃ��o���Ȃ�����
-    /// �ԐړI�Ɏ擾����C���^�[�t�F�[�X���K�v
+    /// ステージデータ提供インターフェース
+    /// ステージデータを直接取得出来るようにすると、
+    /// C#の仕様上、ステージを編集・読込する際に新しいデータへと差し替えることが出来ないため
+    /// 間接的に取得するインターフェースが必要
     /// </summary>
     public interface IStageDataProvider
     {
