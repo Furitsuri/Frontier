@@ -5,15 +5,21 @@ namespace Frontier.UI
 {
     /// <summary>
     /// ステージクリア時に画面の広範囲へ表示するリザルト画面です。
-    /// 表示内容はまだ確定していないため、現状は今回の戦闘で獲得した総アニマ量のみを表示します。
+    /// 表示内容はまだ確定していないため、現状は今回の戦闘で獲得した総アニマ量とクリアまでのターン数のみを表示します。
     /// </summary>
     public class StageResultUI : UiMonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _animaValueText;
+        [SerializeField] private TextMeshProUGUI _turnValueText;
 
         public void SetAnima( int anima )
         {
             _animaValueText.text = anima.ToString();
+        }
+
+        public void SetTurnCount( int turnCount )
+        {
+            _turnValueText.text = turnCount.ToString();
         }
 
         public void Show()

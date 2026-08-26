@@ -30,6 +30,9 @@ namespace Frontier.Battle
         // 戦闘開始後に敵を倒して得たアニマの累計値。戦闘開始前から所持していたUserDomain.Animaとは別に、
         // 戦闘中のみ0からカウントする(戦闘開始時にInit()でリセットされる)。
         private int _battleAnima                        = 0;
+        // クリアまでにかかったターン数。プレイヤーフェーズが1巡するごとに加算する
+        // (Deployment→Playerへの最初の移行時点で1になる)。
+        private int _turnCount                          = 0;
         private BattleFileLoader _btlFileLoader         = null;
         private BattleCameraController _btlCameraCtrl   = null;
         private BattleCharacterCoordinator _btlCharaCdr = null;
@@ -45,6 +48,7 @@ namespace Frontier.Battle
         public BattleFileLoader GetBtlFileLoader => _btlFileLoader;
         public BattleRoutinePresenter BtlPresenter => _presenter;
         public int BattleAnima => _battleAnima;
+        public int TurnCount => _turnCount;
 
         /// <summary>
         /// 戦闘中に獲得したアニマを加算し、表示を更新します
@@ -104,6 +108,7 @@ namespace Frontier.Battle
 
             _battleAnima = 0;                           // 戦闘開始時に戦闘中アニマをリセット
             _presenter.SetBattleAnimaDisplay( _battleAnima );
+            _turnCount = 0;                             // 戦闘開始時にターン数をリセット
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -172,7 +177,7 @@ namespace Frontier.Battle
                     // StageClearStateの入力コードを登録しないと、アイコンの重複登録エラーが発生する
                     _phaseHandlers[_currentPhase].Pause();
 
-                    _stageClearState.Begin( _battleAnima );
+                    _stageClearState.Begin( _battleAnima, _turnCount );
                 },
                 _presenter.StartGameOverAnim ) ) { return true; }
 
@@ -185,6 +190,7 @@ namespace Frontier.Battle
                 // 次のハンドラーに切り替える
                 handler.Exit();
                 _currentPhase = GetNextPhase( _currentPhase );
+                if( _currentPhase == BattlePhaseType.Player ) { _turnCount++; }  // プレイヤーフェーズが1巡するごとにターン数を加算
                 _phaseHandlers[_currentPhase].Enter();
             }
 

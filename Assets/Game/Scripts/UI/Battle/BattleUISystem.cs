@@ -305,11 +305,12 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// ステージクリア時のリザルト画面(獲得アニマ)を表示します。
+        /// ステージクリア時のリザルト画面(獲得アニマ・経過ターン数)を表示します。
         /// </summary>
-        public void ShowStageResult( int anima )
+        public void ShowStageResult( int anima, int turnCount )
         {
             StageResult.SetAnima( anima );
+            StageResult.SetTurnCount( turnCount );
             StageResult.Show();
         }
 

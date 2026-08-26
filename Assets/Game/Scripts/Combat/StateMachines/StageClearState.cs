@@ -20,6 +20,7 @@ namespace Frontier.Battle
 
         private Phase _phase;
         private int _battleAnima;
+        private int _turnCount;
 
         /// <summary>
         /// Begin()が呼ばれ、ステージクリア演出のシーケンスが進行中かどうかを取得します。
@@ -37,9 +38,11 @@ namespace Frontier.Battle
         /// パラメータウィンドウ)の非表示もここで行います。
         /// </summary>
         /// <param name="battleAnima">リザルト画面に表示する、今回の戦闘で獲得したアニマ量</param>
-        public void Begin( int battleAnima )
+        /// <param name="turnCount">リザルト画面に表示する、クリアまでにかかったターン数</param>
+        public void Begin( int battleAnima, int turnCount )
         {
             _battleAnima = battleAnima;
+            _turnCount   = turnCount;
             _phase       = Phase.WAIT_ANIM;
 
             _uiSystem.BattleUi.ToggleStageClearUI( true );
@@ -80,7 +83,7 @@ namespace Frontier.Battle
         {
             if( !AcceptConfirmCore( context ) ) { return false; }
 
-            _uiSystem.BattleUi.ShowStageResult( _battleAnima );
+            _uiSystem.BattleUi.ShowStageResult( _battleAnima, _turnCount );
             _phase = Phase.DONE;
             UnregisterInputCodes( GetInputCodeHash() );
 
