@@ -156,6 +156,12 @@ static public class Constants
     public const float COOPERATIVE_VORTEX_BASE_SCALE = 1.0f;
     // 連携演出(渦巻きエフェクト)において、キャラクター1人ごとに初期スケールへ加算する量
     public const float COOPERATIVE_VORTEX_SCALE_STEP = 0.2f;
+    // アニマ獲得エフェクト(倒した位置からUIへ吸い込まれる演出)の所要時間
+    public const float ANIMA_EFFECT_DURATION = 0.6f;
+    // アニマ獲得エフェクトにおいて、球ごとに開始タイミングをずらす間隔
+    public const float ANIMA_EFFECT_ORB_STAGGER = 0.08f;
+    // アニマ獲得エフェクトの軌道が描く弧の高さ(UIローカル座標単位)
+    public const float ANIMA_EFFECT_ARC_HEIGHT = 60f;
     // 毒ダメージの割合
     public const float POISON_DAMAGE_RATE = 0.1f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間

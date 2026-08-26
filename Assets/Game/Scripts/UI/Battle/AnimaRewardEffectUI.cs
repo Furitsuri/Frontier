@@ -8,12 +8,12 @@ namespace Frontier.UI
     /// 敵撃破位置から戦闘中アニマ表示(BattleAnimaUI)へ向けて、白い球エフェクト(大小3つ)が
     /// 吸い込まれるように移動する演出です。Play()で開始し、全ての球が到達した際にonArrivedを呼びます。
     /// 到達までは実際のアニマ加算を行わないため、呼び出し側はonArrived内で加算処理を行ってください。
+    /// 球のスプライトはAssets/Game/Textures/UI/AnimaOrb.pngをInspector経由で参照しています
+    /// (見た目を調整したい場合はこの画像ファイルを差し替えてください)。
     /// </summary>
     public class AnimaRewardEffectUI : UiMonoBehaviour
     {
         [SerializeField] private Image[] _orbs;
-
-        private static Sprite _orbSprite;
 
         private RectTransform _btlUiRectTransform;
         private Camera _btlUiCamera;
@@ -28,11 +28,9 @@ namespace Frontier.UI
         {
             base.Setup();
 
-            var sprite = GetOrCreateOrbSprite();
             _orbInitialScales = new Vector3[_orbs.Length];
             for ( int i = 0; i < _orbs.Length; ++i )
             {
-                _orbs[i].sprite = sprite;
                 _orbInitialScales[i] = _orbs[i].rectTransform.localScale;
             }
         }
@@ -108,36 +106,6 @@ namespace Frontier.UI
         public void Hide()
         {
             gameObject.SetActive( false );
-        }
-
-        /// <summary>
-        /// 中心が明るく縁が柔らかくフェードする、白い球状のスプライトを1度だけ生成して使い回します。
-        /// </summary>
-        private static Sprite GetOrCreateOrbSprite()
-        {
-            if ( _orbSprite != null ) { return _orbSprite; }
-
-            const int size = 64;
-            var texture = new Texture2D( size, size, TextureFormat.RGBA32, false );
-            texture.wrapMode = TextureWrapMode.Clamp;
-
-            Vector2 center = new Vector2( ( size - 1 ) * 0.5f, ( size - 1 ) * 0.5f );
-            float radius = size * 0.5f;
-
-            for ( int y = 0; y < size; ++y )
-            {
-                for ( int x = 0; x < size; ++x )
-                {
-                    float dist  = Vector2.Distance( new Vector2( x, y ), center );
-                    float alpha = Mathf.Clamp01( 1f - ( dist / radius ) );
-                    alpha *= alpha; // 縁を柔らかくフェードさせる
-                    texture.SetPixel( x, y, new Color( 1f, 1f, 1f, alpha ) );
-                }
-            }
-            texture.Apply();
-
-            _orbSprite = Sprite.Create( texture, new Rect( 0, 0, size, size ), new Vector2( 0.5f, 0.5f ) );
-            return _orbSprite;
         }
     }
 }

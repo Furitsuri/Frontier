@@ -143,6 +143,14 @@ namespace Frontier.Battle
             // そのため、ここに到達した時点でシーケンス側のキャラクター参照の使用は必ず完了しており安全に破棄できる。
             _btlCharaCdr.DisposePendingDeadCharacters();
 
+            // 保留していた撃破報酬(アニマ)を、演出付きで放出する。上記と同じ理由でシーケンス完全終了後にのみ
+            // 呼ばれるため、演出開始タイミングが攻撃・スキルシーケンスの最中と重なることはない。
+            // 実際のアニマ加算は演出がUIへ到達した時点(コールバック)で行われる。
+            _btlCharaCdr.DispensePendingAnimaRewards( ( position, amount ) =>
+            {
+                _presenter.PlayAnimaRewardEffect( position, () => AddBattleAnima( amount ) );
+            } );
+
             if( _presenter.IsActiveStageClearAnimation() )  { return false; }  // ステージクリア時のUIアニメーションが再生中の場合は終了
             if( _presenter.IsActiveGameOverAnimation() )    { return false; }  // ゲーム―オーバー時のUIアニメーションが再生中の場合は終了
 

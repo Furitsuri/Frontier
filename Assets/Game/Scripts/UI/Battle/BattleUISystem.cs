@@ -2,6 +2,7 @@
 using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -49,6 +50,9 @@ namespace Frontier.UI
         [Header( "BattleAnimaUI" )]
         public BattleAnimaUI BattleAnima;         // 戦闘中に獲得したアニマの常時表示
 
+        [Header( "AnimaRewardEffectUI" )]
+        public AnimaRewardEffectUI AnimaRewardEffect; // アニマ獲得エフェクト（テンプレート兼第1インスタンス）
+
         [Header( "StageClearUI" )]
         public StageClearUI StageClear;           // ステージクリアUI
 
@@ -64,6 +68,10 @@ namespace Frontier.UI
         // キャラクターInstanceID → CooperativeVortexUI のマッピング（キャラクター毎に個別管理）
         private Dictionary<int, CooperativeVortexUI> _cooperativeVortexUIByCharaId = new Dictionary<int, CooperativeVortexUI>();
 
+        // 生成済みのAnimaRewardEffectUIインスタンス一覧（同時に複数の撃破報酬が発生した場合に備え、
+        // キャラクター単位ではなく非アクティブなものを使い回すプールとして管理する）
+        private List<AnimaRewardEffectUI> _animaRewardEffects = new List<AnimaRewardEffectUI>();
+
         public void Setup()
         {
             LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
@@ -77,6 +85,7 @@ namespace Frontier.UI
             CooperativeVortex?.Setup();
             Phase?.Setup();
             BattleAnima?.Setup();
+            AnimaRewardEffect?.Setup();
             StageClear?.Setup();
             GameOver?.Setup();
             CommandNameView?.Setup();
@@ -84,6 +93,8 @@ namespace Frontier.UI
 
             DamageValue.Init( _rectTransform, _uiCamera );
             CooperativeVortex.Init( _rectTransform, _uiCamera );
+            AnimaRewardEffect.Init( _rectTransform, _uiCamera );
+            _animaRewardEffects.Add( AnimaRewardEffect );
         }
 
         public void SetActiveLeftParameterWindow( bool isActive )
@@ -233,6 +244,35 @@ namespace Frontier.UI
         public void SetBattleAnima( int anima )
         {
             BattleAnima.SetAnima( anima );
+        }
+
+        /// <summary>
+        /// 敵撃破位置からBattleAnimaUIへ向けてアニマ獲得エフェクトを再生します。
+        /// 演出がUIへ到達した時点でonArrivedが呼ばれます(実際のアニマ加算は呼び出し側の責務)。
+        /// </summary>
+        public void PlayAnimaRewardEffect( Vector3 worldPosition, Action onArrived )
+        {
+            var animaRect = ( RectTransform ) BattleAnima.transform;
+            Vector2 targetLocalPos = ( Vector2 ) animaRect.localPosition + animaRect.rect.center;
+
+            GetOrCreateAnimaRewardEffect().Play( worldPosition, targetLocalPos, onArrived );
+        }
+
+        /// <summary>
+        /// 非アクティブなAnimaRewardEffectUIインスタンスを1つ返します。無ければAnimaRewardEffectを
+        /// テンプレートとして新規生成します。
+        /// </summary>
+        private AnimaRewardEffectUI GetOrCreateAnimaRewardEffect()
+        {
+            foreach( var effect in _animaRewardEffects )
+            {
+                if( !effect.gameObject.activeSelf ) { return effect; }
+            }
+
+            var newEffect = Instantiate( AnimaRewardEffect, AnimaRewardEffect.transform.parent );
+            newEffect.Init( _rectTransform, _uiCamera );
+            _animaRewardEffects.Add( newEffect );
+            return newEffect;
         }
 
         public void StartAnimPhaseUI()

@@ -81,6 +81,14 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetBattleAnima( anima );
         }
 
+        /// <summary>
+        /// 敵撃破位置からアニマ獲得エフェクトを再生します。演出がUIへ到達した時点でonArrivedが呼ばれます。
+        /// </summary>
+        public void PlayAnimaRewardEffect( Vector3 worldPosition, Action onArrived )
+        {
+            _uiSystem.BattleUi.PlayAnimaRewardEffect( worldPosition, onArrived );
+        }
+
         public void SetActiveConfirmUI( bool isActive )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.gameObject.SetActive( isActive );

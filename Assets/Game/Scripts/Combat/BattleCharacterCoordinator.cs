@@ -26,6 +26,10 @@ namespace Frontier.Battle
         // NotifyCharacterDied() で死亡通知を受けたが、まだ実体(GameObject)を破棄していないキャラクターの一覧。
         // DisposePendingDeadCharacters() でまとめて破棄されるまでの間、シーケンス側からの参照に応え続けられるよう保持する。
         private List<Character> _pendingDisposalCharacters = new List<Character>();
+        // NotifyCharacterDied() で確定したが、まだ演出・加算を行っていない撃破報酬(アニマ)の一覧。
+        // 攻撃・スキルシーケンス実行中は加算せず、DispensePendingAnimaRewards() でシーケンス完全終了直後に
+        // まとめて演出付きで放出する(実際の加算は演出がUIへ到達した時点で行われる)。
+        private List<( Vector3 position, int amount )> _pendingAnimaRewards = new List<( Vector3, int )>();
 
         public delegate void StageAnim();
 
@@ -38,6 +42,7 @@ namespace Frontier.Battle
             _battleBossCharacterKey     = new CharacterKey( CHARACTER_TAG.NONE, -1 );
             _escortTargetCharacterKey   = new CharacterKey( CHARACTER_TAG.NONE, -1 );
             _pendingDisposalCharacters.Clear();
+            _pendingAnimaRewards.Clear();
 
             LazyInject.GetOrCreate( ref _characterDict, () => new CharacterDictionary() );
         }
@@ -112,11 +117,19 @@ namespace Frontier.Battle
             var chara = _characterDict.Get( characterKey );
             if( chara == null ) { return; } // 既に処理済みなどで多重通知になった場合はここで防止
 
-            // 倒した敵からアニマを獲得する(戦闘中の累計値。UserDomain.Animaへの反映は別途行う)
+            // 倒した敵からのアニマ獲得を保留する(この時点では加算しない。演出がUIへ到達した時点で加算される)
             if( chara.GetStatusRef.characterTag == CHARACTER_TAG.ENEMY )
             {
                 var status = chara.GetStatusRef;
-                _btlRtnCtrl.AddBattleAnima( EnemyRewardData.CalcAnima( status.PrefabIndex, status.Level ) );
+                int anima = EnemyRewardData.CalcAnima( status.PrefabIndex, status.Level );
+                if( 0 < anima )
+                {
+                    // MEMO : chara.transform.positionは攻撃シーケンス演出用にステージ中央付近へ寄せられた
+                    // クローズアップ位置(TransitBattleField参照)であり、演出再生時(シーケンス完全終了後、
+                    // カメラが通常視点に戻った後)の座標変換には使えない。タイル上の元の立ち位置を使う。
+                    Vector3 diedPosition = _stgCtrl.GetTileStaticData( chara.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
+                    _pendingAnimaRewards.Add( ( diedPosition, anima ) );
+                }
             }
 
             SetDiedCharacterKey( characterKey );
@@ -139,6 +152,23 @@ namespace Frontier.Battle
                 chara.Dispose();
             }
             _pendingDisposalCharacters.Clear();
+        }
+
+        /// <summary>
+        /// NotifyCharacterDied() で保留された撃破報酬(アニマ)を、演出のトリガーとしてまとめて放出します。
+        /// DisposePendingDeadCharacters()と同様、シーケンス(攻撃・スキル等)が完全に終了したタイミングで
+        /// 呼び出すことを想定しています。実際のアニマ加算は演出側のコールバック(onEachReward)に委ねます。
+        /// </summary>
+        /// <param name="onEachReward">保留されていた報酬1件毎に呼ばれるコールバック(倒した位置, 獲得量)</param>
+        public void DispensePendingAnimaRewards( Action<Vector3, int> onEachReward )
+        {
+            if( _pendingAnimaRewards.Count <= 0 ) { return; }
+
+            foreach( var reward in _pendingAnimaRewards )
+            {
+                onEachReward( reward.position, reward.amount );
+            }
+            _pendingAnimaRewards.Clear();
         }
 
         /// <summary>
