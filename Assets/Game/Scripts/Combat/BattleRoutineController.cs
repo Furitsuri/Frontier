@@ -39,7 +39,6 @@ namespace Frontier.Battle
         // ステージクリア判定後、「STAGE CLEAR」演出の開始からリザルト画面表示までを一貫して担う専用ステート。
         // 通常のフェーズ循環(_phaseHandlers)には含めず、ここから直接駆動する。
         private StageClearState _stageClearState        = null;
-        private bool _isShowingStageClear                = false;
 
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
         public BattleCameraController GetBtlCameraCtrl => _btlCameraCtrl;
@@ -105,7 +104,6 @@ namespace Frontier.Battle
 
             _battleAnima = 0;                           // 戦闘開始時に戦闘中アニマをリセット
             _presenter.SetBattleAnimaDisplay( _battleAnima );
-            _isShowingStageClear = false;
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -134,7 +132,7 @@ namespace Frontier.Battle
             }
 
             // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if( _isShowingStageClear || _presenter.IsActiveGameOverAnimation() ) { return; }
+            if( _stageClearState.IsActive || _presenter.IsActiveGameOverAnimation() ) { return; }
 
             _phaseHandlers[_currentPhase].Update();
 
@@ -159,7 +157,7 @@ namespace Frontier.Battle
 
             // ステージクリア判定後、「STAGE CLEAR」演出の開始・終了・CONFIRM入力待ちを経てリザルト画面を
             // 表示するまでは、専用ステートの更新のみを行い、通常のフェーズ進行やシーン遷移(return true)は行わない。
-            if( _isShowingStageClear )
+            if( _stageClearState.IsActive )
             {
                 _stageClearState.Update();
                 return false;
@@ -174,7 +172,6 @@ namespace Frontier.Battle
                     // StageClearStateの入力コードを登録しないと、アイコンの重複登録エラーが発生する
                     _phaseHandlers[_currentPhase].Pause();
 
-                    _isShowingStageClear = true;
                     _stageClearState.Begin( _battleAnima );
                 },
                 _presenter.StartGameOverAnim ) ) { return true; }

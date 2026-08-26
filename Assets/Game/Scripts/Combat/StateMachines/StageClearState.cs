@@ -1,4 +1,4 @@
-using Frontier.StateMachine;
+﻿using Frontier.StateMachine;
 
 namespace Frontier.Battle
 {
@@ -12,6 +12,7 @@ namespace Frontier.Battle
     {
         private enum Phase
         {
+            NONE,           // Begin()未呼び出し(通常の戦闘フェーズ中)
             WAIT_ANIM,      // 「STAGE CLEAR」演出の終了待ち
             WAIT_CONFIRM,   // CONFIRM入力待ち
             DONE,           // リザルト画面表示済み
@@ -19,6 +20,12 @@ namespace Frontier.Battle
 
         private Phase _phase;
         private int _battleAnima;
+
+        /// <summary>
+        /// Begin()が呼ばれ、ステージクリア演出のシーケンスが進行中かどうかを取得します。
+        /// BattleRoutineControllerはこの値を見て、通常の戦闘フェーズ更新を行うかどうかを判断します。
+        /// </summary>
+        public bool IsActive => _phase != Phase.NONE;
 
         /// <summary>
         /// リザルト画面表示まで完了したかどうかを取得します
