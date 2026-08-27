@@ -15,7 +15,7 @@ namespace Frontier.Battle
         {
             NONE,               // Begin()未呼び出し(通常の戦闘フェーズ中)
             WAIT_ANIMA_REWARD,  // アニマ獲得エフェクト(撃破報酬の球)の再生完了待ち
-            WAIT_INTERVAL,      // アニマ獲得エフェクト終了後、「STAGE CLEAR」演出開始までの間隔待ち
+            WAIT_ANIMA_POPUP,   // アニマ加算ポップアップ("+10"等)の表示終了待ち
             WAIT_ANIM,          // 「STAGE CLEAR」演出の終了待ち
             WAIT_CONFIRM,       // CONFIRM入力待ち
             DONE,               // リザルト画面表示済み
@@ -26,7 +26,6 @@ namespace Frontier.Battle
         // 可能性があるため、値そのものではなく取得用のFuncを保持し、実際に表示する直前(AcceptConfirm時)に読み出す。
         private Func<int> _getBattleAnima;
         private int _turnCount;
-        private float _intervalElapsed;
 
         /// <summary>
         /// Begin()が呼ばれ、ステージクリア演出のシーケンスが進行中かどうかを取得します。
@@ -55,9 +54,9 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 毎フレーム呼び出してください。アニマ獲得エフェクトの再生完了(数値への反映)を待ち、
-        /// 一定時間の間隔を空けてから「STAGE CLEAR」演出を開始し、その終了を監視して
-        /// 終了次第CONFIRM入力の受付へ移行します。
+        /// 毎フレーム呼び出してください。アニマ獲得エフェクトの再生完了(数値への反映)と、
+        /// それに伴う加算ポップアップの表示終了を待ってから「STAGE CLEAR」演出を開始し、
+        /// その終了を監視して終了次第CONFIRM入力の受付へ移行します。
         /// </summary>
         public override bool Update()
         {
@@ -66,14 +65,12 @@ namespace Frontier.Battle
                 case Phase.WAIT_ANIMA_REWARD:
                     if( !_uiSystem.BattleUi.IsAnyAnimaRewardEffectPlaying() )
                     {
-                        _intervalElapsed = 0f;
-                        _phase = Phase.WAIT_INTERVAL;
+                        _phase = Phase.WAIT_ANIMA_POPUP;
                     }
                     break;
 
-                case Phase.WAIT_INTERVAL:
-                    _intervalElapsed += DeltaTimeProvider.DeltaTime;
-                    if( Constants.STAGE_CLEAR_ANIMA_INTERVAL <= _intervalElapsed )
+                case Phase.WAIT_ANIMA_POPUP:
+                    if( !_uiSystem.BattleUi.IsShowingBattleAnimaAddedValue() )
                     {
                         _uiSystem.BattleUi.ToggleStageClearUI( true );
                         _uiSystem.BattleUi.StartStageClearAnim();

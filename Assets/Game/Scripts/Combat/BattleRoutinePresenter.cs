@@ -82,6 +82,14 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 戦闘中アニマの加算(または将来の消費)値を、獲得アニマUIの右上にポップアップ表示します
+        /// </summary>
+        public void ShowBattleAnimaAddedValue( int amount )
+        {
+            _uiSystem.BattleUi.ShowBattleAnimaAddedValue( amount );
+        }
+
+        /// <summary>
         /// 敵撃破位置からアニマ獲得エフェクトを再生します。演出がUIへ到達した時点でonArrivedが呼ばれます。
         /// </summary>
         public void PlayAnimaRewardEffect( Vector3 worldPosition, Action onArrived )

@@ -162,8 +162,11 @@ static public class Constants
     public const float ANIMA_EFFECT_ORB_STAGGER = 0.08f;
     // アニマ獲得エフェクトの軌道が描く弧の高さ(UIローカル座標単位)
     public const float ANIMA_EFFECT_ARC_HEIGHT = 60f;
-    // ステージクリア時、アニマ獲得エフェクトが全て終了してから「STAGE CLEAR」演出を開始するまでの間隔
-    public const float STAGE_CLEAR_ANIMA_INTERVAL = 0.5f;
+    // アニマ加算時に表示するポップアップ("+10"等)の表示時間。ステージクリア時は、この表示が
+    // 全て終わってから「STAGE CLEAR」演出を開始する
+    public const float ANIMA_ADDED_VALUE_POPUP_DURATION = 0.5f;
+    // アニマ加算ポップアップが複数同時に表示される場合の、1件あたりのY軸方向のスタック間隔(UIローカル座標単位)
+    public const float ANIMA_ADDED_VALUE_POPUP_STACK_SPACING = 32f;
     // 毒ダメージの割合
     public const float POISON_DAMAGE_RATE = 0.1f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間

@@ -57,6 +57,7 @@ namespace Frontier.Battle
         {
             _battleAnima += amount;
             _presenter.SetBattleAnimaDisplay( _battleAnima );
+            _presenter.ShowBattleAnimaAddedValue( amount );
         }
 
         public IEnumerator Battle()

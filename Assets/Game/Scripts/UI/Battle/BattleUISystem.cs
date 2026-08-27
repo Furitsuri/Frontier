@@ -251,6 +251,23 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// 戦闘中アニマの加算(または将来の消費)値を、獲得アニマUIの右上にポップアップ表示します
+        /// </summary>
+        public void ShowBattleAnimaAddedValue( int amount )
+        {
+            BattleAnima.ShowAddedValuePopup( amount );
+        }
+
+        /// <summary>
+        /// アニマ加算ポップアップがいずれか表示中かどうかを取得します。
+        /// ステージクリア演出は、この表示が終わるまで開始を待つために使用します。
+        /// </summary>
+        public bool IsShowingBattleAnimaAddedValue()
+        {
+            return BattleAnima.IsShowingAddedValuePopup;
+        }
+
+        /// <summary>
         /// 敵撃破位置からBattleAnimaUIへ向けてアニマ獲得エフェクトを再生します。
         /// 演出がUIへ到達した時点でonArrivedが呼ばれます(実際のアニマ加算は呼び出し側の責務)。
         /// </summary>
