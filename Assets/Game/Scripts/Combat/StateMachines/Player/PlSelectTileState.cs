@@ -87,6 +87,10 @@ namespace Frontier.Battle
             // 全てのキャラクターが待機済みになっていれば終了
             if( _btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand( CHARACTER_TAG.PLAYER ) )
             {
+                // 戦闘終了条件(全滅等)に達している場合は、ここでEnemyフェーズ等へ遷移させず、
+                // BattleRoutineController側の勝敗判定・ステージクリア処理が開始されるのを待つ
+                if( _btlRtnCtrl.BtlCharaCdr.IsBattleEndConditionMet() ) { return false; }
+
                 Back();
 
                 return true;

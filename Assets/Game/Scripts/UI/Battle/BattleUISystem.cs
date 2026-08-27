@@ -304,6 +304,7 @@ namespace Frontier.UI
             }
 
             var newEffect = Instantiate( AnimaRewardEffect, AnimaRewardEffect.transform.parent );
+            newEffect.Setup();
             newEffect.Init( _rectTransform, _uiCamera );
             _animaRewardEffects.Add( newEffect );
             return newEffect;

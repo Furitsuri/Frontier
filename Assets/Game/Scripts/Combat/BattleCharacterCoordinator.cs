@@ -296,6 +296,45 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 勝利・敗戦条件(ボス撃破・護衛対象撃破・全滅のいずれか)に、現在のHPから見て既に達しているかを判定します。
+        /// _diedCharacterKeyはNotifyCharacterDied()(死亡アニメーション完了時)にならないと更新されないため、
+        /// これに頼ると死亡演出の再生中(HPは既に0だが死亡通知はまだ)の判定が一拍遅れてしまいます。
+        /// そのため、ここではCurHP&lt;=0かどうかを各キャラクターから直接確認します。
+        /// クリア/ゲームオーバー処理の実行や内部状態の変更といった副作用は伴いません。
+        /// キャラクターの行動終了時など、CheckVictoryOrDefeat()による正式な勝敗判定より前のタイミングで
+        /// 「このまま他のフェーズへ遷移してよいか」を確認する用途を想定しています。
+        /// </summary>
+        public bool IsBattleEndConditionMet()
+        {
+            if ( _battleBossCharacterKey.CharacterTag != CHARACTER_TAG.NONE
+                && IsCharacterDeadOrGone( _battleBossCharacterKey ) )
+            {
+                return true;
+            }
+
+            if ( _escortTargetCharacterKey.CharacterTag != CHARACTER_TAG.NONE
+                && IsCharacterDeadOrGone( _escortTargetCharacterKey ) )
+            {
+                return true;
+            }
+
+            // CheckCharacterAnnihilated()は対象タグの人数が0の場合も真を返すため、
+            // 1人も存在しないタグ(未配置状態等)を誤って全滅扱いしないよう人数を先に確認する
+            return ( 0 < GetCharacterCount( CHARACTER_TAG.ENEMY ) && CheckCharacterAnnihilated( CHARACTER_TAG.ENEMY ) )
+                || ( 0 < GetCharacterCount( CHARACTER_TAG.PLAYER ) && CheckCharacterAnnihilated( CHARACTER_TAG.PLAYER ) );
+        }
+
+        /// <summary>
+        /// 指定キーのキャラクターが、既に死亡通知・破棄済み、またはHPが0になっているかを判定します
+        /// </summary>
+        private bool IsCharacterDeadOrGone( in CharacterKey key )
+        {
+            if ( !_characterDict.IsContains( key ) ) { return true; } // 死亡通知済みで既にリストから除去されている
+
+            return _characterDict.Get( key ).GetStatusRef.IsDead();
+        }
+
+        /// <summary>
         /// 勝利、敗戦判定を行います
         /// </summary>
         /// <status name="clearAnim">ステージクリア時のアニメーション呼び出し関数</status>
