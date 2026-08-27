@@ -7675,8 +7675,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1672a64576ddd734fa3855fc4a47743d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _animaValueText: {fileID: 1672052964}
+  _titleText: {fileID: 731360700}
+  _turnLabelText: {fileID: 731813949}
   _turnValueText: {fileID: 1873020381}
+  _animaLabelText: {fileID: 152436128}
+  _animaValueText: {fileID: 1672052964}
 --- !u!1 &1051538003
 GameObject:
   m_ObjectHideFlags: 0

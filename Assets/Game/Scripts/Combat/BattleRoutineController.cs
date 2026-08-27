@@ -177,7 +177,7 @@ namespace Frontier.Battle
                     // StageClearStateの入力コードを登録しないと、アイコンの重複登録エラーが発生する
                     _phaseHandlers[_currentPhase].Pause();
 
-                    _stageClearState.Begin( _battleAnima, _turnCount );
+                    _stageClearState.Begin( () => _battleAnima, _turnCount );
                 },
                 _presenter.StartGameOverAnim ) ) { return true; }
 

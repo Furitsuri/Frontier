@@ -33,5 +33,7 @@
     "UI_CONFIRM_DELETE_SAVE_MESSAGE": "このセーブデータを削除しますか？",
     "EXPL_SKILL_DASH_SLASH": "複数マスを移動しつつ、相手を斬りつけます",
     "EXPL_SKILL_JUMP_SLASH": "跳躍して相手を斬りつけます。より高い位置から攻撃することでダメージが増加します",
-    "UI_BATTLE_ANIMA": "獲得アニマ"
+    "UI_BATTLE_ANIMA": "獲得アニマ",
+    "UI_STAGE_RESULT_TITLE": "リザルト",
+    "UI_STAGE_RESULT_TURN": "経過ターン数"
 }

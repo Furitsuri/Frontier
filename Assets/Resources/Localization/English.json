@@ -33,5 +33,7 @@
     "UI_CONFIRM_DELETE_SAVE_MESSAGE": "Delete this save data?",
     "EXPL_SKILL_DASH_SLASH": "Dash Attack",
     "EXPL_SKILL_JUMP_SLASH": "Jump Attack",
-    "UI_BATTLE_ANIMA": "Anima Earned"
+    "UI_BATTLE_ANIMA": "Anima Earned",
+    "UI_STAGE_RESULT_TITLE": "Result",
+    "UI_STAGE_RESULT_TURN": "Turns Taken"
 }

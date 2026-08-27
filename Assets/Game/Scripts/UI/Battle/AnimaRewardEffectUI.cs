@@ -24,6 +24,11 @@ namespace Frontier.UI
         private Action _onArrived;
         private bool _isPlaying;
 
+        /// <summary>
+        /// 全ての球が到達しUIへ加算済みかどうか。Play()呼び出しからonArrived直前までtrueです。
+        /// </summary>
+        public bool IsPlaying => _isPlaying;
+
         public override void Setup()
         {
             base.Setup();

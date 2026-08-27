@@ -263,6 +263,19 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// いずれかのアニマ獲得エフェクトが再生中(球がBattleAnimaUIへ向けて移動中)かどうかを取得します。
+        /// ステージクリア演出は、全ての球がUIへ到達するまで開始を待つために使用します。
+        /// </summary>
+        public bool IsAnyAnimaRewardEffectPlaying()
+        {
+            foreach( var effect in _animaRewardEffects )
+            {
+                if( effect.IsPlaying ) { return true; }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 非アクティブなAnimaRewardEffectUIインスタンスを1つ返します。無ければAnimaRewardEffectを
         /// テンプレートとして新規生成します。
         /// </summary>

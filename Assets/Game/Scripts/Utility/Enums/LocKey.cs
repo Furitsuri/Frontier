@@ -50,4 +50,8 @@ public enum LocKey
 
     // 戦闘UI
     UI_BATTLE_ANIMA,
+
+    // ステージリザルト画面
+    UI_STAGE_RESULT_TITLE,
+    UI_STAGE_RESULT_TURN,
 }

@@ -162,6 +162,8 @@ static public class Constants
     public const float ANIMA_EFFECT_ORB_STAGGER = 0.08f;
     // アニマ獲得エフェクトの軌道が描く弧の高さ(UIローカル座標単位)
     public const float ANIMA_EFFECT_ARC_HEIGHT = 60f;
+    // ステージクリア時、アニマ獲得エフェクトが全て終了してから「STAGE CLEAR」演出を開始するまでの間隔
+    public const float STAGE_CLEAR_ANIMA_INTERVAL = 0.5f;
     // 毒ダメージの割合
     public const float POISON_DAMAGE_RATE = 0.1f;
     // 方向に対する入力について、最後に入力操作を行ってから、次のキー操作が有効になるまでのインターバル時間
