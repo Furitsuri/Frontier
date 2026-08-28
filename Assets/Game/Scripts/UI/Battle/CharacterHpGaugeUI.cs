@@ -1,0 +1,199 @@
+﻿using Frontier.Entities;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// キャラクター頭上に常時表示するHPゲージです。
+/// 角丸の黒い下地(Background)の上に、キャラクタータグに応じた色のグラデーション付きゲージバー(Fill)を重ね、
+/// Fillのwidthを現在HP割合に応じて変化させることでHPを表現します。
+/// FillはBackgroundよりわずかに小さいサイズで生成するため、満タン時も下地の黒が縁に少しだけ見えます。
+/// </summary>
+public class CharacterHpGaugeUI : UiMonoBehaviour
+{
+    private RectTransform _btlUiRectTransform;
+    private Camera _btlUiCamera;
+    private RectTransform _selfRectTransform;
+    private Image _fillImage;
+    public Character TargetCharacter { get; private set; }
+
+    /// <summary>
+    /// 背景・前景バーの子Imageを生成します。
+    /// 戦闘UI(BattleUI)自体が非アクティブな間はSetActive(true)を呼んでもAwake()が発火しないため、
+    /// Awake()には頼らずShowFor()から明示的に呼び出します。
+    /// </summary>
+    private void EnsureBuilt()
+    {
+        if( _fillImage != null ) { return; }
+
+        _selfRectTransform = GetComponent<RectTransform>();
+        _selfRectTransform.sizeDelta = new Vector2( Constants.HP_GAUGE_WIDTH, Constants.HP_GAUGE_HEIGHT );
+
+        // 下地(黒、角丸のみ。グラデーションなし)
+        CreateBackgroundImage();
+
+        // ゲージバー(角丸+グラデーション。下地に対してHP_GAUGE_FILL_SIZE_RATIO倍のサイズで中央に配置することで、
+        // 満タン時も下地の黒縁がわずかに見えるようにする
+        _fillImage = CreateFillImage();
+    }
+
+    void Update()
+    {
+        if( TargetCharacter == null )
+        {
+            gameObject.SetActive( false );
+            return;
+        }
+
+        var worldPos    = TargetCharacter.transform.position + Vector3.up * Constants.HP_GAUGE_WORLD_OFFSET_Y;
+        var worldCamera = Camera.main;
+        var screenPos   = RectTransformUtility.WorldToScreenPoint( worldCamera, worldPos );
+        RectTransformUtility.ScreenPointToLocalPointInRectangle( _btlUiRectTransform, screenPos, _btlUiCamera, out var pos );
+        _selfRectTransform.localPosition = pos;
+
+        var status = TargetCharacter.GetStatusRef;
+        _fillImage.fillAmount = ( status.MaxHP <= 0 ) ? 0f : ( float ) status.CurHP / status.MaxHP;
+    }
+
+    private void CreateBackgroundImage()
+    {
+        var go = new GameObject( "Background", typeof( RectTransform ), typeof( Image ) );
+        go.transform.SetParent( transform, false );
+
+        var rect = ( RectTransform ) go.transform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        int w = Mathf.RoundToInt( Constants.HP_GAUGE_WIDTH );
+        int h = Mathf.RoundToInt( Constants.HP_GAUGE_HEIGHT );
+
+        var image = go.GetComponent<Image>();
+        image.sprite         = CreateRoundedRectSprite( w, h, h * Constants.HP_GAUGE_CORNER_RADIUS_RATIO, false );
+        image.color          = Color.black;
+        image.raycastTarget  = false;
+    }
+
+    private Image CreateFillImage()
+    {
+        var go = new GameObject( "Fill", typeof( RectTransform ), typeof( Image ) );
+        go.transform.SetParent( transform, false );
+
+        int bgW = Mathf.RoundToInt( Constants.HP_GAUGE_WIDTH );
+        int bgH = Mathf.RoundToInt( Constants.HP_GAUGE_HEIGHT );
+
+        // 下地よりひと回り小さいサイズ(HP_GAUGE_FILL_SIZE_RATIO倍)で中央に配置する。
+        // ゲージの高さは元々小さいため、比率通りの余白を四捨五入すると縦方向の差が0pxに潰れてしまう場合がある。
+        // そのため、縦横それぞれ最低1pxの余白を保証した上で、その実ピクセル比率をそのままRectTransformのアンカーにも反映する
+        // (テクスチャの見た目とRectTransformの実表示サイズを一致させ、引き伸ばしによる歪みを防ぐ)
+        int marginW = Mathf.Max( 1, Mathf.RoundToInt( bgW * ( 1f - Constants.HP_GAUGE_FILL_SIZE_RATIO ) * 0.5f ) );
+        int marginH = Mathf.Max( 1, Mathf.RoundToInt( bgH * ( 1f - Constants.HP_GAUGE_FILL_SIZE_RATIO ) * 0.5f ) );
+        int w = Mathf.Max( 1, bgW - marginW * 2 );
+        int h = Mathf.Max( 1, bgH - marginH * 2 );
+
+        float insetX = ( float ) marginW / bgW;
+        float insetY = ( float ) marginH / bgH;
+        var rect = ( RectTransform ) go.transform;
+        rect.anchorMin = new Vector2( insetX, insetY );
+        rect.anchorMax = new Vector2( 1f - insetX, 1f - insetY );
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        var image = go.GetComponent<Image>();
+        image.sprite         = CreateRoundedRectSprite( w, h, h * Constants.HP_GAUGE_CORNER_RADIUS_RATIO, true );
+        image.type           = Image.Type.Filled;
+        image.fillMethod     = Image.FillMethod.Horizontal;
+        image.fillOrigin     = ( int ) Image.OriginHorizontal.Left;
+        image.raycastTarget  = false;
+        return image;
+    }
+
+    /// <summary>
+    /// 角丸矩形のアルファマスクを持つスプライトをランタイム生成します。
+    /// gradientがtrueの場合、上を明るく下を暗くしたわずかなグラデーションもRGBに焼き込みます
+    /// (Image.colorで色を乗算した際に、色付きのグラデーションとして見えるようにするため)。
+    /// Image.Type.FilledはSpriteが未設定だとfillAmountを無視して全面描画されてしまうため必須。
+    /// </summary>
+    private static Sprite CreateRoundedRectSprite( int width, int height, float radius, bool gradient )
+    {
+        width  = Mathf.Max( width,  1 );
+        height = Mathf.Max( height, 1 );
+
+        var texture = new Texture2D( width, height, TextureFormat.RGBA32, false );
+        texture.wrapMode   = TextureWrapMode.Clamp;
+        texture.filterMode = FilterMode.Bilinear;
+
+        var pixels = new Color32[width * height];
+        for( int y = 0; y < height; ++y )
+        {
+            float t         = ( height <= 1 ) ? 1f : ( float ) y / ( height - 1 ); // 0=下端、1=上端
+            float luminance = gradient ? Mathf.Lerp( 0.72f, 1f, t ) : 1f;
+            byte  v         = ( byte ) Mathf.RoundToInt( luminance * 255f );
+
+            for( int x = 0; x < width; ++x )
+            {
+                float px = x + 0.5f;
+                float py = y + 0.5f;
+                // 角丸矩形の符号付き距離場(コア矩形上の最近傍点との距離)を利用したアンチエイリアス付きマスク
+                float cx   = Mathf.Clamp( px, radius, width  - radius );
+                float cy   = Mathf.Clamp( py, radius, height - radius );
+                float dist = Mathf.Sqrt( ( px - cx ) * ( px - cx ) + ( py - cy ) * ( py - cy ) );
+                float alpha = Mathf.Clamp01( radius - dist + 0.5f );
+
+                pixels[y * width + x] = new Color32( v, v, v, ( byte ) Mathf.RoundToInt( alpha * 255f ) );
+            }
+        }
+
+        texture.SetPixels32( pixels );
+        texture.Apply();
+
+        return Sprite.Create( texture, new Rect( 0f, 0f, width, height ), new Vector2( 0.5f, 0.5f ) );
+    }
+
+    /// <summary>
+    /// 初期化します
+    /// </summary>
+    /// <param name="rect">BattleUISystemのRectTransform</param>
+    /// <param name="uiCamera">BattleUISystemに用いるUI用カメラ</param>
+    public void Init( RectTransform rect, Camera uiCamera )
+    {
+        _btlUiRectTransform = rect;
+        _btlUiCamera        = uiCamera;
+    }
+
+    /// <summary>
+    /// 対象キャラクターを設定し、キャラクタータグに応じたゲージ色を適用した上で表示します
+    /// </summary>
+    /// <param name="chara">表示対象のキャラクター</param>
+    public void ShowFor( Character chara )
+    {
+        EnsureBuilt();
+
+        TargetCharacter   = chara;
+        _fillImage.color  = GetGaugeColor( chara.GetStatusRef.characterTag );
+        gameObject.SetActive( true );
+    }
+
+    /// <summary>
+    /// HPゲージを明示的に非表示にします
+    /// </summary>
+    public void Hide()
+    {
+        TargetCharacter = null;
+        gameObject.SetActive( false );
+    }
+
+    /// <summary>
+    /// キャラクタータグに応じたゲージの色を取得します
+    /// </summary>
+    private static Color GetGaugeColor( CHARACTER_TAG tag )
+    {
+        switch( tag )
+        {
+            case CHARACTER_TAG.PLAYER: return Constants.HP_GAUGE_COLOR_PLAYER;
+            case CHARACTER_TAG.ENEMY:  return Constants.HP_GAUGE_COLOR_ENEMY;
+            case CHARACTER_TAG.OTHER:  return Constants.HP_GAUGE_COLOR_OTHER;
+            default:                   return Color.white;
+        }
+    }
+}
