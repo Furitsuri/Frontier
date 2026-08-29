@@ -16,7 +16,6 @@ namespace Frontier.Entities
 {
     public class BattleLogicBase : MonoBehaviour
     {
-		[Inject] protected ICharacterUiFeedback _uiFeedback     = null;
         [Inject] protected BattleRoutinePresenter _presenter    = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected StageController _stageCtrl           = null;
@@ -173,10 +172,7 @@ protected Character _opponent                                       = null;
             _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption;
             _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption = 0;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                _uiFeedback.GetPlayerParamSkillBox( i ).StopFlick();
-            }
+            _presenter.StopAllSkillBoxFlick( _paramWinType );
         }
 
         /// <summary>
@@ -188,10 +184,7 @@ protected Character _opponent                                       = null;
         {
             _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= amount;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
-            {
-                _uiFeedback.GetPlayerParamSkillBox( i ).StopFlick();
-            }
+            _presenter.StopAllSkillBoxFlick( _paramWinType );
         }
 
         /// <summary>

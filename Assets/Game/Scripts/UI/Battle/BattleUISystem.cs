@@ -170,16 +170,6 @@ namespace Frontier.UI
             return ConfirmTurnEnd;
         }
 
-        public SkillBoxUI GetPlayerParamSkillBox( int index )
-        {
-            return ParameterView.PlayerParameter.SkillBoxes[index];
-        }
-
-        public SkillBoxUI GetEnemyParamSkillBox( int index )
-        {
-            return ParameterView.EnemyParameter.SkillBoxes[index];
-        }
-
         /// <summary>
         /// 指定キャラクターのダメージUIを表示します。
         /// duration が 0 以上の場合、指定秒数後に自動で非表示にします。

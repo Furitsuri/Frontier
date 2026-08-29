@@ -153,6 +153,18 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 指定側パラメータパネルの全SkillBoxUIの明滅を停止します。
+        /// アクションゲージ消費時(BattleLogicBase.ConsumeActionGauge)に呼ばれます。
+        /// </summary>
+        public void StopAllSkillBoxFlick( ParameterWindowType winType )
+        {
+            foreach( var skillBox in _parameterPresenters[( int ) winType].GetSkillBoxes() )
+            {
+                skillBox.StopFlick();
+            }
+        }
+
+        /// <summary>
         /// SkillBoxUIの並び替え・元位置への復帰アニメーションが再生中かどうかを取得します
         /// </summary>
         public bool IsSkillBoxLayoutAnimating => _skillBoxLayoutAnimator.IsAnimating;
