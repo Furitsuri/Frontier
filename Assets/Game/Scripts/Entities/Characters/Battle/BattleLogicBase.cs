@@ -165,24 +165,22 @@ protected Character _opponent                                       = null;
         }
 
         /// <summary>
-        /// 指定キャラクターのアクションゲージを消費させ、ゲージのUIの表示を更新します
+        /// 自身の保留中のアクションゲージ消費量(TmpParam.ActGaugeConsumption)を消費します
         /// </summary>
         public void ConsumeActionGauge()
         {
-            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption;
-            _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption = 0;
-
-            _presenter.StopAllSkillBoxFlick( _paramWinType );
+            ConsumeActionGauge( _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption );
         }
 
         /// <summary>
-        /// 指定した量のアクションゲージを直接消費させます。
-        /// 予約データ等、既に確定している消費量をそのまま反映したい場合に使用してください
-        /// （現在のTmpParam.ActGaugeConsumptionには依存しません）。
+        /// 指定した量のアクションゲージを消費させ、ゲージのUIの表示を更新します。
+        /// 予約データ等、TmpParam.ActGaugeConsumptionとは別に既に確定している消費量を反映したい場合は、
+        /// 直接この引数ありのオーバーロードを使用してください。
         /// </summary>
         public void ConsumeActionGauge( int amount )
         {
             _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= amount;
+            _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption = 0;
 
             _presenter.StopAllSkillBoxFlick( _paramWinType );
         }
