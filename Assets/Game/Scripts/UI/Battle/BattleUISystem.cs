@@ -10,7 +10,7 @@ using Frontier.Combat.Skill;
 
 namespace Frontier.UI
 {
-    public class BattleUISystem : MonoBehaviour
+    public class BattleUISystem : MonoBehaviour, ICharacterUiFeedback
     {
         [Inject] private CombatSkillEventController _combatSkillCtrl = null;
 
@@ -41,6 +41,9 @@ namespace Frontier.UI
         [Header( "DamageUI" )]
         public DamageUI DamageValue;              // ダメージ表記（テンプレート兼第1インスタンス）
 
+        [Header( "CharacterHpGaugeUI" )]
+        public CharacterHpGaugeUI HpGauge;        // キャラクター頭上の常時表示HPゲージ（テンプレート）
+
         [Header( "CooperativeVortexUI" )]
         public CooperativeVortexUI CooperativeVortex; // 連携演出用渦巻きエフェクト（テンプレート兼第1インスタンス）
 
@@ -68,6 +71,9 @@ namespace Frontier.UI
         // キャラクターInstanceID → DamageUI のマッピング（キャラクター毎に個別管理）
         private Dictionary<int, DamageUI> _damageUIByCharaId = new Dictionary<int, DamageUI>();
 
+        // キャラクターInstanceID → CharacterHpGaugeUI のマッピング（キャラクター毎に個別管理）
+        private Dictionary<int, CharacterHpGaugeUI> _hpGaugeUIByCharaId = new Dictionary<int, CharacterHpGaugeUI>();
+
         // キャラクターInstanceID → CooperativeVortexUI のマッピング（キャラクター毎に個別管理）
         private Dictionary<int, CooperativeVortexUI> _cooperativeVortexUIByCharaId = new Dictionary<int, CooperativeVortexUI>();
 
@@ -85,6 +91,7 @@ namespace Frontier.UI
             TileMenuWindow?.Setup();
             ConfirmTurnEnd?.Setup();
             DamageValue?.Setup();
+            HpGauge?.Setup();
             CooperativeVortex?.Setup();
             Phase?.Setup();
             BattleAnima?.Setup();
@@ -96,6 +103,7 @@ namespace Frontier.UI
             SkillDetail?.Setup();
 
             DamageValue.Init( _rectTransform, _uiCamera );
+            HpGauge.Init( _rectTransform, _uiCamera );
             CooperativeVortex.Init( _rectTransform, _uiCamera );
             AnimaRewardEffect.Init( _rectTransform, _uiCamera );
             _animaRewardEffects.Add( AnimaRewardEffect );
@@ -195,6 +203,69 @@ namespace Frontier.UI
             {
                 ui.Hide();
             }
+        }
+
+        /// <summary>
+        /// 指定キャラクターのHPゲージを表示します。キャラクターが戦闘に参加している間、常時表示され続けます。
+        /// </summary>
+        public void ShowHpGaugeOnCharacter( Character chara )
+        {
+            var ui = GetOrCreateHpGaugeUI( chara );
+            ui.ShowFor( chara );
+        }
+
+        /// <summary>
+        /// 指定キャラクターのHPゲージを破棄します。
+        /// キャラクターが戦闘から離脱した場合(死亡・配置解除など)に呼び出してください。
+        /// </summary>
+        public void RemoveHpGaugeOnCharacter( Character chara )
+        {
+            int id = chara.GetInstanceID();
+            if( _hpGaugeUIByCharaId.TryGetValue( id, out CharacterHpGaugeUI ui ) )
+            {
+                if( ui != null ) { Destroy( ui.gameObject ); }
+                _hpGaugeUIByCharaId.Remove( id );
+            }
+        }
+
+        /// <summary>
+        /// 現在表示中の全キャラクターのHPゲージをまとめて表示/非表示にします。
+        /// 攻撃シーケンスなど、専用カメラ演出中に一時的に隠す用途を想定しています。
+        /// </summary>
+        public void SetHpGaugesActive( bool isActive )
+        {
+            foreach( var ui in _hpGaugeUIByCharaId.Values )
+            {
+                if( ui != null ) { ui.gameObject.SetActive( isActive ); }
+            }
+        }
+
+        /// <summary>
+        /// 生成したすべての CharacterHpGaugeUI インスタンスを破棄し、管理辞書をクリアします。
+        /// </summary>
+        public void CleanupHpGaugeUIs()
+        {
+            foreach( var ui in _hpGaugeUIByCharaId.Values )
+            {
+                if( ui != null ) { Destroy( ui.gameObject ); }
+            }
+            _hpGaugeUIByCharaId.Clear();
+        }
+
+        /// <summary>
+        /// キャラクターに対応する CharacterHpGaugeUI インスタンスを返します。
+        /// 存在しない場合は HpGauge をテンプレートとして新規生成します。
+        /// </summary>
+        private CharacterHpGaugeUI GetOrCreateHpGaugeUI( Character chara )
+        {
+            int id = chara.GetInstanceID();
+            if( !_hpGaugeUIByCharaId.TryGetValue( id, out CharacterHpGaugeUI ui ) )
+            {
+                ui = Instantiate( HpGauge, HpGauge.transform.parent );
+                ui.Init( _rectTransform, _uiCamera );
+                _hpGaugeUIByCharaId[id] = ui;
+            }
+            return ui;
         }
 
         /// <summary>

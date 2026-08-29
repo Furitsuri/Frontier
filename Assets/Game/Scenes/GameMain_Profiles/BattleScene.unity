@@ -1392,6 +1392,54 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!1 &169693513
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 169693514}
+  - component: {fileID: 169693515}
+  m_Layer: 5
+  m_Name: HpGaugeUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &169693514
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 169693513}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6019870887901591306}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 60, y: 8}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &169693515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 169693513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e166ed570aa2954992140ce60198cba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &195566863
 GameObject:
   m_ObjectHideFlags: 0
@@ -34588,6 +34636,7 @@ RectTransform:
   - {fileID: 1323666752}
   - {fileID: 1444827672}
   - {fileID: 5125572718411954697}
+  - {fileID: 169693514}
   - {fileID: 3624829608760015672}
   - {fileID: 375703677}
   - {fileID: 1820662814}
@@ -34846,6 +34895,7 @@ MonoBehaviour:
   SkillDetail: {fileID: 1385645464}
   ConfirmTurnEnd: {fileID: 6171524841852902559}
   DamageValue: {fileID: 1401124153645319502}
+  HpGauge: {fileID: 169693515}
   CooperativeVortex: {fileID: 483007111}
   Phase: {fileID: 474454664147823673}
   BattleAnima: {fileID: 375703678}

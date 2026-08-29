@@ -37,6 +37,9 @@ namespace Frontier
             Container.Bind<IInstaller>().To<DiInstaller>().FromInstance(this);
 
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
+            // 戦闘エンティティ層(Character/BattleLogicBase/BattleAnimationEventReceiver)には、IUiSystem全体ではなく
+            // 自身に紐づくUI演出だけを呼べる限定インターフェースを注入する
+            Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();

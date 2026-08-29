@@ -193,6 +193,20 @@ static public class Constants
 
     public const float COMBAT_POS_LENGTH_FROM_CENTER = 2.0f;
 
+    // キャラクター頭上に常時表示するHPゲージの下地(黒)の幅・高さ(UIローカル座標単位)
+    public const float HP_GAUGE_WIDTH  = 60f;
+    public const float HP_GAUGE_HEIGHT = 8f;
+    // ゲージバー(満タン時)の下地に対する大きさの比率。19/20とすることで、満タン時も下地がわずかに見える
+    public const float HP_GAUGE_FILL_SIZE_RATIO = 19f / 20f;
+    // ゲージ角の丸みの半径(下地の高さに対する比率)
+    public const float HP_GAUGE_CORNER_RADIUS_RATIO = 0.35f;
+    // HPゲージを表示するキャラクター座標からの頭上オフセット
+    public const float HP_GAUGE_WORLD_OFFSET_Y = 1.7f;
+    // HPゲージの色(キャラクタータグ別: プレイヤー=青、エネミー=赤、その他=緑)。減少分は下地の黒がそのまま見える
+    static public readonly Color HP_GAUGE_COLOR_PLAYER = new Color( 0.25f, 0.55f, 1f );
+    static public readonly Color HP_GAUGE_COLOR_ENEMY  = new Color( 0.9f, 0.2f, 0.2f );
+    static public readonly Color HP_GAUGE_COLOR_OTHER  = new Color( 0.3f, 0.8f, 0.35f );
+
     // ダッシュスラッシュ: ダッシュ開始時の前方向速度
     public const float DASH_SLASH_INITIAL_SPEED             = 10f;
     // ジャンプスラッシュ: ジャンプ開始時の前方向速度

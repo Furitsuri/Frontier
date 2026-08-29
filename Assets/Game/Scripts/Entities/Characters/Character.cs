@@ -30,7 +30,7 @@ namespace Frontier.Entities
         [Header( "戦闘表示用カメラパラメータ" )]
         [SerializeField] private CameraParameter _camParam;
 
-        [Inject] protected IUiSystem _uiSystem                              = null;
+        [Inject] protected ICharacterUiFeedback _uiFeedback                 = null;
         [Inject] protected PrefabRegistry _prefabReg                        = null;
         [Inject] protected TimeScaleController _timeScaleCtrl               = null;
 
@@ -370,10 +370,14 @@ namespace Frontier.Entities
         {
             LazyInject.GetOrCreate( ref _animReceiver, () => _hierarchyBld.AddComponentWithDi<BattleAnimationEventReceiver>( gameObject ) );
             _animReceiver.Regist( this, btlCamCtrl );
+
+            _uiFeedback.ShowHpGaugeOnCharacter( this );
         }
 
         virtual public void OnBattleExit()
         {
+            _uiFeedback.RemoveHpGaugeOnCharacter( this );
+
             if( _animReceiver != null )
             {
                 _animReceiver.Dispose();

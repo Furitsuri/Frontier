@@ -9,7 +9,7 @@ namespace Frontier.Entities
     [SerializeField]
     public class BattleAnimationEventReceiver : MonoBehaviour, IBasicAnimationEvent, IParryAnimationEvent
     {
-        [Inject] private IUiSystem _uiSystem                                = null;
+        [Inject] private ICharacterUiFeedback _uiFeedback                   = null;
         [Inject] private StageController _stageCtrl                         = null;
         [Inject] private CombatSkillEventController _combatSkillEventCtrl   = null;
         [Inject] private BattleRoutineController _btlRtnCtrl                = null;
@@ -127,7 +127,7 @@ namespace Frontier.Entities
                 }
             }
 
-            _uiSystem.BattleUi.ShowDamageOnCharacter( _readOnlyBattleLogic.Value.GetOpponent() ); // ダメージUIを表示
+            _uiFeedback.ShowDamageOnCharacter( _readOnlyBattleLogic.Value.GetOpponent() ); // ダメージUIを表示
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Frontier.Entities
             }
 
             // ダメージUIを表示
-            _uiSystem.BattleUi.ShowDamageOnCharacter( _readOnlyBattleLogic.Value.GetOpponent() );
+            _uiFeedback.ShowDamageOnCharacter( _readOnlyBattleLogic.Value.GetOpponent() );
         }
 
         public void DashStart()

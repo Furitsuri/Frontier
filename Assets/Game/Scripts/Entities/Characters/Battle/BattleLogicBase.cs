@@ -16,7 +16,7 @@ namespace Frontier.Entities
 {
     public class BattleLogicBase : MonoBehaviour
     {
-		[Inject] protected IUiSystem _uiSystem                  = null;
+		[Inject] protected ICharacterUiFeedback _uiFeedback     = null;
         [Inject] protected BattleRoutinePresenter _presenter    = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld   = null;
         [Inject] protected StageController _stageCtrl           = null;
@@ -175,7 +175,7 @@ protected Character _opponent                                       = null;
 
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).StopFlick();
+                _uiFeedback.GetPlayerParamSkillBox( i ).StopFlick();
             }
         }
 
@@ -190,7 +190,7 @@ protected Character _opponent                                       = null;
 
             for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
             {
-                _uiSystem.BattleUi.GetPlayerParamSkillBox( i ).StopFlick();
+                _uiFeedback.GetPlayerParamSkillBox( i ).StopFlick();
             }
         }
 
