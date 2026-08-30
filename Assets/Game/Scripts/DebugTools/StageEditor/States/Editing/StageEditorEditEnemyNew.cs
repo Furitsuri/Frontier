@@ -195,7 +195,14 @@ namespace Frontier.DebugTools.StageEditor
 
         // ──── 入力受付判定 ────────────────────────────────────────────────
 
-        public override bool CanAcceptConfirm() { return true; }
+        /// <summary>
+        /// カーソル位置に既に敵が配置されている場合は確定を受け付けません。
+        /// (同一タイルへの重複配置は、戦闘中にタイル位置からキャラクターを逆引きする処理を破綻させるため禁止する)
+        /// </summary>
+        public override bool CanAcceptConfirm()
+        {
+            return !_refParams.GridIndexToEnemyListIndex.ContainsKey( _refParams.EnemyInitGridIndex );
+        }
 
         public override bool CanAcceptSub1()
         {
