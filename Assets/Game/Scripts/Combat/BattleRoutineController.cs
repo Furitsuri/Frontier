@@ -161,12 +161,13 @@ namespace Frontier.Battle
                 _presenter.PlayAnimaRewardEffect( position, () => AddBattleAnima( amount ) );
             } );
 
-            // ステージクリア判定後、「STAGE CLEAR」演出の開始・終了・CONFIRM入力待ちを経てリザルト画面を
-            // 表示するまでは、専用ステートの更新のみを行い、通常のフェーズ進行やシーン遷移(return true)は行わない。
+            // ステージクリア判定後、「STAGE CLEAR」演出の開始・終了・CONFIRM入力待ちを経てリザルト画面の
+            // 表示・クローズまでは、専用ステートの更新のみを行う。シーン遷移(return true)は、
+            // リザルト画面を実際に閉じ終えた(IsFinished)タイミングまで行わない。
             if( _stageClearState.IsActive )
             {
                 _stageClearState.Update();
-                return false;
+                return _stageClearState.IsFinished;
             }
 
             if( _presenter.IsActiveGameOverAnimation() )    { return false; }  // ゲーム―オーバー時のUIアニメーションが再生中の場合は終了

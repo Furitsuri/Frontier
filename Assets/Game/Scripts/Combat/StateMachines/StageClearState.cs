@@ -13,12 +13,13 @@ namespace Frontier.Battle
     {
         private enum Phase
         {
-            NONE,               // Begin()未呼び出し(通常の戦闘フェーズ中)
-            WAIT_ANIMA_REWARD,  // アニマ獲得エフェクト(撃破報酬の球)の再生完了待ち
-            WAIT_ANIMA_POPUP,   // アニマ加算ポップアップ("+10"等)の表示終了待ち
-            WAIT_ANIM,          // 「STAGE CLEAR」演出の終了待ち
-            WAIT_CONFIRM,       // CONFIRM入力待ち
-            DONE,               // リザルト画面表示済み
+            NONE,                // Begin()未呼び出し(通常の戦闘フェーズ中)
+            WAIT_ANIMA_REWARD,   // アニマ獲得エフェクト(撃破報酬の球)の再生完了待ち
+            WAIT_ANIMA_POPUP,    // アニマ加算ポップアップ("+10"等)の表示終了待ち
+            WAIT_ANIM,           // 「STAGE CLEAR」演出の終了待ち
+            WAIT_CONFIRM,        // CONFIRM入力待ち(リザルト画面表示への遷移)
+            WAIT_RESULT_CONFIRM, // リザルト画面表示中、画面を閉じるCONFIRM入力待ち
+            DONE,                // リザルト画面を閉じ終え、シーン遷移可能な状態
         }
 
         private Phase _phase;
@@ -34,9 +35,10 @@ namespace Frontier.Battle
         public bool IsActive => _phase != Phase.NONE;
 
         /// <summary>
-        /// リザルト画面表示まで完了したかどうかを取得します
+        /// リザルト画面を閉じ終え、シーン遷移してよい状態かどうかを取得します。
+        /// BattleRoutineControllerはこの値を見て、LateUpdate()の戻り値(シーン遷移の可否)を決定します。
         /// </summary>
-        public bool IsDone => _phase == Phase.DONE;
+        public bool IsFinished => _phase == Phase.DONE;
 
         /// <summary>
         /// このステートを開始します。撃破位置から放出中のアニマ獲得エフェクトが残っている場合は、
@@ -100,16 +102,26 @@ namespace Frontier.Battle
 
         protected override bool CanAcceptConfirm()
         {
-            return _phase == Phase.WAIT_CONFIRM;
+            return _phase == Phase.WAIT_CONFIRM || _phase == Phase.WAIT_RESULT_CONFIRM;
         }
 
         protected override bool AcceptConfirm( InputContext context )
         {
             if( !AcceptConfirmCore( context ) ) { return false; }
 
-            _uiSystem.BattleUi.ShowStageResult( _getBattleAnima(), _turnCount );
-            _phase = Phase.DONE;
-            UnregisterInputCodes( GetInputCodeHash() );
+            switch( _phase )
+            {
+                case Phase.WAIT_CONFIRM:
+                    _uiSystem.BattleUi.ShowStageResult( _getBattleAnima(), _turnCount );
+                    _phase = Phase.WAIT_RESULT_CONFIRM;
+                    break;
+
+                case Phase.WAIT_RESULT_CONFIRM:
+                    _uiSystem.BattleUi.HideStageResult();
+                    _phase = Phase.DONE;
+                    UnregisterInputCodes( GetInputCodeHash() );
+                    break;
+            }
 
             return true;
         }

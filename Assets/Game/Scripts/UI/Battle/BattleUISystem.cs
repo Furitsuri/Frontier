@@ -407,6 +407,14 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// リザルト画面を閉じます
+        /// </summary>
+        public void HideStageResult()
+        {
+            StageResult.Hide();
+        }
+
+        /// <summary>
         /// ステージクリア演出を開始し、あわせて戦闘中アニマ表示・味方/敵のバトルパラメータUIを
         /// 非表示にします(演出中に余計なHUDが写り込まないようにするため)。
         /// </summary>
