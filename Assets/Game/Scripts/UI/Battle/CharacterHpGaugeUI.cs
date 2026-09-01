@@ -7,6 +7,9 @@ using UnityEngine.UI;
 /// 角丸の黒い下地(Background)の上に、キャラクタータグに応じた色のグラデーション付きゲージバー(Fill)を重ね、
 /// Fillのwidthを現在HP割合に応じて変化させることでHPを表現します。
 /// FillはBackgroundよりわずかに小さいサイズで生成するため、満タン時も下地の黒が縁に少しだけ見えます。
+/// また、攻撃対象選択中はSetPredictedDamage()で予測ダメージ分の範囲を表示できます。
+/// Fill自体は減少後のHP位置まで静的に縮め、その手前の「減少分」の範囲にはFillと同色の
+/// 別Imageを重ねてアルファ値を点滅させることで、伸縮ではなくフェードで減少量を表現します。
 /// </summary>
 public class CharacterHpGaugeUI : UiMonoBehaviour
 {
@@ -14,6 +17,8 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
     private Camera _btlUiCamera;
     private RectTransform _selfRectTransform;
     private Image _fillImage;
+    private Image _predictedDamageImage;
+    private int _predictedDamageAmount;
     public Character TargetCharacter { get; private set; }
 
     /// <summary>
@@ -34,6 +39,11 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         // ゲージバー(角丸+グラデーション。下地に対してHP_GAUGE_FILL_SIZE_RATIO倍のサイズで中央に配置することで、
         // 満タン時も下地の黒縁がわずかに見えるようにする
         _fillImage = CreateFillImage();
+
+        // 予測ダメージ表示(Fillの子とすることで、Fillの見た目上のサイズ=MaxHP幅を基準にした0〜1の割合で
+        // そのままアンカーを指定できる。Image.Type.Filledによる描画クロップは子オブジェクトのRectTransform
+        // 計算には影響しないため、Fillのfillamountを縮めた状態でもこの子は正しい位置に描画される)
+        _predictedDamageImage = CreatePredictedDamageImage();
     }
 
     void Update()
@@ -51,7 +61,39 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         _selfRectTransform.localPosition = pos;
 
         var status = TargetCharacter.GetStatusRef;
-        _fillImage.fillAmount = ( status.MaxHP <= 0 ) ? 0f : ( float ) status.CurHP / status.MaxHP;
+        float curRatio = ( status.MaxHP <= 0 ) ? 0f : ( float ) status.CurHP / status.MaxHP;
+
+        UpdatePredictedDamageDisplay( curRatio, status.MaxHP );
+    }
+
+    /// <summary>
+    /// 予測ダメージが設定されている場合、Fill自体は減少後のHP位置まで静的に縮め、
+    /// その手前の「減少分」の範囲にFillと同色の別Imageを重ねてアルファ値を点滅させます。
+    /// (伸縮ではなく、フェードで減少量を表現するため)
+    /// </summary>
+    private void UpdatePredictedDamageDisplay( float curRatio, int maxHp )
+    {
+        if( _predictedDamageAmount <= 0 || maxHp <= 0 )
+        {
+            _fillImage.fillAmount = curRatio;
+            _predictedDamageImage.gameObject.SetActive( false );
+            return;
+        }
+
+        float lossRatio      = Mathf.Clamp01( ( float ) _predictedDamageAmount / maxHp );
+        float retractedRatio = Mathf.Max( 0f, curRatio - lossRatio );
+
+        _fillImage.fillAmount = retractedRatio;
+
+        var rect = ( RectTransform ) _predictedDamageImage.transform;
+        rect.anchorMin = new Vector2( retractedRatio, 0f );
+        rect.anchorMax = new Vector2( curRatio, 1f );
+
+        var color = _fillImage.color;
+        color.a = Mathf.PingPong( Time.time * Constants.HP_GAUGE_PREDICTED_DAMAGE_BLINK_SPEED, 1f );
+        _predictedDamageImage.color = color;
+
+        _predictedDamageImage.gameObject.SetActive( true );
     }
 
     private void CreateBackgroundImage()
@@ -105,6 +147,28 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         image.fillMethod     = Image.FillMethod.Horizontal;
         image.fillOrigin     = ( int ) Image.OriginHorizontal.Left;
         image.raycastTarget  = false;
+        return image;
+    }
+
+    /// <summary>
+    /// 予測ダメージ表示用のImageを、Fillの子として生成します。
+    /// 角丸・グラデーションは付けず単色とし(狭い範囲に引き伸ばすと角丸が歪むため)、
+    /// アンカーと色のアルファ値はUpdatePredictedDamageDisplay()で毎フレーム更新します。
+    /// </summary>
+    private Image CreatePredictedDamageImage()
+    {
+        var go = new GameObject( "PredictedDamage", typeof( RectTransform ), typeof( Image ) );
+        go.transform.SetParent( _fillImage.transform, false );
+
+        var rect = ( RectTransform ) go.transform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        var image = go.GetComponent<Image>();
+        image.raycastTarget  = false;
+        image.gameObject.SetActive( false );
         return image;
     }
 
@@ -181,6 +245,23 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
     {
         TargetCharacter = null;
         gameObject.SetActive( false );
+    }
+
+    /// <summary>
+    /// 予測ダメージ分の点滅表示を設定します。攻撃対象選択中、対象キャラクターに対して呼び出してください。
+    /// </summary>
+    /// <param name="amount">予測ダメージ量(HP減少量)。0以下の場合は点滅を行いません</param>
+    public void SetPredictedDamage( int amount )
+    {
+        _predictedDamageAmount = Mathf.Max( 0, amount );
+    }
+
+    /// <summary>
+    /// 予測ダメージ分の点滅表示を解除します
+    /// </summary>
+    public void ClearPredictedDamage()
+    {
+        _predictedDamageAmount = 0;
     }
 
     /// <summary>

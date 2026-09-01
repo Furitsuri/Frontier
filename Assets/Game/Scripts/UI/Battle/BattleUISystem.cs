@@ -231,6 +231,29 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// 指定キャラクターのHPゲージに、予測ダメージ分の点滅表示を設定します。
+        /// 攻撃対象選択中、対象キャラクターに対して呼び出してください。
+        /// </summary>
+        public void SetPredictedDamageOnCharacter( Character chara, int amount )
+        {
+            if( _hpGaugeUIByCharaId.TryGetValue( chara.GetInstanceID(), out CharacterHpGaugeUI ui ) && ui != null )
+            {
+                ui.SetPredictedDamage( amount );
+            }
+        }
+
+        /// <summary>
+        /// 表示中の全キャラクターのHPゲージから、予測ダメージ点滅表示を解除します。
+        /// </summary>
+        public void ClearAllPredictedDamage()
+        {
+            foreach( var ui in _hpGaugeUIByCharaId.Values )
+            {
+                if( ui != null ) { ui.ClearPredictedDamage(); }
+            }
+        }
+
+        /// <summary>
         /// 生成したすべての CharacterHpGaugeUI インスタンスを破棄し、管理辞書をクリアします。
         /// </summary>
         public void CleanupHpGaugeUIs()

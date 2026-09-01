@@ -356,6 +356,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveGridCursor( false );
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
+            _presenter.ClearAllPredictedDamage();
 
             if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
             {
@@ -473,6 +474,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveGridCursor( false );
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
+            _presenter.ClearAllPredictedDamage();
 
             if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
             {
@@ -499,6 +501,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveGridCursor( false );
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
+            _presenter.ClearAllPredictedDamage();
         }
 
         private TargetingRangeContext BuildTargetingContext()

@@ -146,6 +146,8 @@ namespace Frontier.Battle
             var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _plOwner, StageCtrl = _stageCtrl };
             List<CharacterKey> attackTargetCharaKeys = null;
             NormalAttackTargetingRange.RefreshFocusTarget( targetingContext, isMoving, ref attackTargetCharaKeys, ref _targetCharacter );
+
+            TargetingPreviewHelper.RefreshPredictedDamageGauges( targetingContext, attackTargetCharaKeys );
         }
 
         /// <summary>
@@ -201,6 +203,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveGridCursor( false );                                      // 選択グリッドを一時非表示
             _stageCtrl.SetActiveTargetCursor( false );                                    // ターゲットカーソルを一時非表示
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
+            _presenter.ClearAllPredictedDamage();                                         // HPゲージの予測ダメージ点滅表示を解除
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
 
             // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)

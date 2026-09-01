@@ -93,6 +93,8 @@ namespace Frontier.Battle
 
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke(
                 context, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
+
+            TargetingPreviewHelper.RefreshPredictedDamageGauges( context, _attackTargetCharaKeys );
         }
 
         /// <summary>
@@ -105,6 +107,8 @@ namespace Frontier.Battle
 
             _refreshFocusTargetCallbacks[( int ) _targetingMode]?.Invoke(
                 context, _isMovingSkill, ref _attackTargetCharaKeys, ref _targetCharacter );
+
+            TargetingPreviewHelper.RefreshPredictedDamageGauges( context, _attackTargetCharaKeys );
         }
 
         /// <summary>
@@ -113,9 +117,16 @@ namespace Frontier.Battle
         public bool TryAdjustRange( int step, TargetingRangeContext context )
         {
             var callback = _tryAdjustRangeCallbacks[( int ) _targetingMode];
-            return callback != null && callback(
+            bool changed = callback != null && callback(
                 context, step, ref _currentRange, _maxRange, _isMovingSkill,
                 ref _attackTargetCharaKeys, ref _targetCharacter );
+
+            if( changed )
+            {
+                TargetingPreviewHelper.RefreshPredictedDamageGauges( context, _attackTargetCharaKeys );
+            }
+
+            return changed;
         }
 
         /// <summary>

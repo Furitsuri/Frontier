@@ -105,6 +105,10 @@ namespace Frontier.Battle
                     // 予測ダメージを適応する
                     _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
 
+                    // 予測ダメージ分のHPゲージ点滅を反映する
+                    var expectedChange = _btlRtnCtrl.BtlCharaCdr.CalculateExpectedHpChange( _attackCharacter, _targetCharacter );
+                    _presenter.SetPredictedDamageOnCharacter( _targetCharacter, -expectedChange.total );
+
                     break;
                 case EmAttackPhase.EM_ATTACK_EXECUTE:
                     {
@@ -138,6 +142,8 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetActiveLeft2RightDirection( false );
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );
+            // HPゲージの予測ダメージ点滅表示を解除
+            _presenter.ClearAllPredictedDamage();
             // タイルメッシュの描画をすべてクリア
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
             // 選択グリッドを表示
@@ -195,6 +201,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveGridCursor( false );                            // 選択グリッドを一時非表示
             _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );           // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );            // ダメージ予測表示UIを非表示
+            _presenter.ClearAllPredictedDamage();                              // HPゲージの予測ダメージ点滅表示を解除
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();                       // タイルメッシュの描画をすべてクリア
 
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除

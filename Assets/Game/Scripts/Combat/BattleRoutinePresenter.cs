@@ -120,6 +120,22 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetActiveActionResultExpect( isActive );         // ダメージ予測表示UIの表示・非表示
         }
 
+        /// <summary>
+        /// 指定キャラクターのHPゲージに、予測ダメージ分の点滅表示を設定します。
+        /// </summary>
+        public void SetPredictedDamageOnCharacter( Character chara, int amount )
+        {
+            _uiSystem.BattleUi.SetPredictedDamageOnCharacter( chara, amount );
+        }
+
+        /// <summary>
+        /// 表示中の全キャラクターのHPゲージから、予測ダメージ点滅表示を解除します。
+        /// </summary>
+        public void ClearAllPredictedDamage()
+        {
+            _uiSystem.BattleUi.ClearAllPredictedDamage();
+        }
+
         public void ApplyColor2Options( int selectIndex )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.ApplyTextColor( selectIndex );

@@ -206,6 +206,8 @@ static public class Constants
     static public readonly Color HP_GAUGE_COLOR_PLAYER = new Color( 0.25f, 0.55f, 1f );
     static public readonly Color HP_GAUGE_COLOR_ENEMY  = new Color( 0.9f, 0.2f, 0.2f );
     static public readonly Color HP_GAUGE_COLOR_OTHER  = new Color( 0.3f, 0.8f, 0.35f );
+    // 攻撃対象選択中、予測ダメージ分の点滅速度(Fillのfillamountを往復させる速さ)
+    public const float HP_GAUGE_PREDICTED_DAMAGE_BLINK_SPEED = 2f;
 
     // ダッシュスラッシュ: ダッシュ開始時の前方向速度
     public const float DASH_SLASH_INITIAL_SPEED             = 10f;

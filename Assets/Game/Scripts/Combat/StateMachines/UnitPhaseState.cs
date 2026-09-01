@@ -36,6 +36,7 @@ namespace Frontier.Battle
             _stageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( ownerChara );  // オーナーのタイルにグリッドカーソルとカメラを適用
 
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
+            _presenter.ClearAllPredictedDamage();                                         // HPゲージの予測ダメージ点滅表示を解除
 
             // 予測ダメージと使用スキルコスト見積もりをリセット
             if( null != ownerChara )
