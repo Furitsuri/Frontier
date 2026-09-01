@@ -142,8 +142,6 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetActiveLeft2RightDirection( false );
             // ダメージ予測表示UIを非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );
-            // HPゲージの予測ダメージ点滅表示を解除
-            _presenter.ClearAllPredictedDamage();
             // タイルメッシュの描画をすべてクリア
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
             // 選択グリッドを表示
