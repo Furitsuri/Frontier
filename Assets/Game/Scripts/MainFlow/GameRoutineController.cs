@@ -63,9 +63,20 @@ namespace Frontier
         {
             if( _current.LateUpdate() )
             {
-                if( _current is BattleRoutineController && FieldTransitionContext.IsFromField )
+                if( _current is BattleRoutineController )
                 {
-                    SceneManager.LoadScene( FieldSceneName );
+                    if( FieldTransitionContext.IsFromField )
+                    {
+                        SceneManager.LoadScene( FieldSceneName );
+                    }
+                    else
+                    {
+                        // Fieldを経由せずBattleSceneが直接起動された場合(開発者によるデバッグ起動)は、
+                        // 遷移先が存在しないためPlayを終了する
+#if UNITY_EDITOR
+                        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                    }
                 }
             }
         }

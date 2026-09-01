@@ -181,7 +181,13 @@ namespace Frontier.Battle
 
                     _stageClearState.Begin( () => _battleAnima, _turnCount );
                 },
-                _presenter.StartGameOverAnim ) ) { return true; }
+                _presenter.StartGameOverAnim ) )
+            {
+                // ステージクリアの場合はStageClearStateが起動している(IsActive)ため、上のif文が次フレーム以降を
+                // 引き継ぎ、リザルト画面を閉じ終えるまでシーン遷移を待つ。ゲームオーバーの場合はStageClearStateを
+                // 経由しないため、従来通りこの場でシーン遷移する。
+                return !_stageClearState.IsActive;
+            }
 
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )

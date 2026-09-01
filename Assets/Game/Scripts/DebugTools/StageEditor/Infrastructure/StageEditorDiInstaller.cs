@@ -24,6 +24,9 @@ namespace Frontier.DebugTools.StageEditor
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<StageEditorController>().FromComponentInHierarchy().AsCached();
             Container.Bind<IUiSystem>().To<EditorUiSystem>().FromComponentInHierarchy().AsCached();
+            // 戦闘エンティティ層(Character等)がStageEditorSceneでもDI解決できるよう、DiInstaller.csと同じBindを用意する
+            // (EditorUiSystem.BattleUiはnullを返すが、StageEditorではOnBattleEnter/OnBattleExitを呼ばないため問題ない)
+            Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<HierarchyBuilderBase>().To<StageEditorHierarchyBuilder>().FromComponentInHierarchy().AsCached();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<TimeScaleController>().AsSingle();
