@@ -356,16 +356,9 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
             _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();
 
-            _stageCtrl.SetActiveGridCursor( false );
-            _stageCtrl.SetActiveTargetCursor( false );
-            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            _presenter.ClearAllPredictedDamage();
-            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );
+            FinalizeTargetSelection( ParameterWindowType.Left );
 
-            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
-            {
-                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
-            }
+            RegisterSelfBuffIfNeeded();
 
             _sequenceFcd.RegistSkillAction( _plOwner, _targetSelector.TargetCharacter, _useSkillID, _targetSelector.AttackTargetCharaKeys );
 
@@ -475,16 +468,9 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
             _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();
 
-            _stageCtrl.SetActiveGridCursor( false );
-            _stageCtrl.SetActiveTargetCursor( false );
-            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            _presenter.ClearAllPredictedDamage();
-            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );
+            FinalizeTargetSelection( ParameterWindowType.Left );
 
-            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
-            {
-                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
-            }
+            RegisterSelfBuffIfNeeded();
 
             entries.Add( _sequenceFcd.CreateCooperativeEntry( _useSkillID, _plOwner, _targetSelector.TargetCharacter, _targetSelector.AttackTargetCharaKeys ) );
 
@@ -503,11 +489,7 @@ namespace Frontier.Battle
             // (解除は実際の実行時、DashSlashSA/JumpSlashSA等のEndActionで行われる)
             _stageCtrl.TileDataHdlr().ReserveTile( _plOwner.GhostObj?.TileIndex ?? -1 );
 
-            _stageCtrl.SetActiveGridCursor( false );
-            _stageCtrl.SetActiveTargetCursor( false );
-            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
-            _presenter.ClearAllPredictedDamage();
-            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );
+            FinalizeTargetSelection( ParameterWindowType.Left );
         }
 
         private TargetingRangeContext BuildTargetingContext()

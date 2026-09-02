@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.StateMachine;
 
 namespace Frontier.Battle
@@ -28,6 +29,17 @@ namespace Frontier.Battle
             var commandTag = _plOwner.PopCommandHistory();
             _plOwner.BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
             _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
+        }
+
+        /// <summary>
+        /// 攻撃・スキルの実行確定時、自己バフスキルが使用されていれば登録し、使用可能スキルフラグを更新します。
+        /// </summary>
+        protected void RegisterSelfBuffIfNeeded()
+        {
+            if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
+            {
+                _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+            }
         }
 
         public override void Init( object context )

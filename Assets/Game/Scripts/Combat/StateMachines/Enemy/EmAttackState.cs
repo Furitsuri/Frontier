@@ -199,11 +199,7 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ConsumeActionGauge();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            _stageCtrl.SetActiveGridCursor( false );                            // 選択グリッドを一時非表示
-            _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );           // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetActiveActionResultExpect( false );            // ダメージ予測表示UIを非表示
-            _presenter.ClearAllPredictedDamage();                              // HPゲージの予測ダメージ点滅表示を解除
-            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );    // 対象選択中のカメラズームを解除
+            FinalizeTargetSelection( ParameterWindowType.Right );
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();                       // タイルメッシュの描画をすべてクリア
 
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除

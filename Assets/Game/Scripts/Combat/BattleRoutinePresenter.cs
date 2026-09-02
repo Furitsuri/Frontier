@@ -110,7 +110,7 @@ namespace Frontier.Battle
 
         public void SetActiveParamWinDirectionRight2Left( bool isActive )
         {
-            _uiSystem.BattleUi.SetActiveLeft2RightDirection( isActive );
+            _uiSystem.BattleUi.SetActiveRight2LeftDirection( isActive );
             _uiSystem.BattleUi.SetActiveLeftParameterWindow( isActive );
         }
 

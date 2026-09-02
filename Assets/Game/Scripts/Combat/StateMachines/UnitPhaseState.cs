@@ -52,5 +52,19 @@ namespace Frontier.Battle
             // タイルメッシュの描画をすべてクリア
             ownerChara.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
         }
+
+        /// <summary>
+        /// 攻撃・スキルの対象選択ステートから、実行確定(攻撃シーケンスへの移行、予約キューへの登録等)を行う際の共通後始末を行います。
+        /// CleanupTargetSelectionStateと異なり、グリッドカーソルの解除やオーナータイルへのカメラ復帰までは行いません
+        /// (実行確定直後はまだ攻撃シーケンス等が続くため、その後始末はExitState側のCleanupTargetSelectionStateに委ねます)。
+        /// </summary>
+        protected void FinalizeTargetSelection( ParameterWindowType fromWinType )
+        {
+            _stageCtrl.SetActiveGridCursor( false );                                   // 選択グリッドを一時非表示
+            _stageCtrl.SetActiveTargetCursor( false );                                 // ターゲットカーソルを一時非表示
+            _presenter.SetActiveActionResultExpect( false, fromWinType );              // アクション対象指定関連のUIを非表示
+            _presenter.ClearAllPredictedDamage();                                      // HPゲージの予測ダメージ点滅表示を解除
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );            // 対象選択中のカメラズームを解除
+        }
     }
 }
