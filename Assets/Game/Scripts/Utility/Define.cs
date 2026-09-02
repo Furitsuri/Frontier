@@ -208,6 +208,9 @@ static public class Constants
     static public readonly Color HP_GAUGE_COLOR_OTHER  = new Color( 0.3f, 0.8f, 0.35f );
     // 攻撃対象選択中、予測ダメージ分の点滅速度(Fillのfillamountを往復させる速さ)
     public const float HP_GAUGE_PREDICTED_DAMAGE_BLINK_SPEED = 2f;
+    // 撃破確定アイコン(ゲージ左端に付ける、ばってん目のドクロ。Assets/Game/Textures/UI/DefeatIcon.png)の
+    // 直径(UIローカル座標単位)。ゲージ本体の高さより一回り大きくし、左端に乗せた際にバッジとして目立つようにする
+    public const float HP_GAUGE_DEFEAT_ICON_SIZE = 18f;
 
     // ダッシュスラッシュ: ダッシュ開始時の前方向速度
     public const float DASH_SLASH_INITIAL_SPEED             = 10f;

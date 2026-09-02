@@ -10,14 +10,20 @@ using UnityEngine.UI;
 /// また、攻撃対象選択中はSetPredictedDamage()で予測ダメージ分の範囲を表示できます。
 /// Fill自体は減少後のHP位置まで静的に縮め、その手前の「減少分」の範囲にはFillと同色の
 /// 別Imageを重ねてアルファ値を点滅させることで、伸縮ではなくフェードで減少量を表現します。
+/// 予測ダメージで対象のHPが0以下になる場合は、ゲージ左端に撃破確定アイコン(赤いバッジ+
+/// ばってん目のドクロ、Assets/Game/Textures/UI/DefeatIcon.png)を表示します。
 /// </summary>
 public class CharacterHpGaugeUI : UiMonoBehaviour
 {
+    [Header( "撃破確定アイコン" )]
+    [SerializeField] private Sprite _defeatIconSprite;
+
     private RectTransform _btlUiRectTransform;
     private Camera _btlUiCamera;
     private RectTransform _selfRectTransform;
     private Image _fillImage;
     private Image _predictedDamageImage;
+    private Image _defeatIconImage;
     private int _predictedDamageAmount;
     public Character TargetCharacter { get; private set; }
 
@@ -44,6 +50,10 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         // そのままアンカーを指定できる。Image.Type.Filledによる描画クロップは子オブジェクトのRectTransform
         // 計算には影響しないため、Fillのfillamountを縮めた状態でもこの子は正しい位置に描画される)
         _predictedDamageImage = CreatePredictedDamageImage();
+
+        // 撃破確定アイコン(ゲージ本体=transformの子。ゲージ左端に固定サイズのバッジとして表示するため、
+        // fillamountで伸縮するFillではなくゲージ全体の左端を基準に配置する)
+        _defeatIconImage = CreateDefeatIconImage();
     }
 
     void Update()
@@ -77,6 +87,7 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         {
             _fillImage.fillAmount = curRatio;
             _predictedDamageImage.gameObject.SetActive( false );
+            _defeatIconImage.gameObject.SetActive( false );
             return;
         }
 
@@ -94,6 +105,10 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         _predictedDamageImage.color = color;
 
         _predictedDamageImage.gameObject.SetActive( true );
+
+        // 予測ダメージで対象のHPが0以下になる(倒せる)場合は、撃破確定アイコンを表示する
+        bool isLethal = TargetCharacter.GetStatusRef.CurHP <= _predictedDamageAmount;
+        _defeatIconImage.gameObject.SetActive( isLethal );
     }
 
     private void CreateBackgroundImage()
@@ -167,6 +182,30 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         rect.offsetMax = Vector2.zero;
 
         var image = go.GetComponent<Image>();
+        image.raycastTarget  = false;
+        image.gameObject.SetActive( false );
+        return image;
+    }
+
+    /// <summary>
+    /// 撃破確定アイコンのImageを、ゲージ本体(transform)の子として生成します。
+    /// アンカーをゲージ左端の中央1点に固定し、pivotを中心に取ることで、
+    /// Fillのfillamountに関わらず常にゲージ左端に固定サイズのバッジとして表示されます。
+    /// </summary>
+    private Image CreateDefeatIconImage()
+    {
+        var go = new GameObject( "DefeatIcon", typeof( RectTransform ), typeof( Image ) );
+        go.transform.SetParent( transform, false );
+
+        var rect = ( RectTransform ) go.transform;
+        rect.anchorMin         = new Vector2( 0f, 0.5f );
+        rect.anchorMax         = new Vector2( 0f, 0.5f );
+        rect.pivot             = new Vector2( 0.5f, 0.5f );
+        rect.sizeDelta         = new Vector2( Constants.HP_GAUGE_DEFEAT_ICON_SIZE, Constants.HP_GAUGE_DEFEAT_ICON_SIZE );
+        rect.anchoredPosition  = Vector2.zero;
+
+        var image = go.GetComponent<Image>();
+        image.sprite         = _defeatIconSprite;
         image.raycastTarget  = false;
         image.gameObject.SetActive( false );
         return image;
