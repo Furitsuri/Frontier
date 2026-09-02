@@ -211,6 +211,9 @@ static public class Constants
     // 撃破確定アイコン(ゲージ左端に付ける、ばってん目のドクロ。Assets/Game/Textures/UI/DefeatIcon.png)の
     // 直径(UIローカル座標単位)。ゲージ本体の高さより一回り大きくし、左端に乗せた際にバッジとして目立つようにする
     public const float HP_GAUGE_DEFEAT_ICON_SIZE = 18f;
+    // 攻撃対象選択中、予測ダメージ分のHPゲージ点滅と連動してカメラを寄せる際の距離倍率
+    // (通常距離を100とした場合、85相当になるようにする)
+    public const float BATTLE_CAMERA_TARGET_SELECT_ZOOM_SCALE = 0.85f;
 
     // ダッシュスラッシュ: ダッシュ開始時の前方向速度
     public const float DASH_SLASH_INITIAL_SPEED             = 10f;

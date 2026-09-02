@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using static Constants;
 
 namespace Frontier
 {
@@ -86,8 +87,14 @@ namespace Frontier
         // --- カメラ入力の一時無効化用フィールド ---
         private bool _inputEnabled = true; // ステータス画面表示中等、外部要因によりカメラ操作入力を一時的に無効化するためのフラグ
 
+        // --- 攻撃対象選択時のズーム用フィールド ---
+        private bool _targetSelectZoomActive = false; // 予測ダメージ表示中(攻撃対象選択中)にtrue。BattleRoutinePresenterのSetPredictedDamageOnCharacter/ClearAllPredictedDamageと連動する
+
         public float InitialAngleXZ => _initialValueAngleXZ;
         public float AngleXZ        => _angleXZ;
+
+        // FOLLOWINGモードの各所で使うカメラ距離。攻撃対象選択中(_targetSelectZoomActive)は既定距離より少しだけ近づける
+        private float CurrentOffsetLength => _targetSelectZoomActive ? _offsetLength * BATTLE_CAMERA_TARGET_SELECT_ZOOM_SCALE : _offsetLength;
 
         void Update()
         {
@@ -106,7 +113,7 @@ namespace Frontier
                 _sharedState.FollowingPosition =
                     _sharedState.PrevCameraPosition =
                     _sharedState.MainCamera.transform.position =
-                        Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+                        Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
                 _sharedState.MainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
 
                 _cameraSliding = !( Mathf.Abs( _goalAngleXZ - _angleXZ ) <= 0f );
@@ -160,8 +167,25 @@ namespace Frontier
 
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _sharedState.LookAtPosition     = pos;
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
             _followElapsedTime              = 0.0f;
+        }
+
+        /// <summary>
+        /// 攻撃対象選択中(HPゲージへの予測ダメージ反映中)のカメラズームを切り替えます。
+        /// BattleRoutinePresenterのSetPredictedDamageOnCharacter/ClearAllPredictedDamageと連動して呼び出されます。
+        /// </summary>
+        public void SetTargetSelectZoomActive( bool isActive )
+        {
+            if( _targetSelectZoomActive == isActive ) { return; }
+
+            _targetSelectZoomActive = isActive;
+
+            if( _activeSequence != null ) { return; } // 演出中はFOLLOWINGモードの位置を直接書き換えない
+
+            _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+            _followElapsedTime              = 0f;
         }
 
         /// <summary>バトル時のカメラデータを設定します。</summary>
@@ -193,7 +217,7 @@ namespace Frontier
         public void EndAttackSequenceMode( Character attacker )
         {
             _sharedState.LookAtPosition    = attacker.transform.position;
-            _sharedState.FollowingPosition = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
             _attackSeqHandler.BeginEndPhase();
         }
 
@@ -275,7 +299,7 @@ namespace Frontier
         {
             _coopSeqHandler.Conclude( lastAttacker );
 
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _followElapsedTime              = 0f;
             _activeSequence                 = null;
@@ -312,7 +336,7 @@ namespace Frontier
 
             process.End();
 
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _followElapsedTime              = 0f;
             _activeSequence                 = null;
@@ -379,7 +403,7 @@ namespace Frontier
 
             _angleYZ = Mathf.Clamp( _angleYZ - context.Stick.y * _inputCoefficientOnCameraSlide, _angleYZMin, _angleYZMax );
             _sharedState.FollowingPosition = _sharedState.PrevCameraPosition =
-                Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _offsetLength + _sharedState.LookAtPosition;
+                Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
 
             return true;
         }

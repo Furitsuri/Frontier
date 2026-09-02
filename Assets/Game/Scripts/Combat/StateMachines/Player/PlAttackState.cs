@@ -65,6 +65,9 @@ namespace Frontier.Battle
             // 使用可能スキルの更新
             _plOwner.RefreshUseableSkillFlags( Combat.SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
 
+            // 対象選択中はカメラを少しだけ近づける(対象の有無によらず、この場面に入った時点でON)
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
+
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             int dprtTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( dprtTileIndex );
@@ -204,6 +207,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveTargetCursor( false );                                    // ターゲットカーソルを一時非表示
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
             _presenter.ClearAllPredictedDamage();                                         // HPゲージの予測ダメージ点滅表示を解除
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );               // 対象選択中のカメラズームを解除
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
 
             // 自己バフスキルの登録(バフスキルが使用されていれば使用可能スキルを更新)

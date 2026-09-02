@@ -1440,6 +1440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e166ed570aa2954992140ce60198cba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defeatIconSprite: {fileID: 21300000, guid: d81d0d7f4f6da2742a60da6942991122, type: 3}
 --- !u!1 &195566863
 GameObject:
   m_ObjectHideFlags: 0

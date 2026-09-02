@@ -65,6 +65,9 @@ namespace Frontier.Battle
             ReceiveContext( ref _useSkillID, context );
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
 
+            // 対象選択中はカメラを少しだけ近づける(対象の有無によらず、この場面に入った時点でON)
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
+
             _targetSelector.Init( SkillsData.data[( int ) _useSkillID], BuildTargetingContext() );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
@@ -357,6 +360,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             _presenter.ClearAllPredictedDamage();
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );
 
             if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
             {
@@ -475,6 +479,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             _presenter.ClearAllPredictedDamage();
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );
 
             if( _plOwner.BattleLogic.RegistSelfBuffSequences() )
             {
@@ -502,6 +507,7 @@ namespace Frontier.Battle
             _stageCtrl.SetActiveTargetCursor( false );
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );
             _presenter.ClearAllPredictedDamage();
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );
         }
 
         private TargetingRangeContext BuildTargetingContext()

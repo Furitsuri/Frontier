@@ -45,6 +45,8 @@ namespace Frontier.Battle
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _plOwner );
             // 使用可能スキルを更新
             _plOwner.RefreshUseableSkillFlags( SituationType.ATTACK, Methods.ToBit( ActionType.BUFF ) );
+            // 対象選択中はカメラを少しだけ近づける(対象の有無によらず、この場面に入った時点でON)
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
             // 攻撃対象キャラクターの情報を更新
             RefreshTargetCharacter( true, targetChara );
         }

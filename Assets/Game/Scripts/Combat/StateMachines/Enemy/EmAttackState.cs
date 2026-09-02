@@ -49,6 +49,9 @@ namespace Frontier.Battle
 			// アタッカーキャラクターの設定
 			_stageCtrl.BindGridCursor( GridCursorState.ATTACK, _attackCharacter );
 
+            // 対象選択中はカメラを少しだけ近づける(対象の有無によらず、この場面に入った時点でON)
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
+
             List<int> tileIndicies = new List<int>();
 
             foreach( var tileDynamicData in _attackCharacter.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
@@ -200,6 +203,7 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetActiveRight2LeftDirection( false );           // アタックカーソルUI非表示
             _uiSystem.BattleUi.SetActiveActionResultExpect( false );            // ダメージ予測表示UIを非表示
             _presenter.ClearAllPredictedDamage();                              // HPゲージの予測ダメージ点滅表示を解除
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );    // 対象選択中のカメラズームを解除
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();                       // タイルメッシュの描画をすべてクリア
 
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除

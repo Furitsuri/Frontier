@@ -37,6 +37,7 @@ namespace Frontier.Battle
 
             _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Left );    // アクション対象指定関連のUIを非表示
             _presenter.ClearAllPredictedDamage();                                         // HPゲージの予測ダメージ点滅表示を解除
+            _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( false );               // 対象選択中のカメラズームを解除
 
             // 予測ダメージと使用スキルコスト見積もりをリセット
             if( null != ownerChara )
