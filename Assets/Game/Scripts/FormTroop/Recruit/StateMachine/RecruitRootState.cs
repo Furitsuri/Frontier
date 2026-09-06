@@ -15,7 +15,6 @@ namespace Frontier.FormTroop
         {
             CHARACTER_STATUS = 0,
             CONFIRM,
-            CONFIRM_CANCEL,
         }
 
         [Inject] private UserDomain _userDomain                     = null;
@@ -73,6 +72,12 @@ namespace Frontier.FormTroop
 
         public override object ExitState()
         {
+            // キャンセル時はクッション画面へBack()するだけでシーンは継続するため、
+            // 破棄予定のキャラクターを表示し続けているCharacterSelectionDisplayが
+            // 破棄後のPlayerを参照し続けてMissingReferenceExceptionになるのを防ぐ
+            _presenter.ClearFocusCharacter();
+            _presenter.SetActiveCharacterSelectUIs( false );
+
             if( _isCancelled )
             {
                 // キャンセル時は雇用予約を全て取り消し、消費した所持アニマを払い戻す
@@ -95,7 +100,7 @@ namespace Frontier.FormTroop
             _inputFcd.RegisterInputCodes(
                (GuideIcon.HORIZONTAL_CURSOR,    "SELECT\nUNIT",             CanAcceptDirection,     new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,       new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL,               "CANCEL\nRECRUIT",          CanAcceptDefault,       new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
+               (GuideIcon.CANCEL,               "BACK",                     CanAcceptDefault,       new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
                (GuideIcon.INFO,                 "STATUS",                   CanAcceptDefault,       new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
                (GuideIcon.OPT2,                 "COMPLETE",                 CanAcceptOptional,      new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
@@ -204,23 +209,17 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 雇用を行わずにRecruitルーチンから脱出してよいかの確認ステートへ遷移します
+        /// 雇用を行わず、雇用/解雇選択画面(クッション画面)へ戻ります
         /// </summary>
         protected override bool AcceptCancel( InputContext context )
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
-            TransitState( ( int ) RecruitRootTransitTag.CONFIRM_CANCEL );
+            // キャンセル時は雇用予約を全て取り消すため、ExitState()で払い戻し処理を行う
+            _isCancelled = true;
+            Back();
 
             return true;
-        }
-
-        /// <summary>
-        /// 雇用を行わずにRecruitルーチンから脱出することを要求します
-        /// </summary>
-        public void RequestCancelExit()
-        {
-            _isCancelled = true;
         }
 
         protected override bool AcceptInfo( InputContext context )
