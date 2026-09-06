@@ -1,11 +1,9 @@
 ﻿using Frontier.Entities;
 using Frontier.Tutorial;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using Zenject;
 using static Constants;
-using static Frontier.Loaders.BattleFileLoader;
 
 namespace Frontier.FormTroop
 {
@@ -18,22 +16,17 @@ namespace Frontier.FormTroop
         }
 
         [Inject] private UserDomain _userDomain                     = null;
-        [Inject] private CharacterFactory _characterFactory         = null;
 
         private bool _isExistEmployedCharacter  = false;
-        private bool _isCancelled               = false;  // 雇用をせずにキャンセルされたか
         private int _focusCharacterIndex        = 0;     // フォーカス中のキャラクターインデックス
         private string[] _inputConfirmStrings;
-        private List<CharacterCandidate> _employmentCandidates = new List<CharacterCandidate>();
+        private List<CharacterCandidate> _employmentCandidates = null;
         private InputCodeStringWrapper _inputConfirmStrWrapper = null;
-        private UnitLevelStatsContainer _unitLevelStatsContainer = null;
 
         public override void Init( object context )
         {
             base.Init( context);
-            
-            _isExistEmployedCharacter   = false;
-            _isCancelled                = false;
+
             _focusCharacterIndex        = 0;
 
             // CONFIRMアイコンの文字列を設定
@@ -45,14 +38,17 @@ namespace Frontier.FormTroop
 
             _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
 
-            // JSONファイルの読み込み
-            string json = File.ReadAllText( "Assets/Resources/CharactersData/UnitLevelStats/UnitLevelStatsData.json" );
-            _unitLevelStatsContainer = JsonUtility.FromJson<UnitLevelStatsContainer>( json );
+            // 雇用可能キャラクター一覧はRecruitTopMenuStateが保持している同一インスタンスを受け取る
+            // (RecruitScene起動時に一度だけ決定され、以後再抽選されない)
+            ReceiveContext( ref _employmentCandidates, context );
+            NullCheck.AssertNotNull( _employmentCandidates, nameof( _employmentCandidates ) );
 
-            SetupEmploymentCandidates();
             _presenter.SetActiveCharacterSelectUIs( true );
             _presenter.AssignCandidates( _employmentCandidates.AsReadOnly() );
             _presenter.SetFocusCharacters( _focusCharacterIndex );
+
+            // 前回訪問時の雇用チェック状態を引き継いで反映
+            _isExistEmployedCharacter = IsExistEmployedCharacter();
 
             // 初の雇用フェーズの開始をチュートリアルへ通知
             TutorialFacade.Notify( TriggerType.FirstRecruit );
@@ -63,7 +59,7 @@ namespace Frontier.FormTroop
             // 基底の更新は行わない
             // if( base.Update() ) { return true; }
 
-            _inputConfirmStrWrapper.Explanation = 
+            _inputConfirmStrWrapper.Explanation =
                 _employmentCandidates[_focusCharacterIndex].Character is Player player && player.RecruitLogic.IsEmployed ?
                 _inputConfirmStrings[1] : _inputConfirmStrings[0];
 
@@ -75,20 +71,9 @@ namespace Frontier.FormTroop
             // キャンセル時はクッション画面へBack()するだけでシーンは継続するため、
             // 破棄予定のキャラクターを表示し続けているCharacterSelectionDisplayが
             // 破棄後のPlayerを参照し続けてMissingReferenceExceptionになるのを防ぐ
+            // (雇用可能キャラクター一覧自体の破棄・確定はRecruitTopMenuStateが行う)
             _presenter.ClearFocusCharacter();
             _presenter.SetActiveCharacterSelectUIs( false );
-
-            if( _isCancelled )
-            {
-                // キャンセル時は雇用予約を全て取り消し、消費した所持アニマを払い戻す
-                CancelAllEmployment();
-            }
-            else
-            {
-                JoinCandidates();
-            }
-
-            RemoveEmploymentCandidates();
 
             return base.ExitState();
         }
@@ -215,8 +200,6 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
-            // キャンセル時は雇用予約を全て取り消すため、ExitState()で払い戻し処理を行う
-            _isCancelled = true;
             Back();
 
             return true;
@@ -242,72 +225,6 @@ namespace Frontier.FormTroop
             TransitState( ( int ) RecruitRootTransitTag.CONFIRM );
 
             return true;
-        }
-
-        private void SetupEmploymentCandidates()
-        {
-            _employmentCandidates.Clear();
-
-            for( int i = 0; i < EMPLOYABLE_CHARACTERS_NUM; ++i )
-            {
-                Player player = CreateEmploymentCandidate( _userDomain.StageLevel, i );
-
-
-                // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
-                CharacterCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<CharacterCandidate>( false );
-                candidate.Init( player, null );
-
-                _employmentCandidates.Add( candidate );
-            }
-        }
-
-        /// <summary>
-        /// 雇用チェックされたキャラクターをキャラクター辞書に登録します
-        /// </summary>
-        private void JoinCandidates()
-        {
-            foreach( var candidate in _employmentCandidates )
-            {
-                var player = candidate.Character as Player;
-                if( !player.RecruitLogic.IsEmployed ) { continue; }
-                _userDomain.RecruitMember( player.GetStatusRef );
-            }
-        }
-
-        /// <summary>
-        /// 雇用予約を全て取り消し、消費した所持アニマを払い戻します
-        /// </summary>
-        private void CancelAllEmployment()
-        {
-            foreach( var candidate in _employmentCandidates )
-            {
-                var player = candidate.Character as Player;
-                if( !player.RecruitLogic.IsEmployed ) { continue; }
-
-                _userDomain.AddAnima( player.RecruitLogic.Cost );
-                player.RecruitLogic.SetEmployed( false );
-            }
-        }
-
-        /// <summary>
-        /// 不要な雇用候補キャラクターを破棄します
-        /// </summary>
-        private void RemoveEmploymentCandidates()
-        {
-            for( int i = 0; i < _employmentCandidates.Count; ++i )
-            {
-                Player player = _employmentCandidates[i].Character as Player;
-                player.RestoreMaterialsOriginalColor();
-                
-
-                if( player.RecruitLogic.IsEmployed )
-                {
-                    player.OnRecruitExit();
-                    continue;
-                }
-
-                player.Dispose();
-            }
         }
 
         /// <summary>
@@ -367,21 +284,6 @@ namespace Frontier.FormTroop
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// 雇用候補キャラクターを生成します
-        /// </summary>
-        /// <returns></returns>
-        private Player CreateEmploymentCandidate( int level, int characterIndex )
-        {
-            ( int unitTypeIndex, int cost, CharacterDeployData deployData ) =
-                RecruitFormula.GenerateEmploymentCandidateData( level, characterIndex, _unitLevelStatsContainer, _employmentCandidates );
-
-            Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, unitTypeIndex, deployData ) as Player;
-            player.OnRecruitEnter( cost );
-
-            return player;
         }
     }
 }
