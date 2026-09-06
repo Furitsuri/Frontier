@@ -200,9 +200,28 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
+            // 未確定の雇用チェックを全て取り消し、消費予定だったアニマを払い戻す
+            CancelPendingEmployment();
+
             Back();
 
             return true;
+        }
+
+        /// <summary>
+        /// まだ雇用を確定していないキャラクターの雇用チェックを全て取り消し、
+        /// 消費予定だった所持アニマを払い戻します
+        /// </summary>
+        private void CancelPendingEmployment()
+        {
+            foreach( var candidate in _employmentCandidates )
+            {
+                var player = candidate.Character as Player;
+                if( !player.RecruitLogic.IsEmployed ) { continue; }
+
+                _userDomain.AddAnima( player.RecruitLogic.Cost );
+                player.RecruitLogic.SetEmployed( false );
+            }
         }
 
         protected override bool AcceptInfo( InputContext context )
