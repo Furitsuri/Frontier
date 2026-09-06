@@ -49,19 +49,27 @@ namespace Frontier.FormTroop
             /*
              *  親子図
              *
-             *      RecruitRootState
+             *      RecruitTopMenuState (雇用/解雇 選択のクッション画面)
              *              ｜
-             *              ├─ CharacterStatusViewState
+             *              ├─ RecruitRootState (雇用候補選択画面)
+             *              ｜         ｜
+             *              ｜         ├─ CharacterStatusViewState
+             *              ｜         ｜
+             *              ｜         ├─ RecruitConfirmCompletedState
+             *              ｜         ｜
+             *              ｜         └─ RecruitConfirmCancelState
              *              ｜
-             *              ├─ RecruitConfirmCompletedState
-             *              ｜
-             *              └─ RecruitConfirmCancelState
+             *              └─ RecruitTopMenuConfirmCancelState
              *
              */
-            RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitRootState>( false );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCancelState>( false ) );
+            var employCandidateState = _hierarchyBld.InstantiateWithDiContainer<RecruitRootState>( false );
+            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
+            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCancelState>( false ) );
+
+            RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuState>( false );
+            RootNode.AddChild( employCandidateState );
+            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuConfirmCancelState>( false ) );
 
             CurrentNode = RootNode;
         }

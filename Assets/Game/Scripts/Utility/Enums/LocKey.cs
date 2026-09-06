@@ -54,4 +54,8 @@ public enum LocKey
     // ステージリザルト画面
     UI_STAGE_RESULT_TITLE,
     UI_STAGE_RESULT_TURN,
+
+    // 雇用フェーズ コマンド
+    UI_CMD_EMPLOY,
+    UI_CMD_DISMISS,
 }

@@ -26,7 +26,8 @@ namespace Frontier.UI
 
             gameObject.SetActive( true );
             _moneyUI.SetActive( true );
-            _employmentSelectUI.gameObject.SetActive( true );
+            // 中央のキャラクター選択ウィンドウは「雇用」選択後(RecruitRootState.Init())に表示されるため、
+            // ここでは有効化しない(_employmentSelectUI.Init()が末尾でSetActive(false)している)
             _confirmEmploymentUI.gameObject.SetActive( false );
         }
 

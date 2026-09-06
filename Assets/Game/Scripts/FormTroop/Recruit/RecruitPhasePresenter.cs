@@ -12,8 +12,10 @@ namespace Frontier.FormTroop
     public class RecruitPhasePresenter : CharacterSelectionPresenter, IConfirmPresenter
     {
         [Inject] private UserDomain _userDomain = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private RecruitUISystem _recruitmentUI = null;
+        private RecruitTopMenuUI _topMenuUI = null;
 
         [Inject]
         public RecruitPhasePresenter( IUiSystem uiSystem, HierarchyBuilderBase hierarchyBld ) : base( uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM, false, hierarchyBld )
@@ -28,6 +30,9 @@ namespace Frontier.FormTroop
 
             _recruitmentUI.gameObject.SetActive( true );
             _recruitmentUI.Init();
+
+            LazyInject.GetOrCreate( ref _topMenuUI, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<RecruitTopMenuUI>( true, false, nameof( RecruitTopMenuUI ) ) );
+            _topMenuUI.Setup();
         }
 
         public void Update()
@@ -42,6 +47,24 @@ namespace Frontier.FormTroop
 
             _recruitmentUI.Exit();
             _recruitmentUI.gameObject.SetActive( false );
+            _topMenuUI?.Hide();
+        }
+
+        /// <summary>
+        /// 雇用/解雇選択メニュー(RecruitTopMenuUI)の表示・非表示を切り替えます
+        /// </summary>
+        public void SetActiveTopMenu( bool isActive )
+        {
+            if( isActive ) { _topMenuUI.Show(); }
+            else { _topMenuUI.Hide(); }
+        }
+
+        /// <summary>
+        /// 雇用/解雇選択メニューの選択中インデックスを反映します
+        /// </summary>
+        public void SetTopMenuSelectedIndex( int index )
+        {
+            _topMenuUI.SetSelectedIndex( index );
         }
 
         public override void SetFocusCharacters( int focusCharaIndex )

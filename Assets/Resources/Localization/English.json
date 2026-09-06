@@ -35,5 +35,7 @@
     "EXPL_SKILL_JUMP_SLASH": "Jump Attack",
     "UI_BATTLE_ANIMA": "Anima Earned",
     "UI_STAGE_RESULT_TITLE": "Result",
-    "UI_STAGE_RESULT_TURN": "Turns Taken"
+    "UI_STAGE_RESULT_TURN": "Turns Taken",
+    "UI_CMD_EMPLOY": "Employ",
+    "UI_CMD_DISMISS": "Dismiss"
 }
