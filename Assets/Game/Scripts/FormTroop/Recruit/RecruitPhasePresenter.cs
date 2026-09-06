@@ -12,7 +12,6 @@ namespace Frontier.FormTroop
     public class RecruitPhasePresenter : CharacterSelectionPresenter, IConfirmPresenter
     {
         [Inject] private UserDomain _userDomain = null;
-        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private RecruitUISystem _recruitmentUI = null;
         private RecruitTopMenuUI _topMenuUI = null;
@@ -22,6 +21,7 @@ namespace Frontier.FormTroop
         {
             _uiSystem      = uiSystem;
             _recruitmentUI = _uiSystem.RecruitUi;
+            _topMenuUI     = _recruitmentUI.TopMenuUI;
         }
 
         public override void Init()
@@ -30,9 +30,6 @@ namespace Frontier.FormTroop
 
             _recruitmentUI.gameObject.SetActive( true );
             _recruitmentUI.Init();
-
-            LazyInject.GetOrCreate( ref _topMenuUI, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<RecruitTopMenuUI>( true, false, nameof( RecruitTopMenuUI ) ) );
-            _topMenuUI.Setup();
         }
 
         public void Update()
@@ -47,7 +44,7 @@ namespace Frontier.FormTroop
 
             _recruitmentUI.Exit();
             _recruitmentUI.gameObject.SetActive( false );
-            _topMenuUI?.Hide();
+            _topMenuUI.Hide();
         }
 
         /// <summary>
