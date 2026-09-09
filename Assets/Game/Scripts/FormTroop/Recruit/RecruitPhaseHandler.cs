@@ -57,6 +57,10 @@ namespace Frontier.FormTroop
              *              ｜         ｜
              *              ｜         └─ RecruitConfirmCompletedState
              *              ｜
+             *              ├─ RecruitDismissState (自軍メンバー一覧・解雇画面。キャンセルでクッション画面へBack())
+             *              ｜         ｜
+             *              ｜         └─ RecruitDismissConfirmState
+             *              ｜
              *              └─ RecruitTopMenuConfirmCancelState
              *
              */
@@ -64,8 +68,12 @@ namespace Frontier.FormTroop
             employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
 
+            var dismissState = _hierarchyBld.InstantiateWithDiContainer<RecruitDismissState>( false );
+            dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitDismissConfirmState>( false ) );
+
             RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuState>( false );
             RootNode.AddChild( employCandidateState );
+            RootNode.AddChild( dismissState );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuConfirmCancelState>( false ) );
 
             CurrentNode = RootNode;

@@ -14,14 +14,15 @@ namespace Frontier.FormTroop
     /// 雇用フェーズ開始時に表示する「雇用/解雇」選択のクッションステート。
     /// 雇用可能キャラクター一覧はこのステートがRecruitScene起動時に一度だけ決定・保持し、
     /// 以後(「雇用」→キャンセルで本ステートに戻ってきても)再抽選しない。
-    /// 「雇用」選択時は既存の雇用候補選択画面(RecruitRootState)へ遷移する。
-    /// 「解雇」は未実装(別タスクで対応予定のスタブ)。
+    /// 「雇用」選択時は既存の雇用候補選択画面(RecruitRootState)へ、「解雇」選択時は
+    /// 自軍メンバー一覧画面(RecruitDismissState)へ遷移する。
     /// </summary>
     public sealed class RecruitTopMenuState : RecruitPhaseStateBase
     {
         private enum RecruitTopMenuTransitTag
         {
             EMPLOY = 0,
+            DISMISS,
             CONFIRM_CANCEL,
         }
 
@@ -133,8 +134,10 @@ namespace Frontier.FormTroop
                     break;
 
                 case RECRUIT_TOP_MENU_OPTION_TAG.DISMISS:
-                    // MEMO : 解雇の実装は別タスクで対応予定
-                    Debug.Log( "[RecruitTopMenuState] 解雇は未実装です。" );
+                    // 画面遷移のため即座に隠す(子への遷移はPauseState止まりでExitStateが呼ばれないため)
+                    _presenter.SetActiveTopMenu( false );
+                    _talkWindowPresenter.Hide();
+                    TransitState( ( int ) RecruitTopMenuTransitTag.DISMISS );
                     break;
             }
 

@@ -21,6 +21,9 @@ namespace Frontier.UI
         [Header( "Lv.と名前を表示するテキスト" )]
         [SerializeField] private TextMeshProUGUI _nameLevelText;
 
+        [Header( "右上に表示する報酬アニマ量テキスト(未使用の呼び出し元では非表示のまま)" )]
+        [SerializeField] private TextMeshProUGUI _rewardAnimaText;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private CharacterCamera _characterCamera = null;
@@ -47,6 +50,18 @@ namespace Frontier.UI
 
             var status = _character.GetStatusRef;
             _nameLevelText.text = $"Lv.{status.Level}  {status.Name}";
+        }
+
+        /// <summary>
+        /// 右上の報酬アニマ量表示を設定します。nullの場合は非表示にします
+        /// (解雇画面等、報酬を提示する呼び出し元でのみ使用する)。
+        /// </summary>
+        public void SetRewardAnima( int? amount )
+        {
+            if ( _rewardAnimaText == null ) return;
+
+            _rewardAnimaText.gameObject.SetActive( amount.HasValue );
+            if ( amount.HasValue ) { _rewardAnimaText.text = $"+{amount.Value}"; }
         }
 
         /// <summary>

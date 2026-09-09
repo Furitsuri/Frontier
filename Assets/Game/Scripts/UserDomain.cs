@@ -40,6 +40,23 @@ public class UserDomain
     }
 
     /// <summary>
+    /// 指定インデックスの味方を編成から除名します。
+    /// characterIndexは「Members内の位置」を表す規約(RecruitMember参照)のため、
+    /// 除名後は残ったメンバー全員のcharacterIndexを詰め直します。
+    /// </summary>
+    public void DismissMember( int index )
+    {
+        Members.RemoveAt( index );
+
+        for( int i = 0; i < Members.Count; ++i )
+        {
+            var status = Members[i];
+            status.characterIndex = i;
+            Members[i] = status;
+        }
+    }
+
+    /// <summary>
     /// 指定スキルの所持数を返します(未所持の場合は0)。
     /// </summary>
     public int GetSkillCount( SkillID skillID )

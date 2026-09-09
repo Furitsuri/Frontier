@@ -16,7 +16,9 @@ namespace Frontier.UI
     /// </summary>
     public class TroopEditUI : UiMonoBehaviour
     {
-        private const LocKey TitleLocalizationKey = LocKey.UI_CMD_TROOPS;
+        private const LocKey DefaultTitleLocalizationKey = LocKey.UI_CMD_TROOPS;
+
+        private LocKey _titleLocalizationKey = DefaultTitleLocalizationKey;
 
         [Header( "タイトルテキスト" )]
         [SerializeField] private TextMeshProUGUI _titleText;
@@ -77,7 +79,17 @@ namespace Frontier.UI
         {
             if ( _titleText == null ) return;
 
-            _titleText.text = _localization != null ? _localization.Get( TitleLocalizationKey ) : TitleLocalizationKey.ToString();
+            _titleText.text = _localization != null ? _localization.Get( _titleLocalizationKey ) : _titleLocalizationKey.ToString();
+        }
+
+        /// <summary>
+        /// 画面タイトルを差し替えます(呼び出し元の文脈に応じたタイトルにするため)。
+        /// 未呼び出しの場合は従来通り"UI_CMD_TROOPS"を表示します。
+        /// </summary>
+        public void SetTitleKey( LocKey key )
+        {
+            _titleLocalizationKey = key;
+            RefreshTitleText();
         }
 
         /// <summary>
@@ -112,6 +124,17 @@ namespace Frontier.UI
             // GridLayoutGroupによる配置はレイアウトパス(次フレーム以降)まで反映されないため、
             // SetSelectedIndex()で各セルの位置を正しく参照できるよう、ここで強制的に確定させる
             LayoutRebuilder.ForceRebuildLayoutImmediate( ( RectTransform ) _gridContent );
+        }
+
+        /// <summary>
+        /// 指定インデックスのセルに報酬アニマ量を表示します(解雇画面等の呼び出し元専用)。
+        /// nullを渡すと非表示に戻ります。
+        /// </summary>
+        public void SetRewardAnima( int index, int? amount )
+        {
+            if ( index < 0 || index >= _cells.Count ) return;
+
+            _cells[index].SetRewardAnima( amount );
         }
 
         /// <summary>

@@ -58,4 +58,7 @@ public enum LocKey
     // 雇用フェーズ コマンド
     UI_CMD_EMPLOY,
     UI_CMD_DISMISS,
+
+    // 解雇確認ダイアログ
+    UI_CONFIRM_DISMISS_MEMBER_MESSAGE,
 }

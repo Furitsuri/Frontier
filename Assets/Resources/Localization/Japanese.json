@@ -37,5 +37,6 @@
     "UI_STAGE_RESULT_TITLE": "リザルト",
     "UI_STAGE_RESULT_TURN": "経過ターン数",
     "UI_CMD_EMPLOY": "雇用",
-    "UI_CMD_DISMISS": "解雇"
+    "UI_CMD_DISMISS": "解雇",
+    "UI_CONFIRM_DISMISS_MEMBER_MESSAGE": "このキャラクターを解雇しますか？"
 }

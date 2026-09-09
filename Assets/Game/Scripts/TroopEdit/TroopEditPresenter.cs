@@ -49,6 +49,16 @@ namespace Frontier.TroopEdit
         public void SetHeaderInfo( int anima, int currentMemberNum, int maxMemberNum ) => _view.SetHeaderInfo( anima, currentMemberNum, maxMemberNum );
 
         /// <summary>
+        /// 画面タイトルを差し替えます(呼び出し元の文脈に応じたタイトルにするため)。
+        /// </summary>
+        public void SetTitleKey( LocKey key ) => _view.SetTitleKey( key );
+
+        /// <summary>
+        /// 指定インデックスのセルに報酬アニマ量を表示します(解雇画面等の呼び出し元専用)。
+        /// </summary>
+        public void SetRewardAnima( int index, int? amount ) => _view.SetRewardAnima( index, amount );
+
+        /// <summary>
         /// 選択中キャラクターのパラメータ表示に使うCharacterParameterUIへの参照。
         /// TroopEditHandlerがCharacterParameterPresenterを構築する際に一度だけ取得します。
         /// </summary>

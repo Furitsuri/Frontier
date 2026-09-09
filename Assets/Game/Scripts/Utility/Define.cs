@@ -96,6 +96,11 @@ static public class Constants
     public const float CHARACTER_SELECTION_SPACING_X    = 50f;
     public const float CHARACTER_SELECTION_OFFSET_Y     = 0f;
     public const float CHARACTER_SELECTION_OFFSET_Z     = -1000f;
+    // 解雇画面(RecruitDismissState)におけるキャラクターの配置前座標。
+    // RecruitScene内ではCHARACTER_SELECTION_OFFSET_Zに雇用候補キャラクターが同時に待機しているため、
+    // 同じZ座標を使うとオフスクリーン上で座標が重なり、カメラに複数キャラクターが映り込んでしまう。
+    // そのため別のZ座標を用いて待機エリアそのものを分離する。
+    public const float DISMISS_CHARACTER_OFFSET_Z       = -2000f;
     // キャラクター編集画面でL1/R1切替時にパラメータパネルの3Dモデルをスライドさせる際の所要時間(秒)
     public const float CHARACTER_PARAM_PORTRAIT_SLIDE_DURATION = 0.25f;
     // 配置フェーズにおいて表示するキャラクター画像のX座標オフセット値

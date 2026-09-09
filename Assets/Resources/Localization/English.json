@@ -37,5 +37,6 @@
     "UI_STAGE_RESULT_TITLE": "Result",
     "UI_STAGE_RESULT_TURN": "Turns Taken",
     "UI_CMD_EMPLOY": "Employ",
-    "UI_CMD_DISMISS": "Dismiss"
+    "UI_CMD_DISMISS": "Dismiss",
+    "UI_CONFIRM_DISMISS_MEMBER_MESSAGE": "Dismiss this character?"
 }

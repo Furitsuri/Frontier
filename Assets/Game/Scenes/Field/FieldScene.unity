@@ -651,7 +651,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 4951665172205754173, guid: 6d9285926553ffb419326fa49c2ac546, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 7838383661153866166, guid: 6d9285926553ffb419326fa49c2ac546, type: 3}
       insertIndex: 2
@@ -1940,7 +1941,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1849047558}
   PanelTransform: {fileID: 1340544095}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -8183,7 +8184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1603264499}
   PanelTransform: {fileID: 782235560}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -15697,6 +15698,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _portrait: {fileID: 1435438802}
   _nameLevelText: {fileID: 1493892631}
+  _rewardAnimaText: {fileID: 0}
 --- !u!1 &1406159182
 GameObject:
   m_ObjectHideFlags: 0
@@ -21999,7 +22001,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1841529931}
   PanelTransform: {fileID: 33897723}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
@@ -24194,7 +24196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea33cb5215ab0846a7ae74386e1338e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textKey: 
+  _textKey: 0
   TMPSkillName: {fileID: 1529254388}
   PanelTransform: {fileID: 2141996346}
   ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
