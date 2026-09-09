@@ -55,13 +55,15 @@ namespace Frontier.UI
         /// <summary>
         /// 右上の報酬アニマ量表示を設定します。nullの場合は非表示にします
         /// (解雇画面等、報酬を提示する呼び出し元でのみ使用する)。
+        /// アニマのスプライトアイコン(TMP Sprite Asset、文字サイズに追従)+数値で表示する。
         /// </summary>
         public void SetRewardAnima( int? amount )
         {
             if ( _rewardAnimaText == null ) return;
 
             _rewardAnimaText.gameObject.SetActive( amount.HasValue );
-            if ( amount.HasValue ) { _rewardAnimaText.text = $"+{amount.Value}"; }
+            // voffsetでスプライトのみ少し上へ補正する(文字のベースラインはそのまま)
+            if ( amount.HasValue ) { _rewardAnimaText.text = $"<voffset=0.15em><sprite name=\"coin_substitute\"></voffset>{amount.Value}"; }
         }
 
         /// <summary>

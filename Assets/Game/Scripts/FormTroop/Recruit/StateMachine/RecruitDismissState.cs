@@ -46,7 +46,8 @@ namespace Frontier.FormTroop
 
             _pendingDismissIndex = -1;
 
-            RefreshRoster();
+            InitializeRewardAnimas();
+            BuildRoster();
         }
 
         public override object ExitState()
@@ -57,8 +58,11 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 解雇確認画面からキャンセル(NO)で戻ってきた際、または解雇確定(YES)後の一覧再構築のために
-        /// 表示を復帰します。RequestDismiss()でリクエストが来ていれば、ここで実際の解雇処理を行います。
+        /// 解雇確認画面から戻ってきた際に呼ばれます。RequestDismiss()でリクエストが来ていれば
+        /// (YES)、実際の解雇処理を行い、解雇された1体だけをグリッドから取り除きます。
+        /// キャンセル(NO)の場合は表示に変更が無いため何もしません
+        /// (毎回グリッドを再構築すると、残っているキャラクター達の再生中アニメーションが
+        /// 途切れてしまうため、実際に変化があった場合のみ更新するようにしています)。
         /// </summary>
         public override void RestartState()
         {
@@ -69,11 +73,17 @@ namespace Frontier.FormTroop
                 int reward = _rewardAnimas[_pendingDismissIndex];
                 _userDomain.AddAnima( reward );
                 _userDomain.DismissMember( _pendingDismissIndex );
+                _rewardAnimas.RemoveAt( _pendingDismissIndex );
+
+                _gridController.RemoveCharacterAt( _pendingDismissIndex, _userDomain.Anima );
+
+                for( int i = 0; i < _rewardAnimas.Count; ++i )
+                {
+                    _troopEditPresenter.SetRewardAnima( i, _rewardAnimas[i] );
+                }
 
                 _pendingDismissIndex = -1;
             }
-
-            RefreshRoster();
         }
 
         public override void RegisterInputCodes()
@@ -89,7 +99,8 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptConfirm()
         {
-            return _gridController.SpawnedCharacters.Count > 0;
+            // 自軍が1人になる解雇は許可しない
+            return _gridController.SpawnedCharacters.Count > 0 && 1 < _userDomain.Members.Count;
         }
 
         protected override bool AcceptDirection( InputContext context )
@@ -132,19 +143,26 @@ namespace Frontier.FormTroop
         public int GetRewardAnima( int index ) => _rewardAnimas[index];
 
         /// <summary>
-        /// UserDomain.Membersから表示用キャラクターを再生成し、グリッド・ヘッダー・
-        /// ステータスパネル・報酬アニマ表示を最新の状態に更新します。
+        /// 解雇報酬アニマ額を、このState突入時に一度だけ算出します。以後は解雇確定によって
+        /// リストから該当分を取り除く場合を除き、再計算しません(RestartState参照)。
         /// </summary>
-        private void RefreshRoster()
+        private void InitializeRewardAnimas()
         {
-            var members = _userDomain.Members;
-
             _rewardAnimas.Clear();
-            for( int i = 0; i < members.Count; ++i )
+            for( int i = 0; i < _userDomain.Members.Count; ++i )
             {
                 // MEMO : 解雇報酬の仕様は未確定のため、暫定的に1〜20のランダム値とする
                 _rewardAnimas.Add( Random.Range( 1, 21 ) );
             }
+        }
+
+        /// <summary>
+        /// UserDomain.Membersから表示用キャラクターを生成し、グリッド・ヘッダー・
+        /// ステータスパネル・報酬アニマ表示を初期表示します(このState突入時に一度だけ呼ばれる)。
+        /// </summary>
+        private void BuildRoster()
+        {
+            var members = _userDomain.Members;
 
             // 雇用候補キャラクター(CharacterCandidate)が同シーン内でCHARACTER_SELECTION_OFFSET_Zの
             // オフスクリーン待機位置を使い続けているため、座標が重ならないよう専用のZ座標を使う

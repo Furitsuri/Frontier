@@ -66,6 +66,25 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
+        /// 指定インデックスのキャラクターだけを取り除きます(解雇確定時等)。Show()と異なり、
+        /// 残りのキャラクターのGameObjectは破棄・再生成しないため、再生中のアニメーションが
+        /// 途切れません(グリッドのセルUI自体はGridLayoutGroupの再配置のため再生成されます)。
+        /// </summary>
+        public void RemoveCharacterAt( int index, int anima )
+        {
+            if ( _spawnedCharacters[index] != null ) { Object.Destroy( _spawnedCharacters[index].gameObject ); }
+            _spawnedCharacters.RemoveAt( index );
+
+            _selectedIndex = Mathf.Clamp( _selectedIndex, 0, Mathf.Max( 0, _spawnedCharacters.Count - 1 ) );
+
+            _troopEditPresenter.DisplayMembers( _spawnedCharacters );
+            _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
+            _troopEditPresenter.SetHeaderInfo( anima, _spawnedCharacters.Count, TROOP_MAX_MEMBERS );
+
+            RefreshCharacterParamDisplay();
+        }
+
+        /// <summary>
         /// 外部要因(CharacterEdit画面からの復帰等)で選択位置が変わった場合に反映します。
         /// </summary>
         public void SetSelectedIndex( int index )

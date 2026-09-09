@@ -215,6 +215,9 @@ namespace Frontier.UI
 
         /// <summary>
         /// グリッド上に生成済みのセルをすべて破棄します。
+        /// DisplayMembers()内でこの直後に新しいセルを生成するため、Destroy()(破棄がフレーム末尾まで
+        /// 遅延する)ではなくDestroyImmediate()を使い、GridLayoutGroupが新旧セル混在の状態で
+        /// レイアウトを確定してしまわないようにする。
         /// </summary>
         public void ClearMembers()
         {
@@ -223,7 +226,7 @@ namespace Frontier.UI
                 if ( cell == null ) continue;
 
                 cell.Dispose();
-                Destroy( cell.gameObject );
+                DestroyImmediate( cell.gameObject );
             }
 
             _cells.Clear();
