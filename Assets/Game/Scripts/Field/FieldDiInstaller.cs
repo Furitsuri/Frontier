@@ -19,6 +19,7 @@ namespace Frontier.Field
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
             // 戦闘エンティティ層(Character等)がFieldSceneでもDI解決できるよう、DiInstaller.csと同じBindを用意する
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
+            Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();

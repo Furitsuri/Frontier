@@ -30,6 +30,7 @@ namespace Frontier.FormTroop
             // 戦闘エンティティ層(Character等)がRecruitSceneでもDI解決できるよう、DiInstaller.csと同じBindを用意する
             // (RecruitScene用UISystemのBattleUiはnullを返すが、RecruitSceneでは戦闘UI演出メソッドを呼ばないため問題ない)
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
+            Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する

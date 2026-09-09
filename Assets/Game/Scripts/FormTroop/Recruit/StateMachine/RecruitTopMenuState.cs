@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.StateMachine;
+using Frontier.UI;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -24,8 +25,9 @@ namespace Frontier.FormTroop
             CONFIRM_CANCEL,
         }
 
-        [Inject] private UserDomain _userDomain             = null;
-        [Inject] private CharacterFactory _characterFactory = null;
+        [Inject] private UserDomain _userDomain                     = null;
+        [Inject] private CharacterFactory _characterFactory         = null;
+        [Inject] private TalkWindowPresenter _talkWindowPresenter   = null;
 
         private bool _isCancelled = false;  // 雇用を行わずにRecruitScene自体を終了するか
         private CommandList _commandList = new CommandList();
@@ -55,11 +57,14 @@ namespace Frontier.FormTroop
 
             _presenter.SetActiveTopMenu( true );
             _presenter.SetTopMenuSelectedIndex( _cmdIdxVal.value );
+
+            _talkWindowPresenter.Show( "shopkeeper_greeting" );
         }
 
         public override object ExitState()
         {
             _presenter.SetActiveTopMenu( false );
+            _talkWindowPresenter.Hide();
 
             if( _isCancelled )
             {
@@ -85,6 +90,8 @@ namespace Frontier.FormTroop
 
             _presenter.SetActiveTopMenu( true );
             _presenter.SetTopMenuSelectedIndex( _cmdIdxVal.value );
+
+            _talkWindowPresenter.Show( "shopkeeper_greeting" );
         }
 
         /// <summary>
@@ -119,6 +126,7 @@ namespace Frontier.FormTroop
                 case RECRUIT_TOP_MENU_OPTION_TAG.EMPLOY:
                     // 画面遷移のため即座に隠す(子への遷移はPauseState止まりでExitStateが呼ばれないため)
                     _presenter.SetActiveTopMenu( false );
+                    _talkWindowPresenter.Hide();
                     // 雇用可能キャラクター一覧(このステートが保持し続ける同一インスタンス)を渡す
                     SetSendTransitionContext( _employmentCandidates );
                     TransitState( ( int ) RecruitTopMenuTransitTag.EMPLOY );
