@@ -27,6 +27,7 @@ namespace Frontier.FormTroop
         }
 
         [Inject] private UserDomain _userDomain = null;
+        [Inject] private GeneralHeaderPresenter _headerPresenter = null;
 
         private TroopEditPresenter _troopEditPresenter      = null;
         private CharacterParameterPresenter _paramPresenter = null;
@@ -57,7 +58,7 @@ namespace Frontier.FormTroop
 
             LazyInject.GetOrCreate( ref _troopEditPresenter, () => _hierarchyBld.InstantiateWithDiContainer<TroopEditPresenter>( false ) );
             _troopEditPresenter.Init();
-            _troopEditPresenter.SetTitleKey( LocKey.UI_CMD_EMPLOY );
+            _headerPresenter.SetStateTitle( LocKey.UI_CMD_EMPLOY );
 
             LazyInject.GetOrCreate( ref _paramPresenter, () => _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(
                 new object[] { _troopEditPresenter.CharacterParamUI, false }, false ) );
@@ -106,6 +107,7 @@ namespace Frontier.FormTroop
         public override object ExitState()
         {
             _gridController.Close();
+            _headerPresenter.ClearStateTitle();
 
             return base.ExitState();
         }

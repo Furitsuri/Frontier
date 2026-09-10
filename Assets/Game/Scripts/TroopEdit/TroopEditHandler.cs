@@ -1,4 +1,5 @@
 ﻿using Frontier.CharacterEdit;
+using Frontier.UI;
 using System;
 using UnityEngine;
 using Zenject;
@@ -19,6 +20,7 @@ namespace Frontier.TroopEdit
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private UserDomain _userDomain = null;
+        [Inject] private GeneralHeaderPresenter _headerPresenter = null;
 
         private TroopEditPresenter _presenter = null;
         private CharacterParameterPresenter _paramPresenter = null;
@@ -52,6 +54,8 @@ namespace Frontier.TroopEdit
         public void Show( Action onClosed )
         {
             _onClosed = onClosed;
+
+            _headerPresenter.SetStateTitle( LocKey.UI_CMD_TROOPS );
 
             _gridController.Show( _userDomain.Members, CHARACTER_SELECTION_OFFSET_Z );
 
@@ -132,6 +136,7 @@ namespace Frontier.TroopEdit
         private void Close()
         {
             _gridController.Close();
+            _headerPresenter.ClearStateTitle();
 
             InputFacade.Instance.UnregisterInputCodes( _navHashCode );
 

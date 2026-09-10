@@ -16,13 +16,6 @@ namespace Frontier.UI
     /// </summary>
     public class TroopEditUI : UiMonoBehaviour
     {
-        private const LocKey DefaultTitleLocalizationKey = LocKey.UI_CMD_TROOPS;
-
-        private LocKey _titleLocalizationKey = DefaultTitleLocalizationKey;
-
-        [Header( "タイトルテキスト" )]
-        [SerializeField] private TextMeshProUGUI _titleText;
-
         [Header( "キャラクターセルを並べるグリッドコンテナ(GridLayoutGroup設置済み)" )]
         [SerializeField] private Transform _gridContent;
 
@@ -39,7 +32,6 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _characterParamNameText;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private ILocalizationService _localization = null;
 
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
         private RectTransform _canvasRect;
@@ -50,38 +42,13 @@ namespace Frontier.UI
         {
             base.Setup();
 
-            RefreshTitleText();
             _characterParamUI?.Setup();
             _canvasRect = ( RectTransform ) GetComponentInParent<Canvas>().transform;
-
-            if ( _localization != null ) { _localization.OnLanguageChanged += RefreshTitleText; }
-        }
-
-        private void OnDestroy()
-        {
-            if ( _localization != null ) { _localization.OnLanguageChanged -= RefreshTitleText; }
         }
 
         public void Show() => gameObject.SetActive( true );
 
         public void Hide() => gameObject.SetActive( false );
-
-        private void RefreshTitleText()
-        {
-            if ( _titleText == null ) return;
-
-            _titleText.text = _localization != null ? _localization.Get( _titleLocalizationKey ) : _titleLocalizationKey.ToString();
-        }
-
-        /// <summary>
-        /// 画面タイトルを差し替えます(呼び出し元の文脈に応じたタイトルにするため)。
-        /// 未呼び出しの場合は従来通り"UI_CMD_TROOPS"を表示します。
-        /// </summary>
-        public void SetTitleKey( LocKey key )
-        {
-            _titleLocalizationKey = key;
-            RefreshTitleText();
-        }
 
         /// <summary>
         /// 渡されたキャラクター一覧をグリッド上に並べ直します。並び順はそのまま

@@ -22,10 +22,12 @@ namespace Frontier.TroopEdit
         private const float CharacterParamSideMargin = 40f;
         // パネルとグリッド最終行との間に確保する余白(px)。
         private const float CharacterParamRowGap = 8f;
-        // パネルとタイトル/入力ガイドバーとの間に確保する最低限の余白(px)。
+        // パネルと画面上部ヘッダー/入力ガイドバーとの間に確保する最低限の余白(px)。
         private const float CharacterParamEdgeGap = 8f;
-        // タイトルテキストの下端・入力ガイドバーの上端のY座標(px、キャンバス中心基準)。実測して決めた値。
-        private const float CharacterParamTitleBottomY = 250f;
+        // 画面上部ヘッダー(GeneralHeaderUI)の下端・入力ガイドバーの上端のY座標
+        // (px、キャンバス中心基準。実測して決めた値)。パネルを画面上側へ配置する場合、
+        // ヘッダーと重ならないようこの値を上限とする。
+        private const float CharacterParamHeaderBottomY = 305f;
         private const float CharacterParamGuideTopY    = -305f;
 
         /// <summary>
@@ -45,11 +47,6 @@ namespace Frontier.TroopEdit
         public void ClearMembers() => _view.ClearMembers();
 
         public void SetSelectedIndex( int index ) => _view.SetSelectedIndex( index );
-
-        /// <summary>
-        /// 画面タイトルを差し替えます(呼び出し元の文脈に応じたタイトルにするため)。
-        /// </summary>
-        public void SetTitleKey( LocKey key ) => _view.SetTitleKey( key );
 
         /// <summary>
         /// 指定インデックスのセルに報酬アニマ量を表示します(解雇画面等の呼び出し元専用)。
@@ -75,7 +72,7 @@ namespace Frontier.TroopEdit
         /// <summary>
         /// キャラクターパラメータパネルを画面左側へ再配置します。選択中セルが乗っている行を基準に、
         /// 入力ガイドバーぎりぎりの下側へ配置することを優先し(その行との間に余白を確保できる場合)、
-        /// 下側に収まらない場合はタイトルぎりぎりの上側へ配置します。グリッドが複数行ある場合、
+        /// 下側に収まらない場合は画面上部ヘッダーぎりぎりの上側へ配置します。グリッドが複数行ある場合、
         /// 選択中の行以外の行とはパネルが重なり得ますが、カーソル・選択中キャラクターとは
         /// 常に重ならないことを優先します。Viewからは事実(セル位置・パネル高さ)のみを取得し、
         /// どこに置くかの判断はここで行います。
@@ -86,12 +83,12 @@ namespace Frontier.TroopEdit
             float panelHeight = _view.GetCharacterParamPanelHeight();
             float? selectedRowBottomY = _view.GetCellBottomY( selectedIndex );
 
-            float guideFloor   = CharacterParamGuideTopY + CharacterParamEdgeGap;
-            float titleCeiling = CharacterParamTitleBottomY - CharacterParamEdgeGap;
+            float guideFloor    = CharacterParamGuideTopY + CharacterParamEdgeGap;
+            float headerCeiling = CharacterParamHeaderBottomY - CharacterParamEdgeGap;
 
             bool fitsBelowSelectedRow = selectedRowBottomY.HasValue && ( guideFloor + panelHeight ) <= ( selectedRowBottomY.Value - CharacterParamRowGap );
 
-            float bottomY = fitsBelowSelectedRow ? guideFloor : titleCeiling - panelHeight;
+            float bottomY = fitsBelowSelectedRow ? guideFloor : headerCeiling - panelHeight;
 
             _view.SetCharacterParamPosition( CharacterParamSideMargin, bottomY );
         }
