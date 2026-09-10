@@ -11,7 +11,8 @@ namespace Frontier.FormTroop
 
             if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {
-                _isEndedPhase = true;
+                // 雇用確定キャラクターを自軍へ加え、表示から取り除く(RecruitSceneは終了しない)
+                GetParent<RecruitRootState>()?.CommitEmployment();
             }
 
             Back();

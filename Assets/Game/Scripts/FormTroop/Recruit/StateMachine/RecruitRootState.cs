@@ -91,10 +91,14 @@ namespace Frontier.FormTroop
             // 基底の更新は行わない
             // if( base.Update() ) { return true; }
 
-            var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
-            NullCheck.AssertNotNull( player, nameof( player ) );
+            // 雇用確定によって候補が0体になった場合はCONFIRMアイコンの文字列更新をスキップする
+            if( _employmentCandidates.Count > 0 )
+            {
+                var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
+                NullCheck.AssertNotNull( player, nameof( player ) );
 
-            _inputConfirmStrWrapper.Explanation = player.RecruitLogic.IsEmployed ? _inputConfirmStrings[1] : _inputConfirmStrings[0];
+                _inputConfirmStrWrapper.Explanation = player.RecruitLogic.IsEmployed ? _inputConfirmStrings[1] : _inputConfirmStrings[0];
+            }
 
             return ( 0 <= TransitIndex );
         }
@@ -114,13 +118,16 @@ namespace Frontier.FormTroop
                (GuideIcon.ALL_CURSOR,           "SELECT\nUNIT",             CanAcceptDefault,       new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,       new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.CANCEL,               "BACK",                     CanAcceptDefault,       new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.INFO,                 "STATUS",                   CanAcceptDefault,       new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
+               (GuideIcon.INFO,                 "STATUS",                   CanAcceptInfo,          new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
                (GuideIcon.OPT2,                 "COMPLETE",                 CanAcceptOptional,      new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
             );
         }
 
         protected override bool CanAcceptConfirm()
         {
+            // 雇用確定によって候補が0体になった場合は選択操作自体を受け付けない
+            if( _employmentCandidates.Count == 0 ) { return false; }
+
             var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
 
@@ -136,6 +143,14 @@ namespace Frontier.FormTroop
         protected override bool CanAcceptOptional()
         {
             return _isExistEmployedCharacter;   // 雇用候補キャラクターが一人もいない場合は完了できない
+        }
+
+        /// <summary>
+        /// 雇用確定によって候補が0体になった場合はステータス表示への遷移を受け付けない
+        /// </summary>
+        protected override bool CanAcceptInfo()
+        {
+            return _employmentCandidates.Count > 0;
         }
 
         /// <summary>
@@ -209,6 +224,43 @@ namespace Frontier.FormTroop
                 _userDomain.AddAnima( player.RecruitLogic.Cost );
                 player.RecruitLogic.SetEmployed( false );
             }
+        }
+
+        /// <summary>
+        /// 雇用完了確認ステートでYesが選択された際に呼ばれます。雇用チェック済みの候補を
+        /// 自軍へ加入させ、表示(候補一覧・グリッド)から取り除きます。RecruitSceneは終了せず、
+        /// 残りの候補(未チェックのもの)で引き続き雇用/解雇の選択を続けられます。
+        /// </summary>
+        public void CommitEmployment()
+        {
+            // _employmentCandidatesはRecruitTopMenuStateが所有するインスタンスをReceiveContext(参照渡し)で
+            // 受け取っているため、新しいリストに差し替えるのではなくこのリスト自体を操作する
+            // (差し替えるとRecruitTopMenuState側の一覧に反映されず、次回「雇用」再訪問時に
+            // 破棄済みキャラクターへ再アクセスしてしまう)
+            for( int i = _employmentCandidates.Count - 1; i >= 0; --i )
+            {
+                var player = _employmentCandidates[i].Character as Player;
+                NullCheck.AssertNotNull( player, nameof( player ) );
+
+                if( !player.RecruitLogic.IsEmployed ) { continue; }
+
+                // 自軍へ加入させた上で、表示用のキャラクターは不要になるため破棄する
+                _userDomain.RecruitMember( player.GetStatusRef );
+                player.Dispose();
+
+                _employmentCandidates.RemoveAt( i );
+            }
+
+            _gridController.ShowExisting( _employmentCandidates.Select( c => c.Character ).ToList() );
+
+            for( int i = 0; i < _employmentCandidates.Count; ++i )
+            {
+                var player = _employmentCandidates[i].Character as Player;
+                _troopEditPresenter.SetCost( i, player.RecruitLogic.Cost );
+                _troopEditPresenter.SetEmployed( i, player.RecruitLogic.IsEmployed );
+            }
+
+            _isExistEmployedCharacter = IsExistEmployedCharacter();
         }
 
         protected override bool AcceptInfo( InputContext context )
