@@ -51,25 +51,17 @@ namespace Frontier.FormTroop
             InitializeRewardAnimas();
             BuildRoster();
 
-            // 突入時は必ず店主の会話クッション画面を経由する(会話を閉じるとこの画面の操作に移れる)
-            TransitState( ( int ) RecruitDismissTransitTag.GREETING );
+            // 解雇可能なメンバーが一人も居ない場合(自軍が1人になる解雇は許可しないため、
+            // 残り1人の場合も含む)のみ、店主の会話クッション画面を経由する(会話を閉じると
+            // RestartState()でこの画面の表示に戻る)。クッション画面表示中はカーソル・
+            // パラメータパネルを隠し、表示するメッセージはcontext経由で渡す。
+            if( _userDomain.Members.Count <= 1 )
+            {
+                _gridController.HideSelectionDisplay();
+                SetSendTransitionContext( new TalkWindowCushionContext( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_DISMISS_NONE_AVAILABLE ) );
+                TransitState( ( int ) RecruitDismissTransitTag.GREETING );
+            }
         }
-
-        /// <summary>
-        /// 解雇可能なメンバーが1体でも残っているか(店主の会話クッション画面が表示メッセージを選ぶ際に使用)。
-        /// 自軍が1人になる解雇は許可しないため、2人以上いる場合のみ解雇可能とする。
-        /// </summary>
-        public bool HasDismissableMembers => 1 < _userDomain.Members.Count;
-
-        /// <summary>
-        /// カーソル・選択中キャラクターのパラメータパネルを一時的に隠します(会話クッション画面表示中)。
-        /// </summary>
-        public void HideGridSelectionDisplay() => _gridController.HideSelectionDisplay();
-
-        /// <summary>
-        /// HideGridSelectionDisplay()で隠したカーソル・パラメータパネルを再表示します。
-        /// </summary>
-        public void ShowGridSelectionDisplay() => _gridController.ShowSelectionDisplay();
 
         public override object ExitState()
         {
@@ -89,6 +81,9 @@ namespace Frontier.FormTroop
         public override void RestartState()
         {
             base.RestartState();
+
+            // 子State表示中に隠していたカーソル・パラメータパネルを再表示する
+            _gridController.ShowSelectionDisplay();
 
             if( 0 <= _pendingDismissIndex )
             {

@@ -70,11 +70,15 @@ namespace Frontier.FormTroop
              *              ｜         ｜
              *              ｜         ├─ CharacterStatusViewState
              *              ｜         ｜
-             *              ｜         └─ RecruitConfirmCompletedState
+             *              ｜         ├─ RecruitConfirmCompletedState
+             *              ｜         ｜
+             *              ｜         └─ TalkWindowCushionState (雇用可能な候補が0体の場合のみ経由する店主の会話クッション。汎用State)
              *              ｜
              *              ├─ RecruitDismissState (自軍メンバー一覧・解雇画面。キャンセルでクッション画面へBack())
              *              ｜         ｜
-             *              ｜         └─ RecruitDismissConfirmState
+             *              ｜         ├─ RecruitDismissConfirmState
+             *              ｜         ｜
+             *              ｜         └─ TalkWindowCushionState (解雇可能なメンバーが0体の場合のみ経由する店主の会話クッション。汎用State)
              *              ｜
              *              └─ RecruitTopMenuConfirmCancelState
              *
@@ -82,9 +86,11 @@ namespace Frontier.FormTroop
             var employCandidateState = _hierarchyBld.InstantiateWithDiContainer<RecruitRootState>( false );
             employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
+            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             var dismissState = _hierarchyBld.InstantiateWithDiContainer<RecruitDismissState>( false );
             dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitDismissConfirmState>( false ) );
+            dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuState>( false );
             RootNode.AddChild( employCandidateState );

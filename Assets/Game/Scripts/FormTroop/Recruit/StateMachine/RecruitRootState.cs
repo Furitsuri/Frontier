@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.StateMachine;
 using Frontier.Tutorial;
 using Frontier.TroopEdit;
 using Frontier.UI;
@@ -87,24 +88,27 @@ namespace Frontier.FormTroop
             // 初の雇用フェーズの開始をチュートリアルへ通知
             TutorialFacade.Notify( TriggerType.FirstRecruit );
 
-            // 突入時は必ず店主の会話クッション画面を経由する(会話を閉じるとこの画面の操作に移れる)
-            TransitState( ( int ) RecruitRootTransitTag.GREETING );
+            // 雇用可能な候補が一人も居ない場合のみ、店主の会話クッション画面を経由する
+            // (会話を閉じるとRestartState()でこの画面の表示に戻る)。クッション画面表示中は
+            // カーソル・パラメータパネルを隠し、表示するメッセージはcontext経由で渡す。
+            if( _employmentCandidates.Count == 0 )
+            {
+                _gridController.HideSelectionDisplay();
+                SetSendTransitionContext( new TalkWindowCushionContext( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_EMPLOY_NONE_AVAILABLE ) );
+                TransitState( ( int ) RecruitRootTransitTag.GREETING );
+            }
         }
 
         /// <summary>
-        /// 雇用可能な候補が1体でも残っているか(店主の会話クッション画面が表示メッセージを選ぶ際に使用)。
+        /// 会話クッション画面等の子Stateから戻ってきた際に呼ばれます。
+        /// 子State表示中に隠していたカーソル・選択中キャラクターのパラメータパネルを再表示します。
         /// </summary>
-        public bool HasAvailableCandidates => _employmentCandidates.Count > 0;
+        public override void RestartState()
+        {
+            base.RestartState();
 
-        /// <summary>
-        /// カーソル・選択中キャラクターのパラメータパネルを一時的に隠します(会話クッション画面表示中)。
-        /// </summary>
-        public void HideGridSelectionDisplay() => _gridController.HideSelectionDisplay();
-
-        /// <summary>
-        /// HideGridSelectionDisplay()で隠したカーソル・パラメータパネルを再表示します。
-        /// </summary>
-        public void ShowGridSelectionDisplay() => _gridController.ShowSelectionDisplay();
+            _gridController.ShowSelectionDisplay();
+        }
 
         public override bool Update()
         {
