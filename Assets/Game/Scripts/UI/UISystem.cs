@@ -33,7 +33,6 @@ namespace Frontier.UI
 #endif // UNITY_EDITOR
 
             _generalUi?.Setup();
-            _recruitmentUi?.Setup();
             _deploymentUi?.Setup();
             _battleUi?.Setup();
 

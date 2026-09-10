@@ -48,8 +48,6 @@ namespace Frontier.FormTroop
         {
             base.Update();
 
-            _presenter.Update();
-
             // どの子State(TopMenu/雇用/解雇)がアクティブでも所持アニマ・部隊人数の変化を
             // 反映できるよう、Handler側のUpdate()で毎フレーム更新する
             _headerPresenter.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );

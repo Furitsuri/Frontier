@@ -1,44 +1,36 @@
-﻿using Frontier.Entities;
-using Frontier.StateMachine;
+﻿using Frontier.StateMachine;
 using Frontier.UI;
-using System;
-using System.Collections.ObjectModel;
-using UnityEngine;
 using Zenject;
-using static Constants;
 
 namespace Frontier.FormTroop
 {
-    public class RecruitPhasePresenter : CharacterSelectionPresenter, IConfirmPresenter
+    /// <summary>
+    /// RecruitScene全体を通して使うUI(雇用/解雇選択メニュー・雇用完了確認ダイアログ)への窓口。
+    /// 雇用候補一覧の表示自体はTroopEdit形式のグリッド(RecruitRootStateが自前で保持する
+    /// TroopEditPresenter/TroopGridController)に移行したため、このクラスはカルーセル関連の
+    /// 責務を持たない。
+    /// </summary>
+    public class RecruitPhasePresenter : PhasePresenterBase, IConfirmPresenter
     {
         private RecruitUISystem _recruitmentUI = null;
         private RecruitTopMenuUI _topMenuUI = null;
 
         [Inject]
-        public RecruitPhasePresenter( IUiSystem uiSystem, HierarchyBuilderBase hierarchyBld ) : base( uiSystem.RecruitUi.EmploymentSelectUI, RECRUIT_SHOWABLE_CHARACTERS_NUM, false, hierarchyBld )
+        public RecruitPhasePresenter( IUiSystem uiSystem )
         {
             _uiSystem      = uiSystem;
             _recruitmentUI = _uiSystem.RecruitUi;
             _topMenuUI     = _recruitmentUI.TopMenuUI;
         }
 
-        public override void Init()
+        public void Init()
         {
-            base.Init();
-
             _recruitmentUI.gameObject.SetActive( true );
             _recruitmentUI.Init();
         }
 
-        public void Update()
+        public void Exit()
         {
-            UpdateSlideAnimation();
-        }
-
-        public override void Exit()
-        {
-            base.Exit();
-
             _recruitmentUI.Exit();
             _recruitmentUI.gameObject.SetActive( false );
             _topMenuUI.Hide();
@@ -59,36 +51,6 @@ namespace Frontier.FormTroop
         public void SetTopMenuSelectedIndex( int index )
         {
             _topMenuUI.SetSelectedIndex( index );
-        }
-
-        public override void SetFocusCharacters( int focusCharaIndex )
-        {
-            base.SetFocusCharacters( focusCharaIndex );
-
-            RefreshFocusCharacterParameter();
-        }
-
-        /// <summary>
-        /// フォーカス中の配置可能キャラクター情報を更新します
-        /// </summary>
-        public void RefreshFocusCharacterParameter()
-        {
-            // フォーカス中のキャラクターのパラメータの表示
-            Debug.Assert( _focusCandidates.Length % 2 == 1 );  // 奇数であることが前提
-            _parameterPresenter.AssignCharacter( _focusCandidates[_focusCandidates.Length / 2].Character, LAYER_MASK_INDEX_DEPLOYMENT_FOCUS );
-        }
-
-        /// <summary>
-        /// 表示中央のキャラクター(フォーカス中)の雇用チェック状態に応じて表示を更新します
-        /// </summary>
-        public void RefreshCentralCandidateEmployed()
-        {
-            int centralIndex = _focusCandidates.Length / 2;
-            var player = _focusCandidates[ centralIndex ].Character as Player;
-            NullCheck.AssertNotNull( player, nameof( player ) );
-
-            // フォーカス中のキャラクター表示の更新
-            _recruitmentUI.EmploymentSelectUI.RefreshCandidate( centralIndex, ref _focusCandidates[ centralIndex ] );
         }
 
         public void SetActiveConfirmUI( bool isActive )
