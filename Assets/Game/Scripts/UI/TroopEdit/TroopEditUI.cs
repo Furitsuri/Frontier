@@ -69,6 +69,11 @@ namespace Frontier.UI
                 _cells.Add( cell );
             }
 
+            // セルは_selectCursorと同じ親(_gridContent)の子として追加されるため、
+            // 描画順(Hierarchy順)でセルより後ろに回りキャラクターの3Dモデルに隠れてしまう。
+            // 常にカーソルが手前に描画されるよう、セル生成のたびに最後尾へ移動させる
+            _selectCursor?.SetAsLastSibling();
+
             // GridLayoutGroupによる配置はレイアウトパス(次フレーム以降)まで反映されないため、
             // SetSelectedIndex()で各セルの位置を正しく参照できるよう、ここで強制的に確定させる
             LayoutRebuilder.ForceRebuildLayoutImmediate( ( RectTransform ) _gridContent );
