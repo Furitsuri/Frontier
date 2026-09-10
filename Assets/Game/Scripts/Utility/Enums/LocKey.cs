@@ -64,4 +64,11 @@ public enum LocKey
 
     // 雇用フェーズ 施設名
     UI_FACILITY_RECRUIT,
+
+    // 雇用/解雇画面突入時の店主の会話
+    UI_TALK_SHOPKEEPER_NAME,
+    UI_TALK_EMPLOY_AVAILABLE,
+    UI_TALK_EMPLOY_NONE_AVAILABLE,
+    UI_TALK_DISMISS_AVAILABLE,
+    UI_TALK_DISMISS_NONE_AVAILABLE,
 }

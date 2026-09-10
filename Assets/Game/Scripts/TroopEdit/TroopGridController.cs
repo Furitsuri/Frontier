@@ -110,6 +110,25 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
+        /// カーソル・選択中キャラクターのパラメータパネルを一時的に非表示にします
+        /// (グリッド自体・各セルの表示はそのまま。突入時の会話ウィンドウ表示中など専用)。
+        /// </summary>
+        public void HideSelectionDisplay()
+        {
+            _troopEditPresenter.SetSelectedIndex( -1 );
+            _paramPresenter.SetActive( false );
+        }
+
+        /// <summary>
+        /// HideSelectionDisplay()で隠したカーソル・パラメータパネルを再表示します。
+        /// </summary>
+        public void ShowSelectionDisplay()
+        {
+            _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
+            RefreshCharacterParamDisplay();
+        }
+
+        /// <summary>
         /// 外部要因(CharacterEdit画面からの復帰等)で選択位置が変わった場合に反映します。
         /// </summary>
         public void SetSelectedIndex( int index )

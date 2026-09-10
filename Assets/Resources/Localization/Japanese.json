@@ -39,5 +39,10 @@
     "UI_CMD_EMPLOY": "雇用",
     "UI_CMD_DISMISS": "解雇",
     "UI_CONFIRM_DISMISS_MEMBER_MESSAGE": "このキャラクターを解雇しますか？",
-    "UI_FACILITY_RECRUIT": "傭兵斡旋所"
+    "UI_FACILITY_RECRUIT": "傭兵斡旋所",
+    "UI_TALK_SHOPKEEPER_NAME": "店主",
+    "UI_TALK_EMPLOY_AVAILABLE": "誰を雇うんだい？",
+    "UI_TALK_EMPLOY_NONE_AVAILABLE": "悪いが出払っちまってる",
+    "UI_TALK_DISMISS_AVAILABLE": "誰を解雇するんだ？",
+    "UI_TALK_DISMISS_NONE_AVAILABLE": "おいおい、お前さんまでいなくなったら部隊がなくなっちまうぞ"
 }

@@ -39,5 +39,10 @@
     "UI_CMD_EMPLOY": "Employ",
     "UI_CMD_DISMISS": "Dismiss",
     "UI_CONFIRM_DISMISS_MEMBER_MESSAGE": "Dismiss this character?",
-    "UI_FACILITY_RECRUIT": "Mercenary Agency"
+    "UI_FACILITY_RECRUIT": "Mercenary Agency",
+    "UI_TALK_SHOPKEEPER_NAME": "Shopkeeper",
+    "UI_TALK_EMPLOY_AVAILABLE": "Who'll you hire, then?",
+    "UI_TALK_EMPLOY_NONE_AVAILABLE": "Sorry, they're all out on jobs right now.",
+    "UI_TALK_DISMISS_AVAILABLE": "Who're you letting go?",
+    "UI_TALK_DISMISS_NONE_AVAILABLE": "Hold on now, if you dismiss yourself too, you won't have a squad left!"
 }

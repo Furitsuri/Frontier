@@ -15,12 +15,13 @@ namespace Frontier.UI
     public class TalkWindowPresenter
     {
         [Inject] private IUiSystem _uiSystem = null;
+        [Inject] private ILocalizationService _localization = null;
 
         private Dictionary<string, TalkEntryData> _talkEntries = null;
 
         /// <summary>
         /// 現在のシーンのトークデータ(Assets/Resources/TalkData/{シーン名}.json)から
-        /// 指定IDの発言をトークウィンドウに表示します。
+        /// 指定IDの発言をトークウィンドウの既定位置(画面左上寄り)に表示します。
         /// </summary>
         public void Show( string entryId )
         {
@@ -33,7 +34,22 @@ namespace Frontier.UI
             }
 
             Sprite portrait = string.IsNullOrEmpty( entry.PortraitKey ) ? null : Resources.Load<Sprite>( $"Sprites/Portraits/{entry.PortraitKey}" );
+
+            _uiSystem.GeneralUi.TalkWindowView.SetPositionDefault();
             _uiSystem.GeneralUi.TalkWindowView.Show( entry.SpeakerName, entry.Message, portrait );
+        }
+
+        /// <summary>
+        /// LocalizationServiceで解決した話者名・セリフを、画面右上(ヘッダー直下)に表示します
+        /// (雇用/解雇画面突入時の店主の会話専用)。
+        /// </summary>
+        public void Show( LocKey speakerKey, LocKey messageKey )
+        {
+            string speakerName = _localization.Get( speakerKey );
+            string message     = _localization.Get( messageKey );
+
+            _uiSystem.GeneralUi.TalkWindowView.SetPositionTopRight();
+            _uiSystem.GeneralUi.TalkWindowView.Show( speakerName, message, null );
         }
 
         public void Hide()

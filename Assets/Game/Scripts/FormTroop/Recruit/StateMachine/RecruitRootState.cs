@@ -24,6 +24,7 @@ namespace Frontier.FormTroop
         {
             CHARACTER_STATUS = 0,
             CONFIRM,
+            GREETING,
         }
 
         [Inject] private UserDomain _userDomain = null;
@@ -85,7 +86,25 @@ namespace Frontier.FormTroop
 
             // 初の雇用フェーズの開始をチュートリアルへ通知
             TutorialFacade.Notify( TriggerType.FirstRecruit );
+
+            // 突入時は必ず店主の会話クッション画面を経由する(会話を閉じるとこの画面の操作に移れる)
+            TransitState( ( int ) RecruitRootTransitTag.GREETING );
         }
+
+        /// <summary>
+        /// 雇用可能な候補が1体でも残っているか(店主の会話クッション画面が表示メッセージを選ぶ際に使用)。
+        /// </summary>
+        public bool HasAvailableCandidates => _employmentCandidates.Count > 0;
+
+        /// <summary>
+        /// カーソル・選択中キャラクターのパラメータパネルを一時的に隠します(会話クッション画面表示中)。
+        /// </summary>
+        public void HideGridSelectionDisplay() => _gridController.HideSelectionDisplay();
+
+        /// <summary>
+        /// HideGridSelectionDisplay()で隠したカーソル・パラメータパネルを再表示します。
+        /// </summary>
+        public void ShowGridSelectionDisplay() => _gridController.ShowSelectionDisplay();
 
         public override bool Update()
         {
