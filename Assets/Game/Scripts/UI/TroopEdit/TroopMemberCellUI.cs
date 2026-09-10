@@ -63,7 +63,7 @@ namespace Frontier.UI
 
             _rewardAnimaText.gameObject.SetActive( amount.HasValue );
             // voffsetでスプライトのみ少し上へ補正する(文字のベースラインはそのまま)
-            if ( amount.HasValue ) { _rewardAnimaText.text = $"<voffset=0.15em><sprite name=\"coin_substitute\"></voffset>{amount.Value}"; }
+            if ( amount.HasValue ) { _rewardAnimaText.text = $"<voffset=0.15em><sprite name=\"anima_icon\"></voffset>{amount.Value}"; }
         }
 
         /// <summary>
