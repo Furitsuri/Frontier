@@ -1,8 +1,8 @@
-﻿using Frontier.Battle;
-using Frontier.Stage;
+﻿using Frontier.Stage;
+using Frontier.StateMachine;
 using Zenject;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public class DeploymentPhaseStateBase : PhaseStateBase
     {

@@ -1,10 +1,10 @@
-﻿using Frontier.Battle;
-using Frontier.Stage;
+﻿using Frontier.Stage;
+using Frontier.StateMachine;
 using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     /// <summary>
     /// 配置フェーズ：配置確定終了状態

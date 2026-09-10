@@ -1,12 +1,13 @@
 ﻿using Frontier.Entities;
 using Frontier.Stage;
+using Frontier.StateMachine;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
 using static InputCode;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     /// <summary>
     /// キャラクターの選択・配置と、配置先のタイル選択の両方を担います

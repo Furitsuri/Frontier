@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
-namespace Frontier.StateMachine
+namespace Frontier.Battle
 {
     public sealed class DeploymentPhaseHandler : PhaseHandlerBase
     {
