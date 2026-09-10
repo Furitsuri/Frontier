@@ -42,7 +42,7 @@ namespace Frontier.Field
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private UserDomain _userDomain             = null;
-        [Inject] private IUiSystem _uiSystem                = null;
+        [Inject] private GeneralHeaderPresenter _headerPresenter = null;
 
         private FieldData                      _fieldData    = null;
         private Dictionary<int, FieldNodeView> _nodeViews    = new Dictionary<int, FieldNodeView>();
@@ -221,16 +221,12 @@ namespace Frontier.Field
         }
 
         /// <summary>
-        /// フィールド画面右上の常時表示HUD(所持アニマ・部隊人数)を最新の値で更新し、表示します。
-        /// TroopEdit画面のヘッダーと同じ情報・同じ位置に揃えている。
+        /// 画面上部の全幅常時表示HUD(所持アニマ・部隊人数)を最新の値で更新し、表示します。
         /// </summary>
         private void RefreshFieldHeader()
         {
-            var headerView = _uiSystem?.GeneralUi?.FieldHeaderView;
-            if ( headerView == null || _userDomain == null ) return;
-
-            headerView.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
-            headerView.Show();
+            _headerPresenter.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            _headerPresenter.Show();
         }
 
         /// <summary>
