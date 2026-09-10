@@ -1,6 +1,7 @@
 ﻿using Frontier.Entities;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
 
@@ -21,8 +22,12 @@ namespace Frontier.UI
         [Header( "Lv.と名前を表示するテキスト" )]
         [SerializeField] private TextMeshProUGUI _nameLevelText;
 
-        [Header( "右上に表示する報酬アニマ量テキスト(未使用の呼び出し元では非表示のまま)" )]
-        [SerializeField] private TextMeshProUGUI _rewardAnimaText;
+        [Header( "右上に表示するアニマ量バッジ(報酬/コスト兼用、未使用の呼び出し元では非表示のまま)" )]
+        [FormerlySerializedAs( "_rewardAnimaText" )]
+        [SerializeField] private TextMeshProUGUI _amountBadgeText;
+
+        [Header( "左上に表示する雇用チェックマーク(未使用の呼び出し元では非表示のまま)" )]
+        [SerializeField] private GameObject _employedMarkObject;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -53,18 +58,33 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 右上の報酬アニマ量表示を設定します。nullの場合は非表示にします
-        /// (解雇画面等、報酬を提示する呼び出し元でのみ使用する)。
-        /// アニマのスプライトアイコン(TMP Sprite Asset、文字サイズに追従)+数値で表示する。
+        /// 右上のアニマ量バッジを設定します。nullの場合は非表示にします。
+        /// アニマのスプライトアイコン(TMP Sprite Asset、文字サイズに追従)+数値で表示する、
+        /// 報酬(解雇画面)・コスト(雇用画面)共通の表示処理です。
         /// </summary>
-        public void SetRewardAnima( int? amount )
+        private void SetAmountBadge( int? amount )
         {
-            if ( _rewardAnimaText == null ) return;
+            if ( _amountBadgeText == null ) return;
 
-            _rewardAnimaText.gameObject.SetActive( amount.HasValue );
+            _amountBadgeText.gameObject.SetActive( amount.HasValue );
             // voffsetでスプライトのみ少し上へ補正する(文字のベースラインはそのまま)
-            if ( amount.HasValue ) { _rewardAnimaText.text = $"<voffset=0.15em><sprite name=\"anima_icon\"></voffset>{amount.Value}"; }
+            if ( amount.HasValue ) { _amountBadgeText.text = $"<voffset=0.15em><sprite name=\"anima_icon\"></voffset>{amount.Value}"; }
         }
+
+        /// <summary>
+        /// 右上に解雇報酬アニマ量を表示します(解雇画面専用、nullで非表示)。
+        /// </summary>
+        public void SetRewardAnima( int? amount ) => SetAmountBadge( amount );
+
+        /// <summary>
+        /// 右上に雇用コストを表示します(雇用画面専用、nullで非表示)。
+        /// </summary>
+        public void SetCost( int? cost ) => SetAmountBadge( cost );
+
+        /// <summary>
+        /// 左上の雇用チェックマークの表示を切り替えます(雇用画面専用)。
+        /// </summary>
+        public void SetEmployed( bool isEmployed ) => _employedMarkObject?.SetActive( isEmployed );
 
         /// <summary>
         /// 専用カメラ・RenderTextureを破棄します。セルを削除する前に呼び出してください。

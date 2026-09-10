@@ -119,6 +119,27 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// 指定インデックスのセルに雇用コストを表示します(雇用画面専用)。
+        /// nullを渡すと非表示に戻ります。
+        /// </summary>
+        public void SetCost( int index, int? cost )
+        {
+            if ( index < 0 || index >= _cells.Count ) return;
+
+            _cells[index].SetCost( cost );
+        }
+
+        /// <summary>
+        /// 指定インデックスのセルの雇用チェックマーク表示を切り替えます(雇用画面専用)。
+        /// </summary>
+        public void SetEmployed( int index, bool isEmployed )
+        {
+            if ( index < 0 || index >= _cells.Count ) return;
+
+            _cells[index].SetEmployed( isEmployed );
+        }
+
+        /// <summary>
         /// 選択カーソルを指定インデックスのセルへ移動します。
         /// index が範囲外(セルが1つも無い場合は-1を渡す)の場合はカーソルを非表示にします。
         /// </summary>

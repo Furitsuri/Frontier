@@ -21,6 +21,9 @@ namespace Frontier.TroopEdit
         private CharacterParameterPresenter _paramPresenter = null;
         private List<Character> _spawnedCharacters = new List<Character>();
         private int _selectedIndex = 0;
+        // Show()で自ら生成した場合はtrue(Close時に破棄する)、ShowExisting()で
+        // 呼び出し元から借りているだけの場合はfalse(Close時に破棄してはいけない)
+        private bool _ownsSpawnedCharacters = true;
 
         public List<Character> SpawnedCharacters => _spawnedCharacters;
         public int SelectedIndex => _selectedIndex;
@@ -41,6 +44,8 @@ namespace Frontier.TroopEdit
         /// </summary>
         public void Show( IReadOnlyList<Status> members, float reserveOffsetZ )
         {
+            _ownsSpawnedCharacters = true;
+
             BuildCharacters( members, reserveOffsetZ );
 
             _selectedIndex = Mathf.Clamp( _selectedIndex, 0, Mathf.Max( 0, _spawnedCharacters.Count - 1 ) );
@@ -53,7 +58,29 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
-        /// グリッド・パラメータパネルを非表示にし、生成済みキャラクターを破棄します。
+        /// 既に生成・配置済みのキャラクター一覧をそのままグリッドに表示します(雇用候補選択画面等、
+        /// 呼び出し元が既にキャラクターを所有・管理している場合専用)。Show()と異なり生成・再配置は
+        /// 行わず、Close()時にもGameObjectを破棄しません(所有権は呼び出し元のまま)。
+        /// </summary>
+        public void ShowExisting( IReadOnlyList<Character> characters )
+        {
+            _ownsSpawnedCharacters = false;
+
+            _spawnedCharacters.Clear();
+            _spawnedCharacters.AddRange( characters );
+
+            _selectedIndex = Mathf.Clamp( _selectedIndex, 0, Mathf.Max( 0, _spawnedCharacters.Count - 1 ) );
+
+            _troopEditPresenter.Show();
+            _troopEditPresenter.DisplayMembers( _spawnedCharacters );
+            _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
+
+            RefreshCharacterParamDisplay();
+        }
+
+        /// <summary>
+        /// グリッド・パラメータパネルを非表示にします。Show()経由で自ら生成したキャラクターは
+        /// 破棄しますが、ShowExisting()経由で借りているだけのキャラクターは破棄せず参照を手放すだけです。
         /// </summary>
         public void Close()
         {
@@ -187,9 +214,12 @@ namespace Frontier.TroopEdit
 
         private void DestroySpawnedCharacters()
         {
-            foreach ( var chara in _spawnedCharacters )
+            if ( _ownsSpawnedCharacters )
             {
-                if ( chara != null ) { Object.Destroy( chara.gameObject ); }
+                foreach ( var chara in _spawnedCharacters )
+                {
+                    if ( chara != null ) { Object.Destroy( chara.gameObject ); }
+                }
             }
 
             _spawnedCharacters.Clear();

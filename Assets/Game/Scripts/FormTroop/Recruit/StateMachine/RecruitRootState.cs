@@ -1,12 +1,23 @@
 ﻿using Frontier.Entities;
 using Frontier.Tutorial;
+using Frontier.TroopEdit;
+using Frontier.UI;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Zenject;
 using static Constants;
 
 namespace Frontier.FormTroop
 {
+    /// <summary>
+    /// 「雇用」選択時に表示する雇用候補一覧グリッド画面。
+    /// グリッド表示・カーソル移動・キャラクターのライフサイクルは、解雇画面(RecruitDismissState)
+    /// と共通のTroopGridControllerに委譲する。雇用候補キャラクター(CharacterCandidate)は
+    /// RecruitTopMenuStateが生成・所有・破棄するため、このStateはShowExisting()で表示を
+    /// 借りるだけで、破棄は行わない。このStateが持つのは雇用チェックのトグル・アニマ加減算・
+    /// 確定/キャンセル時の遷移のみ。
+    /// </summary>
     public sealed class RecruitRootState : RecruitPhaseStateBase
     {
         private enum RecruitRootTransitTag
@@ -15,19 +26,20 @@ namespace Frontier.FormTroop
             CONFIRM,
         }
 
-        [Inject] private UserDomain _userDomain                     = null;
+        [Inject] private UserDomain _userDomain = null;
+
+        private TroopEditPresenter _troopEditPresenter      = null;
+        private CharacterParameterPresenter _paramPresenter = null;
+        private TroopGridController _gridController         = null;
 
         private bool _isExistEmployedCharacter  = false;
-        private int _focusCharacterIndex        = 0;     // フォーカス中のキャラクターインデックス
         private string[] _inputConfirmStrings;
         private List<CharacterCandidate> _employmentCandidates = null;
         private InputCodeStringWrapper _inputConfirmStrWrapper = null;
 
         public override void Init( object context )
         {
-            base.Init( context);
-
-            _focusCharacterIndex        = 0;
+            base.Init( context );
 
             // CONFIRMアイコンの文字列を設定
             _inputConfirmStrings = new string[]
@@ -43,9 +55,29 @@ namespace Frontier.FormTroop
             ReceiveContext( ref _employmentCandidates, context );
             NullCheck.AssertNotNull( _employmentCandidates, nameof( _employmentCandidates ) );
 
-            _presenter.SetActiveCharacterSelectUIs( true );
-            _presenter.AssignCandidates( _employmentCandidates.AsReadOnly() );
-            _presenter.SetFocusCharacters( _focusCharacterIndex );
+            LazyInject.GetOrCreate( ref _troopEditPresenter, () => _hierarchyBld.InstantiateWithDiContainer<TroopEditPresenter>( false ) );
+            _troopEditPresenter.Init();
+            _troopEditPresenter.SetTitleKey( LocKey.UI_CMD_EMPLOY );
+
+            LazyInject.GetOrCreate( ref _paramPresenter, () => _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(
+                new object[] { _troopEditPresenter.CharacterParamUI, false }, false ) );
+            _paramPresenter.Init();
+
+            LazyInject.GetOrCreate( ref _gridController, () => _hierarchyBld.InstantiateWithDiContainer<TroopGridController>( false ) );
+            _gridController.Init( _troopEditPresenter, _paramPresenter );
+
+            // 雇用候補キャラクターは生成・配置済み(CharacterCandidate.Init参照)のため、
+            // TroopGridController側で新規生成・再配置はせず、そのままグリッドに表示する
+            _gridController.ShowExisting( _employmentCandidates.Select( c => c.Character ).ToList() );
+
+            for( int i = 0; i < _employmentCandidates.Count; ++i )
+            {
+                var player = _employmentCandidates[i].Character as Player;
+                NullCheck.AssertNotNull( player, nameof( player ) );
+
+                _troopEditPresenter.SetCost( i, player.RecruitLogic.Cost );
+                _troopEditPresenter.SetEmployed( i, player.RecruitLogic.IsEmployed );
+            }
 
             // 前回訪問時の雇用チェック状態を引き継いで反映
             _isExistEmployedCharacter = IsExistEmployedCharacter();
@@ -59,21 +91,17 @@ namespace Frontier.FormTroop
             // 基底の更新は行わない
             // if( base.Update() ) { return true; }
 
-            _inputConfirmStrWrapper.Explanation =
-                _employmentCandidates[_focusCharacterIndex].Character is Player player && player.RecruitLogic.IsEmployed ?
-                _inputConfirmStrings[1] : _inputConfirmStrings[0];
+            var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
+            NullCheck.AssertNotNull( player, nameof( player ) );
+
+            _inputConfirmStrWrapper.Explanation = player.RecruitLogic.IsEmployed ? _inputConfirmStrings[1] : _inputConfirmStrings[0];
 
             return ( 0 <= TransitIndex );
         }
 
         public override object ExitState()
         {
-            // キャンセル時はクッション画面へBack()するだけでシーンは継続するため、
-            // 破棄予定のキャラクターを表示し続けているCharacterSelectionDisplayが
-            // 破棄後のPlayerを参照し続けてMissingReferenceExceptionになるのを防ぐ
-            // (雇用可能キャラクター一覧自体の破棄・確定はRecruitTopMenuStateが行う)
-            _presenter.ClearFocusCharacter();
-            _presenter.SetActiveCharacterSelectUIs( false );
+            _gridController.Close();
 
             return base.ExitState();
         }
@@ -83,7 +111,7 @@ namespace Frontier.FormTroop
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.HORIZONTAL_CURSOR,    "SELECT\nUNIT",             CanAcceptDirection,     new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.ALL_CURSOR,           "SELECT\nUNIT",             CanAcceptDefault,       new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,       new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.CANCEL,               "BACK",                     CanAcceptDefault,       new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
                (GuideIcon.INFO,                 "STATUS",                   CanAcceptDefault,       new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
@@ -91,17 +119,9 @@ namespace Frontier.FormTroop
             );
         }
 
-        protected override bool CanAcceptDirection()
-        {
-            _presenter.SetActiveLeftInputArrow( CanInputDirectionLeftOnDeploymentList() );
-            _presenter.SetActiveRightInputArrow( CanInputDirectionRightOnDeploymentList() );
-
-            return true;
-        }
-
         protected override bool CanAcceptConfirm()
         {
-            var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
+            var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
 
             // 既に雇用チェックされている場合は雇用前の状態に戻すことができる
@@ -125,48 +145,15 @@ namespace Frontier.FormTroop
         /// <returns>入力実行の有無</returns>
         protected override bool AcceptDirection( InputContext context )
         {
-            bool isOperated = false;
-
-            switch( context.Cursor )
-            {
-                case Direction.LEFT:
-                    {
-                        if( _presenter.RefIsSlideLoop )
-                        {
-                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
-                            isOperated = true;
-                        }
-                        else if( CanInputDirectionLeftOnDeploymentList() )
-                        {
-                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.LEFT, OnCompleteSlideAnimation );
-                            isOperated = true;
-                        }
-                    }
-                    break;
-                case Direction.RIGHT:
-                    {
-                        if( _presenter.RefIsSlideLoop )
-                        {
-                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
-                            isOperated = true;
-                        }
-                        else if( CanInputDirectionRightOnDeploymentList() )
-                        {
-                            _presenter.SlideAnimationCharacterSelectionDisplay( SlideDirection.RIGHT, OnCompleteSlideAnimation );
-                            isOperated = true;
-                        }
-                    }
-                    break;
-            }
-
-            return isOperated;
+            return _gridController.MoveSelection( context.Cursor );
         }
 
         protected override bool AcceptConfirm( InputContext context )
         {
-			if( !base.AcceptConfirm( context ) ) { return false; }
+            if( !base.AcceptConfirm( context ) ) { return false; }
 
-			var player = _employmentCandidates[_focusCharacterIndex].Character as Player;
+            int index = _gridController.SelectedIndex;
+            var player = _employmentCandidates[index].Character as Player;
             NullCheck.AssertNotNull( player, nameof( player ) );
 
             // 既に雇用チェックされている場合は所持アニマとユニットを雇用前の状態に戻す
@@ -186,7 +173,7 @@ namespace Frontier.FormTroop
             }
 
             // ユニットの表示を更新
-            _presenter.RefreshCentralCandidateEmployed();
+            _troopEditPresenter.SetEmployed( index, player.RecruitLogic.IsEmployed );
             // 雇用キャラクターの存在フラグを更新
             _isExistEmployedCharacter = IsExistEmployedCharacter();
 
@@ -229,7 +216,7 @@ namespace Frontier.FormTroop
             if( !base.AcceptInfo( context ) ) { return false; }
 
             // ステータス表示ステートに対象キャラクターを渡す
-            SetSendTransitionContext( _employmentCandidates[_focusCharacterIndex].Character );
+            SetSendTransitionContext( _employmentCandidates[_gridController.SelectedIndex].Character );
             // キャラクターステータス表示ステートへ遷移
             TransitState( ( int ) RecruitRootTransitTag.CHARACTER_STATUS );
 
@@ -246,33 +233,6 @@ namespace Frontier.FormTroop
             return true;
         }
 
-        /// <summary>
-        /// スライドアニメーション完了時のコールバック
-        /// </summary>
-        /// <param name="direction"></param>
-        private void OnCompleteSlideAnimation( SlideDirection direction )
-        {
-            _presenter.ClearFocusCharacter();
-
-            int[] nextIndex = new int[( int ) SlideDirection.NUM];
-
-            if( _presenter.RefIsSlideLoop )
-            {
-                nextIndex[(int) SlideDirection.LEFT]    = ( ( _focusCharacterIndex - 1 ) + _employmentCandidates.Count ) % _employmentCandidates.Count;
-                nextIndex[(int) SlideDirection.RIGHT]   = ( _focusCharacterIndex + 1 ) % _employmentCandidates.Count;
-            }
-            else
-            {
-                nextIndex[(int) SlideDirection.LEFT]    = _focusCharacterIndex - 1;
-                nextIndex[(int) SlideDirection.RIGHT]   = _focusCharacterIndex + 1;
-            }
-
-            _focusCharacterIndex = Mathf.Clamp(  nextIndex[(int) direction], 0, _employmentCandidates.Count - 1 );
-
-            _presenter.SetFocusCharacters( _focusCharacterIndex );
-            _presenter.ResetCharacterDispPosition();
-        }
-
         private bool IsExistEmployedCharacter()
         {
             foreach( var candidate in _employmentCandidates )
@@ -283,26 +243,6 @@ namespace Frontier.FormTroop
             }
 
             return false;
-        }
-
-        private bool CanInputDirectionLeftOnDeploymentList()
-        {
-            if( _focusCharacterIndex <= 0 )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool CanInputDirectionRightOnDeploymentList()
-        {
-            if( _employmentCandidates.Count - 1 <= _focusCharacterIndex )
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }
