@@ -73,24 +73,25 @@ namespace Frontier.TroopEdit
         public CharacterParameterUI CharacterParamUI => _view.CharacterParamUI;
 
         /// <summary>
-        /// キャラクターパラメータパネルを画面左側へ再配置します。常に入力ガイドバーぎりぎりの
-        /// 下側へ配置することを優先し(グリッド最終行との間に余白を確保できる場合)、
-        /// タイトルとグリッド1行目の間はほぼ余白が無いため、下側に収まらない場合のみ
-        /// タイトルぎりぎりの上側へ配置します。Viewからは事実(セル位置・パネル高さ)のみを取得し、
+        /// キャラクターパラメータパネルを画面左側へ再配置します。選択中セルが乗っている行を基準に、
+        /// 入力ガイドバーぎりぎりの下側へ配置することを優先し(その行との間に余白を確保できる場合)、
+        /// 下側に収まらない場合はタイトルぎりぎりの上側へ配置します。グリッドが複数行ある場合、
+        /// 選択中の行以外の行とはパネルが重なり得ますが、カーソル・選択中キャラクターとは
+        /// 常に重ならないことを優先します。Viewからは事実(セル位置・パネル高さ)のみを取得し、
         /// どこに置くかの判断はここで行います。
         /// </summary>
-        /// <param name="lastIndex">グリッド最終セルのインデックス(-1の場合は要素なし)</param>
-        public void SetCharacterParamCorner( int lastIndex )
+        /// <param name="selectedIndex">選択中セルのインデックス(-1の場合は要素なし)</param>
+        public void SetCharacterParamCorner( int selectedIndex )
         {
             float panelHeight = _view.GetCharacterParamPanelHeight();
-            float? lastRowBottomY = _view.GetCellBottomY( lastIndex );
+            float? selectedRowBottomY = _view.GetCellBottomY( selectedIndex );
 
             float guideFloor   = CharacterParamGuideTopY + CharacterParamEdgeGap;
             float titleCeiling = CharacterParamTitleBottomY - CharacterParamEdgeGap;
 
-            bool fitsBelowGrid = lastRowBottomY.HasValue && ( guideFloor + panelHeight ) <= ( lastRowBottomY.Value - CharacterParamRowGap );
+            bool fitsBelowSelectedRow = selectedRowBottomY.HasValue && ( guideFloor + panelHeight ) <= ( selectedRowBottomY.Value - CharacterParamRowGap );
 
-            float bottomY = fitsBelowGrid ? guideFloor : titleCeiling - panelHeight;
+            float bottomY = fitsBelowSelectedRow ? guideFloor : titleCeiling - panelHeight;
 
             _view.SetCharacterParamPosition( CharacterParamSideMargin, bottomY );
         }

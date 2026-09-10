@@ -190,7 +190,7 @@ namespace Frontier.TroopEdit
 
             var status = character.GetStatusRef;
             _troopEditPresenter.SetCharacterParamName( $"Lv.{status.Level}  {status.Name}" );
-            _troopEditPresenter.SetCharacterParamCorner( _spawnedCharacters.Count - 1 );
+            _troopEditPresenter.SetCharacterParamCorner( _selectedIndex );
         }
 
         /// <summary>
