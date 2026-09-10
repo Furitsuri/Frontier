@@ -61,4 +61,7 @@ public enum LocKey
 
     // 解雇確認ダイアログ
     UI_CONFIRM_DISMISS_MEMBER_MESSAGE,
+
+    // 雇用フェーズ 施設名
+    UI_FACILITY_RECRUIT,
 }

@@ -29,6 +29,7 @@ namespace Frontier.FormTroop
         [Inject] private UserDomain _userDomain                     = null;
         [Inject] private CharacterFactory _characterFactory         = null;
         [Inject] private TalkWindowPresenter _talkWindowPresenter   = null;
+        [Inject] private GeneralHeaderPresenter _headerPresenter    = null;
 
         private bool _isCancelled = false;  // 雇用を行わずにRecruitScene自体を終了するか
         private CommandList _commandList = new CommandList();
@@ -58,6 +59,8 @@ namespace Frontier.FormTroop
 
             _presenter.SetActiveTopMenu( true );
             _presenter.SetTopMenuSelectedIndex( _cmdIdxVal.value );
+
+            _headerPresenter.SetStateTitle( LocKey.UI_FACILITY_RECRUIT );
 
             _talkWindowPresenter.Show( "shopkeeper_greeting" );
         }
@@ -91,6 +94,10 @@ namespace Frontier.FormTroop
 
             _presenter.SetActiveTopMenu( true );
             _presenter.SetTopMenuSelectedIndex( _cmdIdxVal.value );
+
+            // 子State(雇用/解雇画面)がExitState()でヘッダーのタイトルを消去しているため、
+            // クッション画面へ戻ってきた際にこのStateのタイトルを再設定する
+            _headerPresenter.SetStateTitle( LocKey.UI_FACILITY_RECRUIT );
 
             _talkWindowPresenter.Show( "shopkeeper_greeting" );
         }
