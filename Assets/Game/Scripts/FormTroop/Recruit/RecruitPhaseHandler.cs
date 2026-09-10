@@ -1,15 +1,22 @@
-﻿using Frontier.StateMachine;
+﻿using Frontier.UI;
+using Frontier.StateMachine;
 using Zenject;
+using static Constants;
 
 namespace Frontier.FormTroop
 {
     public class RecruitPhaseHandler : PhaseHandlerBase
     {
         private RecruitPhasePresenter _presenter = null;
+        private GeneralHeaderPresenter _headerPresenter = null;
+        private UserDomain _userDomain = null;
 
         [Inject]
-        public RecruitPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
+        public RecruitPhaseHandler( HierarchyBuilderBase hierarchyBld, GeneralHeaderPresenter headerPresenter, UserDomain userDomain ) : base( hierarchyBld )
         {
+            _headerPresenter = headerPresenter;
+            _userDomain      = userDomain;
+
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<RecruitPhasePresenter>( true ) );
         }
 
@@ -22,6 +29,10 @@ namespace Frontier.FormTroop
             _presenter.Init();
 
             AssignPresenterToNodes( RootNode, _presenter );
+
+            // 画面上部の全幅HUD(所持アニマ・部隊人数)はRecruitフェーズ全体を通して常時表示するため、
+            // 特定のStateではなくフェーズ全体のライフサイクルを持つこのHandlerで表示/更新/非表示を行う
+            _headerPresenter.Show();
         }
 
         public override void Exit()
@@ -29,6 +40,8 @@ namespace Frontier.FormTroop
             base.Exit();
 
             _presenter.Exit();
+
+            _headerPresenter.Hide();
         }
 
         public override void Update()
@@ -36,6 +49,10 @@ namespace Frontier.FormTroop
             base.Update();
 
             _presenter.Update();
+
+            // どの子State(TopMenu/雇用/解雇)がアクティブでも所持アニマ・部隊人数の変化を
+            // 反映できるよう、Handler側のUpdate()で毎フレーム更新する
+            _headerPresenter.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
         }
 
         /// <summary>

@@ -11,8 +11,6 @@ namespace Frontier.FormTroop
 {
     public class RecruitPhasePresenter : CharacterSelectionPresenter, IConfirmPresenter
     {
-        [Inject] private UserDomain _userDomain = null;
-
         private RecruitUISystem _recruitmentUI = null;
         private RecruitTopMenuUI _topMenuUI = null;
 
@@ -34,7 +32,6 @@ namespace Frontier.FormTroop
 
         public void Update()
         {
-            _recruitmentUI.SetAnimaValue( _userDomain.Anima );  // 所持アニマの更新
             UpdateSlideAnimation();
         }
 
