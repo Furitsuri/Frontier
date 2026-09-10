@@ -53,7 +53,7 @@ namespace Frontier.TroopEdit
         {
             _onClosed = onClosed;
 
-            _gridController.Show( _userDomain.Members, CHARACTER_SELECTION_OFFSET_Z, _userDomain.Anima );
+            _gridController.Show( _userDomain.Members, CHARACTER_SELECTION_OFFSET_Z );
 
             RegisterNavInputCodes();
         }

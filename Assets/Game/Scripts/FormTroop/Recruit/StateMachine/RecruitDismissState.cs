@@ -75,7 +75,7 @@ namespace Frontier.FormTroop
                 _userDomain.DismissMember( _pendingDismissIndex );
                 _rewardAnimas.RemoveAt( _pendingDismissIndex );
 
-                _gridController.RemoveCharacterAt( _pendingDismissIndex, _userDomain.Anima );
+                _gridController.RemoveCharacterAt( _pendingDismissIndex );
 
                 for( int i = 0; i < _rewardAnimas.Count; ++i )
                 {
@@ -157,8 +157,8 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// UserDomain.Membersから表示用キャラクターを生成し、グリッド・ヘッダー・
-        /// ステータスパネル・報酬アニマ表示を初期表示します(このState突入時に一度だけ呼ばれる)。
+        /// UserDomain.Membersから表示用キャラクターを生成し、グリッド・ステータスパネル・
+        /// 報酬アニマ表示を初期表示します(このState突入時に一度だけ呼ばれる)。
         /// </summary>
         private void BuildRoster()
         {
@@ -166,7 +166,7 @@ namespace Frontier.FormTroop
 
             // 雇用候補キャラクター(CharacterCandidate)が同シーン内でCHARACTER_SELECTION_OFFSET_Zの
             // オフスクリーン待機位置を使い続けているため、座標が重ならないよう専用のZ座標を使う
-            _gridController.Show( members, DISMISS_CHARACTER_OFFSET_Z, _userDomain.Anima );
+            _gridController.Show( members, DISMISS_CHARACTER_OFFSET_Z );
 
             for( int i = 0; i < _rewardAnimas.Count; ++i )
             {

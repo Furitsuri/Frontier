@@ -1,13 +1,9 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Frontier.UI
 {
     public sealed class RecruitUISystem : MonoBehaviour
     {
-        [Header( "所持アニマUI" )]
-        [SerializeField] private GameObject _moneyUI;
-
         [Header( "雇用ユニット選択UI" )]
         [SerializeField] private RecruitSelectionUI _employmentSelectUI;
 
@@ -16,8 +12,6 @@ namespace Frontier.UI
 
         [Header( "雇用/解雇選択メニューUI" )]
         [SerializeField] private RecruitTopMenuUI _topMenuUI;
-
-        private TextMeshProUGUI _moneyValueText;
 
         public RecruitSelectionUI EmploymentSelectUI => _employmentSelectUI;
         public ConfirmUI ConfirmEmploymentUI => _confirmEmploymentUI;
@@ -30,7 +24,6 @@ namespace Frontier.UI
             _topMenuUI.Init();
 
             gameObject.SetActive( true );
-            _moneyUI.SetActive( true );
             // 中央のキャラクター選択ウィンドウは「雇用」選択後(RecruitRootState.Init())に表示されるため、
             // ここでは有効化しない(_employmentSelectUI.Init()が末尾でSetActive(false)している)
             _confirmEmploymentUI.gameObject.SetActive( false );
@@ -41,7 +34,6 @@ namespace Frontier.UI
         public void Exit()
         {
             _employmentSelectUI.gameObject.SetActive( false );
-            _moneyUI.SetActive( false );
             _topMenuUI.Hide();
             gameObject.SetActive( false );
         }
@@ -49,12 +41,6 @@ namespace Frontier.UI
         public void Setup()
         {
             _employmentSelectUI.Setup( CharacterSelectionDisplayMode.Camera );
-            _moneyValueText = _moneyUI.GetComponentInChildren<TextMeshProUGUI>();
-        }
-
-        public void SetAnimaValue( float value )
-        {
-            _moneyValueText.text = value.ToString();
         }
     }
 }

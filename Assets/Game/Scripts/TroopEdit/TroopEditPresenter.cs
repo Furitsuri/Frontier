@@ -46,8 +46,6 @@ namespace Frontier.TroopEdit
 
         public void SetSelectedIndex( int index ) => _view.SetSelectedIndex( index );
 
-        public void SetHeaderInfo( int anima, int currentMemberNum, int maxMemberNum ) => _view.SetHeaderInfo( anima, currentMemberNum, maxMemberNum );
-
         /// <summary>
         /// 画面タイトルを差し替えます(呼び出し元の文脈に応じたタイトルにするため)。
         /// </summary>

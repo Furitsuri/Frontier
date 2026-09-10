@@ -29,15 +29,6 @@ namespace Frontier.UI
         [Header( "キャラクター1体分のセルプレハブ(非アクティブなテンプレート)" )]
         [SerializeField] private TroopMemberCellUI _cellPrefab;
 
-        [Header( "所持アニマテキスト" )]
-        [SerializeField] private TextMeshProUGUI _moneyText;
-
-        [Header( "所持アニマテキスト(暫定的にもう1箇所へも表示する)" )]
-        [SerializeField] private TextMeshProUGUI _expText;
-
-        [Header( "部隊人数(現在数/上限数)テキスト" )]
-        [SerializeField] private TextMeshProUGUI _memberCountText;
-
         [Header( "選択中のセルに追従するカーソル(GridLayoutGroupの対象外に設定済み)" )]
         [SerializeField] private RectTransform _selectCursor;
 
@@ -90,16 +81,6 @@ namespace Frontier.UI
         {
             _titleLocalizationKey = key;
             RefreshTitleText();
-        }
-
-        /// <summary>
-        /// 画面右上の所持アニマ・部隊人数(現在数/上限数)表示を更新します。
-        /// </summary>
-        public void SetHeaderInfo( int anima, int currentMemberNum, int maxMemberNum )
-        {
-            _moneyText.text = anima.ToString();
-            _expText.text = anima.ToString();
-            _memberCountText.text = $"{currentMemberNum}/{maxMemberNum}";
         }
 
         /// <summary>

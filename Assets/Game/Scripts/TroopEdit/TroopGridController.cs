@@ -35,11 +35,11 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
-        /// membersからオフスクリーンにキャラクターを生成し、グリッド・ヘッダー・パラメータパネルを表示します。
+        /// membersからオフスクリーンにキャラクターを生成し、グリッド・パラメータパネルを表示します。
         /// reserveOffsetZは、他の画面が同時に待機させているキャラクター群と座標が重ならないよう、
         /// 呼び出し元ごとに異なる値を指定してください。
         /// </summary>
-        public void Show( IReadOnlyList<Status> members, float reserveOffsetZ, int anima )
+        public void Show( IReadOnlyList<Status> members, float reserveOffsetZ )
         {
             BuildCharacters( members, reserveOffsetZ );
 
@@ -48,7 +48,6 @@ namespace Frontier.TroopEdit
             _troopEditPresenter.Show();
             _troopEditPresenter.DisplayMembers( _spawnedCharacters );
             _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
-            _troopEditPresenter.SetHeaderInfo( anima, members.Count, TROOP_MAX_MEMBERS );
 
             RefreshCharacterParamDisplay();
         }
@@ -70,7 +69,7 @@ namespace Frontier.TroopEdit
         /// 残りのキャラクターのGameObjectは破棄・再生成しないため、再生中のアニメーションが
         /// 途切れません(グリッドのセルUI自体はGridLayoutGroupの再配置のため再生成されます)。
         /// </summary>
-        public void RemoveCharacterAt( int index, int anima )
+        public void RemoveCharacterAt( int index )
         {
             if ( _spawnedCharacters[index] != null ) { Object.Destroy( _spawnedCharacters[index].gameObject ); }
             _spawnedCharacters.RemoveAt( index );
@@ -79,7 +78,6 @@ namespace Frontier.TroopEdit
 
             _troopEditPresenter.DisplayMembers( _spawnedCharacters );
             _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
-            _troopEditPresenter.SetHeaderInfo( anima, _spawnedCharacters.Count, TROOP_MAX_MEMBERS );
 
             RefreshCharacterParamDisplay();
         }

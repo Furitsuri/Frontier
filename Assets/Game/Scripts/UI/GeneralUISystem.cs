@@ -29,8 +29,8 @@ namespace Frontier
         [Header( "CharacterEdit" )]
         public CharacterEditUI CharacterEditView;    // キャラクター編集UI
 
-        [Header( "FieldHeader" )]
-        public FieldHeaderUI FieldHeaderView;        // フィールド画面右上の常時表示HUD
+        [Header( "Header" )]
+        public GeneralHeaderUI HeaderView;           // 画面上部の全幅に常時表示するHUD(所持アニマ・部隊人数)
 
         [Header( "TalkWindow" )]
         public TalkWindowUI TalkWindowView;          // 話者名+セリフ+ポートレートを表示する汎用ウィンドウ
@@ -53,7 +53,7 @@ namespace Frontier
             SaveLoadView?.Setup();
             TroopEditView?.Setup();
             CharacterEditView?.Setup();
-            FieldHeaderView?.Setup();
+            HeaderView?.Setup();
             TalkWindowView?.Setup();
         }
 
