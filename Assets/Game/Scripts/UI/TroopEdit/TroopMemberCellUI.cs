@@ -26,8 +26,9 @@ namespace Frontier.UI
         [FormerlySerializedAs( "_rewardAnimaText" )]
         [SerializeField] private TextMeshProUGUI _amountBadgeText;
 
-        [Header( "左上に表示する雇用チェックマーク(未使用の呼び出し元では非表示のまま)" )]
-        [SerializeField] private GameObject _employedMarkObject;
+        [Header( "左上に表示するチェックマーク(雇用/解雇画面共通、未使用の呼び出し元では非表示のまま)" )]
+        [FormerlySerializedAs( "_employedMarkObject" )]
+        [SerializeField] private GameObject _checkMarkObject;
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
@@ -90,9 +91,10 @@ namespace Frontier.UI
         public void SetCost( int? cost ) => SetAmountBadge( cost, CostSign, CostColorHex );
 
         /// <summary>
-        /// 左上の雇用チェックマークの表示を切り替えます(雇用画面専用)。
+        /// 左上のチェックマークの表示を切り替えます(雇用画面での雇用チェック・解雇画面での
+        /// 解雇チェック共通)。
         /// </summary>
-        public void SetEmployed( bool isEmployed ) => _employedMarkObject?.SetActive( isEmployed );
+        public void SetChecked( bool isChecked ) => _checkMarkObject?.SetActive( isChecked );
 
         /// <summary>
         /// 専用カメラ・RenderTextureを破棄します。セルを削除する前に呼び出してください。

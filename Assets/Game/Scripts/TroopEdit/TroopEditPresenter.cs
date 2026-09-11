@@ -59,9 +59,10 @@ namespace Frontier.TroopEdit
         public void SetCost( int index, int? cost ) => _view.SetCost( index, cost );
 
         /// <summary>
-        /// 指定インデックスのセルの雇用チェックマーク表示を切り替えます(雇用画面専用)。
+        /// 指定インデックスのセルのチェックマーク表示を切り替えます
+        /// (雇用画面での雇用チェック・解雇画面での解雇チェック共通)。
         /// </summary>
-        public void SetEmployed( int index, bool isEmployed ) => _view.SetEmployed( index, isEmployed );
+        public void SetChecked( int index, bool isChecked ) => _view.SetChecked( index, isChecked );
 
         /// <summary>
         /// 選択中キャラクターのパラメータ表示に使うCharacterParameterUIへの参照。

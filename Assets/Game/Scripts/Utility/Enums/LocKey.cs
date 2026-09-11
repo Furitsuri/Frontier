@@ -71,4 +71,7 @@ public enum LocKey
     UI_TALK_EMPLOY_NONE_AVAILABLE,
     UI_TALK_DISMISS_AVAILABLE,
     UI_TALK_DISMISS_NONE_AVAILABLE,
+
+    // 解雇完了確認ダイアログ(チェック済みメンバーをまとめて解雇)
+    UI_CONFIRM_DISMISS_COMPLETED_MESSAGE,
 }

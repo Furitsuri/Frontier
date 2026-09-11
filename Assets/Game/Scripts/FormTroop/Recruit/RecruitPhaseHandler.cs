@@ -76,7 +76,7 @@ namespace Frontier.FormTroop
              *              ｜
              *              ├─ RecruitDismissState (自軍メンバー一覧・解雇画面。キャンセルでクッション画面へBack())
              *              ｜         ｜
-             *              ｜         ├─ RecruitDismissConfirmState
+             *              ｜         ├─ RecruitDismissConfirmCompletedState
              *              ｜         ｜
              *              ｜         └─ TalkWindowCushionState (解雇可能なメンバーが0体の場合のみ経由する店主の会話クッション。汎用State)
              *              ｜
@@ -89,7 +89,7 @@ namespace Frontier.FormTroop
             employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             var dismissState = _hierarchyBld.InstantiateWithDiContainer<RecruitDismissState>( false );
-            dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitDismissConfirmState>( false ) );
+            dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitDismissConfirmCompletedState>( false ) );
             dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuState>( false );

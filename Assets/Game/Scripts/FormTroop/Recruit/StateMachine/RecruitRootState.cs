@@ -79,7 +79,7 @@ namespace Frontier.FormTroop
                 NullCheck.AssertNotNull( player, nameof( player ) );
 
                 _troopEditPresenter.SetCost( i, player.RecruitLogic.Cost );
-                _troopEditPresenter.SetEmployed( i, player.RecruitLogic.IsEmployed );
+                _troopEditPresenter.SetChecked( i, player.RecruitLogic.IsEmployed );
             }
 
             // 前回訪問時の雇用チェック状態を引き継いで反映
@@ -213,7 +213,7 @@ namespace Frontier.FormTroop
             }
 
             // ユニットの表示を更新
-            _troopEditPresenter.SetEmployed( index, player.RecruitLogic.IsEmployed );
+            _troopEditPresenter.SetChecked( index, player.RecruitLogic.IsEmployed );
             // 雇用キャラクターの存在フラグを更新
             _isExistEmployedCharacter = IsExistEmployedCharacter();
 
@@ -282,7 +282,7 @@ namespace Frontier.FormTroop
             {
                 var player = _employmentCandidates[i].Character as Player;
                 _troopEditPresenter.SetCost( i, player.RecruitLogic.Cost );
-                _troopEditPresenter.SetEmployed( i, player.RecruitLogic.IsEmployed );
+                _troopEditPresenter.SetChecked( i, player.RecruitLogic.IsEmployed );
             }
 
             _isExistEmployedCharacter = IsExistEmployedCharacter();

@@ -102,13 +102,14 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 指定インデックスのセルの雇用チェックマーク表示を切り替えます(雇用画面専用)。
+        /// 指定インデックスのセルのチェックマーク表示を切り替えます
+        /// (雇用画面での雇用チェック・解雇画面での解雇チェック共通)。
         /// </summary>
-        public void SetEmployed( int index, bool isEmployed )
+        public void SetChecked( int index, bool isChecked )
         {
             if ( index < 0 || index >= _cells.Count ) return;
 
-            _cells[index].SetEmployed( isEmployed );
+            _cells[index].SetChecked( isChecked );
         }
 
         /// <summary>

@@ -44,5 +44,6 @@
     "UI_TALK_EMPLOY_AVAILABLE": "誰を雇うんだい？",
     "UI_TALK_EMPLOY_NONE_AVAILABLE": "悪いが出払っちまってる",
     "UI_TALK_DISMISS_AVAILABLE": "誰を解雇するんだ？",
-    "UI_TALK_DISMISS_NONE_AVAILABLE": "おいおい、お前さんまでいなくなったら部隊がなくなっちまうぞ"
+    "UI_TALK_DISMISS_NONE_AVAILABLE": "おいおい、お前さんまでいなくなったら部隊がなくなっちまうぞ",
+    "UI_CONFIRM_DISMISS_COMPLETED_MESSAGE": "チェックしたメンバーを解雇しますか？"
 }

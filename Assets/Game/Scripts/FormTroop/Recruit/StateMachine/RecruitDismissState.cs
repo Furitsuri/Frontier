@@ -2,6 +2,7 @@
 using Frontier.TroopEdit;
 using Frontier.UI;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -11,14 +12,14 @@ namespace Frontier.FormTroop
     /// <summary>
     /// 「解雇」選択時に表示する自軍メンバー一覧グリッド画面。
     /// グリッド表示・カーソル移動・キャラクターのライフサイクルは、FieldSceneの部隊編集画面
-    /// (TroopEditHandler)と共通のTroopGridControllerに委譲する。このStateが持つのは
-    /// 解雇報酬(_rewardAnimas)の管理と、確定/キャンセル時の遷移(確認Stateへの遷移・Back())のみ。
+    /// (TroopEditHandler)と共通のTroopGridControllerに委譲する。雇用画面(RecruitRootState)と
+    /// 同様、チェックマークのトグルで複数メンバーを選択し、COMPLETE操作でまとめて解雇できる。
     /// </summary>
     public sealed class RecruitDismissState : RecruitPhaseStateBase
     {
         private enum RecruitDismissTransitTag
         {
-            CONFIRM_DISMISS = 0,
+            COMPLETE = 0,
             GREETING,
         }
 
@@ -28,12 +29,24 @@ namespace Frontier.FormTroop
         private TroopEditPresenter _troopEditPresenter      = null;
         private CharacterParameterPresenter _paramPresenter = null;
         private TroopGridController _gridController         = null;
-        private List<int> _rewardAnimas            = new List<int>();
-        private int _pendingDismissIndex  = -1;  // 確認Stateからリクエストされた解雇対象(-1は未リクエスト)
+        private List<int> _rewardAnimas       = new List<int>();
+        private List<bool> _dismissChecked    = new List<bool>();
+
+        private bool _isExistDismissChecked = false;
+        private string[] _inputConfirmStrings;
+        private InputCodeStringWrapper _inputConfirmStrWrapper = null;
 
         public override void Init( object context )
         {
             base.Init( context );
+
+            // CONFIRMアイコンの文字列を設定(雇用画面と同様、チェック状態に応じて切り替える)
+            _inputConfirmStrings = new string[]
+            {
+                "DISMISS\nCHECK",   // 解雇チェック
+                "CANCEL\nCHECK",    // チェック取消
+            };
+            _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
 
             LazyInject.GetOrCreate( ref _troopEditPresenter, () => _hierarchyBld.InstantiateWithDiContainer<TroopEditPresenter>( false ) );
             _troopEditPresenter.Init();
@@ -46,10 +59,11 @@ namespace Frontier.FormTroop
             LazyInject.GetOrCreate( ref _gridController, () => _hierarchyBld.InstantiateWithDiContainer<TroopGridController>( false ) );
             _gridController.Init( _troopEditPresenter, _paramPresenter );
 
-            _pendingDismissIndex = -1;
-
             InitializeRewardAnimas();
+            InitializeDismissChecks();
             BuildRoster();
+
+            _isExistDismissChecked = false;
 
             // 解雇可能なメンバーが一人も居ない場合(自軍が1人になる解雇は許可しないため、
             // 残り1人の場合も含む)のみ、店主の会話クッション画面を経由する(会話を閉じると
@@ -63,6 +77,28 @@ namespace Frontier.FormTroop
             }
         }
 
+        /// <summary>
+        /// 会話クッション画面等の子Stateから戻ってきた際に呼ばれます。
+        /// 子State表示中に隠していたカーソル・選択中キャラクターのパラメータパネルを再表示します。
+        /// </summary>
+        public override void RestartState()
+        {
+            base.RestartState();
+
+            _gridController.ShowSelectionDisplay();
+        }
+
+        public override bool Update()
+        {
+            // 解雇確定によって対象が0体になった場合はCONFIRMアイコンの文字列更新をスキップする
+            if( _gridController.SpawnedCharacters.Count > 0 )
+            {
+                _inputConfirmStrWrapper.Explanation = _dismissChecked[_gridController.SelectedIndex] ? _inputConfirmStrings[1] : _inputConfirmStrings[0];
+            }
+
+            return ( 0 <= TransitIndex );
+        }
+
         public override object ExitState()
         {
             _gridController.Close();
@@ -71,53 +107,35 @@ namespace Frontier.FormTroop
             return base.ExitState();
         }
 
-        /// <summary>
-        /// 解雇確認画面から戻ってきた際に呼ばれます。RequestDismiss()でリクエストが来ていれば
-        /// (YES)、実際の解雇処理を行い、解雇された1体だけをグリッドから取り除きます。
-        /// キャンセル(NO)の場合は表示に変更が無いため何もしません
-        /// (毎回グリッドを再構築すると、残っているキャラクター達の再生中アニメーションが
-        /// 途切れてしまうため、実際に変化があった場合のみ更新するようにしています)。
-        /// </summary>
-        public override void RestartState()
-        {
-            base.RestartState();
-
-            // 子State表示中に隠していたカーソル・パラメータパネルを再表示する
-            _gridController.ShowSelectionDisplay();
-
-            if( 0 <= _pendingDismissIndex )
-            {
-                int reward = _rewardAnimas[_pendingDismissIndex];
-                _userDomain.AddAnima( reward );
-                _userDomain.DismissMember( _pendingDismissIndex );
-                _rewardAnimas.RemoveAt( _pendingDismissIndex );
-
-                _gridController.RemoveCharacterAt( _pendingDismissIndex );
-
-                for( int i = 0; i < _rewardAnimas.Count; ++i )
-                {
-                    _troopEditPresenter.SetRewardAnima( i, _rewardAnimas[i] );
-                }
-
-                _pendingDismissIndex = -1;
-            }
-        }
-
         public override void RegisterInputCodes()
         {
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR, "SELECT",  CanAcceptDefault, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,    "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ),   0.0f, hashCode),
-               (GuideIcon.CANCEL,     "BACK",    CanAcceptDefault, new AcceptContextInput( AcceptCancel ),    0.0f, hashCode)
+               (GuideIcon.ALL_CURSOR, "SELECT",   CanAcceptDefault,  new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+               (GuideIcon.CONFIRM,    _inputConfirmStrWrapper,      CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ),   0.0f, hashCode),
+               (GuideIcon.CANCEL,     "BACK",     CanAcceptDefault,  new AcceptContextInput( AcceptCancel ),    0.0f, hashCode),
+               (GuideIcon.OPT2,       "COMPLETE", CanAcceptOptional, new AcceptContextInput( AcceptOpt2 ),      0.0f, hashCode)
             );
         }
 
         protected override bool CanAcceptConfirm()
         {
-            // 自軍が1人になる解雇は許可しない
-            return _gridController.SpawnedCharacters.Count > 0 && 1 < _userDomain.Members.Count;
+            if( _gridController.SpawnedCharacters.Count == 0 ) { return false; }
+
+            int index = _gridController.SelectedIndex;
+
+            // 既にチェック済みのメンバーは常にチェックを解除できる
+            if( _dismissChecked[index] ) { return true; }
+
+            // 新たにチェックする場合、自軍が1人になってしまう解雇は許可しない
+            int checkedCount = _dismissChecked.Count( c => c );
+            return ( checkedCount + 1 ) < _userDomain.Members.Count;
+        }
+
+        protected override bool CanAcceptOptional()
+        {
+            return _isExistDismissChecked;   // 解雇チェック済みのメンバーが一人もいない場合は完了できない
         }
 
         protected override bool AcceptDirection( InputContext context )
@@ -129,9 +147,11 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            // 解雇対象・報酬額を確認Stateへ渡す(解雇確定はRestartState側で行う)
-            SetSendTransitionContext( _gridController.SelectedIndex );
-            TransitState( ( int ) RecruitDismissTransitTag.CONFIRM_DISMISS );
+            int index = _gridController.SelectedIndex;
+            _dismissChecked[index] = !_dismissChecked[index];
+
+            _troopEditPresenter.SetChecked( index, _dismissChecked[index] );
+            _isExistDismissChecked = IsExistDismissChecked();
 
             return true;
         }
@@ -145,23 +165,52 @@ namespace Frontier.FormTroop
             return true;
         }
 
-        /// <summary>
-        /// 確認Stateから、指定インデックスのメンバーの解雇を要求します。
-        /// 実際の解雇処理(除名+アニマ加算)はRestartState()で行います。
-        /// </summary>
-        public void RequestDismiss( int index )
+        protected override bool AcceptOpt2( InputContext context )
         {
-            _pendingDismissIndex = index;
+            if( !base.AcceptOpt2( context ) ) { return false; }
+
+            // 解雇完了確認ステートへ遷移
+            TransitState( ( int ) RecruitDismissTransitTag.COMPLETE );
+
+            return true;
         }
 
         /// <summary>
-        /// 選択中の報酬アニマ量を返します(確認画面のメッセージ表示等に使う想定)。
+        /// 解雇完了確認ステートでYesが選択された際に呼ばれます。解雇チェック済みのメンバーを
+        /// まとめて解雇し、報酬アニマを加算した上で表示から取り除きます(RecruitSceneは終了しない)。
         /// </summary>
-        public int GetRewardAnima( int index ) => _rewardAnimas[index];
+        public void CommitDismissal()
+        {
+            for( int i = _dismissChecked.Count - 1; i >= 0; --i )
+            {
+                if( !_dismissChecked[i] ) { continue; }
+
+                _userDomain.AddAnima( _rewardAnimas[i] );
+                _userDomain.DismissMember( i );
+
+                _rewardAnimas.RemoveAt( i );
+                _dismissChecked.RemoveAt( i );
+
+                _gridController.RemoveCharacterAt( i );
+            }
+
+            for( int i = 0; i < _rewardAnimas.Count; ++i )
+            {
+                _troopEditPresenter.SetRewardAnima( i, _rewardAnimas[i] );
+                _troopEditPresenter.SetChecked( i, _dismissChecked[i] );
+            }
+
+            _isExistDismissChecked = IsExistDismissChecked();
+        }
+
+        private bool IsExistDismissChecked()
+        {
+            return _dismissChecked.Contains( true );
+        }
 
         /// <summary>
         /// 解雇報酬アニマ額を、このState突入時に一度だけ算出します。以後は解雇確定によって
-        /// リストから該当分を取り除く場合を除き、再計算しません(RestartState参照)。
+        /// リストから該当分を取り除く場合を除き、再計算しません。
         /// </summary>
         private void InitializeRewardAnimas()
         {
@@ -170,6 +219,18 @@ namespace Frontier.FormTroop
             {
                 // MEMO : 解雇報酬の仕様は未確定のため、暫定的に1〜20のランダム値とする
                 _rewardAnimas.Add( Random.Range( 1, 21 ) );
+            }
+        }
+
+        /// <summary>
+        /// 解雇チェック状態を、このState突入時に一度だけ全て未チェックへ初期化します。
+        /// </summary>
+        private void InitializeDismissChecks()
+        {
+            _dismissChecked.Clear();
+            for( int i = 0; i < _userDomain.Members.Count; ++i )
+            {
+                _dismissChecked.Add( false );
             }
         }
 
