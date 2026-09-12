@@ -304,6 +304,10 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptOpt2( context ) ) { return false; }
 
+            // 確認画面の会話文言(単数/複数)を選ぶための、雇用チェック済み人数を渡す
+            int employedCount = _employmentCandidates.Count( c => ( c.Character as Player ).RecruitLogic.IsEmployed );
+            SetSendTransitionContext( employedCount );
+
             // 雇用完了確認ステートへ遷移
             TransitState( ( int ) RecruitRootTransitTag.CONFIRM );
 

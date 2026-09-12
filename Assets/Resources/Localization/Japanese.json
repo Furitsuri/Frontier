@@ -45,5 +45,9 @@
     "UI_TALK_EMPLOY_NONE_AVAILABLE": "悪いが出払っちまってる",
     "UI_TALK_DISMISS_AVAILABLE": "誰を解雇するんだ？",
     "UI_TALK_DISMISS_NONE_AVAILABLE": "おいおい、お前さんまでいなくなったら部隊がなくなっちまうぞ",
-    "UI_CONFIRM_DISMISS_COMPLETED_MESSAGE": "チェックしたメンバーを解雇しますか？"
+    "UI_CONFIRM_DISMISS_COMPLETED_MESSAGE": "チェックしたメンバーを解雇しますか？",
+    "UI_TALK_EMPLOY_CONFIRM_SINGULAR": "雇うのはそいつかい？",
+    "UI_TALK_EMPLOY_CONFIRM_PLURAL": "雇うのはそいつらでいいんだな？",
+    "UI_TALK_DISMISS_CONFIRM_SINGULAR": "二度と会えなくなると思うが、そいつを解雇するんだな？",
+    "UI_TALK_DISMISS_CONFIRM_PLURAL": "いいのか？二度と会えなくなるが、そいつらを解雇するんだな？"
 }

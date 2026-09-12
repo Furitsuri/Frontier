@@ -169,6 +169,10 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptOpt2( context ) ) { return false; }
 
+            // 確認画面の会話文言(単数/複数)を選ぶための、解雇チェック済み人数を渡す
+            int checkedCount = _dismissChecked.Count( c => c );
+            SetSendTransitionContext( checkedCount );
+
             // 解雇完了確認ステートへ遷移
             TransitState( ( int ) RecruitDismissTransitTag.COMPLETE );
 

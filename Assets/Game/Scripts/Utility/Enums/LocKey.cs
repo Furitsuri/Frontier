@@ -74,4 +74,10 @@ public enum LocKey
 
     // 解雇完了確認ダイアログ(チェック済みメンバーをまとめて解雇)
     UI_CONFIRM_DISMISS_COMPLETED_MESSAGE,
+
+    // 雇用/解雇完了確認(会話ウィンドウ形式、対象の単数/複数で文言が異なる)
+    UI_TALK_EMPLOY_CONFIRM_SINGULAR,
+    UI_TALK_EMPLOY_CONFIRM_PLURAL,
+    UI_TALK_DISMISS_CONFIRM_SINGULAR,
+    UI_TALK_DISMISS_CONFIRM_PLURAL,
 }

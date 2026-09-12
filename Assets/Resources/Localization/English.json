@@ -45,5 +45,9 @@
     "UI_TALK_EMPLOY_NONE_AVAILABLE": "Sorry, they're all out on jobs right now.",
     "UI_TALK_DISMISS_AVAILABLE": "Who're you letting go?",
     "UI_TALK_DISMISS_NONE_AVAILABLE": "Hold on now, if you dismiss yourself too, you won't have a squad left!",
-    "UI_CONFIRM_DISMISS_COMPLETED_MESSAGE": "Dismiss the checked members?"
+    "UI_CONFIRM_DISMISS_COMPLETED_MESSAGE": "Dismiss the checked members?",
+    "UI_TALK_EMPLOY_CONFIRM_SINGULAR": "That's the one you're hiring, then?",
+    "UI_TALK_EMPLOY_CONFIRM_PLURAL": "Those are the ones you're hiring, then?",
+    "UI_TALK_DISMISS_CONFIRM_SINGULAR": "You won't see them again, you know. Still dismissing them?",
+    "UI_TALK_DISMISS_CONFIRM_PLURAL": "You sure? You won't see any of them again — still dismissing them?"
 }

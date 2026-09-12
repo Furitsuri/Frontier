@@ -41,6 +41,7 @@ namespace Frontier
             // 自身に紐づくUI演出だけを呼べる限定インターフェースを注入する
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<TalkWindowPresenter>().AsSingle();
+            Container.Bind<TalkWindowConfirmPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
