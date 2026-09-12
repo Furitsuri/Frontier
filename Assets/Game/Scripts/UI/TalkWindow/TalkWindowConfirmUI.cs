@@ -14,18 +14,10 @@ namespace Frontier.UI
         [Header( "はい/いいえの選択肢テキスト(0:はい、1:いいえ)" )]
         [SerializeField] private TextMeshProUGUI[] _optionTexts;
 
-        // Yes/No行を含めるため、通常の会話ウィンドウ(TopRightSizeDelta)より高さを確保する
-        private static readonly Vector2 ConfirmSizeDelta = new Vector2( 560f, 170f );
+        // Yes/No行の分だけ、通常の会話ウィンドウより高さを追加で確保する(実測値)
+        private const float ConfirmOptionsExtraHeight = 40f;
 
-        /// <summary>
-        /// 画面右上、ヘッダー直下へ配置します(SetPositionTopRightのYes/No選択肢用サイズ版)。
-        /// </summary>
-        public void SetPositionTopRightConfirm()
-        {
-            SetPositionTopRight();
-
-            ( ( RectTransform ) transform ).sizeDelta = ConfirmSizeDelta;
-        }
+        protected override float ReservedExtraHeight => ConfirmOptionsExtraHeight;
 
         /// <summary>
         /// 「はい」「いいえ」に表示する文字列を設定します。

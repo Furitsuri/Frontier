@@ -43,7 +43,7 @@ namespace Frontier.UI
             // メッセージの反映(Show()によるgameObjectの表示化を含む)は、この直後に呼ばれる
             // SetConfirmMessage()に委ねる。ここで先にLocKey.None(既定値)のまま表示しようとすると
             // 未設定のキーでローカライズ解決を試みてしまうため、位置・選択肢の準備のみ行う
-            View.SetPositionTopRightConfirm();
+            View.SetPositionTopRight();
             View.SetOptionTexts( _localization.Get( LocKey.UI_CONFIRM_YES ), _localization.Get( LocKey.UI_CONFIRM_NO ) );
             View.SetOptionsActive( true );
         }
