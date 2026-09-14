@@ -17961,6 +17961,7 @@ MonoBehaviour:
   _selectCursor: {fileID: 8431792943475969883}
   _characterParamUI: {fileID: 3231948782667442170}
   _characterParamNameText: {fileID: 3453599581801143525}
+  _background: {fileID: 6737575196503097170}
 --- !u!1 &4962087947915043151
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,6 +31,10 @@ namespace Frontier.UI
         [Header( "パラメータ表示上部の「Lv.名前」ヘッダーテキスト" )]
         [SerializeField] private TextMeshProUGUI _characterParamNameText;
 
+        [Header( "画面全体を覆う背景。部隊編集画面(FieldScene)では表示したままにし、\n" +
+                 "呼び出し元の画面デザインに応じてSetBackgroundVisible()で非表示にできる" )]
+        [SerializeField] private Image _background;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
@@ -49,6 +53,15 @@ namespace Frontier.UI
         public void Show() => gameObject.SetActive( true );
 
         public void Hide() => gameObject.SetActive( false );
+
+        /// <summary>
+        /// 画面全体を覆う背景の表示・非表示を切り替えます。呼び出し元の画面が独自の背景
+        /// (会話ウィンドウ等)を持ち、この画面固有の背景を重ねたくない場合に非表示にします。
+        /// </summary>
+        public void SetBackgroundVisible( bool isVisible )
+        {
+            _background?.gameObject.SetActive( isVisible );
+        }
 
         /// <summary>
         /// 渡されたキャラクター一覧をグリッド上に並べ直します。並び順はそのまま

@@ -52,6 +52,9 @@ namespace Frontier.FormTroop
 
             LazyInject.GetOrCreate( ref _troopEditPresenter, () => _hierarchyBld.InstantiateWithDiContainer<TroopEditPresenter>( false ) );
             _troopEditPresenter.Init();
+            // RecruitTopMenuState(会話ウィンドウ+空の背景)から遷移しても背景の見た目が変わらないよう、
+            // 部隊編集画面(FieldScene)専用の全画面背景はRecruitでは非表示にする
+            _troopEditPresenter.SetBackgroundVisible( false );
             _headerPresenter.SetStateTitle( title );
 
             LazyInject.GetOrCreate( ref _paramPresenter, () => _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(

@@ -42,6 +42,12 @@ namespace Frontier.TroopEdit
 
         public void Hide() => _view.Hide();
 
+        /// <summary>
+        /// 画面全体を覆う背景の表示・非表示を切り替えます。呼び出し元の画面が独自の背景を
+        /// 持ち、この画面固有の背景を重ねたくない場合に非表示にします。
+        /// </summary>
+        public void SetBackgroundVisible( bool isVisible ) => _view.SetBackgroundVisible( isVisible );
+
         public void DisplayMembers( List<Character> characters ) => _view.DisplayMembers( characters );
 
         public void ClearMembers() => _view.ClearMembers();
