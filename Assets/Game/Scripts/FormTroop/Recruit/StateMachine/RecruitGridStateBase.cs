@@ -93,6 +93,7 @@ namespace Frontier.FormTroop
         {
             _gridController.Close();
             _headerPresenter.ClearStateTitle();
+            _headerPresenter.SetAnimaDiff( 0 );
 
             return base.ExitState();
         }
@@ -107,6 +108,8 @@ namespace Frontier.FormTroop
             {
                 _inputConfirmStrWrapper.Explanation = IsSelectedToggled() ? _inputConfirmStrings[1] : _inputConfirmStrings[0];
             }
+
+            _headerPresenter.SetAnimaDiff( GetPendingAnimaDiff() );
 
             return ( 0 <= TransitIndex );
         }
@@ -174,5 +177,11 @@ namespace Frontier.FormTroop
         /// トグル済み(雇用/解雇チェック済み)の人数を返します。
         /// </summary>
         protected virtual int GetToggledCount() { return 0; }
+
+        /// <summary>
+        /// 現在の予備登録(雇用/解雇チェック)によって生じる所持アニマの増減差分を返します。
+        /// ヘッダーのアニマ数値のすぐ下に表示するために、Update()から毎フレーム参照されます。
+        /// </summary>
+        protected virtual int GetPendingAnimaDiff() { return 0; }
     }
 }

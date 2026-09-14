@@ -146,6 +146,17 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
+        /// 雇用チェック済みキャラクターの契約コスト合計を、所持アニマの減少分として返します
+        /// (雇用チェック時点で既に_userDomain.Animaから減算済みのため、その内訳を示す値です)。
+        /// </summary>
+        protected override int GetPendingAnimaDiff()
+        {
+            return -_employmentCandidates
+                .Where( c => ( c.Character as Player ).RecruitLogic.IsEmployed )
+                .Sum( c => ( c.Character as Player ).RecruitLogic.Cost );
+        }
+
+        /// <summary>
         /// まだ雇用を確定していないキャラクターの雇用チェックを全て取り消し、
         /// 消費予定だった所持アニマを払い戻します
         /// </summary>

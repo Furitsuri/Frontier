@@ -97,6 +97,21 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
+        /// 解雇チェック済みメンバーの報酬アニマ合計を返します(解雇確定(CommitDismissal)まで
+        /// 実際にはまだ加算されないため、確定した場合に増加する見込み額のプレビューです)。
+        /// </summary>
+        protected override int GetPendingAnimaDiff()
+        {
+            int total = 0;
+            for( int i = 0; i < _dismissChecked.Count; ++i )
+            {
+                if( _dismissChecked[i] ) { total += _rewardAnimas[i]; }
+            }
+
+            return total;
+        }
+
+        /// <summary>
         /// 解雇完了確認ステートでYesが選択された際に呼ばれます。解雇チェック済みのメンバーを
         /// まとめて解雇し、報酬アニマを加算した上で表示から取り除きます(RecruitSceneは終了しない)。
         /// </summary>

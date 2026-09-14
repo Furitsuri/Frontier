@@ -16,6 +16,9 @@ namespace Frontier.UI
         [Header( "所持アニマのアイコン右側に表示する数値テキスト" )]
         [SerializeField] private TextMeshProUGUI _animaValueText;
 
+        [Header( "所持アニマ増減差分テキスト(アニマ数値のすぐ下に表示。差分0の場合は非表示)" )]
+        [SerializeField] private TextMeshProUGUI _animaDiffText;
+
         [Header( "部隊人数(現在数/上限数)テキスト" )]
         [SerializeField] private TextMeshProUGUI _memberCountText;
 
@@ -46,6 +49,24 @@ namespace Frontier.UI
         {
             _animaValueText.text = anima.ToString();
             _memberCountText.text = $"{currentMemberNum}/{maxMemberNum}";
+        }
+
+        /// <summary>
+        /// 所持アニマの増減差分を、アニマ数値のすぐ下に表示します(雇用/解雇画面での予備登録による
+        /// 増減量を想定)。0を渡すと非表示にします。正の値は"+"付きで緑色、負の値は赤色で表示します。
+        /// </summary>
+        public void SetAnimaDiff( int diff )
+        {
+            if( _animaDiffText == null ) return;
+
+            if( diff == 0 )
+            {
+                _animaDiffText.text = string.Empty;
+                return;
+            }
+
+            _animaDiffText.text  = diff > 0 ? $"+{diff}" : diff.ToString();
+            _animaDiffText.color = diff > 0 ? Color.green : Color.red;
         }
 
         /// <summary>
