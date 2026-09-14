@@ -1,18 +1,21 @@
-﻿using Frontier.Entities;
+﻿using DG.Tweening;
+using Frontier.Entities;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using static Constants;
 
 namespace Frontier.UI
 {
     /// <summary>
     /// 部隊編集画面の見た目のみを担当するView。
-    /// 部隊メンバー一覧を1行4体のグリッドで表示する。開閉やキャラクターデータの取得は
-    /// TroopEditPresenterが行い、このクラスは表示指示(DisplayMembers/Show/Hide)を受けて
-    /// 反映するだけに留める。GeneralUISystem配下にOption/SaveLoadと同様、事前にヒエラルキー
-    /// を構築した状態で配置される。
+    /// 部隊メンバー一覧を、常時TROOP_EDIT_VISIBLE_ROWS行(ScrollRect+Viewportでクリップ)ずつ
+    /// 表示するグリッドで表示し、選択行が範囲外に出るとScrollToRow()でスクロールする。開閉や
+    /// キャラクターデータの取得はTroopEditPresenterが行い、このクラスは表示指示
+    /// (DisplayMembers/Show/Hide)を受けて反映するだけに留める。GeneralUISystem配下に
+    /// Option/SaveLoadと同様、事前にヒエラルキーを構築した状態で配置される。
     /// </summary>
     public class TroopEditUI : UiMonoBehaviour
     {
@@ -25,7 +28,7 @@ namespace Frontier.UI
         [Header( "選択中のセルに追従するカーソル(GridLayoutGroupの対象外に設定済み)" )]
         [SerializeField] private RectTransform _selectCursor;
 
-        [Header( "選択中キャラクターのパラメータ表示(位置はPresenterが決定する)" )]
+        [Header( "選択中キャラクターのパラメータ表示(ウィンドウ下部中央に固定配置済み)" )]
         [SerializeField] private CharacterParameterUI _characterParamUI;
 
         [Header( "パラメータ表示上部の「Lv.名前」ヘッダーテキスト" )]
@@ -35,10 +38,15 @@ namespace Frontier.UI
                  "呼び出し元の画面デザインに応じてSetBackgroundVisible()で非表示にできる" )]
         [SerializeField] private Image _background;
 
+        [Header( "キャラクターグリッドの縦スクロールを担うScrollRect(Viewport/Scrollbar設置済み)" )]
+        [SerializeField] private ScrollRect _scrollRect;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
-        private RectTransform _canvasRect;
+        // GridLayoutGroup.cellSize.y + spacing.yから求めた、行1つ分の高さ(px)
+        private float _rowHeight;
+        private Tweener _scrollTween;
 
         public CharacterParameterUI CharacterParamUI => _characterParamUI;
 
@@ -47,7 +55,9 @@ namespace Frontier.UI
             base.Setup();
 
             _characterParamUI?.Setup();
-            _canvasRect = ( RectTransform ) GetComponentInParent<Canvas>().transform;
+
+            var gridLayout = _gridContent.GetComponent<GridLayoutGroup>();
+            _rowHeight = gridLayout.cellSize.y + gridLayout.spacing.y;
         }
 
         public void Show() => gameObject.SetActive( true );
@@ -65,8 +75,8 @@ namespace Frontier.UI
 
         /// <summary>
         /// 渡されたキャラクター一覧をグリッド上に並べ直します。並び順はそのまま
-        /// 左上から右方向へ配置され、1行4体を超えると次の行へ折り返されます
-        /// (グリッドコンテナに設定済みのGridLayoutGroup: FixedColumnCount=4による)。
+        /// 左上から右方向へ配置され、TROOP_EDIT_GRID_COLUMNS体を超えると次の行へ折り返されます
+        /// (グリッドコンテナに設定済みのGridLayoutGroup: FixedColumnCountによる)。
         /// </summary>
         public void DisplayMembers( List<Character> characters )
         {
@@ -149,44 +159,39 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 指定インデックスのセルの下端Y座標(キャンバス中心基準のローカル座標)を返します。
-        /// セルが存在しない場合はnullを返します。判断は行わず、事実を返すだけです。
+        /// グリッドの表示行を指定行(topRow)から始まるようスクロールします。選択中の行が
+        /// 常時表示2行(TROOP_EDIT_VISIBLE_ROWS)に収まるよう、呼び出し元(TroopGridController)が
+        /// 選択インデックスから求めたtopRowを渡します。ビューポート外に出る行のセルは
+        /// カメラ描画を止め、描画コストを避けます。
+        /// ScrollRectはLateUpdateで自らContentの位置を管理しているため、Content.anchoredPositionを
+        /// 直接書き換えても次フレームで上書きされてしまう。そのためScrollRect.verticalNormalizedPosition
+        /// 経由で操作する。
         /// </summary>
-        public float? GetCellBottomY( int index )
+        /// <param name="topRow">表示範囲の先頭行インデックス</param>
+        /// <param name="animate">true の場合はアニメーションで滑らかにスクロールします</param>
+        public void ScrollToRow( int topRow, bool animate )
         {
-            if ( index < 0 || index >= _cells.Count ) return null;
+            float scrollableHeight = ( ( RectTransform ) _gridContent ).rect.height - _scrollRect.viewport.rect.height;
+            float targetNormalized = scrollableHeight > 0.01f
+                ? Mathf.Clamp01( 1f - ( topRow * _rowHeight ) / scrollableHeight )
+                : 1f;
 
-            var cellRect = ( RectTransform ) _cells[index].transform;
-            var corners = new Vector3[4]; // 0:左下 1:左上 2:右上 3:右下
-            cellRect.GetWorldCorners( corners );
-            return _canvasRect.InverseTransformPoint( corners[0] ).y;
-        }
+            _scrollTween?.Kill();
+            if ( animate )
+            {
+                _scrollTween = DOTween.To( () => _scrollRect.verticalNormalizedPosition, x => _scrollRect.verticalNormalizedPosition = x, targetNormalized, TROOP_EDIT_SCROLL_DURATION );
+            }
+            else
+            {
+                _scrollRect.verticalNormalizedPosition = targetNormalized;
+            }
 
-        /// <summary>
-        /// キャラクターパラメータパネルの高さを返します。判断は行わず、事実を返すだけです。
-        /// </summary>
-        public float GetCharacterParamPanelHeight()
-        {
-            if ( _characterParamUI == null ) return 0f;
-
-            return ( ( RectTransform ) _characterParamUI.transform ).sizeDelta.y;
-        }
-
-        /// <summary>
-        /// キャラクターパラメータパネルを、指定したキャンバス基準ローカル座標(左下ピボット)へ
-        /// 配置します。どこに置くべきかの判断は行わず、指定された位置をそのまま適用するだけです。
-        /// </summary>
-        /// <param name="x">画面左端からのオフセット(px)</param>
-        /// <param name="bottomY">パネル下端のキャンバス中心基準Y座標(px)</param>
-        public void SetCharacterParamPosition( float x, float bottomY )
-        {
-            if ( _characterParamUI == null ) return;
-
-            var rect = ( RectTransform ) _characterParamUI.transform;
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.zero;
-            rect.pivot = Vector2.zero;
-            rect.anchoredPosition = new Vector2( x, bottomY - _canvasRect.rect.y );
+            for ( int i = 0; i < _cells.Count; ++i )
+            {
+                int row = i / TROOP_EDIT_GRID_COLUMNS;
+                bool isVisible = row >= topRow && row < topRow + TROOP_EDIT_VISIBLE_ROWS;
+                _cells[i].SetCameraActive( isVisible );
+            }
         }
 
         /// <summary>

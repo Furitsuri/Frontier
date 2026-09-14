@@ -34,13 +34,20 @@ namespace Frontier.UI
 
         private CharacterCamera _characterCamera = null;
         private Character _character = null;
+        private bool _isCameraActive = true;
 
         private void Update()
         {
-            if ( _character == null ) return;
+            if ( _character == null || !_isCameraActive ) return;
 
             _characterCamera?.Update( _character.CameraParam );
         }
+
+        /// <summary>
+        /// キャラクターカメラの描画更新を止めます。スクロールでビューポート外に出たセルは
+        /// 見た目上不要な描画コストを避けるため、呼び出し元(TroopEditUI)から無効化されます。
+        /// </summary>
+        public void SetCameraActive( bool isActive ) => _isCameraActive = isActive;
 
         /// <summary>
         /// 表示対象のキャラクターを割り当て、専用カメラでの描画を開始します。

@@ -8,7 +8,7 @@ namespace Frontier.TroopEdit
 {
     /// <summary>
     /// 部隊メンバーのグリッド表示・カーソル移動・キャラクターのオフスクリーン生成/破棄・
-    /// パラメータパネル位置更新という、TroopEditPresenter/CharacterParameterPresenterを
+    /// 選択行に追従するグリッドのスクロール制御という、TroopEditPresenter/CharacterParameterPresenterを
     /// 操作する側の共通処理をまとめたクラス。TroopEditHandler(部隊編集画面)・RecruitEmployState
     /// (雇用画面)・RecruitDismissState(解雇画面)から共通して保持・利用される。選択中キャラクター
     /// (SelectedCharacter)もここで一元管理するため、呼び出し元はステータス確認等の対象キャラクター
@@ -23,6 +23,8 @@ namespace Frontier.TroopEdit
         private CharacterParameterPresenter _paramPresenter = null;
         private List<Character> _spawnedCharacters = new List<Character>();
         private int _selectedIndex = 0;
+        // 現在ビューポートの先頭に表示している行インデックス(スクロール位置)
+        private int _topRow = 0;
         // Show()で自ら生成した場合はtrue(Close時に破棄する)、ShowExisting()で
         // 呼び出し元から借りているだけの場合はfalse(Close時に破棄してはいけない)
         private bool _ownsSpawnedCharacters = true;
@@ -57,12 +59,14 @@ namespace Frontier.TroopEdit
             BuildCharacters( members, reserveOffsetZ );
 
             _selectedIndex = Mathf.Clamp( _selectedIndex, 0, Mathf.Max( 0, _spawnedCharacters.Count - 1 ) );
+            _topRow = 0;
 
             _troopEditPresenter.Show();
             _troopEditPresenter.DisplayMembers( _spawnedCharacters );
             _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
 
             RefreshCharacterParamDisplay();
+            UpdateScroll( false );
         }
 
         /// <summary>
@@ -78,12 +82,14 @@ namespace Frontier.TroopEdit
             _spawnedCharacters.AddRange( characters );
 
             _selectedIndex = Mathf.Clamp( _selectedIndex, 0, Mathf.Max( 0, _spawnedCharacters.Count - 1 ) );
+            _topRow = 0;
 
             _troopEditPresenter.Show();
             _troopEditPresenter.DisplayMembers( _spawnedCharacters );
             _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
 
             RefreshCharacterParamDisplay();
+            UpdateScroll( false );
         }
 
         /// <summary>
@@ -115,6 +121,7 @@ namespace Frontier.TroopEdit
             _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
 
             RefreshCharacterParamDisplay();
+            UpdateScroll( false );
         }
 
         /// <summary>
@@ -134,6 +141,7 @@ namespace Frontier.TroopEdit
         {
             _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
             RefreshCharacterParamDisplay();
+            UpdateScroll( false );
         }
 
         /// <summary>
@@ -144,6 +152,7 @@ namespace Frontier.TroopEdit
             _selectedIndex = index;
             _troopEditPresenter.SetSelectedIndex( _selectedIndex );
             RefreshCharacterParamDisplay();
+            UpdateScroll( false );
         }
 
         /// <summary>
@@ -182,6 +191,7 @@ namespace Frontier.TroopEdit
             _selectedIndex = newIndex;
             _troopEditPresenter.SetSelectedIndex( _selectedIndex );
             RefreshCharacterParamDisplay();
+            UpdateScroll( true );
 
             return true;
         }
@@ -205,7 +215,8 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
-        /// 選択中キャラクターのパラメータ表示を更新し、カーソル・キャラクターと重ならない位置へ再配置します。
+        /// 選択中キャラクターのパラメータ表示を更新します(パネル位置は下部中央に固定済みのため、
+        /// ここでは再配置は行いません)。
         /// </summary>
         private void RefreshCharacterParamDisplay()
         {
@@ -217,7 +228,26 @@ namespace Frontier.TroopEdit
 
             var status = character.GetStatusRef;
             _troopEditPresenter.SetCharacterParamName( $"Lv.{status.Level}  {status.Name}" );
-            _troopEditPresenter.SetCharacterParamCorner( _selectedIndex );
+        }
+
+        /// <summary>
+        /// 選択中の行が常時表示範囲(TROOP_EDIT_VISIBLE_ROWS行)に収まるよう、表示先頭行(_topRow)を
+        /// 更新し、ビューポートをスクロールします。選択行が表示範囲より下にある場合はその行が
+        /// 最下段に来るまで、上にある場合はその行が最上段に来るまでスクロールします。
+        /// </summary>
+        private void UpdateScroll( bool animate )
+        {
+            int count = _spawnedCharacters.Count;
+            int totalRows = ( count + TROOP_EDIT_GRID_COLUMNS - 1 ) / TROOP_EDIT_GRID_COLUMNS;
+            int maxTopRow = Mathf.Max( 0, totalRows - TROOP_EDIT_VISIBLE_ROWS );
+            int selectedRow = _selectedIndex / TROOP_EDIT_GRID_COLUMNS;
+
+            if ( selectedRow < _topRow ) { _topRow = selectedRow; }
+            else if ( selectedRow > _topRow + TROOP_EDIT_VISIBLE_ROWS - 1 ) { _topRow = selectedRow - TROOP_EDIT_VISIBLE_ROWS + 1; }
+
+            _topRow = Mathf.Clamp( _topRow, 0, maxTopRow );
+
+            _troopEditPresenter.ScrollToRow( _topRow, animate );
         }
 
         /// <summary>

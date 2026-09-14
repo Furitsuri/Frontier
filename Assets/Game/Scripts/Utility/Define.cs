@@ -6,7 +6,7 @@ static public class Constants
     public const int INPUT_INDEX_MOUSE_RIGHT_CLICK      = 1;
     public const int INPUT_INDEX_MOUSE_MIDDLE_CLICK     = 2;
     // 雇用候補に出来るユニット数
-    public const int EMPLOYABLE_CHARACTERS_NUM = 5;
+    public const int EMPLOYABLE_CHARACTERS_NUM = 10;
     // キャラクター選択の際に可視出来る味方のユニット数(必ず奇数とすること)
     public const int SHOWABLE_SELECTION_CHARACTERS_NUM = 5;
     // 雇用の際に可視出来る味方のユニット数(必ず奇数とすること)
@@ -19,6 +19,10 @@ static public class Constants
     public const int TROOP_MAX_MEMBERS = 20;
     // 部隊編集画面のキャラクターグリッドの列数(Content上のGridLayoutGroup.constraintCountと一致させること)
     public const int TROOP_EDIT_GRID_COLUMNS = 5;
+    // 部隊編集画面のキャラクターグリッドで、スクロールなしに同時表示する行数
+    public const int TROOP_EDIT_VISIBLE_ROWS = 2;
+    // 部隊編集画面のグリッドが選択中の行に追従してスクロールする際のアニメーション時間(秒)
+    public const float TROOP_EDIT_SCROLL_DURATION = 0.15f;
     // キャラクターが装備出来るスキルの最大数
     public const int EQUIPABLE_SKILL_MAX_NUM = 4;
     // キャラクターレベルの最大値
