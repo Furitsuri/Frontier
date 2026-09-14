@@ -1,73 +1,38 @@
 ﻿using Frontier.Entities;
-using Frontier.StateMachine;
 using Frontier.Tutorial;
-using Frontier.TroopEdit;
-using Frontier.UI;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using Zenject;
-using static Constants;
 
 namespace Frontier.FormTroop
 {
     /// <summary>
     /// 「雇用」選択時に表示する雇用候補一覧グリッド画面。
-    /// グリッド表示・カーソル移動・キャラクターのライフサイクルは、解雇画面(RecruitDismissState)
-    /// と共通のTroopGridControllerに委譲する。雇用候補キャラクター(CharacterCandidate)は
-    /// RecruitTopMenuStateが生成・所有・破棄するため、このStateはShowExisting()で表示を
-    /// 借りるだけで、破棄は行わない。このStateが持つのは雇用チェックのトグル・アニマ加減算・
-    /// 確定/キャンセル時の遷移のみ。
+    /// グリッド表示・カーソル移動・ステータス確認等、解雇画面(RecruitDismissState)と共通の処理は
+    /// RecruitGridStateBaseに委譲する。雇用候補キャラクター(CharacterCandidate)はRecruitTopMenuState
+    /// が生成・所有・破棄するため、このStateはShowExisting()で表示を借りるだけで、破棄は行わない。
+    /// このStateが持つのは雇用チェックのトグル・アニマ加減算・確定/キャンセル時の遷移のみ。
     /// </summary>
-    public sealed class RecruitEmployState : RecruitPhaseStateBase
+    public sealed class RecruitEmployState : RecruitGridStateBase
     {
-        private enum RecruitEmployTransitTag
-        {
-            CHARACTER_STATUS = 0,
-            CONFIRM,
-            GREETING,
-        }
-
-        [Inject] private UserDomain _userDomain = null;
-        [Inject] private GeneralHeaderPresenter _headerPresenter = null;
-
-        private TroopEditPresenter _troopEditPresenter      = null;
-        private CharacterParameterPresenter _paramPresenter = null;
-        private TroopGridController _gridController         = null;
+        protected override string SelectGuideText => "SELECT\nUNIT";
 
         private bool _isExistEmployedCharacter  = false;
-        private string[] _inputConfirmStrings;
         private List<CharacterCandidate> _employmentCandidates = null;
-        private InputCodeStringWrapper _inputConfirmStrWrapper = null;
 
         public override void Init( object context )
         {
             base.Init( context );
-
-            // CONFIRMアイコンの文字列を設定
-            _inputConfirmStrings = new string[]
-            {
-                "EMPLOY\nCONTARCT",     // 雇用契約
-                "CANCEL\nCONTRACT",     // 契約中止
-            };
-
-            _inputConfirmStrWrapper = new InputCodeStringWrapper( _inputConfirmStrings[0] );
 
             // 雇用可能キャラクター一覧はRecruitTopMenuStateが保持している同一インスタンスを受け取る
             // (RecruitScene起動時に一度だけ決定され、以後再抽選されない)
             ReceiveContext( ref _employmentCandidates, context );
             NullCheck.AssertNotNull( _employmentCandidates, nameof( _employmentCandidates ) );
 
-            LazyInject.GetOrCreate( ref _troopEditPresenter, () => _hierarchyBld.InstantiateWithDiContainer<TroopEditPresenter>( false ) );
-            _troopEditPresenter.Init();
-            _headerPresenter.SetStateTitle( LocKey.UI_CMD_EMPLOY );
-
-            LazyInject.GetOrCreate( ref _paramPresenter, () => _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>(
-                new object[] { _troopEditPresenter.CharacterParamUI, false }, false ) );
-            _paramPresenter.Init();
-
-            LazyInject.GetOrCreate( ref _gridController, () => _hierarchyBld.InstantiateWithDiContainer<TroopGridController>( false ) );
-            _gridController.Init( _troopEditPresenter, _paramPresenter );
+            SetupGrid( LocKey.UI_CMD_EMPLOY, new[]
+            {
+                "EMPLOY\nCONTARCT",     // 雇用契約
+                "CANCEL\nCONTRACT",     // 契約中止
+            } );
 
             // 雇用候補キャラクターは生成・配置済み(CharacterCandidate.Init参照)のため、
             // TroopGridController側で新規生成・再配置はせず、そのままグリッドに表示する
@@ -89,63 +54,7 @@ namespace Frontier.FormTroop
             TutorialFacade.Notify( TriggerType.FirstRecruit );
 
             // 雇用可能な候補が一人も居ない場合のみ、店主の会話クッション画面を経由する
-            // (会話を閉じるとRestartState()でこの画面の表示に戻る)。クッション画面表示中は
-            // カーソル・パラメータパネルを隠し、表示するメッセージはcontext経由で渡す。
-            if( _employmentCandidates.Count == 0 )
-            {
-                _gridController.HideSelectionDisplay();
-                SetSendTransitionContext( new TalkWindowCushionContext( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_EMPLOY_NONE_AVAILABLE ) );
-                TransitState( ( int ) RecruitEmployTransitTag.GREETING );
-            }
-        }
-
-        /// <summary>
-        /// 会話クッション画面等の子Stateから戻ってきた際に呼ばれます。
-        /// 子State表示中に隠していたカーソル・選択中キャラクターのパラメータパネルを再表示します。
-        /// </summary>
-        public override void RestartState()
-        {
-            base.RestartState();
-
-            _gridController.ShowSelectionDisplay();
-        }
-
-        public override bool Update()
-        {
-            // 基底の更新は行わない
-            // if( base.Update() ) { return true; }
-
-            // 雇用確定によって候補が0体になった場合はCONFIRMアイコンの文字列更新をスキップする
-            if( _employmentCandidates.Count > 0 )
-            {
-                var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
-                NullCheck.AssertNotNull( player, nameof( player ) );
-
-                _inputConfirmStrWrapper.Explanation = player.RecruitLogic.IsEmployed ? _inputConfirmStrings[1] : _inputConfirmStrings[0];
-            }
-
-            return ( 0 <= TransitIndex );
-        }
-
-        public override object ExitState()
-        {
-            _gridController.Close();
-            _headerPresenter.ClearStateTitle();
-
-            return base.ExitState();
-        }
-
-        public override void RegisterInputCodes()
-        {
-            int hashCode = GetInputCodeHash();
-
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.ALL_CURSOR,           "SELECT\nUNIT",             CanAcceptDefault,       new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,              _inputConfirmStrWrapper,    CanAcceptConfirm,       new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.CANCEL,               "BACK",                     CanAcceptDefault,       new AcceptContextInput( AcceptCancel ), 0.0f, hashCode),
-               (GuideIcon.INFO,                 "STATUS",                   CanAcceptInfo,          new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
-               (GuideIcon.OPT2,                 "COMPLETE",                 CanAcceptOptional,      new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
-            );
+            ShowNoneAvailableCushionIfNeeded( _employmentCandidates.Count == 0, LocKey.UI_TALK_EMPLOY_NONE_AVAILABLE );
         }
 
         protected override bool CanAcceptConfirm()
@@ -171,22 +80,14 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 選択中キャラクターが存在しない(雇用確定によって候補が0体になった等)場合は
-        /// ステータス表示への遷移を受け付けない。選択中キャラクターの有無はTroopGridControllerに委譲する。
+        /// 選択中キャラクターが雇用チェック済みかどうかを返します(CONFIRMアイコン文言の切り替えに使用)。
         /// </summary>
-        protected override bool CanAcceptInfo()
+        protected override bool IsSelectedToggled()
         {
-            return _gridController.SelectedCharacter != null;
-        }
+            var player = _employmentCandidates[_gridController.SelectedIndex].Character as Player;
+            NullCheck.AssertNotNull( player, nameof( player ) );
 
-        /// <summary>
-        /// 方向入力を受け取り、選択グリッドを操作します
-        /// </summary>
-        /// <param name="dir">方向入力</param>
-        /// <returns>入力実行の有無</returns>
-        protected override bool AcceptDirection( InputContext context )
-        {
-            return _gridController.MoveSelection( context.Cursor );
+            return player.RecruitLogic.IsEmployed;
         }
 
         protected override bool AcceptConfirm( InputContext context )
@@ -234,6 +135,14 @@ namespace Frontier.FormTroop
             Back();
 
             return true;
+        }
+
+        /// <summary>
+        /// 雇用完了確認画面へ渡す、雇用チェック済み人数を返します。
+        /// </summary>
+        protected override int GetToggledCount()
+        {
+            return _employmentCandidates.Count( c => ( c.Character as Player ).RecruitLogic.IsEmployed );
         }
 
         /// <summary>
@@ -287,32 +196,6 @@ namespace Frontier.FormTroop
             }
 
             _isExistEmployedCharacter = IsExistEmployedCharacter();
-        }
-
-        protected override bool AcceptInfo( InputContext context )
-        {
-            if( !base.AcceptInfo( context ) ) { return false; }
-
-            // ステータス表示ステートに、TroopGridControllerが管理する選択中キャラクターを渡す
-            SetSendTransitionContext( _gridController.SelectedCharacter );
-            // キャラクターステータス表示ステートへ遷移
-            TransitState( ( int ) RecruitEmployTransitTag.CHARACTER_STATUS );
-
-            return true;
-        }
-
-        protected override bool AcceptOpt2( InputContext context )
-        {
-            if( !base.AcceptOpt2( context ) ) { return false; }
-
-            // 確認画面の会話文言(単数/複数)を選ぶための、雇用チェック済み人数を渡す
-            int employedCount = _employmentCandidates.Count( c => ( c.Character as Player ).RecruitLogic.IsEmployed );
-            SetSendTransitionContext( employedCount );
-
-            // 雇用完了確認ステートへ遷移
-            TransitState( ( int ) RecruitEmployTransitTag.CONFIRM );
-
-            return true;
         }
 
         private bool IsExistEmployedCharacter()
