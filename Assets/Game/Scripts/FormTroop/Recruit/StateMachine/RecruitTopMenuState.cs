@@ -14,7 +14,7 @@ namespace Frontier.FormTroop
     /// 雇用フェーズ開始時に表示する「雇用/解雇」選択のクッションステート。
     /// 雇用可能キャラクター一覧はこのステートがRecruitScene起動時に一度だけ決定・保持し、
     /// 以後(「雇用」→キャンセルで本ステートに戻ってきても)再抽選しない。
-    /// 「雇用」選択時は既存の雇用候補選択画面(RecruitRootState)へ、「解雇」選択時は
+    /// 「雇用」選択時は既存の雇用候補選択画面(RecruitEmployState)へ、「解雇」選択時は
     /// 自軍メンバー一覧画面(RecruitDismissState)へ遷移する。
     /// </summary>
     public sealed class RecruitTopMenuState : RecruitPhaseStateBase
@@ -86,7 +86,7 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 雇用候補選択画面(RecruitRootState)からキャンセルで戻ってきた際、メニュー表示を復帰します
+        /// 雇用候補選択画面(RecruitEmployState)からキャンセルで戻ってきた際、メニュー表示を復帰します
         /// </summary>
         public override void RestartState()
         {

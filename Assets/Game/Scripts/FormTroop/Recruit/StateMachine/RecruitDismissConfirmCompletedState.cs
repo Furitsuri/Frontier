@@ -1,11 +1,13 @@
-﻿
 using Frontier.StateMachine;
 using Frontier.UI;
 using Zenject;
 
 namespace Frontier.FormTroop
 {
-    public class RecruitConfirmCompletedState : ConfirmPhaseStateBase
+    /// <summary>
+    /// 解雇チェック済みメンバーをまとめて解雇してよいかを確認するステート(RecruitDismissStateの子)。
+    /// </summary>
+    public sealed class RecruitDismissConfirmCompletedState : ConfirmPhaseStateBase
     {
         [Inject] private TalkWindowConfirmPresenter _talkConfirmPresenter = null;
 
@@ -13,15 +15,15 @@ namespace Frontier.FormTroop
         {
             base.Init( context );
 
-            int employedCount = 0;
-            ReceiveContext( ref employedCount, context );
+            int checkedCount = 0;
+            ReceiveContext( ref checkedCount, context );
 
             _talkConfirmPresenter.SetConfirmMessage( LocKey.UI_TALK_SHOPKEEPER_NAME,
-                employedCount == 1 ? LocKey.UI_TALK_EMPLOY_CONFIRM_SINGULAR : LocKey.UI_TALK_EMPLOY_CONFIRM_PLURAL );
+                checkedCount == 1 ? LocKey.UI_TALK_DISMISS_CONFIRM_SINGULAR : LocKey.UI_TALK_DISMISS_CONFIRM_PLURAL );
         }
 
         /// <summary>
-        /// 雇用完了確認は会話ウィンドウ形式(TalkWindowConfirmPresenter)を使うため、
+        /// 解雇完了確認は会話ウィンドウ形式(TalkWindowConfirmPresenter)を使うため、
         /// ツリー全体に伝播される既定のRecruitPhasePresenterではなく専用のPresenterを割り当てる。
         /// </summary>
         public override void AssignPresenter( PhasePresenterBase presenter )
@@ -35,8 +37,8 @@ namespace Frontier.FormTroop
 
             if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {
-                // 雇用確定キャラクターを自軍へ加え、表示から取り除く(RecruitSceneは終了しない)
-                GetParent<RecruitEmployState>()?.CommitEmployment();
+                // 解雇チェック済みメンバーを自軍から取り除く(RecruitSceneは終了しない)
+                GetParent<RecruitDismissState>()?.CommitDismissal();
             }
 
             Back();

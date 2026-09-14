@@ -12,14 +12,15 @@ namespace Frontier.FormTroop
     /// <summary>
     /// 「解雇」選択時に表示する自軍メンバー一覧グリッド画面。
     /// グリッド表示・カーソル移動・キャラクターのライフサイクルは、FieldSceneの部隊編集画面
-    /// (TroopEditHandler)と共通のTroopGridControllerに委譲する。雇用画面(RecruitRootState)と
+    /// (TroopEditHandler)と共通のTroopGridControllerに委譲する。雇用画面(RecruitEmployState)と
     /// 同様、チェックマークのトグルで複数メンバーを選択し、COMPLETE操作でまとめて解雇できる。
     /// </summary>
     public sealed class RecruitDismissState : RecruitPhaseStateBase
     {
         private enum RecruitDismissTransitTag
         {
-            COMPLETE = 0,
+            CHARACTER_STATUS = 0,
+            COMPLETE,
             GREETING,
         }
 
@@ -115,6 +116,7 @@ namespace Frontier.FormTroop
                (GuideIcon.ALL_CURSOR, "SELECT",   CanAcceptDefault,  new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM,    _inputConfirmStrWrapper,      CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ),   0.0f, hashCode),
                (GuideIcon.CANCEL,     "BACK",     CanAcceptDefault,  new AcceptContextInput( AcceptCancel ),    0.0f, hashCode),
+               (GuideIcon.INFO,       "STATUS",   CanAcceptInfo,     new AcceptContextInput( AcceptInfo ),      0.0f, hashCode),
                (GuideIcon.OPT2,       "COMPLETE", CanAcceptOptional, new AcceptContextInput( AcceptOpt2 ),      0.0f, hashCode)
             );
         }
@@ -136,6 +138,15 @@ namespace Frontier.FormTroop
         protected override bool CanAcceptOptional()
         {
             return _isExistDismissChecked;   // 解雇チェック済みのメンバーが一人もいない場合は完了できない
+        }
+
+        /// <summary>
+        /// 選択中キャラクターが存在しない場合はステータス表示への遷移を受け付けない。
+        /// 選択中キャラクターの有無はTroopGridControllerに委譲する。
+        /// </summary>
+        protected override bool CanAcceptInfo()
+        {
+            return _gridController.SelectedCharacter != null;
         }
 
         protected override bool AcceptDirection( InputContext context )
@@ -175,6 +186,18 @@ namespace Frontier.FormTroop
 
             // 解雇完了確認ステートへ遷移
             TransitState( ( int ) RecruitDismissTransitTag.COMPLETE );
+
+            return true;
+        }
+
+        protected override bool AcceptInfo( InputContext context )
+        {
+            if( !base.AcceptInfo( context ) ) { return false; }
+
+            // ステータス表示ステートに、TroopGridControllerが管理する選択中キャラクターを渡す
+            SetSendTransitionContext( _gridController.SelectedCharacter );
+            // キャラクターステータス表示ステートへ遷移
+            TransitState( ( int ) RecruitDismissTransitTag.CHARACTER_STATUS );
 
             return true;
         }

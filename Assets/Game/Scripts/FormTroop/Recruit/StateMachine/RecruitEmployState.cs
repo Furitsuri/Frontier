@@ -19,9 +19,9 @@ namespace Frontier.FormTroop
     /// 借りるだけで、破棄は行わない。このStateが持つのは雇用チェックのトグル・アニマ加減算・
     /// 確定/キャンセル時の遷移のみ。
     /// </summary>
-    public sealed class RecruitRootState : RecruitPhaseStateBase
+    public sealed class RecruitEmployState : RecruitPhaseStateBase
     {
-        private enum RecruitRootTransitTag
+        private enum RecruitEmployTransitTag
         {
             CHARACTER_STATUS = 0,
             CONFIRM,
@@ -95,7 +95,7 @@ namespace Frontier.FormTroop
             {
                 _gridController.HideSelectionDisplay();
                 SetSendTransitionContext( new TalkWindowCushionContext( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_EMPLOY_NONE_AVAILABLE ) );
-                TransitState( ( int ) RecruitRootTransitTag.GREETING );
+                TransitState( ( int ) RecruitEmployTransitTag.GREETING );
             }
         }
 
@@ -171,11 +171,12 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 雇用確定によって候補が0体になった場合はステータス表示への遷移を受け付けない
+        /// 選択中キャラクターが存在しない(雇用確定によって候補が0体になった等)場合は
+        /// ステータス表示への遷移を受け付けない。選択中キャラクターの有無はTroopGridControllerに委譲する。
         /// </summary>
         protected override bool CanAcceptInfo()
         {
-            return _employmentCandidates.Count > 0;
+            return _gridController.SelectedCharacter != null;
         }
 
         /// <summary>
@@ -292,10 +293,10 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
-            // ステータス表示ステートに対象キャラクターを渡す
-            SetSendTransitionContext( _employmentCandidates[_gridController.SelectedIndex].Character );
+            // ステータス表示ステートに、TroopGridControllerが管理する選択中キャラクターを渡す
+            SetSendTransitionContext( _gridController.SelectedCharacter );
             // キャラクターステータス表示ステートへ遷移
-            TransitState( ( int ) RecruitRootTransitTag.CHARACTER_STATUS );
+            TransitState( ( int ) RecruitEmployTransitTag.CHARACTER_STATUS );
 
             return true;
         }
@@ -309,7 +310,7 @@ namespace Frontier.FormTroop
             SetSendTransitionContext( employedCount );
 
             // 雇用完了確認ステートへ遷移
-            TransitState( ( int ) RecruitRootTransitTag.CONFIRM );
+            TransitState( ( int ) RecruitEmployTransitTag.CONFIRM );
 
             return true;
         }

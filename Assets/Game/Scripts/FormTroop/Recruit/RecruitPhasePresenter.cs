@@ -6,7 +6,7 @@ namespace Frontier.FormTroop
 {
     /// <summary>
     /// RecruitScene全体を通して使うUI(雇用/解雇選択メニュー・雇用完了確認ダイアログ)への窓口。
-    /// 雇用候補一覧の表示自体はTroopEdit形式のグリッド(RecruitRootStateが自前で保持する
+    /// 雇用候補一覧の表示自体はTroopEdit形式のグリッド(RecruitEmployStateが自前で保持する
     /// TroopEditPresenter/TroopGridController)に移行したため、このクラスはカルーセル関連の
     /// 責務を持たない。
     /// </summary>

@@ -9,9 +9,11 @@ namespace Frontier.TroopEdit
     /// <summary>
     /// 部隊メンバーのグリッド表示・カーソル移動・キャラクターのオフスクリーン生成/破棄・
     /// パラメータパネル位置更新という、TroopEditPresenter/CharacterParameterPresenterを
-    /// 操作する側の共通処理をまとめたクラス。TroopEditHandler(部隊編集画面)とRecruitDismissState
-    /// (解雇画面)から共通して保持・利用される。Confirm/Cancel時にどう振る舞うか(遷移先や
-    /// 入力コードの登録方式)は呼び出し元ごとに異なるため、このクラスの責務には含めない。
+    /// 操作する側の共通処理をまとめたクラス。TroopEditHandler(部隊編集画面)・RecruitEmployState
+    /// (雇用画面)・RecruitDismissState(解雇画面)から共通して保持・利用される。選択中キャラクター
+    /// (SelectedCharacter)もここで一元管理するため、呼び出し元はステータス確認等の対象キャラクター
+    /// 取得をこのクラスに委譲できる。Confirm/Cancel時にどう振る舞うか(遷移先や入力コードの登録方式)
+    /// は呼び出し元ごとに異なるため、このクラスの責務には含めない。
     /// </summary>
     public class TroopGridController
     {
@@ -27,6 +29,12 @@ namespace Frontier.TroopEdit
 
         public List<Character> SpawnedCharacters => _spawnedCharacters;
         public int SelectedIndex => _selectedIndex;
+
+        /// <summary>
+        /// 現在選択中のキャラクターを返します(未表示の場合はnull)。ステータス確認画面等、
+        /// 選択中キャラクターを対象に取る機能はこのプロパティ経由で参照してください。
+        /// </summary>
+        public Character SelectedCharacter => _spawnedCharacters.Count > 0 ? _spawnedCharacters[_selectedIndex] : null;
 
         /// <summary>
         /// 呼び出し元が生成したPresenterを紐づけます(一度だけ呼び出してください)。

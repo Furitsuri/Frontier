@@ -66,7 +66,7 @@ namespace Frontier.FormTroop
              *
              *      RecruitTopMenuState (雇用/解雇 選択のクッション画面)
              *              ｜
-             *              ├─ RecruitRootState (雇用候補選択画面。キャンセルでクッション画面へBack())
+             *              ├─ RecruitEmployState (雇用候補選択画面。キャンセルでクッション画面へBack())
              *              ｜         ｜
              *              ｜         ├─ CharacterStatusViewState
              *              ｜         ｜
@@ -76,6 +76,8 @@ namespace Frontier.FormTroop
              *              ｜
              *              ├─ RecruitDismissState (自軍メンバー一覧・解雇画面。キャンセルでクッション画面へBack())
              *              ｜         ｜
+             *              ｜         ├─ CharacterStatusViewState
+             *              ｜         ｜
              *              ｜         ├─ RecruitDismissConfirmCompletedState
              *              ｜         ｜
              *              ｜         └─ TalkWindowCushionState (解雇可能なメンバーが0体の場合のみ経由する店主の会話クッション。汎用State)
@@ -83,17 +85,18 @@ namespace Frontier.FormTroop
              *              └─ RecruitTopMenuConfirmCancelState
              *
              */
-            var employCandidateState = _hierarchyBld.InstantiateWithDiContainer<RecruitRootState>( false );
-            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
-            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
-            employCandidateState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
+            var employState = _hierarchyBld.InstantiateWithDiContainer<RecruitEmployState>( false );
+            employState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            employState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false ) );
+            employState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             var dismissState = _hierarchyBld.InstantiateWithDiContainer<RecruitDismissState>( false );
+            dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
             dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitDismissConfirmCompletedState>( false ) );
             dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuState>( false );
-            RootNode.AddChild( employCandidateState );
+            RootNode.AddChild( employState );
             RootNode.AddChild( dismissState );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<RecruitTopMenuConfirmCancelState>( false ) );
 
