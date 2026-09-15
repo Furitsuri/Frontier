@@ -5,7 +5,11 @@ using Zenject;
 
 #if UNITY_EDITOR
 
-public class EditorStateBase : StateBase
+/// <summary>
+/// 戻り先の管理をStateBase(TreeNode.Parent)ではなく、EditorStackStateBase(EditorHandlerBaseの
+/// 実行時スタックによるPush/Pop)に委ねる。詳細はEditorStackStateBaseのコメントを参照。
+/// </summary>
+public class EditorStateBase : EditorStackStateBase
 {
     [Inject] protected IUiSystem _uiSystem = null;
 
