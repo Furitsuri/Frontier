@@ -163,6 +163,28 @@ public class CommandList
     }
 
     /// <summary>
+    /// 現在の選択位置を、指定したValueを持つノードへ直接設定します。OperateListCursor()のような
+    /// 相対移動ではなく、SUB1/SUB2による絶対選択(「左側を選ぶ」「右側を選ぶ」等)に使用します。
+    /// </summary>
+    /// <param name="value">選択したいノードのValue</param>
+    /// <returns>該当するノードが見つかり設定できたか</returns>
+    public bool SetCurrentValue( int value )
+    {
+        for( var node = _list.First; node != null; node = node.Next )
+        {
+            if( node.Value != value ) { continue; }
+
+            _currentNode = node;
+            _cmdIdxVal.index = GetCurrentIndex();
+            _cmdIdxVal.value = GetCurrentValue();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// 現在のノードのIndex値を取得します
     /// </summary>
     /// <returns>現在のノードのIndex値</returns>

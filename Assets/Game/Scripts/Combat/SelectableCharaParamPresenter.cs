@@ -60,7 +60,7 @@ namespace Frontier.Battle
             NullCheck.AssertNotNull( player, nameof( player ) );
         }
 
-        public void SetActiveConfirmUI( bool isActive )
+        public void SetActiveConfirmUI( bool isActive, Frontier.StateMachine.ConfirmUIType uiType )
         {
         }
 

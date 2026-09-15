@@ -1,11 +1,17 @@
-﻿
+
 using Frontier.StateMachine;
+using Frontier.TroopEdit;
 using Frontier.UI;
 using Zenject;
 
 namespace Frontier.FormTroop
 {
-    public class RecruitConfirmCompletedState : ConfirmPhaseStateBase
+    /// <summary>
+    /// 雇用チェック済みキャラクターをまとめて雇用してよいかを確認するステート(RecruitEmployStateの子)。
+    /// 絞り込み後のキャラクター一覧を十字キーで選択・INFOでステータス確認できる
+    /// (RecruitGridConfirmStateBase参照)。
+    /// </summary>
+    public sealed class RecruitConfirmCompletedState : RecruitGridConfirmStateBase
     {
         [Inject] private TalkWindowConfirmPresenter _talkConfirmPresenter = null;
 
@@ -27,6 +33,14 @@ namespace Frontier.FormTroop
         public override void AssignPresenter( PhasePresenterBase presenter )
         {
             _confirmPresenter = _talkConfirmPresenter;
+        }
+
+        /// <summary>
+        /// 親(RecruitEmployState)が保持するTroopGridControllerを、この確認画面でも使い回します。
+        /// </summary>
+        protected override TroopGridController GetGridController()
+        {
+            return GetParent<RecruitEmployState>()?.GridController;
         }
 
         protected override bool AcceptConfirm( InputContext context )

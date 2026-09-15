@@ -53,7 +53,7 @@ namespace Frontier.FormTroop
             _topMenuUI.SetSelectedIndex( index );
         }
 
-        public void SetActiveConfirmUI( bool isActive )
+        public void SetActiveConfirmUI( bool isActive, Frontier.StateMachine.ConfirmUIType uiType )
         {
             _recruitmentUI.ConfirmEmploymentUI.gameObject.SetActive( isActive );
         }

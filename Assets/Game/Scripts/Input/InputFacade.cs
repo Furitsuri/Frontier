@@ -175,4 +175,14 @@ public class InputFacade
     {
         _inputGuideView?.SetGuideVisible( visible );
     }
+
+    /// <summary>
+    /// 入力ガイドバーが使用しているのと同じGuideIconスプライトを取得します。
+    /// 会話ウィンドウ形式の確認画面でのSUB1/SUB2アイコン表示等、ガイドバー以外の箇所で
+    /// 同じアイコンを流用したい場合に使用します。入力ガイドUIを持たないシーンではnullを返します。
+    /// </summary>
+    public Sprite GetGuideIconSprite( GuideIcon icon )
+    {
+        return _inputGuideView?.GetIconSprite( icon );
+    }
 }

@@ -26,6 +26,9 @@ namespace Frontier.TroopEdit
         private int _selectedIndex = 0;
         // 現在ビューポートの先頭に表示している行インデックス(スクロール位置)
         private int _topRow = 0;
+        // 完了確認画面表示中のみ非null。チェック済み(表示中)キャラクターの、_spawnedCharactersに
+        // おけるインデックス一覧。MoveSelection()はnullでない間、このサブセット内のみを対象に移動する
+        private List<int> _confirmModeIndices = null;
         // Show()で自ら生成した場合はtrue(Close時に破棄する)、ShowExisting()で
         // 呼び出し元から借りているだけの場合はfalse(Close時に破棄してはいけない)
         private bool _ownsSpawnedCharacters = true;
@@ -146,6 +149,7 @@ namespace Frontier.TroopEdit
         /// <param name="checkedIndices">チェック済みキャラクターの、現在の表示上のインデックス一覧</param>
         public void AnimateFocusOnConfirmScreen( List<int> checkedIndices, System.Action onComplete )
         {
+            _confirmModeIndices = checkedIndices;
             _selectedIndex = checkedIndices.Count > 0 ? checkedIndices[0] : 0;
 
             _troopEditPresenter.AnimateFilterToChecked( checkedIndices );
@@ -163,6 +167,8 @@ namespace Frontier.TroopEdit
         /// </summary>
         public void RestoreFromConfirmScreen( System.Action onComplete )
         {
+            _confirmModeIndices = null;
+
             _troopEditPresenter.AnimateRestoreDisplay( _spawnedCharacters );
 
             _selectedIndex = 0;
@@ -205,10 +211,14 @@ namespace Frontier.TroopEdit
         /// <summary>
         /// カーソルを移動します。移動できた場合はtrueを返します。
         /// 上下は同じ列を維持したまま前後の行へ(移動先の行の要素数が足りない場合は末尾要素へ丸める)、
-        /// 左右は行をまたいだ連続的な並びとして折り返します。
+        /// 左右は行をまたいだ連続的な並びとして折り返します。完了確認画面表示中(_confirmModeIndices
+        /// がnullでない間)は、非表示中(チェックされていない)キャラクターを対象から除外し、
+        /// 表示中のキャラクターのみを対象に同じロジックで移動します。
         /// </summary>
         public bool MoveSelection( Direction dir )
         {
+            if ( _confirmModeIndices != null ) { return MoveSelectionWithinConfirmSubset( dir ); }
+
             int count = _spawnedCharacters.Count;
             if ( count <= 1 ) { return false; }
 
@@ -239,6 +249,49 @@ namespace Frontier.TroopEdit
             _troopEditPresenter.SetSelectedIndex( _selectedIndex );
             RefreshCharacterParamDisplay();
             UpdateScroll( true );
+
+            return true;
+        }
+
+        /// <summary>
+        /// 完了確認画面表示中のカーソル移動。_confirmModeIndices(表示中キャラクターの
+        /// _spawnedCharactersにおけるインデックス一覧)自体を、詰め直し後の見た目通りの並びとみなし、
+        /// その中でMoveSelection()と同じ行/列ロジックを適用した上で、元のインデックスへ変換します。
+        /// </summary>
+        private bool MoveSelectionWithinConfirmSubset( Direction dir )
+        {
+            int count = _confirmModeIndices.Count;
+            if ( count <= 1 ) { return false; }
+
+            int currentPos = _confirmModeIndices.IndexOf( _selectedIndex );
+            if ( currentPos < 0 ) { currentPos = 0; }
+
+            int newPos;
+            switch ( dir )
+            {
+                case Direction.LEFT:
+                    newPos = ( currentPos - 1 + count ) % count;
+                    break;
+
+                case Direction.RIGHT:
+                    newPos = ( currentPos + 1 ) % count;
+                    break;
+
+                case Direction.FORWARD:
+                    newPos = MoveRow( currentPos, count, -1 );
+                    break;
+
+                case Direction.BACK:
+                    newPos = MoveRow( currentPos, count, 1 );
+                    break;
+
+                default:
+                    return false;
+            }
+
+            _selectedIndex = _confirmModeIndices[newPos];
+            _troopEditPresenter.SetSelectedIndex( _selectedIndex );
+            RefreshCharacterParamDisplay();
 
             return true;
         }

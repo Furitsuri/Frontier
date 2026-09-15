@@ -1,4 +1,5 @@
 using Frontier.StateMachine;
+using Frontier.TroopEdit;
 using Frontier.UI;
 using Zenject;
 
@@ -6,8 +7,10 @@ namespace Frontier.FormTroop
 {
     /// <summary>
     /// 解雇チェック済みメンバーをまとめて解雇してよいかを確認するステート(RecruitDismissStateの子)。
+    /// 絞り込み後のキャラクター一覧を十字キーで選択・INFOでステータス確認できる
+    /// (RecruitGridConfirmStateBase参照)。
     /// </summary>
-    public sealed class RecruitDismissConfirmCompletedState : ConfirmPhaseStateBase
+    public sealed class RecruitDismissConfirmCompletedState : RecruitGridConfirmStateBase
     {
         [Inject] private TalkWindowConfirmPresenter _talkConfirmPresenter = null;
 
@@ -29,6 +32,14 @@ namespace Frontier.FormTroop
         public override void AssignPresenter( PhasePresenterBase presenter )
         {
             _confirmPresenter = _talkConfirmPresenter;
+        }
+
+        /// <summary>
+        /// 親(RecruitDismissState)が保持するTroopGridControllerを、この確認画面でも使い回します。
+        /// </summary>
+        protected override TroopGridController GetGridController()
+        {
+            return GetParent<RecruitDismissState>()?.GridController;
         }
 
         protected override bool AcceptConfirm( InputContext context )

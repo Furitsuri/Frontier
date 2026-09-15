@@ -1,4 +1,5 @@
-﻿using Zenject;
+﻿using Frontier.StateMachine;
+using Zenject;
 
 namespace Frontier.UI
 {
@@ -7,6 +8,8 @@ namespace Frontier.UI
     /// IConfirmPresenterを実装しているため、ConfirmPhaseStateBase派生StateのAssignPresenter()で
     /// このインスタンスを割り当てれば、既存のConfirmUIベースの確認画面と同じ手順(SetActiveConfirmUI/
     /// ApplyColor2Options)のまま見た目だけを会話ウィンドウ形式に置き換えられる。
+    /// ConfirmUIType.SubButtons指定時は、十字キーの代わりにSUB1/SUB2でYes/Noを選択する形式になり、
+    /// 選択肢の横にInputFacade経由で取得した入力ガイドと同じSUB1/SUB2アイコンを表示する。
     /// </summary>
     public class TalkWindowConfirmPresenter : IConfirmPresenter
     {
@@ -29,13 +32,14 @@ namespace Frontier.UI
             RefreshMessage();
         }
 
-        public void SetActiveConfirmUI( bool isActive )
+        public void SetActiveConfirmUI( bool isActive, ConfirmUIType uiType )
         {
             if ( !isActive )
             {
                 // 通常の会話(挨拶等)で同じウィンドウを使い回した際に選択肢が残らないよう、
                 // 非表示にする際は必ず選択肢自体もOFFにしておく
                 View.SetOptionsActive( false );
+                View.SetOptionIconsVisible( false );
                 View.Hide();
                 return;
             }
@@ -49,9 +53,25 @@ namespace Frontier.UI
             View.SetPositionBottomRight();
             View.SetOptionTexts( _localization.Get( LocKey.UI_CONFIRM_YES ), _localization.Get( LocKey.UI_CONFIRM_NO ) );
             View.SetOptionsActive( true );
+
+            bool showIcons = uiType == ConfirmUIType.SubButtons;
+            View.SetOptionIconsVisible( showIcons );
+            if ( showIcons )
+            {
+                View.SetOptionIcons(
+                    InputFacade.Instance.GetGuideIconSprite( GuideIcon.SUB1 ),
+                    InputFacade.Instance.GetGuideIconSprite( GuideIcon.SUB2 ) );
+            }
         }
 
         public void ApplyColor2Options( int selectIndex ) => View.ApplyOptionColor( selectIndex );
+
+        /// <summary>
+        /// SetActiveConfirmUI(false, ...)で隠した会話ウィンドウを、直前にSetConfirmMessage()で
+        /// 設定した内容のまま再表示します。ステータス確認画面等の子Stateから確認画面へ戻る際
+        /// (RestartState)に使用します。
+        /// </summary>
+        public void RedisplayConfirmMessage() => RefreshMessage();
 
         private void RefreshMessage()
         {

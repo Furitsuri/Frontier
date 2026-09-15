@@ -44,7 +44,7 @@ public class DeploymentPhasePresenter : CharacterSelectionPresenter, IConfirmPre
         _deployUiSystem.Exit();
     }
 
-    public void SetActiveConfirmUI( bool isActive )
+    public void SetActiveConfirmUI( bool isActive, Frontier.StateMachine.ConfirmUIType uiType )
     {
         _deployUiSystem.CharacterSelectUI.SetActive( !isActive );               // 配置キャラクター選択UIの表示を切替
         _deployUiSystem.ConfirmCompletedUI.gameObject.SetActive( isActive );    // 配置完了確認UIの表示を切替

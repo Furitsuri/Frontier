@@ -71,7 +71,7 @@ namespace Frontier.Battle
 
             if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {
-                _confirmPresenter.SetActiveConfirmUI( false );
+                _confirmPresenter.SetActiveConfirmUI( false, UIType );
                 _execPhase = ExecutionPhase.EXECUTING;
 
                 _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();

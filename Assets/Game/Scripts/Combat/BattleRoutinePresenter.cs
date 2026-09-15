@@ -97,7 +97,7 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.PlayAnimaRewardEffect( worldPosition, onArrived );
         }
 
-        public void SetActiveConfirmUI( bool isActive )
+        public void SetActiveConfirmUI( bool isActive, Frontier.StateMachine.ConfirmUIType uiType )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.gameObject.SetActive( isActive );
         }

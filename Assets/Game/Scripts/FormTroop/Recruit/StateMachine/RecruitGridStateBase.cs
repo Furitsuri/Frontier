@@ -34,6 +34,13 @@ namespace Frontier.FormTroop
         protected CharacterParameterPresenter _paramPresenter = null;
         protected TroopGridController _gridController         = null;
 
+        /// <summary>
+        /// この画面が保持するTroopGridControllerへの公開参照。完了確認画面
+        /// (RecruitGridConfirmStateBase派生State、この画面の子)が同じグリッド・選択状態を
+        /// 参照するために使用します。
+        /// </summary>
+        public TroopGridController GridController => _gridController;
+
         protected string[] _inputConfirmStrings;
         protected InputCodeStringWrapper _inputConfirmStrWrapper = null;
 

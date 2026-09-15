@@ -99,6 +99,18 @@ public sealed class InputGuidePresenter
     }
 
     /// <summary>
+    /// 指定したGuideIconに対応するスプライトを取得します。入力ガイドバー以外の箇所
+    /// (会話ウィンドウ形式の確認画面でのSUB1/SUB2アイコン表示等)でも同じスプライトを
+    /// 流用したい場合に使用します。Init()前や該当スプライトが見つからない場合はnullを返します。
+    /// </summary>
+    public Sprite GetIconSprite( GuideIcon icon )
+    {
+        if( _sprites == null || ( int ) icon < 0 || _sprites.Length <= ( int ) icon ) { return null; }
+
+        return _sprites[( int ) icon];
+    }
+
+    /// <summary>
     /// 現在参照している入力コード情報から画面上に表示する入力ガイドを登録します
     /// </summary>
     public void RegisterInputGuides()
