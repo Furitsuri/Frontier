@@ -59,6 +59,8 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptConfirm()
         {
+            if( _isConfirmingSelection ) { return false; }
+
             // 雇用確定によって候補が0体になった場合は選択操作自体を受け付けない
             if( _employmentCandidates.Count == 0 ) { return false; }
 
@@ -76,7 +78,7 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptOptional()
         {
-            return _isExistEmployedCharacter;   // 雇用候補キャラクターが一人もいない場合は完了できない
+            return _isExistEmployedCharacter && !_isConfirmingSelection;   // 雇用候補キャラクターが一人もいない場合は完了できない
         }
 
         /// <summary>
@@ -146,6 +148,20 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
+        /// 雇用チェック済み候補の、現在の表示上のインデックス一覧を返します。
+        /// </summary>
+        protected override List<int> GetCheckedIndices()
+        {
+            var result = new List<int>();
+            for( int i = 0; i < _employmentCandidates.Count; ++i )
+            {
+                if( ( _employmentCandidates[i].Character as Player ).RecruitLogic.IsEmployed ) { result.Add( i ); }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 雇用チェック済みキャラクターの契約コスト合計を、所持アニマの減少分として返します
         /// (雇用チェック時点で既に_userDomain.Animaから減算済みのため、その内訳を示す値です)。
         /// </summary>
@@ -174,8 +190,9 @@ namespace Frontier.FormTroop
 
         /// <summary>
         /// 雇用完了確認ステートでYesが選択された際に呼ばれます。雇用チェック済みの候補を
-        /// 自軍へ加入させ、表示(候補一覧・グリッド)から取り除きます。RecruitSceneは終了せず、
-        /// 残りの候補(未チェックのもの)で引き続き雇用/解雇の選択を続けられます。
+        /// 自軍へ加入させ、候補一覧から取り除きます。RecruitSceneは終了せず、残りの候補
+        /// (未チェックのもの)で引き続き雇用/解雇の選択を続けられます。表示への反映(絞り込み解除
+        /// アニメーション)は、この直後にRestartState()から呼ばれるTroopGridController側に委ねます。
         /// </summary>
         public void CommitEmployment()
         {
@@ -197,14 +214,9 @@ namespace Frontier.FormTroop
                 _employmentCandidates.RemoveAt( i );
             }
 
-            _gridController.ShowExisting( _employmentCandidates.Select( c => c.Character ).ToList() );
-
-            for( int i = 0; i < _employmentCandidates.Count; ++i )
-            {
-                var player = _employmentCandidates[i].Character as Player;
-                _troopEditPresenter.SetCost( i, player.RecruitLogic.Cost );
-                _troopEditPresenter.SetChecked( i, player.RecruitLogic.IsEmployed );
-            }
+            // 生き残ったセルのコスト・チェック表示は、チェック時点で既に正しく設定済みのため
+            // 再設定は不要(セル自体はAnimateRestoreDisplay()まで破棄・再生成されない)
+            _gridController.SyncSpawnedCharacters( _employmentCandidates.Select( c => c.Character ).ToList() );
 
             _isExistEmployedCharacter = IsExistEmployedCharacter();
         }

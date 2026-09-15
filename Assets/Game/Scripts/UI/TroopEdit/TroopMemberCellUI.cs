@@ -36,6 +36,12 @@ namespace Frontier.UI
         private Character _character = null;
         private bool _isCameraActive = true;
 
+        /// <summary>
+        /// このセルが表示中のキャラクター。雇用/解雇完了確認画面からの復帰時、
+        /// 現在も存在するキャラクターかどうかの判定に使われます。
+        /// </summary>
+        public Character AssignedCharacter => _character;
+
         private void Update()
         {
             if ( _character == null || !_isCameraActive ) return;

@@ -25,6 +25,11 @@ namespace Frontier.UI
         private static readonly Vector2 TopRightAnchoredPosition = new Vector2( -24f, -65f );
         private const float TopRightWindowWidth = 560f;
 
+        // 画面右下(入力ガイドバー直上)に表示する場合の配置(雇用/解雇完了確認専用)。
+        // Y値はCharacterParameterUIの下部固定配置と同じ余白計算(ガイドバー上端-305+余白8)による。
+        private static readonly Vector2 BottomRightAnchor           = new Vector2( 1f, 0f );
+        private static readonly Vector2 BottomRightAnchoredPosition = new Vector2( -24f, 63f );
+
         // セリフ本文の上端オフセットと下端マージン(実測値)。ウィンドウ高さの自動計算に用いる
         private const float MessageTextTopOffset    = 45f;
         private const float MessageTextBottomMargin = 10f;
@@ -88,6 +93,20 @@ namespace Frontier.UI
             _rectTransform.anchorMax        = TopRightAnchor;
             _rectTransform.pivot            = TopRightAnchor;
             _rectTransform.anchoredPosition = TopRightAnchoredPosition;
+
+            _currentWindowWidth      = TopRightWindowWidth;
+            _currentMessageTextWidth = TopRightMessageTextWidth;
+        }
+
+        /// <summary>
+        /// 画面右下、入力ガイドバー直上へ配置します(雇用/解雇完了確認の店主会話専用)。
+        /// </summary>
+        public void SetPositionBottomRight()
+        {
+            _rectTransform.anchorMin        = BottomRightAnchor;
+            _rectTransform.anchorMax        = BottomRightAnchor;
+            _rectTransform.pivot            = BottomRightAnchor;
+            _rectTransform.anchoredPosition = BottomRightAnchoredPosition;
 
             _currentWindowWidth      = TopRightWindowWidth;
             _currentMessageTextWidth = TopRightMessageTextWidth;

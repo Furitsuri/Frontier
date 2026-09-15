@@ -8,9 +8,10 @@ namespace Frontier.TroopEdit
 {
     /// <summary>
     /// 部隊メンバーのグリッド表示・カーソル移動・キャラクターのオフスクリーン生成/破棄・
-    /// 選択行に追従するグリッドのスクロール制御という、TroopEditPresenter/CharacterParameterPresenterを
-    /// 操作する側の共通処理をまとめたクラス。TroopEditHandler(部隊編集画面)・RecruitEmployState
-    /// (雇用画面)・RecruitDismissState(解雇画面)から共通して保持・利用される。選択中キャラクター
+    /// 選択行に追従するグリッドのスクロール制御・完了確認画面遷移時のチェック済みキャラクター
+    /// 絞り込み表示という、TroopEditPresenter/CharacterParameterPresenterを操作する側の共通処理を
+    /// まとめたクラス。TroopEditHandler(部隊編集画面)・RecruitEmployState(雇用画面)・
+    /// RecruitDismissState(解雇画面)から共通して保持・利用される。選択中キャラクター
     /// (SelectedCharacter)もここで一元管理するため、呼び出し元はステータス確認等の対象キャラクター
     /// 取得をこのクラスに委譲できる。Confirm/Cancel時にどう振る舞うか(遷移先や入力コードの登録方式)
     /// は呼び出し元ごとに異なるため、このクラスの責務には含めない。
@@ -106,25 +107,6 @@ namespace Frontier.TroopEdit
         }
 
         /// <summary>
-        /// 指定インデックスのキャラクターだけを取り除きます(解雇確定時等)。Show()と異なり、
-        /// 残りのキャラクターのGameObjectは破棄・再生成しないため、再生中のアニメーションが
-        /// 途切れません(グリッドのセルUI自体はGridLayoutGroupの再配置のため再生成されます)。
-        /// </summary>
-        public void RemoveCharacterAt( int index )
-        {
-            if ( _spawnedCharacters[index] != null ) { Object.Destroy( _spawnedCharacters[index].gameObject ); }
-            _spawnedCharacters.RemoveAt( index );
-
-            _selectedIndex = Mathf.Clamp( _selectedIndex, 0, Mathf.Max( 0, _spawnedCharacters.Count - 1 ) );
-
-            _troopEditPresenter.DisplayMembers( _spawnedCharacters );
-            _troopEditPresenter.SetSelectedIndex( _spawnedCharacters.Count > 0 ? _selectedIndex : -1 );
-
-            RefreshCharacterParamDisplay();
-            UpdateScroll( false );
-        }
-
-        /// <summary>
         /// カーソル・選択中キャラクターのパラメータパネルを一時的に非表示にします
         /// (グリッド自体・各セルの表示はそのまま。突入時の会話ウィンドウ表示中など専用)。
         /// </summary>
@@ -153,6 +135,71 @@ namespace Frontier.TroopEdit
             _troopEditPresenter.SetSelectedIndex( _selectedIndex );
             RefreshCharacterParamDisplay();
             UpdateScroll( false );
+        }
+
+        /// <summary>
+        /// 雇用/解雇完了確認画面へ入る際に呼ばれます。チェック済みのキャラクターのみに絞り込んで
+        /// アニメーションつきで詰め直し、カーソル・パラメータパネルを絞り込み後の先頭キャラクターに
+        /// 合わせた上で、パラメータパネルを画面下部左側へアニメーション移動します。すべてのアニメーション
+        /// (グリッド絞り込み・パネル移動)が完了した時点でonCompleteを呼びます。
+        /// </summary>
+        /// <param name="checkedIndices">チェック済みキャラクターの、現在の表示上のインデックス一覧</param>
+        public void AnimateFocusOnConfirmScreen( List<int> checkedIndices, System.Action onComplete )
+        {
+            _selectedIndex = checkedIndices.Count > 0 ? checkedIndices[0] : 0;
+
+            _troopEditPresenter.AnimateFilterToChecked( checkedIndices );
+            RefreshCharacterParamDisplay();
+            _troopEditPresenter.SetPanelHorizontalMode( true, true, onComplete );
+        }
+
+        /// <summary>
+        /// 雇用/解雇完了確認画面から戻る際(キャンセル・決定いずれの場合も)に呼ばれます。
+        /// 絞り込みで非表示にしていたキャラクターを再表示し、その時点の_spawnedCharacters
+        /// (決定時はCommit*()でSyncSpawnedCharacters()済み)に存在しないキャラクターのセルは
+        /// 破棄した上で、アニメーションつきで元の配置に戻します。パラメータパネルも
+        /// 画面下部中央へアニメーション移動し、完了した時点でonCompleteを呼びます
+        /// (呼び出し元はこれを見て、復元アニメーション完了まで入力をブロックし続けます)。
+        /// </summary>
+        public void RestoreFromConfirmScreen( System.Action onComplete )
+        {
+            _troopEditPresenter.AnimateRestoreDisplay( _spawnedCharacters );
+
+            _selectedIndex = 0;
+            RefreshCharacterParamDisplay();
+            UpdateScroll( false );
+
+            _troopEditPresenter.SetPanelHorizontalMode( false, true, onComplete );
+        }
+
+        /// <summary>
+        /// 雇用/解雇完了確認画面での決定(Commit*())によって変化した後のキャラクター一覧を、
+        /// 表示の再構築(DisplayMembers等)を伴わずに反映します。実際の表示更新は、この直後に
+        /// 呼ばれるRestoreFromConfirmScreen()のアニメーションに委ねます。
+        /// </summary>
+        public void SyncSpawnedCharacters( IReadOnlyList<Character> updatedCharacters )
+        {
+            _spawnedCharacters.Clear();
+            _spawnedCharacters.AddRange( updatedCharacters );
+        }
+
+        /// <summary>
+        /// 指定インデックスのキャラクターのGameObjectを破棄し、_spawnedCharactersから取り除きます
+        /// (解雇確定時等)。表示の再構築(DisplayMembers)は行わないため、呼び出し元がこの直後に
+        /// RestoreFromConfirmScreen()等で表示を更新する必要があります。
+        /// </summary>
+        /// <param name="indices">破棄するインデックス一覧(降順である必要はありません)</param>
+        public void RemoveCharactersWithoutRebuild( List<int> indices )
+        {
+            var sorted = new List<int>( indices );
+            sorted.Sort();
+
+            for( int k = sorted.Count - 1; k >= 0; --k )
+            {
+                int index = sorted[k];
+                if ( _spawnedCharacters[index] != null ) { Object.Destroy( _spawnedCharacters[index].gameObject ); }
+                _spawnedCharacters.RemoveAt( index );
+            }
         }
 
         /// <summary>

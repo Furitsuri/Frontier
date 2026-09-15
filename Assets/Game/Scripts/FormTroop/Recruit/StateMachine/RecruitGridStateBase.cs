@@ -1,6 +1,7 @@
 ﻿using Frontier.StateMachine;
 using Frontier.TroopEdit;
 using Frontier.UI;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
@@ -35,6 +36,11 @@ namespace Frontier.FormTroop
 
         protected string[] _inputConfirmStrings;
         protected InputCodeStringWrapper _inputConfirmStrWrapper = null;
+
+        // OPT2入力(完了確認画面への遷移)を受けてから、実際にTransitState()するまでの
+        // アニメーション再生中(0.1秒)、及び完了確認画面表示中、他の入力を受け付けないためのフラグ。
+        // RestartState()で完了確認画面から戻ってきたかどうかの判定にも使う。
+        protected bool _isConfirmingSelection = false;
 
         /// <summary>
         /// SELECTアイコンの説明文言。画面固有の言い回しにしたい場合はオーバーライドしてください。
@@ -79,14 +85,26 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// 会話クッション画面等の子Stateから戻ってきた際に呼ばれます。
-        /// 子State表示中に隠していたカーソル・選択中キャラクターのパラメータパネルを再表示します。
+        /// 子State(会話クッション画面/完了確認画面等)から戻ってきた際に呼ばれます。
+        /// 完了確認画面(SUMMARY_CONFIRM)から戻ってきた場合はAcceptOpt2()で絞り込んだ表示を
+        /// アニメーションつきで元に戻し、それ以外(会話クッション画面等)から戻ってきた場合は
+        /// 子State表示中に隠していたカーソル・パラメータパネルを再表示するだけにとどめます。
+        /// 復元アニメーション完了までは_isConfirmingSelectionをtrueに保ち、入力を受け付けません
+        /// (base.RestartState()がRegisterInputCodes()を呼ぶため、ここでfalseにしてしまうと
+        /// アニメーション再生中でも入力が通ってしまう)。
         /// </summary>
         public override void RestartState()
         {
             base.RestartState();
 
-            _gridController.ShowSelectionDisplay();
+            if( _isConfirmingSelection )
+            {
+                _gridController.RestoreFromConfirmScreen( () => _isConfirmingSelection = false );
+            }
+            else
+            {
+                _gridController.ShowSelectionDisplay();
+            }
         }
 
         public override object ExitState()
@@ -128,6 +146,15 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
+        /// 完了確認画面への遷移アニメーション再生中は、方向入力・キャンセル・ステータス確認等の
+        /// 入力を一切受け付けない(AcceptOpt2内の_isConfirmingSelectionフラグ参照)。
+        /// </summary>
+        protected override bool CanAcceptDefault()
+        {
+            return base.CanAcceptDefault() && !_isConfirmingSelection;
+        }
+
+        /// <summary>
         /// 選択中キャラクターが存在しない場合はステータス表示への遷移を受け付けない。
         /// 選択中キャラクターの有無はTroopGridControllerに委譲する。
         /// </summary>
@@ -154,16 +181,23 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
-        /// トグル済み人数を確認画面へ渡し、確定確認ステートへ遷移します。
-        /// 人数の数え方(何をもって「チェック済み」とするか)は画面ごとにデータソースが異なるため
-        /// GetToggledCount()に委譲します。
+        /// チェック済みキャラクターのみに絞り込むアニメーション(グリッド詰め直し・パラメータパネルの
+        /// 画面下部左側への移動)を再生し、完了した時点で確定確認ステートへ遷移します。
+        /// トグル済み人数・インデックスの数え方(何をもって「チェック済み」とするか)は画面ごとに
+        /// データソースが異なるためGetToggledCount()/GetCheckedIndices()に委譲します。
         /// </summary>
         protected override bool AcceptOpt2( InputContext context )
         {
             if( !base.AcceptOpt2( context ) ) { return false; }
 
-            SetSendTransitionContext( GetToggledCount() );
-            TransitState( ( int ) GridTransitTag.SUMMARY_CONFIRM );
+            _isConfirmingSelection = true;
+            int toggledCount = GetToggledCount();
+
+            _gridController.AnimateFocusOnConfirmScreen( GetCheckedIndices(), () =>
+            {
+                SetSendTransitionContext( toggledCount );
+                TransitState( ( int ) GridTransitTag.SUMMARY_CONFIRM );
+            } );
 
             return true;
         }
@@ -177,6 +211,12 @@ namespace Frontier.FormTroop
         /// トグル済み(雇用/解雇チェック済み)の人数を返します。
         /// </summary>
         protected virtual int GetToggledCount() { return 0; }
+
+        /// <summary>
+        /// チェック済みキャラクターの、現在の表示上のインデックス一覧を返します
+        /// (昇順を前提とします)。完了確認画面へ入る際の絞り込み表示に使われます。
+        /// </summary>
+        protected virtual List<int> GetCheckedIndices() { return new List<int>(); }
 
         /// <summary>
         /// 現在の予備登録(雇用/解雇チェック)によって生じる所持アニマの増減差分を返します。

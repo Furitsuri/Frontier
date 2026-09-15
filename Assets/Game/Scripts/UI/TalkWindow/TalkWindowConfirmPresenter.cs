@@ -43,7 +43,10 @@ namespace Frontier.UI
             // メッセージの反映(Show()によるgameObjectの表示化を含む)は、この直後に呼ばれる
             // SetConfirmMessage()に委ねる。ここで先にLocKey.None(既定値)のまま表示しようとすると
             // 未設定のキーでローカライズ解決を試みてしまうため、位置・選択肢の準備のみ行う
-            View.SetPositionTopRight();
+            // 画面右下(入力ガイドバー直上)に配置する。呼び出し元(RecruitGridStateBase)が
+            // グリッド絞り込み・パラメータパネル移動のアニメーション完了後にこのUIを表示するため、
+            // ここでは瞬時に表示してよい
+            View.SetPositionBottomRight();
             View.SetOptionTexts( _localization.Get( LocKey.UI_CONFIRM_YES ), _localization.Get( LocKey.UI_CONFIRM_NO ) );
             View.SetOptionsActive( true );
         }

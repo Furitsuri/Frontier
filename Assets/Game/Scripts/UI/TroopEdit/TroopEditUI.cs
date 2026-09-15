@@ -43,10 +43,16 @@ namespace Frontier.UI
 
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
 
+        // 画面中央下部(通常のグリッド画面)/画面左下(雇用・解雇完了確認画面)のパラメータパネルX座標(実測値)
+        private const float CharacterParamCenterX = 0f;
+        private const float CharacterParamLeftX   = -315f;
+
         private List<TroopMemberCellUI> _cells = new List<TroopMemberCellUI>();
+        private GridLayoutGroup _gridLayoutGroup;
         // GridLayoutGroup.cellSize.y + spacing.yから求めた、行1つ分の高さ(px)
         private float _rowHeight;
         private Tweener _scrollTween;
+        private Tweener _panelTween;
 
         public CharacterParameterUI CharacterParamUI => _characterParamUI;
 
@@ -56,8 +62,8 @@ namespace Frontier.UI
 
             _characterParamUI?.Setup();
 
-            var gridLayout = _gridContent.GetComponent<GridLayoutGroup>();
-            _rowHeight = gridLayout.cellSize.y + gridLayout.spacing.y;
+            _gridLayoutGroup = _gridContent.GetComponent<GridLayoutGroup>();
+            _rowHeight = _gridLayoutGroup.cellSize.y + _gridLayoutGroup.spacing.y;
         }
 
         public void Show() => gameObject.SetActive( true );
@@ -191,6 +197,138 @@ namespace Frontier.UI
                 int row = i / TROOP_EDIT_GRID_COLUMNS;
                 bool isVisible = row >= topRow && row < topRow + TROOP_EDIT_VISIBLE_ROWS;
                 _cells[i].SetCameraActive( isVisible );
+            }
+        }
+
+        /// <summary>
+        /// 雇用/解雇完了確認画面へ入る際、チェックマークが付いているセル(checkedIndices)のみを
+        /// 残して非表示にし、残ったセルを詰めてアニメーションつきで再配置します。選択カーソルは
+        /// 詰め直した後の先頭セルへ移動します。非表示にするだけでキャラクターやセル自体は破棄しない
+        /// ため、AnimateRestoreDisplay()で元に戻せます。
+        /// </summary>
+        public void AnimateFilterToChecked( List<int> checkedIndices )
+        {
+            var checkedSet = new HashSet<int>( checkedIndices );
+            for ( int i = 0; i < _cells.Count; ++i )
+            {
+                _cells[i].gameObject.SetActive( checkedSet.Contains( i ) );
+            }
+
+            // 絞り込み後は表示数が少ないため、行単位の表示制御(ScrollToRow)は行わず、
+            // 表示中のセルは全てカメラ描画を有効にする。AnimateReflow()内でGridLayoutGroupを
+            // 一時的に無効化する前に済ませておく(ScrollRectの内部処理がレイアウト再計算を
+            // 誘発し、アニメーション開始直後の位置を上書きしてしまうのを避けるため)
+            _scrollRect.verticalNormalizedPosition = 1f;
+            foreach ( var cell in _cells )
+            {
+                cell.SetCameraActive( cell.gameObject.activeSelf );
+            }
+
+            AnimateReflow();
+        }
+
+        /// <summary>
+        /// AnimateFilterToChecked()で非表示にしたセルを再表示し、remainingCharactersに
+        /// 含まれなくなったキャラクター(雇用/解雇が確定して消滅したキャラクター)のセルは破棄した上で、
+        /// 残ったセルをアニメーションつきで元の配置に戻します。スクロール位置・カメラ描画の制御は
+        /// 呼び出し元(TroopGridController)がUpdateScroll()経由で行います。
+        /// </summary>
+        public void AnimateRestoreDisplay( List<Character> remainingCharacters )
+        {
+            for ( int i = 0; i < _cells.Count; ++i )
+            {
+                _cells[i].gameObject.SetActive( true );
+            }
+
+            for ( int i = _cells.Count - 1; i >= 0; --i )
+            {
+                if ( remainingCharacters.Contains( _cells[i].AssignedCharacter ) ) { continue; }
+
+                _cells[i].Dispose();
+                DestroyImmediate( _cells[i].gameObject );
+                _cells.RemoveAt( i );
+            }
+
+            AnimateReflow();
+        }
+
+        /// <summary>
+        /// 現在アクティブなセルの位置を、直前の位置からGridLayoutGroup再計算後の新しい位置へ
+        /// アニメーションで遷移させます。選択カーソルは最初のアクティブセルへ追従させます。
+        /// GridLayoutGroupは有効なままだと毎レイアウトパスで子の位置を計算値へ戻してしまい、
+        /// DOTweenで設定した中間位置を上書きしてアニメーションが瞬間移動に見えてしまうため、
+        /// 目標位置を計算した後はアニメーション再生中だけ無効化する。
+        /// </summary>
+        private void AnimateReflow()
+        {
+            var contentRect = ( RectTransform ) _gridContent;
+
+            var oldPositions = new Vector2[_cells.Count];
+            for ( int i = 0; i < _cells.Count; ++i )
+            {
+                oldPositions[i] = ( ( RectTransform ) _cells[i].transform ).anchoredPosition;
+            }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate( contentRect );
+
+            var newPositions = new Vector2[_cells.Count];
+            for ( int i = 0; i < _cells.Count; ++i )
+            {
+                newPositions[i] = ( ( RectTransform ) _cells[i].transform ).anchoredPosition;
+            }
+
+            _gridLayoutGroup.enabled = false;
+            DOVirtual.DelayedCall( TROOP_EDIT_FOCUS_ANIM_DURATION, () => _gridLayoutGroup.enabled = true );
+
+            Vector2? cursorTargetPos = null;
+            for ( int i = 0; i < _cells.Count; ++i )
+            {
+                var rect = ( RectTransform ) _cells[i].transform;
+
+                if ( cursorTargetPos == null && _cells[i].gameObject.activeSelf )
+                {
+                    cursorTargetPos = newPositions[i];
+                }
+
+                rect.anchoredPosition = oldPositions[i];
+                rect.DOKill();
+                rect.DOAnchorPos( newPositions[i], TROOP_EDIT_FOCUS_ANIM_DURATION );
+            }
+
+            if ( _selectCursor == null ) { return; }
+
+            if ( !cursorTargetPos.HasValue )
+            {
+                _selectCursor.gameObject.SetActive( false );
+                return;
+            }
+
+            _selectCursor.gameObject.SetActive( true );
+            _selectCursor.DOKill();
+            _selectCursor.DOAnchorPos( cursorTargetPos.Value, TROOP_EDIT_FOCUS_ANIM_DURATION );
+        }
+
+        /// <summary>
+        /// キャラクターパラメータパネルを、画面下部中央(isLeft:false)または画面下部左側(isLeft:true)へ
+        /// 移動します(雇用/解雇完了確認画面への遷移用)。Y座標は変えず、X座標のみをアニメーションさせます。
+        /// </summary>
+        public void SetPanelHorizontalMode( bool isLeft, bool animate, System.Action onComplete = null )
+        {
+            if ( _characterParamUI == null ) { onComplete?.Invoke(); return; }
+
+            var rect = ( RectTransform ) _characterParamUI.transform;
+            float targetX = isLeft ? CharacterParamLeftX : CharacterParamCenterX;
+
+            _panelTween?.Kill();
+            if ( animate )
+            {
+                _panelTween = rect.DOAnchorPosX( targetX, TROOP_EDIT_FOCUS_ANIM_DURATION )
+                    .OnComplete( () => onComplete?.Invoke() );
+            }
+            else
+            {
+                rect.anchoredPosition = new Vector2( targetX, rect.anchoredPosition.y );
+                onComplete?.Invoke();
             }
         }
 

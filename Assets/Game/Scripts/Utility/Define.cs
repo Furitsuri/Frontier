@@ -23,6 +23,8 @@ static public class Constants
     public const int TROOP_EDIT_VISIBLE_ROWS = 2;
     // 部隊編集画面のグリッドが選択中の行に追従してスクロールする際のアニメーション時間(秒)
     public const float TROOP_EDIT_SCROLL_DURATION = 0.15f;
+    // 雇用/解雇完了確認画面へ入る際・戻る際のグリッド絞り込み・パラメータパネル移動アニメーション時間(秒)
+    public const float TROOP_EDIT_FOCUS_ANIM_DURATION = 0.1f;
     // キャラクターが装備出来るスキルの最大数
     public const int EQUIPABLE_SKILL_MAX_NUM = 4;
     // キャラクターレベルの最大値

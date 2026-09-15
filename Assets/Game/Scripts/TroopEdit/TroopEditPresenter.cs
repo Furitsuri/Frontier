@@ -69,5 +69,21 @@ namespace Frontier.TroopEdit
         /// グリッドの表示行を指定行(topRow)から始まるようスクロールします。
         /// </summary>
         public void ScrollToRow( int topRow, bool animate ) => _view.ScrollToRow( topRow, animate );
+
+        /// <summary>
+        /// 雇用/解雇完了確認画面へ入る際、チェック済みのセルのみを詰めてアニメーション表示します。
+        /// </summary>
+        public void AnimateFilterToChecked( List<int> checkedIndices ) => _view.AnimateFilterToChecked( checkedIndices );
+
+        /// <summary>
+        /// 完了確認画面から戻る際、非表示にしていたセルを復元し、消滅したキャラクターのセルは
+        /// 破棄した上でアニメーションつきで元の配置に戻します。
+        /// </summary>
+        public void AnimateRestoreDisplay( List<Character> remainingCharacters ) => _view.AnimateRestoreDisplay( remainingCharacters );
+
+        /// <summary>
+        /// キャラクターパラメータパネルを画面下部中央/画面下部左側へ移動します。
+        /// </summary>
+        public void SetPanelHorizontalMode( bool isLeft, bool animate, System.Action onComplete = null ) => _view.SetPanelHorizontalMode( isLeft, animate, onComplete );
     }
 }

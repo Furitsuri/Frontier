@@ -41,6 +41,7 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptConfirm()
         {
+            if( _isConfirmingSelection ) { return false; }
             if( _gridController.SpawnedCharacters.Count == 0 ) { return false; }
 
             int index = _gridController.SelectedIndex;
@@ -55,7 +56,7 @@ namespace Frontier.FormTroop
 
         protected override bool CanAcceptOptional()
         {
-            return _isExistDismissChecked;   // 解雇チェック済みのメンバーが一人もいない場合は完了できない
+            return _isExistDismissChecked && !_isConfirmingSelection;   // 解雇チェック済みのメンバーが一人もいない場合は完了できない
         }
 
         /// <summary>
@@ -97,6 +98,20 @@ namespace Frontier.FormTroop
         }
 
         /// <summary>
+        /// 解雇チェック済みメンバーの、現在の表示上のインデックス一覧を返します。
+        /// </summary>
+        protected override List<int> GetCheckedIndices()
+        {
+            var result = new List<int>();
+            for( int i = 0; i < _dismissChecked.Count; ++i )
+            {
+                if( _dismissChecked[i] ) { result.Add( i ); }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 解雇チェック済みメンバーの報酬アニマ合計を返します(解雇確定(CommitDismissal)まで
         /// 実際にはまだ加算されないため、確定した場合に増加する見込み額のプレビューです)。
         /// </summary>
@@ -113,10 +128,14 @@ namespace Frontier.FormTroop
 
         /// <summary>
         /// 解雇完了確認ステートでYesが選択された際に呼ばれます。解雇チェック済みのメンバーを
-        /// まとめて解雇し、報酬アニマを加算した上で表示から取り除きます(RecruitSceneは終了しない)。
+        /// まとめて解雇し、報酬アニマを加算した上で自軍・キャラクター一覧から取り除きます
+        /// (RecruitSceneは終了しない)。表示への反映(絞り込み解除アニメーション)は、この直後に
+        /// RestartState()から呼ばれるTroopGridController側に委ねます。
         /// </summary>
         public void CommitDismissal()
         {
+            var committedIndices = new List<int>();
+
             for( int i = _dismissChecked.Count - 1; i >= 0; --i )
             {
                 if( !_dismissChecked[i] ) { continue; }
@@ -126,15 +145,12 @@ namespace Frontier.FormTroop
 
                 _rewardAnimas.RemoveAt( i );
                 _dismissChecked.RemoveAt( i );
-
-                _gridController.RemoveCharacterAt( i );
+                committedIndices.Add( i );
             }
 
-            for( int i = 0; i < _rewardAnimas.Count; ++i )
-            {
-                _troopEditPresenter.SetRewardAnima( i, _rewardAnimas[i] );
-                _troopEditPresenter.SetChecked( i, _dismissChecked[i] );
-            }
+            // 生き残ったセルの報酬アニマ・チェック表示はBuildRoster()時点で既に正しく設定済みのため
+            // 再設定は不要(セル自体はAnimateRestoreDisplay()まで破棄・再生成されない)
+            _gridController.RemoveCharactersWithoutRebuild( committedIndices );
 
             _isExistDismissChecked = IsExistDismissChecked();
         }
