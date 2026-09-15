@@ -9,7 +9,7 @@ using static InputCode;
 
 namespace Frontier.DebugTools.StageEditor
 {
-    public class StageEditorEditingState : EditorStateBase
+    public class StageEditorEditingState : StackPhaseStateBase
     {
         /// <summary>
         /// 遷移先を示すタグ

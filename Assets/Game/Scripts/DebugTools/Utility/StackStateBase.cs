@@ -1,13 +1,13 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Zenject;
 
 #if UNITY_EDITOR
 
 /// <summary>
 /// StateBase(TreeNode.Parentという単一参照による戻り先管理)の代替となる基底クラス。
-/// 戻り先の管理をノード自身の`Parent`フィールドではなく、Handler(EditorHandlerBase)側が
-/// 実行時に持つスタックのPush/Popに委ねる。これにより、同一インスタンスを複数の親から
-/// 子として登録しても(AddChildを複数回呼んでも)、戻り先が上書きされて破綻することがない。
+/// 戻り先の管理をノード自身の`Parent`フィールドではなく、Handler側が実行時に持つスタックの
+/// Push/Popに委ねる。これにより、同一インスタンスを複数の親から子として登録しても
+/// (AddChildを複数回呼んでも)、戻り先が上書きされて破綻することがない。
 ///
 /// Children/AddChildは「どんな子Stateが存在するか」を宣言的に登録し、TransitState(index)の
 /// 遷移先探索に使うだけの役割に限定しており、戻り先の管理には一切関与しない
@@ -17,14 +17,15 @@ using Zenject;
 /// 含める形にすること(呼び出し元を型で決め打ちして辿るのではなく、呼び出し元が自分から
 /// 「戻ってきたら何をするか」を渡す形)。
 ///
-/// 影響範囲をリスクの低いデバッグ用StageEditor機能(EditorStateBase以下)に限定するための
+/// 影響範囲をリスクの低いデバッグ用StageEditor機能(StackPhaseStateBase以下)に限定するための
 /// 実験的な実装であり、本番コード(StateBase/PhaseStateBase側)には一切影響しない。
+/// なお、このクラス自体はデバッグ機能に限定される内容を含まない汎用的な基底クラスである。
 /// </summary>
-public abstract class EditorStackStateBase
+public abstract class StackStateBase
 {
     [Inject] protected InputFacade _inputFcd = null;
 
-    private readonly List<EditorStackStateBase> _children = new List<EditorStackStateBase>();
+    private readonly List<StackStateBase> _children = new List<StackStateBase>();
 
     public bool IsExitReserved { get; private set; } = false;
     protected bool _isBack                = false;
@@ -38,7 +39,7 @@ public abstract class EditorStackStateBase
     /// 及び構造をコード上で見渡せるようにするための宣言的な登録に留まる)。そのため、同じ子を
     /// 複数の親から登録しても問題ありません。
     /// </summary>
-    public void AddChild( EditorStackStateBase child )
+    public void AddChild( StackStateBase child )
     {
         _children.Add( child );
     }
@@ -46,7 +47,7 @@ public abstract class EditorStackStateBase
     /// <summary>
     /// 指定インデックスの子Stateノードを取得します
     /// </summary>
-    public T GetChildren<T>( int index ) where T : EditorStackStateBase
+    public T GetChildren<T>( int index ) where T : StackStateBase
     {
         if( index < 0 || index >= _children.Count )
         {
@@ -66,7 +67,7 @@ public abstract class EditorStackStateBase
     /// <summary>
     /// 子Stateノードの列挙を取得します
     /// </summary>
-    public IEnumerable<T> GetChildNodeEnumerable<T>() where T : EditorStackStateBase
+    public IEnumerable<T> GetChildNodeEnumerable<T>() where T : StackStateBase
     {
         foreach( var child in _children )
         {

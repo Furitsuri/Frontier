@@ -8,7 +8,7 @@ using static Constants;
 /// <summary>
 /// 二者択一項目の確認画面の基底クラス
 /// </summary>
-public class ConfirmStateBaseEditor : EditorStateBase
+public class ConfirmStateBaseEditor : StackPhaseStateBase
 {
     protected enum ConfirmTag
     {

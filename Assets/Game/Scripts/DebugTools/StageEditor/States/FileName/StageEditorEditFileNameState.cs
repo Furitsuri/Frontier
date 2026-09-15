@@ -8,7 +8,7 @@ using static InputCode;
 
 namespace Frontier.DebugTools.StageEditor
 {
-    public class StageEditorEditFileNameState : EditorStateBase
+    public class StageEditorEditFileNameState : StackPhaseStateBase
     {
         public override void Init( object context )
         {

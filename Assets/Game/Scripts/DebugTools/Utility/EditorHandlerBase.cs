@@ -9,17 +9,17 @@ using Zenject;
 #if UNITY_EDITOR
 
 /// <summary>
-/// EditorStateBase(EditorStackStateBase)の木を実行するHandler基底クラス。
+/// StackPhaseStateBase(StackStateBase)の木を実行するHandler基底クラス。
 /// 戻り先の管理は、各ノードの`Parent`参照ではなく、このクラスが実行時に保持するスタック
 /// (`_returnStack`)へのPush/Popで行う。TransitState()で子へ遷移する直前に現在のノードを
 /// スタックへpushし、Back()で戻る際にpopして戻り先を決定する。この方式では、同一の子State
 /// インスタンスを複数の親からAddChildしても、戻り先が上書きされて破綻することがない
-/// (詳細はEditorStackStateBaseのコメントを参照)。
+/// (詳細はStackStateBaseのコメントを参照)。
 /// </summary>
 public class EditorHandlerBase
 {
-    public EditorStateBase RootNode    { get; protected set; }
-    public EditorStateBase CurrentNode { get; protected set; }
+    public StackPhaseStateBase RootNode    { get; protected set; }
+    public StackPhaseStateBase CurrentNode { get; protected set; }
 
     [Inject] protected HierarchyBuilderBase _hierarchyBld = null;
 
@@ -27,7 +27,7 @@ public class EditorHandlerBase
     private object _transitionContext   = null;    // State間で受け渡すコンテキスト情報
 
     // 遷移元ノードを記録するスタック。Back()で戻る際、GetParent<T>()の代わりにここからpopする
-    private Stack<EditorStateBase> _returnStack = new Stack<EditorStateBase>();
+    private Stack<StackPhaseStateBase> _returnStack = new Stack<StackPhaseStateBase>();
 
     public void SetTransitionContext( object context )
     {
@@ -73,7 +73,7 @@ public class EditorHandlerBase
         {
             CurrentNode.ExitState();
             _returnStack.Push( CurrentNode );    // 戻り先としてスタックへ記録
-            CurrentNode = CurrentNode.GetChildren<EditorStateBase>(transitIndex);
+            CurrentNode = CurrentNode.GetChildren<StackPhaseStateBase>(transitIndex);
             _isInitReserved = true;
         }
         else if (CurrentNode.IsBack())
