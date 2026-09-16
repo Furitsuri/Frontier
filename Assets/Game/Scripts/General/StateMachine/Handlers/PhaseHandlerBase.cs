@@ -2,15 +2,31 @@
 using Frontier.FormTroop;
 using Frontier.Stage;
 using Frontier.UI;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.StateMachine
 {
-    public class PhaseHandlerBase : Tree<PhaseStateBase>
+    /// <summary>
+    /// PhaseStateBase(StackStateBase)の木を実行するHandler基底クラス。
+    /// 戻り先の管理は、各ノードの`Parent`参照ではなく、このクラスが実行時に保持するスタック
+    /// (`_returnStack`)へのPush/Popで行う。TransitState()で子へ遷移する直前に現在のノードを
+    /// スタックへpushし、Back()で戻る際にpopして戻り先を決定する。この方式では、同一の子State
+    /// インスタンスを複数の親からAddChildしても、戻り先が上書きされて破綻することがない
+    /// (詳細はStackStateBaseのコメントを参照)。
+    /// </summary>
+    public class PhaseHandlerBase
     {
+        public PhaseStateBase RootNode    { get; protected set; }
+        public PhaseStateBase CurrentNode { get; protected set; }
+
         protected HierarchyBuilderBase _hierarchyBld    = null;
         protected bool _isFirstUpdate                   = false;
+
+        // 遷移元ノードを記録するスタック。Back()で戻る際、GetParent<T>()の代わりにここからpopする
+        private readonly Stack<PhaseStateBase> _returnStack = new Stack<PhaseStateBase>();
 
         [Inject] public PhaseHandlerBase( HierarchyBuilderBase hierarchyBld )
         {
@@ -23,6 +39,21 @@ namespace Frontier.StateMachine
         private void AssignHandler( PhaseStateBase state )
         {
             state.AssignHandler( this );
+        }
+
+        /// <summary>
+        /// 指定ノードとその子孫すべてに対してactionを実行します(旧Tree&lt;T&gt;.Traverse()の代替)。
+        /// </summary>
+        private void Traverse( PhaseStateBase node, Action<PhaseStateBase> action )
+        {
+            if( null == node ) { return; }
+
+            action( node );
+
+            foreach( var child in node.GetChildNodeEnumerable<PhaseStateBase>() )
+            {
+                Traverse( child, action );
+            }
         }
 
         protected void AssignPresenterToNodes( PhaseStateBase targetNode, PhasePresenterBase presenter )
@@ -45,6 +76,8 @@ namespace Frontier.StateMachine
         {
             CurrentNode     = RootNode;
             _isFirstUpdate  = true;
+
+            _returnStack.Clear();
         }
 
         virtual public void Update()
@@ -65,6 +98,7 @@ namespace Frontier.StateMachine
                 if( CurrentNode.IsExitReserved ) { transitionContext = CurrentNode.ExitState(); }   // 終了
                 else { transitionContext = CurrentNode.PauseState(); }                              // 中断
 
+                _returnStack.Push( CurrentNode );    // 戻り先としてスタックへ記録
                 CurrentNode = CurrentNode.GetChildren<PhaseStateBase>( transitIndex );
                 CurrentNode.OnEnter( transitionContext );
             }
@@ -72,7 +106,8 @@ namespace Frontier.StateMachine
             {
                 // CurrentNodeがフェーズ終了通知を発行しているか、
                 // 親がフェーズアニメーションステート、または親が存在しない場合はフェーズ遷移完了とみなす
-                if( CurrentNode.IsEndedPhase || null == CurrentNode.Parent || CurrentNode.Parent is PhaseAnimationStateBase )
+                bool hasParent = 0 < _returnStack.Count;
+                if( CurrentNode.IsEndedPhase || !hasParent || _returnStack.Peek() is PhaseAnimationStateBase )
                 {
                     // CurrentNodeから根まで、すべての祖先のExitState()を呼ぶ。
                     // (CurrentNodeのExitState()だけを呼ぶと、親States(RootState等)が保持しているクリーンアップ処理・確定処理が呼ばれないまま終了してしまう)
@@ -80,13 +115,13 @@ namespace Frontier.StateMachine
                     while( node != null )
                     {
                         node.ExitState();
-                        node = node.GetParent<PhaseStateBase>();
+                        node = 0 < _returnStack.Count ? _returnStack.Pop() : null;
                     }
                     return true;
                 }
 
                 transitionContext = CurrentNode.ExitState();
-                CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
+                CurrentNode = _returnStack.Pop();
 
                 // Exit処理が行われたノードはRunを実行。それ以外はPause処理が行われたためRestartを実行
                 if( CurrentNode.IsExitReserved ) { CurrentNode.OnEnter( transitionContext ); }
@@ -127,8 +162,13 @@ namespace Frontier.StateMachine
                     CurrentNode.ExitState();
                 }
 
-                CurrentNode = CurrentNode.GetParent<PhaseStateBase>();
+                CurrentNode = 0 < _returnStack.Count ? _returnStack.Pop() : null;
             }
         }
+
+        /// <summary>
+        /// 遷移木を構築します。派生クラスでRootNode/CurrentNodeを設定してください。
+        /// </summary>
+        virtual protected void CreateTree() { }
     }
 }

@@ -4,7 +4,12 @@ using Zenject;
 
 namespace Frontier.StateMachine
 {
-    public class PhaseStateBase : StateBase
+    /// <summary>
+    /// 戻り先の管理をStateBase(TreeNode.Parent)ではなく、StackStateBase(Handler側の実行時スタックに
+    /// よるPush/Pop)に委ねる。同一Stateインスタンスを複数の親からAddChildしても、戻り先が上書きされて
+    /// 破綻することがない。詳細はStackStateBaseのコメントを参照。
+    /// </summary>
+    public class PhaseStateBase : StackStateBase
     {
         [Inject] protected IUiSystem _uiSystem = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld = null;

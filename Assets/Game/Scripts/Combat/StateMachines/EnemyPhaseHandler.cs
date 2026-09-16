@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.StateMachine;
 using System.Linq;
 using Zenject;
 
@@ -63,10 +64,10 @@ namespace Frontier.Battle
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<EmPhaseStateAnimation>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSelectState>( false ) );
-            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
-            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
-            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSkillState>( false ) );
-            RootNode.Children[0].AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSkillState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
         }
     }
 }

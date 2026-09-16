@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using Zenject;
 
-#if UNITY_EDITOR
-
 /// <summary>
-/// StateBase(TreeNode.Parentという単一参照による戻り先管理)の代替となる基底クラス。
+/// StateBase(旧実装。TreeNode.Parentという単一参照による戻り先管理)の代替となる基底クラス。
 /// 戻り先の管理をノード自身の`Parent`フィールドではなく、Handler側が実行時に持つスタックの
 /// Push/Popに委ねる。これにより、同一インスタンスを複数の親から子として登録しても
 /// (AddChildを複数回呼んでも)、戻り先が上書きされて破綻することがない。
@@ -17,9 +15,8 @@ using Zenject;
 /// 含める形にすること(呼び出し元を型で決め打ちして辿るのではなく、呼び出し元が自分から
 /// 「戻ってきたら何をするか」を渡す形)。
 ///
-/// 影響範囲をリスクの低いデバッグ用StageEditor機能(StackPhaseStateBase以下)に限定するための
-/// 実験的な実装であり、本番コード(StateBase/PhaseStateBase側)には一切影響しない。
-/// なお、このクラス自体はデバッグ機能に限定される内容を含まない汎用的な基底クラスである。
+/// デバッグ機能限定の内容を含まない汎用的な基底クラスであり、本番のPhaseStateBaseと
+/// デバッグ用のStackPhaseStateBase(DebugTools/Utility)の双方から共有される。
 /// </summary>
 public abstract class StackStateBase
 {
@@ -159,12 +156,10 @@ public abstract class StackStateBase
     }
 
     /// <summary>
-    /// 親の遷移に戻ります(実際の戻り先の解決はEditorHandlerBase側のスタックが行う)
+    /// 親の遷移に戻ります(実際の戻り先の解決はHandler側のスタックが行う)
     /// </summary>
     protected void Back()
     {
         _isBack = true;
     }
 }
-
-#endif // UNITY_EDITOR

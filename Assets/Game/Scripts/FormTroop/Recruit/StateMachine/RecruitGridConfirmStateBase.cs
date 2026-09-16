@@ -1,6 +1,7 @@
-using Frontier.StateMachine;
+﻿using Frontier.StateMachine;
 using Frontier.TroopEdit;
 using Frontier.UI;
+using System;
 using static Constants;
 
 namespace Frontier.FormTroop
@@ -25,6 +26,9 @@ namespace Frontier.FormTroop
         }
 
         protected TroopGridController _gridController = null;
+        protected int ToggledCount { get; private set; }
+
+        private Action _commitCallback = null;
 
         protected override ConfirmUIType UIType => ConfirmUIType.SubButtons;
 
@@ -32,14 +36,25 @@ namespace Frontier.FormTroop
         {
             base.Init( context );
 
-            _gridController = GetGridController();
+            RecruitGridConfirmContext gridConfirmContext = null;
+            ReceiveContext( ref gridConfirmContext, context );
+            NullCheck.AssertNotNull( gridConfirmContext, nameof( gridConfirmContext ) );
+
+            _gridController = gridConfirmContext.GridController;
+            _commitCallback = gridConfirmContext.CommitCallback;
+            ToggledCount     = gridConfirmContext.ToggledCount;
+
             NullCheck.AssertNotNull( _gridController, nameof( _gridController ) );
         }
 
         /// <summary>
-        /// 親State(RecruitEmployState/RecruitDismissState)が保持するTroopGridControllerを取得します。
+        /// Yesが選択された際、親State(RecruitEmployState/RecruitDismissState)の確定処理
+        /// (CommitEmployment/CommitDismissal)をコールバック経由で呼びます。
         /// </summary>
-        protected abstract TroopGridController GetGridController();
+        protected void CommitConfirmedSelection()
+        {
+            _commitCallback?.Invoke();
+        }
 
         /// <summary>
         /// ステータス確認画面等の子Stateへ遷移する際に呼ばれます。子State表示中は

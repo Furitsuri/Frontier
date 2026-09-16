@@ -1,6 +1,7 @@
 ﻿using Frontier.StateMachine;
 using Frontier.TroopEdit;
 using Frontier.UI;
+using System;
 using System.Collections.Generic;
 using Zenject;
 using static Constants;
@@ -202,7 +203,7 @@ namespace Frontier.FormTroop
 
             _gridController.AnimateFocusOnConfirmScreen( GetCheckedIndices(), () =>
             {
-                SetSendTransitionContext( toggledCount );
+                SetSendTransitionContext( new RecruitGridConfirmContext( toggledCount, _gridController, GetCommitCallback() ) );
                 TransitState( ( int ) GridTransitTag.SUMMARY_CONFIRM );
             } );
 
@@ -230,5 +231,12 @@ namespace Frontier.FormTroop
         /// ヘッダーのアニマ数値のすぐ下に表示するために、Update()から毎フレーム参照されます。
         /// </summary>
         protected virtual int GetPendingAnimaDiff() { return 0; }
+
+        /// <summary>
+        /// 完了確認画面(RecruitGridConfirmStateBase派生State)でYesが選択された際に呼ぶ、
+        /// このStateの確定処理(CommitEmployment/CommitDismissal)を返します。
+        /// GetParent&lt;T&gt;()での遡り呼び出しの代わりに、コンテキストへ含めて子Stateへ渡します。
+        /// </summary>
+        protected virtual Action GetCommitCallback() { return null; }
     }
 }

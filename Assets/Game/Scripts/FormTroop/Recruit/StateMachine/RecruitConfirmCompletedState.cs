@@ -1,6 +1,5 @@
-
+﻿
 using Frontier.StateMachine;
-using Frontier.TroopEdit;
 using Frontier.UI;
 using Zenject;
 
@@ -19,11 +18,8 @@ namespace Frontier.FormTroop
         {
             base.Init( context );
 
-            int employedCount = 0;
-            ReceiveContext( ref employedCount, context );
-
             _talkConfirmPresenter.SetConfirmMessage( LocKey.UI_TALK_SHOPKEEPER_NAME,
-                employedCount == 1 ? LocKey.UI_TALK_EMPLOY_CONFIRM_SINGULAR : LocKey.UI_TALK_EMPLOY_CONFIRM_PLURAL );
+                ToggledCount == 1 ? LocKey.UI_TALK_EMPLOY_CONFIRM_SINGULAR : LocKey.UI_TALK_EMPLOY_CONFIRM_PLURAL );
         }
 
         /// <summary>
@@ -35,14 +31,6 @@ namespace Frontier.FormTroop
             _confirmPresenter = _talkConfirmPresenter;
         }
 
-        /// <summary>
-        /// 親(RecruitEmployState)が保持するTroopGridControllerを、この確認画面でも使い回します。
-        /// </summary>
-        protected override TroopGridController GetGridController()
-        {
-            return GetParent<RecruitEmployState>()?.GridController;
-        }
-
         protected override bool AcceptConfirm( InputContext context )
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
@@ -50,7 +38,7 @@ namespace Frontier.FormTroop
             if( _commandList.GetCurrentValue() == ( int ) ConfirmTag.YES )
             {
                 // 雇用確定キャラクターを自軍へ加え、表示から取り除く(RecruitSceneは終了しない)
-                GetParent<RecruitEmployState>()?.CommitEmployment();
+                CommitConfirmedSelection();
             }
 
             Back();

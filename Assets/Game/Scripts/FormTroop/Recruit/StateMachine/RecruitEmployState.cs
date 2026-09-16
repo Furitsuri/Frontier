@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.Tutorial;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -172,6 +173,11 @@ namespace Frontier.FormTroop
                 .Sum( c => ( c.Character as Player ).RecruitLogic.Cost );
         }
 
+        protected override Action GetCommitCallback()
+        {
+            return CommitEmployment;
+        }
+
         /// <summary>
         /// まだ雇用を確定していないキャラクターの雇用チェックを全て取り消し、
         /// 消費予定だった所持アニマを払い戻します
@@ -194,7 +200,7 @@ namespace Frontier.FormTroop
         /// (未チェックのもの)で引き続き雇用/解雇の選択を続けられます。表示への反映(絞り込み解除
         /// アニメーション)は、この直後にRestartState()から呼ばれるTroopGridController側に委ねます。
         /// </summary>
-        public void CommitEmployment()
+        private void CommitEmployment()
         {
             // _employmentCandidatesはRecruitTopMenuStateが所有するインスタンスをReceiveContext(参照渡し)で
             // 受け取っているため、新しいリストに差し替えるのではなくこのリスト自体を操作する

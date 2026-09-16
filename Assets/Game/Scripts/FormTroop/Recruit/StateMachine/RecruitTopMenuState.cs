@@ -1,6 +1,7 @@
 ﻿using Frontier.Entities;
 using Frontier.StateMachine;
 using Frontier.UI;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -158,6 +159,7 @@ namespace Frontier.FormTroop
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
+            SetSendTransitionContext( ( Action ) RequestCancelExit );
             TransitState( ( int ) RecruitTopMenuTransitTag.CONFIRM_CANCEL );
 
             return true;
@@ -166,7 +168,7 @@ namespace Frontier.FormTroop
         /// <summary>
         /// 雇用を行わずにRecruitルーチンから脱出することを要求します
         /// </summary>
-        public void RequestCancelExit()
+        private void RequestCancelExit()
         {
             _isCancelled = true;
         }

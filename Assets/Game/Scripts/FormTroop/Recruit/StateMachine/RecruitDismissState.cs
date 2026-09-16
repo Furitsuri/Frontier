@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static Constants;
@@ -132,7 +133,7 @@ namespace Frontier.FormTroop
         /// (RecruitSceneは終了しない)。表示への反映(絞り込み解除アニメーション)は、この直後に
         /// RestartState()から呼ばれるTroopGridController側に委ねます。
         /// </summary>
-        public void CommitDismissal()
+        private void CommitDismissal()
         {
             var committedIndices = new List<int>();
 
@@ -160,6 +161,11 @@ namespace Frontier.FormTroop
             return _dismissChecked.Contains( true );
         }
 
+        protected override Action GetCommitCallback()
+        {
+            return CommitDismissal;
+        }
+
         /// <summary>
         /// 解雇報酬アニマ額を、このState突入時に一度だけ算出します。以後は解雇確定によって
         /// リストから該当分を取り除く場合を除き、再計算しません。
@@ -170,7 +176,7 @@ namespace Frontier.FormTroop
             for( int i = 0; i < _userDomain.Members.Count; ++i )
             {
                 // MEMO : 解雇報酬の仕様は未確定のため、暫定的に1〜20のランダム値とする
-                _rewardAnimas.Add( Random.Range( 1, 21 ) );
+                _rewardAnimas.Add( UnityEngine.Random.Range( 1, 21 ) );
             }
         }
 
