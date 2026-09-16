@@ -27,7 +27,8 @@ namespace Frontier.UI
 
         [Inject] private ILocalizationService _localization = null;
 
-        private LocKey? _stateTitleKey = null;
+        private LocKey?  _stateTitleKey  = null;
+        private object[] _stateTitleArgs = null;
 
         public override void Setup()
         {
@@ -70,11 +71,13 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 左端に現在の画面(State)タイトルを表示します(雇用/解雇/部隊編集画面等)。
+        /// 左端に現在の画面(State)タイトルを表示します(雇用/解雇/部隊編集/ステージ番号表示等)。
+        /// 文言に書式指定(例: "ステージ{0}")が含まれる場合は、argsをstring.Formatで挿入します。
         /// </summary>
-        public void SetStateTitle( LocKey key )
+        public void SetStateTitle( LocKey key, params object[] args )
         {
-            _stateTitleKey = key;
+            _stateTitleKey  = key;
+            _stateTitleArgs = args;
             RefreshStateTitleText();
         }
 
@@ -83,7 +86,8 @@ namespace Frontier.UI
         /// </summary>
         public void ClearStateTitle()
         {
-            _stateTitleKey = null;
+            _stateTitleKey  = null;
+            _stateTitleArgs = null;
             RefreshStateTitleText();
         }
 
@@ -91,9 +95,16 @@ namespace Frontier.UI
         {
             if ( _stateTitleText == null ) return;
 
-            _stateTitleText.text = _stateTitleKey.HasValue
-                ? ( _localization != null ? _localization.Get( _stateTitleKey.Value ) : _stateTitleKey.Value.ToString() )
-                : string.Empty;
+            if ( !_stateTitleKey.HasValue )
+            {
+                _stateTitleText.text = string.Empty;
+                return;
+            }
+
+            string format = _localization != null ? _localization.Get( _stateTitleKey.Value ) : _stateTitleKey.Value.ToString();
+            _stateTitleText.text = ( _stateTitleArgs != null && _stateTitleArgs.Length > 0 )
+                ? string.Format( format, _stateTitleArgs )
+                : format;
         }
     }
 }

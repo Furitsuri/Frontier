@@ -221,11 +221,13 @@ namespace Frontier.Field
         }
 
         /// <summary>
-        /// 画面上部の全幅常時表示HUD(所持アニマ・部隊人数)を最新の値で更新し、表示します。
+        /// 画面上部の全幅常時表示HUD(所持アニマ・部隊人数・ステージ番号)を最新の値で更新し、表示します。
         /// </summary>
         private void RefreshFieldHeader()
         {
             _headerPresenter.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+            // StageLevelは0オリジンのため、表示上は+1する
+            _headerPresenter.SetStateTitle( LocKey.UI_FIELD_STAGE_TITLE, _userDomain.StageLevel + 1 );
             _headerPresenter.Show();
         }
 

@@ -27,9 +27,9 @@ namespace Frontier.UI
         public void SetAnimaDiff( int diff ) => _uiSystem.GeneralUi.HeaderView.SetAnimaDiff( diff );
 
         /// <summary>
-        /// 左端に現在の画面(State)タイトルを表示します(雇用/解雇/部隊編集画面等)。
+        /// 左端に現在の画面(State)タイトルを表示します(雇用/解雇/部隊編集/ステージ番号表示等)。
         /// </summary>
-        public void SetStateTitle( LocKey key ) => _uiSystem.GeneralUi.HeaderView.SetStateTitle( key );
+        public void SetStateTitle( LocKey key, params object[] args ) => _uiSystem.GeneralUi.HeaderView.SetStateTitle( key, args );
 
         /// <summary>
         /// 左端の画面タイトル表示を消去します(該当する画面を離れた際に呼び出してください)。

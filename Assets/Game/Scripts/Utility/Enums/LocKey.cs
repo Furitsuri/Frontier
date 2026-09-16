@@ -80,4 +80,8 @@ public enum LocKey
     UI_TALK_EMPLOY_CONFIRM_PLURAL,
     UI_TALK_DISMISS_CONFIRM_SINGULAR,
     UI_TALK_DISMISS_CONFIRM_PLURAL,
+
+    // フィールド画面
+    // {0}にステージ番号(1オリジン)が入る書式文字列です
+    UI_FIELD_STAGE_TITLE,
 }

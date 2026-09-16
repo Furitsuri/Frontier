@@ -278,6 +278,10 @@ namespace Frontier.Field
             // 部隊編集画面(レベルアップ/ステータス上昇含む)から戻った際、所持アニマ・部隊人数が
             // 変化している可能性があるため、画面上部のHUDを最新の値に更新する
             _headerPresenter.SetHeaderInfo( _userDomain.Anima, _userDomain.Members.Count, TROOP_MAX_MEMBERS );
+
+            // 部隊編集画面(TroopEditHandler)はCloseUI時にステージタイトルをクリアするため、
+            // フィールドメニューへ戻る際は改めてステージ番号タイトルを設定し直す(StageLevelは0オリジンのため+1)
+            _headerPresenter.SetStateTitle( LocKey.UI_FIELD_STAGE_TITLE, _userDomain.StageLevel + 1 );
         }
     }
 }

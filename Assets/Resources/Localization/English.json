@@ -49,5 +49,6 @@
     "UI_TALK_EMPLOY_CONFIRM_SINGULAR": "That's the one you're hiring, then?",
     "UI_TALK_EMPLOY_CONFIRM_PLURAL": "Those are the ones you're hiring, then?",
     "UI_TALK_DISMISS_CONFIRM_SINGULAR": "You won't see them again, you know. Still dismissing them?",
-    "UI_TALK_DISMISS_CONFIRM_PLURAL": "You sure? You won't see any of them again — still dismissing them?"
+    "UI_TALK_DISMISS_CONFIRM_PLURAL": "You sure? You won't see any of them again — still dismissing them?",
+    "UI_FIELD_STAGE_TITLE": "Stage {0}"
 }

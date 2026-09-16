@@ -49,5 +49,6 @@
     "UI_TALK_EMPLOY_CONFIRM_SINGULAR": "雇うのはそいつかい？",
     "UI_TALK_EMPLOY_CONFIRM_PLURAL": "雇うのはそいつらでいいんだな？",
     "UI_TALK_DISMISS_CONFIRM_SINGULAR": "二度と会えなくなると思うが、そいつを解雇するんだな？",
-    "UI_TALK_DISMISS_CONFIRM_PLURAL": "いいのか？二度と会えなくなるが、そいつらを解雇するんだな？"
+    "UI_TALK_DISMISS_CONFIRM_PLURAL": "いいのか？二度と会えなくなるが、そいつらを解雇するんだな？",
+    "UI_FIELD_STAGE_TITLE": "ステージ{0}"
 }
