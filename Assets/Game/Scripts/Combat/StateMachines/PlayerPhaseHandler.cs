@@ -126,14 +126,16 @@ namespace Frontier.Battle
              */
 
             // MEMO : キャラクターステータス表示状態は、各所から遷移可能にするため、複数個所に配置しています。
+            // StackStateBaseはAddChildで戻り先(Parent)を上書きしないため、単一インスタンスを全ての箇所で共有できます。
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PlPhaseStateAnimation>( false );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectTileState>( false ) );
             RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmReservedActionsState>( false ) );
             _confirmReservedActionsState = RootNode.GetChildren<PlConfirmReservedActionsState>( 1 );
+            var characterStatusViewState = _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false );
             // Children[0]はPlSelectTileState、Children[1]はPlConfirmReservedActionsState
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
@@ -145,18 +147,18 @@ namespace Frontier.Battle
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlWaitState>( false ) );
             // Children[0].Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
             // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateとPlConfirmKillReservedTargetStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( characterStatusViewState );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
             // Children[0].Children[0].Children[0].Children[0]はPlAttackOnMoveState。TransitTag.CONFIRM_KILL_RESERVED_TARGET(=1、PlAttackState側と共通)と
             // インデックスを揃えるため、CharacterStatusViewStateをChildren[0]として先に追加してからPlConfirmKillReservedTargetStateを追加する
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
             // Children[0].Children[0].Children[2]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
             // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewState・PlSkillUseOptionState・PlConfirmKillReservedTargetStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillUseOptionState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
         }

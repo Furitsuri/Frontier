@@ -89,19 +89,22 @@ namespace Frontier.FormTroop
              *              └─ RecruitTopMenuConfirmCancelState
              *
              */
+            // StackStateBaseはAddChildで戻り先(Parent)を上書きしないため、単一インスタンスを全ての箇所で共有できる
+            var characterStatusViewState = _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false );
+
             var employConfirmState = _hierarchyBld.InstantiateWithDiContainer<RecruitConfirmCompletedState>( false );
-            employConfirmState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            employConfirmState.AddChild( characterStatusViewState );
 
             var employState = _hierarchyBld.InstantiateWithDiContainer<RecruitEmployState>( false );
-            employState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            employState.AddChild( characterStatusViewState );
             employState.AddChild( employConfirmState );
             employState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
             var dismissConfirmState = _hierarchyBld.InstantiateWithDiContainer<RecruitDismissConfirmCompletedState>( false );
-            dismissConfirmState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            dismissConfirmState.AddChild( characterStatusViewState );
 
             var dismissState = _hierarchyBld.InstantiateWithDiContainer<RecruitDismissState>( false );
-            dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false ) );
+            dismissState.AddChild( characterStatusViewState );
             dismissState.AddChild( dismissConfirmState );
             dismissState.AddChild( _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false ) );
 
