@@ -96,7 +96,9 @@ namespace Frontier.Field
 
         private IEnumerator MoveRoutine( Vector3 target, Action onComplete )
         {
-            _character?.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE );
+            // MOVE(Run)はAnimatorControllerではBool型パラメータのため、Trigger版ではなくBool版で設定する必要がある
+            // (Trigger版はTrigger型パラメータ向けで、Bool型に対して呼ぶと値がtrueのまま残り続け、Run状態から抜けられなくなる)
+            _character?.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, true );
 
             while ( Vector3.Distance( transform.position, target ) > 0.01f )
             {
@@ -109,7 +111,7 @@ namespace Frontier.Field
 
             // 移動完了後は待機アニメーションに戻し、画面正面(定義された既定の向き)に向き直す
             _character?.SetRotation( _facingDirection );
-            _character?.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.WAIT );
+            _character?.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, false );
 
             onComplete?.Invoke();
         }
