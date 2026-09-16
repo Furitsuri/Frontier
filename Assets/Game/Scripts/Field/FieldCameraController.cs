@@ -41,9 +41,11 @@ namespace Frontier.Field
         {
             int hashCode = Hash.GetStableHash( nameof( FieldCameraController ) );
 
-            InputFacade.Instance.RegisterInputCodes(
-                ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_LEFT }, "FIELD\nMOVE",
-                  CanAcceptPan, new AcceptContextInput( AcceptPanInput ), 0.0f, hashCode ) );
+            // マウスドラッグによる連続操作のため、押しっぱなし継続時もRepeatDelayによる待ちを発生させず即座に反映させる
+            InputCode panCode = ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_LEFT }, "FIELD\nMOVE",
+                                   CanAcceptPan, new AcceptContextInput( AcceptPanInput ), 0.0f, hashCode );
+            panCode.RepeatDelay = 0f;
+            InputFacade.Instance.RegisterInputCodes( panCode );
         }
 
         /// <summary>
