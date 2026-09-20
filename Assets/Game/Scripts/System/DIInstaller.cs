@@ -9,6 +9,7 @@ using Frontier.Registries;
 using Frontier.Tutorial;
 using Frontier.Sequences;
 using Frontier.Option;
+using Frontier.Shop;
 
 namespace Frontier
 {
@@ -43,6 +44,8 @@ namespace Frontier
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<TalkWindowConfirmPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
+            Container.Bind<ShopHandler>().AsSingle();
+            Container.Bind<ShopPresenter>().AsSingle();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
