@@ -7,6 +7,7 @@ public interface IUiSystem
     public RecruitUISystem RecruitUi { get; }
     public DeploymentUISystem DeployUi { get; }
     public BattleUISystem BattleUi { get; }
+    public ShopUISystem ShopUi { get; }
 #if UNITY_EDITOR
     public DebugUISystem DebugUi { get; }
 #endif // UNITY_EDITOR
