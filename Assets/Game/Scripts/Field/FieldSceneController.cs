@@ -18,9 +18,15 @@ namespace Frontier.Field
     /// </summary>
     public class FieldSceneController : FocusRoutineBase
     {
-        private const string BattleSceneName  = "BattleScene";
-        private const string RecruitSceneName = "RecruitScene";
-        private const string ShopSceneName    = "ShopScene";
+        // ノード種別ごとの遷移先シーン。シーンへ遷移する種別は、ここへ登録するだけでよい。
+        // Startは到達しても何も起こらないため登録しない。Restは専用のルーチン(シーン)を実装した時点で登録する。
+        private static readonly Dictionary<FieldNodeType, string> SceneNameByNodeType = new Dictionary<FieldNodeType, string>
+        {
+            { FieldNodeType.Battle,  "BattleScene"  },
+            { FieldNodeType.Boss,    "BattleScene"  },
+            { FieldNodeType.Recruit, "RecruitScene" },
+            { FieldNodeType.Shop,    "ShopScene"    },
+        };
 
         [Header( "ノードのプレハブ" )]
         [SerializeField] private FieldNodeView _nodePrefab = null;
@@ -327,32 +333,24 @@ namespace Frontier.Field
             var nodeType = ( FieldNodeType ) node.Type;
             Debug.Log( $"[FieldSceneController] ノード到達: Id={node.Id} Type={nodeType}" );
 
-            switch ( nodeType )
+            if ( nodeType == FieldNodeType.Start ) return;
+
+            if ( !SceneNameByNodeType.TryGetValue( nodeType, out var sceneName ) )
             {
-                case FieldNodeType.Battle:
-                case FieldNodeType.Boss:
-                    FieldTransitionContext.SetupFieldExitTransition( node.Id, node.StageIndex );
-                    TransitionToScene( BattleSceneName );
-                    break;
-
-                case FieldNodeType.Recruit:
-                    FieldTransitionContext.SetupFieldExitTransition( node.Id );
-                    TransitionToScene( RecruitSceneName );
-                    break;
-
-                case FieldNodeType.Shop:
-                    FieldTransitionContext.SetupFieldExitTransition( node.Id );
-                    TransitionToScene( ShopSceneName );
-                    break;
-
-                case FieldNodeType.Rest:
-                    // TODO: 休憩処理（回復等）を実装
-                    Debug.Log( "[FieldSceneController] Rest は未実装です。" );
-                    break;
-
-                default:
-                    break;
+                // 遷移先シーンが未実装の種別(Rest等)
+                Debug.LogWarning( $"[FieldSceneController] 遷移先シーンが未登録のノード種別です: {nodeType}" );
+                return;
             }
+
+            // Battle/Bossは、StageIndexが未指定(負値)のままだとステージデータの参照で範囲外になるため、遷移前に検証する
+            if ( ( nodeType == FieldNodeType.Battle || nodeType == FieldNodeType.Boss ) && node.StageIndex < 0 )
+            {
+                Debug.LogError( $"[FieldSceneController] {nodeType}ノード(Id={node.Id})のStageIndexが未指定です。遷移を中止します。" );
+                return;
+            }
+
+            FieldTransitionContext.SetupFieldExitTransition( node.Id, node.StageIndex );
+            TransitionToScene( sceneName );
         }
 
         /// <summary>

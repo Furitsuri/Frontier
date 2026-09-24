@@ -29,14 +29,14 @@ namespace Frontier.Field
             TransitionStartTime = -1.0;
         }
 
-        /// <summary>遷移先で読み込むステージインデックス。FilePathRegistry.StageNames[] のインデックス。</summary>
-        public static int StageIndex { get; private set; } = 0;
+        /// <summary>遷移先で読み込むステージインデックス。FilePathRegistry.StageNames[] のインデックス。戦闘以外への遷移では-1。</summary>
+        public static int StageIndex { get; private set; } = -1;
 
         /// <summary>クリアしたノードのId。GameMain 終了後に FieldScene が読み取る。</summary>
         public static int ClearedNodeId { get; private set; } = -1;
 
         /// <summary>フィールドから戦闘・雇用などの別シーンへ遷移する前に呼ぶ。</summary>
-        public static void SetupFieldExitTransition( int nodeId, int stageIndex = 0 )
+        public static void SetupFieldExitTransition( int nodeId, int stageIndex = -1 )
         {
             IsFromField   = true;
             StageIndex    = stageIndex;
@@ -47,7 +47,7 @@ namespace Frontier.Field
         public static void Clear()
         {
             IsFromField         = false;
-            StageIndex          = 0;
+            StageIndex          = -1;
             ClearedNodeId       = -1;
             TransitionStartTime = -1.0;
         }

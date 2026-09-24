@@ -7,7 +7,7 @@ namespace Frontier.Field
     {
         public int   Id;
         public int   Type;          // FieldNodeType
-        public int   StageIndex;    // Battle/Boss のみ有効。FilePathRegistry.StageNames[] のインデックス
+        public int   StageIndex = -1;   // Battle/Boss のみ有効。FilePathRegistry.StageNames[] のインデックス。未指定は-1
         public float PosX;
         public float PosY;
 
