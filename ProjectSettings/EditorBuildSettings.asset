@@ -17,5 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Game/Scenes/Play/RecruitScene.unity
     guid: 50b31a2e512e4ee48873eedfdc7f60c3
+  - enabled: 1
+    path: Assets/Game/Scenes/Play/ShopScene.unity
+    guid: 41fc9cec62f43f441bb222094777d1c7
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 216fbf96f8526074f929527d6de65639, type: 2}

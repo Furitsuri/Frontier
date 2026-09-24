@@ -35,6 +35,9 @@ namespace Frontier
         [Header( "TalkWindow" )]
         public TalkWindowUI TalkWindowView;          // 話者名+セリフ+ポートレートを表示する汎用ウィンドウ
 
+        [Header( "BlurOverlay" )]
+        public ScreenBlurOverlayView BlurOverlayView;   // 画面全体をぼかし+単色で覆う汎用オーバーレイ(確認画面等で奥の表示から注意を逸らす)
+
         void Awake()
         {
             if( null == GetComponent<Canvas>() )
@@ -55,6 +58,7 @@ namespace Frontier
             CharacterEditView?.Setup();
             HeaderView?.Setup();
             TalkWindowView?.Setup();
+            BlurOverlayView?.Setup();
         }
 
         public Vector2 GetScreenSize()

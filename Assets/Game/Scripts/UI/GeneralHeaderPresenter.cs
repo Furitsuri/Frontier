@@ -21,10 +21,10 @@ namespace Frontier.UI
             => _uiSystem.GeneralUi.HeaderView.SetHeaderInfo( anima, currentMemberNum, maxMemberNum );
 
         /// <summary>
-        /// 所持アニマの増減差分を、アニマ数値のすぐ下に表示します(雇用/解雇画面での予備登録用)。
-        /// 0を渡すと非表示にします。
+        /// 所持アニマの増減差分を、アニマ数値のすぐ下に表示します(雇用/解雇画面での予備登録、ショップの購入予定額)。
+        /// 0を渡すと非表示にします。emphasizedをtrueにすると文字を大きくして目立たせます(購入確認画面等)。
         /// </summary>
-        public void SetAnimaDiff( int diff ) => _uiSystem.GeneralUi.HeaderView.SetAnimaDiff( diff );
+        public void SetAnimaDiff( int diff, bool emphasized = false ) => _uiSystem.GeneralUi.HeaderView.SetAnimaDiff( diff, emphasized );
 
         /// <summary>
         /// 左端に現在の画面(State)タイトルを表示します(雇用/解雇/部隊編集/ステージ番号表示等)。

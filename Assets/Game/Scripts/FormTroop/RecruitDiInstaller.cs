@@ -33,6 +33,7 @@ namespace Frontier.FormTroop
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<TalkWindowConfirmPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
+            Container.Bind<ScreenBlurOverlayPresenter>().AsSingle();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();
             Container.Bind<HierarchyBuilderBase>().To<HierarchyBuilder>().FromComponentInHierarchy().AsCached();
             // PrefabRegistry は全シーン共通の ScriptableObject アセット(Resources/PrefabRegistry)を共有する

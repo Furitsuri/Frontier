@@ -6,17 +6,25 @@ using static Constants;
 namespace Frontier.Shop
 {
     /// <summary>
-    /// 購入する個数を選ぶステート(ShopBrowseStateの子)。
-    /// 商品一覧で選択中の商品の右隣に個数選択パネルを出し、上下で個数を増減、決定でその個数を購入して商品一覧へ戻る。
+    /// 購入する個数を選ぶステート(ShopBrowseStateの子)。複数個購入できる商品でのみ挟まれる。
+    /// 商品一覧で選択中の商品の右隣に個数選択パネルを出し、上下で個数を増減、決定で購入確認(ShopPurchaseConfirmState)へ進む。
     /// キャンセルなら何も購入せず商品一覧へ戻る。表示中は、店主の「いくつ御購入されますか？」を画面右下に出す。
+    /// 購入確認で購入が済んだ場合は、この画面へ戻らずそのまま商品一覧まで戻る。
     /// 戻った後の店主の言葉は、ShopBrowseState側が切り替える。
     /// </summary>
     public sealed class ShopQuantityState : PhaseStateBase
     {
-        [Inject] private ShopHandler _shopHandler                 = null;
+        private enum ShopQuantityTransitTag
+        {
+            PURCHASE_CONFIRM = 0,
+        }
+
         [Inject] private TalkWindowPresenter _talkWindowPresenter = null;
 
         private ShopPresenter _presenter = null;
+
+        // 購入確認で購入が済んだか。済んでいる場合、購入確認から戻った時点でこの画面も終了する
+        private bool _isPurchased = false;
 
         public override void AssignPresenter( PhasePresenterBase presenter )
         {
@@ -27,9 +35,29 @@ namespace Frontier.Shop
         {
             base.Init( context );
 
+            _isPurchased = false;
+
             _presenter.BeginQuantitySelection();
 
-            _talkWindowPresenter.ShowBottomRight( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_SHOP_ASK_QUANTITY );
+            ShowQuestion();
+        }
+
+        /// <summary>
+        /// 購入確認から戻ってきた際、購入が済んでいれば商品一覧まで戻ります。
+        /// 「いいえ」等で購入しなかった場合は、個数を選び直せるよう店主の問いかけを再表示します。
+        /// </summary>
+        public override void RestartState()
+        {
+            base.RestartState();
+
+            if( _isPurchased )
+            {
+                Back();
+
+                return;
+            }
+
+            ShowQuestion();
         }
 
         public override object ExitState()
@@ -45,7 +73,7 @@ namespace Frontier.Shop
 
             _inputFcd.RegisterInputCodes(
                (GuideIcon.VERTICAL_CURSOR, "QUANTITY", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-               (GuideIcon.CONFIRM,         "BUY",      CanAcceptDefault, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CONFIRM,         "CONFIRM",  CanAcceptDefault, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
                (GuideIcon.CANCEL,          "BACK",     CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
             );
         }
@@ -58,15 +86,11 @@ namespace Frontier.Shop
         protected override bool AcceptConfirm( InputContext context )
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
-            if( !_presenter.TryGetSelectedItem( out var item ) ) { return false; }
-            if( _shopHandler.Purchase( item, _presenter.SelectedQuantity ) != PurchaseResult.Success ) { return false; }
 
-            // 購入でアニマは減算済みのため、Back()による遷移(ExitState)を待たず予定額の表示を止める
-            // (待つと、減算後のアニマ数値と予定額が同時に表示される瞬間が生じる)
-            _presenter.EndQuantitySelection();
-            _presenter.Refresh();
-
-            Back();
+            // 選んだ個数を購入確認へ渡す。購入が済んだ際に、この画面も終了できるよう完了通知も渡す
+            // (Back()時にStateの戻り値は破棄されるため、子から親へはコールバックで伝える)
+            SetSendTransitionContext( new ShopPurchaseConfirmContext( _presenter.SelectedQuantity, () => _isPurchased = true ) );
+            TransitState( ( int ) ShopQuantityTransitTag.PURCHASE_CONFIRM );
 
             return true;
         }
@@ -78,6 +102,11 @@ namespace Frontier.Shop
             Back();
 
             return true;
+        }
+
+        private void ShowQuestion()
+        {
+            _talkWindowPresenter.ShowBottomRight( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_SHOP_ASK_QUANTITY );
         }
     }
 }

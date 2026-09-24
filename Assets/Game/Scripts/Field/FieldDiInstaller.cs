@@ -21,6 +21,7 @@ namespace Frontier.Field
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
+            Container.Bind<ScreenBlurOverlayPresenter>().AsSingle();
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();

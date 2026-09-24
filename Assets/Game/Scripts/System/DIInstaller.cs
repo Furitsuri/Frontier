@@ -44,6 +44,7 @@ namespace Frontier
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<TalkWindowConfirmPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
+            Container.Bind<ScreenBlurOverlayPresenter>().AsSingle();
             Container.Bind<ShopHandler>().AsSingle();
             Container.Bind<CombatSkillEventController>().FromComponentInHierarchy().AsCached();
             Container.Bind<FilePathRegistry>().FromComponentInHierarchy().AsCached();

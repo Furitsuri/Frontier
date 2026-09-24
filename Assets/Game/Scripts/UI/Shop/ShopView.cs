@@ -26,6 +26,12 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _quantityText;
         [SerializeField] private float _quantityPanelMarginX = 12f;
 
+        [Header( "購入確認の内容表示(商品名・個数・合計金額。画面を覆うぼかしオーバーレイより手前に出すため、ネストしたCanvasに置く)" )]
+        [SerializeField] private GameObject _purchaseSummary;
+        [SerializeField] private TextMeshProUGUI _summaryNameText;
+        [SerializeField] private TextMeshProUGUI _summaryQuantityText;
+        [SerializeField] private TextMeshProUGUI _summaryPriceText;
+
         [SerializeField] private Color _normalColor      = Color.white;
         [SerializeField] private Color _unavailableColor = Color.gray;
 
@@ -41,6 +47,7 @@ namespace Frontier.UI
             gameObject.SetActive( true );
 
             HideQuantityPanel();
+            HidePurchaseSummary();
         }
 
         public void Hide() => gameObject.SetActive( false );
@@ -116,6 +123,25 @@ namespace Frontier.UI
         public void HideQuantityPanel()
         {
             if ( _quantityPanel != null ) { _quantityPanel.gameObject.SetActive( false ); }
+        }
+
+        /// <summary>
+        /// 購入確認の内容(商品名・個数・合計金額)を画面中央に表示します。
+        /// </summary>
+        public void ShowPurchaseSummary( string itemName, int quantity, int totalPrice )
+        {
+            if ( _purchaseSummary == null ) { return; }
+
+            if ( _summaryNameText != null )     { _summaryNameText.text     = itemName; }
+            if ( _summaryQuantityText != null ) { _summaryQuantityText.text = $"x{quantity}"; }
+            if ( _summaryPriceText != null )    { _summaryPriceText.text    = totalPrice.ToString(); }
+
+            _purchaseSummary.SetActive( true );
+        }
+
+        public void HidePurchaseSummary()
+        {
+            if ( _purchaseSummary != null ) { _purchaseSummary.SetActive( false ); }
         }
     }
 }

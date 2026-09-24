@@ -23,6 +23,7 @@ namespace Frontier.Title
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
+            Container.Bind<ScreenBlurOverlayPresenter>().AsSingle();
             // タイトルメニューのOPTION項目(OptionHandler)が必要とする依存関係
             Container.Bind<ISaveHandler<OptionSaveData>>().To<OptionSaveHandler>().AsSingle();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();

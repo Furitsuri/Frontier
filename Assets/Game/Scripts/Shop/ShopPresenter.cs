@@ -1,4 +1,5 @@
-﻿using Frontier.StateMachine;
+﻿using Frontier.Combat;
+using Frontier.StateMachine;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -24,24 +25,35 @@ namespace Frontier.Shop
         private int  _quantity            = 1;
         private int  _maxQuantity         = 1;
 
+        // 購入確認中か、その購入個数(個数選択を挟まない単数の購入では1)
+        private bool _isConfirmingPurchase = false;
+        private int  _confirmQuantity      = 1;
+
         /// <summary>
         /// 個数選択で現在選ばれている個数
         /// </summary>
         public int SelectedQuantity => _quantity;
 
         /// <summary>
-        /// 個数選択中の、購入予定(選択中の商品×選択中の個数)による所持アニマの増減差分です(支払いのため0以下)。
-        /// 個数選択中でなければ0を返します。ヘッダーのアニマ数値の下へ表示するため、ShopPhaseHandlerが毎フレーム参照します。
+        /// 購入予定(選択中の商品×個数)による所持アニマの増減差分です(支払いのため0以下)。
+        /// 購入確認中はその個数、個数選択中は選択中の個数で算出し、どちらでもなければ0を返します。
+        /// ヘッダーのアニマ数値の下へ表示するため、ShopPhaseHandlerが毎フレーム参照します。
         /// </summary>
         public int PendingAnimaDiff
         {
             get
             {
-                if ( !_isSelectingQuantity || !TryGetSelectedItem( out var item ) ) { return 0; }
+                if ( !_isConfirmingPurchase && !_isSelectingQuantity ) { return 0; }
+                if ( !TryGetSelectedItem( out var item ) )             { return 0; }
 
-                return -_shopHandler.GetPrice( item ) * _quantity;
+                return -_shopHandler.GetPrice( item ) * ( _isConfirmingPurchase ? _confirmQuantity : _quantity );
             }
         }
+
+        /// <summary>
+        /// ヘッダーのアニマ増減差分を強調(大きく)表示すべきか。購入確認中は金額の増減が主役のため強調します。
+        /// </summary>
+        public bool IsAnimaDiffEmphasized => _isConfirmingPurchase;
 
         /// <summary>
         /// ショップ画面を表示します(ShopHandler.Open()済みであること)。
@@ -139,6 +151,33 @@ namespace Frontier.Shop
         }
 
         /// <summary>
+        /// 現在カーソルが指している商品について、購入確認の内容(商品名・個数・合計金額)を画面中央に表示します。
+        /// ヘッダーのアニマ増減差分は、これ以降PendingAnimaDiff/IsAnimaDiffEmphasizedが強調表示用の値を返します。
+        /// </summary>
+        /// <param name="quantity">購入する個数(個数選択を挟まない単数の購入では1)</param>
+        /// <returns>表示を開始できたか(選択中の商品が無い場合はfalse)</returns>
+        public bool BeginPurchaseConfirm( int quantity )
+        {
+            var shopUi = _uiSystem.ShopUi;
+            if ( shopUi == null || !TryGetSelectedItem( out var item ) ) { return false; }
+
+            _isConfirmingPurchase = true;
+            _confirmQuantity      = Mathf.Max( 1, quantity );
+
+            shopUi.ShopView.ShowPurchaseSummary( GetItemName( item ), _confirmQuantity, _shopHandler.GetPrice( item ) * _confirmQuantity );
+
+            return true;
+        }
+
+        public void EndPurchaseConfirm()
+        {
+            _isConfirmingPurchase = false;
+
+            var shopUi = _uiSystem.ShopUi;
+            if ( shopUi != null ) { shopUi.ShopView.HidePurchaseSummary(); }
+        }
+
+        /// <summary>
         /// 購入等でShopHandler側の状態(在庫・所持アニマによる購入可否)が変化した際に、表示全体を最新の状態へ更新します。
         /// 所持アニマの数値自体は、画面上部のヘッダー(ShopPhaseHandlerが更新)が表示します。
         /// </summary>
@@ -163,6 +202,19 @@ namespace Frontier.Shop
             }
 
             RefreshSelection();
+        }
+
+        // TODO: スキル以外のカテゴリを追加したら、ここに表示名の参照先を追加する
+        private static string GetItemName( ShopItemRef item )
+        {
+            switch ( item.Category )
+            {
+                case ShopItemCategory.Skill:
+                    // SkillBoxUIと同様、SkillsDataの名前(アンダースコア区切り)を表示用に整形する
+                    return SkillsData.data[( int ) item.AsSkillID].Name?.Replace( "_", " " ) ?? string.Empty;
+                default:
+                    return string.Empty;
+            }
         }
 
         private void InitCursor()
