@@ -50,5 +50,7 @@
     "UI_TALK_EMPLOY_CONFIRM_PLURAL": "Those are the ones you're hiring, then?",
     "UI_TALK_DISMISS_CONFIRM_SINGULAR": "You won't see them again, you know. Still dismissing them?",
     "UI_TALK_DISMISS_CONFIRM_PLURAL": "You sure? You won't see any of them again — still dismissing them?",
-    "UI_FIELD_STAGE_TITLE": "Stage {0}"
+    "UI_FIELD_STAGE_TITLE": "Stage {0}",
+    "UI_TALK_SHOP_LEAVE_CONFIRM": "Leaving already?",
+    "UI_TALK_SHOP_FAREWELL": "Come back anytime."
 }
