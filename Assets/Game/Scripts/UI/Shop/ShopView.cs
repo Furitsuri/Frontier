@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Frontier.UI
 {
     /// <summary>
-    /// ショップ画面(商品一覧+所持アニマ)の見た目のみを担当するView。
+    /// ショップ画面(商品一覧)の見た目のみを担当するView。所持アニマは画面上部のヘッダー(GeneralHeaderUI)が表示する。
     /// 商品行はSkillBoxUIを流用し(SkillEquipUIの所持スキル一覧と同じ見た目)、右隣に価格と在庫数を表示する。
     /// どの商品を並べるか・購入可否によるグレー表示・カーソル位置の判断はShopPresenterが行い、
     /// このクラスは指示された内容をそのまま反映するだけに留める。
@@ -16,9 +16,6 @@ namespace Frontier.UI
         [SerializeField] private SkillBoxUI[] _rowBoxes;
         [SerializeField] private TextMeshProUGUI[] _priceTexts;
         [SerializeField] private TextMeshProUGUI[] _stockTexts;
-
-        [Header( "所持アニマの数値テキスト" )]
-        [SerializeField] private TextMeshProUGUI _animaValueText;
 
         [Header( "ウィンドウ背景(表示する行数に応じて高さを調整する)" )]
         [SerializeField] private RectTransform _windowRect;
@@ -81,11 +78,6 @@ namespace Frontier.UI
             {
                 _rowBoxes[i].SetCursorHighlighted( i == rowIndex, scaleUp: false );
             }
-        }
-
-        public void SetAnima( int anima )
-        {
-            _animaValueText.text = anima.ToString();
         }
     }
 }

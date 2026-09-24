@@ -88,4 +88,8 @@ public enum LocKey
     // ショップ画面の退店時の店主の会話(退店確認/退店後の挨拶)
     UI_TALK_SHOP_LEAVE_CONFIRM,
     UI_TALK_SHOP_FAREWELL,
+
+    // ショップ画面 施設名(ヘッダーの画面タイトル)/入店時の店主の挨拶
+    UI_FACILITY_SHOP,
+    UI_TALK_SHOP_GREETING,
 }

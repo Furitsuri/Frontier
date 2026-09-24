@@ -7,7 +7,7 @@ namespace Frontier.UI
     /// </summary>
     public class ShopUISystem : MonoBehaviour
     {
-        [Header( "商品一覧+所持アニマ" )]
+        [Header( "商品一覧" )]
         [SerializeField] private ShopView _shopView;
 
         public ShopView ShopView => _shopView;

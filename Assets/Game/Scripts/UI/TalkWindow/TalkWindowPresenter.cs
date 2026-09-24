@@ -52,6 +52,19 @@ namespace Frontier.UI
             _uiSystem.GeneralUi.TalkWindowView.Show( speakerName, message, null );
         }
 
+        /// <summary>
+        /// LocalizationServiceで解決した話者名・セリフを、画面右下(入力ガイドバー直上)に表示します
+        /// (ショップ入店時の店主の挨拶専用。退店確認ダイアログと同じ位置)。
+        /// </summary>
+        public void ShowBottomRight( LocKey speakerKey, LocKey messageKey )
+        {
+            string speakerName = _localization.Get( speakerKey );
+            string message     = _localization.Get( messageKey );
+
+            _uiSystem.GeneralUi.TalkWindowView.SetPositionBottomRight();
+            _uiSystem.GeneralUi.TalkWindowView.Show( speakerName, message, null );
+        }
+
         public void Hide()
         {
             _uiSystem.GeneralUi.TalkWindowView.Hide();

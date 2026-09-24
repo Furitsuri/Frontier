@@ -52,5 +52,7 @@
     "UI_TALK_DISMISS_CONFIRM_PLURAL": "いいのか？二度と会えなくなるが、そいつらを解雇するんだな？",
     "UI_FIELD_STAGE_TITLE": "ステージ{0}",
     "UI_TALK_SHOP_LEAVE_CONFIRM": "もう行っちまうのかい？",
-    "UI_TALK_SHOP_FAREWELL": "また来てくれよ"
+    "UI_TALK_SHOP_FAREWELL": "また来てくれよ",
+    "UI_FACILITY_SHOP": "ショップ",
+    "UI_TALK_SHOP_GREETING": "いらっしゃいませ。何をお求めになりますか？"
 }

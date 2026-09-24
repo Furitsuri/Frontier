@@ -69,7 +69,8 @@ namespace Frontier.Shop
         }
 
         /// <summary>
-        /// 購入等でShopHandler側の状態(在庫・所持アニマ)が変化した際に、表示全体を最新の状態へ更新します。
+        /// 購入等でShopHandler側の状態(在庫・所持アニマによる購入可否)が変化した際に、表示全体を最新の状態へ更新します。
+        /// 所持アニマの数値自体は、画面上部のヘッダー(ShopPhaseHandlerが更新)が表示します。
         /// </summary>
         public void Refresh()
         {
@@ -91,7 +92,6 @@ namespace Frontier.Shop
                 }
             }
 
-            view.SetAnima( _shopHandler.OwnedAnima );
             RefreshSelection();
         }
 

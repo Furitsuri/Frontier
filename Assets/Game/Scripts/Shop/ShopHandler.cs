@@ -26,8 +26,6 @@ namespace Frontier.Shop
         public IReadOnlyDictionary<ShopItemRef, int> Stock =>
             CurrentContext != null && _stockByInstance.TryGetValue( CurrentContext.InstanceId, out var stock ) ? stock : _emptyStock;
 
-        public int OwnedAnima => _userDomain.Anima;
-
         private static readonly List<ShopItemRef>            _emptyLineup = new List<ShopItemRef>();
         private static readonly Dictionary<ShopItemRef, int> _emptyStock  = new Dictionary<ShopItemRef, int>();
 
