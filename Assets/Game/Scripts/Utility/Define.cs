@@ -245,6 +245,12 @@ static public class Constants
     // セーブスロット数(オートセーブ1 + ユーザーセーブ3)。オートセーブ枠はインデックス0固定。
     public const int USER_SAVE_SLOT_COUNT      = 4;
     public const int USER_SAVE_AUTO_SLOT_INDEX = 0;
+
+    // ショップの品揃え数(1回の抽選で並ぶ商品の種類数)
+    public const int SHOP_LINEUP_SIZE      = 4;
+    // ショップの各商品の在庫数の範囲(抽選時にこの範囲内でランダムに決定)
+    public const int SHOP_ITEM_STOCK_MIN   = 1;
+    public const int SHOP_ITEM_STOCK_MAX   = 3;
 #if UNITY_EDITOR
     public const string DEBUG_TRANSION_INPUT_HASH_STRING    = "DEBUG";
     public const string GUIDE_SPRITE_FILE_NAME              = "Preview Keyboard & Mouse";
