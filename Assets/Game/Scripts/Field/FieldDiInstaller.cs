@@ -23,7 +23,6 @@ namespace Frontier.Field
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
             Container.Bind<ShopHandler>().AsSingle();
-            Container.Bind<ShopPresenter>().AsSingle();
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();

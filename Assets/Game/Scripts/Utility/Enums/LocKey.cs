@@ -84,4 +84,8 @@ public enum LocKey
     // フィールド画面
     // {0}にステージ番号(1オリジン)が入る書式文字列です
     UI_FIELD_STAGE_TITLE,
+
+    // ショップ画面の退店時の店主の会話(退店確認/退店後の挨拶)
+    UI_TALK_SHOP_LEAVE_CONFIRM,
+    UI_TALK_SHOP_FAREWELL,
 }

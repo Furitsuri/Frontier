@@ -9,9 +9,10 @@ namespace Frontier.Shop
     /// <summary>
     /// ショップ機能の処理を担うクラスです。品揃え・在庫・購入処理等の実データを保持します。
     /// 表示は ShopPresenter に委譲し、このクラス自身は IUiSystem を直接参照しません。
-    /// FieldProgress等の永続データにも直接触れず、Close時にClosedイベントを発火するのみで、
-    /// 実際の反映(FieldProgress.MarkCleared等)は呼び出し元のStateが行います。
-    /// 各シーンのDIInstallerでバインドされている前提です(DIInstaller.cs / FieldDiInstaller.cs)。
+    /// フレーム駆動やState遷移は持たず(ShopRoutineController/ShopPhaseHandlerが担う)、
+    /// FieldProgress等の永続データにも直接触れません(実際の反映は呼び出し元が行います)。
+    /// State/Presenterから注入されるため、各シーンのDIInstallerでバインドされている前提です
+    /// (DIInstaller.cs / FieldDiInstaller.cs)。
     /// </summary>
     public class ShopHandler
     {
@@ -25,7 +26,7 @@ namespace Frontier.Shop
         public IReadOnlyDictionary<ShopItemRef, int> Stock =>
             CurrentContext != null && _stockByInstance.TryGetValue( CurrentContext.InstanceId, out var stock ) ? stock : _emptyStock;
 
-        public event Action Closed;
+        public int OwnedAnima => _userDomain.Anima;
 
         private static readonly List<ShopItemRef>            _emptyLineup = new List<ShopItemRef>();
         private static readonly Dictionary<ShopItemRef, int> _emptyStock  = new Dictionary<ShopItemRef, int>();
@@ -52,12 +53,12 @@ namespace Frontier.Shop
         }
 
         /// <summary>
-        /// ショップを閉じます。FieldProgressへの反映等は呼び出し元の責務です(Closedイベントで通知します)。
+        /// ショップを閉じます。FieldProgressへの反映等は呼び出し元の責務です
+        /// (ShopRoutineController.LateUpdate()がtrueを返した時点で、呼び出し元が終了を検知します)。
         /// </summary>
         public void Close()
         {
             CurrentContext = null;
-            Closed?.Invoke();
         }
 
         public bool CanPurchase( ShopItemRef item )
@@ -121,7 +122,7 @@ namespace Frontier.Shop
         }
 
         // TODO: スキル以外のカテゴリを追加したら、ここに参照先を追加する
-        private int GetPrice( ShopItemRef item )
+        public int GetPrice( ShopItemRef item )
         {
             switch ( item.Category )
             {
