@@ -60,15 +60,18 @@ LazyInject.GetOrCreate(ref _myField, () => _hierarchyBld.InstantiateWithDiContai
 ```
 GameMain (MonoBehaviour エントリポイント)
   └─ GameRoutineController (FocusRoutineBase)
-       ├─ FormTroopRoutineController  (雇用・編成フェーズ)
-       └─ BattleRoutineController     (戦闘フェーズ)
+       └─ BattleRoutineController     (戦闘フェーズ。SubRoutineController)
             ├─ DeploymentPhaseHandler  (配置フェーズ)
             ├─ PlayerPhaseHandler      (プレイヤーフェーズ)
             ├─ EnemyPhaseHandler       (エネミーフェーズ)
             └─ OtherPhaseHandler       (その他フェーズ)
+
+RecruitMain (RecruitScene のエントリポイント)
+  └─ RecruitRoutineController (FocusRoutineBase)
+       └─ RecruitPhaseHandler         (雇用・解雇フェーズ)
 ```
 
-`GameRoutineController` は `FormTroopRoutineController`（雇用・編成）と `BattleRoutineController`（戦闘本体）を交互に切り替えます。各フェーズハンドラは `PhaseStateBase` サブクラスのステートマシンを駆動します。
+`GameRoutineController` は `BattleRoutineController`（戦闘本体）を駆動します。雇用・解雇は別シーン（RecruitScene）で、`RecruitRoutineController` が `RecruitPhaseHandler` を直接駆動します。各フェーズハンドラは `PhaseStateBase` サブクラスのステートマシンを駆動します。
 
 ### ステートマシン
 

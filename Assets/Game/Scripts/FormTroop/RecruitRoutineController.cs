@@ -5,7 +5,7 @@ using Zenject;
 namespace Frontier.FormTroop
 {
     /// <summary>
-    /// RecruitScene のメインフロー。FormTroopRoutineController を駆動し、
+    /// RecruitScene のメインフロー。RecruitPhaseHandler を駆動し、
     /// 編成完了でフィールドシーンへ帰還します。
     /// </summary>
     public class RecruitRoutineController : FocusRoutineBase
@@ -14,25 +14,24 @@ namespace Frontier.FormTroop
 
         private const string FieldSceneName = "FieldScene";
 
-        private FormTroopRoutineController _formTroop = null;
+        private RecruitPhaseHandler _handler = null;
 
         public override void Init()
         {
             base.Init();
 
-            _formTroop = _hierarchyBld.InstantiateWithDiContainer<FormTroopRoutineController>( false );
-            _formTroop.Setup();
-            _formTroop.Run();
+            _handler = _hierarchyBld.InstantiateWithDiContainer<RecruitPhaseHandler>( true );
+            _handler.Enter();
         }
 
         public override void UpdateRoutine()
         {
-            _formTroop.Update();
+            _handler.Update();
         }
 
         public override void LateUpdateRoutine()
         {
-            if( _formTroop.LateUpdate() )
+            if( _handler.LateUpdate() )
             {
                 SceneManager.LoadScene( FieldSceneName );
             }
@@ -40,7 +39,7 @@ namespace Frontier.FormTroop
 
         public override void FixedUpdateRoutine()
         {
-            _formTroop.FixedUpdate();
+            _handler.FixedUpdate();
         }
 
         public override int GetPriority() { return ( int ) FocusRoutinePriority.MAIN_FLOW; }
