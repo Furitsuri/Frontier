@@ -92,4 +92,8 @@ public enum LocKey
     // ショップ画面 施設名(ヘッダーの画面タイトル)/入店時の店主の挨拶
     UI_FACILITY_SHOP,
     UI_TALK_SHOP_GREETING,
+
+    // ショップ画面の購入時の店主の会話(他の画面から戻った際の声かけ/購入個数の確認)
+    UI_TALK_SHOP_ANYTHING_ELSE,
+    UI_TALK_SHOP_ASK_QUANTITY,
 }

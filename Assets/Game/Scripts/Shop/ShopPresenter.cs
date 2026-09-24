@@ -1,5 +1,6 @@
 ﻿using Frontier.StateMachine;
 using System.Collections.Generic;
+using UnityEngine;
 using Zenject;
 
 namespace Frontier.Shop
@@ -17,6 +18,30 @@ namespace Frontier.Shop
 
         private readonly CommandList                     _commandList = new CommandList();
         private readonly CommandList.CommandIndexedValue _cmdIdxVal   = new CommandList.CommandIndexedValue( 0, 0 );
+
+        // 個数選択中か、その個数と、選択できる上限(在庫とアニマから決まる、個数選択の開始時点の値)
+        private bool _isSelectingQuantity = false;
+        private int  _quantity            = 1;
+        private int  _maxQuantity         = 1;
+
+        /// <summary>
+        /// 個数選択で現在選ばれている個数
+        /// </summary>
+        public int SelectedQuantity => _quantity;
+
+        /// <summary>
+        /// 個数選択中の、購入予定(選択中の商品×選択中の個数)による所持アニマの増減差分です(支払いのため0以下)。
+        /// 個数選択中でなければ0を返します。ヘッダーのアニマ数値の下へ表示するため、ShopPhaseHandlerが毎フレーム参照します。
+        /// </summary>
+        public int PendingAnimaDiff
+        {
+            get
+            {
+                if ( !_isSelectingQuantity || !TryGetSelectedItem( out var item ) ) { return 0; }
+
+                return -_shopHandler.GetPrice( item ) * _quantity;
+            }
+        }
 
         /// <summary>
         /// ショップ画面を表示します(ShopHandler.Open()済みであること)。
@@ -66,6 +91,51 @@ namespace Frontier.Shop
 
             item = lineup[_cmdIdxVal.index];
             return true;
+        }
+
+        /// <summary>
+        /// 現在カーソルが指している商品について、個数選択を開始します(個数は1から。上限は一度に購入できる最大個数)。
+        /// 個数選択パネルは、カーソルが指している商品行の右隣に表示します。
+        /// </summary>
+        /// <returns>個数選択を開始できたか(選択中の商品が無い場合はfalse)</returns>
+        public bool BeginQuantitySelection()
+        {
+            var shopUi = _uiSystem.ShopUi;
+            if ( shopUi == null || !TryGetSelectedItem( out var item ) ) { return false; }
+
+            _isSelectingQuantity = true;
+            _maxQuantity         = Mathf.Max( 1, _shopHandler.GetMaxPurchasableQuantity( item ) );
+            _quantity            = 1;
+
+            shopUi.ShopView.ShowQuantityPanel( _cmdIdxVal.index, _quantity );
+
+            return true;
+        }
+
+        /// <summary>
+        /// 個数を方向入力に応じて増減します(上で増加、下で減少。上限・下限を超える場合は反対側へループ)。
+        /// </summary>
+        /// <returns>個数が変化したか</returns>
+        public bool MoveQuantity( Direction dir )
+        {
+            int delta = dir == Direction.FORWARD ? 1 : dir == Direction.BACK ? -1 : 0;
+            if ( delta == 0 || _maxQuantity <= 1 ) { return false; }
+
+            var shopUi = _uiSystem.ShopUi;
+            if ( shopUi == null ) { return false; }
+
+            _quantity = ( _quantity - 1 + delta + _maxQuantity ) % _maxQuantity + 1;
+            shopUi.ShopView.SetQuantity( _quantity );
+
+            return true;
+        }
+
+        public void EndQuantitySelection()
+        {
+            _isSelectingQuantity = false;
+
+            var shopUi = _uiSystem.ShopUi;
+            if ( shopUi != null ) { shopUi.ShopView.HideQuantityPanel(); }
         }
 
         /// <summary>

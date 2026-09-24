@@ -54,5 +54,7 @@
     "UI_TALK_SHOP_LEAVE_CONFIRM": "もう行っちまうのかい？",
     "UI_TALK_SHOP_FAREWELL": "また来てくれよ",
     "UI_FACILITY_SHOP": "ショップ",
-    "UI_TALK_SHOP_GREETING": "いらっしゃいませ。何をお求めになりますか？"
+    "UI_TALK_SHOP_GREETING": "いらっしゃいませ。何をお求めになりますか？",
+    "UI_TALK_SHOP_ANYTHING_ELSE": "他に御用はございますか？",
+    "UI_TALK_SHOP_ASK_QUANTITY": "いくつ御購入されますか？"
 }

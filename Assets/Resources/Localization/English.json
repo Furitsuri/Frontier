@@ -54,5 +54,7 @@
     "UI_TALK_SHOP_LEAVE_CONFIRM": "Leaving already?",
     "UI_TALK_SHOP_FAREWELL": "Come back anytime.",
     "UI_FACILITY_SHOP": "Shop",
-    "UI_TALK_SHOP_GREETING": "Welcome. What can I get for you?"
+    "UI_TALK_SHOP_GREETING": "Welcome. What can I get for you?",
+    "UI_TALK_SHOP_ANYTHING_ELSE": "Is there anything else I can help you with?",
+    "UI_TALK_SHOP_ASK_QUANTITY": "How many would you like to buy?"
 }

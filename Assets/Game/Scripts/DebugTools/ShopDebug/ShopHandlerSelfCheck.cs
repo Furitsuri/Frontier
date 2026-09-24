@@ -78,8 +78,76 @@ namespace Frontier.DebugTools.ShopDebug
             handler.Close();
             Check( handler.CurrentContext == null, "Close後にCurrentContextが破棄される" );
 
+            CheckQuantityPurchase();
+
             if ( _ngCount == 0 ) { Debug.Log( "[ShopHandlerSelfCheck] 全項目OKでした" ); }
             else                 { Debug.LogError( $"[ShopHandlerSelfCheck] NGが{_ngCount}件ありました" ); }
+        }
+
+        /// <summary>
+        /// 個数を指定した購入(一度に買える最大個数、まとめ買い、在庫超過・アニマ不足の失敗)を確認します。
+        /// 在庫が複数ある商品が品揃えに含まれるWorldSeedを探して使うため、実行のたびに同じ条件で確認できます。
+        /// </summary>
+        private static void CheckQuantityPurchase()
+        {
+            var userDomain = new UserDomain();
+            ShopHandler handler = null;
+            ShopItemRef target = default;
+            bool isFound = false;
+
+            for ( int seed = 0; seed < 100 && !isFound; ++seed )
+            {
+                userDomain.Debug_SetWorldSeed( seed );
+                handler = CreateHandler( userDomain );
+                handler.Open( new ShopContext( INSTANCE_ID, ShopBackgroundMode.Field ) );
+
+                foreach ( var item in handler.Lineup )
+                {
+                    if ( handler.Stock[item] < 2 ) { continue; }
+
+                    target  = item;
+                    isFound = true;
+                    break;
+                }
+            }
+
+            Check( isFound, "在庫が2個以上の商品を含む品揃えを見つけられる(個数指定の購入チェックの前提)" );
+            if ( !isFound ) { return; }
+
+            int price = handler.GetPrice( target );
+            int stock = handler.Stock[target];
+
+            // 一度に買える最大個数は、在庫とアニマの小さい方で決まる
+            userDomain.Debug_SetAnima( price * ( stock + 5 ) );
+            Check( handler.GetMaxPurchasableQuantity( target ) == stock, $"アニマが十分なら最大購入個数は在庫数({stock})になる" );
+
+            userDomain.Debug_SetAnima( price + price / 2 );
+            Check( handler.GetMaxPurchasableQuantity( target ) == 1, "アニマが1個分と少ししか無ければ最大購入個数は1になる" );
+
+            userDomain.Debug_SetAnima( price - 1 );
+            Check( handler.GetMaxPurchasableQuantity( target ) == 0, "アニマが1個分に満たなければ最大購入個数は0になる" );
+
+            // 失敗した購入は、在庫・アニマ・所持スキルのどれも変化させない
+            int skillCountBefore = userDomain.GetSkillCount( target.AsSkillID );
+
+            userDomain.Debug_SetAnima( price * 2 - 1 );
+            Check( handler.Purchase( target, 2 ) == PurchaseResult.InsufficientAnima, "2個分に満たないアニマで2個購入するとInsufficientAnimaを返す" );
+            Check( handler.Stock[target] == stock && userDomain.Anima == price * 2 - 1, "アニマ不足の購入では在庫・アニマが変化しない" );
+
+            userDomain.Debug_SetAnima( price * ( stock + 5 ) );
+            Check( handler.Purchase( target, stock + 1 ) == PurchaseResult.OutOfStock, "在庫を超える個数の購入はOutOfStockを返す" );
+            Check( handler.Purchase( target, 0 ) == PurchaseResult.OutOfStock, "0個の購入はOutOfStockを返す" );
+            Check( handler.Stock[target] == stock && userDomain.GetSkillCount( target.AsSkillID ) == skillCountBefore, "在庫超過・0個の購入では在庫・所持スキルが変化しない" );
+
+            // まとめ買い: 在庫をすべて購入する
+            int animaBefore = userDomain.Anima;
+            Check( handler.Purchase( target, stock ) == PurchaseResult.Success, $"在庫全数({stock}個)の購入はSuccessを返す" );
+            Check( handler.Stock[target] == 0, "全数購入後に在庫が0になる" );
+            Check( userDomain.Anima == animaBefore - price * stock, "全数購入後にAnimaが価格×個数分減る" );
+            Check( userDomain.GetSkillCount( target.AsSkillID ) == skillCountBefore + stock, "全数購入後に所持スキル数が個数分増える" );
+            Check( !handler.CanPurchase( target ), "売り切れの商品はCanPurchaseがfalseを返す" );
+
+            handler.Close();
         }
 
         /// <summary>

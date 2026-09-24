@@ -61,32 +61,46 @@ namespace Frontier.Shop
 
         public bool CanPurchase( ShopItemRef item )
         {
-            if ( CurrentContext == null ) { return false; }
-
-            var stock = _stockByInstance[CurrentContext.InstanceId];
-            if ( !stock.TryGetValue( item, out int remaining ) || remaining <= 0 ) { return false; }
-
-            return GetPrice( item ) <= _userDomain.Anima;
+            return 1 <= GetMaxPurchasableQuantity( item );
         }
 
-        public PurchaseResult Purchase( ShopItemRef item )
+        /// <summary>
+        /// 在庫と所持アニマの両方の制約から、現在この商品を一度に購入できる最大個数を返します(購入できない場合は0)。
+        /// </summary>
+        public int GetMaxPurchasableQuantity( ShopItemRef item )
         {
-            if ( CurrentContext == null ) { return PurchaseResult.OutOfStock; }
+            if ( CurrentContext == null ) { return 0; }
 
             var stock = _stockByInstance[CurrentContext.InstanceId];
-            if ( !stock.TryGetValue( item, out int remaining ) || remaining <= 0 ) { return PurchaseResult.OutOfStock; }
+            if ( !stock.TryGetValue( item, out int remaining ) || remaining <= 0 ) { return 0; }
 
             int price = GetPrice( item );
-            if ( _userDomain.Anima < price ) { return PurchaseResult.InsufficientAnima; }
+            if ( price <= 0 ) { return remaining; }
+
+            return Mathf.Min( remaining, _userDomain.Anima / price );
+        }
+
+        /// <summary>
+        /// 指定した個数を購入します。個数分の価格をまとめて支払い、在庫が足りない場合は何も購入しません。
+        /// </summary>
+        public PurchaseResult Purchase( ShopItemRef item, int quantity = 1 )
+        {
+            if ( CurrentContext == null || quantity < 1 ) { return PurchaseResult.OutOfStock; }
+
+            var stock = _stockByInstance[CurrentContext.InstanceId];
+            if ( !stock.TryGetValue( item, out int remaining ) || remaining < quantity ) { return PurchaseResult.OutOfStock; }
+
+            int totalPrice = GetPrice( item ) * quantity;
+            if ( _userDomain.Anima < totalPrice ) { return PurchaseResult.InsufficientAnima; }
 
             // UserDomain.AddAnima()には下限チェックが無いため、購入可否は必ず事前に検証してから呼ぶこと
-            _userDomain.AddAnima( -price );
-            stock[item] = remaining - 1;
+            _userDomain.AddAnima( -totalPrice );
+            stock[item] = remaining - quantity;
 
             switch ( item.Category )
             {
                 case ShopItemCategory.Skill:
-                    _userDomain.AddSkill( item.AsSkillID, 1 );
+                    _userDomain.AddSkill( item.AsSkillID, quantity );
                     break;
             }
 

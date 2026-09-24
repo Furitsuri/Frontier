@@ -21,6 +21,11 @@ namespace Frontier.UI
         [SerializeField] private RectTransform _windowRect;
         [SerializeField] private float _windowBottomPadding = 20f;
 
+        [Header( "個数選択パネル(選択中の商品行の右隣、ウィンドウの外側に表示する)" )]
+        [SerializeField] private RectTransform _quantityPanel;
+        [SerializeField] private TextMeshProUGUI _quantityText;
+        [SerializeField] private float _quantityPanelMarginX = 12f;
+
         [SerializeField] private Color _normalColor      = Color.white;
         [SerializeField] private Color _unavailableColor = Color.gray;
 
@@ -31,7 +36,12 @@ namespace Frontier.UI
             foreach ( var box in _rowBoxes ) { box.Setup(); }
         }
 
-        public void Show() => gameObject.SetActive( true );
+        public void Show()
+        {
+            gameObject.SetActive( true );
+
+            HideQuantityPanel();
+        }
 
         public void Hide() => gameObject.SetActive( false );
 
@@ -78,6 +88,34 @@ namespace Frontier.UI
             {
                 _rowBoxes[i].SetCursorHighlighted( i == rowIndex, scaleUp: false );
             }
+        }
+
+        /// <summary>
+        /// 個数選択パネルを、指定行と縦位置の中央を揃えてウィンドウの右外側に表示し、個数を設定します。
+        /// </summary>
+        public void ShowQuantityPanel( int rowIndex, int quantity )
+        {
+            if ( _quantityPanel == null ) { return; }
+
+            var row = _rowBoxes[rowIndex].GetComponent<RectTransform>();
+            float rowCenterY = row.anchoredPosition.y - row.sizeDelta.y * 0.5f;
+            float panelX     = ( _windowRect != null ? _windowRect.sizeDelta.x : 0f ) + _quantityPanelMarginX;
+
+            // パネルのpivotは左上のため、上端 = 行の中央Y + パネル高さの半分
+            _quantityPanel.anchoredPosition = new Vector2( panelX, rowCenterY + _quantityPanel.sizeDelta.y * 0.5f );
+
+            SetQuantity( quantity );
+            _quantityPanel.gameObject.SetActive( true );
+        }
+
+        public void SetQuantity( int quantity )
+        {
+            if ( _quantityText != null ) { _quantityText.text = quantity.ToString(); }
+        }
+
+        public void HideQuantityPanel()
+        {
+            if ( _quantityPanel != null ) { _quantityPanel.gameObject.SetActive( false ); }
         }
     }
 }
