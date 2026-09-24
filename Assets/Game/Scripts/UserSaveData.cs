@@ -25,6 +25,7 @@ public class UserSaveData
 
     public int          Anima;
     public int          StageLevel;
+    public int          WorldSeed;
     public List<Status> Members = new List<Status>();
     public List<SkillInventoryEntry> SkillInventory = new List<SkillInventoryEntry>();
 
