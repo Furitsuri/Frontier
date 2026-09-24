@@ -17,6 +17,17 @@ public class UserDomain
     // 所持しているスキルとその個数(ステージ攻略報酬・店購入等で増える想定)。
     // 同じスキルを複数所持することで、複数のキャラクターに同時に装備させられる。
     [SerializeField] public List<SkillInventoryEntry> SkillInventory { get; private set; } = new List<SkillInventoryEntry>();
+    // ショップの品揃え抽選等に使う、セーブファイル(周回)ごとに一度だけ決まる乱数シード。
+    // ステージ/ノード固有IDと組み合わせて使うことで、同一セーブ内では常に同じ抽選結果を再現しつつ、
+    // 別のセーブファイル(周回)では異なる結果になる。コンストラクタで新規生成し、ロード時はセーブ値で上書きする。
+    [SerializeField] public int WorldSeed { get; private set; }
+
+    public UserDomain()
+    {
+        // GameSessionのフィールド初期化子経由でUnityのシリアライズ処理中に構築されることがあるため、
+        // その最中の呼び出しが禁止されているUnityEngine.Randomではなく、System.Randomを使う。
+        WorldSeed = new System.Random().Next( int.MinValue, int.MaxValue );
+    }
 
     public void AddAnima( int amount )
     {
@@ -94,6 +105,7 @@ public class UserDomain
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     public void Debug_SetAnima( int value )        => Anima = value;
+    public void Debug_SetWorldSeed( int value )   => WorldSeed = value;
     public void Debug_SetStageLevel( int value )  => StageLevel = value;
     public void Debug_ClearMembers()              => Members.Clear();
     public void Debug_ClearSkillInventory()       => SkillInventory.Clear();
@@ -110,6 +122,7 @@ public class UserDomain
             SavedAt        = DateTime.Now.ToString( "yyyy/MM/dd HH:mm" ),
             Anima          = Anima,
             StageLevel     = StageLevel,
+            WorldSeed      = WorldSeed,
             Members        = new List<Status>( Members ),
             SkillInventory = new List<SkillInventoryEntry>( SkillInventory ),
             FieldProgress  = fieldProgress,
@@ -123,6 +136,7 @@ public class UserDomain
     {
         Anima      = data.Anima;
         StageLevel = data.StageLevel;
+        WorldSeed  = data.WorldSeed;
         Members.Clear();
         Members.AddRange( data.Members );
         SkillInventory.Clear();
