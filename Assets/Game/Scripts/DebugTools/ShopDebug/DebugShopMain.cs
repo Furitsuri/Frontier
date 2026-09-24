@@ -10,13 +10,13 @@ using Zenject;
 namespace Frontier.DebugTools.ShopDebug
 {
     /// <summary>
-    /// ShopScene(ショップ機能のデバッグ確認用・単独起動シーン)のエントリポイントです。RecruitMainと同じ位置づけで、
+    /// DebugShop.unity(ショップ機能のデバッグ確認用・単独起動シーン)のエントリポイントです。RecruitMainと同じ位置づけで、
     /// ダミーの所持データを用意し、ShopHandlerのデータ・ロジックの自己チェック結果をConsoleへ出力したうえで、
-    /// FocusRoutineController経由でShopSceneRoutine(=ショップ本体の駆動)を起動するだけの役割です。
+    /// FocusRoutineController経由でDebugShopRoutine(=ショップ本体の駆動)を起動するだけの役割です。
     /// 入力処理は持ちません(本番のStateがInputFacade経由で登録します)。
     /// 本番導線(Field/Battle)からは一切参照されません。
     /// </summary>
-    public class ShopSceneTop : FocusRoutineController
+    public class DebugShopMain : FocusRoutineController
     {
         private const int DUMMY_ANIMA           = 1000;
         private const int CHECK_INSTANCE_ID     = 0;
@@ -113,8 +113,8 @@ namespace Frontier.DebugTools.ShopDebug
 
         private void Check( bool isOk, string label )
         {
-            if ( isOk ) { Debug.Log( $"[ShopSceneTop] OK: {label}" ); }
-            else        { Debug.LogError( $"[ShopSceneTop] NG: {label}" ); }
+            if ( isOk ) { Debug.Log( $"[DebugShopMain] OK: {label}" ); }
+            else        { Debug.LogError( $"[DebugShopMain] NG: {label}" ); }
         }
     }
 }

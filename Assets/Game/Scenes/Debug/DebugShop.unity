@@ -962,7 +962,7 @@ GameObject:
   - component: {fileID: 968422489}
   - component: {fileID: 968422490}
   m_Layer: 0
-  m_Name: ShopSceneRoutine
+  m_Name: DebugShopRoutine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

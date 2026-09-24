@@ -9,11 +9,11 @@ using Zenject;
 namespace Frontier.DebugTools.ShopDebug
 {
     /// <summary>
-    /// ShopScene(ショップ機能のデバッグ確認用・単独起動シーン)用の DI バインド設定。
+    /// DebugShop.unity(ショップ機能のデバッグ確認用・単独起動シーン)用の DI バインド設定。
     /// RecruitDiInstallerと同じ共通基盤(入力・チュートリアル・UI)に加え、ショップ用のバインドを持つ。
     /// 本番のGameSession/UserDomainには依存せず、ダミーのUserDomainをバインドする。
     /// </summary>
-    public class ShopDiInstaller : MonoInstaller, IInstaller
+    public class DebugShopDiInstaller : MonoInstaller, IInstaller
     {
         public override void InstallBindings()
         {
@@ -25,11 +25,11 @@ namespace Frontier.DebugTools.ShopDebug
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().FromInstance( new UserDomain() ).AsSingle();
 
-            Container.Bind<IInstaller>().To<ShopDiInstaller>().FromInstance( this );
+            Container.Bind<IInstaller>().To<DebugShopDiInstaller>().FromInstance( this );
 
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
-            // 戦闘エンティティ層(Character等)がShopSceneでもDI解決できるよう、DiInstaller.csと同じBindを用意する
-            // (ShopScene用UISystemのBattleUiはnullを返すが、戦闘UI演出メソッドを呼ばないため問題ない)
+            // 戦闘エンティティ層(Character等)がDebugShop.unityでもDI解決できるよう、DiInstaller.csと同じBindを用意する
+            // (DebugShop.unity用UISystemのBattleUiはnullを返すが、戦闘UI演出メソッドを呼ばないため問題ない)
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<TalkWindowConfirmPresenter>().AsSingle();

@@ -3,7 +3,7 @@
 namespace Frontier.Shop
 {
     /// <summary>
-    /// ショップ機能全体を、任意のホスト(戦闘側の商人会話State、Fieldのショップノード、ShopScene)から
+    /// ショップ機能全体を、任意のホスト(戦闘側の商人会話State、Fieldのショップノード、デバッグ用のDebugShop.unity)から
     /// 同じ手順で起動・駆動できる自己完結したサブルーチンとして扱うクラスです。
     /// SetContext()でどのショップかを渡してRun()し、以後ホストが毎フレームUpdate()/LateUpdate()を呼びます。
     /// LateUpdate()がtrueを返した時点でショップは終了しており、ホストがその後の処理

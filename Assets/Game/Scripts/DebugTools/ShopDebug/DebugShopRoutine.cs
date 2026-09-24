@@ -7,11 +7,11 @@ using Zenject;
 namespace Frontier.DebugTools.ShopDebug
 {
     /// <summary>
-    /// ShopScene(ショップ機能のデバッグ確認用・単独起動シーン)のメインフロー。RecruitRoutineControllerと同じ位置づけで、
+    /// DebugShop.unity(ショップ機能のデバッグ確認用・単独起動シーン)のメインフロー。RecruitRoutineControllerと同じ位置づけで、
     /// ShopRoutineControllerを駆動するだけの役割です(ショップ自体の処理・入力は本番のクラスが担います)。
     /// ショップが終了した(退店した)ら、遷移先が存在しないためPlayを終了します。
     /// </summary>
-    public class ShopSceneRoutine : FocusRoutineBase
+    public class DebugShopRoutine : FocusRoutineBase
     {
         private const int DUMMY_INSTANCE_ID = 1;
 
@@ -38,7 +38,7 @@ namespace Frontier.DebugTools.ShopDebug
         {
             if( _shop.LateUpdate() )
             {
-                Debug.Log( "[ShopSceneRoutine] ショップが終了しました。Playを終了します" );
+                Debug.Log( "[DebugShopRoutine] ショップが終了しました。Playを終了します" );
                 UnityEditor.EditorApplication.isPlaying = false;
             }
         }

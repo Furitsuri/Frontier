@@ -7,7 +7,7 @@ namespace Frontier.StateMachine
     /// 会話ウィンドウ(画面右上)を表示するクッション画面。特定のフェーズ・Sceneに依存しない
     /// 汎用Stateのため、話者名・メッセージのLocKeyは遷移元から<see cref="TalkWindowCushionContext"/>
     /// 経由で受け取り、任意の親Stateの子として使い回せる(例: RecruitScene「雇用」「解雇」で
-    /// 雇用/解雇不可の場合、今後追加予定のShopSceneでの店主の会話等)。
+    /// 雇用/解雇不可の場合、ショップ退店時の店主の挨拶(ShopPhaseHandler))。
     /// Confirm/Cancelいずれの入力でも会話ウィンドウを閉じBack()するのみで、カーソル・
     /// 選択中キャラクターのパラメータパネル等の再表示は親側のRestartState()で行う
     /// (Back()時にStateBase.ExitState()の戻り値は破棄される仕様のため、親からcontext経由で
