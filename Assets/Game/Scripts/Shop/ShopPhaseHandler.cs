@@ -84,12 +84,15 @@ namespace Frontier.Shop
              *              ├─ ShopQuantityState (購入個数の選択。複数個買える場合のみ挟む)
              *              ｜         ｜
              *              ｜         └─ ShopPurchaseConfirmState (購入確認。下記と同一インスタンス)
+             *              ｜                   ｜
+             *              ｜                   └─ TalkWindowCushionState (購入後の店主のお礼。汎用State)
              *              ｜
              *              └─ ShopPurchaseConfirmState (購入確認。1個しか買えない場合は個数選択を挟まず直接遷移する。
-             *                                           「はい」で購入して商品一覧へ戻る)
+             *                                           「はい」で購入し、お礼を挟んで商品一覧へ戻る)
              *
              *  ※ShopBrowseState.ShopBrowseTransitTagの並び(LEAVE_CONFIRM, QUANTITY, PURCHASE_CONFIRM)、
-             *    ShopQuantityState.ShopQuantityTransitTagの並び(PURCHASE_CONFIRM)は、下記AddChildの順序と一致させること
+             *    ShopQuantityState.ShopQuantityTransitTagの並び(PURCHASE_CONFIRM)、
+             *    ShopPurchaseConfirmState.ShopPurchaseConfirmTransitTagの並び(THANKS)は、下記AddChildの順序と一致させること
              */
             var farewellState = _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false );
 
@@ -98,7 +101,9 @@ namespace Frontier.Shop
 
             // 購入確認は、個数選択の子としても商品一覧の子としても使うため、同一インスタンスを両方へ登録する
             // (戻り先はHandlerの実行時スタックが管理するため、複数の親へAddChildしても問題ない)
+            var thanksState          = _hierarchyBld.InstantiateWithDiContainer<TalkWindowCushionState>( false );
             var purchaseConfirmState = _hierarchyBld.InstantiateWithDiContainer<ShopPurchaseConfirmState>( false );
+            purchaseConfirmState.AddChild( thanksState );
 
             var quantityState = _hierarchyBld.InstantiateWithDiContainer<ShopQuantityState>( false );
             quantityState.AddChild( purchaseConfirmState );

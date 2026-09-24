@@ -57,5 +57,6 @@
     "UI_TALK_SHOP_GREETING": "いらっしゃいませ。何をお求めになりますか？",
     "UI_TALK_SHOP_ANYTHING_ELSE": "他に御用はございますか？",
     "UI_TALK_SHOP_ASK_QUANTITY": "いくつ御購入されますか？",
-    "UI_TALK_SHOP_PURCHASE_CONFIRM": "こちらを御購入されますか？"
+    "UI_TALK_SHOP_PURCHASE_CONFIRM": "こちらでよろしいですか？",
+    "UI_TALK_SHOP_THANKS": "御購入ありがとうございます。"
 }

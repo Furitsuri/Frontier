@@ -31,6 +31,7 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _summaryNameText;
         [SerializeField] private TextMeshProUGUI _summaryQuantityText;
         [SerializeField] private TextMeshProUGUI _summaryPriceText;
+        [SerializeField] private GameObject _purchasedMark;     // 購入済みを示すチェックマーク(購入内容の表示の右上に重ねる。雇用済みと同じスプライト)
 
         [SerializeField] private Color _normalColor      = Color.white;
         [SerializeField] private Color _unavailableColor = Color.gray;
@@ -136,12 +137,24 @@ namespace Frontier.UI
             if ( _summaryQuantityText != null ) { _summaryQuantityText.text = $"x{quantity}"; }
             if ( _summaryPriceText != null )    { _summaryPriceText.text    = totalPrice.ToString(); }
 
+            // 購入確認の段階では未購入のため、チェックマークは出さない(前回の購入の表示が残らないようにもする)
+            if ( _purchasedMark != null )       { _purchasedMark.SetActive( false ); }
+
             _purchaseSummary.SetActive( true );
+        }
+
+        /// <summary>
+        /// 表示中の購入内容に、購入済みを示すチェックマークを重ねます。
+        /// </summary>
+        public void ShowPurchasedMark()
+        {
+            if ( _purchasedMark != null ) { _purchasedMark.SetActive( true ); }
         }
 
         public void HidePurchaseSummary()
         {
-            if ( _purchaseSummary != null ) { _purchaseSummary.SetActive( false ); }
+            if ( _purchasedMark != null )    { _purchasedMark.SetActive( false ); }
+            if ( _purchaseSummary != null )  { _purchaseSummary.SetActive( false ); }
         }
     }
 }

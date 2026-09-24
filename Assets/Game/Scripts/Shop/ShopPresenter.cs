@@ -25,8 +25,10 @@ namespace Frontier.Shop
         private int  _quantity            = 1;
         private int  _maxQuantity         = 1;
 
-        // 購入確認中か、その購入個数(個数選択を挟まない単数の購入では1)
+        // 購入確認の表示中か、その購入個数(個数選択を挟まない単数の購入では1)、購入が済んだか。
+        // 購入が済んだ後も、購入内容の表示はホストが購入確認を終える(EndPurchaseConfirm)まで残す
         private bool _isConfirmingPurchase = false;
+        private bool _isPurchaseCompleted  = false;
         private int  _confirmQuantity      = 1;
 
         /// <summary>
@@ -37,12 +39,14 @@ namespace Frontier.Shop
         /// <summary>
         /// 購入予定(選択中の商品×個数)による所持アニマの増減差分です(支払いのため0以下)。
         /// 購入確認中はその個数、個数選択中は選択中の個数で算出し、どちらでもなければ0を返します。
+        /// 購入が済んだ後は、所持アニマが既に減算済みで「予定」ではなくなるため0を返します。
         /// ヘッダーのアニマ数値の下へ表示するため、ShopPhaseHandlerが毎フレーム参照します。
         /// </summary>
         public int PendingAnimaDiff
         {
             get
             {
+                if ( _isPurchaseCompleted )                            { return 0; }
                 if ( !_isConfirmingPurchase && !_isSelectingQuantity ) { return 0; }
                 if ( !TryGetSelectedItem( out var item ) )             { return 0; }
 
@@ -53,7 +57,7 @@ namespace Frontier.Shop
         /// <summary>
         /// ヘッダーのアニマ増減差分を強調(大きく)表示すべきか。購入確認中は金額の増減が主役のため強調します。
         /// </summary>
-        public bool IsAnimaDiffEmphasized => _isConfirmingPurchase;
+        public bool IsAnimaDiffEmphasized => _isConfirmingPurchase && !_isPurchaseCompleted;
 
         /// <summary>
         /// ショップ画面を表示します(ShopHandler.Open()済みであること)。
@@ -162,6 +166,7 @@ namespace Frontier.Shop
             if ( shopUi == null || !TryGetSelectedItem( out var item ) ) { return false; }
 
             _isConfirmingPurchase = true;
+            _isPurchaseCompleted  = false;
             _confirmQuantity      = Mathf.Max( 1, quantity );
 
             shopUi.ShopView.ShowPurchaseSummary( GetItemName( item ), _confirmQuantity, _shopHandler.GetPrice( item ) * _confirmQuantity );
@@ -169,9 +174,25 @@ namespace Frontier.Shop
             return true;
         }
 
+        /// <summary>
+        /// 購入が済んだことを表示します。購入内容の表示は残したまま右上にチェックマークを重ね、
+        /// ヘッダーのアニマ増減差分の表示は止めます(所持アニマは減算済みのため)。
+        /// 購入内容の表示は、EndPurchaseConfirm()で終えるまで残ります。
+        /// </summary>
+        public void CompletePurchaseConfirm()
+        {
+            if ( !_isConfirmingPurchase ) { return; }
+
+            _isPurchaseCompleted = true;
+
+            var shopUi = _uiSystem.ShopUi;
+            if ( shopUi != null ) { shopUi.ShopView.ShowPurchasedMark(); }
+        }
+
         public void EndPurchaseConfirm()
         {
             _isConfirmingPurchase = false;
+            _isPurchaseCompleted  = false;
 
             var shopUi = _uiSystem.ShopUi;
             if ( shopUi != null ) { shopUi.ShopView.HidePurchaseSummary(); }

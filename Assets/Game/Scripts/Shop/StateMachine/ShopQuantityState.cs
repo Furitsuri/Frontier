@@ -52,6 +52,11 @@ namespace Frontier.Shop
 
             if( _isPurchased )
             {
+                // 個数選択の表示(個数パネル・購入予定額)は、購入確認のお礼の間も残しておいたため、ここで止める。
+                // Back()による終了(ExitState)を待つと、購入確認が終わってからそこまでの間に、購入予定額が
+                // 一瞬だけヘッダーに再表示されてしまう
+                _presenter.EndQuantitySelection();
+
                 Back();
 
                 return;
@@ -89,10 +94,19 @@ namespace Frontier.Shop
 
             // 選んだ個数を購入確認へ渡す。購入が済んだ際に、この画面も終了できるよう完了通知も渡す
             // (Back()時にStateの戻り値は破棄されるため、子から親へはコールバックで伝える)
-            SetSendTransitionContext( new ShopPurchaseConfirmContext( _presenter.SelectedQuantity, () => _isPurchased = true ) );
+            SetSendTransitionContext( new ShopPurchaseConfirmContext( _presenter.SelectedQuantity, OnPurchased ) );
             TransitState( ( int ) ShopQuantityTransitTag.PURCHASE_CONFIRM );
 
             return true;
+        }
+
+        /// <summary>
+        /// 購入確認で購入が済んだ際の通知。購入確認から戻った時点でこの画面も終了するためのフラグを立てる。
+        /// 個数選択の表示は、購入後のお礼の間も(購入確認の表示と同様に)残す
+        /// </summary>
+        private void OnPurchased()
+        {
+            _isPurchased = true;
         }
 
         protected override bool AcceptCancel( InputContext context )

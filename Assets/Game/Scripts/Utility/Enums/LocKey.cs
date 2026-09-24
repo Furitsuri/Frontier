@@ -97,6 +97,7 @@ public enum LocKey
     UI_TALK_SHOP_ANYTHING_ELSE,
     UI_TALK_SHOP_ASK_QUANTITY,
 
-    // ショップ画面の購入確認(会話ウィンドウ内のYes/No確認)
+    // ショップ画面の購入確認(会話ウィンドウ内のYes/No確認)/購入後のお礼
     UI_TALK_SHOP_PURCHASE_CONFIRM,
+    UI_TALK_SHOP_THANKS,
 }
