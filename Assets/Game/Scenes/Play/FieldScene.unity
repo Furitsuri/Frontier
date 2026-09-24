@@ -1241,6 +1241,7 @@ MonoBehaviour:
   _recruitmentUi: {fileID: 0}
   _deploymentUi: {fileID: 0}
   _battleUi: {fileID: 0}
+  _shopUi: {fileID: 0}
 --- !u!224 &1097894578
 RectTransform:
   m_ObjectHideFlags: 0

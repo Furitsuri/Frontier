@@ -20,6 +20,7 @@ namespace Frontier.Field
     {
         private const string BattleSceneName  = "BattleScene";
         private const string RecruitSceneName = "RecruitScene";
+        private const string ShopSceneName    = "ShopScene";
 
         [Header( "ノードのプレハブ" )]
         [SerializeField] private FieldNodeView _nodePrefab = null;
@@ -337,6 +338,11 @@ namespace Frontier.Field
                 case FieldNodeType.Recruit:
                     FieldTransitionContext.SetupFieldExitTransition( node.Id );
                     TransitionToScene( RecruitSceneName );
+                    break;
+
+                case FieldNodeType.Shop:
+                    FieldTransitionContext.SetupFieldExitTransition( node.Id );
+                    TransitionToScene( ShopSceneName );
                     break;
 
                 case FieldNodeType.Rest:

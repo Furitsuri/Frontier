@@ -7,5 +7,6 @@
         Recruit = 2,
         Rest    = 3,
         Boss    = 4,
+        Shop    = 5,
     }
 }

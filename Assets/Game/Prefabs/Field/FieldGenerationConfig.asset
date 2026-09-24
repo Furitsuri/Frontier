@@ -22,6 +22,8 @@ MonoBehaviour:
     Weight: 0.2
   - Type: 3
     Weight: 0.2
+  - Type: 5
+    Weight: 0.2
   _stageIndexRange: {x: 0, y: 0}
   _layerSpacingX: 4
   _nodeSpacingY: 3

@@ -1,6 +1,5 @@
 ﻿using Frontier.Option;
 using Frontier.Registries;
-using Frontier.Shop;
 using Frontier.Tutorial;
 using Frontier.UI;
 using Zenject;
@@ -22,7 +21,6 @@ namespace Frontier.Field
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<GeneralHeaderPresenter>().AsSingle();
-            Container.Bind<ShopHandler>().AsSingle();
             Container.Bind<HierarchyBuilderBase>().FromComponentInHierarchy().AsCached();
             Container.Bind<InputFacade>().FromInstance( InputFacade.Instance ).AsCached();
             Container.Bind<OptionHandler>().FromComponentInHierarchy().AsCached();

@@ -1,20 +1,20 @@
 ﻿using Frontier.Registries;
-using Frontier.Shop;
 using Frontier.Tutorial;
 using Frontier.UI;
 using Zenject;
 
-#if UNITY_EDITOR
-
-namespace Frontier.DebugTools.ShopDebug
+namespace Frontier.Shop
 {
     /// <summary>
-    /// DebugShop.unity(ショップ機能のデバッグ確認用・単独起動シーン)用の DI バインド設定。
-    /// RecruitDiInstallerと同じ共通基盤(入力・チュートリアル・UI)に加え、ショップ用のバインドを持つ。
-    /// 本番のGameSession/UserDomainには依存せず、ダミーのUserDomainをバインドする。
+    /// ShopScene 用の DI バインド設定。
+    /// RecruitDiInstallerと同じ共通基盤(入力・チュートリアル・UI)に、ショップ用のバインドを加えたもの。
+    /// Battle専用の SequenceFacade / SkillActionReservationQueue / CombatSkillEventController は含まない。
     /// </summary>
-    public class DebugShopDiInstaller : MonoInstaller, IInstaller
+    public class ShopDiInstaller : MonoInstaller, IInstaller
     {
+        /// <summary>
+        /// DIコンテナのバインド対象を設定します
+        /// </summary>
         public override void InstallBindings()
         {
             Container.Bind<ILocalizationService>().To<LocalizationService>().AsSingle();
@@ -23,13 +23,13 @@ namespace Frontier.DebugTools.ShopDebug
             Container.Bind<TimeScaleController>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
-            Container.Bind<UserDomain>().FromInstance( new UserDomain() ).AsSingle();
+            Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsSingle();
 
-            Container.Bind<IInstaller>().To<DebugShopDiInstaller>().FromInstance( this );
+            Container.Bind<IInstaller>().To<ShopDiInstaller>().FromInstance( this );
 
             Container.Bind<IUiSystem>().To<UISystem>().FromComponentInHierarchy().AsCached();
-            // 戦闘エンティティ層(Character等)がDebugShop.unityでもDI解決できるよう、DiInstaller.csと同じBindを用意する
-            // (DebugShop.unity用UISystemのBattleUiはnullを返すが、戦闘UI演出メソッドを呼ばないため問題ない)
+            // 戦闘エンティティ層(Character等)がShopSceneでもDI解決できるよう、DiInstaller.csと同じBindを用意する
+            // (ShopScene用UISystemのBattleUiはnullを返すが、ShopSceneでは戦闘UI演出メソッドを呼ばないため問題ない)
             Container.Bind<ICharacterUiFeedback>().FromMethod( ctx => ctx.Container.Resolve<IUiSystem>().BattleUi ).AsCached();
             Container.Bind<TalkWindowPresenter>().AsSingle();
             Container.Bind<TalkWindowConfirmPresenter>().AsSingle();
@@ -45,6 +45,8 @@ namespace Frontier.DebugTools.ShopDebug
         /// <summary>
         /// 外部クラスからDIコンテナに対象をバインド設定します
         /// </summary>
+        /// <typeparam name="T">バインド対象の型</typeparam>
+        /// <param name="instance">バインド対象</param>
         public void InstallBindings<T>( T instance )
         {
             Container.Bind<T>().FromInstance( instance ).AsCached();
@@ -56,5 +58,3 @@ namespace Frontier.DebugTools.ShopDebug
         }
     }
 }
-
-#endif // UNITY_EDITOR

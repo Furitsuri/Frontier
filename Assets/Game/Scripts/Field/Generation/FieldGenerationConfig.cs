@@ -25,6 +25,7 @@ namespace Frontier.Field
             new FieldNodeTypeWeight { Type = FieldNodeType.Battle,  Weight = 0.6f },
             new FieldNodeTypeWeight { Type = FieldNodeType.Recruit, Weight = 0.2f },
             new FieldNodeTypeWeight { Type = FieldNodeType.Rest,    Weight = 0.2f },
+            new FieldNodeTypeWeight { Type = FieldNodeType.Shop,    Weight = 0.2f },
         };
 
         [Header( "Battleノードに割り当てるStageIndexの範囲(両端含む、FilePathRegistry.StageNames[]のインデックス)" )]
