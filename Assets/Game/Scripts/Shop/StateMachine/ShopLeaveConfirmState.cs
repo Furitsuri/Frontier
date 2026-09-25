@@ -6,8 +6,8 @@ namespace Frontier.Shop
 {
     /// <summary>
     /// 退店してよいかを店主が確認するステート(ShopBrowseStateの子)。会話ウィンドウ形式のYes/No確認。
-    /// 「いいえ」なら商品一覧へ戻る。「はい」なら挨拶(TalkWindowCushionState)を挟んでから、
-    /// ショップ全体(フェーズ)を終了する。
+    /// 「いいえ」なら商品一覧へ戻る。「はい」なら挨拶(TalkWindowCushionState、画面右下)を挟んでから、
+    /// ショップ全体(フェーズ)を終了する。挨拶の間は、退店が決まったことが伝わるよう奥の表示をぼかして覆う。
     /// </summary>
     public sealed class ShopLeaveConfirmState : ConfirmPhaseStateBase
     {
@@ -17,6 +17,7 @@ namespace Frontier.Shop
         }
 
         [Inject] private TalkWindowConfirmPresenter _talkConfirmPresenter = null;
+        [Inject] private ScreenBlurOverlayPresenter _blurOverlayPresenter = null;
 
         private bool _isFarewellSpoken = false;
 
@@ -66,11 +67,23 @@ namespace Frontier.Shop
             // 挨拶への遷移はExitStateではなくPauseStateしか呼ばれないため、確認ダイアログは先に隠す
             _confirmPresenter.SetActiveConfirmUI( false, UIType );
 
+            // 退店が決まったことが伝わるよう、別れの挨拶の間は奥の商品一覧等をぼかして覆う(購入確認と同じ表現)。
+            // 挨拶から戻ってショップ全体を終える際(ExitState)に止める
+            _blurOverlayPresenter.Show();
+
+            // 別れの挨拶は、退店確認や他の店主の言葉と同じ画面右下に出す
             _isFarewellSpoken = true;
-            SetSendTransitionContext( new TalkWindowCushionContext( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_SHOP_FAREWELL ) );
+            SetSendTransitionContext( new TalkWindowCushionContext( LocKey.UI_TALK_SHOPKEEPER_NAME, LocKey.UI_TALK_SHOP_FAREWELL, TalkWindowPosition.BottomRight ) );
             TransitState( ( int ) ShopLeaveConfirmTransitTag.FAREWELL );
 
             return true;
+        }
+
+        public override object ExitState()
+        {
+            _blurOverlayPresenter.Hide();
+
+            return base.ExitState();
         }
     }
 }

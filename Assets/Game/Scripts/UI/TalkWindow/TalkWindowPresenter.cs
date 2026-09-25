@@ -54,7 +54,7 @@ namespace Frontier.UI
 
         /// <summary>
         /// LocalizationServiceで解決した話者名・セリフを、画面右下(入力ガイドバー直上)に表示します
-        /// (ショップ入店時の店主の挨拶専用。退店確認ダイアログと同じ位置)。
+        /// (ショップの店主の言葉(挨拶・個数の問いかけ・お礼・別れの挨拶)。購入確認・退店確認ダイアログと同じ位置)。
         /// </summary>
         public void ShowBottomRight( LocKey speakerKey, LocKey messageKey )
         {
