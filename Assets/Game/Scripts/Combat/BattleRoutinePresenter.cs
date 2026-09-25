@@ -136,6 +136,14 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.ClearAllPredictedDamage();
         }
 
+        /// <summary>
+        /// 全キャラクター頭上のHPゲージの表示・非表示を切り替えます。
+        /// </summary>
+        public void SetHpGaugesActive( bool isActive )
+        {
+            _uiSystem.BattleUi.SetHpGaugesActive( isActive );
+        }
+
         public void ApplyColor2Options( int selectIndex )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.ApplyTextColor( selectIndex );

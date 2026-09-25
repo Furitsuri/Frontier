@@ -92,6 +92,8 @@ namespace Frontier.Battle
                 { BattlePhaseType.Other,        _hierarchyBld.InstantiateWithDiContainer<OtherPhaseHandler>(false) }
             };
 
+            _stageClearState.AssignPresenter( _presenter );
+
             _stgCtrl.Setup();
             _presenter.Setup();
             _btlCameraCtrl.Setup( true );

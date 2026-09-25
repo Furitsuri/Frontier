@@ -1,5 +1,6 @@
 ﻿using System;
 using Frontier.StateMachine;
+using Zenject;
 
 namespace Frontier.Battle
 {
@@ -22,6 +23,9 @@ namespace Frontier.Battle
             DONE,                // リザルト画面を閉じ終え、シーン遷移可能な状態
         }
 
+        [Inject] private TimeScaleController _timeScaleCtrl = null;
+
+        private BattleRoutinePresenter _presenter = null;
         private Phase _phase;
         // Begin()時点ではまだ最後の撃破報酬(アニマ獲得エフェクト)が到達しておらず加算前の値である
         // 可能性があるため、値そのものではなく取得用のFuncを保持し、実際に表示する直前(AcceptConfirm時)に読み出す。
@@ -40,6 +44,11 @@ namespace Frontier.Battle
         /// </summary>
         public bool IsFinished => _phase == Phase.DONE;
 
+        public override void AssignPresenter( PhasePresenterBase presenter )
+        {
+            _presenter = presenter as BattleRoutinePresenter;
+        }
+
         /// <summary>
         /// このステートを開始します。撃破位置から放出中のアニマ獲得エフェクトが残っている場合は、
         /// その再生が終わるまで「STAGE CLEAR」演出の開始(戦闘中HUDの非表示を含む)を待ちます。
@@ -51,6 +60,10 @@ namespace Frontier.Battle
             _getBattleAnima = getBattleAnima;
             _turnCount      = turnCount;
             _phase          = Phase.WAIT_ANIMA_REWARD;
+
+            // クリア演出中はステージ上のキャラクターを静止させ、頭上のHPゲージも非表示にする
+            _presenter.SetHpGaugesActive( false );
+            _timeScaleCtrl.SetTimeScale( 0f );
 
             OnEnter( null );
         }
