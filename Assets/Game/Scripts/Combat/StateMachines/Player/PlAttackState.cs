@@ -203,7 +203,7 @@ namespace Frontier.Battle
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            FinalizeTargetSelection( ParameterWindowType.Left );
+            FinalizeTargetSelection( ParameterWindowType.Left, false );                   // カメラズームの解除は攻撃シーケンス側で行う
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除
 
             RegisterSelfBuffIfNeeded();

@@ -21,10 +21,8 @@ namespace Frontier
 
         private readonly BattleCameraSharedState _ctx;
         private readonly Action                  _onFinished;
-        private readonly float _fadeDuration;
+        private readonly AttackSequenceTransitionEffect _transitionEffect;
         private readonly float _atkCameraLerpDuration;
-        private readonly float _mosaicStartFadeRate;
-        private readonly float _mosaicBlockSizeMaxRate;
 
         private readonly List<BattleCameraController.CameraParamData[]> _closeParamDatas;
         private readonly List<BattleCameraController.CameraParamData[]> _rangedParamDatas;
@@ -49,19 +47,15 @@ namespace Frontier
             Action                                           onFinished,
             List<BattleCameraController.CameraParamData[]>  closeParamDatas,
             List<BattleCameraController.CameraParamData[]>  rangedParamDatas,
-            float fadeDuration,
-            float atkCameraLerpDuration,
-            float mosaicStartFadeRate,
-            float mosaicBlockSizeMaxRate )
+            AttackSequenceTransitionEffect                   transitionEffect,
+            float atkCameraLerpDuration )
         {
             _ctx                  = sharedState;
             _onFinished           = onFinished;
             _closeParamDatas      = closeParamDatas;
             _rangedParamDatas     = rangedParamDatas;
-            _fadeDuration         = fadeDuration;
+            _transitionEffect     = transitionEffect;
             _atkCameraLerpDuration = atkCameraLerpDuration;
-            _mosaicStartFadeRate  = mosaicStartFadeRate;
-            _mosaicBlockSizeMaxRate = mosaicBlockSizeMaxRate;
         }
 
         /// <summary>
@@ -96,8 +90,9 @@ namespace Frontier
             _ctx.PrevCameraPosition = _ctx.MainCamera.transform.position;
             _ctx.LookAtPosition     = ( cameraFromChara.transform.position + cameraToChara.transform.position ) * 0.5f;
             _fadeElapsedTime        = 0f;
+            _transitionEffect.Begin();
 
-            _cameraOffset = Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
+            _cameraOffset =Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
 
             _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( false );
             _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( false );
@@ -122,6 +117,7 @@ namespace Frontier
             _phase                  = Phase.END;
             _ctx.PrevCameraPosition = _ctx.MainCamera.transform.position;
             _fadeElapsedTime        = 0f;
+            _transitionEffect.Begin();
         }
 
         /// <summary>
@@ -150,23 +146,9 @@ namespace Frontier
             {
                 case Phase.START:
                 {
-                    _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
-                    var fadeRate      = _fadeElapsedTime / _fadeDuration;
                     var destCameraPos = _cameraBaseTransform.position + _cameraOffset;
-                    _ctx.MainCamera.transform.position = Vector3.Lerp( _ctx.FollowingPosition, destCameraPos, fadeRate );
-                    _ctx.MainCamera.transform.LookAt( _ctx.LookAtPosition );
-
-                    if( _mosaicStartFadeRate <= fadeRate )
+                    if( _transitionEffect.UpdateEnter( _ctx.FollowingPosition, destCameraPos ) )
                     {
-                        _ctx.MosaicEffect.ToggleEnable( true );
-                        var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( fadeRate - _mosaicStartFadeRate ) / ( 1f - _mosaicStartFadeRate );
-                        _ctx.MosaicEffect.UpdateBlockSizeByRate( blockSizeRate );
-                    }
-
-                    if( _fadeDuration <= _fadeElapsedTime )
-                    {
-                        _ctx.MosaicEffect.ToggleEnable( false );
-                        _ctx.MosaicEffect.ResetBlockSize();
                         _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( true );
                         _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( true );
                         _phase = Phase.BATTLE_FIELD;
@@ -193,22 +175,8 @@ namespace Frontier
 
                 case Phase.END:
                 {
-                    _fadeElapsedTime = Mathf.Clamp( _fadeElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _fadeDuration );
-                    var fadeRate = _fadeElapsedTime / _fadeDuration;
-                    _ctx.MainCamera.transform.position = Vector3.Lerp( _ctx.PrevCameraPosition, _ctx.FollowingPosition, fadeRate );
-                    _ctx.MainCamera.transform.LookAt( _ctx.LookAtPosition );
-
-                    if( fadeRate < 1f - _mosaicStartFadeRate )
+                    if( _transitionEffect.UpdateExit( _ctx.PrevCameraPosition, _ctx.FollowingPosition ) )
                     {
-                        _ctx.MosaicEffect.ToggleEnable( true );
-                        var blockSizeRate = 1.0f - Mathf.Clamp01( _mosaicBlockSizeMaxRate ) * ( 1f - ( fadeRate / ( 1f - _mosaicStartFadeRate ) ) );
-                        _ctx.MosaicEffect.UpdateBlockSizeByRate( blockSizeRate );
-                    }
-
-                    if( _fadeDuration <= _fadeElapsedTime )
-                    {
-                        _ctx.MosaicEffect.ToggleEnable( false );
-                        _ctx.MosaicEffect.ResetBlockSize();
                         _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( true );
                         _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( true );
 

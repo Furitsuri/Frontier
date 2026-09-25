@@ -8,6 +8,7 @@
         CLOSED = 0,
         RANGED,
         PARRY,
+        CLOSED_IN_PLACE,    // 相手へ駆け寄らずにその場で行う近接攻撃(InPlaceAttackSequence で使用)
 
         NUM,
     }

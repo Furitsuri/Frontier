@@ -393,7 +393,8 @@ protected Character _opponent                                       = null;
             {
                 () => _hierarchyBld.InstantiateWithDiContainer<ClosedAttackAnimationSequence>(false),
                 () => _hierarchyBld.InstantiateWithDiContainer<RangedAttackAnimationSequence>(false),
-                () => _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false)
+                () => _hierarchyBld.InstantiateWithDiContainer<ParryAnimationSequence>(false),
+                () => _hierarchyBld.InstantiateWithDiContainer<InPlaceClosedAttackAnimationSequence>(false)
             };
         }
 

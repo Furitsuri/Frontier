@@ -20,6 +20,9 @@ namespace Frontier.Option
         private OptionPresenter _presenter = null;
         private OptionSaveData _saveData = null;
 
+        /// <summary>攻撃時に戦闘フィールドへ遷移し、寄りのカメラワークで映すか</summary>
+        public bool IsAttackCloseUpEnabled => _saveData?.IsAttackCloseUpEnabled ?? false;
+
         void Start()
         {
             _saveData = _saveHdlr.Load();
@@ -36,6 +39,7 @@ namespace Frontier.Option
                     _saveData.IsInputGuideVisible = value;
                     _inputFcd.SetGuideVisible( value );
                 } ),
+                new ToggleOptionItem( "ATTACK CLOSE-UP", _saveData.IsAttackCloseUpEnabled, value => _saveData.IsAttackCloseUpEnabled = value ),
             };
 
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<OptionPresenter>( false ) );

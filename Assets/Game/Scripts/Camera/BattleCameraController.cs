@@ -80,7 +80,6 @@ namespace Frontier
         private IBattleCameraSequence           _activeSequence;
         private AttackSequenceCameraHandler     _attackSeqHandler;
         private CooperativeSequenceCameraHandler _coopSeqHandler;
-
         // --- 連携演出(渦巻きエフェクト)用フィールド ---
         private float _vortexOffsetLength; // FitCharactersForCooperativeVortex で決定したカメラ距離(FocusCharacterForCooperativeVortex で使い回す)
 
@@ -196,7 +195,7 @@ namespace Frontier
         }
 
         // -----------------------------------------------------------------------
-        // 攻撃シーケンス API（CharacterAttackSequence から呼ばれる）
+        // 攻撃シーケンス API（CloseUpAttackSequence から呼ばれる）
         // -----------------------------------------------------------------------
 
         public void StartAttackSequenceMode( Character attacker, Character target )
@@ -206,7 +205,8 @@ namespace Frontier
             _attackSeqHandler ??= new AttackSequenceCameraHandler(
                 _sharedState, OnSequenceFinished,
                 _closeAtkCameraParamDatas, _rangedAtkCameraParamDatas,
-                _fadeDuration, _atkCameraLerpDuration, _mosaicStartFadeRate, _mosaicBlockSizeMaxRate );
+                new AttackSequenceTransitionEffect( _sharedState, _fadeDuration, _mosaicStartFadeRate, _mosaicBlockSizeMaxRate ),
+                _atkCameraLerpDuration );
 
             _attackSeqHandler.Init( attacker, target );
             _activeSequence = _attackSeqHandler;
@@ -221,8 +221,17 @@ namespace Frontier
             _attackSeqHandler.BeginEndPhase();
         }
 
+        /// <summary>
+        /// 攻撃シーケンス用カメラのパラメータを次に進めます。
+        /// 遠隔攻撃の弾発射(BattleAnimationEventReceiver)からも呼ばれるため、
+        /// 攻撃シーケンス用カメラが動作していない場合(ステージ上で攻撃が完結する InPlaceAttackSequence 等)は何もしません。
+        /// </summary>
         public void TransitNextPhaseCameraParam( Transform nextBase = null, Transform nextLookAt = null )
-            => _attackSeqHandler.TransitNextPhase( nextBase, nextLookAt );
+        {
+            if( _attackSeqHandler == null || _activeSequence != _attackSeqHandler ) { return; }
+
+            _attackSeqHandler.TransitNextPhase( nextBase, nextLookAt );
+        }
 
         /// <summary>攻撃フィールドのフェードインが完了したかを返します。</summary>
         public bool IsFadeAttack() => _attackSeqHandler?.IsInBattleFieldPhase ?? false;

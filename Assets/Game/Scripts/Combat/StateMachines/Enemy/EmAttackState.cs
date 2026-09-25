@@ -199,7 +199,7 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ConsumeActionGauge();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            FinalizeTargetSelection( ParameterWindowType.Right );
+            FinalizeTargetSelection( ParameterWindowType.Right, false );                  // カメラズームの解除は攻撃シーケンス側で行う
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();                       // タイルメッシュの描画をすべてクリア
 
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除
