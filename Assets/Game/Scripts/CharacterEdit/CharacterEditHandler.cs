@@ -17,7 +17,6 @@ namespace Frontier.CharacterEdit
     public class CharacterEditHandler : MonoBehaviour
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] private UserDomain _userDomain = null;
 
         private CharacterEditPresenter _presenter = null;
         private CharacterParameterPresenter _paramPresenter = null;
@@ -56,7 +55,6 @@ namespace Frontier.CharacterEdit
             _onClosed = onClosed;
 
             _presenter.Show( _context.CurrentCharacter );
-            _presenter.SetHeaderInfo( _userDomain.Anima );
             RefreshCharacterParamDisplay();
             UpdatePreview();
 
@@ -244,7 +242,6 @@ namespace Frontier.CharacterEdit
         private void OnLevelUpClosed()
         {
             _presenter.RefreshCharacterInfo( _context.CurrentCharacter );
-            _presenter.SetHeaderInfo( _userDomain.Anima );
             RefreshCharacterParamDisplay();
             _presenter.UnlockMenu();
             UpdatePreview();
