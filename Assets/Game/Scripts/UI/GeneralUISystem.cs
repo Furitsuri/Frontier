@@ -26,9 +26,6 @@ namespace Frontier
         [Header( "TroopEdit" )]
         public TroopEditUI TroopEditView;            // 部隊編集UI
 
-        [Header( "CharacterEdit" )]
-        public CharacterEditUI CharacterEditView;    // キャラクター編集UI
-
         [Header( "Header" )]
         public GeneralHeaderUI HeaderView;           // 画面上部の全幅に常時表示するHUD(所持アニマ・部隊人数)
 
@@ -55,7 +52,6 @@ namespace Frontier
             OptionView?.Setup();
             SaveLoadView?.Setup();
             TroopEditView?.Setup();
-            CharacterEditView?.Setup();
             HeaderView?.Setup();
             TalkWindowView?.Setup();
             BlurOverlayView?.Setup();

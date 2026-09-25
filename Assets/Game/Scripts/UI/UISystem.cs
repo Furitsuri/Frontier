@@ -9,6 +9,7 @@ namespace Frontier.UI
         [SerializeField] private DeploymentUISystem _deploymentUi   = null;
         [SerializeField] private BattleUISystem _battleUi           = null;
         [SerializeField] private ShopUISystem _shopUi               = null;
+        [SerializeField] private FieldUISystem _fieldUi             = null;
 #if UNITY_EDITOR
         private DebugUISystem _debugUi          = null;
 #endif // UNITY_EDITOR
@@ -18,6 +19,7 @@ namespace Frontier.UI
         public DeploymentUISystem DeployUi => _deploymentUi;
         public BattleUISystem BattleUi => _battleUi;
         public ShopUISystem ShopUi => _shopUi;
+        public FieldUISystem FieldUi => _fieldUi;
 #if UNITY_EDITOR
         public DebugUISystem DebugUi => _debugUi;
 #endif // UNITY_EDITOR
@@ -38,6 +40,7 @@ namespace Frontier.UI
             _deploymentUi?.Setup();
             _battleUi?.Setup();
             _shopUi?.Setup();
+            _fieldUi?.Setup();
 
             _recruitmentUi?.gameObject.SetActive( false );
             _deploymentUi?.gameObject.SetActive( false );

@@ -14,6 +14,7 @@ public class EditorUiSystem : MonoBehaviour, IUiSystem
     public DeploymentUISystem DeployUi => null; // DeploymentUISystem is not defined in this context, returning null
     public BattleUISystem BattleUi => null; // BattleUISystem is not defined in this context, returning null
     public ShopUISystem ShopUi => null; // ShopUISystem is not defined in this context, returning null
+    public FieldUISystem FieldUi => null; // FieldUISystem is not defined in this context, returning null
 #if UNITY_EDITOR
     public DebugUISystem DebugUi => _debugUi;
 #endif // UNITY_EDITOR

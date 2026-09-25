@@ -8,6 +8,7 @@ public interface IUiSystem
     public DeploymentUISystem DeployUi { get; }
     public BattleUISystem BattleUi { get; }
     public ShopUISystem ShopUi { get; }
+    public FieldUISystem FieldUi { get; }
 #if UNITY_EDITOR
     public DebugUISystem DebugUi { get; }
 #endif // UNITY_EDITOR

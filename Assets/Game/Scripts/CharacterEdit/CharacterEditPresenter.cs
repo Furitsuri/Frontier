@@ -20,11 +20,11 @@ namespace Frontier.CharacterEdit
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
         /// <summary>
-        /// GeneralUi.CharacterEditView(既にシーンに存在するUI)への参照を取得します(一度だけ呼び出してください)。
+        /// FieldUi.CharacterEditView(既にシーンに存在するUI)への参照を取得します(一度だけ呼び出してください)。
         /// </summary>
         public void Init()
         {
-            _view = _uiSystem.GeneralUi.CharacterEditView;
+            _view = _uiSystem.FieldUi.CharacterEditView;
         }
 
         /// <summary>
