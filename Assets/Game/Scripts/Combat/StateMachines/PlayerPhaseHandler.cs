@@ -109,6 +109,8 @@ namespace Frontier.Battle
              *              ｜       ｜       ｜
              *              ｜       ｜       └─ PlGroupMoveState (CONFIRMで遷移するグループ移動プレビュー・実行。カーソル移動のたびにプレビューを更新する)
              *              ｜       ｜
+             *              ｜       ├─ PlGroupMoveState (SUB3で全員を一括登録した際に直接遷移。上記と同一インスタンス)
+             *              ｜       ｜
              *              ｜       └─ PlSelectCommandState
              *              ｜                    ｜
              *              ｜                    ├─ PlWaitState
@@ -142,8 +144,11 @@ namespace Frontier.Battle
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectGroupMembersState>( false ) );
+            // PlGroupMoveStateはメンバー選択(CONFIRM)とタイル選択(SUB3による一括登録)の双方から遷移するため、単一インスタンスを共有する
+            var groupMoveState = _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( groupMoveState );
             // Children[0].Children[5]はPlSelectGroupMembersState。その子にPlGroupMoveStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(5).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(5).AddChild( groupMoveState );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );

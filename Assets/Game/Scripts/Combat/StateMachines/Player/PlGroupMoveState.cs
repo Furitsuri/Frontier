@@ -9,15 +9,26 @@ using static Constants;
 namespace Frontier.Battle
 {
     /// <summary>
-    /// PlSelectGroupMembersStateでのCONFIRM入力により遷移する、グループ移動のプレビュー・実行ステートです。
+    /// PlSelectGroupMembersStateでのCONFIRM入力、またはPlSelectTileStateでの一括登録(SUB3)入力により遷移する、
+    /// グループ移動のプレビュー・実行ステートです。
     /// PlSelectTileStateを継承し、グリッドカーソル移動のたびに、登録された各キャラクターを貪欲法によって
     /// 目的地(現在のカーソル位置)周辺の到達可能な空きタイルへ割り当て直し、ゴースト表示・移動経路矢印による
     /// プレビューを更新します。このステートでは新たなキャラクターの登録・解除は行えません。
     /// CONFIRM入力を受けると、その時点のプレビュー通りに全キャラクターを同時に移動させます。
-    /// キャンセル時は登録を維持したままPlSelectGroupMembersStateへ戻ります。
+    /// キャンセル時、PlSelectGroupMembersStateから遷移した場合は登録を維持したまま戻り、
+    /// PlSelectTileStateから直接遷移した場合は登録を全て解除して戻ります。
     /// </summary>
     public class PlGroupMoveState : PlSelectTileState
     {
+        /// <summary>
+        /// 遷移元を示すコンテキストです。遷移時にSetSendTransitionContextで渡してください(未指定時はFromMemberSelection扱い)
+        /// </summary>
+        public enum EntryType
+        {
+            FromMemberSelection = 0,    // PlSelectGroupMembersStateから遷移(戻った後も登録を維持する)
+            Direct,                     // PlSelectTileStateから直接遷移(戻る際に登録を全て解除する)
+        }
+
         private enum Phase
         {
             PREVIEW = 0,
@@ -43,15 +54,33 @@ namespace Frontier.Battle
 
         private readonly List<GroupMoveAssignment> _assignments = new List<GroupMoveAssignment>();
         private Phase _phase;
+        private EntryType _entryType;
 
         public override void Init( object context )
         {
             base.Init( context );  // PlSelectTileStateの初期化を再利用(各種文言設定・RefreshUseableSkillFlags等)
 
-            _phase = Phase.PREVIEW;
+            _phase      = Phase.PREVIEW;
+            _entryType  = EntryType.FromMemberSelection;
+            ReceiveContext( ref _entryType, context );
             _assignments.Clear();
+        }
+
+        protected override void OnActivated()
+        {
+            // 基底でホバー範囲表示の消去が行われる(対象キャラクターの範囲描画も全て消える)ため、プレビューの計算はその後に行う
+            base.OnActivated();
 
             RefreshGroupMovePreview();  // 現在のカーソル位置(=登録操作を行った位置)を目的地としてプレビューを計算
+        }
+
+        /// <summary>
+        /// プレビュー中は登録キャラクターの移動可能範囲(青色)のみを表示するため、カーソル上のキャラクターの
+        /// 移動・攻撃範囲表示(ホバー範囲表示)は行わず、遷移元から引き継いだ表示も消去します
+        /// </summary>
+        protected override void RefreshHoveredRangeDisplay()
+        {
+            _hoveredRangeDisplay.Clear();
         }
 
         public override bool Update()
@@ -119,6 +148,12 @@ namespace Frontier.Battle
             if( Phase.PREVIEW == _phase )
             {
                 ClearPreview();
+            }
+
+            // タイル選択から直接遷移した場合は、戻り先で登録が残留しないよう全て解放する
+            if( EntryType.Direct == _entryType )
+            {
+                ClearAllRegistrations();
             }
 
             return base.ExitState();

@@ -18,6 +18,7 @@ namespace Frontier.Battle
             SELECT_RESERVED_ACTION,
             SELECT_TILE_MENU,
             SELECT_GROUP_MEMBERS,
+            GROUP_MOVE,
         }
 
         [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
@@ -132,7 +133,8 @@ namespace Frontier.Battle
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
                (GuideIcon.OPT1, _inputOpt1StrWrapper, CanAcceptOpt1, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode),
-               (GuideIcon.OPT2, "MENU", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode)
+               (GuideIcon.OPT2, "MENU", CanAcceptDefault, new AcceptContextInput( AcceptOpt2 ), 0.0f, hashCode),
+               (GuideIcon.SUB3, "REGISTER\nALL", CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode)
             );
         }
 
@@ -350,6 +352,60 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 移動可能な(行動済みでない)プレイヤーキャラクターが1人以上いる場合のみ、一括登録を受け付けます
+        /// </summary>
+        protected override bool CanAcceptSub3()
+        {
+            if( !CanAcceptDefault() || 0 <= TransitIndex ) { return false; }
+
+            foreach( Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER ) )
+            {
+                if( Command.IsExecutableMoveCommand( player, _stageCtrl ) ) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// SUB3入力を受けた際、移動可能な(行動済みでない)プレイヤーキャラクターを全てグループ移動に登録し、
+        /// メンバー選択を経由せず、グループ移動のプレビュー・実行ステートへ直接遷移します
+        /// </summary>
+        protected override bool AcceptSub3( InputContext context )
+        {
+            if( !base.AcceptSub3( context ) ) { return false; }
+
+            foreach( Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER ) )
+            {
+                if( !Command.IsExecutableMoveCommand( player, _stageCtrl ) ) { continue; }
+                if( _groupMoveRegistrationList.Contains( player ) ) { continue; }
+
+                _groupMoveRegistrationList.Add( player );
+                player.SetMaterialsSemiTransparent();
+            }
+
+            if( _groupMoveRegistrationList.IsEmpty ) { return false; }
+
+            // メンバー選択を経由しないため、キャンセルで戻った際に登録を解除するよう遷移先へ伝える
+            SetSendTransitionContext( PlGroupMoveState.EntryType.Direct );
+            TransitState( ( int ) TransitTag.GROUP_MOVE );
+
+            return true;
+        }
+
+        /// <summary>
+        /// グループ移動の登録キャラクターを全て解放します(マテリアルを元に戻した上で登録リストをクリアします)
+        /// </summary>
+        protected void ClearAllRegistrations()
+        {
+            foreach( var key in _groupMoveRegistrationList.GetAll() )
+            {
+                _btlRtnCtrl.BtlCharaCdr.GetPlayer( key )?.RestoreMaterialsOriginalColor();
+            }
+
+            _groupMoveRegistrationList.Clear();
+        }
+
+        /// <summary>
         /// グループ移動登録者のうち、行動終了等によって対象外になったキャラクターを登録解除します
         /// </summary>
         private void PruneIneligibleRegistrations()
@@ -372,6 +428,10 @@ namespace Frontier.Battle
         protected override void OnActivated()
         {
             base.OnActivated();
+
+            // 中断からの再開時、前回の遷移で渡したコンテキスト(PlGroupMoveState.EntryType等)が
+            // 以降の別の遷移先へ渡ってしまわないようクリアする
+            SetSendTransitionContext( null );
 
             // 新規開始・中断からの再開いずれの場合も、現在のカーソル位置に応じてホバー範囲表示を同期する
             RefreshHoveredRangeDisplay();

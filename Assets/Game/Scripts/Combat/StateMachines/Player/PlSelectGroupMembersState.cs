@@ -198,17 +198,5 @@ namespace Frontier.Battle
             _btlRtnCtrl.BtlCharaCdr.GetPlayer( key )?.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
         }
 
-        /// <summary>
-        /// グループ移動の登録キャラクターを全て解放します(マテリアルを元に戻した上で登録リストをクリアします)
-        /// </summary>
-        private void ClearAllRegistrations()
-        {
-            foreach( var key in _groupMoveRegistrationList.GetAll() )
-            {
-                _btlRtnCtrl.BtlCharaCdr.GetPlayer( key )?.RestoreMaterialsOriginalColor();
-            }
-
-            _groupMoveRegistrationList.Clear();
-        }
     }
 }
