@@ -214,6 +214,13 @@ namespace Frontier.Battle
             if( !AcceptConfirmCore( context ) ) { return false; }
             if( Phase.PREVIEW != _phase || _assignments.Count <= 0 ) { return false; }
 
+            // 個別移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動前の状態を保存しておく。
+            // これを行わないと、コマンド選択でのキャンセル(RevertBeforeMoving)時に未初期化の情報で巻き戻してしまう
+            foreach( var assignment in _assignments )
+            {
+                if( assignment.IsMoving ) { assignment.Character.HoldBeforeMoveInfo(); }
+            }
+
             ClearMoveRangeDisplay();
             ReleaseCurrentReservations();
             _phase = Phase.EXECUTE_MOVE;
