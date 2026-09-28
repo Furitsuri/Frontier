@@ -17,7 +17,7 @@ namespace Frontier.Battle
             TURN_END,
             SELECT_RESERVED_ACTION,
             SELECT_TILE_MENU,
-            GROUP_MOVE,
+            SELECT_GROUP_MEMBERS,
         }
 
         [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
@@ -330,7 +330,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// OPT1入力を受けた際、カーソル上のキャラクターのグループ移動登録・解除を切り替えます。
-        /// この操作によって登録者が0人から1人になった場合は、グループ移動プレビューステートへ自動的に遷移します。
+        /// この操作によって登録者が0人から1人になった場合は、グループ移動のメンバー選択ステートへ自動的に遷移します。
         /// </summary>
         protected override bool AcceptOpt1( InputContext context )
         {
@@ -343,7 +343,7 @@ namespace Frontier.Battle
 
             if( wasEmpty && !_groupMoveRegistrationList.IsEmpty )
             {
-                TransitState( ( int ) TransitTag.GROUP_MOVE );
+                TransitState( ( int ) TransitTag.SELECT_GROUP_MEMBERS );
             }
 
             return true;

@@ -105,7 +105,9 @@ namespace Frontier.Battle
              *              ｜       ｜
              *              ｜       ├─ PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー)
              *              ｜       ｜
-             *              ｜       ├─ PlGroupMoveState (OPT1でのキャラクター登録時に自動遷移するグループ移動プレビュー・実行。PlSelectTileStateを継承し、カーソル移動のたびにプレビューを更新する)
+             *              ｜       ├─ PlSelectGroupMembersState (OPT1でのキャラクター登録時に自動遷移するグループ移動のメンバー選択。登録・解除はここでのみ可能)
+             *              ｜       ｜       ｜
+             *              ｜       ｜       └─ PlGroupMoveState (CONFIRMで遷移するグループ移動プレビュー・実行。カーソル移動のたびにプレビューを更新する)
              *              ｜       ｜
              *              ｜       └─ PlSelectCommandState
              *              ｜                    ｜
@@ -139,7 +141,9 @@ namespace Frontier.Battle
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false ) );
+            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectGroupMembersState>( false ) );
+            // Children[0].Children[5]はPlSelectGroupMembersState。その子にPlGroupMoveStateを追加
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(5).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false ) );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );

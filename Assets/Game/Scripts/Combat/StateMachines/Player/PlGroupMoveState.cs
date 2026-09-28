@@ -9,11 +9,12 @@ using static Constants;
 namespace Frontier.Battle
 {
     /// <summary>
-    /// PlSelectTileStateでOPT1入力によりグループ移動の登録者が0人から1人になった際に自動遷移する、
-    /// グループ移動のプレビュー・実行ステートです。PlSelectTileStateを継承し、グリッドカーソル移動や
-    /// OPT1による登録操作のたびに、登録された各キャラクターを貪欲法によって目的地(現在のカーソル位置)
-    /// 周辺の到達可能な空きタイルへ割り当て直し、ゴースト表示・移動経路矢印によるプレビューを更新します。
+    /// PlSelectGroupMembersStateでのCONFIRM入力により遷移する、グループ移動のプレビュー・実行ステートです。
+    /// PlSelectTileStateを継承し、グリッドカーソル移動のたびに、登録された各キャラクターを貪欲法によって
+    /// 目的地(現在のカーソル位置)周辺の到達可能な空きタイルへ割り当て直し、ゴースト表示・移動経路矢印による
+    /// プレビューを更新します。このステートでは新たなキャラクターの登録・解除は行えません。
     /// CONFIRM入力を受けると、その時点のプレビュー通りに全キャラクターを同時に移動させます。
+    /// キャンセル時は登録を維持したままPlSelectGroupMembersStateへ戻ります。
     /// </summary>
     public class PlGroupMoveState : PlSelectTileState
     {
@@ -60,7 +61,7 @@ namespace Frontier.Battle
                 // カーソル移動・文言更新・登録者の失格判定はPlSelectTileStateの実装をそのまま再利用する
                 if( base.Update() ) { return true; }
 
-                // OPT1による登録解除やPruneIneligibleRegistrationsによって登録者が0人になった場合は自動的に戻る
+                // PruneIneligibleRegistrationsによって登録者が0人になった場合は自動的に戻る
                 if( _groupMoveRegistrationList.IsEmpty )
                 {
                     Back();
@@ -112,13 +113,12 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            // キャンセル等、プレビューフェーズのまま終了する場合はゴースト・矢印・予約タイルを後始末し、
-            // 登録していたキャラクターも全て解放する(実行フェーズへ進んだ場合はEXECUTE_MOVE/END側で
-            // 予約解放・後始末・登録解除が既に完了しているため対象外)
+            // キャンセル等、プレビューフェーズのまま終了する場合はゴースト・矢印・予約タイルを後始末する。
+            // 登録はメンバー選択(PlSelectGroupMembersState)へ戻った後も続けて使うため維持する
+            // (実行フェーズへ進んだ場合はEXECUTE_MOVE/END側で予約解放・後始末・登録解除が既に完了しているため対象外)
             if( Phase.PREVIEW == _phase )
             {
                 ClearPreview();
-                ClearAllRegistrations();
             }
 
             return base.ExitState();
@@ -134,8 +134,7 @@ namespace Frontier.Battle
             _inputFcd.RegisterInputCodes(
                 (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                 (GuideIcon.CONFIRM,    "MOVE", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ),   0.0f, hashCode),
-                (GuideIcon.CANCEL,     "BACK", CanAcceptDefault, new AcceptContextInput( AcceptCancel ),    0.0f, hashCode),
-                (GuideIcon.OPT1, _inputOpt1StrWrapper, CanAcceptOpt1, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode)
+                (GuideIcon.CANCEL,     "BACK", CanAcceptDefault, new AcceptContextInput( AcceptCancel ),    0.0f, hashCode)
             );
         }
 
@@ -146,15 +145,6 @@ namespace Frontier.Battle
         {
             if( Phase.PREVIEW != _phase ) { return false; }
             return base.CanAcceptDefault();
-        }
-
-        /// <summary>
-        /// プレビューフェーズ中のみOPT1(登録・解除)を受け付けます
-        /// </summary>
-        protected override bool CanAcceptOpt1()
-        {
-            if( Phase.PREVIEW != _phase ) { return false; }
-            return base.CanAcceptOpt1();
         }
 
         /// <summary>
@@ -170,31 +160,6 @@ namespace Frontier.Battle
             }
 
             return isAccepted;
-        }
-
-        /// <summary>
-        /// OPT1入力を受けた際、カーソル上のキャラクターの登録・解除を切り替え、プレビューを再計算します。
-        /// 登録者が0人になった場合は元のタイル選択ステートへ自動的に戻ります。
-        /// </summary>
-        protected override bool AcceptOpt1( InputContext context )
-        {
-            if( !AcceptOpt1Core( context ) ) { return false; }
-
-            Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            if( null == character ) { return false; }
-
-            ToggleGroupMoveRegistration( character, out _ );
-
-            if( _groupMoveRegistrationList.IsEmpty )
-            {
-                Back();
-            }
-            else
-            {
-                RefreshGroupMovePreview();
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -317,19 +282,6 @@ namespace Frontier.Battle
             ReleaseCurrentReservations();
 
             _assignments.Clear();
-        }
-
-        /// <summary>
-        /// グループ移動の登録キャラクターを全て解放します(マテリアルを元に戻した上で登録リストをクリアします)
-        /// </summary>
-        private void ClearAllRegistrations()
-        {
-            foreach( var key in _groupMoveRegistrationList.GetAll() )
-            {
-                _btlRtnCtrl.BtlCharaCdr.GetPlayer( key )?.RestoreMaterialsOriginalColor();
-            }
-
-            _groupMoveRegistrationList.Clear();
         }
 
         /// <summary>
