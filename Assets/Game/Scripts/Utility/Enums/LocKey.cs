@@ -100,4 +100,7 @@ public enum LocKey
     // ショップ画面の購入確認(会話ウィンドウ内のYes/No確認)/購入後のお礼
     UI_TALK_SHOP_PURCHASE_CONFIRM,
     UI_TALK_SHOP_THANKS,
+
+    // 戦闘UI 操作状態の案内(グループ移動のメンバー選択中)
+    UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS,
 }

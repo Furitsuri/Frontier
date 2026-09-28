@@ -238,6 +238,18 @@ namespace Frontier.Entities
             } );
         }
 
+        /// <summary>
+        /// 移動可能なタイルのみを描画します。DrawMoveableRangeと異なり、攻撃が到達可能な立ち位置(REACHABLE_ATTACK)も
+        /// 移動可能タイルとして描画するため、攻撃に関する色が混ざりません(複数キャラクターの移動範囲を同時に示す場合など)
+        /// </summary>
+        public void DrawMoveOnlyRange()
+        {
+            _actionableRangeRdr.DrawRange( TileMapType.MOVEABLE, tileData => new (MeshType, bool)[]
+            {
+                ( MeshType.MOVE,                    0 <= tileData.EstimatedMoveRange ),
+            } );
+        }
+
         public void DrawAttackableRange()
         {
             // メッシュタイプとそれに対応する描画条件( MEMO : 描画優先度の高い順に並べること )

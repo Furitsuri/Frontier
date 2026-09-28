@@ -189,7 +189,7 @@ namespace Frontier.Battle
             if( isAcceptDirection )
             {
                 RefreshDispParameterView();
-                _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+                RefreshHoveredRangeDisplay();
             }
 
             return isAcceptDirection;
@@ -374,7 +374,7 @@ namespace Frontier.Battle
             base.OnActivated();
 
             // 新規開始・中断からの再開いずれの場合も、現在のカーソル位置に応じてホバー範囲表示を同期する
-            _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            RefreshHoveredRangeDisplay();
 
             if( _isWaitingForTileMenuResult )
             {
@@ -397,6 +397,15 @@ namespace Frontier.Battle
             _hoveredRangeDisplay.Clear();
 
             return base.ExitState();
+        }
+
+        /// <summary>
+        /// 現在のカーソル位置に応じて、カーソル上のキャラクターの移動・攻撃範囲表示(ホバー範囲表示)を更新します。
+        /// ホバー範囲表示を行わない派生ステートではオーバーライドしてください。
+        /// </summary>
+        protected virtual void RefreshHoveredRangeDisplay()
+        {
+            _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
         }
 
         private void RefreshDispParameterView()

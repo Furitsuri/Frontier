@@ -228,8 +228,9 @@ namespace Frontier.Battle
 
                 actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
                 // 登録キャラクターごとに移動可能範囲を描画する。タイル毎にオーナーキー別のメッシュとして
-                // Y軸方向にずらして描画されるため、他キャラクターの範囲と重なっても埋もれず個別に視認できる
-                actionRangeCtrl.DrawMoveableRange();
+                // Y軸方向にずらして描画されるため、他キャラクターの範囲と重なっても埋もれず個別に視認できる。
+                // 複数キャラクターの範囲が重なるため、攻撃関連の色は混ぜずに移動可能タイルのみを描画する
+                actionRangeCtrl.DrawMoveOnlyRange();
 
                 int bestIdx   = dprtIdx;
                 int bestRange = int.MaxValue;

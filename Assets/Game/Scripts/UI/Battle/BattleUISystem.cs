@@ -35,6 +35,9 @@ namespace Frontier.UI
         [Header( "SkillDetailUI" )]
         public SkillDetailUI SkillDetail;       // PlSelectSkillState中のスキル詳細情報パネル
 
+        [Header( "GuideMessageUI" )]
+        public BattleGuideMessageUI GuideMessage; // 画面中央上部の操作状態の案内文言
+
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
@@ -101,6 +104,7 @@ namespace Frontier.UI
             GameOver?.Setup();
             CommandNameView?.Setup();
             SkillDetail?.Setup();
+            GuideMessage?.Setup();
 
             DamageValue.Init( _rectTransform, _uiCamera );
             HpGauge.Init( _rectTransform, _uiCamera );

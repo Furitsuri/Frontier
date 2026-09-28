@@ -1,4 +1,7 @@
 ﻿using Frontier.Entities;
+using Frontier.Stage;
+using System.Collections.Generic;
+using System.Linq;
 using static Constants;
 
 namespace Frontier.Battle
@@ -9,6 +12,7 @@ namespace Frontier.Battle
     /// OPT1による他キャラクターの登録・解除のみを受け付けます(ゴースト・移動経路のプレビューは行いません)。
     /// CONFIRM入力を受けると、登録済みのキャラクターを対象としてPlGroupMoveState(プレビュー・実行)へ遷移します。
     /// グループ移動への新たなキャラクターの登録は、このステートの中でのみ行えます。
+    /// 登録中のキャラクターそれぞれの移動可能範囲を(攻撃関連の色を混ぜずに)表示し、画面上部に選択中である旨の案内を表示します。
     /// </summary>
     public class PlSelectGroupMembersState : PlSelectTileState
     {
@@ -16,6 +20,9 @@ namespace Frontier.Battle
         {
             GROUP_MOVE = 0,
         }
+
+        // 移動可能範囲を描画済みのキャラクター(登録リストとの差分で描画・消去を行う)
+        private readonly List<CharacterKey> _drawnRangeKeys = new List<CharacterKey>();
 
         public override bool Update()
         {
@@ -30,16 +37,51 @@ namespace Frontier.Battle
                 return true;
             }
 
+            // 失格判定等で登録内容が変化した場合にも、移動可能範囲の表示を追従させる
+            SyncMoveRangeDisplay();
+
             return ( 0 <= TransitIndex );
+        }
+
+        public override object PauseState()
+        {
+            // PlGroupMoveStateは自前でプレビュー用の移動可能範囲を描画するため、ここでの表示・案内は一旦消去する
+            ClearAllMoveRanges();
+            _presenter.HideGuideMessage();
+
+            return base.PauseState();
         }
 
         public override object ExitState()
         {
             // キャンセル等でタイル選択へ戻る場合は、登録していたキャラクターを全て解放する
             // (PlGroupMoveStateへの遷移はPauseStateとなるため、ここは呼ばれず登録は維持される)
+            ClearAllMoveRanges();
+            _presenter.HideGuideMessage();
             ClearAllRegistrations();
 
             return base.ExitState();
+        }
+
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            // 新規開始時、及びPlGroupMoveStateから戻った際(向こうで移動可能範囲の描画が消去されている)のいずれも、
+            // 登録中の全キャラクターの移動可能範囲を描き直す
+            ClearAllMoveRanges();
+            SyncMoveRangeDisplay();
+
+            _presenter.ShowGuideMessage( LocKey.UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS );
+        }
+
+        /// <summary>
+        /// メンバー選択中は登録キャラクターの移動可能範囲のみを表示するため、カーソル上のキャラクターの
+        /// 移動・攻撃範囲表示(ホバー範囲表示)は行わず、遷移元から引き継いだ表示も消去します
+        /// </summary>
+        protected override void RefreshHoveredRangeDisplay()
+        {
+            _hoveredRangeDisplay.Clear();
         }
 
         /// <summary>
@@ -96,8 +138,64 @@ namespace Frontier.Battle
             {
                 Back();
             }
+            else
+            {
+                SyncMoveRangeDisplay();
+            }
 
             return true;
+        }
+
+        /// <summary>
+        /// 登録リストと描画済みリストの差分を取り、新たに登録されたキャラクターの移動可能範囲を描画し、
+        /// 登録解除されたキャラクターの移動可能範囲を消去します
+        /// </summary>
+        private void SyncMoveRangeDisplay()
+        {
+            for( int i = _drawnRangeKeys.Count - 1; 0 <= i; --i )
+            {
+                if( _groupMoveRegistrationList.GetAll().Contains( _drawnRangeKeys[i] ) ) { continue; }
+
+                ClearMoveRange( _drawnRangeKeys[i] );
+                _drawnRangeKeys.RemoveAt( i );
+            }
+
+            foreach( var key in _groupMoveRegistrationList.GetAll() )
+            {
+                if( _drawnRangeKeys.Contains( key ) ) { continue; }
+
+                Player character = _btlRtnCtrl.BtlCharaCdr.GetPlayer( key );
+                if( null == character ) { continue; }
+
+                int dprtIdx         = character.BattleParams.TmpParam.CurrentTileIndex;
+                float dprtHeight    = _stageCtrl.GetTileStaticData( dprtIdx ).Height;
+                var actionRangeCtrl = character.BattleLogic.ActionRangeCtrl;
+
+                // 登録キャラクターごとに描画する。タイル毎にオーナーキー別のメッシュとしてY軸方向にずらして描画されるため、
+                // 他キャラクターの範囲と重なっても埋もれず個別に視認できる
+                actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
+                actionRangeCtrl.DrawMoveOnlyRange();
+
+                _drawnRangeKeys.Add( key );
+            }
+        }
+
+        /// <summary>
+        /// 描画済みの全キャラクターの移動可能範囲を消去します
+        /// </summary>
+        private void ClearAllMoveRanges()
+        {
+            foreach( var key in _drawnRangeKeys )
+            {
+                ClearMoveRange( key );
+            }
+
+            _drawnRangeKeys.Clear();
+        }
+
+        private void ClearMoveRange( CharacterKey key )
+        {
+            _btlRtnCtrl.BtlCharaCdr.GetPlayer( key )?.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
         }
 
         /// <summary>

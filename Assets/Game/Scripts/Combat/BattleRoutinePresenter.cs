@@ -269,6 +269,22 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetTileMenuActive( false );
         }
 
+        /// <summary>
+        /// 画面中央上部に操作状態の案内文言を表示します
+        /// </summary>
+        public void ShowGuideMessage( LocKey messageKey )
+        {
+            _uiSystem.BattleUi.GuideMessage.Show( messageKey );
+        }
+
+        /// <summary>
+        /// 画面中央上部の操作状態の案内文言を非表示にします
+        /// </summary>
+        public void HideGuideMessage()
+        {
+            _uiSystem.BattleUi.GuideMessage.Hide();
+        }
+
         public void SetConfirmMessage( string message )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.SetMessageText( message );
