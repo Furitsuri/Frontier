@@ -348,16 +348,27 @@ namespace Frontier.Entities
                 return;
             }
 
-            int colNum    = _stageCtrl.GetGridNumsXZ().Item2;
-            int pathCount = proposedMovePath.Count;
+            _moveDirectionArrowPlacer.PlaceArrows( BuildPathArrowEntries( currentTileIndex, proposedMovePath, _stageCtrl.GetGridNumsXZ().Item2 ) );
+        }
+
+        /// <summary>
+        /// 出発タイルと経路から、経路に沿った各タイルの進行方向矢印の配置情報を作成します。
+        /// 出発タイル・最終タイル(目的地)には矢印を配置しません。
+        /// </summary>
+        /// <param name="currentTileIndex">出発タイル</param>
+        /// <param name="path">出発タイルを含まない、目的地までの経路</param>
+        /// <param name="colNum">グリッドの列数</param>
+        public static List<MoveDirectionArrowPlacer.Entry> BuildPathArrowEntries( int currentTileIndex, IReadOnlyList<WaypointInformation> path, int colNum )
+        {
+            int pathCount = path.Count;
             var entries   = new List<MoveDirectionArrowPlacer.Entry>( pathCount );
 
             // 移動目的地となる最終タイルには矢印を配置しないため、pathCount - 1 までを走査する
             for ( int i = 0; i < pathCount - 1; ++i )
             {
-                int prevTileIndex = ( i == 0 ) ? currentTileIndex : proposedMovePath[i - 1].TileIndex;
-                int thisTileIndex = proposedMovePath[i].TileIndex;
-                int nextTileIndex = proposedMovePath[i + 1].TileIndex;
+                int prevTileIndex = ( i == 0 ) ? currentTileIndex : path[i - 1].TileIndex;
+                int thisTileIndex = path[i].TileIndex;
+                int nextTileIndex = path[i + 1].TileIndex;
 
                 ( int inDx, int inDz )   = IndexDeltaToXZ( thisTileIndex - prevTileIndex, colNum );
                 ( int outDx, int outDz ) = IndexDeltaToXZ( nextTileIndex - thisTileIndex, colNum );
@@ -386,7 +397,7 @@ namespace Frontier.Entities
                 entries.Add( new MoveDirectionArrowPlacer.Entry( thisTileIndex, dirType, rotation ) );
             }
 
-            _moveDirectionArrowPlacer.PlaceArrows( entries );
+            return entries;
         }
 
         /// <summary>

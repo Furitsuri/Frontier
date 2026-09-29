@@ -23,6 +23,7 @@ namespace Frontier.Battle
 
         [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
         [Inject] protected HoveredCharacterRangeDisplay _hoveredRangeDisplay = null;
+        [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
         private bool _isWaitingForTileMenuResult;
@@ -192,6 +193,7 @@ namespace Frontier.Battle
             {
                 RefreshDispParameterView();
                 RefreshHoveredRangeDisplay();
+                _provisionalOriginDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
             }
 
             return isAcceptDirection;
@@ -435,6 +437,9 @@ namespace Frontier.Battle
 
             // 新規開始・中断からの再開いずれの場合も、現在のカーソル位置に応じてホバー範囲表示を同期する
             RefreshHoveredRangeDisplay();
+            // カーソル上のキャラクターが暫定的に移動している場合は、移動前の位置を示す目印を表示する。
+            // (コマンド選択へ遷移しても目印は残し、確定・巻き戻しされた時点で目印自身が非表示にする)
+            _provisionalOriginDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
 
             if( _isWaitingForTileMenuResult )
             {

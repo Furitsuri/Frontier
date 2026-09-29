@@ -31,6 +31,7 @@ namespace Frontier
             Container.Bind<SkillActionReservationQueue>().AsSingle();
             Container.Bind<GroupMoveRegistrationList>().AsSingle();
             Container.Bind<HoveredCharacterRangeDisplay>().AsSingle();
+            Container.Bind<ProvisionalMoveOriginDisplay>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsSingle();

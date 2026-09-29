@@ -218,7 +218,11 @@ namespace Frontier.Battle
             // これを行わないと、コマンド選択でのキャンセル(RevertBeforeMoving)時に未初期化の情報で巻き戻してしまう
             foreach( var assignment in _assignments )
             {
-                if( assignment.IsMoving ) { assignment.Character.HoldBeforeMoveInfo(); }
+                if( !assignment.IsMoving ) { continue; }
+
+                assignment.Character.HoldBeforeMoveInfo();
+                // 移動前の位置を示す目印で経路を表示するため、プレビュー通りの(=実際に移動する)経路を保持しておく
+                assignment.Character.HoldMovedPath( assignment.Character.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath );
             }
 
             ClearMoveRangeDisplay();

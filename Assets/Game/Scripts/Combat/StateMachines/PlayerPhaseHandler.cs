@@ -9,6 +9,7 @@ namespace Frontier.Battle
     {
         [Inject] private SkillActionReservationQueue _reservationQueue = null;
         [Inject] private GroupMoveRegistrationList _groupMoveRegistrationList = null;
+        [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
 
         private PlConfirmReservedActionsState _confirmReservedActionsState = null;
 
@@ -78,6 +79,14 @@ namespace Frontier.Battle
                 }
                 _groupMoveRegistrationList.Clear();
             }
+
+            // ターン終了によって、暫定的に移動していたキャラクターの移動を確定させる
+            // (コマンド履歴が残ったままだと、次のターンに前ターンの位置へ巻き戻せてしまうため)
+            foreach( Player player in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER ) )
+            {
+                player.ClearCommandHistory();
+            }
+            _provisionalOriginDisplay.Clear();
 
             base.Exit();
         }

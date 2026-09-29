@@ -42,6 +42,7 @@ namespace Frontier.Entities
         {
             _prevMoveInfo.tmpParam  = _readOnlyOwner.Value.BattleParams.TmpParam.Clone();
             _prevMoveInfo.rotDir    = _readOnlyOwner.Value.GetRotation();
+            _prevMoveInfo.movedPath = null;     // 経路を保持する場合は、呼び出し側で別途HoldMovedPathを呼び出す
         }
 
         public void PushCommandHistory( COMMAND_TAG commandTag )

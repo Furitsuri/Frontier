@@ -16,6 +16,8 @@ namespace Frontier.Entities
         {
             public TemporaryParameter tmpParam;
             public Quaternion rotDir;
+            // 移動前の位置から移動後の位置までに実際に通った経路(出発タイルを含まない)。経路を保持しない移動の場合はnull
+            public List<WaypointInformation> movedPath;
 
             /// <summary>
             /// 情報をリセットします
@@ -23,7 +25,8 @@ namespace Frontier.Entities
             public void Reset()
             {
                 tmpParam.Reset();
-                rotDir = Quaternion.identity;
+                rotDir      = Quaternion.identity;
+                movedPath   = null;
             }
         }
 
@@ -38,6 +41,15 @@ namespace Frontier.Entities
         public void HoldBeforeMoveInfo()
         {
             ( ( PlayerBattleLogic ) _battleLogic ).HoldBeforeMoveInfo();
+        }
+
+        /// <summary>
+        /// 移動で実際に通った経路を保持します(移動前の位置を示す目印の経路表示に使用します)。
+        /// HoldBeforeMoveInfoの後に呼び出してください。
+        /// </summary>
+        public void HoldMovedPath( IReadOnlyList<WaypointInformation> path )
+        {
+            PrevMoveInformaiton.movedPath = ( null == path ) ? null : new List<WaypointInformation>( path );
         }
 
         public void PushCommandHistory( COMMAND_TAG commandTag )
@@ -108,6 +120,17 @@ namespace Frontier.Entities
             if( playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.WAIT ) ) { return false; }
 
             return true;
+        }
+
+        /// <summary>
+        /// 暫定的に移動している(移動後、攻撃・スキル・待機の実行やターン終了による確定がされておらず、
+        /// キャンセルで移動前に戻せる)状態かどうかを取得します
+        /// </summary>
+        public bool IsProvisionallyMoved()
+        {
+            if( null == _battleLogic ) { return false; }
+
+            return IsEnableRevertState() && ( ( PlayerBattleLogic ) _battleLogic ).IsContainsCommandHistory( COMMAND_TAG.MOVE );
         }
 
         /// <summary>
