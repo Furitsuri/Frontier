@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Frontier.Registries
 {
@@ -33,7 +34,8 @@ namespace Frontier.Registries
         [SerializeField] private GameObject tileMeshObject;             // TileMeshプレハブ
         [SerializeField] private GameObject[] _tilePrefabs;             // タイルプレハブ配列
         [SerializeField] private GameObject[] _moveDirectionPrefabs;    // 移動方向プレハブ配列
-        [SerializeField] private GameObject _tileHighlightMarkerObject; // 特定タイルを目立たせる汎用マーカープレハブ
+        [FormerlySerializedAs( "_tileHighlightMarkerObject" )]
+        [SerializeField] private GameObject _tileOutlineMarkerObject;   // 特定タイルの位置を外枠で示す汎用マーカープレハブ
         [SerializeField] private Material _stageBackgroundGradientMaterial; // ステージ背景(Skybox)グラデーション用マテリアル
 
         [Header( "Effect関連" )]
@@ -57,7 +59,7 @@ namespace Frontier.Registries
         public GameObject TileMeshPrefab => tileMeshObject;
         public GameObject[] TilePrefabs => _tilePrefabs;
         public GameObject[] MoveDirectionPrefabs => _moveDirectionPrefabs;
-        public GameObject TileHighlightMarkerPrefab => _tileHighlightMarkerObject;
+        public GameObject TileOutlineMarkerPrefab => _tileOutlineMarkerObject;
         public Material StageBackgroundGradientMaterial => _stageBackgroundGradientMaterial;
     }
 }

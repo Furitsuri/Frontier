@@ -8,7 +8,7 @@ namespace Frontier.Entities
 {
     /// <summary>
     /// 暫定的に移動した(移動が確定していない)キャラクターの移動前の位置を示す目印です。
-    /// 移動前のタイルを汎用のタイル強調マーカー(TileHighlightMarker)で目立たせた上でキャラクターのモノクロの残像を表示し、
+    /// 移動前のタイルを汎用のタイル外枠マーカー(TileOutlineMarker)で目立たせた上でキャラクターのモノクロの残像を表示し、
     /// そこから現在の位置までに実際に通った経路をキャラクター毎の色の矢印で示します。
     /// 残像は「過去」の位置を示すため、移動先などの「未来」を示す通常のゴースト(元の色のまま半透明)とは見た目を変えています。
     /// 表示中は毎フレーム対象キャラクターの状態を確認し、確定・巻き戻し等で暫定状態でなくなった時点で自動的に非表示になります。
@@ -19,7 +19,7 @@ namespace Frontier.Entities
         [Inject] private StageController _stageCtrl         = null;
         [Inject] private PrefabRegistry _prefabReg          = null;
 
-        private TileHighlightMarker _tileMarker         = null;
+        private TileOutlineMarker _tileMarker         = null;
         private MoveDirectionArrowPlacer _arrowPlacer   = null;
         private GhostObject _afterimage                 = null;
         private Player _afterimageSource                = null;     // 残像の生成元のキャラクター(同じキャラクターであれば残像を使い回す)
@@ -28,11 +28,11 @@ namespace Frontier.Entities
         public Player Target => _target;
 
         /// <summary>
-        /// タイルの強調表示・矢印の配置に用いるインスタンスを生成します
+        /// タイルの外枠表示・矢印の配置に用いるインスタンスを生成します
         /// </summary>
         public void Setup()
         {
-            LazyInject.GetOrCreate( ref _tileMarker, () => _hierarchyBld.CreateComponentAndOrganize<TileHighlightMarker>( _prefabReg.TileHighlightMarkerPrefab, false ) );
+            LazyInject.GetOrCreate( ref _tileMarker, () => _hierarchyBld.CreateComponentAndOrganize<TileOutlineMarker>( _prefabReg.TileOutlineMarkerPrefab, false ) );
             LazyInject.GetOrCreate( ref _arrowPlacer, () => _hierarchyBld.InstantiateWithDiContainer<MoveDirectionArrowPlacer>( false ) );
 
             Hide();
@@ -50,7 +50,7 @@ namespace Frontier.Entities
             int originTileIndex     = prevMoveInfo.tmpParam.CurrentTileIndex;
             var originTileData      = _stageCtrl.GetTileStaticData( originTileIndex );
 
-            // 移動前のタイルを強調表示する
+            // 移動前のタイルを外枠で示す
             _tileMarker.Show( originTileData.CursorStandPos );
 
             // 残像: 移動前のタイルに、移動前の向きで配置する
