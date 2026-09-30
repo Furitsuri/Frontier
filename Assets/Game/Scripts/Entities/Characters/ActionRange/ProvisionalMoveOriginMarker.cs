@@ -9,7 +9,7 @@ namespace Frontier.Entities
     /// <summary>
     /// 暫定的に移動した(移動が確定していない)キャラクターの移動前の位置を示す目印です。
     /// 移動前のタイルを汎用のタイル外枠マーカー(TileOutlineMarker)で目立たせた上でキャラクターのモノクロの残像を表示し、
-    /// そこから現在の位置までに実際に通った経路をキャラクター毎の色の矢印で示します。
+    /// そこから現在の位置までに実際に通った経路を矢印で示します。外枠・矢印はいずれもキャラクター毎の色(CharacterKeyColor)で表示します。
     /// 残像は「過去」の位置を示すため、移動先などの「未来」を示す通常のゴースト(元の色のまま半透明)とは見た目を変えています。
     /// 表示中は毎フレーム対象キャラクターの状態を確認し、確定・巻き戻し等で暫定状態でなくなった時点で自動的に非表示になります。
     /// </summary>
@@ -50,7 +50,8 @@ namespace Frontier.Entities
             int originTileIndex     = prevMoveInfo.tmpParam.CurrentTileIndex;
             var originTileData      = _stageCtrl.GetTileStaticData( originTileIndex );
 
-            // 移動前のタイルを外枠で示す
+            // 移動前のタイルを外枠で示す。色は経路の矢印と同じくキャラクター毎の色とし、どのキャラクターの移動前の位置かを判別できるようにする
+            _tileMarker.SetColor( CharacterKeyColor.Resolve( target.GetCharacterKey() ) );
             _tileMarker.Show( originTileData.CursorStandPos );
 
             // 残像: 移動前のタイルに、移動前の向きで配置する

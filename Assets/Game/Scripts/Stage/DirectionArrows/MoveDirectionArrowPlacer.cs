@@ -41,7 +41,7 @@ public class MoveDirectionArrowPlacer
     /// </summary>
     public void Init( in CharacterKey charaKey )
     {
-        _arrowColor = ResolveArrowColor( charaKey );
+        _arrowColor = CharacterKeyColor.Resolve( charaKey );
     }
 
     /// <summary>
@@ -90,24 +90,6 @@ public class MoveDirectionArrowPlacer
     // -------------------------------------------------------
     // Private
     // -------------------------------------------------------
-
-    /// <summary>
-    /// CharacterKey から矢印の表示色を決定します。
-    /// CHARACTER_TAG ごとに色相帯を割り当て、CharacterIndex で帯内の色相を30°ずつずらします。
-    /// </summary>
-    private static Color ResolveArrowColor( in CharacterKey charaKey )
-    {
-        float baseHue = charaKey.CharacterTag switch
-        {
-            CHARACTER_TAG.PLAYER => 210f,
-            CHARACTER_TAG.ENEMY  =>   0f,
-            CHARACTER_TAG.OTHER  => 120f,
-            _                    =>  60f,
-        };
-
-        float hue = ( ( baseHue + charaKey.CharacterIndex * 10f ) % 360f ) / 360f;
-         return Color.HSVToRGB( hue, 0.85f, 1.0f );
-    }
 
     /// <summary>
     /// GameObject 以下の全 Renderer にマテリアルインスタンスを生成し、
