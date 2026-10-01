@@ -123,14 +123,27 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 暫定的に移動している(移動後、攻撃・スキル・待機の実行やターン終了による確定がされておらず、
-        /// キャンセルで移動前に戻せる)状態かどうかを取得します
+        /// グループ移動によって暫定的に移動した状態として記録します。移動コマンドをコマンド履歴へ積んだ後に呼び出してください。
+        /// </summary>
+        public void MarkGroupMoveProvisional()
+        {
+            ( ( PlayerBattleLogic ) _battleLogic ).MarkGroupMoveProvisional();
+        }
+
+        /// <summary>
+        /// グループ移動によって暫定的に移動している(移動後、攻撃・スキルの実行確定や待機、ターン終了による確定がされておらず、
+        /// キャンセルで移動前に戻せる)状態かどうかを取得します。
+        /// 単体移動後のコマンド選択中は、操作中のキャラクターが明らかなため対象に含めません。
         /// </summary>
         public bool IsProvisionallyMoved()
         {
             if( null == _battleLogic ) { return false; }
 
-            return IsEnableRevertState() && ( ( PlayerBattleLogic ) _battleLogic ).IsContainsCommandHistory( COMMAND_TAG.MOVE );
+            var playerBattleLogic = ( PlayerBattleLogic ) _battleLogic;
+
+            return playerBattleLogic.IsGroupMoveProvisional
+                && IsEnableRevertState()
+                && playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.MOVE );
         }
 
         /// <summary>

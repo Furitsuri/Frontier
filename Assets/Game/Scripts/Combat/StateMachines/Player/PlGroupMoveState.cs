@@ -127,6 +127,8 @@ namespace Frontier.Battle
                         {
                             assignment.Character.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
                             assignment.Character.PushCommandHistory( COMMAND_TAG.MOVE );
+                            // 頭上の暫定移動アイコンや、移動前の位置を示す目印の表示対象とする
+                            assignment.Character.MarkGroupMoveProvisional();
                         }
 
                         _groupMoveRegistrationList.Remove( assignment.Character );

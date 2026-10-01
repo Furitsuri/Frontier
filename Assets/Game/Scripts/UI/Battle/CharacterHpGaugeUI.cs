@@ -12,11 +12,18 @@ using UnityEngine.UI;
 /// 別Imageを重ねてアルファ値を点滅させることで、伸縮ではなくフェードで減少量を表現します。
 /// 予測ダメージで対象のHPが0以下になる場合は、ゲージ左端に撃破確定アイコン(赤いバッジ+
 /// ばってん目のドクロ、Assets/Game/Textures/UI/DefeatIcon.png)を表示します。
+/// 加えて、対象が暫定的に移動している間は、ゲージの上部に暫定移動アイコン(丸いバッジ+折り返し矢印)を表示します。
+/// こちらは生死に関わる情報ではないため、ゲージには連ねず離して配置します。
 /// </summary>
 public class CharacterHpGaugeUI : UiMonoBehaviour
 {
     [Header( "撃破確定アイコン" )]
     [SerializeField] private Sprite _defeatIconSprite;
+
+    [Header( "暫定移動アイコン" )]
+    [Tooltip( "移動が確定していない(キャンセルで移動前に戻せる)キャラクターの頭上に表示するアイコン。" +
+              "HPゲージの子オブジェクトとして配置し、位置・大きさ・画像・明滅アニメーションはオブジェクト側で設定します" )]
+    [SerializeField] private GameObject _provisionalMoveIcon;
 
     private RectTransform _btlUiRectTransform;
     private Camera _btlUiCamera;
@@ -74,6 +81,22 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
         float curRatio = ( status.MaxHP <= 0 ) ? 0f : ( float ) status.CurHP / status.MaxHP;
 
         UpdatePredictedDamageDisplay( curRatio, status.MaxHP );
+        UpdateProvisionalMoveIcon();
+    }
+
+    /// <summary>
+    /// 対象キャラクターが暫定的に移動している(移動が確定していない)間のみ、暫定移動アイコンを表示します。
+    /// アイコンの見た目・位置・明滅はオブジェクト側の設定に委ね、ここでは表示・非表示の切り替えのみを行います。
+    /// </summary>
+    private void UpdateProvisionalMoveIcon()
+    {
+        if( null == _provisionalMoveIcon ) { return; }
+
+        bool isProvisional = ( TargetCharacter is Player player ) && player.IsProvisionallyMoved();
+        if( _provisionalMoveIcon.activeSelf != isProvisional )
+        {
+            _provisionalMoveIcon.SetActive( isProvisional );
+        }
     }
 
     /// <summary>

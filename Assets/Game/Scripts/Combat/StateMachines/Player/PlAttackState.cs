@@ -199,6 +199,10 @@ namespace Frontier.Battle
         /// </summary>
         private void ExecuteAttack()
         {
+            // 攻撃の実行が確定した時点で移動前へは戻せなくなるため、演出の完了(FinalizeCommand)を待たずに行動履歴をクリアする
+            // (暫定移動の表示が攻撃演出中も残り続けないようにするため)
+            _plOwner.ClearCommandHistory();
+
             _plOwner.BattleLogic.ConsumeActionGauge();  // キャラクターのアクションゲージを消費
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
             _targetCharacter.BattleLogic.ConsumeActionGauge();

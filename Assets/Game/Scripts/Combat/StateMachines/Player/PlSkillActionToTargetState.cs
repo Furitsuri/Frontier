@@ -347,6 +347,10 @@ namespace Frontier.Battle
 
         private void ExecuteSkill()
         {
+            // スキルの実行が確定した時点で移動前へは戻せなくなるため、演出の完了(FinalizeCommand)を待たずに行動履歴をクリアする
+            // (暫定移動の表示がスキル演出中も残り続けないようにするため)
+            _plOwner.ClearCommandHistory();
+
             // 連携攻撃ではない通常攻撃・非連携スキルは、キル確認を挟む場合も含めここが実行確定のタイミングとなるため、SkillBoxUIを元の位置に戻す
             _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );
             // カーソルハイライト(黄色の外枠フレーム)を解除する(元の位置に戻った後も枠が残ったままにならないようにするため)
@@ -449,6 +453,10 @@ namespace Frontier.Battle
         private void ExecuteCooperativeSkill()
         {
             _isCooperativeSkill = true;
+
+            // 連携攻撃の実行が確定した時点で移動前へは戻せなくなるため、演出の完了を待たずに行動履歴をクリアする
+            // (連携攻撃者側は予約時点で既にクリア済み)
+            _plOwner.ClearCommandHistory();
 
             var cooperativeAttackers = _candidateFinder.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
             var entries = new List<CooperativeSkillEntry>( cooperativeAttackers.Count + 1 );
