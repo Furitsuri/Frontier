@@ -117,6 +117,8 @@ namespace Frontier.Battle
              *              ｜       ├─ PlSelectGroupMembersState (OPT1でのキャラクター登録時に自動遷移するグループ移動のメンバー選択。登録・解除はここでのみ可能)
              *              ｜       ｜       ｜
              *              ｜       ｜       └─ PlGroupMoveState (CONFIRMで遷移するグループ移動プレビュー・実行。カーソル移動のたびにプレビューを更新する)
+             *              ｜       ｜                ｜
+             *              ｜       ｜                └─ PlConfirmBlockUndoMoveState (移動先が、暫定移動中の他キャラクターの移動前の位置である場合の確認。PlMoveStateの子にも同一インスタンスを登録)
              *              ｜       ｜
              *              ｜       ├─ PlGroupMoveState (SUB3で全員を一括登録した際に直接遷移。上記と同一インスタンス)
              *              ｜       ｜
@@ -158,6 +160,10 @@ namespace Frontier.Battle
             RootNode.GetChildren<PhaseStateBase>(0).AddChild( groupMoveState );
             // Children[0].Children[5]はPlSelectGroupMembersState。その子にPlGroupMoveStateを追加
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(5).AddChild( groupMoveState );
+            // PlGroupMoveStateの子に、移動先が他キャラクターの移動前の位置である場合の確認(PlConfirmBlockUndoMoveState)を追加
+            // (PlMoveStateからも同じ確認へ遷移するため、単一インスタンスを共有する)
+            var confirmBlockUndoMoveState = _hierarchyBld.InstantiateWithDiContainer<PlConfirmBlockUndoMoveState>( false );
+            groupMoveState.AddChild( confirmBlockUndoMoveState );
             // Children[0].Children[0]はPlSelectCommandState
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );
@@ -166,6 +172,8 @@ namespace Frontier.Battle
             // Children[0].Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
+            // PlMoveStateのChildren[2]に、移動先が他キャラクターの移動前の位置である場合の確認を追加
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( confirmBlockUndoMoveState );
             // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateとPlConfirmKillReservedTargetStateを追加
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( characterStatusViewState );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
@@ -179,6 +187,8 @@ namespace Frontier.Battle
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillUseOptionState>( false ) );
             RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
+            // PlSkillActionToTargetStateのChildren[3]に、移動を伴うスキルの着地先が他キャラクターの移動前の位置である場合の確認を追加
+            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( confirmBlockUndoMoveState );
         }
     }
 }

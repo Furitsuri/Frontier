@@ -103,4 +103,8 @@ public enum LocKey
 
     // 戦闘UI 操作状態の案内(グループ移動のメンバー選択中)
     UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS,
+
+    // 移動先が、暫定移動中の他キャラクターの移動前の位置である場合の確認ダイアログ
+    // {0}に、移動前の位置へ戻せなくなるキャラクター名(複数の場合は区切り文字で連結)が入る書式文字列です
+    UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE,
 }

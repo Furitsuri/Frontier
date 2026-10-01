@@ -59,5 +59,6 @@
     "UI_TALK_SHOP_ASK_QUANTITY": "いくつ御購入されますか？",
     "UI_TALK_SHOP_PURCHASE_CONFIRM": "こちらでよろしいですか？",
     "UI_TALK_SHOP_THANKS": "御購入ありがとうございます。",
-    "UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS": "一緒に移動させるキャラクターを選んでください"
+    "UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS": "一緒に移動させるキャラクターを選んでください",
+    "UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE": "{0}が移動前の位置に戻せなくなります。\nよろしいですか？"
 }
