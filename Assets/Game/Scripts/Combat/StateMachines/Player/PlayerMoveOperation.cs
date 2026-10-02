@@ -82,7 +82,7 @@ namespace Frontier.Battle
         /// 実体が現在の経路のまま歩いた場合に止まるタイルを取得します
         /// (歩いている途中であれば経路の終点、止まっていれば現在立っているタイル)
         /// </summary>
-        private int GetStoppingTileIndex()
+        public int GetStoppingTileIndex()
         {
             MovePathHandler pathHdlr = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr;
             var movePath             = pathHdlr.ProposedMovePath;

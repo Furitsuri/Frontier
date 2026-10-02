@@ -16,6 +16,16 @@ namespace Frontier.Battle
             PL_MOVE_END,
         }
 
+        /// <summary>
+        /// 他のステートへ遷移する前の、実体の止め方です
+        /// </summary>
+        private enum StopMode
+        {
+            WALK_TO_DESTINATION = 0,    // 目的地(カーソル位置)まで歩かせる(移動先を確定させる遷移に使用する)
+            FINISH_CURRENT_PATH,        // 現在歩いている経路の終点まで歩かせる(カーソルが留まれないタイルにあり、実体が向かっている先で行動させる遷移に使用する)
+            STOP_AT_NEXT_TILE,          // 次に到達するタイルで止める(実体の位置が結果に関わらない、一時的な遷移に使用する)
+        }
+
         private enum TransitTag
         {
             ATTACK_ON_MOVE = 0,
@@ -30,8 +40,8 @@ namespace Frontier.Battle
         // 実体が歩いている途中で他のステートへ遷移すると、このステートの更新が止まっている間も実体が速度を持ったまま
         // 進み続けてしまう。そのため、このステートから他のステートへの遷移は必ずRequestTransitAfterStopを経由させること
         private System.Action _transitOnArrival = null;
-        // 遷移待ちの間、目的地(カーソル位置)まで歩かせるか(falseの場合は次に到達するタイルで止める)
-        private bool _isWalkingToDestinationBeforeTransit = false;
+        // 遷移待ちの間、目的地(カーソル位置)へ向けて経路を引き直し続けるか(falseの場合は現在の経路のまま歩かせる)
+        private bool _isRetargetingBeforeTransit = false;
         // 1キャラクター分の移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了させる)。
         // グループ移動(PlGroupMoveState)と同じ処理を用いることで、移動の処理とユーザーからの見え方を揃えている
         private PlayerMoveOperation _moveOperation = null;
@@ -51,16 +61,13 @@ namespace Frontier.Battle
         /// 待っている間は全ての入力を受け付けず、実体は高速で歩きます。既に止まっている場合は次の更新ですぐに遷移します。
         /// </summary>
         /// <param name="transit">実体が止まった後に行う遷移処理</param>
-        /// <param name="isWalkingToDestination">
-        /// true : 目的地(カーソル位置)まで歩かせてから遷移する(移動先を確定させる遷移に使用する)
-        /// false: 次に到達するタイルで止めてから遷移する(移動先を確定させない、一時的な遷移に使用する)
-        /// </param>
-        private void RequestTransitAfterStop( System.Action transit, bool isWalkingToDestination )
+        /// <param name="stopMode">遷移する前の、実体の止め方</param>
+        private void RequestTransitAfterStop( System.Action transit, StopMode stopMode )
         {
-            _transitOnArrival                       = transit;
-            _isWalkingToDestinationBeforeTransit    = isWalkingToDestination;
+            _transitOnArrival           = transit;
+            _isRetargetingBeforeTransit = ( StopMode.WALK_TO_DESTINATION == stopMode );
 
-            if( !isWalkingToDestination ) { _moveOperation.StopAtNextWaypoint(); }
+            if( StopMode.STOP_AT_NEXT_TILE == stopMode ) { _moveOperation.StopAtNextWaypoint(); }
         }
 
         /// <summary>
@@ -83,8 +90,13 @@ namespace Frontier.Battle
 
             if( !Methods.HasAnyFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return false; }
 
-            // 現在位置と指定位置の差が攻撃レンジ以内であることが条件
-            (int, int) ranges = _stageCtrl.CalcurateRanges( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _stageCtrl.GetCurrentGridIndex() );
+            // 実体が最終的に止まるタイル(歩いている途中であれば経路の終点、止まっていれば現在立っているタイル)と、
+            // 指定位置との差が攻撃レンジ以内であることが条件。
+            // 歩いている途中に攻撃対象を指定した場合は、向かっている先まで歩いてからそこで攻撃するため、止まるタイルを基準とする
+            int standTileIndex = ( null != _moveOperation && _moveOperation.IsActive )
+                ? _moveOperation.GetStoppingTileIndex()
+                : _plOwner.BattleParams.TmpParam.CurrentTileIndex;
+            (int, int) ranges = _stageCtrl.CalcurateRanges( standTileIndex, _stageCtrl.GetCurrentGridIndex() );
 
             return ranges.Item1 + ranges.Item2 <= _plOwner.GetStatusRef.attackRange;
         }
@@ -128,7 +140,7 @@ namespace Frontier.Battle
                     // 他のステートへの遷移待ちの場合は、実体が止まってから遷移する(待っている間は入力を受け付けず、高速で歩かせる)
                     if( null != _transitOnArrival )
                     {
-                        if( _moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, _isWalkingToDestinationBeforeTransit ) )
+                        if( _moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, _isRetargetingBeforeTransit ) )
                         {
                             var transit         = _transitOnArrival;
                             _transitOnArrival   = null;
@@ -335,18 +347,19 @@ namespace Frontier.Battle
             // 出発地点と同一グリッドであれば戻る(実体が出発地点へ歩いて戻っている途中の場合は、到着を待ってから戻る)
             if( currentIndex == _departTileIndex )
             {
-                RequestTransitAfterStop( () => Back(), true );
+                RequestTransitAfterStop( () => Back(), StopMode.WALK_TO_DESTINATION );
 
                 return true;
             }
             // 攻撃可能なキャラクターが存在している場合は攻撃へ遷移
             else if( null != tileData && Methods.HasAnyFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
-                // 実体を次に到達するタイルで止めてから攻撃へ遷移する。止まった位置から攻撃が届かなくなっていた場合は遷移しない
+                // 実体が歩いている途中の場合は、向かっている先(現在の経路の終点)まで歩かせてから攻撃へ遷移する。
+                // 攻撃が届くかどうかは、決定入力の受付時(CanAcceptConfirm)に同じく経路の終点を基準として判定済みだが、念のため到着後にも確認する
                 RequestTransitAfterStop( () =>
                 {
                     if( CanAttackOnMove( tileData ) ) { TransitAttackOnMoveState(); }
-                }, false );
+                }, StopMode.FINISH_CURRENT_PATH );
 
                 return true;
             }
@@ -362,7 +375,7 @@ namespace Frontier.Battle
                     _isWaitingForBlockUndoConfirmResult = true;
                     SetSendTransitionContext( blockedNameArray );
                     TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
-                }, true );
+                }, StopMode.WALK_TO_DESTINATION );
 
                 return true;
             }
@@ -402,7 +415,7 @@ namespace Frontier.Battle
                 // ステータス表示ステートに対象キャラクターを渡す
                 SetSendTransitionContext( statusTarget );
                 TransitState( ( int ) TransitTag.CHARACTER_STATUS );
-            }, false );
+            }, StopMode.STOP_AT_NEXT_TILE );
 
             return true;
         }
