@@ -93,6 +93,15 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 歩いている実体を、次に到達するタイルで止めるようにします(それより先の経路を破棄します)。
+        /// この後はUpdateWalkingをisRetargeting=falseで呼び出し、到着を待ってください。
+        /// </summary>
+        public void StopAtNextWaypoint()
+        {
+            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.TruncateAfterFocusedWaypoint();
+        }
+
+        /// <summary>
         /// 現在の位置で移動を完了させます。移動コマンドを使用済みにして行動履歴へ積み、移動前へ戻せる暫定移動の状態として記録します。
         /// ただし移動中に直接攻撃を行った場合は、既に行動が確定しているため暫定移動の状態にはしません。
         /// </summary>
