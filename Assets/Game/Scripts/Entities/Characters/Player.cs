@@ -123,17 +123,16 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// グループ移動によって暫定的に移動した状態として記録します。移動コマンドをコマンド履歴へ積んだ後に呼び出してください。
+        /// 移動(単体移動・グループ移動)によって暫定的に移動した状態として記録します。移動コマンドをコマンド履歴へ積んだ後に呼び出してください。
         /// </summary>
-        public void MarkGroupMoveProvisional()
+        public void MarkMoveProvisional()
         {
-            ( ( PlayerBattleLogic ) _battleLogic ).MarkGroupMoveProvisional();
+            ( ( PlayerBattleLogic ) _battleLogic ).MarkMoveProvisional();
         }
 
         /// <summary>
-        /// グループ移動によって暫定的に移動している(移動後、攻撃・スキルの実行確定や待機、ターン終了による確定がされておらず、
-        /// キャンセルで移動前に戻せる)状態かどうかを取得します。
-        /// 単体移動後のコマンド選択中は、操作中のキャラクターが明らかなため対象に含めません。
+        /// 暫定的に移動している(単体移動・グループ移動の後、攻撃・スキルの実行確定や待機、ターン終了による確定がされておらず、
+        /// タイル選択中のキャンセルで移動前に戻せる)状態かどうかを取得します。
         /// </summary>
         public bool IsProvisionallyMoved()
         {
@@ -141,7 +140,7 @@ namespace Frontier.Entities
 
             var playerBattleLogic = ( PlayerBattleLogic ) _battleLogic;
 
-            return playerBattleLogic.IsGroupMoveProvisional
+            return playerBattleLogic.IsMoveProvisional
                 && IsEnableRevertState()
                 && playerBattleLogic.IsContainsCommandHistory( COMMAND_TAG.MOVE );
         }

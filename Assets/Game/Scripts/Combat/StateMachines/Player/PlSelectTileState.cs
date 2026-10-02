@@ -131,6 +131,7 @@ namespace Frontier.Battle
             _inputFcd.RegisterInputCodes(
                (GuideIcon.ALL_CURSOR, "MOVE", CanAcceptDefault, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
                (GuideIcon.CONFIRM, _inputConfirmStrWrapper, CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
+               (GuideIcon.CANCEL, "UNDO\nMOVE", CanAcceptUndoMove, new AcceptContextInput( AcceptUndoMove ), 0.0f, hashCode),
                (GuideIcon.TOOL, _inputToolStrWrapper, CanAcceptDefault, new AcceptContextInput( AcceptTool ), 0.0f, hashCode),
                (GuideIcon.INFO, "STATUS", CanAcceptInfo, new AcceptContextInput( AcceptInfo ), 0.0f, hashCode),
                (GuideIcon.OPT1, _inputOpt1StrWrapper, CanAcceptOpt1, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode),
@@ -193,7 +194,7 @@ namespace Frontier.Battle
             {
                 RefreshDispParameterView();
                 RefreshHoveredRangeDisplay();
-                _provisionalOriginDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+                RefreshProvisionalMoveDisplay();
             }
 
             return isAcceptDirection;
@@ -354,6 +355,47 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// カーソル上のキャラクターが暫定的に移動しており、かつ移動前のタイルへ戻れる場合のみ、移動の取り消しを受け付けます。
+        /// (移動前のタイルに他のキャラクターが留まっている、または移動を伴うスキルの着地先として予約されている場合は戻れません)
+        /// </summary>
+        private bool CanAcceptUndoMove()
+        {
+            if( !CanAcceptDefault() || 0 <= TransitIndex ) { return false; }
+
+            Player player = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            if( null == player || !player.IsProvisionallyMoved() ) { return false; }
+
+            int originTileIndex = player.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
+
+            return _stageCtrl.TileDataHdlr().GetTileDatas( originTileIndex ).Item2.IsStandableBy( player.GetCharacterKey() );
+        }
+
+        /// <summary>
+        /// CANCEL入力を受けた際、カーソル上の暫定的に移動しているキャラクターを移動前の位置へ戻します。
+        /// (コマンド選択中のCANCELでは移動前へ戻さず、タイル選択へ戻った後のこの入力で初めて戻します)
+        /// MEMO : 基底のAcceptCancelはBack()によってフェーズを終了させてしまうため、別名のメソッドとして入力に登録しています。
+        /// </summary>
+        private bool AcceptUndoMove( InputContext context )
+        {
+            if( !AcceptCancelCore( context ) ) { return false; }
+
+            Player player = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Player;
+            if( null == player ) { return false; }
+
+            // 移動前の位置・移動コマンドの使用可否を戻し、グリッドカーソルも移動前のタイルへ追従させる
+            RevertCommandHistory( player );
+
+            // 位置が変わったため、カーソル上のキャラクターに関する各表示を更新し直す
+            // (ホバー範囲表示は同一キャラクターだと更新されないため、一度消去してから表示し直す)
+            _hoveredRangeDisplay.Clear();
+            RefreshDispParameterView();
+            RefreshHoveredRangeDisplay();
+            RefreshProvisionalMoveDisplay();
+
+            return true;
+        }
+
+        /// <summary>
         /// 移動可能な(行動済みでない)プレイヤーキャラクターが1人以上いる場合のみ、一括登録を受け付けます
         /// </summary>
         protected override bool CanAcceptSub3()
@@ -437,9 +479,9 @@ namespace Frontier.Battle
 
             // 新規開始・中断からの再開いずれの場合も、現在のカーソル位置に応じてホバー範囲表示を同期する
             RefreshHoveredRangeDisplay();
-            // カーソル上のキャラクターが暫定的に移動している場合は、移動前の位置を示す目印を表示する。
-            // (コマンド選択へ遷移しても目印は残し、確定・巻き戻しされた時点で目印自身が非表示にする)
-            _provisionalOriginDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            // 暫定移動に関する表示(頭上のアイコン、及びカーソル上のキャラクターの移動前の位置を示す目印)を、
+            // コマンド選択等から戻ってきた場合も含めて表示し直す
+            RefreshProvisionalMoveDisplay();
 
             if( _isWaitingForTileMenuResult )
             {
@@ -460,8 +502,57 @@ namespace Frontier.Battle
         public override object ExitState()
         {
             _hoveredRangeDisplay.Clear();
+            HideProvisionalMoveDisplay();
 
             return base.ExitState();
+        }
+
+        /// <summary>
+        /// このステートを中断して子ステート(メニュー、ステータス表示、グループ移動のメンバー選択等)へ遷移する際、
+        /// 暫定移動に関する表示を一時的に非表示にします(戻ってきた際にOnActivatedで表示し直します)。
+        /// </summary>
+        public override object PauseState()
+        {
+            HideProvisionalMoveDisplay();
+
+            return base.PauseState();
+        }
+
+        /// <summary>
+        /// カーソルを合わせているキャラクターの移動前の位置を示す目印(残像・経路の矢印・タイルの外枠)をこのステートで表示するかどうか。
+        /// 目印はタイル選択中にのみ表示し、グループ移動の操作中は移動先のゴースト・矢印表示との混同を避けるため表示しません。
+        /// 派生ステートでは表示しないようオーバーライドしてください。
+        /// </summary>
+        protected virtual bool ShowsProvisionalMoveDisplay => true;
+
+        /// <summary>
+        /// 暫定移動に関する表示を現在の状況に合わせて更新します。
+        /// 頭上のアイコンは暫定移動中の全キャラクターに表示し、移動前の位置を示す目印は
+        /// カーソルを合わせているキャラクターにのみ表示します。
+        /// </summary>
+        private void RefreshProvisionalMoveDisplay()
+        {
+            // このステートがアクティブな間は、頭上のアイコンを隠すキャラクターはいない
+            _presenter.SuppressProvisionalMoveIcon( null );
+
+            if( ShowsProvisionalMoveDisplay )
+            {
+                _provisionalOriginDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            }
+            else
+            {
+                _provisionalOriginDisplay.Clear();
+            }
+        }
+
+        /// <summary>
+        /// コマンド操作等へ遷移する際、カーソルを合わせているキャラクターに限り、暫定移動に関する表示を一時的に非表示にします
+        /// (操作の妨げや、スキル選択時のゴースト表示等との混同を避けるため。他のキャラクターの頭上のアイコンは表示したままとします)。
+        /// </summary>
+        private void HideProvisionalMoveDisplay()
+        {
+            _presenter.SuppressProvisionalMoveIcon( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            _provisionalOriginDisplay.Clear();
         }
 
         /// <summary>

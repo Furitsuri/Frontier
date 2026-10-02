@@ -258,6 +258,21 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// 暫定移動中のキャラクター頭上に表示するアイコンを、指定キャラクターに限り一時的に非表示にします。
+        /// 他のキャラクターのアイコンは表示されたままとなります。nullを渡すと、非表示の指定を解除します。
+        /// </summary>
+        public void SuppressProvisionalMoveIcon( Character character )
+        {
+            foreach( var pair in _hpGaugeUIByCharaId )
+            {
+                if( pair.Value == null ) { continue; }
+
+                bool isSuppressed = ( null != character ) && ( pair.Key == character.GetInstanceID() );
+                pair.Value.SetProvisionalMoveIconVisible( !isSuppressed );
+            }
+        }
+
+        /// <summary>
         /// 生成したすべての CharacterHpGaugeUI インスタンスを破棄し、管理辞書をクリアします。
         /// </summary>
         public void CleanupHpGaugeUIs()

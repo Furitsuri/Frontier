@@ -19,10 +19,12 @@ namespace Frontier.Battle
         {
             ATTACK_ON_MOVE = 0,
             CHARACTER_STATUS,
+            CONFIRM_BLOCK_UNDO_MOVE,
         }
 
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
+        private bool _isWaitingForBlockUndoConfirmResult = false;
 
         /// <summary>
         /// 移動中攻撃に遷移します
@@ -49,6 +51,24 @@ namespace Frontier.Battle
             }
 
             _plOwner.BattleLogic.ActionRangeCtrl.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.GetStatusRef.jumpForce, _plOwner.BattleLogic.TileCostTable, isEndPathTrace );
+        }
+
+        /// <summary>
+        /// 移動前の地点から移動後の地点までの最短経路を求め、移動前の位置を示す目印の経路表示用に保持します。
+        /// この移動では移動範囲内を自由に歩き回って移動先を決められるため、実際に通った経路ではなく最短経路を用います
+        /// (ジグザグに歩いた場合などに、無駄の多い経路が描画されるのを避けるため)。
+        /// </summary>
+        private void HoldShortestMovedPath()
+        {
+            int destinationTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
+            var moveableTileMap      = _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap;
+
+            // 移動可能範囲のデータが残っていない等で経路を求められない場合は、経路なし(残像と外枠のみの表示)とする
+            var route = ( 0 < moveableTileMap.Count )
+                ? _stageCtrl.ExtractShortestPath( _departTileIndex, destinationTileIndex, _plOwner.GetStatusRef.jumpForce, _plOwner.BattleLogic.TileCostTable, moveableTileMap )
+                : null;
+
+            _plOwner.HoldMovedPath( route );
         }
 
         /// <summary>
@@ -80,6 +100,8 @@ namespace Frontier.Battle
         public override void Init( object context )
         {
             base.Init( context );
+
+            _isWaitingForBlockUndoConfirmResult = false;
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
             if( _plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
@@ -126,6 +148,13 @@ namespace Frontier.Battle
                     // 移動したキャラクターの移動コマンドを選択不可にする
                     _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
                     _plOwner.PushCommandHistory( COMMAND_TAG.MOVE );
+                    // 移動後はコマンド選択をキャンセルしてタイル選択へ戻っても、移動前へ戻せる暫定状態として扱う。
+                    // ただし移動中に直接攻撃を行った場合は、既に行動が確定しているため暫定状態にはしない
+                    if( !_plOwner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] )
+                    {
+                        _plOwner.MarkMoveProvisional();
+                        HoldShortestMovedPath();
+                    }
                     Back();     // コマンド選択に戻る
 
                     return true;
@@ -184,6 +213,17 @@ namespace Frontier.Battle
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を確定する
+            if( _isWaitingForBlockUndoConfirmResult )
+            {
+                _isWaitingForBlockUndoConfirmResult = false;
+                var confirmState = GetChildren<PlConfirmBlockUndoMoveState>( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                if( confirmState != null && confirmState.Confirmed )
+                {
+                    _phase = PlMovePhase.PL_MOVE_RESERVE_END;
+                }
+            }
         }
 
         /// <summary>
@@ -282,6 +322,17 @@ namespace Frontier.Battle
             else if( null != tileData && Methods.HasAnyFlag( tileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
             {
                 TransitAttackOnMoveState();
+
+                return true;
+            }
+
+            // 移動先が、暫定移動中の他キャラクターの移動前の位置である場合は、そのキャラクターが戻せなくなる旨を確認する
+            var blockedNames = CollectUndoBlockedCharacterNames( new int[] { currentIndex }, new Player[] { _plOwner } );
+            if( 0 < blockedNames.Count )
+            {
+                _isWaitingForBlockUndoConfirmResult = true;
+                SetSendTransitionContext( blockedNames.ToArray() );
+                TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
 
                 return true;
             }

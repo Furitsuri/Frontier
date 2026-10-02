@@ -144,6 +144,15 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetHpGaugesActive( isActive );
         }
 
+        /// <summary>
+        /// 暫定移動中のキャラクター頭上に表示するアイコンを、指定キャラクターに限り一時的に非表示にします。
+        /// 他のキャラクターのアイコンは表示されたままとなります。nullを渡すと、非表示の指定を解除します。
+        /// </summary>
+        public void SuppressProvisionalMoveIcon( Character character )
+        {
+            _uiSystem.BattleUi.SuppressProvisionalMoveIcon( character );
+        }
+
         public void ApplyColor2Options( int selectIndex )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.ApplyTextColor( selectIndex );

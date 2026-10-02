@@ -185,25 +185,9 @@ namespace Frontier.Battle
             return true;
         }
 
-        /// <summary>
-        /// キャンセル入力を受けた際の処理を行います
-        /// </summary>
-        /// <param name="isCancel">キャンセル入力の有無</param>
-        protected override bool AcceptCancel( InputContext context )
-        {
-            if( !base.AcceptCancel( context ) ) { return false; }
-
-            // 以前の状態に巻き戻せる場合は状態を巻き戻す
-            if( _plOwner.IsEnableRevertState() )
-            {
-                RevertCommandHistory();
-                // コマンド選択状態を終了させる必要はないため、初期化した後にfalseを返す
-                Init( null );
-                return false;
-            }
-
-            return true;
-        }
+        // MEMO : キャンセル入力は基底(PlPhaseStateBase.AcceptCancel)の処理のまま、コマンドメニューを閉じてタイル選択へ戻るだけとする。
+        //        移動後であっても、ここでは移動前の位置へ巻き戻さない(キャラクターは暫定移動の状態のままタイル選択へ戻る)。
+        //        移動前の位置への巻き戻しは、タイル選択(PlSelectTileState)で当該キャラクターにキャンセル入力を行った際に行う。
 
         public int GetCurrentIndex() => _cmdIdxVal.index;
 

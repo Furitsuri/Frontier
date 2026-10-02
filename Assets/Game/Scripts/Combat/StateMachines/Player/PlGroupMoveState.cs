@@ -53,8 +53,17 @@ namespace Frontier.Battle
         }
 
         private readonly List<GroupMoveAssignment> _assignments = new List<GroupMoveAssignment>();
+        private enum TransitTag
+        {
+            CONFIRM_BLOCK_UNDO_MOVE = 0,
+        }
+
         private Phase _phase;
         private EntryType _entryType;
+        private bool _isWaitingForBlockUndoConfirmResult = false;
+
+        // プレビュー中は移動先のゴースト・経路の矢印を表示するため、混同を避けて暫定移動に関する表示(移動前の残像・矢印等)は行わない
+        protected override bool ShowsProvisionalMoveDisplay => false;
 
         public override void Init( object context )
         {
@@ -64,6 +73,7 @@ namespace Frontier.Battle
             _entryType  = EntryType.FromMemberSelection;
             ReceiveContext( ref _entryType, context );
             _assignments.Clear();
+            _isWaitingForBlockUndoConfirmResult = false;
         }
 
         protected override void OnActivated()
@@ -72,6 +82,18 @@ namespace Frontier.Battle
             base.OnActivated();
 
             RefreshGroupMovePreview();  // 現在のカーソル位置(=登録操作を行った位置)を目的地としてプレビューを計算
+
+            // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を実行する
+            // (カーソル位置は変わっていないため、上で再計算したプレビューは確認前と同じ内容になる)
+            if( _isWaitingForBlockUndoConfirmResult )
+            {
+                _isWaitingForBlockUndoConfirmResult = false;
+                var confirmState = GetChildren<PlConfirmBlockUndoMoveState>( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                if( confirmState != null && confirmState.Confirmed )
+                {
+                    StartExecuteMove();
+                }
+            }
         }
 
         /// <summary>
@@ -128,7 +150,7 @@ namespace Frontier.Battle
                             assignment.Character.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
                             assignment.Character.PushCommandHistory( COMMAND_TAG.MOVE );
                             // 頭上の暫定移動アイコンや、移動前の位置を示す目印の表示対象とする
-                            assignment.Character.MarkGroupMoveProvisional();
+                            assignment.Character.MarkMoveProvisional();
                         }
 
                         _groupMoveRegistrationList.Remove( assignment.Character );
@@ -216,6 +238,37 @@ namespace Frontier.Battle
             if( !AcceptConfirmCore( context ) ) { return false; }
             if( Phase.PREVIEW != _phase || _assignments.Count <= 0 ) { return false; }
 
+            // 移動先のいずれかが、暫定移動中の他キャラクターの移動前の位置である場合は、そのキャラクターが戻せなくなる旨を確認する
+            var destinationTileIndices = new HashSet<int>();
+            var movers                 = new HashSet<Player>();
+            foreach( var assignment in _assignments )
+            {
+                if( !assignment.IsMoving ) { continue; }
+
+                destinationTileIndices.Add( assignment.DestinationTileIndex );
+                movers.Add( assignment.Character );
+            }
+
+            var blockedNames = CollectUndoBlockedCharacterNames( destinationTileIndices, movers );
+            if( 0 < blockedNames.Count )
+            {
+                _isWaitingForBlockUndoConfirmResult = true;
+                SetSendTransitionContext( blockedNames.ToArray() );
+                TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+
+                return true;
+            }
+
+            StartExecuteMove();
+
+            return true;
+        }
+
+        /// <summary>
+        /// その時点のプレビュー通りに、全キャラクターの移動実行フェーズへ移行します
+        /// </summary>
+        private void StartExecuteMove()
+        {
             // 個別移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動前の状態を保存しておく。
             // これを行わないと、コマンド選択でのキャンセル(RevertBeforeMoving)時に未初期化の情報で巻き戻してしまう
             foreach( var assignment in _assignments )
@@ -230,8 +283,6 @@ namespace Frontier.Battle
             ClearMoveRangeDisplay();
             ReleaseCurrentReservations();
             _phase = Phase.EXECUTE_MOVE;
-
-            return true;
         }
 
         /// <summary>

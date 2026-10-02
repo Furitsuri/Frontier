@@ -32,6 +32,7 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
     private Image _predictedDamageImage;
     private Image _defeatIconImage;
     private int _predictedDamageAmount;
+    private bool _isProvisionalMoveIconVisible = true;  // 既定は表示可。操作中のキャラクターのみ一時的に不可とされる
     public Character TargetCharacter { get; private set; }
 
     /// <summary>
@@ -92,11 +93,21 @@ public class CharacterHpGaugeUI : UiMonoBehaviour
     {
         if( null == _provisionalMoveIcon ) { return; }
 
-        bool isProvisional = ( TargetCharacter is Player player ) && player.IsProvisionallyMoved();
-        if( _provisionalMoveIcon.activeSelf != isProvisional )
+        bool isShown = _isProvisionalMoveIconVisible && ( TargetCharacter is Player player ) && player.IsProvisionallyMoved();
+        if( _provisionalMoveIcon.activeSelf != isShown )
         {
-            _provisionalMoveIcon.SetActive( isProvisional );
+            _provisionalMoveIcon.SetActive( isShown );
         }
+    }
+
+    /// <summary>
+    /// 暫定移動アイコンの表示可否を設定します。
+    /// 許可されている間のみ、対象キャラクターが暫定移動中であればアイコンを表示します
+    /// (このキャラクターをコマンド操作している間など、表示が操作の妨げになる場面で一時的に非表示にするために使用します)。
+    /// </summary>
+    public void SetProvisionalMoveIconVisible( bool isVisible )
+    {
+        _isProvisionalMoveIconVisible = isVisible;
     }
 
     /// <summary>

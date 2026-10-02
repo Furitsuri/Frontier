@@ -17,6 +17,17 @@ namespace Frontier.Battle
             CHARACTER_STATUS = 0,
             USE_SKILL_OPTION  = 1,
             CONFIRM_KILL_RESERVED_TARGET = 2,
+            CONFIRM_BLOCK_UNDO_MOVE = 3,
+        }
+
+        /// <summary>
+        /// 対象選択の確定後に行うスキルの使用方法です
+        /// </summary>
+        private enum SkillUseAction
+        {
+            EXECUTION = 0,  // 即時実行
+            QUEUE,          // 予約
+            COOPERATIVE,    // 連携攻撃
         }
 
         protected enum PlSkillActionPhase : int
@@ -28,6 +39,8 @@ namespace Frontier.Battle
 
         private bool _isWaitingForOptionResult;
         private bool _isWaitingForKillConfirmResult;
+        private bool _isWaitingForBlockUndoConfirmResult;
+        private SkillUseAction _pendingSkillUseAction;      // 移動前の位置へ戻せなくなる旨の確認中に保留している使用方法
         private bool _isSkillQueued;
         private bool _isCooperativeSkill;
         private SkillID _useSkillID;
@@ -59,6 +72,7 @@ namespace Frontier.Battle
 
             _isWaitingForOptionResult      = false;
             _isWaitingForKillConfirmResult = false;
+            _isWaitingForBlockUndoConfirmResult = false;
             _isSkillQueued            = false;
             _isCooperativeSkill       = false;
 
@@ -158,18 +172,15 @@ namespace Frontier.Battle
                 switch( optionState?.SelectedOption )
                 {
                     case USE_SKILL_OPTION_TAG.EXECUTION:
-                        TryExecuteSkillWithKillConfirm();
+                        RequestSkillUse( SkillUseAction.EXECUTION );
                         break;
 
                     case USE_SKILL_OPTION_TAG.QUEUE:
-                        _isSkillQueued = true;
-                        EnqueueSkillAction();
-                        CleanupEnqueuedAction();
-                        Back();
+                        RequestSkillUse( SkillUseAction.QUEUE );
                         break;
 
                     case USE_SKILL_OPTION_TAG.COOPERATIVE:
-                        ExecuteCooperativeSkill();
+                        RequestSkillUse( SkillUseAction.COOPERATIVE );
                         break;
 
                     // PlSkillUseOptionStateの選択をキャンセルされた場合
@@ -177,6 +188,22 @@ namespace Frontier.Battle
                         _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
                         _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
                         break;
+                }
+            }
+            else if( _isWaitingForBlockUndoConfirmResult )
+            {
+                _isWaitingForBlockUndoConfirmResult = false;
+                var confirmState = GetChildren<PlConfirmBlockUndoMoveState>( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                if( confirmState != null && confirmState.Confirmed )
+                {
+                    PerformSkillUse( _pendingSkillUseAction );
+                }
+                // NOの場合は対象選択へ戻る。使用方法の選択(PlSkillUseOptionState)を経由していた場合は、
+                // その際に消去したタイル描画を、選択をキャンセルされた場合と同様に戻す
+                else if( SkillsData.data[( int ) _useSkillID].IsCooperative )
+                {
+                    _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
+                    _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
                 }
             }
             else if( _isWaitingForKillConfirmResult )
@@ -255,7 +282,7 @@ namespace Frontier.Battle
             }
             else
             {
-                TryExecuteSkillWithKillConfirm();
+                RequestSkillUse( SkillUseAction.EXECUTION );
             }
 
             return true;
@@ -319,6 +346,68 @@ namespace Frontier.Battle
                 _targetSelector.UpdateFocusedTarget( _btlRtnCtrl.BtlCharaCdr.GetTargetCharacter() );
                 _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetSelector.TargetCharacter );
             }
+        }
+
+        /// <summary>
+        /// 指定の使用方法でスキルを使用します。
+        /// 移動を伴うスキルの着地先が、暫定移動中の他キャラクターの移動前の位置である場合は、
+        /// そのキャラクターが移動前の位置へ戻せなくなる旨の確認ダイアログを先に挟みます
+        /// (予約の場合も着地先のタイルを予約して塞ぐため、即時実行・連携攻撃と同様に確認の対象とします)。
+        /// </summary>
+        private void RequestSkillUse( SkillUseAction action )
+        {
+            int landingTileIndex = GetMovingSkillLandingTileIndex();
+            if( 0 <= landingTileIndex )
+            {
+                var blockedNames = CollectUndoBlockedCharacterNames( new int[] { landingTileIndex }, new Player[] { _plOwner } );
+                if( 0 < blockedNames.Count )
+                {
+                    _pendingSkillUseAction              = action;
+                    _isWaitingForBlockUndoConfirmResult = true;
+                    SetSendTransitionContext( blockedNames.ToArray() );
+                    TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                    return;
+                }
+            }
+
+            PerformSkillUse( action );
+        }
+
+        /// <summary>
+        /// 指定の使用方法でスキルを使用します(確認が不要な場合、または確認でYESが選ばれた場合に呼ばれます)
+        /// </summary>
+        private void PerformSkillUse( SkillUseAction action )
+        {
+            switch( action )
+            {
+                case SkillUseAction.EXECUTION:
+                    TryExecuteSkillWithKillConfirm();
+                    break;
+
+                case SkillUseAction.QUEUE:
+                    _isSkillQueued = true;
+                    EnqueueSkillAction();
+                    CleanupEnqueuedAction();
+                    Back();
+                    break;
+
+                case SkillUseAction.COOPERATIVE:
+                    ExecuteCooperativeSkill();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 移動を伴うスキルの着地先のタイルを取得します。移動を伴わないスキルや、着地先が定まっていない場合は-1を返します。
+        /// </summary>
+        private int GetMovingSkillLandingTileIndex()
+        {
+            if( !_targetSelector.IsMovingSkill ) { return -1; }
+
+            var ghostObj = _plOwner.GhostObj;
+            if( null == ghostObj || !ghostObj.gameObject.activeSelf ) { return -1; }
+
+            return ghostObj.TileIndex;
         }
 
         /// <summary>

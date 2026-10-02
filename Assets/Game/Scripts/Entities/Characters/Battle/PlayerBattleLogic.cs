@@ -13,19 +13,19 @@ namespace Frontier.Entities
         private PrevMoveInfo _prevMoveInfo;
         private Stack<COMMAND_TAG> _commandHistory = new Stack<COMMAND_TAG>();    // コマンド履歴(攻撃シーケンスにおいて使用)
         private Action[] _revertCommandStateFuncs;
-        // グループ移動によって暫定的に移動している(移動が確定していない)状態か。
-        // 単体移動後のコマンド選択中と区別するため、コマンド履歴とは別に明示的に保持する
-        private bool _isGroupMoveProvisional = false;
+        // 移動(単体移動・グループ移動)によって暫定的に移動している(移動が確定していない)状態か。
+        // 移動中に直接攻撃した場合など、移動の履歴があっても暫定扱いにしないケースと区別するため、コマンド履歴とは別に明示的に保持する
+        private bool _isMoveProvisional = false;
 
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
-        public bool IsGroupMoveProvisional => _isGroupMoveProvisional;
+        public bool IsMoveProvisional => _isMoveProvisional;
 
         public override void Init()
         {
             base.Init();
 
             _paramWinType           = ParameterWindowType.Left;
-            _isGroupMoveProvisional = false;
+            _isMoveProvisional = false;
 
             LazyInject.GetOrCreate( ref _baseAi, () => _hierarchyBld.InstantiateWithDiContainer<AiBase>( false ) );
 
@@ -69,17 +69,17 @@ namespace Frontier.Entities
         {
             _commandHistory.Clear();
             // 履歴が無くなる=移動前へ巻き戻せなくなるため、暫定移動の状態も解除する
-            _isGroupMoveProvisional = false;
+            _isMoveProvisional = false;
         }
 
         /// <summary>
-        /// グループ移動によって暫定的に移動した状態として記録します。
+        /// 移動(単体移動・グループ移動)によって暫定的に移動した状態として記録します。
         /// 移動コマンドをコマンド履歴へ積んだ後に呼び出してください。
         /// 解除は、移動の確定(ClearCommandHistory/FinalizeCommand)または巻き戻し(RevertBeforeMoving)の際に自動で行われます。
         /// </summary>
-        public void MarkGroupMoveProvisional()
+        public void MarkMoveProvisional()
         {
-            _isGroupMoveProvisional = true;
+            _isMoveProvisional = true;
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Frontier.Entities
         public void RevertBeforeMoving()
         {
             ForcedStopMoving();
-            _isGroupMoveProvisional = false;    // 移動前へ戻るため、暫定移動の状態を解除する
+            _isMoveProvisional = false;    // 移動前へ戻るため、暫定移動の状態を解除する
             _readOnlyOwner.Value.BattleParams.TmpParam = _prevMoveInfo.tmpParam;
             SetPositionOnStage( _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex, _prevMoveInfo.rotDir );
         }
