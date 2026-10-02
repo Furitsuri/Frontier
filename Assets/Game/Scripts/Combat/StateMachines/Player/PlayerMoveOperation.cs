@@ -64,14 +64,35 @@ namespace Frontier.Battle
 
         /// <summary>
         /// 目的地を設定します。実体はUpdateWalkingによってこのタイルへ向けて歩き、
-        /// 移動前のタイルからこのタイルまでの最短経路が矢印で表示されます(留まることの出来ないタイルの場合は矢印を表示しません)。
+        /// 移動前のタイルからこのタイルまでの最短経路が矢印で表示されます。
+        /// 留まることの出来ないタイル(移動範囲外など)が指定された場合、実体はそこへは向かわないため、
+        /// 矢印は実体が実際に止まるタイルまでの経路を表示します。
         /// </summary>
         public void SetDestination( int tileIndex )
         {
             if( tileIndex == _destinationTileIndex ) { return; }
 
             _destinationTileIndex = tileIndex;
-            _originIndicator.SetPath( CanStandOn( tileIndex ) ? FindShortestPathFromOrigin( tileIndex ) : null );
+
+            int routeEndTileIndex = CanStandOn( tileIndex ) ? tileIndex : GetStoppingTileIndex();
+            _originIndicator.SetPath( FindShortestPathFromOrigin( routeEndTileIndex ) );
+        }
+
+        /// <summary>
+        /// 実体が現在の経路のまま歩いた場合に止まるタイルを取得します
+        /// (歩いている途中であれば経路の終点、止まっていれば現在立っているタイル)
+        /// </summary>
+        private int GetStoppingTileIndex()
+        {
+            MovePathHandler pathHdlr = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr;
+            var movePath             = pathHdlr.ProposedMovePath;
+
+            if( !pathHdlr.IsEndPathTrace() && 0 < movePath.Count )
+            {
+                return movePath[movePath.Count - 1].TileIndex;
+            }
+
+            return _owner.BattleParams.TmpParam.CurrentTileIndex;
         }
 
         /// <summary>
@@ -99,6 +120,12 @@ namespace Frontier.Battle
         public void StopAtNextWaypoint()
         {
             _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.TruncateAfterFocusedWaypoint();
+
+            // 目的地が留まることの出来ないタイルの場合、矢印は実体が止まるタイルまでを表示しているため、止まる位置の変化に合わせて更新する
+            if( !CanStandOn( _destinationTileIndex ) )
+            {
+                _originIndicator.SetPath( FindShortestPathFromOrigin( GetStoppingTileIndex() ) );
+            }
         }
 
         /// <summary>
