@@ -10,12 +10,14 @@ namespace Frontier.Battle
 {
     /// <summary>
     /// PlSelectGroupMembersStateでのCONFIRM入力、またはPlSelectTileStateでの一括登録(SUB3)入力により遷移する、
-    /// グループ移動のプレビュー・実行ステートです。
+    /// グループ移動の操作・実行ステートです。
     /// PlSelectTileStateを継承し、グリッドカーソル移動のたびに、登録された各キャラクターを貪欲法によって
-    /// 目的地(現在のカーソル位置)周辺の到達可能な空きタイルへ割り当て直し、ゴースト表示・移動経路矢印による
-    /// プレビューを更新します。このステートでは新たなキャラクターの登録・解除は行えません。
-    /// CONFIRM入力を受けると、その時点のプレビュー通りに全キャラクターを同時に移動させます。
-    /// キャンセル時、PlSelectGroupMembersStateから遷移した場合は登録を維持したまま戻り、
+    /// 目的地(現在のカーソル位置)周辺の到達可能な空きタイルへ割り当て直します。
+    /// 各キャラクターの移動は単体移動(PlMoveState)と同じ処理(PlayerMoveOperation)で行うため、実体は割り当て先へ向けて
+    /// 実際に歩き、移動前のタイルには残像が、そこからの経路には矢印が表示されます。
+    /// このステートでは新たなキャラクターの登録・解除は行えません。
+    /// CONFIRM入力を受けると、全キャラクターが割り当て先に到着するのを待ってから移動を完了させます。
+    /// キャンセル時は全キャラクターを移動前の位置へ戻した上で、PlSelectGroupMembersStateから遷移した場合は登録を維持したまま戻り、
     /// PlSelectTileStateから直接遷移した場合は登録を全て解除して戻ります。
     /// </summary>
     public class PlGroupMoveState : PlSelectTileState
@@ -31,60 +33,63 @@ namespace Frontier.Battle
 
         private enum Phase
         {
-            PREVIEW = 0,
-            EXECUTE_MOVE,
+            OPERATING = 0,      // カーソルで目的地を操作中(実体は割り当て先へ向けて歩き続ける)
+            WALK_BEFORE_CONFIRM,// 確認ダイアログを出す前の、全キャラクターの到着待ち
+            EXECUTE_MOVE,       // 決定後、全キャラクターの到着待ち
             END,
         }
 
-        private class GroupMoveAssignment
-        {
-            public readonly Player Character;
-            public readonly int DepartureTileIndex;
-            public readonly int DestinationTileIndex;
-
-            public bool IsMoving => DestinationTileIndex != DepartureTileIndex;
-
-            public GroupMoveAssignment( Player character, int departureTileIndex, int destinationTileIndex )
-            {
-                Character             = character;
-                DepartureTileIndex    = departureTileIndex;
-                DestinationTileIndex  = destinationTileIndex;
-            }
-        }
-
-        private readonly List<GroupMoveAssignment> _assignments = new List<GroupMoveAssignment>();
         private enum TransitTag
         {
             CONFIRM_BLOCK_UNDO_MOVE = 0,
         }
 
+        // 移動中の各キャラクターの移動操作
+        private readonly List<PlayerMoveOperation> _moveOperations = new List<PlayerMoveOperation>();
+        // 移動操作のインスタンスの使い回し用(残像等の生成物を持つため、ステートへ入る度に作り直さない)
+        private readonly List<PlayerMoveOperation> _moveOperationPool = new List<PlayerMoveOperation>();
+
         private Phase _phase;
         private EntryType _entryType;
+        private bool _isMoveOperationsBegun              = false;
         private bool _isWaitingForBlockUndoConfirmResult = false;
+        // 確認ダイアログを出す前に全キャラクターの到着を待っている間の、確認対象のキャラクター名。
+        // 歩行中にダイアログを開くとステートの更新が止まり、実体が速度を持ったまま進み続けてしまうため、到着を待ってから開く
+        private string[] _pendingBlockedCharacterNames = null;
 
-        // プレビュー中は移動先のゴースト・経路の矢印を表示するため、混同を避けて暫定移動に関する表示(移動前の残像・矢印等)は行わない
+        // このステートでは各キャラクターの移動前の位置を移動操作(PlayerMoveOperation)側で表示するため、
+        // カーソルを合わせたキャラクターに対する暫定移動の目印(PlSelectTileStateの表示)は行わない
         protected override bool ShowsProvisionalMoveDisplay => false;
 
         public override void Init( object context )
         {
             base.Init( context );  // PlSelectTileStateの初期化を再利用(各種文言設定・RefreshUseableSkillFlags等)
 
-            _phase      = Phase.PREVIEW;
+            _phase      = Phase.OPERATING;
             _entryType  = EntryType.FromMemberSelection;
             ReceiveContext( ref _entryType, context );
-            _assignments.Clear();
+            _moveOperations.Clear();
+            _isMoveOperationsBegun              = false;
             _isWaitingForBlockUndoConfirmResult = false;
+            _pendingBlockedCharacterNames       = null;
         }
 
         protected override void OnActivated()
         {
-            // 基底でホバー範囲表示の消去が行われる(対象キャラクターの範囲描画も全て消える)ため、プレビューの計算はその後に行う
+            // 基底でホバー範囲表示の消去が行われる(対象キャラクターの範囲データ・描画も全て消える)ため、移動操作の開始はその後に行う
             base.OnActivated();
 
-            RefreshGroupMovePreview();  // 現在のカーソル位置(=登録操作を行った位置)を目的地としてプレビューを計算
+            // ステートへ入った初回のみ、登録済みキャラクターの移動操作を開始する(確認ダイアログから戻った際は開始済み)
+            if( !_isMoveOperationsBegun )
+            {
+                BeginMoveOperations();
+                _isMoveOperationsBegun = true;
+            }
 
-            // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を実行する
-            // (カーソル位置は変わっていないため、上で再計算したプレビューは確認前と同じ内容になる)
+            // 現在のカーソル位置(=登録操作を行った位置)を目的地として、各キャラクターの移動先を割り当てる
+            AssignGroupMoveDestinations( _stageCtrl.GetCurrentGridIndex() );
+
+            // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を確定する
             if( _isWaitingForBlockUndoConfirmResult )
             {
                 _isWaitingForBlockUndoConfirmResult = false;
@@ -93,11 +98,16 @@ namespace Frontier.Battle
                 {
                     StartExecuteMove();
                 }
+                else
+                {
+                    // NOの場合は、割り当て先に到着した状態のまま目的地の操作へ戻る
+                    _phase = Phase.OPERATING;
+                }
             }
         }
 
         /// <summary>
-        /// プレビュー中は登録キャラクターの移動可能範囲(青色)のみを表示するため、カーソル上のキャラクターの
+        /// このステートでは登録キャラクターの移動可能範囲(青色)のみを表示するため、カーソル上のキャラクターの
         /// 移動・攻撃範囲表示(ホバー範囲表示)は行わず、遷移元から引き継いだ表示も消去します
         /// </summary>
         protected override void RefreshHoveredRangeDisplay()
@@ -107,55 +117,59 @@ namespace Frontier.Battle
 
         public override bool Update()
         {
-            if( Phase.PREVIEW == _phase )
-            {
-                // カーソル移動・文言更新・登録者の失格判定はPlSelectTileStateの実装をそのまま再利用する
-                if( base.Update() ) { return true; }
-
-                // PruneIneligibleRegistrationsによって登録者が0人になった場合は自動的に戻る
-                if( _groupMoveRegistrationList.IsEmpty )
-                {
-                    Back();
-                    return true;
-                }
-
-                return false;
-            }
-
             switch( _phase )
             {
-                case Phase.EXECUTE_MOVE:
-                    bool isAllArrived = true;
-                    foreach( var assignment in _assignments )
+                case Phase.OPERATING:
+                    // カーソル移動・文言更新・登録者の失格判定はPlSelectTileStateの実装をそのまま再利用する
+                    if( base.Update() ) { return true; }
+
+                    // PruneIneligibleRegistrationsによって登録者が0人になった場合は自動的に戻る
+                    if( _groupMoveRegistrationList.IsEmpty )
                     {
-                        if( !assignment.IsMoving ) { continue; }
-                        if( !assignment.Character.BattleLogic.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
-                        {
-                            isAllArrived = false;
-                        }
+                        Back();
+                        return true;
                     }
 
-                    if( isAllArrived ) { _phase = Phase.END; }
+                    // 各キャラクターの実体を、割り当て先へ向けて歩かせる(単体移動の操作中と同じ)
+                    foreach( var moveOperation in _moveOperations )
+                    {
+                        moveOperation.UpdateWalking( 1.0f, true );
+                    }
+
+                    return false;
+
+                case Phase.WALK_BEFORE_CONFIRM:
+                    // 全キャラクターが割り当て先に到着してから、確認ダイアログへ遷移する
+                    if( UpdateWalkingUntilAllArrived() )
+                    {
+                        _isWaitingForBlockUndoConfirmResult = true;
+                        SetSendTransitionContext( _pendingBlockedCharacterNames );
+                        _pendingBlockedCharacterNames = null;
+                        TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                    }
+                    break;
+
+                case Phase.EXECUTE_MOVE:
+                    // 全キャラクターが割り当て先に到着するまで待つ(単体移動の決定後と同じく高速で移動させる)
+                    if( UpdateWalkingUntilAllArrived() ) { _phase = Phase.END; }
                     break;
 
                 case Phase.END:
-                    foreach( var assignment in _assignments )
+                    foreach( var moveOperation in _moveOperations )
                     {
-                        assignment.Character.SetGhostActive( false );
-                        assignment.Character.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
+                        Player character = moveOperation.Owner;
 
-                        // 実際に移動したキャラクターのみ移動コマンドを消費する(留まったキャラクターは個別に移動可能なままにする)
-                        if( assignment.IsMoving )
+                        // 実際に移動したキャラクターのみ移動を完了させる(留まったキャラクターは個別に移動可能なままにする)
+                        if( moveOperation.HasMoved )
                         {
-                            assignment.Character.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
-                            assignment.Character.PushCommandHistory( COMMAND_TAG.MOVE );
-                            // 頭上の暫定移動アイコンや、移動前の位置を示す目印の表示対象とする
-                            assignment.Character.MarkMoveProvisional();
+                            moveOperation.Commit();
                         }
 
-                        _groupMoveRegistrationList.Remove( assignment.Character );
-                        assignment.Character.RestoreMaterialsOriginalColor();
+                        character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
+                        _groupMoveRegistrationList.Remove( character );
+                        moveOperation.End();
                     }
+                    _moveOperations.Clear();
 
                     Back();
                     return true;
@@ -166,12 +180,11 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            // キャンセル等、プレビューフェーズのまま終了する場合はゴースト・矢印・予約タイルを後始末する。
-            // 登録はメンバー選択(PlSelectGroupMembersState)へ戻った後も続けて使うため維持する
-            // (実行フェーズへ進んだ場合はEXECUTE_MOVE/END側で予約解放・後始末・登録解除が既に完了しているため対象外)
-            if( Phase.PREVIEW == _phase )
+            // キャンセル等、操作中のまま終了する場合は、全キャラクターを移動前の位置へ即座に戻して後始末する
+            // (実行フェーズへ進んだ場合はEND側で完了・後始末・登録解除が既に済んでいるため対象外)
+            if( Phase.OPERATING == _phase || Phase.WALK_BEFORE_CONFIRM == _phase )
             {
-                ClearPreview();
+                CancelMoveOperations();
             }
 
             // タイル選択から直接遷移した場合は、戻り先で登録が残留しないよう全て解放する
@@ -198,16 +211,16 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// プレビューフェーズ中のみ入力を受け付けます
+        /// 操作中のみ入力を受け付けます
         /// </summary>
         protected override bool CanAcceptDefault()
         {
-            if( Phase.PREVIEW != _phase ) { return false; }
+            if( Phase.OPERATING != _phase ) { return false; }
             return base.CanAcceptDefault();
         }
 
         /// <summary>
-        /// 方向入力を受けてカーソルを移動させた際、その位置を目的地としてプレビューを再計算します
+        /// 方向入力を受けてカーソルを移動させた際、その位置を目的地として各キャラクターの移動先を割り当て直します
         /// </summary>
         protected override bool AcceptDirection( InputContext context )
         {
@@ -215,46 +228,46 @@ namespace Frontier.Battle
 
             if( isAccepted )
             {
-                RefreshGroupMovePreview();
+                AssignGroupMoveDestinations( _stageCtrl.GetCurrentGridIndex() );
             }
 
             return isAccepted;
         }
 
         /// <summary>
-        /// プレビューフェーズ中、割り当てが1件以上ある場合のみCONFIRM(実行)を受け付けます
+        /// 操作中、移動するキャラクターが1人以上いる場合のみCONFIRM(確定)を受け付けます
         /// </summary>
         protected override bool CanAcceptConfirm()
         {
-            if( Phase.PREVIEW != _phase ) { return false; }
-            return 0 < _assignments.Count;
+            if( Phase.OPERATING != _phase ) { return false; }
+            return 0 < _moveOperations.Count;
         }
 
         /// <summary>
-        /// 決定入力を受けた際、その時点のプレビュー通りに移動実行フェーズへ移行します
+        /// 決定入力を受けた際、その時点の割り当て通りに移動を確定します
         /// </summary>
         protected override bool AcceptConfirm( InputContext context )
         {
             if( !AcceptConfirmCore( context ) ) { return false; }
-            if( Phase.PREVIEW != _phase || _assignments.Count <= 0 ) { return false; }
+            if( Phase.OPERATING != _phase || _moveOperations.Count <= 0 ) { return false; }
 
             // 移動先のいずれかが、暫定移動中の他キャラクターの移動前の位置である場合は、そのキャラクターが戻せなくなる旨を確認する
             var destinationTileIndices = new HashSet<int>();
             var movers                 = new HashSet<Player>();
-            foreach( var assignment in _assignments )
+            foreach( var moveOperation in _moveOperations )
             {
-                if( !assignment.IsMoving ) { continue; }
+                if( moveOperation.DestinationTileIndex == moveOperation.OriginTileIndex ) { continue; }
 
-                destinationTileIndices.Add( assignment.DestinationTileIndex );
-                movers.Add( assignment.Character );
+                destinationTileIndices.Add( moveOperation.DestinationTileIndex );
+                movers.Add( moveOperation.Owner );
             }
 
             var blockedNames = CollectUndoBlockedCharacterNames( destinationTileIndices, movers );
             if( 0 < blockedNames.Count )
             {
-                _isWaitingForBlockUndoConfirmResult = true;
-                SetSendTransitionContext( blockedNames.ToArray() );
-                TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                // 全キャラクターが割り当て先へ到着するのを待ってから確認ダイアログを開く
+                _pendingBlockedCharacterNames = blockedNames.ToArray();
+                _phase = Phase.WALK_BEFORE_CONFIRM;
 
                 return true;
             }
@@ -265,71 +278,110 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// その時点のプレビュー通りに、全キャラクターの移動実行フェーズへ移行します
+        /// その時点の割り当てで移動を確定し、全キャラクターの到着待ちへ移行します
         /// </summary>
         private void StartExecuteMove()
         {
-            // 個別移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動前の状態を保存しておく。
-            // これを行わないと、コマンド選択でのキャンセル(RevertBeforeMoving)時に未初期化の情報で巻き戻してしまう
-            foreach( var assignment in _assignments )
-            {
-                if( !assignment.IsMoving ) { continue; }
-
-                assignment.Character.HoldBeforeMoveInfo();
-                // 移動前の位置を示す目印で経路を表示するため、プレビュー通りの(=実際に移動する)経路を保持しておく
-                assignment.Character.HoldMovedPath( assignment.Character.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath );
-            }
-
-            ClearMoveRangeDisplay();
-            ReleaseCurrentReservations();
             _phase = Phase.EXECUTE_MOVE;
         }
 
         /// <summary>
-        /// 現在のカーソル位置を目的地として、登録済みキャラクターのゴースト・移動経路プレビューを再計算します
+        /// 全キャラクターの実体を割り当て先へ向けて高速で歩かせ、全員が到着しているかを返します
+        /// (単体移動の決定後と同じ速度で移動させます)
         /// </summary>
-        private void RefreshGroupMovePreview()
+        private bool UpdateWalkingUntilAllArrived()
         {
-            ClearPreview();
-            AssignGroupMoveDestinations( _stageCtrl.GetCurrentGridIndex() );
+            bool isAllArrived = true;
+            foreach( var moveOperation in _moveOperations )
+            {
+                if( !moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, true ) )
+                {
+                    isAllArrived = false;
+                }
+            }
+
+            return isAllArrived;
         }
 
         /// <summary>
-        /// 登録済みキャラクターを目的地までの距離が近い順に並べ、貪欲法で移動先タイルを割り当てます。
-        /// 目的地周辺に到達可能な空きタイルが1つもない場合は、自身の現在地(=行けるところまで)がフォールバックとして選ばれます。
+        /// 登録済みキャラクターそれぞれの移動操作を開始します。
+        /// 単体移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動前の状態を保存した上で、
+        /// 移動前のタイルを起点とした移動可能範囲を設定・表示します。
+        /// 移動可能範囲は、全キャラクターが移動前の位置にいるこの時点の状況を基に求め、以降の操作中は求め直しません
+        /// (実体が歩き始めると各タイルの状況が変わってしまうため)。
         /// </summary>
-        private void AssignGroupMoveDestinations( int targetTileIndex )
+        private void BeginMoveOperations()
         {
-            var eligible = new List<Player>();
             foreach( var key in _groupMoveRegistrationList.GetAll() )
             {
                 Player character = _btlRtnCtrl.BtlCharaCdr.GetPlayer( key );
                 if( null == character || !Command.IsExecutableMoveCommand( character, _stageCtrl ) ) { continue; }
 
-                eligible.Add( character );
-            }
+                // 登録中を示す半透明表示は解除し、歩く実体を通常の見た目にする(移動前の位置に残る残像と区別するため)
+                character.RestoreMaterialsOriginalColor();
 
-            // 目的地までの距離が近いキャラクター順に割り当てる(貪欲法)。OrderByは安定ソートのため、同値の場合は登録順が維持される
-            var sortedCharacters = eligible.OrderBy( c => _stageCtrl.CalculateTotalRange( c.BattleParams.TmpParam.CurrentTileIndex, targetTileIndex ) );
+                character.HoldBeforeMoveInfo();
 
-            foreach( var character in sortedCharacters )
-            {
-                int dprtIdx          = character.BattleParams.TmpParam.CurrentTileIndex;
-                float dprtHeight     = _stageCtrl.GetTileStaticData( dprtIdx ).Height;
-                var actionRangeCtrl  = character.BattleLogic.ActionRangeCtrl;
-
-                actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
+                PlayerMoveOperation moveOperation = RentMoveOperation();
+                moveOperation.Begin( character );
                 // 登録キャラクターごとに移動可能範囲を描画する。タイル毎にオーナーキー別のメッシュとして
                 // Y軸方向にずらして描画されるため、他キャラクターの範囲と重なっても埋もれず個別に視認できる。
                 // 複数キャラクターの範囲が重なるため、攻撃関連の色は混ぜずに移動可能タイルのみを描画する
-                actionRangeCtrl.DrawMoveOnlyRange();
+                character.BattleLogic.ActionRangeCtrl.DrawMoveOnlyRange();
 
-                int bestIdx   = dprtIdx;
-                int bestRange = int.MaxValue;
-                foreach( var tile in actionRangeCtrl.ActionableTileData.MoveableTileMap )
+                _moveOperations.Add( moveOperation );
+            }
+        }
+
+        /// <summary>
+        /// 全キャラクターの移動操作を取り消し、移動前の位置へ即座に戻します
+        /// </summary>
+        private void CancelMoveOperations()
+        {
+            foreach( var moveOperation in _moveOperations )
+            {
+                Player character = moveOperation.Owner;
+
+                moveOperation.Revert();
+                character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
+                moveOperation.End();
+
+                // メンバー選択へ戻る場合は登録が維持されるため、登録中を示す半透明表示へ戻す
+                if( EntryType.FromMemberSelection == _entryType && _groupMoveRegistrationList.Contains( character ) )
                 {
-                    // 立てないタイル(生存キャラクターが存在する、または他キャラクターが着地予約(RESERVED)している)は候補から除外する
+                    character.SetMaterialsSemiTransparent();
+                }
+            }
+            _moveOperations.Clear();
+
+            // 実体の位置を戻したことを、タイルの情報へ反映する
+            _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();
+        }
+
+        /// <summary>
+        /// 登録済みキャラクターを、移動前の位置から目的地までの距離が近い順に並べ、貪欲法で移動先タイルを割り当てます。
+        /// 目的地周辺に到達可能な空きタイルが1つもない場合は、移動前の位置がフォールバックとして選ばれます。
+        /// </summary>
+        private void AssignGroupMoveDestinations( int targetTileIndex )
+        {
+            // 目的地までの距離が近いキャラクター順に割り当てる(貪欲法)。OrderByは安定ソートのため、同値の場合は登録順が維持される
+            var sortedOperations = _moveOperations.OrderBy( op => _stageCtrl.CalculateTotalRange( op.OriginTileIndex, targetTileIndex ) );
+
+            // 先に割り当てたキャラクターの移動先(重複して割り当てないようにする)
+            var assignedTileIndices = new HashSet<int>();
+
+            foreach( var moveOperation in sortedOperations )
+            {
+                Player character = moveOperation.Owner;
+
+                int bestIdx   = moveOperation.OriginTileIndex;
+                int bestRange = int.MaxValue;
+                foreach( var tile in character.BattleLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap )
+                {
+                    // 立てないタイル(生存キャラクターが存在する、または他キャラクターが着地予約(RESERVED)している)、
+                    // 及び他のキャラクターへ割り当て済みのタイルは候補から除外する
                     if( !tile.Value.IsStandableBy( character.GetCharacterKey() ) ) { continue; }
+                    if( assignedTileIndices.Contains( tile.Key ) ) { continue; }
 
                     int range = _stageCtrl.CalculateTotalRange( tile.Key, targetTileIndex );
                     if( range < bestRange )
@@ -339,65 +391,25 @@ namespace Frontier.Battle
                     }
                 }
 
-                if( bestIdx != dprtIdx )
-                {
-                    actionRangeCtrl.FindMovePath( dprtIdx, bestIdx, character.GetStatusRef.jumpForce, character.BattleLogic.TileCostTable );
-                    actionRangeCtrl.PlaceMoveDirectionArrows( dprtIdx, actionRangeCtrl.MovePathHdlr.ProposedMovePath );
-
-                    var ghostObject = character.GetGhostObject();
-                    var destTile    = _stageCtrl.GetTileStaticData( bestIdx );
-                    ghostObject.TileIndex = bestIdx;
-                    ghostObject.transform.SetPositionAndRotation( destTile.CharaStandPos, character.transform.rotation );
-                    character.SetGhostActive( true );
-                }
-
-                // ★重要 : 次のキャラクターのSetupActionableRangeDataにこの予約を反映させるため、ループ内で都度UpdateTileDynamicDatasを呼ぶ
-                //          (ExtractActionableRangeDataは毎回タイルデータをクローンするため、都度反映しないと重複割り当てが起こり得る)
-                _stageCtrl.TileDataHdlr().ReserveTile( bestIdx );
-                _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();
-
-                _assignments.Add( new GroupMoveAssignment( character, dprtIdx, bestIdx ) );
+                assignedTileIndices.Add( bestIdx );
+                moveOperation.SetDestination( bestIdx );
             }
         }
 
         /// <summary>
-        /// 現在の割り当てのゴースト・移動経路矢印を消去し、予約タイルを解放した上で割り当てをクリアします
+        /// 使い回し用の移動操作のインスタンスを取得します(空きが無ければ新規に生成します)
         /// </summary>
-        private void ClearPreview()
+        private PlayerMoveOperation RentMoveOperation()
         {
-            foreach( var assignment in _assignments )
+            foreach( var pooled in _moveOperationPool )
             {
-                assignment.Character.SetGhostActive( false );
-                assignment.Character.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
+                if( !pooled.IsActive ) { return pooled; }
             }
 
-            ClearMoveRangeDisplay();
-            ReleaseCurrentReservations();
+            var created = _hierarchyBld.InstantiateWithDiContainer<PlayerMoveOperation>( false );
+            _moveOperationPool.Add( created );
 
-            _assignments.Clear();
-        }
-
-        /// <summary>
-        /// 現在の割り当てを持つ各キャラクターの移動可能範囲表示を消去します
-        /// </summary>
-        private void ClearMoveRangeDisplay()
-        {
-            foreach( var assignment in _assignments )
-            {
-                assignment.Character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
-            }
-        }
-
-        /// <summary>
-        /// 現在の割り当てが保持する予約タイルのみを解放します(ゴースト・矢印・割り当てリストはそのまま維持します)
-        /// </summary>
-        private void ReleaseCurrentReservations()
-        {
-            foreach( var assignment in _assignments )
-            {
-                _stageCtrl.TileDataHdlr().ReleaseTile( assignment.DestinationTileIndex );
-            }
-            _stageCtrl.TileDataHdlr().UpdateTileDynamicDatas();
+            return created;
         }
     }
 }

@@ -2,6 +2,7 @@
 using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.UI;
+using System.Collections.Generic;
 using static Constants;
 
 namespace Frontier.Battle
@@ -25,6 +26,12 @@ namespace Frontier.Battle
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
         private bool _isWaitingForBlockUndoConfirmResult = false;
+        // 確認ダイアログを出す前に、実体が移動先へ到着するのを待っている間の、確認対象のキャラクター名(待っていない間はnull)。
+        // 歩行中にダイアログを開くとステートの更新が止まり、実体が速度を持ったまま進み続けてしまうため、到着を待ってから開く
+        private string[] _pendingBlockedCharacterNames = null;
+        // 1キャラクター分の移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了させる)。
+        // グループ移動(PlGroupMoveState)と同じ処理を用いることで、移動の処理とユーザーからの見え方を揃えている
+        private PlayerMoveOperation _moveOperation = null;
 
         /// <summary>
         /// 移動中攻撃に遷移します
@@ -32,43 +39,6 @@ namespace Frontier.Battle
         private void TransitAttackOnMoveState()
         {
             TransitStateWithExit( ( int ) TransitTag.ATTACK_ON_MOVE );
-        }
-
-        /// <summary>
-        /// 移動するパスを作成します
-        /// </summary>
-        private void SetupMovePath()
-        {
-            int departingTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
-            int destinationTileIndex = _stageCtrl.GetCurrentGridIndex();
-            MovePathHandler pathHdlr = _plOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr;
-            bool isEndPathTrace = pathHdlr.IsEndPathTrace();
-
-            // 現在のパストレースが終了していない場合は、直近のwaypointを出発地点にする
-            if( !isEndPathTrace )
-            {
-                departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
-            }
-
-            _plOwner.BattleLogic.ActionRangeCtrl.FindActuallyMovePath( departingTileIndex, destinationTileIndex, _plOwner.GetStatusRef.jumpForce, _plOwner.BattleLogic.TileCostTable, isEndPathTrace );
-        }
-
-        /// <summary>
-        /// 移動前の地点から移動後の地点までの最短経路を求め、移動前の位置を示す目印の経路表示用に保持します。
-        /// この移動では移動範囲内を自由に歩き回って移動先を決められるため、実際に通った経路ではなく最短経路を用います
-        /// (ジグザグに歩いた場合などに、無駄の多い経路が描画されるのを避けるため)。
-        /// </summary>
-        private void HoldShortestMovedPath()
-        {
-            int destinationTileIndex = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
-            var moveableTileMap      = _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap;
-
-            // 移動可能範囲のデータが残っていない等で経路を求められない場合は、経路なし(残像と外枠のみの表示)とする
-            var route = ( 0 < moveableTileMap.Count )
-                ? _stageCtrl.ExtractShortestPath( _departTileIndex, destinationTileIndex, _plOwner.GetStatusRef.jumpForce, _plOwner.BattleLogic.TileCostTable, moveableTileMap )
-                : null;
-
-            _plOwner.HoldMovedPath( route );
         }
 
         /// <summary>
@@ -102,6 +72,7 @@ namespace Frontier.Battle
             base.Init( context );
 
             _isWaitingForBlockUndoConfirmResult = false;
+            _pendingBlockedCharacterNames       = null;
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
             if( _plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
@@ -114,12 +85,12 @@ namespace Frontier.Battle
             _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _stageCtrl.BindGridCursor( GridCursorState.MOVE, _plOwner );
 
-            // 移動可能情報を登録及び表示
-            int atkRange            = !_plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ? _plOwner.GetStatusRef.attackRange : 0;
-            var param               = _plOwner.GetStatusRef;
-            float dprtTileHeight    = _stageCtrl.GetTileStaticData( _departTileIndex ).Height;
-            _plOwner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _departTileIndex, dprtTileHeight );
+            // 移動操作を開始する(移動前のタイルを起点とした移動可能範囲のデータ設定と、移動前の位置の表示の開始)
+            LazyInject.GetOrCreate( ref _moveOperation, () => _hierarchyBld.InstantiateWithDiContainer<PlayerMoveOperation>( false ) );
+            _moveOperation.Begin( _plOwner );
+            // 移動可能範囲に加え、移動中に直接攻撃できる範囲も表示する
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
+            _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() );
         }
 
         public override bool Update()
@@ -132,28 +103,44 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case PlMovePhase.PL_MOVE:
-                    SetupMovePath();
-                    _plOwner.BattleLogic.UpdateMovePath();
+                    // 確認ダイアログの表示待ちの場合は、実体が移動先(カーソル位置)へ到着してからダイアログへ遷移する
+                    if( null != _pendingBlockedCharacterNames )
+                    {
+                        if( _moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, true ) )
+                        {
+                            _isWaitingForBlockUndoConfirmResult = true;
+                            SetSendTransitionContext( _pendingBlockedCharacterNames );
+                            _pendingBlockedCharacterNames = null;
+                            TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                        }
+                        break;
+                    }
+
+                    // カーソル位置を目的地として、実体をそこへ向けて歩かせる
+                    _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() );
+                    _moveOperation.UpdateWalking( 1.0f, true );
                     break;
 
                 case PlMovePhase.PL_MOVE_RESERVE_END:
                     // 移動完了後に終了へ移行
-                    if( _plOwner.BattleLogic.UpdateMovePath( CHARACTER_MOVE_HIGH_SPEED_RATE ) )
+                    if( _moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, false ) )
                     {
                         _phase = PlMovePhase.PL_MOVE_END;
                     }
                     break;
 
                 case PlMovePhase.PL_MOVE_END:
-                    // 移動したキャラクターの移動コマンドを選択不可にする
-                    _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
-                    _plOwner.PushCommandHistory( COMMAND_TAG.MOVE );
-                    // 移動後はコマンド選択をキャンセルしてタイル選択へ戻っても、移動前へ戻せる暫定状態として扱う。
-                    // ただし移動中に直接攻撃を行った場合は、既に行動が確定しているため暫定状態にはしない
-                    if( !_plOwner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] )
+                    if( _moveOperation != null && _moveOperation.IsActive )
                     {
-                        _plOwner.MarkMoveProvisional();
-                        HoldShortestMovedPath();
+                        // 移動を完了させる(移動コマンドを使用済みにし、移動前へ戻せる暫定移動の状態として記録する)
+                        _moveOperation.Commit();
+                    }
+                    else
+                    {
+                        // 移動中に直接攻撃を行って戻ってきた場合(Initで移動操作を開始していない)。
+                        // 既に行動が確定しているため、移動コマンドを使用済みにするのみで暫定移動の状態にはしない
+                        _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+                        _plOwner.PushCommandHistory( COMMAND_TAG.MOVE );
                     }
                     Back();     // コマンド選択に戻る
 
@@ -165,8 +152,11 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
+            // 移動操作を終了し、移動前の位置の表示を消去する(移動完了・キャンセル・移動中攻撃への遷移のいずれの場合も)
+            _moveOperation?.End();
+
             // 選択グリッドを表示
-            _stageCtrl.SetActiveGridCursor( true );    
+            _stageCtrl.SetActiveGridCursor( true );
             // QUEUED以外のタイルメッシュ描画をすべてクリア
             _btlRtnCtrl.BtlCharaCdr.ClearTileMeshesByType( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE );
 
@@ -224,6 +214,16 @@ namespace Frontier.Battle
                     _phase = PlMovePhase.PL_MOVE_RESERVE_END;
                 }
             }
+        }
+
+        /// <summary>
+        /// 確認ダイアログの表示待ち(実体が移動先へ到着するのを待っている間)は、全ての入力を受け付けません
+        /// </summary>
+        protected override bool CanAcceptDefault()
+        {
+            if( null != _pendingBlockedCharacterNames ) { return false; }
+
+            return base.CanAcceptDefault();
         }
 
         /// <summary>
@@ -330,9 +330,8 @@ namespace Frontier.Battle
             var blockedNames = CollectUndoBlockedCharacterNames( new int[] { currentIndex }, new Player[] { _plOwner } );
             if( 0 < blockedNames.Count )
             {
-                _isWaitingForBlockUndoConfirmResult = true;
-                SetSendTransitionContext( blockedNames.ToArray() );
-                TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
+                // 実体が移動先へ到着するのを待ってから確認ダイアログを開く(Updateで到着を検知して遷移する)
+                _pendingBlockedCharacterNames = blockedNames.ToArray();
 
                 return true;
             }
