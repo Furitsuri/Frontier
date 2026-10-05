@@ -1,62 +1,108 @@
 ﻿using Frontier.Combat;
-using Frontier.Entities;
 using Frontier.Stage;
 using System.Collections.Generic;
+using UnityEngine;
 using Zenject;
 
-namespace Frontier.Battle
+namespace Frontier.Entities
 {
     /// <summary>
     /// プレイヤーキャラクター1人分の移動操作(実体を目的地へ向けて実際に歩かせる・移動前の位置を表示する・移動を完了/取り消しする)を扱います。
-    /// 単体移動(PlMoveState)とグループ移動(PlGroupMoveState)の双方がこのクラスを用いることで、
-    /// 移動の処理と、ユーザーからの見え方(実体が歩き、移動前のタイルに残像が残り、そこからの経路が矢印で示される)を揃えています。
-    /// 生成はHierarchyBuilderBase.InstantiateWithDiContainerで行ってください。
+    /// PlayerBattleLogicがキャラクター1人につき1つ保持し、単体移動(PlMoveState)とグループ移動(PlGroupMoveState)の双方が
+    /// これを用いることで、移動の処理と、ユーザーからの見え方(実体が歩き、移動前のタイルに残像が残り、そこからの経路が矢印で示される)を揃えています。
+    ///
+    /// 通常の移動か、移動先の変更(暫定移動中の移動のやり直し)かといった状況による処理の違いは、このクラスの中で判断します。
+    /// 呼び出し側(各ステート)は、状況を意識せずに Prepare → Begin → (SetDestination/UpdateWalking) → Complete または Cancel → End の順に呼び出してください。
     /// </summary>
     public class PlayerMoveOperation
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
         [Inject] private StageController _stageCtrl         = null;
 
-        private Player _owner                       = null;
-        private int _originTileIndex                = -1;
-        private int _destinationTileIndex           = -1;
+        private Player _owner                           = null;
+        private PlayerBattleLogic _ownerLogic           = null;
+        private bool _isActive                          = false;
+        private int _originTileIndex                    = -1;
+        private int _destinationTileIndex               = -1;
         // 移動先の変更(暫定移動中の移動のやり直し)として行っている移動操作か
-        private bool _isRepositioning               = false;
-        private MoveOriginIndicator _originIndicator = null;
+        private bool _isRepositioning                   = false;
+        // 移動先の変更を開始した時点の位置と向き。変更をキャンセルした際にここへ戻す。
+        // 移動先の変更を開始する度に上書きされる(2度目の変更をキャンセルした場合は、2度目を開始する前の位置へ戻る)
+        private int _repositionStartTileIndex           = -1;
+        private Quaternion _repositionStartRot          = Quaternion.identity;
+        private MoveOriginIndicator _originIndicator    = null;
 
         public Player Owner => _owner;
-        public bool IsActive => ( null != _owner );
+        /// <summary>移動操作の最中か(BeginからEndまでの間)</summary>
+        public bool IsActive => _isActive;
         public int OriginTileIndex => _originTileIndex;
         public int DestinationTileIndex => _destinationTileIndex;
-        /// <summary>移動先の変更(暫定移動中の移動のやり直し)として行っている移動操作か</summary>
-        public bool IsRepositioning => _isRepositioning;
 
         /// <summary>実体が移動前のタイルから離れているか(1タイル以上移動しているか)</summary>
         public bool HasMoved => _owner.BattleParams.TmpParam.CurrentTileIndex != _originTileIndex;
 
         /// <summary>
+        /// 対象のキャラクターを設定します。PlayerBattleLogicの初期化時に呼び出してください。
+        /// </summary>
+        public void Init( Player owner, PlayerBattleLogic ownerLogic )
+        {
+            _owner              = owner;
+            _ownerLogic         = ownerLogic;
+            _isActive           = false;
+            _isRepositioning    = false;
+        }
+
+        /// <summary>
+        /// 生成した表示物(残像・矢印)を破棄します
+        /// </summary>
+        public void Dispose()
+        {
+            _originIndicator?.Dispose();
+            _originIndicator    = null;
+            _isActive           = false;
+        }
+
+        /// <summary>
+        /// 移動操作の準備として、取り消し・キャンセルの際に戻すための現時点の状態を保存します。
+        /// 移動を行うことが決まった時点(コマンドメニューで移動を選んだ時、グループ移動の操作を開始する時)に1度だけ呼び出してください。
+        /// ・通常の移動の場合: 現時点の状態を「移動前の状態」として保存します。
+        /// ・移動先の変更の場合(既に暫定的に移動している場合): 移動前の状態は上書きせず(起点と移動範囲を最初の地点のままとするため)、
+        ///   変更をキャンセルした際に戻すための現時点の位置のみを保存します。
+        /// </summary>
+        public void Prepare()
+        {
+            _isRepositioning = _owner.IsProvisionallyMoved();
+
+            if( _isRepositioning )
+            {
+                _repositionStartTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
+                _repositionStartRot         = _owner.GetRotation();
+            }
+            else
+            {
+                _ownerLogic.HoldBeforeMoveInfo();
+            }
+        }
+
+        /// <summary>
         /// 移動操作を開始します。移動前のタイルを起点とした移動可能範囲のデータを設定し、移動前の位置の表示を開始します。
-        /// 事前にowner.HoldBeforeMoveInfo()で移動前の状態が保存されている必要があります
-        /// (移動前のタイル・向きは、その保存内容を参照します)。
+        /// 事前にPrepareが呼び出されている必要があります(移動前のタイル・向きは、その保存内容を参照します)。
         /// 移動可能範囲の描画は用途によって異なるため、呼び出し側で行ってください。
         /// </summary>
-        public void Begin( Player owner )
+        public void Begin()
         {
             LazyInject.GetOrCreate( ref _originIndicator, () => _hierarchyBld.InstantiateWithDiContainer<MoveOriginIndicator>( false ) );
 
-            _owner                  = owner;
-            _originTileIndex        = owner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
+            _isActive               = true;
+            _originTileIndex        = _owner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _destinationTileIndex   = -1;
-            // 既に暫定的に移動している場合は、移動先の変更として扱う。
-            // 起点・移動可能範囲は最初に移動を開始した地点(保存されている移動前の位置)のままとなる
-            _isRepositioning        = owner.IsProvisionallyMoved();
 
-            // 以降の経路探索は、この時点(移動前)の状況を基にした移動可能範囲のデータを用いる
+            // 以降の経路探索は、この時点の状況を基にした、移動前のタイルを起点とする移動可能範囲のデータを用いる
             float originTileHeight = _stageCtrl.GetTileStaticData( _originTileIndex ).Height;
-            owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( _originTileIndex, originTileHeight );
+            _ownerLogic.ActionRangeCtrl.SetupActionableRangeData( _originTileIndex, originTileHeight );
 
             // 残像は、実体が移動前のタイルに立っている間は表示しない
-            _originIndicator.Show( owner, HasMoved );
+            _originIndicator.Show( _owner, HasMoved );
         }
 
         /// <summary>
@@ -64,7 +110,7 @@ namespace Frontier.Battle
         /// </summary>
         public bool CanStandOn( int tileIndex )
         {
-            var actionRangeCtrl = _owner.BattleLogic.ActionRangeCtrl;
+            var actionRangeCtrl = _ownerLogic.ActionRangeCtrl;
 
             return actionRangeCtrl.MovePathHdlr.CanStandOnTile( actionRangeCtrl.ActionableTileData.GetMoveableTile( tileIndex ) );
         }
@@ -91,7 +137,7 @@ namespace Frontier.Battle
         /// </summary>
         public int GetStoppingTileIndex()
         {
-            MovePathHandler pathHdlr = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr;
+            MovePathHandler pathHdlr = _ownerLogic.ActionRangeCtrl.MovePathHdlr;
             var movePath             = pathHdlr.ProposedMovePath;
 
             if( !pathHdlr.IsEndPathTrace() && 0 < movePath.Count )
@@ -112,7 +158,7 @@ namespace Frontier.Battle
         {
             if( isRetargeting ) { SetupMovePath(); }
 
-            bool isArrived = _owner.BattleLogic.UpdateMovePath( moveSpeedRate );
+            bool isArrived = _ownerLogic.UpdateMovePath( moveSpeedRate );
 
             // 残像は、実体が移動前のタイルに立っている間は表示しない(他キャラクターの実体が立っている場合は表示する)
             _originIndicator.SetAfterimageVisible( HasMoved );
@@ -126,7 +172,7 @@ namespace Frontier.Battle
         /// </summary>
         public void StopAtNextWaypoint()
         {
-            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.TruncateAfterFocusedWaypoint();
+            _ownerLogic.ActionRangeCtrl.MovePathHdlr.TruncateAfterFocusedWaypoint();
 
             // 目的地が留まることの出来ないタイルの場合、矢印は実体が止まるタイルまでを表示しているため、止まる位置の変化に合わせて更新する
             if( !CanStandOn( _destinationTileIndex ) )
@@ -136,17 +182,29 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 現在の位置で移動を完了させます。移動コマンドを使用済みにして行動履歴へ積み、移動前へ戻せる暫定移動の状態として記録します。
-        /// ただし移動中に直接攻撃を行った場合は、既に行動が確定しているため暫定移動の状態にはしません。
+        /// 現在の位置で移動操作を終えます。状況に応じて以下のいずれかとして扱います。
+        /// ・移動中に直接攻撃を行った後の場合: 既に行動が確定しているため、移動コマンドを使用済みにするのみとします。
+        /// ・移動前のタイルに立っている場合: 移動しなかったものとして扱います。移動先の変更で最初の地点へ戻った場合は、
+        ///   移動の取り消しとして扱い、暫定移動の状態を解除して移動コマンドを通常の移動として選択出来る状態へ戻します。
+        /// ・それ以外の場合: 移動を完了させます。移動コマンドを使用済みにし、移動前へ戻せる暫定移動の状態として記録します。
         /// </summary>
-        public void Commit()
+        public void Complete()
         {
-            _owner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
-            // 移動先の変更の場合は、最初の移動の時点で既に行動履歴へ積まれているため、重ねて積まない
-            // (重ねて積むと、移動を取り消しても履歴が残ってしまう)
-            if( !_isRepositioning ) { _owner.PushCommandHistory( COMMAND_TAG.MOVE ); }
+            bool isAttackEnded = _owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK];
 
-            if( !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] )
+            if( !isAttackEnded && !HasMoved )
+            {
+                if( _isRepositioning ) { _owner.RevertLastCommand(); }
+
+                return;
+            }
+
+            _owner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+            // 移動先の変更の場合など、既に移動が行動履歴へ積まれている場合は重ねて積まない
+            // (重ねて積むと、移動を取り消しても履歴が残ってしまう)
+            if( !_ownerLogic.IsContainsCommandHistory( COMMAND_TAG.MOVE ) ) { _owner.PushCommandHistory( COMMAND_TAG.MOVE ); }
+
+            if( !isAttackEnded )
             {
                 _owner.MarkMoveProvisional();
                 // 移動前の位置を示す目印の経路表示用に、移動前の地点から移動後の地点までの最短経路を保持する。
@@ -157,22 +215,29 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 移動操作を取り消し、実体を即座に元の位置へ戻します。
+        /// 移動操作をキャンセルし、実体を即座に元の位置へ戻します。
         /// 通常の移動の場合は移動前の位置・状態へ、移動先の変更の場合は変更を開始する前の位置へ戻します(暫定移動の状態は維持されます)。
         /// </summary>
-        public void Revert()
+        public void Cancel()
         {
-            if( _isRepositioning ) { _owner.RevertToRepositionStart(); }
-            else { _owner.RevertBeforeMoving(); }
+            if( _isRepositioning )
+            {
+                _ownerLogic.ForcedStopMoving();
+                _ownerLogic.SetPositionOnStage( _repositionStartTileIndex, _repositionStartRot );
+            }
+            else
+            {
+                _owner.RevertBeforeMoving();
+            }
         }
 
         /// <summary>
-        /// 移動操作を終了し、移動前の位置の表示を消去します(Commit/Revertのいずれの後にも呼び出してください)
+        /// 移動操作を終了し、移動前の位置の表示を消去します(Complete/Cancelのいずれの後にも呼び出してください)
         /// </summary>
         public void End()
         {
             _originIndicator?.Hide();
-            _owner = null;
+            _isActive = false;
         }
 
         /// <summary>
@@ -180,7 +245,7 @@ namespace Frontier.Battle
         /// </summary>
         private void SetupMovePath()
         {
-            var actionRangeCtrl         = _owner.BattleLogic.ActionRangeCtrl;
+            var actionRangeCtrl         = _ownerLogic.ActionRangeCtrl;
             MovePathHandler pathHdlr    = actionRangeCtrl.MovePathHdlr;
             int departingTileIndex      = _owner.BattleParams.TmpParam.CurrentTileIndex;
             bool isEndPathTrace         = pathHdlr.IsEndPathTrace();
@@ -191,7 +256,7 @@ namespace Frontier.Battle
                 departingTileIndex = pathHdlr.GetFocusedWaypointIndex();
             }
 
-            actionRangeCtrl.FindActuallyMovePath( departingTileIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, _owner.BattleLogic.TileCostTable, isEndPathTrace );
+            actionRangeCtrl.FindActuallyMovePath( departingTileIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, _ownerLogic.TileCostTable, isEndPathTrace );
         }
 
         /// <summary>
@@ -200,10 +265,10 @@ namespace Frontier.Battle
         /// </summary>
         private List<WaypointInformation> FindShortestPathFromOrigin( int destinationTileIndex )
         {
-            var moveableTileMap = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap;
+            var moveableTileMap = _ownerLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap;
             if( moveableTileMap.Count <= 0 || destinationTileIndex == _originTileIndex ) { return null; }
 
-            return _stageCtrl.ExtractShortestPath( _originTileIndex, destinationTileIndex, _owner.GetStatusRef.jumpForce, _owner.BattleLogic.TileCostTable, moveableTileMap );
+            return _stageCtrl.ExtractShortestPath( _originTileIndex, destinationTileIndex, _owner.GetStatusRef.jumpForce, _ownerLogic.TileCostTable, moveableTileMap );
         }
     }
 }

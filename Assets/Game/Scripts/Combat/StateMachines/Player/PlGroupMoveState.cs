@@ -44,10 +44,8 @@ namespace Frontier.Battle
             CONFIRM_BLOCK_UNDO_MOVE = 0,
         }
 
-        // 移動中の各キャラクターの移動操作
+        // 移動中の各キャラクターが保持する移動操作
         private readonly List<PlayerMoveOperation> _moveOperations = new List<PlayerMoveOperation>();
-        // 移動操作のインスタンスの使い回し用(残像等の生成物を持つため、ステートへ入る度に作り直さない)
-        private readonly List<PlayerMoveOperation> _moveOperationPool = new List<PlayerMoveOperation>();
 
         private Phase _phase;
         private EntryType _entryType;
@@ -159,11 +157,9 @@ namespace Frontier.Battle
                     {
                         Player character = moveOperation.Owner;
 
-                        // 実際に移動したキャラクターのみ移動を完了させる(留まったキャラクターは個別に移動可能なままにする)
-                        if( moveOperation.HasMoved )
-                        {
-                            moveOperation.Commit();
-                        }
+                        // 現在の位置で移動操作を終える。実際に移動したキャラクターのみ移動の完了として扱われ、
+                        // 留まったキャラクターは個別に移動可能なままとなる(移動操作側で判断される)
+                        moveOperation.Complete();
 
                         character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
                         _groupMoveRegistrationList.Remove( character );
@@ -305,7 +301,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// 登録済みキャラクターそれぞれの移動操作を開始します。
-        /// 単体移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動前の状態を保存した上で、
+        /// 単体移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動操作の準備(移動前の状態の保存)を行った上で、
         /// 移動前のタイルを起点とした移動可能範囲を設定・表示します。
         /// 移動可能範囲は、全キャラクターが移動前の位置にいるこの時点の状況を基に求め、以降の操作中は求め直しません
         /// (実体が歩き始めると各タイルの状況が変わってしまうため)。
@@ -320,10 +316,9 @@ namespace Frontier.Battle
                 // 登録中を示す半透明表示は解除し、歩く実体を通常の見た目にする(移動前の位置に残る残像と区別するため)
                 character.RestoreMaterialsOriginalColor();
 
-                character.HoldBeforeMoveInfo();
-
-                PlayerMoveOperation moveOperation = RentMoveOperation();
-                moveOperation.Begin( character );
+                PlayerMoveOperation moveOperation = character.MoveOperation;
+                moveOperation.Prepare();
+                moveOperation.Begin();
                 // 登録キャラクターごとに移動可能範囲を描画する。タイル毎にオーナーキー別のメッシュとして
                 // Y軸方向にずらして描画されるため、他キャラクターの範囲と重なっても埋もれず個別に視認できる。
                 // 複数キャラクターの範囲が重なるため、攻撃関連の色は混ぜずに移動可能タイルのみを描画する
@@ -342,7 +337,7 @@ namespace Frontier.Battle
             {
                 Player character = moveOperation.Owner;
 
-                moveOperation.Revert();
+                moveOperation.Cancel();
                 character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
                 moveOperation.End();
 
@@ -394,22 +389,6 @@ namespace Frontier.Battle
                 assignedTileIndices.Add( bestIdx );
                 moveOperation.SetDestination( bestIdx );
             }
-        }
-
-        /// <summary>
-        /// 使い回し用の移動操作のインスタンスを取得します(空きが無ければ新規に生成します)
-        /// </summary>
-        private PlayerMoveOperation RentMoveOperation()
-        {
-            foreach( var pooled in _moveOperationPool )
-            {
-                if( !pooled.IsActive ) { return pooled; }
-            }
-
-            var created = _hierarchyBld.InstantiateWithDiContainer<PlayerMoveOperation>( false );
-            _moveOperationPool.Add( created );
-
-            return created;
         }
     }
 }

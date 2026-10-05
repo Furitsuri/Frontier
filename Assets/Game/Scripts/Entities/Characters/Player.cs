@@ -34,6 +34,8 @@ namespace Frontier.Entities
 
         public RecruitLogic RecruitLogic => _recruitLogic;
         public ref PrevMoveInfo PrevMoveInformaiton => ref ( ( PlayerBattleLogic )_battleLogic ).PrevMoveInformaiton;
+        /// <summary>このキャラクターの移動操作(単体移動・グループ移動の各ステートから使用します)</summary>
+        public PlayerMoveOperation MoveOperation => ( ( PlayerBattleLogic ) _battleLogic ).MoveOperation;
 
         /// <summary>
         /// 現在の移動前情報を適応します
@@ -53,19 +55,18 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 移動先の変更(暫定移動中の移動のやり直し)を開始する時点の位置と向きを保持します
+        /// 直前に行ったコマンドを取り消し、そのコマンドを再び選択出来る状態へ戻します(移動の場合は移動前の位置・状態へ戻ります)。
         /// </summary>
-        public void HoldRepositionStartInfo()
+        /// <returns>取り消したコマンド(取り消せるコマンドが無い場合はCOMMAND_TAG.NONE)</returns>
+        public COMMAND_TAG RevertLastCommand()
         {
-            ( ( PlayerBattleLogic ) _battleLogic ).HoldRepositionStartInfo();
-        }
+            var commandTag = PopCommandHistory();
+            if( COMMAND_TAG.NONE != commandTag )
+            {
+                BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
+            }
 
-        /// <summary>
-        /// 移動先の変更を取り消し、変更を開始する前の位置へ即座に戻します(暫定移動の状態は維持されます)
-        /// </summary>
-        public void RevertToRepositionStart()
-        {
-            ( ( PlayerBattleLogic ) _battleLogic ).RevertToRepositionStart();
+            return commandTag;
         }
 
         public void PushCommandHistory( COMMAND_TAG commandTag )

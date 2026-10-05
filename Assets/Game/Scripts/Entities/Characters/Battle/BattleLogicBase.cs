@@ -97,7 +97,7 @@ protected Character _opponent                                       = null;
             }
         }
 
-        public void Dispose()
+        virtual public void Dispose()
         {
             _actionRangeCtrl.Dispose();
         }

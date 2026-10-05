@@ -64,10 +64,8 @@ namespace Frontier.Battle
             //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
             if( TransitIndex == ( int ) COMMAND_TAG.MOVE )
             {
-                // 暫定的に移動している場合は移動先の変更となる。移動前(最初に移動を開始した地点)の情報は上書きせず、
-                // 変更をキャンセルした際に戻すための、現時点の位置のみを保存する
-                if( _plOwner.IsProvisionallyMoved() ) { _plOwner.HoldRepositionStartInfo(); }
-                else { _plOwner.HoldBeforeMoveInfo(); }
+                // 通常の移動か移動先の変更かに応じた保存内容の違いは、移動操作側で判断される
+                _plOwner.MoveOperation.Prepare();
             }
 
             _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();

@@ -12,25 +12,12 @@ namespace Frontier.Battle
         virtual protected void AdaptSelectPlayer() { }
 
         /// <summary>
-        /// 以前の状態に巻き戻します
-        /// </summary>
-        protected void Rewind()
-        {
-            if ( _plOwner == null ) { return; }
-
-            _plOwner.RevertBeforeMoving();
-            _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
-        }
-
-        /// <summary>
         /// 指定キャラクターのコマンド履歴から直前のコマンドを取り消し、グリッドカーソルを元の位置へ同期します
         /// </summary>
         protected void RevertCommandHistory( Player player )
         {
-            var commandTag = player.PopCommandHistory();
-            if( COMMAND_TAG.NONE == commandTag ) { return; }
+            if( COMMAND_TAG.NONE == player.RevertLastCommand() ) { return; }
 
-            player.BattleParams.TmpParam.SetEndCommandStatus( commandTag, false );
             _stageCtrl.SyncGridCursorAfterRevert( player );
         }
 

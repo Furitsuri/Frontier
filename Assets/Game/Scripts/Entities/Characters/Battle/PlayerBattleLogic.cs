@@ -16,13 +16,13 @@ namespace Frontier.Entities
         // 移動(単体移動・グループ移動)によって暫定的に移動している(移動が確定していない)状態か。
         // 移動中に直接攻撃した場合など、移動の履歴があっても暫定扱いにしないケースと区別するため、コマンド履歴とは別に明示的に保持する
         private bool _isMoveProvisional = false;
-        // 移動先の変更(暫定移動中の移動のやり直し)を開始した時点の位置と向き。変更をキャンセルした際にここへ戻す。
-        // 移動先の変更を開始する度に上書きされる(2度目の変更をキャンセルした場合は、2度目を開始する前の位置へ戻る)
-        private int _repositionStartTileIndex       = -1;
-        private UnityEngine.Quaternion _repositionStartRot = UnityEngine.Quaternion.identity;
+        // 移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了/取り消しする)。
+        // キャラクター1人につき1つ保持し、単体移動・グループ移動の各ステートから使用される
+        private PlayerMoveOperation _moveOperation = null;
 
         public ref PrevMoveInfo PrevMoveInformaiton => ref _prevMoveInfo;
         public bool IsMoveProvisional => _isMoveProvisional;
+        public PlayerMoveOperation MoveOperation => _moveOperation;
 
         public override void Init()
         {
@@ -32,6 +32,8 @@ namespace Frontier.Entities
             _isMoveProvisional = false;
 
             LazyInject.GetOrCreate( ref _baseAi, () => _hierarchyBld.InstantiateWithDiContainer<AiBase>( false ) );
+            LazyInject.GetOrCreate( ref _moveOperation, () => _hierarchyBld.InstantiateWithDiContainer<PlayerMoveOperation>( false ) );
+            _moveOperation.Init( ( Player ) _readOnlyOwner.Value, this );
 
             _revertCommandStateFuncs = new Action[( int ) COMMAND_TAG.NUM]
             {
@@ -54,24 +56,11 @@ namespace Frontier.Entities
             _prevMoveInfo.movedPath = null;     // 経路を保持する場合は、呼び出し側で別途HoldMovedPathを呼び出す
         }
 
-        /// <summary>
-        /// 移動先の変更を開始する時点の位置と向きを保持します。
-        /// 通常の移動開始時のHoldBeforeMoveInfoと異なり、移動前(最初に移動を開始した地点)の情報は上書きしません
-        /// (移動先の変更では、起点と移動範囲を最初の地点のままとするため)。
-        /// </summary>
-        public void HoldRepositionStartInfo()
+        public override void Dispose()
         {
-            _repositionStartTileIndex   = _readOnlyOwner.Value.BattleParams.TmpParam.CurrentTileIndex;
-            _repositionStartRot         = _readOnlyOwner.Value.GetRotation();
-        }
+            _moveOperation?.Dispose();
 
-        /// <summary>
-        /// 移動先の変更を取り消し、変更を開始する前の位置へ即座に戻します(暫定移動の状態は維持されます)
-        /// </summary>
-        public void RevertToRepositionStart()
-        {
-            ForcedStopMoving();
-            SetPositionOnStage( _repositionStartTileIndex, _repositionStartRot );
+            base.Dispose();
         }
 
         public void PushCommandHistory( COMMAND_TAG commandTag )

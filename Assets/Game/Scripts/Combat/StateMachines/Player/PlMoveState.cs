@@ -42,8 +42,9 @@ namespace Frontier.Battle
         private System.Action _transitOnArrival = null;
         // 遷移待ちの間、目的地(カーソル位置)へ向けて経路を引き直し続けるか(falseの場合は現在の経路のまま歩かせる)
         private bool _isRetargetingBeforeTransit = false;
-        // 1キャラクター分の移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了させる)。
-        // グループ移動(PlGroupMoveState)と同じ処理を用いることで、移動の処理とユーザーからの見え方を揃えている
+        // 操作対象のキャラクターが保持する移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了させる)。
+        // グループ移動(PlGroupMoveState)と同じ処理を用いることで、移動の処理とユーザーからの見え方を揃えている。
+        // 通常の移動か移動先の変更かといった状況による処理の違いは移動操作側で判断されるため、このステートでは意識しない
         private PlayerMoveOperation _moveOperation = null;
 
         /// <summary>
@@ -93,10 +94,7 @@ namespace Frontier.Battle
             // 実体が最終的に止まるタイル(歩いている途中であれば経路の終点、止まっていれば現在立っているタイル)と、
             // 指定位置との差が攻撃レンジ以内であることが条件。
             // 歩いている途中に攻撃対象を指定した場合は、向かっている先まで歩いてからそこで攻撃するため、止まるタイルを基準とする
-            int standTileIndex = ( null != _moveOperation && _moveOperation.IsActive )
-                ? _moveOperation.GetStoppingTileIndex()
-                : _plOwner.BattleParams.TmpParam.CurrentTileIndex;
-            (int, int) ranges = _stageCtrl.CalcurateRanges( standTileIndex, _stageCtrl.GetCurrentGridIndex() );
+            (int, int) ranges = _stageCtrl.CalcurateRanges( _moveOperation.GetStoppingTileIndex(), _stageCtrl.GetCurrentGridIndex() );
 
             return ranges.Item1 + ranges.Item2 <= _plOwner.GetStatusRef.attackRange;
         }
@@ -107,6 +105,7 @@ namespace Frontier.Battle
 
             _isWaitingForBlockUndoConfirmResult = false;
             _transitOnArrival                   = null;
+            _moveOperation                      = _plOwner.MoveOperation;
 
             // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
             if( _plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
@@ -120,8 +119,7 @@ namespace Frontier.Battle
             _stageCtrl.BindGridCursor( GridCursorState.MOVE, _plOwner );
 
             // 移動操作を開始する(移動前のタイルを起点とした移動可能範囲のデータ設定と、移動前の位置の表示の開始)
-            LazyInject.GetOrCreate( ref _moveOperation, () => _hierarchyBld.InstantiateWithDiContainer<PlayerMoveOperation>( false ) );
-            _moveOperation.Begin( _plOwner );
+            _moveOperation.Begin();
             // 移動可能範囲に加え、移動中に直接攻撃できる範囲も表示する
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
             _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() );
@@ -163,18 +161,8 @@ namespace Frontier.Battle
                     break;
 
                 case PlMovePhase.PL_MOVE_END:
-                    if( _moveOperation != null && _moveOperation.IsActive )
-                    {
-                        // 移動を完了させる(移動コマンドを使用済みにし、移動前へ戻せる暫定移動の状態として記録する)
-                        _moveOperation.Commit();
-                    }
-                    else
-                    {
-                        // 移動中に直接攻撃を行って戻ってきた場合(Initで移動操作を開始していない)。
-                        // 既に行動が確定しているため、移動コマンドを使用済みにするのみで暫定移動の状態にはしない
-                        _plOwner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
-                        _plOwner.PushCommandHistory( COMMAND_TAG.MOVE );
-                    }
+                    // 現在の位置で移動操作を終える(移動の完了として扱うか等は、状況に応じて移動操作側で判断される)
+                    _moveOperation.Complete();
                     Back();     // コマンド選択に戻る
 
                     return true;
@@ -349,10 +337,8 @@ namespace Frontier.Battle
             {
                 RequestTransitAfterStop( () =>
                 {
-                    // 移動先の変更で最初に移動を開始した地点を選んだ場合は、移動の取り消しとして扱う
-                    // (暫定移動の状態を解除し、移動コマンドを通常の移動として選択出来る状態へ戻す)
-                    if( _moveOperation.IsRepositioning ) { RevertCommandHistory( _plOwner ); }
-
+                    // 現在の位置(出発地点)で移動操作を終える(移動しなかったものとして扱うか、移動の取り消しとして扱うかは移動操作側で判断される)
+                    _moveOperation.Complete();
                     Back();
                 }, StopMode.WALK_TO_DESTINATION );
 
@@ -401,17 +387,10 @@ namespace Frontier.Battle
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
-            // 巻き戻しを行う。通常の移動の場合は移動前の位置へ、移動先の変更の場合は変更を開始する前の位置へ戻す
-            // (移動先の変更では暫定移動の状態を維持するため、移動前の位置までは戻さない)
-            if( null != _moveOperation && _moveOperation.IsActive )
-            {
-                _moveOperation.Revert();
-                _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
-            }
-            else
-            {
-                Rewind();
-            }
+            // 移動操作をキャンセルして実体を元の位置へ戻し、グリッドカーソルもその位置へ追従させる
+            // (どの位置へ戻すかは、通常の移動か移動先の変更かに応じて移動操作側で判断される)
+            _moveOperation.Cancel();
+            _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
 
             return true;
         }
