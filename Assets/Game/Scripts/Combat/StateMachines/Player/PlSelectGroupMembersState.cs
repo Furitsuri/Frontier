@@ -21,8 +21,8 @@ namespace Frontier.Battle
             GROUP_MOVE = 0,
         }
 
-        // メンバー選択中は登録キャラクターの移動可能範囲の表示に集中させるため、暫定移動に関する表示は行わない
-        protected override bool ShowsProvisionalMoveDisplay => false;
+        // メンバー選択中は登録キャラクターの移動可能範囲の表示に集中させるため、暫定移動中のキャラクターの移動前の位置は表示しない
+        protected override ProvisionalOriginDisplayMode OriginDisplayMode => ProvisionalOriginDisplayMode.NONE;
 
         // 移動可能範囲を描画済みのキャラクター(登録リストとの差分で描画・消去を行う)
         private readonly List<CharacterKey> _drawnRangeKeys = new List<CharacterKey>();

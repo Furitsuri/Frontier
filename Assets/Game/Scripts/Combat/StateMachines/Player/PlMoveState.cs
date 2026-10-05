@@ -3,6 +3,7 @@ using Frontier.Entities;
 using Frontier.Stage;
 using Frontier.UI;
 using System.Collections.Generic;
+using Zenject;
 using static Constants;
 
 namespace Frontier.Battle
@@ -32,6 +33,8 @@ namespace Frontier.Battle
             CHARACTER_STATUS,
             CONFIRM_BLOCK_UNDO_MOVE,
         }
+
+        [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
 
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
@@ -123,6 +126,9 @@ namespace Frontier.Battle
             // 移動可能範囲に加え、移動中に直接攻撃できる範囲も表示する
             _plOwner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
             _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() );
+
+            // 移動している間は、どこが他の暫定移動中のキャラクターの移動前のタイルなのかが分かるよう、操作中のキャラクター以外の全員分を表示する
+            _provisionalOriginDisplay.ShowAllExcept( _plOwner );
         }
 
         public override bool Update()
@@ -175,6 +181,7 @@ namespace Frontier.Battle
         {
             // 移動操作を終了し、移動前の位置の表示を消去する(移動完了・キャンセル・移動中攻撃への遷移のいずれの場合も)
             _moveOperation?.End();
+            _provisionalOriginDisplay.Clear();
 
             // 選択グリッドを表示
             _stageCtrl.SetActiveGridCursor( true );

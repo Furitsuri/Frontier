@@ -519,29 +519,44 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// カーソルを合わせているキャラクターの移動前の位置を示す目印(残像・経路の矢印・タイルの外枠)をこのステートで表示するかどうか。
-        /// 目印はタイル選択中にのみ表示し、グループ移動の操作中は移動先のゴースト・矢印表示との混同を避けるため表示しません。
-        /// 派生ステートでは表示しないようオーバーライドしてください。
+        /// 暫定的に移動しているキャラクターの移動前の位置(残像・タイルの外枠・経路の矢印)を、どのキャラクターの分まで表示するか
         /// </summary>
-        protected virtual bool ShowsProvisionalMoveDisplay => true;
+        protected enum ProvisionalOriginDisplayMode
+        {
+            NONE = 0,       // 表示しない
+            HOVERED_ONLY,   // カーソルを合わせているキャラクターの分のみ(経路の矢印付き)
+            ALL,            // 全員分(経路の矢印なし)
+        }
+
+        /// <summary>
+        /// このステートでの、移動前の位置の表示方法。
+        /// タイル選択中は、複数人分が並ぶ煩わしさを避けるため、カーソルを合わせているキャラクターの分のみを表示します。
+        /// 派生ステートでは、用途に応じてオーバーライドしてください。
+        /// </summary>
+        protected virtual ProvisionalOriginDisplayMode OriginDisplayMode => ProvisionalOriginDisplayMode.HOVERED_ONLY;
 
         /// <summary>
         /// 暫定移動に関する表示を現在の状況に合わせて更新します。
-        /// 頭上のアイコンは暫定移動中の全キャラクターに表示し、移動前の位置を示す目印は
-        /// カーソルを合わせているキャラクターにのみ表示します。
+        /// 頭上のアイコンは暫定移動中の全キャラクターに表示し、移動前の位置はOriginDisplayModeに応じて表示します。
         /// </summary>
         private void RefreshProvisionalMoveDisplay()
         {
             // このステートがアクティブな間は、頭上のアイコンを隠すキャラクターはいない
             _presenter.SuppressProvisionalMoveIcon( null );
 
-            if( ShowsProvisionalMoveDisplay )
+            switch( OriginDisplayMode )
             {
-                _provisionalOriginDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
-            }
-            else
-            {
-                _provisionalOriginDisplay.Clear();
+                case ProvisionalOriginDisplayMode.HOVERED_ONLY:
+                    _provisionalOriginDisplay.ShowHovered( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+                    break;
+
+                case ProvisionalOriginDisplayMode.ALL:
+                    _provisionalOriginDisplay.ShowAllExcept( null );
+                    break;
+
+                default:
+                    _provisionalOriginDisplay.Clear();
+                    break;
             }
         }
 

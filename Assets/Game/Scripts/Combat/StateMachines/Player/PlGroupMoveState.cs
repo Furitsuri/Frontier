@@ -55,9 +55,9 @@ namespace Frontier.Battle
         // 歩行中にダイアログを開くとステートの更新が止まり、実体が速度を持ったまま進み続けてしまうため、到着を待ってから開く
         private string[] _pendingBlockedCharacterNames = null;
 
-        // このステートでは各キャラクターの移動前の位置を移動操作(PlayerMoveOperation)側で表示するため、
-        // カーソルを合わせたキャラクターに対する暫定移動の目印(PlSelectTileStateの表示)は行わない
-        protected override bool ShowsProvisionalMoveDisplay => false;
+        // 他のキャラクターが移動している間は、どこが暫定移動中のキャラクターの移動前のタイルなのかが分かるよう、全員分を表示する
+        // (移動するメンバー自身は暫定移動の状態ではないため対象にならず、各自の移動前の位置は移動操作側が表示する)
+        protected override ProvisionalOriginDisplayMode OriginDisplayMode => ProvisionalOriginDisplayMode.ALL;
 
         public override void Init( object context )
         {

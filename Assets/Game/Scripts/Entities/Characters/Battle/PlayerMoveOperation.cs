@@ -31,6 +31,8 @@ namespace Frontier.Entities
         private int _repositionStartTileIndex           = -1;
         private Quaternion _repositionStartRot          = Quaternion.identity;
         private MoveOriginIndicator _originIndicator    = null;
+        // 移動操作の最中ではない時に、暫定移動の状態の表示として移動前の位置を表示しているか
+        private bool _isShowingProvisionalOrigin        = false;
 
         public Player Owner => _owner;
         /// <summary>移動操作の最中か(BeginからEndまでの間)</summary>
@@ -58,8 +60,9 @@ namespace Frontier.Entities
         public void Dispose()
         {
             _originIndicator?.Dispose();
-            _originIndicator    = null;
-            _isActive           = false;
+            _originIndicator            = null;
+            _isActive                   = false;
+            _isShowingProvisionalOrigin = false;
         }
 
         /// <summary>
@@ -91,9 +94,11 @@ namespace Frontier.Entities
         /// </summary>
         public void Begin()
         {
-            LazyInject.GetOrCreate( ref _originIndicator, () => _hierarchyBld.InstantiateWithDiContainer<MoveOriginIndicator>( false ) );
+            EnsureOriginIndicator();
 
-            _isActive               = true;
+            _isActive                   = true;
+            // 暫定移動の状態の表示として表示していた場合も、以降は移動操作中の表示として扱う
+            _isShowingProvisionalOrigin = false;
             _originTileIndex        = _owner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _destinationTileIndex   = -1;
 
@@ -238,6 +243,41 @@ namespace Frontier.Entities
         {
             _originIndicator?.Hide();
             _isActive = false;
+        }
+
+        /// <summary>
+        /// 暫定移動の状態の表示として、移動前の位置(残像と外枠、指定があれば移動前の位置から現在の位置までの経路の矢印)を表示します。
+        /// 移動操作の最中(BeginからEndまでの間)は、移動操作としての表示を優先するため何もしません。
+        /// </summary>
+        /// <param name="isPathVisible">経路の矢印も表示するか</param>
+        public void ShowProvisionalOrigin( bool isPathVisible )
+        {
+            if( _isActive ) { return; }
+
+            EnsureOriginIndicator();
+
+            _originIndicator.Show( _owner, true );
+            _originIndicator.SetOutlineVisible( true );
+            _originIndicator.SetPath( isPathVisible ? _owner.PrevMoveInformaiton.movedPath : null );
+
+            _isShowingProvisionalOrigin = true;
+        }
+
+        /// <summary>
+        /// ShowProvisionalOriginによる表示を消去します。
+        /// 移動操作の最中の表示(Beginによって開始された表示)には影響しません。
+        /// </summary>
+        public void HideProvisionalOrigin()
+        {
+            if( !_isShowingProvisionalOrigin ) { return; }
+
+            _isShowingProvisionalOrigin = false;
+            _originIndicator?.Hide();
+        }
+
+        private void EnsureOriginIndicator()
+        {
+            LazyInject.GetOrCreate( ref _originIndicator, () => _hierarchyBld.InstantiateWithDiContainer<MoveOriginIndicator>( false ) );
         }
 
         /// <summary>

@@ -46,6 +46,8 @@ namespace Frontier.Battle
         private SkillID _useSkillID;
         private PlSkillActionPhase _phase;
 
+        [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
+
         private SequenceFacade _sequenceFcd                     = null;
         private SkillTargetSelector _targetSelector             = null;
         private CooperativeBlinkController _blinkController     = null;
@@ -86,6 +88,13 @@ namespace Frontier.Battle
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
             _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
+
+            // 移動を伴うスキルの対象選択中は、どこが他の暫定移動中のキャラクターの移動前のタイルなのかが分かるよう、
+            // 操作中のキャラクター以外の全員分を表示する
+            if( _targetSelector.IsMovingSkill )
+            {
+                _provisionalOriginDisplay.ShowAllExcept( _plOwner );
+            }
         }
 
         public override bool Update()
@@ -123,6 +132,7 @@ namespace Frontier.Battle
         {
             _blinkController.StopAll();
             CleanupTargetSelectionState( _plOwner, _targetSelector.TargetCharacter );
+            _provisionalOriginDisplay.Clear();
 
             if( _isSkillQueued )
             {
