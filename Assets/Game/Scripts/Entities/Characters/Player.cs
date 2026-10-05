@@ -52,6 +52,22 @@ namespace Frontier.Entities
             PrevMoveInformaiton.movedPath = ( null == path ) ? null : new List<WaypointInformation>( path );
         }
 
+        /// <summary>
+        /// 移動先の変更(暫定移動中の移動のやり直し)を開始する時点の位置と向きを保持します
+        /// </summary>
+        public void HoldRepositionStartInfo()
+        {
+            ( ( PlayerBattleLogic ) _battleLogic ).HoldRepositionStartInfo();
+        }
+
+        /// <summary>
+        /// 移動先の変更を取り消し、変更を開始する前の位置へ即座に戻します(暫定移動の状態は維持されます)
+        /// </summary>
+        public void RevertToRepositionStart()
+        {
+            ( ( PlayerBattleLogic ) _battleLogic ).RevertToRepositionStart();
+        }
+
         public void PushCommandHistory( COMMAND_TAG commandTag )
         {
             ( ( PlayerBattleLogic ) _battleLogic ).PushCommandHistory( commandTag );

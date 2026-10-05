@@ -60,5 +60,6 @@
     "UI_TALK_SHOP_PURCHASE_CONFIRM": "Will you be taking this?",
     "UI_TALK_SHOP_THANKS": "Thank you for your purchase.",
     "UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS": "Select units to move together",
-    "UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE": "{0} can no longer undo the move.\nProceed?"
+    "UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE": "{0} can no longer undo the move.\nProceed?",
+    "UI_CMD_REPOSITION": "Reposition"
 }

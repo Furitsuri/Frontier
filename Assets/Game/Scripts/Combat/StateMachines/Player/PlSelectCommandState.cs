@@ -64,7 +64,10 @@ namespace Frontier.Battle
             //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
             if( TransitIndex == ( int ) COMMAND_TAG.MOVE )
             {
-                _plOwner.HoldBeforeMoveInfo();
+                // 暫定的に移動している場合は移動先の変更となる。移動前(最初に移動を開始した地点)の情報は上書きせず、
+                // 変更をキャンセルした際に戻すための、現時点の位置のみを保存する
+                if( _plOwner.IsProvisionallyMoved() ) { _plOwner.HoldRepositionStartInfo(); }
+                else { _plOwner.HoldBeforeMoveInfo(); }
             }
 
             _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
@@ -142,8 +145,10 @@ namespace Frontier.Battle
             switch( ( COMMAND_TAG ) GetCommandValue() )
             {
                 case COMMAND_TAG.MOVE:
-                    float dprtHeight = _stageCtrl.GetTileStaticData( dprtIdx ).Height;
-                    actionRangeCtrl.SetupActionableRangeData( dprtIdx, dprtHeight );
+                    // 移動先の変更の場合、起点は現在の位置ではなく、最初に移動を開始した地点となる
+                    int moveOriginIdx   = _plOwner.IsProvisionallyMoved() ? _plOwner.PrevMoveInformaiton.tmpParam.CurrentTileIndex : dprtIdx;
+                    float dprtHeight    = _stageCtrl.GetTileStaticData( moveOriginIdx ).Height;
+                    actionRangeCtrl.SetupActionableRangeData( moveOriginIdx, dprtHeight );
                     actionRangeCtrl.DrawActionableRange();
                     break;
 
@@ -219,7 +224,8 @@ namespace Frontier.Battle
             }
             _commandList.Init( ref commandIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            _presenter.InitPLCommandView( this, executableCommands );
+            // 暫定的に移動している場合、移動コマンドは「移動先変更」として表示する
+            _presenter.InitPLCommandView( this, executableCommands, _plOwner.IsProvisionallyMoved() );
         }
     }
 }

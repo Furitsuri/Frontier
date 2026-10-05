@@ -226,10 +226,23 @@ namespace Frontier.Battle
             _skillBoxLayoutAnimator.RevertToOriginalLayout( _parameterPresenters[( int ) winType].GetSkillBoxes() );
         }
 
-        public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands )
+        /// <summary>
+        /// プレイヤーのコマンドメニューを表示します
+        /// </summary>
+        /// <param name="isRepositioning">
+        /// 対象キャラクターが暫定的に移動しているか。trueの場合、移動コマンドは「もう一度移動出来る」という誤解を避けるため、
+        /// 移動先の変更を示すコマンド名で表示します
+        /// </param>
+        public void InitPLCommandView( PlSelectCommandState script, List<COMMAND_TAG> executableCommands, bool isRepositioning )
         {
+            Dictionary<COMMAND_TAG, LocKey> textKeyOverrides = null;
+            if( isRepositioning )
+            {
+                textKeyOverrides = new Dictionary<COMMAND_TAG, LocKey> { { COMMAND_TAG.MOVE, LocKey.UI_CMD_REPOSITION } };
+            }
+
             _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
-            _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
+            _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands, textKeyOverrides );
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 

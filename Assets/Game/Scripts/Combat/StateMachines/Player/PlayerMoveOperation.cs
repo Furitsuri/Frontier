@@ -20,12 +20,16 @@ namespace Frontier.Battle
         private Player _owner                       = null;
         private int _originTileIndex                = -1;
         private int _destinationTileIndex           = -1;
+        // 移動先の変更(暫定移動中の移動のやり直し)として行っている移動操作か
+        private bool _isRepositioning               = false;
         private MoveOriginIndicator _originIndicator = null;
 
         public Player Owner => _owner;
         public bool IsActive => ( null != _owner );
         public int OriginTileIndex => _originTileIndex;
         public int DestinationTileIndex => _destinationTileIndex;
+        /// <summary>移動先の変更(暫定移動中の移動のやり直し)として行っている移動操作か</summary>
+        public bool IsRepositioning => _isRepositioning;
 
         /// <summary>実体が移動前のタイルから離れているか(1タイル以上移動しているか)</summary>
         public bool HasMoved => _owner.BattleParams.TmpParam.CurrentTileIndex != _originTileIndex;
@@ -43,6 +47,9 @@ namespace Frontier.Battle
             _owner                  = owner;
             _originTileIndex        = owner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _destinationTileIndex   = -1;
+            // 既に暫定的に移動している場合は、移動先の変更として扱う。
+            // 起点・移動可能範囲は最初に移動を開始した地点(保存されている移動前の位置)のままとなる
+            _isRepositioning        = owner.IsProvisionallyMoved();
 
             // 以降の経路探索は、この時点(移動前)の状況を基にした移動可能範囲のデータを用いる
             float originTileHeight = _stageCtrl.GetTileStaticData( _originTileIndex ).Height;
@@ -135,7 +142,9 @@ namespace Frontier.Battle
         public void Commit()
         {
             _owner.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
-            _owner.PushCommandHistory( COMMAND_TAG.MOVE );
+            // 移動先の変更の場合は、最初の移動の時点で既に行動履歴へ積まれているため、重ねて積まない
+            // (重ねて積むと、移動を取り消しても履歴が残ってしまう)
+            if( !_isRepositioning ) { _owner.PushCommandHistory( COMMAND_TAG.MOVE ); }
 
             if( !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] )
             {
@@ -148,11 +157,13 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 移動を取り消し、実体を移動前の位置・状態へ即座に戻します
+        /// 移動操作を取り消し、実体を即座に元の位置へ戻します。
+        /// 通常の移動の場合は移動前の位置・状態へ、移動先の変更の場合は変更を開始する前の位置へ戻します(暫定移動の状態は維持されます)。
         /// </summary>
         public void Revert()
         {
-            _owner.RevertBeforeMoving();
+            if( _isRepositioning ) { _owner.RevertToRepositionStart(); }
+            else { _owner.RevertBeforeMoving(); }
         }
 
         /// <summary>

@@ -205,7 +205,8 @@ namespace Frontier
         /// 実行可能なコマンドをコマンドリストUIに設定します
         /// </summary>
         /// <param name="executableCommands">実行可能なコマンドリスト</param>
-        public void SetExecutableCommandList( in List<COMMAND_TAG> executableCommands )
+        /// <param name="textKeyOverrides">既定のコマンド名の代わりに表示する文言の指定(指定のないコマンドは既定のコマンド名で表示します)</param>
+        public void SetExecutableCommandList( in List<COMMAND_TAG> executableCommands, IReadOnlyDictionary<COMMAND_TAG, LocKey> textKeyOverrides = null )
         {
             float fontSize = 0;
 
@@ -221,7 +222,12 @@ namespace Frontier
                 CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "command_" + i );
                 commandItem.Setup();
                 commandItem.transform.SetParent( this.gameObject.transform, false );
-                commandItem.SetTextKey( _commandTextKeys[( int ) executableCommands[i]] );
+                LocKey textKey = _commandTextKeys[( int ) executableCommands[i]];
+                if( null != textKeyOverrides && textKeyOverrides.TryGetValue( executableCommands[i], out LocKey overrideKey ) )
+                {
+                    textKey = overrideKey;
+                }
+                commandItem.SetTextKey( textKey );
                 _commandItems.Add( commandItem );
 
                 fontSize = commandItem.GetFontSize();

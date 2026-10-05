@@ -22,6 +22,19 @@ namespace Frontier.Combat
             return !character.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.MOVE];
         }
 
+        /// <summary>
+        /// コマンドメニューで移動コマンドを選択出来るかを判定します。
+        /// 未移動の場合(通常の移動)に加え、暫定的に移動している場合も、移動先の変更(最初に移動を開始した地点を起点とした移動のやり直し)として選択出来ます。
+        /// グループ移動への登録可否など「新たに移動を開始出来るか」の判定にはIsExecutableMoveCommandを使用してください
+        /// (暫定的に移動しているキャラクターはグループ移動に登録出来ません)。
+        /// </summary>
+        static public bool IsSelectableMoveCommand( Character character, StageController stageCtrl )
+        {
+            if( IsExecutableMoveCommand( character, stageCtrl ) ) { return true; }
+
+            return IsExecutableCommandBase( character ) && ( character is Player player ) && player.IsProvisionallyMoved();
+        }
+
         static public bool IsExecutableAttackCommand( Character character, StageController stageCtrl )
         {
             var tmpParam = character.BattleParams.TmpParam;

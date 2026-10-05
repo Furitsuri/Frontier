@@ -347,7 +347,14 @@ namespace Frontier.Battle
             // 出発地点と同一グリッドであれば戻る(実体が出発地点へ歩いて戻っている途中の場合は、到着を待ってから戻る)
             if( currentIndex == _departTileIndex )
             {
-                RequestTransitAfterStop( () => Back(), StopMode.WALK_TO_DESTINATION );
+                RequestTransitAfterStop( () =>
+                {
+                    // 移動先の変更で最初に移動を開始した地点を選んだ場合は、移動の取り消しとして扱う
+                    // (暫定移動の状態を解除し、移動コマンドを通常の移動として選択出来る状態へ戻す)
+                    if( _moveOperation.IsRepositioning ) { RevertCommandHistory( _plOwner ); }
+
+                    Back();
+                }, StopMode.WALK_TO_DESTINATION );
 
                 return true;
             }
@@ -394,7 +401,17 @@ namespace Frontier.Battle
         {
             if( !base.AcceptCancel( context ) ) { return false; }
 
-            Rewind();   // 巻き戻しを行う
+            // 巻き戻しを行う。通常の移動の場合は移動前の位置へ、移動先の変更の場合は変更を開始する前の位置へ戻す
+            // (移動先の変更では暫定移動の状態を維持するため、移動前の位置までは戻さない)
+            if( null != _moveOperation && _moveOperation.IsActive )
+            {
+                _moveOperation.Revert();
+                _stageCtrl.SyncGridCursorAfterRevert( _plOwner );
+            }
+            else
+            {
+                Rewind();
+            }
 
             return true;
         }

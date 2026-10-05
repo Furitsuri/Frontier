@@ -56,7 +56,7 @@ protected Character _opponent                                       = null;
 
         static private IsExecutableCommand[] _executableCommandTables =
         {
-            Command.IsExecutableMoveCommand,
+            Command.IsSelectableMoveCommand,
             Command.IsExecutableAttackCommand,
             Command.IsExecutableSkillCommand,
             Command.IsExecutableWaitCommand,
