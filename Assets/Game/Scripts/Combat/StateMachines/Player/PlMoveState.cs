@@ -24,7 +24,6 @@ namespace Frontier.Battle
         {
             WALK_TO_DESTINATION = 0,    // 目的地(カーソル位置)まで歩かせる(移動先を確定させる遷移に使用する)
             FINISH_CURRENT_PATH,        // 現在歩いている経路の終点まで歩かせる(カーソルが留まれないタイルにあり、実体が向かっている先で行動させる遷移に使用する)
-            STOP_AT_NEXT_TILE,          // 次に到達するタイルで止める(実体の位置が結果に関わらない、一時的な遷移に使用する)
         }
 
         private enum TransitTag
@@ -39,12 +38,12 @@ namespace Frontier.Battle
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
         private bool _isWaitingForBlockUndoConfirmResult = false;
-        // 実体が止まるのを待ってから行う、他のステートへの遷移処理。待っていない間はnull。
-        // 実体が歩いている途中で他のステートへ遷移すると、このステートの更新が止まっている間も実体が速度を持ったまま
-        // 進み続けてしまう。そのため、このステートから他のステートへの遷移は必ずRequestTransitAfterStopを経由させること
+        // 実体が歩き終えるのを待ってから行う、他のステートへの遷移(またはこのステートの終了)の処理。待っていない間はnull。
+        // 実体の歩行は戦闘ロジックの更新で進むため、確認ダイアログやステータス表示のようにこのステートを中断するだけの遷移は、
+        // 歩いている途中でもそのまま行える(中断している間も、実体は歩き続けて目的のタイルで止まる)。
+        // 一方、このステートを終了する遷移(攻撃への遷移、コマンド選択へ戻る)は、移動操作が終了して歩行が進まなくなる上に、
+        // 実体の位置が結果に関わるため、必ずRequestTransitAfterStopを経由させて、歩き終えてから行うこと
         private System.Action _transitOnArrival = null;
-        // 遷移待ちの間、目的地(カーソル位置)へ向けて経路を引き直し続けるか(falseの場合は現在の経路のまま歩かせる)
-        private bool _isRetargetingBeforeTransit = false;
         // 操作対象のキャラクターが保持する移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了させる)。
         // グループ移動(PlGroupMoveState)と同じ処理を用いることで、移動の処理とユーザーからの見え方を揃えている。
         // 通常の移動か移動先の変更かといった状況による処理の違いは移動操作側で判断されるため、このステートでは意識しない
@@ -59,19 +58,30 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 実体が止まるのを待ってから、他のステートへの遷移(またはこのステートの終了)を行うよう予約します。
-        /// このステートから他のステートへ移る処理は、歩行中の実体が進み続けてしまうのを防ぐため、必ずこのメソッドを経由させてください
+        /// 実体が歩き終えるのを待ってから、このステートを終了する遷移を行うよう予約します。
+        /// このステートを終了する遷移(攻撃への遷移、コマンド選択へ戻る)は、必ずこのメソッドを経由させてください
         /// (移動前の位置へ即座に戻すキャンセルのみ、実体を強制的に止めるため対象外です)。
-        /// 待っている間は全ての入力を受け付けず、実体は高速で歩きます。既に止まっている場合は次の更新ですぐに遷移します。
+        /// 待っている間は全ての入力を受け付けず、実体は高速で歩きます。既に歩き終えている場合は次の更新ですぐに遷移します。
         /// </summary>
-        /// <param name="transit">実体が止まった後に行う遷移処理</param>
+        /// <param name="transit">実体が歩き終えた後に行う遷移処理</param>
         /// <param name="stopMode">遷移する前の、実体の止め方</param>
         private void RequestTransitAfterStop( System.Action transit, StopMode stopMode )
         {
-            _transitOnArrival           = transit;
-            _isRetargetingBeforeTransit = ( StopMode.WALK_TO_DESTINATION == stopMode );
+            _transitOnArrival = transit;
 
-            if( StopMode.STOP_AT_NEXT_TILE == stopMode ) { _moveOperation.StopAtNextWaypoint(); }
+            bool isWalkingToDestination = ( StopMode.WALK_TO_DESTINATION == stopMode );
+            if( isWalkingToDestination ) { _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() ); }
+            _moveOperation.SetWalk( CHARACTER_MOVE_HIGH_SPEED_RATE, isWalkingToDestination );
+        }
+
+        /// <summary>
+        /// 現在のカーソル位置で移動先を確定し、実体の到着を待って移動を完了させるフェーズへ移行します
+        /// </summary>
+        private void StartReserveEnd()
+        {
+            _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() );
+            _moveOperation.SetWalk( CHARACTER_MOVE_HIGH_SPEED_RATE, true );
+            _phase = PlMovePhase.PL_MOVE_RESERVE_END;
         }
 
         /// <summary>
@@ -141,26 +151,27 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case PlMovePhase.PL_MOVE:
-                    // 他のステートへの遷移待ちの場合は、実体が止まってから遷移する(待っている間は入力を受け付けず、高速で歩かせる)
+                    // このステートを終了する遷移の待ちの場合は、実体が歩き終えてから遷移する(待っている間は入力を受け付けない)
                     if( null != _transitOnArrival )
                     {
-                        if( _moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, _isRetargetingBeforeTransit ) )
+                        if( _moveOperation.IsArrived )
                         {
                             var transit         = _transitOnArrival;
                             _transitOnArrival   = null;
+                            // 遷移が行われなかった場合(攻撃が届かなくなっていた場合等)に備え、歩き方を操作中の設定へ戻しておく
+                            _moveOperation.SetWalk( 1.0f, true );
                             transit();
                         }
                         break;
                     }
 
-                    // カーソル位置を目的地として、実体をそこへ向けて歩かせる
+                    // カーソル位置を目的地とする(実体は戦闘ロジックの更新によって、そこへ向けて歩く)
                     _moveOperation.SetDestination( _stageCtrl.GetCurrentGridIndex() );
-                    _moveOperation.UpdateWalking( 1.0f, true );
                     break;
 
                 case PlMovePhase.PL_MOVE_RESERVE_END:
-                    // 移動完了後に終了へ移行
-                    if( _moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, false ) )
+                    // 実体が移動先へ到着したら終了へ移行
+                    if( _moveOperation.IsArrived )
                     {
                         _phase = PlMovePhase.PL_MOVE_END;
                     }
@@ -239,13 +250,13 @@ namespace Frontier.Battle
                 var confirmState = GetChildren<PlConfirmBlockUndoMoveState>( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
                 if( confirmState != null && confirmState.Confirmed )
                 {
-                    _phase = PlMovePhase.PL_MOVE_RESERVE_END;
+                    StartReserveEnd();
                 }
             }
         }
 
         /// <summary>
-        /// 他のステートへの遷移待ち(実体が止まるのを待っている間)は、全ての入力を受け付けません
+        /// このステートを終了する遷移の待ち(実体が歩き終えるのを待っている間)は、全ての入力を受け付けません
         /// </summary>
         protected override bool CanAcceptDefault()
         {
@@ -368,19 +379,16 @@ namespace Frontier.Battle
             var blockedNames = CollectUndoBlockedCharacterNames( new int[] { currentIndex }, new Player[] { _plOwner } );
             if( 0 < blockedNames.Count )
             {
-                // 実体が移動先へ到着するのを待ってから確認ダイアログを開く
-                string[] blockedNameArray = blockedNames.ToArray();
-                RequestTransitAfterStop( () =>
-                {
-                    _isWaitingForBlockUndoConfirmResult = true;
-                    SetSendTransitionContext( blockedNameArray );
-                    TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
-                }, StopMode.WALK_TO_DESTINATION );
+                // 確認ダイアログはこのステートを中断するだけの遷移のため、実体が歩いている途中でもそのまま開く
+                // (中断している間も、実体は戦闘ロジックの更新によって歩き続け、目的のタイルで止まる)
+                _isWaitingForBlockUndoConfirmResult = true;
+                SetSendTransitionContext( blockedNames.ToArray() );
+                TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
 
                 return true;
             }
 
-            _phase = PlMovePhase.PL_MOVE_RESERVE_END;
+            StartReserveEnd();
 
             return true;
         }
@@ -411,14 +419,11 @@ namespace Frontier.Battle
         {
             if( !base.AcceptInfo( context ) ) { return false; }
 
-            // 実体を次に到達するタイルで止めてから、ステータス表示へ遷移する
-            Character statusTarget = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
-            RequestTransitAfterStop( () =>
-            {
-                // ステータス表示ステートに対象キャラクターを渡す
-                SetSendTransitionContext( statusTarget );
-                TransitState( ( int ) TransitTag.CHARACTER_STATUS );
-            }, StopMode.STOP_AT_NEXT_TILE );
+            // ステータス表示はこのステートを中断するだけの遷移のため、実体が歩いている途中でもそのまま遷移する
+            // (中断している間も、実体は戦闘ロジックの更新によって歩き続け、目的のタイルで止まる)
+            // ステータス表示ステートに対象キャラクターを渡す
+            SetSendTransitionContext( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+            TransitState( ( int ) TransitTag.CHARACTER_STATUS );
 
             return true;
         }

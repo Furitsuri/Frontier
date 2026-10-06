@@ -63,6 +63,15 @@ namespace Frontier.Entities
             base.Dispose();
         }
 
+        /// <summary>
+        /// 移動操作の最中は、移動操作による歩行(目的地へ向けた経路の引き直しを含む)を進めます
+        /// </summary>
+        protected override void UpdateWalk()
+        {
+            if( null != _moveOperation && _moveOperation.IsActive ) { _moveOperation.Tick(); }
+            else { base.UpdateWalk(); }
+        }
+
         public void PushCommandHistory( COMMAND_TAG commandTag )
         {
             _commandHistory.Push( commandTag );

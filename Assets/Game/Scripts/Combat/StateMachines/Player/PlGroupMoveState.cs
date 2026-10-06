@@ -34,7 +34,6 @@ namespace Frontier.Battle
         private enum Phase
         {
             OPERATING = 0,      // カーソルで目的地を操作中(実体は割り当て先へ向けて歩き続ける)
-            WALK_BEFORE_CONFIRM,// 確認ダイアログを出す前の、全キャラクターの到着待ち
             EXECUTE_MOVE,       // 決定後、全キャラクターの到着待ち
             END,
         }
@@ -51,10 +50,6 @@ namespace Frontier.Battle
         private EntryType _entryType;
         private bool _isMoveOperationsBegun              = false;
         private bool _isWaitingForBlockUndoConfirmResult = false;
-        // 確認ダイアログを出す前に全キャラクターの到着を待っている間の、確認対象のキャラクター名。
-        // 歩行中にダイアログを開くとステートの更新が止まり、実体が速度を持ったまま進み続けてしまうため、到着を待ってから開く
-        private string[] _pendingBlockedCharacterNames = null;
-
         // 他のキャラクターが移動している間は、どこが暫定移動中のキャラクターの移動前のタイルなのかが分かるよう、全員分を表示する
         // (移動するメンバー自身は暫定移動の状態ではないため対象にならず、各自の移動前の位置は移動操作側が表示する)
         protected override ProvisionalOriginDisplayMode OriginDisplayMode => ProvisionalOriginDisplayMode.ALL;
@@ -69,7 +64,6 @@ namespace Frontier.Battle
             _moveOperations.Clear();
             _isMoveOperationsBegun              = false;
             _isWaitingForBlockUndoConfirmResult = false;
-            _pendingBlockedCharacterNames       = null;
         }
 
         protected override void OnActivated()
@@ -95,11 +89,6 @@ namespace Frontier.Battle
                 if( confirmState != null && confirmState.Confirmed )
                 {
                     StartExecuteMove();
-                }
-                else
-                {
-                    // NOの場合は、割り当て先に到着した状態のまま目的地の操作へ戻る
-                    _phase = Phase.OPERATING;
                 }
             }
         }
@@ -128,28 +117,12 @@ namespace Frontier.Battle
                         return true;
                     }
 
-                    // 各キャラクターの実体を、割り当て先へ向けて歩かせる(単体移動の操作中と同じ)
-                    foreach( var moveOperation in _moveOperations )
-                    {
-                        moveOperation.UpdateWalking( 1.0f, true );
-                    }
-
-                    return false;
-
-                case Phase.WALK_BEFORE_CONFIRM:
-                    // 全キャラクターが割り当て先に到着してから、確認ダイアログへ遷移する
-                    if( UpdateWalkingUntilAllArrived() )
-                    {
-                        _isWaitingForBlockUndoConfirmResult = true;
-                        SetSendTransitionContext( _pendingBlockedCharacterNames );
-                        _pendingBlockedCharacterNames = null;
-                        TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
-                    }
-                    break;
+                    // 各キャラクターの実体は、戦闘ロジックの更新によって割り当て先へ向けて歩く(単体移動の操作中と同じ)
+                    return ( 0 <= TransitIndex );
 
                 case Phase.EXECUTE_MOVE:
                     // 全キャラクターが割り当て先に到着するまで待つ(単体移動の決定後と同じく高速で移動させる)
-                    if( UpdateWalkingUntilAllArrived() ) { _phase = Phase.END; }
+                    if( AreAllArrived() ) { _phase = Phase.END; }
                     break;
 
                 case Phase.END:
@@ -178,7 +151,7 @@ namespace Frontier.Battle
         {
             // キャンセル等、操作中のまま終了する場合は、全キャラクターを移動前の位置へ即座に戻して後始末する
             // (実行フェーズへ進んだ場合はEND側で完了・後始末・登録解除が既に済んでいるため対象外)
-            if( Phase.OPERATING == _phase || Phase.WALK_BEFORE_CONFIRM == _phase )
+            if( Phase.OPERATING == _phase )
             {
                 CancelMoveOperations();
             }
@@ -261,9 +234,11 @@ namespace Frontier.Battle
             var blockedNames = CollectUndoBlockedCharacterNames( destinationTileIndices, movers );
             if( 0 < blockedNames.Count )
             {
-                // 全キャラクターが割り当て先へ到着するのを待ってから確認ダイアログを開く
-                _pendingBlockedCharacterNames = blockedNames.ToArray();
-                _phase = Phase.WALK_BEFORE_CONFIRM;
+                // 確認ダイアログはこのステートを中断するだけの遷移のため、実体が歩いている途中でもそのまま開く
+                // (中断している間も、実体は戦闘ロジックの更新によって歩き続け、割り当て先のタイルで止まる)
+                _isWaitingForBlockUndoConfirmResult = true;
+                SetSendTransitionContext( blockedNames.ToArray() );
+                TransitState( ( int ) TransitTag.CONFIRM_BLOCK_UNDO_MOVE );
 
                 return true;
             }
@@ -278,25 +253,26 @@ namespace Frontier.Battle
         /// </summary>
         private void StartExecuteMove()
         {
+            // 単体移動の決定後と同じく、割り当て先まで高速で歩かせる
+            foreach( var moveOperation in _moveOperations )
+            {
+                moveOperation.SetWalk( CHARACTER_MOVE_HIGH_SPEED_RATE, true );
+            }
+
             _phase = Phase.EXECUTE_MOVE;
         }
 
         /// <summary>
-        /// 全キャラクターの実体を割り当て先へ向けて高速で歩かせ、全員が到着しているかを返します
-        /// (単体移動の決定後と同じ速度で移動させます)
+        /// 全キャラクターの実体が、割り当て先に到着しているかを取得します
         /// </summary>
-        private bool UpdateWalkingUntilAllArrived()
+        private bool AreAllArrived()
         {
-            bool isAllArrived = true;
             foreach( var moveOperation in _moveOperations )
             {
-                if( !moveOperation.UpdateWalking( CHARACTER_MOVE_HIGH_SPEED_RATE, true ) )
-                {
-                    isAllArrived = false;
-                }
+                if( !moveOperation.IsArrived ) { return false; }
             }
 
-            return isAllArrived;
+            return true;
         }
 
         /// <summary>

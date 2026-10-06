@@ -197,6 +197,23 @@ namespace Frontier.Battle
             }
         }
 
+        /// <summary>
+        /// 戦闘に参加している全キャラクターの戦闘ロジックを更新します。
+        /// BattleRoutineControllerから、フェーズ(各ステート)の更新の後に毎フレーム呼び出されます。
+        /// </summary>
+        public void UpdateCharacterLogics()
+        {
+            foreach( var character in _characterDict.GetAllCharacters() )
+            {
+                // 配置フェーズ中の配置前キャラクター等、戦闘ロジックを持たないキャラクターは対象外とする
+                if( null == character || null == character.BattleLogic ) { continue; }
+                // 無効化されているキャラクター(撃破後等)は更新しない(MonoBehaviour.Update()で更新していた際と同じ扱いとする)
+                if( !character.BattleLogic.isActiveAndEnabled ) { continue; }
+
+                character.BattleLogic.UpdateLogic();
+            }
+        }
+
         public void ClearTileMeshesByType( TileMapType types )
         {
             foreach( var character in _characterDict.GetAllCharacters() )

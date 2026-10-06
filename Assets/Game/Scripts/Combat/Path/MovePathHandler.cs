@@ -183,21 +183,6 @@ public class MovePathHandler
         return _stageCtrl.GetTileStaticData( _proposedMovePath[_focusedWaypointIndex].TileIndex );
     }
 
-    /// <summary>
-    /// 現在向かっているwaypointより先の経路を破棄します。
-    /// 移動中のキャラクターを、次に到達するタイルで止めたい場合に使用します(既に経路の終点に到達している場合は何もしません)。
-    /// </summary>
-    public void TruncateAfterFocusedWaypoint()
-    {
-        if( IsEndPathTrace() ) { return; }
-
-        int keepCount = _focusedWaypointIndex + 1;
-        if( keepCount < _proposedMovePath.Count )
-        {
-            _proposedMovePath.RemoveRange( keepCount, _proposedMovePath.Count - keepCount );
-        }
-    }
-
     public void ClearMovePath()
     {
         _focusedWaypointIndex = 0;

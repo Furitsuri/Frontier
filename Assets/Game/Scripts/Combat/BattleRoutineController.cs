@@ -144,6 +144,10 @@ namespace Frontier.Battle
 
             _phaseHandlers[_currentPhase].Update();
 
+            // 各キャラクターの戦闘ロジックを更新する(行動終了判定、歩行)。
+            // ステートが目的地等を決めた後、かつタイル情報の更新より前に行うことで、処理の順序を保証する
+            _btlCharaCdr.UpdateCharacterLogics();
+
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();   // タイル情報を更新
         }
 

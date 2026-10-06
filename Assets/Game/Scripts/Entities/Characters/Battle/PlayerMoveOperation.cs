@@ -12,7 +12,9 @@ namespace Frontier.Entities
     /// これを用いることで、移動の処理と、ユーザーからの見え方(実体が歩き、移動前のタイルに残像が残り、そこからの経路が矢印で示される)を揃えています。
     ///
     /// 通常の移動か、移動先の変更(暫定移動中の移動のやり直し)かといった状況による処理の違いは、このクラスの中で判断します。
-    /// 呼び出し側(各ステート)は、状況を意識せずに Prepare → Begin → (SetDestination/UpdateWalking) → Complete または Cancel → End の順に呼び出してください。
+    /// 呼び出し側(各ステート)は、状況を意識せずに Prepare → Begin → (SetDestination/SetWalk、IsArrivedで到着を確認) → Complete または Cancel → End の順に呼び出してください。
+    /// 実体を歩かせる処理(Tick)は、ステートからではなく、PlayerBattleLogicの更新(BattleRoutineControllerから毎フレーム呼ばれる)から行われます。
+    /// そのため、確認ダイアログの表示等でステートの更新が止まっている間も、実体は目的地へ向けて歩き、目的のタイルで止まります。
     /// </summary>
     public class PlayerMoveOperation
     {
@@ -33,6 +35,9 @@ namespace Frontier.Entities
         private MoveOriginIndicator _originIndicator    = null;
         // 移動操作の最中ではない時に、暫定移動の状態の表示として移動前の位置を表示しているか
         private bool _isShowingProvisionalOrigin        = false;
+        private float _walkSpeedRate                    = 1.0f;     // 歩行の移動速度の倍率
+        // 毎フレーム、現在の目的地へ向けて経路を引き直すか(falseの場合は現在の経路のまま歩く)
+        private bool _isRetargeting                     = true;
 
         public Player Owner => _owner;
         /// <summary>移動操作の最中か(BeginからEndまでの間)</summary>
@@ -101,6 +106,8 @@ namespace Frontier.Entities
             _isShowingProvisionalOrigin = false;
             _originTileIndex        = _owner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _destinationTileIndex   = -1;
+            _walkSpeedRate          = 1.0f;
+            _isRetargeting          = true;
 
             // 以降の経路探索は、この時点の状況を基にした、移動前のタイルを起点とする移動可能範囲のデータを用いる
             float originTileHeight = _stageCtrl.GetTileStaticData( _originTileIndex ).Height;
@@ -121,7 +128,7 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 目的地を設定します。実体はUpdateWalkingによってこのタイルへ向けて歩き、
+        /// 目的地を設定します。実体はこのタイルへ向けて歩き(歩き方はSetWalkで指定します)、
         /// 移動前のタイルからこのタイルまでの最短経路が矢印で表示されます。
         /// 留まることの出来ないタイル(移動範囲外など)が指定された場合、実体はそこへは向かわないため、
         /// 矢印は実体が実際に止まるタイルまでの経路を表示します。
@@ -154,36 +161,52 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 実体を目的地へ向けて歩かせます。毎フレーム呼び出してください。
+        /// 実体の歩き方を指定します。Beginの直後は、等速で、現在の目的地へ向けて経路を引き直し続ける設定です。
         /// </summary>
         /// <param name="moveSpeedRate">移動速度の倍率</param>
-        /// <param name="isRetargeting">現在の目的地へ向けて経路を引き直すか。目的地が変わり得る操作中はtrue、確定後に到着を待つだけの場合はfalseを指定します</param>
-        /// <returns>目的地(経路の終点)に到着しているか</returns>
-        public bool UpdateWalking( float moveSpeedRate, bool isRetargeting )
+        /// <param name="isRetargeting">
+        /// true : 毎フレーム、現在の目的地へ向けて経路を引き直す(目的地まで歩かせる場合に指定します)
+        /// false: 現在歩いている経路のまま歩かせる(留まることの出来ないタイルが目的地に指定されており、実体が向かっている先で止めたい場合に指定します)
+        /// </param>
+        public void SetWalk( float moveSpeedRate, bool isRetargeting )
         {
-            if( isRetargeting ) { SetupMovePath(); }
-
-            bool isArrived = _ownerLogic.UpdateMovePath( moveSpeedRate );
-
-            // 残像は、実体が移動前のタイルに立っている間は表示しない(他キャラクターの実体が立っている場合は表示する)
-            _originIndicator.SetAfterimageVisible( HasMoved );
-
-            return isArrived;
+            _walkSpeedRate  = moveSpeedRate;
+            _isRetargeting  = isRetargeting;
         }
 
         /// <summary>
-        /// 歩いている実体を、次に到達するタイルで止めるようにします(それより先の経路を破棄します)。
-        /// この後はUpdateWalkingをisRetargeting=falseで呼び出し、到着を待ってください。
+        /// 実体が歩き終えているかを取得します。
+        /// 目的地へ向けて経路を引き直す設定で、かつ目的地に留まることが出来る場合は、目的地に立っていることを条件とします
+        /// (目的地を変更した直後で、まだ経路が引き直されていない場合に、古い経路の終点を「到着」と誤って判定しないようにするため)。
         /// </summary>
-        public void StopAtNextWaypoint()
+        public bool IsArrived
         {
-            _ownerLogic.ActionRangeCtrl.MovePathHdlr.TruncateAfterFocusedWaypoint();
-
-            // 目的地が留まることの出来ないタイルの場合、矢印は実体が止まるタイルまでを表示しているため、止まる位置の変化に合わせて更新する
-            if( !CanStandOn( _destinationTileIndex ) )
+            get
             {
-                _originIndicator.SetPath( FindShortestPathFromOrigin( GetStoppingTileIndex() ) );
+                if( !_ownerLogic.ActionRangeCtrl.MovePathHdlr.IsEndPathTrace() ) { return false; }
+
+                if( _isRetargeting && CanStandOn( _destinationTileIndex ) )
+                {
+                    return _owner.BattleParams.TmpParam.CurrentTileIndex == _destinationTileIndex;
+                }
+
+                return true;
             }
+        }
+
+        /// <summary>
+        /// 実体の歩行を1フレーム分進めます。移動操作の最中、PlayerBattleLogicの更新から毎フレーム呼び出されます。
+        /// </summary>
+        public void Tick()
+        {
+            if( !_isActive ) { return; }
+
+            if( _isRetargeting ) { SetupMovePath(); }
+
+            _ownerLogic.UpdateMovePath( _walkSpeedRate );
+
+            // 残像は、実体が移動前のタイルに立っている間は表示しない(他キャラクターの実体が立っている場合は表示する)
+            _originIndicator.SetAfterimageVisible( HasMoved );
         }
 
         /// <summary>

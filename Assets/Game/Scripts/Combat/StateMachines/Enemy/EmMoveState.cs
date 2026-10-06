@@ -63,12 +63,16 @@ namespace Frontier.Battle
                     {
                         _stageCtrl.SetActiveGridCursor( false );  // 選択グリッドを一時非表示
 
+                        // 決定済みの経路に沿って歩き始めるよう指示する(歩行そのものは戦闘ロジックの更新で進む)
+                        _emOwner.BattleLogic.StartWalk();
                         _Phase = EmMovePhase.EM_MOVE_EXECUTE;
                     }
                     break;
                 case EmMovePhase.EM_MOVE_EXECUTE:
-                    if( _emOwner.BattleLogic.UpdateMovePath() )
+                    // 経路の終点への到着を待つ
+                    if( _emOwner.BattleLogic.IsWalkArrived )
                     {
+                        _emOwner.BattleLogic.StopWalk();
                         _Phase = EmMovePhase.EM_MOVE_END;
                     }
                     break;

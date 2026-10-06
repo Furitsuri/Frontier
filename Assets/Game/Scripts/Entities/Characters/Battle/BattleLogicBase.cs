@@ -23,6 +23,8 @@ namespace Frontier.Entities
         [Inject] private SequenceFacade _sequenceFcd            = null;
 
         protected bool _isPrevMoving                                        = false;
+        private bool _isWalking                                             = false;                // StartWalkによって歩行を指示されているか
+        private float _walkSpeedRate                                        = 1.0f;                 // 歩行を指示された際の移動速度の倍率
         protected int[] _tileCostTable                                      = null;                 // タイル移動時のコストテーブル(並列計算する可能性があるため、キャラ毎に保持)
         protected ReadOnlyReference<Character> _readOnlyOwner               = null;
 protected Character _opponent                                       = null;
@@ -70,9 +72,48 @@ protected Character _opponent                                       = null;
             tag => (tag == CHARACTER_TAG.PLAYER || tag == CHARACTER_TAG.ENEMY),  // OTHERにおける攻撃可能勢力
         };
 
-        void Update()
+        /// <summary>
+        /// 戦闘ロジックを更新します。BattleRoutineControllerから、フェーズ(各ステート)の更新の後に毎フレーム明示的に呼び出されます。
+        /// MEMO : UnityのMonoBehaviour.Update()には依らず、戦闘の管理側から呼び出す形としています。
+        ///        「ステートが目的地等を決める → キャラクターが歩く → タイル情報を更新する」という順序を保証するためと、
+        ///        個々のステートの更新が(確認ダイアログの表示等で)止まっている間も、歩いているキャラクターが目的のタイルで止まれるようにするためです。
+        /// </summary>
+        virtual public void UpdateLogic()
         {
             UpdateActionEndState();
+            UpdateWalk();
+        }
+
+        /// <summary>
+        /// 設定済みの移動経路(MovePathHandlerの経路)に沿って歩き始めるよう指示します。
+        /// 以降はUpdateLogicによって毎フレーム歩行が進むため、呼び出し側はIsWalkArrivedで到着を確認してください。
+        /// </summary>
+        /// <param name="moveSpeedRate">移動速度の倍率</param>
+        public void StartWalk( float moveSpeedRate = 1.0f )
+        {
+            _isWalking      = true;
+            _walkSpeedRate  = moveSpeedRate;
+        }
+
+        /// <summary>
+        /// StartWalkによる歩行の指示を解除します(到着を確認した後に呼び出してください)
+        /// </summary>
+        public void StopWalk()
+        {
+            _isWalking = false;
+        }
+
+        /// <summary>
+        /// 設定済みの移動経路の終点に到着しているかを取得します
+        /// </summary>
+        public bool IsWalkArrived => _actionRangeCtrl.MovePathHdlr.IsEndPathTrace();
+
+        /// <summary>
+        /// 歩行を更新します。プレイヤーは移動操作(PlayerMoveOperation)による歩行を行うため、PlayerBattleLogicでoverrideしています。
+        /// </summary>
+        virtual protected void UpdateWalk()
+        {
+            if( _isWalking ) { UpdateMovePath( _walkSpeedRate ); }
         }
 
         /// <summary>
@@ -378,6 +419,7 @@ protected Character _opponent                                       = null;
         public void ForcedStopMoving()
         {
             _isPrevMoving = false;
+            _isWalking    = false;
             _actionRangeCtrl.MovePathHdlr.ClearMovePath();
             _readOnlyOwner.Value.ResetVelocityAcceleration();
             _readOnlyOwner.Value.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.MOVE, false );
@@ -401,6 +443,7 @@ protected Character _opponent                                       = null;
         virtual public void Init()
         {
             _isPrevMoving = false;
+            _isWalking    = false;
             _actionRangeCtrl.Init( _readOnlyOwner.Value );
             _readOnlyOwner.Value.BattleParams.Init();
             _readOnlyOwner.Value.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
