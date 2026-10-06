@@ -28,7 +28,11 @@ public class InputCode
     // 受付を一切行わない(単発の新規押下のみ受け付ける)。
     public float RepeatDelay = DIRECTION_INPUT_REPEAT_DELAY;
     private float _inputLastTime;               // 入力処理を行った最後の時間
-    private float _pressStartTime = -1f;        // 現在の連続押下(hold)が開始した時刻。-1は「押されていない」ことを表す
+    // 現在の連続押下(hold)が開始した時刻。-1は「押されていない」ことを表す。
+    // 複数のアイコンを1つの入力コードにまとめた場合(SUB3/SUB4等)に、押されていない側の判定が
+    // 押されている側の押下状態をリセットしてしまわないよう、アイコン毎に保持する。
+    // (同時入力の場合は全アイコンで1つの押下として扱うため、先頭要素のみを使用する)
+    private float[] _pressStartTimes = null;
 
     /// <summary>
     /// 入力コードを設定します
@@ -306,19 +310,26 @@ public class InputCode
     /// 押しっぱなし継続中の受付を一切行いません(単発の新規押下のみ受け付ける)。
     /// </summary>
     /// <param name="isHeld">このフレームで対応する入力が押されている状態かどうか</param>
+    /// <param name="iconIdx">判定対象のアイコンのインデックス(同時入力の場合は0を指定)</param>
     /// <returns>このフレームでAcceptを実行してよいか</returns>
-    public bool UpdateHoldState( bool isHeld )
+    public bool UpdateHoldState( bool isHeld, int iconIdx = 0 )
     {
+        if ( _pressStartTimes == null )
+        {
+            _pressStartTimes = new float[Mathf.Max( 1, Icons.Length )];
+            Array.Fill( _pressStartTimes, -1f );
+        }
+
         if ( !isHeld )
         {
-            _pressStartTime = -1f;
+            _pressStartTimes[iconIdx] = -1f;
             return false;
         }
 
-        bool isNewPress = ( _pressStartTime < 0f );
+        bool isNewPress = ( _pressStartTimes[iconIdx] < 0f );
         if ( isNewPress )
         {
-            _pressStartTime = Time.time;
+            _pressStartTimes[iconIdx] = Time.time;
             return true;
         }
 
@@ -326,7 +337,7 @@ public class InputCode
         if ( RepeatDelay < 0f ) { return false; }
 
         // 押しっぱなし継続中は、RepeatDelay経過するまで次の受付を待つ(0の場合は待たずに即座に次へ進む)
-        if ( ( Time.time - _pressStartTime ) < RepeatDelay ) { return false; }
+        if ( ( Time.time - _pressStartTimes[iconIdx] ) < RepeatDelay ) { return false; }
 
         return IsIntervalTimePassed();
     }

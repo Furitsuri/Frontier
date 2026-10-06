@@ -185,7 +185,7 @@ public class InputHandler : MonoBehaviour
             // 有効判定コールバックがfalseの場合は「押されていない」ものとして扱う
             // (再度有効になった際、押しっぱなし継続ではなく新規の押下として扱われるようにするため)
             bool isHeld = enable && inputForIcon.IsHeld( inputContext );
-            if( !code.UpdateHoldState( isHeld ) ) { continue; }
+            if( !code.UpdateHoldState( isHeld, i ) ) { continue; }
 
             if( code.ExecuteAcceptInputCallback( inputContext, i ) ) { return true; }   // 入力があった場合は必ずブレークする
         }
