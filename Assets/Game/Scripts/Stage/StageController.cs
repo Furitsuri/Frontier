@@ -222,10 +222,15 @@ namespace Frontier.Stage
         /// <returns>タイルのrowとcolumnにおけるレンジ差</returns>
         public (int, int) CalcurateRanges( int tileIdxA, int tileIdxB )
         {
-            int range = Math.Abs( tileIdxA - tileIdxB );
             int colNum = _stageDataProvider.CurrentData.TileColNum;
 
-            return (range % colNum, range / colNum);
+            // タイルインデックスは「行 * 列数 + 列」で振られているため、それぞれを列・行へ分解した上で差を取る。
+            // インデックスの差をそのまま列数で割ると、列の大小関係と行の大小関係が逆になる2タイル(右上と左下の関係)で
+            // 誤った値になる(例: 列数10でインデックス10(列0,行1)と7(列7,行0)の差は、正しくは列7+行1だが、差3を割ると列3+行0になってしまう)
+            int colRange = Math.Abs( ( tileIdxA % colNum ) - ( tileIdxB % colNum ) );
+            int rowRange = Math.Abs( ( tileIdxA / colNum ) - ( tileIdxB / colNum ) );
+
+            return (colRange, rowRange);
         }
 
         /// <summary>
