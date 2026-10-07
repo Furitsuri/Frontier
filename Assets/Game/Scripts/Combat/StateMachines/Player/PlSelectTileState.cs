@@ -12,13 +12,14 @@ namespace Frontier.Battle
     {
         private enum TransitTag
         {
-            CHARACTER_COMMAND = 0,
+            CHARACTER_MOVE = 0,
             CHARACTER_STATUS,
             TURN_END,
             SELECT_RESERVED_ACTION,
             SELECT_TILE_MENU,
             SELECT_GROUP_MEMBERS,
             GROUP_MOVE,
+            CHARACTER_COMMAND,
         }
 
         [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
@@ -28,6 +29,7 @@ namespace Frontier.Battle
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
         private bool _isWaitingForTileMenuResult;
         private string[] _inputConfirmStrings;
+        private string _inputConfirmCommandString;
         private string[] _inputToolStrings;
         private string[] _inputOpt1Strings;
         private InputCodeStringWrapper _inputConfirmStrWrapper;
@@ -48,10 +50,12 @@ namespace Frontier.Battle
             // Confirmアイコンの文字列を設定
             _inputConfirmStrings = new string[( int ) CHARACTER_TAG.NUM]
             {
-                "COMMAND",          // PLAYER
+                "SELECT",           // PLAYER(移動の操作へ入る)
                 "TOGGLE RANGE",     // ENEMY
                 "TOGGLE RANGE",     // OTHER
             };
+            // 移動出来ない(移動が確定している)プレイヤーキャラクターの場合は、コマンド選択を直接開く
+            _inputConfirmCommandString = "COMMAND";
             // TOOLアイコンの文字列を設定
             _inputToolStrings = new string[]
             {
@@ -103,6 +107,12 @@ namespace Frontier.Battle
             {
                 // Confirmアイコンの文字列を更新
                 _inputConfirmStrWrapper.Explanation = _inputConfirmStrings[( int ) tileData.CharaKey.CharacterTag];
+
+                Character confirmTarget = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
+                if( null != confirmTarget && CHARACTER_TAG.PLAYER == confirmTarget.GetCharacterTag() && !Command.IsSelectableMoveCommand( confirmTarget, _stageCtrl ) )
+                {
+                    _inputConfirmStrWrapper.Explanation = _inputConfirmCommandString;
+                }
             }
 
             // TOOLアイコンの文字列を更新
@@ -141,9 +151,9 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// キャラクターコマンドへ遷移可能かを判定します
+        /// 決定入力(プレイヤーキャラクターの移動の操作・コマンド選択への遷移、敵等の攻撃範囲表示の切り替え)が可能かを判定します
         /// </summary>
-        /// <returns>コマンド選択が可能か</returns>
+        /// <returns>決定入力が可能か</returns>
         protected override bool CanAcceptConfirm()
         {
             if( 0 <= TransitIndex )
@@ -212,7 +222,7 @@ namespace Frontier.Battle
             Character character = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter();
             if( null == character ) { return false; }
 
-            // プレイヤーキャラクターの場合、行動終了状態でなければコマンド選択可能
+            // プレイヤーキャラクターの場合、行動終了状態でなければ操作可能
             if( character.GetStatusRef.characterTag == CHARACTER_TAG.PLAYER )
             {
                 // スキル予約済みの場合は、予約に対する操作(即時実行等)の選択画面へ遷移する
@@ -222,9 +232,25 @@ namespace Frontier.Battle
                     return true;
                 }
 
-                TransitStateWithExit( ( int ) TransitTag.CHARACTER_COMMAND );
-                // コマンドを開くことをチュートリアルへ通知
-                TutorialFacade.Notify( TriggerType.OpenBattleCommand );
+                // 移動出来る(未移動、または暫定的に移動している)場合は、移動の操作へ直接入る。
+                // コマンド選択は、移動の操作の中で移動先を決定した際に開かれる(その場で行動する場合は、移動せずにもう一度決定する)
+                if( Command.IsSelectableMoveCommand( character, _stageCtrl ) )
+                {
+                    // 移動のキャンセルや取り消しの際に戻すための、現時点の状態を保存する
+                    // (通常の移動か移動先の変更かに応じた保存内容の違いは、移動操作側で判断される)
+                    // MEMO : PlMoveStateのInitで保存すると、『移動ステート中に敵を直接攻撃→攻撃をキャンセルして移動に戻る』とした場合に、
+                    //        移動ステートに戻った時点で保存し直されてしまうため、移動の操作を開始するこの時点で処理する
+                    ( ( Player ) character ).MoveOperation.Prepare();
+
+                    TransitStateWithExit( ( int ) TransitTag.CHARACTER_MOVE );
+                }
+                // スキルの使用等によって移動が確定している場合は、移動の操作を挟まずにコマンド選択を開く
+                else
+                {
+                    TransitStateWithExit( ( int ) TransitTag.CHARACTER_COMMAND );
+                    // コマンドを開くことをチュートリアルへ通知
+                    TutorialFacade.Notify( TriggerType.OpenBattleCommand );
+                }
             }
             // 敵キャラクター、その他のキャラクターの場合、攻撃範囲表示を行う
             else
@@ -372,7 +398,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// CANCEL入力を受けた際、カーソル上の暫定的に移動しているキャラクターを移動前の位置へ戻します。
-        /// (コマンド選択中のCANCELでは移動前へ戻さず、タイル選択へ戻った後のこの入力で初めて戻します)
+        /// (移動先を決定してコマンド選択を開いた後、タイル選択まで戻ってきた場合や、グループ移動の後に、この入力で移動前へ戻します)
         /// MEMO : 基底のAcceptCancelはBack()によってフェーズを終了させてしまうため、別名のメソッドとして入力に登録しています。
         /// </summary>
         private bool AcceptUndoMove( InputContext context )
@@ -496,7 +522,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// このステートから退避する際、ホバー範囲表示を非表示にします。
-        /// CHARACTER_COMMANDへの遷移先であるPlSelectCommandStateは選択中コマンドに応じた
+        /// 遷移先であるPlMoveState・PlSelectCommandStateは、それぞれ移動可能範囲・選択中コマンドに応じた
         /// 範囲表示を自前で行うため、ここで一旦消去しても問題ありません。
         /// </summary>
         public override object ExitState()

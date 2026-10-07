@@ -1,6 +1,7 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
+using Frontier.Tutorial;
 using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
@@ -13,8 +14,9 @@ namespace Frontier.Battle
         private enum PlMovePhase
         {
             PL_MOVE = 0,
-            PL_MOVE_RESERVE_END,
-            PL_MOVE_END,
+            PL_MOVE_RESERVE_END,    // 実体が移動先へ到着するのを待っている
+            PL_MOVE_END,            // 現在の位置で移動を終え、コマンド選択を開く
+            PL_MOVE_LEAVE,          // 移動操作を行わずに、タイル選択へ戻る
         }
 
         /// <summary>
@@ -31,6 +33,7 @@ namespace Frontier.Battle
             ATTACK_ON_MOVE = 0,
             CHARACTER_STATUS,
             CONFIRM_BLOCK_UNDO_MOVE,
+            SELECT_COMMAND,
         }
 
         [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
@@ -41,9 +44,11 @@ namespace Frontier.Battle
         // 実体が歩き終えるのを待ってから行う、他のステートへの遷移(またはこのステートの終了)の処理。待っていない間はnull。
         // 実体の歩行は戦闘ロジックの更新で進むため、確認ダイアログやステータス表示のようにこのステートを中断するだけの遷移は、
         // 歩いている途中でもそのまま行える(中断している間も、実体は歩き続けて目的のタイルで止まる)。
-        // 一方、このステートを終了する遷移(攻撃への遷移、コマンド選択へ戻る)は、移動操作が終了して歩行が進まなくなる上に、
-        // 実体の位置が結果に関わるため、必ずRequestTransitAfterStopを経由させて、歩き終えてから行うこと
+        // 一方、このステートを終了する遷移(攻撃への遷移、コマンド選択を開く)は、移動操作が終了して歩行が進まなくなる上に、
+        // 実体の位置が結果に関わるため、必ず歩き終えてから行うこと(RequestTransitAfterStop、またはStartReserveEndを経由させる)
         private System.Action _transitOnArrival = null;
+        // 直前にこのステートを終了して遷移した先。その遷移先から戻ってきた際(Init)の処理の判断にのみ使用する
+        private int _lastExitTransitIndex = -1;
         // 操作対象のキャラクターが保持する移動操作(実体を歩かせる・移動前の位置を表示する・移動を完了させる)。
         // グループ移動(PlGroupMoveState)と同じ処理を用いることで、移動の処理とユーザーからの見え方を揃えている。
         // 通常の移動か移動先の変更かといった状況による処理の違いは移動操作側で判断されるため、このステートでは意識しない
@@ -54,13 +59,26 @@ namespace Frontier.Battle
         /// </summary>
         private void TransitAttackOnMoveState()
         {
+            _lastExitTransitIndex = ( int ) TransitTag.ATTACK_ON_MOVE;
             TransitStateWithExit( ( int ) TransitTag.ATTACK_ON_MOVE );
         }
 
         /// <summary>
+        /// コマンド選択を開きます。
+        /// コマンド選択でキャンセルした場合はこのステートへ戻り(Initから再開)、行動を終えた場合はこのステートを経由してタイル選択まで戻ります。
+        /// </summary>
+        private void TransitSelectCommandState()
+        {
+            _lastExitTransitIndex = ( int ) TransitTag.SELECT_COMMAND;
+            TransitStateWithExit( ( int ) TransitTag.SELECT_COMMAND );
+            // コマンドを開くことをチュートリアルへ通知
+            TutorialFacade.Notify( TriggerType.OpenBattleCommand );
+        }
+
+        /// <summary>
         /// 実体が歩き終えるのを待ってから、このステートを終了する遷移を行うよう予約します。
-        /// このステートを終了する遷移(攻撃への遷移、コマンド選択へ戻る)は、必ずこのメソッドを経由させてください
-        /// (移動前の位置へ即座に戻すキャンセルのみ、実体を強制的に止めるため対象外です)。
+        /// 移動中攻撃への遷移のように、実体を歩き終えさせてからこのステートを終了する遷移に使用してください
+        /// (コマンド選択を開く遷移はStartReserveEndを使用します。移動前の位置へ即座に戻すキャンセルは、実体を強制的に止めるため対象外です)。
         /// 待っている間は全ての入力を受け付けず、実体は高速で歩きます。既に歩き終えている場合は次の更新ですぐに遷移します。
         /// </summary>
         /// <param name="transit">実体が歩き終えた後に行う遷移処理</param>
@@ -75,7 +93,8 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 現在のカーソル位置で移動先を確定し、実体の到着を待って移動を完了させるフェーズへ移行します
+        /// 現在のカーソル位置で移動先を確定し、実体の到着を待って移動を完了させるフェーズへ移行します。
+        /// 到着後は、その位置で移動を終えてコマンド選択を開きます。
         /// </summary>
         private void StartReserveEnd()
         {
@@ -120,13 +139,36 @@ namespace Frontier.Battle
             _transitOnArrival                   = null;
             _moveOperation                      = _plOwner.MoveOperation;
 
-            // 攻撃が終了している場合(移動遷移中に直接攻撃を行った場合)
-            if( _plOwner.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
+            int lastExitTransitIndex    = _lastExitTransitIndex;
+            _lastExitTransitIndex       = -1;
+
+            var tmpParam = _plOwner.BattleParams.TmpParam;
+
+            // 攻撃が終了している場合(移動中に直接攻撃を行った場合)は、移動コマンドを使用済みにした上でタイル選択へ戻る
+            if( tmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] )
             {
-                _phase = PlMovePhase.PL_MOVE_END;
+                _moveOperation.Complete();
+                _phase = PlMovePhase.PL_MOVE_LEAVE;
                 return;
             }
-            else { _phase = PlMovePhase.PL_MOVE; }
+            // コマンド選択で行動を終えた(攻撃・スキル・待機の実行、スキルの予約)場合や、スキルの使用によって移動が確定し、
+            // 移動をやり直せなくなった場合は、そのままタイル選択へ戻る
+            if( tmpParam.IsSkillQueued || !Command.IsSelectableMoveCommand( _plOwner, _stageCtrl ) )
+            {
+                _phase = PlMovePhase.PL_MOVE_LEAVE;
+                return;
+            }
+
+            _phase = PlMovePhase.PL_MOVE;
+
+            // コマンド選択からキャンセルで戻ってきた際に、移動していない状態(移動前のタイルで決定した、または移動前のタイルへ戻って移動を取り消した)であれば、
+            // 現時点の状態を移動前の状態として保存し直す(コマンド選択中に自己強化スキルを使用した場合等、タイル選択で保存した時点から状態が変わっている場合があるため)。
+            // 移動している状態で戻ってきた場合は保存し直さないため、キャンセルした際はタイル選択で決定した時点の位置へ戻る。
+            // MEMO : 移動中攻撃をキャンセルして戻ってきた場合は、移動の途中の位置を移動前の状態として保存してしまうことになるため、保存し直してはならない
+            if( ( int ) TransitTag.SELECT_COMMAND == lastExitTransitIndex && !_plOwner.IsProvisionallyMoved() )
+            {
+                _moveOperation.Prepare();
+            }
 
             _departTileIndex = _plOwner.PrevMoveInformaiton.tmpParam.CurrentTileIndex;
             _stageCtrl.BindGridCursor( GridCursorState.MOVE, _plOwner );
@@ -178,9 +220,14 @@ namespace Frontier.Battle
                     break;
 
                 case PlMovePhase.PL_MOVE_END:
-                    // 現在の位置で移動操作を終える(移動の完了として扱うか等は、状況に応じて移動操作側で判断される)
+                    // 現在の位置で移動操作を終え(移動の完了として扱うか等は、状況に応じて移動操作側で判断される)、コマンド選択を開く
                     _moveOperation.Complete();
-                    Back();     // コマンド選択に戻る
+                    TransitSelectCommandState();
+
+                    return true;
+
+                case PlMovePhase.PL_MOVE_LEAVE:
+                    Back();     // タイル選択に戻る
 
                     return true;
             }
@@ -190,7 +237,9 @@ namespace Frontier.Battle
 
         public override object ExitState()
         {
-            // 移動操作を終了し、移動前の位置の表示を消去する(移動完了・キャンセル・移動中攻撃への遷移のいずれの場合も)
+            // 移動操作を終了し、移動前の位置の表示を消去する。
+            // コマンド選択を開く場合(Complete)・キャンセルした場合(Cancel)は移動操作側で既に終了しているため、
+            // ここでの呼び出しは、それらを経ない移動中攻撃への遷移のためのもの(重ねて呼び出しても問題ない)
             _moveOperation?.End();
             _provisionalOriginDisplay.Clear();
 
@@ -339,7 +388,7 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 決定入力を受けた際は選択した地点に移動するか、選択した場でそのまま攻撃へ遷移します
+        /// 決定入力を受けた際は、選択した地点へ移動した上でコマンド選択を開くか、選択した場でそのまま攻撃へ遷移します
         /// </summary>
         /// <param name="isConfirm">決定入力</param>
         /// <returns>決定入力実行の有無</returns>
@@ -350,15 +399,11 @@ namespace Frontier.Battle
 			var currentIndex            = _stageCtrl.GetCurrentGridIndex();
             TileDynamicData tileData    = _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.GetAttackableTile( currentIndex );
 
-            // 出発地点と同一グリッドであれば戻る(実体が出発地点へ歩いて戻っている途中の場合は、到着を待ってから戻る)
+            // 出発地点と同一グリッドであれば、移動せずに(実体が出発地点へ歩いて戻っている途中の場合は、到着を待ってから)コマンド選択を開く
+            // (移動しなかったものとして扱うか、移動の取り消しとして扱うかは移動操作側で判断される)
             if( currentIndex == _departTileIndex )
             {
-                RequestTransitAfterStop( () =>
-                {
-                    // 現在の位置(出発地点)で移動操作を終える(移動しなかったものとして扱うか、移動の取り消しとして扱うかは移動操作側で判断される)
-                    _moveOperation.Complete();
-                    Back();
-                }, StopMode.WALK_TO_DESTINATION );
+                StartReserveEnd();
 
                 return true;
             }
@@ -394,7 +439,7 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// キャンセル入力を受けた際は巻き戻し処理を行います
+        /// キャンセル入力を受けた際は、このステートで行った移動を取り消してタイル選択へ戻ります
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>
         /// <returns>キャンセル入力実行の有無</returns>

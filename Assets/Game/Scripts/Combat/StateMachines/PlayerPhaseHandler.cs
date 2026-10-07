@@ -100,95 +100,107 @@ namespace Frontier.Battle
             // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
 
             /*
-             *  親子図
+             *  親子図 ( [n]は子ステートとしての登録順。各ステートのTransitTagの値と一致させること )
              *
-             *      PlPhaseAnimationState
-             *              ｜
-             *              ├─ PlSelectTileState
-             *              ｜       ｜
-             *              ｜       ├─ CharacterStatusViewState
-             *              ｜       ｜
-             *              ｜       ├─ PlConfrimTurnEnd
-             *              ｜       ｜
-             *              ｜       ├─ PlSelectReservedActionState (予約に対する操作選択、実行まで行う)
-             *              ｜       ｜
-             *              ｜       ├─ PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー)
-             *              ｜       ｜
-             *              ｜       ├─ PlSelectGroupMembersState (OPT1でのキャラクター登録時に自動遷移するグループ移動のメンバー選択。登録・解除はここでのみ可能)
-             *              ｜       ｜       ｜
-             *              ｜       ｜       └─ PlGroupMoveState (CONFIRMで遷移するグループ移動プレビュー・実行。カーソル移動のたびにプレビューを更新する)
-             *              ｜       ｜                ｜
-             *              ｜       ｜                └─ PlConfirmBlockUndoMoveState (移動先が、暫定移動中の他キャラクターの移動前の位置である場合の確認。PlMoveStateの子にも同一インスタンスを登録)
-             *              ｜       ｜
-             *              ｜       ├─ PlGroupMoveState (SUB3で全員を一括登録した際に直接遷移。上記と同一インスタンス)
-             *              ｜       ｜
-             *              ｜       └─ PlSelectCommandState
-             *              ｜                    ｜
-             *              ｜                    ├─ PlWaitState
-             *              ｜                    ｜
-             *              ｜                    ├────────────────────────────────────────PlSelectSkillState
-             *              ｜                    ｜                                                                                        ｜
-             *              ｜                    ├───────────────────── PlAttackState                                └─ PlSkillActionToTargetState
-             *              ｜                    ｜                                                ｜                                                     ｜
-             *              ｜                    └─ PlMoveState                                  └─ CharacterStatusViewState              ├─ CharacterStatusViewState
-             *              ｜                             ｜                                                                              ｜
-             *              ｜                             ├─ CharacterStatusViewState                                                     └─ PlSkillUseOptionState
-             *              ｜                             ｜
-             *              ｜                             └─ PlAttackOnMoveState
-             *              ｜
-             *              └─ PlConfirmReservedActionsState  (index 1 : キュー実行確認)
+             *      PlPhaseStateAnimation
+             *          ｜
+             *          ├─ [0] PlSelectTileState
+             *          ｜       ｜
+             *          ｜       ├─ [0] PlMoveState (プレイヤーキャラクターを決定すると直接遷移する、移動の操作)
+             *          ｜       ｜       ｜
+             *          ｜       ｜       ├─ [0] PlAttackOnMoveState (移動中に直接、攻撃へ遷移する)
+             *          ｜       ｜       ｜       ├─ [0] CharacterStatusViewState
+             *          ｜       ｜       ｜       └─ [1] PlConfirmKillReservedTargetState
+             *          ｜       ｜       ├─ [1] CharacterStatusViewState
+             *          ｜       ｜       ├─ [2] PlConfirmBlockUndoMoveState (移動先が、暫定移動中の他キャラクターの移動前の位置である場合の確認)
+             *          ｜       ｜       └─ [3] PlSelectCommandState (移動先を決定すると開かれるコマンド選択。キャンセルすると移動の操作へ戻る)
+             *          ｜       ｜               ｜
+             *          ｜       ｜               ├─ [0] PlAttackState
+             *          ｜       ｜               ｜       ├─ [0] CharacterStatusViewState
+             *          ｜       ｜               ｜       └─ [1] PlConfirmKillReservedTargetState
+             *          ｜       ｜               ├─ [1] PlSelectSkillState
+             *          ｜       ｜               ｜       └─ [0] PlSkillActionToTargetState
+             *          ｜       ｜               ｜               ├─ [0] CharacterStatusViewState
+             *          ｜       ｜               ｜               ├─ [1] PlSkillUseOptionState
+             *          ｜       ｜               ｜               ├─ [2] PlConfirmKillReservedTargetState
+             *          ｜       ｜               ｜               └─ [3] PlConfirmBlockUndoMoveState (移動を伴うスキルの着地先に対する確認)
+             *          ｜       ｜               └─ [2] PlWaitState
+             *          ｜       ｜
+             *          ｜       ├─ [1] CharacterStatusViewState
+             *          ｜       ├─ [2] PlConfirmTurnEnd
+             *          ｜       ├─ [3] PlSelectReservedActionState (予約に対する操作選択、実行まで行う)
+             *          ｜       ├─ [4] PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー)
+             *          ｜       ├─ [5] PlSelectGroupMembersState (OPT1でのキャラクター登録時に自動遷移するグループ移動のメンバー選択。登録・解除はここでのみ可能)
+             *          ｜       ｜       └─ [0] PlGroupMoveState (CONFIRMで遷移するグループ移動プレビュー・実行。カーソル移動のたびにプレビューを更新する)
+             *          ｜       ｜               └─ [0] PlConfirmBlockUndoMoveState
+             *          ｜       ├─ [6] PlGroupMoveState (SUB3で全員を一括登録した際に直接遷移。上記と同一インスタンス)
+             *          ｜       └─ [7] PlSelectCommandState (スキルの使用等によって移動が確定しているキャラクターを決定した場合に直接遷移。上記と同一インスタンス)
+             *          ｜
+             *          └─ [1] PlConfirmReservedActionsState (キュー実行確認)
              *
              */
 
-            // MEMO : キャラクターステータス表示状態は、各所から遷移可能にするため、複数個所に配置しています。
-            // StackStateBaseはAddChildで戻り先(Parent)を上書きしないため、単一インスタンスを全ての箇所で共有できます。
+            // MEMO : StackStateBaseはAddChildで戻り先(Parent)を上書きしないため、複数の箇所から遷移するステート
+            //        (キャラクターステータス表示、グループ移動、コマンド選択、移動前の位置へ戻せなくなる旨の確認)は、単一インスタンスを全ての箇所で共有しています。
+
+            var selectTileState             = _hierarchyBld.InstantiateWithDiContainer<PlSelectTileState>( false );
+            var confirmReservedActionsState = _hierarchyBld.InstantiateWithDiContainer<PlConfirmReservedActionsState>( false );
+            var characterStatusViewState    = _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false );
+            var moveState                   = _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false );
+            var attackOnMoveState           = _hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>( false );
+            var selectCommandState          = _hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>( false );
+            var attackState                 = _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false );
+            var selectSkillState            = _hierarchyBld.InstantiateWithDiContainer<PlSelectSkillState>( false );
+            var skillActionToTargetState    = _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false );
+            var selectGroupMembersState     = _hierarchyBld.InstantiateWithDiContainer<PlSelectGroupMembersState>( false );
+            var groupMoveState              = _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false );
+            var confirmBlockUndoMoveState   = _hierarchyBld.InstantiateWithDiContainer<PlConfirmBlockUndoMoveState>( false );
 
             RootNode = _hierarchyBld.InstantiateWithDiContainer<PlPhaseStateAnimation>( false );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectTileState>( false ) );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmReservedActionsState>( false ) );
-            _confirmReservedActionsState = RootNode.GetChildren<PlConfirmReservedActionsState>( 1 );
-            var characterStatusViewState = _hierarchyBld.InstantiateWithDiContainer<CharacterStatusViewState>( false );
-            // Children[0]はPlSelectTileState、Children[1]はPlConfirmReservedActionsState
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectCommandState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectGroupMembersState>( false ) );
-            // PlGroupMoveStateはメンバー選択(CONFIRM)とタイル選択(SUB3による一括登録)の双方から遷移するため、単一インスタンスを共有する
-            var groupMoveState = _hierarchyBld.InstantiateWithDiContainer<PlGroupMoveState>( false );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( groupMoveState );
-            // Children[0].Children[5]はPlSelectGroupMembersState。その子にPlGroupMoveStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(5).AddChild( groupMoveState );
-            // PlGroupMoveStateの子に、移動先が他キャラクターの移動前の位置である場合の確認(PlConfirmBlockUndoMoveState)を追加
-            // (PlMoveStateからも同じ確認へ遷移するため、単一インスタンスを共有する)
-            var confirmBlockUndoMoveState = _hierarchyBld.InstantiateWithDiContainer<PlConfirmBlockUndoMoveState>( false );
+            RootNode.AddChild( selectTileState );
+            RootNode.AddChild( confirmReservedActionsState );
+            _confirmReservedActionsState = confirmReservedActionsState;
+
+            // タイル選択
+            selectTileState.AddChild( moveState );
+            selectTileState.AddChild( characterStatusViewState );
+            selectTileState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
+            selectTileState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
+            selectTileState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
+            selectTileState.AddChild( selectGroupMembersState );
+            selectTileState.AddChild( groupMoveState );
+            selectTileState.AddChild( selectCommandState );
+
+            // 移動の操作
+            moveState.AddChild( attackOnMoveState );
+            moveState.AddChild( characterStatusViewState );
+            moveState.AddChild( confirmBlockUndoMoveState );
+            moveState.AddChild( selectCommandState );
+
+            // 移動中の直接攻撃
+            // (TransitTag.CONFIRM_KILL_RESERVED_TARGET(=1、PlAttackState側と共通)とインデックスを揃えるため、CharacterStatusViewStateを先に追加する)
+            attackOnMoveState.AddChild( characterStatusViewState );
+            attackOnMoveState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
+
+            // コマンド選択
+            selectCommandState.AddChild( attackState );
+            selectCommandState.AddChild( selectSkillState );
+            selectCommandState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlWaitState>( false ) );
+
+            // 攻撃
+            attackState.AddChild( characterStatusViewState );
+            attackState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
+
+            // スキル
+            selectSkillState.AddChild( skillActionToTargetState );
+            skillActionToTargetState.AddChild( characterStatusViewState );
+            skillActionToTargetState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillUseOptionState>( false ) );
+            skillActionToTargetState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
+            skillActionToTargetState.AddChild( confirmBlockUndoMoveState );
+
+            // グループ移動
+            selectGroupMembersState.AddChild( groupMoveState );
             groupMoveState.AddChild( confirmBlockUndoMoveState );
-            // Children[0].Children[0]はPlSelectCommandState
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlMoveState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectSkillState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlWaitState>( false ) );
-            // Children[0].Children[0].Children[0]はPlMoveState。その子にPlAttackOnMoveStateを追加(※移動中に直接、攻撃へ遷移出来るように)
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlAttackOnMoveState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
-            // PlMoveStateのChildren[2]に、移動先が他キャラクターの移動前の位置である場合の確認を追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( confirmBlockUndoMoveState );
-            // Children[0].Children[0].Children[1]はPlAttackState。その子にCharacterStatusViewStateとPlConfirmKillReservedTargetStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( characterStatusViewState );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(1).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
-            // Children[0].Children[0].Children[0].Children[0]はPlAttackOnMoveState。TransitTag.CONFIRM_KILL_RESERVED_TARGET(=1、PlAttackState側と共通)と
-            // インデックスを揃えるため、CharacterStatusViewStateをChildren[0]として先に追加してからPlConfirmKillReservedTargetStateを追加する
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
-            // Children[0].Children[0].Children[2]はPlSelectSkillState。その子にPlSkillActionToTargetStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillActionToTargetState>( false ) );
-            // Children[0].Children[0].Children[2].Children[0]はPlSkillActionToTargetState。その子にCharacterStatusViewState・PlSkillUseOptionState・PlConfirmKillReservedTargetStateを追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( characterStatusViewState );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSkillUseOptionState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmKillReservedTargetState>( false ) );
-            // PlSkillActionToTargetStateのChildren[3]に、移動を伴うスキルの着地先が他キャラクターの移動前の位置である場合の確認を追加
-            RootNode.GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(0).GetChildren<PhaseStateBase>(2).GetChildren<PhaseStateBase>(0).AddChild( confirmBlockUndoMoveState );
         }
     }
 }

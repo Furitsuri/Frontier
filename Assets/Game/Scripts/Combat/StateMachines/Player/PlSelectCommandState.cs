@@ -8,6 +8,17 @@ namespace Frontier.Battle
 {
     public class PlSelectCommandState : PlPhaseStateBase, ICommandCursorProvider
     {
+        /// <summary>
+        /// 遷移先を示すタグ(子ステートの登録順)。
+        /// 移動はコマンドではなくなった(タイル選択での決定から移動ステートへ直接遷移する)ため、COMMAND_TAGの値とは一致しません
+        /// </summary>
+        private enum TransitTag
+        {
+            ATTACK = 0,
+            SKILL,
+            WAIT,
+        }
+
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
@@ -59,15 +70,6 @@ namespace Frontier.Battle
         /// </summary>
         public override object ExitState()
         {
-            // 移動コマンドを選択した場合は、この時点でのキャラクターの位置情報を保存する
-            // ( PlMoveStateのInitなどで保存すると、『移動ステート中に敵を直接攻撃→攻撃をキャンセルして移動に戻る』とした場合に、
-            //   移動ステートに戻った時点で位置情報が再保存されてしまうため、ここで処理する )
-            if( TransitIndex == ( int ) COMMAND_TAG.MOVE )
-            {
-                // 通常の移動か移動先の変更かに応じた保存内容の違いは、移動操作側で判断される
-                _plOwner.MoveOperation.Prepare();
-            }
-
             _plOwner.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
             _presenter.ExitPLCommandView();
 
@@ -119,7 +121,7 @@ namespace Frontier.Battle
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
 
-            // 子ステート(PlMoveState等)からBack()で復帰した場合、子ステート側で表示していた範囲描画が
+            // 子ステート(PlAttackState等)からBack()で復帰した場合、子ステート側で表示していた範囲描画が
             // 残っている、または消えている場合があるため、選択中コマンドに応じて表示を仕切り直す。
             // ただし行動が全て終了している場合はInit()でコマンドリストが構築されておらず
             // GetCommandValue()が参照できないため対象外とする
@@ -131,7 +133,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// 現在選択中のコマンドに応じて行動可能範囲の表示を切り替えます。
-        /// MOVEなら移動+攻撃範囲、ATTACKなら攻撃範囲のみ、SKILL・WAIT等はレンジという概念を持たないため
+        /// ATTACKなら攻撃範囲を表示し、SKILL・WAIT等はレンジという概念を持たないため
         /// 何も表示しません(スキルの効果範囲はSKILL選択時点では未確定のため)。
         /// </summary>
         private void RefreshCommandRangeDisplay()
@@ -142,14 +144,6 @@ namespace Frontier.Battle
             int dprtIdx = _plOwner.BattleParams.TmpParam.CurrentTileIndex;
             switch( ( COMMAND_TAG ) GetCommandValue() )
             {
-                case COMMAND_TAG.MOVE:
-                    // 移動先の変更の場合、起点は現在の位置ではなく、最初に移動を開始した地点となる
-                    int moveOriginIdx   = _plOwner.IsProvisionallyMoved() ? _plOwner.PrevMoveInformaiton.tmpParam.CurrentTileIndex : dprtIdx;
-                    float dprtHeight    = _stageCtrl.GetTileStaticData( moveOriginIdx ).Height;
-                    actionRangeCtrl.SetupActionableRangeData( moveOriginIdx, dprtHeight );
-                    actionRangeCtrl.DrawActionableRange();
-                    break;
-
                 case COMMAND_TAG.ATTACK:
                     actionRangeCtrl.SetupAttackableRangeData( dprtIdx );
                     actionRangeCtrl.DrawAttackableRange();
@@ -183,14 +177,31 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            TransitStateWithExit( GetCommandValue() );
+            TransitStateWithExit( ToTransitIndex( ( COMMAND_TAG ) GetCommandValue() ) );
 
             return true;
         }
 
-        // MEMO : キャンセル入力は基底(PlPhaseStateBase.AcceptCancel)の処理のまま、コマンドメニューを閉じてタイル選択へ戻るだけとする。
-        //        移動後であっても、ここでは移動前の位置へ巻き戻さない(キャラクターは暫定移動の状態のままタイル選択へ戻る)。
-        //        移動前の位置への巻き戻しは、タイル選択(PlSelectTileState)で当該キャラクターにキャンセル入力を行った際に行う。
+        // MEMO : キャンセル入力は基底(PlPhaseStateBase.AcceptCancel)の処理のまま、コマンドメニューを閉じて遷移元へ戻るだけとする。
+        //        移動ステート(PlMoveState)から開かれた場合は移動ステートへ戻り、キャラクターは決定した位置に立ったまま、移動先を選び直せる状態になる。
+        //        ここでは移動前の位置へ巻き戻さない(巻き戻しは、戻った先の移動ステート、またはタイル選択(PlSelectTileState)でのキャンセル入力で行う)。
+
+        /// <summary>
+        /// コマンドに対応する遷移先(子ステート)のインデックスを取得します
+        /// </summary>
+        private static int ToTransitIndex( COMMAND_TAG commandTag )
+        {
+            switch( commandTag )
+            {
+                case COMMAND_TAG.ATTACK:    return ( int ) TransitTag.ATTACK;
+                case COMMAND_TAG.SKILL:     return ( int ) TransitTag.SKILL;
+                case COMMAND_TAG.WAIT:      return ( int ) TransitTag.WAIT;
+            }
+
+            UnityEngine.Debug.Assert( false, $"コマンド選択から遷移出来ないコマンドが指定されました : {commandTag}" );
+
+            return ( int ) TransitTag.WAIT;
+        }
 
         public int GetCurrentIndex() => _cmdIdxVal.index;
 
@@ -222,8 +233,7 @@ namespace Frontier.Battle
             }
             _commandList.Init( ref commandIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            // 暫定的に移動している場合、移動コマンドは「移動先変更」として表示する
-            _presenter.InitPLCommandView( this, executableCommands, _plOwner.IsProvisionallyMoved() );
+            _presenter.InitPLCommandView( this, executableCommands );
         }
     }
 }

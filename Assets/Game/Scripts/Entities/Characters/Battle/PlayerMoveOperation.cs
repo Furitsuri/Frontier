@@ -12,7 +12,8 @@ namespace Frontier.Entities
     /// これを用いることで、移動の処理と、ユーザーからの見え方(実体が歩き、移動前のタイルに残像が残り、そこからの経路が矢印で示される)を揃えています。
     ///
     /// 通常の移動か、移動先の変更(暫定移動中の移動のやり直し)かといった状況による処理の違いは、このクラスの中で判断します。
-    /// 呼び出し側(各ステート)は、状況を意識せずに Prepare → Begin → (SetDestination/SetWalk、IsArrivedで到着を確認) → Complete または Cancel → End の順に呼び出してください。
+    /// 呼び出し側(各ステート)は、状況を意識せずに Prepare → Begin → (SetDestination/SetWalk、IsArrivedで到着を確認) → Complete または Cancel の順に呼び出してください。
+    /// Complete・Cancelは移動操作の終了(End)まで行います。どちらも呼び出さずに移動操作を終える場合(移動中攻撃への遷移等)のみ、Endを直接呼び出してください。
     /// 実体を歩かせる処理(Tick)は、ステートからではなく、PlayerBattleLogicの更新(BattleRoutineControllerから毎フレーム呼ばれる)から行われます。
     /// そのため、確認ダイアログの表示等でステートの更新が止まっている間も、実体は目的地へ向けて歩き、目的のタイルで止まります。
     /// </summary>
@@ -72,7 +73,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 移動操作の準備として、取り消し・キャンセルの際に戻すための現時点の状態を保存します。
-        /// 移動を行うことが決まった時点(コマンドメニューで移動を選んだ時、グループ移動の操作を開始する時)に1度だけ呼び出してください。
+        /// 移動を行うことが決まった時点(タイル選択でキャラクターを決定した時、グループ移動の操作を開始する時)に呼び出してください。
         /// ・通常の移動の場合: 現時点の状態を「移動前の状態」として保存します。
         /// ・移動先の変更の場合(既に暫定的に移動している場合): 移動前の状態は上書きせず(起点と移動範囲を最初の地点のままとするため)、
         ///   変更をキャンセルした際に戻すための現時点の位置のみを保存します。
@@ -213,10 +214,17 @@ namespace Frontier.Entities
         /// 現在の位置で移動操作を終えます。状況に応じて以下のいずれかとして扱います。
         /// ・移動中に直接攻撃を行った後の場合: 既に行動が確定しているため、移動コマンドを使用済みにするのみとします。
         /// ・移動前のタイルに立っている場合: 移動しなかったものとして扱います。移動先の変更で最初の地点へ戻った場合は、
-        ///   移動の取り消しとして扱い、暫定移動の状態を解除して移動コマンドを通常の移動として選択出来る状態へ戻します。
+        ///   移動の取り消しとして扱い、暫定移動の状態を解除して通常の移動を行える状態へ戻します。
         /// ・それ以外の場合: 移動を完了させます。移動コマンドを使用済みにし、移動前へ戻せる暫定移動の状態として記録します。
+        /// いずれの場合も、実体の位置が決まった時点で移動操作は終わりとなるため、移動操作の終了(End)まで行います。
         /// </summary>
         public void Complete()
+        {
+            ApplyCompletion();
+            End();
+        }
+
+        private void ApplyCompletion()
         {
             bool isAttackEnded = _owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK];
 
@@ -245,13 +253,30 @@ namespace Frontier.Entities
         /// <summary>
         /// 移動操作をキャンセルし、実体を即座に元の位置へ戻します。
         /// 通常の移動の場合は移動前の位置・状態へ、移動先の変更の場合は変更を開始する前の位置へ戻します(暫定移動の状態は維持されます)。
+        /// Completeによって一度移動を完了させた後(コマンド選択からキャンセルで戻ってきた後)に呼び出された場合も、同じ位置へ戻します。
+        /// 実体の位置が決まった時点で移動操作は終わりとなるため、移動操作の終了(End)まで行います。
+        /// MEMO : 終了まで行わずに移動操作の最中のままにしておくと、ステートの終了処理より先に行われる歩行の更新(Tick)によって、
+        ///        残っている目的地へ向けて経路が引き直され、戻したはずの実体が再び歩き出してしまう
         /// </summary>
         public void Cancel()
+        {
+            ApplyCancellation();
+            End();
+        }
+
+        private void ApplyCancellation()
         {
             if( _isRepositioning )
             {
                 _ownerLogic.ForcedStopMoving();
                 _ownerLogic.SetPositionOnStage( _repositionStartTileIndex, _repositionStartRot );
+                // 変更後の位置で一度移動を完了させていた場合、保持している経路が変更後の位置までのものになっているため、戻した位置までの経路で保持し直す
+                _owner.HoldMovedPath( FindShortestPathFromOrigin( _repositionStartTileIndex ) );
+            }
+            else if( _ownerLogic.IsContainsCommandHistory( COMMAND_TAG.MOVE ) )
+            {
+                // 一度移動を完了させていた場合は、行動履歴に積まれた移動ごと取り消す(移動前の位置・状態へ戻り、暫定移動の状態も解除される)
+                _owner.RevertLastCommand();
             }
             else
             {
@@ -260,7 +285,9 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 移動操作を終了し、移動前の位置の表示を消去します(Complete/Cancelのいずれの後にも呼び出してください)
+        /// 移動操作を終了し、移動前の位置の表示を消去します。
+        /// Complete・Cancelからも呼び出されるため、それらを呼び出した場合は改めて呼び出す必要はありません(重ねて呼び出しても問題ありません)。
+        /// どちらも呼び出さずに移動操作を終える場合(移動中攻撃への遷移等)に、直接呼び出してください。
         /// </summary>
         public void End()
         {

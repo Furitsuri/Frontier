@@ -136,7 +136,6 @@ namespace Frontier.Battle
 
                         character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
                         _groupMoveRegistrationList.Remove( character );
-                        moveOperation.End();
                     }
                     _moveOperations.Clear();
 
@@ -277,7 +276,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// 登録済みキャラクターそれぞれの移動操作を開始します。
-        /// 単体移動(PlSelectCommandStateからPlMoveStateへの遷移時)と同様に、移動操作の準備(移動前の状態の保存)を行った上で、
+        /// 単体移動(PlSelectTileStateからPlMoveStateへの遷移時)と同様に、移動操作の準備(移動前の状態の保存)を行った上で、
         /// 移動前のタイルを起点とした移動可能範囲を設定・表示します。
         /// 移動可能範囲は、全キャラクターが移動前の位置にいるこの時点の状況を基に求め、以降の操作中は求め直しません
         /// (実体が歩き始めると各タイルの状況が変わってしまうため)。
@@ -315,7 +314,6 @@ namespace Frontier.Battle
 
                 moveOperation.Cancel();
                 character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.MOVEABLE );
-                moveOperation.End();
 
                 // メンバー選択へ戻る場合は登録が維持されるため、登録中を示す半透明表示へ戻す
                 if( EntryType.FromMemberSelection == _entryType && _groupMoveRegistrationList.Contains( character ) )

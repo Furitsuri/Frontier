@@ -56,9 +56,11 @@ protected Character _opponent                                       = null;
 
         private delegate bool IsExecutableCommand( Character character, StageController stageCtrl );
 
+        // コマンドメニューに並べるコマンドの実行可否の判定(COMMAND_TAGの値で引く)。
+        // 移動はコマンドメニューからではなく、タイル選択での決定から直接行うため、メニューには並べない(null)
         static private IsExecutableCommand[] _executableCommandTables =
         {
-            Command.IsSelectableMoveCommand,
+            null,
             Command.IsExecutableAttackCommand,
             Command.IsExecutableSkillCommand,
             Command.IsExecutableWaitCommand,
@@ -170,7 +172,7 @@ protected Character _opponent                                       = null;
 
             for( int i = 0; i < ( int ) COMMAND_TAG.NUM; ++i )
             {
-                if( !_executableCommandTables[i]( _readOnlyOwner.Value, stageCtrl ) ) continue;
+                if( null == _executableCommandTables[i] || !_executableCommandTables[i]( _readOnlyOwner.Value, stageCtrl ) ) continue;
 
                 _executableCommands.Add( ( COMMAND_TAG ) i );
             }
