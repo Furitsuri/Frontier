@@ -34,6 +34,9 @@ public class InputCode
     // (同時入力の場合は全アイコンで1つの押下として扱うため、先頭要素のみを使用する)
     private float[] _pressStartTimes = null;
 
+    // 直近のUpdateHoldState()が、新規の押下(離した状態から押した、または押し直した瞬間)として受け付けたか否か
+    public bool IsNewPress { get; private set; } = false;
+
     /// <summary>
     /// 入力コードを設定します
     /// 複数のガイドアイコン及び入力受付関数を設定できます
@@ -320,14 +323,16 @@ public class InputCode
             Array.Fill( _pressStartTimes, -1f );
         }
 
+        IsNewPress = false;
+
         if ( !isHeld )
         {
             _pressStartTimes[iconIdx] = -1f;
             return false;
         }
 
-        bool isNewPress = ( _pressStartTimes[iconIdx] < 0f );
-        if ( isNewPress )
+        IsNewPress = ( _pressStartTimes[iconIdx] < 0f );
+        if ( IsNewPress )
         {
             _pressStartTimes[iconIdx] = Time.time;
             return true;

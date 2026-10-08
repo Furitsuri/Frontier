@@ -186,6 +186,7 @@ public class InputHandler : MonoBehaviour
             // (再度有効になった際、押しっぱなし継続ではなく新規の押下として扱われるようにするため)
             bool isHeld = enable && inputForIcon.IsHeld( inputContext );
             if( !code.UpdateHoldState( isHeld, i ) ) { continue; }
+            inputContext.IsNewPress = code.IsNewPress;
 
             if( code.ExecuteAcceptInputCallback( inputContext, i ) ) { return true; }   // 入力があった場合は必ずブレークする
         }
@@ -209,6 +210,7 @@ public class InputHandler : MonoBehaviour
         }
 
         if( !code.UpdateHoldState( isHeld ) ) { return false; }
+        inputContext.IsNewPress = code.IsNewPress;
 
         if( code.ExecuteAcceptSimultaneousInputCallback( inputContext ) ) { return true; }
 

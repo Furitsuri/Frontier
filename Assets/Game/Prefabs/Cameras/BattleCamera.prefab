@@ -53,7 +53,8 @@ MonoBehaviour:
   _atkCameraLerpDuration: 0.33
   _mosaicStartFadeRate: 0
   _mosaicBlockSizeMaxRate: 1
-  _cameraXZSlide: 0
+  _slideStepAngle: 30
+  _slideDuration: 0.15
   _inputThreshold: 0.5
   _inputCoefficientOnCameraSlide: 5
   _angleYZMin: 15

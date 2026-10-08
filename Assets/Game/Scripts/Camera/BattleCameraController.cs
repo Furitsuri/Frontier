@@ -47,13 +47,13 @@ namespace Frontier
         [SerializeField] private float _mosaicBlockSizeMaxRate  = 0.5f;
 
         // --- FOLLOWING モード用パラメータ ---
-        [Header("XZ平面上のカメラの移動をスライドで行わせる場合はチェックを入れてください")]
-        [SerializeField] private bool  _cameraXZSlide = false;
-        [ShowIf( nameof( _cameraXZSlide ) )]
-        [SerializeField] private float _inputThreshold = 0f;
+        [Header("左右のカメラ回転(1回の入力につき一定角度ずつ回転します)")]
+        [SerializeField] private float _slideStepAngle = 30f;   // 1回の入力で回転する角度
+        [SerializeField] private float _slideDuration  = 0.3f;  // 1回の回転にかける秒数
+        [SerializeField] private float _inputThreshold = 0f;    // 左右回転の入力として扱う横方向の入力量の下限
 
         [Space(5)]
-        [SerializeField] private float _inputCoefficientOnCameraSlide = 3f;
+        [SerializeField] private float _inputCoefficientOnCameraSlide = 3f;   // 上下方向の入力量に対する回転量の係数
         [SerializeField] private float _angleYZMin                    = 30f;
         [SerializeField] private float _angleYZMax                    = 80f;
         [SerializeField] private float _followDuration                = 1f;
@@ -63,6 +63,8 @@ namespace Frontier
 
         // --- FOLLOWING モード専用フィールド ---
         private bool  _cameraSliding      = false;
+        private bool  _slideInputConsumed = false; // 現在の押下で左右回転を既に行ったか。入力を一度離して押し直すまで次の左右回転を受け付けない
+        private float _slideElapsedTime   = 0f;
         private float _initialValueAngleXZ = 0f;
         private float _followElapsedTime   = 0.0f;
         private float _offsetLength        = 0.0f;
@@ -106,8 +108,12 @@ namespace Frontier
             // FOLLOWING モード
             if( _cameraSliding )
             {
-                _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, 0.3f );
-                _angleXZ = Mathf.LerpAngle( _startAngleXZ, _goalAngleXZ, _followElapsedTime / 0.3f );
+                _slideElapsedTime += DeltaTimeProvider.DeltaTime;
+                bool isSlideEnd    = ( _slideDuration <= _slideElapsedTime );
+                // 終了時は誤差を残さないよう目標角度そのものに合わせる
+                _angleXZ = isSlideEnd
+                    ? ( _goalAngleXZ + 360f ) % 360f
+                    : Mathf.Lerp( _startAngleXZ, _goalAngleXZ, _slideElapsedTime / _slideDuration );
 
                 _sharedState.FollowingPosition =
                     _sharedState.PrevCameraPosition =
@@ -115,7 +121,7 @@ namespace Frontier
                         Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
                 _sharedState.MainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
 
-                _cameraSliding = !( Mathf.Abs( _goalAngleXZ - _angleXZ ) <= 0f );
+                _cameraSliding = !isSlideEnd;
             }
             else
             {
@@ -364,16 +370,17 @@ namespace Frontier
 
         private void StartSlide( CameraDirection dir )
         {
-            _cameraSliding = true;
-            _angleXZ       = ( _angleXZ + 360f ) % 360f;
-            _startAngleXZ  = _angleXZ;
-            _goalAngleXZ   = ( dir == CameraDirection.LEFT ) ? _angleXZ - 90f : _angleXZ + 90f;
+            _cameraSliding    = true;
+            _slideElapsedTime = 0f;
+            _angleXZ          = ( _angleXZ + 360f ) % 360f;
+            _startAngleXZ     = _angleXZ;
+            _goalAngleXZ      = ( dir == CameraDirection.LEFT ) ? _angleXZ - _slideStepAngle : _angleXZ + _slideStepAngle;
         }
 
         private void RegisterInputCodes()
         {
             int hashCode = Hash.GetStableHash( Constants.INPUT_CAMERA_STRING );
-            // マウスドラッグによる連続操作のため、押しっぱなし継続時もRepeatDelayによる待ちを発生させず即座に反映させる
+            // マウスドラッグによる連続操作(上下方向)のため、押しっぱなし継続時もRepeatDelayによる待ちを発生させず即座に反映させる
             InputCode cameraCode = ( new GuideIcon[] { GuideIcon.POINTER_MOVE, GuideIcon.POINTER_RIGHT }, "CAMERA\nMOVE", CanAcceptCamera, new AcceptContextInput( AcceptCameraInput ), 0.0f, hashCode );
             cameraCode.RepeatDelay = 0f;
             _inputFcd.RegisterInputCodes( cameraCode );
@@ -381,7 +388,10 @@ namespace Frontier
 
         private bool CanAcceptCamera()
         {
-            return _inputEnabled && _activeSequence == null && !_cameraSliding;
+            // MEMO : 回転中(_cameraSliding)の入力拒否はAcceptCameraInput側で行う。
+            //        ここで無効にすると入力システム上「離された」扱いとなり、回転終了時に押しっぱなしのままでも
+            //        新規の押下と判定されて、押し直し無しで次の左右回転が始まってしまうため
+            return _inputEnabled && _activeSequence == null;
         }
 
         /// <summary>
@@ -396,18 +406,22 @@ namespace Frontier
         private bool AcceptCameraInput( InputContext context )
         {
             if( !context.GetButton( GameButton.PointerRight ) ) { return false; }
-            if( context.Stick.SqrMagnitude() <= 0f )            { return false; }
 
-            if( _cameraXZSlide )
+            // 入力を一度離して押し直された場合のみ、次の左右回転を受け付けられるようにする(回転中に押し直された場合も有効)
+            if( context.IsNewPress ) { _slideInputConsumed = false; }
+
+            if( _cameraSliding )                     { return false; }  // 回転中は入力を受け付けない
+            if( context.Stick.SqrMagnitude() <= 0f ) { return false; }
+
+            // 左右は1回の押下につき1度だけ、一定角度の回転を行う。
+            // 上下操作中のわずかな横ぶれで回転しないよう、横方向が主体の入力のみを対象とする
+            float absX = Mathf.Abs( context.Stick.x );
+            if( !_slideInputConsumed && 0f < absX && _inputThreshold <= absX && Mathf.Abs( context.Stick.y ) <= absX )
             {
-                if( _inputThreshold <= Mathf.Abs( context.Stick.x ) )
-                {
-                    StartSlide( context.Stick.x < 0 ? CameraDirection.LEFT : CameraDirection.RIGHT );
-                }
-            }
-            else
-            {
-                _angleXZ += context.Stick.x * _inputCoefficientOnCameraSlide;
+                _slideInputConsumed = true;
+                StartSlide( context.Stick.x < 0 ? CameraDirection.LEFT : CameraDirection.RIGHT );
+
+                return true;
             }
 
             _angleYZ = Mathf.Clamp( _angleYZ - context.Stick.y * _inputCoefficientOnCameraSlide, _angleYZMin, _angleYZMax );
