@@ -1,6 +1,8 @@
 ﻿/// <summary>
 /// ローカライズ文字列を参照するためのキーです。
-/// 実際の文言はResources/Localization/以下のJSONに定義されます。
+/// 実際の文言は Resources/Localization/{言語名}/ 以下のJSONに、内容に応じてファイルを分けて定義されます
+/// (UI.json: 画面上の短い文言、Talk.json: 会話文、Skill.json: スキルの説明文)。
+/// どのファイルに定義しても読み込まれますが、同じキーを複数のファイルに定義することは出来ません。
 /// </summary>
 public enum LocKey
 {
@@ -16,7 +18,6 @@ public enum LocKey
     UI_STATUS_DEFFENCE,
 
     // コマンド
-    UI_CMD_MOVE,
     UI_CMD_ATTACK,
     UI_CMD_SKILL,
     UI_CMD_WAIT,

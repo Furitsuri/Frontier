@@ -1,0 +1,18 @@
+{
+    "UI_TALK_SHOPKEEPER_NAME": "Shopkeeper",
+    "UI_TALK_EMPLOY_AVAILABLE": "Who'll you hire, then?",
+    "UI_TALK_EMPLOY_NONE_AVAILABLE": "Sorry, they're all out on jobs right now.",
+    "UI_TALK_DISMISS_AVAILABLE": "Who're you letting go?",
+    "UI_TALK_DISMISS_NONE_AVAILABLE": "Hold on now, if you dismiss yourself too, you won't have a squad left!",
+    "UI_TALK_EMPLOY_CONFIRM_SINGULAR": "That's the one you're hiring, then?",
+    "UI_TALK_EMPLOY_CONFIRM_PLURAL": "Those are the ones you're hiring, then?",
+    "UI_TALK_DISMISS_CONFIRM_SINGULAR": "You won't see them again, you know. Still dismissing them?",
+    "UI_TALK_DISMISS_CONFIRM_PLURAL": "You sure? You won't see any of them again — still dismissing them?",
+    "UI_TALK_SHOP_LEAVE_CONFIRM": "Leaving already?",
+    "UI_TALK_SHOP_FAREWELL": "Come back anytime.",
+    "UI_TALK_SHOP_GREETING": "Welcome. What can I get for you?",
+    "UI_TALK_SHOP_ANYTHING_ELSE": "Is there anything else I can help you with?",
+    "UI_TALK_SHOP_ASK_QUANTITY": "How many would you like to buy?",
+    "UI_TALK_SHOP_PURCHASE_CONFIRM": "Will you be taking this?",
+    "UI_TALK_SHOP_THANKS": "Thank you for your purchase."
+}

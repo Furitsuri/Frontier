@@ -20,7 +20,7 @@ namespace Frontier
         private VerticalLayoutGroup _cmdTextVerticalLayout;
         private float _defaultWidth; // Setup()時点の幅。表示するコマンドの文字列がこれより狭い場合はこの幅を下限として使う
         private ICommandCursorProvider _activeCommandScript;
-        private LocKey[] _commandTextKeys;
+        private Dictionary<COMMAND_TAG, LocKey> _commandTextKeys;
         private LocKey[] _useSkillOptionTextKeys;
         private LocKey[] _reservedActionOptionTextKeys;
         private LocKey[] _tileMenuOptionTextKeys;
@@ -31,14 +31,14 @@ namespace Frontier
         /// </summary>
         void InitCommandStrings()
         {
-            _commandTextKeys = new LocKey[( int ) COMMAND_TAG.NUM]
+            // コマンドメニューに並ぶコマンドの文言。
+            // 移動(COMMAND_TAG.MOVE)は、タイル選択での決定から直接行うためメニューには並ばず、文言を持たない
+            _commandTextKeys = new Dictionary<COMMAND_TAG, LocKey>
             {
-                LocKey.UI_CMD_MOVE,
-                LocKey.UI_CMD_ATTACK,
-                LocKey.UI_CMD_SKILL,
-                LocKey.UI_CMD_WAIT
+                { COMMAND_TAG.ATTACK, LocKey.UI_CMD_ATTACK },
+                { COMMAND_TAG.SKILL,  LocKey.UI_CMD_SKILL },
+                { COMMAND_TAG.WAIT,   LocKey.UI_CMD_WAIT },
             };
-            Debug.Assert( _commandTextKeys.Length == ( int ) COMMAND_TAG.NUM );
 
             _useSkillOptionTextKeys = new LocKey[( int ) USE_SKILL_OPTION_TAG.NUM]
             {
@@ -222,7 +222,12 @@ namespace Frontier
                 CommandItem commandItem = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<CommandItem>( _commandItemSample.gameObject, true, false, "command_" + i );
                 commandItem.Setup();
                 commandItem.transform.SetParent( this.gameObject.transform, false );
-                LocKey textKey = _commandTextKeys[( int ) executableCommands[i]];
+                if( !_commandTextKeys.TryGetValue( executableCommands[i], out LocKey textKey ) )
+                {
+                    Debug.Assert( false, $"コマンドメニューに表示する文言が設定されていないコマンドです : {executableCommands[i]}" );
+                    continue;
+                }
+
                 if( null != textKeyOverrides && textKeyOverrides.TryGetValue( executableCommands[i], out LocKey overrideKey ) )
                 {
                     textKey = overrideKey;
