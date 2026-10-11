@@ -70,14 +70,23 @@ namespace Frontier.Entities
         }
         public void SetupActionableRangeData( int dprtTileIdx, float dprtTileHeight )
         {
-            _actionableTileData.Init();
+            ExtractActionableRangeData( dprtTileIdx, dprtTileHeight, ref _actionableTileData );
+        }
+
+        /// <summary>
+        /// 移動可能範囲、及びそこから攻撃可能な範囲を、渡されたActionableTileDataへ計算します
+        /// (SetupActionableRangeDataと危険範囲表示の共通処理)
+        /// </summary>
+        private void ExtractActionableRangeData( int dprtTileIdx, float dprtTileHeight, ref ActionableTileData targetTileData )
+        {
+            targetTileData.Init();
 
             var charaParam  = _owner.GetStatusRef;
             var mvRng       = charaParam.moveRange;
             var jmp         = charaParam.jumpForce;
             var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref _actionableTileData );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref targetTileData );
         }
 
         /// <summary>
@@ -162,9 +171,20 @@ namespace Frontier.Entities
             _actionableTileData.Init();
         }
 
-        public void ClearActionableRangeDataWithRender()
+        /// <summary>
+        /// 範囲データと、その描画を消去します
+        /// </summary>
+        /// <param name="isKeepDangerRange">危険範囲の表示を残すかどうか</param>
+        public void ClearActionableRangeDataWithRender( bool isKeepDangerRange = false )
         {
-            _actionableRangeRdr.ClearTileMeshesAllType();
+            if( isKeepDangerRange )
+            {
+                _actionableRangeRdr.ClearTileMeshesByTypeKeepingDangerRange( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
+            }
+            else
+            {
+                _actionableRangeRdr.ClearTileMeshesAllType();
+            }
 
             ClearActionableRangeData();
         }
@@ -205,28 +225,27 @@ namespace Frontier.Entities
 
         public void ToggleDisplayDangerRange( in Color color )
         {
-            // ActionableTileDataが空の場合はこのタイミングでセットアップを行う
-            if( _actionableTileData.IsEmpty() )
-            {
-                int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
-                var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
-                SetupActionableRangeData( dprtTileIndex, data.Height );
-            }
-
-            _actionableRangeRdr.SetDisplayDangerRange( !_actionableRangeRdr.IsShowingAttackableRange, color );
+            SetDisplayDangerRange( !_actionableRangeRdr.IsShowingAttackableRange, color );
         }
 
         public void SetDisplayDangerRange( bool isShow, in Color color )
         {
-            // ActionableTileDataが空の場合はこのタイミングでセットアップを行う
-            if( _actionableTileData.IsEmpty() )
+            if( !isShow )
             {
-                int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
-                var data            =_stageCtrl.GetTileStaticData( dprtTileIndex );
-                SetupActionableRangeData( dprtTileIndex, data.Height );
+                _actionableRangeRdr.HideDangerRange();
+                return;
             }
 
-            _actionableRangeRdr.SetDisplayDangerRange( isShow, color );
+            if( _actionableRangeRdr.IsShowingAttackableRange ) { return; }
+
+            // 危険範囲は、カーソルを合わせている間の範囲表示等で用いる_actionableTileDataを書き換えないよう、
+            // 一時的なデータへ計算した上で、攻撃可能なタイルのみを表示に用いる
+            int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
+            var data            = _stageCtrl.GetTileStaticData( dprtTileIndex );
+            var dangerTileData  = new ActionableTileData();
+            ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData );
+
+            _actionableRangeRdr.ShowDangerRange( dangerTileData.AttackableTileMap.Keys, color );
         }
 
         public void DrawMoveableRange()

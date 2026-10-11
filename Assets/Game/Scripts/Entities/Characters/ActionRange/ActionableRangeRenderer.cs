@@ -22,6 +22,8 @@ namespace Frontier.Entities
         // DrawRange で実際に描画したタイルインデックスを TileMapType 別に記録します。
         // ActionableTileData がリセットされても確実にクリアできるようにするために使用します。
         private readonly Dictionary<TileMapType, HashSet<int>> _drawnTileIndices = new Dictionary<TileMapType, HashSet<int>>();
+        // 危険範囲として各タイルに登録したタイルインデックスを記録します。
+        private readonly HashSet<int> _dangerTileIndices = new HashSet<int>();
 
         public bool IsShowingAttackableRange => _isShowingAttackableRange;
 
@@ -31,6 +33,7 @@ namespace Frontier.Entities
             _owner                      = owner;
             _readOnlyActionableTileData = new ReadOnlyReference<ActionableTileData>( actionableTileMap );
             _drawnTileIndices.Clear();
+            _dangerTileIndices.Clear();
         }
 
         public void Dispose()
@@ -40,16 +43,43 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 攻撃範囲の表示・非表示を切り替えます
+        /// 指定されたタイルを危険範囲(このキャラクターが攻撃可能な範囲)として表示します。
+        /// 危険範囲は、移動・攻撃範囲等の表示(DrawRange)とは別の層として各タイルに登録されるため、互いの描画・消去に影響しません。
         /// </summary>
-        public void SetDisplayDangerRange( bool isShow, in UnityEngine.Color color )
+        public void ShowDangerRange( IEnumerable<int> tileIndices, in UnityEngine.Color color )
         {
-            if( isShow == _isShowingAttackableRange ) { return; }
+            if( _isShowingAttackableRange ) { return; }
 
-            _isShowingAttackableRange = isShow;
+            _isShowingAttackableRange = true;
 
-            if( _isShowingAttackableRange ) { DrawDangerRange( in color ); }
-            else { ClearTileMeshesAllType(); }
+            CharacterKey ownerKey = _owner.GetCharacterKey();
+
+            foreach( int tileIndex in tileIndices )
+            {
+                var tile = _stageDataProvider.CurrentData.GetTile( tileIndex );
+                if( tile == null ) { continue; }
+
+                tile.AddDangerRange( ownerKey, in color, CreateTileMesh );
+                _dangerTileIndices.Add( tileIndex );
+            }
+        }
+
+        /// <summary>
+        /// 危険範囲の表示を消去します
+        /// </summary>
+        public void HideDangerRange()
+        {
+            if( !_isShowingAttackableRange ) { return; }
+
+            _isShowingAttackableRange = false;
+
+            CharacterKey ownerKey = _owner.GetCharacterKey();
+
+            foreach( int tileIndex in _dangerTileIndices )
+            {
+                _stageDataProvider.CurrentData.GetTile( tileIndex )?.RemoveDangerRange( ownerKey );
+            }
+            _dangerTileIndices.Clear();
         }
 
         /// <summary>
@@ -70,11 +100,8 @@ namespace Frontier.Entities
                 {
                     if( meshTypeAndConditions[i].condition )
                     {
-                        TileMesh tileMesh = null;
-                        LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
-
                         var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                        tile.DrawTileMesh( tileMesh, in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), tileMapType );
+                        tile.DrawTileMesh( CreateTileMesh(), in TileColors.Colors[( int ) meshTypeAndConditions[i].meshType], _owner.GetCharacterKey(), tileMapType );
                         _drawnTileIndices[tileMapType].Add( data.Key );
 
                         break;
@@ -86,8 +113,23 @@ namespace Frontier.Entities
         /// <summary>
         /// 指定した TileMapType（複数可）に該当するタイルの描画を消去します。
         /// ビットフラグで複数種を同時に指定できます。
+        /// 移動・攻撃・ターゲット範囲のいずれかを消去する場合は、危険範囲の表示も併せて消去します。
         /// </summary>
         public void ClearTileMeshesByType( TileMapType types )
+        {
+            ClearTileMeshesByTypeKeepingDangerRange( types );
+
+            if( ( types & ( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE ) ) != 0 )
+            {
+                HideDangerRange();
+            }
+        }
+
+        /// <summary>
+        /// 指定した TileMapType（複数可）に該当するタイルの描画を、危険範囲の表示を残したまま消去します。
+        /// (カーソルを合わせている間のみ表示する範囲の消去など、危険範囲の表示状態に影響させたくない場合に使用します)
+        /// </summary>
+        public void ClearTileMeshesByTypeKeepingDangerRange( TileMapType types )
         {
             CharacterKey ownerKey = _owner.GetCharacterKey();
 
@@ -113,11 +155,6 @@ namespace Frontier.Entities
                     _readOnlyActionableTileData.Value.ClearTileMap( TileMapType.QUEUED );
                 }
             }
-
-            if( ( types & ( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE ) ) != 0 )
-            {
-                _isShowingAttackableRange = false;
-            }
         }
 
         /// <summary>
@@ -142,22 +179,9 @@ namespace Frontier.Entities
             ClearTileMeshesByType( TileMapType.MOVEABLE | TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
         }
 
-        private void DrawDangerRange( in UnityEngine.Color color )
+        private TileMesh CreateTileMesh()
         {
-            if( !_drawnTileIndices.ContainsKey( TileMapType.ATTACKABLE ) )
-            {
-                _drawnTileIndices[TileMapType.ATTACKABLE] = new HashSet<int>();
-            }
-
-            foreach( var data in _readOnlyActionableTileData.Value.GetTileMap( TileMapType.ATTACKABLE ) )
-            {
-                TileMesh tileMesh = null;
-                LazyInject.GetOrCreate( ref tileMesh, () => _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true ) );
-
-                var tile = _stageDataProvider.CurrentData.GetTile( data.Key );
-                tile.DrawTileMesh( tileMesh, in color, _owner.GetCharacterKey(), TileMapType.ATTACKABLE );
-                _drawnTileIndices[TileMapType.ATTACKABLE].Add( data.Key );
-            }
+            return _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true );
         }
     }
 }

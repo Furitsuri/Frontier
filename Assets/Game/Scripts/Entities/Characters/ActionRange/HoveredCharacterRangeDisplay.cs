@@ -67,7 +67,8 @@ namespace Frontier.Entities
         {
             if( !_currentKey.IsValid() ) { return; }
 
-            _btlRtnCtrl.BtlCharaCdr.GetCharacter( _currentKey )?.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender();
+            // 危険範囲はホバー範囲表示とは別の層として表示されているため、その表示は残したまま消去する
+            _btlRtnCtrl.BtlCharaCdr.GetCharacter( _currentKey )?.BattleLogic.ActionRangeCtrl.ClearActionableRangeDataWithRender( true );
             _currentKey = CharacterKey.Invalid;
         }
 
