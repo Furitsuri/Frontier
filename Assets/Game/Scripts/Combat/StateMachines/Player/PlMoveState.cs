@@ -37,6 +37,7 @@ namespace Frontier.Battle
         }
 
         [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
+        [Inject] private AttackForecastLineDisplay _attackForecastDisplay = null;
 
         private PlMovePhase _phase          = PlMovePhase.PL_MOVE;
         private int _departTileIndex        = -1;
@@ -242,6 +243,7 @@ namespace Frontier.Battle
             // ここでの呼び出しは、それらを経ない移動中攻撃への遷移のためのもの(重ねて呼び出しても問題ない)
             _moveOperation?.End();
             _provisionalOriginDisplay.Clear();
+            _attackForecastDisplay.Clear();
 
             // 選択グリッドを表示
             _stageCtrl.SetActiveGridCursor( true );
@@ -256,6 +258,17 @@ namespace Frontier.Battle
             }
 
             return base.ExitState();
+        }
+
+        /// <summary>
+        /// このステートを中断して子ステート(ステータス表示、確認ダイアログ)へ遷移する際、
+        /// 攻撃予告線を一時的に非表示にします(戻ってきた際にOnActivatedで表示し直します)。
+        /// </summary>
+        public override object PauseState()
+        {
+            _attackForecastDisplay.Clear();
+
+            return base.PauseState();
         }
 
         /// <summary>
@@ -291,6 +304,13 @@ namespace Frontier.Battle
             // パラメータビューにキャラクターを割り当て
             var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
             _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _plOwner, layerMaskIndex );
+
+            // 新規開始・中断からの再開いずれの場合も、カーソル位置(移動先の候補)を攻撃出来る敵対勢力からの攻撃予告線を表示する
+            // (移動操作を行わずにタイル選択へ戻る場合を除く)
+            if( PlMovePhase.PL_MOVE_LEAVE != _phase )
+            {
+                _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex() );
+            }
 
             // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を確定する
             if( _isWaitingForBlockUndoConfirmResult )
@@ -382,6 +402,8 @@ namespace Frontier.Battle
                     _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( gridSelectChara, layerMaskIndex );
                 }
                 _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParamUI );
+
+                _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex() );
             }
 
             return isAcceptDirection;

@@ -80,6 +80,7 @@ namespace Frontier.Battle
 
             // 現在のカーソル位置(=登録操作を行った位置)を目的地として、各キャラクターの移動先を割り当てる
             AssignGroupMoveDestinations( _stageCtrl.GetCurrentGridIndex() );
+            RefreshAttackForecastDisplay();
 
             // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を確定する
             if( _isWaitingForBlockUndoConfirmResult )
@@ -100,6 +101,21 @@ namespace Frontier.Battle
         protected override void RefreshHoveredRangeDisplay()
         {
             _hoveredRangeDisplay.Clear();
+        }
+
+        /// <summary>
+        /// 攻撃予告線は、カーソル位置(隊列の基準)ではなく、各キャラクターに割り当てた移動先のタイルそれぞれに対して表示します。
+        /// 移動先の割り当てを変えた際は、その後に呼び出してください。
+        /// </summary>
+        protected override void RefreshAttackForecastDisplay()
+        {
+            var destinationTileIndices = new List<int>( _moveOperations.Count );
+            foreach( var moveOperation in _moveOperations )
+            {
+                destinationTileIndices.Add( moveOperation.DestinationTileIndex );
+            }
+
+            _attackForecastDisplay.Refresh( destinationTileIndices );
         }
 
         public override bool Update()
@@ -197,6 +213,8 @@ namespace Frontier.Battle
             if( isAccepted )
             {
                 AssignGroupMoveDestinations( _stageCtrl.GetCurrentGridIndex() );
+                // 基底での更新は割り当て直す前の移動先に対するものとなるため、割り当て直した移動先で表示し直す
+                RefreshAttackForecastDisplay();
             }
 
             return isAccepted;

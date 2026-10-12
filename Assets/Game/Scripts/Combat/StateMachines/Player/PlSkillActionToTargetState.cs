@@ -47,6 +47,7 @@ namespace Frontier.Battle
         private PlSkillActionPhase _phase;
 
         [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
+        [Inject] private AttackForecastLineDisplay _attackForecastDisplay = null;
 
         private SequenceFacade _sequenceFcd                     = null;
         private SkillTargetSelector _targetSelector             = null;
@@ -133,6 +134,7 @@ namespace Frontier.Battle
             _blinkController.StopAll();
             CleanupTargetSelectionState( _plOwner, _targetSelector.TargetCharacter );
             _provisionalOriginDisplay.Clear();
+            _attackForecastDisplay.Clear();
 
             if( _isSkillQueued )
             {
@@ -144,6 +146,17 @@ namespace Frontier.Battle
             }
 
             return base.ExitState();
+        }
+
+        /// <summary>
+        /// このステートを中断して子ステート(ステータス表示、使用方法の選択、確認ダイアログ)へ遷移する際、
+        /// 攻撃予告線を一時的に非表示にします(戻ってきた際にOnActivatedで表示し直します)。
+        /// </summary>
+        public override object PauseState()
+        {
+            _attackForecastDisplay.Clear();
+
+            return base.PauseState();
         }
 
         public override void RegisterInputCodes()
@@ -225,6 +238,10 @@ namespace Frontier.Battle
                     ExecuteSkill();
                 }
             }
+
+            // 新規開始・中断からの再開いずれの場合も、移動を伴うスキルの着地先に対する攻撃予告線を表示する
+            // (上記でスキルの使用が確定した場合は消去される)
+            RefreshAttackForecastDisplay();
         }
 
         protected override bool CanAcceptDefault()
@@ -266,6 +283,7 @@ namespace Frontier.Battle
 
             _targetSelector.AcceptDirection( context.Cursor, BuildTargetingContext() );
             _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
+            RefreshAttackForecastDisplay();
 
             return true;
         }
@@ -336,7 +354,11 @@ namespace Frontier.Battle
             if( !base.AcceptSub3( context ) ) { return false; }
 
             bool adjusted = _targetSelector.TryAdjustRange( -1, BuildTargetingContext() );
-            if( adjusted ) { _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID ); }
+            if( adjusted )
+            {
+                _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
+                RefreshAttackForecastDisplay();
+            }
             return adjusted;
         }
 
@@ -345,7 +367,11 @@ namespace Frontier.Battle
             if( !base.AcceptSub4( context ) ) { return false; }
 
             bool adjusted = _targetSelector.TryAdjustRange( +1, BuildTargetingContext() );
-            if( adjusted ) { _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID ); }
+            if( adjusted )
+            {
+                _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
+                RefreshAttackForecastDisplay();
+            }
             return adjusted;
         }
 
@@ -355,6 +381,25 @@ namespace Frontier.Battle
             {
                 _targetSelector.UpdateFocusedTarget( _btlRtnCtrl.BtlCharaCdr.GetTargetCharacter() );
                 _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetSelector.TargetCharacter );
+                RefreshAttackForecastDisplay();
+            }
+        }
+
+        /// <summary>
+        /// 移動を伴うスキルの着地先が定まっている場合、そのタイルを攻撃出来る敵対勢力のキャラクターからの攻撃予告線を表示します。
+        /// 移動を伴わないスキルや着地先が定まっていない場合、及び対象の選択を終えた後(スキルの使用が確定した後)は消去します。
+        /// 着地先が変わり得る操作(対象タイルの選択、射程の調整、対象の切り替え)の後に呼び出してください。
+        /// </summary>
+        private void RefreshAttackForecastDisplay()
+        {
+            int landingTileIndex = GetMovingSkillLandingTileIndex();
+            if( PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID == _phase && 0 <= landingTileIndex )
+            {
+                _attackForecastDisplay.Refresh( landingTileIndex );
+            }
+            else
+            {
+                _attackForecastDisplay.Clear();
             }
         }
 

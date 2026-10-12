@@ -25,6 +25,7 @@ namespace Frontier.Battle
         [Inject] protected GroupMoveRegistrationList _groupMoveRegistrationList = null;
         [Inject] protected HoveredCharacterRangeDisplay _hoveredRangeDisplay = null;
         [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
+        [Inject] protected AttackForecastLineDisplay _attackForecastDisplay = null;
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
         private bool _isWaitingForTileMenuResult;
@@ -205,6 +206,7 @@ namespace Frontier.Battle
                 RefreshDispParameterView();
                 RefreshHoveredRangeDisplay();
                 RefreshProvisionalMoveDisplay();
+                RefreshAttackForecastDisplay();
             }
 
             return isAcceptDirection;
@@ -417,6 +419,9 @@ namespace Frontier.Battle
             RefreshDispParameterView();
             RefreshHoveredRangeDisplay();
             RefreshProvisionalMoveDisplay();
+            // 敵対勢力の移動を塞ぐ位置も変わるため、攻撃予告線は各キャラクターが攻撃出来るタイルから求め直す
+            _attackForecastDisplay.Clear();
+            RefreshAttackForecastDisplay();
 
             return true;
         }
@@ -508,6 +513,8 @@ namespace Frontier.Battle
             // 暫定移動に関する表示(頭上のアイコン、及びカーソル上のキャラクターの移動前の位置を示す目印)を、
             // コマンド選択等から戻ってきた場合も含めて表示し直す
             RefreshProvisionalMoveDisplay();
+            // 敵対勢力からカーソル位置へ伸びる攻撃予告線も、同様に表示し直す
+            RefreshAttackForecastDisplay();
 
             if( _isWaitingForTileMenuResult )
             {
@@ -529,17 +536,19 @@ namespace Frontier.Battle
         {
             _hoveredRangeDisplay.Clear();
             HideProvisionalMoveDisplay();
+            _attackForecastDisplay.Clear();
 
             return base.ExitState();
         }
 
         /// <summary>
         /// このステートを中断して子ステート(メニュー、ステータス表示、グループ移動のメンバー選択等)へ遷移する際、
-        /// 暫定移動に関する表示を一時的に非表示にします(戻ってきた際にOnActivatedで表示し直します)。
+        /// 暫定移動に関する表示と攻撃予告線を一時的に非表示にします(戻ってきた際にOnActivatedで表示し直します)。
         /// </summary>
         public override object PauseState()
         {
             HideProvisionalMoveDisplay();
+            _attackForecastDisplay.Clear();
 
             return base.PauseState();
         }
@@ -603,6 +612,15 @@ namespace Frontier.Battle
         protected virtual void RefreshHoveredRangeDisplay()
         {
             _hoveredRangeDisplay.Refresh( _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() );
+        }
+
+        /// <summary>
+        /// 現在のカーソル位置に応じて、そのタイルを攻撃出来る敵対勢力のキャラクターからの攻撃予告線を更新します。
+        /// カーソル位置が「キャラクターを立たせる先」を意味しない派生ステートでは、用途に応じてオーバーライドしてください。
+        /// </summary>
+        protected virtual void RefreshAttackForecastDisplay()
+        {
+            _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex() );
         }
 
         private void RefreshDispParameterView()

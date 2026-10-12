@@ -88,6 +88,14 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// メンバーを選んでいる間のカーソル位置は移動先を意味しないため、攻撃予告線は表示しません
+        /// </summary>
+        protected override void RefreshAttackForecastDisplay()
+        {
+            _attackForecastDisplay.Clear();
+        }
+
+        /// <summary>
         /// 入力コードを登録します
         /// </summary>
         public override void RegisterInputCodes()

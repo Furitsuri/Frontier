@@ -238,14 +238,21 @@ namespace Frontier.Entities
 
             if( _actionableRangeRdr.IsShowingAttackableRange ) { return; }
 
-            // 危険範囲は、カーソルを合わせている間の範囲表示等で用いる_actionableTileDataを書き換えないよう、
-            // 一時的なデータへ計算した上で、攻撃可能なタイルのみを表示に用いる
+            _actionableRangeRdr.ShowDangerRange( ExtractDangerTileIndices(), color );
+        }
+
+        /// <summary>
+        /// 危険範囲(現在の位置から移動した上で攻撃出来るタイル)のタイル番号を求めます。
+        /// カーソルを合わせている間の範囲表示等で用いる_actionableTileDataを書き換えないよう、一時的なデータへ計算します
+        /// </summary>
+        public ICollection<int> ExtractDangerTileIndices()
+        {
             int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
             var data            = _stageCtrl.GetTileStaticData( dprtTileIndex );
             var dangerTileData  = new ActionableTileData();
             ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData );
 
-            _actionableRangeRdr.ShowDangerRange( dangerTileData.AttackableTileMap.Keys, color );
+            return dangerTileData.AttackableTileMap.Keys;
         }
 
         public void DrawMoveableRange()
