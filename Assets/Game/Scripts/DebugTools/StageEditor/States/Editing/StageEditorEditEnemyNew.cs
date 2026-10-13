@@ -86,7 +86,10 @@ namespace Frontier.DebugTools.StageEditor
             _params.Add( new ParamDescriptor { Name = "AtkRange",    Min = 1,            Max = 10,           Getter = () => _refParams.EnemyAtkRange,    Setter = v => _refParams.EnemyAtkRange    = v } );
             _params.Add( new ParamDescriptor { Name = "ActGaugeMax", Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyActGaugeMax, Setter = v => _refParams.EnemyActGaugeMax = v } );
             _params.Add( new ParamDescriptor { Name = "ActRecovery", Min = 0,            Max = 999,          Getter = () => _refParams.EnemyActRecovery, Setter = v => _refParams.EnemyActRecovery = v } );
-            _params.Add( new ParamDescriptor { Name = "ThinkType",   Min = 0,            Max = 10,           Getter = () => _refParams.EnemyThinkType,   Setter = v => _refParams.EnemyThinkType   = v } );
+            _params.Add( new ParamDescriptor { Name = "ThinkType", Min = 0, Max = ( int ) ThinkingType.NUM - 1, Getter = () => _refParams.EnemyThinkType, Setter = v => _refParams.EnemyThinkType = v } );
+            // InterceptType / InterceptGroupId は ThinkType が INTERCEPT の場合のみ有効(無効な間は PREV/NEXT で読み飛ばされる)
+            _params.Add( new ParamDescriptor { Name = "InterceptType", Min = 0, Max = ( int ) InterceptType.NUM - 1, Getter = () => _refParams.EnemyInterceptType, Setter = v => _refParams.EnemyInterceptType = v } );
+            _params.Add( new ParamDescriptor { Name = "InterceptGroupId", Min = 0, Max = 99, Getter = () => _refParams.EnemyInterceptGroupId, Setter = v => _refParams.EnemyInterceptGroupId = v } );
             // InitGridIndex はカーソル位置から UpdatePreviewPosition() で自動設定。Sub3/Sub4 は無効。
             _params.Add( new ParamDescriptor { Name = "InitGridIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyInitGridIndex, Setter = v => { } } );
             _params.Add( new ParamDescriptor { Name = "InitDir",  Min = 0,                    Max = 3,                    Getter = () => _refParams.EnemyInitDir,  Setter = v => _refParams.EnemyInitDir  = v } );
@@ -206,12 +209,12 @@ namespace Frontier.DebugTools.StageEditor
 
         public override bool CanAcceptSub1()
         {
-            return 0 < _refParams.SelectedEnemyParamIndex;
+            return _refParams.FindEnabledEnemyParamIndex( _refParams.SelectedEnemyParamIndex, -1 ) != _refParams.SelectedEnemyParamIndex;
         }
 
         public override bool CanAcceptSub2()
         {
-            return _refParams.SelectedEnemyParamIndex < _params.Count - 1;
+            return _refParams.FindEnabledEnemyParamIndex( _refParams.SelectedEnemyParamIndex, 1 ) != _refParams.SelectedEnemyParamIndex;
         }
 
         public override bool CanAcceptSub3()
@@ -252,7 +255,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( !base.AcceptSub1( context ) ) return false;
 
-            _refParams.SelectedEnemyParamIndex = Math.Max( 0, _refParams.SelectedEnemyParamIndex - 1 );
+            _refParams.SelectedEnemyParamIndex = _refParams.FindEnabledEnemyParamIndex( _refParams.SelectedEnemyParamIndex, -1 );
             return true;
         }
 
@@ -260,7 +263,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if ( !base.AcceptSub2( context ) ) return false;
 
-            _refParams.SelectedEnemyParamIndex = Math.Min( _params.Count - 1, _refParams.SelectedEnemyParamIndex + 1 );
+            _refParams.SelectedEnemyParamIndex = _refParams.FindEnabledEnemyParamIndex( _refParams.SelectedEnemyParamIndex, 1 );
             return true;
         }
 

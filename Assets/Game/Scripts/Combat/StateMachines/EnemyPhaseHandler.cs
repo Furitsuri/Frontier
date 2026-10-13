@@ -19,6 +19,9 @@ namespace Frontier.Battle
             {
                 enemy.BattleLogic.GetAi().ResetDestinationAndTarget();
             }
+            // 待ち構えている(INTERCEPT型の)敵のうち、行動範囲に攻撃対象が入ってきた集団に行動を開始させる
+            // MEMO : 各敵の手番毎に判定すると、先に手番を終えた構成員がそのターン行動出来なくなるため、フェーズ開始時にまとめて判定する
+            _btlRtnCtrl.BtlCharaCdr.InterceptGroupReg.ActivateGroupsDetectingOpponent( CHARACTER_TAG.ENEMY );
             // MEMO : 上記リセット後に初期化する必要があるためにこの位置であることに注意
             base.Init();
             // 選択グリッドを(1番目の)敵のグリッド位置に合わせる

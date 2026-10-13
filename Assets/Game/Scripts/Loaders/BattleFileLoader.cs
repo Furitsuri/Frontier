@@ -30,6 +30,7 @@ namespace Frontier.Loaders
         /// <summary>
         /// キャラクターの配置データです。基礎パラメータは Status に集約し、
         /// 配置時にのみ必要となる要素(初期座標・向き・思考タイプ)だけをここに追加します。
+        /// InterceptType・InterceptGroupId は、思考タイプがINTERCEPTである場合にのみ参照されます。
         /// </summary>
         [Serializable]
         public struct CharacterDeployData
@@ -38,6 +39,8 @@ namespace Frontier.Loaders
             public int InitGridIndex;
             public int InitDir;
             public int ThinkType;
+            public int InterceptType;
+            public int InterceptGroupId;
         }
 
         [System.Serializable]

@@ -8,6 +8,12 @@ namespace Frontier.Entities.Ai
     public abstract class BaseAi
     {
         /// <summary>
+        /// 思考に関する設定を適用します。思考タイプ毎の設定値を持つAIは、ここで自身のフィールドへ取り込みます
+        /// </summary>
+        /// <param name="setting">思考に関する設定</param>
+        virtual public void ApplyThinkingSetting( in ThinkingSetting setting ) {}
+
+        /// <summary>
         /// 初期化します
         /// </summary>
         virtual public void Init( Character owner ) {}

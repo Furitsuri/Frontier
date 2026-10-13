@@ -458,7 +458,7 @@ protected Character _opponent                                       = null;
         /// キャラクターの思考タイプを設定します
         /// </summary>
         /// <param name="type">設定する思考タイプ</param>
-        virtual public void SetThinkType( ThinkingType type ) { }
+        virtual public void SetThinkType( in ThinkingSetting setting ) { }
 
         /// <summary>
         /// 戦闘に使用するスキルを選択します

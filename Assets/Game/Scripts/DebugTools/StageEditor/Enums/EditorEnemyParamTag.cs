@@ -15,6 +15,8 @@ namespace Frontier.DebugTools.StageEditor
         ACT_GAUGE_MAX,
         ACT_RECOVERY,
         THINK_TYPE,
+        INTERCEPT_TYPE,
+        INTERCEPT_GROUP_ID,
         INIT_GRID_INDEX,
         INIT_DIR,
         SKILL_1,

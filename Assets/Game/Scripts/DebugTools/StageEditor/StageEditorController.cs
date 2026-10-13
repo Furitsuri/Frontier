@@ -47,6 +47,8 @@ namespace Frontier.DebugTools.StageEditor
             public int EnemyActRecovery   = 10;
             public int EnemyPrefab        = 0;
             public int EnemyThinkType     = 0;
+            public int EnemyInterceptType    = ( int ) InterceptType.SOLO;  // ThinkType が INTERCEPT の場合のみ有効
+            public int EnemyInterceptGroupId = 0;                           // InterceptType が GROUP の場合のみ有効
             public int EnemyInitGridIndex = 0;
             public int EnemyInitDir       = ( int ) Direction.BACK;
             public int EnemySkill1        = ( int ) SkillID.NONE;
@@ -191,7 +193,7 @@ namespace Frontier.DebugTools.StageEditor
             {
                 "Prefab", "Level", "MaxHP", "Atk", "Def", "MoveRange",
                 "JumpForce", "AtkRange", "ActGaugeMax", "ActRecovery",
-                "ThinkType", "InitGridIndex", "InitDir",
+                "ThinkType", "InterceptType", "InterceptGroupId", "InitGridIndex", "InitDir",
                 "Skill1", "Skill2", "Skill3", "Skill4"
             };
 
@@ -210,6 +212,8 @@ namespace Frontier.DebugTools.StageEditor
                     ( int ) EditorEnemyParamTag.ACT_GAUGE_MAX  => EnemyActGaugeMax,
                     ( int ) EditorEnemyParamTag.ACT_RECOVERY   => EnemyActRecovery,
                     ( int ) EditorEnemyParamTag.THINK_TYPE     => EnemyThinkType,
+                    ( int ) EditorEnemyParamTag.INTERCEPT_TYPE => EnemyInterceptType,
+                    ( int ) EditorEnemyParamTag.INTERCEPT_GROUP_ID => EnemyInterceptGroupId,
                     ( int ) EditorEnemyParamTag.INIT_GRID_INDEX => EnemyInitGridIndex,
                     ( int ) EditorEnemyParamTag.INIT_DIR       => EnemyInitDir,
                     ( int ) EditorEnemyParamTag.SKILL_1        => EnemySkill1,
@@ -223,9 +227,12 @@ namespace Frontier.DebugTools.StageEditor
             /// <summary>
             /// パラメータの表示用文字列を返します。
             /// Prefab は ENEMIES の enum 名、InitDir は Direction の enum 名、Skill1~4 は SkillID の enum 名で返します。
+            /// 現在の設定では無効なパラメータ(IsEnemyParamEnabled 参照)は "-" を返します。
             /// </summary>
             public string GetEnemyParamDisplayString( int index )
             {
+                if ( !IsEnemyParamEnabled( index ) ) return "-";
+                if ( index == ( int ) EditorEnemyParamTag.INTERCEPT_TYPE ) return ( ( InterceptType ) EnemyInterceptType ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.PREFAB      ) return ( ( ENEMIES ) EnemyPrefab ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.THINK_TYPE  ) return ( ( ThinkingType ) EnemyThinkType ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.INIT_DIR    ) return ( ( Direction ) EnemyInitDir ).ToString();
@@ -234,6 +241,34 @@ namespace Frontier.DebugTools.StageEditor
                 if ( index == ( int ) EditorEnemyParamTag.SKILL_3  ) return ( ( SkillID ) EnemySkill3 ).ToString();
                 if ( index == ( int ) EditorEnemyParamTag.SKILL_4  ) return ( ( SkillID ) EnemySkill4 ).ToString();
                 return GetEnemyParamValue( index ).ToString();
+            }
+
+            /// <summary>
+            /// 指定のパラメータが、現在の設定において有効(編集対象となる)かを返します。
+            /// InterceptType は ThinkType が INTERCEPT の場合のみ、
+            /// InterceptGroupId は更に InterceptType が GROUP の場合のみ有効です。
+            /// </summary>
+            public bool IsEnemyParamEnabled( int index )
+            {
+                bool isIntercept = ( EnemyThinkType == ( int ) ThinkingType.INTERCEPT );
+
+                if ( index == ( int ) EditorEnemyParamTag.INTERCEPT_TYPE )     return isIntercept;
+                if ( index == ( int ) EditorEnemyParamTag.INTERCEPT_GROUP_ID ) return isIntercept && EnemyInterceptType == ( int ) InterceptType.GROUP;
+                return true;
+            }
+
+            /// <summary>
+            /// 指定のパラメータから direction(-1:前 / +1:次) の方向にある、最も近い有効なパラメータのインデックスを返します。
+            /// 無効なパラメータは読み飛ばします。該当するものが無い場合は index をそのまま返します。
+            /// </summary>
+            public int FindEnabledEnemyParamIndex( int index, int direction )
+            {
+                for ( int i = index + direction; 0 <= i && i < ( int ) EditorEnemyParamTag.NUM; i += direction )
+                {
+                    if ( IsEnemyParamEnabled( i ) ) return i;
+                }
+
+                return index;
             }
 
             /// <summary>
@@ -508,6 +543,8 @@ namespace Frontier.DebugTools.StageEditor
             {
                 status        = status,
                 ThinkType     = _refParams.EnemyThinkType,
+                InterceptType    = _refParams.EnemyInterceptType,
+                InterceptGroupId = _refParams.EnemyInterceptGroupId,
                 InitGridIndex = _refParams.EnemyInitGridIndex,
                 InitDir       = _refParams.EnemyInitDir,
             };
@@ -554,6 +591,8 @@ namespace Frontier.DebugTools.StageEditor
             data.status.recoveryActionGauge = _refParams.EnemyActRecovery;
             data.status.PrefabIndex         = _refParams.EnemyPrefab;
             data.ThinkType     = _refParams.EnemyThinkType;
+            data.InterceptType    = _refParams.EnemyInterceptType;
+            data.InterceptGroupId = _refParams.EnemyInterceptGroupId;
             data.InitGridIndex = newGridIndex;
             data.InitDir       = _refParams.EnemyInitDir;
             data.status.EquipSkills = new SkillID[] { ( SkillID ) _refParams.EnemySkill1, ( SkillID ) _refParams.EnemySkill2, ( SkillID ) _refParams.EnemySkill3, ( SkillID ) _refParams.EnemySkill4 };
@@ -623,6 +662,8 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.EnemyActRecovery   = data.status.recoveryActionGauge;
             _refParams.EnemyPrefab        = data.status.PrefabIndex;
             _refParams.EnemyThinkType     = data.ThinkType;
+            _refParams.EnemyInterceptType    = data.InterceptType;
+            _refParams.EnemyInterceptGroupId = data.InterceptGroupId;
             _refParams.EnemyInitGridIndex = data.InitGridIndex;
             _refParams.EnemyInitDir       = data.InitDir;
             var skills = data.status.EquipSkills;

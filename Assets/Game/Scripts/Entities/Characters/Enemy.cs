@@ -25,7 +25,7 @@
             _battleLogic.Setup();
             _battleLogic.Regist( this );
             _battleLogic.Init();
-            _battleLogic.SetThinkType( ThinkingType );
+            _battleLogic.SetThinkType( ThinkingSetting );
 
             base.OnBattleEnter( btlCamCtrl );   // 基底クラスのOnBattleEnterは最後に呼ぶ
         }

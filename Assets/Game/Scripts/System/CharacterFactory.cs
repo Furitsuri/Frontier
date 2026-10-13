@@ -59,7 +59,12 @@ public class CharacterFactory
         if( tag != CHARACTER_TAG.PLAYER )
         {
             var npc = chara as Npc;
-            npc.ThinkingType = ( ( ThinkingType ) deployData.ThinkType );
+            npc.ThinkingSetting = new ThinkingSetting
+            {
+                Type                = ( ThinkingType ) deployData.ThinkType,
+                InterceptType       = ( InterceptType ) deployData.InterceptType,
+                InterceptGroupId    = deployData.InterceptGroupId,
+            };
         }
 
         return chara;

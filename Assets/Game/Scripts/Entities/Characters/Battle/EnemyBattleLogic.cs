@@ -27,10 +27,10 @@ namespace Frontier.Entities
         /// <summary>
         /// 思考タイプを設定します
         /// </summary>
-        /// <param name="type">設定する思考タイプ</param>
-        public override void SetThinkType( ThinkingType type )
+        /// <param name="setting">設定する思考タイプ、及び思考タイプ毎の設定値</param>
+        public override void SetThinkType( in ThinkingSetting setting )
         {
-            _thikType = type;
+            _thikType = setting.Type;
 
             // 思考タイプによってemAIに代入する派生クラスを変更する
             Func<BaseAi>[] emAiFactorys = new Func<BaseAi>[( int ) ThinkingType.NUM]
@@ -41,6 +41,7 @@ namespace Frontier.Entities
             };
 
             _baseAi = emAiFactorys[( int ) _thikType]();
+            _baseAi.ApplyThinkingSetting( in setting );   // MEMO : Init内で設定値を参照するAIがあるため、Initより前に呼ぶこと
             _baseAi.Init( _readOnlyOwner.Value );
         }
 

@@ -2,7 +2,7 @@
 {
     public class Npc : Character
     {
-        public ThinkingType ThinkingType { get; set; } = ThinkingType.BASE;
+        public ThinkingSetting ThinkingSetting { get; set; }    // AIの生成時に渡す、思考に関する設定
 
         public override void Init()
         {

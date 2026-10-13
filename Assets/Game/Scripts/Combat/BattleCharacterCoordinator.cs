@@ -30,6 +30,10 @@ namespace Frontier.Battle
         // 攻撃・スキルシーケンス実行中は加算せず、DispensePendingAnimaRewards() でシーケンス完全終了直後に
         // まとめて演出付きで放出する(実際の加算は演出がUIへ到達した時点で行われる)。
         private List<( Vector3 position, int amount )> _pendingAnimaRewards = new List<( Vector3, int )>();
+        // 待ち構えている(思考タイプがINTERCEPTの)キャラクターの集団管理
+        private InterceptGroupRegistry _interceptGroupReg = new InterceptGroupRegistry();
+
+        public InterceptGroupRegistry InterceptGroupReg => _interceptGroupReg;
 
         public delegate void StageAnim();
 
@@ -43,6 +47,7 @@ namespace Frontier.Battle
             _escortTargetCharacterKey   = new CharacterKey( CHARACTER_TAG.NONE, -1 );
             _pendingDisposalCharacters.Clear();
             _pendingAnimaRewards.Clear();
+            _interceptGroupReg.Init();
 
             LazyInject.GetOrCreate( ref _characterDict, () => new CharacterDictionary() );
         }
@@ -101,6 +106,11 @@ namespace Frontier.Battle
             NullCheck.AssertNotNull( chara, nameof( chara ) );
 
             _characterDict.Remove( in charaKey );
+            // 待ち構えの集団に所属している場合は、行動開始の判定対象から外す
+            if( chara.BattleLogic != null && chara.BattleLogic.GetAi() is AiIntercept interceptAi )
+            {
+                _interceptGroupReg.Unregister( interceptAi );
+            }
             chara.OnBattleExit();
         }
 

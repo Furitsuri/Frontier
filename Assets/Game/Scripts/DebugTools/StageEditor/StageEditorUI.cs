@@ -37,6 +37,7 @@ namespace Frontier.DebugTools.StageEditor
         private static readonly Color ColorParamUnselected = new Color( 0.55f, 0.55f, 0.55f, 1.0f ); // 非選択：グレー
         private static readonly Color ColorValueSelected   = new Color( 0.2f, 1.0f, 0.6f,  1.0f );  // 選択中値：緑
         private static readonly Color ColorValueUnselected = new Color( 0.35f, 0.75f, 1.0f, 1.0f );  // 非選択値：シアン
+        private static readonly Color ColorParamDisabled   = new Color( 0.3f, 0.3f, 0.3f, 1.0f );    // 無効：暗いグレー
 
         private Holder<string> _holdEditFileName;
 
@@ -221,18 +222,19 @@ namespace Frontier.DebugTools.StageEditor
             for ( int i = 0; i < StageEditRefParams.EnemyParamNames.Length; i++ )
             {
                 bool isSelected = ( i == selected );
+                bool isEnabled  = refParams.IsEnemyParamEnabled( i );   // 現在の設定では無効なパラメータは暗く表示する
 
                 // 値テキスト更新
                 if ( i < _enemyParamValueTexts.Length && _enemyParamValueTexts[i] != null )
                 {
                     _enemyParamValueTexts[i].text  = refParams.GetEnemyParamDisplayString( i );
-                    _enemyParamValueTexts[i].color = isSelected ? ColorValueSelected : ColorValueUnselected;
+                    _enemyParamValueTexts[i].color = !isEnabled ? ColorParamDisabled : isSelected ? ColorValueSelected : ColorValueUnselected;
                 }
 
                 // 名前テキストのハイライト
                 if ( i < _enemyParamNameTexts.Length && _enemyParamNameTexts[i] != null )
                 {
-                    _enemyParamNameTexts[i].color = isSelected ? ColorParamSelected : ColorParamUnselected;
+                    _enemyParamNameTexts[i].color = !isEnabled ? ColorParamDisabled : isSelected ? ColorParamSelected : ColorParamUnselected;
                 }
 
                 // 選択インジケーター（▶）の表示切替
