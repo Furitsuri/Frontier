@@ -18,6 +18,7 @@ namespace Frontier.Battle
         [Inject] private UserDomain _userDomain                 = null;
         [Inject] private CharacterFactory _characterFactory     = null;   // UserDomain.Members(Status)からPlayerを再構築するために使用
         [Inject] private HoveredCharacterRangeDisplay _hoveredRangeDisplay = null;
+        [Inject] private CharacterPortraitRegistry _portraitReg = null;
 
         private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
         private EntitySnapshot _entitySnapshot  = null;
@@ -38,6 +39,12 @@ namespace Frontier.Battle
 
             _focusCharacterIndex = 0;
             SetupDeploymentCandidates();
+
+            // 敵・第三勢力の顔アイコン用の画像(攻撃予告線の顔アイコン等に使用)も、プレイヤーのスナップショットと同じく、
+            // 戦闘開始前のこの時点でまとめて撮影しておく。
+            // MEMO : このInitは戦闘シーンの初期化(FocusRoutineController.InitCommonRoutine)の中で呼ばれ、
+            //        ローディング画面はその完了後に解除されるため、撮影は画面が表示される前に全て終わる
+            _portraitReg.CaptureAll( _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) );
 
             _stageCtrl.SetActiveGridCursor( true );                   // グリッド選択を有効化
             _presenter.SetActiveCharacterSelectUIs( true );                     // キャラクター選択画面の表示を有効化

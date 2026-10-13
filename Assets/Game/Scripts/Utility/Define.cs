@@ -201,6 +201,8 @@ static public class Constants
     public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_X = 0f;
     public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Y = 1000f;
     public const float ENTITY_SNAPSHOT_CHARACTER_SNAP_POS_Z = 0f;
+    // キャラクターの顔アイコン用スナップショットの一辺の長さ(ピクセル)
+    public const int CHARACTER_PORTRAIT_SNAPSHOT_SIZE = 128;
 
     public const float COMBAT_POS_LENGTH_FROM_CENTER = 2.0f;
 

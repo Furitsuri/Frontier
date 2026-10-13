@@ -2,6 +2,7 @@
 using Frontier.Battle;
 using Frontier.Registries;
 using Frontier.Stage;
+using Frontier.UI;
 using Zenject;
 
 namespace Frontier.Entities
@@ -11,6 +12,7 @@ namespace Frontier.Entities
     /// 「そのタイルに立つと、線を伸ばしているキャラクターから攻撃される可能性がある」ことを示します。
     /// タイル選択中(PlSelectTileState)と移動の操作中(PlMoveState)はカーソル位置、グループ移動の操作中(PlGroupMoveState)は各キャラクターの移動先、
     /// 移動を伴うスキルの対象選択中(PlSkillActionToTargetState)は着地先のタイルを対象とし、それらが変わる度に呼び出すことで、常に現在の状況に対応した表示を維持します。
+    /// 線を伸ばしているキャラクターが画面から見切れている場合は、そのキャラクターの顔アイコンが線上に表示されます(AttackForecastIconPresenter)。
     /// 各キャラクターが攻撃出来るタイルは、初回の表示時に求めた結果を使い回します(カーソル移動の度に全員分を求め直すと負荷が大きいため)。
     /// キャラクターの位置等、状況が変わり得る箇所(ステートの終了・中断時、移動の取り消し時など)ではClearを呼び出して破棄してください。
     /// </summary>
@@ -20,6 +22,7 @@ namespace Frontier.Entities
         [Inject] private StageController _stageCtrl             = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
+        [Inject] private AttackForecastIconPresenter _iconPresenter = null;
 
         // 敵対勢力の各キャラクターが、移動した上で攻撃出来るタイル。nullの場合は未計算
         private List<(Character attacker, HashSet<int> tileIndices)> _dangerTiles = null;
@@ -27,6 +30,8 @@ namespace Frontier.Entities
         private readonly List<AttackForecastLine> _lines = new List<AttackForecastLine>();
         // 対象のタイルが1つの場合に、複数タイル用の処理へ渡すための使い回しの配列
         private readonly int[] _singleTargetBuffer = new int[1];
+        // 表示中の線と、その線を伸ばしている攻撃側のキャラクターの組(顔アイコンの表示対象として渡すための使い回しのリスト)
+        private readonly List<(AttackForecastLine line, Character attacker)> _shownLines = new List<(AttackForecastLine line, Character attacker)>();
 
         [Inject]
         public AttackForecastLineDisplay() { }
@@ -50,6 +55,7 @@ namespace Frontier.Entities
         public void Refresh( IReadOnlyList<int> targetTileIndices )
         {
             int lineCount = 0;
+            _shownLines.Clear();
 
             foreach( int targetTileIndex in targetTileIndices )
             {
@@ -69,7 +75,9 @@ namespace Frontier.Entities
                     {
                         _lines.Add( _hierarchyBld.CreateComponentAndOrganize<AttackForecastLine>( _prefabReg.AttackForecastLinePrefab, false ) );
                     }
-                    _lines[lineCount++].Show( attacker.transform.position, targetPos );
+                    var line = _lines[lineCount++];
+                    line.Show( attacker.transform.position, targetPos );
+                    _shownLines.Add( (line, attacker) );
                 }
             }
 
@@ -77,6 +85,9 @@ namespace Frontier.Entities
             {
                 _lines[i].Hide();
             }
+
+            // 線を伸ばしているキャラクターが画面から見切れている場合に、線上へ顔アイコンを表示させる
+            _iconPresenter.SetTargets( _shownLines );
         }
 
         /// <summary>
@@ -89,6 +100,8 @@ namespace Frontier.Entities
                 // シーンの破棄等で既に破棄されている場合は対象外とする
                 if( null != line ) { line.Hide(); }
             }
+            _shownLines.Clear();
+            _iconPresenter.Clear();
 
             _dangerTiles = null;
         }

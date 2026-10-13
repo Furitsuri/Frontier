@@ -33,6 +33,8 @@ namespace Frontier
             Container.Bind<HoveredCharacterRangeDisplay>().AsSingle();
             Container.Bind<ProvisionalMoveOriginDisplay>().AsSingle();
             Container.Bind<AttackForecastLineDisplay>().AsSingle();
+            Container.Bind<CharacterPortraitRegistry>().AsSingle();
+            Container.Bind<AttackForecastIconPresenter>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();
             Container.Bind<CharacterFactory>().AsSingle();
             Container.Bind<UserDomain>().FromInstance( GameSession.Instance.UserDomain ).AsSingle();

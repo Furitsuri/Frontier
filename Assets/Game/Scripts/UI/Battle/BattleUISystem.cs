@@ -285,6 +285,21 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// 攻撃予告線を伸ばしているキャラクターが画面から見切れている場合に表示する、顔アイコンを生成します。
+        /// キャラクター頭上のHPゲージと同じ階層(各種ウィンドウより奥)に、非表示の状態で生成されます。
+        /// </summary>
+        /// <param name="prefab">顔アイコンのプレハブ(PrefabRegistry.AttackForecastIconPrefab)</param>
+        public AttackForecastIconUI CreateAttackForecastIcon( AttackForecastIconUI prefab )
+        {
+            var ui = Instantiate( prefab, HpGauge.transform.parent );
+            ui.transform.SetSiblingIndex( HpGauge.transform.GetSiblingIndex() + 1 );
+            ui.Init( _rectTransform, _uiCamera );
+            ui.Hide();
+
+            return ui;
+        }
+
+        /// <summary>
         /// キャラクターに対応する CharacterHpGaugeUI インスタンスを返します。
         /// 存在しない場合は HpGauge をテンプレートとして新規生成します。
         /// </summary>
