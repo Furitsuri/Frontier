@@ -37,7 +37,7 @@ namespace Frontier.Entities
             {
                 () => _hierarchyBld.InstantiateWithDiContainer<AiBase>(false),        // BASE
                 () => _hierarchyBld.InstantiateWithDiContainer<AiAggressive>(false),  // AGGRESSIVE
-                () => _hierarchyBld.InstantiateWithDiContainer<AiWaiting>(false),     // WAITING
+                () => _hierarchyBld.InstantiateWithDiContainer<AiIntercept>(false),   // INTERCEPT
             };
 
             _baseAi = emAiFactorys[( int ) _thikType]();
