@@ -4,9 +4,12 @@ namespace Frontier.Entities.Ai
 {
     /// <summary>
     /// 迎撃型のAI。その場で待ち構え、自身の行動範囲(攻撃範囲)に対象が入ってきたら行動を開始します。
-    /// 行動を開始する契機は、所属する集団(単独型の場合は自身のみの集団)単位で InterceptGroupRegistry が判定します
+    /// 行動を開始する契機は、所属する集団(単独型の場合は自身のみの集団)単位で InterceptGroupRegistry が判定します。
+    /// 行動開始後はAGGRESSIVEと同じ動作をします。
+    /// TODO : 現在は暫定的にAiAggressiveを継承することで行動開始後の動作を共有している。
+    ///        AGGRESSIVEと共通の行動決定処理を用意した際は、継承をやめてそれを呼び出す形にする
     /// </summary>
-    public class AiIntercept : AiBase
+    public class AiIntercept : AiAggressive
     {
         private InterceptType _interceptType    = InterceptType.SOLO;   // 待ち構え方のタイプ
         private int _interceptGroupId           = 0;                    // 待ち構え方が集団型である場合の集団ID
@@ -55,26 +58,20 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 目的地と攻撃対象を決定します。行動を開始していない間は、移動も攻撃も行いません
+        /// 目的地と攻撃対象を決定します。
+        /// 行動を開始していない間は移動も攻撃も行わず、行動開始後はAGGRESSIVEと同じ決定を行います
         /// </summary>
         /// <returns>有効となる目的地及び攻撃対象がそれぞれ設定されたか否か</returns>
         public override (bool, bool) DetermineDestinationAndTarget( BattleParameters battleParams, in Status status, in int[] ownerTileCosts, in CharacterKey ownerKey )
         {
-            _isDetermined = true;
+            if( !_isActivated )
+            {
+                _isDetermined = true;
 
-            if( !_isActivated ) { return (false, false); }
+                return (false, false);
+            }
 
-            DetermineDestinationAndTargetAfterActivated( battleParams, in status, in ownerTileCosts, in ownerKey );
-
-            return (IsValidDestination(), IsValidTarget());
-        }
-
-        /// <summary>
-        /// 行動開始後の、目的地と攻撃対象を決定します
-        /// TODO : AGGRESSIVEと共通の行動決定処理を用意し、それを呼び出す形にする
-        /// </summary>
-        private void DetermineDestinationAndTargetAfterActivated( BattleParameters battleParams, in Status status, in int[] ownerTileCosts, in CharacterKey ownerKey )
-        {
+            return base.DetermineDestinationAndTarget( battleParams, in status, in ownerTileCosts, in ownerKey );
         }
     }
 }
