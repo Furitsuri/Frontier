@@ -22,6 +22,7 @@ namespace Frontier.Battle
 
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
         [Inject] private PrefabRegistry _prefabReg                  = null;
+        [Inject] private CharacterPortraitRegistry _portraitReg     = null;
 
         private int _currentStageIndex                  = 0;
 
@@ -120,6 +121,11 @@ namespace Frontier.Battle
             {
                 _btlFileLoader.CharacterLoad( _currentStageIndex );
             }
+
+            // 戦闘に登場する敵・第三勢力の顔アイコン用の画像(攻撃予告線の顔アイコン等に使用)を、戦闘の準備としてまとめて撮影しておく。
+            // MEMO : このInitは戦闘シーンの初期化(FocusRoutineController.InitCommonRoutine)の中で呼ばれ、
+            //        ローディング画面はその完了後に解除されるため、撮影は画面が表示される前に全て終わる
+            _portraitReg.CaptureAll( _btlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) );
 
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)

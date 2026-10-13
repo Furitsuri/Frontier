@@ -21,7 +21,6 @@ namespace Frontier.Battle
         [Inject] private CharacterPortraitRegistry _portraitReg = null;
 
         private int _focusCharacterIndex        = 0;                                                // フォーカス中のキャラクターインデックス
-        private EntitySnapshot _entitySnapshot  = null;
         private List<CharacterCandidate> _deploymentCandidates = new List<CharacterCandidate>();    // 配置可能なキャラクターリスト
 
         private enum TransitTag
@@ -32,19 +31,10 @@ namespace Frontier.Battle
 
         public override void Init( object context )
         {
-            LazyInject.GetOrCreate( ref _entitySnapshot, () => _hierarchyBld.InstantiateWithDiContainer<EntitySnapshot>( false ) );
-
             base.Init( context);
-            _entitySnapshot.Init();
 
             _focusCharacterIndex = 0;
             SetupDeploymentCandidates();
-
-            // 敵・第三勢力の顔アイコン用の画像(攻撃予告線の顔アイコン等に使用)も、プレイヤーのスナップショットと同じく、
-            // 戦闘開始前のこの時点でまとめて撮影しておく。
-            // MEMO : このInitは戦闘シーンの初期化(FocusRoutineController.InitCommonRoutine)の中で呼ばれ、
-            //        ローディング画面はその完了後に解除されるため、撮影は画面が表示される前に全て終わる
-            _portraitReg.CaptureAll( _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) );
 
             _stageCtrl.SetActiveGridCursor( true );                   // グリッド選択を有効化
             _presenter.SetActiveCharacterSelectUIs( true );                     // キャラクター選択画面の表示を有効化
@@ -335,10 +325,9 @@ namespace Frontier.Battle
                 Player player = _characterFactory.CreateCharacter( CHARACTER_TAG.PLAYER, status ) as Player;
                 if( null == player ) { continue; }
 
-                // UI表示用に各キャラクターのスナップショットを撮影
+                // UI表示用に各キャラクターのスナップショットを撮影(撮影はCharacterPortraitRegistryが一手に担う)
                 var size = _presenter.GetCharacterSelectionDisplaySize();
-                Texture2D candidateSnapshot = null;
-                _entitySnapshot.CaptureCharacter( size.Item1, size.Item2, player, out candidateSnapshot, false, AnimDatas.AnimeConditionsTag.WAIT );
+                Texture2D candidateSnapshot = _portraitReg.CaptureFullBody( player, size.Item1, size.Item2 );
 
                 // 配置候補キャラクターを生成・初期化してスナップショットと共にリストに追加
                 CharacterCandidate candidate = _hierarchyBld.InstantiateWithDiContainer<CharacterCandidate>( false );
