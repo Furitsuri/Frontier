@@ -41,6 +41,11 @@ namespace Frontier.Shop
             Container.Bind<PrefabRegistry>().FromInstance( UnityEngine.Resources.Load<PrefabRegistry>( "PrefabRegistry" ) ).AsCached();
 
             Container.Bind<ShopHandler>().AsSingle();
+#if UNITY_EDITOR
+            // シーン上に配置されたDebugMenuHandlerへの注入に必要となるため、DiInstaller.csと同じBindを用意する
+            Container.Bind<Frontier.DebugTools.DebugMenu.DebugMenuItemRegistry>().AsSingle();
+            Container.Bind<Frontier.DebugTools.DebugSettings>().AsSingle();
+#endif // UNITY_EDITOR
         }
 
         /// <summary>

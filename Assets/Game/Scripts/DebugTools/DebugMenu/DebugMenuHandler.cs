@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using TMPro;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
@@ -8,15 +7,37 @@ using static Constants;
 
 namespace Frontier.DebugTools.DebugMenu
 {
+    /// <summary>
+    /// デバッグメニューの操作を処理します。
+    /// カテゴリの一覧 → カテゴリ内のページの一覧 → ページ内の項目の一覧、の3階層で構成されます。
+    /// 上下で行を選択し、決定で1階層進み、キャンセルで1階層戻ります。
+    /// 項目の一覧では、決定・左右の入力を選択中の項目の型に応じた操作として項目へ渡します
+    /// </summary>
     public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
     {
+        /// <summary>
+        /// 表示中の階層
+        /// </summary>
+        private enum MenuLevel
+        {
+            CATEGORY_LIST,  // カテゴリの一覧
+            PAGE_LIST,      // カテゴリ内のページの一覧
+            ITEM_LIST,      // ページ内の項目の一覧
+        }
+
         private InputFacade _inputFcd = null;
+        private DebugMenuItemRegistry _itemRegistry = null;
         private DebugMenuPresenter _debugMenuView = null;
-        private IDebugLauncher[] _debugLhr = null;
-        // 選択中のメニューインデックス
-        private int _currentMenuIndex = 0;
         private int _inputHashCode = -1;
-        private ReadOnlyCollection<TextMeshProUGUI> _menuTexts;
+        private MenuLevel _level = MenuLevel.CATEGORY_LIST;
+        private List<DebugMenuCategory> _categories = new List<DebugMenuCategory>();
+        private List<DebugMenuPage> _pages = new List<DebugMenuPage>();
+        private List<DebugMenuItem> _items = new List<DebugMenuItem>();
+        // 選択中の行のインデックス
+        private int _currentIndex = 0;
+        // 上の階層へ戻った際に、直前に開いていた行を選択し直すためのインデックス
+        private int _categoryIndex = 0;
+        private int _pageIndex = 0;
         // デバッグON/OFFのコールバック
         public delegate void ToggleDebugCallback();
         // デバッグメニューへの遷移の入力可否コールバック
@@ -27,9 +48,10 @@ namespace Frontier.DebugTools.DebugMenu
         public ToggleDebugCallback _toggleDebugCb = null;
 
         [Inject]
-        public void Construct( InputFacade inputFcd )
+        public void Construct( InputFacade inputFcd, DebugMenuItemRegistry itemRegistry )
         {
-            _inputFcd = inputFcd;
+            _inputFcd       = inputFcd;
+            _itemRegistry   = itemRegistry;
         }
 
         /// <summary>
@@ -40,13 +62,16 @@ namespace Frontier.DebugTools.DebugMenu
             base.Init();
 
             _debugMenuView = debugMenuView;
-            _menuTexts = _debugMenuView.MenuTexts();
-            _currentMenuIndex = 0;
             _toggleDebugCb = cb;
-            _debugLhr = new IDebugLauncher[( int ) DebugMainMenuTag.MAX];
             _inputHashCode = Hash.GetStableHash( GetType().Name );
             _canAcceptDebugTransitionCb = canAcceptCb;
             _acceptDebugTransitionCb = acceptInputCb;
+
+            _categories.Clear();
+            for( int i = 0; i < ( int ) DebugMenuCategory.NUM; ++i )
+            {
+                _categories.Add( ( DebugMenuCategory ) i );
+            }
         }
 
         /// <summary>
@@ -60,51 +85,66 @@ namespace Frontier.DebugTools.DebugMenu
 
         private void RegisterInputCodes()
         {
-            int hashCode = Hash.GetStableHash( GetType().Name );
-
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.VERTICAL_CURSOR, "SELECT", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
-                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-                (GuideIcon.CANCEL, "EXIT", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode)
+                (GuideIcon.ALL_CURSOR, "SELECT/VALUE", CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, _inputHashCode),
+                (GuideIcon.CONFIRM, "CONFIRM", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, _inputHashCode),
+                (GuideIcon.CANCEL, "BACK", CanAcceptCancel, new AcceptContextInput( AcceptCancel ), 0.0f, _inputHashCode)
             );
         }
 
         /// <summary>
-        /// 指定のIndexに対応するデバッグメニューを起動します
+        /// カテゴリの一覧を表示する状態にします
         /// </summary>
-        /// <param name="menuIdx">指定するIndex値</param>
-        private void LaunchDebugMenu( int menuIdx )
+        private void OpenCategoryList()
         {
-            if( _debugLhr[menuIdx] == null )
+            _level          = MenuLevel.CATEGORY_LIST;
+            _currentIndex   = _categoryIndex;
+        }
+
+        /// <summary>
+        /// 選択中のカテゴリのページの一覧を表示する状態にします
+        /// </summary>
+        private void OpenPageList()
+        {
+            _level          = MenuLevel.PAGE_LIST;
+            _pages          = _itemRegistry.GetPages( _categories[_categoryIndex] );
+            _currentIndex   = Math.Clamp( _pageIndex, 0, Math.Max( 0, _pages.Count - 1 ) );
+        }
+
+        /// <summary>
+        /// 選択中のページの項目の一覧を表示する状態にします
+        /// </summary>
+        private void OpenItemList()
+        {
+            var page = _pages[_pageIndex];
+            _itemRegistry.NotifyPageOpened( page );
+
+            _level          = MenuLevel.ITEM_LIST;
+            _items          = _itemRegistry.GetItems( page );
+            _currentIndex   = 0;
+        }
+
+        /// <summary>
+        /// 現在の階層の行数を取得します
+        /// </summary>
+        private int GetRowCount()
+        {
+            switch( _level )
             {
-                switch( menuIdx )
-                {
-                    case ( int ) DebugMainMenuTag.BATTLE:
-                        break;
-                    case ( int ) DebugMainMenuTag.TUTORIAL:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException( nameof( menuIdx ), "Invalid menu index for debug launcher." );
-                }
-
-                NullCheck.AssertNotNull( _debugLhr[menuIdx], "_debugLhr[menuIdx]" );
+                case MenuLevel.CATEGORY_LIST:   return _categories.Count;
+                case MenuLevel.PAGE_LIST:       return _pages.Count;
+                default:                        return _items.Count;
             }
-
-            // 現在の入力コードを抹消
-            _inputFcd.UnregisterInputCodes( _inputHashCode );
-
-            _debugLhr[menuIdx].Init();
-            _debugLhr[menuIdx].LaunchEditor();
         }
 
         private bool CanAcceptDirection()
         {
-            return true;
+            return 0 < GetRowCount();
         }
 
         private bool CanAcceptConfirm()
         {
-            return true;
+            return 0 < GetRowCount();
         }
 
         private bool CanAcceptCancel()
@@ -112,53 +152,84 @@ namespace Frontier.DebugTools.DebugMenu
             return true;
         }
 
+        /// <summary>
+        /// 方向入力を受け取った際の処理を行います。
+        /// 上下は行の選択、左右は(項目の一覧でのみ)選択中の項目の値の変更として扱います
+        /// </summary>
         private bool AcceptDirection( InputContext context )
         {
-            if( context.Cursor == Direction.FORWARD )
-            {
-                // 前のメニューへ
-                _currentMenuIndex = ( _currentMenuIndex - 1 + _menuTexts.Count ) % _menuTexts.Count;
+            int rowCount = GetRowCount();
 
-                return true;
-            }
-            else if( context.Cursor == Direction.BACK )
+            switch( context.Cursor )
             {
-                // 次のメニューへ
-                _currentMenuIndex = ( _currentMenuIndex + 1 ) % _menuTexts.Count;
+                case Direction.FORWARD:
+                    _currentIndex = ( _currentIndex - 1 + rowCount ) % rowCount;   // 前の行へ
+                    return true;
 
-                return true;
+                case Direction.BACK:
+                    _currentIndex = ( _currentIndex + 1 ) % rowCount;              // 次の行へ
+                    return true;
+
+                case Direction.LEFT:
+                    return _level == MenuLevel.ITEM_LIST && _items[_currentIndex].Step( -1 );
+
+                case Direction.RIGHT:
+                    return _level == MenuLevel.ITEM_LIST && _items[_currentIndex].Step( 1 );
             }
 
             return false;
         }
 
         /// <summary>
-        /// 決定入力を受け取った際の処理を行います
+        /// 決定入力を受け取った際の処理を行います。
+        /// カテゴリ・ページの一覧では選択中の行を開き、項目の一覧では選択中の項目へ決定操作を渡します
         /// </summary>
-        /// <param name="isInput">決定入力</param>
         /// <returns>入力実行の有無</returns>
         private bool AcceptConfirm( InputContext context )
         {
             if( !context.GetButton( GameButton.Confirm ) ) { return false; }
 
-            Pause();
-            LaunchDebugMenu( _currentMenuIndex );
+            switch( _level )
+            {
+                case MenuLevel.CATEGORY_LIST:
+                    _categoryIndex  = _currentIndex;
+                    _pageIndex      = 0;
+                    OpenPageList();
+                    return true;
 
-            return true;
+                case MenuLevel.PAGE_LIST:
+                    _pageIndex = _currentIndex;
+                    OpenItemList();
+                    return true;
+
+                default:
+                    return _items[_currentIndex].Confirm();
+            }
         }
 
         /// <summary>
-        /// オプション入力を受けた際の処理を行います
+        /// キャンセル入力を受けた際の処理を行います。
+        /// 1階層上へ戻り、カテゴリの一覧ではデバッグメニューを閉じます
         /// </summary>
-        /// <param name="isInput">オプション入力</param>
         /// <returns>入力実行の有無</returns>
         private bool AcceptCancel( InputContext context )
         {
             if( !context.GetButton( GameButton.Cancel ) ) { return false; }
 
-            ScheduleExit();
+            switch( _level )
+            {
+                case MenuLevel.ITEM_LIST:
+                    OpenPageList();
+                    return true;
 
-            return true;
+                case MenuLevel.PAGE_LIST:
+                    OpenCategoryList();
+                    return true;
+
+                default:
+                    ScheduleExit();
+                    return true;
+            }
         }
 
         // =========================================================
@@ -169,15 +240,33 @@ namespace Frontier.DebugTools.DebugMenu
 
         /// <summary>
         /// 更新を行います
+        /// 項目の値はメニュー外の要因でも変化し得るため、毎フレーム表示し直します
         /// </summary>
         public override void UpdateRoutine()
         {
-            _debugMenuView.UpdateMenuCursor( _currentMenuIndex );
+            switch( _level )
+            {
+                case MenuLevel.CATEGORY_LIST:
+                    _debugMenuView.ShowCategoryList( _categories, _currentIndex );
+                    break;
+
+                case MenuLevel.PAGE_LIST:
+                    _debugMenuView.ShowPageList( _categories[_categoryIndex], _pages, _currentIndex );
+                    break;
+
+                default:
+                    _debugMenuView.ShowItemPage( _pages[_pageIndex], _items, _currentIndex );
+                    break;
+            }
         }
 
         public override void Run()
         {
             base.Run();
+
+            _categoryIndex  = 0;
+            _pageIndex      = 0;
+            OpenCategoryList();
 
             ToggleDebugView();
             _inputFcd.UnregisterInputCodes();

@@ -43,6 +43,10 @@ namespace Frontier.Battle
         // ステージクリア判定後、「STAGE CLEAR」演出の開始からリザルト画面表示までを一貫して担う専用ステート。
         // 通常のフェーズ循環(_phaseHandlers)には含めず、ここから直接駆動する。
         private StageClearState _stageClearState        = null;
+#if UNITY_EDITOR
+        private Frontier.DebugTools.Battle.BattleDebugMenuItems _debugMenuItems           = null;   // 戦闘中に使用するデバッグメニューの項目
+        private Frontier.DebugTools.Battle.DebugCharacterLabelPresenter _debugLabelPrsnt  = null;   // キャラクター頭上のデバッグ用ラベル
+#endif // UNITY_EDITOR
 
         public BattleCharacterCoordinator BtlCharaCdr => _btlCharaCdr;
         public BattleCameraController GetBtlCameraCtrl => _btlCameraCtrl;
@@ -79,6 +83,11 @@ namespace Frontier.Battle
             LazyInject.GetOrCreate( ref _btlCameraCtrl, () => _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<BattleCameraController>( _prefabReg.BattleCameraPrefab, true, true, typeof( BattleCameraController ).Name ) );
             LazyInject.GetOrCreate( ref _btlCharaCdr,   () => _hierarchyBld.InstantiateWithDiContainer<BattleCharacterCoordinator>( false ) );
             LazyInject.GetOrCreate( ref _stageClearState, () => _hierarchyBld.InstantiateWithDiContainer<StageClearState>( false ) );
+#if UNITY_EDITOR
+            LazyInject.GetOrCreate( ref _debugMenuItems,  () => _hierarchyBld.InstantiateWithDiContainer<Frontier.DebugTools.Battle.BattleDebugMenuItems>( false ) );
+            LazyInject.GetOrCreate( ref _debugLabelPrsnt, () => _hierarchyBld.InstantiateWithDiContainer<Frontier.DebugTools.Battle.DebugCharacterLabelPresenter>( false ) );
+            _debugLabelPrsnt.Init();
+#endif // UNITY_EDITOR
 
             if( SkillsData.ReactiveSkillNotifierFactory == null )
             {
@@ -131,6 +140,10 @@ namespace Frontier.Battle
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF
             _btlFileLoader.LoadCameraParams( _btlCameraCtrl );          // ファイル読込マネージャにカメラパラメータをロードさせる
+
+#if UNITY_EDITOR
+            _debugMenuItems.Register( _btlCharaCdr );                   // 戦闘中に使用するデバッグメニューの項目を登録
+#endif // UNITY_EDITOR
         }
 
         public override void Update()
@@ -155,6 +168,10 @@ namespace Frontier.Battle
             _btlCharaCdr.UpdateCharacterLogics();
 
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();   // タイル情報を更新
+
+#if UNITY_EDITOR
+            _debugLabelPrsnt.Update( _btlCharaCdr );            // キャラクター頭上のデバッグ用ラベルを更新
+#endif // UNITY_EDITOR
         }
 
         public override bool LateUpdate()
@@ -256,6 +273,11 @@ namespace Frontier.Battle
         {
             _phaseHandlers[_currentPhase].Exit();
             _presenter.Exit();
+
+#if UNITY_EDITOR
+            _debugMenuItems.Unregister();
+            _debugLabelPrsnt.HideAll();
+#endif // UNITY_EDITOR
         }
 
         #endregion // SubRoutineController Implementation

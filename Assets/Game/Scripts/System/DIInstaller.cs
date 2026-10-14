@@ -60,6 +60,8 @@ namespace Frontier
             Container.Bind<DebugEditorMonoDriver>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuUI>().FromComponentInHierarchy().AsCached();
+            Container.Bind<DebugMenuItemRegistry>().AsSingle();
+            Container.Bind<Frontier.DebugTools.DebugSettings>().AsSingle();
 #endif // UNITY_EDITOR
         }
 
