@@ -34,20 +34,40 @@ namespace Frontier.DebugTools.DebugMenu
         }
 
         /// <summary>
+        /// 指定の文字列を行に表示した場合の横幅を取得します(行と同じフォント・文字サイズで計測します)
+        /// </summary>
+        public float MeasureRowTextWidth( string text )
+        {
+            EnsureRowCount( 1 );
+
+            return _rowTexts[0].GetPreferredValues( text ).x;
+        }
+
+        /// <summary>
         /// 各行の文字列を設定します。行数が足りない場合は行を追加し、余った行は非表示にします
         /// </summary>
         public void SetRows( IReadOnlyList<string> texts )
         {
-            while( _rowTexts.Count < texts.Count )
-            {
-                _rowTexts.Add( _hierarchyBld.CreateComponentWithNestedParent<TextMeshProUGUI>( DebugMenuElement, DebugMenuList, true ) );
-            }
+            EnsureRowCount( texts.Count );
 
             for( int i = 0; i < _rowTexts.Count; ++i )
             {
                 bool isUsed = ( i < texts.Count );
                 if( _rowTexts[i].gameObject.activeSelf != isUsed ) { _rowTexts[i].gameObject.SetActive( isUsed ); }
                 if( isUsed ) { _rowTexts[i].text = texts[i]; }
+            }
+        }
+
+        /// <summary>
+        /// 行の数が指定数に満たない場合、行を追加します(追加した行は非表示のまま)
+        /// </summary>
+        private void EnsureRowCount( int count )
+        {
+            while( _rowTexts.Count < count )
+            {
+                var row = _hierarchyBld.CreateComponentWithNestedParent<TextMeshProUGUI>( DebugMenuElement, DebugMenuList, true );
+                row.gameObject.SetActive( false );
+                _rowTexts.Add( row );
             }
         }
 

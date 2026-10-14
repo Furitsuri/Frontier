@@ -12,8 +12,14 @@ namespace Frontier.DebugTools.DebugMenu
         private const string CATEGORY_LIST_HEADLINE = "DEBUG MENU";
         private const string NOT_IMPLEMENTED_TEXT   = "NOT IMPLEMENTED";    // ページが1つも無いカテゴリを開いた際の表記
         private const string HEADLINE_SEPARATOR     = " > ";
-        private const string VALUE_COLUMN_POS       = "<pos=360>";  // 項目名に続けて値を表示する位置(行の左端からの距離)
+        private const float VALUE_COLUMN_GAP        = 24f;  // 最も長い項目名の右端から、値の列までの間隔
         private const int NO_SELECTION              = -1;
+
+        // 項目名と値の間に挟む区切り。項目の型ごとに一律で適用する(登録されていない型は区切り無し)
+        private static readonly Dictionary<DebugMenuItemType, string> ValueSeparators = new Dictionary<DebugMenuItemType, string>
+        {
+            { DebugMenuItemType.TOGGLE, ": " },
+        };
 
         private DebugMenuUI _debugMenuUI;
         private List<string> _rowTexts = new List<string>();
@@ -59,14 +65,18 @@ namespace Frontier.DebugTools.DebugMenu
         }
 
         /// <summary>
-        /// 指定ページの項目の一覧を、各項目の現在値と共に表示します
+        /// 指定ページの項目の一覧を、各項目の現在値と共に表示します。
+        /// 値(区切りを含む)は、ページ内で最も長い項目名の右側に揃えた列に表示します
         /// </summary>
         public void ShowItemPage( DebugMenuPage page, IReadOnlyList<DebugMenuItem> items, int selectedIndex )
         {
+            string valueColumnTag = $"<pos={CalcValueColumnPosition( items ):0}>";
+
             _rowTexts.Clear();
             foreach( var item in items )
             {
-                _rowTexts.Add( item.Name + VALUE_COLUMN_POS + item.GetValueText() );
+                ValueSeparators.TryGetValue( item.Type, out var separator );
+                _rowTexts.Add( item.Name + valueColumnTag + separator + item.GetValueText() );
             }
 
             Show( ToDisplayName( page.Category ) + HEADLINE_SEPARATOR + page.Name, selectedIndex );
@@ -82,6 +92,20 @@ namespace Frontier.DebugTools.DebugMenu
             _debugMenuUI.SetHeadline( headline );
             _debugMenuUI.SetRows( _rowTexts );
             _debugMenuUI.SetSelectedRow( selectedIndex );
+        }
+
+        /// <summary>
+        /// 値の列を表示する位置(行の左端からの距離)を、ページ内で最も長い項目名の幅から求めます
+        /// </summary>
+        private float CalcValueColumnPosition( IReadOnlyList<DebugMenuItem> items )
+        {
+            float maxNameWidth = 0f;
+            foreach( var item in items )
+            {
+                maxNameWidth = System.Math.Max( maxNameWidth, _debugMenuUI.MeasureRowTextWidth( item.Name ) );
+            }
+
+            return maxNameWidth + VALUE_COLUMN_GAP;
         }
 
         private static string ToDisplayName( DebugMenuCategory category )
