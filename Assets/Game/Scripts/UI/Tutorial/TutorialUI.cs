@@ -50,6 +50,7 @@ public class TutorialUI : UiMonoBehaviour
         _headline.text      = tutorialContent.Headline;
         _explain.text       = tutorialContent.Explain;
         _image.sprite       = tutorialContent.Image;
+        _image.enabled      = ( tutorialContent.Image != null );   // 画像の無いページで、空のImage(白い矩形)を表示しないようにする
         _pageNumberL.text   = ( pageIndex + 1 ).ToString();
         _pageNumberR.text   = pageNum.ToString();
     }

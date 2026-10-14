@@ -12,12 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6407282b39c7fcd43bdf2237141dd828, type: 3}
   m_Name: RecruitGuide
   m_EditorClassIdentifier: 
-  _title: HOW TO MOVE
-  flagBitIndex: 0
+  _triggerType: 0
+  _title: HOW TO RECRUIT
+  flagBitIndex: 1
   _tutorialElements:
-  - _headline: Move Command 1
-    _explain: Move
-    _image: {fileID: 21300000, guid: dbbd045bc4a42e049bfc0c7a3241af09, type: 3}
-  - _headline: Move Command 2
-    _explain: Move Move
-    _image: {fileID: 21300000, guid: dbbd045bc4a42e049bfc0c7a3241af09, type: 3}
+  - _headline: Choose a Unit
+    _explain: Move the cursor to choose a unit. STATUS shows its parameters.
+    _image: {fileID: 0}
+  - _headline: Employ Contract
+    _explain: CONFIRM signs or cancels a contract. The cost is paid in Anima.
+    _image: {fileID: 0}
+  - _headline: Complete
+    _explain: COMPLETE finishes hiring. BACK cancels the contracts.
+    _image: {fileID: 0}
