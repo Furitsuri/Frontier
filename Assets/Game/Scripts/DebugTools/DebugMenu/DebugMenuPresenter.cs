@@ -15,10 +15,13 @@ namespace Frontier.DebugTools.DebugMenu
         private const float VALUE_COLUMN_GAP        = 24f;  // 最も長い項目名の右端から、値の列までの間隔
         private const int NO_SELECTION              = -1;
 
-        // 項目名と値の間に挟む区切り。項目の型ごとに一律で適用する(登録されていない型は区切り無し)
+        // 項目名と値の間に挟む区切り。項目の型ごとに一律で適用する(登録されていない型は区切り無し。ACTIONは表示する値を持たないため対象外)
         private static readonly Dictionary<DebugMenuItemType, string> ValueSeparators = new Dictionary<DebugMenuItemType, string>
         {
-            { DebugMenuItemType.TOGGLE, ": " },
+            { DebugMenuItemType.TOGGLE,    ": " },
+            { DebugMenuItemType.INT,       ": " },
+            { DebugMenuItemType.CHOICE,    ": " },
+            { DebugMenuItemType.READ_ONLY, ": " },
         };
 
         private DebugMenuUI _debugMenuUI;
