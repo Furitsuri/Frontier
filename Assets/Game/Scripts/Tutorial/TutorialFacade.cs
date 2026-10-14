@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using Zenject;
@@ -59,6 +60,26 @@ namespace Frontier.Tutorial
                     _saveHdlr.Save( _saveData );
                 }
             }
+        }
+
+        /// <summary>
+        /// 読み込んだチュートリアルデータの一覧を取得します。読込みが完了していない場合は空の一覧を返します
+        /// </summary>
+        public IReadOnlyList<TutorialData> GetTutorialDatas()
+        {
+            return _handler.GetTutorialDatas();
+        }
+
+        /// <summary>
+        /// チュートリアルデータの一覧の、指定番号のチュートリアルを表示します。
+        /// 表示済みとしての記録は行いません(デバッグでの内容確認用)
+        /// </summary>
+        /// <param name="index">GetTutorialDatas()で得られる一覧の中での番号</param>
+        /// <param name="onExited">表示したチュートリアルを閉じた際に一度だけ呼ばれるコールバック</param>
+        /// <returns>表示の成否</returns>
+        public bool ShowTutorialAt( int index, Action onExited )
+        {
+            return _handler.ShowTutorialAt( index, onExited );
         }
 
         public void LoadTutorialData()

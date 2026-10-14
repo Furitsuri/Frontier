@@ -20,6 +20,8 @@ public class TutorialFileLoader : MonoBehaviour
 
         await handle.Task;
 
+        OnLoaded( handle );     // 読み込んだデータを保持する(保持しないとGetTutorialDatas()がnullを参照してしまう)
+
         return handle.Result;
     }
 
@@ -31,6 +33,11 @@ public class TutorialFileLoader : MonoBehaviour
     {
         return _tutorialDatabase.GetTutorials;
     }
+
+    /// <summary>
+    /// チュートリアルデータの読込みが完了しているかを取得します
+    /// </summary>
+    public bool IsLoaded => _tutorialDatabase != null;
 
     /// <summary>
     /// 読込み完了時のイベントを設定します

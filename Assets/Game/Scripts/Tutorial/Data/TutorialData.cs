@@ -19,6 +19,8 @@ public class TutorialData : ScriptableObject
 
     public TriggerType TriggerType => _triggerType;
 
+    public string Title => _title;
+
     public int GetFlagBitIdx => flagBitIndex;
 
     /// <summary>

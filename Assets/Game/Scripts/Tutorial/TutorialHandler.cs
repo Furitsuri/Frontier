@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using Zenject;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using static Constants;
 
@@ -19,6 +20,8 @@ namespace Frontier.Tutorial
         private ReadOnlyCollection<TutorialData> _tutorialDatas = null;
         // 参照しているチュートリアルデータの内容
         private ReadOnlyCollection<TutorialElement> _displayContents = null;
+        // 表示しているチュートリアルを閉じた際に一度だけ呼ばれるコールバック
+        private Action _onExitedOnce = null;
 
         /// <summary>
         /// 初期化します
@@ -59,14 +62,50 @@ namespace Frontier.Tutorial
                 return false;
             }
 
-            // 該当したチュートリアルのデータを表示する
-            _displayContents = matchingData.GetTutorialElements.AsReadOnly();
-            _tutorialView.ShowTutorial( _displayContents, _displayContents.Count, matchingData.GetFlagBitIdx );
+            ShowTutorialData( matchingData );
+
+            return true;
+        }
+
+        /// <summary>
+        /// 読み込んだチュートリアルデータの一覧を取得します。読込みが完了していない場合は空の一覧を返します
+        /// </summary>
+        public IReadOnlyList<TutorialData> GetTutorialDatas()
+        {
+            if( _tutorialLoader == null || !_tutorialLoader.IsLoaded ) { return Array.Empty<TutorialData>(); }
+
+            return _tutorialLoader.GetTutorialDatas();
+        }
+
+        /// <summary>
+        /// チュートリアルデータの一覧の、指定番号のチュートリアルを表示します。
+        /// トリガーによる通常の表示とは異なり、表示済みとしての記録は行いません(デバッグでの内容確認用)
+        /// </summary>
+        /// <param name="index">GetTutorialDatas()で得られる一覧の中での番号</param>
+        /// <param name="onExited">表示したチュートリアルを閉じた際に一度だけ呼ばれるコールバック</param>
+        /// <returns>表示の成否</returns>
+        public bool ShowTutorialAt( int index, Action onExited )
+        {
+            var datas = GetTutorialDatas();
+            if( index < 0 || datas.Count <= index ) { return false; }
+
+            _onExitedOnce = onExited;
+            ShowTutorialData( datas[index] );
+
+            return true;
+        }
+
+        /// <summary>
+        /// 指定のチュートリアルデータを先頭ページから表示し、実行を予約します
+        /// </summary>
+        private void ShowTutorialData( TutorialData data )
+        {
+            _displayContents    = data.GetTutorialElements.AsReadOnly();
+            _currentPageIndex   = 0;    // 表示は常に先頭ページから始まるため、前回表示時のページ位置を引き継がない
+            _tutorialView.ShowTutorial( _displayContents, _displayContents.Count, data.GetFlagBitIdx );
 
             // 実行を予約
             ScheduleRun();
-
-            return true;
         }
 
         public async Task LoadTutorialData()
@@ -269,6 +308,11 @@ namespace Frontier.Tutorial
             _tutorialView.Exit();
             // 入力コードの解除
             _inputFcd.UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );
+
+            // 終了の通知(一度だけ)
+            var onExited = _onExitedOnce;
+            _onExitedOnce = null;
+            onExited?.Invoke();
         }
 
         public override int GetPriority() { return ( int ) FocusRoutinePriority.TUTORIAL; }

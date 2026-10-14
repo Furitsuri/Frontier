@@ -10,7 +10,7 @@ namespace Frontier.DebugTools.DebugMenu
     /// <summary>
     /// デバッグメニューの操作を処理します。
     /// カテゴリの一覧 → カテゴリ内のページの一覧 → ページ内の項目の一覧、の3階層で構成されます。
-    /// 上下で行を選択し、決定で1階層進み、キャンセルで1階層戻ります。
+    /// 上下で行を選択し、決定で1階層進み、キャンセルで1階層戻ります(ページが1つしか無いカテゴリでは、ページの一覧を飛ばします)。
     /// 項目の一覧では、決定・左右の入力を選択中の項目の型に応じた操作として項目へ渡します
     /// </summary>
     public class DebugMenuHandler : BaseHandlerExtendedFocusRoutine
@@ -38,6 +38,8 @@ namespace Frontier.DebugTools.DebugMenu
         // 上の階層へ戻った際に、直前に開いていた行を選択し直すためのインデックス
         private int _categoryIndex = 0;
         private int _pageIndex = 0;
+        // 一時的に閉じている間はtrue。再び開いた際に、閉じる直前の階層・選択位置から再開する
+        private bool _isTemporarilyClosed = false;
         // デバッグON/OFFのコールバック
         public delegate void ToggleDebugCallback();
         // デバッグメニューへの遷移の入力可否コールバック
@@ -125,6 +127,34 @@ namespace Frontier.DebugTools.DebugMenu
         }
 
         /// <summary>
+        /// ページの一覧を飛ばすか(カテゴリ内のページが1つしか無い場合)を取得します
+        /// </summary>
+        private bool ShouldSkipPageList()
+        {
+            return _pages.Count == 1;
+        }
+
+        /// <summary>
+        /// デバッグメニューを一時的に閉じます。ReopenFromTemporaryClose()で、閉じる直前の階層・選択位置から再開します。
+        /// チュートリアルの表示など、デバッグメニューより優先度の低いルーチンへ一時的に処理を渡す場合に使用します
+        /// </summary>
+        public void CloseTemporarily()
+        {
+            _isTemporarilyClosed = true;
+            ScheduleExit();
+        }
+
+        /// <summary>
+        /// CloseTemporarily()で閉じたデバッグメニューを再び開きます
+        /// </summary>
+        public void ReopenFromTemporaryClose()
+        {
+            if( !_isTemporarilyClosed ) { return; }
+
+            ScheduleRun();
+        }
+
+        /// <summary>
         /// 現在の階層の行数を取得します
         /// </summary>
         private int GetRowCount()
@@ -195,6 +225,7 @@ namespace Frontier.DebugTools.DebugMenu
                     _categoryIndex  = _currentIndex;
                     _pageIndex      = 0;
                     OpenPageList();
+                    if( ShouldSkipPageList() ) { OpenItemList(); }
                     return true;
 
                 case MenuLevel.PAGE_LIST:
@@ -219,7 +250,8 @@ namespace Frontier.DebugTools.DebugMenu
             switch( _level )
             {
                 case MenuLevel.ITEM_LIST:
-                    OpenPageList();
+                    if( ShouldSkipPageList() ) { OpenCategoryList(); }
+                    else { OpenPageList(); }
                     return true;
 
                 case MenuLevel.PAGE_LIST:
@@ -264,9 +296,17 @@ namespace Frontier.DebugTools.DebugMenu
         {
             base.Run();
 
-            _categoryIndex  = 0;
-            _pageIndex      = 0;
-            OpenCategoryList();
+            // 一時的に閉じていた場合は、閉じる直前の階層・選択位置から再開する
+            if( _isTemporarilyClosed )
+            {
+                _isTemporarilyClosed = false;
+            }
+            else
+            {
+                _categoryIndex  = 0;
+                _pageIndex      = 0;
+                OpenCategoryList();
+            }
 
             ToggleDebugView();
             _inputFcd.UnregisterInputCodes();

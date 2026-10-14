@@ -13,6 +13,7 @@ namespace Frontier.DebugTools.DebugMenu
 
         private DebugMenuPresenter _presenter   = null;
         private GameObject _debugUi             = null;
+        private Frontier.DebugTools.Tutorial.TutorialDebugMenuItems _tutorialItems = null;    // チュートリアルの内容確認用の項目
 
         /// <summary>
         /// 初期化します
@@ -21,11 +22,13 @@ namespace Frontier.DebugTools.DebugMenu
         {
             LazyInject.GetOrCreate( ref _debugUi, () => GameObjectFinder.FindInSceneEvenIfInactive( "DebugUI" ) );
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<DebugMenuPresenter>( false ) );
+            LazyInject.GetOrCreate( ref _tutorialItems, () => _hierarchyBld.InstantiateWithDiContainer<Frontier.DebugTools.Tutorial.TutorialDebugMenuItems>( false ) );
 
             _debugUi.SetActive( false ); // 初期状態では非表示
 
             _presenter.Init();
             _handler.Init( _presenter, ToggleDebugCallback, canAcceptCb, acceptInputCb );
+            _tutorialItems.Register();
         }
 
         /// <summary>

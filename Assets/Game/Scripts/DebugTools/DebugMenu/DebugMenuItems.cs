@@ -118,22 +118,33 @@ namespace Frontier.DebugTools.DebugMenu
     }
 
     /// <summary>
-    /// 選択肢を切り替える項目です。選択肢の表現(何を何順に巡るか)は登録側に委ねます
+    /// 選択肢を切り替える項目です。選択肢の表現(何を何順に巡るか)は登録側に委ねます。
+    /// 決定時の処理を渡した場合は、選択中の選択肢に対する決定操作も受け付けます
     /// </summary>
     public sealed class DebugChoiceItem : DebugMenuItem
     {
         private readonly Func<string> _getter;
         private readonly Action<int> _step;
+        private readonly Action _confirm;
 
         public override DebugMenuItemType Type => DebugMenuItemType.CHOICE;
 
-        public DebugChoiceItem( DebugMenuPage page, string name, Func<string> getter, Action<int> step ) : base( page, name )
+        public DebugChoiceItem( DebugMenuPage page, string name, Func<string> getter, Action<int> step, Action confirm = null ) : base( page, name )
         {
-            _getter = getter;
-            _step   = step;
+            _getter     = getter;
+            _step       = step;
+            _confirm    = confirm;
         }
 
         public override string GetValueText() { return _getter(); }
+
+        public override bool Confirm()
+        {
+            if( _confirm == null ) { return false; }
+
+            _confirm();
+            return true;
+        }
 
         public override bool Step( int delta )
         {

@@ -56,12 +56,14 @@ public class FocusRoutineController : MonoBehaviour
     /// </summary>
     protected IEnumerator InitCommonRoutine()
     {
+        // MEMO : Init()でチュートリアルデータの読込を担うローダーを取得するため、読込の開始(LoadTutorialData)より先に呼ぶこと
+        //        (逆順だとローダーが未取得のまま読込が始まり、例外でTaskが中断してチュートリアルが一切表示されなくなる)
+        _tutorialFcd.Init();
+
         // チュートリアルデータの読込を開始する。実際に表示が必要になるタイミング(TryShowTutorial)までに
         // 完了していれば良いため、ここでは完了を待たずに進める(読込完了前にトリガーが発火した場合は
         // TutorialFacade.TryShowTutorial 側で読込完了まで表示を保留する)
         _tutorialFcd.LoadTutorialData();
-
-        _tutorialFcd.Init();
 
         Init();
 
