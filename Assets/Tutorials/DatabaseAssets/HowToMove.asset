@@ -16,9 +16,15 @@ MonoBehaviour:
   _title: HOW TO MOVE
   flagBitIndex: 0
   _tutorialElements:
-  - _headline: Move Command 1
-    _explain: Move
-    _image: {fileID: 21300000, guid: dbbd045bc4a42e049bfc0c7a3241af09, type: 3}
-  - _headline: Move Command 2
-    _explain: Move Move
-    _image: {fileID: 21300000, guid: dbbd045bc4a42e049bfc0c7a3241af09, type: 3}
+  - _headline: Select a Unit
+    _explain: Put the cursor on your unit and press SELECT to start moving.
+    _image: {fileID: 0}
+  - _headline: Choose a Tile
+    _explain: Move the cursor within the range and press DECISION.
+    _image: {fileID: 0}
+  - _headline: Attack on Move
+    _explain: DECISION on an enemy in range moves and attacks at once.
+    _image: {fileID: 0}
+  - _headline: Undo a Move
+    _explain: Before acting, UNDO MOVE puts the unit back where it was.
+    _image: {fileID: 0}

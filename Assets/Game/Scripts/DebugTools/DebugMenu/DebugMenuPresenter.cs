@@ -26,6 +26,7 @@ namespace Frontier.DebugTools.DebugMenu
 
         private DebugMenuUI _debugMenuUI;
         private List<string> _rowTexts = new List<string>();
+        private List<bool> _rowDimmed = new List<bool>();
 
         public void Init()
         {
@@ -76,13 +77,15 @@ namespace Frontier.DebugTools.DebugMenu
             string valueColumnTag = $"<pos={CalcValueColumnPosition( items ):0}>";
 
             _rowTexts.Clear();
+            _rowDimmed.Clear();
             foreach( var item in items )
             {
                 ValueSeparators.TryGetValue( item.Type, out var separator );
                 _rowTexts.Add( item.Name + valueColumnTag + separator + item.GetValueText() );
+                _rowDimmed.Add( !item.IsSelectable );   // 選択できない(操作を受け付けない)項目は暗く表示する
             }
 
-            Show( ToDisplayName( page.Category ) + HEADLINE_SEPARATOR + page.Name, selectedIndex );
+            Show( ToDisplayName( page.Category ) + HEADLINE_SEPARATOR + page.Name, selectedIndex, _rowDimmed );
         }
 
         public void ToggleMenuVisibility()
@@ -90,11 +93,11 @@ namespace Frontier.DebugTools.DebugMenu
             _debugMenuUI.gameObject.SetActive( !_debugMenuUI.gameObject.activeSelf );
         }
 
-        private void Show( string headline, int selectedIndex )
+        private void Show( string headline, int selectedIndex, IReadOnlyList<bool> dimmedRows = null )
         {
             _debugMenuUI.SetHeadline( headline );
             _debugMenuUI.SetRows( _rowTexts );
-            _debugMenuUI.SetSelectedRow( selectedIndex );
+            _debugMenuUI.SetRowColors( selectedIndex, dimmedRows );
         }
 
         /// <summary>

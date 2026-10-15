@@ -27,6 +27,11 @@ namespace Frontier.DebugTools.DebugMenu
         public string Name { get; }
         public abstract DebugMenuItemType Type { get; }
 
+        /// <summary>
+        /// メニュー上でカーソルを合わせられるか。操作を受け付けない項目(表示のみ)はfalseとし、カーソル移動時に読み飛ばされます
+        /// </summary>
+        public virtual bool IsSelectable => true;
+
         protected DebugMenuItem( DebugMenuPage page, string name )
         {
             Page        = page;
@@ -186,6 +191,8 @@ namespace Frontier.DebugTools.DebugMenu
         private readonly Func<string> _getter;
 
         public override DebugMenuItemType Type => DebugMenuItemType.READ_ONLY;
+
+        public override bool IsSelectable => false;
 
         public DebugReadOnlyItem( DebugMenuPage page, string name, Func<string> getter ) : base( page, name )
         {

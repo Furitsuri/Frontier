@@ -33,8 +33,9 @@ namespace Frontier.DebugTools.DebugMenu
         private List<DebugMenuCategory> _categories = new List<DebugMenuCategory>();
         private List<DebugMenuPage> _pages = new List<DebugMenuPage>();
         private List<DebugMenuItem> _items = new List<DebugMenuItem>();
-        // 選択中の行のインデックス
+        // 選択中の行のインデックス。選択できる行が1つも無い場合はNO_SELECTION
         private int _currentIndex = 0;
+        private const int NO_SELECTION = -1;
         // 上の階層へ戻った際に、直前に開いていた行を選択し直すためのインデックス
         private int _categoryIndex = 0;
         private int _pageIndex = 0;
@@ -123,7 +124,7 @@ namespace Frontier.DebugTools.DebugMenu
 
             _level          = MenuLevel.ITEM_LIST;
             _items          = _itemRegistry.GetItems( page );
-            _currentIndex   = 0;
+            _currentIndex   = FindNextSelectableIndex( NO_SELECTION, 1 );   // 先頭から見て最初に選択できる行
         }
 
         /// <summary>
@@ -167,14 +168,47 @@ namespace Frontier.DebugTools.DebugMenu
             }
         }
 
+        /// <summary>
+        /// 指定の行にカーソルを合わせられるかを取得します。項目の一覧では、表示のみの項目等は選択できません
+        /// </summary>
+        private bool IsRowSelectable( int index )
+        {
+            return _level != MenuLevel.ITEM_LIST || _items[index].IsSelectable;
+        }
+
+        /// <summary>
+        /// 指定の行から direction(-1:前 / +1:次) の方向に辿って、最初に見つかる選択できる行を取得します。
+        /// 端に達した場合は反対側の端から辿り直し、選択できる行が1つも無い場合は NO_SELECTION を返します
+        /// </summary>
+        private int FindNextSelectableIndex( int from, int direction )
+        {
+            int rowCount = GetRowCount();
+
+            for( int step = 1; step <= rowCount; ++step )
+            {
+                int index = ( ( from + direction * step ) % rowCount + rowCount ) % rowCount;
+                if( IsRowSelectable( index ) ) { return index; }
+            }
+
+            return NO_SELECTION;
+        }
+
+        /// <summary>
+        /// 選択中の行があるかを取得します
+        /// </summary>
+        private bool HasSelection()
+        {
+            return 0 <= _currentIndex && _currentIndex < GetRowCount();
+        }
+
         private bool CanAcceptDirection()
         {
-            return 0 < GetRowCount();
+            return HasSelection();
         }
 
         private bool CanAcceptConfirm()
         {
-            return 0 < GetRowCount();
+            return HasSelection();
         }
 
         private bool CanAcceptCancel()
@@ -184,20 +218,18 @@ namespace Frontier.DebugTools.DebugMenu
 
         /// <summary>
         /// 方向入力を受け取った際の処理を行います。
-        /// 上下は行の選択、左右は(項目の一覧でのみ)選択中の項目の値の変更として扱います
+        /// 上下は行の選択(選択できない行は読み飛ばす)、左右は(項目の一覧でのみ)選択中の項目の値の変更として扱います
         /// </summary>
         private bool AcceptDirection( InputContext context )
         {
-            int rowCount = GetRowCount();
-
             switch( context.Cursor )
             {
                 case Direction.FORWARD:
-                    _currentIndex = ( _currentIndex - 1 + rowCount ) % rowCount;   // 前の行へ
+                    _currentIndex = FindNextSelectableIndex( _currentIndex, -1 );   // 前の選択できる行へ
                     return true;
 
                 case Direction.BACK:
-                    _currentIndex = ( _currentIndex + 1 ) % rowCount;              // 次の行へ
+                    _currentIndex = FindNextSelectableIndex( _currentIndex, 1 );    // 次の選択できる行へ
                     return true;
 
                 case Direction.LEFT:

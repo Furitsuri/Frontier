@@ -17,6 +17,7 @@ namespace Frontier.DebugTools.DebugMenu
 
         private static readonly Color ColorSelected   = Color.yellow;
         private static readonly Color ColorUnselected = Color.white;
+        private static readonly Color ColorDimmed     = new Color( 0.55f, 0.55f, 0.55f, 1f );  // 選択できない行
 
         private List<TextMeshProUGUI> _rowTexts = new List<TextMeshProUGUI>();
 
@@ -72,13 +73,19 @@ namespace Frontier.DebugTools.DebugMenu
         }
 
         /// <summary>
-        /// 指定の行を選択中として強調表示します
+        /// 各行の色を設定します。指定の行を選択中として強調表示し、暗く表示するよう指定された行は暗く表示します
         /// </summary>
-        public void SetSelectedRow( int index )
+        /// <param name="selectedIndex">選択中の行。選択中の行が無い場合は負の値</param>
+        /// <param name="dimmedRows">各行を暗く表示するか。nullの場合は全ての行を通常の色で表示します</param>
+        public void SetRowColors( int selectedIndex, IReadOnlyList<bool> dimmedRows )
         {
             for( int i = 0; i < _rowTexts.Count; ++i )
             {
-                _rowTexts[i].color = ( i == index ) ? ColorSelected : ColorUnselected;
+                bool isDimmed = ( dimmedRows != null && i < dimmedRows.Count && dimmedRows[i] );
+
+                if( i == selectedIndex )    { _rowTexts[i].color = ColorSelected; }
+                else if( isDimmed )         { _rowTexts[i].color = ColorDimmed; }
+                else                        { _rowTexts[i].color = ColorUnselected; }
             }
         }
     }
