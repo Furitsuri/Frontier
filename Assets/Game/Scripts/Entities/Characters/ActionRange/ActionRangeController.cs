@@ -18,8 +18,7 @@ namespace Frontier.Entities
         private ActionableTileData       _actionableTileData      = null;
         private ActionableRangeRenderer  _actionableRangeRdr     = null;
         private MoveDirectionArrowPlacer _moveDirectionArrowPlacer = null;
-        private TileDataHandler.GhostTileResolver    _ghostTileResolver    = null;
-        private TileDataHandler.RangeAdjustmentFilter _rangeAdjustmentFilter = null;
+        private SkillRangeRules          _skillRangeRules         = SkillRangeRules.Default;
         private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         public MovePathHandler MovePathHdlr => _movePathHandler;
@@ -96,6 +95,7 @@ namespace Frontier.Entities
         public void SetupAttackableRangeData( int dprtTileIdx )
         {
             _actionableTileData.Init();
+            _skillRangeRules = SkillRangeRules.Default;
 
             var atkRng = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
@@ -116,10 +116,9 @@ namespace Frontier.Entities
                 return;
             }
 
-            _ghostTileResolver     = null;
-            _rangeAdjustmentFilter = ( useSkillID == SkillID.JUMP_SLASH ) ? JumpSlashSA.CreateRangeAdjustmentFilter() : null;
+            _skillRangeRules = SkillRangeRules.Get( useSkillID, _stageCtrl );
 
-            ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, ref _actionableTileData );
+            ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, _skillRangeRules, ref _actionableTileData );
         }
 
         /// <summary>
@@ -134,17 +133,19 @@ namespace Frontier.Entities
             var skillData = SkillsData.data[( int ) useSkillID];
             if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return false; }
 
+            var rules        = SkillRangeRules.Get( useSkillID, _stageCtrl );
             var tempTileData = new ActionableTileData();
-            ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, ref tempTileData );
+            ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, rules, ref tempTileData );
 
-            var selfKey = _owner.GetCharacterKey();
+            if( skillData.IsMovingSkill )
+            {
+                // 対象選択時と同じ着地先の決定処理を用いて、いずれかの方向に着地先が存在するかを判定する
+                return DirectionalTargetingRange.HasLandingTileInAnyDirection( dprtTileIdx, tempTileData, _stageCtrl, _owner.GetCharacterKey(), rules.GhostResolver );
+            }
+
             foreach( var data in tempTileData.AttackableTileMap )
             {
-                if( skillData.IsMovingSkill )
-                {
-                    if( data.Key != dprtTileIdx && data.Value.IsStandableBy( selfKey ) ) { return true; }
-                }
-                else if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return true; }
+                if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return true; }
             }
 
             return false;
@@ -154,7 +155,7 @@ namespace Frontier.Entities
         /// 指定スキルの攻撃可能範囲を、渡されたActionableTileDataへ計算します
         /// (SetupAttackableRangeData(int,SkillID)とIsSkillExecutableAtの共通処理)
         /// </summary>
-        private void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, ref ActionableTileData targetTileData )
+        private void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules, ref ActionableTileData targetTileData )
         {
             SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
 
@@ -162,16 +163,7 @@ namespace Frontier.Entities
             var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
 
             targetTileData.Init();
-            TileDataHandler.AttackableDataPostProcessor postProcessor = null;
-            if( useSkillID == SkillID.DASH_SLASH )
-            {
-                postProcessor = DashSlashSA.FilterAttackTargets;
-            }
-            else if( useSkillID == SkillID.JUMP_SLASH )
-            {
-                postProcessor = JumpSlashSA.CreateFilterAttackTargets( _stageCtrl );
-            }
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref targetTileData, postProcessor );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref targetTileData, rules.PostProcessor, rules.Reachability );
         }
 
         public void ClearActionableRangeData()
@@ -212,7 +204,7 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _ghostTileResolver, RangeAdjustmentFilter = _rangeAdjustmentFilter };
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _skillRangeRules.GhostResolver, RangeAdjustmentFilter = _skillRangeRules.RangeAdjustmentFilter };
             RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();

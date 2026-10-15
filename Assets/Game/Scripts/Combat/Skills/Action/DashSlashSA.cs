@@ -11,11 +11,26 @@ namespace Frontier.Combat
 {
     public class DashSlashSA : MovingSkillActionBase
     {
-        // SkillID.SKILL_DASH_SLASHが選択されたとき、攻撃範囲の後処理として
-        // ActionRangeController.SetupAttackableRangeData から渡されるコールバック
-        public static readonly TileDataHandler.AttackableDataPostProcessor FilterAttackTargets = FilterAttackTargetsImpl;
+        /// <summary>
+        /// ダッシュ斬りの範囲計算ルールを生成します(SkillRangeRules から参照されます)
+        /// </summary>
+        public static SkillRangeRules CreateRangeRules( StageController stageCtrl )
+        {
+            return new SkillRangeRules(
+                reachability  : ( dprtIdx, prevIdx, tgtIdx, remainingRange ) => IsPassableByDash( prevIdx, tgtIdx, stageCtrl ),
+                postProcessor : FilterAttackTargets );
+        }
 
-        private static void FilterAttackTargetsImpl( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData )
+        // 地面を走って移動するため、直前のタイルとの高低差が一定未満である場合のみ先へ進める
+        // (出発地点との高低差ではなく、1マスごとの段差で判定する)
+        private static bool IsPassableByDash( int prevIdx, int tgtIdx, StageController stageCtrl )
+        {
+            float prevHeight = stageCtrl.GetTileStaticData( prevIdx ).Height;
+            float tgtHeight  = stageCtrl.GetTileStaticData( tgtIdx ).Height;
+            return Mathf.Abs( tgtHeight - prevHeight ) < Constants.DASH_SLASH_PASSABLE_HEIGHT_DIFF;
+        }
+
+        private static void FilterAttackTargets( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData )
         {
             // 4方向それぞれについて「着地タイルを跨いでいない敵」を攻撃対象から除外する
             int[] dirOffsets = { colNum, 1, -colNum, -1 };
@@ -75,6 +90,10 @@ namespace Frontier.Combat
         }
 
         private DashSlashState _state;
+        // 出発タイルから着地先までの経路上の各タイルの立ち位置(先頭が出発タイル)
+        private readonly List<Vector3> _pathStandPositions = new List<Vector3>();
+        // 経路上で現在侵入しているタイルの位置(_pathStandPositionsの添字)
+        private int _pathTileCursor;
         private Vector3 _velocity;
 
         [Inject]
@@ -94,6 +113,8 @@ namespace Frontier.Combat
             // 向きの補間誤差(CHARACTER_ROT_THRESHOLD等)による直線からのズレを防ぐ
             var dirXZ = ( _goalPosition - _owner.GetPosition() ).XZ().normalized;
             _velocity = dirXZ * Constants.DASH_SLASH_INITIAL_SPEED;
+
+            BuildDashPath();
 
             _state = DashSlashState.START;
         }
@@ -117,6 +138,7 @@ namespace Frontier.Combat
                     }
                     break;
                 case DashSlashState.SLASHING:
+                    FollowEnteredTileHeight();
                     UpdateAttack2TargetCharacters();
                     UpdateAttackAnimEnd();
 
@@ -145,6 +167,44 @@ namespace Frontier.Combat
         protected override bool IsFinished()
         {
             return _state == DashSlashState.END;
+        }
+
+        /// <summary>
+        /// 出発タイルから着地先までの経路上の各タイルの立ち位置を、出発タイルを先頭として順に求めます
+        /// </summary>
+        private void BuildDashPath()
+        {
+            _pathStandPositions.Clear();
+            _pathTileCursor = 0;
+
+            int startTileIdx = _owner.BattleParams.TmpParam.CurrentTileIndex;
+            _pathStandPositions.Add( _stageCtrl.GetTileStaticData( startTileIdx ).CharaStandPos );
+
+            int steps = _stageCtrl.CalculateTotalRange( startTileIdx, _goalTileIndex );
+            if( steps <= 0 ) { return; }
+
+            // 着地先は出発タイルから直線上にあるため、1マスあたりのインデックスの差は一定となる
+            int stepOffset = ( _goalTileIndex - startTileIdx ) / steps;
+            for( int l = 1; l <= steps; ++l )
+            {
+                _pathStandPositions.Add( _stageCtrl.GetTileStaticData( startTileIdx + l * stepOffset ).CharaStandPos );
+            }
+        }
+
+        /// <summary>
+        /// 経路上のどのタイルへ侵入しているかを水平方向の進んだ距離から判定し、
+        /// 新たなタイルへ侵入した時点で、キャラクターの高さをそのタイルの高さに合わせます
+        /// </summary>
+        private void FollowEnteredTileHeight()
+        {
+            var   curPos    = _owner.GetPosition();
+            float traveled  = ( curPos - _pathStandPositions[0] ).XZ().magnitude;
+            // タイルの中心同士の中間点を越えた時点で、次のタイルへ侵入したとみなす
+            int   enteredIdx = Mathf.Clamp( Mathf.RoundToInt( traveled / Constants.TILE_SIZE ), 0, _pathStandPositions.Count - 1 );
+            if( enteredIdx == _pathTileCursor ) { return; }
+
+            _pathTileCursor = enteredIdx;
+            _owner.SetPosition( new Vector3( curPos.x, _pathStandPositions[enteredIdx].y, curPos.z ) );
         }
 
         protected override bool IsInAttackRange( Character target )

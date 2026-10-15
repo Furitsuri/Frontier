@@ -152,10 +152,7 @@ namespace Frontier.Entities
 
         static private void AdjustRangeForMove( TargetingRangeContext context, int tileIndex, ActionableTileData actionableTileData )
         {
-            // スキル固有リゾルバがあればそれを使い、なければデフォルト（最遠の空きタイル）でゴーストを決定する
-            int ghostTileIdx = context.GhostResolver != null
-                ? context.GhostResolver( tileIndex, actionableTileData, context.StageCtrl )
-                : ResolveDefaultGhostTile( tileIndex, actionableTileData, context.StageCtrl, context.Owner.GetCharacterKey() );
+            int ghostTileIdx = ResolveGhostTile( tileIndex, actionableTileData, context.StageCtrl, context.Owner.GetCharacterKey(), context.GhostResolver );
 
             // ゴースト位置より遠いタイルをターゲット可能マップおよび攻撃対象から除外する
             // スキル固有フィルタ (context.RangeAdjustmentFilter) がある場合はそれに委譲し、
@@ -187,6 +184,44 @@ namespace Frontier.Entities
 
             // ゴーストのプレビューを更新
             RefreshGhostPreview( context, ghostTileIdx );
+        }
+
+        /// <summary>
+        /// 移動を伴うスキルについて、出発タイルから前後左右いずれかの方向に着地先(ゴースト)が存在するかを判定します。
+        /// 対象選択時と同じ着地先の決定処理を、方向ごとに適用して判定します。
+        /// </summary>
+        /// <param name="actionableTileData">攻撃可能範囲の計算済みデータ(AttackableTileMapのみ参照し、変更しません)</param>
+        static public bool HasLandingTileInAnyDirection( int dprtTileIdx, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, TileDataHandler.GhostTileResolver resolver )
+        {
+            Vector3 basePos = stageCtrl.GetTileStaticData( dprtTileIdx ).CharaStandPos;
+            Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+
+            foreach( var dir in directions )
+            {
+                // 対象選択時のRefreshTargetableRangeと同様に、向きに沿ったタイルをターゲット可能タイルとして抽出する
+                var dirTileData = new ActionableTileData();
+                foreach( var attackableMap in actionableTileData.AttackableTileMap )
+                {
+                    var targetTilePos = stageCtrl.GetTileStaticData( attackableMap.Key ).CharaStandPos;
+                    if( !Methods.IsMatchForward( dir, basePos, targetTilePos ) ) { continue; }
+
+                    dirTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
+                }
+
+                if( 0 <= ResolveGhostTile( dprtTileIdx, dirTileData, stageCtrl, selfKey, resolver ) ) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// ゴーストタイルを決定します。スキル固有リゾルバがあればそれを使い、なければデフォルト（最遠の空きタイル）を用います。
+        /// </summary>
+        static private int ResolveGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, TileDataHandler.GhostTileResolver resolver )
+        {
+            return resolver != null
+                ? resolver( tileIndex, actionableTileData, stageCtrl, selfKey )
+                : ResolveDefaultGhostTile( tileIndex, actionableTileData, stageCtrl, selfKey );
         }
 
         /// <summary>

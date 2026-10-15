@@ -30,27 +30,27 @@
         },
         {
             "IsDeployable": false,
-            "Height": 0.0,
+            "Height": 0.5,
             "TileType": 0
         },
         {
             "IsDeployable": false,
-            "Height": 0.0,
+            "Height": 1.0,
             "TileType": 0
         },
         {
             "IsDeployable": false,
-            "Height": 0.0,
+            "Height": 1.5,
             "TileType": 0
         },
         {
             "IsDeployable": false,
-            "Height": 0.0,
+            "Height": 2.0,
             "TileType": 0
         },
         {
             "IsDeployable": false,
-            "Height": 0.0,
+            "Height": 2.5,
             "TileType": 0
         },
         {
@@ -220,7 +220,7 @@
         },
         {
             "IsDeployable": false,
-            "Height": 0.0,
+            "Height": 3.0,
             "TileType": 0
         },
         {

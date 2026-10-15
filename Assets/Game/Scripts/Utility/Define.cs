@@ -238,6 +238,8 @@ static public class Constants
     public const float DASH_SLASH_ATTACK_TRIGGER_DISTANCE   = 1.5f;
     // ダッシュスラッシュ: 斬撃フェーズへ移行した際の速度倍率
     public const float DASH_SLASH_SLASHING_SPEED_MULTIPLIER = 1.5f;
+    // ダッシュスラッシュ: 直前のタイルとの高低差がこの値未満であれば、そのタイルへ進むことが出来る
+    public const float DASH_SLASH_PASSABLE_HEIGHT_DIFF      = 1.0f;
 
     public const string INPUT_CAMERA_STRING = "CAMERA";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";
