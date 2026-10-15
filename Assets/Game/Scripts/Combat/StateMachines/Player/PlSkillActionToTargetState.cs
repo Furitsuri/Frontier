@@ -149,12 +149,16 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// このステートを中断して子ステート(ステータス表示、使用方法の選択、確認ダイアログ)へ遷移する際、
+        /// このステートを中断して子ステート(ステータス表示、確認ダイアログ)へ遷移する際、
         /// 攻撃予告線を一時的に非表示にします(戻ってきた際にOnActivatedで表示し直します)。
+        /// 使用方法の選択(即時実行・予約等)へ遷移する場合は、選んだ着地先が攻撃される可能性を見ながら使用方法を決められるよう、表示したままとします。
         /// </summary>
         public override object PauseState()
         {
-            _attackForecastDisplay.Clear();
+            if( !_isWaitingForOptionResult )
+            {
+                _attackForecastDisplay.Clear();
+            }
 
             return base.PauseState();
         }
