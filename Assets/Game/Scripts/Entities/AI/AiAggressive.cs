@@ -147,9 +147,9 @@ namespace Frontier.Entities.Ai
                 evaluateValue += CalcurateEvaluateAttack( _owner.GetStatusRef, chara.GetStatusRef );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまりターゲットが存在するタイルの中でも、近ければ近いものほど評価値を大きくするため)
+                // 高低差等で到達出来ない対象は候補から外す
                 if( !_owner.BattleLogic.ActionRangeCtrl.FindMovePath( battleParams.TmpParam.CurrentTileIndex, destGridIndex, _owner.GetStatusRef.jumpForce, in ownerTileCosts ) )
                 {
-                    Debug.LogError("ルートの探索に失敗しました。出発インデックスや目的インデックスなどの設定を見直してください。");
                     continue;
                 }
                 var path        = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.ToList();

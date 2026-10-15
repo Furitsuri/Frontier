@@ -32,6 +32,9 @@ public class Dijkstra
     {
         var List = new List<WaypointInformation>(Constants.DIJKSTRA_ROUTE_INDEXS_MAX_NUM);
 
+        // 出発地点・目的地が頂点に含まれない場合は経路なし
+        if( startIndex < 0 || N <= startIndex || goalIndex < 0 || N <= goalIndex ) { return List; }
+
         // コストをスタート頂点以外を無限大に
         var costInfo = new (int cost, int fromIndex)[N];   // item1 : 移動コスト item2 : item1におけるfromノードインデックス
         for (int i = 0; i < N; i++) costInfo[i] = (int.MaxValue, -1);
@@ -59,6 +62,9 @@ public class Dijkstra
                 }
             }
         }
+
+        // 目的地に到達出来ない(高低差で孤立している等)場合は経路なし
+        if( costInfo[goalIndex].cost == int.MaxValue ) { return List; }
 
         for( int i = goalIndex; i != startIndex; i = costInfo[i].fromIndex )
         {
