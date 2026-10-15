@@ -86,6 +86,8 @@ static public class Constants
     public const float TILE_MIN_THICKNESS   = 0.01f;
     // タイルの高さの最大値
     public const float TILE_MAX_HEIGHT      = 5.0f;
+    // ステージエディターでタイルの高さを増減する際の刻み幅
+    public const float TILE_HEIGHT_EDIT_STEP = 0.25f;
     // タイルのY座標に加算する補正値
     public const float ADD_TILE_POS_Y       = 0.02f;
     // 水タイルの見た目を通常タイルより少しだけ低く沈ませる量（見た目のみ。論理高さは変えない）
@@ -238,8 +240,8 @@ static public class Constants
     public const float DASH_SLASH_ATTACK_TRIGGER_DISTANCE   = 1.5f;
     // ダッシュスラッシュ: 斬撃フェーズへ移行した際の速度倍率
     public const float DASH_SLASH_SLASHING_SPEED_MULTIPLIER = 1.5f;
-    // ダッシュスラッシュ: 直前のタイルとの高低差がこの値未満であれば、そのタイルへ進むことが出来る
-    public const float DASH_SLASH_PASSABLE_HEIGHT_DIFF      = 1.0f;
+    // ダッシュスラッシュ: 直前のタイルとの高低差がこの値以下であれば、そのタイルへ進むことが出来る
+    public const float DASH_SLASH_PASSABLE_HEIGHT_DIFF      = 0.25f;
 
     public const string INPUT_CAMERA_STRING = "CAMERA";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";

@@ -30,7 +30,17 @@
         },
         {
             "IsDeployable": false,
+            "Height": 0.25,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
             "Height": 0.5,
+            "TileType": 0
+        },
+        {
+            "IsDeployable": false,
+            "Height": 0.75,
             "TileType": 0
         },
         {
@@ -40,17 +50,7 @@
         },
         {
             "IsDeployable": false,
-            "Height": 1.5,
-            "TileType": 0
-        },
-        {
-            "IsDeployable": false,
-            "Height": 2.0,
-            "TileType": 0
-        },
-        {
-            "IsDeployable": false,
-            "Height": 2.5,
+            "Height": 1.25,
             "TileType": 0
         },
         {

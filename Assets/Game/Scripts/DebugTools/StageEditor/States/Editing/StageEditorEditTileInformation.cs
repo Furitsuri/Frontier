@@ -81,7 +81,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !base.AcceptSub3( context ) ) { return false; }
 
-            _refParams.SelectedHeight = Mathf.Clamp( ( float )_refParams.SelectedHeight - 0.5f, 0.0f, TILE_MAX_HEIGHT );
+            _refParams.SelectedHeight = Mathf.Clamp( ( float )_refParams.SelectedHeight - TILE_HEIGHT_EDIT_STEP, 0.0f, TILE_MAX_HEIGHT );
 
             return true;
         }
@@ -90,7 +90,7 @@ namespace Frontier.DebugTools.StageEditor
         {
             if( !base.AcceptSub4( context ) ) { return false; }
 
-            _refParams.SelectedHeight = Mathf.Clamp( ( float )_refParams.SelectedHeight + 0.5f, 0.0f, TILE_MAX_HEIGHT );
+            _refParams.SelectedHeight = Mathf.Clamp( ( float )_refParams.SelectedHeight + TILE_HEIGHT_EDIT_STEP, 0.0f, TILE_MAX_HEIGHT );
 
             return true;
         }

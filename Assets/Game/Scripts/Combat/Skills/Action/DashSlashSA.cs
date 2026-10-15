@@ -27,7 +27,7 @@ namespace Frontier.Combat
         {
             float prevHeight = stageCtrl.GetTileStaticData( prevIdx ).Height;
             float tgtHeight  = stageCtrl.GetTileStaticData( tgtIdx ).Height;
-            return Mathf.Abs( tgtHeight - prevHeight ) < Constants.DASH_SLASH_PASSABLE_HEIGHT_DIFF;
+            return Mathf.Abs( tgtHeight - prevHeight ) <= Constants.DASH_SLASH_PASSABLE_HEIGHT_DIFF;
         }
 
         private static void FilterAttackTargets( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData )
