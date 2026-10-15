@@ -313,17 +313,12 @@ namespace Frontier.Battle
                 _transitTargetSelectSkillID = SkillID.NONE;
 
                 // 効果範囲の表示自体はカーソル位置に応じてRefreshSkillRangeDisplay()で既に描画済みのため、
-                // ここではスキル使用フラグが立っている場合に、その範囲内に攻撃対象が存在するかどうかのみ判定する
-                if( _plOwner.BattleParams.TmpParam.IsSkillsToggledON[index] )
+                // ここではスキル使用フラグが立っている場合に、そのスキルが実行可能かどうかのみ判定する
+                // (移動を伴うスキルは攻撃対象が存在しなくても、着地可能なタイルがあれば実行可能)
+                if( _plOwner.BattleParams.TmpParam.IsSkillsToggledON[index] &&
+                    _plOwner.BattleLogic.ActionRangeCtrl.IsSkillExecutableAt( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID ) )
                 {
-                    foreach( var data in _plOwner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap )
-                    {
-                        if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
-                        {
-                            _transitTargetSelectSkillID = skillID;
-                            break;
-                        }
-                    }
+                    _transitTargetSelectSkillID = skillID;
                 }
             }
 

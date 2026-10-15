@@ -57,16 +57,9 @@ namespace Frontier.Entities
 			}
 
 			// 移動を伴う場合は、最も遠方の移動可能(キャラクターが存在しない)なタイルにターゲット可能レンジを合わせる
-			// また、全てのタイルが移動不可、もしくは攻撃対象が存在しない場合は実行不可とする
+			// 攻撃対象が存在しなくても、移動可能なタイルがあれば実行可能とする(全てのタイルが移動不可の場合はゴーストを表示せず実行不可)
 			if( isMovingSkill )
 			{
-                // 攻撃対象が存在するタイルがない場合には実行不可
-                if( actionableTileData.RefAttackTargetTileIndicies.Count <= 0 )
-                {
-                    RefreshGhostPreview( context, -1 );
-                    return;
-                }
-
 				AdjustRangeForMove( context, tileIndex, actionableTileData );
 			}
 		}
@@ -108,9 +101,8 @@ namespace Frontier.Entities
         /// step方向にcurrentRangeを調整します。有効なレンジが見つかれば更新します。
         /// 有効なレンジが存在しない場合は元の状態を復元してfalseを返します。
         /// isMovingSkillの場合、候補レンジをトリミングした後(AdjustRangeForMove適用後)に
-        /// 攻撃対象が1体以上残っているかどうかを有効性の条件とします。
-        /// スキル選択時点(PlSelectSkillState)で対象0体のスキルは選択不可としているのと同じ基準であり、
-        /// 着地先(ゴースト)の有無だけでは「立てるが誰も攻撃できない」レンジを弾けないため、この基準を用います。
+        /// 着地先(ゴースト)が存在するかどうかを有効性の条件とします。
+        /// 移動を伴うスキルは攻撃対象が存在しなくても実行可能とするため、攻撃対象の有無は問いません。
         /// </summary>
         static public bool TryAdjustRange( TargetingRangeContext context, int step, ref int currentRange, int maxRange, bool isMovingSkill, ref List<CharacterKey> attackTargets, ref Character targetCharacter )
         {
@@ -119,6 +111,7 @@ namespace Frontier.Entities
 
             int limit           = ( step < 0 ) ? 1 : maxRange;
             int candidate       = currentRange + step;
+            int prevGhostTileIdx = GetActiveGhostTileIndex( context );
 
             while( ( step < 0 ) ? ( candidate >= limit ) : ( candidate <= limit ) )
             {
@@ -126,7 +119,10 @@ namespace Frontier.Entities
 
                 if( isMovingSkill )
                 {
-                    bool isValid = 0 < actionRangeCtrl.ActionableTileData.RefAttackTargetTileIndicies.Count;
+                    // 着地先(ゴースト)が存在し、かつ調整前から位置が変化した場合のみ有効とする
+                    // (位置が変わらないレンジを有効とすると、操作しても見た目に変化しない調整となってしまうため)
+                    int ghostTileIdx = GetActiveGhostTileIndex( context );
+                    bool isValid     = 0 <= ghostTileIdx && ghostTileIdx != prevGhostTileIdx;
 
                     if( isValid )
                     {
@@ -284,6 +280,15 @@ namespace Frontier.Entities
             {
                 currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
             }
+        }
+
+        /// <summary>
+        /// 表示中のゴーストのタイルインデックスを取得します。ゴーストが表示されていない場合は-1を返します。
+        /// </summary>
+        static private int GetActiveGhostTileIndex( TargetingRangeContext context )
+        {
+            var ghostObj = context.Owner.GhostObj;
+            return ( ghostObj != null && ghostObj.gameObject.activeSelf ) ? ghostObj.TileIndex : -1;
         }
 
         static private bool IsExistOpponent( TileDynamicData tileDynamicData, CHARACTER_TAG ownerTag )

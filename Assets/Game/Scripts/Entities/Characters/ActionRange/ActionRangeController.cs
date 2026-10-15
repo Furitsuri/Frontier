@@ -124,19 +124,27 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 表示用のActionableTileData(及びゴースト表示関連のフィールド)には影響を与えず、
-        /// 指定スキルの攻撃範囲内に攻撃対象が存在するかどうかのみを判定します。
+        /// 指定スキルが実行可能かどうかのみを判定します。
+        /// 移動を伴うスキルは、攻撃対象の有無によらず着地可能なタイルが範囲内に存在すれば実行可能とします。
+        /// それ以外のスキルは、攻撃範囲内に攻撃対象が存在する場合のみ実行可能とします。
         /// スキル選択画面などで、範囲プレビューを崩さずに使用可否を判定したい場合に使用します。
         /// </summary>
-        public bool HasAttackTargetForSkill( int dprtTileIdx, SkillID useSkillID )
+        public bool IsSkillExecutableAt( int dprtTileIdx, SkillID useSkillID )
         {
-            if( !SkillsData.IsTransitionSkillActionType( SkillsData.data[( int ) useSkillID].ActionType ) ) { return false; }
+            var skillData = SkillsData.data[( int ) useSkillID];
+            if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return false; }
 
             var tempTileData = new ActionableTileData();
             ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, ref tempTileData );
 
+            var selfKey = _owner.GetCharacterKey();
             foreach( var data in tempTileData.AttackableTileMap )
             {
-                if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return true; }
+                if( skillData.IsMovingSkill )
+                {
+                    if( data.Key != dprtTileIdx && data.Value.IsStandableBy( selfKey ) ) { return true; }
+                }
+                else if( Methods.HasAnyFlag( data.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return true; }
             }
 
             return false;
@@ -144,7 +152,7 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 指定スキルの攻撃可能範囲を、渡されたActionableTileDataへ計算します
-        /// (SetupAttackableRangeData(int,SkillID)とHasAttackTargetForSkillの共通処理)
+        /// (SetupAttackableRangeData(int,SkillID)とIsSkillExecutableAtの共通処理)
         /// </summary>
         private void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, ref ActionableTileData targetTileData )
         {

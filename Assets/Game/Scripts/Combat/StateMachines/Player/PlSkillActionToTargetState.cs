@@ -255,7 +255,8 @@ namespace Frontier.Battle
         protected override bool CanAcceptConfirm()
         {
             if( _phase != PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID ) { return false; }
-            return _targetSelector.HasTarget;
+            // 移動を伴うスキルは、攻撃対象が存在しなくても着地先が定まっていれば実行可能とする
+            return _targetSelector.HasTarget || 0 <= GetMovingSkillLandingTileIndex();
         }
 
         protected override bool CanAcceptCancel() => _phase == PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;

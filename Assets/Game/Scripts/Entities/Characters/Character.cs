@@ -186,11 +186,12 @@ namespace Frontier.Entities
 
                 // checkAttackTarget指定時のみ、ターゲット選択に遷移するタイプのスキル(攻撃系)について
                 // 実際に効果範囲内に攻撃対象が存在する場合のみ使用可能とする
+                // (移動を伴うスキルは攻撃対象が存在しなくても、着地可能なタイルがあれば使用可能とする)
                 // ( BattleLogicがまだ設定されていない場合(戦闘開始前のステータス反映時など)は、位置情報が不定のため判定をスキップする )
                 if( checkAttackTarget &&
                     SkillsData.IsTransitionSkillActionType( skillData.ActionType ) &&
                     null != _battleLogic &&
-                    !_battleLogic.ActionRangeCtrl.HasAttackTargetForSkill( BattleParams.TmpParam.CurrentTileIndex, skillID ) )
+                    !_battleLogic.ActionRangeCtrl.IsSkillExecutableAt( BattleParams.TmpParam.CurrentTileIndex, skillID ) )
                 {
                     continue;
                 }
