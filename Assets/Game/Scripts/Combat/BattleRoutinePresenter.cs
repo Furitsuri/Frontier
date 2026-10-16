@@ -1,11 +1,9 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
-using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -17,20 +15,17 @@ namespace Frontier.Battle
     public class BattleRoutinePresenter : PhasePresenterBase, IConfirmPresenter
     {
         [Inject] HierarchyBuilderBase _hierarchyBld = null;
-        [Inject] StageController _stageCtrl         = null;
 
         private const float USE_SKILL_OPTION_MENU_MARGIN_X = 16.0f;  // スキル使用オプション選択時、縦一列に並んだSkillBoxUIとコマンドメニューの間隔
 
-        private bool _isTileHeightDisplayEnabled = false;       // タイルの高さ表示を行うフェーズであるか
-        private float _displayedTileHeight       = float.NaN;   // 表示中の高さ(同値の場合は文字列の再生成を省く)
-        private int _tileHeightTargetIndex       = -1;          // グリッドカーソルの代わりに高さを表示するタイル(-1の場合はグリッドカーソルの対象タイル)
-
         private CharacterParameterPresenter[] _parameterPresenters;
+        private TileHeightPresenter _tileHeightPresenter;
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
         private Action<bool>[] SetActiveActionDirectionCallbacks;
         static private int[] _layerMaskIndecies;
         private SkillBoxLayoutAnimator _skillBoxLayoutAnimator = new SkillBoxLayoutAnimator();
         public CharacterParameterPresenter CharaParamView( ParameterWindowType winType ) => _parameterPresenters[( int ) winType];
+        public TileHeightPresenter TileHeightView => _tileHeightPresenter;
 
         public void Setup()
         {
@@ -39,6 +34,8 @@ namespace Frontier.Battle
                 _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.PlayerParameter, true }, false ),
                 _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.EnemyParameter, true }, false ),
             };
+
+            _tileHeightPresenter = _hierarchyBld.InstantiateWithDiContainer<TileHeightPresenter>( false );
 
             // グラデーション用マテリアルを設定済みのPlayerParameter/EnemyParameterにのみ、勢力に応じた背景色決定処理を差し込む
             foreach( var parameterPresenter in _parameterPresenters )
@@ -76,50 +73,7 @@ namespace Frontier.Battle
                 paramPresenter.Update();
             }
 
-            UpdateTileHeightDisplay();
-        }
-
-        /// <summary>
-        /// グリッドカーソルが選択しているタイルの高さ表示を行うか否かを設定します。
-        /// 有効にしている間、グリッドカーソルが表示されていれば高さを表示します。
-        /// </summary>
-        public void SetTileHeightDisplayEnabled( bool isEnabled )
-        {
-            _isTileHeightDisplayEnabled = isEnabled;
-
-            UpdateTileHeightDisplay();
-        }
-
-        /// <summary>
-        /// グリッドカーソルの対象タイルの代わりに、高さを表示するタイルを指定します。
-        /// 移動を伴うスキルの着地先など、グリッドカーソルの対象とは別のタイルの高さを見せたい場合に使用します。
-        /// -1を指定すると、グリッドカーソルの対象タイルの高さ表示に戻ります。
-        /// </summary>
-        public void SetTileHeightTargetTile( int tileIndex )
-        {
-            _tileHeightTargetIndex = tileIndex;
-
-            UpdateTileHeightDisplay();
-        }
-
-        /// <summary>
-        /// グリッドカーソルが選択しているタイル(SetTileHeightTargetTileで指定がある場合はそのタイル)の高さ表示を更新します
-        /// </summary>
-        private void UpdateTileHeightDisplay()
-        {
-            var tileHeightUi    = _uiSystem.BattleUi.TileHeight;
-            bool hasTargetTile  = 0 <= _tileHeightTargetIndex;
-            bool isVisible      = _isTileHeightDisplayEnabled && ( hasTargetTile || _stageCtrl.IsActiveGridCursor() );
-
-            tileHeightUi.SetVisible( isVisible );
-            if( !isVisible ) { return; }
-
-            int tileIndex = hasTargetTile ? _tileHeightTargetIndex : _stageCtrl.GetCurrentGridIndex();
-            float height  = _stageCtrl.GetTileStaticData( tileIndex ).Height;
-            if( height == _displayedTileHeight ) { return; }
-
-            _displayedTileHeight = height;
-            tileHeightUi.SetHeightText( "HEIGHT : " + height.ToString( "0.##", CultureInfo.InvariantCulture ) );
+            _tileHeightPresenter.Update();
         }
 
         public void SetActiveBattleUI( bool isActive )

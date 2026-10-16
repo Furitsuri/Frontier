@@ -135,7 +135,7 @@ namespace Frontier.Battle
             CleanupTargetSelectionState( _plOwner, _targetSelector.TargetCharacter );
             _provisionalOriginDisplay.Clear();
             _attackForecastDisplay.Clear();
-            _presenter.SetTileHeightTargetTile( -1 );
+            _presenter.TileHeightView.SetTargetTile( -1 );
 
             if( _isSkillQueued )
             {
@@ -401,7 +401,7 @@ namespace Frontier.Battle
 
             // 着地先が定まっている間は、グリッドカーソルの対象タイルではなく着地先のタイルの高さを表示する
             int landingTileIndex = ( PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID == _phase ) ? GetMovingSkillLandingTileIndex() : -1;
-            _presenter.SetTileHeightTargetTile( landingTileIndex );
+            _presenter.TileHeightView.SetTargetTile( landingTileIndex );
         }
 
         /// <summary>
