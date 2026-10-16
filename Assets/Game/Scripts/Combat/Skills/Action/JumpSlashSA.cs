@@ -15,14 +15,17 @@ namespace Frontier.Combat
     {
         /// <summary>
         /// ジャンプ斬りの範囲計算ルールを生成します(SkillRangeRules から参照されます)
-        /// 高さ情報が必要なため、StageController を閉じ込めたデリゲートを設定します
+        /// 高さ情報・使用者のジャンプ力が必要なため、StageController と使用者を閉じ込めたデリゲートを設定します
         /// </summary>
-        public static SkillRangeRules CreateRangeRules( StageController stageCtrl )
+        public static SkillRangeRules CreateRangeRules( StageController stageCtrl, Character owner )
         {
             return new SkillRangeRules(
-                postProcessor         : ( dprtIdx, atkRng, colNum, actionableTileData ) => FilterAttackTargets( dprtIdx, atkRng, colNum, actionableTileData, stageCtrl ),
-                ghostResolver         : ResolveLandingTile,
-                rangeAdjustmentFilter : IsKeepTileBeyondGhost );
+                reachability          : ( dprtIdx, prevIdx, tgtIdx, remainingRange ) => IsReachableByJump( dprtIdx, prevIdx, owner.GetStatusRef.jumpForce, stageCtrl ),
+                postProcessor         : ( dprtIdx, atkRng, colNum, actionableTileData ) => FilterAttackTargets( dprtIdx, atkRng, colNum, owner.GetStatusRef.jumpForce, actionableTileData, stageCtrl ),
+                ghostResolver         : ( tileIndex, actionableTileData, ctrl, selfKey, landingRange ) => ResolveLandingTile( tileIndex, actionableTileData, ctrl, selfKey, landingRange, owner.GetStatusRef.jumpForce ),
+                rangeAdjustmentFilter : IsKeepTileBeyondGhost,
+                maxRangeResolver      : dprtIdx => CalcurateMaxLandingRange( dprtIdx, owner.GetStatusRef.jumpForce, stageCtrl ),
+                targetableRangeMargin : 1 );    // 着地タイルの1つ先の相手を攻撃するため
         }
 
         // ゴースト距離より遠いタイルの保持・除外を判定するスキル固有フィルタ
@@ -33,17 +36,63 @@ namespace Frontier.Combat
                 Methods.HasAnyFlag( candidateTileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );
         }
 
-        private static void FilterAttackTargets( int dprtIdx, int atkRng, int colNum, ActionableTileData actionableTileData, StageController stageCtrl )
+        /// <summary>
+        /// 着地可能な最大の横方向の距離を求めます。
+        /// 高さ h のタイルへは (自身のタイルの高さ - h) + ジャンプ力 の距離まで着地出来るため、ステージ上で最も低いタイルを基準とします。
+        /// </summary>
+        private static int CalcurateMaxLandingRange( int dprtIdx, int jumpForce, StageController stageCtrl )
+        {
+            ( int rowNum, int colNum ) = stageCtrl.GetGridNumsXZ();
+            float minHeight = float.MaxValue;
+            for( int i = 0; i < rowNum * colNum; ++i )
+            {
+                minHeight = Mathf.Min( minHeight, stageCtrl.GetTileStaticData( i ).Height );
+            }
+
+            float selfHeight = stageCtrl.GetTileStaticData( dprtIdx ).Height;
+            return Mathf.Max( 0, Mathf.FloorToInt( selfHeight + jumpForce - minHeight ) );
+        }
+
+        /// <summary>
+        /// 範囲を直前のタイルから次のタイルへ伸ばせるかを判定します。
+        /// 直前のタイルを飛び越えられる場合のみ先へ伸ばします(飛び越えられないタイル自体は、着地タイルの先の攻撃対象となり得るため範囲に含めます)
+        /// </summary>
+        private static bool IsReachableByJump( int dprtIdx, int prevIdx, int jumpForce, StageController stageCtrl )
+        {
+            if( prevIdx == dprtIdx ) { return true; }
+
+            int   prevDist   = stageCtrl.CalculateTotalRange( dprtIdx, prevIdx );
+            float selfHeight = stageCtrl.GetTileStaticData( dprtIdx ).Height;
+            return !IsBlockingJump( selfHeight, jumpForce, prevDist, prevIdx, stageCtrl );
+        }
+
+        /// <summary>
+        /// 指定のタイルがジャンプの妨げとなる(飛び越えられない)かを判定します。
+        /// 判定条件: n + JumpForce - x < h で飛び越え不可 (n=自身のタイルの高さ, x=横方向の距離, h=対象タイルの高さ)
+        /// 対象タイルにキャラクターが存在する場合は、h にキャラクターの高さを加えます。
+        /// </summary>
+        private static bool IsBlockingJump( float selfHeight, int jumpForce, int dist, int tileIdx, StageController stageCtrl )
+        {
+            float obstacleHeight = stageCtrl.GetTileStaticData( tileIdx ).Height;
+            if( stageCtrl.GetTileDynamicData( tileIdx ).CharaKey.IsValid() )
+            {
+                obstacleHeight += Constants.JUMP_SLASH_CHARACTER_HEIGHT;
+            }
+
+            return selfHeight + jumpForce - dist < obstacleHeight;
+        }
+
+        private static void FilterAttackTargets( int dprtIdx, int atkRng, int colNum, int jumpForce, ActionableTileData actionableTileData, StageController stageCtrl )
         {
             int[] dirOffsets = { colNum, 1, -colNum, -1 };
             foreach( int dirOffset in dirOffsets )
             {
-                FilterAttackTargetsInDirection( dprtIdx, atkRng, dirOffset, actionableTileData, stageCtrl );
+                FilterAttackTargetsInDirection( dprtIdx, atkRng, dirOffset, jumpForce, actionableTileData, stageCtrl );
             }
         }
 
-        // 指定の1方向について走査し、着地条件・高さ条件を満たさない敵を攻撃対象から除外する
-        private static void FilterAttackTargetsInDirection( int dprtIdx, int atkRng, int dirOffset, ActionableTileData actionableTileData, StageController stageCtrl )
+        // 指定の1方向について走査し、いずれかの着地タイルの直後にいて、かつ高さ条件を満たす敵のみを攻撃対象として残す
+        private static void FilterAttackTargetsInDirection( int dprtIdx, int atkRng, int dirOffset, int jumpForce, ActionableTileData actionableTileData, StageController stageCtrl )
         {
             var attackableMap = actionableTileData.AttackableTileMap;
 
@@ -61,19 +110,23 @@ namespace Frontier.Combat
                 }
             }
 
-            // 着地タイルの直後にいる敵のみフラグを復元する
-            ScanJumpLine( dprtIdx, dirOffset, atkRng, attackableMap, allEnemyIndices.Contains, tileData => true, stageCtrl, out _, out int targetTileIdx );
-            if( 0 <= targetTileIdx )
+            // 着地先は選択可能なため、着地可能な全てのタイルについて、その直後にいる敵のフラグを復元する
+            var landingTileIndices = ScanLandingTiles( dprtIdx, dirOffset, atkRng, jumpForce, attackableMap, tileData => true, stageCtrl );
+            foreach( int landingTileIdx in landingTileIndices )
             {
-                Methods.SetBitFlag( ref attackableMap[targetTileIdx].Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );
+                int targetTileIdx = landingTileIdx + dirOffset;
+                if( allEnemyIndices.Contains( targetTileIdx ) && IsAttackableFromLandingTile( landingTileIdx, targetTileIdx, stageCtrl ) )
+                {
+                    Methods.SetBitFlag( ref attackableMap[targetTileIdx].Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );
+                }
             }
         }
 
         /// <summary>
-        /// 着地先(ゴースト)のタイルを決定します。攻撃対象の絞り込みと同じ条件で走査し、ジャンプで着地可能な最も遠いタイルを返します。
+        /// 着地先(ゴースト)のタイルを決定します。着地先として選べる距離内で、ジャンプで着地可能な最も遠いタイルを返します。
         /// 着地可能なタイルが存在しない場合は-1を返します。
         /// </summary>
-        private static int ResolveLandingTile( int dprtIdx, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey )
+        private static int ResolveLandingTile( int dprtIdx, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, int landingRange, int jumpForce )
         {
             var targetableMap = actionableTileData.TargetableTileMap;
             if( targetableMap.Count <= 0 ) { return -1; }
@@ -82,79 +135,53 @@ namespace Frontier.Combat
             int nearestTileIdx = targetableMap.Keys.OrderBy( idx => stageCtrl.CalculateTotalRange( dprtIdx, idx ) ).First();
             if( stageCtrl.CalculateTotalRange( dprtIdx, nearestTileIdx ) != 1 ) { return -1; }
 
-            int dirOffset  = nearestTileIdx - dprtIdx;
-            int maxL       = targetableMap.Keys.Max( idx => stageCtrl.CalculateTotalRange( dprtIdx, idx ) );
-            var isOpponent = BattleLogicBase.IsOpponentFaction[( int ) selfKey.CharacterTag];
+            int dirOffset = nearestTileIdx - dprtIdx;
+            int maxL      = Math.Min( landingRange, targetableMap.Keys.Max( idx => stageCtrl.CalculateTotalRange( dprtIdx, idx ) ) );
 
-            ScanJumpLine( dprtIdx, dirOffset, maxL, targetableMap,
-                idx => isOpponent( targetableMap[idx].CharaKey.CharacterTag ),
-                tileData => tileData.IsStandableBy( selfKey ),
-                stageCtrl, out int landingTileIdx, out _ );
+            var landingTileIndices = ScanLandingTiles( dprtIdx, dirOffset, maxL, jumpForce, targetableMap, tileData => tileData.IsStandableBy( selfKey ), stageCtrl );
 
-            return landingTileIdx;
+            return ( 0 < landingTileIndices.Count ) ? landingTileIndices[^1] : -1;
         }
 
         /// <summary>
-        /// 指定方向へ1マスずつ走査し、ジャンプで着地可能な最も遠いタイルと、その直後にいる攻撃対象のタイルを求めます。
+        /// 指定方向へ1マスずつ走査し、ジャンプで着地可能なタイルを近い順に求めます。
         /// 攻撃対象の絞り込みと着地先の決定で同じ条件を用いるための共通処理です。
         /// 判定条件:
-        ///   着地タイル: 0 <= 1 - l + n (l=距離, n=自身タイル高さ-対象タイル高さ)
-        ///   攻撃対象:   着地タイルの直後 かつ 着地タイルとの高さの差が 1.0f 未満
+        ///   飛び越え不可: n + JumpForce - x < h (キャラクターが存在するタイルは h にキャラクターの高さを加える)。以降のタイルへは到達不可
+        ///   着地タイル:   キャラクターの存在しない、飛び越え不可でないタイル(味方・敵を問わずキャラクターは飛び越えられる)
         /// </summary>
         /// <param name="tileMap">走査するタイルの範囲。含まれないタイルに達した時点で走査を終了する</param>
-        /// <param name="isOpponentTile">敵が存在するタイルかどうか</param>
         /// <param name="isLandable">キャラクターの存在しないタイルのうち、着地可能なタイルかどうか(他キャラクターの着地予約など)</param>
-        /// <param name="landingTileIdx">着地可能な最も遠いタイル。存在しない場合は-1</param>
-        /// <param name="targetTileIdx">攻撃対象となる敵のタイル。存在しない場合は-1</param>
-        private static void ScanJumpLine( int dprtIdx, int dirOffset, int maxL, Dictionary<int, TileDynamicData> tileMap, Func<int, bool> isOpponentTile, Func<TileDynamicData, bool> isLandable, StageController stageCtrl, out int landingTileIdx, out int targetTileIdx )
+        private static List<int> ScanLandingTiles( int dprtIdx, int dirOffset, int maxL, int jumpForce, Dictionary<int, TileDynamicData> tileMap, Func<TileDynamicData, bool> isLandable, StageController stageCtrl )
         {
-            landingTileIdx = -1;
-            targetTileIdx  = -1;
+            var landingTileIndices = new List<int>();
+            float selfHeight       = stageCtrl.GetTileStaticData( dprtIdx ).Height;
 
-            float selfHeight             = stageCtrl.GetTileStaticData( dprtIdx ).Height;
-            int   lastValidLandingL      = -1;
-            float lastValidLandingHeight = 0f;
             for( int l = 1; l <= maxL; ++l )
             {
                 int tileIdx = dprtIdx + l * dirOffset;
                 if( !tileMap.TryGetValue( tileIdx, out var tileData ) ) { break; }
 
-                float tileHeight = stageCtrl.GetTileStaticData( tileIdx ).Height;
+                // 飛び越えられないタイルに達した場合、以降のタイルへも到達不可
+                if( IsBlockingJump( selfHeight, jumpForce, l, tileIdx, stageCtrl ) ) { break; }
 
-                if( isOpponentTile( tileIdx ) )
+                if( !tileData.CharaKey.IsValid() && isLandable( tileData ) )
                 {
-                    if( lastValidLandingL == l - 1 )
-                    {
-                        // 直前が有効な着地タイル → 高さの差が 1.0f 未満なら攻撃対象とする
-                        if( Mathf.Abs( tileHeight - lastValidLandingHeight ) < 1.0f )
-                        {
-                            targetTileIdx = tileIdx;
-                        }
-                        break;  // 着地タイル直後の敵を確認したら走査終了
-                    }
-                    // 直前が着地タイルでない場合は飛び越え対象 → 走査継続
-                }
-                else if( !tileData.CharaKey.IsValid() )
-                {
-                    // ジャンプ条件: 0 <= 1 - l + (selfHeight - tileHeight)
-                    float n = selfHeight - tileHeight;
-                    if( 0f > 1f - (float)l + n )
-                    {
-                        break;  // 条件不成立 → 以降のタイルへも到達不可
-                    }
-
-                    if( isLandable( tileData ) )
-                    {
-                        lastValidLandingL      = l;
-                        lastValidLandingHeight = tileHeight;
-                        landingTileIdx         = tileIdx;
-                    }
-                }
-                else
-                {
-                    break;  // 味方など通過不可なキャラクターが存在 → 走査停止
+                    landingTileIndices.Add( tileIdx );
                 }
             }
+
+            return landingTileIndices;
+        }
+
+        /// <summary>
+        /// 着地タイルから、その直後のタイルにいる相手を攻撃出来るかを判定します(高さの差が一定以内である必要があります)
+        /// </summary>
+        private static bool IsAttackableFromLandingTile( int landingTileIdx, int targetTileIdx, StageController stageCtrl )
+        {
+            float landingHeight = stageCtrl.GetTileStaticData( landingTileIdx ).Height;
+            float targetHeight  = stageCtrl.GetTileStaticData( targetTileIdx ).Height;
+            return Mathf.Abs( targetHeight - landingHeight ) <= Constants.JUMP_SLASH_ATTACKABLE_HEIGHT_DIFF;
         }
 
         private enum JumpSlashState

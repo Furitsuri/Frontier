@@ -242,6 +242,10 @@ static public class Constants
     public const float DASH_SLASH_SLASHING_SPEED_MULTIPLIER = 1.5f;
     // ダッシュスラッシュ: 直前のタイルとの高低差がこの値以下であれば、そのタイルへ進むことが出来る
     public const float DASH_SLASH_PASSABLE_HEIGHT_DIFF      = 0.25f;
+    // ジャンプスラッシュ: 着地タイルとの高低差がこの値以内の相手のみ攻撃対象とする
+    public const float JUMP_SLASH_ATTACKABLE_HEIGHT_DIFF    = 0.25f;
+    // ジャンプスラッシュ: キャラクターを飛び越える際に、タイルの高さへ加算するキャラクターの高さ(暫定で全キャラクター共通)
+    public const float JUMP_SLASH_CHARACTER_HEIGHT          = 1.0f;
 
     public const string INPUT_CAMERA_STRING = "CAMERA";
     public const string OBJECT_TAG_NAME_CHARA_SKIN_MESH     = "CharacterSkinMesh";

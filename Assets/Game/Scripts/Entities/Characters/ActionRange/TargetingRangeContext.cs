@@ -18,4 +18,10 @@ public class TargetingRangeContext
         /// nullの場合はデフォルト（ゴースト距離より遠いタイルをすべて除外）を使用します。
         /// </summary>
         public TileDataHandler.RangeAdjustmentFilter RangeAdjustmentFilter;
+
+        /// <summary>
+        /// 移動を伴うスキルについて、現在のレンジより先に攻撃対象として含めるタイル数。
+        /// 着地タイルの更に先の相手を攻撃するスキルで用います。
+        /// </summary>
+        public int TargetableRangeMargin;
     }

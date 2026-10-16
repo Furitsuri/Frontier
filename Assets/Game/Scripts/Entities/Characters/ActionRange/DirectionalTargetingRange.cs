@@ -35,6 +35,10 @@ namespace Frontier.Entities
 			baseForward.y = 0f;
 			baseForward = baseForward.normalized;
 
+            // 移動を伴うスキルでは、レンジは着地先として選べる距離を表す。
+            // 着地タイルの更に先の相手を攻撃するスキルのため、その分だけ先のタイルまで含める
+            int targetableRange = isMovingSkill ? range + context.TargetableRangeMargin : range;
+
             foreach( var attackableMap in actionableTileData.AttackableTileMap )
             {
 				// キャラクターの向きに沿ったタイル
@@ -43,7 +47,7 @@ namespace Frontier.Entities
 
 				// 指定範囲内のタイル
 				var tileRange = context.StageCtrl.CalculateTotalRange( tileIndex, attackableMap.Key );
-				if( range < tileRange ) { continue; }
+				if( targetableRange < tileRange ) { continue; }
 
 				// ターゲット可能タイルとして登録する
 				actionableTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
@@ -60,7 +64,7 @@ namespace Frontier.Entities
 			// 攻撃対象が存在しなくても、移動可能なタイルがあれば実行可能とする(全てのタイルが移動不可の場合はゴーストを表示せず実行不可)
 			if( isMovingSkill )
 			{
-				AdjustRangeForMove( context, tileIndex, actionableTileData );
+				AdjustRangeForMove( context, tileIndex, range, actionableTileData );
 			}
 		}
 
@@ -150,9 +154,9 @@ namespace Frontier.Entities
             return false;
         }
 
-        static private void AdjustRangeForMove( TargetingRangeContext context, int tileIndex, ActionableTileData actionableTileData )
+        static private void AdjustRangeForMove( TargetingRangeContext context, int tileIndex, int range, ActionableTileData actionableTileData )
         {
-            int ghostTileIdx = ResolveGhostTile( tileIndex, actionableTileData, context.StageCtrl, context.Owner.GetCharacterKey(), context.GhostResolver );
+            int ghostTileIdx = ResolveGhostTile( tileIndex, actionableTileData, context.StageCtrl, context.Owner.GetCharacterKey(), range, context.GhostResolver );
 
             // ゴースト位置より遠いタイルをターゲット可能マップおよび攻撃対象から除外する
             // スキル固有フィルタ (context.RangeAdjustmentFilter) がある場合はそれに委譲し、
@@ -208,7 +212,8 @@ namespace Frontier.Entities
                     dirTileData.AddTargetableTile( attackableMap.Key, attackableMap.Value );
                 }
 
-                if( 0 <= ResolveGhostTile( dprtTileIdx, dirTileData, stageCtrl, selfKey, resolver ) ) { return true; }
+                // 実行可否の判定ではレンジによる制限を設けず、範囲内のいずれかに着地出来るかを調べる
+                if( 0 <= ResolveGhostTile( dprtTileIdx, dirTileData, stageCtrl, selfKey, int.MaxValue, resolver ) ) { return true; }
             }
 
             return false;
@@ -217,20 +222,21 @@ namespace Frontier.Entities
         /// <summary>
         /// ゴーストタイルを決定します。スキル固有リゾルバがあればそれを使い、なければデフォルト（最遠の空きタイル）を用います。
         /// </summary>
-        static private int ResolveGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, TileDataHandler.GhostTileResolver resolver )
+        static private int ResolveGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, int landingRange, TileDataHandler.GhostTileResolver resolver )
         {
             return resolver != null
-                ? resolver( tileIndex, actionableTileData, stageCtrl, selfKey )
-                : ResolveDefaultGhostTile( tileIndex, actionableTileData, stageCtrl, selfKey );
+                ? resolver( tileIndex, actionableTileData, stageCtrl, selfKey, landingRange )
+                : ResolveDefaultGhostTile( tileIndex, actionableTileData, stageCtrl, selfKey, landingRange );
         }
 
         /// <summary>
-        /// デフォルトのゴーストタイル決定ロジック。ターゲット可能タイルのうち最も遠い空きタイルを返します。
+        /// デフォルトのゴーストタイル決定ロジック。着地先として選べる距離内のターゲット可能タイルのうち、最も遠い空きタイルを返します。
         /// </summary>
-        static private int ResolveDefaultGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey )
+        static private int ResolveDefaultGhostTile( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, int landingRange )
         {
             int ghostTileIdx = -1;
             var sortedTargetableMap = actionableTileData.TargetableTileMap
+                .Where( pair => stageCtrl.CalculateTotalRange( tileIndex, pair.Key ) <= landingRange )
                 .OrderBy( pair => stageCtrl.CalculateTotalRange( tileIndex, pair.Key ) );
 
             foreach( var targetableMap in sortedTargetableMap )

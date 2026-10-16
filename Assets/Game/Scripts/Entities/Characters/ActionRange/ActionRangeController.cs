@@ -19,8 +19,14 @@ namespace Frontier.Entities
         private ActionableRangeRenderer  _actionableRangeRdr     = null;
         private MoveDirectionArrowPlacer _moveDirectionArrowPlacer = null;
         private SkillRangeRules          _skillRangeRules         = SkillRangeRules.Default;
+        private int                      _skillMaxRange           = 0;
         private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
+        /// <summary>
+        /// 直近にSetupAttackableRangeData(int,SkillID)で設定したスキルの最大レンジ
+        /// (移動を伴うスキルでは着地可能な最大距離。攻撃対象として含める先のタイル数は含まない)
+        /// </summary>
+        public int SkillMaxRange => _skillMaxRange;
         public MovePathHandler MovePathHdlr => _movePathHandler;
         public ActionableTileData ActionableTileData => _actionableTileData;
         public ActionableRangeRenderer ActionableRangeRdr => _actionableRangeRdr;
@@ -116,7 +122,8 @@ namespace Frontier.Entities
                 return;
             }
 
-            _skillRangeRules = SkillRangeRules.Get( useSkillID, _stageCtrl );
+            _skillRangeRules = SkillRangeRules.Get( useSkillID, _stageCtrl, _owner );
+            _skillMaxRange   = ResolveSkillMaxRange( dprtTileIdx, useSkillID, _skillRangeRules );
 
             ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, _skillRangeRules, ref _actionableTileData );
         }
@@ -133,7 +140,7 @@ namespace Frontier.Entities
             var skillData = SkillsData.data[( int ) useSkillID];
             if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return false; }
 
-            var rules        = SkillRangeRules.Get( useSkillID, _stageCtrl );
+            var rules        = SkillRangeRules.Get( useSkillID, _stageCtrl, _owner );
             var tempTileData = new ActionableTileData();
             ExtractAttackableRangeDataForSkill( dprtTileIdx, useSkillID, rules, ref tempTileData );
 
@@ -159,11 +166,23 @@ namespace Frontier.Entities
         {
             SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
 
-            // スキルの効果範囲に負の値が設定されている場合は、キャラクターの攻撃レンジをそのまま用いる
-            var atkRng = ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
+            // 着地タイルの先の相手を攻撃するスキル等のため、最大レンジに攻撃対象として含める分のタイル数を加える
+            var atkRng = ResolveSkillMaxRange( dprtTileIdx, useSkillID, rules ) + rules.TargetableRangeMargin;
 
             targetTileData.Init();
             _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref targetTileData, rules.PostProcessor, rules.Reachability );
+        }
+
+        /// <summary>
+        /// 指定スキルの最大レンジを求めます。
+        /// スキル固有の求め方が無い場合、スキルの効果範囲の値を用います(負の値の場合はキャラクターの攻撃レンジ)
+        /// </summary>
+        private int ResolveSkillMaxRange( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules )
+        {
+            if( rules.MaxRangeResolver != null ) { return rules.MaxRangeResolver( dprtTileIdx ); }
+
+            SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
+            return ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
         }
 
         public void ClearActionableRangeData()
@@ -204,7 +223,7 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _skillRangeRules.GhostResolver, RangeAdjustmentFilter = _skillRangeRules.RangeAdjustmentFilter };
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _skillRangeRules.GhostResolver, RangeAdjustmentFilter = _skillRangeRules.RangeAdjustmentFilter, TargetableRangeMargin = _skillRangeRules.TargetableRangeMargin };
             RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();

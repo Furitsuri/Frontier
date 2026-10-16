@@ -38,8 +38,9 @@ namespace Frontier.Stage
         /// 移動を伴うスキルのゴースト（着地点）タイルインデックスを決定するスキル固有デリゲート。
         /// 着地可能なタイルが存在しない場合は-1を返してください。
         /// nullの場合は DirectionalTargetingRange のデフォルト（最遠の空きタイル）が使用されます。
+        /// landingRange: 着地先として選べる最大の距離(現在のレンジ)
         /// </summary>
-        public delegate int GhostTileResolver( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey );
+        public delegate int GhostTileResolver( int tileIndex, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, int landingRange );
 
         /// <summary>
         /// ゴースト距離より遠いタイルを除外するかどうかをスキル固有に判定するデリゲート。

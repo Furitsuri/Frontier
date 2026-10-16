@@ -68,8 +68,9 @@ namespace Frontier.Battle
         public void Init( in SkillsData.Data skillData, TargetingRangeContext context )
         {
             _targetingMode     = skillData.TargetingMode;
-            // DIRECTIONALは自身の向きに沿った直線状の範囲すべてが攻撃対象範囲となるため、RangeValueをそのまま適用
-            _maxRange          = ( TargetingMode.DIRECTIONAL != _targetingMode ) ? skillData.TargetingRange : skillData.RangeValue;
+            // DIRECTIONALは自身の向きに沿った直線状の範囲すべてが攻撃対象範囲となるため、スキルの最大レンジをそのまま適用
+            // (スキルによってはジャンプ力や高さから求まるため、範囲設定時に求めた値を参照する)
+            _maxRange          = ( TargetingMode.DIRECTIONAL != _targetingMode ) ? skillData.TargetingRange : context.Owner.BattleLogic.ActionRangeCtrl.SkillMaxRange;
             _currentRange      = _maxRange;
             _isAdjustableRange = skillData.IsAdjustableRange;
             _isMovingSkill     = skillData.IsMovingSkill;

@@ -14,7 +14,7 @@ namespace Frontier.Combat
         /// <summary>
         /// ダッシュ斬りの範囲計算ルールを生成します(SkillRangeRules から参照されます)
         /// </summary>
-        public static SkillRangeRules CreateRangeRules( StageController stageCtrl )
+        public static SkillRangeRules CreateRangeRules( StageController stageCtrl, Character owner )
         {
             return new SkillRangeRules(
                 reachability  : ( dprtIdx, prevIdx, tgtIdx, remainingRange ) => IsPassableByDash( prevIdx, tgtIdx, stageCtrl ),
