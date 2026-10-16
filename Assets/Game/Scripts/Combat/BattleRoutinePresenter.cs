@@ -1,9 +1,11 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -15,6 +17,12 @@ namespace Frontier.Battle
     public class BattleRoutinePresenter : PhasePresenterBase, IConfirmPresenter
     {
         [Inject] HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] StageController _stageCtrl         = null;
+
+        private const float USE_SKILL_OPTION_MENU_MARGIN_X = 16.0f;  // スキル使用オプション選択時、縦一列に並んだSkillBoxUIとコマンドメニューの間隔
+
+        private bool _isTileHeightDisplayEnabled = false;       // タイルの高さ表示を行うフェーズであるか
+        private float _displayedTileHeight       = float.NaN;   // 表示中の高さ(同値の場合は文字列の再生成を省く)
 
         private CharacterParameterPresenter[] _parameterPresenters;
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
@@ -66,6 +74,37 @@ namespace Frontier.Battle
             {
                 paramPresenter.Update();
             }
+
+            UpdateTileHeightDisplay();
+        }
+
+        /// <summary>
+        /// グリッドカーソルが選択しているタイルの高さ表示を行うか否かを設定します。
+        /// 有効にしている間、グリッドカーソルが表示されていれば高さを表示します。
+        /// </summary>
+        public void SetTileHeightDisplayEnabled( bool isEnabled )
+        {
+            _isTileHeightDisplayEnabled = isEnabled;
+
+            UpdateTileHeightDisplay();
+        }
+
+        /// <summary>
+        /// グリッドカーソルが選択しているタイルの高さ表示を更新します
+        /// </summary>
+        private void UpdateTileHeightDisplay()
+        {
+            var tileHeightUi = _uiSystem.BattleUi.TileHeight;
+            bool isVisible   = _isTileHeightDisplayEnabled && _stageCtrl.IsActiveGridCursor();
+
+            tileHeightUi.SetVisible( isVisible );
+            if( !isVisible ) { return; }
+
+            float height = _stageCtrl.GetTileStaticData( _stageCtrl.GetCurrentGridIndex() ).Height;
+            if( height == _displayedTileHeight ) { return; }
+
+            _displayedTileHeight = height;
+            tileHeightUi.SetHeightText( "HEIGHT : " + height.ToString( "0.##", CultureInfo.InvariantCulture ) );
         }
 
         public void SetActiveBattleUI( bool isActive )
@@ -233,6 +272,7 @@ namespace Frontier.Battle
         {
             _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
             _uiSystem.BattleUi.PlCommandWindow.SetExecutableCommandList( executableCommands );
+            _uiSystem.BattleUi.PlCommandWindow.SetHorizontalOffset( 0f );
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 
@@ -246,6 +286,8 @@ namespace Frontier.Battle
         {
             _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
             _uiSystem.BattleUi.PlCommandWindow.SetUseSkillOptionList( options );
+            // この時点ではSkillBoxUIがステータスウィンドウの下に縦一列で並んだままであるため、重ならないようその右隣へずらす
+            _uiSystem.BattleUi.PlCommandWindow.SetHorizontalOffset( GetSkillBoxColumnWidth( ParameterWindowType.Left ) + USE_SKILL_OPTION_MENU_MARGIN_X );
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 
@@ -259,6 +301,7 @@ namespace Frontier.Battle
         {
             _uiSystem.BattleUi.PlCommandWindow.RegistCommandScript( script );
             _uiSystem.BattleUi.PlCommandWindow.SetReservedActionOptionList( options );
+            _uiSystem.BattleUi.PlCommandWindow.SetHorizontalOffset( 0f );
             _uiSystem.BattleUi.SetPlayerCommandActive( true );
         }
 
@@ -279,6 +322,17 @@ namespace Frontier.Battle
         {
             _uiSystem.BattleUi.TileMenuWindow.RegistCommandScript( null );
             _uiSystem.BattleUi.SetTileMenuActive( false );
+        }
+
+        /// <summary>
+        /// 縦一列に並べたSkillBoxUIの幅を取得します
+        /// </summary>
+        private float GetSkillBoxColumnWidth( ParameterWindowType winType )
+        {
+            var skillBoxes = _parameterPresenters[( int ) winType].GetSkillBoxes();
+            if( skillBoxes == null || skillBoxes.Length == 0 ) { return 0f; }
+
+            return ( ( RectTransform ) skillBoxes[0].transform ).rect.width;
         }
 
         /// <summary>

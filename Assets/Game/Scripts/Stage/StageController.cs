@@ -134,6 +134,14 @@ namespace Frontier.Stage
             _gridCursorCtrl.SetActiveGridCursor( isActive, GridCursorController.CursorType.GRID_CURSOR );
         }
 
+        /// <summary>
+        /// 選択グリッドが表示中であるかを取得します
+        /// </summary>
+        public bool IsActiveGridCursor()
+        {
+            return _gridCursorCtrl.IsActiveGridCursor( GridCursorController.CursorType.GRID_CURSOR );
+        }
+
         public void SetActiveTargetCursor( bool isActive )
         {
             _gridCursorCtrl.SetActiveGridCursor( isActive, GridCursorController.CursorType.TARGET_CURSOR );

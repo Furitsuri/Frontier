@@ -38,6 +38,9 @@ namespace Frontier.UI
         [Header( "GuideMessageUI" )]
         public BattleGuideMessageUI GuideMessage; // 画面中央上部の操作状態の案内文言
 
+        [Header( "TileHeightUI" )]
+        public TileHeightUI TileHeight;           // グリッドカーソルが選択しているタイルの高さ表示
+
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
@@ -105,6 +108,7 @@ namespace Frontier.UI
             CommandNameView?.Setup();
             SkillDetail?.Setup();
             GuideMessage?.Setup();
+            TileHeight?.Setup();
 
             DamageValue.Init( _rectTransform, _uiCamera );
             HpGauge.Init( _rectTransform, _uiCamera );

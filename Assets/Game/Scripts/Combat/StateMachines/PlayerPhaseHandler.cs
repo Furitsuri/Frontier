@@ -32,6 +32,9 @@ namespace Frontier.Battle
             }
 
             AssignPresenterToNodes( RootNode, _presenter );
+
+            // プレイヤーフェーズの間は、グリッドカーソルが選択しているタイルの高さを表示する
+            _presenter.SetTileHeightDisplayEnabled( true );
         }
 
         /// <summary>
@@ -87,6 +90,8 @@ namespace Frontier.Battle
                 player.ClearCommandHistory();
             }
             _provisionalOriginDisplay.Clear();
+
+            _presenter.SetTileHeightDisplayEnabled( false );
 
             base.Exit();
         }

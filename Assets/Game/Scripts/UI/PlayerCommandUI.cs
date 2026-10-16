@@ -19,6 +19,7 @@ namespace Frontier
         private RectTransform _commandUIBaseRectTransform;
         private VerticalLayoutGroup _cmdTextVerticalLayout;
         private float _defaultWidth; // Setup()時点の幅。表示するコマンドの文字列がこれより狭い場合はこの幅を下限として使う
+        private Vector2 _defaultAnchoredPosition; // Setup()時点の位置。SetHorizontalOffset()はこの位置を基準にずらす
         private ICommandCursorProvider _activeCommandScript;
         private Dictionary<COMMAND_TAG, LocKey> _commandTextKeys;
         private LocKey[] _useSkillOptionTextKeys;
@@ -107,6 +108,14 @@ namespace Frontier
             float width = Mathf.Max( _defaultWidth, maxTextWidth + horizontalMarginSize );
 
             _commandUIBaseRectTransform.sizeDelta = new Vector2( width, marginSize + ( fontSize + intervalSize ) * executableCmdNum - intervalSize );
+        }
+
+        /// <summary>
+        /// 表示位置を、既定の位置から横方向に指定量ずらします。0を指定すると既定の位置に戻ります。
+        /// </summary>
+        public void SetHorizontalOffset( float offsetX )
+        {
+            _commandUIBaseRectTransform.anchoredPosition = _defaultAnchoredPosition + new Vector2( offsetX, 0f );
         }
 
         /// <summary>
@@ -252,6 +261,7 @@ namespace Frontier
             _cmdTextVerticalLayout          = gameObject.GetComponent<VerticalLayoutGroup>();
             TextMeshProUGUI[] commandNames  = gameObject.GetComponentsInChildren<TextMeshProUGUI>();
             _defaultWidth                   = _commandUIBaseRectTransform.sizeDelta.x;
+            _defaultAnchoredPosition        = _commandUIBaseRectTransform.anchoredPosition;
 
             // childControlWidthがfalseだと、下地(_commandUIBaseRectTransform)の幅を変更しても
             // 各CommandItemの幅は追従しないため、テキストが折り返されたままになってしまう。

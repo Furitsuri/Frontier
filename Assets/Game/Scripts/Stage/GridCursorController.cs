@@ -108,6 +108,11 @@ namespace Frontier.Stage
             _gridCursors[( int ) cursorType].SetActive( isActive );
         }
 
+        public bool IsActiveGridCursor( CursorType cursorType )
+        {
+            return _gridCursors[( int ) cursorType].gameObject.activeSelf;
+        }
+
         public void SetCameraFocusType( CursorType cursorType )
         {
             _gridCursors[( int ) cursorType].SetCameraFocus( true );
