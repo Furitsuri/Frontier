@@ -135,6 +135,7 @@ namespace Frontier.Battle
             CleanupTargetSelectionState( _plOwner, _targetSelector.TargetCharacter );
             _provisionalOriginDisplay.Clear();
             _attackForecastDisplay.Clear();
+            _presenter.SetTileHeightTargetTile( -1 );
 
             if( _isSkillQueued )
             {
@@ -245,7 +246,7 @@ namespace Frontier.Battle
 
             // 新規開始・中断からの再開いずれの場合も、移動を伴うスキルの着地先に対する攻撃予告線を表示する
             // (上記でスキルの使用が確定した場合は消去される)
-            RefreshAttackForecastDisplay();
+            RefreshLandingTileDisplay();
         }
 
         protected override bool CanAcceptDefault()
@@ -288,7 +289,7 @@ namespace Frontier.Battle
 
             _targetSelector.AcceptDirection( context.Cursor, BuildTargetingContext() );
             _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
-            RefreshAttackForecastDisplay();
+            RefreshLandingTileDisplay();
 
             return true;
         }
@@ -362,7 +363,7 @@ namespace Frontier.Battle
             if( adjusted )
             {
                 _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
-                RefreshAttackForecastDisplay();
+                RefreshLandingTileDisplay();
             }
             return adjusted;
         }
@@ -375,7 +376,7 @@ namespace Frontier.Battle
             if( adjusted )
             {
                 _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
-                RefreshAttackForecastDisplay();
+                RefreshLandingTileDisplay();
             }
             return adjusted;
         }
@@ -386,8 +387,21 @@ namespace Frontier.Battle
             {
                 _targetSelector.UpdateFocusedTarget( _btlRtnCtrl.BtlCharaCdr.GetTargetCharacter() );
                 _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _plOwner, _targetSelector.TargetCharacter );
-                RefreshAttackForecastDisplay();
+                RefreshLandingTileDisplay();
             }
+        }
+
+        /// <summary>
+        /// 移動を伴うスキルの着地先に関する表示(攻撃予告線、タイルの高さ)を更新します。
+        /// 着地先が変わり得る操作(対象タイルの選択、射程の調整、対象の切り替え)の後に呼び出してください。
+        /// </summary>
+        private void RefreshLandingTileDisplay()
+        {
+            RefreshAttackForecastDisplay();
+
+            // 着地先が定まっている間は、グリッドカーソルの対象タイルではなく着地先のタイルの高さを表示する
+            int landingTileIndex = ( PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID == _phase ) ? GetMovingSkillLandingTileIndex() : -1;
+            _presenter.SetTileHeightTargetTile( landingTileIndex );
         }
 
         /// <summary>

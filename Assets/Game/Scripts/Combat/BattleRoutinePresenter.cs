@@ -23,6 +23,7 @@ namespace Frontier.Battle
 
         private bool _isTileHeightDisplayEnabled = false;       // タイルの高さ表示を行うフェーズであるか
         private float _displayedTileHeight       = float.NaN;   // 表示中の高さ(同値の場合は文字列の再生成を省く)
+        private int _tileHeightTargetIndex       = -1;          // グリッドカーソルの代わりに高さを表示するタイル(-1の場合はグリッドカーソルの対象タイル)
 
         private CharacterParameterPresenter[] _parameterPresenters;
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
@@ -90,17 +91,31 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// グリッドカーソルが選択しているタイルの高さ表示を更新します
+        /// グリッドカーソルの対象タイルの代わりに、高さを表示するタイルを指定します。
+        /// 移動を伴うスキルの着地先など、グリッドカーソルの対象とは別のタイルの高さを見せたい場合に使用します。
+        /// -1を指定すると、グリッドカーソルの対象タイルの高さ表示に戻ります。
+        /// </summary>
+        public void SetTileHeightTargetTile( int tileIndex )
+        {
+            _tileHeightTargetIndex = tileIndex;
+
+            UpdateTileHeightDisplay();
+        }
+
+        /// <summary>
+        /// グリッドカーソルが選択しているタイル(SetTileHeightTargetTileで指定がある場合はそのタイル)の高さ表示を更新します
         /// </summary>
         private void UpdateTileHeightDisplay()
         {
-            var tileHeightUi = _uiSystem.BattleUi.TileHeight;
-            bool isVisible   = _isTileHeightDisplayEnabled && _stageCtrl.IsActiveGridCursor();
+            var tileHeightUi    = _uiSystem.BattleUi.TileHeight;
+            bool hasTargetTile  = 0 <= _tileHeightTargetIndex;
+            bool isVisible      = _isTileHeightDisplayEnabled && ( hasTargetTile || _stageCtrl.IsActiveGridCursor() );
 
             tileHeightUi.SetVisible( isVisible );
             if( !isVisible ) { return; }
 
-            float height = _stageCtrl.GetTileStaticData( _stageCtrl.GetCurrentGridIndex() ).Height;
+            int tileIndex = hasTargetTile ? _tileHeightTargetIndex : _stageCtrl.GetCurrentGridIndex();
+            float height  = _stageCtrl.GetTileStaticData( tileIndex ).Height;
             if( height == _displayedTileHeight ) { return; }
 
             _displayedTileHeight = height;
