@@ -39,6 +39,11 @@ namespace Frontier.Combat
         public readonly TileDataHandler.RangeAdjustmentFilter RangeAdjustmentFilter;
 
         /// <summary>
+        /// 着地先の決定後に、ターゲット可能範囲内のタイルを攻撃対象として残すかどうかの判定
+        /// </summary>
+        public readonly TileDataHandler.AttackTargetFilter AttackTargetFilter;
+
+        /// <summary>
         /// 出発タイルから求める、スキル固有の最大レンジ(移動を伴うスキルでは着地可能な最大距離)。
         /// nullの場合はスキルデータの RangeValue が用いられます。
         /// </summary>
@@ -63,6 +68,7 @@ namespace Frontier.Combat
             TileDataHandler.AttackableDataPostProcessor postProcessor         = null,
             TileDataHandler.GhostTileResolver           ghostResolver         = null,
             TileDataHandler.RangeAdjustmentFilter       rangeAdjustmentFilter = null,
+            TileDataHandler.AttackTargetFilter          attackTargetFilter    = null,
             Func<int, int>                              maxRangeResolver      = null,
             int                                         targetableRangeMargin = 0 )
         {
@@ -70,6 +76,7 @@ namespace Frontier.Combat
             PostProcessor         = postProcessor;
             GhostResolver         = ghostResolver;
             RangeAdjustmentFilter = rangeAdjustmentFilter;
+            AttackTargetFilter    = attackTargetFilter;
             MaxRangeResolver      = maxRangeResolver;
             TargetableRangeMargin = targetableRangeMargin;
         }

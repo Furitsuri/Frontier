@@ -65,8 +65,6 @@ static public class Constants
     public const int DEPLOYABLE_UNIT_DEFAULT_NUM = 5;
     // ジャンプ動作が必要と判定する高低差
     public const int NEED_JUMP_HEIGHT_DIFFERENCE = 1;
-    // 降下する際に必要なジャンプ力に対して加算するマージン
-    public const int DESCENT_MARGIN = 1;
     // ステータス異常のビットフラグにおいて、カテゴリーの区切りとなるビット数
     public const int STATUS_EFFECT_CATEGORY_BIT = 8;
     // 雇用フェーズにおいて、キャラクターの雇用コストを計算する際に用いる各パラメータ毎の係数

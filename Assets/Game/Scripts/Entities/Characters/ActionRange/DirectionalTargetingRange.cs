@@ -179,6 +179,20 @@ namespace Frontier.Entities
                     actionableTileData.DeleteAttackTargetTileIndex( idx );
                     actionableTileData.DeleteTileMap( TileMapType.TARGETABLE, idx );
                 }
+
+                // 残ったタイルのうち、着地先との位置関係から攻撃対象とならないもの(飛び越える相手など)を攻撃対象から外す
+                var targetFilter = context.AttackTargetFilter;
+                if( targetFilter != null )
+                {
+                    var targetableMap      = actionableTileData.TargetableTileMap;
+                    var toRemoveFromTarget = targetableMap.Keys
+                        .Where( idx => !targetFilter( idx, ghostRange, context.StageCtrl.CalculateTotalRange( tileIndex, idx ), targetableMap[idx] ) )
+                        .ToList();
+                    foreach( int idx in toRemoveFromTarget )
+                    {
+                        actionableTileData.DeleteAttackTargetTileIndex( idx );
+                    }
+                }
             }
             else
             {

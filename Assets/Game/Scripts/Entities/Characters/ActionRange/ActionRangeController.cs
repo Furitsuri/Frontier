@@ -223,7 +223,7 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _skillRangeRules.GhostResolver, RangeAdjustmentFilter = _skillRangeRules.RangeAdjustmentFilter, TargetableRangeMargin = _skillRangeRules.TargetableRangeMargin };
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _skillRangeRules.GhostResolver, RangeAdjustmentFilter = _skillRangeRules.RangeAdjustmentFilter, AttackTargetFilter = _skillRangeRules.AttackTargetFilter, TargetableRangeMargin = _skillRangeRules.TargetableRangeMargin };
             RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();

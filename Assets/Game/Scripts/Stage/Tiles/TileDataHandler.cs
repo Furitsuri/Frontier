@@ -51,6 +51,15 @@ namespace Frontier.Stage
         /// </summary>
         public delegate bool RangeAdjustmentFilter( int candidateIdx, int ghostRange, int candidateDist, TileDynamicData candidateTileData );
 
+        /// <summary>
+        /// 着地先(ゴースト)の決定後、ターゲット可能範囲に残ったタイルを攻撃対象として扱うかどうかをスキル固有に判定するデリゲート。
+        /// 引数: candidateIdx=攻撃対象タイルインデックス, ghostRange=ゴーストの距離,
+        ///       candidateDist=攻撃対象タイルの距離, candidateTileData=攻撃対象タイルの動的データ
+        /// 戻り値: true=攻撃対象として残す / false=攻撃対象から外す(ターゲット可能範囲としては残る)
+        /// nullの場合は、ターゲット可能範囲に残った攻撃対象をすべてそのまま残します。
+        /// </summary>
+        public delegate bool AttackTargetFilter( int candidateIdx, int ghostRange, int candidateDist, TileDynamicData candidateTileData );
+
         private int[] _directionOffsets;
         private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
 
@@ -296,10 +305,10 @@ namespace Frontier.Stage
             TileType destTileType   = destTileData.TileType;
             int tileCost            = ownerTileCosts[( int ) destTileType];
 
-            // 高低差コストを取得
-            int heightCost = CalcurateHeightCost( dprtIndex, destIndex, jumpForce );
+            // 高低差がジャンプ力を超過している場合は移動不可(ジャンプ力以内であればコストには影響しない)
+            if( !IsWithinJumpHeight( dprtIndex, destIndex, jumpForce ) ) { return ( short.MaxValue, false ); }
 
-            return ( tileCost + heightCost, heightCost <= jumpForce );
+            return ( tileCost, true );
         }
 
         /// <summary>
@@ -441,14 +450,14 @@ namespace Frontier.Stage
             // 自身における敵対勢力キャラクターが存在すれば終了
             if( BattleLogicBase.IsOpponentFaction[Convert.ToInt32( charaKey.CharacterTag )]( tileDynamicData.CharaKey.CharacterTag ) ) { return; }
 
-            // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する
+            // 直前のタイルとの高さの差分を求め、ジャンプ値と比較して移動可能かを判定する(高低差は移動コストには影響しない)
             var staticData  = _stageDataProvider.CurrentData.GetTileStaticData( tileIdx );
             float curHeight = staticData.Height;
-            int heightCost  = CalcurateHeightCost( prevHeight, curHeight, jmp );
+            if( !IsWithinJumpHeight( prevHeight, curHeight, jmp ) ) { return; }
 
             // 現在グリッドの移動抵抗値を更新( 出発グリッドではmoveRangeの値をそのまま適応する )
             int tileTypeIndex           = Convert.ToInt32( staticData.TileType );
-            int currentMoveRange        = mvRng - tileCosts[tileTypeIndex] * staticData.MoveResist - heightCost;
+            int currentMoveRange        = mvRng - tileCosts[tileTypeIndex] * staticData.MoveResist;
             tileDynamicData.EstimatedMoveRange = currentMoveRange;
 
             // 負の値であれば終了
@@ -538,46 +547,34 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 隣接タイル間の高低差コストを計算します
+        /// 隣接タイル間を高低差の観点で移動可能かを判定します
         /// </summary>
-        /// <param name="dprtIndex"></param>
-        /// <param name="destIndex"></param>
-        /// <param name="jumpForce"></param>
-        /// <returns></returns>
-        private int CalcurateHeightCost( int dprtIndex, int destIndex, int jumpForce )
+        /// <param name="dprtIndex">移動元のタイルインデックス</param>
+        /// <param name="destIndex">移動先のタイルインデックス</param>
+        /// <param name="jumpForce">ジャンプ力</param>
+        /// <returns>移動可能であればtrue</returns>
+        private bool IsWithinJumpHeight( int dprtIndex, int destIndex, int jumpForce )
         {
             Debug.Assert( IsTileNextToEacheOther( dprtIndex, destIndex ), "" );
 
             float dprtHeight = _stageDataProvider.CurrentData.GetTile( dprtIndex ).StaticData().Height;
             float destHeight = _stageDataProvider.CurrentData.GetTile( destIndex ).StaticData().Height;
 
-            return CalcurateHeightCost( dprtHeight, destHeight, jumpForce );
+            return IsWithinJumpHeight( dprtHeight, destHeight, jumpForce );
         }
 
         /// <summary>
-        /// 
+        /// 高低差がジャンプ力以内であるかを判定します。上り・下りともに同じ基準で判定します。
+        /// 高低差は移動可否にのみ影響し、移動コストには影響しません。
+        /// 通常の移動と、移動を伴うスキルの着地判定の双方で用います。
         /// </summary>
-        /// <param name="dprtHeight"></param>
-        /// <param name="destHeight"></param>
-        /// <param name="jumpForce"></param>
-        /// <returns></returns>
-        private int CalcurateHeightCost( float dprtHeight, float destHeight, int jumpForce )
+        /// <param name="dprtHeight">移動元のタイルの高さ</param>
+        /// <param name="destHeight">移動先のタイルの高さ</param>
+        /// <param name="jumpForce">ジャンプ力</param>
+        /// <returns>移動可能であればtrue</returns>
+        public static bool IsWithinJumpHeight( float dprtHeight, float destHeight, int jumpForce )
         {
-            int retCost             = 0;
-            float diffHeightCeil    = Mathf.Ceil( destHeight - dprtHeight );
-
-            if( jumpForce < diffHeightCeil ||                           // ジャンプ力を超過している場合は、移動不可
-                diffHeightCeil <= -1 * ( jumpForce + DESCENT_MARGIN ) ) // 移動先のタイルが低くてても、高低差がジャンプ力+定数を超過している場合は、移動不可
-            {
-                retCost += short.MaxValue;  // int.MaxValueを入れるとオーバーフローしてしまうため、short.MaxValueに留める
-            }
-            // ジャンプ力以内の高さであれば、その分をコストに加算する
-            else if( 0 < diffHeightCeil )
-            {
-                retCost += Convert.ToInt32( diffHeightCeil );
-            }
-
-            return retCost;
+            return Mathf.Abs( destHeight - dprtHeight ) <= jumpForce;
         }
 
         #endregion PRIVATE_METHOD

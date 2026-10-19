@@ -20,6 +20,12 @@ public class TargetingRangeContext
         public TileDataHandler.RangeAdjustmentFilter RangeAdjustmentFilter;
 
         /// <summary>
+        /// 着地先(ゴースト)の決定後、ターゲット可能範囲内のタイルを攻撃対象として残すかを判定するスキル固有フィルタ。
+        /// nullの場合は、ターゲット可能範囲に残った攻撃対象をすべてそのまま残します。
+        /// </summary>
+        public TileDataHandler.AttackTargetFilter AttackTargetFilter;
+
+        /// <summary>
         /// 移動を伴うスキルについて、現在のレンジより先に攻撃対象として含めるタイル数。
         /// 着地タイルの更に先の相手を攻撃するスキルで用います。
         /// </summary>
