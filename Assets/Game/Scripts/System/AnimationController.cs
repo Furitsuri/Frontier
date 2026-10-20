@@ -45,6 +45,30 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 指定のアニメーションの再生時間(秒)を取得します。
+        /// 再生時間は AnimStateLengthTable にエディタ上で自動収集されたものを用います。
+        /// </summary>
+        /// <param name="animTag">アニメーションタグ</param>
+        /// <param name="length">再生時間(秒)</param>
+        /// <returns>取得出来た場合はtrue</returns>
+        public bool TryGetAnimationLength( AnimDatas.AnimeConditionsTag animTag, out float length )
+        {
+            return AnimStateLengthTable.TryGetLength( _readOnlyAnimator.Value.runtimeAnimatorController, animTag, out length );
+        }
+
+        /// <summary>
+        /// 指定のアニメーションの開始から、打撃のタイミング(SkillStrikeOnAnimEvent)までの時間(秒)を取得します。
+        /// 時間は AnimStateLengthTable にエディタ上で自動収集されたものを用います。
+        /// </summary>
+        /// <param name="animTag">アニメーションタグ</param>
+        /// <param name="strikeTime">打撃のタイミングまでの時間(秒)</param>
+        /// <returns>取得出来た場合はtrue(打撃のイベントが設定されていない場合はfalse)</returns>
+        public bool TryGetStrikeTime( AnimDatas.AnimeConditionsTag animTag, out float strikeTime )
+        {
+            return AnimStateLengthTable.TryGetStrikeTime( _readOnlyAnimator.Value.runtimeAnimatorController, animTag, out strikeTime );
+        }
+
+        /// <summary>
         /// 現在再生中のアニメーションを再開します
         /// </summary>
         public void RestartAnimator()

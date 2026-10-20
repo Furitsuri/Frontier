@@ -205,7 +205,10 @@ namespace Frontier.Combat
 
         private JumpSlashState _state;
         private bool _isAtLatter;
+        private bool _isPassedApex;
         private Vector3 _xzVelocity;
+        // 着地の何秒前に斬りかかりモーションを開始するか。モーションの長さが取得出来なかった場合は負の値(頂点通過時に開始する)
+        private float _latterLeadTime;
 
         [Inject]
         public JumpSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem )
@@ -219,7 +222,9 @@ namespace Frontier.Combat
         {
             base.StartAction();
 
-            _isAtLatter = false;
+            _isAtLatter     = false;
+            _isPassedApex   = false;
+            _latterLeadTime = ResolveLatterLeadTime();
 
             _state = JumpSlashState.START;
         }
@@ -248,19 +253,20 @@ namespace Frontier.Combat
                     }
                 case JumpSlashState.JUMPING:
                     {
-                        // 前フレームより Y 座標が下がった時点を放物運動の頂点通過とみなし、アニメーションを切り替える
-                        if( !_isAtLatter )
+                        // 前フレームより Y 座標が下がった時点を放物運動の頂点通過とみなす
+                        if( !_isPassedApex && _owner.GetPosition().y < _owner.GetPreviousPosition().y )
                         {
-                            float curY = _owner.GetPosition().y;
-                            float prevY = _owner.GetPreviousPosition().y;
-                            if( curY < prevY )
-                            {
-                                _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
-                                _isAtLatter = true;
+                            _isPassedApex = true;
 
-                                // 頂点を過ぎて降下(＝被弾)に転じるタイミングでカメラを寄りアングルへ遷移させる
-                                _cameraProcess?.TransitNextPhase();
-                            }
+                            // 頂点を過ぎて降下(＝被弾)に転じるタイミングでカメラを寄りアングルへ遷移させる
+                            _cameraProcess?.TransitNextPhase();
+                        }
+
+                        // 着地までの残り時間が斬りかかりモーションの先行時間を下回った時点で、モーションを開始する
+                        // (モーションの長さが取得出来なかった場合は、頂点通過時に開始する)
+                        if( !_isAtLatter && ( ( 0f <= _latterLeadTime ) ? CalcurateRemainingTimeToLand() <= _latterLeadTime : _isPassedApex ) )
+                        {
+                            StartLatterAnimation();
                         }
 
                         // UpdateAttack2TargetCharacters();
@@ -268,6 +274,9 @@ namespace Frontier.Combat
 
                         if( Methods.IsPassedPosition( _owner.GetPosition(), _goalPosition, _xzVelocity ) )
                         {
+                            // 万一モーションを開始しないまま着地した場合でも、モーションの終了待ちで停止しないよう開始しておく
+                            if( !_isAtLatter ) { StartLatterAnimation(); }
+
                             UpdateAttack2TargetCharacters();
 
                             _owner.ResetVelocityAcceleration();
@@ -291,6 +300,42 @@ namespace Frontier.Combat
                     EndAction();
                     break;
             }
+        }
+
+        private void StartLatterAnimation()
+        {
+            _owner.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER );
+            _isAtLatter = true;
+        }
+
+        /// <summary>
+        /// 斬りかかりモーションを着地の何秒前に開始するかを求めます。
+        /// モーションの打撃のタイミング(SkillStrikeOnAnimEvent)で着地するよう、モーションの開始から打撃までの時間を用います。
+        /// 打撃のイベントが設定されていない場合はモーションの終了時に着地するようモーションの長さを用い、
+        /// それも取得出来ない場合は負の値を返します。
+        /// </summary>
+        private float ResolveLatterLeadTime()
+        {
+            const AnimDatas.AnimeConditionsTag latterTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
+
+            if( _owner.AnimCtrl.TryGetStrikeTime( latterTag, out float strikeTime ) ) { return strikeTime; }
+
+            if( _owner.AnimCtrl.TryGetAnimationLength( latterTag, out float latterLength ) )
+            {
+                Debug.LogWarning( $"[JumpSlashSA] {_owner.name} の斬りかかりモーションに打撃のイベント(SkillStrikeOnAnimEvent)が設定されていないため、モーションの終了時に着地させます。" );
+                return latterLength;
+            }
+
+            Debug.LogWarning( $"[JumpSlashSA] {_owner.name} の斬りかかりモーションの長さが取得出来ないため、頂点通過時にモーションを開始します。(AnimStateLengthTable を再収集してください)" );
+            return -1f;
+        }
+
+        /// <summary>
+        /// 着地までの残り時間を求めます(XZ 方向は等速で移動するため、残りの水平距離から求められます)
+        /// </summary>
+        private float CalcurateRemainingTimeToLand()
+        {
+            return ( _goalPosition - _owner.GetPosition() ).XZ().magnitude / Constants.JUMP_SLASH_INITIAL_SPEED;
         }
 
         protected override bool IsFinished()
