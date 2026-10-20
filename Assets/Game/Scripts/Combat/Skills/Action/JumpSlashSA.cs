@@ -318,7 +318,7 @@ namespace Frontier.Combat
         {
             const AnimDatas.AnimeConditionsTag latterTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
 
-            if( _owner.AnimCtrl.TryGetStrikeTime( latterTag, out float strikeTime ) ) { return strikeTime; }
+            if( _owner.AnimCtrl.TryGetEventTime( latterTag, nameof( BattleAnimationEventReceiver.SkillStrikeOnAnimEvent ), out float strikeTime ) ) { return strikeTime; }
 
             if( _owner.AnimCtrl.TryGetAnimationLength( latterTag, out float latterLength ) )
             {
