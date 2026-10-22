@@ -313,6 +313,10 @@ namespace Frontier.UI
             if( !_hpGaugeUIByCharaId.TryGetValue( id, out CharacterHpGaugeUI ui ) )
             {
                 ui = Instantiate( HpGauge, HpGauge.transform.parent );
+                // Instantiateでは末尾(最前面)に追加されるため、テンプレートの直後へ移動する。
+                // HPゲージはキャラクター頭上に追従する表示であり、パラメータやコマンド等のHUDより奥に描画する必要がある
+                // (テンプレート自体はBattleUIの先頭に配置しておくこと)
+                ui.transform.SetSiblingIndex( HpGauge.transform.GetSiblingIndex() + 1 );
                 ui.Init( _rectTransform, _uiCamera );
                 _hpGaugeUIByCharaId[id] = ui;
             }
