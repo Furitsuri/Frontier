@@ -44,14 +44,18 @@ namespace Frontier.UI
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
+        // MEMO : 実行時に複製して用いるUIは、テンプレートと同じ親の下に生成されます。描画の前後関係を生成順に左右されないよう、
+        //        テンプレートはBattleUI直下の以下のレイヤーに配置しておくこと(同一Canvas内では、ヒエラルキーで後ろにあるものほど手前に描画される)
+        //          CharacterFollowLayer : BattleUIの先頭。HPゲージ等、キャラクターに追従する表示(パラメータ・コマンド等のHUDより奥)
+        //          EffectLayer          : HUDの後ろ、確認ダイアログ・リザルト等の前。ダメージ表記等の演出(HUDより手前)
         [Header( "DamageUI" )]
-        public DamageUI DamageValue;              // ダメージ表記（テンプレート兼第1インスタンス）
+        public DamageUI DamageValue;              // ダメージ表記（テンプレート兼第1インスタンス。EffectLayerに配置）
 
         [Header( "CharacterHpGaugeUI" )]
-        public CharacterHpGaugeUI HpGauge;        // キャラクター頭上の常時表示HPゲージ（テンプレート）
+        public CharacterHpGaugeUI HpGauge;        // キャラクター頭上の常時表示HPゲージ（テンプレート。CharacterFollowLayerに配置）
 
         [Header( "CooperativeVortexUI" )]
-        public CooperativeVortexUI CooperativeVortex; // 連携演出用渦巻きエフェクト（テンプレート兼第1インスタンス）
+        public CooperativeVortexUI CooperativeVortex; // 連携演出用渦巻きエフェクト（テンプレート兼第1インスタンス。EffectLayerに配置）
 
         [Header( "PhaseUI" )]
         public PhaseUI Phase;                     // フェーズ表記UI
@@ -60,7 +64,7 @@ namespace Frontier.UI
         public BattleAnimaUI BattleAnima;         // 戦闘中に獲得したアニマの常時表示
 
         [Header( "AnimaRewardEffectUI" )]
-        public AnimaRewardEffectUI AnimaRewardEffect; // アニマ獲得エフェクト（テンプレート兼第1インスタンス）
+        public AnimaRewardEffectUI AnimaRewardEffect; // アニマ獲得エフェクト（テンプレート兼第1インスタンス。EffectLayerに配置）
 
         [Header( "StageClearUI" )]
         public StageClearUI StageClear;           // ステージクリアUI
@@ -290,7 +294,7 @@ namespace Frontier.UI
 
         /// <summary>
         /// 攻撃予告線を伸ばしているキャラクターが画面から見切れている場合に表示する、顔アイコンを生成します。
-        /// キャラクター頭上のHPゲージと同じ階層(各種ウィンドウより奥)に、非表示の状態で生成されます。
+        /// キャラクター頭上のHPゲージと同じ階層(CharacterFollowLayer。各種ウィンドウより奥)に、非表示の状態で生成されます。
         /// </summary>
         /// <param name="prefab">顔アイコンのプレハブ(PrefabRegistry.AttackForecastIconPrefab)</param>
         public AttackForecastIconUI CreateAttackForecastIcon( AttackForecastIconUI prefab )
@@ -313,10 +317,6 @@ namespace Frontier.UI
             if( !_hpGaugeUIByCharaId.TryGetValue( id, out CharacterHpGaugeUI ui ) )
             {
                 ui = Instantiate( HpGauge, HpGauge.transform.parent );
-                // Instantiateでは末尾(最前面)に追加されるため、テンプレートの直後へ移動する。
-                // HPゲージはキャラクター頭上に追従する表示であり、パラメータやコマンド等のHUDより奥に描画する必要がある
-                // (テンプレート自体はBattleUIの先頭に配置しておくこと)
-                ui.transform.SetSiblingIndex( HpGauge.transform.GetSiblingIndex() + 1 );
                 ui.Init( _rectTransform, _uiCamera );
                 _hpGaugeUIByCharaId[id] = ui;
             }
