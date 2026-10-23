@@ -102,7 +102,7 @@ namespace Frontier.Battle
         /// </summary>
         public void PlayAnimaRewardEffect( Vector3 worldPosition, Action onArrived )
         {
-            _uiSystem.BattleUi.PlayAnimaRewardEffect( worldPosition, onArrived );
+            _uiSystem.BattleUi.AnimaRewardEffects.Play( worldPosition, _uiSystem.BattleUi.BattleAnima.RewardTargetLocalPosition, onArrived );
         }
 
         public void SetActiveConfirmUI( bool isActive, Frontier.StateMachine.ConfirmUIType uiType )
@@ -335,7 +335,7 @@ namespace Frontier.Battle
 
         private void CleanupDamageUIs()
         {
-            _uiSystem.BattleUi.CleanupDamageUIs();
+            _uiSystem.BattleUi.DamageValues.Cleanup();
         }
 
         static public int GetLayerMaskIndexFromWinType( ParameterWindowType winType )

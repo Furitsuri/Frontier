@@ -78,7 +78,7 @@ namespace Frontier.Sequences
         {
             float initialScale = COOPERATIVE_VORTEX_BASE_SCALE + _nextStartIndex * COOPERATIVE_VORTEX_SCALE_STEP;
             var chara = _participants[_nextStartIndex];
-            _uiSystem.BattleUi.ShowCooperativeVortexOnCharacter( chara, COOPERATIVE_VORTEX_DURATION, initialScale );
+            _uiSystem.BattleUi.CooperativeVortices.Show( chara, COOPERATIVE_VORTEX_DURATION, initialScale );
             PlayConvergingLines( chara );
             _btlRtnCtrl.GetBtlCameraCtrl.FocusCharacterForCooperativeVortex( chara );
             ++_nextStartIndex;

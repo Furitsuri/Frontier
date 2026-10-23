@@ -44,18 +44,18 @@ namespace Frontier.UI
         [Header( "ConfirmTurnEndUI" )]
         public ConfirmUI ConfirmTurnEnd;          // ターン終了確認UI
 
-        // MEMO : 実行時に複製して用いるUIは、テンプレートと同じ親の下に生成されます。描画の前後関係を生成順に左右されないよう、
-        //        テンプレートはBattleUI直下の以下のレイヤーに配置しておくこと(同一Canvas内では、ヒエラルキーで後ろにあるものほど手前に描画される)
+        // MEMO : 実行時に複製して用いるUIは、機能ごとのGroupViewが自身の子として生成・管理します。描画の前後関係を生成順に左右されないよう、
+        //        GroupViewはBattleUI直下の以下のレイヤーに配置しておくこと(同一Canvas内では、ヒエラルキーで後ろにあるものほど手前に描画される)
         //          CharacterFollowLayer : BattleUIの先頭。HPゲージ等、キャラクターに追従する表示(パラメータ・コマンド等のHUDより奥)
         //          EffectLayer          : HUDの後ろ、確認ダイアログ・リザルト等の前。ダメージ表記等の演出(HUDより手前)
-        [Header( "DamageUI" )]
-        public DamageUI DamageValue;              // ダメージ表記（テンプレート兼第1インスタンス。EffectLayerに配置）
+        [Header( "DamageValueGroupView" )]
+        public DamageValueGroupView DamageValues; // ダメージ表記の生成・管理（EffectLayerに配置）
 
         [Header( "CharacterHpGaugeGroupView" )]
         public CharacterHpGaugeGroupView HpGauges; // キャラクター頭上の常時表示HPゲージの生成・管理（CharacterFollowLayerに配置）
 
-        [Header( "CooperativeVortexUI" )]
-        public CooperativeVortexUI CooperativeVortex; // 連携演出用渦巻きエフェクト（テンプレート兼第1インスタンス。EffectLayerに配置）
+        [Header( "CooperativeVortexGroupView" )]
+        public CooperativeVortexGroupView CooperativeVortices; // 連携演出用渦巻きエフェクトの生成・管理（EffectLayerに配置）
 
         [Header( "PhaseUI" )]
         public PhaseUI Phase;                     // フェーズ表記UI
@@ -63,8 +63,8 @@ namespace Frontier.UI
         [Header( "BattleAnimaUI" )]
         public BattleAnimaUI BattleAnima;         // 戦闘中に獲得したアニマの常時表示
 
-        [Header( "AnimaRewardEffectUI" )]
-        public AnimaRewardEffectUI AnimaRewardEffect; // アニマ獲得エフェクト（テンプレート兼第1インスタンス。EffectLayerに配置）
+        [Header( "AnimaRewardEffectGroupView" )]
+        public AnimaRewardEffectGroupView AnimaRewardEffects; // アニマ獲得エフェクトの生成・管理（EffectLayerに配置）
 
         [Header( "StageClearUI" )]
         public StageClearUI StageClear;           // ステージクリアUI
@@ -78,16 +78,6 @@ namespace Frontier.UI
         private RectTransform _rectTransform;     // BattleUIのRectTransform
         private Camera _uiCamera;                 // UI表示用のカメラ
 
-        // キャラクターInstanceID → DamageUI のマッピング（キャラクター毎に個別管理）
-        private Dictionary<int, DamageUI> _damageUIByCharaId = new Dictionary<int, DamageUI>();
-
-        // キャラクターInstanceID → CooperativeVortexUI のマッピング（キャラクター毎に個別管理）
-        private Dictionary<int, CooperativeVortexUI> _cooperativeVortexUIByCharaId = new Dictionary<int, CooperativeVortexUI>();
-
-        // 生成済みのAnimaRewardEffectUIインスタンス一覧（同時に複数の撃破報酬が発生した場合に備え、
-        // キャラクター単位ではなく非アクティブなものを使い回すプールとして管理する）
-        private List<AnimaRewardEffectUI> _animaRewardEffects = new List<AnimaRewardEffectUI>();
-
         public void Setup()
         {
             LazyInject.GetOrCreate( ref _rectTransform, () => GetComponent<RectTransform>() );
@@ -97,11 +87,8 @@ namespace Frontier.UI
             PlCommandWindow?.Setup();
             TileMenuWindow?.Setup();
             ConfirmTurnEnd?.Setup();
-            DamageValue?.Setup();
-            CooperativeVortex?.Setup();
             Phase?.Setup();
             BattleAnima?.Setup();
-            AnimaRewardEffect?.Setup();
             StageClear?.Setup();
             StageResult?.Setup();
             GameOver?.Setup();
@@ -110,11 +97,10 @@ namespace Frontier.UI
             GuideMessage?.Setup();
             TileHeight?.Setup();
 
-            DamageValue.Init( _rectTransform, _uiCamera );
             HpGauges.Setup( _rectTransform, _uiCamera );
-            CooperativeVortex.Init( _rectTransform, _uiCamera );
-            AnimaRewardEffect.Init( _rectTransform, _uiCamera );
-            _animaRewardEffects.Add( AnimaRewardEffect );
+            DamageValues.Setup( _rectTransform, _uiCamera );
+            CooperativeVortices.Setup( _rectTransform, _uiCamera );
+            AnimaRewardEffects.Setup( _rectTransform, _uiCamera );
         }
 
         public void SetActiveLeftParameterWindow( bool isActive )
@@ -158,49 +144,22 @@ namespace Frontier.UI
             ParameterView.EnemyParameter.TMPDiffHPValue.gameObject.SetActive( isActive );
         }
 
-        /// <summary>
-        /// 全キャラクターのダメージUIをまとめて表示/非表示にします。
-        /// isActive=true の場合は何もしません（キャラクター毎に ShowDamageOnCharacter を使用してください）。
-        /// </summary>
-        public void ToggleDamageUI( bool isActive )
-        {
-            if( !isActive )
-            {
-                foreach( var ui in _damageUIByCharaId.Values )
-                {
-                    ui.Hide();
-                }
-            }
-        }
-
         public ConfirmUI GetConfirmTurnEndUI()
         {
             return ConfirmTurnEnd;
         }
 
         /// <summary>
-        /// 指定キャラクターのダメージUIを表示します。
+        /// 指定キャラクターのダメージUIを表示します(ICharacterUiFeedback)。
         /// duration が 0 以上の場合、指定秒数後に自動で非表示にします。
-        /// duration が負の値の場合は自動非表示を行わず、HideDamageOnCharacter() による明示的な非表示が必要です。
+        /// duration が負の値の場合は自動非表示を行わず、DamageValues.Hide() による明示的な非表示が必要です。
         /// </summary>
         /// <param name="chara">ダメージ表示対象のキャラクター</param>
         /// <param name="duration">自動非表示までの秒数。負の値で無効（デフォルト: -1）。</param>
         public void ShowDamageOnCharacter( Character chara, float duration = -1f )
         {
-            var ui = GetOrCreateDamageUI( chara );
-            SetDamageUIContent( ui, chara, chara.BattleParams.TmpParam.ExpectedHpChange );
-            ui.ShowWith( duration );
-        }
-
-        /// <summary>
-        /// 指定キャラクターのダメージUIを明示的に非表示にします
-        /// </summary>
-        public void HideDamageOnCharacter( Character chara )
-        {
-            if( _damageUIByCharaId.TryGetValue( chara.GetInstanceID(), out DamageUI ui ) )
-            {
-                ui.Hide();
-            }
+            ( string text, Color color ) = ResolveDamageContent( chara.BattleParams.TmpParam.ExpectedHpChange );
+            DamageValues.Show( chara, text, color, duration );
         }
 
         /// <summary>
@@ -233,46 +192,6 @@ namespace Frontier.UI
             return ui;
         }
 
-        /// <summary>
-        /// 連携演出用の渦巻きエフェクトを、指定キャラクターの画面上の位置に表示します。
-        /// duration 秒かけて縮小しながら回転し、経過後に自動的に非表示になります。
-        /// </summary>
-        /// <param name="initialScale">縮小開始時の拡大率(等倍=1)</param>
-        public void ShowCooperativeVortexOnCharacter( Character chara, float duration, float initialScale = 1f )
-        {
-            var ui = GetOrCreateCooperativeVortexUI( chara );
-            ui.CharacterTransform = chara.transform;
-            ui.Play( duration, initialScale );
-        }
-
-        /// <summary>
-        /// 生成したすべての CooperativeVortexUI インスタンスを破棄し、管理辞書をクリアします。
-        /// </summary>
-        public void CleanupCooperativeVortexUIs()
-        {
-            foreach( var ui in _cooperativeVortexUIByCharaId.Values )
-            {
-                if( ui != null ) { Destroy( ui.gameObject ); }
-            }
-            _cooperativeVortexUIByCharaId.Clear();
-        }
-
-        /// <summary>
-        /// キャラクターに対応する CooperativeVortexUI インスタンスを返します。
-        /// 存在しない場合は CooperativeVortex をテンプレートとして新規生成します。
-        /// </summary>
-        private CooperativeVortexUI GetOrCreateCooperativeVortexUI( Character chara )
-        {
-            int id = chara.GetInstanceID();
-            if( !_cooperativeVortexUIByCharaId.TryGetValue( id, out CooperativeVortexUI ui ) )
-            {
-                ui = Instantiate( CooperativeVortex, CooperativeVortex.transform.parent );
-                ui.Init( _rectTransform, _uiCamera );
-                _cooperativeVortexUIByCharaId[id] = ui;
-            }
-            return ui;
-        }
-
         public void SetTurnType( TurnType turntype )
         {
             Phase.SetTurnType( turntype );
@@ -301,49 +220,6 @@ namespace Frontier.UI
         public bool IsShowingBattleAnimaAddedValue()
         {
             return BattleAnima.IsShowingAddedValuePopup;
-        }
-
-        /// <summary>
-        /// 敵撃破位置からBattleAnimaUIへ向けてアニマ獲得エフェクトを再生します。
-        /// 演出がUIへ到達した時点でonArrivedが呼ばれます(実際のアニマ加算は呼び出し側の責務)。
-        /// </summary>
-        public void PlayAnimaRewardEffect( Vector3 worldPosition, Action onArrived )
-        {
-            var animaRect = ( RectTransform ) BattleAnima.transform;
-            Vector2 targetLocalPos = ( Vector2 ) animaRect.localPosition + animaRect.rect.center;
-
-            GetOrCreateAnimaRewardEffect().Play( worldPosition, targetLocalPos, onArrived );
-        }
-
-        /// <summary>
-        /// いずれかのアニマ獲得エフェクトが再生中(球がBattleAnimaUIへ向けて移動中)かどうかを取得します。
-        /// ステージクリア演出は、全ての球がUIへ到達するまで開始を待つために使用します。
-        /// </summary>
-        public bool IsAnyAnimaRewardEffectPlaying()
-        {
-            foreach( var effect in _animaRewardEffects )
-            {
-                if( effect.IsPlaying ) { return true; }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 非アクティブなAnimaRewardEffectUIインスタンスを1つ返します。無ければAnimaRewardEffectを
-        /// テンプレートとして新規生成します。
-        /// </summary>
-        private AnimaRewardEffectUI GetOrCreateAnimaRewardEffect()
-        {
-            foreach( var effect in _animaRewardEffects )
-            {
-                if( !effect.gameObject.activeSelf ) { return effect; }
-            }
-
-            var newEffect = Instantiate( AnimaRewardEffect, AnimaRewardEffect.transform.parent );
-            newEffect.Setup();
-            newEffect.Init( _rectTransform, _uiCamera );
-            _animaRewardEffects.Add( newEffect );
-            return newEffect;
         }
 
         public void StartAnimPhaseUI()
@@ -412,66 +288,24 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 生成したすべての DamageUI インスタンスを破棄し、管理辞書をクリアします。
-        /// バトル終了などのタイミングで明示的に破棄したい場合に呼び出してください。
+        /// ダメージ表記に表示する文言と色を決定します
         /// </summary>
-        public void CleanupDamageUIs()
+        /// <param name="damageValue">HPの変化量(負の値でダメージ、正の値で回復)</param>
+        private ( string text, Color color ) ResolveDamageContent( int damageValue )
         {
-            foreach( var ui in _damageUIByCharaId.Values )
-            {
-                if( ui != null ) { Destroy( ui.gameObject ); }
-            }
-            _damageUIByCharaId.Clear();
-        }
-
-        /// <summary>
-        /// キャラクターに対応する DamageUI インスタンスを返します。
-        /// 存在しない場合は DamageValue をテンプレートとして新規生成します。
-        /// </summary>
-        private DamageUI GetOrCreateDamageUI( Character chara )
-        {
-            int id = chara.GetInstanceID();
-            if( !_damageUIByCharaId.TryGetValue( id, out DamageUI ui ) )
-            {
-                ui = Instantiate( DamageValue, DamageValue.transform.parent );
-                ui.Init( _rectTransform, _uiCamera );
-                _damageUIByCharaId[id] = ui;
-            }
-            return ui;
-        }
-
-        /// <summary>
-        /// 指定の DamageUI にキャラクターのトランスフォームとダメージ値を設定します
-        /// </summary>
-        private void SetDamageUIContent( DamageUI ui, Character character, int damageValue )
-        {
-            ui.CharacterTransform = character.transform;
 
             ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
             if( parrySkillHdlr != null &&
                 ( parrySkillHdlr.IsMatchResult( JudgeResult.SUCCESS ) ||
                   parrySkillHdlr.IsMatchResult( JudgeResult.JUST ) ) )
             {
-                ui.damageText.color = Color.yellow;
-                ui.damageText.text = "DEFLECT";
+                return ( "DEFLECT", Color.yellow );
             }
-            else
-            {
-                int absDamage = Mathf.Abs( damageValue );
-                ui.damageText.text = absDamage.ToString();
-                if( damageValue < 0 )
-                {
-                    ui.damageText.color = Color.red;
-                }
-                else if( 0 < damageValue )
-                {
-                    ui.damageText.color = Color.green;
-                }
-                else
-                {
-                    ui.damageText.color = Color.white;
-                }
-            }
+
+            string text = Mathf.Abs( damageValue ).ToString();
+            if( damageValue < 0 ) { return ( text, Color.red ); }
+            if( 0 < damageValue ) { return ( text, Color.green ); }
+            return ( text, Color.white );
         }
     }
 }

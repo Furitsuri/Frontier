@@ -78,7 +78,7 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case Phase.WAIT_ANIMA_REWARD:
-                    if( !_uiSystem.BattleUi.IsAnyAnimaRewardEffectPlaying() )
+                    if( !_uiSystem.BattleUi.AnimaRewardEffects.IsAnyPlaying() )
                     {
                         _phase = Phase.WAIT_ANIMA_POPUP;
                     }

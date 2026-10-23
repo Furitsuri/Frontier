@@ -73,6 +73,19 @@ namespace Frontier.UI
         /// </summary>
         public bool IsShowingAddedValuePopup => 0 < _activePopups.Count;
 
+        /// <summary>
+        /// アニマ獲得エフェクトの到達位置(このUIの中心。BattleUI上のローカル座標)
+        /// ※このUIがBattleUIの直下に配置されていることを前提とします
+        /// </summary>
+        public Vector2 RewardTargetLocalPosition
+        {
+            get
+            {
+                var rect = ( RectTransform ) transform;
+                return ( Vector2 ) rect.localPosition + rect.rect.center;
+            }
+        }
+
         void Update()
         {
             for ( int i = _activePopups.Count - 1; 0 <= i; --i )

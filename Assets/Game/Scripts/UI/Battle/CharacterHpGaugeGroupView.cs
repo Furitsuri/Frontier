@@ -1,5 +1,4 @@
 ﻿using Frontier.Entities;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier.UI
@@ -15,11 +14,7 @@ namespace Frontier.UI
         [Tooltip( "キャラクターごとのHPゲージの複製元。自身の子として配置し、非表示の状態で保持します" )]
         [SerializeField] private CharacterHpGaugeUI _template;
 
-        private RectTransform _btlUiRectTransform;
-        private Camera _btlUiCamera;
-
-        // キャラクターInstanceID → CharacterHpGaugeUI のマッピング（キャラクター毎に個別管理）
-        private readonly Dictionary<int, CharacterHpGaugeUI> _gaugeByCharaId = new Dictionary<int, CharacterHpGaugeUI>();
+        private PerCharacterUiPool<CharacterHpGaugeUI> _pool;
 
         /// <summary>
         /// 初期化します
@@ -28,11 +23,10 @@ namespace Frontier.UI
         /// <param name="uiCamera">BattleUISystemに用いるUI用カメラ</param>
         public void Setup( RectTransform btlUiRect, Camera uiCamera )
         {
-            _btlUiRectTransform = btlUiRect;
-            _btlUiCamera        = uiCamera;
-
             _template.Setup();
-            _template.Init( _btlUiRectTransform, _btlUiCamera );
+            _template.Init( btlUiRect, uiCamera );
+
+            _pool = new PerCharacterUiPool<CharacterHpGaugeUI>( _template, transform, ui => ui.Init( btlUiRect, uiCamera ) );
         }
 
         /// <summary>
@@ -40,7 +34,7 @@ namespace Frontier.UI
         /// </summary>
         public void Show( Character chara )
         {
-            GetOrCreate( chara ).ShowFor( chara );
+            _pool.GetOrCreate( chara ).ShowFor( chara );
         }
 
         /// <summary>
@@ -49,12 +43,7 @@ namespace Frontier.UI
         /// </summary>
         public void Remove( Character chara )
         {
-            int id = chara.GetInstanceID();
-            if( _gaugeByCharaId.TryGetValue( id, out CharacterHpGaugeUI ui ) )
-            {
-                if( ui != null ) { Destroy( ui.gameObject ); }
-                _gaugeByCharaId.Remove( id );
-            }
+            _pool.Remove( chara );
         }
 
         /// <summary>
@@ -63,9 +52,9 @@ namespace Frontier.UI
         /// </summary>
         public void SetAllActive( bool isActive )
         {
-            foreach( var ui in _gaugeByCharaId.Values )
+            foreach( var ui in _pool.Values )
             {
-                if( ui != null ) { ui.gameObject.SetActive( isActive ); }
+                ui.gameObject.SetActive( isActive );
             }
         }
 
@@ -75,7 +64,7 @@ namespace Frontier.UI
         /// </summary>
         public void SetPredictedDamage( Character chara, int amount )
         {
-            if( _gaugeByCharaId.TryGetValue( chara.GetInstanceID(), out CharacterHpGaugeUI ui ) && ui != null )
+            if( _pool.TryGet( chara, out var ui ) )
             {
                 ui.SetPredictedDamage( amount );
             }
@@ -86,9 +75,9 @@ namespace Frontier.UI
         /// </summary>
         public void ClearAllPredictedDamage()
         {
-            foreach( var ui in _gaugeByCharaId.Values )
+            foreach( var ui in _pool.Values )
             {
-                if( ui != null ) { ui.ClearPredictedDamage(); }
+                ui.ClearPredictedDamage();
             }
         }
 
@@ -98,40 +87,19 @@ namespace Frontier.UI
         /// </summary>
         public void SuppressProvisionalMoveIcon( Character character )
         {
-            foreach( var pair in _gaugeByCharaId )
+            foreach( var pair in _pool.Pairs )
             {
-                if( pair.Value == null ) { continue; }
-
                 bool isSuppressed = ( null != character ) && ( pair.Key == character.GetInstanceID() );
                 pair.Value.SetProvisionalMoveIconVisible( !isSuppressed );
             }
         }
 
         /// <summary>
-        /// 生成したすべてのHPゲージを破棄し、管理辞書をクリアします。
+        /// 生成したすべてのHPゲージを破棄します。
         /// </summary>
         public void Cleanup()
         {
-            foreach( var ui in _gaugeByCharaId.Values )
-            {
-                if( ui != null ) { Destroy( ui.gameObject ); }
-            }
-            _gaugeByCharaId.Clear();
-        }
-
-        /// <summary>
-        /// キャラクターに対応するHPゲージを返します。存在しない場合はテンプレートを複製して新規生成します。
-        /// </summary>
-        private CharacterHpGaugeUI GetOrCreate( Character chara )
-        {
-            int id = chara.GetInstanceID();
-            if( !_gaugeByCharaId.TryGetValue( id, out CharacterHpGaugeUI ui ) )
-            {
-                ui = Instantiate( _template, transform );
-                ui.Init( _btlUiRectTransform, _btlUiCamera );
-                _gaugeByCharaId[id] = ui;
-            }
-            return ui;
+            _pool.Clear();
         }
     }
 }

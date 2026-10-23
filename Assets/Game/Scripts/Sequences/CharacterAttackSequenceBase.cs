@@ -133,7 +133,7 @@ namespace Frontier.Sequences
                     {
                         OnAttackTurnFinished();
                         // ダメージUIを非表示
-                        _uiSystem.BattleUi.HideDamageOnCharacter( _targetCharacter );
+                        _uiSystem.BattleUi.DamageValues.Hide( _targetCharacter );
 
                         // ガードスキルを使用時はガードモーションを戻す
                         int guardSkillIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD );
@@ -201,7 +201,7 @@ namespace Frontier.Sequences
                         else
                         {
                             // ダメージUIを非表示（パリィ成功 → 攻撃キャラがダメージを受けた）
-                            _uiSystem.BattleUi.HideDamageOnCharacter( _attackCharacter );
+                            _uiSystem.BattleUi.DamageValues.Hide( _attackCharacter );
 
                             _phase = Phase.WAIT_END;
                         }
@@ -219,7 +219,7 @@ namespace Frontier.Sequences
                         }
                         else
                         {
-                            _uiSystem.BattleUi.HideDamageOnCharacter( _attackCharacter );  // ダメージUIを非表示（カウンター → 攻撃キャラがダメージを受けた）
+                            _uiSystem.BattleUi.DamageValues.Hide( _attackCharacter );  // ダメージUIを非表示（カウンター → 攻撃キャラがダメージを受けた）
 
                             _phase = Phase.WAIT_END;
                         }
