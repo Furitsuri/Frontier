@@ -133,7 +133,7 @@ namespace Frontier.Battle
         /// </summary>
         public void SetPredictedDamageOnCharacter( Character chara, int amount )
         {
-            _uiSystem.BattleUi.SetPredictedDamageOnCharacter( chara, amount );
+            _uiSystem.BattleUi.HpGauges.SetPredictedDamage( chara, amount );
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Frontier.Battle
         /// </summary>
         public void ClearAllPredictedDamage()
         {
-            _uiSystem.BattleUi.ClearAllPredictedDamage();
+            _uiSystem.BattleUi.HpGauges.ClearAllPredictedDamage();
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Frontier.Battle
         /// </summary>
         public void SetHpGaugesActive( bool isActive )
         {
-            _uiSystem.BattleUi.SetHpGaugesActive( isActive );
+            _uiSystem.BattleUi.HpGauges.SetAllActive( isActive );
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Frontier.Battle
         /// </summary>
         public void SuppressProvisionalMoveIcon( Character character )
         {
-            _uiSystem.BattleUi.SuppressProvisionalMoveIcon( character );
+            _uiSystem.BattleUi.HpGauges.SuppressProvisionalMoveIcon( character );
         }
 
         public void ApplyColor2Options( int selectIndex )
