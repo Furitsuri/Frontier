@@ -1,5 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using System;
 using System.Collections.Generic;
 using Zenject;
 
@@ -14,6 +15,23 @@ namespace Frontier.Sequences
         public void Setup( FocusRoutineBase handler )
         {
             LazyInject.GetOrCreate( ref _handler, () => handler as SequenceHandler );
+        }
+
+        /// <summary>
+        /// シーケンス実行中も毎フレーム呼び出す処理を登録します。
+        /// シーケンス実行中は戦闘ルーチン等が一時停止されるため、停止中も継続させたい処理を登録してください。
+        /// </summary>
+        public void RegistUpdateWhileRunning( Action action )
+        {
+            _handler.RegistUpdateWhileRunning( action );
+        }
+
+        /// <summary>
+        /// RegistUpdateWhileRunningで登録した処理を解除します
+        /// </summary>
+        public void UnregistUpdateWhileRunning( Action action )
+        {
+            _handler.UnregistUpdateWhileRunning( action );
         }
 
         public void RegistAttack( Character attacker, Character target )

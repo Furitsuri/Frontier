@@ -74,12 +74,22 @@ namespace Frontier.Battle
 
         public void Update()
         {
+            UpdateParameterViews();
+
+            _tileHeightPresenter.Update();
+        }
+
+        /// <summary>
+        /// パラメータUIの表示(キャラクターのリアルタイム映像を含む)を更新します。
+        /// 攻撃・スキルシーケンス実行中は戦闘ルーチンが一時停止されUpdate()が呼ばれないため、
+        /// シーケンス実行中はSequenceHandlerからこの処理のみが毎フレーム呼ばれます。
+        /// </summary>
+        public void UpdateParameterViews()
+        {
             foreach( var paramPresenter in _parameterPresenters )
             {
                 paramPresenter.Update();
             }
-
-            _tileHeightPresenter.Update();
         }
 
         public void SetActiveBattleUI( bool isActive )

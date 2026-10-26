@@ -1,6 +1,7 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Registries;
+using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
@@ -23,6 +24,7 @@ namespace Frontier.Battle
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
         [Inject] private PrefabRegistry _prefabReg                  = null;
         [Inject] private CharacterPortraitRegistry _portraitReg     = null;
+        [Inject] private SequenceFacade _sequenceFcd                = null;
 
         private int _currentStageIndex                  = 0;
 
@@ -107,6 +109,9 @@ namespace Frontier.Battle
             _stgCtrl.Setup();
             _presenter.Setup();
             _btlCameraCtrl.Setup( true, _presenter );
+
+            // 攻撃・スキルシーケンス実行中もパラメータUIのキャラクター映像をリアルタイムに更新し続ける
+            _sequenceFcd.RegistUpdateWhileRunning( _presenter.UpdateParameterViews );
         }
 
         /// <summary>
@@ -273,6 +278,7 @@ namespace Frontier.Battle
         {
             _phaseHandlers[_currentPhase].Exit();
             _presenter.Exit();
+            _sequenceFcd.UnregistUpdateWhileRunning( _presenter.UpdateParameterViews );
 
 #if UNITY_EDITOR
             _debugMenuItems.Unregister();

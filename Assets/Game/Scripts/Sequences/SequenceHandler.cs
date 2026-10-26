@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,9 @@ namespace Frontier.Sequences
     {
         bool _isReservedExitOnCurrentRoutine = false;
         List<ISequence> _sequences = new List<ISequence>();
+        // シーケンス実行中も毎フレーム呼び出す処理。実行中は他のルーチンが一時停止されるため、
+        // 停止中も継続させたい処理(パラメータUIのキャラクター映像の更新等)はここに登録する
+        Action _updateWhileRunning = null;
 
         public void Regist( ISequence seq )
         {
@@ -18,6 +22,23 @@ namespace Frontier.Sequences
 
         public int GetSequencesCount() { return _sequences.Count; }
 
+        /// <summary>
+        /// シーケンス実行中も毎フレーム呼び出す処理を登録します
+        /// </summary>
+        public void RegistUpdateWhileRunning( Action action )
+        {
+            _updateWhileRunning -= action;  // 二重登録の防止
+            _updateWhileRunning += action;
+        }
+
+        /// <summary>
+        /// RegistUpdateWhileRunningで登録した処理を解除します
+        /// </summary>
+        public void UnregistUpdateWhileRunning( Action action )
+        {
+            _updateWhileRunning -= action;
+        }
+
         // Update is called once per frame
         public override void UpdateRoutine()
         {
@@ -27,6 +48,8 @@ namespace Frontier.Sequences
             {
                 _isReservedExitOnCurrentRoutine = true;
             }
+
+            _updateWhileRunning?.Invoke();
         }
 
         public override void LateUpdateRoutine()
