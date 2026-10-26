@@ -1,5 +1,5 @@
-﻿using Frontier.Combat;
-using Frontier.UI;
+﻿using Frontier.Battle;
+using Frontier.Combat;
 using Zenject;
 
 namespace Frontier.Sequences
@@ -10,17 +10,17 @@ namespace Frontier.Sequences
 
         private readonly SkillActionBase _skillAction;
         private readonly SkillID _skillId;
-        private readonly IUiSystem _uiSystem;
+        private readonly BattleRoutinePresenter _presenter;
 
         private Phase _phase;
         private bool _skillStarted;
 
         [Inject]
-        public SkillActionSequence( SkillActionBase skillAction, SkillID skillId, IUiSystem uiSystem )
+        public SkillActionSequence( SkillActionBase skillAction, SkillID skillId, BattleRoutinePresenter presenter )
         {
             _skillAction = skillAction;
             _skillId     = skillId;
-            _uiSystem    = uiSystem;
+            _presenter   = presenter;
         }
 
         public void Start()
@@ -28,7 +28,7 @@ namespace Frontier.Sequences
             _phase        = Phase.SHOW_SKILL_NAME;
             _skillStarted = false;
             _skillAction.OnBeforeNameDisplay();
-            _uiSystem.BattleUi.CommandNameView.Show( _skillId, 0.85f, () => _phase = Phase.EXECUTING );
+            _presenter.ShowCommandNameUI( _skillId, 0.85f, () => _phase = Phase.EXECUTING );
         }
 
         public bool Update()

@@ -21,7 +21,6 @@ namespace Frontier.Sequences
         private const string COOPERATIVE_COMMAND_NAME     = "Cooperation Attack";
         private const float  COOPERATIVE_COMMAND_DURATION = 0.85f;
 
-        [Inject] private IUiSystem               _uiSystem    = null;
         [Inject] private BattleRoutineController _btlRtnCtrl  = null;
 
         private readonly List<CooperativeSkillEntry> _entries;
@@ -51,7 +50,7 @@ namespace Frontier.Sequences
                 entry.SkillAction.OnBeforeNameDisplay();
             }
 
-            _uiSystem.BattleUi.CommandNameView.Show( COOPERATIVE_COMMAND_NAME, COOPERATIVE_COMMAND_DURATION, () => _phase = Phase.ACTIVATING );
+            _btlRtnCtrl.BtlPresenter.ShowCommandNameUI( COOPERATIVE_COMMAND_NAME, COOPERATIVE_COMMAND_DURATION, () => _phase = Phase.ACTIVATING );
         }
 
         /// <summary>

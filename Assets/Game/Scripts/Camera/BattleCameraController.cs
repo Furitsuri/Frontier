@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Battle;
+using Frontier.Entities;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -58,7 +59,6 @@ namespace Frontier
         [SerializeField] private float _angleYZMax                    = 80f;
         [SerializeField] private float _followDuration                = 1f;
 
-        [Inject] private IUiSystem   _uiSystem = null;
         [Inject] private InputFacade _inputFcd  = null;
 
         // --- FOLLOWING モード専用フィールド ---
@@ -132,12 +132,12 @@ namespace Frontier
             }
         }
 
-        public void Setup( bool createMosaicEff )
+        public void Setup( bool createMosaicEff, BattleRoutinePresenter presenter = null )
         {
             _sharedState = new BattleCameraSharedState
             {
                 MainCamera = Camera.main,
-                UiSystem   = _uiSystem,
+                Presenter  = presenter,
             };
 
             if( createMosaicEff )

@@ -42,8 +42,7 @@ namespace Frontier
             _phaseIndex = 0;
             StartPhase( fromPosition, sharedState.LookAtPosition );
 
-            _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( false );
-            _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( false );
+            _ctx.Presenter?.SetActiveParameterWindows( false );
         }
 
         public void TransitNextPhase()
@@ -67,8 +66,7 @@ namespace Frontier
 
         public void End()
         {
-            _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( true );
-            _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( true );
+            _ctx.Presenter?.SetActiveParameterWindows( true );
         }
 
         private void StartPhase( Vector3 fromPosition, Vector3 fromLookAt )

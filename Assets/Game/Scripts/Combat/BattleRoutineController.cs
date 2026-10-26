@@ -106,7 +106,7 @@ namespace Frontier.Battle
 
             _stgCtrl.Setup();
             _presenter.Setup();
-            _btlCameraCtrl.Setup( true );
+            _btlCameraCtrl.Setup( true, _presenter );
         }
 
         /// <summary>

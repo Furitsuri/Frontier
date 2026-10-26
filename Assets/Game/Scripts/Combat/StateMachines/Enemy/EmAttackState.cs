@@ -141,10 +141,8 @@ namespace Frontier.Battle
             // 予測ダメージをリセット
             _attackCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
             _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            // アタックカーソルUI非表示
-            _uiSystem.BattleUi.SetActiveLeft2RightDirection( false );
-            // ダメージ予測表示UIを非表示
-            _uiSystem.BattleUi.SetActiveActionResultExpect( false );
+            // アタックカーソルUI・ダメージ予測表示UIを非表示
+            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Right );
             // タイルメッシュの描画をすべてクリア
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
             // 選択グリッドを表示

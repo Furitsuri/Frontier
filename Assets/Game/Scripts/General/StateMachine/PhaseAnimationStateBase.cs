@@ -1,5 +1,5 @@
-﻿using Frontier.UI;
-using Zenject;
+﻿using Frontier.Battle;
+using Frontier.UI;
 
 namespace Frontier.StateMachine
 {
@@ -13,21 +13,27 @@ namespace Frontier.StateMachine
             NUM,
         }
 
-        protected BattleUISystem _btlUi = null;
+        private BattleRoutinePresenter _presenter = null;
+
+        // MEMO : AssignPresenter()の時点では子Presenterが未生成の場合があるため、参照の都度取得します
+        protected PhaseAnimationPresenter PhaseAnimPresenter => _presenter.PhaseAnimationView;
+
+        public override void AssignPresenter( PhasePresenterBase presenter )
+        {
+            _presenter = presenter as BattleRoutinePresenter;
+        }
 
         /// <summary>
         /// フェーズアニメーションを再生します
         /// </summary>
         virtual protected void StartPhaseAnim()
         {
-            _btlUi.StartAnimPhaseUI();
+            PhaseAnimPresenter.StartPhaseAnim();
         }
 
         public override void Init( object context )
         {
             base.Init( context );   // _transitIndex を -1 にリセット
-
-            _btlUi = _uiSystem.BattleUi;
 
             StartPhaseAnim();   // フェーズアニメーションの開始
         }
@@ -35,7 +41,7 @@ namespace Frontier.StateMachine
         public override bool Update()
         {
             // フェーズアニメーション中は操作無効
-            if( _btlUi.IsPlayingPhaseUI() )
+            if( PhaseAnimPresenter.IsPlayingPhaseAnim() )
             {
                 return false;
             }

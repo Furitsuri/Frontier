@@ -42,8 +42,7 @@ namespace Frontier
             _lookAtPosition         = CalcLookAtPosition( attacker, target );
             _lerpElapsed            = 0f;
 
-            _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( false );
-            _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( false );
+            _ctx.Presenter?.SetActiveParameterWindows( false );
         }
 
         /// <summary>
@@ -68,8 +67,7 @@ namespace Frontier
                 ? lastAttacker.transform.position
                 : _ctx.MainCamera.transform.position + _ctx.MainCamera.transform.forward;
 
-            _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( true );
-            _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( true );
+            _ctx.Presenter?.SetActiveParameterWindows( true );
         }
 
         public void Update()

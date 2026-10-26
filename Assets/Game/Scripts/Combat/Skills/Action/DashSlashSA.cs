@@ -97,8 +97,8 @@ namespace Frontier.Combat
         private Vector3 _velocity;
 
         [Inject]
-        public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl, IUiSystem uiSystem )
-            : base( owner, targetCharaKeys, btlRtnCtrl, stageCtrl, uiSystem )
+        public DashSlashSA( Character owner, List<CharacterKey> targetCharaKeys, BattleRoutineController btlRtnCtrl, StageController stageCtrl )
+            : base( owner, targetCharaKeys, btlRtnCtrl, stageCtrl )
         {
             _attackAnimTag = AnimDatas.AnimeConditionsTag.DASH_AND_JUMP_ATK_LATTER;
             _skillID       = SkillID.DASH_SLASH;

@@ -16,7 +16,6 @@ namespace Frontier.Sequences
     /// </summary>
     public class CooperativeVortexIntroSequence : ISequence
     {
-        [Inject] private IUiSystem               _uiSystem    = null;
         [Inject] private BattleRoutineController _btlRtnCtrl  = null;
         [Inject] private HierarchyBuilderBase    _hierarchyBld = null;
         [Inject] private PrefabRegistry          _prefabReg   = null;
@@ -78,7 +77,7 @@ namespace Frontier.Sequences
         {
             float initialScale = COOPERATIVE_VORTEX_BASE_SCALE + _nextStartIndex * COOPERATIVE_VORTEX_SCALE_STEP;
             var chara = _participants[_nextStartIndex];
-            _uiSystem.BattleUi.CooperativeVortices.Show( chara, COOPERATIVE_VORTEX_DURATION, initialScale );
+            _btlRtnCtrl.BtlPresenter.ShowCooperativeVortex( chara, COOPERATIVE_VORTEX_DURATION, initialScale );
             PlayConvergingLines( chara );
             _btlRtnCtrl.GetBtlCameraCtrl.FocusCharacterForCooperativeVortex( chara );
             ++_nextStartIndex;

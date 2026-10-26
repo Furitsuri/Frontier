@@ -32,7 +32,7 @@ namespace Frontier.Sequences
             _btlCamCtrl.StartAttackSequenceMode( _attackCharacter, _targetCharacter );
 
             // 攻撃シーケンス用の演出中は、キャラクター頭上のHPゲージを一時的に非表示にする
-            _uiSystem.BattleUi.HpGauges.SetAllActive( false );
+            _btlRtnCtrl.BtlPresenter.SetHpGaugesActive( false );
         }
 
         protected override bool IsReadyToAttack( float rotateRate ) => _btlCamCtrl.IsFadeAttack();
@@ -53,7 +53,7 @@ namespace Frontier.Sequences
             TransitStageField( _attackCharacter, _targetCharacter );  // バトルフィールドからステージフィールドに遷移
 
             // キャラクター頭上のHPゲージ表示を再開
-            _uiSystem.BattleUi.HpGauges.SetAllActive( true );
+            _btlRtnCtrl.BtlPresenter.SetHpGaugesActive( true );
 
             // 攻撃シーケンス用カメラを終了
             _btlCamCtrl.EndAttackSequenceMode( _attackCharacter );

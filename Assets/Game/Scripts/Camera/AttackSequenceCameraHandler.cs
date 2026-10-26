@@ -94,8 +94,7 @@ namespace Frontier
 
             _cameraOffset =Methods.RotateVector( _cameraBaseTransform, _pitch, _yaw, _roll, _cameraBaseTransform.forward ) * _length + _characterCameraOffset;
 
-            _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( false );
-            _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( false );
+            _ctx.Presenter?.SetActiveParameterWindows( false );
         }
 
         /// <summary>
@@ -149,8 +148,7 @@ namespace Frontier
                     var destCameraPos = _cameraBaseTransform.position + _cameraOffset;
                     if( _transitionEffect.UpdateEnter( _ctx.FollowingPosition, destCameraPos ) )
                     {
-                        _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( true );
-                        _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( true );
+                        _ctx.Presenter?.SetActiveParameterWindows( true );
                         _phase = Phase.BATTLE_FIELD;
                     }
                 }
@@ -177,8 +175,7 @@ namespace Frontier
                 {
                     if( _transitionEffect.UpdateExit( _ctx.PrevCameraPosition, _ctx.FollowingPosition ) )
                     {
-                        _ctx.UiSystem.BattleUi.SetActiveLeftParameterWindow( true );
-                        _ctx.UiSystem.BattleUi.SetActiveRightParameterWindow( true );
+                        _ctx.Presenter?.SetActiveParameterWindows( true );
 
                         _ctx.MainCamera.transform.position = _ctx.FollowingPosition;
                         _ctx.MainCamera.transform.LookAt( _ctx.LookAtPosition );

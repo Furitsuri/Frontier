@@ -20,12 +20,16 @@ namespace Frontier.Battle
 
         private CharacterParameterPresenter[] _parameterPresenters;
         private TileHeightPresenter _tileHeightPresenter;
+        private StageClearPresenter _stageClearPresenter;
+        private PhaseAnimationPresenter _phaseAnimationPresenter;
         private SelectableCharaParamPresenter _selectableCharaParamPresenter;
         private Action<bool>[] SetActiveActionDirectionCallbacks;
         static private int[] _layerMaskIndecies;
         private SkillBoxLayoutAnimator _skillBoxLayoutAnimator = new SkillBoxLayoutAnimator();
         public CharacterParameterPresenter CharaParamView( ParameterWindowType winType ) => _parameterPresenters[( int ) winType];
         public TileHeightPresenter TileHeightView => _tileHeightPresenter;
+        public StageClearPresenter StageClearView => _stageClearPresenter;
+        public PhaseAnimationPresenter PhaseAnimationView => _phaseAnimationPresenter;
 
         public void Setup()
         {
@@ -35,7 +39,9 @@ namespace Frontier.Battle
                 _hierarchyBld.InstantiateWithDiContainer<CharacterParameterPresenter>( new object[] { _uiSystem.BattleUi.ParameterView.EnemyParameter, true }, false ),
             };
 
-            _tileHeightPresenter = _hierarchyBld.InstantiateWithDiContainer<TileHeightPresenter>( false );
+            _tileHeightPresenter        = _hierarchyBld.InstantiateWithDiContainer<TileHeightPresenter>( false );
+            _stageClearPresenter        = _hierarchyBld.InstantiateWithDiContainer<StageClearPresenter>( false );
+            _phaseAnimationPresenter    = _hierarchyBld.InstantiateWithDiContainer<PhaseAnimationPresenter>( false );
 
             // グラデーション用マテリアルを設定済みのPlayerParameter/EnemyParameterにのみ、勢力に応じた背景色決定処理を差し込む
             foreach( var parameterPresenter in _parameterPresenters )
@@ -105,6 +111,22 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.AnimaRewardEffects.Play( worldPosition, _uiSystem.BattleUi.BattleAnima.RewardTargetLocalPosition, onArrived );
         }
 
+        /// <summary>
+        /// アニマ獲得エフェクトのいずれかが再生中かどうかを取得します
+        /// </summary>
+        public bool IsAnyAnimaRewardEffectPlaying()
+        {
+            return _uiSystem.BattleUi.AnimaRewardEffects.IsAnyPlaying();
+        }
+
+        /// <summary>
+        /// 獲得アニマUIの加算値ポップアップを表示中かどうかを取得します
+        /// </summary>
+        public bool IsShowingBattleAnimaAddedValue()
+        {
+            return _uiSystem.BattleUi.IsShowingBattleAnimaAddedValue();
+        }
+
         public void SetActiveConfirmUI( bool isActive, Frontier.StateMachine.ConfirmUIType uiType )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.gameObject.SetActive( isActive );
@@ -120,6 +142,15 @@ namespace Frontier.Battle
         {
             _uiSystem.BattleUi.SetActiveRight2LeftDirection( isActive );
             _uiSystem.BattleUi.SetActiveLeftParameterWindow( isActive );
+        }
+
+        /// <summary>
+        /// 左右のパラメータウィンドウの表示・非表示をまとめて切り替えます
+        /// </summary>
+        public void SetActiveParameterWindows( bool isActive )
+        {
+            _uiSystem.BattleUi.SetActiveLeftParameterWindow( isActive );
+            _uiSystem.BattleUi.SetActiveRightParameterWindow( isActive );
         }
 
         public void SetActiveActionResultExpect( bool isActive, ParameterWindowType fromWinType )
@@ -161,6 +192,30 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.HpGauges.SuppressProvisionalMoveIcon( character );
         }
 
+        /// <summary>
+        /// 指定キャラクターのダメージ表記を非表示にします。
+        /// </summary>
+        public void HideDamageOnCharacter( Character chara )
+        {
+            _uiSystem.BattleUi.DamageValues.Hide( chara );
+        }
+
+        /// <summary>
+        /// 指定キャラクターにダメージ表記を表示します。durationが負の値の場合は自動非表示を行いません。
+        /// </summary>
+        public void ShowDamageOnCharacter( Character chara, float duration = -1f )
+        {
+            _uiSystem.BattleUi.ShowDamageOnCharacter( chara, duration );
+        }
+
+        /// <summary>
+        /// 連携演出用の渦巻きエフェクトを指定キャラクターの位置に表示します。
+        /// </summary>
+        public void ShowCooperativeVortex( Character chara, float duration, float initialScale )
+        {
+            _uiSystem.BattleUi.CooperativeVortices.Show( chara, duration, initialScale );
+        }
+
         public void ApplyColor2Options( int selectIndex )
         {
             _uiSystem.BattleUi.ConfirmTurnEnd.ApplyTextColor( selectIndex );
@@ -180,9 +235,17 @@ namespace Frontier.Battle
             return _uiSystem.BattleUi.GameOver.isActiveAndEnabled;
         }
 
-        public void ShowCommandNameUI( SkillID skillId, float duration = 2.0f )
+        public void ShowCommandNameUI( SkillID skillId, float duration = 2.0f, Action onComplete = null )
         {
-            _uiSystem.BattleUi.CommandNameView.Show( skillId, duration );
+            _uiSystem.BattleUi.CommandNameView.Show( skillId, duration, onComplete );
+        }
+
+        /// <summary>
+        /// スキルIDに対応しない任意のコマンド名(連携攻撃等)を表示します
+        /// </summary>
+        public void ShowCommandNameUI( string commandName, float duration = 2.0f, Action onComplete = null )
+        {
+            _uiSystem.BattleUi.CommandNameView.Show( commandName, duration, onComplete );
         }
 
         /// <summary>

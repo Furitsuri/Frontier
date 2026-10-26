@@ -78,23 +78,22 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case Phase.WAIT_ANIMA_REWARD:
-                    if( !_uiSystem.BattleUi.AnimaRewardEffects.IsAnyPlaying() )
+                    if( !_presenter.IsAnyAnimaRewardEffectPlaying() )
                     {
                         _phase = Phase.WAIT_ANIMA_POPUP;
                     }
                     break;
 
                 case Phase.WAIT_ANIMA_POPUP:
-                    if( !_uiSystem.BattleUi.IsShowingBattleAnimaAddedValue() )
+                    if( !_presenter.IsShowingBattleAnimaAddedValue() )
                     {
-                        _uiSystem.BattleUi.ToggleStageClearUI( true );
-                        _uiSystem.BattleUi.StartStageClearAnim();
+                        _presenter.StageClearView.StartStageClearAnim();
                         _phase = Phase.WAIT_ANIM;
                     }
                     break;
 
                 case Phase.WAIT_ANIM:
-                    if( !_uiSystem.BattleUi.StageClear.IsPlayingAnim() )
+                    if( !_presenter.StageClearView.IsPlayingStageClearAnim() )
                     {
                         _phase = Phase.WAIT_CONFIRM;
                     }
@@ -125,12 +124,12 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case Phase.WAIT_CONFIRM:
-                    _uiSystem.BattleUi.ShowStageResult( _getBattleAnima(), _turnCount );
+                    _presenter.StageClearView.ShowStageResult( _getBattleAnima(), _turnCount );
                     _phase = Phase.WAIT_RESULT_CONFIRM;
                     break;
 
                 case Phase.WAIT_RESULT_CONFIRM:
-                    _uiSystem.BattleUi.HideStageResult();
+                    _presenter.StageClearView.HideStageResult();
                     _phase = Phase.DONE;
                     UnregisterInputCodes( GetInputCodeHash() );
                     break;

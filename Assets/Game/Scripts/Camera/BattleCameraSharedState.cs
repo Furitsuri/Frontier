@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Frontier.Battle;
+using UnityEngine;
 
 namespace Frontier
 {
@@ -11,7 +12,7 @@ namespace Frontier
     {
         // 外部参照（Setup 時に一度だけ設定）
         public Camera             MainCamera;
-        public IUiSystem          UiSystem;
+        public BattleRoutinePresenter Presenter;   // StageEditor等、戦闘外で使用する場合はnull
         public CameraMosaicEffect MosaicEffect;
 
         // 共有座標（ハンドラと FOLLOWING モード双方が読み書き）

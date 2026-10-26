@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Battle;
+using Frontier.Entities;
 using Frontier.Loaders;
 using Frontier.Sequences;
 using Frontier.UI;
@@ -14,7 +15,7 @@ namespace Frontier.Combat
         private const float DEFAULT_CAMERA_DURATION    = 0.5f;
 
         protected Character              _owner        = null;
-        protected IUiSystem              _uiSystem     = null;
+        protected BattleRoutinePresenter _presenter    = null;
         protected BattleCameraController _btlCamCtrl   = null;
         protected BattleFileLoader       _btlFileLoader = null;
 
@@ -35,10 +36,10 @@ namespace Frontier.Combat
             _owner = owner;
         }
 
-        public SkillActionBase( Character owner, IUiSystem uiSystem, BattleCameraController btlCamCtrl, BattleFileLoader btlFileLoader )
+        public SkillActionBase( Character owner, BattleRoutinePresenter presenter, BattleCameraController btlCamCtrl, BattleFileLoader btlFileLoader )
         {
             _owner         = owner;
-            _uiSystem      = uiSystem;
+            _presenter     = presenter;
             _btlCamCtrl    = btlCamCtrl;
             _btlFileLoader = btlFileLoader;
         }
@@ -129,7 +130,7 @@ namespace Frontier.Combat
                 }
             }
 
-            _uiSystem.BattleUi.ShowDamageOnCharacter( target, 1f );
+            _presenter.ShowDamageOnCharacter( target, 1f );
         }
 
         /// <summary>
