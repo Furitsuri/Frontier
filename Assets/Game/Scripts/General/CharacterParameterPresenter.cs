@@ -132,6 +132,18 @@ public class CharacterParameterPresenter : PhasePresenterBase
     }
 
     /// <summary>
+    /// 表示中のキャラクターのレイヤーを、このウィンドウのカメラに映るレイヤーへ再設定します。
+    /// 他の処理(GridCursor.Unbind等)によってレイヤーが既定に戻された場合に使用します。
+    /// AssignCharacterと異なり、キャラクターのアクティブ状態やパラメータ表示には触れません。
+    /// </summary>
+    public void RestoreCharacterLayer()
+    {
+        if( null == _character ) { return; }
+
+        _characterCamera?.AssignCharacter( _character, _layerMaskIndex );
+    }
+
+    /// <summary>
     /// SetBackgroundColorResolverで差し込まれた処理を使って背景色を適用します。
     /// パネル本体だけでなく、各SkillBoxUIの背景にも同じ色を反映します。
     /// </summary>

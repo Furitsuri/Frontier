@@ -136,14 +136,10 @@ namespace Frontier.Battle
             //        (BattleAnimationEventReceiver.DieOnAnimEvent → BattleCharacterCoordinator.NotifyCharacterDied)、
             //        ここでは行いません。
 
-            // アタッカーキャラクターの設定を解除
-            _stageCtrl.UnbindGridCursor();
-            // 予測ダメージをリセット
-            _attackCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            _targetCharacter.BattleParams.TmpParam.SetExpectedHpChange( 0, 0 );
-            // アタックカーソルUI・ダメージ予測表示UIを非表示
-            _presenter.SetActiveActionResultExpect( false, ParameterWindowType.Right );
-            // タイルメッシュの描画をすべてクリア
+            // 対象選択の共通後始末
+            // (パラメータウィンドウは攻撃シーケンス中も表示し続けるため非表示にせず、グリッドカーソルも下記の理由でオーナーへ戻さない)
+            CleanupTargetSelectionState( _attackCharacter, _targetCharacter, ParameterWindowType.Right, hideTargetWindow: false, focusOwner: false );
+            // 他キャラクターの描画分も含め、タイルメッシュの描画をすべてクリア
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、

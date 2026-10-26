@@ -153,6 +153,24 @@ namespace Frontier.Battle
             _uiSystem.BattleUi.SetActiveRightParameterWindow( isActive );
         }
 
+        /// <summary>
+        /// アクション方向を示す矢印とダメージ予測表示UIのみを切り替えます。
+        /// SetActiveActionResultExpectと異なり、パラメータウィンドウ自体の表示状態は変更しません。
+        /// </summary>
+        public void SetActiveActionDirectionAndResultExpect( bool isActive, ParameterWindowType fromWinType )
+        {
+            if( fromWinType == ParameterWindowType.Left )
+            {
+                _uiSystem.BattleUi.SetActiveLeft2RightDirection( isActive );
+            }
+            else
+            {
+                _uiSystem.BattleUi.SetActiveRight2LeftDirection( isActive );
+            }
+
+            _uiSystem.BattleUi.SetActiveActionResultExpect( isActive );
+        }
+
         public void SetActiveActionResultExpect( bool isActive, ParameterWindowType fromWinType )
         {
             SetActiveActionDirectionCallbacks[( int ) fromWinType]( isActive ); // アクション対象指定UIの表示・非表示
