@@ -29,10 +29,8 @@ namespace Frontier.Battle
             // TODO : 選択グリッドの設定
         }
 
-        public override void Update()
+        public override void UpdatePresentation()
         {
-            base.Update();
-
             _presenter.Update();
         }
 

@@ -38,16 +38,6 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 更新を行います
-        /// </summary>
-        public override void Update()
-        {
-            base.Update();
-
-            _presenter.Update();
-        }
-
-        /// <summary>
         /// 後更新を行います。
         /// フェーズ終了時にキューが残っていれば確認ステートへ遷移します。
         /// </summary>

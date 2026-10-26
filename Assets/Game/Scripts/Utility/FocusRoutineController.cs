@@ -143,7 +143,28 @@ public class FocusRoutineController : MonoBehaviour
 
         _currentRoutine.UpdateRoutine();
 
-        
+        UpdatePresentations();
+    }
+
+    /// <summary>
+    /// 実行中のルーチンの表示を更新します。実行中のルーチンが許可している場合は、一時停止中のルーチンの表示も更新します。
+    /// MEMO : 各ルーチンのロジック更新(UpdateRoutine)の後に呼ぶことで、更新後の状態を表示に反映させます。
+    /// </summary>
+    private void UpdatePresentations()
+    {
+        _currentRoutine.UpdatePresentation();
+
+        if( !_currentRoutine.KeepsPausedPresentation ) { return; }
+
+        for( int i = 0; i < _routines.Length; ++i )
+        {
+            if( _routines[i] == null || _routines[i] == _currentRoutine ) { continue; }
+
+            if( _routines[i].IsMatchFocusState( FocusState.PAUSE ) )
+            {
+                _routines[i].UpdatePresentation();
+            }
+        }
     }
 
     public void LateUpdateRoutine()

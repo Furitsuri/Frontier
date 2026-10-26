@@ -85,6 +85,12 @@ namespace Frontier.StateMachine
             CurrentNode.Update();   // 現在実行中のステートを更新
         }
 
+        /// <summary>
+        /// 表示(Presenter等)の更新を行います。攻撃シーケンス等で親のルーチンが一時停止中でも呼ばれる場合があるため、
+        /// ゲームの状態は変更せず見た目の更新のみを行ってください。
+        /// </summary>
+        virtual public void UpdatePresentation() { }
+
         virtual public bool LateUpdate()
         {
             object transitionContext = null;

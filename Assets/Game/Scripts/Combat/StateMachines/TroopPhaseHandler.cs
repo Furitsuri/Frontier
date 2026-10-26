@@ -14,5 +14,10 @@ namespace Frontier.Battle
         public TroopPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
         {
         }
+
+        public override void UpdatePresentation()
+        {
+            _presenter.Update();
+        }
     }
 }

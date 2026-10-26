@@ -31,12 +31,5 @@ namespace Frontier.Battle
 
             AssignPresenterToNodes( RootNode, _presenter );
         }
-
-        public override void Update()
-        {
-            base.Update();
-
-            _presenter.Update();
-        }
     }
 }

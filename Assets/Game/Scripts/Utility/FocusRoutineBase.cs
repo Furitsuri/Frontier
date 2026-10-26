@@ -17,6 +17,8 @@ public class FocusRoutineBase : MonoBehaviour, IFocusRoutine
     virtual public void UpdateRoutine() { }
     virtual public void LateUpdateRoutine() { }
     virtual public void FixedUpdateRoutine() { }
+    virtual public void UpdatePresentation() { }
+    virtual public bool KeepsPausedPresentation => false;
     virtual public void ScheduleRun()
     {
         _focusState = FocusState.RUN_SCHEDULED;

@@ -59,6 +59,11 @@ namespace Frontier
             _current.Update();
         }
 
+        public override void UpdatePresentation()
+        {
+            _current?.UpdatePresentation();
+        }
+
         public override void LateUpdateRoutine()
         {
             if( _current.LateUpdate() )

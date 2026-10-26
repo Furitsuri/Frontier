@@ -1,7 +1,6 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Registries;
-using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.StateMachine;
 using Frontier.UI;
@@ -24,7 +23,6 @@ namespace Frontier.Battle
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
         [Inject] private PrefabRegistry _prefabReg                  = null;
         [Inject] private CharacterPortraitRegistry _portraitReg     = null;
-        [Inject] private SequenceFacade _sequenceFcd                = null;
 
         private int _currentStageIndex                  = 0;
 
@@ -109,9 +107,6 @@ namespace Frontier.Battle
             _stgCtrl.Setup();
             _presenter.Setup();
             _btlCameraCtrl.Setup( true, _presenter );
-
-            // 攻撃・スキルシーケンス実行中もパラメータUIのキャラクター映像をリアルタイムに更新し続ける
-            _sequenceFcd.RegistUpdateWhileRunning( _presenter.UpdateParameterViews );
         }
 
         /// <summary>
@@ -153,18 +148,7 @@ namespace Frontier.Battle
 
         public override void Update()
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-            if( !Methods.IsDebugScene() )
-#endif
-            {
-                if( GameMain.instance.IsInvoking() )
-                {
-                    return;
-                }
-            }
-
-            // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は終了
-            if( _stageClearState.IsActive || _presenter.IsActiveGameOverAnimation() ) { return; }
+            if( !CanUpdatePhase() ) { return; }
 
             _phaseHandlers[_currentPhase].Update();
 
@@ -177,6 +161,32 @@ namespace Frontier.Battle
 #if UNITY_EDITOR
             _debugLabelPrsnt.Update( _btlCharaCdr );            // キャラクター頭上のデバッグ用ラベルを更新
 #endif // UNITY_EDITOR
+        }
+
+        public override void UpdatePresentation()
+        {
+            if( !CanUpdatePhase() ) { return; }
+
+            _phaseHandlers[_currentPhase].UpdatePresentation();
+        }
+
+        /// <summary>
+        /// 現在のフェーズの更新(ロジック・表示とも)を行える状態かどうかを判定します
+        /// </summary>
+        private bool CanUpdatePhase()
+        {
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            if( !Methods.IsDebugScene() )
+#endif
+            {
+                if( GameMain.instance.IsInvoking() )
+                {
+                    return false;
+                }
+            }
+
+            // ステージクリア時、ゲーム―オーバー時のUIアニメーションが再生されている場合は更新しない
+            return !( _stageClearState.IsActive || _presenter.IsActiveGameOverAnimation() );
         }
 
         public override bool LateUpdate()
@@ -278,7 +288,6 @@ namespace Frontier.Battle
         {
             _phaseHandlers[_currentPhase].Exit();
             _presenter.Exit();
-            _sequenceFcd.UnregistUpdateWhileRunning( _presenter.UpdateParameterViews );
 
 #if UNITY_EDITOR
             _debugMenuItems.Unregister();

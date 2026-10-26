@@ -39,13 +39,6 @@ namespace Frontier.Battle
         /// <summary>
         /// 更新を行います
         /// </summary>
-        public override void Update()
-        {
-            base.Update();
-
-            _presenter.Update();
-        }
-
         protected override void CreateTree()
         {
             // 遷移木の作成
