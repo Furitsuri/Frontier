@@ -37,33 +37,37 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 更新を行います
+        /// 遷移の木構造を作成します
         /// </summary>
         protected override void CreateTree()
         {
             // 遷移木の作成
+            // MEMO : 別のファイル(XMLなど)から読み込んで作成出来るようにするのもアリ
+
             /*
-             *  親子図
-             * 
-             *      EmPhaseAnimationState
-             *              ｜
-             *              └─ EmSelectState
-             *                      ｜
-             *                      ├─ EmMoveState
-             *                      ｜
-             *                      ├─ EmAttackState
-             *                      ｜
-             *                      ├─ EmSkillState
-             *                      ｜
-             *                      └─ EmWaitState
+             *  親子図 ( [n]は子ステートとしての登録順。EmSelectStateの子はCOMMAND_TAGの値と一致させること )
+             *
+             *      EmPhaseStateAnimation
+             *          ｜
+             *          └─ [0] EmSelectState
+             *                  ｜
+             *                  ├─ [0] EmMoveState   (COMMAND_TAG.MOVE)
+             *                  ├─ [1] EmAttackState (COMMAND_TAG.ATTACK)
+             *                  ├─ [2] EmSkillState  (COMMAND_TAG.SKILL)
+             *                  └─ [3] EmWaitState   (COMMAND_TAG.WAIT)
+             *
              */
 
+            var selectState = _hierarchyBld.InstantiateWithDiContainer<EmSelectState>( false );
+
             RootNode = _hierarchyBld.InstantiateWithDiContainer<EmPhaseStateAnimation>( false );
-            RootNode.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSelectState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSkillState>( false ) );
-            RootNode.GetChildren<PhaseStateBase>(0).AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
+            RootNode.AddChild( selectState );
+
+            // 行動選択
+            selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
+            selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
+            selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSkillState>( false ) );
+            selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
         }
     }
 }
