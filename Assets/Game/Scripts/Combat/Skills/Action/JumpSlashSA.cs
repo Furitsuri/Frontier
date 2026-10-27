@@ -247,6 +247,8 @@ namespace Frontier.Combat
                         _owner.SetVelocityAndAcceleration( _xzVelocity, Vector3.zero );
                         float speedRate = Constants.JUMP_SLASH_INITIAL_SPEED / Constants.CHARACTER_MOVE_SPEED;
                         _owner.StartSkillJump( startPos, _goalPosition, speedRate );
+                        // フレームが飛んだ際に軌道の途中まで一気に進まないよう、着地までの経過時間に上限を設ける
+                        _owner.LimitMoveDeltaTime( Constants.JUMP_SLASH_MAX_DELTA_TIME );
 
                         _state = JumpSlashState.JUMPING;
                         break;
@@ -280,6 +282,7 @@ namespace Frontier.Combat
                             UpdateAttack2TargetCharacters();
 
                             _owner.ResetVelocityAcceleration();
+                            _owner.ResetMoveDeltaTimeLimit();
                             _owner.SetPosition( _goalPosition );
                             _owner.BattleParams.TmpParam.CurrentTileIndex = _goalTileIndex;
                             _state = JumpSlashState.WAIT_END;

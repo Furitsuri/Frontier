@@ -61,6 +61,16 @@ namespace Frontier
         }
 
         /// <summary>
+        /// テーブルを事前に読み込み、検索用のキャッシュを構築します。
+        /// 初回の Resources.Load は参照先の Animator Controller・クリップも同期的に読み込むため重く、
+        /// スキル実行中に行うとフレームが飛び、放物運動等が途中まで進んでしまいます。ローディング中など、表示に影響しない時点で呼び出してください。
+        /// </summary>
+        public static void Preload()
+        {
+            Instance?.BuildLookupIfNeeded();
+        }
+
+        /// <summary>
         /// 指定の Animator Controller における、指定ステートの再生時間を取得します
         /// </summary>
         /// <param name="controller">対象の Animator Controller</param>

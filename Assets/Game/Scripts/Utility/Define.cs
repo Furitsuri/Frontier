@@ -232,6 +232,8 @@ static public class Constants
     public const float DASH_SLASH_INITIAL_SPEED             = 10f;
     // ジャンプスラッシュ: ジャンプ開始時の前方向速度
     public const float JUMP_SLASH_INITIAL_SPEED             = 3.33f;
+    // ジャンプスラッシュ: 放物運動の1フレームあたりの最大経過時間。フレームが飛んだ際に軌道の途中まで一気に進むことを防ぐ
+    public const float JUMP_SLASH_MAX_DELTA_TIME            = 1f / 30f;
     // ダッシュスラッシュ: ターゲット不在時に前方へ進むゴール距離
     public const float DASH_SLASH_FALLBACK_GOAL_DISTANCE    = 3f;
     // ダッシュスラッシュ: 攻撃判定を発動するターゲットとの距離閾値

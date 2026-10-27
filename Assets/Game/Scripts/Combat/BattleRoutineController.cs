@@ -136,6 +136,9 @@ namespace Frontier.Battle
             //        ローディング画面はその完了後に解除されるため、撮影は画面が表示される前に全て終わる
             _portraitReg.CaptureAll( _btlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) );
 
+            // スキル実行中に初回の読み込みでフレームが飛ばないよう、アニメーションの再生時間テーブルをローディング中に読み込んでおく
+            AnimStateLengthTable.Preload();
+
             _stgCtrl.TileDataHdlr().UpdateTileDynamicDatas();           // タイル情報を更新
             _currentPhase = BattlePhaseType.Deployment;                 // 初期フェイズを設定(配置フェーズ)
             _presenter.SetActiveBattleUI( false );                      // 配置フェーズ移行前に戦闘用UIの表示をOFF

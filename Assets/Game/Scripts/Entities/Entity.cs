@@ -34,6 +34,8 @@ namespace Frontier.Entities
         public void SetRotation( Direction direction )                                          => _transformHdlr.SetRotation( direction );
         public void SetVelocityAndAcceleration( in Vector3 velocity, in Vector3 accel )        => _transformHdlr.SetVelocityAndAcceleration( velocity, accel );
         public void ResetVelocityAcceleration()                                                 => _transformHdlr.ResetVelocityAcceleration();
+        public void LimitMoveDeltaTime( float maxDeltaTime )                                    => _transformHdlr.LimitMoveDeltaTime( maxDeltaTime );
+        public void ResetMoveDeltaTimeLimit()                                                   => _transformHdlr.ResetMoveDeltaTimeLimit();
         public void ResetRotationOrder()                                                        => _transformHdlr.ResetRotationOrder();
         public void OrderRotate( in Quaternion rotation )                                       => _transformHdlr.OrderRotate( rotation );
         public void RotateToPosition( in Vector3 targetPos )                                    => _transformHdlr.RotateToPosition( targetPos );

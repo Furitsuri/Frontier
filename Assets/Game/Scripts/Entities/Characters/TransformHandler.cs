@@ -10,6 +10,7 @@ public class TransformHandler
     private Quaternion _prevRotation;                       // 1フレーム前の回転
     private Quaternion _baseRotation;                       // ターン開始時や移動完了時など、回転命令が発行されていない状態の回転量(キャラクターの向き)を保存する(回転命令が発行されたときに、回転命令実行前の回転量を保存するために用いる)
     private Quaternion? _orderdRotation         = null;     // 指示されている回転量(nullは指示がないことを示す)
+    private float _maxMoveDeltaTime             = float.MaxValue;   // 速度・位置の更新に用いる1フレームあたりの最大経過時間
 
     public void Init()
     {
@@ -18,6 +19,7 @@ public class TransformHandler
         _prevPosition   = _readOnlyTransform.Value.position;
         _prevRotation   = _readOnlyTransform.Value.rotation;
         _orderdRotation = null;
+        _maxMoveDeltaTime = float.MaxValue;
     }
 
     public void Update( float deltaTime )
@@ -27,8 +29,9 @@ public class TransformHandler
         _prevRotation   = _readOnlyTransform.Value.rotation;
 
         // 速度・位置を更新
-        _readOnlyTransform.Value.position += ( _velocity * deltaTime + 0.5f * _accel * deltaTime * deltaTime );
-        _velocity += ( _accel * deltaTime );
+        float moveDeltaTime = Mathf.Min( deltaTime, _maxMoveDeltaTime );
+        _readOnlyTransform.Value.position += ( _velocity * moveDeltaTime + 0.5f * _accel * moveDeltaTime * moveDeltaTime );
+        _velocity += ( _accel * moveDeltaTime );
 
         AdjustRotationToXZPlane();  // キャラクターの角度をXZ平面に垂直となるように補正
 
@@ -94,6 +97,21 @@ public class TransformHandler
     {
         _velocity   = new Vector3( 0, 0, 0 );
         _accel      = new Vector3( 0, 0, 0 );
+    }
+
+    /// <summary>
+    /// 速度・位置の更新に用いる1フレームあたりの経過時間に上限を設けます。
+    /// フレームが飛んだ際に、放物運動などが軌道の途中まで一気に進むことを防ぎます(上限を超えた分の時間は運動が遅れます)。
+    /// ResetMoveDeltaTimeLimit() を呼ぶまで有効です。
+    /// </summary>
+    public void LimitMoveDeltaTime( float maxDeltaTime )
+    {
+        _maxMoveDeltaTime = maxDeltaTime;
+    }
+
+    public void ResetMoveDeltaTimeLimit()
+    {
+        _maxMoveDeltaTime = float.MaxValue;
     }
 
     public void ResetRotationOrder()
