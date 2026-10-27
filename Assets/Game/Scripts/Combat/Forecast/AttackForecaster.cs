@@ -32,8 +32,8 @@ namespace Frontier.Combat
 
                 skillModified.AddAtkNum         += skillData.AddAtkNum;
                 skillModified.AtkMagnification  += skillData.AddAtkMag;
-                // BattleParameters.RegreshModifiedParamと同じ算出方法で補正値を求める
-                modifiedAtk                     = ( int ) ( ( float ) attacker.GetStatusRef.Atk * skillModified.AtkMagnification );
+                // BattleParameters.RefreshModifiedParamと同じ算出方法で補正値を求める
+                modifiedAtk                     = BattleParameters.CalculateModifiedValue( attacker.GetStatusRef.Atk, skillModified.AtkMagnification );
                 actGaugeCost                    += skillData.Cost;
             }
 

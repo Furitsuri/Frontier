@@ -66,7 +66,7 @@ namespace Frontier.Entities
 
             Methods.SetBitFlag( ref _appliedSkillBit, skillID );
 
-            RegreshModifiedParam( ownerStatus );
+            RefreshModifiedParam( ownerStatus );
         }
 
         public void RemoveStatusEffect( StatusEffect statusEff )
@@ -86,33 +86,33 @@ namespace Frontier.Entities
 
             Methods.UnsetBitFlag( ref _appliedSkillBit, skillID );
 
-            RegreshModifiedParam( ownerStatus );
+            RefreshModifiedParam( ownerStatus );
         }
 
-        public void RegreshModifiedParam( in Status ownerStatus )
+        public void RefreshModifiedParam( in Status ownerStatus )
         {
-            float atk  = ( float ) ownerStatus.Atk * _skillModifiedParam.AtkMagnification;
-            float def  = ( float ) ownerStatus.Def * _skillModifiedParam.DefMagnification;
+            _modifiedParam.Atk = CalculateModifiedValue( ownerStatus.Atk, _skillModifiedParam.AtkMagnification );
+            _modifiedParam.Def = CalculateModifiedValue( ownerStatus.Def, _skillModifiedParam.DefMagnification );
+        }
 
-            var absAtk = Mathf.Abs( _modifiedParam.Atk );
-            if( 0f < absAtk && absAtk < 1f )
+        /// <summary>
+        /// 基礎値に倍率を掛けた補正値を求めます。
+        /// 補正値の絶対値が1未満(0は除く)となる場合は、補正が切り捨てによって消えてしまわないよう、符号を保ったまま1とします
+        /// </summary>
+        /// <param name="baseValue">基礎値</param>
+        /// <param name="magnification">倍率</param>
+        /// <returns>補正値</returns>
+        static public int CalculateModifiedValue( int baseValue, float magnification )
+        {
+            float value     = ( float ) baseValue * magnification;
+            float absValue  = Mathf.Abs( value );
+
+            if( 0f < absValue && absValue < 1f )
             {
-                _modifiedParam.Atk = ( int )( 1f * ( ( atk < 0f ) ? -1f : 1f ) );
-            }
-            else
-            {
-                _modifiedParam.Atk = ( int ) atk;
+                return ( value < 0f ) ? -1 : 1;
             }
 
-                var absDef = Mathf.Abs( _modifiedParam.Def );
-            if( 0f < absDef && absDef < 1f )
-            {
-                _modifiedParam.Def = ( int ) ( 1f * ( ( def < 0f ) ? -1f : 1f ) );
-            }
-            else
-            {
-                _modifiedParam.Def = ( int ) def;
-            }
+            return ( int ) value;
         }
     }
 }
