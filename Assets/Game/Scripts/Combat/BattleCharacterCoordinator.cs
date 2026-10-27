@@ -1,4 +1,5 @@
-﻿using Frontier.Entities;
+﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Entities.Ai;
 using Frontier.Stage;
 using System;
@@ -645,13 +646,9 @@ namespace Frontier.Battle
         /// <returns>単発攻撃の予測変動量、複数回攻撃を考慮した予測総変動量</returns>
         public ( int single, int total ) CalculateExpectedHpChange( Character attacker, Character target )
         {
-            int targetDef   = target.GetStatusRef.Def + target.BattleParams.ModifiedParam.Def;
-            int attackerAtk = attacker.GetStatusRef.Atk + attacker.BattleParams.ModifiedParam.Atk;
-            int changeHP    = ( targetDef - attackerAtk );
+            var forecast = AttackForecaster.Forecast( attacker, target );
 
-            int single = Mathf.Min( changeHP, 0 );
-            int total  = Mathf.Min( changeHP * ( 1 + attacker.BattleParams.SkillModifiedParam.AddAtkNum ), 0 );
-            return ( single, total );
+            return ( -forecast.SingleDamage, -forecast.TotalDamage );
         }
 
         /// <summary>

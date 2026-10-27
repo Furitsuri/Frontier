@@ -37,6 +37,18 @@ namespace Frontier.Entities
             _appliedStarusEffects.Clear();
         }
 
+        /// <summary>
+        /// 指定のスキルが適用中であるかを取得します
+        /// </summary>
+        /// <param name="skillID">指定スキルID</param>
+        /// <returns>適用中か否か</returns>
+        public bool IsSkillApplied( SkillID skillID )
+        {
+            if( !SkillsData.IsValidSkill( skillID ) ) { return false; }
+
+            return 0 != ( _appliedSkillBit & Methods.ToBit64( skillID ) );
+        }
+
         public void ApplyStatusEffect( StatusEffect statusEff )
         {
             _appliedStarusEffects.Add( statusEff );

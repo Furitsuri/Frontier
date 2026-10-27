@@ -1,4 +1,5 @@
 ﻿using Frontier.Battle;
+using Frontier.Combat;
 using Frontier.Entities;
 using Frontier.Stage;
 using System;
@@ -110,18 +111,17 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 対象のキャラクターを攻撃した際の評価値を計算します
         /// </summary>
-        /// <param name="mySelf">自身</param>
-        /// <param name="TargetCharacter">対象のキャラクター</param>
+        /// <param name="target">対象のキャラクター</param>
         /// <returns>評価値</returns>
-        protected float CalcurateEvaluateAttack( in Status selfParam, in Status targetParam )
+        protected float CalcurateEvaluateAttack( Character target )
         {
-            float evaluateValue = 0f;
+            var forecast = AttackForecaster.Forecast( _owner, target );
 
             // 与ダメージをそのまま評価値にして使用
-            evaluateValue = Mathf.Max( 0, selfParam.Atk - targetParam.Def );
+            float evaluateValue = forecast.TotalDamage;
 
             // 倒すことが出来る場合はボーナスを加算
-            if ( targetParam.CurHP <= evaluateValue ) evaluateValue += ENABLE_DEFEAT_VALUE;
+            if( forecast.IsDefeat ) evaluateValue += ENABLE_DEFEAT_VALUE;
 
             return evaluateValue;
         }

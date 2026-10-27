@@ -99,7 +99,7 @@ namespace Frontier.Entities.Ai
                     var character = _btlRtnCtrl.BtlCharaCdr.GetCharacter( opponent );
                     if( character == null ) continue;
 
-                    var eValue = CalcurateEvaluateAttack( _owner.GetStatusRef, character.GetStatusRef );
+                    var eValue = CalcurateEvaluateAttack( character );
                     if( maxEvaluate.eValue < eValue )
                     {
                         maxEvaluate = (candidate.gridIndex, character, eValue);
@@ -144,7 +144,7 @@ namespace Frontier.Entities.Ai
                 int destGridIndex       = chara.BattleParams.TmpParam.CurrentTileIndex;
                 ref float evaluateValue = ref _gridEvaluationValues[destGridIndex];
 
-                evaluateValue += CalcurateEvaluateAttack( _owner.GetStatusRef, chara.GetStatusRef );  // 攻撃による評価値を加算
+                evaluateValue += CalcurateEvaluateAttack( chara );  // 攻撃による評価値を加算
 
                 // 経路コストの逆数を乗算(経路コストが低い、つまりターゲットが存在するタイルの中でも、近ければ近いものほど評価値を大きくするため)
                 // 高低差等で到達出来ない対象は候補から外す
