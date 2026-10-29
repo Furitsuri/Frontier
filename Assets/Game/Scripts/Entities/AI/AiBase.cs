@@ -11,26 +11,19 @@ namespace Frontier.Entities.Ai
 {
     public class AiBase : BaseAi
     {
-        /// <summary>
-        /// 自身の攻撃(移動)可能範囲内に存在する攻撃対象キャラクターの情報です
-        /// </summary>
-        public struct TargetCandidateInfo
-        {
-            public int gridIndex;
-            public List<int> targetCharaIndices;
-        }
-
         [Inject] protected BattleRoutineController _btlRtnCtrl      = null;
         [Inject] protected HierarchyBuilderBase _hierarchyBld       = null;
         [Inject] protected StageController _stageCtrl               = null;
         [Inject] protected IStageDataProvider _stageDataProvider    = null;
-        
+
         protected int _destinationTileIndex         = -1;                               // 移動目標グリッドのインデックス値
         protected float[] _gridEvaluationValues     = null;                             // 各グリッドの評価値
         protected bool _isDetermined                = false;                            // 既に移動対象や攻撃対象を決定しているか
         protected Character _owner                  = null;
         protected Character _targetCharacter        = null;                             // 攻撃対象のキャラクター
-        protected List<TargetCandidateInfo> _targetChandidateInfos  = null;             // 攻撃(移動)可能範囲内に存在する攻撃対象キャラクター
+        protected AttackOptionCollector _attackOptionCollector = null;                  // 攻撃の候補の列挙
+        protected AttackOption _attackOption;                                           // 選択した攻撃(_isAttackOptionSelectedがtrueの場合のみ有効)
+        protected bool _isAttackOptionSelected      = false;                            // 攻撃を選択しているか
 
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
@@ -75,37 +68,15 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 指定インデックスの十字方向(隣接するタイル)にいる敵対キャラクターのキーを抽出します
+        /// 選択した攻撃を設定します。攻撃を行う位置を移動目標に、主となる攻撃対象を攻撃対象に設定します
         /// </summary>
-        /// <param name="baseIndex">指定インデックス(十字方向の中心インデックス)</param>
-        /// <param name="opponentKeys">抜き出しに使用するリスト</param>
-        protected void ExtractAdjacentOpponentKeys( int baseIndex, CHARACTER_TAG ownerTag, out List<CharacterKey> opponentKeys )
+        /// <param name="option">選択した攻撃</param>
+        protected void SetAttackOption( in AttackOption option )
         {
-            (int TileRowNum, int TileColNum) = _stageCtrl.GetGridNumsXZ();
-
-            // 十字方向の判定関数とインデックスをタプルに詰め込む
-            (Func<bool> lambda, int index)[] tuples = new (Func<bool>, int)[]
-            {
-                (() => baseIndex % TileColNum != 0,                       baseIndex - 1),
-                (() => (baseIndex + 1) % TileColNum != 0,                 baseIndex + 1),
-                (() => 0 <= (baseIndex - TileColNum),                     baseIndex - TileColNum),
-                (() => (baseIndex + TileColNum) < _stageDataProvider.CurrentData.GetTileTotalNum(), baseIndex + TileColNum)
-            };
-
-            opponentKeys = new List<CharacterKey>( tuples.Length );
-
-            foreach( var tuple in tuples )
-            {
-                if( tuple.lambda() )
-                {
-                    // 敵対勢力(攻撃可能)であることを確認した上でリストに追加
-                    var tileData = _stageCtrl.GetTileDynamicData( tuple.index );
-                    if( BattleLogicBase.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileData.CharaKey.CharacterTag ) )
-                    {
-                        opponentKeys.Add( tileData.CharaKey );
-                    }
-                }
-            }
+            _attackOption           = option;
+            _isAttackOptionSelected = true;
+            _destinationTileIndex   = option.StandTileIndex;
+            _targetCharacter        = option.MainTarget;
         }
 
         /// <summary>
@@ -168,9 +139,10 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居た場合の処理を行います
         /// </summary>
-        /// <param name="selfParam">自身のパラメータ</param>
-        /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        virtual protected void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates ) { }
+        /// <param name="battleParams">自身の戦闘パラメータ</param>
+        /// <param name="ownerTileCosts">自身のタイル移動コスト</param>
+        /// <param name="options">攻撃の候補</param>
+        virtual protected void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<AttackOption> options ) { }
 
         /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居ない場合の処理を行います
@@ -186,7 +158,8 @@ namespace Frontier.Entities.Ai
         {
             _owner                  = owner;
             _gridEvaluationValues   = new float[_stageDataProvider.CurrentData.GetTileTotalNum()];
-            _targetChandidateInfos  = new List<TargetCandidateInfo>(64);
+
+            LazyInject.GetOrCreate( ref _attackOptionCollector, () => _hierarchyBld.InstantiateWithDiContainer<AttackOptionCollector>( false ) );
         }
 
         /// <summary>
@@ -198,6 +171,8 @@ namespace Frontier.Entities.Ai
             _isDetermined           = false;
             _destinationTileIndex   = -1;
             _targetCharacter        = null;
+            _attackOption           = default;
+            _isAttackOptionSelected = false;
         }
 
         /// <summary>
@@ -222,6 +197,17 @@ namespace Frontier.Entities.Ai
         public override Character GetTargetCharacter()
         {
             return _targetCharacter;
+        }
+
+        /// <summary>
+        /// 選択した攻撃を取得します
+        /// </summary>
+        /// <param name="option">選択した攻撃</param>
+        /// <returns>攻撃を選択しているか否か</returns>
+        public override bool TryGetAttackOption( out AttackOption option )
+        {
+            option = _attackOption;
+            return _isAttackOptionSelected;
         }
     }
 }

@@ -31,6 +31,13 @@ namespace Frontier.Entities.Ai
         virtual public Character GetTargetCharacter() { return null; }
 
         /// <summary>
+        /// 選択した攻撃(攻撃を行う位置、通常攻撃かスキルか、攻撃対象など)を取得します
+        /// </summary>
+        /// <param name="option">選択した攻撃</param>
+        /// <returns>攻撃を選択しているか否か</returns>
+        virtual public bool TryGetAttackOption( out AttackOption option ) { option = default; return false; }
+
+        /// <summary>
         /// 目的地と攻撃対象を決定します
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>

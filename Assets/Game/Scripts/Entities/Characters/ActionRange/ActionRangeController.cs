@@ -284,25 +284,6 @@ namespace Frontier.Entities
             return dangerTileData.AttackableTileMap.Keys;
         }
 
-        /// <summary>
-        /// 危険範囲(現在の位置から移動した上で攻撃出来るタイル)に、攻撃対象が存在するかどうかを判定します。
-        /// ExtractDangerTileIndicesと同様、_actionableTileDataは書き換えません
-        /// </summary>
-        public bool HasAttackTargetInDangerRange()
-        {
-            int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
-            var data            = _stageCtrl.GetTileStaticData( dprtTileIndex );
-            var dangerTileData  = new ActionableTileData();
-            ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData );
-
-            foreach( var tileData in dangerTileData.AttackableTileMap )
-            {
-                if( Methods.HasAnyFlag( tileData.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) ) { return true; }
-            }
-
-            return false;
-        }
-
         public void DrawMoveableRange()
         {
             _actionableRangeRdr.DrawRange( TileMapType.MOVEABLE, tileData => new (MeshType, bool)[]

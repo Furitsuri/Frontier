@@ -49,12 +49,12 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 自身の行動範囲(現在の位置から移動した上で攻撃が届く範囲)に、攻撃対象が存在するかを取得します
+        /// 自身の行動範囲(現在の位置から移動した上で、通常攻撃またはスキルによる攻撃が届く範囲)に、攻撃対象が存在するかを取得します
         /// </summary>
         /// <returns>攻撃対象が存在するか</returns>
         public bool IsOpponentInActionRange()
         {
-            return _owner.BattleLogic.ActionRangeCtrl.HasAttackTargetInDangerRange();
+            return _attackOptionCollector.HasAnyOption( _owner );
         }
 
         /// <summary>

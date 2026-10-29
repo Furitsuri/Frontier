@@ -21,46 +21,6 @@ namespace Frontier.Entities.Ai
         private const float ACTION_GAUGE_COST_VALUE = 1f;       // 消費するアクションゲージ1あたりの減算値
 
         /// <summary>
-        /// 攻撃対象が自身の攻撃範囲に存在するかを取得します
-        /// </summary>
-        /// <param name="selfParam">自身のパラメータ</param>
-        /// <param name="selfTmpParam">自身の一時保存パラメータ</param>
-        /// <param name="candidates">攻撃範囲内となる攻撃対象候補</param>
-        /// <returns>存在の有無</returns>
-        private bool CollectTargetInActionableRange( Status selfParam, TemporaryParameter selfTmpParam, in int[] ownerTileCosts, in CharacterKey ownerKey, out List<(int tileIndex, List<CharacterKey> opponents)> candidates )
-        {
-            candidates = new List<(int tileIndex, List<CharacterKey> opponents)>( Constants.CHARACTER_MAX_NUM );
-
-            // 自身の移動範囲をステージ上に登録する
-            bool isAttackable = !selfTmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK];
-            float curHeight = _stageCtrl.GetTileStaticData( selfTmpParam.CurrentTileIndex ).Height;
-
-            _owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( selfTmpParam.CurrentTileIndex, curHeight );
-            _owner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
-
-            // 攻撃可能範囲に攻撃対象がいるかどうかを判定
-            for( int i = 0; i < _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.Count; ++i )
-            {
-                var tileIndex = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.ElementAt( i ).Key;
-                var tileDynamicData = _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.AttackableTileMap.ElementAt( i ).Value;
-
-                // 移動可能地点、かつ自身が立てるタイルを取得
-                if( 0 <= tileDynamicData.EstimatedMoveRange && tileDynamicData.IsStandableBy( ownerKey ) )
-                {
-                    // タイルの十字方向に存在する敵対キャラクターを抽出
-                    List<CharacterKey> opponentKeys;
-                    ExtractAdjacentOpponentKeys( tileIndex, ownerKey.CharacterTag, out opponentKeys );
-                    if( 0 < opponentKeys.Count )
-                    {
-                        candidates.Add( (tileIndex, opponentKeys) );
-                    }
-                }
-            }
-
-            return ( 0 < candidates.Count );
-        }
-
-        /// <summary>
         /// 各グリッドの評価値を計算します
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>
@@ -70,12 +30,18 @@ namespace Frontier.Entities.Ai
         {
             _isDetermined = true;
 
-            List<(int tileIndex, List<CharacterKey> opponents)> candidates = null;
+            // 自身の行動範囲を計算して表示する
+            // MEMO : 敵の移動時(EmMoveState)は、ここで表示した行動範囲がそのまま表示されることを前提としています。
+            //        また、移動経路の探索(FindMovePath)はここで計算した移動可能範囲を用います
+            float curHeight = _stageCtrl.GetTileStaticData( battleParams.TmpParam.CurrentTileIndex ).Height;
+            _owner.BattleLogic.ActionRangeCtrl.SetupActionableRangeData( battleParams.TmpParam.CurrentTileIndex, curHeight );
+            _owner.BattleLogic.ActionRangeCtrl.DrawActionableRange();
 
-            // 攻撃範囲内に敵対キャラクターが存在するか確認し、存在する場合はそのキャラクター達を取得
-            if( CollectTargetInActionableRange( status, battleParams.TmpParam, in ownerTileCosts, in ownerKey, out candidates ) )
+            // スキルを含めた攻撃の候補が存在する場合は、その中から攻撃を選択する
+            var options = _attackOptionCollector.Collect( _owner );
+            if( 0 < options.Count )
             {
-                DetermineDestinationAndTargetInAttackRange( in battleParams, in ownerTileCosts, candidates );
+                DetermineDestinationAndTargetInAttackRange( in battleParams, in ownerTileCosts, options );
             }
             // 攻撃範囲内に敵対キャラクターが存在しない場合は、評価値を計算して最も高いグリッド位置へ向かうように
             else
@@ -130,31 +96,16 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居た場合の処理を行います
         /// </summary>
-        /// <param name="selfParam">自身のパラメータ</param>
-        /// <param name="selfTmpParam">自身の一時パラメータ</param>
-        protected override void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<(int gridIndex, List<CharacterKey> opponents)> candidates )
+        /// <param name="battleParams">自身の戦闘パラメータ</param>
+        /// <param name="ownerTileCosts">自身のタイル移動コスト</param>
+        /// <param name="options">攻撃の候補</param>
+        protected override void DetermineDestinationAndTargetInAttackRange( in BattleParameters battleParams, in int[] ownerTileCosts, List<AttackOption> options )
         {
-            (int gridIndex, Character target, float eValue) maxEvaluate = (-1, null, int.MinValue);
+            // 評価が最も高い攻撃を求める
+            if( !TrySelectAttackOption( options, out var selected ) ) { return; }
 
-            // 戦闘結果の評価が最も高い相手を求める
-            foreach( var candidate in candidates )
-            {
-                foreach( var opponent in candidate.opponents )
-                {
-                    var character = _btlRtnCtrl.BtlCharaCdr.GetCharacter( opponent );
-                    if( character == null ) continue;
-
-                    var eValue = CalcurateEvaluateAttack( character );
-                    if( maxEvaluate.eValue < eValue )
-                    {
-                        maxEvaluate = (candidate.gridIndex, character, eValue);
-                    }
-                }
-            }
-
-            // 評価値の高い位置と相手を目標移動位置、攻撃対象に設定
-            _destinationTileIndex   = maxEvaluate.gridIndex;
-            _targetCharacter        = maxEvaluate.target;
+            // 選択した攻撃を行う位置と主となる攻撃対象を、目標移動位置、攻撃対象に設定
+            SetAttackOption( in selected );
 
             _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.FindMovePath( battleParams.TmpParam.CurrentTileIndex, _destinationTileIndex, _owner.GetStatusRef.jumpForce, ownerTileCosts, _owner.BattleLogic.ActionRangeCtrl.ActionableTileData.MoveableTileMap );
         }
