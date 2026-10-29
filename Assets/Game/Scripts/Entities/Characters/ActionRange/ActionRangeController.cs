@@ -109,6 +109,16 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 表示用のActionableTileDataには影響を与えず、指定の出発タイルから通常攻撃を行った場合の攻撃可能範囲を、渡されたActionableTileDataへ計算します。
+        /// 攻撃コマンドの実行済み状態は考慮しないため、必要に応じて呼び出し側で判定してください。
+        /// </summary>
+        public void ExtractAttackableRangeDataForNormalAttack( int dprtTileIdx, ActionableTileData targetTileData )
+        {
+            targetTileData.Init();
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, _owner.GetStatusRef.attackRange, RangeShape.FROM_MYSELF, _owner.GetCharacterKey(), ref targetTileData );
+        }
+
+        /// <summary>
         /// スキルによる攻撃用に攻撃可能な範囲を設定します
         /// </summary>
         /// <param name="dprtTileIdx"></param>
@@ -147,7 +157,7 @@ namespace Frontier.Entities
             if( skillData.IsMovingSkill )
             {
                 // 対象選択時と同じ着地先の決定処理を用いて、いずれかの方向に着地先が存在するかを判定する
-                return DirectionalTargetingRange.HasLandingTileInAnyDirection( dprtTileIdx, tempTileData, _stageCtrl, _owner.GetCharacterKey(), rules.GhostResolver );
+                return DirectionalTargetingRange.HasLandingTileInAnyDirection( dprtTileIdx, tempTileData, _stageCtrl, _owner.GetCharacterKey(), rules );
             }
 
             foreach( var data in tempTileData.AttackableTileMap )
@@ -160,9 +170,9 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 指定スキルの攻撃可能範囲を、渡されたActionableTileDataへ計算します
-        /// (SetupAttackableRangeData(int,SkillID)とIsSkillExecutableAtの共通処理)
+        /// (SetupAttackableRangeData(int,SkillID)とIsSkillExecutableAtの共通処理。表示用のActionableTileDataには影響を与えません)
         /// </summary>
-        private void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules, ref ActionableTileData targetTileData )
+        public void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules, ref ActionableTileData targetTileData )
         {
             SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
 
@@ -177,7 +187,7 @@ namespace Frontier.Entities
         /// 指定スキルの最大レンジを求めます。
         /// スキル固有の求め方が無い場合、スキルの効果範囲の値を用います(負の値の場合はキャラクターの攻撃レンジ)
         /// </summary>
-        private int ResolveSkillMaxRange( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules )
+        public int ResolveSkillMaxRange( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules )
         {
             if( rules.MaxRangeResolver != null ) { return rules.MaxRangeResolver( dprtTileIdx ); }
 
@@ -223,7 +233,7 @@ namespace Frontier.Entities
             // ターゲット可能タイルのインデックスを一度クリアする
             _actionableTileData.ClearTargetableTile();
             // ターゲットモードに合ったコールバックを呼び出す
-            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, GhostResolver = _skillRangeRules.GhostResolver, RangeAdjustmentFilter = _skillRangeRules.RangeAdjustmentFilter, AttackTargetFilter = _skillRangeRules.AttackTargetFilter, TargetableRangeMargin = _skillRangeRules.TargetableRangeMargin };
+            var context = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Owner = _owner, StageCtrl = _stageCtrl, Rules = _skillRangeRules };
             RefreshTargetableRangeCallbacks[( int ) targetingMode]( context, isFirstRefresh, isWithMove, tileIndex, currentRange, _actionableTileData );
             // 攻撃範囲再描画も併せて行う
             DrawAttackableRange();

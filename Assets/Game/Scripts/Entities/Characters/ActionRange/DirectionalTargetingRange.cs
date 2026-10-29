@@ -30,23 +30,46 @@ namespace Frontier.Entities
 
 		static public void RefreshTargetableRange( TargetingRangeContext context, bool isFirstRefresh, bool isMovingSkill, int tileIndex, int range, ActionableTileData actionableTileData )
 		{
-			Vector3 basePos = context.StageCtrl.GetTileStaticData( context.Owner.BattleParams.TmpParam.CurrentTileIndex ).CharaStandPos;
-			Vector3 baseForward = context.Owner.GetOrderedForward();
+			int ghostTileIdx = ExtractTargetableTiles( tileIndex, context.Owner.GetOrderedForward(), range, isMovingSkill, context.Rules, context.StageCtrl, context.Owner.GetCharacterKey(), actionableTileData );
+
+			// ゴーストのプレビューを更新
+			if( isMovingSkill )
+			{
+				RefreshGhostPreview( context, ghostTileIdx );
+			}
+		}
+
+        /// <summary>
+        /// 出発タイルから指定の向きに沿った、射程内のターゲット可能タイル及び攻撃対象タイルを求めます。
+        /// 移動を伴うスキルの場合は着地先も求め、着地先との位置関係から対象を絞り込みます。
+        /// キャラクターの向きやゴーストの表示などには一切触れないため、AIの思考などで任意の位置・向きを試算する用途にも使用出来ます。
+        /// </summary>
+        /// <param name="dprtTileIdx">出発タイル</param>
+        /// <param name="forward">向き</param>
+        /// <param name="range">射程(移動を伴うスキルでは着地先として選べる距離)</param>
+        /// <param name="isMovingSkill">移動を伴うスキルか</param>
+        /// <param name="rules">スキル固有の範囲計算ルール</param>
+        /// <param name="actionableTileData">攻撃可能範囲の計算済みデータ。ターゲット可能タイル及び攻撃対象タイルが追加されます</param>
+        /// <returns>着地先のタイル。移動を伴わないスキルの場合、または着地先が存在しない場合は-1</returns>
+        static public int ExtractTargetableTiles( int dprtTileIdx, Vector3 forward, int range, bool isMovingSkill, SkillRangeRules rules, StageController stageCtrl, CharacterKey selfKey, ActionableTileData actionableTileData )
+        {
+			Vector3 basePos = stageCtrl.GetTileStaticData( dprtTileIdx ).CharaStandPos;
+			Vector3 baseForward = forward;
 			baseForward.y = 0f;
 			baseForward = baseForward.normalized;
 
             // 移動を伴うスキルでは、レンジは着地先として選べる距離を表す。
             // 着地タイルの更に先の相手を攻撃するスキルのため、その分だけ先のタイルまで含める
-            int targetableRange = isMovingSkill ? range + context.TargetableRangeMargin : range;
+            int targetableRange = isMovingSkill ? range + rules.TargetableRangeMargin : range;
 
             foreach( var attackableMap in actionableTileData.AttackableTileMap )
             {
 				// キャラクターの向きに沿ったタイル
-				var targetTilePos = context.StageCtrl.GetTileStaticData( attackableMap.Key ).CharaStandPos;
+				var targetTilePos = stageCtrl.GetTileStaticData( attackableMap.Key ).CharaStandPos;
 				if(!Methods.IsMatchForward( baseForward, basePos, targetTilePos )) { continue; }
 
 				// 指定範囲内のタイル
-				var tileRange = context.StageCtrl.CalculateTotalRange( tileIndex, attackableMap.Key );
+				var tileRange = stageCtrl.CalculateTotalRange( dprtTileIdx, attackableMap.Key );
 				if( targetableRange < tileRange ) { continue; }
 
 				// ターゲット可能タイルとして登録する
@@ -61,12 +84,11 @@ namespace Frontier.Entities
 			}
 
 			// 移動を伴う場合は、最も遠方の移動可能(キャラクターが存在しない)なタイルにターゲット可能レンジを合わせる
-			// 攻撃対象が存在しなくても、移動可能なタイルがあれば実行可能とする(全てのタイルが移動不可の場合はゴーストを表示せず実行不可)
-			if( isMovingSkill )
-			{
-				AdjustRangeForMove( context, tileIndex, range, actionableTileData );
-			}
-		}
+			// 攻撃対象が存在しなくても、移動可能なタイルがあれば実行可能とする(全てのタイルが移動不可の場合は着地先が存在せず実行不可)
+			if( !isMovingSkill ) { return -1; }
+
+			return AdjustRangeForMove( dprtTileIdx, range, rules, stageCtrl, selfKey, actionableTileData );
+        }
 
 		static public void RefreshFocusTarget( TargetingRangeContext context, bool isMovingSkill, ref List<CharacterKey> attackTargetCharaKeys, ref Character targetCharacter )
         {
@@ -154,21 +176,25 @@ namespace Frontier.Entities
             return false;
         }
 
-        static private void AdjustRangeForMove( TargetingRangeContext context, int tileIndex, int range, ActionableTileData actionableTileData )
+        /// <summary>
+        /// 着地先(ゴースト)を決定し、着地先との位置関係からターゲット可能タイル及び攻撃対象を絞り込みます
+        /// </summary>
+        /// <returns>着地先のタイル。存在しない場合は-1</returns>
+        static private int AdjustRangeForMove( int tileIndex, int range, SkillRangeRules rules, StageController stageCtrl, CharacterKey selfKey, ActionableTileData actionableTileData )
         {
-            int ghostTileIdx = ResolveGhostTile( tileIndex, actionableTileData, context.StageCtrl, context.Owner.GetCharacterKey(), range, context.GhostResolver );
+            int ghostTileIdx = ResolveGhostTile( tileIndex, actionableTileData, stageCtrl, selfKey, range, rules.GhostResolver );
 
             // ゴースト位置より遠いタイルをターゲット可能マップおよび攻撃対象から除外する
-            // スキル固有フィルタ (context.RangeAdjustmentFilter) がある場合はそれに委譲し、
+            // スキル固有フィルタ (rules.RangeAdjustmentFilter) がある場合はそれに委譲し、
             // ない場合はデフォルト（ゴースト距離より遠いタイルをすべて除外）を適用する
             if( 0 <= ghostTileIdx )
             {
-                int ghostRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostTileIdx );
-                var rangeFilter = context.RangeAdjustmentFilter;
+                int ghostRange = stageCtrl.CalculateTotalRange( tileIndex, ghostTileIdx );
+                var rangeFilter = rules.RangeAdjustmentFilter;
                 var toRemove = actionableTileData.TargetableTileMap.Keys
                     .Where( idx =>
                     {
-                        int dist = context.StageCtrl.CalculateTotalRange( tileIndex, idx );
+                        int dist = stageCtrl.CalculateTotalRange( tileIndex, idx );
                         if( dist <= ghostRange ) { return false; }
                         // スキル固有フィルタがあれば委譲、なければデフォルト（全除外）
                         return rangeFilter == null || !rangeFilter( idx, ghostRange, dist, actionableTileData.TargetableTileMap[idx] );
@@ -181,12 +207,12 @@ namespace Frontier.Entities
                 }
 
                 // 残ったタイルのうち、着地先との位置関係から攻撃対象とならないもの(飛び越える相手など)を攻撃対象から外す
-                var targetFilter = context.AttackTargetFilter;
+                var targetFilter = rules.AttackTargetFilter;
                 if( targetFilter != null )
                 {
                     var targetableMap      = actionableTileData.TargetableTileMap;
                     var toRemoveFromTarget = targetableMap.Keys
-                        .Where( idx => !targetFilter( idx, ghostRange, context.StageCtrl.CalculateTotalRange( tileIndex, idx ), targetableMap[idx] ) )
+                        .Where( idx => !targetFilter( idx, ghostRange, stageCtrl.CalculateTotalRange( tileIndex, idx ), targetableMap[idx] ) )
                         .ToList();
                     foreach( int idx in toRemoveFromTarget )
                     {
@@ -200,8 +226,7 @@ namespace Frontier.Entities
                 actionableTileData.ClearAttackTargetTileIndicies();
             }
 
-            // ゴーストのプレビューを更新
-            RefreshGhostPreview( context, ghostTileIdx );
+            return ghostTileIdx;
         }
 
         /// <summary>
@@ -209,7 +234,7 @@ namespace Frontier.Entities
         /// 対象選択時と同じ着地先の決定処理を、方向ごとに適用して判定します。
         /// </summary>
         /// <param name="actionableTileData">攻撃可能範囲の計算済みデータ(AttackableTileMapのみ参照し、変更しません)</param>
-        static public bool HasLandingTileInAnyDirection( int dprtTileIdx, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, TileDataHandler.GhostTileResolver resolver )
+        static public bool HasLandingTileInAnyDirection( int dprtTileIdx, ActionableTileData actionableTileData, StageController stageCtrl, CharacterKey selfKey, SkillRangeRules rules )
         {
             Vector3 basePos = stageCtrl.GetTileStaticData( dprtTileIdx ).CharaStandPos;
             Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
@@ -227,7 +252,7 @@ namespace Frontier.Entities
                 }
 
                 // 実行可否の判定ではレンジによる制限を設けず、範囲内のいずれかに着地出来るかを調べる
-                if( 0 <= ResolveGhostTile( dprtTileIdx, dirTileData, stageCtrl, selfKey, int.MaxValue, resolver ) ) { return true; }
+                if( 0 <= ResolveGhostTile( dprtTileIdx, dirTileData, stageCtrl, selfKey, int.MaxValue, rules.GhostResolver ) ) { return true; }
             }
 
             return false;

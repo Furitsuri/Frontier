@@ -75,11 +75,11 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 指定インデックスの十字方向にいる敵対キャラクターのキャラクターインデックスを抽出します
+        /// 指定インデックスの十字方向(隣接するタイル)にいる敵対キャラクターのキーを抽出します
         /// </summary>
         /// <param name="baseIndex">指定インデックス(十字方向の中心インデックス)</param>
-        /// <param name="opponentCharaIndices">抜き出しに使用するリスト</param>
-        protected void ExtractAttackabkeOpponentIndices( int baseIndex, CHARACTER_TAG ownerTag, out List<CharacterKey> opponentCharaIndices )
+        /// <param name="opponentKeys">抜き出しに使用するリスト</param>
+        protected void ExtractAdjacentOpponentKeys( int baseIndex, CHARACTER_TAG ownerTag, out List<CharacterKey> opponentKeys )
         {
             (int TileRowNum, int TileColNum) = _stageCtrl.GetGridNumsXZ();
 
@@ -92,7 +92,7 @@ namespace Frontier.Entities.Ai
                 (() => (baseIndex + TileColNum) < _stageDataProvider.CurrentData.GetTileTotalNum(), baseIndex + TileColNum)
             };
 
-            opponentCharaIndices = new List<CharacterKey>( tuples.Length );
+            opponentKeys = new List<CharacterKey>( tuples.Length );
 
             foreach( var tuple in tuples )
             {
@@ -102,7 +102,7 @@ namespace Frontier.Entities.Ai
                     var tileData = _stageCtrl.GetTileDynamicData( tuple.index );
                     if( BattleLogicBase.IsOpponentFaction[Convert.ToInt32( ownerTag )]( tileData.CharaKey.CharacterTag ) )
                     {
-                        opponentCharaIndices.Add( tileData.CharaKey );
+                        opponentKeys.Add( tileData.CharaKey );
                     }
                 }
             }
