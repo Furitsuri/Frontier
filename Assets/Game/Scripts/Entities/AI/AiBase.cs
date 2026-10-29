@@ -127,6 +127,45 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
+        /// 攻撃の候補を評価します。評価値が高いほど優先して選択されます。
+        /// 評価の方針は思考タイプ毎に異なるため、派生クラスでオーバーライドしてください
+        /// </summary>
+        /// <param name="option">評価する攻撃の候補</param>
+        /// <returns>評価値</returns>
+        virtual protected float EvaluateAttackOption( in AttackOption option ) { return 0f; }
+
+        /// <summary>
+        /// 攻撃の候補の中から、評価値が最も高いものを選択します。
+        /// 評価値が等しい場合は消費するアクションゲージが少ないものを、それも等しい場合は先に列挙されたものを優先します
+        /// </summary>
+        /// <param name="options">攻撃の候補</param>
+        /// <param name="selected">選択された攻撃の候補</param>
+        /// <returns>選択出来たか否か(候補が存在しない場合はfalse)</returns>
+        protected bool TrySelectAttackOption( List<AttackOption> options, out AttackOption selected )
+        {
+            selected = default;
+            if( options == null || options.Count <= 0 ) { return false; }
+
+            float maxValue  = float.MinValue;
+            int minCost     = int.MaxValue;
+
+            foreach( var option in options )
+            {
+                float value = EvaluateAttackOption( in option );
+                int cost    = SkillsData.IsValidSkill( option.SkillID ) ? SkillsData.data[( int ) option.SkillID].Cost : 0;
+
+                if( maxValue < value || ( maxValue == value && cost < minCost ) )
+                {
+                    maxValue    = value;
+                    minCost     = cost;
+                    selected    = option;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// 進行予定の移動ルートを取得する際、自身の攻撃範囲に攻撃可能キャラクターが居た場合の処理を行います
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>

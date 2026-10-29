@@ -14,6 +14,12 @@ namespace Frontier.Entities.Ai
         protected override float ATTACKABLE_VALUE { get; } = 50;
         protected override float WITHIN_RANGE_VALUE { get; } = 50;
 
+        // 攻撃の候補の評価に用いる値
+        // 撃破 > (撃破出来ない場合)ダメージ割合 > コスト の順に優先されるよう、各値の大きさに十分な差を設けている
+        private const float DEFEAT_VALUE            = 1000f;    // 攻撃対象1体を撃破出来る場合の加算値
+        private const float DAMAGE_RATIO_VALUE      = 100f;     // ダメージ割合(残りHPに対する与ダメージの割合。最大100%)が100%の場合の加算値
+        private const float ACTION_GAUGE_COST_VALUE = 1f;       // 消費するアクションゲージ1あたりの減算値
+
         /// <summary>
         /// 攻撃対象が自身の攻撃範囲に存在するかを取得します
         /// </summary>
@@ -80,6 +86,45 @@ namespace Frontier.Entities.Ai
             ResetAllTileEvaluationValues(); // 必ず評価値をリセットしてから終了する
 
             return (IsValidDestination(), IsValidTarget());
+        }
+
+        /// <summary>
+        /// 攻撃の候補を評価します。
+        /// 攻撃対象1体ごとに、撃破出来る場合は撃破の評価を、そうでない場合はダメージ割合の評価を加算し(範囲攻撃の場合は合計)、
+        /// 消費するアクションゲージに応じて減算します。
+        /// これにより、通常攻撃で撃破出来る相手 > スキルを使用すれば撃破出来る相手 > ダメージ割合が最も大きい攻撃 の順に選択されます
+        /// MEMO : 攻撃によって自身に付与される状態効果(AttackForecast.SelfStatusEffects)は、仕組みが未実装のため評価していません
+        /// </summary>
+        /// <param name="option">評価する攻撃の候補</param>
+        /// <returns>評価値</returns>
+        protected override float EvaluateAttackOption( in AttackOption option )
+        {
+            float evaluateValue = 0f;
+            int actionGaugeCost = 0;
+
+            foreach( var key in option.AttackTargetKeys )
+            {
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+                if( target == null ) { continue; }
+
+                var forecast    = AttackForecaster.Forecast( _owner, target, option.SkillID );
+                actionGaugeCost = forecast.ActionGaugeCost;
+
+                if( forecast.IsDefeat )
+                {
+                    evaluateValue += DEFEAT_VALUE;
+                }
+                else
+                {
+                    // 残りHPが0以下の相手は撃破済みとして扱われるため、ここでは残りHPが正の値であることが前提
+                    float damageRatio = Mathf.Min( ( float ) forecast.TotalDamage / forecast.TargetCurrentHp, 1f );
+                    evaluateValue += damageRatio * DAMAGE_RATIO_VALUE;
+                }
+            }
+
+            evaluateValue -= actionGaugeCost * ACTION_GAUGE_COST_VALUE;
+
+            return evaluateValue;
         }
 
         /// <summary>
