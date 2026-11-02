@@ -22,6 +22,9 @@ Shader "Frontier/TileStandard"
         // 乗算カラー。Tile.cs の ApplyDeployableColor() が material.color に書き込む値がここに入る。
         // 配置不可タイルは (0.5, 0.5, 0.5) で50%暗転する。
         _Color ("カラー", Color) = (1,1,1,1)
+
+        // カメラの注視点を遮っている間の抜き具合。TileOcclusionFader から書き込まれる
+        [HideInInspector] _OcclusionFade ("遮蔽時の抜き具合", Range(0.0, 1.0)) = 0.0
     }
 
     SubShader
@@ -38,7 +41,10 @@ Shader "Frontier/TileStandard"
         //   fullforwardshadows : すべてのライト種別で影を受け取る
         //   vertex:vert    : カスタム頂点関数 vert を使う
         #pragma surface surf Standard fullforwardshadows vertex:vert
-        #pragma target 3.0
+        // 3.0 では遮蔽ディザ用の screenPos を加えると補間レジスタ数(10)を超えるため 3.5 とする
+        #pragma target 3.5
+
+        #include "TileOcclusionDither.cginc"
 
         // ---- シェーダー変数（Properties と対応） ----
         sampler2D _TopTex;
@@ -57,6 +63,8 @@ Shader "Frontier/TileStandard"
             float2 uv_SideTex;  // 側面テクスチャの UV 座標
             float3 worldNormal; // ワールド空間での面の法線ベクトル（Surface Shader が自動設定）
             float  localY;      // オブジェクト空間での Y 座標（頂点シェーダーから渡す）
+            float4 screenPos;   // スクリーン座標（遮蔽時のディザ抜きに使う。Surface Shader が自動設定）
+            float3 worldPos;    // ワールド座標（遮蔽時、地面より下へ抜ける視線を判定するのに使う。Surface Shader が自動設定）
         };
 
         // =====================================================================
@@ -81,6 +89,9 @@ Shader "Frontier/TileStandard"
         // =====================================================================
         void surf(Input IN, inout SurfaceOutputStandard o)
         {
+            // カメラの注視点を遮っている場合、注視点周りのピクセルを網点状に抜く
+            ClipTileOcclusion( IN.screenPos, IN.worldPos );
+
             // ------------------------------------------------------------------
             // Step 1: このピクセルが「上面」かどうかを判定する
             // ------------------------------------------------------------------
@@ -127,6 +138,54 @@ Shader "Frontier/TileStandard"
         }
 
         ENDCG
+
+        // =====================================================================
+        // ShadowCaster パス
+        // このパスは「ライトのシャドウマップ」と「カメラの深度テクスチャ」の両方の描画に使われる。
+        //   シャドウマップ   : 抜かない（遮蔽中でも柱などの影は残す）
+        //   カメラの深度     : 本体と同じ網点で抜く（抜いた穴の奥に見える床へ、柱の影が誤って落ちないようにする）
+        // =====================================================================
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+
+            CGPROGRAM
+            #pragma vertex vertShadow
+            #pragma fragment fragShadow
+            #pragma target 3.0
+            #pragma multi_compile_shadowcaster
+
+            #include "UnityCG.cginc"
+            #include "TileOcclusionDither.cginc"
+
+            struct v2fShadow
+            {
+                V2F_SHADOW_CASTER;
+                float4 screenPos : TEXCOORD1;
+                float3 worldPos  : TEXCOORD2;
+            };
+
+            v2fShadow vertShadow( appdata_base v )
+            {
+                v2fShadow o;
+                UNITY_INITIALIZE_OUTPUT( v2fShadow, o );
+                TRANSFER_SHADOW_CASTER_NORMALOFFSET( o )
+                o.screenPos = ComputeScreenPos( UnityObjectToClipPos( v.vertex ) );
+                o.worldPos  = mul( unity_ObjectToWorld, v.vertex ).xyz;
+                return o;
+            }
+
+            float4 fragShadow( v2fShadow i ) : SV_Target
+            {
+                // 平行光源のシャドウマップは平行投影、メインカメラは透視投影のため、射影行列で両者を見分ける
+                bool isCameraDepth = UNITY_MATRIX_P[3][3] != 1.0;
+                if( isCameraDepth ) { ClipTileOcclusion( i.screenPos, i.worldPos ); }
+
+                SHADOW_CASTER_FRAGMENT( i )
+            }
+            ENDCG
+        }
     }
 
     // このシェーダーが使えない環境でのフォールバック

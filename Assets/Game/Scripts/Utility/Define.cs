@@ -94,6 +94,18 @@ static public class Constants
     public const float WATER_CHARA_STAND_HEIGHT_OFFSET = -0.35f;
     // グリッドカーソルのY座標に加算する補正値
     public const float GRID_CURSOR_OFFSET_Y = 0.03f;
+    // カメラの注視点を遮るタイルを網点状に抜く処理(TileOcclusionFader)の各種パラメータ
+    // 遮蔽判定に用いる、注視点からの高さ(足元・胴・頭付近)。いずれかへの視線を遮るタイルを抜く
+    static public readonly float[] TILE_OCCLUSION_SAMPLE_HEIGHTS = { 0.1f, 0.8f, 1.6f };
+    // 画面上で抜く円の中心とする、注視点からの高さ
+    public const float TILE_OCCLUSION_FOCUS_HEIGHT       = 0.6f;
+    // 画面上で抜く円の半径と、縁をなだらかにする幅(いずれも画面の高さに対する割合)
+    public const float TILE_OCCLUSION_RADIUS             = 0.2f;
+    public const float TILE_OCCLUSION_EDGE_SOFTNESS      = 0.08f;
+    // 円の中心で抜くピクセルの割合(1で完全に穴が開く)
+    public const float TILE_OCCLUSION_MAX_STRENGTH       = 0.75f;
+    // 抜き始め/抜き終わりにかける秒数
+    public const float TILE_OCCLUSION_FADE_DURATION      = 0.2f;
     // 配置フェーズにおけるキャラクターの配置前座標
     public const float DEPLOYMENT_CHARACTER_SPACING_X   = 50f;
     public const float DEPLOYMENT_CHARACTER_OFFSET_Y    = 0f;

@@ -137,6 +137,28 @@ namespace Frontier.Stage
             _renderer.material.SetVector( "_SideAlphaDirs", dirs );
         }
 
+        /// <summary>描画上の外接箱(ワールド空間)を返します。カメラの注視点を遮っているかの判定に使用します。</summary>
+        public Bounds RenderBounds => _renderer.bounds;
+
+        /// <summary>
+        /// カメラの注視点を遮っている間の抜き具合(0=抜かない, 1=最大まで抜く)をマテリアルに適用します。
+        /// 対応していないシェーダー(水タイル等)では何も起きません。
+        /// </summary>
+        public void ApplyOcclusionFade( float fade )
+        {
+            // タイルの真下(地面より下)へ抜ける視線の部分は抜かないよう、足元の範囲と地面の高さも合わせて渡す。
+            // 地面の高さは、高さ0のタイルの上面(底面はどのタイルも揃っている)とする
+            Bounds bounds = _renderer.bounds;
+            var material  = _renderer.material;
+            material.SetFloat( OcclusionFadeId, fade );
+            material.SetVector( OcclusionFootprintId, new Vector4( bounds.min.x, bounds.min.z, bounds.max.x, bounds.max.z ) );
+            material.SetFloat( OcclusionGroundYId, bounds.min.y + TILE_MIN_THICKNESS );
+        }
+
+        private static readonly int OcclusionFadeId      = Shader.PropertyToID( "_OcclusionFade" );
+        private static readonly int OcclusionFootprintId = Shader.PropertyToID( "_OcclusionFootprint" );
+        private static readonly int OcclusionGroundYId   = Shader.PropertyToID( "_OcclusionGroundY" );
+
         /// <summary>
         /// 初期状態のタイル情報を、現在のタイル情報に適応させます
         /// </summary>

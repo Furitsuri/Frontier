@@ -33,7 +33,8 @@ namespace Frontier.Stage
                 if (i == (int)TileType.None)
                 {
                     // TODO : URPに適応した場合は、"Universal Render Pipeline/Lit"に変更する必要がある
-                    _profiles[type] = CreateProfile(type, new Material(Shader.Find("Standard")));
+                    // Standard と同じ見た目で、カメラの注視点を遮った際に網点状に抜ける TileBasic を使用する
+                    _profiles[type] = CreateProfile(type, new Material(Shader.Find("Frontier/TileBasic")));
                     continue;
                 }
 

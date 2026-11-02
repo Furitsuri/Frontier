@@ -1,5 +1,6 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -60,6 +61,9 @@ namespace Frontier
         [SerializeField] private float _followDuration                = 1f;
 
         [Inject] private InputFacade _inputFcd  = null;
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+
+        private TileOcclusionFader _tileOcclusionFader; // 注視点を遮るタイルを透けさせる
 
         // --- FOLLOWING モード専用フィールド ---
         private bool  _cameraSliding      = false;
@@ -132,8 +136,18 @@ namespace Frontier
             }
         }
 
+        void LateUpdate()
+        {
+            if( _sharedState == null ) { return; }
+
+            // 攻撃演出等のシーケンス中はステージを俯瞰しないため、透けさせていたタイルを元に戻す
+            _tileOcclusionFader.Update( _sharedState.MainCamera, _sharedState.LookAtPosition, _activeSequence == null );
+        }
+
         public void Setup( bool createMosaicEff, BattleRoutinePresenter presenter = null )
         {
+            LazyInject.GetOrCreate( ref _tileOcclusionFader, () => _hierarchyBld.InstantiateWithDiContainer<TileOcclusionFader>( false ) );
+
             _sharedState = new BattleCameraSharedState
             {
                 MainCamera = Camera.main,
