@@ -36,6 +36,11 @@ namespace Frontier
         [SerializeField] private float _coopCameraHeight       = 4.0f;
         [SerializeField] private float _coopCameraLerpDuration = 0.5f;
 
+        // --- プレイヤー以外(敵・第三勢力)のスキル用カメラパラメータ ---
+        [Header("プレイヤー以外(敵・第三勢力)のスキル用カメラパラメータ")]
+        [SerializeField] private float _npcSkillCameraApproachRate = 0.8f;  // 注視点までの距離に対する寄った後の距離の割合
+        [SerializeField] private float _npcSkillCameraDuration     = 0.5f;  // 寄り切るまでにかける秒数
+
         // --- 連携演出(渦巻きエフェクト)用カメラパラメータ ---
         [Header("連携演出(渦巻きエフェクト)用カメラパラメータ")]
         [SerializeField] private float _vortexIntroZoomOutFactor = 2.0f;   // キャラクター間の広がりに対するカメラを引く量の係数
@@ -352,6 +357,15 @@ namespace Frontier
 
             process.Begin( _sharedState, fromPosition, fromRotation );
             _activeSequence = process;
+        }
+
+        /// <summary>
+        /// プレイヤー以外(敵・第三勢力)のスキル使用時に用いる、カメラの向きを保ったまま少しだけ寄るカメラ処理を生成します。
+        /// 寄る量・時間はInspectorで設定した値を用います。
+        /// </summary>
+        public ISkillCameraProcess CreateNpcSkillCameraProcess( Character attacker, Character target )
+        {
+            return new ApproachCameraProcess( attacker, target, _npcSkillCameraApproachRate, _npcSkillCameraDuration );
         }
 
         /// <summary>

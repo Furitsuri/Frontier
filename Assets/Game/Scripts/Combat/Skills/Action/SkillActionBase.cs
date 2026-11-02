@@ -139,10 +139,19 @@ namespace Frontier.Combat
         /// データが複数フェーズを持つ場合、継承先が任意のタイミングで _cameraProcess.TransitNextPhase() を呼ぶことで
         /// 次フェーズ(例: 被弾直前の寄りアングル)へ連続的に遷移できます。
         /// 継承先は読み込むスキルIDと注視対象キャラクターを指定するだけで済みます。
+        /// なお、使用者がプレイヤー以外(敵・第三勢力)の場合は、カメラの向きを保ったまま少しだけ寄る演出(ApproachCameraProcess)を設定します。
         /// </summary>
         protected void SetupCameraProcess( SkillID skillID, Character target )
         {
             if( target == null ) { return; }
+
+            // 攻撃者→対象方向を基準にカメラを回り込ませる演出はプレイヤーのみとし、
+            // 敵・第三勢力はカメラの向きを保ったまま少しだけ寄る
+            if( _owner.GetStatusRef.characterTag != CHARACTER_TAG.PLAYER )
+            {
+                _cameraProcess = _btlCamCtrl?.CreateNpcSkillCameraProcess( _owner, target );
+                return;
+            }
 
             var camParams = _btlFileLoader?.LoadSkillCameraParams( skillID );
             BattleCameraController.CameraParamData[] phases = ( camParams != null && camParams.Count > 0 && camParams[0].Length > 0 )
