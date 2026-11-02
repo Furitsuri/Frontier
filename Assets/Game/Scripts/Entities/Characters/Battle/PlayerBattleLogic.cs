@@ -182,28 +182,5 @@ namespace Frontier.Entities
         {
             return _commandHistory.Count;
         }
-
-        /// <summary>
-        /// 指定のスキルの使用設定を切り替えます
-        /// </summary>
-        /// <param name="index">指定のスキルのインデックス番号</param>
-        public override void ToggleEquipSkill( int index )
-        {
-            var owner = _readOnlyOwner.Value;
-            bool IsToggledToUse = owner.BattleParams.TmpParam.IsSkillsToggledON[index] = !owner.BattleParams.TmpParam.IsSkillsToggledON[index];
-
-            SkillID skillID = owner.GetEquipSkillID( index );
-            if( !SkillsData.IsValidSkill( skillID ) ) { return; }
-            var skillData = SkillsData.data[( int ) skillID];
-
-            if( IsToggledToUse )
-            {
-                owner.BattleParams.ApplySkill( skillID, owner.GetStatusRef );
-            }
-            else
-            {
-                owner.BattleParams.RemoveSkill( skillID, owner.GetStatusRef );
-            }
-        }
     }
 }

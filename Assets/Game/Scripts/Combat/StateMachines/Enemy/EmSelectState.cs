@@ -40,6 +40,14 @@ namespace Frontier.Battle
                 return true;
             }
 
+            // スキルによる攻撃行動に遷移するか
+            if( ShouldTransitionToSkill( _currentEnemy ) )
+            {
+                TransitStateWithExit( ( int ) COMMAND_TAG.SKILL );
+
+                return true;
+            }
+
             if( ShouldTransitionToWait( _currentEnemy ) )
             {
                 TransitStateWithExit( ( int ) COMMAND_TAG.WAIT );
@@ -121,7 +129,25 @@ namespace Frontier.Battle
 
             if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ) return false;
 
+            // AIがスキルによる攻撃を選択している場合は、通常攻撃ではなくスキルの行動へ遷移させる
+            if( em.BattleLogic.GetAi().TryGetAttackOption( out var option ) && !option.IsNormalAttack ) return false;
+
             return true;
+        }
+
+        /// <summary>
+        /// スキルによる攻撃コマンドに遷移するかを取得します
+        /// </summary>
+        /// <param name="em">判定する敵キャラクター</param>
+        /// <returns>遷移するか否か</returns>
+        private bool ShouldTransitionToSkill( Enemy em )
+        {
+            if( !_isValidTarget ) return false;
+
+            if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ||
+                em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.SKILL ] ) return false;
+
+            return em.BattleLogic.GetAi().TryGetAttackOption( out var option ) && !option.IsNormalAttack;
         }
 
         private bool ShouldTransitionToWait( Enemy em )

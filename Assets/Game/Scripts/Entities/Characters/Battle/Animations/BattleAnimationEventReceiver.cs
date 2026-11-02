@@ -104,10 +104,9 @@ namespace Frontier.Entities
         /// </summary>
         public void AttackOpponentOnAnimEvent()
         {
-            if( _readOnlyBattleLogic.Value.GetOpponent() == null )
-            {
-                Debug.Assert( false );
-            }
+            // 対戦相手が存在しない場合は何もしない
+            // (スキル専用のアニメーションを持たないキャラクターがスキルを使用した際に、代わりに攻撃アニメーションが再生された場合等。ダメージはスキル側で与える)
+            if( _readOnlyBattleLogic.Value.GetOpponent() == null ) { return; }
 
             IsAttacked = true;
             _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().BattleParams.TmpParam.ExpectedHpChange;
@@ -137,10 +136,8 @@ namespace Frontier.Entities
         /// </summary>
         public void HurtOpponentByAnimation()
         {
-            if( _readOnlyBattleLogic.Value.GetOpponent() == null )
-            {
-                Debug.Assert( false );
-            }
+            // 対戦相手が存在しない場合は何もしない(AttackOpponentOnAnimEventと同様)
+            if( _readOnlyBattleLogic.Value.GetOpponent() == null ) { return; }
 
             IsAttacked = true;
             _readOnlyBattleLogic.Value.GetOpponent().GetStatusRef.CurHP += _readOnlyBattleLogic.Value.GetOpponent().BattleParams.TmpParam.ExpectedHpChange;
@@ -187,6 +184,9 @@ namespace Frontier.Entities
         /// </summary>
         public void StartParryOnAnimEvent()
         {
+            // 対戦相手が存在しない場合はパリィの対象とならないため何もしない(AttackOpponentOnAnimEventと同様)
+            if( _readOnlyBattleLogic.Value.GetOpponent() == null ) { return; }
+
             var opponentBattleLogic = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic;
             if( opponentBattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) { return; }
 
@@ -202,6 +202,8 @@ namespace Frontier.Entities
         /// </summary>
         public void ParryAttackOnAnimEvent()
         {
+            if( _readOnlyBattleLogic.Value.GetOpponent() == null ) { return; }
+
             var opponentBattleLogic = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic;
             if( opponentBattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) { return; }
 

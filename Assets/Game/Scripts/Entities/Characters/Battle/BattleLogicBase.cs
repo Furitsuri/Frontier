@@ -477,10 +477,27 @@ protected Character _opponent                                       = null;
         virtual public void SetDisplayDangerRange( bool isShow ) { }
 
         /// <summary>
-        /// 指定のスキルの使用設定を切り替えます
+        /// 指定のスキルの使用設定を切り替えます。
+        /// 使用ONにした場合はスキルの効果(攻撃回数・倍率・消費ゲージ等)を適用し、OFFにした場合は取り除きます
         /// </summary>
         /// <param name="index">指定のスキルのインデックス番号</param>
-        virtual public void ToggleEquipSkill( int index ) { }
+        public void ToggleEquipSkill( int index )
+        {
+            var owner = _readOnlyOwner.Value;
+            bool IsToggledToUse = owner.BattleParams.TmpParam.IsSkillsToggledON[index] = !owner.BattleParams.TmpParam.IsSkillsToggledON[index];
+
+            SkillID skillID = owner.GetEquipSkillID( index );
+            if( !SkillsData.IsValidSkill( skillID ) ) { return; }
+
+            if( IsToggledToUse )
+            {
+                owner.BattleParams.ApplySkill( skillID, owner.GetStatusRef );
+            }
+            else
+            {
+                owner.BattleParams.RemoveSkill( skillID, owner.GetStatusRef );
+            }
+        }
 
         /// <summary>
         /// キャラクターを、作成済みのパスに沿って移動させます

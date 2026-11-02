@@ -10,10 +10,69 @@ namespace Frontier
     public class AnimationController
     {
         ReadOnlyReference<Animator> _readOnlyAnimator = null;
+        // 各アニメーションがAnimatorに存在するか(初回参照時に求める。nullの場合は未取得)
+        bool[] _hasAnimations = null;
+        // 存在しない旨の警告を出力済みのアニメーション(同じ警告を繰り返し出力しないため)
+        readonly HashSet<AnimDatas.AnimeConditionsTag> _warnedMissingTags = new HashSet<AnimDatas.AnimeConditionsTag>();
 
         public void Regist( Animator animator )
         {
             _readOnlyAnimator = new ReadOnlyReference<Animator>( animator );
+            _hasAnimations    = null;
+            _warnedMissingTags.Clear();
+        }
+
+        /// <summary>
+        /// 指定のアニメーションがAnimatorに存在するかを判定します。
+        /// MEMO : Animatorのパラメータ名とステート名が一致している(例 : Trigger「SingleAttack」→ステート「SingleAttack」)ことを前提に、パラメータの有無で判定します
+        /// </summary>
+        /// <param name="animTag">アニメーションタグ</param>
+        /// <returns>存在するか否か</returns>
+        public bool HasAnimation( AnimDatas.AnimeConditionsTag animTag )
+        {
+            if( animTag <= AnimDatas.AnimeConditionsTag.NONE || AnimDatas.AnimeConditionsTag.NUM <= animTag ) { return false; }
+
+            if( null == _hasAnimations )
+            {
+                var parameters = _readOnlyAnimator.Value.parameters;
+                // Animatorの初期化前などでパラメータが取得出来ない場合は、判定出来ないため存在するものとして扱う(結果は保持せず、次回再度取得する)
+                if( parameters.Length <= 0 ) { return true; }
+
+                _hasAnimations = new bool[( int ) AnimDatas.AnimeConditionsTag.NUM];
+                foreach( var parameter in parameters )
+                {
+                    int index = AnimDatas.AnimNameHashList.IndexOf( parameter.nameHash );
+                    if( 0 <= index ) { _hasAnimations[index] = true; }
+                }
+            }
+
+            return _hasAnimations[( int ) animTag];
+        }
+
+        /// <summary>
+        /// 実際に用いるアニメーションのタグを求めます。
+        /// 指定のアニメーションがAnimatorに存在しない場合は警告を出力し、代わりのアニメーション(AnimDatas.FALLBACK_TAGS)を返します。
+        /// 代わりのアニメーションも存在しない場合はNONEを返します
+        /// </summary>
+        /// <param name="animTag">アニメーションタグ</param>
+        /// <returns>実際に用いるアニメーションのタグ</returns>
+        private AnimDatas.AnimeConditionsTag ResolveAnimTag( AnimDatas.AnimeConditionsTag animTag )
+        {
+            if( animTag <= AnimDatas.AnimeConditionsTag.NONE || AnimDatas.AnimeConditionsTag.NUM <= animTag ) { return AnimDatas.AnimeConditionsTag.NONE; }
+            if( HasAnimation( animTag ) ) { return animTag; }
+
+            var fallbackTag     = AnimDatas.FALLBACK_TAGS[( int ) animTag];
+            bool hasFallback    = HasAnimation( fallbackTag );
+
+            if( _warnedMissingTags.Add( animTag ) )
+            {
+                var animator        = _readOnlyAnimator.Value;
+                string missingName  = AnimDatas.ANIME_CONDITIONS_NAMES[( int ) animTag];
+                string substitution = hasFallback ? $"{AnimDatas.ANIME_CONDITIONS_NAMES[( int ) fallbackTag]} で代用します" : "再生せず、すぐに終了したものとして扱います";
+                Debug.LogWarning( $"[AnimationController] {animator.runtimeAnimatorController?.name} ({animator.gameObject.name}) に {missingName} のアニメーションが存在しないため、{substitution}。" );
+            }
+
+            return hasFallback ? fallbackTag : AnimDatas.AnimeConditionsTag.NONE;
         }
 
         /// <summary>
@@ -31,7 +90,10 @@ namespace Frontier
         /// <param name="animTag">アニメーションタグ</param>
         public void SetAnimator( AnimDatas.AnimeConditionsTag animTag )
         {
-            _readOnlyAnimator.Value.SetTrigger( AnimDatas.AnimNameHashList[( int ) animTag] );
+            var resolvedTag = ResolveAnimTag( animTag );
+            if( resolvedTag == AnimDatas.AnimeConditionsTag.NONE ) { return; }
+
+            _readOnlyAnimator.Value.SetTrigger( AnimDatas.AnimNameHashList[( int ) resolvedTag] );
         }
 
         /// <summary>
@@ -41,7 +103,10 @@ namespace Frontier
         /// <param name="b">トリガーアニメーションに対して使用</param>
         public void SetAnimator( AnimDatas.AnimeConditionsTag animTag, bool b )
         {
-            _readOnlyAnimator.Value.SetBool( AnimDatas.AnimNameHashList[( int ) animTag], b );
+            var resolvedTag = ResolveAnimTag( animTag );
+            if( resolvedTag == AnimDatas.AnimeConditionsTag.NONE ) { return; }
+
+            _readOnlyAnimator.Value.SetBool( AnimDatas.AnimNameHashList[( int ) resolvedTag], b );
         }
 
         /// <summary>
@@ -53,7 +118,11 @@ namespace Frontier
         /// <returns>取得出来た場合はtrue</returns>
         public bool TryGetAnimationLength( AnimDatas.AnimeConditionsTag animTag, out float length )
         {
-            return AnimStateLengthTable.TryGetLength( _readOnlyAnimator.Value.runtimeAnimatorController, animTag, out length );
+            length = 0f;
+            var resolvedTag = ResolveAnimTag( animTag );
+            if( resolvedTag == AnimDatas.AnimeConditionsTag.NONE ) { return false; }
+
+            return AnimStateLengthTable.TryGetLength( _readOnlyAnimator.Value.runtimeAnimatorController, resolvedTag, out length );
         }
 
         /// <summary>
@@ -66,7 +135,11 @@ namespace Frontier
         /// <returns>取得出来た場合はtrue(イベントが設定されていない場合はfalse)</returns>
         public bool TryGetEventTime( AnimDatas.AnimeConditionsTag animTag, string functionName, out float time )
         {
-            return AnimStateLengthTable.TryGetEventTime( _readOnlyAnimator.Value.runtimeAnimatorController, animTag, functionName, out time );
+            time = 0f;
+            var resolvedTag = ResolveAnimTag( animTag );
+            if( resolvedTag == AnimDatas.AnimeConditionsTag.NONE ) { return false; }
+
+            return AnimStateLengthTable.TryGetEventTime( _readOnlyAnimator.Value.runtimeAnimatorController, resolvedTag, functionName, out time );
         }
 
         /// <summary>
@@ -82,6 +155,9 @@ namespace Frontier
         /// </summary>
         public void SnapToCurrentAnimationToStart( AnimDatas.AnimeConditionsTag animTag )
         {
+            // 指定のアニメーションも代わりのアニメーションも存在しない場合は、現在のアニメーションを用いる
+            animTag = ResolveAnimTag( animTag );
+
             if( animTag == AnimDatas.AnimeConditionsTag.NONE )
             {
                 int hash;
@@ -116,6 +192,10 @@ namespace Frontier
         /// <returns>true : 再生中, false : 再生していない</returns>
         public bool IsPlayingAnimationOnConditionTag( AnimDatas.AnimeConditionsTag animTag )
         {
+            // 指定のアニメーションも代わりのアニメーションも存在しない場合は、再生後すぐに終了したものとして扱う
+            animTag = ResolveAnimTag( animTag );
+            if( animTag == AnimDatas.AnimeConditionsTag.NONE ) { return false; }
+
             AnimatorStateInfo stateInfo = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
@@ -147,6 +227,10 @@ namespace Frontier
         /// <returns>true : 終了, false : 未終了</returns>
         public bool IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag animTag )
         {
+            // 指定のアニメーションも代わりのアニメーションも存在しない場合は、再生後すぐに終了したものとして扱う
+            animTag = ResolveAnimTag( animTag );
+            if( animTag == AnimDatas.AnimeConditionsTag.NONE ) { return true; }
+
             AnimatorStateInfo stateInfo = _readOnlyAnimator.Value.GetCurrentAnimatorStateInfo( 0 );
 
             // MEMO : animator側でHasExitTime(終了時間あり)をONにしている場合、終了時間を1.0に設定する必要があることに注意
