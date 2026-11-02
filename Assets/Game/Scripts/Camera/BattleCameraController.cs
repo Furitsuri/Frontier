@@ -38,8 +38,7 @@ namespace Frontier
 
         // --- プレイヤー以外(敵・第三勢力)のスキル用カメラパラメータ ---
         [Header("プレイヤー以外(敵・第三勢力)のスキル用カメラパラメータ")]
-        [SerializeField] private float _npcSkillCameraApproachRate = 0.8f;  // 注視点までの距離に対する寄った後の距離の割合
-        [SerializeField] private float _npcSkillCameraDuration     = 0.5f;  // 寄り切るまでにかける秒数
+        [SerializeField] private float _npcSkillCameraDuration = 0.5f;  // 寄り切るまでにかける秒数(寄る距離は攻撃対象選択中と同じ)
 
         // --- 連携演出(渦巻きエフェクト)用カメラパラメータ ---
         [Header("連携演出(渦巻きエフェクト)用カメラパラメータ")]
@@ -104,7 +103,20 @@ namespace Frontier
         public float AngleXZ        => _angleXZ;
 
         // FOLLOWINGモードの各所で使うカメラ距離。攻撃対象選択中(_targetSelectZoomActive)は既定距離より少しだけ近づける
-        private float CurrentOffsetLength => _targetSelectZoomActive ? _offsetLength * BATTLE_CAMERA_TARGET_SELECT_ZOOM_SCALE : _offsetLength;
+        private float CurrentOffsetLength => _targetSelectZoomActive ? TargetSelectOffsetLength : _offsetLength;
+        // 攻撃対象選択中のカメラ距離。プレイヤー以外のスキル使用時のカメラ演出(ApproachCameraProcess)もこの距離まで寄る
+        private float TargetSelectOffsetLength => _offsetLength * BATTLE_CAMERA_TARGET_SELECT_ZOOM_SCALE;
+
+        /// <summary>
+        /// 現在のカメラ角度(_angleYZ, _angleXZ)を保ったまま、注視点から指定の距離だけ離れたカメラ座標を求めます
+        /// </summary>
+        /// <param name="lookAt">注視点</param>
+        /// <param name="offsetLength">注視点からカメラまでの距離</param>
+        /// <returns>カメラ座標</returns>
+        private Vector3 CalcFollowingPosition( in Vector3 lookAt, float offsetLength )
+        {
+            return Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * offsetLength + lookAt;
+        }
 
         void Update()
         {
@@ -127,7 +139,7 @@ namespace Frontier
                 _sharedState.FollowingPosition =
                     _sharedState.PrevCameraPosition =
                     _sharedState.MainCamera.transform.position =
-                        Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+                        CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
                 _sharedState.MainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
 
                 _cameraSliding = !isSlideEnd;
@@ -191,7 +203,7 @@ namespace Frontier
 
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _sharedState.LookAtPosition     = pos;
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
             _followElapsedTime              = 0.0f;
         }
 
@@ -208,7 +220,7 @@ namespace Frontier
             if( _activeSequence != null ) { return; } // 演出中はFOLLOWINGモードの位置を直接書き換えない
 
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
             _followElapsedTime              = 0f;
         }
 
@@ -242,7 +254,7 @@ namespace Frontier
         public void EndAttackSequenceMode( Character attacker )
         {
             _sharedState.LookAtPosition    = attacker.transform.position;
-            _sharedState.FollowingPosition = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition = CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
             _attackSeqHandler.BeginEndPhase();
         }
 
@@ -291,7 +303,7 @@ namespace Frontier
 
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _sharedState.LookAtPosition     = center;
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * requiredOffset + center;
+            _sharedState.FollowingPosition  = CalcFollowingPosition( center, requiredOffset );
             _followElapsedTime              = 0f;
         }
 
@@ -307,7 +319,7 @@ namespace Frontier
 
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _sharedState.LookAtPosition     = chara.transform.position;
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * _vortexOffsetLength + chara.transform.position;
+            _sharedState.FollowingPosition  = CalcFollowingPosition( chara.transform.position, _vortexOffsetLength );
             _followElapsedTime              = 0f;
         }
 
@@ -333,7 +345,7 @@ namespace Frontier
         {
             _coopSeqHandler.Conclude( lastAttacker );
 
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _followElapsedTime              = 0f;
             _activeSequence                 = null;
@@ -361,11 +373,11 @@ namespace Frontier
 
         /// <summary>
         /// プレイヤー以外(敵・第三勢力)のスキル使用時に用いる、カメラの向きを保ったまま少しだけ寄るカメラ処理を生成します。
-        /// 寄る量・時間はInspectorで設定した値を用います。
+        /// 寄る距離は攻撃対象選択中のカメラ距離と同じとし、寄り切るまでの時間はInspectorで設定した値を用います。
         /// </summary>
         public ISkillCameraProcess CreateNpcSkillCameraProcess( Character attacker, Character target )
         {
-            return new ApproachCameraProcess( attacker, target, _npcSkillCameraApproachRate, _npcSkillCameraDuration );
+            return new ApproachCameraProcess( attacker, target, lookAt => CalcFollowingPosition( lookAt, TargetSelectOffsetLength ), _npcSkillCameraDuration );
         }
 
         /// <summary>
@@ -379,7 +391,7 @@ namespace Frontier
 
             process.End();
 
-            _sharedState.FollowingPosition  = Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+            _sharedState.FollowingPosition  = CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
             _sharedState.PrevCameraPosition = _sharedState.MainCamera.transform.position;
             _followElapsedTime              = 0f;
             _activeSequence                 = null;
@@ -454,7 +466,7 @@ namespace Frontier
 
             _angleYZ = Mathf.Clamp( _angleYZ - context.Stick.y * _inputCoefficientOnCameraSlide, _angleYZMin, _angleYZMax );
             _sharedState.FollowingPosition = _sharedState.PrevCameraPosition =
-                Quaternion.Euler( _angleYZ, _angleXZ, 0 ) * Vector3.back * CurrentOffsetLength + _sharedState.LookAtPosition;
+                CalcFollowingPosition( _sharedState.LookAtPosition, CurrentOffsetLength );
 
             return true;
         }

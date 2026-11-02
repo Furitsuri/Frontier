@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using System;
 using UnityEngine;
 
 namespace Frontier
@@ -12,7 +13,7 @@ namespace Frontier
     {
         private readonly Character _attacker;
         private readonly Character _target;
-        private readonly float _approachRate;
+        private readonly Func<Vector3, Vector3> _calcCameraPosition;
         private readonly float _duration;
 
         private BattleCameraSharedState _ctx;
@@ -22,14 +23,14 @@ namespace Frontier
         private Vector3 _targetPosition;
         private Vector3 _lookAtPosition;
 
-        /// <param name="approachRate">開始時点の注視点までの距離に対する、寄った後の距離の割合(例: 0.8で2割寄る)</param>
+        /// <param name="calcCameraPosition">注視点を受け取り、寄った後のカメラ座標を返す処理(BattleCameraControllerのFOLLOWINGモードと同じ計算式を渡します)</param>
         /// <param name="duration">寄り切るまでにかける秒数</param>
-        public ApproachCameraProcess( Character attacker, Character target, float approachRate, float duration )
+        public ApproachCameraProcess( Character attacker, Character target, Func<Vector3, Vector3> calcCameraPosition, float duration )
         {
-            _attacker     = attacker;
-            _target       = target;
-            _approachRate = approachRate;
-            _duration     = duration;
+            _attacker           = attacker;
+            _target             = target;
+            _calcCameraPosition = calcCameraPosition;
+            _duration           = duration;
         }
 
         public void Begin( BattleCameraSharedState sharedState, Vector3 fromPosition, Quaternion fromRotation )
@@ -39,10 +40,9 @@ namespace Frontier
             _fromPosition = fromPosition;
             _fromLookAt   = sharedState.LookAtPosition;
 
-            // 開始時点の注視点→カメラの向きを保ったまま、注視点を攻撃者と対象の中間点へ移し、距離だけを縮める
-            Vector3 offset  = _fromPosition - _fromLookAt;
+            // 注視点を攻撃者と対象の中間点へ移し、カメラの角度はそのままに、攻撃対象選択中と同じ距離まで寄る
             _lookAtPosition = ( _attacker.transform.position + _target.transform.position ) * 0.5f;
-            _targetPosition = _lookAtPosition + offset * _approachRate;
+            _targetPosition = _calcCameraPosition( _lookAtPosition );
 
             _ctx.Presenter?.SetActiveParameterWindows( false );
         }
