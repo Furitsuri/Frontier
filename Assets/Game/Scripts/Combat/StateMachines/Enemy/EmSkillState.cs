@@ -77,7 +77,10 @@ namespace Frontier.Battle
             // アタッカーキャラクターの設定
             _stageCtrl.BindGridCursor( GridCursorState.ATTACK, _attackCharacter );
             _stageCtrl.ApplyGridCursor2CharacterTile( _attackCharacter );
-            _stageCtrl.ApplyTargetCursor2CharacterTile( true, _targetCharacter );
+            // MEMO : カメラの注視先はターゲットカーソルへ切り替えない。
+            //        敵の行動後はグリッドカーソルへ注視先を戻さない(CleanupTargetSelectionStateでfocusOwner:false)ため、
+            //        切り替えるとプレイヤーフェーズになってもカメラがグリッドカーソルに追従しなくなる
+            _stageCtrl.ApplyTargetCursor2CharacterTile( false, _targetCharacter );
 
             // 対象選択中はカメラを少しだけ近づける
             _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
