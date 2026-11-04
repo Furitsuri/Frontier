@@ -31,11 +31,7 @@ namespace Frontier.Battle
             // 移動行動に遷移するか
             if( ShouldTransitionToMove( _currentEnemy ) )
             {
-                // 移動先が現在地の場合は実際には移動しないため、行動の開始とはみなさない
-                if( 0 < _currentEnemy.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count )
-                {
-                    BeginActingDisplay( _currentEnemy );
-                }
+                BeginActingDisplay( _currentEnemy );
                 TransitStateWithExit( ( int ) COMMAND_TAG.MOVE );
 
                 return true;
@@ -133,6 +129,13 @@ namespace Frontier.Battle
                 {
                     EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
                     (_isValidDestination, _isValidTarget) = enemyLogic.DetermineDestinationAndTargetWithAI();
+
+                    // 移動先が現在地(移動経路が空)の場合は、移動の必要が無いため移動済み状態にする
+                    // (移動コマンドに遷移させず、移動・攻撃の両コマンドの終了状態による行動終了判定が成り立つようにするため)
+                    if( _currentEnemy.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
+                    {
+                        _currentEnemy.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+                    }
                 }
 
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
