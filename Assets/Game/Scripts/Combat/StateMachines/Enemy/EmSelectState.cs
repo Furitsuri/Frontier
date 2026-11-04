@@ -2,6 +2,7 @@
 using Frontier.Entities;
 using Frontier.StateMachine;
 using Frontier.UI;
+using System;
 using System.Collections.Generic;
 
 namespace Frontier.Battle
@@ -16,6 +17,21 @@ namespace Frontier.Battle
         // 子ステート(移動・攻撃・スキル)から戻る度にInit()が呼ばれるため、Init()ではリセットしない
         Enemy _actingEnemy = null;
 
+        // 遷移先の判定表。先頭から順に判定し、最初に条件を満たしたコマンドへ遷移する(並び順が判定の優先順位)。
+        // isAction : 行動(移動・攻撃・スキル)の開始として、パラメータウィンドウに表示するか
+        readonly ( Func<Enemy, bool> shouldTransit, COMMAND_TAG command, bool isAction )[] _transitions;
+
+        public EmSelectState()
+        {
+            _transitions = new ( Func<Enemy, bool>, COMMAND_TAG, bool )[]
+            {
+                ( ShouldTransitionToMove,   COMMAND_TAG.MOVE,   true  ),   // 移動
+                ( ShouldTransitionToAttack, COMMAND_TAG.ATTACK, true  ),   // 攻撃
+                ( ShouldTransitionToSkill,  COMMAND_TAG.SKILL,  true  ),   // スキルによる攻撃
+                ( ShouldTransitionToWait,   COMMAND_TAG.WAIT,   false ),   // 待機(行動しないため表示しない)
+            };
+        }
+
         public override void Init( object context )
         {
             base.Init( context);
@@ -28,36 +44,12 @@ namespace Frontier.Battle
         {
             if( IsBack() ) { return true; }
 
-            // 移動行動に遷移するか
-            if( ShouldTransitionToMove( _currentEnemy ) )
+            foreach( var ( shouldTransit, command, isAction ) in _transitions )
             {
-                BeginActingDisplay( _currentEnemy );
-                TransitStateWithExit( ( int ) COMMAND_TAG.MOVE );
+                if( !shouldTransit( _currentEnemy ) ) { continue; }
 
-                return true;
-            }
-
-            // 攻撃行動に遷移するか
-            if( ShouldTransitionToAttack( _currentEnemy ) )
-            {
-                BeginActingDisplay( _currentEnemy );
-                TransitStateWithExit( ( int ) COMMAND_TAG.ATTACK );
-
-                return true;
-            }
-
-            // スキルによる攻撃行動に遷移するか
-            if( ShouldTransitionToSkill( _currentEnemy ) )
-            {
-                BeginActingDisplay( _currentEnemy );
-                TransitStateWithExit( ( int ) COMMAND_TAG.SKILL );
-
-                return true;
-            }
-
-            if( ShouldTransitionToWait( _currentEnemy ) )
-            {
-                TransitStateWithExit( ( int ) COMMAND_TAG.WAIT );
+                if( isAction ) { BeginActingDisplay( _currentEnemy ); }
+                TransitStateWithExit( ( int ) command );
 
                 return true;
             }
