@@ -47,6 +47,7 @@ MonoBehaviour:
   _coopCameraXZDistance: 5
   _coopCameraHeight: 4
   _coopCameraLerpDuration: 0.5
+  _npcSkillCameraDuration: 0.5
   _vortexIntroZoomOutFactor: 2
   _enableVortexCharacterFocus: 1
   _fadeDuration: 0.5
