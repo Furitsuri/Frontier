@@ -85,12 +85,22 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 攻撃・スキルのシーケンスが完全に終了した後に、指定のパラメータウィンドウを閉じます。
-        /// 表示していたキャラクターの割り当ても解除するため、死亡して破棄されるキャラクターを表示し続けることもありません。
-        /// MEMO : シーケンス中のカメラ演出(AttackSequenceCameraHandler等)は終了時に左右のウィンドウを再表示するため、
-        ///        必ずシーケンス完了後(各ステートのENDフェーズ等)に呼び出してください。
+        /// 指定のパラメータウィンドウにキャラクターを割り当てて表示します。
         /// </summary>
-        protected void CloseParameterWindowAfterSequence( ParameterWindowType winType )
+        protected void ShowParameterWindow( ParameterWindowType winType, Character chara )
+        {
+            var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( winType );
+            _presenter.CharaParamView( winType ).AssignCharacter( chara, layerMaskIndex );
+            _presenter.CharaParamView( winType ).SetActive( true );
+        }
+
+        /// <summary>
+        /// 指定のパラメータウィンドウを閉じます。
+        /// 表示していたキャラクターの割り当ても解除するため、死亡して破棄されるキャラクターを表示し続けることもありません。
+        /// MEMO : 攻撃・スキルのシーケンス中のカメラ演出(AttackSequenceCameraHandler等)は終了時に左右のウィンドウを再表示するため、
+        ///        シーケンスを伴う行動の後に閉じる場合は、必ずシーケンス完了後(各ステートのENDフェーズ等)に呼び出してください。
+        /// </summary>
+        protected void CloseParameterWindow( ParameterWindowType winType )
         {
             _presenter.CharaParamView( winType ).ClearCharacter();
         }

@@ -108,7 +108,7 @@ namespace Frontier.Battle
                 case PlAttackPhase.PL_ATTACK_END:
                     // 攻撃シーケンスが終了したため、攻撃対象のパラメータウィンドウを閉じる
                     // (攻撃したプレイヤー側(左)は、続くコマンド選択でも表示するため閉じない)
-                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
+                    CloseParameterWindow( ParameterWindowType.Right );
                     // 攻撃コマンドを実行完了として確定する（以前の状態には戻せなくなる）
                     _plOwner.FinalizeCommand( COMMAND_TAG.ATTACK );
                     // コマンド選択に戻る

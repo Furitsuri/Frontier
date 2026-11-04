@@ -125,7 +125,7 @@ namespace Frontier.Battle
                 case PlSkillActionPhase.PL_SKILL_ACTION_END:
                     // スキルのシーケンスが終了したため、攻撃対象のパラメータウィンドウを閉じる
                     // (スキルを使用したプレイヤー側(左)は、続くコマンド選択でも表示するため閉じない)
-                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
+                    CloseParameterWindow( ParameterWindowType.Right );
                     // 連携攻撃の場合、行動終了の確定は CooperativeSkillSequence.End() で参加キャラクター全員分まとめて行う
                     if( !_isCooperativeSkill ) { _plOwner.FinalizeCommand( COMMAND_TAG.SKILL ); }
                     Back();

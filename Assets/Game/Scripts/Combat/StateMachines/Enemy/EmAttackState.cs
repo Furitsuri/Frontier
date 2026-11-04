@@ -79,13 +79,9 @@ namespace Frontier.Battle
             var attackerTileData = _stageCtrl.GetTileStaticData( _attackCharacter.BattleParams.TmpParam.CurrentTileIndex );
             _targetCharacter.RotateToPosition( attackerTileData.CharaStandPos );
 
-            // パラメータビューにキャラクターを割り当て
-            var leftWindowLayerMaskIndex    = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Left );
-            var rightWindowLayerMaskIndex   = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
-            _presenter.CharaParamView( ParameterWindowType.Left ).AssignCharacter( _targetCharacter, leftWindowLayerMaskIndex );
-            _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _attackCharacter, rightWindowLayerMaskIndex );
-            _presenter.CharaParamView( ParameterWindowType.Left ).SetActive( true );
-            _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( true );
+            // 攻撃対象をパラメータビュー(左)に表示する
+            // (攻撃する敵自身(右)の表示と、行動終了後に左右を閉じる処理はEmSelectStateが行う)
+            ShowParameterWindow( ParameterWindowType.Left, _targetCharacter );
 
             _phase = EmAttackPhase.EM_ATTACK_CONFIRM;
         }
@@ -119,10 +115,6 @@ namespace Frontier.Battle
                     }
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
-                    // 攻撃シーケンスが終了したため、左右のパラメータウィンドウを閉じる
-                    // (敵フェーズにはタイル選択によるパラメータ表示の自動更新が無く、閉じなければ次の行動まで表示が残るため)
-                    CloseParameterWindowAfterSequence( ParameterWindowType.Left );
-                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
                     _attackCharacter.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
 

@@ -282,9 +282,15 @@ namespace Frontier.UI
             GameOver.gameObject.SetActive( isActive );
         }
 
+        /// <summary>
+        /// ゲームオーバー演出を開始し、あわせて味方/敵のバトルパラメータUIを非表示にします
+        /// (StartStageClearAnimと同様、演出中に余計なHUDが写り込まないようにするため)。
+        /// </summary>
         public void StartGameOverAnim()
         {
             GameOver.StartAnim();
+            SetActiveLeftParameterWindow( false );
+            SetActiveRightParameterWindow( false );
         }
 
         /// <summary>

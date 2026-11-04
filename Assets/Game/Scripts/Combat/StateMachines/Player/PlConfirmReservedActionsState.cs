@@ -43,7 +43,7 @@ namespace Frontier.Battle
                 if( !_sequenceFcd.IsEmptySequence() ) { return IsBack(); }
 
                 // スキルのシーケンスが終了したため、攻撃対象側(右)のパラメータウィンドウを閉じる
-                // (UnitPhaseStateを継承しないため、CloseParameterWindowAfterSequenceと同じ処理を直接行う)
+                // (UnitPhaseStateを継承しないため、CloseParameterWindowと同じ処理を直接行う)
                 ( _confirmPresenter as BattleRoutinePresenter )?.CharaParamView( ParameterWindowType.Right ).ClearCharacter();
 
                 _lastExecutedAttacker ?.FinalizeCommand( COMMAND_TAG.SKILL );

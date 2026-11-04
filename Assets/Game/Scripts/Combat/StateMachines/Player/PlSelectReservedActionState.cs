@@ -65,7 +65,7 @@ namespace Frontier.Battle
                     if( !_sequenceFcd.IsEmptySequence() ) { break; }
 
                     // スキルのシーケンスが終了したため、攻撃対象側(右)のパラメータウィンドウを閉じる
-                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
+                    CloseParameterWindow( ParameterWindowType.Right );
 
                     _plOwner.FinalizeCommand( COMMAND_TAG.SKILL );
 
