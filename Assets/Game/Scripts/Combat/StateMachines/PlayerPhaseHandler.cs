@@ -122,14 +122,13 @@ namespace Frontier.Battle
              *          ｜       ｜               └─ [2] PlWaitState
              *          ｜       ｜
              *          ｜       ├─ [1] CharacterStatusViewState
-             *          ｜       ├─ [2] PlConfirmTurnEnd
-             *          ｜       ├─ [3] PlSelectReservedActionState (予約に対する操作選択、実行まで行う)
-             *          ｜       ├─ [4] PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー)
-             *          ｜       ├─ [5] PlSelectGroupMembersState (OPT1でのキャラクター登録時に自動遷移するグループ移動のメンバー選択。登録・解除はここでのみ可能)
+             *          ｜       ├─ [2] PlSelectReservedActionState (予約に対する操作選択、実行まで行う)
+             *          ｜       ├─ [3] PlSelectMenuState (OPT2から遷移するOption/Turn Endメニュー。Turn End選択時は確認画面を介さずターンを終了する)
+             *          ｜       ├─ [4] PlSelectGroupMembersState (OPT1でのキャラクター登録時に自動遷移するグループ移動のメンバー選択。登録・解除はここでのみ可能)
              *          ｜       ｜       └─ [0] PlGroupMoveState (CONFIRMで遷移するグループ移動プレビュー・実行。カーソル移動のたびにプレビューを更新する)
              *          ｜       ｜               └─ [0] PlConfirmBlockUndoMoveState
-             *          ｜       ├─ [6] PlGroupMoveState (SUB3で全員を一括登録した際に直接遷移。上記と同一インスタンス)
-             *          ｜       └─ [7] PlSelectCommandState (スキルの使用等によって移動が確定しているキャラクターを決定した場合に直接遷移。上記と同一インスタンス)
+             *          ｜       ├─ [5] PlGroupMoveState (SUB3で全員を一括登録した際に直接遷移。上記と同一インスタンス)
+             *          ｜       └─ [6] PlSelectCommandState (スキルの使用等によって移動が確定しているキャラクターを決定した場合に直接遷移。上記と同一インスタンス)
              *          ｜
              *          └─ [1] PlConfirmReservedActionsState (キュー実行確認)
              *
@@ -159,7 +158,6 @@ namespace Frontier.Battle
             // タイル選択
             selectTileState.AddChild( moveState );
             selectTileState.AddChild( characterStatusViewState );
-            selectTileState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlConfirmTurnEnd>( false ) );
             selectTileState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectReservedActionState>( false ) );
             selectTileState.AddChild( _hierarchyBld.InstantiateWithDiContainer<PlSelectMenuState>( false ) );
             selectTileState.AddChild( selectGroupMembersState );

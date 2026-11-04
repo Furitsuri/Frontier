@@ -14,7 +14,6 @@ namespace Frontier.Battle
         {
             CHARACTER_MOVE = 0,
             CHARACTER_STATUS,
-            TURN_END,
             SELECT_RESERVED_ACTION,
             SELECT_TILE_MENU,
             SELECT_GROUP_MEMBERS,
@@ -522,7 +521,9 @@ namespace Frontier.Battle
                 var menuState = GetChildren<PlSelectMenuState>( ( int ) TransitTag.SELECT_TILE_MENU );
                 if( menuState != null && menuState.IsTurnEndSelected )
                 {
-                    TransitState( ( int ) TransitTag.TURN_END );
+                    // 確認画面を介さず、全てのキャラクターを待機済みに設定してターンを終了させる
+                    // (フェーズの終了はUpdate内のIsEndAllArmyWaitCommandの判定で行われる)
+                    _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction( CHARACTER_TAG.PLAYER );
                 }
             }
         }

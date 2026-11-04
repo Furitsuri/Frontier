@@ -10,7 +10,7 @@ namespace Frontier.Battle
     /// <summary>
     /// PlSelectTileStateのOPT2入力から遷移する、"Option"/"Turn End"の選択メニューです。
     /// "Option"を選んだ場合はOptionHandlerを起動し、"Turn End"を選んだ場合はIsTurnEndSelectedを立てて
-    /// 呼び出し元(PlSelectTileState)にターン終了確認画面への遷移を委ねます。
+    /// 呼び出し元(PlSelectTileState)にターン終了処理を委ねます。
     /// </summary>
     public class PlSelectMenuState : PlPhaseStateBase, ICommandCursorProvider
     {
