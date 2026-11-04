@@ -3,6 +3,7 @@ using Frontier.Entities;
 using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.StateMachine;
+using Frontier.UI;
 using System.Collections.Generic;
 using Zenject;
 
@@ -40,6 +41,10 @@ namespace Frontier.Battle
             if( _execPhase == ExecutionPhase.EXECUTING )
             {
                 if( !_sequenceFcd.IsEmptySequence() ) { return IsBack(); }
+
+                // スキルのシーケンスが終了したため、攻撃対象側(右)のパラメータウィンドウを閉じる
+                // (UnitPhaseStateを継承しないため、CloseParameterWindowAfterSequenceと同じ処理を直接行う)
+                ( _confirmPresenter as BattleRoutinePresenter )?.CharaParamView( ParameterWindowType.Right ).ClearCharacter();
 
                 _lastExecutedAttacker ?.FinalizeCommand( COMMAND_TAG.SKILL );
 

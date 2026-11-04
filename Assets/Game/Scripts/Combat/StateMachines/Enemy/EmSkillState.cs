@@ -112,6 +112,10 @@ namespace Frontier.Battle
                     _phase = EmSkillPhase.EM_SKILL_END;
                     break;
                 case EmSkillPhase.EM_SKILL_END:
+                    // スキルのシーケンスが終了したため、左右のパラメータウィンドウを閉じる
+                    // (敵フェーズにはタイル選択によるパラメータ表示の自動更新が無く、閉じなければ次の行動まで表示が残るため)
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Left );
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
                     // 攻撃またはスキルを実行した時点で行動終了とするため、攻撃・スキルの両コマンドを選択不可にする
                     _attackCharacter.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
                     _attackCharacter.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.SKILL, true );

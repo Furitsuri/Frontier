@@ -119,6 +119,10 @@ namespace Frontier.Battle
                     }
                     break;
                 case EmAttackPhase.EM_ATTACK_END:
+                    // 攻撃シーケンスが終了したため、左右のパラメータウィンドウを閉じる
+                    // (敵フェーズにはタイル選択によるパラメータ表示の自動更新が無く、閉じなければ次の行動まで表示が残るため)
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Left );
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
                     // 攻撃したキャラクターの攻撃コマンドを選択不可にする
                     _attackCharacter.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
 

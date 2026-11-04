@@ -64,6 +64,9 @@ namespace Frontier.Battle
                     // スキルアクションが完了するまでは行動終了状態にしない(完了前にグレー化してしまうのを防ぐ)
                     if( !_sequenceFcd.IsEmptySequence() ) { break; }
 
+                    // スキルのシーケンスが終了したため、攻撃対象側(右)のパラメータウィンドウを閉じる
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
+
                     _plOwner.FinalizeCommand( COMMAND_TAG.SKILL );
 
                     _phase = Phase.END;

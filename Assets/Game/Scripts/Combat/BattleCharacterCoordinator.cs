@@ -103,6 +103,17 @@ namespace Frontier.Battle
         /// <status name="charaKey">削除対象のキャラクター</status>
         public void RemoveCharacterFromList( CharacterKey charaKey )
         {
+            var chara = UnregisterCharacter( charaKey );
+            chara.OnBattleExit();
+        }
+
+        /// <summary>
+        /// キャラクターをリストとハッシュから除去します。戦闘からの退出処理(OnBattleExit)は行いません。
+        /// </summary>
+        /// <param name="charaKey">除去対象のキャラクター</param>
+        /// <returns>除去したキャラクター</returns>
+        private Character UnregisterCharacter( in CharacterKey charaKey )
+        {
             var chara = _characterDict.Get( charaKey );
             NullCheck.AssertNotNull( chara, nameof( chara ) );
 
@@ -112,7 +123,8 @@ namespace Frontier.Battle
             {
                 _interceptGroupReg.Unregister( interceptAi );
             }
-            chara.OnBattleExit();
+
+            return chara;
         }
 
         /// <summary>
@@ -144,7 +156,11 @@ namespace Frontier.Battle
             }
 
             SetDiedCharacterKey( characterKey );
-            RemoveCharacterFromList( characterKey );
+            // MEMO : ここでは戦闘からの退出処理(OnBattleExit)を行わず、DisposePendingDeadCharacters()まで遅らせる。
+            //        PlayerはOnBattleExit()で戦闘ロジック(BattleLogic)を破棄・nullにするため、ここで呼ぶと
+            //        攻撃・スキルシーケンスの残り(終了時のResetOnEndOfAttackSequence等)が例外で止まり、
+            //        シーケンスが完了せず死亡したプレイヤーの実体が破棄されなくなる。
+            UnregisterCharacter( characterKey );
             ForceEndExhaustedReservations( characterKey );
             _pendingDisposalCharacters.Add( chara );
         }
@@ -160,6 +176,7 @@ namespace Frontier.Battle
 
             foreach( var chara in _pendingDisposalCharacters )
             {
+                chara.OnBattleExit();
                 chara.Dispose();
             }
             _pendingDisposalCharacters.Clear();

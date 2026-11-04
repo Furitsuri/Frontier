@@ -100,12 +100,17 @@ namespace Frontier.Battle
 
         public override bool Update()
         {
-            bool isActiveRightParameterView = ( _targetSelector.TargetCharacter != null );
-            _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParameterView );
-            if( isActiveRightParameterView )
+            // 対象選択中のみ、対象の有無に応じて右側(攻撃対象)のパラメータウィンドウを更新する
+            // (実行確定後も毎フレーム更新すると、シーケンス終了後に閉じたウィンドウが再表示されてしまうため)
+            if( PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID == _phase )
             {
-                var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
-                _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetSelector.TargetCharacter, layerMaskIndex );
+                bool isActiveRightParameterView = ( _targetSelector.TargetCharacter != null );
+                _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParameterView );
+                if( isActiveRightParameterView )
+                {
+                    var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
+                    _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetSelector.TargetCharacter, layerMaskIndex );
+                }
             }
 
             if( base.Update() ) { return true; }
@@ -118,6 +123,9 @@ namespace Frontier.Battle
                     _phase = PlSkillActionPhase.PL_SKILL_ACTION_END;
                     break;
                 case PlSkillActionPhase.PL_SKILL_ACTION_END:
+                    // スキルのシーケンスが終了したため、攻撃対象のパラメータウィンドウを閉じる
+                    // (スキルを使用したプレイヤー側(左)は、続くコマンド選択でも表示するため閉じない)
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
                     // 連携攻撃の場合、行動終了の確定は CooperativeSkillSequence.End() で参加キャラクター全員分まとめて行う
                     if( !_isCooperativeSkill ) { _plOwner.FinalizeCommand( COMMAND_TAG.SKILL ); }
                     Back();

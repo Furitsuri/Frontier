@@ -85,6 +85,17 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 攻撃・スキルのシーケンスが完全に終了した後に、指定のパラメータウィンドウを閉じます。
+        /// 表示していたキャラクターの割り当ても解除するため、死亡して破棄されるキャラクターを表示し続けることもありません。
+        /// MEMO : シーケンス中のカメラ演出(AttackSequenceCameraHandler等)は終了時に左右のウィンドウを再表示するため、
+        ///        必ずシーケンス完了後(各ステートのENDフェーズ等)に呼び出してください。
+        /// </summary>
+        protected void CloseParameterWindowAfterSequence( ParameterWindowType winType )
+        {
+            _presenter.CharaParamView( winType ).ClearCharacter();
+        }
+
+        /// <summary>
         /// 攻撃・スキルの対象選択ステートから、実行確定(攻撃シーケンスへの移行、予約キューへの登録等)を行う際の共通後始末を行います。
         /// CleanupTargetSelectionStateと異なり、グリッドカーソルの解除やオーナータイルへのカメラ復帰までは行いません
         /// (実行確定直後はまだ攻撃シーケンス等が続くため、その後始末はExitState側のCleanupTargetSelectionStateに委ねます)。

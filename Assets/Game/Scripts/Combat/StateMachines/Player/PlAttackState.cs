@@ -77,8 +77,13 @@ namespace Frontier.Battle
 
         public override bool Update()
         {
-            bool isActiveRightParameterView = ( null != _targetCharacter );
-            _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParameterView );
+            // 対象選択中のみ、対象の有無に応じて右側(攻撃対象)のパラメータウィンドウの表示を切り替える
+            // (実行確定後も毎フレーム切り替えると、シーケンス終了後に閉じたウィンドウが再表示されてしまうため)
+            if( PlAttackPhase.PL_ATTACK_SELECT_GRID == _phase )
+            {
+                bool isActiveRightParameterView = ( null != _targetCharacter );
+                _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParameterView );
+            }
 
             if( base.Update() )
             {
@@ -101,6 +106,9 @@ namespace Frontier.Battle
 
                     break;
                 case PlAttackPhase.PL_ATTACK_END:
+                    // 攻撃シーケンスが終了したため、攻撃対象のパラメータウィンドウを閉じる
+                    // (攻撃したプレイヤー側(左)は、続くコマンド選択でも表示するため閉じない)
+                    CloseParameterWindowAfterSequence( ParameterWindowType.Right );
                     // 攻撃コマンドを実行完了として確定する（以前の状態には戻せなくなる）
                     _plOwner.FinalizeCommand( COMMAND_TAG.ATTACK );
                     // コマンド選択に戻る
