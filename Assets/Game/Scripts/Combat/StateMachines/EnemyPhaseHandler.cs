@@ -53,6 +53,7 @@ namespace Frontier.Battle
              *                  ｜
              *                  ├─ [0] EmMoveState   (COMMAND_TAG.MOVE)
              *                  ├─ [1] EmAttackState (COMMAND_TAG.ATTACK)
+             *                  │       └─ [0] EmDefenceSkillSelectState (攻撃対象のプレイヤーが防御スキルを選択)
              *                  ├─ [2] EmSkillState  (COMMAND_TAG.SKILL)
              *                  └─ [3] EmWaitState   (COMMAND_TAG.WAIT)
              *
@@ -65,7 +66,9 @@ namespace Frontier.Battle
 
             // 行動選択
             selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmMoveState>( false ) );
-            selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false ) );
+            var attackState = _hierarchyBld.InstantiateWithDiContainer<EmAttackState>( false );
+            attackState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmDefenceSkillSelectState>( false ) );
+            selectState.AddChild( attackState );
             selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmSkillState>( false ) );
             selectState.AddChild( _hierarchyBld.InstantiateWithDiContainer<EmWaitState>( false ) );
         }

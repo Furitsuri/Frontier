@@ -20,13 +20,17 @@ namespace Frontier.Battle
             EM_ATTACK_END,
         }
 
+        private enum TransitTag
+        {
+            DEFENCE_SKILL_SELECT = 0,
+        }
+
         [Inject] private SequenceFacade _sequenceFcd = null;
 
         private EmAttackPhase _phase;
-        private string[] _targetCharaSkillNames = null;
         private Enemy _attackCharacter = null;
         private Character _targetCharacter = null;
-        private Func<InputContext, bool>[] AccespuSubs;
+        private bool _isWaitingForDefenceSkillSelect = false;
 
         public override void Init( object context )
         {
@@ -34,13 +38,7 @@ namespace Frontier.Battle
 
             _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
             Debug.Assert( _attackCharacter != null );
-            AccespuSubs = new Func<InputContext, bool>[]
-            {
-                ( context ) => base.AcceptSub1( context ),
-                ( context ) => base.AcceptSub2( context ),
-                ( context ) => base.AcceptSub3( context ),
-                ( context ) => base.AcceptSub4( context )
-            };
+            _isWaitingForDefenceSkillSelect = false;
 
             // 現在選択中のキャラクター情報を取得して攻撃範囲を表示
             _attackCharacter.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _attackCharacter.BattleParams.TmpParam.CurrentTileIndex );
@@ -71,8 +69,6 @@ namespace Frontier.Battle
             _targetCharacter = _attackCharacter.BattleLogic.GetAi().GetTargetCharacter();
             _stageCtrl.ApplyGridCursor2CharacterTile( _attackCharacter );
 
-            _targetCharaSkillNames = _targetCharacter.GetStatusRef.GetEquipSkillNames();
-
             // 攻撃者の向きを設定
             var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
             _attackCharacter.RotateToPosition( targetTileData.CharaStandPos );
@@ -82,6 +78,17 @@ namespace Frontier.Battle
             // 攻撃対象をパラメータビュー(左)に表示する
             // (攻撃する敵自身(右)の表示と、行動終了後に左右を閉じる処理はEmSelectStateが行う)
             ShowParameterWindow( ParameterWindowType.Left, _targetCharacter );
+
+            // 防御側のスキルの使用可否を、防御シチュエーションで更新する
+            // (プレイヤーフェーズ中の攻撃シチュエーションでの判定結果が残ったままだと、防御スキルが使用不可のままになるため)
+            EmDefenceSkillSelectState.RefreshDefenceUseableSkillFlags( _targetCharacter );
+
+            // 使用スキルを選択する(プレイヤー以外はAIが選択。プレイヤーは防御スキル選択ステートで選択する)
+            _attackCharacter.BattleLogic.SelectUseSkills( SituationType.ATTACK );
+            _targetCharacter.BattleLogic.SelectUseSkills( SituationType.DEFENCE );
+
+            // 予測ダメージを適応し、HPゲージに予測ダメージ分の点滅を反映する
+            RefreshNormalAttackDamageExpect( _attackCharacter, _targetCharacter );
 
             _phase = EmAttackPhase.EM_ATTACK_CONFIRM;
         }
@@ -97,16 +104,20 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case EmAttackPhase.EM_ATTACK_CONFIRM:
-                    // 使用スキルを選択する
-                    _attackCharacter.BattleLogic.SelectUseSkills( SituationType.ATTACK );
-                    _targetCharacter.BattleLogic.SelectUseSkills( SituationType.DEFENCE );
+                    if( _isWaitingForDefenceSkillSelect ) { break; }
 
-                    // 予測ダメージを適応する
-                    _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
-
-                    // 予測ダメージ分のHPゲージ点滅を反映する
-                    var expectedChange = _btlRtnCtrl.BtlCharaCdr.CalculateExpectedHpChange( _attackCharacter, _targetCharacter );
-                    _presenter.SetPredictedDamageOnCharacter( _targetCharacter, -expectedChange.total );
+                    // 攻撃対象のプレイヤーが防御時に使用可能なスキルを持つ場合は、防御スキルの選択へ遷移する
+                    // (装備していない、またはアクションゲージが不足している場合は確認を挟まずにそのまま攻撃を実行する)
+                    if( _targetCharacter is Player defender && EmDefenceSkillSelectState.HasUseableDefenceSkill( defender ) )
+                    {
+                        _isWaitingForDefenceSkillSelect = true;
+                        SetSendTransitionContext( new EmDefenceSkillSelectState.TransitContext { Attacker = _attackCharacter, Defender = defender } );
+                        TransitState( ( int ) TransitTag.DEFENCE_SKILL_SELECT );
+                    }
+                    else
+                    {
+                        ExecuteAttack();
+                    }
 
                     break;
                 case EmAttackPhase.EM_ATTACK_EXECUTE:
@@ -147,82 +158,33 @@ namespace Frontier.Battle
             return base.ExitState();
         }
 
-        public override void RegisterInputCodes()
+        protected override void OnActivated()
         {
-            int hashCode = GetInputCodeHash();
+            base.OnActivated();
 
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode),
-               (GuideIcon.SUB1, _targetCharaSkillNames[0], CanAcceptSub1, new AcceptContextInput( AcceptSub1 ), 0.0f, hashCode),
-               (GuideIcon.SUB2, _targetCharaSkillNames[1], CanAcceptSub2, new AcceptContextInput( AcceptSub2 ), 0.0f, hashCode),
-               (GuideIcon.SUB3, _targetCharaSkillNames[2], CanAcceptSub3, new AcceptContextInput( AcceptSub3 ), 0.0f, hashCode),
-               (GuideIcon.SUB4, _targetCharaSkillNames[3], CanAcceptSub4, new AcceptContextInput( AcceptSub4 ), 0.0f, hashCode)
-            );
+            // 防御スキルの選択から戻った場合は攻撃を実行する
+            if( _isWaitingForDefenceSkillSelect )
+            {
+                _isWaitingForDefenceSkillSelect = false;
+                ExecuteAttack();
+            }
         }
 
         /// <summary>
-        /// 決定入力受付の可否を判定します
+        /// 攻撃を実際に実行します
         /// </summary>
-        /// <returns>決定入力受付の可否</returns>
-        protected override bool CanAcceptConfirm()
+        private void ExecuteAttack()
         {
-            if( !CanAcceptDefault() ) return false;
-
-            if( EmAttackPhase.EM_ATTACK_CONFIRM == _phase ) return true;
-
-            return false;
-        }
-
-        protected override bool CanAcceptSub1() => CanAcceptSub( 0 );
-        protected override bool CanAcceptSub2() => CanAcceptSub( 1 );
-        protected override bool CanAcceptSub3() => CanAcceptSub( 2 );
-        protected override bool CanAcceptSub4() => CanAcceptSub( 3 );
-        /// <summary>
-        /// 決定入力を受け取った際の処理を行います
-        /// </summary>
-        /// <param name="isConfirm">決定入力の有無</param>
-        protected override bool AcceptConfirm( InputContext context )
-        {
-            if( !base.AcceptConfirm( context ) ) { return false; }
-
-            // キャラクターのアクションゲージを消費
+            // キャラクターのアクションゲージを消費(防御側は防御スキルの使用分)
             _attackCharacter.BattleLogic.ConsumeActionGauge();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
 
-            FinalizeTargetSelection( ParameterWindowType.Right, false );                  // カメラズームの解除は攻撃シーケンス側で行う
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();                       // タイルメッシュの描画をすべてクリア
-
-            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );       // 現在の入力コードを登録解除
+            FinalizeTargetSelection( ParameterWindowType.Right, false );          // カメラズームの解除は攻撃シーケンス側で行う
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();               // タイルメッシュの描画をすべてクリア
 
             _sequenceFcd.RegistAttack( _attackCharacter, _targetCharacter );    // 攻撃シーケンス処理に移行
 
             _phase = EmAttackPhase.EM_ATTACK_EXECUTE;
-
-            return true;
-        }
-
-        protected override bool AcceptSub1( InputContext context ) => AcceptSub( 0, context );
-        protected override bool AcceptSub2( InputContext context ) => AcceptSub( 1, context );
-        protected override bool AcceptSub3( InputContext context ) => AcceptSub( 2, context );
-        protected override bool AcceptSub4( InputContext context ) => AcceptSub( 3, context );
-
-        private bool CanAcceptSub( int index )
-        {
-            if( !CanAcceptDefault() )                       { return false; }
-            if( EmAttackPhase.EM_ATTACK_CONFIRM != _phase ) { return false; }
-            if( _targetCharaSkillNames[index].Length <= 0 ) { return false; }
-            if( _targetCharacter is not Player )            { return false; }
-
-            return _targetCharacter.BattleParams.TmpParam.IsUseableSkill[index];
-        }
-
-        private bool AcceptSub( int index, InputContext context )
-        {
-            if( !AccespuSubs[index]( context ) ) { return false; }
-
-            _targetCharacter.BattleLogic.ToggleEquipSkill( index );
-
-            return true;
         }
     }
 }

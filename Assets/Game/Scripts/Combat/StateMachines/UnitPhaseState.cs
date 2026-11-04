@@ -85,6 +85,18 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 通常攻撃の予測ダメージを算出し、攻撃対象のHPゲージに予測ダメージ分の点滅を反映します。
+        /// 攻撃側・防御側のスキルの使用切り替えで予測値が変わるため、切り替えの度に呼び出してください。
+        /// </summary>
+        protected void RefreshNormalAttackDamageExpect( Character attacker, Character target )
+        {
+            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( attacker, target );
+
+            var expectedChange = _btlRtnCtrl.BtlCharaCdr.CalculateExpectedHpChange( attacker, target );
+            _presenter.SetPredictedDamageOnCharacter( target, -expectedChange.total );
+        }
+
+        /// <summary>
         /// 指定のパラメータウィンドウにキャラクターを割り当てて表示します。
         /// </summary>
         protected void ShowParameterWindow( ParameterWindowType winType, Character chara )
