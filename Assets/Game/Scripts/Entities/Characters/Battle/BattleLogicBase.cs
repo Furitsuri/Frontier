@@ -258,6 +258,9 @@ protected Character _opponent                                       = null;
         public void BePossibleAction()
         {
             _readOnlyOwner.Value.BattleParams.TmpParam.Reset();
+            // スキルの使用フラグをリセットする以上、適用済みのスキル効果も併せて取り除く
+            // (自己バフスキルを使用したまま戦闘せずに行動を終えた場合などに、効果が残り続けないようにするため)
+            _readOnlyOwner.Value.BattleParams.ResetAppliedSkills( _readOnlyOwner.Value.GetStatusRef );
             _readOnlyOwner.Value.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
             _readOnlyOwner.Value.RestoreMaterialsOriginalColor();
         }
@@ -396,8 +399,16 @@ protected Character _opponent                                       = null;
         /// </summary>
         public void ResetOnEndOfAttackSequence()
         {
+            var owner = _readOnlyOwner.Value;
+
             _opponent = null;   // 対戦相手情報をリセット
             ResetUseSkills();   // 使用スキル情報をリセット
+
+            // 使用ONのまま攻撃を受けたスキル(防御時のGUARD等)のフラグもリセットする
+            // (ONのまま残ると、次の戦闘で再度切り替えた際に効果の重複適用や、ゲージ消費量の不整合が生じるため)
+            owner.BattleParams.TmpParam.ResetSkillsToggledOn();
+            // スキルの効果(防御力・攻撃力の倍率、攻撃回数)は戦闘1回限りのため、ここで取り除く
+            owner.BattleParams.ResetAppliedSkills( owner.GetStatusRef );
         }
 
         public void RevertSkillsToggledOn()

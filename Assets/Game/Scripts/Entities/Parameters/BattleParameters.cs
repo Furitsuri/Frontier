@@ -89,6 +89,20 @@ namespace Frontier.Entities
             RefreshModifiedParam( ownerStatus );
         }
 
+        /// <summary>
+        /// 適用中の全スキルの効果(攻撃回数・倍率、及びパリィ等による倍率の直接変更分)を取り除きます。
+        /// スキルの効果は戦闘1回限りのため、攻撃シーケンスの終了時やフェーズの終了時に呼び出してください。
+        /// MEMO : アクションゲージ消費量はスキルの使用確定時に消費済み(0にリセット済み)であるため、ここでは扱いません。
+        /// </summary>
+        /// <param name="ownerStatus">所有キャラクターのステータス</param>
+        public void ResetAppliedSkills( in Status ownerStatus )
+        {
+            _skillModifiedParam.Init();
+            _appliedSkillBit = 0;
+
+            RefreshModifiedParam( ownerStatus );
+        }
+
         public void RefreshModifiedParam( in Status ownerStatus )
         {
             _modifiedParam.Atk = CalculateModifiedValue( ownerStatus.Atk, _skillModifiedParam.AtkMagnification );
