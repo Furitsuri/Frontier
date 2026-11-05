@@ -64,7 +64,7 @@
             "Name": "COUNTER",
             "Cost": 2,
             "SituationType": 1,
-            "ActionType": 0,
+            "ActionType": 4,
             "Duration": 0,
             "RangeShape": 0,
             "RangeValue": 0,
