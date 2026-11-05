@@ -409,6 +409,8 @@ protected Character _opponent                                       = null;
             owner.BattleParams.TmpParam.ResetSkillsToggledOn();
             // スキルの効果(防御力・攻撃力の倍率、攻撃回数)は戦闘1回限りのため、ここで取り除く
             owner.BattleParams.ResetAppliedSkills( owner.GetStatusRef );
+            // スキルの効果を取り除いたため、バフエフェクトも併せて取り除く
+            RemoveBuffEffect();
         }
 
         public void RevertSkillsToggledOn()

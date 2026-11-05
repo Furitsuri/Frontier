@@ -175,12 +175,17 @@ namespace Frontier.Battle
         /// </summary>
         private void ExecuteAttack()
         {
-            // キャラクターのアクションゲージを消費(防御側は防御スキルの使用分)
+            // キャラクターのアクションゲージを消費
             _attackCharacter.BattleLogic.ConsumeActionGauge();
-            _targetCharacter.BattleLogic.ConsumeActionGauge();
+            // 防御側は防御スキルの使用分を消費し、使用ONのスキルを使用済みへ移す
+            // (攻撃シーケンス中のガードモーション・パリィ等の判定は使用済みのスキルを参照するため)
+            _targetCharacter.BattleLogic.ConsumeActionGaugeForSkill();
 
             FinalizeTargetSelection( ParameterWindowType.Right, false );          // カメラズームの解除は攻撃シーケンス側で行う
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();               // タイルメッシュの描画をすべてクリア
+
+            // 防御側が自己バフスキル(GUARD等)を使用している場合はバフシーケンスを登録する(必ず攻撃シーケンスより先に登録する)
+            _targetCharacter.BattleLogic.RegistSelfBuffSequences();
 
             _sequenceFcd.RegistAttack( _attackCharacter, _targetCharacter );    // 攻撃シーケンス処理に移行
 
