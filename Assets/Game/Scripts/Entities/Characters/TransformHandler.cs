@@ -114,6 +114,15 @@ public class TransformHandler
         _maxMoveDeltaTime = float.MaxValue;
     }
 
+    /// <summary>
+    /// 回転命令(OrderRotate / RotateToPosition / ResetRotationOrder)による向き直りの途中であるかを取得します
+    /// </summary>
+    /// <returns>向き直りの途中であるか</returns>
+    public bool IsRotationOrdered()
+    {
+        return _orderdRotation != null;
+    }
+
     public void ResetRotationOrder()
     {
         _orderdRotation = _baseRotation;

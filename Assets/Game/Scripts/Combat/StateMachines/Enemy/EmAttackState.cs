@@ -106,6 +106,11 @@ namespace Frontier.Battle
                 case EmAttackPhase.EM_ATTACK_CONFIRM:
                     if( _isWaitingForDefenceSkillSelect ) { break; }
 
+                    // Initで発行した、攻撃者・攻撃対象が互いに向き合う向き直りが終わるまで待つ
+                    // (攻撃シーケンスは開始時点の向きを攻撃前の向きとして記録するため、
+                    //  向き直りの途中で開始すると、攻撃後に移動直後の向きへ戻ってしまう)
+                    if( _attackCharacter.IsRotationOrdered() || _targetCharacter.IsRotationOrdered() ) { break; }
+
                     // 攻撃対象のプレイヤーが防御時に使用可能なスキルを持つ場合は、防御スキルの選択へ遷移する
                     // (装備していない、またはアクションゲージが不足している場合は確認を挟まずにそのまま攻撃を実行する)
                     if( _targetCharacter is Player defender && EmDefenceSkillSelectState.HasUseableDefenceSkill( defender ) )

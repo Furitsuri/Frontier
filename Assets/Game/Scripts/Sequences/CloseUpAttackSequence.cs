@@ -129,12 +129,15 @@ namespace Frontier.Sequences
             }
 
             // キャラクターをステージの中心位置からそれぞれ離れた場所に立たせる
-            var tileData = _stageCtrl.GetTileStaticData( attacker.BattleParams.TmpParam.CurrentTileIndex );
-            _attackCharacter.transform.position = tileData.CharaStandPos;
-            _attackCharacter.transform.rotation = _atkCharaInitialRot;
-            tileData = _stageCtrl.GetTileStaticData( target.BattleParams.TmpParam.CurrentTileIndex );
-            _targetCharacter.transform.position = tileData.CharaStandPos;
+            var atkTileData = _stageCtrl.GetTileStaticData( attacker.BattleParams.TmpParam.CurrentTileIndex );
+            var tgtTileData = _stageCtrl.GetTileStaticData( target.BattleParams.TmpParam.CurrentTileIndex );
+            _attackCharacter.transform.position = atkTileData.CharaStandPos;
+            _targetCharacter.transform.position = tgtTileData.CharaStandPos;
             _targetCharacter.transform.rotation = _tgtCharaInitialRot;
+
+            // 攻撃者は攻撃後に攻撃前の向きへ戻す必要が無いため、ステージ上の相手の方を向かせる
+            Vector3 toTargetXZ = ( tgtTileData.CharaStandPos - atkTileData.CharaStandPos ).XZ();
+            _attackCharacter.transform.rotation = ( 0.0001f < toTargetXZ.sqrMagnitude ) ? Quaternion.LookRotation( toTargetXZ ) : _atkCharaInitialRot;
         }
     }
 }
