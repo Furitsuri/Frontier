@@ -108,9 +108,18 @@ namespace Frontier.Stage
             _gridCursors[( int ) cursorType].SetActive( isActive );
         }
 
+        /// <summary>
+        /// カーソルの描画のみを切り替えます(非表示の間もカメラの注視点の追従は継続します)
+        /// </summary>
+        public void SetVisibleGridCursor( bool isVisible, CursorType cursorType )
+        {
+            _gridCursors[( int ) cursorType].SetVisible( isVisible );
+        }
+
         public bool IsActiveGridCursor( CursorType cursorType )
         {
-            return _gridCursors[( int ) cursorType].gameObject.activeSelf;
+            // 描画のみを消している場合も、表示していないものとして扱う(タイルの高さ表示等が追従して非表示になるようにするため)
+            return _gridCursors[( int ) cursorType].IsShown();
         }
 
         public void SetCameraFocusType( CursorType cursorType )

@@ -20,11 +20,14 @@ namespace Frontier.Battle
             }
             // MEMO : 上記リセット後に初期化する必要があるためにこの位置であることに注意
             base.Init();
-            // 選択グリッドを(1番目の)キャラクターのグリッド位置に合わせる
+            // 選択グリッドを(1番目の)キャラクターのグリッド位置に合わせ、カメラの注視対象もグリッドカーソルへ切り替える
+            // (前のフェーズの最後の行動で、注視対象がターゲットカーソルのまま終わっている場合があるため)
             if( 0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.OTHER ) && _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ) != null )
             {
                 Character other = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.OTHER ).First();
-                _stgCtrl.ApplyGridCursor2CharacterTile( other );
+                _stgCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( other );
+                // フェーズアニメーション中はグリッドカーソルを表示しない
+                _stgCtrl.SetVisibleGridCursor( false );
             }
             // ターン開始時の自軍キャラへの処理
             _btlRtnCtrl.BtlCharaCdr.ApplyTurnStartProccessingForGroup( CHARACTER_TAG.OTHER );

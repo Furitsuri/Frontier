@@ -64,6 +64,37 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 後更新を行います。
+        /// 行動の終了等で戻ろうとしている時点で、プレイヤーの全キャラクターが行動を終えている(最後のキャラクターが行動を終えた、
+        /// またはターン終了が選ばれた)場合は、フェーズの終了を通知します。
+        /// これにより、親ステート(コマンド選択・タイル選択等)へ1つずつ戻ることなく、このフレームのうちにフェーズが終了するため、
+        /// 戻る度に行われる入力ガイドの登録・表示の更新等が挟まらず、次のフェーズへ滑らかに移行します。
+        /// MEMO : 行動終了の判定(BattleLogicBase.UpdateActionEndState)はフェーズの更新の後に行われるため、Updateではなくここで判定します。
+        ///        戦闘終了条件を満たしている場合は、従来通り勝敗判定・ステージクリア処理の開始を待つため通知しません。
+        ///        予約中のスキルがある場合の実行確認は、フェーズ終了後にPlayerPhaseHandlerが挟みます。
+        /// </summary>
+        public override void LateUpdate()
+        {
+            base.LateUpdate();
+
+            if( IsBack() && !_isEndedPhase && IsPlayerPhaseEnding() )
+            {
+                _isEndedPhase = true;
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーの全キャラクターが行動を終え、プレイヤーフェーズを終了する状態であるかを取得します
+        /// </summary>
+        /// <returns>フェーズを終了する状態か</returns>
+        protected bool IsPlayerPhaseEnding()
+        {
+            var btlCharaCdr = _btlRtnCtrl.BtlCharaCdr;
+
+            return btlCharaCdr.IsEndAllArmyWaitCommand( CHARACTER_TAG.PLAYER ) && !btlCharaCdr.IsBattleEndConditionMet();
+        }
+
+        /// <summary>
         /// キャンセル入力を受けた際の処理を行います
         /// </summary>
         /// <param name="isCancel">キャンセル入力</param>

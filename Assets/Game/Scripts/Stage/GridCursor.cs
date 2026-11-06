@@ -84,6 +84,28 @@ namespace Frontier.Stage
         public void SetActive( bool isActive )
         {
             gameObject.SetActive( isActive );
+
+            // アクティブにする際は、SetVisibleで描画のみを消していた場合も含めて表示状態に戻す
+            if( isActive ) { SetVisible( true ); }
+        }
+
+        /// <summary>
+        /// カーソルの描画のみを切り替えます。
+        /// SetActive(false)とは異なり、非表示の間も位置の更新(カメラの注視点の追従を含む)は継続します。
+        /// フェーズの切り替え時など、カーソルを見せずにカメラだけを次の注視対象へ追従させたい場合に使用します。
+        /// </summary>
+        /// <param name="isVisible">描画するか</param>
+        public void SetVisible( bool isVisible )
+        {
+            _lineRenderer.enabled = isVisible;
+        }
+
+        /// <summary>
+        /// カーソルが画面上に表示されているか(アクティブ、かつ描画中であるか)を取得します
+        /// </summary>
+        public bool IsShown()
+        {
+            return gameObject.activeSelf && _lineRenderer.enabled;
         }
 
         public void SetTileIndex( int index )

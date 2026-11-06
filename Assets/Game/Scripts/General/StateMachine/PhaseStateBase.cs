@@ -24,6 +24,14 @@ namespace Frontier.StateMachine
             Handler = handler;
         }
 
+        public override void Init( object context )
+        {
+            base.Init( context );
+
+            // ステートはフェーズをまたいで使い回されるため、前回のフェーズ終了通知を持ち越さないようリセットする
+            _isEndedPhase = false;
+        }
+
         /// <summary>
         /// 入力コードのハッシュ値を取得します
         /// </summary>

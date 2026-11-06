@@ -27,7 +27,6 @@ namespace Frontier.Battle
         [Inject] protected AttackForecastLineDisplay _attackForecastDisplay = null;
 
         private bool _isShowingAllDangerRange;  // 全危険範囲表示中かどうか
-        private bool _isWaitingForTileMenuResult;
         private string[] _inputConfirmStrings;
         private string _inputConfirmCommandString;
         private string[] _inputToolStrings;
@@ -44,7 +43,6 @@ namespace Frontier.Battle
             base.Init( context );
 
             _isShowingAllDangerRange    = false;
-            _isWaitingForTileMenuResult = false;
             _stageCtrl.SetActiveGridCursor( true );   // グリッド選択を有効化
 
             // Confirmアイコンの文字列を設定
@@ -91,6 +89,7 @@ namespace Frontier.Battle
             // if( base.Update() ) { return true; }
 
             // 全てのキャラクターが待機済みになっていれば終了
+            // (通常は行動した側のステートから直接フェーズが終了するため、ここは保険としての判定となる)
             if( _btlRtnCtrl.BtlCharaCdr.IsEndAllArmyWaitCommand( CHARACTER_TAG.PLAYER ) )
             {
                 // 戦闘終了条件(全滅等)に達している場合は、ここでEnemyフェーズ等へ遷移させず、
@@ -322,7 +321,6 @@ namespace Frontier.Battle
         {
             if( !base.AcceptOpt2( context ) ) { return false; }
 
-            _isWaitingForTileMenuResult = true;
             TransitState( ( int ) TransitTag.SELECT_TILE_MENU );
 
             return true;
@@ -507,6 +505,9 @@ namespace Frontier.Battle
             // 以降の別の遷移先へ渡ってしまわないようクリアする
             SetSendTransitionContext( null );
 
+            // MEMO : 最後のキャラクターの行動終了・ターン終了の選択によってフェーズが終了する場合は、
+            //        行動した側のステートから直接フェーズが終了する(PlPhaseStateBase.LateUpdate)ため、このステートへは戻ってこない
+
             // 新規開始・中断からの再開いずれの場合も、現在のカーソル位置に応じてホバー範囲表示を同期する
             RefreshHoveredRangeDisplay();
             // 暫定移動に関する表示(頭上のアイコン、及びカーソル上のキャラクターの移動前の位置を示す目印)を、
@@ -514,18 +515,6 @@ namespace Frontier.Battle
             RefreshProvisionalMoveDisplay();
             // 敵対勢力からカーソル位置へ伸びる攻撃予告線も、同様に表示し直す
             RefreshAttackForecastDisplay();
-
-            if( _isWaitingForTileMenuResult )
-            {
-                _isWaitingForTileMenuResult = false;
-                var menuState = GetChildren<PlSelectMenuState>( ( int ) TransitTag.SELECT_TILE_MENU );
-                if( menuState != null && menuState.IsTurnEndSelected )
-                {
-                    // 確認画面を介さず、全てのキャラクターを待機済みに設定してターンを終了させる
-                    // (フェーズの終了はUpdate内のIsEndAllArmyWaitCommandの判定で行われる)
-                    _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction( CHARACTER_TAG.PLAYER );
-                }
-            }
         }
 
         /// <summary>

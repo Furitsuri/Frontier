@@ -48,7 +48,13 @@ namespace Frontier.Battle
             {
                 if( !shouldTransit( _currentEnemy ) ) { continue; }
 
-                if( isAction ) { BeginActingDisplay( _currentEnemy ); }
+                if( isAction )
+                {
+                    // 実際に行動(移動・攻撃・スキル)する敵にのみ選択グリッドを合わせる
+                    // (待機のみの敵にまで合わせると、行動しない敵へカーソル・カメラの注視点が寄ってしまうため)
+                    _stageCtrl.ApplyGridCursor2CharacterTile( _currentEnemy );
+                    BeginActingDisplay( _currentEnemy );
+                }
                 TransitStateWithExit( ( int ) command );
 
                 return true;
@@ -115,7 +121,7 @@ namespace Frontier.Battle
 
                 isExist = true;
 
-                _stageCtrl.ApplyGridCursor2CharacterTile( _currentEnemy );   // 選択グリッドを合わせる
+                // MEMO : 選択グリッドは、行動の内容が決まった後(Update内で行動へ遷移する時点)で合わせる
 
                 if( !_currentEnemy.BattleLogic.GetAi().IsDetermined() )
                 {

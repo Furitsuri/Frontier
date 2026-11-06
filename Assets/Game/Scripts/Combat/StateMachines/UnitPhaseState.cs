@@ -40,6 +40,9 @@ namespace Frontier.Battle
         {
             UnbindGridCursorKeepingParameterView();                                 // アタッカーキャラクターの設定を解除
             _stageCtrl.SetActiveTargetCursor( false );                              // ターゲットカーソルを非表示
+            // MEMO : この行動でフェーズが終了する場合も、ここでオーナーへカーソルを戻す。フェーズはこのフレームのうちに終了し、
+            //        次のフェーズの開始時に(カメラの注視点が実際に更新されるGridCursor.Updateより前に)カーソルが次の注視対象へ合わせ直されるため、
+            //        カーソルの表示やカメラがオーナーへ戻る動きが画面に現れることはない
             if( focusOwner )
             {
                 _stageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( ownerChara );  // オーナーのタイルにグリッドカーソルとカメラを適用

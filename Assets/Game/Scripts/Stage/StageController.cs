@@ -135,6 +135,17 @@ namespace Frontier.Stage
         }
 
         /// <summary>
+        /// 選択グリッドの描画のみを切り替えます。
+        /// SetActiveGridCursor(false)とは異なり、非表示の間もカメラの注視点はグリッドの位置へ追従し続けます。
+        /// 再び表示する際は、SetVisibleGridCursor(true)またはSetActiveGridCursor(true)を呼んでください。
+        /// </summary>
+        /// <param name="isVisible">描画するか</param>
+        public void SetVisibleGridCursor( bool isVisible )
+        {
+            _gridCursorCtrl.SetVisibleGridCursor( isVisible, GridCursorController.CursorType.GRID_CURSOR );
+        }
+
+        /// <summary>
         /// 選択グリッドが表示中であるかを取得します
         /// </summary>
         public bool IsActiveGridCursor()

@@ -63,6 +63,8 @@ namespace Frontier
         [SerializeField] private float _angleYZMin                    = 30f;
         [SerializeField] private float _angleYZMax                    = 80f;
         [SerializeField] private float _followDuration                = 1f;
+        [Tooltip( "FOLLOWINGモードの追従・左右回転に用いる、1フレームあたりの経過時間の上限(秒)。処理の重いフレームの直後に、カメラが一気に進んで飛んだように見えるのを防ぎます" )]
+        [SerializeField] private float _maxFollowDeltaTime            = 1f / 30f;
 
         [Inject] private InputFacade _inputFcd  = null;
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
@@ -127,9 +129,13 @@ namespace Frontier
             }
 
             // FOLLOWING モード
+            // 処理の重いフレーム(フェーズ開始時のAIの索敵等)があっても、その直後にカメラが一気に進まないよう、経過時間に上限を設ける
+            // (上限を超えた分の時間は、カメラの動きが遅れる。TransformHandler.LimitMoveDeltaTimeと同様の考え方)
+            float deltaTime = Mathf.Min( DeltaTimeProvider.DeltaTime, _maxFollowDeltaTime );
+
             if( _cameraSliding )
             {
-                _slideElapsedTime += DeltaTimeProvider.DeltaTime;
+                _slideElapsedTime += deltaTime;
                 bool isSlideEnd    = ( _slideDuration <= _slideElapsedTime );
                 // 終了時は誤差を残さないよう目標角度そのものに合わせる
                 _angleXZ = isSlideEnd
@@ -147,7 +153,7 @@ namespace Frontier
             else
             {
                 // MEMO : position を決定してから LookAt を設定しないと画面にかくつきが発生する
-                _followElapsedTime = Mathf.Clamp( _followElapsedTime + DeltaTimeProvider.DeltaTime, 0f, _followDuration );
+                _followElapsedTime = Mathf.Clamp( _followElapsedTime + deltaTime, 0f, _followDuration );
                 _sharedState.MainCamera.transform.position = Vector3.Lerp( _sharedState.PrevCameraPosition, _sharedState.FollowingPosition, _followElapsedTime / _followDuration );
                 _sharedState.MainCamera.transform.rotation = Quaternion.Euler( _angleYZ, _angleXZ, 0f );
             }

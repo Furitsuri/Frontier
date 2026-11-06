@@ -117,10 +117,12 @@ namespace Frontier.StateMachine
                 {
                     // CurrentNodeから根まで、すべての祖先のExitState()を呼ぶ。
                     // (CurrentNodeのExitState()だけを呼ぶと、親States(RootState等)が保持しているクリーンアップ処理・確定処理が呼ばれないまま終了してしまう)
+                    // ただし、子への遷移時に既にExitState()を済ませている(IsExitReserved)祖先は、重ねて呼ばない
+                    // (Exit()と同様。ExitState()内で表示の再設定等を行うステートがあり、二重に呼ぶと意図しない表示が生じるため)
                     var node = CurrentNode;
                     while( node != null )
                     {
-                        node.ExitState();
+                        if( node == CurrentNode || !node.IsExitReserved ) { node.ExitState(); }
                         node = 0 < _returnStack.Count ? _returnStack.Pop() : null;
                     }
                     return true;

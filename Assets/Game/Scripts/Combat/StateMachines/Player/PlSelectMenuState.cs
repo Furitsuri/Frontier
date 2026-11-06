@@ -1,4 +1,5 @@
 ﻿using Frontier.Combat;
+using Frontier.Entities;
 using Frontier.Option;
 using Frontier.UI;
 using System.Collections.Generic;
@@ -9,8 +10,7 @@ namespace Frontier.Battle
 {
     /// <summary>
     /// PlSelectTileStateのOPT2入力から遷移する、"Option"/"Turn End"の選択メニューです。
-    /// "Option"を選んだ場合はOptionHandlerを起動し、"Turn End"を選んだ場合はIsTurnEndSelectedを立てて
-    /// 呼び出し元(PlSelectTileState)にターン終了処理を委ねます。
+    /// "Option"を選んだ場合はOptionHandlerを起動し、"Turn End"を選んだ場合は全てのキャラクターを待機済みにしてフェーズを終了させます。
     /// </summary>
     public class PlSelectMenuState : PlPhaseStateBase, ICommandCursorProvider
     {
@@ -26,14 +26,11 @@ namespace Frontier.Battle
         private CommandList.CommandIndexedValue _cmdIdxVal;
         private Phase _phase;
 
-        public bool IsTurnEndSelected { get; private set; }
-
         public override void Init( object context )
         {
             base.Init( context );
 
-            _phase            = Phase.SELECT_OPTION;
-            IsTurnEndSelected = false;
+            _phase = Phase.SELECT_OPTION;
 
             _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
 
@@ -116,7 +113,10 @@ namespace Frontier.Battle
                     break;
 
                 case TILE_MENU_OPTION_TAG.TURN_END:
-                    IsTurnEndSelected = true;
+                    // 確認画面を介さず、全てのキャラクターを待機済みに設定してターンを終了させる。
+                    // このメニューから戻る時点でフェーズの終了が通知される(PlPhaseStateBase.LateUpdate)ため、
+                    // 呼び出し元のタイル選択へは戻らずにフェーズが終了する
+                    _btlRtnCtrl.BtlCharaCdr.ApplyAllArmyEndAction( CHARACTER_TAG.PLAYER );
                     _phase = Phase.END;
                     break;
             }

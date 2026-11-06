@@ -239,6 +239,11 @@ namespace Frontier.Battle
             var handler = _phaseHandlers[_currentPhase];
             if( handler.LateUpdate() )
             {
+                // フェーズの終了に合わせてグリッドカーソルを非表示にする
+                // (次のフェーズのアニメーション中は表示せず、次のフェーズの各ステートが必要に応じて表示し直す。
+                //  描画のみを消すことで、カメラの注視点は次のフェーズの開始時に合わせたカーソル位置へ追従させる)
+                _stgCtrl.SetVisibleGridCursor( false );
+
                 // フェーズ終了時の全てのキャラクターへの処理を実行
                 _btlCharaCdr.AdjustAllCharactersEndOfPhase();
 
