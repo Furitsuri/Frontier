@@ -9,10 +9,13 @@ namespace Frontier.Battle
         {
             base.Init( context );
 
-            var _emOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
+            // 手番の敵はEmSelectStateから渡される
+            // (待機のみの敵にはグリッドカーソルを合わせないため、カーソル位置のキャラクターから求めてはならない)
+            var emOwner = context as Enemy;
+            NullCheck.AssertNotNull( emOwner, nameof( emOwner ) );
 
             // 行動をすべて終了
-            _emOwner.BattleParams.TmpParam.EndAction();
+            emOwner?.BattleParams.TmpParam.EndAction();
             // 即終了
             Back();
         }

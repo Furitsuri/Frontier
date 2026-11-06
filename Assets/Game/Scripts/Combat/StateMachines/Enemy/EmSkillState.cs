@@ -34,7 +34,7 @@ namespace Frontier.Battle
         {
             base.Init( context );
 
-            _attackCharacter = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
+            _attackCharacter = context as Enemy;    // 手番の敵はEmSelectStateから渡される
             Debug.Assert( _attackCharacter != null );
 
             bool isSelected = _attackCharacter.BattleLogic.GetAi().TryGetAttackOption( out _attackOption );

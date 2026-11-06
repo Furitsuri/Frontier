@@ -30,8 +30,8 @@ namespace Frontier.Battle
 
             _moveWaitTimer = 0f;    // 移動開始までの待機時間をリセット
 
-            // 現在選択中のキャラクター情報を取得して移動範囲を表示
-            _emOwner = _btlRtnCtrl.BtlCharaCdr.GetSelectCharacter() as Enemy;
+            // 手番の敵(EmSelectStateから渡される)の情報を取得して移動範囲を表示
+            _emOwner = context as Enemy;
             Debug.Assert( _emOwner != null );
             var param = _emOwner.GetStatusRef;
             var path = _emOwner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath;

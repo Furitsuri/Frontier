@@ -25,11 +25,38 @@ namespace Frontier.Battle
         {
             _transitions = new ( Func<Enemy, bool>, COMMAND_TAG, bool )[]
             {
-                ( ShouldTransitionToMove,   COMMAND_TAG.MOVE,   true  ),   // 移動
-                ( ShouldTransitionToAttack, COMMAND_TAG.ATTACK, true  ),   // 攻撃
-                ( ShouldTransitionToSkill,  COMMAND_TAG.SKILL,  true  ),   // スキルによる攻撃
-                ( ShouldTransitionToWait,   COMMAND_TAG.WAIT,   false ),   // 待機(行動しないため表示しない)
+                ( em => ShouldTransitionToMove( em, _isValidDestination ),                  COMMAND_TAG.MOVE,   true  ),   // 移動
+                ( em => ShouldTransitionToAttack( em, _isValidTarget ),                     COMMAND_TAG.ATTACK, true  ),   // 攻撃
+                ( em => ShouldTransitionToSkill( em, _isValidTarget ),                      COMMAND_TAG.SKILL,  true  ),   // スキルによる攻撃
+                ( em => ShouldTransitionToWait( em, _isValidDestination, _isValidTarget ),  COMMAND_TAG.WAIT,   false ),   // 待機(行動しないため表示しない)
             };
+        }
+
+        /// <summary>
+        /// 指定の敵の中から、このフェーズで最初に行動(移動・攻撃・スキル)する敵を求めます。
+        /// 各敵の行動はAIに決定させますが、手番の順に「最初に行動する敵」までしか決定しないため、
+        /// 各敵の手番(ShouldExitState)で決定する場合と、決定の順序・時点(いずれの敵もまだ行動していない時点)は変わりません。
+        /// 決定した結果はAI側に保持され、手番の際にはそのまま使われます。
+        /// </summary>
+        /// <param name="enemies">手番の順に並んだ敵</param>
+        /// <returns>最初に行動する敵(行動する敵がいない場合はnull)</returns>
+        public static Enemy FindFirstActingEnemy( IEnumerable<Character> enemies )
+        {
+            foreach( var chara in enemies )
+            {
+                if( chara is not Enemy enemy || enemy.BattleParams.TmpParam.IsEndAction() ) { continue; }
+                if( enemy.BattleLogic is not EnemyBattleLogic enemyLogic ) { continue; }
+
+                var ( isValidDestination, isValidTarget ) = enemyLogic.PrepareActionWithAI();
+                if( ShouldTransitionToMove( enemy, isValidDestination ) ||
+                    ShouldTransitionToAttack( enemy, isValidTarget ) ||
+                    ShouldTransitionToSkill( enemy, isValidTarget ) )
+                {
+                    return enemy;
+                }
+            }
+
+            return null;
         }
 
         public override void Init( object context )
@@ -55,6 +82,9 @@ namespace Frontier.Battle
                     _stageCtrl.ApplyGridCursor2CharacterTile( _currentEnemy );
                     BeginActingDisplay( _currentEnemy );
                 }
+                // 遷移先(移動・攻撃・スキル・待機)へ、手番の敵を直接渡す
+                // (グリッドカーソルの位置から求めると、待機のみの敵にはカーソルを合わせないため、別の敵を対象としてしまう)
+                SetSendTransitionContext( _currentEnemy );
                 TransitStateWithExit( ( int ) command );
 
                 return true;
@@ -123,18 +153,9 @@ namespace Frontier.Battle
 
                 // MEMO : 選択グリッドは、行動の内容が決まった後(Update内で行動へ遷移する時点)で合わせる
 
-                if( !_currentEnemy.BattleLogic.GetAi().IsDetermined() )
-                {
-                    EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
-                    (_isValidDestination, _isValidTarget) = enemyLogic.DetermineDestinationAndTargetWithAI();
-
-                    // 移動先が現在地(移動経路が空)の場合は、移動の必要が無いため移動済み状態にする
-                    // (移動コマンドに遷移させず、移動・攻撃の両コマンドの終了状態による行動終了判定が成り立つようにするため)
-                    if( _currentEnemy.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
-                    {
-                        _currentEnemy.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
-                    }
-                }
+                // AIに行動を決定させる(フェーズ開始時に最初に行動する敵を求めた際など、既に決定済みの場合はその結果を用いる)
+                EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
+                (_isValidDestination, _isValidTarget) = enemyLogic.PrepareActionWithAI();
 
                 // 攻撃対象がいなかった場合は攻撃済み状態にする
                 // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
@@ -153,10 +174,11 @@ namespace Frontier.Battle
         /// 移動コマンドに遷移するかを取得します
         /// </summary>
         /// <param name="em">判定する敵キャラクター</param>
+        /// <param name="isValidDestination">AIが決定した目的地が有効か</param>
         /// <returns>遷移するか否か</returns>
-        private bool ShouldTransitionToMove( Enemy em )
+        private static bool ShouldTransitionToMove( Enemy em, bool isValidDestination )
         {
-            if( !_isValidDestination ) return false;
+            if( !isValidDestination ) return false;
 
             if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.MOVE ] ) return false;
 
@@ -167,10 +189,11 @@ namespace Frontier.Battle
         /// 攻撃コマンドに遷移するかを取得します
         /// </summary>
         /// <param name="em">判定する敵キャラクター</param>
+        /// <param name="isValidTarget">AIが決定した攻撃対象が有効か</param>
         /// <returns>遷移するか否か</returns>
-        private bool ShouldTransitionToAttack( Enemy em )
+        private static bool ShouldTransitionToAttack( Enemy em, bool isValidTarget )
         {
-            if( !_isValidTarget ) return false;
+            if( !isValidTarget ) return false;
 
             if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ) return false;
 
@@ -184,10 +207,11 @@ namespace Frontier.Battle
         /// スキルによる攻撃コマンドに遷移するかを取得します
         /// </summary>
         /// <param name="em">判定する敵キャラクター</param>
+        /// <param name="isValidTarget">AIが決定した攻撃対象が有効か</param>
         /// <returns>遷移するか否か</returns>
-        private bool ShouldTransitionToSkill( Enemy em )
+        private static bool ShouldTransitionToSkill( Enemy em, bool isValidTarget )
         {
-            if( !_isValidTarget ) return false;
+            if( !isValidTarget ) return false;
 
             if( em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.ATTACK ] ||
                 em.BattleParams.TmpParam.IsEndCommand[ ( int ) COMMAND_TAG.SKILL ] ) return false;
@@ -195,9 +219,9 @@ namespace Frontier.Battle
             return em.BattleLogic.GetAi().TryGetAttackOption( out var option ) && !option.IsNormalAttack;
         }
 
-        private bool ShouldTransitionToWait( Enemy em )
+        private static bool ShouldTransitionToWait( Enemy em, bool isValidDestination, bool isValidTarget )
         {
-            if( _isValidDestination || _isValidTarget ) { return false; }
+            if( isValidDestination || isValidTarget ) { return false; }
 
             if( !em.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.MOVE] &&
                 !em.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ) { return false; }

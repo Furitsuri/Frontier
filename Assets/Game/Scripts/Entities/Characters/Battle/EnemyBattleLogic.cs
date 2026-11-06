@@ -9,12 +9,38 @@ namespace Frontier.Entities
 {
     public class EnemyBattleLogic : BattleLogicBase
     {
+        // AIが決定した目的地・攻撃対象がそれぞれ有効か(AIが決定済み(IsDetermined)の間のみ有効な値)
+        private (bool isValidDestination, bool isValidTarget) _determinedResult = (false, false);
+
         /// <summary>
         /// 目的座標と標的キャラクターを決定する
         /// </summary>
         public (bool, bool) DetermineDestinationAndTargetWithAI()
         {
             return _baseAi.DetermineDestinationAndTarget( _readOnlyOwner.Value.BattleParams, in _readOnlyOwner.Value.GetStatusRef, in _tileCostTable, _readOnlyOwner.Value.GetCharacterKey() );
+        }
+
+        /// <summary>
+        /// このフェーズでの行動(目的地・攻撃対象)をAIに決定させ、その結果を返します。
+        /// AIが既に決定済みの場合は決定し直さず、決定した時点の結果を返します
+        /// (フェーズ開始時に最初に行動する敵を求める際と、各敵の手番の際の双方から呼ばれても、結果が一致するようにするため)。
+        /// 移動先が現在地(移動経路が空)の場合は、移動の必要が無いため移動済み状態にします
+        /// (移動コマンドに遷移させず、移動・攻撃の両コマンドの終了状態による行動終了判定が成り立つようにするため)。
+        /// </summary>
+        /// <returns>目的地・攻撃対象がそれぞれ有効か</returns>
+        public (bool isValidDestination, bool isValidTarget) PrepareActionWithAI()
+        {
+            if( !_baseAi.IsDetermined() )
+            {
+                _determinedResult = DetermineDestinationAndTargetWithAI();
+
+                if( _actionRangeCtrl.MovePathHdlr.ProposedMovePath.Count <= 0 )
+                {
+                    _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+                }
+            }
+
+            return _determinedResult;
         }
 
         public override void Init()
