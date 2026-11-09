@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Zenject;
 
 namespace Frontier.Entities.Ai
@@ -19,12 +20,19 @@ namespace Frontier.Entities.Ai
     public class TroopActionCoordinator
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private Frontier.Stage.StageController _stageCtrl = null;
+#if UNITY_EDITOR
+        [InjectOptional] private Frontier.DebugTools.DebugSettings _debugSettings = null;
+#endif // UNITY_EDITOR
 
         private AttackOptionCollector _collector = null;
 
         // 調整の対象(このフェーズで行動し得る、行動を終えていないキャラクター)と、その識別子
         private readonly List<Character> _candidates            = new List<Character>();
         private readonly HashSet<CharacterKey> _candidateKeys   = new HashSet<CharacterKey>();
+
+        // 各調整の対象が攻撃を行い得る位置(まだ行動していない味方が空けた場合を含む)。SelectNextActorの度に求め直す
+        private readonly Dictionary<Character, HashSet<int>> _potentialStandTiles = new Dictionary<Character, HashSet<int>>();
 
         // 直近のSelectNextActorで選んだキャラクターと、そのキャラクターに渡す「他の味方が攻撃位置として必要としているタイル」
         private Character _selectedActor                         = null;
@@ -39,10 +47,33 @@ namespace Frontier.Entities.Ai
         {
             LazyInject.GetOrCreate( ref _collector, () => _hierarchyBld.InstantiateWithDiContainer<AttackOptionCollector>( false ) );
 
-            CollectCandidates( troop );
+            var stopwatch = Stopwatch.StartNew();
 
-            _selectedActor          = SelectActorFromCandidates();
+            CollectCandidates( troop );
+            _potentialStandTiles.Clear();
+            _selectedContestedTiles = null;
+
+            // 行動の途中(行動を決定済みで、まだ行動を終えていない)のキャラクターがいれば、その行動を続けさせる。
+            // 行動は決定済みのため、攻撃を行い得る位置や必要タイルの計算は不要
+            _selectedActor = FindActorInProgress();
+            if( null != _selectedActor )
+            {
+                LogTiming( $"SelectNextActor {stopwatch.Elapsed.TotalMilliseconds:F2}ms (行動の途中のため計算なし) 対象{_candidates.Count}体 → {GetLabel( _selectedActor )}" );
+                return _selectedActor;
+            }
+
+            // 各調整の対象について、攻撃を行い得る位置を1回ずつ求める(順番の決定と必要タイルの算出の双方で使い回す)
+            foreach( var chara in _candidates )
+            {
+                _potentialStandTiles[chara] = CollectPotentialStandTiles( chara );
+            }
+            double collectMs = stopwatch.Elapsed.TotalMilliseconds;
+
+            _selectedActor          = SelectActorByStandTiles();
             _selectedContestedTiles = ( null != _selectedActor ) ? BuildContestedTiles( _selectedActor ) : null;
+            double totalMs          = stopwatch.Elapsed.TotalMilliseconds;
+
+            LogTiming( $"SelectNextActor {totalMs:F2}ms (攻撃候補の列挙 {collectMs:F2}ms / 順番の決定・必要タイルの算出 {totalMs - collectMs:F2}ms) 対象{_candidates.Count}体 → {GetLabel( _selectedActor )}" );
 
             return _selectedActor;
         }
@@ -58,13 +89,41 @@ namespace Frontier.Entities.Ai
             if( actor.BattleLogic is not EnemyBattleLogic enemyLogic ) { return (false, false); }
 
             var ai = actor.BattleLogic.GetAi();
-            if( !ai.IsDetermined() )
-            {
-                // SelectNextActorで選んだ直後であれば、その時点で求めたものを使う
-                ai.SetContestedTiles( ( actor == _selectedActor ) ? _selectedContestedTiles : BuildContestedTiles( actor ) );
-            }
+            if( ai.IsDetermined() ) { return enemyLogic.PrepareActionWithAI(); }  // 決定済みの結果を返すのみ
 
-            return enemyLogic.PrepareActionWithAI();
+            var stopwatch = Stopwatch.StartNew();
+
+            // SelectNextActorで選んだ直後であれば、その時点で求めたものを使う
+            ai.SetContestedTiles( ( actor == _selectedActor ) ? _selectedContestedTiles : BuildContestedTiles( actor ) );
+            var result = enemyLogic.PrepareActionWithAI();
+
+            LogTiming( $"PrepareAction(AIによる行動の決定) {stopwatch.Elapsed.TotalMilliseconds:F2}ms {GetLabel( actor )} 移動先:{result.isValidDestination} 攻撃対象:{result.isValidTarget}" );
+
+            return result;
+        }
+
+        /// <summary>
+        /// 処理時間の計測結果をConsoleへ出力します(デバッグ設定で有効な場合のみ。エディタ以外では出力しません)
+        /// </summary>
+        [Conditional( "UNITY_EDITOR" )]
+        private void LogTiming( string message )
+        {
+#if UNITY_EDITOR
+            if( _debugSettings == null || !_debugSettings.LogTroopActionTiming ) { return; }
+
+            UnityEngine.Debug.Log( $"[TroopAI] {message}" );
+#endif // UNITY_EDITOR
+        }
+
+        /// <summary>
+        /// ログに表示するキャラクターの識別名を取得します
+        /// </summary>
+        private static string GetLabel( Character chara )
+        {
+            if( null == chara ) { return "なし"; }
+
+            var key = chara.GetCharacterKey();
+            return $"{key.CharacterTag}#{key.CharacterIndex}";
         }
 
         /// <summary>
@@ -89,24 +148,33 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 調整の対象の中から、次に行動するキャラクターを選びます
+        /// 行動の途中(行動を決定済みで、まだ行動を終えていない)のキャラクターを探します
         /// </summary>
-        private Character SelectActorFromCandidates()
+        /// <returns>行動の途中のキャラクター。いない場合はnull</returns>
+        private Character FindActorInProgress()
         {
-            if( _candidates.Count <= 0 ) { return null; }
-
-            // 行動の途中(行動を決定済みで、まだ行動を終えていない)のキャラクターがいれば、その行動を続けさせる
             foreach( var chara in _candidates )
             {
                 if( chara.BattleLogic.GetAi().IsDetermined() ) { return chara; }
             }
 
-            // 攻撃出来るキャラクターのうち、攻撃を行える位置の数が最も少ないキャラクターを選ぶ
+            return null;
+        }
+
+        /// <summary>
+        /// 調整の対象の中から、攻撃を行える位置の数に基づいて次に行動するキャラクターを選びます。
+        /// 攻撃出来るキャラクターのうち、攻撃を行える位置の数が最も少ないキャラクターを選び、
+        /// 攻撃出来るキャラクターがいない場合は、手番の順で最初のキャラクターを選びます
+        /// </summary>
+        private Character SelectActorByStandTiles()
+        {
+            if( _candidates.Count <= 0 ) { return null; }
+
             Character bestAttacker  = null;
             int minStandTileNum     = int.MaxValue;
             foreach( var chara in _candidates )
             {
-                int standTileNum = CountStandTiles( _collector.Collect( chara ) );
+                int standTileNum = CountCurrentlyStandableTiles( chara, _potentialStandTiles[chara] );
                 if( 0 < standTileNum && standTileNum < minStandTileNum )
                 {
                     minStandTileNum = standTileNum;
@@ -114,8 +182,38 @@ namespace Frontier.Entities.Ai
                 }
             }
 
-            // 攻撃出来るキャラクターがいない場合は、手番の順で最初のキャラクター
             return bestAttacker ?? _candidates[0];
+        }
+
+        /// <summary>
+        /// 指定のキャラクターが攻撃を行い得る位置(まだ行動していない味方が空けた場合を含む)を求めます
+        /// </summary>
+        private HashSet<int> CollectPotentialStandTiles( Character chara )
+        {
+            var standTiles = new HashSet<int>();
+            foreach( var option in _collector.Collect( chara, _candidateKeys ) )
+            {
+                standTiles.Add( option.StandTileIndex );
+            }
+
+            return standTiles;
+        }
+
+        /// <summary>
+        /// 攻撃を行い得る位置のうち、味方が空けるのを待たずに現時点で立つことが出来る位置の数を求めます。
+        /// (味方が空けた場合を含めて列挙した結果から、現在他のキャラクターが立っている位置を除いたものであり、
+        ///  味方が空けた場合を考慮せずに列挙した場合と同じ結果になります)
+        /// </summary>
+        private int CountCurrentlyStandableTiles( Character chara, HashSet<int> potentialStandTiles )
+        {
+            var key     = chara.GetCharacterKey();
+            int count   = 0;
+            foreach( int tileIndex in potentialStandTiles )
+            {
+                if( _stageCtrl.GetTileDynamicData( tileIndex ).IsStandableBy( key ) ) { ++count; }
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -128,17 +226,17 @@ namespace Frontier.Entities.Ai
         /// <returns>タイルのインデックスと、そのタイルの必要度</returns>
         private Dictionary<int, float> BuildContestedTiles( Character actor )
         {
-            var weights     = new Dictionary<int, float>();
-            var standTiles  = new HashSet<int>();
+            var weights = new Dictionary<int, float>();
 
             foreach( var other in _candidates )
             {
                 if( other == actor ) { continue; }
 
-                standTiles.Clear();
-                foreach( var option in _collector.Collect( other, _candidateKeys ) )
+                // SelectNextActorで求め済みであれば使い回す
+                if( !_potentialStandTiles.TryGetValue( other, out var standTiles ) )
                 {
-                    standTiles.Add( option.StandTileIndex );
+                    standTiles = CollectPotentialStandTiles( other );
+                    _potentialStandTiles[other] = standTiles;
                 }
                 if( standTiles.Count <= 0 ) { continue; }
 
@@ -153,18 +251,5 @@ namespace Frontier.Entities.Ai
             return weights;
         }
 
-        /// <summary>
-        /// 攻撃の候補から、攻撃を行う位置の数を求めます
-        /// </summary>
-        private static int CountStandTiles( List<AttackOption> options )
-        {
-            var standTiles = new HashSet<int>();
-            foreach( var option in options )
-            {
-                standTiles.Add( option.StandTileIndex );
-            }
-
-            return standTiles.Count;
-        }
     }
 }

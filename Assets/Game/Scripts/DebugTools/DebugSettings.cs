@@ -9,6 +9,7 @@ namespace Frontier.DebugTools
     public class DebugSettings
     {
         public bool ShowThinkingTypeLabel = false;  // NPCの頭上に思考タイプ(INTERCEPT型の場合は待ち構え方・集団ID・起動状態も)を表示する
+        public bool LogTroopActionTiming  = false;  // 軍全体の行動の調整(TroopActionCoordinator)の処理時間をConsoleへ出力する(計測用。デバッグメニューの「AI TIMING LOG」で切り替える)
     }
 }
 

@@ -43,10 +43,12 @@ namespace Frontier.Stage
         /// <summary>
         /// 初期化を行います
         /// </summary>
-        public void Init( BattleCameraController btlCameraCtrl )
+        /// <param name="btlCameraCtrl">戦闘用のカメラ</param>
+        /// <param name="stageIndex">読み込むステージのインデックス(FilePathRegistry.StageNamesのインデックス。キャラクターの読み込みと同じものを指定すること)</param>
+        public void Init( BattleCameraController btlCameraCtrl, int stageIndex )
         {
             _stageFileLoader.Init( _prefabReg.TilePrefabs );
-            _stageFileLoader.Load( 0 );
+            _stageFileLoader.Load( stageIndex );
 
             // 背景色を適用。本項目に未対応の古いステージデータの場合は既定配色にフォールバックする
             var stageData = _stageDataProvider.CurrentData;

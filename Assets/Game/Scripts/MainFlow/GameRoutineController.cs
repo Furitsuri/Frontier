@@ -13,7 +13,11 @@ namespace Frontier
         [Header( "スキルコントローラオブジェクト" )]
         [SerializeField] private GameObject _skillCtrlObject;
 
+        [Header( "フィールドを経由せずに直接起動した際(開発用の起動)に読み込むステージ名(FilePathRegistryのステージ名。空の場合は先頭のステージ)" )]
+        [SerializeField] private string _directLaunchStageName = string.Empty;
+
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
+        [Inject] private Frontier.Registries.FilePathRegistry _filePathReg = null;
 
         private StartMode _startMode = StartMode.NEW_GAME;
         private SubRoutineController _current;
@@ -50,8 +54,26 @@ namespace Frontier
             }
             else
             {
-                StartBattle();
+                StartBattle( ResolveDirectLaunchStageIndex() );
             }
+        }
+
+        /// <summary>
+        /// フィールドを経由せずに直接起動した際に読み込むステージのインデックスを求めます。
+        /// ステージ名が未指定、または見つからない場合は先頭のステージとします
+        /// </summary>
+        private int ResolveDirectLaunchStageIndex()
+        {
+            if( string.IsNullOrEmpty( _directLaunchStageName ) ) { return 0; }
+
+            int index = System.Array.IndexOf( _filePathReg.StageNames, _directLaunchStageName );
+            if( index < 0 )
+            {
+                Debug.LogWarning( $"[GameRoutineController] 直接起動時のステージ名「{_directLaunchStageName}」がFilePathRegistryに見つかりません。先頭のステージを読み込みます。" );
+                return 0;
+            }
+
+            return index;
         }
 
         public override void UpdateRoutine()

@@ -117,7 +117,7 @@ namespace Frontier.Battle
             _presenter.Init();
             _btlCameraCtrl.Init();
             _btlCharaCdr.Init();
-            _stgCtrl.Init( _btlCameraCtrl );
+            _stgCtrl.Init( _btlCameraCtrl, _currentStageIndex );    // キャラクター(CharacterLoad)と同じステージのマップを読み込む
 
             _battleAnima = 0;                           // 戦闘開始時に戦闘中アニマをリセット
             _presenter.SetBattleAnimaDisplay( _battleAnima );

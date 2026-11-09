@@ -52,6 +52,7 @@ namespace Frontier.DebugTools.Battle
             var page = BattleDebugMenuPages.DISPLAY;
 
             _registry.Register( this, new DebugToggleItem( page, "THINK TYPE LABEL", () => _settings.ShowThinkingTypeLabel, v => _settings.ShowThinkingTypeLabel = v ) );
+            _registry.Register( this, new DebugToggleItem( page, "AI TIMING LOG",    () => _settings.LogTroopActionTiming,  v => _settings.LogTroopActionTiming  = v ) );
         }
 
         private void RegisterSelectedCharacterItems()

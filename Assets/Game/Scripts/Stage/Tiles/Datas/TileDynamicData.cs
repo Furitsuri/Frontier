@@ -1,12 +1,9 @@
 ﻿using Frontier.Entities;
-using Zenject;
 
 namespace Frontier.Stage
 {
     public class TileDynamicData
     {
-        [Inject] HierarchyBuilderBase _hierarchyBld = null;
-
         // 移動値の見積もり値
         public int EstimatedMoveRange;
         // タイル上に存在するキャラクターのハッシュキー
@@ -65,17 +62,15 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 現在の状態をクローンして対象に渡します
+        /// 現在の状態をクローンして対象に渡します。
+        /// MEMO : 移動範囲・攻撃範囲の算出の度にステージ全体のタイル分呼ばれるため、DIコンテナを経由した生成(InstantiateWithDiContainer)は行わない
+        ///        (タイル1枚ごとにDIコンテナを経由すると、敵AIの攻撃候補の列挙等で非常に重くなるため)。
+        ///        保持しているのは値型のフィールドのみのため、MemberwiseCloneによる複製で全ての値が独立して複製されます
         /// </summary>
         /// <returns>クローンオブジェクト</returns>
         public TileDynamicData DeepClone()
         {
-            TileDynamicData retData     = _hierarchyBld.InstantiateWithDiContainer<TileDynamicData>( false );
-            retData.EstimatedMoveRange  = this.EstimatedMoveRange;
-            retData.CharaKey            = this.CharaKey;
-            retData.Flag                = this.Flag;
-
-            return retData;
+            return ( TileDynamicData ) MemberwiseClone();
         }
 
         public void CopyTo( TileDynamicData target )

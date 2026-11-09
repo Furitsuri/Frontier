@@ -13490,6 +13490,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _skillCtrlObject: {fileID: 0}
+  _directLaunchStageName: test_stage
 --- !u!1 &1864796864
 GameObject:
   m_ObjectHideFlags: 0
