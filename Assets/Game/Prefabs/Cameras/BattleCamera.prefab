@@ -61,3 +61,4 @@ MonoBehaviour:
   _angleYZMin: 15
   _angleYZMax: 65
   _followDuration: 0.2
+  _maxFollowDeltaTime: 0.033333335
