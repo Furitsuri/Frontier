@@ -161,8 +161,9 @@ namespace Frontier.Entities.Ai
                 if ( maxEvaluateRoute.evaluateValue < evaluateValue ) { maxEvaluateRoute = (path, evaluateValue); }
             }
 
-            // 得られたルートのパスをキャラクターの移動レンジ分に調整する
-            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.AdjustPathToRangeAndSet( _owner.GetStatusRef.moveRange, _owner.GetStatusRef.jumpForce, in maxEvaluateRoute.path );
+            // 得られたルートのパスをキャラクターの移動レンジ分に調整する。
+            // その際、他の味方が攻撃を行う位置として必要としているタイルでは止まらないようにする(味方の攻撃位置を塞がないため)
+            _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.AdjustPathToRangeAndSet( _owner.GetStatusRef.moveRange, _owner.GetStatusRef.jumpForce, in maxEvaluateRoute.path, _contestedTileWeights );
             var proposedPath = _owner.BattleLogic.ActionRangeCtrl.MovePathHdlr.ProposedMovePath;
             if( 0 < proposedPath.Count )
             {

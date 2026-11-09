@@ -130,11 +130,15 @@ public class MovePathHandler
     }
 
     /// <summary>
-    /// 渡されたパスの長さを指定の長さに調整し、保持します
+    /// 渡されたパスの長さを指定の長さに調整し、保持します。
+    /// 移動レンジ内で最も先にある、立つことが出来るタイルを終点とします。
+    /// avoidTilesが指定されている場合は、それらのタイルを避けて、移動レンジ内で最も先にある立てるタイルを終点とします
+    /// (避けるべきタイル以外に立てるタイルが無い場合は、避けずに最も先のタイルとします)。
     /// </summary>
     /// <param name="range">移動可能レンジ</param>
     /// <param name="adjustTargetPath">調整対象のパス</param>
-    public void AdjustPathToRangeAndSet(  int range, int jumpForce, in List<WaypointInformation> adjustTargetPath )
+    /// <param name="avoidTiles">終点として避けるタイル(他の味方が攻撃を行う位置として必要としているタイル等)。nullの場合は避けない</param>
+    public void AdjustPathToRangeAndSet(  int range, int jumpForce, in List<WaypointInformation> adjustTargetPath, IReadOnlyDictionary<int, float> avoidTiles = null )
     {
         _proposedMovePath.Clear();
 
@@ -142,6 +146,7 @@ public class MovePathHandler
 
         int prevCost            = 0;   // 下記routeCostは各インデックスまでの合計値コストなので、差分を得る必要がある
         int reachableTileIndex  = -1;  // 未発見を示す無効値
+        int unavoidedTileIndex  = -1;  // 避けるべきタイルではない、立てるタイル(未発見を示す無効値)
 
         // 得られたルートのうち、移動可能なインデックス値を辿る
         foreach ( WaypointInformation p in adjustTargetPath )
@@ -153,11 +158,17 @@ public class MovePathHandler
             if ( range < 0 ) { break; }
             // 立てるタイルであることを確認して更新
             var tileData = _stageCtrl.GetTileDynamicData( p.TileIndex );
-            if ( tileData.IsStandableBy( _owner.GetCharacterKey() ) ) { reachableTileIndex = p.TileIndex; }
+            if ( !tileData.IsStandableBy( _owner.GetCharacterKey() ) ) { continue; }
+
+            reachableTileIndex = p.TileIndex;
+            if( avoidTiles == null || !avoidTiles.ContainsKey( p.TileIndex ) ) { unavoidedTileIndex = p.TileIndex; }
         }
 
         // 移動可能なタイルが1つも見つからなかった場合はパスを空のまま返す
         if( reachableTileIndex < 0 ) { return; }
+
+        // 避けるべきタイル以外に立てるタイルがあれば、そちらを終点とする
+        if( 0 <= unavoidedTileIndex ) { reachableTileIndex = unavoidedTileIndex; }
 
         // 目的地となるタイルのインデックス値より、後方のインデックス値のタイル情報をリストから削除
         int removeBaseIndex = adjustTargetPath.FindIndex(item => item.TileIndex == reachableTileIndex) + 1;
