@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.Combat;
+using System.Collections.Generic;
 
 namespace Frontier.Sequences
 {
@@ -9,5 +10,6 @@ namespace Frontier.Sequences
         public SkillActionBase SkillAction;
         public Character Attacker;
         public Character Target;
+        public List<CharacterKey> AttackTargetCharaKeys;
     }
 }

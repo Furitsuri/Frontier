@@ -1,4 +1,6 @@
 ﻿using Frontier;
+using Frontier.Entities;
+using System.Collections.Generic;
 using Zenject;
 
 namespace Frontier.Sequences
@@ -9,7 +11,9 @@ namespace Frontier.Sequences
 
         public override ISequence CreateSequence( SkillActionSequenceParam param )
         {
-            object[] args = new object[] { param.SkillAction, param.SkillID };
+            // MEMO : DIコンテナへ渡す引数は型で照合されるため、nullを渡さないようにする
+            var targetKeys = param.AttackTargetCharaKeys ?? new List<CharacterKey>();
+            object[] args = new object[] { param.SkillAction, param.SkillID, param.Attacker, targetKeys };
 
             return _hierarchyBld.InstantiateWithDiContainer<SkillActionSequence>( args, false );
         }

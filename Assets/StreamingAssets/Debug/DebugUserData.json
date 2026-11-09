@@ -5,6 +5,25 @@
   "members": [
     {
       "prefabIndex": 0,
+      "name": "Tester",
+      "level": 3,
+      "maxHP": 30,
+      "atk": 8,
+      "def": 4,
+      "moveRange": 4,
+      "jumpForce": 3,
+      "attackRange": 1,
+      "maxActionGauge": 10,
+      "recoveryActionGauge": 10,
+      "equipSkills": [
+        1,
+        6,
+        7,
+        -1
+      ]
+    },
+    {
+      "prefabIndex": 0,
       "name": "Fenn",
       "level": 3,
       "maxHP": 25,

@@ -35,6 +35,7 @@ namespace Frontier.Sequences
             param.Attacker      = attacker;
             param.Target        = target;
             param.SkillID       = skillID;
+            param.AttackTargetCharaKeys = attackTargetCharaKeys;
             param.SkillAction   = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld );
             ISequence skillActionSeq = factory.CreateSequence( param );
             _handler.Regist( skillActionSeq );

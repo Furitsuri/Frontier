@@ -30,6 +30,9 @@ namespace Frontier.Sequences
         private float  _elapsedSinceLastStart;
         private bool[] _finished;
 
+        // 連携に参加したキャラクター(各エントリの使用者と攻撃対象)。終了時の後片付けの対象
+        private readonly List<Character> _participants = new List<Character>();
+
         public CooperativeSkillSequence( List<CooperativeSkillEntry> entries )
         {
             _entries = entries;
@@ -43,6 +46,7 @@ namespace Frontier.Sequences
             _phase                 = Phase.SHOW_COMMAND_NAME;
 
             AssignRemainingCooperativeHits();
+            CollectParticipants();
 
             // コマンド名表示前に全エントリのゴーストを非表示
             foreach( var entry in _entries )
@@ -136,8 +140,25 @@ namespace Frontier.Sequences
                 ( entry.Attacker as Player )?.FinalizeCommand( COMMAND_TAG.SKILL );
             }
 
+            // 通常攻撃と同様に、スキルの効果(自己バフ等)・バフエフェクトは戦闘1回限りのため、ここで取り除く
+            CombatSequenceCleanup.ResetParticipants( _participants );
+
             var lastEntry = _entries.Count > 0 ? _entries[_entries.Count - 1] : null;
             _btlRtnCtrl.GetBtlCameraCtrl.EndCooperativeSkillSequence( lastEntry?.Attacker );
+        }
+
+        /// <summary>
+        /// 連携に参加したキャラクターを集めます。
+        /// 攻撃対象は死亡するとキーで取得出来なくなるため、ダメージを与える前(シーケンスの開始時)に参照を確保しておきます
+        /// </summary>
+        private void CollectParticipants()
+        {
+            _participants.Clear();
+            foreach( var entry in _entries )
+            {
+                CombatSequenceCleanup.CollectParticipants( entry.Attacker, entry.AttackTargetCharaKeys, _btlRtnCtrl.BtlCharaCdr, _participants );
+                CombatSequenceCleanup.AddUnique( _participants, entry.Target );
+            }
         }
 
         private void ActivateEntry( int index )

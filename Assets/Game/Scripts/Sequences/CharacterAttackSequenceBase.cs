@@ -243,9 +243,8 @@ namespace Frontier.Sequences
                 case Phase.END:
                     if( UpdateFinishing() )
                     {
-                        // 対戦相手設定をリセット
-                        _attackCharacter?.BattleLogic.ResetOnEndOfAttackSequence();
-                        _targetCharacter?.BattleLogic.ResetOnEndOfAttackSequence();
+                        // 戦闘1回限りの状態(スキルの効果・バフエフェクト・対戦相手等)を元に戻す
+                        CombatSequenceCleanup.ResetParticipants( _attackCharacter, _targetCharacter );
 
                         return true;
                     }
