@@ -56,5 +56,20 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <returns>決定の有無</returns>
         virtual public bool IsDetermined() { return false; }
+
+        /// <summary>
+        /// このフェーズで行動(移動・攻撃)し得るかを取得します。
+        /// 行動を決定する処理を持たない思考タイプや、待ち構えていてまだ行動を開始していないAIはfalseを返します。
+        /// 軍全体の行動の調整(TroopActionCoordinator)において、調整の対象とするかの判定に用います
+        /// </summary>
+        /// <returns>行動し得るか</returns>
+        virtual public bool CanTakeAction() { return false; }
+
+        /// <summary>
+        /// 他の味方が攻撃を行う位置として必要としているタイルと、その必要度を設定します。
+        /// 次に目的地と攻撃対象を決定する際、これらのタイルに立つ攻撃の候補は評価を下げます(味方の攻撃位置を塞がないようにするため)
+        /// </summary>
+        /// <param name="weights">タイルのインデックスと、そのタイルの必要度。nullの場合は考慮しない</param>
+        virtual public void SetContestedTiles( IReadOnlyDictionary<int, float> weights ) {}
     }
 }

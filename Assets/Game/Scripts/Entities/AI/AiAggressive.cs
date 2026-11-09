@@ -21,6 +21,11 @@ namespace Frontier.Entities.Ai
         private const float ACTION_GAUGE_COST_VALUE = 1f;       // 消費するアクションゲージ1あたりの減算値
 
         /// <summary>
+        /// このフェーズで行動(移動・攻撃)し得るかを取得します。AGGRESSIVEは常に行動します
+        /// </summary>
+        public override bool CanTakeAction() { return true; }
+
+        /// <summary>
         /// 各グリッドの評価値を計算します
         /// </summary>
         /// <param name="selfParam">自身のパラメータ</param>

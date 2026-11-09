@@ -49,6 +49,11 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
+        /// このフェーズで行動し得るかを取得します。行動を開始するまでは、その場で待ち構えるため行動しません
+        /// </summary>
+        public override bool CanTakeAction() { return _isActivated; }
+
+        /// <summary>
         /// 自身の行動範囲(現在の位置から移動した上で、通常攻撃またはスキルによる攻撃が届く範囲)に、攻撃対象が存在するかを取得します
         /// </summary>
         /// <returns>攻撃対象が存在するか</returns>

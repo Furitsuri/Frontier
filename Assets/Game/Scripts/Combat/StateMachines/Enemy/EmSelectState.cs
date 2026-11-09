@@ -1,16 +1,24 @@
 ﻿using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.Entities.Ai;
 using Frontier.StateMachine;
 using Frontier.UI;
 using System;
 using System.Collections.Generic;
+using Zenject;
 
 namespace Frontier.Battle
 {
+    /// <summary>
+    /// 敵フェーズで、次に行動する敵とその行動(移動・攻撃・スキル・待機)を選ぶステートです。
+    /// 次に行動する敵は、番号順ではなく軍全体の調整役(TroopActionCoordinator)が、行動の度に現在の盤面を見て選びます。
+    /// 行動し得る敵がいなくなった時点で、残りの敵をまとめて行動終了とし、フェーズを終了します。
+    /// </summary>
     public class EmSelectState : UnitPhaseState
     {
+        [Inject] private TroopActionCoordinator _coordinator = null;
+
         Enemy _currentEnemy = null;
-        IEnumerator<Character> _enemyEnumerator;
         bool _isValidDestination = false;
         bool _isValidTarget = false;
         // 行動中としてパラメータウィンドウに表示している敵。
@@ -33,37 +41,42 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// 指定の敵の中から、このフェーズで最初に行動(移動・攻撃・スキル)する敵を求めます。
-        /// 各敵の行動はAIに決定させますが、手番の順に「最初に行動する敵」までしか決定しないため、
-        /// 各敵の手番(ShouldExitState)で決定する場合と、決定の順序・時点(いずれの敵もまだ行動していない時点)は変わりません。
-        /// 決定した結果はAI側に保持され、手番の際にはそのまま使われます。
+        /// このフェーズで最初に行動(移動・攻撃・スキル)する敵を求めます。
+        /// 調整役が選んだ敵の行動をAIに決定させ、行動しない(待機のみの)敵であれば行動終了として次の敵を選ぶ、を繰り返します。
+        /// 敵の手番(ShouldExitState)で行う選択・決定と同じ処理を、いずれの敵もまだ行動していない時点で前倒しで行うだけのため、
+        /// 結果は変わりません。決定した結果はAI側に保持され、手番の際にはそのまま使われます。
         /// </summary>
+        /// <param name="coordinator">軍全体の調整役</param>
         /// <param name="enemies">手番の順に並んだ敵</param>
         /// <returns>最初に行動する敵(行動する敵がいない場合はnull)</returns>
-        public static Enemy FindFirstActingEnemy( IEnumerable<Character> enemies )
+        public static Enemy FindFirstActingEnemy( TroopActionCoordinator coordinator, IEnumerable<Character> enemies )
         {
-            foreach( var chara in enemies )
+            while( coordinator.SelectNextActor( enemies ) is Enemy enemy )
             {
-                if( chara is not Enemy enemy || enemy.BattleParams.TmpParam.IsEndAction() ) { continue; }
-                if( enemy.BattleLogic is not EnemyBattleLogic enemyLogic ) { continue; }
+                var ( isValidDestination, isValidTarget ) = coordinator.PrepareAction( enemy );
+                if( WillTakeAction( enemy, isValidDestination, isValidTarget ) ) { return enemy; }
 
-                var ( isValidDestination, isValidTarget ) = enemyLogic.PrepareActionWithAI();
-                if( ShouldTransitionToMove( enemy, isValidDestination ) ||
-                    ShouldTransitionToAttack( enemy, isValidTarget ) ||
-                    ShouldTransitionToSkill( enemy, isValidTarget ) )
-                {
-                    return enemy;
-                }
+                // 待機のみの敵は、ここで行動終了とする(手番で待機(EmWaitState)を選んだ場合と同じ処理)
+                enemy.BattleParams.TmpParam.EndAction();
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 指定の敵が、移動・攻撃・スキルのいずれかの行動を行うかを取得します
+        /// </summary>
+        private static bool WillTakeAction( Enemy enemy, bool isValidDestination, bool isValidTarget )
+        {
+            return ShouldTransitionToMove( enemy, isValidDestination ) ||
+                   ShouldTransitionToAttack( enemy, isValidTarget ) ||
+                   ShouldTransitionToSkill( enemy, isValidTarget );
         }
 
         public override void Init( object context )
         {
             base.Init( context);
 
-            _enemyEnumerator = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).GetEnumerator();
             _currentEnemy = null;
         }
 
@@ -138,36 +151,41 @@ namespace Frontier.Battle
 
         private bool ShouldExitState()
         {
-            bool isExist = false;   // 行動可能なキャラクターが存在するか
+            var enemies = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY );
 
-            // 行動済みでないキャラクターを選択する
-            while( _enemyEnumerator.MoveNext() )
+            // 移動・攻撃の両方を終えた敵を行動終了とする
+            foreach( var chara in enemies )
             {
-                _currentEnemy = _enemyEnumerator.Current as Enemy;
-                if( ShouldTransitionToNextCharacter( _currentEnemy ) )
-                {
-                    continue;
-                }
-
-                isExist = true;
-
-                // MEMO : 選択グリッドは、行動の内容が決まった後(Update内で行動へ遷移する時点)で合わせる
-
-                // AIに行動を決定させる(フェーズ開始時に最初に行動する敵を求めた際など、既に決定済みの場合はその結果を用いる)
-                EnemyBattleLogic enemyLogic = _currentEnemy.BattleLogic as EnemyBattleLogic;
-                (_isValidDestination, _isValidTarget) = enemyLogic.PrepareActionWithAI();
-
-                // 攻撃対象がいなかった場合は攻撃済み状態にする
-                // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
-                if( !_isValidTarget )
-                {
-                    _currentEnemy.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
-                }
-
-                break;
+                if( chara is Enemy enemy ) { ShouldTransitionToNextCharacter( enemy ); }
             }
 
-            return !isExist;
+            // 次に行動する敵を、軍全体の調整役に選ばせる(行動の途中の敵がいれば、その敵が選ばれる)
+            _currentEnemy = _coordinator.SelectNextActor( enemies ) as Enemy;
+
+            // 行動し得る敵がいなくなった場合は、残りの敵(待ち構えていて行動を開始していない敵等)をまとめて行動終了とする
+            if( null == _currentEnemy )
+            {
+                foreach( var chara in enemies )
+                {
+                    chara.BattleParams.TmpParam.EndAction();
+                }
+
+                return true;
+            }
+
+            // MEMO : 選択グリッドは、行動の内容が決まった後(Update内で行動へ遷移する時点)で合わせる
+
+            // AIに行動を決定させる(既に決定済みの場合はその結果を用いる)
+            (_isValidDestination, _isValidTarget) = _coordinator.PrepareAction( _currentEnemy );
+
+            // 攻撃対象がいなかった場合は攻撃済み状態にする
+            // ただし、スキルなどで攻撃出来ない状態になっている可能性があるため、SetEndCommandStatus( COMMAND_TAG.ATTACK, _isValidTarget ) としてはならない
+            if( !_isValidTarget )
+            {
+                _currentEnemy.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.ATTACK, true );
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -24,6 +24,12 @@ namespace Frontier.Entities.Ai
         protected AttackOptionCollector _attackOptionCollector = null;                  // 攻撃の候補の列挙
         protected AttackOption _attackOption;                                           // 選択した攻撃(_isAttackOptionSelectedがtrueの場合のみ有効)
         protected bool _isAttackOptionSelected      = false;                            // 攻撃を選択しているか
+        protected IReadOnlyDictionary<int, float> _contestedTileWeights = null;        // 他の味方が攻撃位置として必要としているタイルと、その必要度
+
+        // 他の味方が攻撃位置として必要としているタイルに立つ攻撃の候補への減算値(必要度1あたり)。
+        // 撃破の可否やダメージの大小は覆さず、評価がほぼ等しい候補どうしであれば味方の攻撃位置を空ける程度の大きさとする
+        // (AiAggressiveの評価ではダメージ割合20%分に相当)
+        protected const float CONTESTED_TILE_PENALTY = 20f;
 
         virtual protected float ATTACKABLE_VALUE { get; } = 0;
         virtual protected float WITHIN_RANGE_VALUE { get; } = 0;
@@ -106,6 +112,29 @@ namespace Frontier.Entities.Ai
         virtual protected float EvaluateAttackOption( in AttackOption option ) { return 0f; }
 
         /// <summary>
+        /// 攻撃の候補が、他の味方が攻撃位置として必要としているタイルに立つ(居座る)ものである場合の減算値を求めます。
+        /// 攻撃後に立っている位置(移動を伴うスキルの場合は着地先)で判定します
+        /// </summary>
+        /// <param name="option">評価する攻撃の候補</param>
+        /// <returns>減算値</returns>
+        protected float EvaluateContestedTilePenalty( in AttackOption option )
+        {
+            if( _contestedTileWeights == null ) { return 0f; }
+
+            int finalTileIndex = ( 0 <= option.LandingTileIndex ) ? option.LandingTileIndex : option.StandTileIndex;
+
+            return _contestedTileWeights.TryGetValue( finalTileIndex, out float weight ) ? weight * CONTESTED_TILE_PENALTY : 0f;
+        }
+
+        /// <summary>
+        /// 他の味方が攻撃位置として必要としているタイルと、その必要度を設定します
+        /// </summary>
+        public override void SetContestedTiles( IReadOnlyDictionary<int, float> weights )
+        {
+            _contestedTileWeights = weights;
+        }
+
+        /// <summary>
         /// 攻撃の候補の中から、評価値が最も高いものを選択します。
         /// 評価値が等しい場合は消費するアクションゲージが少ないものを、それも等しい場合は先に列挙されたものを優先します
         /// </summary>
@@ -122,7 +151,7 @@ namespace Frontier.Entities.Ai
 
             foreach( var option in options )
             {
-                float value = EvaluateAttackOption( in option );
+                float value = EvaluateAttackOption( in option ) - EvaluateContestedTilePenalty( in option );
                 int cost    = SkillsData.IsValidSkill( option.SkillID ) ? SkillsData.data[( int ) option.SkillID].Cost : 0;
 
                 if( maxValue < value || ( maxValue == value && cost < minCost ) )
@@ -173,6 +202,7 @@ namespace Frontier.Entities.Ai
             _targetCharacter        = null;
             _attackOption           = default;
             _isAttackOptionSelected = false;
+            _contestedTileWeights   = null;
         }
 
         /// <summary>

@@ -33,6 +33,7 @@ namespace Frontier
             Container.Bind<HoveredCharacterRangeDisplay>().AsSingle();
             Container.Bind<ProvisionalMoveOriginDisplay>().AsSingle();
             Container.Bind<AttackForecastLineDisplay>().AsSingle();
+            Container.Bind<Frontier.Entities.Ai.TroopActionCoordinator>().AsSingle();
             Container.Bind<CharacterPortraitRegistry>().AsSingle();
             Container.Bind<AttackForecastIconPresenter>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();

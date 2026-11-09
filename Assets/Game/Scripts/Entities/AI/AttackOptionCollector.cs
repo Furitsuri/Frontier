@@ -29,8 +29,21 @@ namespace Frontier.Entities.Ai
         /// <returns>攻撃の候補</returns>
         public List<AttackOption> Collect( Character owner )
         {
+            return Collect( owner, null );
+        }
+
+        /// <summary>
+        /// 攻撃の候補をすべて列挙します。
+        /// 指定のキャラクターが立っているタイルは、そのキャラクターが移動して空くものとみなし、攻撃を行う位置の候補に含めます
+        /// (軍全体の行動の調整において、「味方が空けてくれれば攻撃出来る位置」を求めるために使用します)
+        /// </summary>
+        /// <param name="owner">攻撃を行うキャラクター</param>
+        /// <param name="vacatableKeys">移動して空くものとみなすキャラクター(nullの場合は空かないものとする)</param>
+        /// <returns>攻撃の候補</returns>
+        public List<AttackOption> Collect( Character owner, ICollection<CharacterKey> vacatableKeys )
+        {
             var options = new List<AttackOption>();
-            Enumerate( owner, option => { options.Add( option ); return false; } );
+            Enumerate( owner, vacatableKeys, option => { options.Add( option ); return false; } );
 
             return options;
         }
@@ -43,15 +56,16 @@ namespace Frontier.Entities.Ai
         /// <returns>存在するか否か</returns>
         public bool HasAnyOption( Character owner )
         {
-            return Enumerate( owner, option => true );
+            return Enumerate( owner, null, option => true );
         }
 
         /// <summary>
         /// 攻撃の候補を列挙し、見つかる度にonFoundを呼び出します
         /// </summary>
+        /// <param name="vacatableKeys">立っているタイルが移動して空くものとみなすキャラクター(nullの場合は空かないものとする)</param>
         /// <param name="onFound">候補が見つかった際の処理。trueを返した場合は列挙を打ち切ります</param>
         /// <returns>列挙を打ち切ったか否か</returns>
-        private bool Enumerate( Character owner, Func<AttackOption, bool> onFound )
+        private bool Enumerate( Character owner, ICollection<CharacterKey> vacatableKeys, Func<AttackOption, bool> onFound )
         {
             var tmpParam = owner.BattleParams.TmpParam;
 
@@ -61,7 +75,7 @@ namespace Frontier.Entities.Ai
             var usableSkillIDs  = CollectUsableAttackSkills( owner );
             var tileData        = new ActionableTileData();
 
-            foreach( int standTileIdx in CollectStandableTiles( owner ) )
+            foreach( int standTileIdx in CollectStandableTiles( owner, vacatableKeys ) )
             {
                 if( EnumerateNormalAttack( owner, standTileIdx, tileData, onFound ) ) { return true; }
 
@@ -76,9 +90,10 @@ namespace Frontier.Entities.Ai
 
         /// <summary>
         /// 攻撃を行う位置として立つことが出来るタイルを求めます。
-        /// 移動済みの場合は現在のタイルのみとなります
+        /// 移動済みの場合は現在のタイルのみとなります。
+        /// vacatableKeysに含まれるキャラクターが立っているタイルは、そのキャラクターが移動して空くものとみなして含めます
         /// </summary>
-        private List<int> CollectStandableTiles( Character owner )
+        private List<int> CollectStandableTiles( Character owner, ICollection<CharacterKey> vacatableKeys )
         {
             int dprtTileIdx = owner.BattleParams.TmpParam.CurrentTileIndex;
 
@@ -95,13 +110,27 @@ namespace Frontier.Entities.Ai
             var standableTiles = new List<int>( moveData.MoveableTileMap.Count );
             foreach( var pair in moveData.MoveableTileMap )
             {
-                if( 0 <= pair.Value.EstimatedMoveRange && pair.Value.IsStandableBy( ownerKey ) )
+                if( pair.Value.EstimatedMoveRange < 0 ) { continue; }
+
+                if( pair.Value.IsStandableBy( ownerKey ) || IsVacatable( pair.Value, vacatableKeys ) )
                 {
                     standableTiles.Add( pair.Key );
                 }
             }
 
             return standableTiles;
+        }
+
+        /// <summary>
+        /// 指定のタイルに立っているキャラクターが、移動して空くものとみなすキャラクターであるかを取得します
+        /// (移動を伴うスキルの着地先等として予約されているタイルは、空かないものとします)
+        /// </summary>
+        private static bool IsVacatable( TileDynamicData tileData, ICollection<CharacterKey> vacatableKeys )
+        {
+            if( vacatableKeys == null || !tileData.CharaKey.IsValid() ) { return false; }
+            if( Methods.HasAnyFlag( tileData.Flag, TileBitFlag.RESERVED ) ) { return false; }
+
+            return vacatableKeys.Contains( tileData.CharaKey );
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Frontier.Entities;
+using Frontier.Entities.Ai;
 using Frontier.StateMachine;
 using System.Linq;
 using Zenject;
@@ -7,6 +8,8 @@ namespace Frontier.Battle
 {
     public class EnemyPhaseHandler : TroopPhaseHandler
     {
+        [Inject] private TroopActionCoordinator _coordinator = null;
+
         [Inject]
         public EnemyPhaseHandler( HierarchyBuilderBase hierarchyBld ) : base( hierarchyBld )
         {
@@ -27,13 +30,13 @@ namespace Frontier.Battle
             // ターン開始時の自軍キャラへの処理
             _btlRtnCtrl.BtlCharaCdr.ApplyTurnStartProccessingForGroup( CHARACTER_TAG.ENEMY );
 
-            // 選択グリッドを、このフェーズで最初に行動する敵(行動する敵がいない場合は1番目の敵)のグリッド位置に合わせ、
+            // 選択グリッドを、このフェーズで最初に行動する敵(軍全体の調整役が最初に選ぶ敵。行動する敵がいない場合は1番目の敵)のグリッド位置に合わせ、
             // カメラの注視対象もグリッドカーソルへ切り替える(前のフェーズの最後の行動で、注視対象がターゲットカーソルのまま終わっている場合があるため)
             // MEMO : 最初に行動する敵を求める際にAIが行動を決定するため、アクションゲージの回復等(上記のターン開始時の処理)より後に行うこと
             if( 0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.ENEMY ) )
             {
                 var enemies = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY );
-                Character focusEnemy = EmSelectState.FindFirstActingEnemy( enemies ) ?? enemies.First();
+                Character focusEnemy = EmSelectState.FindFirstActingEnemy( _coordinator, enemies ) ?? enemies.First();
                 _stgCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( focusEnemy );
                 // フェーズアニメーション中はグリッドカーソルを表示しない(アニメーション後にEmSelectStateが行動する敵へ合わせて表示する)
                 _stgCtrl.SetVisibleGridCursor( false );
