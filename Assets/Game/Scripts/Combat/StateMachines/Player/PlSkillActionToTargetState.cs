@@ -110,22 +110,14 @@ namespace Frontier.Battle
             // (実行確定後も毎フレーム更新すると、シーケンス終了後に閉じたウィンドウが再表示されてしまうため)
             if( PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID == _phase )
             {
-                // MEMO : 対象がスキルの使用者自身である場合(回復等)は、右側のウィンドウを表示しない。
-                //        パラメータウィンドウのキャラクター表示は、キャラクターのレイヤーをウィンドウ毎のカメラに映るレイヤーへ切り替える方式のため、
-                //        同じキャラクターを左右両方に表示することが出来ず、右側に割り当てると左側(使用者)の表示が消えてしまうため。
-                //        使用者自身への効果の予測は、左側のウィンドウにそのまま表示される
-                bool isTargetSelf               = ( _targetSelector.TargetCharacter == _plOwner );
-                bool isActiveRightParameterView = ( _targetSelector.TargetCharacter != null && !isTargetSelf );
+                // MEMO : 対象がスキルの使用者自身である場合(回復等)も、対象が誰であるかを示すため右側のウィンドウに表示する。
+                //        同じキャラクターを左右のウィンドウに同時に表示出来るよう、CharacterCameraが描画の間だけレイヤーを切り替えている
+                bool isActiveRightParameterView = ( _targetSelector.TargetCharacter != null );
                 _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParameterView );
                 if( isActiveRightParameterView )
                 {
                     var layerMaskIndex = BattleRoutinePresenter.GetLayerMaskIndexFromWinType( ParameterWindowType.Right );
                     _presenter.CharaParamView( ParameterWindowType.Right ).AssignCharacter( _targetSelector.TargetCharacter, layerMaskIndex );
-                }
-                else if( isTargetSelf )
-                {
-                    // 右側のウィンドウを表示しないため、左から右への対象を示す矢印も表示しない
-                    _presenter.SetActiveParamWinDirectionLeft2Right( false );
                 }
             }
 
