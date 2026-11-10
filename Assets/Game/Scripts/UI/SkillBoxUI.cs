@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Frontier.Combat;
 using Frontier.Entities;
+using Frontier.UI;
 
 namespace Frontier
 {
@@ -67,7 +68,7 @@ namespace Frontier
                 // 再利用されるため、ここを省略すると直後のEnableRefreshText()が古い_textKeyを読み直し、
                 // 前に表示していたスキルの説明文でツールチップを上書きしてしまう。
                 _textKey = LocKey.None;
-                SetSkillName( "", SKILL_NAME_COLOR_BY_SITUATION[( int ) SituationType.ATTACK] );
+                SetSkillName( "", GetSkillNameColorConfig()?.GetColor( SituationType.ATTACK ) ?? Color.white );
                 SetTooltipText( LocKey.None );
                 ShowSkillCostImage( 0 );
                 EnableRefreshText();
@@ -163,20 +164,36 @@ namespace Frontier
             _imageFlicker.StopFlickOnStart();
         }
 
-        // スキル名の色(使用出来る場面ごと: 攻撃時 / 防御時 / パッシブ)
-        private static readonly Color[] SKILL_NAME_COLOR_BY_SITUATION = new Color[( int ) SituationType.NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
-        // 回復系のスキルのスキル名の色(使用出来る場面よりも優先する)
-        private static readonly Color SKILL_NAME_COLOR_HEAL = Color.green;
+        // スキル名の表示色の設定(全ての枠で共有するため、初回の参照時に一度だけ読み込む)
+        private static SkillNameColorConfig _skillNameColorConfig = null;
+        private static bool _isSkillNameColorConfigLoaded         = false;
 
         /// <summary>
-        /// スキルの種類と使用出来る場面から、スキル名の色を決定します。
-        /// 回復系のスキルは、使用出来る場面(攻撃時の行動として使用)に関わらず回復を表す色とします
+        /// スキル名の表示色の設定を取得します。設定アセットが見つからない場合はnullを返します
+        /// </summary>
+        private static SkillNameColorConfig GetSkillNameColorConfig()
+        {
+            if( !_isSkillNameColorConfigLoaded )
+            {
+                _isSkillNameColorConfigLoaded   = true;
+                _skillNameColorConfig           = Resources.Load<SkillNameColorConfig>( SkillNameColorConfig.RESOURCE_PATH );
+                if( null == _skillNameColorConfig )
+                {
+                    Debug.LogError( $"[SkillBoxUI] スキル名の表示色の設定が見つかりません: Resources/{SkillNameColorConfig.RESOURCE_PATH}" );
+                }
+            }
+
+            return _skillNameColorConfig;
+        }
+
+        /// <summary>
+        /// スキルの種類と使用出来る場面から、スキル名の色を決定します(色の値は設定アセットで調整します)。
+        /// 設定アセットが見つからない場合は白で表示します
         /// </summary>
         private static Color ResolveSkillNameColor( in SkillsData.Data skillData )
         {
-            if( ActionType.HEAL == skillData.ActionType ) { return SKILL_NAME_COLOR_HEAL; }
-
-            return SKILL_NAME_COLOR_BY_SITUATION[( int ) skillData.SituationType];
+            var config = GetSkillNameColorConfig();
+            return ( null != config ) ? config.GetColor( skillData ) : Color.white;
         }
 
         /// <summary>
