@@ -12,6 +12,7 @@
         TRIPLE_STRIKE,
         DASH_SLASH,
         JUMP_SLASH,
+        HEAL,
 
         NUM,
     }
