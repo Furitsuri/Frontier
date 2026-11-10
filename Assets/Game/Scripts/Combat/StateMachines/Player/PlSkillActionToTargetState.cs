@@ -67,7 +67,10 @@ namespace Frontier.Battle
 
         /// <summary>
         /// 初期化します
-        /// MEMO : 攻撃範囲については前StateのPlSelectSkillStateで設定済みであるため、ここでは設定しないことに注意
+        /// MEMO : 攻撃範囲は、使用するスキルに合わせてここで設定し直します。
+        ///        前StateのPlSelectSkillStateが保持している範囲データは「カーソル位置のスキル」のプレビュー用であり、
+        ///        カーソルが自己バフ等の範囲を持たないスキルや、使用しない別の攻撃スキルを指したまま決定された場合には、
+        ///        使用するスキルの範囲と一致しない(空の場合もある)ため、流用しないこと
         /// </summary>
         public override void Init( object context )
         {
@@ -84,6 +87,9 @@ namespace Frontier.Battle
 
             // 対象選択中はカメラを少しだけ近づける(対象の有無によらず、この場面に入った時点でON)
             _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
+
+            // 使用するスキルの攻撃範囲を設定する(前Stateのプレビュー用の範囲データは流用しない)
+            _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _useSkillID );
 
             _targetSelector.Init( SkillsData.data[( int ) _useSkillID], BuildTargetingContext() );
 
