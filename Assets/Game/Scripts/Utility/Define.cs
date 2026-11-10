@@ -157,6 +157,9 @@ static public class Constants
     // 自身にバフをかける処理の待ち時間
     public const float SELF_BUFF_DISP_NAME_TIME = 0.5f;
     public const float SELF_BUFF_EXE_TIME = 0.75f;
+    // 回復系のスキルの演出の待ち時間(専用のモーションが用意されるまでの暫定値)
+    public const float HEAL_SKILL_APPLY_DELAY       = 0.3f;     // スキル名の表示後、回復を適用するまで
+    public const float HEAL_SKILL_END_WAIT_TIME     = 1.0f;     // 回復量の表示後、スキルを終了するまで
     // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
     // 攻撃時に相手に近接するまでの時間

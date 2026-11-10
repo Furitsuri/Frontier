@@ -663,9 +663,32 @@ namespace Frontier.Battle
         /// <returns>単発攻撃の予測変動量、複数回攻撃を考慮した予測総変動量</returns>
         public ( int single, int total ) CalculateExpectedHpChange( Character attacker, Character target )
         {
+            // 回復系のスキルを使用中であれば、ダメージではなく回復量(HPの増加)を予測する
+            if( TryGetToggledHealSkill( attacker, out var healSkillID ) )
+            {
+                int heal = HealForecaster.Forecast( attacker, target, healSkillID );
+                return ( heal, heal );
+            }
+
             var forecast = AttackForecaster.Forecast( attacker, target );
 
             return ( -forecast.SingleDamage, -forecast.TotalDamage );
+        }
+
+        /// <summary>
+        /// 指定のキャラクターが、回復系のスキルの使用をONにしているかを判定し、そのスキルを取得します
+        /// </summary>
+        private static bool TryGetToggledHealSkill( Character chara, out SkillID healSkillID )
+        {
+            healSkillID = SkillID.NONE;
+            if( null == chara || null == chara.BattleLogic ) { return false; }
+            if( !chara.BattleLogic.IsSkillToggledTransitActionState( out int equipIndex ) ) { return false; }
+
+            var skillID = chara.GetEquipSkillID( equipIndex );
+            if( ActionType.HEAL != SkillsData.data[( int ) skillID].ActionType ) { return false; }
+
+            healSkillID = skillID;
+            return true;
         }
 
         /// <summary>

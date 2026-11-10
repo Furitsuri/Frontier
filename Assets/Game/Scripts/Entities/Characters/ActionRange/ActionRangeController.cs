@@ -180,7 +180,26 @@ namespace Frontier.Entities
             var atkRng = ResolveSkillMaxRange( dprtTileIdx, useSkillID, rules ) + rules.TargetableRangeMargin;
 
             targetTileData.Init();
-            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref targetTileData, rules.PostProcessor, rules.Reachability );
+            _stageCtrl.TileDataHdlr().ExtractAttackableData( dprtTileIdx, atkRng, skillData.RangeShape, _owner.GetCharacterKey(), ref targetTileData, rules.PostProcessor, rules.Reachability, rules.TargetFaction );
+
+            // 自軍を対象とするスキル(回復等)は使用者自身も対象とするため、出発タイル(使用者自身が立っているタイル)も範囲に含める
+            // (範囲の計算では出発タイルは登録されないため、ここで加える)
+            if( TargetFaction.ALLY == rules.TargetFaction )
+            {
+                AddOriginTileAsTarget( dprtTileIdx, targetTileData );
+            }
+        }
+
+        /// <summary>
+        /// 出発タイルを、使用者自身が対象として存在するタイルとして範囲に加えます
+        /// </summary>
+        private void AddOriginTileAsTarget( int dprtTileIdx, ActionableTileData targetTileData )
+        {
+            // 基データを直接変更しないよう、クローンに対してフラグを設定する
+            var originTileData = _stageCtrl.GetTileDynamicData( dprtTileIdx ).DeepClone();
+            Methods.SetBitFlag( ref originTileData.Flag, TileBitFlag.ATTACKABLE | TileBitFlag.ATTACKABLE_TARGET_EXIST );
+
+            targetTileData.AddAttackableTile( dprtTileIdx, originTileData );
         }
 
         /// <summary>

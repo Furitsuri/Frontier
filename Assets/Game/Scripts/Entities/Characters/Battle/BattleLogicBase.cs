@@ -74,6 +74,25 @@ protected Character _opponent                                       = null;
             tag => (tag == CHARACTER_TAG.PLAYER || tag == CHARACTER_TAG.ENEMY),  // OTHERにおける攻撃可能勢力
         };
 
+        // 各勢力における自軍(回復・サポート等の対象となる)キャラクタータグ
+        static public Func<CHARACTER_TAG, bool>[] IsAllyFaction = new Func<CHARACTER_TAG, bool>[( int ) CHARACTER_TAG.NUM]
+        {
+            tag => (tag == CHARACTER_TAG.PLAYER),   // PLAYERにおける自軍
+            tag => (tag == CHARACTER_TAG.ENEMY),    // ENEMYにおける自軍
+            tag => (tag == CHARACTER_TAG.OTHER),    // OTHERにおける自軍
+        };
+
+        /// <summary>
+        /// 指定の勢力のキャラクターから見て、対象とする勢力に該当するかを判定する処理を取得します。
+        /// MEMO : 範囲の計算でタイル毎に呼ばれるため、呼び出しの度にデリゲートを生成しないよう、静的なテーブルの要素を返します
+        /// </summary>
+        /// <param name="targetFaction">対象とする勢力</param>
+        /// <param name="ownerTag">判定の基準となるキャラクターの勢力</param>
+        static public Func<CHARACTER_TAG, bool> GetTargetFactionPredicate( TargetFaction targetFaction, CHARACTER_TAG ownerTag )
+        {
+            return ( TargetFaction.ALLY == targetFaction ) ? IsAllyFaction[( int ) ownerTag] : IsOpponentFaction[( int ) ownerTag];
+        }
+
         /// <summary>
         /// 戦闘ロジックを更新します。BattleRoutineControllerから、フェーズ(各ステート)の更新の後に毎フレーム明示的に呼び出されます。
         /// MEMO : UnityのMonoBehaviour.Update()には依らず、戦闘の管理側から呼び出す形としています。

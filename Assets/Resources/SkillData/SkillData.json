@@ -163,6 +163,28 @@
             "Param3": null,
             "Param4": null,
             "ExplainTextKey": "EXPL_SKILL_JUMP_SLASH"
+        },
+        {
+            "Name": "HEAL",
+            "Cost": 1,
+            "SituationType": 0,
+            "ActionType": 3,
+            "Duration": 0,
+            "RangeShape": 0,
+            "RangeValue": 5,
+            "IsAdjustableRange": 0,
+            "TargetingMode": 1,
+            "TargetingRange": 2,
+            "IsMovingSkill": 0,
+            "IsCooperative": 0,
+            "AddAtkMag": 0,
+            "AddDefMag": 0,
+            "AddAtkNum": 0,
+            "Param1": 10,
+            "Param2": null,
+            "Param3": null,
+            "Param4": null,
+            "ExplainTextKey": "EXPL_SKILL_HEAL"
         }
     ]
 }

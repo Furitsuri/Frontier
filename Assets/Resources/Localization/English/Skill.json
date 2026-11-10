@@ -1,4 +1,5 @@
 {
     "EXPL_SKILL_DASH_SLASH": "Dash Attack",
-    "EXPL_SKILL_JUMP_SLASH": "Jump Attack"
+    "EXPL_SKILL_JUMP_SLASH": "Jump Attack",
+    "EXPL_SKILL_HEAL": "Restores 10 HP to allies in range"
 }

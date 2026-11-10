@@ -19,6 +19,11 @@ namespace Frontier.Combat
         public static readonly SkillRangeRules Default = new SkillRangeRules();
 
         /// <summary>
+        /// 自軍を対象とするスキル(回復・サポート)で、スキル固有のルールを持たない場合に用いるルールです
+        /// </summary>
+        public static readonly SkillRangeRules AllyDefault = new SkillRangeRules( targetFaction: TargetFaction.ALLY );
+
+        /// <summary>
         /// 範囲を直前のタイルから次のタイルへ伸ばせるかどうかの判定
         /// </summary>
         public readonly TileDataHandler.TileReachabilityPredicate Reachability;
@@ -55,6 +60,12 @@ namespace Frontier.Combat
         /// </summary>
         public readonly int TargetableRangeMargin;
 
+        /// <summary>
+        /// 効果の対象とする勢力。
+        /// ALLYの場合は、使用者自身が立っているタイルも効果の対象となる範囲に含めます(使用者自身も対象とするため)
+        /// </summary>
+        public readonly TargetFaction TargetFaction;
+
         // スキルIDごとのルール生成処理
         // 高さ情報やジャンプ力の参照など、StageController・使用者を必要とするルールがあるため生成時に受け取る
         private static readonly Dictionary<SkillID, Func<StageController, Character, SkillRangeRules>> _factories = new Dictionary<SkillID, Func<StageController, Character, SkillRangeRules>>
@@ -70,7 +81,8 @@ namespace Frontier.Combat
             TileDataHandler.RangeAdjustmentFilter       rangeAdjustmentFilter = null,
             TileDataHandler.AttackTargetFilter          attackTargetFilter    = null,
             Func<int, int>                              maxRangeResolver      = null,
-            int                                         targetableRangeMargin = 0 )
+            int                                         targetableRangeMargin = 0,
+            TargetFaction                               targetFaction         = TargetFaction.OPPONENT )
         {
             Reachability          = reachability;
             PostProcessor         = postProcessor;
@@ -79,15 +91,19 @@ namespace Frontier.Combat
             AttackTargetFilter    = attackTargetFilter;
             MaxRangeResolver      = maxRangeResolver;
             TargetableRangeMargin = targetableRangeMargin;
+            TargetFaction         = targetFaction;
         }
 
         /// <summary>
-        /// 指定スキルの範囲計算ルールを取得します。スキル固有のルールが無い場合は Default を返します。
+        /// 指定スキルの範囲計算ルールを取得します。
+        /// スキル固有のルールが無い場合は、自軍を対象とするスキルであれば AllyDefault を、それ以外は Default を返します。
         /// </summary>
         /// <param name="owner">スキルの使用者</param>
         public static SkillRangeRules Get( SkillID skillID, StageController stageCtrl, Character owner )
         {
-            return _factories.TryGetValue( skillID, out var factory ) ? factory( stageCtrl, owner ) : Default;
+            if( _factories.TryGetValue( skillID, out var factory ) ) { return factory( stageCtrl, owner ); }
+
+            return SkillsData.IsAllyTargetSkill( skillID ) ? AllyDefault : Default;
         }
     }
 }

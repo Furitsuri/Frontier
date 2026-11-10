@@ -54,7 +54,8 @@ namespace Frontier.Entities
                 actionableTileData.ClearAttackTargetTileIndicies();
             }
 
-            context.StageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( tileIndex, currentRange, context.Owner.GetCharacterTag(), actionableTileData );
+            // 効果の対象とする勢力(回復等は自軍)は、使用するスキルの範囲計算ルールに従う
+            context.StageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( tileIndex, currentRange, context.Owner.GetCharacterTag(), actionableTileData, context.Rules.TargetFaction );
         }
 
         static private bool IsExistOpponent( TileDynamicData tileDynamicData, CHARACTER_TAG ownerTag )

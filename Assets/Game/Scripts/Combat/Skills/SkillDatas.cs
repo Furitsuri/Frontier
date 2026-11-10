@@ -34,6 +34,11 @@ namespace Frontier.Combat
             public float Param3;                    // 汎用パラメータ3
             public float Param4;                    // 汎用パラメータ4
             public LocKey ExplainTextKey;           // スキル説明文のテキストキー
+
+            /// <summary>
+            /// 回復系のスキル(ActionType.HEAL)の回復量。汎用パラメータ1を用います
+            /// </summary>
+            public int HealAmount => ( int ) Param1;
         }
 
         // JsonUtility.FromJson()によるJSONデシリアライズでのみ値が設定されるフィールドのため、
@@ -88,6 +93,7 @@ namespace Frontier.Combat
                 { SkillID.DOUBLE_STRIKE, ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<PartOfRangeSABase>( new object[] { owner, targets }, false ) },
                 { SkillID.DASH_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( new object[] { owner, targets }, false ) },
                 { SkillID.JUMP_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( new object[] { owner, targets }, false ) },
+                { SkillID.HEAL,          ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<HealSA>( new object[] { owner, targets }, false ) },
             };
 
         static SkillsData()
@@ -179,6 +185,20 @@ namespace Frontier.Combat
         static public bool IsValidSkill( SkillID skillID )
         {
             return SkillID.NONE < skillID && skillID < SkillID.NUM;
+        }
+
+        /// <summary>
+        /// 自軍(使用者自身を含む)を効果の対象とする種類のスキルであるかを判定します
+        /// </summary>
+        static public bool IsAllyTargetActionType( ActionType actType )
+        {
+            return actType == ActionType.HEAL || actType == ActionType.SUPPORT;
+        }
+
+        /// <inheritdoc cref="IsAllyTargetActionType(ActionType)"/>
+        static public bool IsAllyTargetSkill( SkillID skillID )
+        {
+            return IsValidSkill( skillID ) && IsAllyTargetActionType( data[( int ) skillID].ActionType );
         }
 
         static public bool IsTransitionSkillActionType( ActionType actType )

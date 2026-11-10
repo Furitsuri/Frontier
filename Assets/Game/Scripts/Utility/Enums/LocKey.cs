@@ -108,4 +108,8 @@ public enum LocKey
     // 移動先が、暫定移動中の他キャラクターの移動前の位置である場合の確認ダイアログ
     // {0}に、移動前の位置へ戻せなくなるキャラクター名(複数の場合は区切り文字で連結)が入る書式文字列です
     UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE,
+
+    // スキル説明文(追加分)
+    // MEMO : LocKeyはPrefab等にint値でシリアライズされているため、途中に挿入せず末尾に追加すること
+    EXPL_SKILL_HEAL,
 }

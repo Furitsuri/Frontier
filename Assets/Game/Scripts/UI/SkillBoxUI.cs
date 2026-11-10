@@ -67,7 +67,7 @@ namespace Frontier
                 // 再利用されるため、ここを省略すると直後のEnableRefreshText()が古い_textKeyを読み直し、
                 // 前に表示していたスキルの説明文でツールチップを上書きしてしまう。
                 _textKey = LocKey.None;
-                SetSkillName( "", SituationType.ATTACK );
+                SetSkillName( "", SKILL_NAME_COLOR_BY_SITUATION[( int ) SituationType.ATTACK] );
                 SetTooltipText( LocKey.None );
                 ShowSkillCostImage( 0 );
                 EnableRefreshText();
@@ -81,9 +81,8 @@ namespace Frontier
         {
             var skillData      = SkillsData.data[( int ) skillID];
             string skillName   = skillData.Name;
-            var situationType  = skillData.SituationType;
             _textKey           = skillData.ExplainTextKey;
-            SetSkillName( skillName, situationType );
+            SetSkillName( skillName, ResolveSkillNameColor( skillData ) );
             SetTooltipText( _textKey );
             ShowSkillCostImage( skillData.Cost );
 
@@ -164,17 +163,32 @@ namespace Frontier
             _imageFlicker.StopFlickOnStart();
         }
 
+        // スキル名の色(使用出来る場面ごと: 攻撃時 / 防御時 / パッシブ)
+        private static readonly Color[] SKILL_NAME_COLOR_BY_SITUATION = new Color[( int ) SituationType.NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
+        // 回復系のスキルのスキル名の色(使用出来る場面よりも優先する)
+        private static readonly Color SKILL_NAME_COLOR_HEAL = Color.green;
+
+        /// <summary>
+        /// スキルの種類と使用出来る場面から、スキル名の色を決定します。
+        /// 回復系のスキルは、使用出来る場面(攻撃時の行動として使用)に関わらず回復を表す色とします
+        /// </summary>
+        private static Color ResolveSkillNameColor( in SkillsData.Data skillData )
+        {
+            if( ActionType.HEAL == skillData.ActionType ) { return SKILL_NAME_COLOR_HEAL; }
+
+            return SKILL_NAME_COLOR_BY_SITUATION[( int ) skillData.SituationType];
+        }
+
         /// <summary>
         /// スキル名テキストを設定します
         /// </summary>
         /// <param name="name">設定するスキル名</param>
-        private void SetSkillName( string name, SituationType type )
+        /// <param name="color">スキル名の色</param>
+        private void SetSkillName( string name, Color color )
         {
-            Color[] typeColor = new Color[( int ) SituationType.NUM] { Color.red, new Color( 0.1f, 0.6f, 1.0f ), Color.yellow };
-
             // SkillsData側で名前が未設定(null)のスキルでも表示自体はクラッシュさせない
             TMPSkillName.text = name?.Replace( "_", Environment.NewLine ) ?? "";
-            TMPSkillName.color = typeColor[( int ) type];
+            TMPSkillName.color = color;
         }
 
         /// <summary>
