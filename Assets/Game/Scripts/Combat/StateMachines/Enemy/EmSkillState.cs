@@ -70,8 +70,12 @@ namespace Frontier.Battle
                 actionRangeCtrl.DrawAttackableRange();
 
                 // 攻撃者と主となる攻撃対象を向かい合わせる
-                var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
-                _attackCharacter.RotateToPosition( targetTileData.CharaStandPos );
+                // (回復等で対象が自分自身の場合は、向く方向が定まらないため向きを変えない)
+                if( _targetCharacter != _attackCharacter )
+                {
+                    var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
+                    _attackCharacter.RotateToPosition( targetTileData.CharaStandPos );
+                }
             }
 
             // アタッカーキャラクターの設定

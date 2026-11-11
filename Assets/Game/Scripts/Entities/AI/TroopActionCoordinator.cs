@@ -12,9 +12,11 @@ namespace Frontier.Entities.Ai
     ///
     /// 次に行動するキャラクターの選び方:
     ///   1. 行動の途中のキャラクター(移動を終えて続けて攻撃する場合など)がいれば、そのキャラクター
-    ///   2. 攻撃出来るキャラクターのうち、攻撃を行える位置の数が最も少ないキャラクター
+    ///   2. 回復役以外の攻撃出来るキャラクターのうち、攻撃を行える位置の数が最も少ないキャラクター
     ///      (立てる位置が限られるキャラクターに先に位置を取らせ、融通の利くキャラクターが後から合わせるため)
-    ///   3. 攻撃出来るキャラクターがいない場合は、手番の順で最初のキャラクター(近づく等の行動はAIが決定する)
+    ///   3. 回復役(範囲内にHPが減っている味方がいて、回復を行えるキャラクター)
+    ///      (攻撃役が先に位置を取った後に動くことで攻撃位置を塞ぎにくく、攻撃役が受けたダメージも含めて回復の対象を決められるため)
+    ///   4. いずれもいない場合は、手番の順で最初のキャラクター(近づく等の行動はAIが決定する)
     ///   いずれも等しい場合は、手番の順(並び順)で先のキャラクターを優先します。
     /// </summary>
     public class TroopActionCoordinator
@@ -32,7 +34,10 @@ namespace Frontier.Entities.Ai
         private readonly HashSet<CharacterKey> _candidateKeys   = new HashSet<CharacterKey>();
 
         // 各調整の対象が攻撃を行い得る位置(まだ行動していない味方が空けた場合を含む)。SelectNextActorの度に求め直す
+        // MEMO : 回復の候補は含めない(回復は射程が広く多くの位置から行えるため、含めると攻撃役の位置取りの判断が薄まるため)
         private readonly Dictionary<Character, HashSet<int>> _potentialStandTiles = new Dictionary<Character, HashSet<int>>();
+        // 調整の対象のうち、回復役(現時点で回復を行えるキャラクター)。SelectNextActorの度に求め直す
+        private readonly HashSet<Character> _healers = new HashSet<Character>();
 
         // 直近のSelectNextActorで選んだキャラクターと、そのキャラクターに渡す「他の味方が攻撃位置として必要としているタイル」
         private Character _selectedActor                         = null;
@@ -51,6 +56,7 @@ namespace Frontier.Entities.Ai
 
             CollectCandidates( troop );
             _potentialStandTiles.Clear();
+            _healers.Clear();
             _selectedContestedTiles = null;
 
             // 行動の途中(行動を決定済みで、まだ行動を終えていない)のキャラクターがいれば、その行動を続けさせる。
@@ -66,6 +72,7 @@ namespace Frontier.Entities.Ai
             foreach( var chara in _candidates )
             {
                 _potentialStandTiles[chara] = CollectPotentialStandTiles( chara );
+                if( _collector.HasAnyAllyTargetOption( chara ) ) { _healers.Add( chara ); }
             }
             double collectMs = stopwatch.Elapsed.TotalMilliseconds;
 
@@ -73,7 +80,7 @@ namespace Frontier.Entities.Ai
             _selectedContestedTiles = ( null != _selectedActor ) ? BuildContestedTiles( _selectedActor ) : null;
             double totalMs          = stopwatch.Elapsed.TotalMilliseconds;
 
-            LogTiming( $"SelectNextActor {totalMs:F2}ms (攻撃候補の列挙 {collectMs:F2}ms / 順番の決定・必要タイルの算出 {totalMs - collectMs:F2}ms) 対象{_candidates.Count}体 → {GetLabel( _selectedActor )}" );
+            LogTiming( $"SelectNextActor {totalMs:F2}ms (攻撃・回復候補の列挙 {collectMs:F2}ms / 順番の決定・必要タイルの算出 {totalMs - collectMs:F2}ms) 対象{_candidates.Count}体(回復役{_healers.Count}体) → {GetLabel( _selectedActor )}" );
 
             return _selectedActor;
         }
@@ -162,18 +169,26 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 調整の対象の中から、攻撃を行える位置の数に基づいて次に行動するキャラクターを選びます。
-        /// 攻撃出来るキャラクターのうち、攻撃を行える位置の数が最も少ないキャラクターを選び、
-        /// 攻撃出来るキャラクターがいない場合は、手番の順で最初のキャラクターを選びます
+        /// 調整の対象の中から、攻撃を行える位置の数と回復役であるかに基づいて次に行動するキャラクターを選びます。
+        /// 回復役以外の攻撃出来るキャラクターのうち、攻撃を行える位置の数が最も少ないキャラクターを選び、
+        /// いない場合は回復役を、それもいない場合は手番の順で最初のキャラクターを選びます(回復役同士、及びそれ以外は手番の順)
         /// </summary>
         private Character SelectActorByStandTiles()
         {
             if( _candidates.Count <= 0 ) { return null; }
 
             Character bestAttacker  = null;
+            Character firstHealer   = null;
             int minStandTileNum     = int.MaxValue;
             foreach( var chara in _candidates )
             {
+                // 回復役は攻撃役が行動を終えた後に動かす
+                if( _healers.Contains( chara ) )
+                {
+                    firstHealer ??= chara;
+                    continue;
+                }
+
                 int standTileNum = CountCurrentlyStandableTiles( chara, _potentialStandTiles[chara] );
                 if( 0 < standTileNum && standTileNum < minStandTileNum )
                 {
@@ -182,7 +197,7 @@ namespace Frontier.Entities.Ai
                 }
             }
 
-            return bestAttacker ?? _candidates[0];
+            return bestAttacker ?? firstHealer ?? _candidates[0];
         }
 
         /// <summary>

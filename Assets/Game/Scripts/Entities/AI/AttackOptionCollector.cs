@@ -12,6 +12,7 @@ namespace Frontier.Entities.Ai
 {
     /// <summary>
     /// キャラクターが現在の位置から移動した上で選択し得る、攻撃の候補(AttackOption)を列挙します。
+    /// 回復など自軍を対象とするスキルの使用も、同じ形の候補として列挙します(Collect(Character)のみ。対象は味方)。
     /// AIの思考タイプによらない共通処理であり、候補の評価・選択は各AI側で行います。
     /// 表示用の範囲データやキャラクターの向き・ゴーストなどには一切触れません。
     /// MEMO : 計算時点では使用者が元のタイルに存在したままであるため、移動後の位置からの攻撃を試算する際に、
@@ -23,17 +24,20 @@ namespace Frontier.Entities.Ai
         [Inject] private StageController _stageCtrl            = null;
 
         /// <summary>
-        /// 攻撃の候補をすべて列挙します
+        /// 攻撃の候補と、回復など自軍を対象とするスキルの使用の候補を、すべて列挙します
         /// </summary>
         /// <param name="owner">攻撃を行うキャラクター</param>
         /// <returns>攻撃の候補</returns>
         public List<AttackOption> Collect( Character owner )
         {
-            return Collect( owner, null );
+            var options = new List<AttackOption>();
+            Enumerate( owner, null, true, option => { options.Add( option ); return false; } );
+
+            return options;
         }
 
         /// <summary>
-        /// 攻撃の候補をすべて列挙します。
+        /// 攻撃の候補をすべて列挙します(自軍を対象とするスキルの使用の候補は含みません)。
         /// 指定のキャラクターが立っているタイルは、そのキャラクターが移動して空くものとみなし、攻撃を行う位置の候補に含めます
         /// (軍全体の行動の調整において、「味方が空けてくれれば攻撃出来る位置」を求めるために使用します)
         /// </summary>
@@ -43,36 +47,48 @@ namespace Frontier.Entities.Ai
         public List<AttackOption> Collect( Character owner, ICollection<CharacterKey> vacatableKeys )
         {
             var options = new List<AttackOption>();
-            Enumerate( owner, vacatableKeys, option => { options.Add( option ); return false; } );
+            Enumerate( owner, vacatableKeys, false, option => { options.Add( option ); return false; } );
 
             return options;
         }
 
         /// <summary>
-        /// 攻撃の候補が1つでも存在するかを判定します。
+        /// 攻撃の候補が1つでも存在するかを判定します(自軍を対象とするスキルの使用の候補は含みません)。
         /// 候補が見つかった時点で列挙を打ち切るため、Collectよりも軽量です
         /// </summary>
         /// <param name="owner">攻撃を行うキャラクター</param>
         /// <returns>存在するか否か</returns>
         public bool HasAnyOption( Character owner )
         {
-            return Enumerate( owner, null, option => true );
+            return Enumerate( owner, null, false, option => true );
+        }
+
+        /// <summary>
+        /// 回復など自軍を対象とするスキルの使用の候補が1つでも存在するかを判定します
+        /// (回復の場合、範囲内にHPが減っている味方がいる場合のみ候補となります)
+        /// </summary>
+        /// <param name="owner">スキルを使用するキャラクター</param>
+        /// <returns>存在するか否か</returns>
+        public bool HasAnyAllyTargetOption( Character owner )
+        {
+            return Enumerate( owner, null, true, option => SkillsData.IsAllyTargetSkill( option.SkillID ) );
         }
 
         /// <summary>
         /// 攻撃の候補を列挙し、見つかる度にonFoundを呼び出します
         /// </summary>
         /// <param name="vacatableKeys">立っているタイルが移動して空くものとみなすキャラクター(nullの場合は空かないものとする)</param>
+        /// <param name="includeAllyTargetSkills">回復など自軍を対象とするスキルの使用も候補に含めるか</param>
         /// <param name="onFound">候補が見つかった際の処理。trueを返した場合は列挙を打ち切ります</param>
         /// <returns>列挙を打ち切ったか否か</returns>
-        private bool Enumerate( Character owner, ICollection<CharacterKey> vacatableKeys, Func<AttackOption, bool> onFound )
+        private bool Enumerate( Character owner, ICollection<CharacterKey> vacatableKeys, bool includeAllyTargetSkills, Func<AttackOption, bool> onFound )
         {
             var tmpParam = owner.BattleParams.TmpParam;
 
             // 攻撃またはスキルを実行済みであれば、攻撃は行えない
             if( tmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] || tmpParam.IsEndCommand[( int ) COMMAND_TAG.SKILL] ) { return false; }
 
-            var usableSkillIDs  = CollectUsableAttackSkills( owner );
+            var usableSkillIDs  = CollectUsableSkills( owner, includeAllyTargetSkills );
             var tileData        = new ActionableTileData();
 
             foreach( int standTileIdx in CollectStandableTiles( owner, vacatableKeys ) )
@@ -134,11 +150,12 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 装備しているスキルのうち、攻撃の候補となるスキルを求めます。
-        /// 攻撃シチュエーションで使用する攻撃用のスキルで、未使用かつアクションゲージが足りているもののみが対象です。
-        /// MEMO : 回復・サポートなど自軍を対象とするスキルは、攻撃の候補ではないため対象外としています
+        /// 装備しているスキルのうち、候補となるスキルを求めます。
+        /// 攻撃シチュエーションで使用する攻撃用のスキル(及び、指定時は回復スキル)で、未使用かつアクションゲージが足りているもののみが対象です。
+        /// MEMO : サポートスキルは、AIでの評価の方法が未定のため対象外としています
         /// </summary>
-        private List<SkillID> CollectUsableAttackSkills( Character owner )
+        /// <param name="includeAllyTargetSkills">回復など自軍を対象とするスキルも含めるか</param>
+        private List<SkillID> CollectUsableSkills( Character owner, bool includeAllyTargetSkills )
         {
             var skillIDs = new List<SkillID>( EQUIPABLE_SKILL_MAX_NUM );
             var tmpParam = owner.BattleParams.TmpParam;
@@ -149,8 +166,10 @@ namespace Frontier.Entities.Ai
                 if( !SkillsData.IsValidSkill( skillID ) ) { continue; }
 
                 var skillData = SkillsData.data[( int ) skillID];
+                bool isTargetActionType = ( skillData.ActionType == ActionType.ATTACK ) ||
+                                          ( includeAllyTargetSkills && skillData.ActionType == ActionType.HEAL );
                 if( skillData.SituationType != SituationType.ATTACK ||
-                    skillData.ActionType != ActionType.ATTACK ||
+                    !isTargetActionType ||
                     tmpParam.IsSkillsUsed[i] ||
                     owner.GetStatusRef.CurActionGauge < tmpParam.ActGaugeConsumption + skillData.Cost )
                 {
@@ -189,7 +208,7 @@ namespace Frontier.Entities.Ai
                 case TargetingMode.NORMAL_ATTACK:
                     return EnumerateSingleTargets( owner, standTileIdx, skillID, tileData, onFound );
                 case TargetingMode.PART_OF_RANGE:
-                    return EnumeratePartOfRangeTargets( owner, standTileIdx, skillID, skillData.TargetingRange, tileData, onFound );
+                    return EnumeratePartOfRangeTargets( owner, standTileIdx, skillID, skillData.TargetingRange, rules.TargetFaction, tileData, onFound );
                 case TargetingMode.DIRECTIONAL:
                     // NPCは射程を調整せず、常に最大の射程で使用する(移動を伴うスキルでは、最も遠くへ着地する)
                     int maxRange = actionRangeCtrl.ResolveSkillMaxRange( standTileIdx, skillID, rules );
@@ -221,7 +240,7 @@ namespace Frontier.Entities.Ai
         /// 攻撃可能範囲内の各タイルを中心として範囲を展開し、展開した範囲内の攻撃対象をまとめて候補として列挙します。
         /// 攻撃対象の組み合わせが同じとなる候補は、1つにまとめます
         /// </summary>
-        private bool EnumeratePartOfRangeTargets( Character owner, int standTileIdx, SkillID skillID, int expandRange, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool EnumeratePartOfRangeTargets( Character owner, int standTileIdx, SkillID skillID, int expandRange, TargetFaction targetFaction, ActionableTileData tileData, Func<AttackOption, bool> onFound )
         {
             var foundTargetSets = new List<HashSet<CharacterKey>>();
             var expandData      = new ActionableTileData();
@@ -229,9 +248,10 @@ namespace Frontier.Entities.Ai
             foreach( int centerTileIdx in tileData.AttackableTileMap.Keys )
             {
                 expandData.Init();
-                _stageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( centerTileIdx, expandRange, owner.GetCharacterTag(), expandData );
+                _stageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( centerTileIdx, expandRange, owner.GetCharacterTag(), expandData, targetFaction );
 
                 var targetKeys = ToCharacterKeys( expandData.RefAttackTargetTileIndicies );
+                if( TargetFaction.ALLY == targetFaction ) { CorrectOwnerPositionInTargets( owner, standTileIdx, expandData, targetKeys ); }
                 if( targetKeys.Count <= 0 ) { continue; }
 
                 var targetSet = new HashSet<CharacterKey>( targetKeys );
@@ -242,6 +262,18 @@ namespace Frontier.Entities.Ai
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 自軍を対象とする範囲の対象の一覧について、使用者自身が対象に含まれるかを、移動後の位置(攻撃を行う位置)で判定し直します。
+        /// 候補の計算時点では使用者は元のタイルに立ったままであるため、範囲の計算上は元のタイルで対象に含まれるかが判定されてしまうためです
+        /// </summary>
+        private static void CorrectOwnerPositionInTargets( Character owner, int standTileIdx, ActionableTileData expandData, List<CharacterKey> targetKeys )
+        {
+            var ownerKey = owner.GetCharacterKey();
+
+            targetKeys.Remove( ownerKey );
+            if( expandData.TargetableTileMap.ContainsKey( standTileIdx ) ) { targetKeys.Add( ownerKey ); }
         }
 
         /// <summary>
@@ -288,12 +320,22 @@ namespace Frontier.Entities.Ai
 
         /// <summary>
         /// 候補を作成してonFoundへ渡します。主となる攻撃対象は、攻撃を行う位置から最も近い攻撃対象とします
+        /// (回復スキルの場合は、対象の中で最もHPが減っている味方とします)
         /// </summary>
         /// <returns>列挙を打ち切るか否か</returns>
         private bool TryNotify( Character owner, int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, List<CharacterKey> targetKeys, Func<AttackOption, bool> onFound )
         {
             Character mainTarget    = null;
             int minRange            = int.MaxValue;
+
+            if( SkillsData.IsValidSkill( skillID ) && ActionType.HEAL == SkillsData.data[( int ) skillID].ActionType )
+            {
+                // HPが減っている味方が1体もいない場合は、回復しても意味が無いため候補としない
+                mainTarget = FindMostDamagedTarget( targetKeys );
+                if( mainTarget == null ) { return false; }
+
+                return onFound( CreateOption( standTileIdx, skillID, dir, landingTileIdx, mainTarget, targetKeys ) );
+            }
 
             foreach( var key in targetKeys )
             {
@@ -310,7 +352,12 @@ namespace Frontier.Entities.Ai
 
             if( mainTarget == null ) { return false; }
 
-            var option = new AttackOption
+            return onFound( CreateOption( standTileIdx, skillID, dir, landingTileIdx, mainTarget, targetKeys ) );
+        }
+
+        private static AttackOption CreateOption( int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, Character mainTarget, List<CharacterKey> targetKeys )
+        {
+            return new AttackOption
             {
                 StandTileIndex      = standTileIdx,
                 SkillID             = skillID,
@@ -319,8 +366,32 @@ namespace Frontier.Entities.Ai
                 MainTarget          = mainTarget,
                 AttackTargetKeys    = targetKeys,
             };
+        }
 
-            return onFound( option );
+        /// <summary>
+        /// 対象の中から、最もHPが減っている(最大HPまでの不足分が最も大きい)キャラクターを求めます
+        /// </summary>
+        /// <returns>最もHPが減っているキャラクター。全員のHPが満タンの場合はnull</returns>
+        private Character FindMostDamagedTarget( List<CharacterKey> targetKeys )
+        {
+            Character mostDamaged   = null;
+            int maxLackingHp        = 0;
+
+            foreach( var key in targetKeys )
+            {
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+                if( target == null ) { continue; }
+
+                var status      = target.GetStatusRef;
+                int lackingHp   = status.MaxHP - status.CurHP;
+                if( maxLackingHp < lackingHp )
+                {
+                    maxLackingHp    = lackingHp;
+                    mostDamaged     = target;
+                }
+            }
+
+            return mostDamaged;
         }
 
         /// <summary>

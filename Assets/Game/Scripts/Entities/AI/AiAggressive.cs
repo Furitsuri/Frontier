@@ -19,6 +19,8 @@ namespace Frontier.Entities.Ai
         private const float DEFEAT_VALUE            = 1000f;    // 攻撃対象1体を撃破出来る場合の加算値
         private const float DAMAGE_RATIO_VALUE      = 100f;     // ダメージ割合(残りHPに対する与ダメージの割合。最大100%)が100%の場合の加算値
         private const float ACTION_GAUGE_COST_VALUE = 1f;       // 消費するアクションゲージ1あたりの減算値
+        // 回復の候補の評価に用いる値(攻撃の候補と比較出来るよう、ダメージ割合と同じ尺度とする)
+        private const float HEAL_RATIO_VALUE        = 100f;     // 回復割合(最大HPに対する回復量の割合)が100%の場合の加算値
 
         /// <summary>
         /// このフェーズで行動(移動・攻撃)し得るかを取得します。AGGRESSIVEは常に行動します
@@ -70,6 +72,8 @@ namespace Frontier.Entities.Ai
         /// <returns>評価値</returns>
         protected override float EvaluateAttackOption( in AttackOption option )
         {
+            if( SkillsData.IsAllyTargetSkill( option.SkillID ) ) { return EvaluateHealOption( in option ); }
+
             float evaluateValue = 0f;
             int actionGaugeCost = 0;
 
@@ -94,6 +98,32 @@ namespace Frontier.Entities.Ai
             }
 
             evaluateValue -= actionGaugeCost * ACTION_GAUGE_COST_VALUE;
+
+            return evaluateValue;
+        }
+
+        /// <summary>
+        /// 回復スキルの使用の候補を評価します。
+        /// 対象1体ごとに、最大HPに対する実際の回復量(最大HPを超える分は含まない)の割合を加算し、消費するアクションゲージに応じて減算します。
+        /// 攻撃の候補のダメージ割合と同じ尺度とすることで、撃破出来る攻撃 > 回復割合とダメージ割合の大きい方 の順に選択されます
+        /// </summary>
+        /// <param name="option">評価する回復の候補</param>
+        /// <returns>評価値</returns>
+        private float EvaluateHealOption( in AttackOption option )
+        {
+            float evaluateValue = 0f;
+
+            foreach( var key in option.AttackTargetKeys )
+            {
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+                if( target == null || target.GetStatusRef.MaxHP <= 0 ) { continue; }
+
+                int heal        = HealForecaster.Forecast( _owner, target, option.SkillID );
+                evaluateValue   += ( float ) heal / target.GetStatusRef.MaxHP * HEAL_RATIO_VALUE;
+            }
+
+            int actionGaugeCost = _owner.BattleParams.TmpParam.ActGaugeConsumption + SkillsData.data[( int ) option.SkillID].Cost;
+            evaluateValue      -= actionGaugeCost * ACTION_GAUGE_COST_VALUE;
 
             return evaluateValue;
         }
