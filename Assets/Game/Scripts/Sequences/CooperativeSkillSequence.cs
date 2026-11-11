@@ -132,6 +132,9 @@ namespace Frontier.Sequences
             foreach( var entry in _entries )
             {
                 entry.SkillAction.End();
+
+                // 対象へ向き直った結果、斜めを向いたままにならないよう、縦軸・横軸に沿う向きへ向き直らせる
+                if( null != entry.Attacker ) { entry.Attacker.OrderRotateToNearestAxis(); }
             }
 
             // 連携に参加した全キャラクターの行動終了を、連携攻撃が完全に終わったこのタイミングでまとめて確定する

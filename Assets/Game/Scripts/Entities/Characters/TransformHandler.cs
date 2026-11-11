@@ -123,6 +123,22 @@ public class TransformHandler
         return _orderdRotation != null;
     }
 
+    /// <summary>
+    /// 向きがグリッドの縦軸・横軸のいずれにも沿っていない(斜めを向いている)場合に、最も少ない角度の変更で軸に沿う向きへの向き直りを指示します。
+    /// 向き直りの途中である場合は、向き直り後の向きを基準に判定します
+    /// </summary>
+    public void OrderRotateToNearestAxis()
+    {
+        var baseRotation    = _orderdRotation ?? _readOnlyTransform.Value.rotation;
+        float yaw           = baseRotation.eulerAngles.y;
+        float snappedYaw    = Mathf.Round( yaw / 90f ) * 90f;
+
+        // 既に軸に沿っている場合は何もしない
+        if( Mathf.Abs( Mathf.DeltaAngle( yaw, snappedYaw ) ) < AXIS_ALIGNED_ANGLE_THRESHOLD ) { return; }
+
+        OrderRotate( Quaternion.Euler( 0f, snappedYaw, 0f ) );
+    }
+
     public void ResetRotationOrder()
     {
         _orderdRotation = _baseRotation;

@@ -29,6 +29,10 @@ namespace Frontier.Battle
         private Enemy _attackCharacter      = null;
         private Character _targetCharacter  = null;
         private AttackOption _attackOption;
+        // スキルの使用者・対象にプレイヤーが含まれるか。含まれない場合(敵から敵への回復等)は、プレイヤーが介入する手立てが無いため、
+        // 確認の入力を待たず、パラメータウィンドウを一定時間(ENEMY_SKILL_AUTO_EXECUTE_DISPLAY_TIME)表示した後に実行する
+        private bool _isPlayerInvolved      = true;
+        private float _elapsedTime          = 0f;   // 確認の入力を待たずに実行する場合の、パラメータウィンドウの表示を開始してからの経過時間
 
         public override void Init( object context )
         {
@@ -40,8 +44,9 @@ namespace Frontier.Battle
             bool isSelected = _attackCharacter.BattleLogic.GetAi().TryGetAttackOption( out _attackOption );
             Debug.Assert( isSelected && !_attackOption.IsNormalAttack, "スキルによる攻撃が選択されていない状態でEmSkillStateに遷移しています。" );
 
-            _targetCharacter = _attackOption.MainTarget;
-            var skillData    = SkillsData.data[( int ) _attackOption.SkillID];
+            _targetCharacter    = _attackOption.MainTarget;
+            _isPlayerInvolved   = IsPlayerInvolved( _attackCharacter, _targetCharacter, _attackOption );
+            var skillData       = SkillsData.data[( int ) _attackOption.SkillID];
 
             // スキルを使用ONにして、スキルの効果(攻撃回数・倍率・消費ゲージ等)を適用する
             int slotIndex = GetEquipSkillSlotIndex( _attackCharacter, _attackOption.SkillID );
@@ -93,6 +98,7 @@ namespace Frontier.Battle
             // (スキルを使用する敵自身(右)の表示と、行動終了後に左右を閉じる処理はEmSelectStateが行う)
             ShowParameterWindow( ParameterWindowType.Left, _targetCharacter );
             _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
+            _elapsedTime = 0f;
 
             // 予測ダメージを適応し、攻撃対象全員のHPゲージに予測ダメージ分の点滅を反映する
             _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
@@ -107,6 +113,16 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case EmSkillPhase.EM_SKILL_CONFIRM:
+                    // プレイヤーが関わらない場合は、確認の入力を待たずに、パラメータウィンドウを一定時間表示し、
+                    // かつ対象への向き直りが終わった時点で実行する
+                    if( !_isPlayerInvolved )
+                    {
+                        _elapsedTime += DeltaTimeProvider.DeltaTime;
+                        if( ENEMY_SKILL_AUTO_EXECUTE_DISPLAY_TIME <= _elapsedTime && !_attackCharacter.IsRotationOrdered() )
+                        {
+                            ExecuteSkill();
+                        }
+                    }
                     break;
                 case EmSkillPhase.EM_SKILL_EXECUTE:
                     _phase = EmSkillPhase.EM_SKILL_END;
@@ -152,7 +168,7 @@ namespace Frontier.Battle
         {
             if( !CanAcceptDefault() ) return false;
 
-            return EmSkillPhase.EM_SKILL_CONFIRM == _phase;
+            return _isPlayerInvolved && EmSkillPhase.EM_SKILL_CONFIRM == _phase;
         }
 
         /// <summary>
@@ -162,6 +178,16 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
+            ExecuteSkill();
+
+            return true;
+        }
+
+        /// <summary>
+        /// スキルを実行します(アクションゲージを消費し、スキルのシーケンスを登録します)
+        /// </summary>
+        private void ExecuteSkill()
+        {
             // キャラクターのアクションゲージを消費
             _attackCharacter.BattleLogic.ConsumeActionGaugeForSkill();
             _targetCharacter.BattleLogic.ConsumeActionGauge();
@@ -174,8 +200,24 @@ namespace Frontier.Battle
             _sequenceFcd.RegistSkillAction( _attackCharacter, _targetCharacter, _attackOption.SkillID, _attackOption.AttackTargetKeys );    // スキルのシーケンス処理に移行
 
             _phase = EmSkillPhase.EM_SKILL_EXECUTE;
+        }
 
-            return true;
+        /// <summary>
+        /// スキルの使用者・対象に、プレイヤーが含まれるかを判定します
+        /// </summary>
+        private bool IsPlayerInvolved( Character user, Character mainTarget, in AttackOption option )
+        {
+            if( user is Player || mainTarget is Player ) { return true; }
+
+            if( null != option.AttackTargetKeys )
+            {
+                foreach( var key in option.AttackTargetKeys )
+                {
+                    if( CHARACTER_TAG.PLAYER == key.CharacterTag ) { return true; }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -65,6 +65,9 @@ namespace Frontier.Sequences
         {
             _skillAction.End();
 
+            // 対象へ向き直った結果、斜めを向いたままにならないよう、縦軸・横軸に沿う向きへ向き直らせる
+            if( null != _attacker ) { _attacker.OrderRotateToNearestAxis(); }
+
             // 通常攻撃と同様に、スキルの効果(自己バフ等)・バフエフェクトは戦闘1回限りのため、ここで取り除く
             CombatSequenceCleanup.ResetParticipants( _participants );
         }

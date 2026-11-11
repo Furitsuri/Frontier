@@ -131,6 +131,8 @@ static public class Constants
     public const float CHARACTER_ROT_SPEED = 10f;
     // キャラクターの回転終了閾値
     public const float CHARACTER_ROT_THRESHOLD = 3f;
+    // 向きがグリッドの縦軸・横軸に沿っているとみなす角度の差(向き直りはCHARACTER_ROT_THRESHOLD以内で完了扱いとなるため、それより大きくすること)
+    public const float AXIS_ALIGNED_ANGLE_THRESHOLD = 5f;
     // キャラクターの向き判定を行う際に許容する角度誤差
     public const float CHARACTER_ANGLE_THRESHOLD_DEGREES = 5f;
     // プレイヤーの移動操作時、目標座標に対し入力を受け付けられるグリッドサイズの割合
@@ -160,6 +162,8 @@ static public class Constants
     // 回復系のスキルの演出の待ち時間(専用のモーションが用意されるまでの暫定値)
     public const float HEAL_SKILL_APPLY_DELAY       = 0.3f;     // スキル名の表示後、回復を適用するまで
     public const float HEAL_SKILL_END_WAIT_TIME     = 1.0f;     // 回復量の表示後、スキルを終了するまで
+    // プレイヤーが関わらない敵のスキル(敵から敵への回復等)を、確認の入力を待たずに実行するまでの、パラメータウィンドウの表示時間
+    public const float ENEMY_SKILL_AUTO_EXECUTE_DISPLAY_TIME = 1.0f;
     // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
     // 攻撃時に相手に近接するまでの時間

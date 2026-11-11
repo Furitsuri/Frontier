@@ -41,6 +41,7 @@ namespace Frontier.Entities
         public void RotateToPosition( in Vector3 targetPos )                                    => _transformHdlr.RotateToPosition( targetPos );
         public void EstablishBaseRotation()                                                     => _transformHdlr.EstablishBaseRotation();
         public bool IsRotationOrdered()                                                         => _transformHdlr.IsRotationOrdered();
+        public void OrderRotateToNearestAxis()                                                  => _transformHdlr.OrderRotateToNearestAxis();
         public void AddPosition( in Vector3 position )                                          => _transformHdlr.AddPosition( position );
         public Vector3 GetPosition()                                                            => _transformHdlr.GetPosition();
         public Vector3 GetPreviousPosition()                                                    => _transformHdlr.GetPreviousPosition();
