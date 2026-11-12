@@ -280,6 +280,13 @@ static public class Constants
     // ショップの各商品の在庫数の範囲(抽選時にこの範囲内でランダムに決定)
     public const int SHOP_ITEM_STOCK_MIN   = 1;
     public const int SHOP_ITEM_STOCK_MAX   = 3;
+
+    // 戦闘の早送り倍率としてオプションで選択できる値(先頭が既定値)
+    static public readonly float[] BATTLE_FAST_FORWARD_RATES = { 2.0f, 3.0f };
+    // 早送りをこの秒数(実時間)以上続けた場合、CONFIRMを離すまでの間CONFIRM入力を無効化する。
+    // 早送り中に操作が必要な場面へ切り替わった際、押しっぱなしのCONFIRMを離した瞬間に意図しない決定が行われるのを防ぐ。
+    // (状態の切り替わりの隙間で短く押しただけの場合は、従来通り離した瞬間の決定入力として扱う)
+    public const float BATTLE_FAST_FORWARD_SUPPRESS_CONFIRM_TIME = 0.2f;
 #if UNITY_EDITOR
     public const string DEBUG_TRANSION_INPUT_HASH_STRING    = "DEBUG";
     public const string GUIDE_SPRITE_FILE_NAME              = "Preview Keyboard & Mouse";

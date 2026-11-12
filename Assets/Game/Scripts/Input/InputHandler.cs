@@ -21,6 +21,8 @@ public class InputHandler : MonoBehaviour
     private IGetInputBase[] _inputForIcons;                 // ガイドアイコン毎に対応した入力関数
     private InputGuidePresenter _inputGuideView = null;     // 入力ガイド表示
     private ReadOnlyCollection<InputCode> _inputCodes;      // InputFacade内のInputCodeの参照値
+    // trueの間、CONFIRMが離されるまで(離した瞬間のフレームも含む)CONFIRM入力を「押されていない」ものとして扱う
+    private bool _isConfirmSuppressed = false;
 
     public void Setup()
     {
@@ -53,9 +55,52 @@ public class InputHandler : MonoBehaviour
     void Update()
     {
         UpdateInputDevice();
+        UpdateConfirmSuppression();
         UpdateInputCodes();
 
         _inputGuideView?.Update();
+    }
+
+    /// <summary>
+    /// CONFIRMが(入力コードの登録状況に関わらず)現在押しっぱなしになっているかを返します。
+    /// CONFIRMの抑止中であっても、実際のボタンの状態を返します
+    /// </summary>
+    public bool IsConfirmHeld()
+    {
+        return _iInput != null && _iInput.IsConfirmPressed( InputTriggerMode.DownRepeat );
+    }
+
+    /// <summary>
+    /// CONFIRMが一度離されるまでの間、CONFIRM入力を無効化します。
+    /// 押しっぱなしのCONFIRMを別の用途(戦闘の早送り等)に使用していた場合に、
+    /// 離した瞬間の入力が各入力コードへ決定入力として届いてしまうのを防ぐために使用します
+    /// </summary>
+    public void SuppressConfirmUntilReleased()
+    {
+        _isConfirmSuppressed = true;
+    }
+
+    /// <summary>
+    /// CONFIRMの抑止中に、ボタンが完全に離された(離した瞬間のフレームも過ぎた)場合に抑止を解除します
+    /// </summary>
+    private void UpdateConfirmSuppression()
+    {
+        if( !_isConfirmSuppressed || _iInput == null ) { return; }
+
+        if( !_iInput.IsConfirmPressed( InputTriggerMode.DownRepeat ) && !_iInput.IsConfirmPressed( InputTriggerMode.Up ) )
+        {
+            _isConfirmSuppressed = false;
+        }
+    }
+
+    /// <summary>
+    /// CONFIRMの入力判定です。抑止中は常に「押されていない」を返します
+    /// </summary>
+    private bool IsConfirmPressedUnlessSuppressed( InputTriggerMode mode )
+    {
+        if( _isConfirmSuppressed || _iInput == null ) { return false; }
+
+        return _iInput.IsConfirmPressed( mode );
     }
 
     /// <summary>
@@ -67,7 +112,7 @@ public class InputHandler : MonoBehaviour
         _inputForIcons[( int ) GuideIcon.ALL_CURSOR]        = new GetDirectionalInput( _iInput.GetDirectionalPress );
         _inputForIcons[( int ) GuideIcon.VERTICAL_CURSOR]   = new GetDirectionalInput( _iInput.GetDirectionalPress );
         _inputForIcons[( int ) GuideIcon.HORIZONTAL_CURSOR] = new GetDirectionalInput( _iInput.GetDirectionalPress );
-        _inputForIcons[( int ) GuideIcon.CONFIRM]           = new GetBooleanInput( _iInput.IsConfirmPressed, GameButton.Confirm );
+        _inputForIcons[( int ) GuideIcon.CONFIRM]           = new GetBooleanInput( IsConfirmPressedUnlessSuppressed, GameButton.Confirm );
         _inputForIcons[( int ) GuideIcon.CANCEL]            = new GetBooleanInput( _iInput.IsCancelPressed, GameButton.Cancel );
         _inputForIcons[( int ) GuideIcon.TOOL]              = new GetBooleanInput( _iInput.IsToolPressed, GameButton.Tool );
         _inputForIcons[( int ) GuideIcon.INFO]              = new GetBooleanInput( _iInput.IsInfoPressed, GameButton.Info );

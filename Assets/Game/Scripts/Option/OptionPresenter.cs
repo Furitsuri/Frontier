@@ -74,7 +74,7 @@ namespace Frontier.Option
         }
 
         /// <summary>
-        /// 現在選択中の項目を確定操作します(トグルの切替・閉じるボタンの実行)。
+        /// 現在選択中の項目を確定操作します(トグルの切替・選択肢の切替・閉じるボタンの実行)。
         /// スライダー選択時は何も行いません(左右入力で調整するため)
         /// </summary>
         public void ConfirmSelection()
@@ -85,31 +85,45 @@ namespace Frontier.Option
                 return;
             }
 
-            if( _itemUIs[_selectedIndex] is ToggleOptionItemUI toggleUI )
+            switch( _itemUIs[_selectedIndex] )
             {
-                toggleUI.Toggle();
+                case ToggleOptionItemUI toggleUI:
+                    toggleUI.Toggle();
+                    break;
+
+                case ChoiceOptionItemUI choiceUI:
+                    choiceUI.Step( 1 );
+                    break;
             }
         }
 
         /// <summary>
-        /// 現在選択中の項目がスライダーであれば、値をdelta分調整します
+        /// 現在選択中の項目がスライダーであれば値をdelta分調整し、選択肢であればdelta分選択肢をずらします
         /// </summary>
-        public void AdjustSelectedSlider( float delta )
+        public void AdjustSelected( int delta )
         {
             if( _selectedIndex >= _itemUIs.Count ) { return; }
 
-            if( _itemUIs[_selectedIndex] is SliderOptionItemUI sliderUI )
+            switch( _itemUIs[_selectedIndex] )
             {
-                sliderUI.AdjustValue( delta );
+                case SliderOptionItemUI sliderUI:
+                    sliderUI.AdjustValue( delta );
+                    break;
+
+                case ChoiceOptionItemUI choiceUI:
+                    choiceUI.Step( delta );
+                    break;
             }
         }
 
         /// <summary>
-        /// 現在選択中の項目がスライダーかどうかを返します
+        /// 現在選択中の項目が、左右入力で値を調整できる項目(スライダー・選択肢)かどうかを返します
         /// </summary>
-        public bool IsSliderSelected()
+        public bool IsHorizontalAdjustableSelected()
         {
-            return _selectedIndex < _itemUIs.Count && _itemUIs[_selectedIndex] is SliderOptionItemUI;
+            if( _selectedIndex >= _itemUIs.Count ) { return false; }
+
+            return _itemUIs[_selectedIndex] is SliderOptionItemUI || _itemUIs[_selectedIndex] is ChoiceOptionItemUI;
         }
 
         /// <summary>
@@ -127,6 +141,10 @@ namespace Frontier.Option
 
                     case ToggleOptionItem toggleItem:
                         BuildToggleItemUI( toggleItem );
+                        break;
+
+                    case ChoiceOptionItem choiceItem:
+                        BuildChoiceItemUI( choiceItem );
                         break;
                 }
             }
@@ -157,6 +175,21 @@ namespace Frontier.Option
 
             itemUI.SetLabel( item.Label );
             itemUI.SetValueWithoutNotify( item.CurrentValue );
+            itemUI.OnValueChanged += item.Apply;
+
+            _itemUIs.Add( itemUI );
+        }
+
+        private void BuildChoiceItemUI( ChoiceOptionItem item )
+        {
+            var itemUI = _hierarchyBld.CreateComponentAndOrganizeWithDiContainer<ChoiceOptionItemUI>( _prefabReg.ChoiceOptionItemPrefab, true, false, item.Label );
+            itemUI.Setup();
+            itemUI.gameObject.SetActive( true );
+            itemUI.transform.SetParent( _optionUI.ContentRoot, false );
+
+            itemUI.SetLabel( item.Label );
+            itemUI.SetChoices( item.Choices );
+            itemUI.SetIndexWithoutNotify( item.CurrentIndex );
             itemUI.OnValueChanged += item.Apply;
 
             _itemUIs.Add( itemUI );

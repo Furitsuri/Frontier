@@ -96,9 +96,10 @@ public class InputFacade
             if( arg == null ) { continue; }
 
             // 既に登録済みのガイドアイコンで入力コードが登録されている場合はエラー
+            // (どちらかがアイコンの共存を明示的に許容している場合を除く)
             foreach( var code in _inputCodes )
             {
-                if( code.Icons.First() == arg.Icons.First() )
+                if( code.Icons.First() == arg.Icons.First() && !code.AllowsSharedIcon && !arg.AllowsSharedIcon )
                 {
                     LogHelper.LogError( $"InputCode is already registered. Icon: {arg.Icons.First()}, Explanation: {arg.Explanation}" );
                 }
@@ -164,6 +165,48 @@ public class InputFacade
     static public bool CanBeAcceptAlways()
     {
         return true;
+    }
+
+    /// <summary>
+    /// CONFIRMが現在押しっぱなしになっているかを返します。
+    /// 入力コードの登録状況やCONFIRMの抑止状態に関わらず、実際のボタンの状態を返します
+    /// </summary>
+    public bool IsConfirmHeld()
+    {
+        return _inputHdlr != null && _inputHdlr.IsConfirmHeld();
+    }
+
+    /// <summary>
+    /// CONFIRMが一度離されるまでの間、各入力コードへのCONFIRM入力を無効化します
+    /// </summary>
+    public void SuppressConfirmUntilReleased()
+    {
+        _inputHdlr?.SuppressConfirmUntilReleased();
+    }
+
+    /// <summary>
+    /// CONFIRMを受け付ける入力コードのうち、現時点で入力受付が有効なものが存在するかを返します。
+    /// 存在しない場合は、ユーザーの決定操作を必要としない場面(演出の再生中や敵の行動中等)であるとみなせます
+    /// </summary>
+    /// <param name="excludeHashCode">判定から除外する入力コードの登録元ハッシュ値(自身の有効判定から呼び出す場合の再帰防止用)</param>
+    public bool IsAnyConfirmInputEnabled( int? excludeHashCode = null )
+    {
+        foreach( var code in _inputCodes )
+        {
+            if( code.EnableCbs == null ) { continue; }
+            if( excludeHashCode.HasValue && code.RegisterClassHashCode == excludeHashCode.Value ) { continue; }
+
+            for( int i = 0; i < code.Icons.Length; ++i )
+            {
+                if( code.Icons[i] != GuideIcon.CONFIRM ) { continue; }
+
+                // 同時入力の場合は先頭の有効判定コールバックのみを持つ
+                var enableCb = code.IsSimultaneousInput ? code.EnableCbs[0] : code.EnableCbs[i];
+                if( enableCb != null && enableCb() ) { return true; }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

@@ -46,3 +46,4 @@ MonoBehaviour:
   CooperativeConvergingLinesPrefab: {fileID: 1902869444003645472, guid: ab9f576b60059f648839937b3d500179, type: 3}
   SliderOptionItemPrefab: {fileID: 4966168016440332519, guid: 503815c979ede584f8181e61a9cf4df9, type: 3}
   ToggleOptionItemPrefab: {fileID: 614780745541198877, guid: 0b1160da8d79ccf4699e8c61b893d0ba, type: 3}
+  ChoiceOptionItemPrefab: {fileID: 614780745541198877, guid: 717538b79af2b4a4ba8fa3d244bf0252, type: 3}

@@ -20,6 +20,11 @@ public class InputCode
     public bool IsSimultaneousInput;            // 同時入力か否か
     public InputTriggerMode TriggerMode;        // ボタン系入力の判定タイミング(Up/Down/DownRepeat)
     public bool IsGuideVisible = true;          // 入力ガイドとして画面に表示するか(falseの場合、入力受付は行うがガイド表示は行わない)
+    // 他の入力コードと同じガイドアイコンでの登録を許容するか。
+    // trueにする場合、同じアイコンを持つ他の入力コードと有効判定(EnableCbs)が同時にtrueにならないことを
+    // 登録側が保証すること(入力ガイドは有効な入力コードのみを表示するため、場面に応じて片方だけが表示される)。
+    // 例: 戦闘の早送り(CONFIRM)は、CONFIRMを受け付ける他の入力コードが1つも有効でない場面でのみ有効になる
+    public bool AllowsSharedIcon = false;
     // 押しっぱなし状態でリピート入力(インターバル間隔での連続受付)を開始するまでの遅延時間(秒)。
     // 既定でDIRECTION_INPUT_REPEAT_DELAYを持たせることで、明示設定しない入力コードにも
     // 「本当に押しっぱなしか」を判断する猶予期間が自動的に効くようにしている。
@@ -235,7 +240,7 @@ public class InputCode
         }
 
         bool hasInput = AcceptInputs[acceptIdx].Accept( context );
-        if( hasInput ) { SetInputLastTime( Time.time ); }  // 最後の入力時間を記録
+        if( hasInput ) { SetInputLastTime( Time.unscaledTime ); }  // 最後の入力時間を記録
 
         return hasInput;
     }
@@ -254,7 +259,7 @@ public class InputCode
         }
 
         bool hasInput = AcceptInputs[0].Accept( context );
-        if( hasInput ) { SetInputLastTime( Time.time ); }  // 最後の入力時間を記録
+        if( hasInput ) { SetInputLastTime( Time.unscaledTime ); }  // 最後の入力時間を記録
 
         return hasInput;
     }
@@ -297,7 +302,7 @@ public class InputCode
     /// <returns>インターバル時間が経過したか</returns>
     public bool IsIntervalTimePassed()
     {
-        return ( InputInterval <= Time.time - _inputLastTime );
+        return ( InputInterval <= Time.unscaledTime - _inputLastTime );
     }
 
     /// <summary>
@@ -334,7 +339,7 @@ public class InputCode
         IsNewPress = ( _pressStartTimes[iconIdx] < 0f );
         if ( IsNewPress )
         {
-            _pressStartTimes[iconIdx] = Time.time;
+            _pressStartTimes[iconIdx] = Time.unscaledTime;
             return true;
         }
 
@@ -342,7 +347,7 @@ public class InputCode
         if ( RepeatDelay < 0f ) { return false; }
 
         // 押しっぱなし継続中は、RepeatDelay経過するまで次の受付を待つ(0の場合は待たずに即座に次へ進む)
-        if ( ( Time.time - _pressStartTimes[iconIdx] ) < RepeatDelay ) { return false; }
+        if ( ( Time.unscaledTime - _pressStartTimes[iconIdx] ) < RepeatDelay ) { return false; }
 
         return IsIntervalTimePassed();
     }

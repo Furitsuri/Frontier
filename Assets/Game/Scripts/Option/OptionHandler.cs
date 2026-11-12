@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Zenject;
 using static Constants;
 
@@ -23,6 +24,9 @@ namespace Frontier.Option
         /// <summary>攻撃時に戦闘フィールドへ遷移し、寄りのカメラワークで映すか</summary>
         public bool IsAttackCloseUpEnabled => _saveData?.IsAttackCloseUpEnabled ?? false;
 
+        /// <summary>戦闘中にCONFIRMを押している間の早送り倍率</summary>
+        public float BattleFastForwardRate => BATTLE_FAST_FORWARD_RATES[GetBattleFastForwardRateIndex()];
+
         void Start()
         {
             _saveData = _saveHdlr.Load();
@@ -40,6 +44,10 @@ namespace Frontier.Option
                     _inputFcd.SetGuideVisible( value );
                 } ),
                 new ToggleOptionItem( "ATTACK CLOSE-UP", _saveData.IsAttackCloseUpEnabled, value => _saveData.IsAttackCloseUpEnabled = value ),
+                new ChoiceOptionItem( "FAST FORWARD",
+                    Array.ConvertAll( BATTLE_FAST_FORWARD_RATES, rate => $"x{rate:0.0}" ),
+                    GetBattleFastForwardRateIndex(),
+                    index => _saveData.BattleFastForwardRate = BATTLE_FAST_FORWARD_RATES[index] ),
             };
 
             LazyInject.GetOrCreate( ref _presenter, () => _hierarchyBld.InstantiateWithDiContainer<OptionPresenter>( false ) );
@@ -48,6 +56,18 @@ namespace Frontier.Option
             _presenter.OnCloseRequested += HandleCloseRequested;
 
             base.Init();
+        }
+
+        /// <summary>
+        /// 保存されている早送り倍率に対応する、BATTLE_FAST_FORWARD_RATES上のインデックスを返します。
+        /// 該当する値がない(未保存・不正値)場合は先頭の既定値を返します
+        /// </summary>
+        private int GetBattleFastForwardRateIndex()
+        {
+            if( _saveData == null ) { return 0; }
+
+            int index = Array.IndexOf( BATTLE_FAST_FORWARD_RATES, _saveData.BattleFastForwardRate );
+            return ( index < 0 ) ? 0 : index;
         }
 
         /// <summary>
@@ -71,11 +91,11 @@ namespace Frontier.Option
         }
 
         /// <summary>
-        /// 現在選択中の項目がスライダーの場合のみ、左右入力を受け付けます
+        /// 現在選択中の項目が左右入力で値を調整できる項目(スライダー・選択肢)の場合のみ、左右入力を受け付けます
         /// </summary>
         private bool CanAcceptHorizontal()
         {
-            return IsMatchFocusState( FocusState.RUN ) && _presenter.IsSliderSelected();
+            return IsMatchFocusState( FocusState.RUN ) && _presenter.IsHorizontalAdjustableSelected();
         }
 
         private bool CanAcceptConfirm()
@@ -108,18 +128,18 @@ namespace Frontier.Option
         }
 
         /// <summary>
-        /// 左右入力を受け、選択中のスライダーの値を調整します
+        /// 左右入力を受け、選択中のスライダー・選択肢の値を調整します
         /// </summary>
         private bool AcceptHorizontal( InputContext context )
         {
             switch( context.Cursor )
             {
                 case Direction.LEFT:
-                    _presenter.AdjustSelectedSlider( -1f );
+                    _presenter.AdjustSelected( -1 );
                     return true;
 
                 case Direction.RIGHT:
-                    _presenter.AdjustSelectedSlider( 1f );
+                    _presenter.AdjustSelected( 1 );
                     return true;
             }
 
@@ -127,7 +147,7 @@ namespace Frontier.Option
         }
 
         /// <summary>
-        /// 決定入力を受け、選択中の項目を確定操作します(トグルの切替・閉じるボタンの実行)
+        /// 決定入力を受け、選択中の項目を確定操作します(トグルの切替・選択肢の切替・閉じるボタンの実行)
         /// </summary>
         private bool AcceptConfirm( InputContext context )
         {

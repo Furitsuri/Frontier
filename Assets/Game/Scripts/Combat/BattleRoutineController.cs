@@ -54,6 +54,7 @@ namespace Frontier.Battle
         public BattleRoutinePresenter BtlPresenter => _presenter;
         public int BattleAnima => _battleAnima;
         public int TurnCount => _turnCount;
+        public BattlePhaseType CurrentPhase => _currentPhase;
 
         /// <summary>
         /// 戦闘中に獲得したアニマを加算し、表示を更新します

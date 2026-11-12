@@ -1,4 +1,5 @@
-﻿using Frontier.DebugTools.DebugMenu;
+﻿using Frontier.Battle;
+using Frontier.DebugTools.DebugMenu;
 using Frontier.Sequences;
 using Frontier.Tutorial;
 using Frontier.UI;
@@ -26,6 +27,7 @@ namespace Frontier
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
         private GameObject _stageImage;
+        private BattleFastForwardController _fastForwardCtrl = null;
 #if UNITY_EDITOR
         private DebugMenuFacade _debugMenuFcd;
         private DebugEditorMonoDriver _debugEditorMonoDrv;
@@ -64,6 +66,9 @@ namespace Frontier
 
         void OnDestroy()
         {
+            // 早送り中にシーンを離れた場合でも、次のシーンへ倍速の状態を持ち越さない
+            _fastForwardCtrl?.Dispose();
+
             if( instance == this ) instance = null;
         }
 
@@ -77,6 +82,9 @@ namespace Frontier
 
         void Update()
         {
+            // 戦闘ルーチンがシーケンス等で中断中であっても判定が必要なため、ルーチンの更新とは独立して毎フレーム判定する
+            _fastForwardCtrl.Update();
+
             base.UpdateRoutine();
         }
 
@@ -122,6 +130,10 @@ namespace Frontier
             }
 
             yield return StartCoroutine( InitCommonRoutine() );   // InputFacade / TutorialFacade の初期化、ルーチン起動、ローディング画面解除
+
+            // BattleRoutineControllerがDIコンテナへバインドされるのはルーチンの初期化時のため、それ以降に生成する
+            LazyInject.GetOrCreate( ref _fastForwardCtrl, () => _hierarchyBld.InstantiateWithDiContainer<BattleFastForwardController>( false ) );
+            _fastForwardCtrl.Init();
 
             enabled = true; // 読込完了したため、Update()などを有効に
         }

@@ -215,6 +215,8 @@ public sealed class InputGuidePresenter
         if( isToggled )
         {
             TransitFadeMode();
+            // 有効なガイドが0件⇔1件以上に変わった場合に備え、ガイドバー全体の表示可否も反映し直す
+            ApplyGuideBarVisibility();
         }
     }
 

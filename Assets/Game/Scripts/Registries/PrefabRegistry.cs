@@ -48,6 +48,7 @@ namespace Frontier.Registries
         [Header( "Option関連" )]
         [SerializeField] public GameObject SliderOptionItemPrefab;      // スライダー形式のオプション項目プレハブ
         [SerializeField] public GameObject ToggleOptionItemPrefab;      // トグル形式のオプション項目プレハブ
+        [SerializeField] public GameObject ChoiceOptionItemPrefab;      // 選択肢形式のオプション項目プレハブ
 
         public GameObject[] StagePropPrefabs => _stagePropObjects;
         public GameObject[] PlayerPrefabs => _playerGameObjects;
