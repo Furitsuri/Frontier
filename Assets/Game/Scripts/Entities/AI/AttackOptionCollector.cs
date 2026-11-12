@@ -176,10 +176,38 @@ namespace Frontier.Entities.Ai
                     continue;
                 }
 
+                // 回復スキルは、HPが減っているキャラクターが対象とする勢力に1体もいなければ候補になり得ない(TryNotifyを参照)。
+                // そのため、使用する位置ごとの範囲の計算(射程が広く重い)を行う前に除外する
+                if( ActionType.HEAL == skillData.ActionType && !HasAnyDamagedCharacter( owner, SkillRangeRules.Get( skillID, _stageCtrl, owner ).TargetFaction ) )
+                {
+                    continue;
+                }
+
                 skillIDs.Add( skillID );
             }
 
             return skillIDs;
+        }
+
+        /// <summary>
+        /// 指定のキャラクターから見て対象とする勢力に、HPが減っているキャラクターが1体でもいるかを取得します
+        /// </summary>
+        /// <param name="owner">基準となるキャラクター</param>
+        /// <param name="targetFaction">対象とする勢力</param>
+        /// <returns>いるか否か</returns>
+        private bool HasAnyDamagedCharacter( Character owner, TargetFaction targetFaction )
+        {
+            var isTargetTag = BattleLogicBase.GetTargetFactionPredicate( targetFaction, owner.GetCharacterTag() );
+
+            foreach( var chara in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.PLAYER, CHARACTER_TAG.ENEMY, CHARACTER_TAG.OTHER ) )
+            {
+                if( !isTargetTag( chara.GetCharacterTag() ) ) { continue; }
+
+                var status = chara.GetStatusRef;
+                if( status.CurHP < status.MaxHP ) { return true; }
+            }
+
+            return false;
         }
 
         /// <summary>
