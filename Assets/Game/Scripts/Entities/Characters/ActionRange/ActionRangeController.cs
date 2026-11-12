@@ -82,7 +82,7 @@ namespace Frontier.Entities
         /// 移動可能範囲、及びそこから攻撃可能な範囲を、渡されたActionableTileDataへ計算します
         /// (SetupActionableRangeDataと危険範囲表示の共通処理)
         /// </summary>
-        private void ExtractActionableRangeData( int dprtTileIdx, float dprtTileHeight, ref ActionableTileData targetTileData, ICollection<CharacterKey> ignoredCharaKeys = null )
+        private void ExtractActionableRangeData( int dprtTileIdx, float dprtTileHeight, ref ActionableTileData targetTileData, TileOccupancyOverride occupancyOverride = null )
         {
             targetTileData.Init();
 
@@ -91,7 +91,7 @@ namespace Frontier.Entities
             var jmp         = charaParam.jumpForce;
             var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref targetTileData, ignoredCharaKeys );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref targetTileData, occupancyOverride );
         }
 
         /// <summary>
@@ -293,15 +293,26 @@ namespace Frontier.Entities
         /// 危険範囲(現在の位置から移動した上で攻撃出来るタイル)のタイル番号を求めます。
         /// カーソルを合わせている間の範囲表示等で用いる_actionableTileDataを書き換えないよう、一時的なデータへ計算します
         /// </summary>
-        /// <param name="ignoredCharaKeys">計算上、存在しないものとして扱うキャラクター(移動操作中で、現在の位置から離れる予定のキャラクターなど)。nullの場合は全員を考慮します</param>
-        public ICollection<int> ExtractDangerTileIndices( ICollection<CharacterKey> ignoredCharaKeys = null )
+        /// <param name="occupancyOverride">計算上のキャラクター配置の差し替え(移動操作中のキャラクターの移動前の位置を空け、移動先に立たせるなど)。nullの場合は現在の配置のまま計算します</param>
+        public ICollection<int> ExtractDangerTileIndices( TileOccupancyOverride occupancyOverride = null )
+        {
+            return ExtractDangerRangeTileIndices( occupancyOverride ).attackable;
+        }
+
+        /// <summary>
+        /// 危険範囲(現在の位置から移動した上で攻撃出来るタイル)と、その際に通過・到達出来るタイルのタイル番号を求めます。
+        /// 通過出来るタイルには、立ち止まれない(他のキャラクターがいる)タイルも含みます。
+        /// 特定のタイルを塞いだ場合に危険範囲が変わり得るか(そのタイルを通過する経路があるか)の判定に用います
+        /// </summary>
+        /// <param name="occupancyOverride">計算上のキャラクター配置の差し替え。nullの場合は現在の配置のまま計算します</param>
+        public (ICollection<int> attackable, ICollection<int> moveable) ExtractDangerRangeTileIndices( TileOccupancyOverride occupancyOverride = null )
         {
             int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
             var data            = _stageCtrl.GetTileStaticData( dprtTileIndex );
             var dangerTileData  = new ActionableTileData();
-            ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData, ignoredCharaKeys );
+            ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData, occupancyOverride );
 
-            return dangerTileData.AttackableTileMap.Keys;
+            return (dangerTileData.AttackableTileMap.Keys, dangerTileData.MoveableTileMap.Keys);
         }
 
         public void DrawMoveableRange()
