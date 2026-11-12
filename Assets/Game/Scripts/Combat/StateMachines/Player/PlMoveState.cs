@@ -309,7 +309,7 @@ namespace Frontier.Battle
             // (移動操作を行わずにタイル選択へ戻る場合を除く)
             if( PlMovePhase.PL_MOVE_LEAVE != _phase )
             {
-                _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex() );
+                _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex(), _plOwner.GetCharacterKey() );
             }
 
             // 他キャラクターが移動前の位置へ戻せなくなる旨の確認から戻ってきた場合、YESであれば移動を確定する
@@ -403,7 +403,7 @@ namespace Frontier.Battle
                 }
                 _presenter.CharaParamView( ParameterWindowType.Right ).SetActive( isActiveRightParamUI );
 
-                _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex() );
+                _attackForecastDisplay.Refresh( _stageCtrl.GetCurrentGridIndex(), _plOwner.GetCharacterKey() );
             }
 
             return isAcceptDirection;

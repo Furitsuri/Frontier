@@ -430,7 +430,7 @@ namespace Frontier.Battle
             int landingTileIndex = GetMovingSkillLandingTileIndex();
             if( PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID == _phase && 0 <= landingTileIndex )
             {
-                _attackForecastDisplay.Refresh( landingTileIndex );
+                _attackForecastDisplay.Refresh( landingTileIndex, _plOwner.GetCharacterKey() );
             }
             else
             {

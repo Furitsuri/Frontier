@@ -110,12 +110,15 @@ namespace Frontier.Battle
         protected override void RefreshAttackForecastDisplay()
         {
             var destinationTileIndices = new List<int>( _moveOperations.Count );
+            var movingCharaKeys        = new List<CharacterKey>( _moveOperations.Count );
             foreach( var moveOperation in _moveOperations )
             {
                 destinationTileIndices.Add( moveOperation.DestinationTileIndex );
+                movingCharaKeys.Add( moveOperation.Owner.GetCharacterKey() );
             }
 
-            _attackForecastDisplay.Refresh( destinationTileIndices );
+            // 移動する全員の移動前の位置は、敵対勢力の移動経路の計算上は空きタイルとして扱う
+            _attackForecastDisplay.Refresh( destinationTileIndices, movingCharaKeys );
         }
 
         public override bool Update()

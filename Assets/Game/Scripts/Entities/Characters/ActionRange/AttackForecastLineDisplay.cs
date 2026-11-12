@@ -26,6 +26,12 @@ namespace Frontier.Entities
 
         // 敵対勢力の各キャラクターが、移動した上で攻撃出来るタイル。nullの場合は未計算
         private List<(Character attacker, HashSet<int> tileIndices)> _dangerTiles = null;
+        // _dangerTilesの計算時に、存在しないものとして扱ったキャラクター(移動操作中のキャラクター)
+        private readonly HashSet<CharacterKey> _dangerTilesIgnoredKeys = new HashSet<CharacterKey>();
+        // 移動操作中のキャラクターが1人の場合に、複数人用の処理へ渡すための使い回しの配列
+        private readonly CharacterKey[] _singleMovingKeyBuffer = new CharacterKey[1];
+        // 移動操作中のキャラクターがいない場合に渡す空の配列
+        private static readonly CharacterKey[] NoMovingKeys = new CharacterKey[0];
         // 生成済みの線(表示する本数が増えた場合のみ追加で生成し、以降は使い回す)
         private readonly List<AttackForecastLine> _lines = new List<AttackForecastLine>();
         // 対象のタイルが1つの場合に、複数タイル用の処理へ渡すための使い回しの配列
@@ -44,15 +50,31 @@ namespace Frontier.Entities
         public void Refresh( int targetTileIndex )
         {
             _singleTargetBuffer[0] = targetTileIndex;
-            Refresh( _singleTargetBuffer );
+            Refresh( _singleTargetBuffer, NoMovingKeys );
+        }
+
+        /// <summary>
+        /// 指定のタイルを攻撃出来る敵対勢力のキャラクターから、そのタイルへ向けて線を表示します。
+        /// 移動操作中のキャラクターは現在の位置から離れるため、その位置は空きタイルとして敵対勢力の移動経路を計算します。
+        /// </summary>
+        /// <param name="targetTileIndex">対象のタイル(移動先の候補、スキルの着地先など)</param>
+        /// <param name="movingCharaKey">移動操作中のキャラクター</param>
+        public void Refresh( int targetTileIndex, CharacterKey movingCharaKey )
+        {
+            _singleTargetBuffer[0]    = targetTileIndex;
+            _singleMovingKeyBuffer[0] = movingCharaKey;
+            Refresh( _singleTargetBuffer, _singleMovingKeyBuffer );
         }
 
         /// <summary>
         /// 指定の各タイルについて、そのタイルを攻撃出来る敵対勢力のキャラクターから、そのタイルへ向けて線を表示します。
         /// 敵対勢力のキャラクターがいるタイルに対しては表示しません。
+        /// 移動操作中のキャラクターは現在の位置から離れるため、その位置は空きタイルとして敵対勢力の移動経路を計算します
+        /// (移動前の位置に立ったままの扱いにすると、そこが壁となって実際には攻撃されるタイルが安全と表示されてしまうため)。
         /// </summary>
         /// <param name="targetTileIndices">対象のタイル(グループ移動での各キャラクターの移動先など)</param>
-        public void Refresh( IReadOnlyList<int> targetTileIndices )
+        /// <param name="movingCharaKeys">移動操作中のキャラクター</param>
+        public void Refresh( IReadOnlyList<int> targetTileIndices, IReadOnlyList<CharacterKey> movingCharaKeys )
         {
             int lineCount = 0;
             _shownLines.Clear();
@@ -61,7 +83,13 @@ namespace Frontier.Entities
             {
                 if( IsOpponentOfPlayer( _stageCtrl.GetTileDynamicData( targetTileIndex ).CharaKey ) ) { continue; }
 
-                if( null == _dangerTiles ) { _dangerTiles = ExtractDangerTiles(); }
+                // 未計算、または前回の計算時から移動操作中のキャラクターが変わった場合は計算し直す
+                if( null == _dangerTiles || !IsSameIgnoredKeys( movingCharaKeys ) )
+                {
+                    _dangerTilesIgnoredKeys.Clear();
+                    foreach( var key in movingCharaKeys ) { _dangerTilesIgnoredKeys.Add( key ); }
+                    _dangerTiles = ExtractDangerTiles( _dangerTilesIgnoredKeys );
+                }
 
                 var targetPos = _stageCtrl.GetTileStaticData( targetTileIndex ).CursorStandPos;
 
@@ -104,12 +132,30 @@ namespace Frontier.Entities
             _iconPresenter.Clear();
 
             _dangerTiles = null;
+            _dangerTilesIgnoredKeys.Clear();
+        }
+
+        /// <summary>
+        /// 指定の移動操作中のキャラクターが、_dangerTilesの計算時に存在しないものとして扱ったキャラクターと一致するかを判定します
+        /// </summary>
+        private bool IsSameIgnoredKeys( IReadOnlyList<CharacterKey> movingCharaKeys )
+        {
+            int count = 0;
+            foreach( var key in movingCharaKeys )
+            {
+                if( !_dangerTilesIgnoredKeys.Contains( key ) ) { return false; }
+                ++count;
+            }
+
+            // 重複を含まない前提で、要素数が一致すれば同一とみなす
+            return count == _dangerTilesIgnoredKeys.Count;
         }
 
         /// <summary>
         /// 敵対勢力の各キャラクターについて、現在の位置から移動した上で攻撃出来るタイルを求めます
         /// </summary>
-        private List<(Character, HashSet<int>)> ExtractDangerTiles()
+        /// <param name="ignoredCharaKeys">存在しないものとして扱うキャラクター(移動操作中のキャラクター)</param>
+        private List<(Character, HashSet<int>)> ExtractDangerTiles( ICollection<CharacterKey> ignoredCharaKeys )
         {
             var dangerTiles = new List<(Character, HashSet<int>)>();
 
@@ -117,7 +163,7 @@ namespace Frontier.Entities
             {
                 if( null == character.BattleLogic ) { continue; }
 
-                dangerTiles.Add( (character, new HashSet<int>( character.BattleLogic.ActionRangeCtrl.ExtractDangerTileIndices() )) );
+                dangerTiles.Add( (character, new HashSet<int>( character.BattleLogic.ActionRangeCtrl.ExtractDangerTileIndices( ignoredCharaKeys ) )) );
             }
 
             return dangerTiles;

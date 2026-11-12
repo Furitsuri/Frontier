@@ -82,7 +82,7 @@ namespace Frontier.Entities
         /// 移動可能範囲、及びそこから攻撃可能な範囲を、渡されたActionableTileDataへ計算します
         /// (SetupActionableRangeDataと危険範囲表示の共通処理)
         /// </summary>
-        private void ExtractActionableRangeData( int dprtTileIdx, float dprtTileHeight, ref ActionableTileData targetTileData )
+        private void ExtractActionableRangeData( int dprtTileIdx, float dprtTileHeight, ref ActionableTileData targetTileData, ICollection<CharacterKey> ignoredCharaKeys = null )
         {
             targetTileData.Init();
 
@@ -91,7 +91,7 @@ namespace Frontier.Entities
             var jmp         = charaParam.jumpForce;
             var atkRng      = !_owner.BattleParams.TmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] ? _owner.GetStatusRef.attackRange : 0;
 
-            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref targetTileData );
+            _stageCtrl.TileDataHdlr().ExtractActionableRangeData( dprtTileIdx, mvRng, jmp, atkRng, dprtTileHeight, _owner.BattleLogic.TileCostTable, _owner.GetCharacterKey(), ref targetTileData, ignoredCharaKeys );
         }
 
         /// <summary>
@@ -293,12 +293,13 @@ namespace Frontier.Entities
         /// 危険範囲(現在の位置から移動した上で攻撃出来るタイル)のタイル番号を求めます。
         /// カーソルを合わせている間の範囲表示等で用いる_actionableTileDataを書き換えないよう、一時的なデータへ計算します
         /// </summary>
-        public ICollection<int> ExtractDangerTileIndices()
+        /// <param name="ignoredCharaKeys">計算上、存在しないものとして扱うキャラクター(移動操作中で、現在の位置から離れる予定のキャラクターなど)。nullの場合は全員を考慮します</param>
+        public ICollection<int> ExtractDangerTileIndices( ICollection<CharacterKey> ignoredCharaKeys = null )
         {
             int dprtTileIndex   = _owner.BattleParams.TmpParam.CurrentTileIndex;
             var data            = _stageCtrl.GetTileStaticData( dprtTileIndex );
             var dangerTileData  = new ActionableTileData();
-            ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData );
+            ExtractActionableRangeData( dprtTileIndex, data.Height, ref dangerTileData, ignoredCharaKeys );
 
             return dangerTileData.AttackableTileMap.Keys;
         }

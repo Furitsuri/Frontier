@@ -216,11 +216,24 @@ namespace Frontier.Stage
         /// <param name="dprtHeight"></param>
         /// <param name="tileCosts"></param>
         /// <param name="charaKey"></param>
+        /// <param name="ignoredCharaKeys">計算上、存在しないものとして扱うキャラクター(移動操作中で、現在の位置から離れる予定のキャラクターなど)。nullの場合は全員を考慮します</param>
         /// <returns></returns>
-        public void ExtractActionableRangeData( int dprtIdx, int mvRng, int jmp, int atkRng, float dprtHeight, in int[] tileCosts, in CharacterKey charaKey, ref ActionableTileData actionableTileMap )
+        public void ExtractActionableRangeData( int dprtIdx, int mvRng, int jmp, int atkRng, float dprtHeight, in int[] tileCosts, in CharacterKey charaKey, ref ActionableTileData actionableTileMap, ICollection<CharacterKey> ignoredCharaKeys = null )
         {
             // 基データを直接変更しないようにクローンを作成してから処理を行う
             var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
+
+            // 存在しないものとして扱うキャラクターがいるタイルは、空きタイルとして計算する(クローン側のみを書き換えるため基データには影響しない)
+            if( null != ignoredCharaKeys && 0 < ignoredCharaKeys.Count )
+            {
+                foreach( var tileData in cloneStageDynamicDatas )
+                {
+                    if( tileData.CharaKey.IsValid() && ignoredCharaKeys.Contains( tileData.CharaKey ) )
+                    {
+                        tileData.CharaKey = CharacterKey.Invalid;
+                    }
+                }
+            }
 
             BeginRegisterAttackableTiles( cloneStageDynamicDatas, dprtIdx, atkRng, RangeShape.FROM_MYSELF, charaKey.CharacterTag, false, ref actionableTileMap );
             BeginRegisterMoveableTiles( cloneStageDynamicDatas, dprtIdx, mvRng, jmp, atkRng, dprtHeight, in tileCosts, in charaKey, ref actionableTileMap );
