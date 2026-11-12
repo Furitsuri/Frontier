@@ -62,6 +62,11 @@ namespace Frontier.Stage
 
         private int[] _directionOffsets;
         private RegisterAttackableTileCallback[] _registerAttackableTileCallbacks;
+        // 攻撃可能範囲の登録中に、各タイルから展開し終えた際の残り射程の最大値(展開していないタイルはint.MinValue)。
+        // 同じ以上の残り射程で展開し終えたタイルからは、再度展開しても新たに登録されるものが無いため、展開を省略するために用いる。
+        // 到達判定が直前のタイルに依存し得るスキル固有の判定を用いる場合は使用しない(null)
+        private int[] _completedAttackRanges        = null;
+        private int[] _completedAttackRangesBuffer  = null;
 
         #region PUBLIC_METHOD
 
@@ -135,10 +140,9 @@ namespace Frontier.Stage
 
         public void BeginExpandTargetableTilesWithPartOfRange( int baseTileIndex, int expandRange, CHARACTER_TAG ownerTag, ActionableTileData actionableTileData, TargetFaction targetFaction = TargetFaction.OPPONENT )
         {
-            // 基データを直接変更しないようにクローンを作成してから処理を行う
-            var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
-
-            ExpandTargetableTilesWithPartOfRange( cloneStageDynamicDatas, baseTileIndex, expandRange, BattleLogicBase.GetTargetFactionPredicate( targetFaction, ownerTag ), actionableTileData );
+            // 展開処理は基データを読み取るのみで変更しないため、ステージ全体のクローンは作成しない
+            // (登録するタイルの動的データのみ、基データに影響しないようクローンとする。ExpandTargetableTilesWithPartOfRangeを参照)
+            ExpandTargetableTilesWithPartOfRange( _stageDataProvider.CurrentData.Tiles, baseTileIndex, expandRange, BattleLogicBase.GetTargetFactionPredicate( targetFaction, ownerTag ), actionableTileData );
         }
 
         /// <summary>
@@ -183,7 +187,18 @@ namespace Frontier.Stage
             int targetTileIndex = dprtIdx;    // 開始時点では出発タイルと同じ
             // 攻撃対象(スキルの効果の対象)となる勢力の判定
             var isTargetTag     = BattleLogicBase.GetTargetFactionPredicate( targetFaction, charaTag );
-            _registerAttackableTileCallbacks[( int )rangeType]( tileDynamicDatas, dprtIdx, targetTileIndex, atkRng, isTargetTag, actionableTileMap, reachability ?? IsReachableByDefault );
+
+            // デフォルトの到達判定は直前のタイルに依存せず、残り射程が多いほど到達しやすい判定であるため、
+            // 同じタイルを同じ以上の残り射程で展開し終えていれば、それ以降の展開を省略しても結果は変わらない(RegisterAttackableTilesを参照)
+            _completedAttackRanges = ( reachability == null ) ? PrepareCompletedAttackRanges( tileDynamicDatas.Length ) : null;
+            try
+            {
+                _registerAttackableTileCallbacks[( int )rangeType]( tileDynamicDatas, dprtIdx, targetTileIndex, atkRng, isTargetTag, actionableTileMap, reachability ?? IsReachableByDefault );
+            }
+            finally
+            {
+                _completedAttackRanges = null;
+            }
         }
 
         /// <summary>
@@ -331,19 +346,19 @@ namespace Frontier.Stage
 
         #region PRIVATE_METHOD
 
-        private void ExpandTargetableTilesWithPartOfRange( TileDynamicData[] tileDynamicDatas, int tileIndex, int expandRange, Func<CHARACTER_TAG, bool> isTargetTag, ActionableTileData actionableTileData )
+        private void ExpandTargetableTilesWithPartOfRange( Tile[] tiles, int tileIndex, int expandRange, Func<CHARACTER_TAG, bool> isTargetTag, ActionableTileData actionableTileData )
         {
             // 範囲外のタイルは考慮しない
-            if( tileIndex < 0 || tileDynamicDatas.Length <= tileIndex ) { return; }
+            if( tileIndex < 0 || tiles.Length <= tileIndex ) { return; }
             // 指定のタイル情報を取得
-            var tileDynamicData = tileDynamicDatas[tileIndex];
+            var tileDynamicData = tiles[tileIndex].DynamicData();
             // 移動不可のグリッドに辿り着いた場合は終了
             if( Methods.HasAnyFlag( tileDynamicData.Flag, TileBitFlag.CANNOT_MOVE ) ) { return; }
             // 既にターゲット可能なグリッドであれば終了
             if( actionableTileData.TargetableTileMap.ContainsKey( tileIndex ) ) { return; }
 
-            // ターゲット可能タイルとして登録
-            actionableTileData.AddTargetableTile( tileIndex, tileDynamicData );
+            // ターゲット可能タイルとして登録(基データを直接変更されないよう、登録するデータはクローンとする)
+            actionableTileData.AddTargetableTile( tileIndex, tileDynamicData.DeepClone() );
 
             // 敵対勢力のキャラクターが存在するタイルであれば、攻撃対象タイルとして登録
             if( isTargetTag( tileDynamicData.CharaKey.CharacterTag ) )   // 対象とする勢力(攻撃系のスキルであれば敵対勢力)か
@@ -357,10 +372,10 @@ namespace Frontier.Stage
             var tileColNum = _stageDataProvider.CurrentData.TileColNum;
 
             // 現在のタイルから更に四方に展開
-            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex - 1, expandRange, isTargetTag, actionableTileData );            // tileIndexからX軸方向へ-1
-            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex + 1, expandRange, isTargetTag, actionableTileData );            // tileIndexからX軸方向へ+1
-            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex - tileColNum, expandRange, isTargetTag, actionableTileData );   // tileIndexからZ軸方向へ-1
-            ExpandTargetableTilesWithPartOfRange( tileDynamicDatas, tileIndex + tileColNum, expandRange, isTargetTag, actionableTileData );   // tileIndexからZ軸方向へ+1
+            ExpandTargetableTilesWithPartOfRange( tiles, tileIndex - 1, expandRange, isTargetTag, actionableTileData );            // tileIndexからX軸方向へ-1
+            ExpandTargetableTilesWithPartOfRange( tiles, tileIndex + 1, expandRange, isTargetTag, actionableTileData );            // tileIndexからX軸方向へ+1
+            ExpandTargetableTilesWithPartOfRange( tiles, tileIndex - tileColNum, expandRange, isTargetTag, actionableTileData );   // tileIndexからZ軸方向へ-1
+            ExpandTargetableTilesWithPartOfRange( tiles, tileIndex + tileColNum, expandRange, isTargetTag, actionableTileData );   // tileIndexからZ軸方向へ+1
         }
 
         /// <summary>
@@ -519,9 +534,34 @@ namespace Frontier.Stage
         /// <param name="isTargetTag">攻撃対象(スキルの効果の対象)となる勢力かを判定する処理</param>
         private void RegisterAttackableTiles( TileDynamicData[] tileDynamicDatas, int dprtIdx, int prevTileIdx, int tgtTileIdx, int atkRng, Func<CHARACTER_TAG, bool> isTargetTag, ActionableTileData actionableTileMap, TileReachabilityPredicate reachability )
         {
-            if( !RegisterAttackableTile( tileDynamicDatas, dprtIdx, prevTileIdx, tgtTileIdx, ref atkRng, isTargetTag, actionableTileMap, reachability ) ) { return; }
+            // 同じ以上の残り射程で既に展開し終えたタイルであれば、ここから展開しても新たに登録されるタイル・フラグは無いため終了する
+            // (展開中のタイルへ戻ってきた場合は、展開し終えていないため省略しない。これにより登録の順序も変わらない)
+            var completedRanges = _completedAttackRanges;
+            bool isMemoTarget   = ( completedRanges != null ) && tgtTileIdx.IsInHalfOpenRange( 0, completedRanges.Length );
+            if( isMemoTarget && atkRng <= completedRanges[tgtTileIdx] ) { return; }
 
-            RegisterAttackableTilesAllSides( tileDynamicDatas, dprtIdx, tgtTileIdx, atkRng, isTargetTag, actionableTileMap, reachability );  // 現在のtargetTileIndexの地点から更に四方に展開
+            int enteredAtkRng = atkRng;
+            if( RegisterAttackableTile( tileDynamicDatas, dprtIdx, prevTileIdx, tgtTileIdx, ref atkRng, isTargetTag, actionableTileMap, reachability ) )
+            {
+                RegisterAttackableTilesAllSides( tileDynamicDatas, dprtIdx, tgtTileIdx, atkRng, isTargetTag, actionableTileMap, reachability );  // 現在のtargetTileIndexの地点から更に四方に展開
+            }
+
+            if( isMemoTarget && completedRanges[tgtTileIdx] < enteredAtkRng ) { completedRanges[tgtTileIdx] = enteredAtkRng; }
+        }
+
+        /// <summary>
+        /// 攻撃可能範囲の登録で用いる、各タイルから展開し終えた際の残り射程の記録を初期化して返します
+        /// </summary>
+        private int[] PrepareCompletedAttackRanges( int tileNum )
+        {
+            if( _completedAttackRangesBuffer == null || _completedAttackRangesBuffer.Length != tileNum )
+            {
+                _completedAttackRangesBuffer = new int[tileNum];
+            }
+
+            Array.Fill( _completedAttackRangesBuffer, int.MinValue );
+
+            return _completedAttackRangesBuffer;
         }
 
         private void RegisterAttackableTilesLinearly( TileDynamicData[] tileDynamicDatas, int dprtIdx, int prevTileIdx, int tgtTileIdx, int atkRng, Direction dir, Func<CHARACTER_TAG, bool> isTargetTag, ActionableTileData actionableTileMap, TileReachabilityPredicate reachability )
