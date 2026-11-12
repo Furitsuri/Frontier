@@ -372,8 +372,15 @@ namespace Frontier.Stage
             var tileColNum = _stageDataProvider.CurrentData.TileColNum;
 
             // 現在のタイルから更に四方に展開
-            ExpandTargetableTilesWithPartOfRange( tiles, tileIndex - 1, expandRange, isTargetTag, actionableTileData );            // tileIndexからX軸方向へ-1
-            ExpandTargetableTilesWithPartOfRange( tiles, tileIndex + 1, expandRange, isTargetTag, actionableTileData );            // tileIndexからX軸方向へ+1
+            // (左右方向は、列の端から反対側の端(隣の行)へ回り込まないよう、端のタイルからは展開しない)
+            if( tileIndex % tileColNum != 0 )
+            {
+                ExpandTargetableTilesWithPartOfRange( tiles, tileIndex - 1, expandRange, isTargetTag, actionableTileData );        // tileIndexからX軸方向へ-1
+            }
+            if( ( tileIndex + 1 ) % tileColNum != 0 )
+            {
+                ExpandTargetableTilesWithPartOfRange( tiles, tileIndex + 1, expandRange, isTargetTag, actionableTileData );        // tileIndexからX軸方向へ+1
+            }
             ExpandTargetableTilesWithPartOfRange( tiles, tileIndex - tileColNum, expandRange, isTargetTag, actionableTileData );   // tileIndexからZ軸方向へ-1
             ExpandTargetableTilesWithPartOfRange( tiles, tileIndex + tileColNum, expandRange, isTargetTag, actionableTileData );   // tileIndexからZ軸方向へ+1
         }
