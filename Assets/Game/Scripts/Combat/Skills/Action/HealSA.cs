@@ -121,7 +121,7 @@ namespace Frontier.Combat
             ref var status  = ref target.GetStatusRef;
             status.CurHP    = Mathf.Min( status.CurHP + target.BattleParams.TmpParam.ExpectedHpChange, status.MaxHP );
 
-            _presenter.ShowDamageOnCharacter( target, 1f );
+            _presenter.ShowHealOnCharacter( target, 1f );
         }
     }
 }

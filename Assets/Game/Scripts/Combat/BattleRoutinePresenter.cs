@@ -231,6 +231,15 @@ namespace Frontier.Battle
         }
 
         /// <summary>
+        /// 回復行動の結果として、指定キャラクターに回復量を表示します(回復量が0の場合は表示しません)。
+        /// durationが負の値の場合は自動非表示を行いません。
+        /// </summary>
+        public void ShowHealOnCharacter( Character chara, float duration = -1f )
+        {
+            _uiSystem.BattleUi.ShowHealOnCharacter( chara, duration );
+        }
+
+        /// <summary>
         /// 連携演出用の渦巻きエフェクトを指定キャラクターの位置に表示します。
         /// </summary>
         public void ShowCooperativeVortex( Character chara, float duration, float initialScale )

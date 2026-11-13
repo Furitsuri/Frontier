@@ -12,6 +12,11 @@ namespace Frontier.UI
 {
     public class BattleUISystem : MonoBehaviour, ICharacterUiFeedback
     {
+        /// <summary>
+        /// ダメージを与える行動でHPが変動しなかった場合に、ダメージ表記へ表示する文言
+        /// </summary>
+        private const string NO_DAMAGE_TEXT = "No Damage";
+
         [Inject] private CombatSkillEventController _combatSkillCtrl = null;
 
         [Header( "表示キャンバス" )]
@@ -163,6 +168,26 @@ namespace Frontier.UI
         }
 
         /// <summary>
+        /// 回復行動の結果として、指定キャラクターに回復量を表示します。
+        /// 回復量が0の場合(HPが最大の対象など)は何も表示しません。
+        /// duration の扱いは ShowDamageOnCharacter と同様です。
+        /// </summary>
+        /// <param name="chara">回復対象のキャラクター</param>
+        /// <param name="duration">自動非表示までの秒数。負の値で無効（デフォルト: -1）。</param>
+        public void ShowHealOnCharacter( Character chara, float duration = -1f )
+        {
+            int hpChange = chara.BattleParams.TmpParam.ExpectedHpChange;
+            if( hpChange == 0 )
+            {
+                DamageValues.Hide( chara );
+                return;
+            }
+
+            ( string text, Color color ) = ResolveHpChangeValueContent( hpChange );
+            DamageValues.Show( chara, text, color, duration );
+        }
+
+        /// <summary>
         /// 指定キャラクターのHPゲージを表示します(ICharacterUiFeedback)。
         /// </summary>
         public void ShowHpGaugeOnCharacter( Character chara )
@@ -294,12 +319,12 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// ダメージ表記に表示する文言と色を決定します
+        /// ダメージを与える行動の結果として、ダメージ表記に表示する文言と色を決定します。
+        /// HPが減る値は赤、増える値は緑で表示し、変動が0の場合は"No Damage"と表示します。
         /// </summary>
-        /// <param name="damageValue">HPの変化量(負の値でダメージ、正の値で回復)</param>
-        private ( string text, Color color ) ResolveDamageContent( int damageValue )
+        /// <param name="hpChange">HPの変化量(負の値でダメージ、正の値で回復)</param>
+        private ( string text, Color color ) ResolveDamageContent( int hpChange )
         {
-
             ParrySkillHandler parrySkillHdlr = _combatSkillCtrl.CurrentSkillHandler as ParrySkillHandler;
             if( parrySkillHdlr != null &&
                 ( parrySkillHdlr.IsMatchResult( JudgeResult.SUCCESS ) ||
@@ -308,10 +333,18 @@ namespace Frontier.UI
                 return ( "DEFLECT", Color.yellow );
             }
 
-            string text = Mathf.Abs( damageValue ).ToString();
-            if( damageValue < 0 ) { return ( text, Color.red ); }
-            if( 0 < damageValue ) { return ( text, Color.green ); }
-            return ( text, Color.white );
+            if( hpChange == 0 ) { return ( NO_DAMAGE_TEXT, Color.white ); }
+
+            return ResolveHpChangeValueContent( hpChange );
+        }
+
+        /// <summary>
+        /// HPの変化量を数値として表示する場合の文言と色を決定します(減少は赤、増加は緑)
+        /// </summary>
+        /// <param name="hpChange">HPの変化量(0以外)</param>
+        private static ( string text, Color color ) ResolveHpChangeValueContent( int hpChange )
+        {
+            return ( Mathf.Abs( hpChange ).ToString(), ( hpChange < 0 ) ? Color.red : Color.green );
         }
     }
 }

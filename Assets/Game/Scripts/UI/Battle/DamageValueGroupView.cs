@@ -44,7 +44,11 @@ namespace Frontier.UI
             var ui = _pool.GetOrCreate( chara );
             ui.CharacterTransform = chara.transform;
             ui.damageText.text    = text;
-            ui.damageText.color   = color;
+            // MEMO : 文字の頂点カラー(TMP_Text.color)で色を指定すると、同じオブジェクトに付いている
+            //        TextMeshProGeometryAnimatorが文字数の変化時にしか頂点カラーを再キャッシュしないため、
+            //        桁数が同じまま色だけ変えても前回の色(初期の白や前回ダメージ時の赤等)で上書きされてしまう。
+            //        そのため頂点カラーは白のまま固定し、マテリアルのFaceColorで色を指定する
+            ui.damageText.faceColor = color;
             ui.ShowWith( duration );
         }
 
