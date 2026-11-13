@@ -14,10 +14,24 @@ public class DamageUI : UiMonoBehaviour
     [Tooltip( "表示文字列全体が出現しきるまでの秒数。1文字あたりの出現時間は、この秒数を文字数で割った値になります" )]
     [SerializeField] private float _revealDuration = 0.4f;
 
+    [Header( "表示枠" )]
+    [Tooltip( "文字列が表示枠を超える場合に縮小する対象(damageTextを持つ子)。縮小はこのRectTransformのPivotを基準に行うため、Pivotは数字の足元(マスクの境目)に合わせてください" )]
+    [SerializeField] private RectTransform _fitTarget;
+    [Tooltip( "表示枠の幅の基準となる文字列。この文字列を等倍で表示した幅を枠とし、それより幅の広い文字列は枠に収まるよう全体を縮小します(狭い文字列は拡大しません)" )]
+    [SerializeField] private string _fitReferenceText = "999";
+
+    private bool _isFitPending = false;
+
     public Transform CharacterTransform { get; set; }
 
     void Update()
     {
+        // 表示指示の時点で親階層が非アクティブだった場合、TMPが文字幅を測れないため、ここで改めて枠に収める
+        if( _isFitPending && damageText.isActiveAndEnabled )
+        {
+            ApplyFitScale();
+        }
+
         // 対象キャラクターが破棄され CharacterTransform が null になった後も、
         // 自動非表示のカウントダウン(_remainingTime)は進める必要があるため、
         // 位置追従処理とは独立して進行させる
@@ -60,7 +74,29 @@ public class DamageUI : UiMonoBehaviour
     {
         _remainingTime = duration;
         gameObject.SetActive( true );
+        _isFitPending = true;
+        if( damageText.isActiveAndEnabled )
+        {
+            ApplyFitScale();
+        }
         PlayReveal();
+    }
+
+    /// <summary>
+    /// 表示文字列の幅が表示枠(_fitReferenceTextを等倍で表示した幅)を超える場合、枠に収まるよう _fitTarget 全体を縮小します。
+    /// フォントサイズではなく子ごと縮小することで、出現演出の移動量やマスクの境目との位置関係も同じ比率で縮み、
+    /// 文字数に関わらず出現の見え方を保ったまま小さくできます。
+    /// </summary>
+    private void ApplyFitScale()
+    {
+        _isFitPending = false;
+        if( _fitTarget == null ) { return; }
+
+        float frameWidth    = damageText.GetPreferredValues( _fitReferenceText ).x;
+        float textWidth     = damageText.GetPreferredValues( damageText.text ).x;
+        float scale         = ( 0f < frameWidth && frameWidth < textWidth ) ? frameWidth / textWidth : 1f;
+
+        _fitTarget.localScale = new Vector3( scale, scale, 1f );
     }
 
     /// <summary>

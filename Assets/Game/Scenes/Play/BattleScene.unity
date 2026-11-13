@@ -14159,7 +14159,7 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0.05}
 --- !u!114 &1934181643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17603,6 +17603,8 @@ MonoBehaviour:
   damageText: {fileID: 1934181644}
   _revealAnimator: {fileID: 1934181643}
   _revealDuration: 0.4
+  _fitTarget: {fileID: 1934181642}
+  _fitReferenceText: 999
 --- !u!222 &1402052097799708878
 CanvasRenderer:
   m_ObjectHideFlags: 0
