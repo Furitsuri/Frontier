@@ -55,28 +55,29 @@ namespace Frontier.Stage
         }
 
         /// <summary>
-        /// 計算用に複製した盤面へ、配置の差し替えを適用します。
+        /// 計算用の書き換え用の層へ、配置の差し替えを適用します(基の盤面データには影響しません)。
         /// 先に存在しないものとして扱うキャラクターを取り除いてから、指定のタイルへキャラクターを配置します
         /// (移動前の位置と移動先が同じキャラクターであっても、移動先に立っている状態となるようにするため)。
         /// </summary>
-        public void ApplyTo( TileDynamicData[] clonedTileDatas )
+        public void ApplyTo( TileDynamicDataOverlay overlay )
         {
             if( 0 < _ignoredCharaKeys.Count )
             {
-                foreach( var tileData in clonedTileDatas )
+                for( int i = 0; i < overlay.Length; ++i )
                 {
-                    if( tileData.CharaKey.IsValid() && _ignoredCharaKeys.Contains( tileData.CharaKey ) )
+                    var charaKey = overlay.Peek( i ).CharaKey;
+                    if( charaKey.IsValid() && _ignoredCharaKeys.Contains( charaKey ) )
                     {
-                        tileData.CharaKey = CharacterKey.Invalid;
+                        overlay.GetWritable( i ).CharaKey = CharacterKey.Invalid;
                     }
                 }
             }
 
             foreach( var (tileIndex, charaKey) in _placedCharas )
             {
-                if( 0 <= tileIndex && tileIndex < clonedTileDatas.Length )
+                if( 0 <= tileIndex && tileIndex < overlay.Length )
                 {
-                    clonedTileDatas[tileIndex].CharaKey = charaKey;
+                    overlay.GetWritable( tileIndex ).CharaKey = charaKey;
                 }
             }
         }
