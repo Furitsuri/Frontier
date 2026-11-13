@@ -7,6 +7,13 @@ public class DamageUI : UiMonoBehaviour
     private Camera _btlUiCamera;
     private float _remainingTime = -1f;
     public TextMeshProUGUI damageText;
+
+    [Header( "出現演出" )]
+    [Tooltip( "文字を上の桁(左)から順に、下からせり上がらせて出現させるアニメーター。移動量(position.from/to)・カーブはこちらで設定します" )]
+    [SerializeField] private TextMeshProGeometryAnimator _revealAnimator;
+    [Tooltip( "表示文字列全体が出現しきるまでの秒数。1文字あたりの出現時間は、この秒数を文字数で割った値になります" )]
+    [SerializeField] private float _revealDuration = 0.4f;
+
     public Transform CharacterTransform { get; set; }
 
     void Update()
@@ -53,6 +60,37 @@ public class DamageUI : UiMonoBehaviour
     {
         _remainingTime = duration;
         gameObject.SetActive( true );
+        PlayReveal();
+    }
+
+    /// <summary>
+    /// 表示文字列を上の桁(左)から順にせり上がらせる出現演出を、最初から再生します。
+    /// 文字数に関わらず全体が _revealDuration 秒で出現しきるよう、1文字あたりの出現時間と
+    /// 次の文字が動き出すまでの間隔を、どちらも「全体の秒数 ÷ 文字数」に設定します。
+    /// </summary>
+    private void PlayReveal()
+    {
+        if( _revealAnimator == null ) { return; }
+
+        // MEMO : 親階層が非アクティブの間はTMPのメッシュ(textInfo)が生成されないため、文字数は文字列から求める。
+        //        リッチテキストのタグを含めると、タグの文字数まで数えてしまう点に注意
+        int charCount = damageText.text?.Length ?? 0;
+        if( charCount <= 0 ) { return; }
+
+        // アニメーターの経過時間には再生速度(speed)が掛かるため、実時間の秒数に換算して設定する
+        var position        = _revealAnimator.animationData.position;
+        float speed         = Mathf.Max( _revealAnimator.animationData.speed, Mathf.Epsilon );
+        float perCharTime   = _revealDuration * speed / charCount;
+        position.delay      = 0f;
+        position.wave       = perCharTime;
+        position.time       = perCharTime;
+
+        // 非アクティブの場合は、アクティブになった時点でアニメーター自身が(OnEnableで)再生する
+        if( _revealAnimator.isActiveAndEnabled )
+        {
+            damageText.ForceMeshUpdate( true );
+            _revealAnimator.Play();
+        }
     }
 
     /// <summary>
