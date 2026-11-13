@@ -71,7 +71,7 @@ namespace Frontier.Entities.Ai
         /// <returns>存在するか否か</returns>
         public bool HasAnyAllyTargetOption( Character owner )
         {
-            return Enumerate( owner, null, true, option => SkillsData.IsAllyTargetSkill( option.SkillID ) );
+            return Enumerate( owner, null, true, option => SkillsData.IsAllyTargetSkill( option.SkillID ), isAllyTargetSkillsOnly: true );
         }
 
         /// <summary>
@@ -80,8 +80,9 @@ namespace Frontier.Entities.Ai
         /// <param name="vacatableKeys">立っているタイルが移動して空くものとみなすキャラクター(nullの場合は空かないものとする)</param>
         /// <param name="includeAllyTargetSkills">回復など自軍を対象とするスキルの使用も候補に含めるか</param>
         /// <param name="onFound">候補が見つかった際の処理。trueを返した場合は列挙を打ち切ります</param>
+        /// <param name="isAllyTargetSkillsOnly">自軍を対象とするスキルの候補のみを列挙するか(通常攻撃・攻撃用のスキルの範囲は計算しません)</param>
         /// <returns>列挙を打ち切ったか否か</returns>
-        private bool Enumerate( Character owner, ICollection<CharacterKey> vacatableKeys, bool includeAllyTargetSkills, Func<AttackOption, bool> onFound )
+        private bool Enumerate( Character owner, ICollection<CharacterKey> vacatableKeys, bool includeAllyTargetSkills, Func<AttackOption, bool> onFound, bool isAllyTargetSkillsOnly = false )
         {
             var tmpParam = owner.BattleParams.TmpParam;
 
@@ -91,9 +92,17 @@ namespace Frontier.Entities.Ai
             var usableSkillIDs  = CollectUsableSkills( owner, includeAllyTargetSkills );
             var tileData        = new ActionableTileData();
 
+            // 自軍を対象とするスキルの候補のみが必要な場合、それ以外のスキルは列挙しない。
+            // 該当するスキルが無ければ、立てるタイルや範囲を求めるまでもなく候補は存在しない
+            if( isAllyTargetSkillsOnly )
+            {
+                usableSkillIDs.RemoveAll( skillID => !SkillsData.IsAllyTargetSkill( skillID ) );
+                if( usableSkillIDs.Count <= 0 ) { return false; }
+            }
+
             foreach( int standTileIdx in CollectStandableTiles( owner, vacatableKeys ) )
             {
-                if( EnumerateNormalAttack( owner, standTileIdx, tileData, onFound ) ) { return true; }
+                if( !isAllyTargetSkillsOnly && EnumerateNormalAttack( owner, standTileIdx, tileData, onFound ) ) { return true; }
 
                 foreach( var skillID in usableSkillIDs )
                 {

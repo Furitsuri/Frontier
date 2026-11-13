@@ -258,8 +258,10 @@ namespace Frontier.Stage
         /// <returns></returns>
         public void ExtractAttackableData( int dprtIdx, int atkRng, RangeShape rangeType, in CharacterKey charaKey, ref ActionableTileData actionableTileMap, AttackableDataPostProcessor postProcessor = null, TileReachabilityPredicate reachability = null, TargetFaction targetFaction = TargetFaction.OPPONENT )
         {
-            // 基データを直接変更しないようにクローンを作成してから処理を行う
-            var cloneStageDynamicDatas = _stageDataProvider.CurrentData.DeepCloneStageDynamicData();
+            // 基データを直接変更しないよう、クローンに対して処理を行う。
+            // ステージ全体を複製すると、範囲が狭い場合でも全タイル分の複製の負荷が掛かるため、
+            // 空の配列を渡し、範囲の計算で触れたタイルのみをその時点で複製する(GetOrCloneTileDynamicDataを参照)
+            var cloneStageDynamicDatas = new TileDynamicData[_stageDataProvider.CurrentData.Tiles.Length];
 
             BeginRegisterAttackableTiles( cloneStageDynamicDatas, dprtIdx, atkRng, rangeType, charaKey.CharacterTag, false, ref actionableTileMap, reachability, targetFaction );
             postProcessor?.Invoke( dprtIdx, atkRng, _stageDataProvider.CurrentData.TileColNum, actionableTileMap );
@@ -502,25 +504,37 @@ namespace Frontier.Stage
             RegisterMoveableTilesAllSides( tileDynamicDatas, tileIdx, currentMoveRange, jmp, atkRng, curHeight, in tileCosts, in charaKey, ref actionableTileMap );
         }
 
+        /// <summary>
+        /// 指定のタイルの動的データを取得します。
+        /// 未複製(null)の場合は、その時点の基データを複製して配列へ格納した上で返します(ExtractAttackableDataを参照)
+        /// </summary>
+        private TileDynamicData GetOrCloneTileDynamicData( TileDynamicData[] tileDynamicDatas, int tileIdx )
+        {
+            return tileDynamicDatas[tileIdx] ??= _stageDataProvider.CurrentData.GetTileDynamicData( tileIdx ).DeepClone();
+        }
+
         private bool RegisterAttackableTile( TileDynamicData[] tileDynamicDatas, int dprtIdx, int prevTileIdx, int tgtTileIdx, ref int atkRng, Func<CHARACTER_TAG, bool> isTargetTag, ActionableTileData actionableTileMap, TileReachabilityPredicate reachability )
         {
             // 範囲外のグリッドは考慮しない
             if( !tgtTileIdx.IsInHalfOpenRange( 0, tileDynamicDatas.Length ) ) { return false; }
             // 移動不可のグリッドには攻撃できない
-            if( Methods.HasAnyFlag( tileDynamicDatas[tgtTileIdx].Flag, TileBitFlag.CANNOT_MOVE ) ) { return false; }
+            // (移動不可のフラグは範囲の計算では変更されないため、未複製のタイルは基データを参照する)
+            var tgtTileFlag = ( tileDynamicDatas[tgtTileIdx] ?? _stageDataProvider.CurrentData.GetTileDynamicData( tgtTileIdx ) ).Flag;
+            if( Methods.HasAnyFlag( tgtTileFlag, TileBitFlag.CANNOT_MOVE ) ) { return false; }
             // 高低差などにより到達できない場合は攻撃できない(判定内容はスキルによって差し替えられる)
             if( !reachability( dprtIdx, prevTileIdx, tgtTileIdx, atkRng ) ) { return false; }
 
             // 出発地点でなければ登録
             if( tgtTileIdx != dprtIdx )
             {
-                var tgtTileData = tileDynamicDatas[tgtTileIdx];
+                var tgtTileData = GetOrCloneTileDynamicData( tileDynamicDatas, tgtTileIdx );
                 Methods.SetBitFlag( ref tgtTileData.Flag, TileBitFlag.ATTACKABLE ); // 攻撃可能地点であることをフラグに記述
 
                 // tgtTileに攻撃対象となるキャラクターがいれば、そのこともフラグに記述
                 if( isTargetTag( tgtTileData.CharaKey.CharacterTag ) )   // 攻撃対象(スキルの効果の対象)となる勢力か
                 {
-                    Methods.SetBitFlag( ref tileDynamicDatas[dprtIdx].Flag, TileBitFlag.REACHABLE_ATTACK );   // dprtIdxであれば攻撃対象へ攻撃可能であることを記述
+                    var dprtTileData = GetOrCloneTileDynamicData( tileDynamicDatas, dprtIdx );
+                    Methods.SetBitFlag( ref dprtTileData.Flag, TileBitFlag.REACHABLE_ATTACK );  // dprtIdxであれば攻撃対象へ攻撃可能であることを記述
                     Methods.SetBitFlag( ref tgtTileData.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST );    // tgtTileに攻撃可能な攻撃対象がいることを記述
                 }
 
