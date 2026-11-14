@@ -55,6 +55,9 @@ namespace Frontier.Stage
 
         // 陣営をキーとして危険範囲の層を管理します。各キャラクターの行動範囲を示すTileMesh(_tileMeshes)よりも下に表示します
         private Dictionary<CHARACTER_TAG, DangerRangeLayer> _dangerRangeLayers = new Dictionary<CHARACTER_TAG, DangerRangeLayer>();
+        // NPCが次のフェーズで使用を予約した攻撃の範囲(予兆)を示す層です。危険範囲と同様、複数のキャラクターの予兆が重なっても1枚のTileMeshで表示します。
+        // 危険範囲よりも上、各キャラクターの行動範囲を示すTileMesh(_tileMeshes)よりも下に表示します。予兆が無い場合はnullです
+        private DangerRangeLayer _telegraphLayer = null;
         // CharacterKey をキーとして各キャラクターの移動方向を一意に管理します
         private Dictionary<CharacterKey, MoveDirectionType> _moveDirections = new Dictionary<CharacterKey, MoveDirectionType>();
 
@@ -214,6 +217,55 @@ namespace Frontier.Stage
                 layer.Mesh.Remove();
             }
             _dangerRangeLayers.Clear();
+
+            if( _telegraphLayer != null )
+            {
+                _telegraphLayer.Mesh.ClearDraw();
+                _telegraphLayer.Mesh.Remove();
+                _telegraphLayer = null;
+            }
+        }
+
+        /// <summary>
+        /// 指定オーナーキーのキャラクターが予約した攻撃の範囲(予兆)として、このタイルを登録します。
+        /// 予兆は全てのキャラクターで1枚のタイルメッシュで表示され、既に他のキャラクターが登録している場合は見た目が変わりません。
+        /// </summary>
+        /// <param name="ownerKey">予約した攻撃の持主</param>
+        /// <param name="color">予兆の色</param>
+        /// <param name="tileMeshFactory">予兆を初めて表示する際に用いる、タイルメッシュの生成処理</param>
+        public void AddTelegraph( CharacterKey ownerKey, in Color color, Func<TileMesh> tileMeshFactory )
+        {
+            if( _telegraphLayer == null )
+            {
+                _telegraphLayer = new DangerRangeLayer { Mesh = tileMeshFactory(), Color = color };
+                _telegraphLayer.Mesh.MapType = TileMapType.ATTACKABLE;
+                _telegraphLayer.OwnerKeys.Add( ownerKey );
+
+                // 層が増えたことで、それより上に表示するメッシュの段がずれるため配置し直す
+                ReDrawTileMeshes();
+
+                return;
+            }
+
+            _telegraphLayer.OwnerKeys.Add( ownerKey );
+        }
+
+        /// <summary>
+        /// 指定オーナーキーのキャラクターが予約した攻撃の範囲(予兆)から、このタイルを除外します。
+        /// 他のキャラクターがこのタイルを予兆に含んでいる間は、表示は残ります。
+        /// </summary>
+        public void RemoveTelegraph( CharacterKey ownerKey )
+        {
+            if( _telegraphLayer == null ) { return; }
+
+            _telegraphLayer.OwnerKeys.Remove( ownerKey );
+            if( 0 < _telegraphLayer.OwnerKeys.Count ) { return; }
+
+            _telegraphLayer.Mesh.ClearDraw();
+            _telegraphLayer.Mesh.Remove();
+            _telegraphLayer = null;
+
+            ReDrawTileMeshes();
         }
 
         /// <summary>
@@ -290,7 +342,7 @@ namespace Frontier.Stage
             tileMesh.MapType        = mapType;
 
             // 危険範囲の層は、各キャラクターの行動範囲を示すメッシュよりも下に表示する
-            int slotIndex = _dangerRangeLayers.Count;
+            int slotIndex = _dangerRangeLayers.Count + ( _telegraphLayer != null ? 1 : 0 );
             foreach( var entry in _tileMeshes )
             {
                 if( ReferenceEquals( entry.Value, tileMesh ) )
@@ -371,7 +423,7 @@ namespace Frontier.Stage
 
         /// <summary>
         /// タイルメッシュを再描画します。
-        /// 下から順に、危険範囲の層(陣営ごとに1枚)、各キャラクターの行動範囲を示すメッシュを重ねて配置します。
+        /// 下から順に、危険範囲の層(陣営ごとに1枚)、予兆の層、各キャラクターの行動範囲を示すメッシュを重ねて配置します。
         /// </summary>
         private void ReDrawTileMeshes()
         {
@@ -383,6 +435,13 @@ namespace Frontier.Stage
 
                 layer.Mesh.ClearDraw();
                 layer.Mesh.DrawTileMesh( _tileStaticData.CursorStandPos, GetTileMeshDrawYOffset( i ), in layer.Color );
+                ++i;
+            }
+
+            if( _telegraphLayer != null )
+            {
+                _telegraphLayer.Mesh.ClearDraw();
+                _telegraphLayer.Mesh.DrawTileMesh( _tileStaticData.CursorStandPos, GetTileMeshDrawYOffset( i ), in _telegraphLayer.Color );
                 ++i;
             }
 

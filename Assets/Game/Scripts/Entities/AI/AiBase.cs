@@ -206,6 +206,31 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
+        /// 予兆を伴うスキルによる攻撃の候補の中から、評価が最も高いものを選択します。
+        /// 他の味方の攻撃位置を塞ぐかどうかは考慮しません(予約した攻撃はその場で行うため、立ち位置を選ぶ余地が無いため)
+        /// </summary>
+        public override bool TrySelectTelegraphOption( List<AttackOption> options, out AttackOption selected )
+        {
+            var contestedTileWeights = _contestedTileWeights;
+            _contestedTileWeights    = null;
+            bool isSelected          = TrySelectAttackOption( options, out selected );
+            _contestedTileWeights    = contestedTileWeights;
+
+            return isSelected;
+        }
+
+        /// <summary>
+        /// 予約していた攻撃を、このフェーズの行動として決定済みにします
+        /// </summary>
+        public override void ApplyReservedAttackOption( in AttackOption option )
+        {
+            ResetDestinationAndTarget();
+            SetAttackOption( in option );
+            _destinationTileIndex   = -1;   // その場で攻撃を行うため、移動先は持たない
+            _isDetermined           = true;
+        }
+
+        /// <summary>
         /// 既に移動対象や攻撃対象を決定しているかどうかの情報を取得します
         /// </summary>
         /// <returns>決定の有無</returns>

@@ -71,5 +71,19 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="weights">タイルのインデックスと、そのタイルの必要度。nullの場合は考慮しない</param>
         virtual public void SetContestedTiles( IReadOnlyDictionary<int, float> weights ) {}
+
+        /// <summary>
+        /// 予兆を伴うスキルによる攻撃の候補の中から、次のフェーズで使用する予約として最も評価の高いものを選択します
+        /// </summary>
+        /// <param name="options">予兆を伴うスキルによる攻撃の候補</param>
+        /// <param name="selected">選択された候補</param>
+        /// <returns>選択出来たか否か</returns>
+        virtual public bool TrySelectTelegraphOption( List<AttackOption> options, out AttackOption selected ) { selected = default; return false; }
+
+        /// <summary>
+        /// 予約していた攻撃を、このフェーズの行動として決定済みにします(移動は行わず、その場で攻撃を行います)
+        /// </summary>
+        /// <param name="option">予約していた攻撃(現在の盤面で攻撃対象を求め直したもの)</param>
+        virtual public void ApplyReservedAttackOption( in AttackOption option ) {}
     }
 }

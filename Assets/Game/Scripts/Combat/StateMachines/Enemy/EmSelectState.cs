@@ -17,6 +17,7 @@ namespace Frontier.Battle
     public class EmSelectState : UnitPhaseState
     {
         [Inject] private TroopActionCoordinator _coordinator = null;
+        [Inject] private AttackTelegraphPlanner _telegraphPlanner = null;
 
         Enemy _currentEnemy = null;
         bool _isValidDestination = false;
@@ -161,6 +162,13 @@ namespace Frontier.Battle
 
             // 次に行動する敵を、軍全体の調整役に選ばせる(行動の途中の敵がいれば、その敵が選ばれる)
             _currentEnemy = _coordinator.SelectNextActor( enemies ) as Enemy;
+
+            // 攻撃を予約している敵(予約を決定済みの行動としているため、調整役が先に選ぶ)は、先に行動した敵によって盤面が変わり得るため、
+            // 実行する直前に改めて実行出来るかを判定する。実行出来ない場合は一回休みとなるため、次に行動する敵を選び直す
+            while( null != _currentEnemy && _telegraphPlanner.HasReservation( _currentEnemy ) && !_telegraphPlanner.TryPrepareReservedAction( _currentEnemy ) )
+            {
+                _currentEnemy = _coordinator.SelectNextActor( enemies ) as Enemy;
+            }
 
             // 行動し得る敵がいなくなった場合は、残りの敵(待ち構えていて行動を開始していない敵等)をまとめて行動終了とする
             if( null == _currentEnemy )

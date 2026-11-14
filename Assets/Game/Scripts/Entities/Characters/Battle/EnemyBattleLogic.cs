@@ -43,6 +43,18 @@ namespace Frontier.Entities
             return _determinedResult;
         }
 
+        /// <summary>
+        /// 前のフェーズの終了時に予約していた攻撃を、このフェーズの行動としてAIに決定済みにさせます。
+        /// 予約した攻撃はその場で行うため、移動は行わない(移動済み状態にする)ものとします
+        /// </summary>
+        /// <param name="option">予約していた攻撃(現在の盤面で攻撃対象を求め直したもの)</param>
+        public void ApplyReservedAction( in AttackOption option )
+        {
+            _baseAi.ApplyReservedAttackOption( in option );
+            _determinedResult = (false, true);
+            _readOnlyOwner.Value.BattleParams.TmpParam.SetEndCommandStatus( COMMAND_TAG.MOVE, true );
+        }
+
         public override void Init()
         {
             base.Init();

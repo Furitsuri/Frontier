@@ -201,6 +201,21 @@ namespace Frontier.Combat
             return IsValidSkill( skillID ) && IsAllyTargetActionType( data[( int ) skillID].ActionType );
         }
 
+        /// <summary>
+        /// NPCが使用する際に、前のフェーズの終了時点で使用を予約し、その範囲を予兆として表示する攻撃スキルであるかを判定します。
+        /// 移動を伴う攻撃スキル(ダッシュ斬り・ジャンプ斬り等)と、一定の範囲(PART_OF_RANGE)を対象とする攻撃スキルが該当します。
+        /// NPCはこれらのスキルを、予約を経ずにその場の判断で使用することはありません
+        /// </summary>
+        static public bool IsTelegraphedSkill( SkillID skillID )
+        {
+            if( !IsValidSkill( skillID ) ) { return false; }
+
+            var skillData = data[( int ) skillID];
+            if( ActionType.ATTACK != skillData.ActionType ) { return false; }
+
+            return skillData.IsMovingSkill || TargetingMode.PART_OF_RANGE == skillData.TargetingMode;
+        }
+
         static public bool IsTransitionSkillActionType( ActionType actType )
         {
             if( actType == ActionType.ATTACK || actType == ActionType.HEAL || actType == ActionType.SUPPORT ) { return true; }

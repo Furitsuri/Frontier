@@ -18,6 +18,7 @@ namespace Frontier.Battle
         [Inject] private BattleRoutineController _btlRtnCtrl               = null;
         [Inject] private StageController _stgCtrl                          = null;
         [Inject] private SkillActionReservationQueue _reservationQueue     = null;
+        [Inject] private Frontier.Entities.Ai.AttackTelegraphRegistry _telegraphRegistry = null;
 
         private CharacterDictionary _characterDict      = null; // キャラクターハッシュテーブル(あくまで戦闘用のインスタンスであるため、DiContainerで定義されているものとは別のインスタンスです)
         
@@ -162,6 +163,7 @@ namespace Frontier.Battle
             //        シーケンスが完了せず死亡したプレイヤーの実体が破棄されなくなる。
             UnregisterCharacter( characterKey );
             ForceEndExhaustedReservations( characterKey );
+            _telegraphRegistry.Remove( chara );    // 撃破されたキャラクターが予約していた攻撃(予兆)を取り消す
             _pendingDisposalCharacters.Add( chara );
         }
 

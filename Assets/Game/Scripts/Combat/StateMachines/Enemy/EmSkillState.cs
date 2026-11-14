@@ -24,6 +24,7 @@ namespace Frontier.Battle
         }
 
         [Inject] private SequenceFacade _sequenceFcd = null;
+        [Inject] private AttackTelegraphPlanner _telegraphPlanner = null;
 
         private EmSkillPhase _phase;
         private Enemy _attackCharacter      = null;
@@ -43,6 +44,9 @@ namespace Frontier.Battle
 
             bool isSelected = _attackCharacter.BattleLogic.GetAi().TryGetAttackOption( out _attackOption );
             Debug.Assert( isSelected && !_attackOption.IsNormalAttack, "スキルによる攻撃が選択されていない状態でEmSkillStateに遷移しています。" );
+
+            // 予約していた攻撃(予兆を伴うスキル)の実行を開始するため、予兆の表示を消去する(以降は下記の攻撃範囲の表示に切り替わる)
+            _telegraphPlanner.NotifyReservedActionStarted( _attackCharacter );
 
             _targetCharacter    = _attackOption.MainTarget;
             _isPlayerInvolved   = IsPlayerInvolved( _attackCharacter, _targetCharacter, _attackOption );

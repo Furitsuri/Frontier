@@ -14,5 +14,6 @@ public static class TileColors
         new Color(1f,   1f,   0.1f, 0.95f),     // 攻撃の実行範囲( TARGETABLE )
         new Color(0.1f,   0.1f, 1.0f, 0.80f),   // QUEUEに詰められている攻撃の実行範囲( QUEUED )
         new Color(0.5f, 0.5f,   0,  0.65f),     // 配置可能( DEPLOYABLE )
+        new Color(1f,   0.45f,  0f, 0.85f),     // NPCが次のフェーズで使用を予約した攻撃の範囲( TELEGRAPH )
     };
 }

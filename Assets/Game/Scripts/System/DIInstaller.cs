@@ -34,6 +34,8 @@ namespace Frontier
             Container.Bind<ProvisionalMoveOriginDisplay>().AsSingle();
             Container.Bind<AttackForecastLineDisplay>().AsSingle();
             Container.Bind<Frontier.Entities.Ai.TroopActionCoordinator>().AsSingle();
+            Container.Bind<Frontier.Entities.Ai.AttackTelegraphRegistry>().AsSingle();
+            Container.Bind<Frontier.Entities.Ai.AttackTelegraphPlanner>().AsSingle();
             Container.Bind<CharacterPortraitRegistry>().AsSingle();
             Container.Bind<AttackForecastIconPresenter>().AsSingle();
             Container.Bind<TutorialFacade>().AsSingle();

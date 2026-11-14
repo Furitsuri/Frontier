@@ -12,6 +12,7 @@
         QUEUED,
 
         DEPLOYABLE,     // 配置可能(ステージ開始前の配置フェーズで使用)
+        TELEGRAPH,      // NPCが次のフェーズで使用を予約した攻撃の範囲(予兆)
 
         NUM
     }

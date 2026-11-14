@@ -14,8 +14,10 @@ namespace Frontier.Entities.Ai
         public SkillID SkillID;                     // 使用するスキル。SkillID.NONEの場合は通常攻撃
         public Direction Direction;                 // 向きによって対象が決まるスキル(TargetingMode.DIRECTIONAL)の向き。それ以外はDirection.NONE
         public int LandingTileIndex;                // 移動を伴うスキルの着地先のタイル。それ以外は-1
+        public int CenterTileIndex;                 // 一定の範囲を対象とするスキル(TargetingMode.PART_OF_RANGE)の範囲の中心のタイル。それ以外は-1
         public Character MainTarget;                // 主となる攻撃対象
         public List<CharacterKey> AttackTargetKeys; // 攻撃対象の一覧(範囲攻撃の場合は複数)
+        public List<int> AffectedTileIndices;       // スキルの効果が及ぶタイル(予兆として表示する範囲)。PART_OF_RANGE・DIRECTIONALのスキルのみ。それ以外はnull
 
         public bool IsNormalAttack => SkillID == SkillID.NONE;
     }

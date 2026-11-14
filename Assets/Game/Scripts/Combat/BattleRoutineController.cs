@@ -23,6 +23,13 @@ namespace Frontier.Battle
         [Inject] private HierarchyBuilderBase _hierarchyBld         = null;
         [Inject] private PrefabRegistry _prefabReg                  = null;
         [Inject] private CharacterPortraitRegistry _portraitReg     = null;
+        [Inject] private Frontier.Entities.Ai.AttackTelegraphPlanner _telegraphPlanner   = null;
+        [Inject] private Frontier.Entities.Ai.AttackTelegraphRegistry _telegraphRegistry = null;
+
+        // NPCの予兆を伴うスキルの予約の判断(AttackTelegraphPlanner)に、1フレームあたりに使う処理時間の予算(ミリ秒)
+        private const double TELEGRAPH_PLAN_BUDGET_MS   = 4.0;
+        // 現在のフェーズが終了し、次のフェーズへ切り替える前に、NPCの予約の判断を進めている途中であるか
+        private bool _isPlanningTelegraphs              = false;
 
         private int _currentStageIndex                  = 0;
 
@@ -123,6 +130,8 @@ namespace Frontier.Battle
             _battleAnima = 0;                           // 戦闘開始時に戦闘中アニマをリセット
             _presenter.SetBattleAnimaDisplay( _battleAnima );
             _turnCount = 0;                             // 戦闘開始時にターン数をリセット
+            _isPlanningTelegraphs = false;
+            _telegraphRegistry.Clear();                 // 前の戦闘の予約(予兆)が残らないようにする
 
             // FileReaderManagerからjsonファイルを読込み、各プレイヤー、敵に設定する ※デバッグシーンは除外
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -154,7 +163,11 @@ namespace Frontier.Battle
         {
             if( !CanUpdatePhase() ) { return; }
 
-            _phaseHandlers[_currentPhase].Update();
+            // フェーズを終えて予約の判断を進めている間は、終了したフェーズのステートを更新しない
+            if( !_isPlanningTelegraphs )
+            {
+                _phaseHandlers[_currentPhase].Update();
+            }
 
             // 各キャラクターの戦闘ロジックを更新する(行動終了判定、歩行)。
             // ステートが目的地等を決めた後、かつタイル情報の更新より前に行うことで、処理の順序を保証する
@@ -238,8 +251,22 @@ namespace Frontier.Battle
             }
 
             var handler = _phaseHandlers[_currentPhase];
-            if( handler.LateUpdate() )
+            if( _isPlanningTelegraphs || handler.LateUpdate() )
             {
+                // 敵のフェーズ(及び配置フェーズ)の終了時は、次のフェーズへ切り替える前に、敵が次の敵のフェーズで使用する予兆を伴うスキルを予約し、
+                // その予兆を表示しておく(プレイヤーフェーズの開始時点で予兆が表示されているようにするため)。
+                // 予約の判断は、1フレームに集中しないよう処理時間の予算内で少しずつ進め、終えるまでフェーズの切り替えを待つ
+                if( !_isPlanningTelegraphs && ShouldPlanTelegraphsOnPhaseEnd( _currentPhase ) )
+                {
+                    _telegraphPlanner.Begin( _btlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) );
+                    _isPlanningTelegraphs = true;
+                }
+                if( _isPlanningTelegraphs )
+                {
+                    if( !_telegraphPlanner.Step( TELEGRAPH_PLAN_BUDGET_MS ) ) { return false; }
+                    _isPlanningTelegraphs = false;
+                }
+
                 // フェーズの終了に合わせてグリッドカーソルを非表示にする
                 // (次のフェーズのアニメーション中は表示せず、次のフェーズの各ステートが必要に応じて表示し直す。
                 //  描画のみを消すことで、カメラの注視点は次のフェーズの開始時に合わせたカーソル位置へ追従させる)
@@ -305,6 +332,15 @@ namespace Frontier.Battle
         }
 
         #endregion // SubRoutineController Implementation
+
+        /// <summary>
+        /// 指定のフェーズの終了時に、敵の予兆を伴うスキルの予約を行うかを取得します。
+        /// 敵のフェーズの終了時に加え、最初のプレイヤーフェーズにも予兆を表示するため、配置フェーズの終了時にも行います
+        /// </summary>
+        private static bool ShouldPlanTelegraphsOnPhaseEnd( BattlePhaseType phase )
+        {
+            return phase == BattlePhaseType.Enemy || phase == BattlePhaseType.Deployment;
+        }
 
         /// <summary>
         /// 次のフェーズへの移行先を取得します
