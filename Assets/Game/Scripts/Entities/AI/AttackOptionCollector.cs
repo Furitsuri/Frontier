@@ -504,6 +504,13 @@ namespace Frontier.Entities.Ai
         /// <returns>列挙を打ち切るか否か</returns>
         private bool TryNotify( Character owner, int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, List<CharacterKey> targetKeys, Func<AttackOption, bool> onFound )
         {
+            // HPが0になっているキャラクターは対象から除く。
+            // 死亡通知(NotifyCharacterDied)は死亡アニメーションのイベントから行われるため、それまでの間はHPが0のまま
+            // 盤面(タイルの情報・キャラクターの一覧)に残っている。対象に含めると、行動の実行中に死亡通知・破棄が行われ、
+            // 破棄済み(BattleLogicがnull)のキャラクターを参照してしまう
+            targetKeys.RemoveAll( key => IsDeadOrGone( key ) );
+            if( targetKeys.Count <= 0 ) { return false; }
+
             Character mainTarget    = null;
             int minRange            = int.MaxValue;
 
@@ -532,6 +539,15 @@ namespace Frontier.Entities.Ai
             if( mainTarget == null ) { return false; }
 
             return onFound( CreateOption( standTileIdx, skillID, dir, landingTileIdx, centerTileIdx, affectedTiles, mainTarget, targetKeys ) );
+        }
+
+        /// <summary>
+        /// 指定のキャラクターが、既に戦闘から除かれている、またはHPが0になっているかを判定します
+        /// </summary>
+        private bool IsDeadOrGone( in CharacterKey key )
+        {
+            var chara = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+            return chara == null || chara.BattleLogic == null || chara.GetStatusRef.IsDead();
         }
 
         private static AttackOption CreateOption( int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, Character mainTarget, List<CharacterKey> targetKeys )
