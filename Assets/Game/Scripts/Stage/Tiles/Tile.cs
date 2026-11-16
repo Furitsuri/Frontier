@@ -104,6 +104,18 @@ namespace Frontier.Stage
             ApplyDeployableColor();
         }
 
+        /// <summary>
+        /// 侵入不可のタイル(StageProp が配置されている等)として設定します。
+        /// 通常移動のコスト計算に加え、移動を伴うスキルの範囲・着地判定やAIの経路候補でも除外されるよう、
+        /// 移動阻害値の設定と合わせて基のタイル情報に CANNOT_MOVE を立てます(UpdateTileDynamicDatas による再構築後も維持されます)
+        /// </summary>
+        public void SetImpassable()
+        {
+            _tileStaticData.MoveResist = short.MaxValue;
+            Methods.SetBitFlag( ref _baseDynamicData.Flag, TileBitFlag.CANNOT_MOVE );
+            Methods.SetBitFlag( ref _tileDynamicData.Flag, TileBitFlag.CANNOT_MOVE );
+        }
+
         public void Dispose()
         {
             _gridLineMesh?.Dispose();

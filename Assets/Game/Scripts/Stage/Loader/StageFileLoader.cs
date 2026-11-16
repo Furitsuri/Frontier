@@ -83,7 +83,7 @@ namespace Frontier.Stage
             {
                 foreach ( var prop in _lastLoadedStagePropData )
                 {
-                    _stageDataProvider.CurrentData.GetTileStaticData( prop.TileIndex ).MoveResist = short.MaxValue;
+                    _stageDataProvider.CurrentData.Tiles[prop.TileIndex].SetImpassable();
                     SpawnStageProp( prop );
                 }
             }

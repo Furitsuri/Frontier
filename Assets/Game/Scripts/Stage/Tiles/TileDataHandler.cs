@@ -343,6 +343,9 @@ namespace Frontier.Stage
             // 隣接していないタイル間の移動は不可
             if( !IsTileNextToEacheOther( dprtIndex, destIndex ) ) { return ( short.MaxValue, false ); }
 
+            // 侵入不可のタイルへの移動は不可
+            if( Methods.HasAnyFlag( _stageDataProvider.CurrentData.GetTileDynamicData( destIndex ).Flag, TileBitFlag.CANNOT_MOVE ) ) { return ( short.MaxValue, false ); }
+
             // 目的地のタイルのタイプから移動コストを取得
             var destTileData        = _stageDataProvider.CurrentData.GetTile( destIndex ).StaticData();
             TileType destTileType   = destTileData.TileType;
