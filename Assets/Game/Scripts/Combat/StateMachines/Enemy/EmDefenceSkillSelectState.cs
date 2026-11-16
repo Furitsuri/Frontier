@@ -7,10 +7,10 @@ using static Constants;
 namespace Frontier.Battle
 {
     /// <summary>
-    /// 敵の通常攻撃を受けるプレイヤーが、防御時に使用するスキルを選択するステートです。
+    /// 敵の攻撃(通常攻撃・スキルによる攻撃)を受けるプレイヤーが、防御時に使用するスキルを選択するステートです。
     /// プレイヤーが自ら攻撃する際のスキル選択(PlSelectSkillState)と同じく、
     /// SkillBoxUIを縦一列へアニメーション移動させ、カーソルで選んだスキルの使用ON/OFFを切り替えます。
-    /// 敵の攻撃自体は取り消せないため、キャンセル入力は受け付けません。決定入力で親(EmAttackState)へ戻り、攻撃が実行されます。
+    /// 敵の攻撃自体は取り消せないため、キャンセル入力は受け付けません。決定入力で親(EmAttackState/EmSkillState)へ戻り、攻撃が実行されます。
     /// </summary>
     public class EmDefenceSkillSelectState : UnitPhaseState
     {
@@ -21,6 +21,10 @@ namespace Frontier.Battle
         {
             public Character Attacker;
             public Player Defender;
+            // 防御時に使用可能なスキルの種類のビットフラグ(攻撃の種類によって、効果を持つ防御スキルが異なるため)
+            public int UseableActionTypeBit         = NormalAttackDefenceActionTypeBit;
+            // 防御スキルの使用を切り替えた際に、予測ダメージを更新する処理(nullの場合は通常攻撃の予測ダメージを更新する)
+            public System.Action RefreshDamageExpect = null;
         }
 
         private TransitContext _transitContext = null;
@@ -30,15 +34,20 @@ namespace Frontier.Battle
         private CommandList _commandList = new CommandList();
         private CommandList.CommandIndexedValue _cmdIdxVal;
 
-        // 防御時に使用可能なスキルの種類(NormalAttackTargetingRangeでの防御側の判定と揃える)
-        private static readonly int DefenceActionTypeBit = Methods.ToBit( ActionType.BUFF ) | Methods.ToBit( ActionType.SPECIAL );
+        // 通常攻撃を受ける際に使用可能な防御スキルの種類(NormalAttackTargetingRangeでの防御側の判定と揃える)
+        public static readonly int NormalAttackDefenceActionTypeBit = Methods.ToBit( ActionType.BUFF ) | Methods.ToBit( ActionType.SPECIAL );
+        // スキルによる攻撃を受ける際に使用可能な防御スキルの種類。
+        // スキルによる攻撃のシーケンスは、防御側の能力値の変化(ガード等の自己バフ)のみを反映し、
+        // パリィ・カウンター等の攻撃シーケンス中の反応(SPECIAL)を扱わないため、自己バフのみとする
+        public static readonly int SkillAttackDefenceActionTypeBit = Methods.ToBit( ActionType.BUFF );
 
         /// <summary>
         /// 防御側のスキルの使用可否を、防御シチュエーションで更新します
         /// </summary>
-        static public void RefreshDefenceUseableSkillFlags( Character defender )
+        /// <param name="useableActionTypeBit">使用可能なスキルの種類のビットフラグ(省略時は通常攻撃を受ける場合)</param>
+        static public void RefreshDefenceUseableSkillFlags( Character defender, int useableActionTypeBit = -1 )
         {
-            defender.RefreshUseableSkillFlags( SituationType.DEFENCE, DefenceActionTypeBit );
+            defender.RefreshUseableSkillFlags( SituationType.DEFENCE, ( useableActionTypeBit < 0 ) ? NormalAttackDefenceActionTypeBit : useableActionTypeBit );
         }
 
         /// <summary>
@@ -77,7 +86,7 @@ namespace Frontier.Battle
             _cmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
             _commandList.Init( ref equippedIndices, CommandList.CommandDirection.VERTICAL, false, _cmdIdxVal );
 
-            RefreshDefenceUseableSkillFlags( _defender );
+            RefreshDefenceUseableSkillFlags( _defender, _transitContext.UseableActionTypeBit );
 
             // SkillBoxUIを選択用の縦一列レイアウトへアニメーション移動(防御側のプレイヤーは左のパラメータウィンドウに表示されている)
             _presenter.AnimateSkillBoxesForSelection( ParameterWindowType.Left );
@@ -157,10 +166,11 @@ namespace Frontier.Battle
             if( !base.AcceptSub1( context ) ) { return false; }
 
             _defender.BattleLogic.ToggleEquipSkill( _cmdIdxVal.value );
-            RefreshDefenceUseableSkillFlags( _defender );
+            RefreshDefenceUseableSkillFlags( _defender, _transitContext.UseableActionTypeBit );
 
             // 防御スキルの使用切り替えで予測ダメージが変わるため、予測を更新する
-            RefreshNormalAttackDamageExpect( _attacker, _defender );
+            if( _transitContext.RefreshDamageExpect != null ) { _transitContext.RefreshDamageExpect(); }
+            else { RefreshNormalAttackDamageExpect( _attacker, _defender ); }
 
             return true;
         }

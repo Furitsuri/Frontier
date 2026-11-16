@@ -11,7 +11,12 @@ using static Constants;
 
 namespace Frontier.Battle
 {
-    public class EmAttackState : UnitPhaseState
+    /// <summary>
+    /// 敵が通常攻撃を行うステートです。
+    /// 攻撃を受けるプレイヤーが防御スキルを使用出来る場合は防御スキルの選択へ移り、出来ない場合は攻撃の内容を一定時間表示した後に実行します
+    /// (実行前の流れはNpcActionStateBaseで共通化しています)
+    /// </summary>
+    public class EmAttackState : NpcActionStateBase
     {
         private enum EmAttackPhase
         {
@@ -90,6 +95,9 @@ namespace Frontier.Battle
             // 予測ダメージを適応し、HPゲージに予測ダメージ分の点滅を反映する
             RefreshNormalAttackDamageExpect( _attackCharacter, _targetCharacter );
 
+            // 攻撃対象のプレイヤーが防御時に使用可能なスキルを持つかで、防御スキルの選択を挟むか、確認を挟まずに実行するかが決まる
+            BeginActionConfirm( 0 < CollectInterveningPlayers( new[] { _targetCharacter } ).Count );
+
             _phase = EmAttackPhase.EM_ATTACK_CONFIRM;
         }
 
@@ -109,19 +117,20 @@ namespace Frontier.Battle
                     // Initで発行した、攻撃者・攻撃対象が互いに向き合う向き直りが終わるまで待つ
                     // (攻撃シーケンスは開始時点の向きを攻撃前の向きとして記録するため、
                     //  向き直りの途中で開始すると、攻撃後に移動直後の向きへ戻ってしまう)
-                    if( _attackCharacter.IsRotationOrdered() || _targetCharacter.IsRotationOrdered() ) { break; }
+                    bool isReady = !_attackCharacter.IsRotationOrdered() && !_targetCharacter.IsRotationOrdered();
 
-                    // 攻撃対象のプレイヤーが防御時に使用可能なスキルを持つ場合は、防御スキルの選択へ遷移する
-                    // (装備していない、またはアクションゲージが不足している場合は確認を挟まずにそのまま攻撃を実行する)
-                    if( _targetCharacter is Player defender && EmDefenceSkillSelectState.HasUseableDefenceSkill( defender ) )
+                    switch( UpdateActionConfirm( isReady ) )
                     {
-                        _isWaitingForDefenceSkillSelect = true;
-                        SetSendTransitionContext( new EmDefenceSkillSelectState.TransitContext { Attacker = _attackCharacter, Defender = defender } );
-                        TransitState( ( int ) TransitTag.DEFENCE_SKILL_SELECT );
-                    }
-                    else
-                    {
-                        ExecuteAttack();
+                        // 攻撃対象のプレイヤーが防御時に使用可能なスキルを持つ場合は、防御スキルの選択へ遷移する
+                        case ActionConfirmResult.REQUEST_INTERVENTION:
+                            _isWaitingForDefenceSkillSelect = true;
+                            SetSendTransitionContext( new EmDefenceSkillSelectState.TransitContext { Attacker = _attackCharacter, Defender = ( Player ) _targetCharacter } );
+                            TransitState( ( int ) TransitTag.DEFENCE_SKILL_SELECT );
+                            break;
+                        // 介入の手立てが無い場合は、攻撃の内容を一定時間表示した後にそのまま攻撃を実行する
+                        case ActionConfirmResult.EXECUTE:
+                            ExecuteAttack();
+                            break;
                     }
 
                     break;

@@ -4,6 +4,7 @@ using Frontier.Entities.Ai;
 using Frontier.Sequences;
 using Frontier.Stage;
 using Frontier.UI;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using static Constants;
@@ -11,16 +12,24 @@ using static Constants;
 namespace Frontier.Battle
 {
     /// <summary>
-    /// 敵がスキルによる攻撃を行うステートです。
-    /// 使用するスキル・向き・攻撃対象などは、AIが選択した攻撃(AttackOption)に従います
+    /// 敵がスキルによる攻撃(回復等も含む)を行うステートです。
+    /// 使用するスキル・向き・攻撃対象などは、AIが選択した攻撃(AttackOption)に従います。
+    /// 実行前の流れはNpcActionStateBaseで共通化しています。
+    /// 攻撃を受けるプレイヤーが防御スキル(スキルによる攻撃に効果を持つもの)を使用出来る場合は、該当するプレイヤー1人ずつに防御スキルを選択させた後に実行し、
+    /// 介入する手立てが無い場合は、確認の入力を待たずに一定時間表示した後に実行します
     /// </summary>
-    public class EmSkillState : UnitPhaseState
+    public class EmSkillState : NpcActionStateBase
     {
         private enum EmSkillPhase
         {
             EM_SKILL_CONFIRM = 0,
             EM_SKILL_EXECUTE,
             EM_SKILL_END,
+        }
+
+        private enum TransitTag
+        {
+            DEFENCE_SKILL_SELECT = 0,
         }
 
         [Inject] private SequenceFacade _sequenceFcd = null;
@@ -30,10 +39,11 @@ namespace Frontier.Battle
         private Enemy _attackCharacter      = null;
         private Character _targetCharacter  = null;
         private AttackOption _attackOption;
-        // スキルの使用者・対象にプレイヤーが含まれるか。含まれない場合(敵から敵への回復等)は、プレイヤーが介入する手立てが無いため、
-        // 確認の入力を待たず、パラメータウィンドウを一定時間(ENEMY_SKILL_AUTO_EXECUTE_DISPLAY_TIME)表示した後に実行する
-        private bool _isPlayerInvolved      = true;
-        private float _elapsedTime          = 0f;   // 確認の入力を待たずに実行する場合の、パラメータウィンドウの表示を開始してからの経過時間
+        private TargetingRangeContext _targetingContext = null;
+        // 防御スキルを選択させるプレイヤー(介入の手立てがあるプレイヤー)と、次に選択させるプレイヤーの番号
+        private List<Player> _interveningPlayers        = new List<Player>();
+        private int _nextInterveningIndex               = 0;
+        private bool _isWaitingForDefenceSkillSelect    = false;
 
         public override void Init( object context )
         {
@@ -49,7 +59,6 @@ namespace Frontier.Battle
             _telegraphPlanner.NotifyReservedActionStarted( _attackCharacter );
 
             _targetCharacter    = _attackOption.MainTarget;
-            _isPlayerInvolved   = IsPlayerInvolved( _attackCharacter, _targetCharacter, _attackOption );
             var skillData       = SkillsData.data[( int ) _attackOption.SkillID];
 
             // スキルを使用ONにして、スキルの効果(攻撃回数・倍率・消費ゲージ等)を適用する
@@ -102,12 +111,28 @@ namespace Frontier.Battle
             // (スキルを使用する敵自身(右)の表示と、行動終了後に左右を閉じる処理はEmSelectStateが行う)
             ShowParameterWindow( ParameterWindowType.Left, _targetCharacter );
             _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
-            _elapsedTime = 0f;
+
+            // 攻撃を受ける側のスキルの使用可否を、防御シチュエーション(スキルによる攻撃に効果を持つ種類のみ)で更新する
+            // (プレイヤーフェーズ終了時の更新結果のままだと、防御時に使用出来ないスキルまで使用可能な表示になるため。通常攻撃(EmAttackState)と揃える)。
+            // 回復等の自軍を対象とするスキルは攻撃ではないため、防御スキルの選択の対象としない
+            _interveningPlayers.Clear();
+            _nextInterveningIndex           = 0;
+            _isWaitingForDefenceSkillSelect = false;
+            if( ActionType.ATTACK == skillData.ActionType )
+            {
+                foreach( var target in GetTargets() )
+                {
+                    EmDefenceSkillSelectState.RefreshDefenceUseableSkillFlags( target, EmDefenceSkillSelectState.SkillAttackDefenceActionTypeBit );
+                    target.BattleLogic.SelectUseSkills( SituationType.DEFENCE );   // プレイヤー以外はAIが選択する(プレイヤーは防御スキル選択ステートで選択する)
+                }
+                _interveningPlayers.AddRange( CollectInterveningPlayers( GetTargets() ) );
+            }
 
             // 予測ダメージを適応し、攻撃対象全員のHPゲージに予測ダメージ分の点滅を反映する
-            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
-            var targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _attackCharacter, StageCtrl = _stageCtrl };
-            TargetingPreviewHelper.RefreshPredictedDamageGauges( targetingContext, _attackOption.AttackTargetKeys );
+            _targetingContext = new TargetingRangeContext { BtlRtnCtrl = _btlRtnCtrl, Presenter = _presenter, Owner = _attackCharacter, StageCtrl = _stageCtrl };
+            RefreshSkillDamageExpect();
+
+            BeginActionConfirm( 0 < _interveningPlayers.Count );
 
             _phase = EmSkillPhase.EM_SKILL_CONFIRM;
         }
@@ -117,15 +142,20 @@ namespace Frontier.Battle
             switch( _phase )
             {
                 case EmSkillPhase.EM_SKILL_CONFIRM:
-                    // プレイヤーが関わらない場合は、確認の入力を待たずに、パラメータウィンドウを一定時間表示し、
-                    // かつ対象への向き直りが終わった時点で実行する
-                    if( !_isPlayerInvolved )
+                    if( _isWaitingForDefenceSkillSelect ) { break; }
+
+                    // 対象への向き直りが終わった時点で、介入の手立てがあるプレイヤーには防御スキルを選択させ、
+                    // 無い場合はスキルの内容を一定時間表示した時点で実行する
+                    switch( UpdateActionConfirm( !_attackCharacter.IsRotationOrdered() ) )
                     {
-                        _elapsedTime += DeltaTimeProvider.DeltaTime;
-                        if( ENEMY_SKILL_AUTO_EXECUTE_DISPLAY_TIME <= _elapsedTime && !_attackCharacter.IsRotationOrdered() )
-                        {
+                        case ActionConfirmResult.REQUEST_INTERVENTION:
+                            // 防御スキルの選択を、対象のプレイヤー1人ずつ順に行い、全員が終えた時点で実行する
+                            if( _nextInterveningIndex < _interveningPlayers.Count ) { TransitToDefenceSkillSelect( _interveningPlayers[_nextInterveningIndex++] ); }
+                            else { ExecuteSkill(); }
+                            break;
+                        case ActionConfirmResult.EXECUTE:
                             ExecuteSkill();
-                        }
+                            break;
                     }
                     break;
                 case EmSkillPhase.EM_SKILL_EXECUTE:
@@ -144,6 +174,19 @@ namespace Frontier.Battle
             return false;
         }
 
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            // 防御スキルの選択から戻った場合は、次のプレイヤーの選択または実行へ進む(Updateで判定する)。
+            // 全員の選択を終えた場合は、パラメータウィンドウ(左)を主となる攻撃対象の表示に戻す
+            if( _isWaitingForDefenceSkillSelect )
+            {
+                _isWaitingForDefenceSkillSelect = false;
+                if( _interveningPlayers.Count <= _nextInterveningIndex ) { ShowParameterWindow( ParameterWindowType.Left, _targetCharacter ); }
+            }
+        }
+
         public override object ExitState()
         {
             // 対象選択の共通後始末
@@ -155,38 +198,6 @@ namespace Frontier.Battle
             return base.ExitState();
         }
 
-        public override void RegisterInputCodes()
-        {
-            int hashCode = GetInputCodeHash();
-
-            _inputFcd.RegisterInputCodes(
-               (GuideIcon.CONFIRM, "Confirm", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ), 0.0f, hashCode)
-            );
-        }
-
-        /// <summary>
-        /// 決定入力受付の可否を判定します
-        /// </summary>
-        /// <returns>決定入力受付の可否</returns>
-        protected override bool CanAcceptConfirm()
-        {
-            if( !CanAcceptDefault() ) return false;
-
-            return _isPlayerInvolved && EmSkillPhase.EM_SKILL_CONFIRM == _phase;
-        }
-
-        /// <summary>
-        /// 決定入力を受け取った際の処理を行います
-        /// </summary>
-        protected override bool AcceptConfirm( InputContext context )
-        {
-            if( !base.AcceptConfirm( context ) ) { return false; }
-
-            ExecuteSkill();
-
-            return true;
-        }
-
         /// <summary>
         /// スキルを実行します(アクションゲージを消費し、スキルのシーケンスを登録します)
         /// </summary>
@@ -194,12 +205,18 @@ namespace Frontier.Battle
         {
             // キャラクターのアクションゲージを消費
             _attackCharacter.BattleLogic.ConsumeActionGaugeForSkill();
-            _targetCharacter.BattleLogic.ConsumeActionGauge();
+            // 防御スキルを選択したプレイヤーは、使用分のゲージを消費し、使用ONのスキルを使用済みへ移す(通常攻撃(EmAttackState)と同様)
+            foreach( var defender in _interveningPlayers ) { defender.BattleLogic.ConsumeActionGaugeForSkill(); }
+            if( !( _targetCharacter is Player mainDefender && _interveningPlayers.Contains( mainDefender ) ) )
+            {
+                _targetCharacter.BattleLogic.ConsumeActionGauge();
+            }
 
             FinalizeTargetSelection( ParameterWindowType.Right );
             _attackCharacter.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
 
-            UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );   // 現在の入力コードを登録解除
+            // 防御側が自己バフスキル(GUARD等)を使用している場合はバフシーケンスを登録する(必ずスキルのシーケンスより先に登録する)
+            foreach( var defender in _interveningPlayers ) { defender.BattleLogic.RegistSelfBuffSequences(); }
 
             _sequenceFcd.RegistSkillAction( _attackCharacter, _targetCharacter, _attackOption.SkillID, _attackOption.AttackTargetKeys );    // スキルのシーケンス処理に移行
 
@@ -207,21 +224,47 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// スキルの使用者・対象に、プレイヤーが含まれるかを判定します
+        /// 指定のプレイヤーに防御スキルを選択させます(選択中はパラメータウィンドウ(左)にそのプレイヤーを表示します)
         /// </summary>
-        private bool IsPlayerInvolved( Character user, Character mainTarget, in AttackOption option )
+        private void TransitToDefenceSkillSelect( Player defender )
         {
-            if( user is Player || mainTarget is Player ) { return true; }
+            ShowParameterWindow( ParameterWindowType.Left, defender );
 
-            if( null != option.AttackTargetKeys )
+            _isWaitingForDefenceSkillSelect = true;
+            SetSendTransitionContext( new EmDefenceSkillSelectState.TransitContext
             {
-                foreach( var key in option.AttackTargetKeys )
-                {
-                    if( CHARACTER_TAG.PLAYER == key.CharacterTag ) { return true; }
-                }
-            }
+                Attacker                = _attackCharacter,
+                Defender                = defender,
+                UseableActionTypeBit    = EmDefenceSkillSelectState.SkillAttackDefenceActionTypeBit,
+                RefreshDamageExpect     = RefreshSkillDamageExpect,
+            } );
+            TransitState( ( int ) TransitTag.DEFENCE_SKILL_SELECT );
+        }
 
-            return false;
+        /// <summary>
+        /// 予測ダメージを適応し、攻撃対象全員のHPゲージに予測ダメージ分の点滅を反映します
+        /// (防御スキルの使用を切り替えた際にも、予測ダメージが変わるため呼び出します)
+        /// </summary>
+        private void RefreshSkillDamageExpect()
+        {
+            _btlRtnCtrl.BtlCharaCdr.ApplyDamageExpect( _attackCharacter, _targetCharacter );
+            TargetingPreviewHelper.RefreshPredictedDamageGauges( _targetingContext, _attackOption.AttackTargetKeys );
+        }
+
+        /// <summary>
+        /// スキルの対象(主となる対象を含む)を取得します
+        /// </summary>
+        private IEnumerable<Character> GetTargets()
+        {
+            yield return _targetCharacter;
+
+            if( null == _attackOption.AttackTargetKeys ) { yield break; }
+
+            foreach( var key in _attackOption.AttackTargetKeys )
+            {
+                var target = _btlRtnCtrl.BtlCharaCdr.GetCharacter( key );
+                if( null != target && target != _targetCharacter ) { yield return target; }
+            }
         }
 
         /// <summary>

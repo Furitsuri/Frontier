@@ -162,8 +162,8 @@ static public class Constants
     // 回復系のスキルの演出の待ち時間(専用のモーションが用意されるまでの暫定値)
     public const float HEAL_SKILL_APPLY_DELAY       = 0.3f;     // スキル名の表示後、回復を適用するまで
     public const float HEAL_SKILL_END_WAIT_TIME     = 1.0f;     // 回復量の表示後、スキルを終了するまで
-    // プレイヤーが関わらない敵のスキル(敵から敵への回復等)を、確認の入力を待たずに実行するまでの、パラメータウィンドウの表示時間
-    public const float ENEMY_SKILL_AUTO_EXECUTE_DISPLAY_TIME = 1.0f;
+    // NPCの行動(通常攻撃・スキル・回復等)のうち、プレイヤーが介入する手立てが無いものを、確認の入力を待たずに実行するまでの、行動の内容の表示時間
+    public const float NPC_ACTION_AUTO_EXECUTE_DISPLAY_TIME = 1.0f;
     // 攻撃時に向きを定める際の待ち時間
     public const float ATTACK_ROTATIION_TIME = 0.2f;
     // 攻撃時に相手に近接するまでの時間
