@@ -100,7 +100,7 @@ RecruitMain (RecruitScene のエントリポイント)
 
 ### シーケンス
 
-**`SequenceFacade`** は `ISequence` オブジェクト（攻撃、自己バフ）を `SequenceHandler` にキューイングします。`CharacterAttackSequence` と `SelfBuffSequence` が主なシーケンス型です。シーケンスハンドラは `FocusRoutineBase` と同一オブジェクトであり、`SequenceFacade.Setup()` に渡されます。
+**`SequenceFacade`** は `ISequence` オブジェクト（攻撃、自己バフ）を `SequenceHandler` にキューイングします。通常攻撃は `NormalAttackSequenceBase` の派生 (`CloseUpAttackSequence` / `InPlaceAttackSequence`)、スキル攻撃は `SkillActionSequence` (連携は `CooperativeSkillSequence`)、自己バフは `SelfBuffSequence` が担います。通常攻撃とスキル攻撃は構造が異なるため基底を共有せず、共通処理 (`CombatSequenceCleanup`、`DeathAnimationWaiter`) はコンポジションで共有します。シーケンスハンドラは `FocusRoutineBase` と同一オブジェクトであり、`SequenceFacade.Setup()` に渡されます。
 
 ### 入力システム
 

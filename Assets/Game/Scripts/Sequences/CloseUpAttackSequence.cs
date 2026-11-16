@@ -11,7 +11,7 @@ namespace Frontier.Sequences
     /// モザイクをかけながらカメラを近づけ、攻撃者と被攻撃者のみを専用の戦闘フィールドに配置して攻撃を行わせます。
     /// 攻撃終了後はステージ上の元の位置へ戻します。
     /// </summary>
-    public class CloseUpAttackSequence : CharacterAttackSequenceBase
+    public class CloseUpAttackSequence : NormalAttackSequenceBase
     {
         [Inject] private StageController _stageCtrl = null;
 

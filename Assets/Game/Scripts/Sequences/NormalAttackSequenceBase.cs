@@ -11,7 +11,7 @@ namespace Frontier.Sequences
     /// 向きの変更 → 攻撃 → (パリィ / カウンター / 死亡) → 終了 という流れはここで管理し、
     /// 演出(カメラ・キャラクターの配置・近接攻撃時の移動有無)の違いは派生クラスで実装します。
     /// </summary>
-    public abstract class CharacterAttackSequenceBase : ISequence
+    public abstract class NormalAttackSequenceBase : ISequence
     {
         protected enum Phase
         {
@@ -47,7 +47,7 @@ namespace Frontier.Sequences
         protected Quaternion _atkCharaInitialRot = Quaternion.identity;
         protected Quaternion _tgtCharaInitialRot = Quaternion.identity;
 
-        public CharacterAttackSequenceBase( Character attackChara, Character targetChara )
+        public NormalAttackSequenceBase( Character attackChara, Character targetChara )
         {
             _attackCharacter = attackChara;
             _targetCharacter = targetChara;

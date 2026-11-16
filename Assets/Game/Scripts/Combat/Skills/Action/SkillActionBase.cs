@@ -66,7 +66,7 @@ namespace Frontier.Combat
 
         /// <summary>
         /// スキルを更新します。スキル自体の処理を終えた後も、倒した対象の死亡アニメーションが完了するまではシーケンスを終了しません。
-        /// (待つ理由・待ち方はDeathAnimationWaiterを参照。通常の攻撃(CharacterAttackSequenceBase)と共通)
+        /// (待つ理由・待ち方はDeathAnimationWaiterを参照。通常の攻撃(NormalAttackSequenceBase)と共通)
         /// </summary>
         public bool Update()
         {

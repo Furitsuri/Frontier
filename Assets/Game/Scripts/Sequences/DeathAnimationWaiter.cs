@@ -6,7 +6,7 @@ namespace Frontier.Sequences
 {
     /// <summary>
     /// 攻撃・スキルで倒したキャラクターの死亡アニメーションの完了を待ちます。
-    /// 通常の攻撃(CharacterAttackSequenceBase)とスキル(SkillActionBase)の双方で使用し、待ち方を揃えます。
+    /// 通常の攻撃(NormalAttackSequenceBase)とスキル(SkillActionBase)の双方で使用し、待ち方を揃えます。
     ///
     /// 死亡通知(BattleCharacterCoordinator.NotifyCharacterDied)は死亡アニメーションのイベントから行われるため、
     /// 完了を待たずにシーケンスを終了すると、HPが0のまま死亡通知前のキャラクターが盤面に残った状態で戦闘が再開され、

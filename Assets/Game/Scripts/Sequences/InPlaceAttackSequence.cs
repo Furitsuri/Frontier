@@ -9,7 +9,7 @@ namespace Frontier.Sequences
     /// 攻撃終了後、攻撃対象は攻撃前の向きへ滑らかに戻します(攻撃者は相手の方を向いたままとします)。
     /// 対象選択中のカメラズームはシーケンス終了まで維持します。
     /// </summary>
-    public class InPlaceAttackSequence : CharacterAttackSequenceBase
+    public class InPlaceAttackSequence : NormalAttackSequenceBase
     {
         private Quaternion _tgtCharaFacingRot = Quaternion.identity;
 

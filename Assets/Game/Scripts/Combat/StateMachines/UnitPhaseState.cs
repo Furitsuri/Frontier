@@ -127,7 +127,7 @@ namespace Frontier.Battle
         /// </summary>
         /// <param name="releaseCameraZoom">
         /// 対象選択中のカメラズームをここで解除するか。
-        /// 通常攻撃(CharacterAttackSequenceBase の派生)は解除のタイミングをシーケンス側で決めるため false を指定してください。
+        /// 通常攻撃(NormalAttackSequenceBase の派生)は解除のタイミングをシーケンス側で決めるため false を指定してください。
         /// </param>
         protected void FinalizeTargetSelection( ParameterWindowType fromWinType, bool releaseCameraZoom = true )
         {
