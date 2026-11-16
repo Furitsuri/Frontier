@@ -176,6 +176,9 @@ static public class Constants
     public const float ATTACK_SEQUENCE_WAIT_ATTACK_TIME = 0.5f;
     // 攻撃シーケンスにおける終了待ち時間
     public const float ATTACK_SEQUENCE_WAIT_END_TIME = 0.95f;
+    // 攻撃・スキルで倒した対象の死亡アニメーションの完了を待つ時間の上限(秒)。
+    // 死亡アニメーションが別のアニメーションに上書きされる等で完了を検知出来ない場合に、シーケンスが終わらなくなることを防ぐ
+    public const float DIE_ANIMATION_WAIT_TIMEOUT = 5.0f;
     // 連携スキルシーケンスにおける各スキル発動の間隔
     public const float COOPERATIVE_SKILL_STAGGER_INTERVAL = 0.3f;
     // 連携演出(渦巻きエフェクト)の1キャラクターあたりの表示時間

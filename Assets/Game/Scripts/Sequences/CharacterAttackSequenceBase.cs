@@ -34,6 +34,7 @@ namespace Frontier.Sequences
         private Phase _phase;
         private bool _counterConditions = false;
         private Character _diedCharacter = null;
+        private readonly DeathAnimationWaiter _deathWaiter = new DeathAnimationWaiter();
         private Vector3 _departure = Vector3.zero;
         private Vector3 _destination = Vector3.zero;
         private UpdateAttack _updateAttackerAttack = null;
@@ -55,6 +56,7 @@ namespace Frontier.Sequences
         public void Start()
         {
             _diedCharacter  = null;
+            _deathWaiter.Clear();
             _elapsedTime    = 0f;
             _phase          = Phase.START;
 
@@ -142,6 +144,7 @@ namespace Frontier.Sequences
                         if( _targetCharacter.GetStatusRef.IsDead() )
                         {
                             _diedCharacter = _targetCharacter;
+                            _deathWaiter.Track( _diedCharacter );
                             _phase = Phase.DIE;
                         }
                         // カウンタースキルが登録されている場合はカウンター処理へ
@@ -195,6 +198,7 @@ namespace Frontier.Sequences
                         if( _attackCharacter.GetStatusRef.IsDead() )
                         {
                             _diedCharacter = _attackCharacter;
+                            _deathWaiter.Track( _diedCharacter );
                             _phase = Phase.DIE;
                         }
                         else
@@ -214,6 +218,7 @@ namespace Frontier.Sequences
                         if( _attackCharacter.GetStatusRef.IsDead() )
                         {
                             _diedCharacter = _attackCharacter;
+                            _deathWaiter.Track( _diedCharacter );
                             _phase = Phase.DIE;
                         }
                         else
@@ -225,7 +230,9 @@ namespace Frontier.Sequences
                     }
                     break;
                 case Phase.DIE:
-                    if( _targetCharacter.AnimCtrl.IsEndAnimationOnConditionTag( AnimDatas.AnimeConditionsTag.DIE ) )
+                    // 死亡したキャラクター(パリィ・カウンターで倒された場合は攻撃側)の死亡アニメーションの完了を待つ
+                    // (待つ理由・待ち方はDeathAnimationWaiterを参照。スキル(SkillActionBase)と共通)
+                    if( _deathWaiter.Update() )
                     {
                         _phase = Phase.WAIT_END;
                     }

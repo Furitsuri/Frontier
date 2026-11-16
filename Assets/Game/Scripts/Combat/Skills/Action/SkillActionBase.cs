@@ -31,6 +31,11 @@ namespace Frontier.Combat
         /// </summary>
         protected ISkillCameraProcess _cameraProcess = null;
 
+        // このスキルで倒した対象の死亡アニメーションの完了待ち
+        private readonly DeathAnimationWaiter _deathWaiter = new DeathAnimationWaiter();
+        // スキル自体の処理(UpdateAction)を終え、倒した対象の死亡アニメーションの完了を待っているか
+        private bool _isWaitingForDeaths = false;
+
         public SkillActionBase( Character owner )
         {
             _owner = owner;
@@ -46,6 +51,9 @@ namespace Frontier.Combat
 
         public void Start()
         {
+            _deathWaiter.Clear();
+            _isWaitingForDeaths = false;
+
             StartAction();
         }
 
@@ -56,11 +64,21 @@ namespace Frontier.Combat
             if( _cameraProcess != null ) { _btlCamCtrl?.EndSkillCameraProcess(); }
         }
 
+        /// <summary>
+        /// スキルを更新します。スキル自体の処理を終えた後も、倒した対象の死亡アニメーションが完了するまではシーケンスを終了しません。
+        /// (待つ理由・待ち方はDeathAnimationWaiterを参照。通常の攻撃(CharacterAttackSequenceBase)と共通)
+        /// </summary>
         public bool Update()
         {
-            UpdateAction();
+            if( !_isWaitingForDeaths )
+            {
+                UpdateAction();
+                if( !IsFinished() ) { return false; }
 
-            return IsFinished();
+                _isWaitingForDeaths = true;
+            }
+
+            return _deathWaiter.Update();
         }
 
         /// <summary>
@@ -123,6 +141,7 @@ namespace Frontier.Combat
                 {
                     target.GetStatusRef.CurHP = 0;
                     target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
+                    _deathWaiter.Track( target );
                 }
                 else
                 {
