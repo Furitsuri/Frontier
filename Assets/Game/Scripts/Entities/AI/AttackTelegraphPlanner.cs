@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine;
 using Zenject;
 
 namespace Frontier.Entities.Ai
@@ -31,11 +32,19 @@ namespace Frontier.Entities.Ai
         private IEnumerator _planRoutine            = null;
         private double _totalPlanMs                 = 0.0;  // 計測用: 予約の判断に要した処理時間の合計
         private int _planFrameCount                 = 0;    // 計測用: 予約の判断に要したフレーム数
+        private float _signalEndTime                = 0f;   // 予約したキャラクターが取る合図のモーションのうち、最も遅く終わるものの終了時刻(Time.time基準)
 
         /// <summary>
         /// 予約の判断を進めている途中であるか
         /// </summary>
         public bool IsPlanning => _planRoutine != null;
+
+        /// <summary>
+        /// 予約したキャラクターの合図のモーションを再生している途中であるか。
+        /// 合図は予約したキャラクター全員が同時に取るため、最も長いもの1回分が終わるまでがこの期間となります
+        /// (時刻はTime.time基準のため、早送り等によるタイムスケールの変更にも合わせて短くなります)
+        /// </summary>
+        public bool IsPlayingSignal => Time.time < _signalEndTime;
 
         /// <summary>
         /// 指定の軍の予約の判断を開始します。
@@ -53,6 +62,7 @@ namespace Frontier.Entities.Ai
             _planRoutine    = PlanRoutine( new List<Character>( troop ) );
             _totalPlanMs    = 0.0;
             _planFrameCount = 0;
+            _signalEndTime  = 0f;
         }
 
         /// <summary>
@@ -144,6 +154,11 @@ namespace Frontier.Entities.Ai
                     // 予兆の範囲がどのキャラクターのものかをユーザーに示すため、合図のモーションを取らせる
                     // (モーションの内容・尺は各キャラクターのAnimator Controllerの「Telegraph」ステートで設定する)
                     chara.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.TELEGRAPH );
+                    // 合図のモーションを持たないキャラクターは長さを取得出来ないため、待ちの対象としない
+                    if( chara.AnimCtrl.TryGetAnimationLength( AnimDatas.AnimeConditionsTag.TELEGRAPH, out float signalLength ) )
+                    {
+                        _signalEndTime = Mathf.Max( _signalEndTime, Time.time + signalLength );
+                    }
                 }
 
                 yield return null;

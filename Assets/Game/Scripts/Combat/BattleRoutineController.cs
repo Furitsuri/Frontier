@@ -255,7 +255,8 @@ namespace Frontier.Battle
             {
                 // 敵のフェーズ(及び配置フェーズ)の終了時は、次のフェーズへ切り替える前に、敵が次の敵のフェーズで使用する予兆を伴うスキルを予約し、
                 // その予兆を表示しておく(プレイヤーフェーズの開始時点で予兆が表示されているようにするため)。
-                // 予約の判断は、1フレームに集中しないよう処理時間の予算内で少しずつ進め、終えるまでフェーズの切り替えを待つ
+                // 予約の判断は、1フレームに集中しないよう処理時間の予算内で少しずつ進め、終えるまでフェーズの切り替えを待つ。
+                // また、予約したキャラクターは合図のモーションを取るため、ユーザーが気付けるよう、最も長い合図1回分が終わるまで切り替えを待つ
                 if( !_isPlanningTelegraphs && ShouldPlanTelegraphsOnPhaseEnd( _currentPhase ) )
                 {
                     _telegraphPlanner.Begin( _btlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ) );
@@ -264,6 +265,7 @@ namespace Frontier.Battle
                 if( _isPlanningTelegraphs )
                 {
                     if( !_telegraphPlanner.Step( TELEGRAPH_PLAN_BUDGET_MS ) ) { return false; }
+                    if( _telegraphPlanner.IsPlayingSignal ) { return false; }
                     _isPlanningTelegraphs = false;
                 }
 
