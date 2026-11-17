@@ -64,7 +64,7 @@ namespace Frontier
             Container.Bind<DebugMenuHandler>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuUI>().FromComponentInHierarchy().AsCached();
             Container.Bind<DebugMenuItemRegistry>().AsSingle();
-            Container.Bind<Frontier.DebugTools.DebugSettings>().AsSingle();
+            Container.Bind<Frontier.DebugTools.DebugSettings>().FromInstance( Frontier.DebugTools.DebugSettings.Shared ).AsSingle();  // シーンをまたいで設定を保持するため共有インスタンスを使う
 #endif // UNITY_EDITOR
         }
 

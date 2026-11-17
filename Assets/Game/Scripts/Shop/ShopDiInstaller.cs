@@ -44,7 +44,7 @@ namespace Frontier.Shop
 #if UNITY_EDITOR
             // シーン上に配置されたDebugMenuHandlerへの注入に必要となるため、DiInstaller.csと同じBindを用意する
             Container.Bind<Frontier.DebugTools.DebugMenu.DebugMenuItemRegistry>().AsSingle();
-            Container.Bind<Frontier.DebugTools.DebugSettings>().AsSingle();
+            Container.Bind<Frontier.DebugTools.DebugSettings>().FromInstance( Frontier.DebugTools.DebugSettings.Shared ).AsSingle();  // シーンをまたいで設定を保持するため共有インスタンスを使う
 #endif // UNITY_EDITOR
         }
 
