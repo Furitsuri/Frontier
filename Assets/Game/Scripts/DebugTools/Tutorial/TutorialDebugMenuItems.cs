@@ -7,7 +7,7 @@ using Zenject;
 namespace Frontier.DebugTools.Tutorial
 {
     /// <summary>
-    /// チュートリアルの内容確認用のデバッグメニューの項目を登録します。
+    /// チュートリアルの内容確認・既読データ編集用のデバッグメニューの項目を登録します。
     /// チュートリアルには番号が割り振られていないため、チュートリアルデータの一覧(TutorialDatabase)の先頭から0として扱います
     /// </summary>
     public class TutorialDebugMenuItems
@@ -28,10 +28,15 @@ namespace Frontier.DebugTools.Tutorial
 
             if( _tutorialFcd == null ) { return; }
 
-            var page = TutorialDebugMenuPages.VIEWER;
+            var page = TutorialDebugMenuPages.ENTRIES;
 
+            // 閲覧と既読データ編集はどちらも番号の指定が共通のため、同じページにまとめる
             _registry.Register( this, new DebugChoiceItem( page, "NUMBER", GetSelectedNumberText, StepSelectedIndex, ShowSelectedTutorial ) );
             _registry.Register( this, new DebugReadOnlyItem( page, "TITLE", GetSelectedTitle ) );
+            _registry.Register( this, new DebugToggleItem( page, "READ", IsSelectedShown, SetSelectedShown ) );
+            _registry.Register( this, new DebugReadOnlyItem( page, "READ COUNT", GetReadCountText ) );
+            _registry.Register( this, new DebugActionItem( page, "SET ALL READ", () => _tutorialFcd.SetAllShown( true ) ) );
+            _registry.Register( this, new DebugActionItem( page, "SET ALL UNREAD", () => _tutorialFcd.SetAllShown( false ) ) );
         }
 
         private int GetTutorialCount()
@@ -48,6 +53,41 @@ namespace Frontier.DebugTools.Tutorial
         {
             var datas = _tutorialFcd.GetTutorialDatas();
             return ( _selectedIndex < datas.Count ) ? datas[_selectedIndex].Title : "-";
+        }
+
+        /// <summary>
+        /// 選択中の番号のチュートリアルが既読かを取得します。番号が無効な場合は未読として扱います
+        /// </summary>
+        private bool IsSelectedShown()
+        {
+            var datas = _tutorialFcd.GetTutorialDatas();
+            return ( _selectedIndex < datas.Count ) && _tutorialFcd.IsShown( datas[_selectedIndex].TriggerType );
+        }
+
+        /// <summary>
+        /// 選択中の番号のチュートリアルの既読状態を設定します
+        /// </summary>
+        private void SetSelectedShown( bool isShown )
+        {
+            var datas = _tutorialFcd.GetTutorialDatas();
+            if( datas.Count <= _selectedIndex ) { return; }
+
+            _tutorialFcd.SetShown( datas[_selectedIndex].TriggerType, isShown );
+        }
+
+        /// <summary>
+        /// 既読のチュートリアル数を「既読数 / 総数」の形式で取得します
+        /// </summary>
+        private string GetReadCountText()
+        {
+            var datas = _tutorialFcd.GetTutorialDatas();
+            int readCount = 0;
+            foreach( var data in datas )
+            {
+                if( _tutorialFcd.IsShown( data.TriggerType ) ) { ++readCount; }
+            }
+
+            return $"{readCount} / {datas.Count}";
         }
 
         /// <summary>

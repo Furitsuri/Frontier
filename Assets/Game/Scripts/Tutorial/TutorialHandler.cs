@@ -68,34 +68,6 @@ namespace Frontier.Tutorial
         }
 
         /// <summary>
-        /// 読み込んだチュートリアルデータの一覧を取得します。読込みが完了していない場合は空の一覧を返します
-        /// </summary>
-        public IReadOnlyList<TutorialData> GetTutorialDatas()
-        {
-            if( _tutorialLoader == null || !_tutorialLoader.IsLoaded ) { return Array.Empty<TutorialData>(); }
-
-            return _tutorialLoader.GetTutorialDatas();
-        }
-
-        /// <summary>
-        /// チュートリアルデータの一覧の、指定番号のチュートリアルを表示します。
-        /// トリガーによる通常の表示とは異なり、表示済みとしての記録は行いません(デバッグでの内容確認用)
-        /// </summary>
-        /// <param name="index">GetTutorialDatas()で得られる一覧の中での番号</param>
-        /// <param name="onExited">表示したチュートリアルを閉じた際に一度だけ呼ばれるコールバック</param>
-        /// <returns>表示の成否</returns>
-        public bool ShowTutorialAt( int index, Action onExited )
-        {
-            var datas = GetTutorialDatas();
-            if( index < 0 || datas.Count <= index ) { return false; }
-
-            _onExitedOnce = onExited;
-            ShowTutorialData( datas[index] );
-
-            return true;
-        }
-
-        /// <summary>
         /// 指定のチュートリアルデータを先頭ページから表示し、実行を予約します
         /// </summary>
         private void ShowTutorialData( TutorialData data )
@@ -318,5 +290,38 @@ namespace Frontier.Tutorial
         public override int GetPriority() { return ( int ) FocusRoutinePriority.TUTORIAL; }
 
         #endregion
+
+        // =========================================================
+        // デバッグ用
+        // =========================================================
+#if UNITY_EDITOR
+        /// <summary>
+        /// 読み込んだチュートリアルデータの一覧を取得します。読込みが完了していない場合は空の一覧を返します
+        /// </summary>
+        public IReadOnlyList<TutorialData> GetTutorialDatas()
+        {
+            if( _tutorialLoader == null || !_tutorialLoader.IsLoaded ) { return Array.Empty<TutorialData>(); }
+
+            return _tutorialLoader.GetTutorialDatas();
+        }
+
+        /// <summary>
+        /// チュートリアルデータの一覧の、指定番号のチュートリアルを表示します。
+        /// トリガーによる通常の表示とは異なり、表示済みとしての記録は行いません(デバッグでの内容確認用)
+        /// </summary>
+        /// <param name="index">GetTutorialDatas()で得られる一覧の中での番号</param>
+        /// <param name="onExited">表示したチュートリアルを閉じた際に一度だけ呼ばれるコールバック</param>
+        /// <returns>表示の成否</returns>
+        public bool ShowTutorialAt( int index, Action onExited )
+        {
+            var datas = GetTutorialDatas();
+            if( index < 0 || datas.Count <= index ) { return false; }
+
+            _onExitedOnce = onExited;
+            ShowTutorialData( datas[index] );
+
+            return true;
+        }
+#endif // UNITY_EDITOR
     }
 }

@@ -9,8 +9,8 @@ namespace Frontier.DebugTools.Tutorial
     /// </summary>
     public static class TutorialDebugMenuPages
     {
-        // チュートリアルの閲覧。番号を指定したチュートリアルを、表示済みの記録を残さずに表示する
-        public static readonly DebugMenuPage VIEWER = new DebugMenuPage( DebugMenuCategory.TUTORIAL, "VIEWER" );
+        // チュートリアルの項目。番号を指定したチュートリアルの閲覧(表示済みの記録は残さない)と、既読データの編集を行う
+        public static readonly DebugMenuPage ENTRIES = new DebugMenuPage( DebugMenuCategory.TUTORIAL, "ENTRIES" );
     }
 }
 
