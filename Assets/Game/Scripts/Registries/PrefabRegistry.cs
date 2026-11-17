@@ -36,6 +36,7 @@ namespace Frontier.Registries
         [SerializeField] private GameObject[] _moveDirectionPrefabs;    // 移動方向プレハブ配列
         [FormerlySerializedAs( "_tileHighlightMarkerObject" )]
         [SerializeField] private GameObject _tileOutlineMarkerObject;   // 特定タイルの位置を外枠で示す汎用マーカープレハブ
+        [SerializeField] private GameObject _attackTelegraphAreaObject; // NPCが予約した攻撃の範囲(予兆)を塗り+外周の縁取りで示すプレハブ
         [SerializeField] private GameObject _attackForecastLineObject;  // 敵対勢力からカーソル位置へ伸びる攻撃予告線プレハブ
         [SerializeField] private GameObject _attackForecastIconObject;  // 攻撃予告線を伸ばしているキャラクターが画面から見切れている場合に表示する顔アイコン(UI)プレハブ
         [SerializeField] private Material _stageBackgroundGradientMaterial; // ステージ背景(Skybox)グラデーション用マテリアル
@@ -63,6 +64,7 @@ namespace Frontier.Registries
         public GameObject[] TilePrefabs => _tilePrefabs;
         public GameObject[] MoveDirectionPrefabs => _moveDirectionPrefabs;
         public GameObject TileOutlineMarkerPrefab => _tileOutlineMarkerObject;
+        public GameObject AttackTelegraphAreaPrefab => _attackTelegraphAreaObject;
         public GameObject AttackForecastLinePrefab => _attackForecastLineObject;
         public GameObject AttackForecastIconPrefab => _attackForecastIconObject;
         public Material StageBackgroundGradientMaterial => _stageBackgroundGradientMaterial;

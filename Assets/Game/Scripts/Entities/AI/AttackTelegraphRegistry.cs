@@ -16,8 +16,8 @@ namespace Frontier.Entities.Ai
         [Inject] private PrefabRegistry _prefabReg              = null;
         [Inject] private IStageDataProvider _stageDataProvider  = null;
 
-        // 予約しているキャラクターと、予約した時点のCharacterKey(予兆の表示・消去に用いる)、予約した攻撃
-        private readonly Dictionary<Character, (CharacterKey key, AttackOption option)> _reservations = new Dictionary<Character, (CharacterKey, AttackOption)>();
+        // 予約しているキャラクターと、予約した攻撃、その範囲を示す予兆の表示(範囲が無い場合はnull)
+        private readonly Dictionary<Character, (AttackOption option, AttackTelegraphAreaView view)> _reservations = new Dictionary<Character, (AttackOption, AttackTelegraphAreaView)>();
 
         /// <summary>
         /// 予約しているキャラクターの数
@@ -33,9 +33,7 @@ namespace Frontier.Entities.Ai
         {
             Remove( owner );
 
-            var ownerKey = owner.GetCharacterKey();
-            _reservations[owner] = (ownerKey, option);
-            ShowTelegraph( ownerKey, in option );
+            _reservations[owner] = (option, ShowTelegraph( in option ));
         }
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace Frontier.Entities.Ai
         {
             if( owner == null || !_reservations.TryGetValue( owner, out var reservation ) ) { return; }
 
-            HideTelegraph( reservation.key, in reservation.option );
+            HideTelegraph( reservation.view );
             _reservations.Remove( owner );
         }
 
@@ -77,34 +75,28 @@ namespace Frontier.Entities.Ai
         {
             foreach( var reservation in _reservations.Values )
             {
-                HideTelegraph( reservation.key, in reservation.option );
+                HideTelegraph( reservation.view );
             }
             _reservations.Clear();
         }
 
-        private void ShowTelegraph( CharacterKey ownerKey, in AttackOption option )
+        /// <summary>
+        /// 予約した攻撃の範囲を予兆として表示します。予約ごとに外周を縁取った範囲を1つ表示するため、範囲が重なっても予約ごとの形が判別できます
+        /// </summary>
+        /// <returns>生成した予兆の表示(範囲が無い場合はnull)</returns>
+        private AttackTelegraphAreaView ShowTelegraph( in AttackOption option )
         {
-            if( option.AffectedTileIndices == null ) { return; }
+            if( option.AffectedTileIndices == null || option.AffectedTileIndices.Count <= 0 ) { return null; }
 
-            foreach( int tileIndex in option.AffectedTileIndices )
-            {
-                _stageDataProvider.CurrentData.GetTile( tileIndex )?.AddTelegraph( ownerKey, in TileColors.Colors[( int ) MeshType.TELEGRAPH], CreateTileMesh );
-            }
+            var view = _hierarchyBld.CreateComponentAndOrganize<AttackTelegraphAreaView>( _prefabReg.AttackTelegraphAreaPrefab, true );
+            view.Show( _stageDataProvider.CurrentData, option.AffectedTileIndices );
+
+            return view;
         }
 
-        private void HideTelegraph( CharacterKey ownerKey, in AttackOption option )
+        private void HideTelegraph( AttackTelegraphAreaView view )
         {
-            if( option.AffectedTileIndices == null ) { return; }
-
-            foreach( int tileIndex in option.AffectedTileIndices )
-            {
-                _stageDataProvider.CurrentData.GetTile( tileIndex )?.RemoveTelegraph( ownerKey );
-            }
-        }
-
-        private TileMesh CreateTileMesh()
-        {
-            return _hierarchyBld.CreateComponentAndOrganize<TileMesh>( _prefabReg.TileMeshPrefab, true );
+            if( view != null ) { view.Remove(); }
         }
     }
 }
