@@ -267,6 +267,11 @@ namespace Frontier.Battle
                     if( !_telegraphPlanner.Step( TELEGRAPH_PLAN_BUDGET_MS ) ) { return false; }
                     if( _telegraphPlanner.IsPlayingSignal ) { return false; }
                     _isPlanningTelegraphs = false;
+
+                    // 予兆が初めて表示された際に、予兆攻撃の説明を表示する(表示済みの場合はTutorialFacade側で無視される)。
+                    // 予約の判断・合図の間はフェーズのステートのLateUpdate(チュートリアルの表示を試行する箇所)を止めているため、
+                    // 実際の表示は合図を終えて次のフェーズへ切り替わった後になる
+                    if( _telegraphPlanner.HasAnyReservation ) { Frontier.Tutorial.TutorialFacade.Notify( Frontier.Tutorial.TriggerType.FirstAttackTelegraph ); }
                 }
 
                 // フェーズの終了に合わせてグリッドカーソルを非表示にする

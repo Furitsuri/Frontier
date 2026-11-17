@@ -132,6 +132,11 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
+        /// いずれかのキャラクターが攻撃を予約しているかを取得します
+        /// </summary>
+        public bool HasAnyReservation => 0 < _registry.Count;
+
+        /// <summary>
         /// 予約していた攻撃の実行を開始したことを通知します(予約を取り除き、予兆の表示を消去します)
         /// </summary>
         public void NotifyReservedActionStarted( Character chara )
