@@ -19,6 +19,9 @@ namespace Frontier.Battle
         [Inject] private StageController _stgCtrl                          = null;
         [Inject] private SkillActionReservationQueue _reservationQueue     = null;
         [Inject] private Frontier.Entities.Ai.AttackTelegraphRegistry _telegraphRegistry = null;
+#if UNITY_EDITOR
+        [InjectOptional] private Frontier.DebugTools.DebugSettings _debugSettings = null;
+#endif // UNITY_EDITOR
 
         private CharacterDictionary _characterDict      = null; // キャラクターハッシュテーブル(あくまで戦闘用のインスタンスであるため、DiContainerで定義されているものとは別のインスタンスです)
         
@@ -675,6 +678,10 @@ namespace Frontier.Battle
 
             var forecast = AttackForecaster.Forecast( attacker, target );
 
+#if UNITY_EDITOR
+            if( TryOverrideDamageForDebug( attacker, target, out var overridden ) ) { return overridden; }
+#endif // UNITY_EDITOR
+
             return ( -forecast.SingleDamage, -forecast.TotalDamage );
         }
 
@@ -746,5 +753,41 @@ namespace Frontier.Battle
             chara.SetRotation( rot[( int ) initDir] );                                      // 向きを設定
             _stgCtrl.GetTileDynamicData( initGridIndex ).SetExistCharacter( chara );                            // 対応するグリッドに立っているキャラクターを登録
         }
+
+        // =========================================================
+        // デバッグ用
+        // =========================================================
+#if UNITY_EDITOR
+        /// <summary>
+        /// デバッグメニューのチート設定に応じて、ダメージの予測HP変動量を上書きします。
+        /// 実際のダメージ適用もHPゲージの予測表示もこの予測値を使うため、両方に反映されます。
+        /// AIの思考(AttackForecasterを直接使用)には影響しないため、AIは通常どおりの判断を行います
+        /// </summary>
+        /// <returns>上書きを行ったか</returns>
+        private bool TryOverrideDamageForDebug( Character attacker, Character target, out ( int single, int total ) hpChange )
+        {
+            hpChange = ( 0, 0 );
+            if( _debugSettings == null || attacker == null ) { return false; }
+
+            bool isAttackerPlayer = attacker.GetCharacterKey().CharacterTag == CHARACTER_TAG.PLAYER;
+            bool isTargetPlayer   = target.GetCharacterKey().CharacterTag == CHARACTER_TAG.PLAYER;
+
+            // プレイヤー以外から受けるダメージを無効化する
+            if( _debugSettings.PlayerNoDamage && isTargetPlayer && !isAttackerPlayer )
+            {
+                return true;
+            }
+
+            // プレイヤー以外への攻撃を、残りHP分のダメージにする(一撃目で倒れるよう、単発・総量とも残りHP)
+            if( _debugSettings.PlayerOneHitKill && isAttackerPlayer && !isTargetPlayer )
+            {
+                int curHp = target.GetStatusRef.CurHP;
+                hpChange  = ( -curHp, -curHp );
+                return true;
+            }
+
+            return false;
+        }
+#endif // UNITY_EDITOR
     }
 }

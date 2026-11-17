@@ -33,6 +33,7 @@ namespace Frontier.DebugTools.Battle
             _registry.UnregisterAll( this );    // 戦闘が再初期化された場合に二重登録しないよう、一度解除する
 
             RegisterDisplayItems();
+            RegisterCheatItems();
             RegisterSelectedCharacterItems();
         }
 
@@ -53,6 +54,14 @@ namespace Frontier.DebugTools.Battle
 
             _registry.Register( this, new DebugToggleItem( page, "THINK TYPE LABEL", () => _settings.ShowThinkingTypeLabel, v => _settings.ShowThinkingTypeLabel = v ) );
             _registry.Register( this, new DebugToggleItem( page, "AI TIMING LOG",    () => _settings.LogTroopActionTiming,  v => _settings.LogTroopActionTiming  = v ) );
+        }
+
+        private void RegisterCheatItems()
+        {
+            var page = BattleDebugMenuPages.CHEAT;
+
+            _registry.Register( this, new DebugToggleItem( page, "PLAYER ONE HIT KILL", () => _settings.PlayerOneHitKill, v => _settings.PlayerOneHitKill = v ) );
+            _registry.Register( this, new DebugToggleItem( page, "PLAYER NO DAMAGE",    () => _settings.PlayerNoDamage,   v => _settings.PlayerNoDamage   = v ) );
         }
 
         private void RegisterSelectedCharacterItems()

@@ -11,6 +11,8 @@ namespace Frontier.DebugTools.Battle
     {
         // 表示。戦闘中の表示のON/OFFなど
         public static readonly DebugMenuPage DISPLAY            = new DebugMenuPage( DebugMenuCategory.BATTLE, "DISPLAY" );
+        // チート。戦闘の結果そのものを変えるON/OFF(必ず倒せる、ダメージ無効など)。表示だけを変えるものは DISPLAY へ
+        public static readonly DebugMenuPage CHEAT              = new DebugMenuPage( DebugMenuCategory.BATTLE, "CHEAT" );
         // 選択中キャラクター。ページを開いた時点でグリッドカーソル上にいたキャラクターへの操作
         public static readonly DebugMenuPage SELECTED_CHARACTER = new DebugMenuPage( DebugMenuCategory.BATTLE, "SELECTED CHARACTER" );
     }
