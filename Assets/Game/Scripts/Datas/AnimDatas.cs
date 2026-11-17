@@ -25,6 +25,7 @@ namespace Frontier
             PARRY,
             GET_HIT,
             DIE,
+            TELEGRAPH,      // 次のフェーズで使用する攻撃を予約した(予兆を表示した)ことを示す合図。全ての敵で共通して用いる短いモーション
 
             NUM,
         }
@@ -44,7 +45,8 @@ namespace Frontier
             "Guard",
             "Parry",
             "GetHit",
-            "Die"
+            "Die",
+            "Telegraph"
         };
 
         /// <summary>
@@ -65,6 +67,7 @@ namespace Frontier
             AnimeConditionsTag.GUARD,           // PARRY
             AnimeConditionsTag.NONE,            // GET_HIT
             AnimeConditionsTag.NONE,            // DIE
+            AnimeConditionsTag.NONE,            // TELEGRAPH (合図のモーションを持たないキャラクターは再生しない。予兆の範囲表示のみとなる)
         };
 
         // アニメーション名ハッシュリスト

@@ -141,6 +141,9 @@ namespace Frontier.Entities.Ai
                 if( TryPlan( chara, out var selected ) )
                 {
                     _registry.Reserve( chara, in selected );
+                    // 予兆の範囲がどのキャラクターのものかをユーザーに示すため、合図のモーションを取らせる
+                    // (モーションの内容・尺は各キャラクターのAnimator Controllerの「Telegraph」ステートで設定する)
+                    chara.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.TELEGRAPH );
                 }
 
                 yield return null;
