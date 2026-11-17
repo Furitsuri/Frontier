@@ -50,7 +50,9 @@ public class TutorialUI : UiMonoBehaviour
         _headline.text      = tutorialContent.Headline;
         _explain.text       = tutorialContent.Explain;
         _image.sprite       = tutorialContent.Image;
-        _image.enabled      = ( tutorialContent.Image != null );   // 画像の無いページで、空のImage(白い矩形)を表示しないようにする
+        // 画像の無いページでは、空のImage(白い矩形)を表示せず、その分の領域も詰める
+        // (画像と本文はVerticalLayoutGroupで並べているため、非アクティブにすると本文が見出しの直下に寄る)
+        _image.gameObject.SetActive( tutorialContent.Image != null );
         _pageNumberL.text   = ( pageIndex + 1 ).ToString();
         _pageNumberR.text   = pageNum.ToString();
     }
