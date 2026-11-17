@@ -10,6 +10,8 @@ namespace Frontier.Stage
         public CharacterKey CharaKey;
         // フラグ情報
         public TileBitFlag Flag;
+        // 着地予約(RESERVED)を行ったキャラクターのキー。予約したキャラクター自身はこのタイルに立てる。無効なキーの場合は誰も立てない
+        public CharacterKey ReservedBy;
 
         /// <summary>
         /// 初期化します
@@ -21,6 +23,7 @@ namespace Frontier.Stage
             EstimatedMoveRange  = -1;
             CharaKey            = CharacterKey.Invalid;
             Flag                = Stage.TileBitFlag.NONE;
+            ReservedBy          = CharacterKey.Invalid;
         }
 
         /// <summary>
@@ -53,12 +56,14 @@ namespace Frontier.Stage
 
         /// <summary>
         /// 指定したキャラクターがこのタイルに立てる(移動先・着地先として選択できる)かどうかを判定します。
-        /// 占有者がいない、または占有者が自分自身であり、かつ他キャラクターの着地予約(RESERVED)がされていないことを条件とします。
+        /// 占有者がいない、または占有者が自分自身であり、かつ他キャラクターの着地予約(RESERVED)がされていないことを条件とします
+        /// (自分自身が予約したタイルには立てます)。
         /// </summary>
         /// <param name="selfKey">判定を行うキャラクター自身のキー(自分自身が占有しているタイルには留まれるようにするため)</param>
         public bool IsStandableBy( CharacterKey selfKey )
         {
-            return ( CharaKey == selfKey || !CharaKey.IsValid() ) && !Methods.HasAnyFlag( Flag, TileBitFlag.RESERVED );
+            bool isReservedByOther = Methods.HasAnyFlag( Flag, TileBitFlag.RESERVED ) && ( !ReservedBy.IsValid() || ReservedBy != selfKey );
+            return ( CharaKey == selfKey || !CharaKey.IsValid() ) && !isReservedByOther;
         }
 
         /// <summary>
@@ -78,6 +83,7 @@ namespace Frontier.Stage
             target.EstimatedMoveRange  = this.EstimatedMoveRange;
             target.CharaKey            = this.CharaKey;
             target.Flag                = this.Flag;
+            target.ReservedBy          = this.ReservedBy;
         }
     }
 }

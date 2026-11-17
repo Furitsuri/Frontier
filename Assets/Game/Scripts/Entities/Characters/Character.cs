@@ -40,7 +40,9 @@ namespace Frontier.Entities
         protected FieldLogicBase _fieldLogic                                                = null;
         protected BattleLogicBase _battleLogic                                              = null;
         protected BattleAnimationEventReceiver _animReceiver                                = null;
-        protected GhostObject _ghostObject                                                  = null;
+        // 移動を伴うスキルの着地先(対象選択中のプレビュー・予約した着地先)を示すゴースト。
+        // 初回の使用時に生成し、以降はキャラクターが破棄されるまで保持して、表示・非表示と位置のみを切り替えて使い回す
+        private GhostObject _ghostObject                                                    = null;
         protected AnimationController _animCtrl                                             = null;     // アニメーションコントローラ
         protected Bullet _bullet                                                            = null;     // 矢などの弾
 
@@ -51,7 +53,6 @@ namespace Frontier.Entities
         public BattleParameters BattleParams => _btlParams;                         // パラメータ群の取得(※CharacterParametersはstructなので参照渡しにする)
         public BattleLogicBase BattleLogic => _battleLogic;
         public BattleAnimationEventReceiver BtlAnimReceiver => _animReceiver;
-        public GhostObject GhostObj => _ghostObject;
         public ref Status GetStatusRef => ref _status;
         public ref CameraParameter CameraParam => ref _camParam;
 
@@ -214,12 +215,40 @@ namespace Frontier.Entities
             }
         }
 
+        /// <summary>
+        /// ゴーストの表示・非表示を切り替えます(ゴーストを生成していない場合は何もしません)。
+        /// 非表示にしても破棄はしないため、着地先のタイル(GhostObject.TileIndex)・位置は保持されます
+        /// </summary>
         public void SetGhostActive( bool isActive )
         {
             if( _ghostObject != null )
             {
                 _ghostObject.gameObject.SetActive( isActive );
             }
+        }
+
+        /// <summary>
+        /// 表示中のゴーストのタイルを取得します。
+        /// ゴーストは非表示にしても以前のタイルを保持したまま残るため、着地先の判定には必ずこちらを用いてください
+        /// </summary>
+        /// <returns>表示中のゴーストのタイル。ゴーストを表示していない場合は-1</returns>
+        public int GetActiveGhostTileIndex()
+        {
+            return ( _ghostObject != null && _ghostObject.gameObject.activeSelf ) ? _ghostObject.TileIndex : -1;
+        }
+
+        /// <summary>
+        /// 指定のタイルにゴーストを配置して表示します
+        /// </summary>
+        /// <param name="tileIndex">配置するタイル</param>
+        /// <param name="position">配置する位置</param>
+        /// <param name="rotation">配置する向き</param>
+        public void ShowGhostAt( int tileIndex, Vector3 position, Quaternion rotation )
+        {
+            var ghost       = GetGhostObject();
+            ghost.TileIndex = tileIndex;
+            ghost.transform.SetPositionAndRotation( position, rotation );
+            ghost.gameObject.SetActive( true );
         }
 
         public void SetMaterialsSemiTransparent( float alpha = 0.5f )
@@ -295,11 +324,19 @@ namespace Frontier.Entities
         /// <returns>Prefabに設定されている弾</returns>
         public Bullet GetBullet() { return _bullet; }
 
+        /// <summary>
+        /// ゴーストを取得します。未生成の場合は非表示の状態で生成します(表示はSetGhostActive・ShowGhostAtで行います)
+        /// </summary>
         public GhostObject GetGhostObject()
         {
             if( null == _ghostObject )
             {
-                _ghostObject = GhostObject.Create( this.transform, gameObject.name );
+                // ゴーストは生成時点の姿勢を写し取り、以降も使い回すため、待機の姿勢を取らせた上で生成する
+                // (移動・攻撃・合図のモーションには跳ねるものがあり、その途中の姿勢を写し取ると着地先から浮いて見えるため)
+                System.Action create = () => _ghostObject = GhostObject.Create( this.transform, gameObject.name );
+                if( _animCtrl != null ) { _animCtrl.InvokeWithPoseOf( AnimDatas.AnimeConditionsTag.WAIT, create ); }
+                else { create(); }
+                _ghostObject.gameObject.SetActive( false );
             }
 
             return _ghostObject;
@@ -360,6 +397,8 @@ namespace Frontier.Entities
             _battleLogic?.Dispose();
             _battleLogic = null;
 
+            DisposeGhost();
+
             base.Dispose();
         }
 
@@ -378,6 +417,7 @@ namespace Frontier.Entities
         virtual public void OnBattleExit()
         {
             _uiFeedback.RemoveHpGaugeOnCharacter( this );
+            DisposeGhost(); // 戦闘中のみ用いるため、戦闘を終える際に破棄する
 
             if( _animReceiver != null )
             {
@@ -387,7 +427,11 @@ namespace Frontier.Entities
             }
         }
 
-        public void CleanupGhost()
+        /// <summary>
+        /// ゴーストを破棄します。ゴーストは使い回すため、キャラクターの破棄・戦闘の終了時にのみ呼び出します
+        /// (表示を消す場合はSetGhostActive( false )を用いてください)
+        /// </summary>
+        private void DisposeGhost()
         {
             if( _ghostObject != null )
             {

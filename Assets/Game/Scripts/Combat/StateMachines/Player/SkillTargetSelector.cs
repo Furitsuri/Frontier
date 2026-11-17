@@ -85,10 +85,10 @@ namespace Frontier.Battle
             // 「名目上のレンジ」を基準に動いてしまい、見た目に変化しない不具合が起きる
             if( _isMovingSkill )
             {
-                var ghostObj = context.Owner.GhostObj;
-                if( ghostObj != null && ghostObj.gameObject.activeSelf )
+                int ghostTileIdx = context.Owner.GetActiveGhostTileIndex();
+                if( 0 <= ghostTileIdx )
                 {
-                    _currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
+                    _currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostTileIdx );
                 }
             }
 

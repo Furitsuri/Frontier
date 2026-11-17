@@ -89,7 +89,7 @@ namespace Frontier.Combat
         /// </summary>
         public virtual void OnBeforeNameDisplay()
         {
-            _owner?.GhostObj?.gameObject.SetActive( false );
+            _owner?.SetGhostActive( false );
 
             PrepareCameraProcess();
 

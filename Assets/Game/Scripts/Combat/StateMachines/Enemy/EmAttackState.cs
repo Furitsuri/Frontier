@@ -161,7 +161,7 @@ namespace Frontier.Battle
             // (パラメータウィンドウは攻撃シーケンス中も表示し続けるため非表示にせず、グリッドカーソルも下記の理由でオーナーへ戻さない)
             CleanupTargetSelectionState( _attackCharacter, _targetCharacter, ParameterWindowType.Right, hideTargetWindow: false, focusOwner: false );
             // 他キャラクターの描画分も含め、タイルメッシュの描画をすべてクリア
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
             // 選択グリッドを表示
             // ※この攻撃の直後にプレイヤーフェーズに移行した場合、一瞬の間、選択グリッドが表示され、
             //   その後プレイヤーに選択グリッドが移るという状況になります。
@@ -196,7 +196,7 @@ namespace Frontier.Battle
             _targetCharacter.BattleLogic.ConsumeActionGaugeForSkill();
 
             FinalizeTargetSelection( ParameterWindowType.Right, false );          // カメラズームの解除は攻撃シーケンス側で行う
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();               // タイルメッシュの描画をすべてクリア
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();               // タイルメッシュの描画をすべてクリア
 
             // 防御側が自己バフスキル(GUARD等)を使用している場合はバフシーケンスを登録する(必ず攻撃シーケンスより先に登録する)
             _targetCharacter.BattleLogic.RegistSelfBuffSequences();

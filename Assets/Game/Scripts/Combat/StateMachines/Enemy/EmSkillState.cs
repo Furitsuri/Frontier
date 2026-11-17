@@ -16,7 +16,8 @@ namespace Frontier.Battle
     /// 使用するスキル・向き・攻撃対象などは、AIが選択した攻撃(AttackOption)に従います。
     /// 実行前の流れはNpcActionStateBaseで共通化しています。
     /// 攻撃を受けるプレイヤーが防御スキル(スキルによる攻撃に効果を持つもの)を使用出来る場合は、該当するプレイヤー1人ずつに防御スキルを選択させた後に実行し、
-    /// 介入する手立てが無い場合は、確認の入力を待たずに一定時間表示した後に実行します
+    /// 介入する手立てが無い場合は、確認の入力を待たずに一定時間表示した後に実行します。
+    /// 予兆を伴うスキルは、予兆を示した範囲に攻撃対象がいなくなっても実行するため、主となる攻撃対象(_targetCharacter)がnullの場合があります
     /// </summary>
     public class EmSkillState : NpcActionStateBase
     {
@@ -74,24 +75,28 @@ namespace Frontier.Battle
             if( TargetingMode.DIRECTIONAL == skillData.TargetingMode )
             {
                 // 選択した向きへ回転させた上で、プレイヤーの対象選択と同じ処理で対象範囲・着地先(ゴースト)を表示する
-                // (NPCは射程を調整せず、常に最大の射程で使用する)
+                // (NPCは射程を調整せず、常に最大の射程で使用する。ただし移動を伴うスキルは、予兆で示した着地先までの距離を射程とする)
                 _attackCharacter.OrderRotate( Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) _attackOption.Direction], 0f ) );
-                actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, true, skillData.IsMovingSkill, dprtTileIndex, actionRangeCtrl.SkillMaxRange );
+                int range = ( skillData.IsMovingSkill && 0 <= _attackOption.LandingTileIndex )
+                    ? _stageCtrl.CalculateTotalRange( dprtTileIndex, _attackOption.LandingTileIndex )
+                    : actionRangeCtrl.SkillMaxRange;
+                actionRangeCtrl.RefreshTargetableRange( TargetingMode.DIRECTIONAL, true, skillData.IsMovingSkill, dprtTileIndex, range );
 
-                if( skillData.IsMovingSkill && _attackCharacter.GhostObj?.TileIndex != _attackOption.LandingTileIndex )
+                if( skillData.IsMovingSkill && _attackCharacter.GetActiveGhostTileIndex() != _attackOption.LandingTileIndex )
                 {
-                    Debug.LogWarning( $"敵のスキルの着地先が、AIが選択した着地先と異なります。(選択:{_attackOption.LandingTileIndex}, 実際:{_attackCharacter.GhostObj?.TileIndex})" );
+                    Debug.LogWarning( $"敵のスキルの着地先が、AIが選択した着地先と異なります。(選択:{_attackOption.LandingTileIndex}, 実際:{_attackCharacter.GetActiveGhostTileIndex()})" );
                 }
             }
             else
             {
                 actionRangeCtrl.DrawAttackableRange();
 
-                // 攻撃者と主となる攻撃対象を向かい合わせる
+                // 攻撃者と主となる攻撃対象を向かい合わせる。攻撃対象がいない場合は範囲の中心を向く
                 // (回復等で対象が自分自身の場合は、向く方向が定まらないため向きを変えない)
-                if( _targetCharacter != _attackCharacter )
+                int faceTileIndex = ( _targetCharacter != null ) ? _targetCharacter.BattleParams.TmpParam.CurrentTileIndex : _attackOption.CenterTileIndex;
+                if( _targetCharacter != _attackCharacter && 0 <= faceTileIndex && faceTileIndex != dprtTileIndex )
                 {
-                    var targetTileData = _stageCtrl.GetTileStaticData( _targetCharacter.BattleParams.TmpParam.CurrentTileIndex );
+                    var targetTileData = _stageCtrl.GetTileStaticData( faceTileIndex );
                     _attackCharacter.RotateToPosition( targetTileData.CharaStandPos );
                 }
             }
@@ -102,15 +107,18 @@ namespace Frontier.Battle
             // MEMO : カメラの注視先はターゲットカーソルへ切り替えない。
             //        敵の行動後はグリッドカーソルへ注視先を戻さない(CleanupTargetSelectionStateでfocusOwner:false)ため、
             //        切り替えるとプレイヤーフェーズになってもカメラがグリッドカーソルに追従しなくなる
-            _stageCtrl.ApplyTargetCursor2CharacterTile( false, _targetCharacter );
+            if( _targetCharacter != null ) { _stageCtrl.ApplyTargetCursor2CharacterTile( false, _targetCharacter ); }
+            else { _stageCtrl.SetActiveTargetCursor( false ); }
 
             // 対象選択中はカメラを少しだけ近づける
             _btlRtnCtrl.GetBtlCameraCtrl.SetTargetSelectZoomActive( true );
 
             // 主となる攻撃対象をパラメータビュー(左)に表示する
             // (スキルを使用する敵自身(右)の表示と、行動終了後に左右を閉じる処理はEmSelectStateが行う)
-            ShowParameterWindow( ParameterWindowType.Left, _targetCharacter );
-            _presenter.SetActiveActionResultExpect( true, ParameterWindowType.Right );
+            // 攻撃対象がいない場合は、左のパラメータビュー・ダメージ予測を表示しない
+            if( _targetCharacter != null ) { ShowParameterWindow( ParameterWindowType.Left, _targetCharacter ); }
+            else { CloseParameterWindow( ParameterWindowType.Left ); }
+            _presenter.SetActiveActionResultExpect( _targetCharacter != null, ParameterWindowType.Right );
 
             // 攻撃を受ける側のスキルの使用可否を、防御シチュエーション(スキルによる攻撃に効果を持つ種類のみ)で更新する
             // (プレイヤーフェーズ終了時の更新結果のままだと、防御時に使用出来ないスキルまで使用可能な表示になるため。通常攻撃(EmAttackState)と揃える)。
@@ -183,7 +191,7 @@ namespace Frontier.Battle
             if( _isWaitingForDefenceSkillSelect )
             {
                 _isWaitingForDefenceSkillSelect = false;
-                if( _interveningPlayers.Count <= _nextInterveningIndex ) { ShowParameterWindow( ParameterWindowType.Left, _targetCharacter ); }
+                if( _interveningPlayers.Count <= _nextInterveningIndex && _targetCharacter != null ) { ShowParameterWindow( ParameterWindowType.Left, _targetCharacter ); }
             }
         }
 
@@ -192,8 +200,9 @@ namespace Frontier.Battle
             // 対象選択の共通後始末
             // (パラメータウィンドウはスキルの演出中も表示し続けるため非表示にせず、グリッドカーソルもEmAttackStateと同様の理由でオーナーへ戻さない)
             CleanupTargetSelectionState( _attackCharacter, _targetCharacter, ParameterWindowType.Right, hideTargetWindow: false, focusOwner: false );
-            // 他キャラクターの描画分も含め、タイルメッシュの描画とゴーストをすべてクリア
-            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
+            // 他キャラクターの描画分も含め、タイルメッシュの描画をすべてクリア
+            // (着地先のゴーストはスキルの実行開始時(SkillActionBase.OnBeforeNameDisplay)に非表示になっている)
+            _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
 
             return base.ExitState();
         }
@@ -207,7 +216,7 @@ namespace Frontier.Battle
             _attackCharacter.BattleLogic.ConsumeActionGaugeForSkill();
             // 防御スキルを選択したプレイヤーは、使用分のゲージを消費し、使用ONのスキルを使用済みへ移す(通常攻撃(EmAttackState)と同様)
             foreach( var defender in _interveningPlayers ) { defender.BattleLogic.ConsumeActionGaugeForSkill(); }
-            if( !( _targetCharacter is Player mainDefender && _interveningPlayers.Contains( mainDefender ) ) )
+            if( _targetCharacter != null && !( _targetCharacter is Player mainDefender && _interveningPlayers.Contains( mainDefender ) ) )
             {
                 _targetCharacter.BattleLogic.ConsumeActionGauge();
             }
@@ -218,7 +227,7 @@ namespace Frontier.Battle
             // 防御側が自己バフスキル(GUARD等)を使用している場合はバフシーケンスを登録する(必ずスキルのシーケンスより先に登録する)
             foreach( var defender in _interveningPlayers ) { defender.BattleLogic.RegistSelfBuffSequences(); }
 
-            _sequenceFcd.RegistSkillAction( _attackCharacter, _targetCharacter, _attackOption.SkillID, _attackOption.AttackTargetKeys );    // スキルのシーケンス処理に移行
+            _sequenceFcd.RegistSkillAction( _attackCharacter, _targetCharacter, _attackOption.SkillID, _attackOption.AttackTargetKeys ?? new List<CharacterKey>() );    // スキルのシーケンス処理に移行
 
             _phase = EmSkillPhase.EM_SKILL_EXECUTE;
         }
@@ -256,7 +265,7 @@ namespace Frontier.Battle
         /// </summary>
         private IEnumerable<Character> GetTargets()
         {
-            yield return _targetCharacter;
+            if( null != _targetCharacter ) { yield return _targetCharacter; }
 
             if( null == _attackOption.AttackTargetKeys ) { yield break; }
 

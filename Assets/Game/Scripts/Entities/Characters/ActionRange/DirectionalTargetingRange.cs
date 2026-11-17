@@ -338,14 +338,10 @@ namespace Frontier.Entities
                 return;
             }
 
-            var ghostObject = context.Owner.GetGhostObject();
             var targetTile  = context.StageCtrl.GetTileStaticData( tileIdx );
             var originalRot = Quaternion.LookRotation( Vector3.forward, Vector3.up );
             var rotatedRot  = Quaternion.LookRotation( context.Owner.GetOrderedForward(), Vector3.up );
-            ghostObject.TileIndex = tileIdx;
-            ghostObject.transform.SetPositionAndRotation( targetTile.CharaStandPos, rotatedRot * Quaternion.Inverse( originalRot ) );
-
-            context.Owner.SetGhostActive( true );
+            context.Owner.ShowGhostAt( tileIdx, targetTile.CharaStandPos, rotatedRot * Quaternion.Inverse( originalRot ) );
         }
 
         /// <summary>
@@ -355,10 +351,10 @@ namespace Frontier.Entities
         /// </summary>
         static private void SnapRangeToGhostDistance( TargetingRangeContext context, int tileIndex, ref int currentRange )
         {
-            var ghostObj = context.Owner.GhostObj;
-            if( ghostObj != null && ghostObj.gameObject.activeSelf )
+            int ghostTileIdx = context.Owner.GetActiveGhostTileIndex();
+            if( 0 <= ghostTileIdx )
             {
-                currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostObj.TileIndex );
+                currentRange = context.StageCtrl.CalculateTotalRange( tileIndex, ghostTileIdx );
             }
         }
 
@@ -367,8 +363,7 @@ namespace Frontier.Entities
         /// </summary>
         static private int GetActiveGhostTileIndex( TargetingRangeContext context )
         {
-            var ghostObj = context.Owner.GhostObj;
-            return ( ghostObj != null && ghostObj.gameObject.activeSelf ) ? ghostObj.TileIndex : -1;
+            return context.Owner.GetActiveGhostTileIndex();
         }
 
         static private bool IsExistOpponent( TileDynamicData tileDynamicData, CHARACTER_TAG ownerTag )

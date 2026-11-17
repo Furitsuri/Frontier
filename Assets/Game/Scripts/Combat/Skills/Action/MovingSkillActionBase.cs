@@ -74,7 +74,7 @@ namespace Frontier.Combat
             Debug.Assert( ghostObject != null );
             _goalTileIndex  = ghostObject.TileIndex;
             _goalPosition   = ghostObject.transform.position;
-            _owner.CleanupGhost();
+            _owner.SetGhostActive( false );   // ゴーストは使い回すため、破棄せず非表示にする
 
             // 着地予定地を予約し、他キャラクターが移動中に留まれないようにする（EndActionで解除）
             _stageCtrl.TileDataHdlr().ReserveTile( _goalTileIndex );

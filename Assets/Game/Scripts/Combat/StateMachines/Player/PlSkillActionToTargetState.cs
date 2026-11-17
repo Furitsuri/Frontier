@@ -155,11 +155,11 @@ namespace Frontier.Battle
 
             if( _isSkillQueued )
             {
-                _plOwner.BattleLogic.ActionRangeCtrl.DrawTargetableRangeAsQueued( _plOwner.GhostObj?.TileIndex ?? -1 );
+                _plOwner.BattleLogic.ActionRangeCtrl.DrawTargetableRangeAsQueued( _plOwner.GetActiveGhostTileIndex() );
             }
             else
             {
-                _plOwner.CleanupGhost();
+                _plOwner.SetGhostActive( false );
             }
 
             return base.ExitState();
@@ -494,10 +494,7 @@ namespace Frontier.Battle
         {
             if( !_targetSelector.IsMovingSkill ) { return -1; }
 
-            var ghostObj = _plOwner.GhostObj;
-            if( null == ghostObj || !ghostObj.gameObject.activeSelf ) { return -1; }
-
-            return ghostObj.TileIndex;
+            return _plOwner.GetActiveGhostTileIndex();
         }
 
         /// <summary>
@@ -584,7 +581,7 @@ namespace Frontier.Battle
                 attackerTotalHpChange,
                 targetHpChangeMap,
                 targetTotalHpChangeMap,
-                _plOwner.GhostObj?.TileIndex ?? -1
+                _plOwner.GetActiveGhostTileIndex()
             );
 
             _reservationQueue.Enqueue( data );
@@ -674,7 +671,7 @@ namespace Frontier.Battle
 
             // 移動を伴うスキルの着地予定地を予約し、実行されるまで他キャラクターが留まれないようにする
             // (解除は実際の実行時、DashSlashSA/JumpSlashSA等のEndActionで行われる)
-            _stageCtrl.TileDataHdlr().ReserveTile( _plOwner.GhostObj?.TileIndex ?? -1 );
+            _stageCtrl.TileDataHdlr().ReserveTile( _plOwner.GetActiveGhostTileIndex() );
 
             FinalizeTargetSelection( ParameterWindowType.Left );
         }

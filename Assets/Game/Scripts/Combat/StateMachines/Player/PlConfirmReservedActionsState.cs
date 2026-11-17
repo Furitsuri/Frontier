@@ -79,8 +79,9 @@ namespace Frontier.Battle
                 _confirmPresenter.SetActiveConfirmUI( false, UIType );
                 _execPhase = ExecutionPhase.EXECUTING;
 
-                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshesAndGhosts();
+                _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();
                 _btlRtnCtrl.BtlCharaCdr.ClearAllMoveDirectionArrows();
+                HideQueuedAttackersGhosts();
 
                 ExecuteNextQueuedAction();
             }
@@ -92,6 +93,18 @@ namespace Frontier.Battle
             return true;
         }
 
+        /// <summary>
+        /// 予約を実行するプレイヤー全員の、着地先のゴーストを非表示にします。
+        /// MEMO : 全キャラクターを対象にしてはならない(敵が予兆として予約した着地先のゴーストまで消えてしまうため)
+        /// </summary>
+        private void HideQueuedAttackersGhosts()
+        {
+            foreach( var data in _reservationQueue.GetAll() )
+            {
+                _btlRtnCtrl.BtlCharaCdr.GetPlayer( data.AttackerKey )?.SetGhostActive( false );
+            }
+        }
+
         private void ExecuteNextQueuedAction()
         {
             var data     = _reservationQueue.Dequeue();
@@ -101,8 +114,7 @@ namespace Frontier.Battle
             _lastExecutedAttacker = attacker;
             _stageCtrl.ApplyGridCursor2CharacterTileWithFocusCamera( attacker );
 
-            // ExitState で CleanupGhost が呼ばれているため、キュー実行時点ではゴーストが存在しない
-            // (ReservedSkillActionApplier.Apply内でGhostTileIndexを基に再構築される)
+            // ゴーストは確定時に非表示にしている(ReservedSkillActionApplier.Apply内で、非表示のまま予約時の着地先を設定し直す)
             var target = ReservedSkillActionApplier.Apply( data, attacker, _stageCtrl, _btlRtnCtrl.BtlCharaCdr );
 
             var attackTargetKeys = new List<CharacterKey>( data.AttackTargetCharaKeys );

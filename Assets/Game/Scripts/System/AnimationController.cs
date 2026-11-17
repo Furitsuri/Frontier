@@ -143,6 +143,40 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 一時的に指定のアニメーションの先頭の姿勢を取らせた状態で処理を行い、その後に元の再生位置へ戻します。
+        /// 移動・攻撃等のモーションの途中で跳ねている等の姿勢に左右されず、決まった姿勢を写し取る(ゴーストの生成等)ために用います。
+        /// 処理の前後で同じフレームのうちに姿勢を戻すため、画面上に一時的な姿勢が表示されることはありません。
+        /// MEMO : 遷移(ブレンド)の途中であった場合は、遷移先のステートの再生位置へ戻ります
+        /// </summary>
+        /// <param name="animTag">姿勢を取らせるアニメーションタグ(存在しない場合は代わりのアニメーション、それも無い場合は現在の姿勢のまま処理を行う)</param>
+        /// <param name="action">指定の姿勢を取らせた状態で行う処理</param>
+        public void InvokeWithPoseOf( AnimDatas.AnimeConditionsTag animTag, System.Action action )
+        {
+            var animator    = _readOnlyAnimator?.Value;
+            var resolvedTag = ( animator != null && animator.isActiveAndEnabled ) ? ResolveAnimTag( animTag ) : AnimDatas.AnimeConditionsTag.NONE;
+            if( resolvedTag == AnimDatas.AnimeConditionsTag.NONE )
+            {
+                action();
+                return;
+            }
+
+            var restoreState = animator.IsInTransition( 0 ) ? animator.GetNextAnimatorStateInfo( 0 ) : animator.GetCurrentAnimatorStateInfo( 0 );
+
+            animator.Play( AnimDatas.ANIME_CONDITIONS_NAMES[( int ) resolvedTag], 0, 0f );
+            animator.Update( 0f );  // 姿勢を即座に反映する
+
+            try
+            {
+                action();
+            }
+            finally
+            {
+                animator.Play( restoreState.fullPathHash, 0, restoreState.normalizedTime );
+                animator.Update( 0f );
+            }
+        }
+
+        /// <summary>
         /// 現在再生中のアニメーションを再開します
         /// </summary>
         public void RestartAnimator()

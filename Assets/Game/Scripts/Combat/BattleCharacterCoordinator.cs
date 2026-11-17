@@ -254,14 +254,15 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// すべてのキャラクターのタイルメッシュとゴーストをクリアします。
+        /// すべてのキャラクターのタイルメッシュをクリアします。
+        /// MEMO : ゴーストはここでは扱わない。ゴーストの表示は各キャラクターの行動(対象選択・スキルの実行・予兆の予約等)ごとに
+        ///        そのキャラクター自身の分のみを切り替える(一括で消すと、他のキャラクターが予約中の着地先の表示まで消えてしまうため)
         /// </summary>
-        public void ClearAllTileMeshesAndGhosts()
+        public void ClearAllTileMeshes()
         {
             foreach( var character in _characterDict.GetAllCharacters() )
             {
                 character.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesAllType();
-                character.CleanupGhost();
             }
         }
 

@@ -1,6 +1,8 @@
-﻿using Frontier.Registries;
+﻿using Frontier.Combat;
+using Frontier.Registries;
 using Frontier.Stage;
 using System.Collections.Generic;
+using UnityEngine;
 using Zenject;
 
 namespace Frontier.Entities.Ai
@@ -9,15 +11,31 @@ namespace Frontier.Entities.Ai
     /// NPCが次の自軍のフェーズで使用を予約した攻撃(予兆を伴うスキルによる攻撃)を保持し、その範囲を予兆としてステージ上に表示します。
     /// 予約は自軍のフェーズの終了時(AttackTelegraphPlanner)に登録され、次の自軍のフェーズで実行・取り消しされるか、
     /// 予約したキャラクターが撃破されるまで表示され続けます。
+    ///
+    /// 移動を伴うスキルの場合は、着地先のタイルを予約したキャラクター以外が立てないよう予約し(TileDataHandler.ReserveTile)、
+    /// 着地先にそのキャラクターのゴースト(これからの位置を示す半透明の姿)を表示します(ゴーストはキャラクターが保持するものを用い、表示・非表示のみを切り替えます)。
+    /// 着地先を他のキャラクターで塞いで射程を縮める(予兆の通りに実行させない)ことが出来ないようにするためです。
     /// </summary>
     public class AttackTelegraphRegistry
     {
         [Inject] private HierarchyBuilderBase _hierarchyBld     = null;
         [Inject] private PrefabRegistry _prefabReg              = null;
         [Inject] private IStageDataProvider _stageDataProvider  = null;
+        [Inject] private DiContainer _container                 = null;
 
-        // 予約しているキャラクターと、予約した攻撃、その範囲を示す予兆の表示(範囲が無い場合はnull)
-        private readonly Dictionary<Character, (AttackOption option, AttackTelegraphAreaView view)> _reservations = new Dictionary<Character, (AttackOption, AttackTelegraphAreaView)>();
+        // MEMO : StageControllerはBattleRoutineControllerの初期化時に生成・バインドされ、このクラスはそれより前に生成されるため注入出来ない。
+        //        予約を行う時点(戦闘の開始後)にコンテナから取得する
+        private StageController _stageCtrlCache = null;
+        private StageController _stageCtrl => _stageCtrlCache ??= _container.Resolve<StageController>();
+
+        private struct Reservation
+        {
+            public AttackOption Option;
+            public AttackTelegraphAreaView AreaView;    // 範囲を示す予兆の表示(範囲が無い場合はnull)
+        }
+
+        // 予約しているキャラクターと、その予約
+        private readonly Dictionary<Character, Reservation> _reservations = new Dictionary<Character, Reservation>();
 
         /// <summary>
         /// 予約しているキャラクターの数
@@ -33,7 +51,12 @@ namespace Frontier.Entities.Ai
         {
             Remove( owner );
 
-            _reservations[owner] = (option, ShowTelegraph( in option ));
+            _reservations[owner] = new Reservation
+            {
+                Option          = option,
+                AreaView        = ShowTelegraph( in option ),
+            };
+            ReserveLanding( owner, in option );
         }
 
         /// <summary>
@@ -45,7 +68,7 @@ namespace Frontier.Entities.Ai
             option = default;
             if( owner == null || !_reservations.TryGetValue( owner, out var reservation ) ) { return false; }
 
-            option = reservation.option;
+            option = reservation.Option;
             return true;
         }
 
@@ -64,7 +87,7 @@ namespace Frontier.Entities.Ai
         {
             if( owner == null || !_reservations.TryGetValue( owner, out var reservation ) ) { return; }
 
-            HideTelegraph( reservation.view );
+            Release( owner, in reservation );
             _reservations.Remove( owner );
         }
 
@@ -73,9 +96,9 @@ namespace Frontier.Entities.Ai
         /// </summary>
         public void Clear()
         {
-            foreach( var reservation in _reservations.Values )
+            foreach( var reservation in _reservations )
             {
-                HideTelegraph( reservation.view );
+                Release( reservation.Key, reservation.Value );
             }
             _reservations.Clear();
         }
@@ -94,9 +117,27 @@ namespace Frontier.Entities.Ai
             return view;
         }
 
-        private void HideTelegraph( AttackTelegraphAreaView view )
+        /// <summary>
+        /// 移動を伴うスキルの場合、着地先のタイルを予約したキャラクター以外が立てないよう予約し、着地先にゴーストを表示します
+        /// </summary>
+        private void ReserveLanding( Character owner, in AttackOption option )
         {
-            if( view != null ) { view.Remove(); }
+            if( option.LandingTileIndex < 0 ) { return; }
+
+            _stageCtrl.TileDataHdlr().ReserveTile( option.LandingTileIndex, owner.GetCharacterKey() );
+
+            var landingTile = _stageCtrl.GetTileStaticData( option.LandingTileIndex );
+            owner.ShowGhostAt( option.LandingTileIndex, landingTile.CharaStandPos, Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) option.Direction], 0f ) );
+        }
+
+        /// <summary>
+        /// 予約の表示を消去し、着地先のタイルの予約を解除します
+        /// </summary>
+        private void Release( Character owner, in Reservation reservation )
+        {
+            if( reservation.AreaView != null ) { reservation.AreaView.Remove(); }
+            if( owner != null ) { owner.SetGhostActive( false ); }
+            if( 0 <= reservation.Option.LandingTileIndex ) { _stageCtrl.TileDataHdlr().ReleaseTile( reservation.Option.LandingTileIndex ); }
         }
     }
 }

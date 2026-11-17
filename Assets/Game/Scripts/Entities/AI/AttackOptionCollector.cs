@@ -116,7 +116,8 @@ namespace Frontier.Entities.Ai
         ///   ・予約時の位置に立っていない / スキルを装備していない / アクションゲージが足りない
         ///   ・(移動を伴うスキル)着地先が予約時から変わった(塞がれた等)
         ///   ・(一定範囲を対象とするスキル)範囲の中心が攻撃可能な範囲から外れた
-        ///   ・範囲内に攻撃対象が1体も存在しない
+        /// 予兆を示した以上は必ず実行するため、範囲内に攻撃対象が1体も存在しない場合も実行出来るものとします
+        /// (その場合、主となる攻撃対象(MainTarget)はnull、攻撃対象の一覧は空となります)
         /// </summary>
         /// <param name="owner">スキルを使用するキャラクター</param>
         /// <param name="reserved">予約した攻撃</param>
@@ -145,11 +146,11 @@ namespace Frontier.Entities.Ai
             {
                 case TargetingMode.PART_OF_RANGE:
                     if( !tileData.AttackableTileMap.ContainsKey( reserved.CenterTileIndex ) ) { return false; }
-                    NotifyPartOfRangeAt( owner, standTileIdx, reserved.SkillID, reserved.CenterTileIndex, skillData.TargetingRange, rules.TargetFaction, new ActionableTileData(), capture );
+                    NotifyPartOfRangeAt( owner, standTileIdx, reserved.SkillID, reserved.CenterTileIndex, skillData.TargetingRange, rules.TargetFaction, new ActionableTileData(), capture, allowNoTarget: true );
                     break;
                 case TargetingMode.DIRECTIONAL:
-                    int maxRange = owner.BattleLogic.ActionRangeCtrl.ResolveSkillMaxRange( standTileIdx, reserved.SkillID, rules );
-                    NotifyDirectionalAt( owner, standTileIdx, reserved.SkillID, reserved.Direction, maxRange, skillData.IsMovingSkill, rules, tileData, capture );
+                    int maxRange = ResolveReservedDirectionalRange( owner, standTileIdx, in reserved, rules );
+                    NotifyDirectionalAt( owner, standTileIdx, reserved.SkillID, reserved.Direction, maxRange, skillData.IsMovingSkill, rules, tileData, capture, allowNoTarget: true );
                     break;
                 default:
                     return false;
@@ -160,6 +161,21 @@ namespace Frontier.Entities.Ai
 
             rebuilt = found.Value;
             return true;
+        }
+
+        /// <summary>
+        /// 予約した、向きによって対象が決まるスキルを実行する際の射程を求めます。
+        /// 移動を伴うスキルでは、予約時の着地先までの距離とします。予約時に最大の射程の位置が塞がれていて手前に着地する予約となった場合に、
+        /// その後に塞いでいたキャラクターが離れても、予兆で示した着地先(予約によって他のキャラクターは立てない)に着地させるためです
+        /// </summary>
+        public int ResolveReservedDirectionalRange( Character owner, int standTileIdx, in AttackOption reserved, SkillRangeRules rules )
+        {
+            if( SkillsData.data[( int ) reserved.SkillID].IsMovingSkill && 0 <= reserved.LandingTileIndex )
+            {
+                return _stageCtrl.CalculateTotalRange( standTileIdx, reserved.LandingTileIndex );
+            }
+
+            return owner.BattleLogic.ActionRangeCtrl.ResolveSkillMaxRange( standTileIdx, reserved.SkillID, rules );
         }
 
         /// <summary>
@@ -415,15 +431,16 @@ namespace Frontier.Entities.Ai
         /// 指定のタイルを中心として範囲を展開し、展開した範囲内の攻撃対象をまとめて候補として通知します
         /// </summary>
         /// <param name="foundTargetSets">通知済みの攻撃対象の組み合わせ。同じ組み合わせとなる場合は通知しません(nullの場合は判定しない)</param>
+        /// <param name="allowNoTarget">攻撃対象が存在しなくても通知するか(予約した攻撃の実行時の再判定用)</param>
         /// <returns>列挙を打ち切るか否か</returns>
-        private bool NotifyPartOfRangeAt( Character owner, int standTileIdx, SkillID skillID, int centerTileIdx, int expandRange, TargetFaction targetFaction, ActionableTileData expandData, Func<AttackOption, bool> onFound, List<HashSet<CharacterKey>> foundTargetSets = null )
+        private bool NotifyPartOfRangeAt( Character owner, int standTileIdx, SkillID skillID, int centerTileIdx, int expandRange, TargetFaction targetFaction, ActionableTileData expandData, Func<AttackOption, bool> onFound, List<HashSet<CharacterKey>> foundTargetSets = null, bool allowNoTarget = false )
         {
             expandData.Init();
             _stageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( centerTileIdx, expandRange, owner.GetCharacterTag(), expandData, targetFaction );
 
             var targetKeys = ToCharacterKeys( expandData.RefAttackTargetTileIndicies );
             if( TargetFaction.ALLY == targetFaction ) { CorrectOwnerPositionInTargets( owner, standTileIdx, expandData, targetKeys ); }
-            if( targetKeys.Count <= 0 ) { return false; }
+            if( targetKeys.Count <= 0 && !allowNoTarget ) { return false; }
 
             if( foundTargetSets != null )
             {
@@ -432,7 +449,7 @@ namespace Frontier.Entities.Ai
                 foundTargetSets.Add( targetSet );
             }
 
-            return TryNotify( owner, standTileIdx, skillID, Direction.NONE, -1, centerTileIdx, CopyAffectedTilesIfTelegraphed( skillID, expandData ), targetKeys, onFound );
+            return TryNotify( owner, standTileIdx, skillID, Direction.NONE, -1, centerTileIdx, CopyAffectedTilesIfTelegraphed( skillID, expandData ), targetKeys, onFound, allowNoTarget );
         }
 
         /// <summary>
@@ -463,8 +480,9 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 指定の向きに沿った範囲内の攻撃対象をまとめて候補として通知します
         /// </summary>
+        /// <param name="allowNoTarget">攻撃対象が存在しなくても通知するか(予約した攻撃の実行時の再判定用)</param>
         /// <returns>列挙を打ち切るか否か</returns>
-        private bool NotifyDirectionalAt( Character owner, int standTileIdx, SkillID skillID, Direction dir, int range, bool isMovingSkill, SkillRangeRules rules, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool NotifyDirectionalAt( Character owner, int standTileIdx, SkillID skillID, Direction dir, int range, bool isMovingSkill, SkillRangeRules rules, ActionableTileData tileData, Func<AttackOption, bool> onFound, bool allowNoTarget = false )
         {
             var forward = Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) * Vector3.forward;
 
@@ -476,9 +494,9 @@ namespace Frontier.Entities.Ai
             if( isMovingSkill && landingTileIdx < 0 ) { return false; }
 
             var targetKeys = ToCharacterKeys( tileData.RefAttackTargetTileIndicies );
-            if( targetKeys.Count <= 0 ) { return false; }
+            if( targetKeys.Count <= 0 && !allowNoTarget ) { return false; }
 
-            return TryNotify( owner, standTileIdx, skillID, dir, landingTileIdx, -1, CopyAffectedTilesIfTelegraphed( skillID, tileData ), targetKeys, onFound );
+            return TryNotify( owner, standTileIdx, skillID, dir, landingTileIdx, -1, CopyAffectedTilesIfTelegraphed( skillID, tileData ), targetKeys, onFound, allowNoTarget );
         }
 
         /// <summary>
@@ -501,15 +519,20 @@ namespace Frontier.Entities.Ai
         /// 候補を作成してonFoundへ渡します。主となる攻撃対象は、攻撃を行う位置から最も近い攻撃対象とします
         /// (回復スキルの場合は、対象の中で最もHPが減っている味方とします)
         /// </summary>
+        /// <param name="allowNoTarget">攻撃対象が存在しなくても、主となる攻撃対象をnullとして通知するか(予約した攻撃の実行時の再判定用)</param>
         /// <returns>列挙を打ち切るか否か</returns>
-        private bool TryNotify( Character owner, int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, List<CharacterKey> targetKeys, Func<AttackOption, bool> onFound )
+        private bool TryNotify( Character owner, int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, List<CharacterKey> targetKeys, Func<AttackOption, bool> onFound, bool allowNoTarget = false )
         {
             // HPが0になっているキャラクターは対象から除く。
             // 死亡通知(NotifyCharacterDied)は死亡アニメーションのイベントから行われるため、それまでの間はHPが0のまま
             // 盤面(タイルの情報・キャラクターの一覧)に残っている。対象に含めると、行動の実行中に死亡通知・破棄が行われ、
             // 破棄済み(BattleLogicがnull)のキャラクターを参照してしまう
             targetKeys.RemoveAll( key => IsDeadOrGone( key ) );
-            if( targetKeys.Count <= 0 ) { return false; }
+            if( targetKeys.Count <= 0 )
+            {
+                // 予兆を示した攻撃は、攻撃対象がいなくても(範囲から逃げられても)そのまま実行する
+                return allowNoTarget && onFound( CreateOption( standTileIdx, skillID, dir, landingTileIdx, centerTileIdx, affectedTiles, null, targetKeys ) );
+            }
 
             Character mainTarget    = null;
             int minRange            = int.MaxValue;

@@ -18,9 +18,9 @@ namespace Frontier.Stage
         [Inject] private IStageDataProvider _stageDataProvider  = null;
         [Inject] private BattleRoutineController _btlRtnCtrl    = null;
 
-        // 移動を伴うスキルの着地予定地として予約されているタイルインデックスの集合。
-        // UpdateTileDynamicDatas() の毎フレーム再構築時に、この集合の内容を RESERVED フラグとして反映し直す。
-        private readonly HashSet<int> _reservedTileIndices = new HashSet<int>();
+        // 移動を伴うスキルの着地予定地として予約されているタイルインデックスと、予約したキャラクター(無効なキーの場合は特定しない)。
+        // UpdateTileDynamicDatas() の毎フレーム再構築時に、この内容を RESERVED フラグとして反映し直す。
+        private readonly Dictionary<int, CharacterKey> _reservedTiles = new Dictionary<int, CharacterKey>();
 
         private delegate void RegisterAttackableTileCallback( TileDynamicDataOverlay overlay, int l, int m, int n, Func<CHARACTER_TAG, bool> isTargetTag, ActionableTileData map, TileReachabilityPredicate reachability );
 
@@ -111,10 +111,9 @@ namespace Frontier.Stage
             }
 
             // 予約済みタイルにRESERVEDフラグを立て直す（ResetTileDynamicDatasで消えているため）
-            foreach( var tileIndex in _reservedTileIndices )
+            foreach( var reserved in _reservedTiles )
             {
-                var tileData = _stageDataProvider.CurrentData.GetTileDynamicData( tileIndex );
-                Methods.SetBitFlag( ref tileData.Flag, TileBitFlag.RESERVED );
+                ApplyReservedFlag( reserved.Key, reserved.Value );
             }
         }
 
@@ -124,9 +123,21 @@ namespace Frontier.Stage
         /// <param name="tileIndex">予約するタイルインデックス（負の場合は何もしません）</param>
         public void ReserveTile( int tileIndex )
         {
+            ReserveTile( tileIndex, CharacterKey.Invalid );
+        }
+
+        /// <summary>
+        /// 移動を伴うスキルの着地予定地としてタイルを予約し、予約したキャラクター以外が留まれないようにします。
+        /// 予約は直ちに(次のUpdateTileDynamicDatasを待たずに)タイル情報へ反映します。
+        /// </summary>
+        /// <param name="tileIndex">予約するタイルインデックス（負の場合は何もしません）</param>
+        /// <param name="ownerKey">予約するキャラクター。このキャラクター自身はタイルに立てます(無効なキーの場合は誰も立てません)</param>
+        public void ReserveTile( int tileIndex, CharacterKey ownerKey )
+        {
             if( tileIndex < 0 ) { return; }
 
-            _reservedTileIndices.Add( tileIndex );
+            _reservedTiles[tileIndex] = ownerKey;
+            ApplyReservedFlag( tileIndex, ownerKey );
         }
 
         /// <summary>
@@ -135,9 +146,34 @@ namespace Frontier.Stage
         /// <param name="tileIndex">解除するタイルインデックス（負の場合は何もしません）</param>
         public void ReleaseTile( int tileIndex )
         {
-            if( tileIndex < 0 ) { return; }
+            if( tileIndex < 0 || !_reservedTiles.Remove( tileIndex ) ) { return; }
 
-            _reservedTileIndices.Remove( tileIndex );
+            // 予約の解除も直ちに反映する
+            var stageData = _stageDataProvider.CurrentData;
+            if( stageData == null || stageData.GetTileTotalNum() <= tileIndex ) { return; }
+
+            var tileData = stageData.GetTileDynamicData( tileIndex );
+            Methods.UnsetBitFlag( ref tileData.Flag, TileBitFlag.RESERVED );
+            tileData.ReservedBy = CharacterKey.Invalid;
+        }
+
+        /// <summary>
+        /// 指定のタイルが着地予約されている場合、予約したキャラクターを取得します
+        /// </summary>
+        /// <returns>予約されているか否か</returns>
+        public bool TryGetReservedTileOwner( int tileIndex, out CharacterKey ownerKey )
+        {
+            return _reservedTiles.TryGetValue( tileIndex, out ownerKey );
+        }
+
+        private void ApplyReservedFlag( int tileIndex, CharacterKey ownerKey )
+        {
+            var stageData = _stageDataProvider.CurrentData;
+            if( stageData == null || stageData.GetTileTotalNum() <= tileIndex ) { return; }
+
+            var tileData = stageData.GetTileDynamicData( tileIndex );
+            Methods.SetBitFlag( ref tileData.Flag, TileBitFlag.RESERVED );
+            tileData.ReservedBy = ownerKey;
         }
 
         public void BeginExpandTargetableTilesWithPartOfRange( int baseTileIndex, int expandRange, CHARACTER_TAG ownerTag, ActionableTileData actionableTileData, TargetFaction targetFaction = TargetFaction.OPPONENT )

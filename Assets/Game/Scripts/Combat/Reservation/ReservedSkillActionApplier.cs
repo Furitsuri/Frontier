@@ -12,12 +12,13 @@ namespace Frontier.Battle
     public static class ReservedSkillActionApplier
     {
         /// <summary>
-        /// 予約データを攻撃者に適用します(ゴースト再構築、スキル切替・ゲージ消費量の復元、
+        /// 予約データを攻撃者に適用します(ゴーストへの着地先の設定、スキル切替・ゲージ消費量の復元、
         /// キュー状態解除、ゲージ消費、自己バフ登録)。対象キャラクターを解決して返します。
         /// </summary>
         public static Character Apply( SkillActionReservationData data, Character attacker, StageController stageCtrl, BattleCharacterCoordinator btlCharaCdr )
         {
-            // ゴーストを使用するスキル（ダッシュ斬りなど）のためにゴーストを再構築する
+            // ゴーストを使用するスキル（ダッシュ斬りなど）は、ゴーストの位置を着地先として移動するため、予約時の着地先を設定し直す
+            // (表示はしない。予約の確定時に非表示にしたゴーストを、実行時まで非表示のまま用いる)
             if( data.GhostTileIndex >= 0 )
             {
                 var ghost = attacker.GetGhostObject();
