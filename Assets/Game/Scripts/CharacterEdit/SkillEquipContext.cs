@@ -17,7 +17,7 @@ namespace Frontier.CharacterEdit
         public Character Character { get; }
 
         /// <summary>
-        /// アクティブスキルの装備枠。同一スキルを複数の枠に装備出来ます。
+        /// アクティブスキルの装備枠。同一スキル(同一系統)は1人1つまでしか装備出来ません。
         /// </summary>
         public SkillEquipSlotGroup<ActiveSkillID> Active { get; }
 
@@ -40,16 +40,14 @@ namespace Frontier.CharacterEdit
                 Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM,
                 userDomain.ActiveSkillInventory.Select( e => new KeyValuePair<ActiveSkillID, int>( e.SkillID, e.Count ) ),
                 ActiveSkillsData.IsValidSkill,
-                ActiveSkillID.NONE,
-                allowsSameSkillInMultipleSlots: true );
+                ActiveSkillID.NONE );
 
             Passive = new SkillEquipSlotGroup<PassiveSkillID>(
                 status.PassiveSkills,
                 Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM,
                 userDomain.PassiveSkillInventory.Select( e => new KeyValuePair<PassiveSkillID, int>( e.SkillID, e.Count ) ),
                 PassiveSkillsData.IsValidSkill,
-                PassiveSkillID.NONE,
-                allowsSameSkillInMultipleSlots: false );
+                PassiveSkillID.NONE );
         }
 
         /// <summary>

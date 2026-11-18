@@ -12,7 +12,7 @@ namespace Frontier.UI
     /// </summary>
     public class ShopView : UiMonoBehaviour
     {
-        [Header( "商品行(ActiveSkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
+        [Header( "商品行(Constants.SHOP_LINEUP_SIZE個以上をあらかじめ用意し、使わない分は非表示にする)" )]
         [SerializeField] private SkillBoxUI[] _rowBoxes;
         [SerializeField] private TextMeshProUGUI[] _priceTexts;
         [SerializeField] private TextMeshProUGUI[] _stockTexts;
@@ -78,6 +78,20 @@ namespace Frontier.UI
         public void SetRowSkill( int rowIndex, ActiveSkillID skillID, int price, int stock, bool unavailable )
         {
             _rowBoxes[rowIndex].ApplySkillForEditing( skillID );
+            ApplyRowState( rowIndex, price, stock, unavailable );
+        }
+
+        /// <summary>
+        /// SetRowSkillのパッシブスキル版です。
+        /// </summary>
+        public void SetRowSkill( int rowIndex, PassiveSkillID skillID, int price, int stock, bool unavailable )
+        {
+            _rowBoxes[rowIndex].ApplyPassiveSkillForEditing( skillID );
+            ApplyRowState( rowIndex, price, stock, unavailable );
+        }
+
+        private void ApplyRowState( int rowIndex, int price, int stock, bool unavailable )
+        {
             _rowBoxes[rowIndex].SetUseableOrNot( !unavailable );
 
             var color = unavailable ? _unavailableColor : _normalColor;

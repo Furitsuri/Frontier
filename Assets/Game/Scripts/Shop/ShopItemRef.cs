@@ -13,10 +13,17 @@ namespace Frontier.Shop
         public ShopItemCategory Category;
         public int              RawId;
 
-        public static ShopItemRef FromSkill( ActiveSkillID skillID )
-            => new ShopItemRef { Category = ShopItemCategory.Skill, RawId = ( int ) skillID };
+        public static ShopItemRef FromActiveSkill( ActiveSkillID skillID )
+            => new ShopItemRef { Category = ShopItemCategory.ActiveSkill, RawId = ( int ) skillID };
 
-        public ActiveSkillID AsSkillID => ( ActiveSkillID ) RawId;
+        public static ShopItemRef FromPassiveSkill( PassiveSkillID skillID )
+            => new ShopItemRef { Category = ShopItemCategory.PassiveSkill, RawId = ( int ) skillID };
+
+        /// <summary>Category が ActiveSkill の場合のみ有効です。</summary>
+        public ActiveSkillID AsActiveSkillID => ( ActiveSkillID ) RawId;
+
+        /// <summary>Category が PassiveSkill の場合のみ有効です。</summary>
+        public PassiveSkillID AsPassiveSkillID => ( PassiveSkillID ) RawId;
 
         public bool Equals( ShopItemRef other ) => Category == other.Category && RawId == other.RawId;
         public override bool Equals( object obj ) => obj is ShopItemRef other && Equals( other );

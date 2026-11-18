@@ -216,8 +216,11 @@ namespace Frontier.Shop
                 var item = lineup[i];
                 switch ( item.Category )
                 {
-                    case ShopItemCategory.Skill:
-                        view.SetRowSkill( i, item.AsSkillID, _shopHandler.GetPrice( item ), _shopHandler.Stock[item], !_shopHandler.CanPurchase( item ) );
+                    case ShopItemCategory.ActiveSkill:
+                        view.SetRowSkill( i, item.AsActiveSkillID, _shopHandler.GetPrice( item ), _shopHandler.Stock[item], !_shopHandler.CanPurchase( item ) );
+                        break;
+                    case ShopItemCategory.PassiveSkill:
+                        view.SetRowSkill( i, item.AsPassiveSkillID, _shopHandler.GetPrice( item ), _shopHandler.Stock[item], !_shopHandler.CanPurchase( item ) );
                         break;
                 }
             }
@@ -230,9 +233,11 @@ namespace Frontier.Shop
         {
             switch ( item.Category )
             {
-                case ShopItemCategory.Skill:
-                    // SkillBoxUIと同様、SkillsDataの名前(アンダースコア区切り)を表示用に整形する
-                    return ActiveSkillsData.data[( int ) item.AsSkillID].Name?.Replace( "_", " " ) ?? string.Empty;
+                // SkillBoxUIと同様、スキルデータの名前(アンダースコア区切り)を表示用に整形する
+                case ShopItemCategory.ActiveSkill:
+                    return ActiveSkillsData.data[( int ) item.AsActiveSkillID].Name?.Replace( "_", " " ) ?? string.Empty;
+                case ShopItemCategory.PassiveSkill:
+                    return PassiveSkillsData.data[( int ) item.AsPassiveSkillID].Name?.Replace( "_", " " ) ?? string.Empty;
                 default:
                     return string.Empty;
             }

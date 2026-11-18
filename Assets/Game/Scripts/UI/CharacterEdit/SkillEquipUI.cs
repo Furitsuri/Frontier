@@ -38,9 +38,13 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _removeRowText;
         [SerializeField] private GameObject _removeRowFrame;
 
-        [Header( "右側: 所持スキル一覧(ActiveSkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
+        [Header( "右側: 所持スキル一覧の表示行(一度に表示する行数分。所持スキルがこれより多い場合はスクロールして表示する)" )]
         [SerializeField] private SkillBoxUI[] _inventorySkillBoxes;
         [SerializeField] private TextMeshProUGUI[] _inventoryCountTexts;
+
+        [Header( "右側: 所持スキル一覧の上下に続きがあることを示す表示" )]
+        [SerializeField] private GameObject _scrollUpIndicator;
+        [SerializeField] private GameObject _scrollDownIndicator;
 
         [Header( "選択中スキルの説明文" )]
         [SerializeField] private GameObject _explanationPanel;
@@ -82,6 +86,11 @@ namespace Frontier.UI
         }
 
         public void Show() => gameObject.SetActive( true );
+
+        /// <summary>
+        /// 右側の所持スキル一覧で、一度に表示出来る行数です。
+        /// </summary>
+        public int VisibleInventoryRowCount => _inventorySkillBoxes.Length;
 
         public void Hide() => gameObject.SetActive( false );
 
@@ -143,7 +152,7 @@ namespace Frontier.UI
 
         /// <summary>
         /// 右側ウィンドウの選択状態(フォーカス外枠)を反映します
-        /// (-1:「スキルを外す」を選択中、0以上:所持スキル一覧の行index、
+        /// (-1:「スキルを外す」を選択中、0以上:所持スキル一覧の表示行index(スクロール位置を差し引いた、画面上の行)、
         /// どちらでもない場合(左側が選択中)はSetRightSelectedRow(-2)相当として全て非表示にしてください)。
         /// </summary>
         public void SetRightSelectedRow( int inventoryRowIndex )
@@ -158,7 +167,7 @@ namespace Frontier.UI
 
         /// <summary>
         /// 右側の所持スキル一覧の行数(表示する分)を設定します。あらかじめ用意した行のうち、
-        /// この件数を超える分は非表示にします。
+        /// この件数を超える分は非表示にします(VisibleInventoryRowCountを超える値は指定しないでください)。
         /// </summary>
         public void SetInventoryRowCount( int visibleCount )
         {
@@ -169,7 +178,7 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// 右側の指定行の内容を設定します。unavailableがtrueの場合(所持数0、または左側で
+        /// 右側の指定表示行の内容を設定します。unavailableがtrueの場合(所持数0、または左側で
         /// 選択中の枠と同じスキルの場合)はSkillBoxUI.SetUseableOrNot(false)でグレー表示にします
         /// (戦闘中の使用不可スキルと同じ暗転表現)。
         /// </summary>
@@ -186,6 +195,15 @@ namespace Frontier.UI
         {
             _inventorySkillBoxes[rowIndex].ApplyPassiveSkillForEditing( skillID );
             ApplyInventoryRowState( rowIndex, count, unavailable );
+        }
+
+        /// <summary>
+        /// 所持スキル一覧の上下に、表示しきれていない続きがあることを示す表示を切り替えます。
+        /// </summary>
+        public void SetScrollIndicators( bool hasAbove, bool hasBelow )
+        {
+            if ( _scrollUpIndicator != null )   { _scrollUpIndicator.SetActive( hasAbove ); }
+            if ( _scrollDownIndicator != null ) { _scrollDownIndicator.SetActive( hasBelow ); }
         }
 
         private void ApplyInventoryRowState( int rowIndex, int count, bool unavailable )

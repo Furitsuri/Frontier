@@ -99,8 +99,11 @@ namespace Frontier.Shop
 
             switch ( item.Category )
             {
-                case ShopItemCategory.Skill:
-                    _userDomain.AddSkill( item.AsSkillID, quantity );
+                case ShopItemCategory.ActiveSkill:
+                    _userDomain.AddSkill( item.AsActiveSkillID, quantity );
+                    break;
+                case ShopItemCategory.PassiveSkill:
+                    _userDomain.AddSkill( item.AsPassiveSkillID, quantity );
                     break;
             }
 
@@ -112,8 +115,10 @@ namespace Frontier.Shop
             int seed = ComputeSeed( _userDomain.WorldSeed, instanceId );
             var random = new System.Random( seed );
 
-            var pool = new List<ActiveSkillID>( ( int ) ActiveSkillID.NUM );
-            for ( int i = 0; i < ( int ) ActiveSkillID.NUM; ++i ) { pool.Add( ( ActiveSkillID ) i ); }
+            // アクティブ・パッシブのスキルを区別せず、全てのスキルから抽選する
+            var pool = new List<ShopItemRef>( ( int ) ActiveSkillID.NUM + ( int ) PassiveSkillID.NUM );
+            for ( int i = 0; i < ( int ) ActiveSkillID.NUM; ++i )  { pool.Add( ShopItemRef.FromActiveSkill( ( ActiveSkillID ) i ) ); }
+            for ( int i = 0; i < ( int ) PassiveSkillID.NUM; ++i ) { pool.Add( ShopItemRef.FromPassiveSkill( ( PassiveSkillID ) i ) ); }
 
             var lineup = new List<ShopItemRef>();
             var stock  = new Dictionary<ShopItemRef, int>();
@@ -122,7 +127,7 @@ namespace Frontier.Shop
             for ( int i = 0; i < lineupSize; ++i )
             {
                 int pick = random.Next( pool.Count );
-                var item = ShopItemRef.FromSkill( pool[pick] );
+                var item = pool[pick];
                 pool.RemoveAt( pick );
 
                 lineup.Add( item );
@@ -138,8 +143,10 @@ namespace Frontier.Shop
         {
             switch ( item.Category )
             {
-                case ShopItemCategory.Skill:
-                    return SkillShopPriceData.Price[( int ) item.AsSkillID];
+                case ShopItemCategory.ActiveSkill:
+                    return SkillShopPriceData.GetPrice( item.AsActiveSkillID );
+                case ShopItemCategory.PassiveSkill:
+                    return SkillShopPriceData.GetPrice( item.AsPassiveSkillID );
                 default:
                     throw new NotImplementedException( $"未対応のカテゴリです: {item.Category}" );
             }

@@ -17,6 +17,8 @@ namespace Frontier.CharacterEdit
     /// 左側の行番号は「アクティブ枠(0〜EQUIPABLE_ACTIVE_SKILL_MAX_NUM-1) → パッシブ枠 → OK」の順に並ぶ
     /// (SkillEquipUIの左側の行番号と一致させている)。右側の所持スキル一覧は、左側でフォーカス中(右側の
     /// 操作中は編集中)の枠の種類のスキルを表示する。
+    /// 所持スキルがViewの表示行数(SkillEquipUI.VisibleInventoryRowCount)より多い場合は、カーソルに追従して
+    /// 表示範囲をスクロールする(どの範囲を表示するかはこのクラスが決め、Viewには表示行単位で内容を渡す)。
     /// </summary>
     public class SkillEquipPresenter
     {
@@ -50,6 +52,9 @@ namespace Frontier.CharacterEdit
         private List<ActiveSkillID> _rightActiveIds = new List<ActiveSkillID>();
         private List<PassiveSkillID> _rightPassiveIds = new List<PassiveSkillID>();
 
+        // 右側の所持スキル一覧で、表示範囲の先頭にある一覧のindex(スクロール位置)
+        private int _rightScrollTop = 0;
+
         [Inject]
         public SkillEquipPresenter( SkillEquipUI view )
         {
@@ -66,6 +71,7 @@ namespace Frontier.CharacterEdit
             _currentPane = Pane.Left;
             _editingRow = -1;
             _rightListType = SkillSlotType.ACTIVE;
+            _rightScrollTop = 0;
 
             var indices = new List<int>();
             for ( int i = 0; i <= OK_ROW; ++i ) { indices.Add( i ); }
@@ -91,6 +97,7 @@ namespace Frontier.CharacterEdit
             _currentPane = Pane.Left;
             _editingRow = -1;
             _rightListType = SkillSlotType.ACTIVE;
+            _rightScrollTop = 0;
 
             RefreshLeftSlots();
             _view.SetSelectedSlot( -1 );
@@ -118,6 +125,7 @@ namespace Frontier.CharacterEdit
                     if ( TryGetSlot( _leftCmdIdxVal.value, out var slotType, out _ ) && slotType != _rightListType )
                     {
                         _rightListType = slotType;
+                        _rightScrollTop = 0;
                         RefreshRightList();
                     }
                 }
@@ -125,7 +133,11 @@ namespace Frontier.CharacterEdit
             else
             {
                 moved = _rightCommandList.OperateListCursor( dir );
-                if ( moved ) { RefreshRightSelectionDisplay(); }
+                if ( moved )
+                {
+                    if ( ScrollToRightSelection() ) { RefreshRightList(); }
+                    RefreshRightSelectionDisplay();
+                }
             }
 
             if ( moved ) { RefreshExplanation(); }
@@ -146,6 +158,7 @@ namespace Frontier.CharacterEdit
 
             _editingRow = _leftCmdIdxVal.value;
             _rightListType = slotType;
+            _rightScrollTop = 0;
             RefreshRightList();
 
             _currentPane = Pane.Right;
@@ -175,6 +188,7 @@ namespace Frontier.CharacterEdit
 
             _view.SetRightSelectedRow( -2 );
             _view.SetSelectedSlot( _leftCmdIdxVal.index );
+            _rightScrollTop = 0;
             RefreshRightList();
             RefreshExplanation();
         }
@@ -249,7 +263,7 @@ namespace Frontier.CharacterEdit
         /// <summary>
         /// 右側の所持スキル一覧の指定行を選択不可(グレー表示)にすべきかどうかを判定します。
         /// 編集中の枠がある場合はその枠へ装備出来ないスキル(所持数0、既にその枠に装備されている、
-        /// パッシブスキルで他の枠に同一スキルを装備済み等。SkillEquipSlotGroup.CanEquip参照)、
+        /// 他の枠に同一スキルを装備済み等。SkillEquipSlotGroup.CanEquip参照)、
         /// 編集中でない場合は所持数が0のスキルを選択不可とします。
         /// </summary>
         private bool IsRightRowUnavailable( int listIndex )
@@ -287,28 +301,59 @@ namespace Frontier.CharacterEdit
 
             _view.SetRemoveRowUnavailable( IsRemoveRowUnavailable() );
 
-            int count = RightListCount;
-            _view.SetInventoryRowCount( count );
-            for ( int i = 0; i < count; ++i )
+            int count        = RightListCount;
+            int visibleCount = _view.VisibleInventoryRowCount;
+            _rightScrollTop  = UnityEngine.Mathf.Clamp( _rightScrollTop, 0, UnityEngine.Mathf.Max( 0, count - visibleCount ) );
+
+            int shownCount = UnityEngine.Mathf.Min( visibleCount, count - _rightScrollTop );
+            _view.SetInventoryRowCount( shownCount );
+            for ( int row = 0; row < shownCount; ++row )
             {
-                bool unavailable = IsRightRowUnavailable( i );
+                int listIndex    = _rightScrollTop + row;
+                bool unavailable = IsRightRowUnavailable( listIndex );
                 if ( _rightListType == SkillSlotType.PASSIVE )
                 {
-                    var skillID = _rightPassiveIds[i];
-                    _view.SetInventoryRow( i, skillID, _context.Passive.GetTentativeCount( skillID ), unavailable );
+                    var skillID = _rightPassiveIds[listIndex];
+                    _view.SetInventoryRow( row, skillID, _context.Passive.GetTentativeCount( skillID ), unavailable );
                 }
                 else
                 {
-                    var skillID = _rightActiveIds[i];
-                    _view.SetInventoryRow( i, skillID, _context.Active.GetTentativeCount( skillID ), unavailable );
+                    var skillID = _rightActiveIds[listIndex];
+                    _view.SetInventoryRow( row, skillID, _context.Active.GetTentativeCount( skillID ), unavailable );
                 }
             }
+
+            _view.SetScrollIndicators( 0 < _rightScrollTop, _rightScrollTop + shownCount < count );
+        }
+
+        /// <summary>
+        /// 右側で選択中の一覧の行が表示範囲に収まるよう、スクロール位置を調整します。
+        /// 「スキルを外す」を選択中の場合は先頭までスクロールします。
+        /// </summary>
+        /// <returns>スクロール位置が変化したか</returns>
+        private bool ScrollToRightSelection()
+        {
+            int prevTop = _rightScrollTop;
+            int listIndex = _rightCmdIdxVal.value - 1;
+
+            if ( listIndex < 0 )
+            {
+                _rightScrollTop = 0;
+            }
+            else
+            {
+                int visibleCount = _view.VisibleInventoryRowCount;
+                if ( listIndex < _rightScrollTop )                      { _rightScrollTop = listIndex; }
+                else if ( _rightScrollTop + visibleCount <= listIndex ) { _rightScrollTop = listIndex - visibleCount + 1; }
+            }
+
+            return prevTop != _rightScrollTop;
         }
 
         private void RefreshRightSelectionDisplay()
         {
             int value = _rightCmdIdxVal.value;
-            _view.SetRightSelectedRow( value == REMOVE_ROW_VALUE ? -1 : value - 1 );
+            _view.SetRightSelectedRow( value == REMOVE_ROW_VALUE ? -1 : value - 1 - _rightScrollTop );
         }
 
         /// <summary>

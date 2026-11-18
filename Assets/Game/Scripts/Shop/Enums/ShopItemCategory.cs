@@ -5,6 +5,7 @@
     /// </summary>
     public enum ShopItemCategory
     {
-        Skill,
+        ActiveSkill,    // アクティブスキル(RawIdはActiveSkillID)
+        PassiveSkill,   // パッシブスキル(RawIdはPassiveSkillID)
     }
 }

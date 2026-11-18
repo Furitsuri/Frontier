@@ -35,7 +35,7 @@ namespace Frontier.DebugTools.ShopDebug
             handler.Open( new ShopContext( INSTANCE_ID, ShopBackgroundMode.Field ) );
             Check( handler.CurrentContext != null, "Open後にCurrentContextが設定される" );
 
-            int expectedLineupSize = Mathf.Min( Constants.SHOP_LINEUP_SIZE, ( int ) ActiveSkillID.NUM );
+            int expectedLineupSize = Mathf.Min( Constants.SHOP_LINEUP_SIZE, ( int ) ActiveSkillID.NUM + ( int ) PassiveSkillID.NUM );
             Check( handler.Lineup.Count == expectedLineupSize, $"品揃え数が{expectedLineupSize}件になる(実際:{handler.Lineup.Count})" );
             Check( handler.Lineup.Distinct().Count() == handler.Lineup.Count, "品揃えに重複が無い" );
             Check( handler.Lineup.All( item => Constants.SHOP_ITEM_STOCK_MIN <= handler.Stock[item] && handler.Stock[item] <= Constants.SHOP_ITEM_STOCK_MAX ),
@@ -52,19 +52,19 @@ namespace Frontier.DebugTools.ShopDebug
             int price            = handler.GetPrice( purchaseTarget );
             int stockBefore      = handler.Stock[purchaseTarget];
             int animaBefore      = userDomain.Anima;
-            int skillCountBefore = userDomain.GetSkillCount( purchaseTarget.AsSkillID );
+            int skillCountBefore = GetOwnedCount( userDomain, purchaseTarget );
 
             var result = handler.Purchase( purchaseTarget );
             Check( result == PurchaseResult.Success, $"在庫のある商品の購入はSuccessを返す(実際:{result})" );
             Check( handler.Stock[purchaseTarget] == stockBefore - 1, "購入後に在庫が1減る" );
             Check( userDomain.Anima == animaBefore - price, "購入後にAnimaが価格分減る" );
-            Check( userDomain.GetSkillCount( purchaseTarget.AsSkillID ) == skillCountBefore + 1, "購入後に所持スキル数が1増える" );
+            Check( GetOwnedCount( userDomain, purchaseTarget ) == skillCountBefore + 1, "購入後に所持スキル数が1増える" );
 
             // 品揃えに無い商品の購入
             var notInLineup = System.Enum.GetValues( typeof( ActiveSkillID ) )
                 .Cast<ActiveSkillID>()
                 .Where( id => id != ActiveSkillID.NONE && id != ActiveSkillID.NUM )
-                .Select( ShopItemRef.FromSkill )
+                .Select( ShopItemRef.FromActiveSkill )
                 .FirstOrDefault( item => !handler.Lineup.Contains( item ) );
             Check( handler.Purchase( notInLineup ) == PurchaseResult.OutOfStock, "品揃えに無い商品の購入はOutOfStockを返す" );
             Check( !handler.CanPurchase( notInLineup ), "品揃えに無い商品はCanPurchaseがfalseを返す" );
@@ -128,7 +128,7 @@ namespace Frontier.DebugTools.ShopDebug
             Check( handler.GetMaxPurchasableQuantity( target ) == 0, "アニマが1個分に満たなければ最大購入個数は0になる" );
 
             // 失敗した購入は、在庫・アニマ・所持スキルのどれも変化させない
-            int skillCountBefore = userDomain.GetSkillCount( target.AsSkillID );
+            int skillCountBefore = GetOwnedCount( userDomain, target );
 
             userDomain.Debug_SetAnima( price * 2 - 1 );
             Check( handler.Purchase( target, 2 ) == PurchaseResult.InsufficientAnima, "2個分に満たないアニマで2個購入するとInsufficientAnimaを返す" );
@@ -137,14 +137,14 @@ namespace Frontier.DebugTools.ShopDebug
             userDomain.Debug_SetAnima( price * ( stock + 5 ) );
             Check( handler.Purchase( target, stock + 1 ) == PurchaseResult.OutOfStock, "在庫を超える個数の購入はOutOfStockを返す" );
             Check( handler.Purchase( target, 0 ) == PurchaseResult.OutOfStock, "0個の購入はOutOfStockを返す" );
-            Check( handler.Stock[target] == stock && userDomain.GetSkillCount( target.AsSkillID ) == skillCountBefore, "在庫超過・0個の購入では在庫・所持スキルが変化しない" );
+            Check( handler.Stock[target] == stock && GetOwnedCount( userDomain, target ) == skillCountBefore, "在庫超過・0個の購入では在庫・所持スキルが変化しない" );
 
             // まとめ買い: 在庫をすべて購入する
             int animaBefore = userDomain.Anima;
             Check( handler.Purchase( target, stock ) == PurchaseResult.Success, $"在庫全数({stock}個)の購入はSuccessを返す" );
             Check( handler.Stock[target] == 0, "全数購入後に在庫が0になる" );
             Check( userDomain.Anima == animaBefore - price * stock, "全数購入後にAnimaが価格×個数分減る" );
-            Check( userDomain.GetSkillCount( target.AsSkillID ) == skillCountBefore + stock, "全数購入後に所持スキル数が個数分増える" );
+            Check( GetOwnedCount( userDomain, target ) == skillCountBefore + stock, "全数購入後に所持スキル数が個数分増える" );
             Check( !handler.CanPurchase( target ), "売り切れの商品はCanPurchaseがfalseを返す" );
 
             handler.Close();
@@ -160,6 +160,19 @@ namespace Frontier.DebugTools.ShopDebug
                 .SetValue( handler, userDomain );
 
             return handler;
+        }
+
+        /// <summary>
+        /// 商品に対応するスキルの所持数を返します。
+        /// </summary>
+        private static int GetOwnedCount( UserDomain userDomain, ShopItemRef item )
+        {
+            switch ( item.Category )
+            {
+                case ShopItemCategory.ActiveSkill:  return userDomain.GetSkillCount( item.AsActiveSkillID );
+                case ShopItemCategory.PassiveSkill: return userDomain.GetSkillCount( item.AsPassiveSkillID );
+                default:                            return 0;
+            }
         }
 
         private static void Check( bool isOk, string label )
