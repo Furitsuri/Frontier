@@ -115,39 +115,125 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 攻撃力の補正値を算出します。スキルによる倍率に、装備中のパッシブスキルによる倍率を加算して求めます。
+        /// 攻撃力の補正値を算出します。装備中のパッシブスキルごとの補正値と、スキルによる補正値の合計です。
+        /// MEMO : 倍率を全て合算してから整数化すると、小さな補正(例: 基礎値4の+20%)が他の補正の端数と合わせて切り捨てられ、
+        ///        効果が無かったことになる場合があるため、パッシブスキルは1つずつ整数化してから合計します。
+        ///        これにより、ステータス画面のツールチップに表示する内訳(GetAtkBreakdown)と合計値が一致します。
         /// 攻撃予測(AttackForecaster)等、実際の補正値と同じ算出方法で試算したい場合にも使用してください。
         /// </summary>
         /// <param name="ownerStatus">対象キャラクターのステータス</param>
         /// <param name="skillAtkMagnification">スキルによる攻撃力倍率の加算値</param>
         static public int CalculateModifiedAtk( in Status ownerStatus, float skillAtkMagnification )
         {
-            float passiveMagnification = PassiveSkillsData.SumEffectValue( ownerStatus.PassiveSkills, PassiveEffectType.ATK_MAGNIFICATION );
+            return CalculatePassiveModifiedValue( ownerStatus, ownerStatus.Atk, PassiveEffectType.ATK_MAGNIFICATION )
+                 + CalculateModifiedValue( ownerStatus.Atk, skillAtkMagnification );
+        }
 
-            return CalculateModifiedValue( ownerStatus.Atk, skillAtkMagnification + passiveMagnification );
+        /// <summary>
+        /// 防御力の補正値を算出します。装備中のパッシブスキルごとの補正値と、スキルによる補正値の合計です(CalculateModifiedAtkと同様)。
+        /// </summary>
+        /// <param name="ownerStatus">対象キャラクターのステータス</param>
+        /// <param name="skillDefMagnification">スキルによる防御力倍率の加算値</param>
+        static public int CalculateModifiedDef( in Status ownerStatus, float skillDefMagnification )
+        {
+            return CalculatePassiveModifiedValue( ownerStatus, ownerStatus.Def, PassiveEffectType.DEF_MAGNIFICATION )
+                 + CalculateModifiedValue( ownerStatus.Def, skillDefMagnification );
         }
 
         /// <summary>
         /// 装備中のパッシブスキルのみによる攻撃力の補正値を算出します(使用中のスキルの倍率は含みません)。
         /// 常時の効果であるパッシブスキル分を、一時的なスキル効果と区別して表示する場合などに使用します。
         /// </summary>
-        static public int CalculatePassiveModifiedAtk( in Status ownerStatus ) => CalculateModifiedAtk( ownerStatus, 0f );
+        static public int CalculatePassiveModifiedAtk( in Status ownerStatus ) => CalculatePassiveModifiedValue( ownerStatus, ownerStatus.Atk, PassiveEffectType.ATK_MAGNIFICATION );
 
         /// <summary>
         /// 装備中のパッシブスキルのみによる防御力の補正値を算出します(使用中のスキルの倍率は含みません)。
         /// </summary>
-        static public int CalculatePassiveModifiedDef( in Status ownerStatus ) => CalculateModifiedDef( ownerStatus, 0f );
+        static public int CalculatePassiveModifiedDef( in Status ownerStatus ) => CalculatePassiveModifiedValue( ownerStatus, ownerStatus.Def, PassiveEffectType.DEF_MAGNIFICATION );
 
         /// <summary>
-        /// 防御力の補正値を算出します。スキルによる倍率に、装備中のパッシブスキルによる倍率を加算して求めます。
+        /// 現在の攻撃力の補正値(ModifiedParam.Atk)の内訳を、要因(装備中のパッシブスキル→適用中のスキルの順)ごとに求めます。
+        /// 内訳の合計はModifiedParam.Atkと一致します。
         /// </summary>
-        /// <param name="ownerStatus">対象キャラクターのステータス</param>
-        /// <param name="skillDefMagnification">スキルによる防御力倍率の加算値</param>
-        static public int CalculateModifiedDef( in Status ownerStatus, float skillDefMagnification )
+        public void GetAtkBreakdown( in Status ownerStatus, List<ModifierBreakdown.Entry> dest )
         {
-            float passiveMagnification = PassiveSkillsData.SumEffectValue( ownerStatus.PassiveSkills, PassiveEffectType.DEF_MAGNIFICATION );
+            CollectPassiveBreakdown( ownerStatus, ownerStatus.Atk, PassiveEffectType.ATK_MAGNIFICATION, dest );
+            CollectAppliedSkillBreakdown( ownerStatus.Atk, true, CalculateModifiedValue( ownerStatus.Atk, _skillModifiedParam.AtkMagnification ), dest );
+        }
 
-            return CalculateModifiedValue( ownerStatus.Def, skillDefMagnification + passiveMagnification );
+        /// <summary>
+        /// 現在の防御力の補正値(ModifiedParam.Def)の内訳を、要因(装備中のパッシブスキル→適用中のスキルの順)ごとに求めます。
+        /// 内訳の合計はModifiedParam.Defと一致します。
+        /// </summary>
+        public void GetDefBreakdown( in Status ownerStatus, List<ModifierBreakdown.Entry> dest )
+        {
+            CollectPassiveBreakdown( ownerStatus, ownerStatus.Def, PassiveEffectType.DEF_MAGNIFICATION, dest );
+            CollectAppliedSkillBreakdown( ownerStatus.Def, false, CalculateModifiedValue( ownerStatus.Def, _skillModifiedParam.DefMagnification ), dest );
+        }
+
+        static private int CalculatePassiveModifiedValue( in Status ownerStatus, int baseValue, PassiveEffectType effectType )
+        {
+            if( ownerStatus.PassiveSkills == null ) { return 0; }
+
+            int total = 0;
+            foreach( var skillID in ownerStatus.PassiveSkills )
+            {
+                if( TryGetPassiveMagnification( skillID, effectType, out float magnification ) )
+                {
+                    total += CalculateModifiedValue( baseValue, magnification );
+                }
+            }
+
+            return total;
+        }
+
+        static private void CollectPassiveBreakdown( in Status ownerStatus, int baseValue, PassiveEffectType effectType, List<ModifierBreakdown.Entry> dest )
+        {
+            if( ownerStatus.PassiveSkills == null ) { return; }
+
+            foreach( var skillID in ownerStatus.PassiveSkills )
+            {
+                if( TryGetPassiveMagnification( skillID, effectType, out float magnification ) )
+                {
+                    dest.Add( new ModifierBreakdown.Entry( PassiveSkillsData.data[( int ) skillID].Name, CalculateModifiedValue( baseValue, magnification ) ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 指定のパッシブスキルが指定の効果を持つ場合、その倍率を取得します。
+        /// TODO : スキル強化の実装時に、装備枠ごとの強化段階を受け取り、その段階の効果量を用いるよう変更すること(現状は全て未強化として扱う)
+        /// </summary>
+        static private bool TryGetPassiveMagnification( PassiveSkillID skillID, PassiveEffectType effectType, out float magnification )
+        {
+            magnification = 0f;
+            if( !PassiveSkillsData.IsValidSkill( skillID ) ) { return false; }
+            if( PassiveSkillsData.data[( int ) skillID].EffectType != effectType ) { return false; }
+
+            magnification = PassiveSkillsData.GetGradeData( skillID, 0 ).Value;
+            return true;
+        }
+
+        /// <summary>
+        /// 適用中のスキルによる補正値(skillTotal)を、スキルごとの倍率に応じて振り分けた内訳を追加します。
+        /// MEMO : スキルによる倍率は合算してから整数化している(パリィによる倍率の直接変更もあるため)ので、ModifierBreakdown.Apportionで
+        ///        合計が一致するよう振り分けます。パリィによる変更分は要因として扱わず、他のスキルに振り分けられます。
+        /// </summary>
+        private void CollectAppliedSkillBreakdown( int baseValue, bool isAtk, int skillTotal, List<ModifierBreakdown.Entry> dest )
+        {
+            var sources = new List<ModifierBreakdown.Source>();
+            for( int i = 0; i < ( int ) ActiveSkillID.NUM; ++i )
+            {
+                if( !IsSkillApplied( ( ActiveSkillID ) i ) ) { continue; }
+
+                var skillData       = ActiveSkillsData.data[i];
+                float magnification = isAtk ? skillData.AddAtkMag : skillData.AddDefMag;
+                if( magnification == 0f ) { continue; }
+
+                sources.Add( new ModifierBreakdown.Source( skillData.Name, magnification ) );
+            }
+
+            ModifierBreakdown.Apportion( baseValue, sources, skillTotal, dest );
         }
 
         /// <summary>

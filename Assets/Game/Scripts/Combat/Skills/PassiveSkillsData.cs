@@ -104,29 +104,6 @@ namespace Frontier.Combat
         }
 
         /// <summary>
-        /// 装備中のパッシブスキルのうち、指定の効果を持つものの効果量を合計します。
-        /// 戦闘中の能力補正など、パッシブスキルの効果を数値として適用する際に用います。
-        /// TODO : スキル強化の実装時に、装備枠ごとの強化段階を受け取り、その段階の効果量を用いるよう変更すること(現状は全て未強化として扱う)
-        /// </summary>
-        /// <param name="equippedSkills">装備中のパッシブスキル(Status.PassiveSkills)。nullの場合は0を返します</param>
-        /// <param name="effectType">合計する効果の種類</param>
-        static public float SumEffectValue( PassiveSkillID[] equippedSkills, PassiveEffectType effectType )
-        {
-            if ( equippedSkills == null ) { return 0f; }
-
-            float total = 0f;
-            foreach ( var skillID in equippedSkills )
-            {
-                if ( !IsValidSkill( skillID ) ) { continue; }
-                if ( data[( int ) skillID].EffectType != effectType ) { continue; }
-
-                total += GetGradeData( skillID, 0 ).Value;
-            }
-
-            return total;
-        }
-
-        /// <summary>
         /// 指定スキルの指定強化段階のデータを取得します。段階がデータの範囲を超える場合は、範囲内に丸めた段階のデータを返します。
         /// </summary>
         static public GradeData GetGradeData( PassiveSkillID skillID, int grade )

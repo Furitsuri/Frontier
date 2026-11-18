@@ -86,6 +86,15 @@ namespace Frontier.UI
             return ( bonusValue < 0 ) ? $"- {-bonusValue}" : $"+ {bonusValue}";
         }
 
+        /// <summary>
+        /// 攻撃力・防御力の項目のツールチップに追記する、補正値の内訳を設定します。
+        /// </summary>
+        public void SetBonusBreakdownText( string atkText, string defText )
+        {
+            TMPAttack.SetTooltipDetailText( atkText );
+            TMPDeffence.SetTooltipDetailText( defText );
+        }
+
         public void SetSelectCursorRect( Vector2 pos, Vector2 size )
         {
             _selectCursor.rectTransform.anchoredPosition = pos;
