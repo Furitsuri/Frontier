@@ -23,7 +23,7 @@ namespace Frontier.UI
     /// </summary>
     public class SkillEquipUI : UiMonoBehaviour
     {
-        [Header( "左側: 装備枠(EQUIPABLE_SKILL_MAX_NUM個)" )]
+        [Header( "左側: 装備枠(EQUIPABLE_ACTIVE_SKILL_MAX_NUM個)" )]
         [SerializeField] private SkillBoxUI[] _slotBoxes;
 
         [Header( "左側: 決定(OK)項目" )]

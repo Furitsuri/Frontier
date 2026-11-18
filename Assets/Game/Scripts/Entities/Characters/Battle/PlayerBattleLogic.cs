@@ -139,7 +139,7 @@ namespace Frontier.Entities
         {
             int totalCost = 0;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( IsUsingEquipSkill( i ) )
                 {

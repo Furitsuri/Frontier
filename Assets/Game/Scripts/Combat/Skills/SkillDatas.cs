@@ -188,6 +188,23 @@ namespace Frontier.Combat
         }
 
         /// <summary>
+        /// パッシブスキル(装備しているだけで常時効果を持ち、能動的に使用しないスキル)であるかを判定します
+        /// パッシブスキルはパッシブスキル枠にのみ、それ以外のスキルはアクティブスキル枠にのみ装備出来ます
+        /// </summary>
+        static public bool IsPassiveSkill( SkillID skillID )
+        {
+            return IsValidSkill( skillID ) && data[( int ) skillID].SituationType == SituationType.PASSIVE;
+        }
+
+        /// <summary>
+        /// アクティブスキル(戦闘中に能動的に使用するスキル)であるかを判定します
+        /// </summary>
+        static public bool IsActiveSkill( SkillID skillID )
+        {
+            return IsValidSkill( skillID ) && data[( int ) skillID].SituationType != SituationType.PASSIVE;
+        }
+
+        /// <summary>
         /// 自軍(使用者自身を含む)を効果の対象とする種類のスキルであるかを判定します
         /// </summary>
         static public bool IsAllyTargetActionType( ActionType actType )

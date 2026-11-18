@@ -257,7 +257,7 @@ protected Character _opponent                                       = null;
             owner.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption;
             owner.BattleParams.TmpParam.ActGaugeConsumption = 0;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( owner.BattleParams.TmpParam.IsSkillsToggledON[i] )
                 {
@@ -310,7 +310,7 @@ protected Character _opponent                                       = null;
 
         public bool IsEquipSkillToggledOn( int skillIdx )
         {
-            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( skillIdx < 0 || EQUIPABLE_ACTIVE_SKILL_MAX_NUM <= skillIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
                 return false;
@@ -321,7 +321,7 @@ protected Character _opponent                                       = null;
 
         public bool IsUsingEquipSkill( int skillIdx )
         {
-            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( skillIdx < 0 || EQUIPABLE_ACTIVE_SKILL_MAX_NUM <= skillIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
                 return false;
@@ -334,7 +334,7 @@ protected Character _opponent                                       = null;
         {
             skillNames = new List<string>();
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( !IsUsingEquipSkill( i ) ) { continue; }
 
@@ -355,7 +355,7 @@ protected Character _opponent                                       = null;
         {
             equipIndex = -1;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( IsEquipSkillToggledOn( i ) )
                 {
@@ -381,7 +381,7 @@ protected Character _opponent                                       = null;
         /// <returns>使用登録されているか否か</returns>
         public int GetUsingSkillSlotIndexById( SkillID skillID )
         {
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( !IsUsingEquipSkill( i ) ) { continue; }
 
@@ -407,7 +407,7 @@ protected Character _opponent                                       = null;
 
         public void ResetUseSkills()
         {
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 _readOnlyOwner.Value.BattleParams.TmpParam.IsSkillsUsed[i] = false;
             }
@@ -436,7 +436,7 @@ protected Character _opponent                                       = null;
         {
             var owner = _readOnlyOwner.Value;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( owner.BattleParams.TmpParam.IsSkillsToggledON[i] )
                 {
@@ -614,7 +614,7 @@ protected Character _opponent                                       = null;
         {
             _reactiveNotifiers.Clear();
 
-            for( int i = 0; i < ( int ) EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < ( int ) EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
                 if( !SkillsData.ReactiveSkillNotifierFactory.TryGetValue( skillID, out var factory ) ) { continue; }

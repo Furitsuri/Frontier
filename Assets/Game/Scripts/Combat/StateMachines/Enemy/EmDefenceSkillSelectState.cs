@@ -58,7 +58,7 @@ namespace Frontier.Battle
         {
             var skillNames = defender.GetStatusRef.GetEquipSkillNames();
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( 0 < skillNames[i].Length && defender.BattleParams.TmpParam.IsUseableSkill[i] ) { return true; }
             }
@@ -78,7 +78,7 @@ namespace Frontier.Battle
             // 装備されているスキルの枠のみをカーソル移動対象にする
             var skillNames      = _defender.GetStatusRef.GetEquipSkillNames();
             var equippedIndices = new List<int>();
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( 0 < skillNames[i].Length ) { equippedIndices.Add( i ); }
             }

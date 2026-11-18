@@ -102,7 +102,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         public static bool HasTelegraphSkill( Character owner )
         {
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( SkillsData.IsTelegraphedSkill( owner.GetEquipSkillID( i ) ) ) { return true; }
             }
@@ -183,9 +183,9 @@ namespace Frontier.Entities.Ai
         /// </summary>
         private List<SkillID> CollectTelegraphSkills( Character owner, int actionGauge )
         {
-            var skillIDs = new List<SkillID>( EQUIPABLE_SKILL_MAX_NUM );
+            var skillIDs = new List<SkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 SkillID skillID = owner.GetEquipSkillID( i );
                 if( !SkillsData.IsTelegraphedSkill( skillID ) ) { continue; }
@@ -300,10 +300,10 @@ namespace Frontier.Entities.Ai
         /// <param name="includeAllyTargetSkills">回復など自軍を対象とするスキルも含めるか</param>
         private List<SkillID> CollectUsableSkills( Character owner, bool includeAllyTargetSkills )
         {
-            var skillIDs = new List<SkillID>( EQUIPABLE_SKILL_MAX_NUM );
+            var skillIDs = new List<SkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
             var tmpParam = owner.BattleParams.TmpParam;
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 SkillID skillID = owner.GetEquipSkillID( i );
                 if( !SkillsData.IsValidSkill( skillID ) ) { continue; }

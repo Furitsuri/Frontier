@@ -139,6 +139,14 @@ public class UserDomain
         WorldSeed  = data.WorldSeed;
         Members.Clear();
         Members.AddRange( data.Members );
+
+        // パッシブスキル枠追加以前のセーブデータ等、装備スキル枠の数が現行と異なるデータを補完する
+        for ( int i = 0; i < Members.Count; ++i )
+        {
+            var status = Members[i];
+            status.EnsureSkillSlots();
+            Members[i] = status;
+        }
         SkillInventory.Clear();
         if ( data.SkillInventory != null ) { SkillInventory.AddRange( data.SkillInventory ); }
     }

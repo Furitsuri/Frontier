@@ -59,7 +59,7 @@ namespace Frontier.UI
             _characterCamera.AssignCharacter( chara, LAYER_MASK_INDEX_CHARACTER_STATUS );
 
             // スキルボックスUIの表示
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 SkillBoxes[i].ApplySkill( chara, i );
             }

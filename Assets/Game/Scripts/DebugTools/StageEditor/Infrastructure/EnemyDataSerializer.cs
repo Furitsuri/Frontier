@@ -50,16 +50,13 @@ namespace Frontier.DebugTools.StageEditor
 
             try
             {
-                // EquipSkills が null のエントリを補完してからシリアライズ
+                // 装備スキル枠(アクティブ・パッシブ)が未確保・枠数不一致のエントリを補完してからシリアライズ
                 var entries = enemyList.ToArray();
                 for ( int i = 0; i < entries.Length; i++ )
                 {
-                    if ( entries[i].status.EquipSkills == null )
-                    {
-                        var e = entries[i];
-                        e.status.EquipSkills = new Frontier.Combat.SkillID[] { Frontier.Combat.SkillID.NONE, Frontier.Combat.SkillID.NONE, Frontier.Combat.SkillID.NONE, Frontier.Combat.SkillID.NONE };
-                        entries[i] = e;
-                    }
+                    var e = entries[i];
+                    e.status.EnsureSkillSlots();
+                    entries[i] = e;
                 }
 
                 var container = new SaveContainer { CharacterStatuses = entries };

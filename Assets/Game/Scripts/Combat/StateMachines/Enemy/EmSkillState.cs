@@ -282,7 +282,7 @@ namespace Frontier.Battle
         /// <returns>スロットの番号。存在しない場合は-1</returns>
         private int GetEquipSkillSlotIndex( Character chara, SkillID skillID )
         {
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( chara.GetEquipSkillID( i ) == skillID && !chara.BattleParams.TmpParam.IsSkillsUsed[i] ) { return i; }
             }

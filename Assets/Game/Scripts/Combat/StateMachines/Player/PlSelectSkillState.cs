@@ -42,7 +42,7 @@ namespace Frontier.Battle
 
             // 装備されているスキルの枠のみをカーソル移動対象にする
             var equippedIndices = new List<int>();
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( 0 < _playerSkillNames[i].Length ) { equippedIndices.Add( i ); }
             }
@@ -169,7 +169,7 @@ namespace Frontier.Battle
             bool isExistToggledOnSkill = false;
 
             // 所有スキルのうち、どれか一つでも使用フラグが立っていれば決定入力を受け付ける
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 if( _plOwner.BattleLogic.IsEquipSkillToggledOn( i ) )
                 {

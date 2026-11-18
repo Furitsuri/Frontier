@@ -28,7 +28,8 @@ namespace Frontier.Entities
         public int maxActionGauge;          // アクションゲージ最大値
         public int CurActionGauge;          // アクションゲージ現在値
         public int recoveryActionGauge;     // アクションゲージ回復値
-        public SkillID[] EquipSkills;       // 装備しているスキル
+        public SkillID[] EquipSkills;       // 装備しているアクティブスキル(EQUIPABLE_ACTIVE_SKILL_MAX_NUM枠)
+        public SkillID[] PassiveSkills;     // 装備しているパッシブスキル(EQUIPABLE_PASSIVE_SKILL_MAX_NUM枠)
 
         /// <summary>
         /// キャラクターパラメータを適応させます
@@ -39,13 +40,51 @@ namespace Frontier.Entities
         static public void ApplyParams( ref Status status, in BattleFileLoader.CharacterDeployData fdata )
         {
             status = fdata.status;
+            status.EnsureSkillSlots();
             status.CurHP           = status.MaxHP;
             status.CurActionGauge  = status.maxActionGauge;
         }
 
+        /// <summary>
+        /// 装備スキル枠を確保し、全枠を未装備(SkillID.NONE)で初期化します。
+        /// MEMO : SkillIDの0はPARRYであるため、配列を確保しただけの状態(全要素0)では全枠にPARRYが入ってしまう点に注意してください。
+        /// </summary>
         public void Setup()
         {
-            EquipSkills = new SkillID[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            EquipSkills     = CreateEmptySkillSlots( Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
+            PassiveSkills   = CreateEmptySkillSlots( Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM );
+        }
+
+        /// <summary>
+        /// 装備スキル枠が未確保、または枠数が定数と一致しない場合に、枠数を揃えます。
+        /// 既存の装備内容は保持し、不足する枠はSkillID.NONEで補完します(超過分は切り捨てます)。
+        /// パッシブスキル枠追加以前のセーブデータ・敵データJSON等、該当フィールドを持たないデータを読み込んだ際の補完に用います。
+        /// </summary>
+        public void EnsureSkillSlots()
+        {
+            EquipSkills     = ResizeSkillSlots( EquipSkills, Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
+            PassiveSkills   = ResizeSkillSlots( PassiveSkills, Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM );
+        }
+
+        static private SkillID[] CreateEmptySkillSlots( int slotNum )
+        {
+            var slots = new SkillID[slotNum];
+            for( int i = 0; i < slotNum; ++i ) { slots[i] = SkillID.NONE; }
+
+            return slots;
+        }
+
+        static private SkillID[] ResizeSkillSlots( SkillID[] source, int slotNum )
+        {
+            if( source != null && source.Length == slotNum ) { return source; }
+
+            var slots = CreateEmptySkillSlots( slotNum );
+            if( source != null )
+            {
+                Array.Copy( source, slots, Math.Min( source.Length, slotNum ) );
+            }
+
+            return slots;
         }
 
         public void Init()
@@ -116,14 +155,14 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 装備中のスキルの名前を取得します
+        /// 装備中のアクティブスキルの名前を取得します
         /// </summary>
         /// <returns>スキル名の配列</returns>
         public string[] GetEquipSkillNames()
         {
-            string[] names = new string[Constants.EQUIPABLE_SKILL_MAX_NUM];
+            string[] names = new string[Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM];
 
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 names[i] = "";
                 if( !SkillsData.IsValidSkill( EquipSkills[i] ) ) { continue; }

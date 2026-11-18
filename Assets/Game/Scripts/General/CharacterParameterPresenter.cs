@@ -395,7 +395,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
         }
 
         // スキルボックスUIの表示
-        for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+        for( int i = 0; i < Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
         {
             _parameterUI.SkillBoxes[i].ApplySkill( selectCharacter, i );
             _parameterUI.SkillBoxes[i].SetUseableOrNot( selectCharacter.BattleParams.TmpParam.IsUseableSkill[i] );
@@ -455,7 +455,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
         }
 
         // スキルボックスUIの表示
-        for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+        for( int i = 0; i < Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
         {
             _parameterUI.SkillBoxes[i].UpdateImageFlick();
         }

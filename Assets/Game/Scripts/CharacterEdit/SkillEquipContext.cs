@@ -46,7 +46,7 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 指定枠(0〜EQUIPABLE_SKILL_MAX_NUM-1)に仮に装備されているスキルを返します。
+        /// 指定枠(0〜EQUIPABLE_ACTIVE_SKILL_MAX_NUM-1)に仮に装備されているスキルを返します。
         /// </summary>
         public SkillID GetEquippedSkill( int slotIndex ) => _tentativeEquipSkills[slotIndex];
 

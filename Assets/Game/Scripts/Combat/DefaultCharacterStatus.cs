@@ -48,7 +48,8 @@ namespace Frontier
             status.attackRange         = AtkRange;
             status.CurActionGauge      = status.maxActionGauge = Math.Min( ActGaugeMax, Constants.ACTION_GAUGE_MAX );
             status.recoveryActionGauge = ActRecovery;
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = SkillID.NONE; }
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = SkillID.NONE; }
+            for( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; ++i ) { status.PassiveSkills[i] = SkillID.NONE; }
 
             return status;
         }

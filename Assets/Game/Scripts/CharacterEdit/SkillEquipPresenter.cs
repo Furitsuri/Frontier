@@ -23,7 +23,7 @@ namespace Frontier.CharacterEdit
             Right,
         }
 
-        private const int OK_ROW = EQUIPABLE_SKILL_MAX_NUM;
+        private const int OK_ROW = EQUIPABLE_ACTIVE_SKILL_MAX_NUM;
 
         // 右側CommandListの値0は常に「スキルを外す」(一番上に固定)、1以降が所持スキル一覧に対応する
         private const int REMOVE_ROW_VALUE = 0;
@@ -230,7 +230,7 @@ namespace Frontier.CharacterEdit
 
         private void RefreshLeftSlots()
         {
-            for ( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for ( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 _view.SetSlotSkill( i, _context.GetEquippedSkill( i ) );
             }

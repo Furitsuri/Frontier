@@ -32,9 +32,9 @@ namespace Frontier.Entities
         public void Setup()
         {
             IsEndCommand        = new bool[( int ) COMMAND_TAG.NUM];
-            IsSkillsToggledON   = new bool[EQUIPABLE_SKILL_MAX_NUM];
-            IsSkillsUsed        = new bool[EQUIPABLE_SKILL_MAX_NUM];
-            IsUseableSkill      = new bool[EQUIPABLE_SKILL_MAX_NUM];
+            IsSkillsToggledON   = new bool[EQUIPABLE_ACTIVE_SKILL_MAX_NUM];
+            IsSkillsUsed        = new bool[EQUIPABLE_ACTIVE_SKILL_MAX_NUM];
+            IsUseableSkill      = new bool[EQUIPABLE_ACTIVE_SKILL_MAX_NUM];
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Frontier.Entities
                 IsEndCommand[i] = false;
             }
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 IsSkillsToggledON[i]    = false;
                 IsSkillsUsed[i]         = false;
@@ -87,7 +87,7 @@ namespace Frontier.Entities
 
         public void ResetSkillsToggledOn()
         {
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 IsSkillsToggledON[i] = false;
             }
@@ -95,7 +95,7 @@ namespace Frontier.Entities
 
         public void ResetSkillsUsed()
         {
-            for( int i = 0; i < Constants.EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 IsSkillsUsed[i] = false;
             }

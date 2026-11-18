@@ -161,7 +161,7 @@ namespace Frontier.Entities
             int equipSkillIndexTransitAction = -1;
             _battleLogic?.IsSkillToggledTransitActionState( out equipSkillIndexTransitAction );
 
-            for( int i = 0; i < EQUIPABLE_SKILL_MAX_NUM; ++i )
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 SkillID skillID = GetEquipSkillID( i );
                 if( !SkillsData.IsValidSkill( skillID ) ) { continue; }
@@ -282,7 +282,7 @@ namespace Frontier.Entities
         /// <returns></returns>
         public bool IsUseableSkillByCost( int skillIdx )
         {
-            if( skillIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= skillIdx )
+            if( skillIdx < 0 || EQUIPABLE_ACTIVE_SKILL_MAX_NUM <= skillIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
 
@@ -300,12 +300,48 @@ namespace Frontier.Entities
 
         public SkillID GetEquipSkillID( int slotIdx )
         {
-            if( slotIdx < 0 || EQUIPABLE_SKILL_MAX_NUM <= slotIdx )
+            if( slotIdx < 0 || EQUIPABLE_ACTIVE_SKILL_MAX_NUM <= slotIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
                 return SkillID.NONE;
             }
             return _status.EquipSkills[slotIdx];
+        }
+
+        /// <summary>
+        /// 指定のパッシブスキル枠に装備されているスキルを取得します
+        /// </summary>
+        /// <param name="slotIdx">パッシブスキル枠のインデックス(0〜EQUIPABLE_PASSIVE_SKILL_MAX_NUM-1)</param>
+        /// <returns>装備中のスキルID(未装備の場合はSkillID.NONE)</returns>
+        public SkillID GetPassiveSkillID( int slotIdx )
+        {
+            if( slotIdx < 0 || EQUIPABLE_PASSIVE_SKILL_MAX_NUM <= slotIdx )
+            {
+                Debug.Assert( false, "指定されているスキルの装備インデックス値がパッシブスキルの装備範囲を超えています。" );
+                return SkillID.NONE;
+            }
+            // MEMO : パッシブスキル枠追加以前のデータから生成されたステータスでは枠が未確保の場合があるため、未装備扱いとします
+            if( _status.PassiveSkills == null || _status.PassiveSkills.Length <= slotIdx ) { return SkillID.NONE; }
+
+            return _status.PassiveSkills[slotIdx];
+        }
+
+        /// <summary>
+        /// 指定のパッシブスキルを装備しているかを取得します
+        /// 戦闘中の常時効果の適用や、フィールドイベント等でのパッシブスキルの有無の判定に用います
+        /// </summary>
+        /// <param name="skillID">判定するスキルID</param>
+        /// <returns>パッシブスキル枠のいずれかに装備しているか否か</returns>
+        public bool HasPassiveSkill( SkillID skillID )
+        {
+            if( !SkillsData.IsValidSkill( skillID ) ) { return false; }
+
+            for( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; ++i )
+            {
+                if( GetPassiveSkillID( i ) == skillID ) { return true; }
+            }
+
+            return false;
         }
 
         public CHARACTER_TAG GetCharacterTag()
