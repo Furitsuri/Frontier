@@ -28,8 +28,8 @@ namespace Frontier.Entities
         public int maxActionGauge;          // アクションゲージ最大値
         public int CurActionGauge;          // アクションゲージ現在値
         public int recoveryActionGauge;     // アクションゲージ回復値
-        public SkillID[] EquipSkills;       // 装備しているアクティブスキル(EQUIPABLE_ACTIVE_SKILL_MAX_NUM枠)
-        public SkillID[] PassiveSkills;     // 装備しているパッシブスキル(EQUIPABLE_PASSIVE_SKILL_MAX_NUM枠)
+        public ActiveSkillID[] EquipSkills;     // 装備しているアクティブスキル(EQUIPABLE_ACTIVE_SKILL_MAX_NUM枠)
+        public PassiveSkillID[] PassiveSkills;  // 装備しているパッシブスキル(EQUIPABLE_PASSIVE_SKILL_MAX_NUM枠)
 
         /// <summary>
         /// キャラクターパラメータを適応させます
@@ -46,39 +46,39 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 装備スキル枠を確保し、全枠を未装備(SkillID.NONE)で初期化します。
-        /// MEMO : SkillIDの0はPARRYであるため、配列を確保しただけの状態(全要素0)では全枠にPARRYが入ってしまう点に注意してください。
+        /// 装備スキル枠を確保し、全枠を未装備(NONE)で初期化します。
+        /// MEMO : ActiveSkillIDの0はPARRYであるため、配列を確保しただけの状態(全要素0)では全枠にPARRYが入ってしまう点に注意してください。
         /// </summary>
         public void Setup()
         {
-            EquipSkills     = CreateEmptySkillSlots( Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
-            PassiveSkills   = CreateEmptySkillSlots( Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM );
+            EquipSkills     = CreateEmptySkillSlots( Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM, ActiveSkillID.NONE );
+            PassiveSkills   = CreateEmptySkillSlots( Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM, PassiveSkillID.NONE );
         }
 
         /// <summary>
         /// 装備スキル枠が未確保、または枠数が定数と一致しない場合に、枠数を揃えます。
-        /// 既存の装備内容は保持し、不足する枠はSkillID.NONEで補完します(超過分は切り捨てます)。
+        /// 既存の装備内容は保持し、不足する枠はNONEで補完します(超過分は切り捨てます)。
         /// パッシブスキル枠追加以前のセーブデータ・敵データJSON等、該当フィールドを持たないデータを読み込んだ際の補完に用います。
         /// </summary>
         public void EnsureSkillSlots()
         {
-            EquipSkills     = ResizeSkillSlots( EquipSkills, Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
-            PassiveSkills   = ResizeSkillSlots( PassiveSkills, Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM );
+            EquipSkills     = ResizeSkillSlots( EquipSkills, Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM, ActiveSkillID.NONE );
+            PassiveSkills   = ResizeSkillSlots( PassiveSkills, Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM, PassiveSkillID.NONE );
         }
 
-        static private SkillID[] CreateEmptySkillSlots( int slotNum )
+        static private T[] CreateEmptySkillSlots<T>( int slotNum, T none ) where T : struct, Enum
         {
-            var slots = new SkillID[slotNum];
-            for( int i = 0; i < slotNum; ++i ) { slots[i] = SkillID.NONE; }
+            var slots = new T[slotNum];
+            for( int i = 0; i < slotNum; ++i ) { slots[i] = none; }
 
             return slots;
         }
 
-        static private SkillID[] ResizeSkillSlots( SkillID[] source, int slotNum )
+        static private T[] ResizeSkillSlots<T>( T[] source, int slotNum, T none ) where T : struct, Enum
         {
             if( source != null && source.Length == slotNum ) { return source; }
 
-            var slots = CreateEmptySkillSlots( slotNum );
+            var slots = CreateEmptySkillSlots( slotNum, none );
             if( source != null )
             {
                 Array.Copy( source, slots, Math.Min( source.Length, slotNum ) );
@@ -165,8 +165,8 @@ namespace Frontier.Entities
             for( int i = 0; i < Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 names[i] = "";
-                if( !SkillsData.IsValidSkill( EquipSkills[i] ) ) { continue; }
-                names[i] = SkillsData.data[( int ) EquipSkills[i]].Name;
+                if( !ActiveSkillsData.IsValidSkill( EquipSkills[i] ) ) { continue; }
+                names[i] = ActiveSkillsData.data[( int ) EquipSkills[i]].Name;
                 names[i] = names[i].Replace( "_", Environment.NewLine );
             }
 

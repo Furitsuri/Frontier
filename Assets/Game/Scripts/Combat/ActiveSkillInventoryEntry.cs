@@ -7,9 +7,9 @@ namespace Frontier.Combat
     /// JsonUtility/SerializeFieldはDictionaryを直接扱えないため、Listの要素として保持する。
     /// </summary>
     [Serializable]
-    public struct SkillInventoryEntry
+    public struct ActiveSkillInventoryEntry
     {
-        public SkillID SkillID;
+        public ActiveSkillID SkillID;
         public int Count;
     }
 }

@@ -27,7 +27,7 @@ namespace Frontier
 
         /// <summary>
         /// デフォルトステータスを反映した PLAYER 用 Status を生成して返します。
-        /// 装備スキルはすべて SkillID.NONE（無し）です。
+        /// 装備スキルはすべて ActiveSkillID.NONE（無し）です。
         /// </summary>
         public static Status CreatePlayerStatus()
         {
@@ -48,8 +48,8 @@ namespace Frontier
             status.attackRange         = AtkRange;
             status.CurActionGauge      = status.maxActionGauge = Math.Min( ActGaugeMax, Constants.ACTION_GAUGE_MAX );
             status.recoveryActionGauge = ActRecovery;
-            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = SkillID.NONE; }
-            for( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; ++i ) { status.PassiveSkills[i] = SkillID.NONE; }
+            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = ActiveSkillID.NONE; }
+            for( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; ++i ) { status.PassiveSkills[i] = PassiveSkillID.NONE; }
 
             return status;
         }

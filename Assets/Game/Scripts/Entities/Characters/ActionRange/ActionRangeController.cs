@@ -23,7 +23,7 @@ namespace Frontier.Entities
         private Action<TargetingRangeContext, bool, bool, int, int, ActionableTileData>[] RefreshTargetableRangeCallbacks;
 
         /// <summary>
-        /// 直近にSetupAttackableRangeData(int,SkillID)で設定したスキルの最大レンジ
+        /// 直近にSetupAttackableRangeData(int,ActiveSkillID)で設定したスキルの最大レンジ
         /// (移動を伴うスキルでは着地可能な最大距離。攻撃対象として含める先のタイル数は含まない)
         /// </summary>
         public int SkillMaxRange => _skillMaxRange;
@@ -123,9 +123,9 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="dprtTileIdx"></param>
         /// <param name="useSkillID"></param>
-        public void SetupAttackableRangeData( int dprtTileIdx, SkillID useSkillID )
+        public void SetupAttackableRangeData( int dprtTileIdx, ActiveSkillID useSkillID )
         {
-            if( !SkillsData.IsTransitionSkillActionType( SkillsData.data[( int ) useSkillID].ActionType ) )
+            if( !ActiveSkillsData.IsTransitionSkillActionType( ActiveSkillsData.data[( int ) useSkillID].ActionType ) )
             {
                 Debug.LogError( "攻撃用のスキル以外のスキルが指定されています。" );
 
@@ -145,10 +145,10 @@ namespace Frontier.Entities
         /// それ以外のスキルは、攻撃範囲内に攻撃対象が存在する場合のみ実行可能とします。
         /// スキル選択画面などで、範囲プレビューを崩さずに使用可否を判定したい場合に使用します。
         /// </summary>
-        public bool IsSkillExecutableAt( int dprtTileIdx, SkillID useSkillID )
+        public bool IsSkillExecutableAt( int dprtTileIdx, ActiveSkillID useSkillID )
         {
-            var skillData = SkillsData.data[( int ) useSkillID];
-            if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return false; }
+            var skillData = ActiveSkillsData.data[( int ) useSkillID];
+            if( !ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return false; }
 
             var rules        = SkillRangeRules.Get( useSkillID, _stageCtrl, _owner );
             var tempTileData = new ActionableTileData();
@@ -170,11 +170,11 @@ namespace Frontier.Entities
 
         /// <summary>
         /// 指定スキルの攻撃可能範囲を、渡されたActionableTileDataへ計算します
-        /// (SetupAttackableRangeData(int,SkillID)とIsSkillExecutableAtの共通処理。表示用のActionableTileDataには影響を与えません)
+        /// (SetupAttackableRangeData(int,ActiveSkillID)とIsSkillExecutableAtの共通処理。表示用のActionableTileDataには影響を与えません)
         /// </summary>
-        public void ExtractAttackableRangeDataForSkill( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules, ref ActionableTileData targetTileData )
+        public void ExtractAttackableRangeDataForSkill( int dprtTileIdx, ActiveSkillID useSkillID, SkillRangeRules rules, ref ActionableTileData targetTileData )
         {
-            SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
+            ActiveSkillsData.Data skillData = ActiveSkillsData.data[( int ) useSkillID];
 
             // 着地タイルの先の相手を攻撃するスキル等のため、最大レンジに攻撃対象として含める分のタイル数を加える
             var atkRng = ResolveSkillMaxRange( dprtTileIdx, useSkillID, rules ) + rules.TargetableRangeMargin;
@@ -206,11 +206,11 @@ namespace Frontier.Entities
         /// 指定スキルの最大レンジを求めます。
         /// スキル固有の求め方が無い場合、スキルの効果範囲の値を用います(負の値の場合はキャラクターの攻撃レンジ)
         /// </summary>
-        public int ResolveSkillMaxRange( int dprtTileIdx, SkillID useSkillID, SkillRangeRules rules )
+        public int ResolveSkillMaxRange( int dprtTileIdx, ActiveSkillID useSkillID, SkillRangeRules rules )
         {
             if( rules.MaxRangeResolver != null ) { return rules.MaxRangeResolver( dprtTileIdx ); }
 
-            SkillsData.Data skillData = SkillsData.data[( int ) useSkillID];
+            ActiveSkillsData.Data skillData = ActiveSkillsData.data[( int ) useSkillID];
             return ( skillData.RangeValue < 0 ) ? _owner.GetStatusRef.attackRange : skillData.RangeValue;
         }
 

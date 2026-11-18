@@ -17,7 +17,7 @@ namespace Frontier.UI
         [Header( "使用出来る場面ごとの色" )]
         [SerializeField] private Color _attackColor     = Color.red;                        // 攻撃時
         [SerializeField] private Color _defenceColor    = new Color( 0.1f, 0.6f, 1.0f );    // 防御時
-        [SerializeField] private Color _passiveColor    = Color.yellow;                     // パッシブ
+        [SerializeField] private Color _passiveColor    = Color.yellow;                     // パッシブスキル
 
         [Header( "スキルの種類ごとの色(使用出来る場面よりも優先)" )]
         [SerializeField] private Color _healColor       = Color.green;                      // 回復系
@@ -25,7 +25,7 @@ namespace Frontier.UI
         /// <summary>
         /// 指定のスキルのスキル名の色を取得します
         /// </summary>
-        public Color GetColor( in SkillsData.Data skillData )
+        public Color GetColor( in ActiveSkillsData.Data skillData )
         {
             if( ActionType.HEAL == skillData.ActionType ) { return _healColor; }
 
@@ -40,9 +40,13 @@ namespace Frontier.UI
             switch( situationType )
             {
                 case SituationType.DEFENCE: return _defenceColor;
-                case SituationType.PASSIVE: return _passiveColor;
                 default:                    return _attackColor;
             }
         }
+
+        /// <summary>
+        /// パッシブスキルのスキル名の色を取得します
+        /// </summary>
+        public Color GetPassiveColor() => _passiveColor;
     }
 }

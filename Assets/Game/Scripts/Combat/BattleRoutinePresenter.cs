@@ -266,7 +266,7 @@ namespace Frontier.Battle
             return _uiSystem.BattleUi.GameOver.isActiveAndEnabled;
         }
 
-        public void ShowCommandNameUI( SkillID skillId, float duration = 2.0f, Action onComplete = null )
+        public void ShowCommandNameUI( ActiveSkillID skillId, float duration = 2.0f, Action onComplete = null )
         {
             _uiSystem.BattleUi.CommandNameView.Show( skillId, duration, onComplete );
         }

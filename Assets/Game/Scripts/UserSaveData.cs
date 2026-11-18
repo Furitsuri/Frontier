@@ -27,7 +27,9 @@ public class UserSaveData
     public int          StageLevel;
     public int          WorldSeed;
     public List<Status> Members = new List<Status>();
-    public List<SkillInventoryEntry> SkillInventory = new List<SkillInventoryEntry>();
+    // アクティブスキルの所持数。パッシブスキル追加以前のセーブデータとの互換のため、フィールド名はSkillInventoryのまま据え置く
+    public List<ActiveSkillInventoryEntry>  SkillInventory          = new List<ActiveSkillInventoryEntry>();
+    public List<PassiveSkillInventoryEntry> PassiveSkillInventory   = new List<PassiveSkillInventoryEntry>();
 
     public FieldProgress FieldProgress;
 }

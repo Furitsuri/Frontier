@@ -38,7 +38,7 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _removeRowText;
         [SerializeField] private GameObject _removeRowFrame;
 
-        [Header( "右側: 所持スキル一覧(SkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
+        [Header( "右側: 所持スキル一覧(ActiveSkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
         [SerializeField] private SkillBoxUI[] _inventorySkillBoxes;
         [SerializeField] private TextMeshProUGUI[] _inventoryCountTexts;
 
@@ -86,11 +86,19 @@ namespace Frontier.UI
         public void Hide() => gameObject.SetActive( false );
 
         /// <summary>
-        /// 左側の指定行の枠に表示するスキルを設定します(未装備の場合はSkillID.NONEを渡してください)。
+        /// 左側の指定行の枠に表示するアクティブスキルを設定します(未装備の場合はActiveSkillID.NONEを渡してください)。
         /// </summary>
-        public void SetSlotSkill( int row, SkillID skillID )
+        public void SetSlotSkill( int row, ActiveSkillID skillID )
         {
             _leftRowBoxes[row].ApplySkillForEditing( skillID );
+        }
+
+        /// <summary>
+        /// 左側の指定行の枠に表示するパッシブスキルを設定します(未装備の場合はPassiveSkillID.NONEを渡してください)。
+        /// </summary>
+        public void SetSlotSkill( int row, PassiveSkillID skillID )
+        {
+            _leftRowBoxes[row].ApplyPassiveSkillForEditing( skillID );
         }
 
         /// <summary>
@@ -165,9 +173,23 @@ namespace Frontier.UI
         /// 選択中の枠と同じスキルの場合)はSkillBoxUI.SetUseableOrNot(false)でグレー表示にします
         /// (戦闘中の使用不可スキルと同じ暗転表現)。
         /// </summary>
-        public void SetInventoryRow( int rowIndex, SkillID skillID, int count, bool unavailable )
+        public void SetInventoryRow( int rowIndex, ActiveSkillID skillID, int count, bool unavailable )
         {
             _inventorySkillBoxes[rowIndex].ApplySkillForEditing( skillID );
+            ApplyInventoryRowState( rowIndex, count, unavailable );
+        }
+
+        /// <summary>
+        /// SetInventoryRowのパッシブスキル版です。
+        /// </summary>
+        public void SetInventoryRow( int rowIndex, PassiveSkillID skillID, int count, bool unavailable )
+        {
+            _inventorySkillBoxes[rowIndex].ApplyPassiveSkillForEditing( skillID );
+            ApplyInventoryRowState( rowIndex, count, unavailable );
+        }
+
+        private void ApplyInventoryRowState( int rowIndex, int count, bool unavailable )
+        {
             _inventorySkillBoxes[rowIndex].SetUseableOrNot( !unavailable );
 
             _inventoryCountTexts[rowIndex].text  = count.ToString();
@@ -177,11 +199,25 @@ namespace Frontier.UI
         /// <summary>
         /// 指定スキルの説明文を表示します。無効なSkillIDの場合は非表示にします。
         /// </summary>
-        public void SetExplanation( SkillID skillID )
+        public void SetExplanation( ActiveSkillID skillID )
         {
-            if ( !SkillsData.IsValidSkill( skillID ) ) { HideExplanation(); return; }
+            if ( !ActiveSkillsData.IsValidSkill( skillID ) ) { HideExplanation(); return; }
 
-            var textKey = SkillsData.data[( int ) skillID].ExplainTextKey;
+            ShowExplanation( ActiveSkillsData.data[( int ) skillID].ExplainTextKey );
+        }
+
+        /// <summary>
+        /// 指定パッシブスキルの説明文を表示します。無効なPassiveSkillIDの場合は非表示にします。
+        /// </summary>
+        public void SetExplanation( PassiveSkillID skillID )
+        {
+            if ( !PassiveSkillsData.IsValidSkill( skillID ) ) { HideExplanation(); return; }
+
+            ShowExplanation( PassiveSkillsData.data[( int ) skillID].ExplainTextKey );
+        }
+
+        private void ShowExplanation( LocKey textKey )
+        {
             _explanationText.text = textKey == LocKey.None ? "" : _localization.Get( textKey );
             _explanationPanel.SetActive( true );
         }

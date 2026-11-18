@@ -289,14 +289,14 @@ namespace Frontier.Combat
             switch( result )
             {
                 case JudgeResult.SUCCESS:
-                    attackChara.BattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) SkillID.PARRY].Param1;
+                    attackChara.BattleParams.SkillModifiedParam.AtkMagnification *= ActiveSkillsData.data[( int ) ActiveSkillID.PARRY].Param1;
                     break;
                 case JudgeResult.FAILED:
-                    useParryChara.BattleParams.SkillModifiedParam.DefMagnification *= SkillsData.data[( int ) SkillID.PARRY].Param2;
+                    useParryChara.BattleParams.SkillModifiedParam.DefMagnification *= ActiveSkillsData.data[( int ) ActiveSkillID.PARRY].Param2;
                     break;
                 case JudgeResult.JUST:
-                    attackChara.BattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) SkillID.PARRY].Param1;
-                    useParryChara.BattleParams.SkillModifiedParam.AtkMagnification *= SkillsData.data[( int ) SkillID.PARRY].Param3;
+                    attackChara.BattleParams.SkillModifiedParam.AtkMagnification *= ActiveSkillsData.data[( int ) ActiveSkillID.PARRY].Param1;
+                    useParryChara.BattleParams.SkillModifiedParam.AtkMagnification *= ActiveSkillsData.data[( int ) ActiveSkillID.PARRY].Param3;
                     break;
                 default:
                     Debug.Assert( false );

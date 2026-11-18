@@ -1,6 +1,6 @@
 ﻿namespace Frontier.Combat
 {
-    public enum SkillID
+    public enum ActiveSkillID
     {
         NONE = -1,
 

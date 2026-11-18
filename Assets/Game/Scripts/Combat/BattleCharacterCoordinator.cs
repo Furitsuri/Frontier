@@ -688,14 +688,14 @@ namespace Frontier.Battle
         /// <summary>
         /// 指定のキャラクターが、回復系のスキルの使用をONにしているかを判定し、そのスキルを取得します
         /// </summary>
-        private static bool TryGetToggledHealSkill( Character chara, out SkillID healSkillID )
+        private static bool TryGetToggledHealSkill( Character chara, out ActiveSkillID healSkillID )
         {
-            healSkillID = SkillID.NONE;
+            healSkillID = ActiveSkillID.NONE;
             if( null == chara || null == chara.BattleLogic ) { return false; }
             if( !chara.BattleLogic.IsSkillToggledTransitActionState( out int equipIndex ) ) { return false; }
 
             var skillID = chara.GetEquipSkillID( equipIndex );
-            if( ActionType.HEAL != SkillsData.data[( int ) skillID].ActionType ) { return false; }
+            if( ActionType.HEAL != ActiveSkillsData.data[( int ) skillID].ActionType ) { return false; }
 
             healSkillID = skillID;
             return true;

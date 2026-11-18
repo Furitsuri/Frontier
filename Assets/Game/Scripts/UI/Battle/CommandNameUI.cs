@@ -29,9 +29,9 @@ namespace Frontier.UI
         /// <param name="skillId">表示するスキルのID</param>
         /// <param name="duration">自動非表示までの秒数。負の値で無効。</param>
         /// <param name="onComplete">自動非表示後に呼ばれるコールバック。duration が負の値の場合は呼ばれません。</param>
-        public void Show( SkillID skillId, float duration = -1f, Action onComplete = null )
+        public void Show( ActiveSkillID skillId, float duration = -1f, Action onComplete = null )
         {
-            Show( SkillsData.data[( int ) skillId].Name, duration, onComplete );
+            Show( ActiveSkillsData.data[( int ) skillId].Name, duration, onComplete );
         }
 
         /// <summary>

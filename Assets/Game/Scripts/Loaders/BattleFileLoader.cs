@@ -121,7 +121,7 @@ namespace Frontier.Loaders
         /// 指定スキルのカメラパラメータを読み込みます。データファイルが存在しない場合は null を返します
         /// (＝そのスキルにはまだカメラ演出用データが用意されていない、という扱いになります)。
         /// </summary>
-        public List<BattleCameraController.CameraParamData[]> LoadSkillCameraParams( SkillID skillID )
+        public List<BattleCameraController.CameraParamData[]> LoadSkillCameraParams( ActiveSkillID skillID )
         {
             string path = _filePathReg.GetSkillCameraParamFilePath( skillID );
             if( !File.Exists( path ) ) { return null; }

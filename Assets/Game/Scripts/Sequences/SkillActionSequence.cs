@@ -11,7 +11,7 @@ namespace Frontier.Sequences
         private enum Phase { SHOW_SKILL_NAME, EXECUTING }
 
         private readonly SkillActionBase _skillAction;
-        private readonly SkillID _skillId;
+        private readonly ActiveSkillID _skillId;
         private readonly BattleRoutinePresenter _presenter;
         private readonly BattleRoutineController _btlRtnCtrl;
         private readonly Character _attacker;
@@ -24,7 +24,7 @@ namespace Frontier.Sequences
         private bool _skillStarted;
 
         [Inject]
-        public SkillActionSequence( SkillActionBase skillAction, SkillID skillId, Character attacker, List<CharacterKey> attackTargetCharaKeys,
+        public SkillActionSequence( SkillActionBase skillAction, ActiveSkillID skillId, Character attacker, List<CharacterKey> attackTargetCharaKeys,
                                     BattleRoutinePresenter presenter, BattleRoutineController btlRtnCtrl )
         {
             _skillAction            = skillAction;

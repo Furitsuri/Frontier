@@ -15,8 +15,8 @@ namespace Frontier.CharacterEdit
     /// フォーカス中スキルの説明文切り替え等)を行う。Viewは指示された内容をそのまま適用するだけの
     /// 薄い層とする。
     /// 左側の行番号は「アクティブ枠(0〜EQUIPABLE_ACTIVE_SKILL_MAX_NUM-1) → パッシブ枠 → OK」の順に並ぶ
-    /// (SkillEquipUIの左側の行番号と一致させている)。右側の所持スキル一覧は、編集中の枠の種類に
-    /// 装備可能なスキルのみに絞り込んで表示する。
+    /// (SkillEquipUIの左側の行番号と一致させている)。右側の所持スキル一覧は、左側でフォーカス中(右側の
+    /// 操作中は編集中)の枠の種類のスキルを表示する。
     /// </summary>
     public class SkillEquipPresenter
     {
@@ -44,7 +44,11 @@ namespace Frontier.CharacterEdit
 
         private readonly CommandList _rightCommandList = new CommandList();
         private CommandList.CommandIndexedValue _rightCmdIdxVal;
-        private List<SkillID> _rightSkillIds = new List<SkillID>();
+
+        // 右側の所持スキル一覧に表示中のスキルの種類と、その一覧(表示中の種類の方のみ使用する)
+        private SkillSlotType _rightListType = SkillSlotType.ACTIVE;
+        private List<ActiveSkillID> _rightActiveIds = new List<ActiveSkillID>();
+        private List<PassiveSkillID> _rightPassiveIds = new List<PassiveSkillID>();
 
         [Inject]
         public SkillEquipPresenter( SkillEquipUI view )
@@ -61,6 +65,7 @@ namespace Frontier.CharacterEdit
             _context = context;
             _currentPane = Pane.Left;
             _editingRow = -1;
+            _rightListType = SkillSlotType.ACTIVE;
 
             var indices = new List<int>();
             for ( int i = 0; i <= OK_ROW; ++i ) { indices.Add( i ); }
@@ -85,6 +90,7 @@ namespace Frontier.CharacterEdit
             _context = context;
             _currentPane = Pane.Left;
             _editingRow = -1;
+            _rightListType = SkillSlotType.ACTIVE;
 
             RefreshLeftSlots();
             _view.SetSelectedSlot( -1 );
@@ -104,7 +110,17 @@ namespace Frontier.CharacterEdit
             if ( IsLeftPane )
             {
                 moved = _leftCommandList.OperateListCursor( dir );
-                if ( moved ) { _view.SetSelectedSlot( _leftCmdIdxVal.index ); }
+                if ( moved )
+                {
+                    _view.SetSelectedSlot( _leftCmdIdxVal.index );
+
+                    // フォーカス中の枠の種類が変わった場合は、右側の一覧もその種類の所持スキルへ切り替える
+                    if ( TryGetSlot( _leftCmdIdxVal.value, out var slotType, out _ ) && slotType != _rightListType )
+                    {
+                        _rightListType = slotType;
+                        RefreshRightList();
+                    }
+                }
             }
             else
             {
@@ -126,16 +142,17 @@ namespace Frontier.CharacterEdit
         public bool EnterRightPane()
         {
             if ( !IsLeftPane ) return false;
-            if ( IsOkSelected() ) return false;
+            if ( !TryGetSlot( _leftCmdIdxVal.value, out var slotType, out _ ) ) return false;
 
             _editingRow = _leftCmdIdxVal.value;
+            _rightListType = slotType;
             RefreshRightList();
 
             _currentPane = Pane.Right;
 
             // 値0:スキルを外す、値1〜:所持スキル一覧(要素数は「スキルを外す」の分だけ+1)
             var indices = new List<int>();
-            for ( int i = 0; i <= _rightSkillIds.Count; ++i ) { indices.Add( i ); }
+            for ( int i = 0; i <= RightListCount; ++i ) { indices.Add( i ); }
 
             _rightCmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
             _rightCommandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _rightCmdIdxVal );
@@ -174,10 +191,10 @@ namespace Frontier.CharacterEdit
 
             if ( _rightCmdIdxVal.value == REMOVE_ROW_VALUE ) return !IsRemoveRowUnavailable();
 
-            int skillIndex = _rightCmdIdxVal.value - 1;
-            if ( skillIndex < 0 || _rightSkillIds.Count <= skillIndex ) return false;
+            int listIndex = _rightCmdIdxVal.value - 1;
+            if ( listIndex < 0 || RightListCount <= listIndex ) return false;
 
-            return !IsRowUnavailable( _rightSkillIds[skillIndex] );
+            return !IsRightRowUnavailable( listIndex );
         }
 
         /// <summary>
@@ -189,21 +206,24 @@ namespace Frontier.CharacterEdit
         public bool ConfirmRightSelection()
         {
             if ( !CanConfirmRightSelection() ) return false;
+            if ( !TryGetSlot( _editingRow, out var slotType, out var slotIndex ) ) return false;
 
+            bool succeeded;
             if ( _rightCmdIdxVal.value == REMOVE_ROW_VALUE )
             {
-                if ( !TryGetSlot( _editingRow, out var removeSlotType, out var removeSlotIndex ) ) return false;
-                if ( !_context.UnequipSkill( removeSlotType, removeSlotIndex ) ) return false;
-
-                RefreshLeftSlots();
-                ExitRightPane();
-
-                return true;
+                succeeded = ( slotType == SkillSlotType.PASSIVE )
+                    ? _context.Passive.Unequip( slotIndex )
+                    : _context.Active.Unequip( slotIndex );
+            }
+            else
+            {
+                int listIndex = _rightCmdIdxVal.value - 1;
+                succeeded = ( slotType == SkillSlotType.PASSIVE )
+                    ? _context.Passive.Equip( slotIndex, _rightPassiveIds[listIndex] )
+                    : _context.Active.Equip( slotIndex, _rightActiveIds[listIndex] );
             }
 
-            var skillID = _rightSkillIds[_rightCmdIdxVal.value - 1];
-            if ( !TryGetSlot( _editingRow, out var slotType, out var slotIndex ) ) return false;
-            if ( !_context.EquipSkill( slotType, slotIndex, skillID ) ) return false;
+            if ( !succeeded ) return false;
 
             RefreshLeftSlots();
             ExitRightPane();
@@ -211,55 +231,77 @@ namespace Frontier.CharacterEdit
             return true;
         }
 
+        private int RightListCount => ( _rightListType == SkillSlotType.PASSIVE ) ? _rightPassiveIds.Count : _rightActiveIds.Count;
+
         /// <summary>
         /// 「スキルを外す」が選択不可(グレー表示)かどうかを判定します。
         /// 編集中の枠が元々未装備の場合は、外す対象が無いため選択不可にします。
         /// </summary>
         private bool IsRemoveRowUnavailable()
         {
-            return !SkillsData.IsValidSkill( GetSkillAtRow( _editingRow ) );
+            if ( !TryGetSlot( _editingRow, out var slotType, out var slotIndex ) ) return true;
+
+            return ( slotType == SkillSlotType.PASSIVE )
+                ? !PassiveSkillsData.IsValidSkill( _context.Passive.GetEquippedSkill( slotIndex ) )
+                : !ActiveSkillsData.IsValidSkill( _context.Active.GetEquippedSkill( slotIndex ) );
         }
 
         /// <summary>
-        /// 右側ウィンドウで指定スキルを選択不可(グレー表示)にすべきかどうかを判定します。
-        /// 所持数が0、現在編集中の枠に既に装備されているスキル、または編集中の枠の種類に装備出来ない
-        /// スキルの場合はtrueを返します(一覧は枠の種類で絞り込み済みのため、最後の条件は保険です)。
+        /// 右側の所持スキル一覧の指定行を選択不可(グレー表示)にすべきかどうかを判定します。
+        /// 編集中の枠がある場合はその枠へ装備出来ないスキル(所持数0、既にその枠に装備されている、
+        /// パッシブスキルで他の枠に同一スキルを装備済み等。SkillEquipSlotGroup.CanEquip参照)、
+        /// 編集中でない場合は所持数が0のスキルを選択不可とします。
         /// </summary>
-        private bool IsRowUnavailable( SkillID skillID )
+        private bool IsRightRowUnavailable( int listIndex )
         {
-            if ( _context.GetTentativeCount( skillID ) <= 0 ) return true;
-            if ( TryGetSlot( _editingRow, out var slotType, out var slotIndex ) )
-            {
-                if ( skillID == _context.GetEquippedSkill( slotType, slotIndex ) ) return true;
-                if ( !SkillsData.IsSkillMatchSlotType( skillID, slotType ) ) return true;
-            }
+            bool isEditing = TryGetSlot( _editingRow, out _, out var slotIndex );
 
-            return false;
+            if ( _rightListType == SkillSlotType.PASSIVE )
+            {
+                var skillID = _rightPassiveIds[listIndex];
+                return isEditing ? !_context.Passive.CanEquip( slotIndex, skillID ) : _context.Passive.GetTentativeCount( skillID ) <= 0;
+            }
+            else
+            {
+                var skillID = _rightActiveIds[listIndex];
+                return isEditing ? !_context.Active.CanEquip( slotIndex, skillID ) : _context.Active.GetTentativeCount( skillID ) <= 0;
+            }
         }
 
         private void RefreshLeftSlots()
         {
-            for ( int row = 0; row < OK_ROW; ++row )
+            for ( int i = 0; i < _context.Active.SlotCount; ++i )
             {
-                _view.SetSlotSkill( row, GetSkillAtRow( row ) );
+                _view.SetSlotSkill( i, _context.Active.GetEquippedSkill( i ) );
+            }
+            for ( int i = 0; i < _context.Passive.SlotCount; ++i )
+            {
+                _view.SetSlotSkill( PASSIVE_FIRST_ROW + i, _context.Passive.GetEquippedSkill( i ) );
             }
         }
 
         private void RefreshRightList()
         {
-            // 編集中は枠の種類に装備可能なスキルのみ、それ以外(左側選択中・プレビュー)は所持スキル全てを表示する
-            _rightSkillIds = TryGetSlot( _editingRow, out var slotType, out _ )
-                ? new List<SkillID>( _context.GetOwnedSkillIdsOrdered( slotType ) )
-                : new List<SkillID>( _context.GetOwnedSkillIdsOrdered() );
+            _rightActiveIds  = new List<ActiveSkillID>( _context.Active.GetOwnedSkillIdsOrdered() );
+            _rightPassiveIds = new List<PassiveSkillID>( _context.Passive.GetOwnedSkillIdsOrdered() );
 
             _view.SetRemoveRowUnavailable( IsRemoveRowUnavailable() );
 
-            _view.SetInventoryRowCount( _rightSkillIds.Count );
-            for ( int i = 0; i < _rightSkillIds.Count; ++i )
+            int count = RightListCount;
+            _view.SetInventoryRowCount( count );
+            for ( int i = 0; i < count; ++i )
             {
-                var skillID = _rightSkillIds[i];
-                int count = _context.GetTentativeCount( skillID );
-                _view.SetInventoryRow( i, skillID, count, IsRowUnavailable( skillID ) );
+                bool unavailable = IsRightRowUnavailable( i );
+                if ( _rightListType == SkillSlotType.PASSIVE )
+                {
+                    var skillID = _rightPassiveIds[i];
+                    _view.SetInventoryRow( i, skillID, _context.Passive.GetTentativeCount( skillID ), unavailable );
+                }
+                else
+                {
+                    var skillID = _rightActiveIds[i];
+                    _view.SetInventoryRow( i, skillID, _context.Active.GetTentativeCount( skillID ), unavailable );
+                }
             }
         }
 
@@ -278,18 +320,20 @@ namespace Frontier.CharacterEdit
         {
             if ( IsLeftPane )
             {
-                if ( IsOkSelected() ) { _view.HideExplanation(); return; }
+                if ( !TryGetSlot( _leftCmdIdxVal.value, out var slotType, out var slotIndex ) ) { _view.HideExplanation(); return; }
 
-                _view.SetExplanation( GetSkillAtRow( _leftCmdIdxVal.value ) );
+                if ( slotType == SkillSlotType.PASSIVE ) { _view.SetExplanation( _context.Passive.GetEquippedSkill( slotIndex ) ); }
+                else                                     { _view.SetExplanation( _context.Active.GetEquippedSkill( slotIndex ) ); }
                 return;
             }
 
             if ( _rightCmdIdxVal.value == REMOVE_ROW_VALUE ) { _view.HideExplanation(); return; }
 
-            int skillIndex = _rightCmdIdxVal.value - 1;
-            if ( skillIndex < 0 || _rightSkillIds.Count <= skillIndex ) { _view.HideExplanation(); return; }
+            int listIndex = _rightCmdIdxVal.value - 1;
+            if ( listIndex < 0 || RightListCount <= listIndex ) { _view.HideExplanation(); return; }
 
-            _view.SetExplanation( _rightSkillIds[skillIndex] );
+            if ( _rightListType == SkillSlotType.PASSIVE ) { _view.SetExplanation( _rightPassiveIds[listIndex] ); }
+            else                                           { _view.SetExplanation( _rightActiveIds[listIndex] ); }
         }
 
         /// <summary>
@@ -311,16 +355,6 @@ namespace Frontier.CharacterEdit
             slotType  = SkillSlotType.PASSIVE;
             slotIndex = row - PASSIVE_FIRST_ROW;
             return true;
-        }
-
-        /// <summary>
-        /// 左側の指定行の枠に仮に装備されているスキルを返します(OK行・範囲外の場合はSkillID.NONE)。
-        /// </summary>
-        private SkillID GetSkillAtRow( int row )
-        {
-            if ( !TryGetSlot( row, out var slotType, out var slotIndex ) ) return SkillID.NONE;
-
-            return _context.GetEquippedSkill( slotType, slotIndex );
         }
     }
 }

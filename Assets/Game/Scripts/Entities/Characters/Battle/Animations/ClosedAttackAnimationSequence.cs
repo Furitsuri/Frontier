@@ -57,7 +57,7 @@ namespace Frontier.Entities
             if ( _character.GetBullet() != null ) return false;
 
             float t = 0f;
-            bool isReservedParry = ( 0 <= _character.BattleLogic.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) );
+            bool isReservedParry = ( 0 <= _character.BattleLogic.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.PARRY ) );
 
             switch ( _closingAttackPhase )
             {

@@ -65,7 +65,7 @@ namespace Frontier.Battle
         /// <summary>
         /// スキルデータとターゲティングコンテキストをもとにターゲット選択状態を初期化します。
         /// </summary>
-        public void Init( in SkillsData.Data skillData, TargetingRangeContext context )
+        public void Init( in ActiveSkillsData.Data skillData, TargetingRangeContext context )
         {
             _targetingMode     = skillData.TargetingMode;
             // DIRECTIONALは自身の向きに沿った直線状の範囲すべてが攻撃対象範囲となるため、スキルの最大レンジをそのまま適用

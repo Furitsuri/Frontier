@@ -35,7 +35,7 @@ namespace Frontier.DebugTools.ShopDebug
             handler.Open( new ShopContext( INSTANCE_ID, ShopBackgroundMode.Field ) );
             Check( handler.CurrentContext != null, "Open後にCurrentContextが設定される" );
 
-            int expectedLineupSize = Mathf.Min( Constants.SHOP_LINEUP_SIZE, ( int ) SkillID.NUM );
+            int expectedLineupSize = Mathf.Min( Constants.SHOP_LINEUP_SIZE, ( int ) ActiveSkillID.NUM );
             Check( handler.Lineup.Count == expectedLineupSize, $"品揃え数が{expectedLineupSize}件になる(実際:{handler.Lineup.Count})" );
             Check( handler.Lineup.Distinct().Count() == handler.Lineup.Count, "品揃えに重複が無い" );
             Check( handler.Lineup.All( item => Constants.SHOP_ITEM_STOCK_MIN <= handler.Stock[item] && handler.Stock[item] <= Constants.SHOP_ITEM_STOCK_MAX ),
@@ -61,9 +61,9 @@ namespace Frontier.DebugTools.ShopDebug
             Check( userDomain.GetSkillCount( purchaseTarget.AsSkillID ) == skillCountBefore + 1, "購入後に所持スキル数が1増える" );
 
             // 品揃えに無い商品の購入
-            var notInLineup = System.Enum.GetValues( typeof( SkillID ) )
-                .Cast<SkillID>()
-                .Where( id => id != SkillID.NONE && id != SkillID.NUM )
+            var notInLineup = System.Enum.GetValues( typeof( ActiveSkillID ) )
+                .Cast<ActiveSkillID>()
+                .Where( id => id != ActiveSkillID.NONE && id != ActiveSkillID.NUM )
                 .Select( ShopItemRef.FromSkill )
                 .FirstOrDefault( item => !handler.Lineup.Contains( item ) );
             Check( handler.Purchase( notInLineup ) == PurchaseResult.OutOfStock, "品揃えに無い商品の購入はOutOfStockを返す" );

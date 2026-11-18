@@ -20,10 +20,10 @@ namespace Frontier.Combat
         protected BattleFileLoader       _btlFileLoader = null;
 
         /// <summary>
-        /// このスキルのID。継承先のコンストラクタで設定してください(例: _skillID = SkillID.DASH_SLASH;)。
-        /// SkillID.NONE のままであれば、カメラ演出の自動セットアップは行われません。
+        /// このスキルのID。継承先のコンストラクタで設定してください(例: _skillID = ActiveSkillID.DASH_SLASH;)。
+        /// ActiveSkillID.NONE のままであれば、カメラ演出の自動セットアップは行われません。
         /// </summary>
-        protected SkillID _skillID = SkillID.NONE;
+        protected ActiveSkillID _skillID = ActiveSkillID.NONE;
 
         /// <summary>
         /// このスキル実行中のカメラ演出。SetupCameraProcess() などで設定してください。
@@ -160,7 +160,7 @@ namespace Frontier.Combat
         /// 継承先は読み込むスキルIDと注視対象キャラクターを指定するだけで済みます。
         /// なお、使用者がプレイヤー以外(敵・第三勢力)の場合は、カメラの向きを保ったまま少しだけ寄る演出(ApproachCameraProcess)を設定します。
         /// </summary>
-        protected void SetupCameraProcess( SkillID skillID, Character target )
+        protected void SetupCameraProcess( ActiveSkillID skillID, Character target )
         {
             if( target == null ) { return; }
 

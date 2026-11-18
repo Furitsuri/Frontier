@@ -6,7 +6,6 @@
 
         ATTACK,
         DEFENCE,
-        PASSIVE,
 
         NUM,
     }

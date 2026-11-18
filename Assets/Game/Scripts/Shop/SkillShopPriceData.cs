@@ -5,9 +5,9 @@ namespace Frontier.Shop
 {
     /// <summary>
     /// スキルをショップで販売する際の価格マスターデータです。
-    /// SkillsData.Costは戦闘中の使用コストであり購入価格ではないため、別テーブルとして独立させています。
+    /// ActiveSkillsData.Costは戦闘中の使用コストであり購入価格ではないため、別テーブルとして独立させています。
     /// SkillsDataと同じ「static自己ロード」パターンに倣い、Resources/ShopData/SkillShopPriceData.jsonから読み込みます。
-    /// JSON配列の並び順はSkillID enumの宣言順と対応させてください(SkillsData.jsonと同じ規約)。
+    /// JSON配列の並び順はSkillID enumの宣言順と対応させてください(ActiveSkillsData.jsonと同じ規約)。
     /// </summary>
     static public class SkillShopPriceData
     {
@@ -25,7 +25,7 @@ namespace Frontier.Shop
 
         private const string ResourcesPath = "ShopData/SkillShopPriceData";
 
-        static public int[] Price = new int[( int ) SkillID.NUM];
+        static public int[] Price = new int[( int ) ActiveSkillID.NUM];
 
         static SkillShopPriceData()
         {

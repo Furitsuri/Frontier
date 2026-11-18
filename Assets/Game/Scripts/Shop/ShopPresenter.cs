@@ -232,7 +232,7 @@ namespace Frontier.Shop
             {
                 case ShopItemCategory.Skill:
                     // SkillBoxUIと同様、SkillsDataの名前(アンダースコア区切り)を表示用に整形する
-                    return SkillsData.data[( int ) item.AsSkillID].Name?.Replace( "_", " " ) ?? string.Empty;
+                    return ActiveSkillsData.data[( int ) item.AsSkillID].Name?.Replace( "_", " " ) ?? string.Empty;
                 default:
                     return string.Empty;
             }

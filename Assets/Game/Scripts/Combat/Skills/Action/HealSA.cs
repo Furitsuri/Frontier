@@ -36,7 +36,7 @@ namespace Frontier.Combat
             _targetCharacters   = new List<Character>();
             _btlCharaCdr        = btlRtnCtrl.BtlCharaCdr;
             _stageCtrl          = stageCtrl;
-            _skillID            = SkillID.HEAL;
+            _skillID            = ActiveSkillID.HEAL;
 
             foreach( var key in targetCharaKeys )
             {

@@ -22,9 +22,9 @@ namespace Frontier.Battle
         /// 現在の攻撃対象リストをもとに点滅状態を更新します。
         /// IsCooperative でないスキルの場合は点滅を全停止します。
         /// </summary>
-        public void Refresh( List<CharacterKey> attackTargetCharaKeys, SkillID useSkillID )
+        public void Refresh( List<CharacterKey> attackTargetCharaKeys, ActiveSkillID useSkillID )
         {
-            if( !SkillsData.data[( int ) useSkillID].IsCooperative )
+            if( !ActiveSkillsData.data[( int ) useSkillID].IsCooperative )
             {
                 StopAll();
                 return;

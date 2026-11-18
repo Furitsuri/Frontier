@@ -144,7 +144,7 @@ namespace Frontier.Entities
                 if( IsUsingEquipSkill( i ) )
                 {
                     var skillID     = _readOnlyOwner.Value.GetEquipSkillID( i );
-                    var skillData   = SkillsData.data[( int ) skillID];
+                    var skillData   = ActiveSkillsData.data[( int ) skillID];
                     totalCost       += skillData.Cost;
                     _readOnlyOwner.Value.BattleParams.RemoveSkill( skillID, _readOnlyOwner.Value.GetStatusRef );
                 }

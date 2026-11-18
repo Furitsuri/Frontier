@@ -112,8 +112,8 @@ namespace Frontier.Shop
             int seed = ComputeSeed( _userDomain.WorldSeed, instanceId );
             var random = new System.Random( seed );
 
-            var pool = new List<SkillID>( ( int ) SkillID.NUM );
-            for ( int i = 0; i < ( int ) SkillID.NUM; ++i ) { pool.Add( ( SkillID ) i ); }
+            var pool = new List<ActiveSkillID>( ( int ) ActiveSkillID.NUM );
+            for ( int i = 0; i < ( int ) ActiveSkillID.NUM; ++i ) { pool.Add( ( ActiveSkillID ) i ); }
 
             var lineup = new List<ShopItemRef>();
             var stock  = new Dictionary<ShopItemRef, int>();

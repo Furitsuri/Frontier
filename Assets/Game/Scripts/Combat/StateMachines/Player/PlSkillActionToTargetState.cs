@@ -43,7 +43,7 @@ namespace Frontier.Battle
         private SkillUseAction _pendingSkillUseAction;      // 移動前の位置へ戻せなくなる旨の確認中に保留している使用方法
         private bool _isSkillQueued;
         private bool _isCooperativeSkill;
-        private SkillID _useSkillID;
+        private ActiveSkillID _useSkillID;
         private PlSkillActionPhase _phase;
 
         [Inject] private ProvisionalMoveOriginDisplay _provisionalOriginDisplay = null;
@@ -91,7 +91,7 @@ namespace Frontier.Battle
             // 使用するスキルの攻撃範囲を設定する(前Stateのプレビュー用の範囲データは流用しない)
             _plOwner.BattleLogic.ActionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, _useSkillID );
 
-            _targetSelector.Init( SkillsData.data[( int ) _useSkillID], BuildTargetingContext() );
+            _targetSelector.Init( ActiveSkillsData.data[( int ) _useSkillID], BuildTargetingContext() );
 
             _phase = PlSkillActionPhase.PL_SKILL_ACTION_SELECT_GRID;
             _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
@@ -244,7 +244,7 @@ namespace Frontier.Battle
                 }
                 // NOの場合は対象選択へ戻る。使用方法の選択(PlSkillUseOptionState)を経由していた場合は、
                 // その際に消去したタイル描画を、選択をキャンセルされた場合と同様に戻す
-                else if( SkillsData.data[( int ) _useSkillID].IsCooperative )
+                else if( ActiveSkillsData.data[( int ) _useSkillID].IsCooperative )
                 {
                     _plOwner.BattleLogic.ActionRangeCtrl.ReDrawAttackableRange();
                     _blinkController.Refresh( _targetSelector.AttackTargetCharaKeys, _useSkillID );
@@ -314,7 +314,7 @@ namespace Frontier.Battle
         {
             if( !base.AcceptConfirm( context ) ) { return false; }
 
-            if( SkillsData.data[( int ) _useSkillID].IsCooperative )
+            if( ActiveSkillsData.data[( int ) _useSkillID].IsCooperative )
             {
                 var cooperativeAttackers = _candidateFinder.GetCooperativeAttackers( _targetSelector.AttackTargetCharaKeys );
                 var options = ( cooperativeAttackers.Count > 0 )

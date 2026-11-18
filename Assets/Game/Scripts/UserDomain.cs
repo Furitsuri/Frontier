@@ -14,9 +14,10 @@ public class UserDomain
     [SerializeField] public int Anima { get; private set; } = 0;
     [SerializeField] public int StageLevel { get; private set; } = 0;   // 0オリジンのため、0はステージレベル1を表します
     [SerializeField] public List<Status> Members { get; private set; } = new List<Status>();
-    // 所持しているスキルとその個数(ステージ攻略報酬・店購入等で増える想定)。
+    // 所持しているスキルとその個数(ステージ攻略報酬・店購入等で増える想定)。アクティブ/パッシブで別々に保持する。
     // 同じスキルを複数所持することで、複数のキャラクターに同時に装備させられる。
-    [SerializeField] public List<SkillInventoryEntry> SkillInventory { get; private set; } = new List<SkillInventoryEntry>();
+    [SerializeField] public List<ActiveSkillInventoryEntry> ActiveSkillInventory { get; private set; } = new List<ActiveSkillInventoryEntry>();
+    [SerializeField] public List<PassiveSkillInventoryEntry> PassiveSkillInventory { get; private set; } = new List<PassiveSkillInventoryEntry>();
     // ショップの品揃え抽選等に使う、セーブファイル(周回)ごとに一度だけ決まる乱数シード。
     // ステージ/ノード固有IDと組み合わせて使うことで、同一セーブ内では常に同じ抽選結果を再現しつつ、
     // 別のセーブファイル(周回)では異なる結果になる。コンストラクタで新規生成し、ロード時はセーブ値で上書きする。
@@ -70,11 +71,11 @@ public class UserDomain
     /// <summary>
     /// 指定スキルの所持数を返します(未所持の場合は0)。
     /// </summary>
-    public int GetSkillCount( SkillID skillID )
+    public int GetSkillCount( ActiveSkillID skillID )
     {
-        for ( int i = 0; i < SkillInventory.Count; ++i )
+        for ( int i = 0; i < ActiveSkillInventory.Count; ++i )
         {
-            if ( SkillInventory[i].SkillID == skillID ) { return SkillInventory[i].Count; }
+            if ( ActiveSkillInventory[i].SkillID == skillID ) { return ActiveSkillInventory[i].Count; }
         }
 
         return 0;
@@ -84,22 +85,57 @@ public class UserDomain
     /// 指定スキルの所持数を増減させます(ステージ攻略報酬・店購入・売却等)。
     /// 負の値を渡すことで減らすことも出来ますが、所持数は0未満になりません。
     /// </summary>
-    public void AddSkill( SkillID skillID, int amount )
+    public void AddSkill( ActiveSkillID skillID, int amount )
     {
-        for ( int i = 0; i < SkillInventory.Count; ++i )
+        for ( int i = 0; i < ActiveSkillInventory.Count; ++i )
         {
-            if ( SkillInventory[i].SkillID != skillID ) { continue; }
+            if ( ActiveSkillInventory[i].SkillID != skillID ) { continue; }
 
-            var entry = SkillInventory[i];
+            var entry = ActiveSkillInventory[i];
             entry.Count = Mathf.Max( 0, entry.Count + amount );
-            SkillInventory[i] = entry;
+            ActiveSkillInventory[i] = entry;
 
             return;
         }
 
         if ( 0 < amount )
         {
-            SkillInventory.Add( new SkillInventoryEntry { SkillID = skillID, Count = amount } );
+            ActiveSkillInventory.Add( new ActiveSkillInventoryEntry { SkillID = skillID, Count = amount } );
+        }
+    }
+
+    /// <summary>
+    /// 指定パッシブスキルの所持数を返します(未所持の場合は0)。
+    /// </summary>
+    public int GetSkillCount( PassiveSkillID skillID )
+    {
+        for ( int i = 0; i < PassiveSkillInventory.Count; ++i )
+        {
+            if ( PassiveSkillInventory[i].SkillID == skillID ) { return PassiveSkillInventory[i].Count; }
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// 指定パッシブスキルの所持数を増減させます。所持数は0未満になりません。
+    /// </summary>
+    public void AddSkill( PassiveSkillID skillID, int amount )
+    {
+        for ( int i = 0; i < PassiveSkillInventory.Count; ++i )
+        {
+            if ( PassiveSkillInventory[i].SkillID != skillID ) { continue; }
+
+            var entry = PassiveSkillInventory[i];
+            entry.Count = Mathf.Max( 0, entry.Count + amount );
+            PassiveSkillInventory[i] = entry;
+
+            return;
+        }
+
+        if ( 0 < amount )
+        {
+            PassiveSkillInventory.Add( new PassiveSkillInventoryEntry { SkillID = skillID, Count = amount } );
         }
     }
 
@@ -108,7 +144,7 @@ public class UserDomain
     public void Debug_SetWorldSeed( int value )   => WorldSeed = value;
     public void Debug_SetStageLevel( int value )  => StageLevel = value;
     public void Debug_ClearMembers()              => Members.Clear();
-    public void Debug_ClearSkillInventory()       => SkillInventory.Clear();
+    public void Debug_ClearSkillInventory()       { ActiveSkillInventory.Clear(); PassiveSkillInventory.Clear(); }
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
     /// <summary>
@@ -124,7 +160,8 @@ public class UserDomain
             StageLevel     = StageLevel,
             WorldSeed      = WorldSeed,
             Members        = new List<Status>( Members ),
-            SkillInventory = new List<SkillInventoryEntry>( SkillInventory ),
+            SkillInventory        = new List<ActiveSkillInventoryEntry>( ActiveSkillInventory ),
+            PassiveSkillInventory = new List<PassiveSkillInventoryEntry>( PassiveSkillInventory ),
             FieldProgress  = fieldProgress,
         };
     }
@@ -147,7 +184,9 @@ public class UserDomain
             status.EnsureSkillSlots();
             Members[i] = status;
         }
-        SkillInventory.Clear();
-        if ( data.SkillInventory != null ) { SkillInventory.AddRange( data.SkillInventory ); }
+        ActiveSkillInventory.Clear();
+        if ( data.SkillInventory != null ) { ActiveSkillInventory.AddRange( data.SkillInventory ); }
+        PassiveSkillInventory.Clear();
+        if ( data.PassiveSkillInventory != null ) { PassiveSkillInventory.AddRange( data.PassiveSkillInventory ); }
     }
 }

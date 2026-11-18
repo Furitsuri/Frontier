@@ -41,7 +41,7 @@ namespace Frontier.Registries
         /// 指定スキルのカメラパラメータファイルのパスを、SkillIDから導出して取得します。
         /// スキルごとにInspectorへ個別のパスを設定する必要がないよう、SkillID名から一意に導出する方式にしています。
         /// </summary>
-        public string GetSkillCameraParamFilePath( SkillID skillID ) =>
+        public string GetSkillCameraParamFilePath( ActiveSkillID skillID ) =>
             Path.Combine( "Assets", "Resources", "CameraData", "Skills", $"Frontier_Skill_CameraParam_{skillID}.json" );
 
         // _stageNames[stageIndex] を冠にしたディレクトリ・ファイル名を組み立てる。

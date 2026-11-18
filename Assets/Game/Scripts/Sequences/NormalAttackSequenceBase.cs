@@ -67,7 +67,7 @@ namespace Frontier.Sequences
             _attackCharacter.BattleLogic.SetOpponentCharacter( _targetCharacter );
             _targetCharacter.BattleLogic.SetOpponentCharacter( _attackCharacter );
 
-            _counterConditions = ( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.COUNTER ) ); // カウンター条件の設定
+            _counterConditions = ( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.COUNTER ) ); // カウンター条件の設定
 
             // 攻撃更新処理の条件別設定
             if( _counterConditions && _attackCharacter.GetBullet() != null ) _counterConditions = _targetCharacter.GetBullet() != null;
@@ -117,11 +117,11 @@ namespace Frontier.Sequences
                         StartAttack( _attackCharacter, _targetCharacter );
 
                         // パリィスキル使用時はパリィ判定専用処理へ遷移
-                        if( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) )
+                        if( 0 <= _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.PARRY ) )
                         {
                             _combatSkillCtrl.Register<ParrySkillHandler>();
 
-                            _parryNotifier = _targetCharacter.BattleLogic.GetSkillNotifier<ParrySkillNotifier>( SkillID.PARRY );
+                            _parryNotifier = _targetCharacter.BattleLogic.GetSkillNotifier<ParrySkillNotifier>( ActiveSkillID.PARRY );
                             NullCheck.AssertNotNull( _parryNotifier, nameof( _parryNotifier ) );
                             _phase = Phase.WAIT_PARRY_RESULT;
                         }
@@ -137,7 +137,7 @@ namespace Frontier.Sequences
                         _btlRtnCtrl.BtlPresenter.HideDamageOnCharacter( _targetCharacter );
 
                         // ガードスキルを使用時はガードモーションを戻す
-                        int guardSkillIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD );
+                        int guardSkillIdx = _targetCharacter.BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.GUARD );
                         if( 0 <= guardSkillIdx ) { _targetCharacter.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, false ); }
 
                         // 対象が死亡している場合は死亡処理へ
@@ -321,7 +321,7 @@ namespace Frontier.Sequences
             target.BattleLogic.SetReceiveAttackSetting();
 
             // ターゲットがガードスキル使用時はガードモーションを再生
-            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
+            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.GUARD ) ) target.AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GUARD, true );
         }
 
         /// <summary>

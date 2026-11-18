@@ -42,9 +42,9 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillID">指定スキルID</param>
         /// <returns>適用中か否か</returns>
-        public bool IsSkillApplied( SkillID skillID )
+        public bool IsSkillApplied( ActiveSkillID skillID )
         {
-            if( !SkillsData.IsValidSkill( skillID ) ) { return false; }
+            if( !ActiveSkillsData.IsValidSkill( skillID ) ) { return false; }
 
             return 0 != ( _appliedSkillBit & Methods.ToBit64( skillID ) );
         }
@@ -54,10 +54,10 @@ namespace Frontier.Entities
             _appliedStarusEffects.Add( statusEff );
         }
 
-        public void ApplySkill( SkillID skillID, in Status ownerStatus )
+        public void ApplySkill( ActiveSkillID skillID, in Status ownerStatus )
         {
-            if( !SkillsData.IsValidSkill( skillID ) ) { return; }
-            var skillData = SkillsData.data[( int ) skillID];
+            if( !ActiveSkillsData.IsValidSkill( skillID ) ) { return; }
+            var skillData = ActiveSkillsData.data[( int ) skillID];
 
             _tmpParam.ActGaugeConsumption           += skillData.Cost;
             _skillModifiedParam.AddAtkNum           += skillData.AddAtkNum;
@@ -74,10 +74,10 @@ namespace Frontier.Entities
             _appliedStarusEffects.Remove( statusEff );
         }
 
-        public void RemoveSkill( SkillID skillID, in Status ownerStatus )
+        public void RemoveSkill( ActiveSkillID skillID, in Status ownerStatus )
         {
-            if( !SkillsData.IsValidSkill( skillID ) ) { return; }
-            var skillData = SkillsData.data[( int ) skillID];
+            if( !ActiveSkillsData.IsValidSkill( skillID ) ) { return; }
+            var skillData = ActiveSkillsData.data[( int ) skillID];
 
             _tmpParam.ActGaugeConsumption           -= skillData.Cost;
             _skillModifiedParam.AddAtkNum           -= skillData.AddAtkNum;

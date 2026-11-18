@@ -50,8 +50,8 @@ namespace Frontier.Combat
 
             SortTargetCharactersByDistance();
 
-            // _skillID が設定されている(SkillID.NONE でない)場合のみ、距離順で最も近い対象へのカメラ演出を自動セットアップする
-            if( _skillID != SkillID.NONE )
+            // _skillID が設定されている(ActiveSkillID.NONE でない)場合のみ、距離順で最も近い対象へのカメラ演出を自動セットアップする
+            if( _skillID != ActiveSkillID.NONE )
             {
                 SetupCameraProcess( _skillID, _targetCharacters.Count > 0 ? _targetCharacters[0] : null );
             }

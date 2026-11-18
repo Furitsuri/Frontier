@@ -60,7 +60,7 @@ namespace Frontier.Battle
             _telegraphPlanner.NotifyReservedActionStarted( _attackCharacter );
 
             _targetCharacter    = _attackOption.MainTarget;
-            var skillData       = SkillsData.data[( int ) _attackOption.SkillID];
+            var skillData       = ActiveSkillsData.data[( int ) _attackOption.SkillID];
 
             // スキルを使用ONにして、スキルの効果(攻撃回数・倍率・消費ゲージ等)を適用する
             int slotIndex = GetEquipSkillSlotIndex( _attackCharacter, _attackOption.SkillID );
@@ -280,7 +280,7 @@ namespace Frontier.Battle
         /// 指定のスキルを装備しているスロットのうち、未使用のスロットの番号を取得します
         /// </summary>
         /// <returns>スロットの番号。存在しない場合は-1</returns>
-        private int GetEquipSkillSlotIndex( Character chara, SkillID skillID )
+        private int GetEquipSkillSlotIndex( Character chara, ActiveSkillID skillID )
         {
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {

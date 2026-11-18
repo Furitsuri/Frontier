@@ -13,10 +13,10 @@ namespace Frontier.Shop
         public ShopItemCategory Category;
         public int              RawId;
 
-        public static ShopItemRef FromSkill( SkillID skillID )
+        public static ShopItemRef FromSkill( ActiveSkillID skillID )
             => new ShopItemRef { Category = ShopItemCategory.Skill, RawId = ( int ) skillID };
 
-        public SkillID AsSkillID => ( SkillID ) RawId;
+        public ActiveSkillID AsSkillID => ( ActiveSkillID ) RawId;
 
         public bool Equals( ShopItemRef other ) => Category == other.Category && RawId == other.RawId;
         public override bool Equals( object obj ) => obj is ShopItemRef other && Equals( other );

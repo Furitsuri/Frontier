@@ -71,11 +71,11 @@ namespace Frontier.Entities.Ai
         /// <returns>存在するか否か</returns>
         public bool HasAnyAllyTargetOption( Character owner )
         {
-            return Enumerate( owner, null, true, option => SkillsData.IsAllyTargetSkill( option.SkillID ), isAllyTargetSkillsOnly: true );
+            return Enumerate( owner, null, true, option => ActiveSkillsData.IsAllyTargetSkill( option.SkillID ), isAllyTargetSkillsOnly: true );
         }
 
         /// <summary>
-        /// 予兆を伴うスキル(SkillsData.IsTelegraphedSkill)による攻撃の候補を、現在の位置から使用する場合に限って列挙します。
+        /// 予兆を伴うスキル(ActiveSkillsData.IsTelegraphedSkill)による攻撃の候補を、現在の位置から使用する場合に限って列挙します。
         /// 次の自軍のフェーズで使用する予約の候補を求めるためのものであり、次のフェーズの開始時点の状態を想定して、
         /// このフェーズでの行動の終了状態・スキルの使用済み状態は考慮せず、アクションゲージは指定の値(次のフェーズの開始時の見込み)で判定します。
         /// 攻撃対象が1体以上存在する候補のみを列挙します(移動のみを目的とした使用や、攻撃対象のいない範囲への使用は行わないため)
@@ -104,7 +104,7 @@ namespace Frontier.Entities.Ai
         {
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
-                if( SkillsData.IsTelegraphedSkill( owner.GetEquipSkillID( i ) ) ) { return true; }
+                if( ActiveSkillsData.IsTelegraphedSkill( owner.GetEquipSkillID( i ) ) ) { return true; }
             }
 
             return false;
@@ -134,7 +134,7 @@ namespace Frontier.Entities.Ai
             if( tmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] || tmpParam.IsEndCommand[( int ) COMMAND_TAG.SKILL] ) { return false; }
             if( !CollectTelegraphSkills( owner, owner.GetStatusRef.CurActionGauge - tmpParam.ActGaugeConsumption ).Contains( reserved.SkillID ) ) { return false; }
 
-            var skillData   = SkillsData.data[( int ) reserved.SkillID];
+            var skillData   = ActiveSkillsData.data[( int ) reserved.SkillID];
             var tileData    = new ActionableTileData();
             var rules       = SkillRangeRules.Get( reserved.SkillID, _stageCtrl, owner );
             owner.BattleLogic.ActionRangeCtrl.ExtractAttackableRangeDataForSkill( standTileIdx, reserved.SkillID, rules, ref tileData );
@@ -170,7 +170,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         public int ResolveReservedDirectionalRange( Character owner, int standTileIdx, in AttackOption reserved, SkillRangeRules rules )
         {
-            if( SkillsData.data[( int ) reserved.SkillID].IsMovingSkill && 0 <= reserved.LandingTileIndex )
+            if( ActiveSkillsData.data[( int ) reserved.SkillID].IsMovingSkill && 0 <= reserved.LandingTileIndex )
             {
                 return _stageCtrl.CalculateTotalRange( standTileIdx, reserved.LandingTileIndex );
             }
@@ -181,16 +181,16 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 装備しているスキルのうち、予兆を伴うスキルで、指定のアクションゲージで使用出来るものを求めます
         /// </summary>
-        private List<SkillID> CollectTelegraphSkills( Character owner, int actionGauge )
+        private List<ActiveSkillID> CollectTelegraphSkills( Character owner, int actionGauge )
         {
-            var skillIDs = new List<SkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
+            var skillIDs = new List<ActiveSkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
 
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
-                SkillID skillID = owner.GetEquipSkillID( i );
-                if( !SkillsData.IsTelegraphedSkill( skillID ) ) { continue; }
-                if( SkillsData.data[( int ) skillID].SituationType != SituationType.ATTACK ) { continue; }
-                if( actionGauge < SkillsData.data[( int ) skillID].Cost ) { continue; }
+                ActiveSkillID skillID = owner.GetEquipSkillID( i );
+                if( !ActiveSkillsData.IsTelegraphedSkill( skillID ) ) { continue; }
+                if( ActiveSkillsData.data[( int ) skillID].SituationType != SituationType.ATTACK ) { continue; }
+                if( actionGauge < ActiveSkillsData.data[( int ) skillID].Cost ) { continue; }
                 if( skillIDs.Contains( skillID ) ) { continue; }
 
                 skillIDs.Add( skillID );
@@ -203,9 +203,9 @@ namespace Frontier.Entities.Ai
         /// 予兆を伴うスキルの場合のみ、スキルの効果が及ぶタイル(ターゲット可能タイル)の一覧を複製して返します。
         /// それ以外のスキルでは使用しないため、複製の負荷を避けてnullを返します
         /// </summary>
-        private static List<int> CopyAffectedTilesIfTelegraphed( SkillID skillID, ActionableTileData tileData )
+        private static List<int> CopyAffectedTilesIfTelegraphed( ActiveSkillID skillID, ActionableTileData tileData )
         {
-            return SkillsData.IsTelegraphedSkill( skillID ) ? new List<int>( tileData.TargetableTileMap.Keys ) : null;
+            return ActiveSkillsData.IsTelegraphedSkill( skillID ) ? new List<int>( tileData.TargetableTileMap.Keys ) : null;
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Frontier.Entities.Ai
             // 該当するスキルが無ければ、立てるタイルや範囲を求めるまでもなく候補は存在しない
             if( isAllyTargetSkillsOnly )
             {
-                usableSkillIDs.RemoveAll( skillID => !SkillsData.IsAllyTargetSkill( skillID ) );
+                usableSkillIDs.RemoveAll( skillID => !ActiveSkillsData.IsAllyTargetSkill( skillID ) );
                 if( usableSkillIDs.Count <= 0 ) { return false; }
             }
 
@@ -298,20 +298,20 @@ namespace Frontier.Entities.Ai
         /// MEMO : サポートスキルは、AIでの評価の方法が未定のため対象外としています
         /// </summary>
         /// <param name="includeAllyTargetSkills">回復など自軍を対象とするスキルも含めるか</param>
-        private List<SkillID> CollectUsableSkills( Character owner, bool includeAllyTargetSkills )
+        private List<ActiveSkillID> CollectUsableSkills( Character owner, bool includeAllyTargetSkills )
         {
-            var skillIDs = new List<SkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
+            var skillIDs = new List<ActiveSkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
             var tmpParam = owner.BattleParams.TmpParam;
 
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
-                SkillID skillID = owner.GetEquipSkillID( i );
-                if( !SkillsData.IsValidSkill( skillID ) ) { continue; }
+                ActiveSkillID skillID = owner.GetEquipSkillID( i );
+                if( !ActiveSkillsData.IsValidSkill( skillID ) ) { continue; }
 
                 // 予兆を伴うスキル(移動を伴う攻撃・一定範囲への攻撃)は、前のフェーズの終了時に予約した場合のみ使用し、その場の判断では使用しない
-                if( SkillsData.IsTelegraphedSkill( skillID ) ) { continue; }
+                if( ActiveSkillsData.IsTelegraphedSkill( skillID ) ) { continue; }
 
-                var skillData = SkillsData.data[( int ) skillID];
+                var skillData = ActiveSkillsData.data[( int ) skillID];
                 bool isTargetActionType = ( skillData.ActionType == ActionType.ATTACK ) ||
                                           ( includeAllyTargetSkills && skillData.ActionType == ActionType.HEAL );
                 if( skillData.SituationType != SituationType.ATTACK ||
@@ -363,16 +363,16 @@ namespace Frontier.Entities.Ai
         {
             owner.BattleLogic.ActionRangeCtrl.ExtractAttackableRangeDataForNormalAttack( standTileIdx, tileData );
 
-            return EnumerateSingleTargets( owner, standTileIdx, SkillID.NONE, tileData, onFound );
+            return EnumerateSingleTargets( owner, standTileIdx, ActiveSkillID.NONE, tileData, onFound );
         }
 
         /// <summary>
         /// 指定の位置から指定のスキルで攻撃を行う場合の候補を列挙します
         /// </summary>
-        private bool EnumerateSkillAttack( Character owner, int standTileIdx, SkillID skillID, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool EnumerateSkillAttack( Character owner, int standTileIdx, ActiveSkillID skillID, ActionableTileData tileData, Func<AttackOption, bool> onFound )
         {
             var actionRangeCtrl = owner.BattleLogic.ActionRangeCtrl;
-            var skillData       = SkillsData.data[( int ) skillID];
+            var skillData       = ActiveSkillsData.data[( int ) skillID];
             var rules           = SkillRangeRules.Get( skillID, _stageCtrl, owner );
 
             actionRangeCtrl.ExtractAttackableRangeDataForSkill( standTileIdx, skillID, rules, ref tileData );
@@ -397,7 +397,7 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 攻撃可能範囲内の攻撃対象1体ずつを、それぞれ候補として列挙します
         /// </summary>
-        private bool EnumerateSingleTargets( Character owner, int standTileIdx, SkillID skillID, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool EnumerateSingleTargets( Character owner, int standTileIdx, ActiveSkillID skillID, ActionableTileData tileData, Func<AttackOption, bool> onFound )
         {
             foreach( var pair in tileData.AttackableTileMap )
             {
@@ -414,7 +414,7 @@ namespace Frontier.Entities.Ai
         /// 攻撃可能範囲内の各タイルを中心として範囲を展開し、展開した範囲内の攻撃対象をまとめて候補として列挙します。
         /// 攻撃対象の組み合わせが同じとなる候補は、1つにまとめます
         /// </summary>
-        private bool EnumeratePartOfRangeTargets( Character owner, int standTileIdx, SkillID skillID, int expandRange, TargetFaction targetFaction, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool EnumeratePartOfRangeTargets( Character owner, int standTileIdx, ActiveSkillID skillID, int expandRange, TargetFaction targetFaction, ActionableTileData tileData, Func<AttackOption, bool> onFound )
         {
             var foundTargetSets = new List<HashSet<CharacterKey>>();
             var expandData      = new ActionableTileData();
@@ -433,7 +433,7 @@ namespace Frontier.Entities.Ai
         /// <param name="foundTargetSets">通知済みの攻撃対象の組み合わせ。同じ組み合わせとなる場合は通知しません(nullの場合は判定しない)</param>
         /// <param name="allowNoTarget">攻撃対象が存在しなくても通知するか(予約した攻撃の実行時の再判定用)</param>
         /// <returns>列挙を打ち切るか否か</returns>
-        private bool NotifyPartOfRangeAt( Character owner, int standTileIdx, SkillID skillID, int centerTileIdx, int expandRange, TargetFaction targetFaction, ActionableTileData expandData, Func<AttackOption, bool> onFound, List<HashSet<CharacterKey>> foundTargetSets = null, bool allowNoTarget = false )
+        private bool NotifyPartOfRangeAt( Character owner, int standTileIdx, ActiveSkillID skillID, int centerTileIdx, int expandRange, TargetFaction targetFaction, ActionableTileData expandData, Func<AttackOption, bool> onFound, List<HashSet<CharacterKey>> foundTargetSets = null, bool allowNoTarget = false )
         {
             expandData.Init();
             _stageCtrl.TileDataHdlr().BeginExpandTargetableTilesWithPartOfRange( centerTileIdx, expandRange, owner.GetCharacterTag(), expandData, targetFaction );
@@ -467,7 +467,7 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 前後左右の各向きについて、向きに沿った範囲内の攻撃対象をまとめて候補として列挙します
         /// </summary>
-        private bool EnumerateDirectionalTargets( Character owner, int standTileIdx, SkillID skillID, int range, bool isMovingSkill, SkillRangeRules rules, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool EnumerateDirectionalTargets( Character owner, int standTileIdx, ActiveSkillID skillID, int range, bool isMovingSkill, SkillRangeRules rules, ActionableTileData tileData, Func<AttackOption, bool> onFound )
         {
             for( int i = 0; i < ( int ) Direction.NUM; ++i )
             {
@@ -482,7 +482,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="allowNoTarget">攻撃対象が存在しなくても通知するか(予約した攻撃の実行時の再判定用)</param>
         /// <returns>列挙を打ち切るか否か</returns>
-        private bool NotifyDirectionalAt( Character owner, int standTileIdx, SkillID skillID, Direction dir, int range, bool isMovingSkill, SkillRangeRules rules, ActionableTileData tileData, Func<AttackOption, bool> onFound, bool allowNoTarget = false )
+        private bool NotifyDirectionalAt( Character owner, int standTileIdx, ActiveSkillID skillID, Direction dir, int range, bool isMovingSkill, SkillRangeRules rules, ActionableTileData tileData, Func<AttackOption, bool> onFound, bool allowNoTarget = false )
         {
             var forward = Quaternion.Euler( 0f, StageDirectionConverter.DirectionAngles[( int ) dir], 0f ) * Vector3.forward;
 
@@ -502,7 +502,7 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 攻撃可能範囲内の攻撃対象すべてを、1つの候補として列挙します
         /// </summary>
-        private bool EnumerateAllTargets( Character owner, int standTileIdx, SkillID skillID, ActionableTileData tileData, Func<AttackOption, bool> onFound )
+        private bool EnumerateAllTargets( Character owner, int standTileIdx, ActiveSkillID skillID, ActionableTileData tileData, Func<AttackOption, bool> onFound )
         {
             var targetTileIndices = tileData.AttackableTileMap
                 .Where( pair => Methods.HasAnyFlag( pair.Value.Flag, TileBitFlag.ATTACKABLE_TARGET_EXIST ) )
@@ -521,7 +521,7 @@ namespace Frontier.Entities.Ai
         /// </summary>
         /// <param name="allowNoTarget">攻撃対象が存在しなくても、主となる攻撃対象をnullとして通知するか(予約した攻撃の実行時の再判定用)</param>
         /// <returns>列挙を打ち切るか否か</returns>
-        private bool TryNotify( Character owner, int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, List<CharacterKey> targetKeys, Func<AttackOption, bool> onFound, bool allowNoTarget = false )
+        private bool TryNotify( Character owner, int standTileIdx, ActiveSkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, List<CharacterKey> targetKeys, Func<AttackOption, bool> onFound, bool allowNoTarget = false )
         {
             // HPが0になっているキャラクターは対象から除く。
             // 死亡通知(NotifyCharacterDied)は死亡アニメーションのイベントから行われるため、それまでの間はHPが0のまま
@@ -537,7 +537,7 @@ namespace Frontier.Entities.Ai
             Character mainTarget    = null;
             int minRange            = int.MaxValue;
 
-            if( SkillsData.IsValidSkill( skillID ) && ActionType.HEAL == SkillsData.data[( int ) skillID].ActionType )
+            if( ActiveSkillsData.IsValidSkill( skillID ) && ActionType.HEAL == ActiveSkillsData.data[( int ) skillID].ActionType )
             {
                 // HPが減っている味方が1体もいない場合は、回復しても意味が無いため候補としない
                 mainTarget = FindMostDamagedTarget( targetKeys );
@@ -573,7 +573,7 @@ namespace Frontier.Entities.Ai
             return chara == null || chara.BattleLogic == null || chara.GetStatusRef.IsDead();
         }
 
-        private static AttackOption CreateOption( int standTileIdx, SkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, Character mainTarget, List<CharacterKey> targetKeys )
+        private static AttackOption CreateOption( int standTileIdx, ActiveSkillID skillID, Direction dir, int landingTileIdx, int centerTileIdx, List<int> affectedTiles, Character mainTarget, List<CharacterKey> targetKeys )
         {
             return new AttackOption
             {

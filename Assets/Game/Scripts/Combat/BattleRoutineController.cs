@@ -97,9 +97,9 @@ namespace Frontier.Battle
             _debugLabelPrsnt.Init();
 #endif // UNITY_EDITOR
 
-            if( SkillsData.ReactiveSkillNotifierFactory == null )
+            if( ActiveSkillsData.ReactiveSkillNotifierFactory == null )
             {
-                SkillsData.BuildSkillNotifierFactory( _hierarchyBld );
+                ActiveSkillsData.BuildSkillNotifierFactory( _hierarchyBld );
             }
 
             _phaseHandlers = new Dictionary<BattlePhaseType, PhaseHandlerBase>

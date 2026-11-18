@@ -8,7 +8,7 @@ namespace Frontier.Combat
     /// <summary>
     /// 各スキルの実行内容の関数集合です
     /// </summary>
-    static public class SkillsData
+    static public class ActiveSkillsData
     {
         [System.Serializable]
         public struct Data
@@ -73,30 +73,30 @@ namespace Frontier.Combat
         [System.Serializable]
         private class SkillDataContainer
         {
-            public FileData[] SkillsData;
+            public FileData[] ActiveSkillsData;
         }
 #pragma warning restore 0649
 
-        private const string ResourcesPath = "SkillData/SkillData";
+        private const string ResourcesPath = "SkillData/ActiveSkillData";
 
-        static public Data[] data = new Data[( int ) SkillID.NUM];
+        static public Data[] data = new Data[( int ) ActiveSkillID.NUM];
         // MEMO : 攻撃を受けた際に反応するパリィのような「リアクション型」のスキルのみを登録します。
         //        大半のスキルはリアクションを必要としないため、ここには登録しません(登録が無ければ通知処理自体が存在しません)。
-        static public Dictionary<SkillID, Func<SkillNotifierBase>> ReactiveSkillNotifierFactory = null;
+        static public Dictionary<ActiveSkillID, Func<SkillNotifierBase>> ReactiveSkillNotifierFactory = null;
         static private readonly SkillActionBase sharedAction            = new SkillActionBase(null);    // 使いまわし前提のため静的読み取り専用
 
         // MEMO : データだけでは表現できない固有の手続き(移動・アニメーション制御等)を持つスキルのみを登録します。
         //        登録が無いスキルはsharedAction(汎用実装、Dataの数値を元にダメージ計算等を行う)を使用します。
-        static private Dictionary<SkillID, Func<Character, List<CharacterKey>, HierarchyBuilderBase, SkillActionBase>> _skillActionFactory =
-            new Dictionary<SkillID, Func<Character, List<CharacterKey>, HierarchyBuilderBase, SkillActionBase>>
+        static private Dictionary<ActiveSkillID, Func<Character, List<CharacterKey>, HierarchyBuilderBase, SkillActionBase>> _skillActionFactory =
+            new Dictionary<ActiveSkillID, Func<Character, List<CharacterKey>, HierarchyBuilderBase, SkillActionBase>>
             {
-                { SkillID.DOUBLE_STRIKE, ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<PartOfRangeSABase>( new object[] { owner, targets }, false ) },
-                { SkillID.DASH_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( new object[] { owner, targets }, false ) },
-                { SkillID.JUMP_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( new object[] { owner, targets }, false ) },
-                { SkillID.HEAL,          ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<HealSA>( new object[] { owner, targets }, false ) },
+                { ActiveSkillID.DOUBLE_STRIKE, ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<PartOfRangeSABase>( new object[] { owner, targets }, false ) },
+                { ActiveSkillID.DASH_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<DashSlashSA>( new object[] { owner, targets }, false ) },
+                { ActiveSkillID.JUMP_SLASH,    ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<JumpSlashSA>( new object[] { owner, targets }, false ) },
+                { ActiveSkillID.HEAL,          ( owner, targets, hierarchyBld ) => hierarchyBld.InstantiateWithDiContainer<HealSA>( new object[] { owner, targets }, false ) },
             };
 
-        static SkillsData()
+        static ActiveSkillsData()
         {
             Load();
         }
@@ -110,21 +110,21 @@ namespace Frontier.Combat
             var asset = Resources.Load<TextAsset>( ResourcesPath );
             if ( asset == null )
             {
-                Debug.LogWarning( $"[SkillsData] スキルデータが見つかりません: Resources/{ResourcesPath}.json" );
+                Debug.LogWarning( $"[ActiveSkillsData] スキルデータが見つかりません: Resources/{ResourcesPath}.json" );
                 return;
             }
 
             var container = JsonUtility.FromJson<SkillDataContainer>( asset.text );
-            if ( container == null || container.SkillsData == null )
+            if ( container == null || container.ActiveSkillsData == null )
             {
-                Debug.LogWarning( "[SkillsData] スキルデータの読み込みに失敗しました" );
+                Debug.LogWarning( "[ActiveSkillsData] スキルデータの読み込みに失敗しました" );
                 return;
             }
 
-            int count = Mathf.Min( container.SkillsData.Length, data.Length );
+            int count = Mathf.Min( container.ActiveSkillsData.Length, data.Length );
             for ( int i = 0; i < count; ++i )
             {
-                ApplyFileData( ref data[i], container.SkillsData[i] );
+                ApplyFileData( ref data[i], container.ActiveSkillsData[i] );
             }
         }
 
@@ -161,7 +161,7 @@ namespace Frontier.Combat
 
             if ( Enum.TryParse<LocKey>( keyName, out var key ) ) { return key; }
 
-            Debug.LogWarning( $"[SkillsData] ExplainTextKeyが不正です: {keyName}" );
+            Debug.LogWarning( $"[ActiveSkillsData] ExplainTextKeyが不正です: {keyName}" );
             return LocKey.None;
         }
 
@@ -169,47 +169,22 @@ namespace Frontier.Combat
         {
             if( ReactiveSkillNotifierFactory != null ) { return; }
 
-            ReactiveSkillNotifierFactory = new Dictionary<SkillID, Func<SkillNotifierBase>>
+            ReactiveSkillNotifierFactory = new Dictionary<ActiveSkillID, Func<SkillNotifierBase>>
             {
-                { SkillID.PARRY, () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false) },
+                { ActiveSkillID.PARRY, () => hierarchyBld.InstantiateWithDiContainer<ParrySkillNotifier>(false) },
             };
         }
 
-        static public SkillActionBase CreateSkillAction( SkillID skillID, Character owner, List<CharacterKey> targetCharaKeys, HierarchyBuilderBase hierarchyBld )
+        static public SkillActionBase CreateSkillAction( ActiveSkillID skillID, Character owner, List<CharacterKey> targetCharaKeys, HierarchyBuilderBase hierarchyBld )
         {
             return _skillActionFactory.TryGetValue( skillID, out var factory )
                 ? factory( owner, targetCharaKeys, hierarchyBld )
                 : sharedAction;
         }
 
-        static public bool IsValidSkill( SkillID skillID )
+        static public bool IsValidSkill( ActiveSkillID skillID )
         {
-            return SkillID.NONE < skillID && skillID < SkillID.NUM;
-        }
-
-        /// <summary>
-        /// パッシブスキル(装備しているだけで常時効果を持ち、能動的に使用しないスキル)であるかを判定します
-        /// パッシブスキルはパッシブスキル枠にのみ、それ以外のスキルはアクティブスキル枠にのみ装備出来ます
-        /// </summary>
-        static public bool IsPassiveSkill( SkillID skillID )
-        {
-            return IsValidSkill( skillID ) && data[( int ) skillID].SituationType == SituationType.PASSIVE;
-        }
-
-        /// <summary>
-        /// アクティブスキル(戦闘中に能動的に使用するスキル)であるかを判定します
-        /// </summary>
-        static public bool IsActiveSkill( SkillID skillID )
-        {
-            return IsValidSkill( skillID ) && data[( int ) skillID].SituationType != SituationType.PASSIVE;
-        }
-
-        /// <summary>
-        /// 指定スキルが、指定種類の装備枠に装備可能な種類のスキルであるかを判定します
-        /// </summary>
-        static public bool IsSkillMatchSlotType( SkillID skillID, SkillSlotType slotType )
-        {
-            return ( slotType == SkillSlotType.PASSIVE ) ? IsPassiveSkill( skillID ) : IsActiveSkill( skillID );
+            return ActiveSkillID.NONE < skillID && skillID < ActiveSkillID.NUM;
         }
 
         /// <summary>
@@ -221,7 +196,7 @@ namespace Frontier.Combat
         }
 
         /// <inheritdoc cref="IsAllyTargetActionType(ActionType)"/>
-        static public bool IsAllyTargetSkill( SkillID skillID )
+        static public bool IsAllyTargetSkill( ActiveSkillID skillID )
         {
             return IsValidSkill( skillID ) && IsAllyTargetActionType( data[( int ) skillID].ActionType );
         }
@@ -231,7 +206,7 @@ namespace Frontier.Combat
         /// 移動を伴う攻撃スキル(ダッシュ斬り・ジャンプ斬り等)と、一定の範囲(PART_OF_RANGE)を対象とする攻撃スキルが該当します。
         /// NPCはこれらのスキルを、予約を経ずにその場の判断で使用することはありません
         /// </summary>
-        static public bool IsTelegraphedSkill( SkillID skillID )
+        static public bool IsTelegraphedSkill( ActiveSkillID skillID )
         {
             if( !IsValidSkill( skillID ) ) { return false; }
 

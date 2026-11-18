@@ -176,10 +176,10 @@ namespace Frontier.DebugTools.StageEditor
             // InitGridIndex: カーソル位置から自動設定されるため読み取り専用
             _params.Add( new ParamDescriptor { Name = "InitGridIndex", Min = int.MaxValue, Max = int.MinValue, Getter = () => _refParams.EnemyInitGridIndex, Setter = v => { } } );
             _params.Add( new ParamDescriptor { Name = "InitDir",  Min = 0,                    Max = 3,                    Getter = () => _refParams.EnemyInitDir,  Setter = v => _refParams.EnemyInitDir  = v } );
-            _params.Add( new ParamDescriptor { Name = "Skill1",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill1,  Setter = v => _refParams.EnemySkill1  = v } );
-            _params.Add( new ParamDescriptor { Name = "Skill2",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill2,  Setter = v => _refParams.EnemySkill2  = v } );
-            _params.Add( new ParamDescriptor { Name = "Skill3",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill3,  Setter = v => _refParams.EnemySkill3  = v } );
-            _params.Add( new ParamDescriptor { Name = "Skill4",   Min = ( int ) SkillID.NONE - 1, Max = ( int ) SkillID.NUM,  Getter = () => _refParams.EnemySkill4,  Setter = v => _refParams.EnemySkill4  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill1",   Min = ( int ) ActiveSkillID.NONE - 1, Max = ( int ) ActiveSkillID.NUM,  Getter = () => _refParams.EnemySkill1,  Setter = v => _refParams.EnemySkill1  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill2",   Min = ( int ) ActiveSkillID.NONE - 1, Max = ( int ) ActiveSkillID.NUM,  Getter = () => _refParams.EnemySkill2,  Setter = v => _refParams.EnemySkill2  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill3",   Min = ( int ) ActiveSkillID.NONE - 1, Max = ( int ) ActiveSkillID.NUM,  Getter = () => _refParams.EnemySkill3,  Setter = v => _refParams.EnemySkill3  = v } );
+            _params.Add( new ParamDescriptor { Name = "Skill4",   Min = ( int ) ActiveSkillID.NONE - 1, Max = ( int ) ActiveSkillID.NUM,  Getter = () => _refParams.EnemySkill4,  Setter = v => _refParams.EnemySkill4  = v } );
         }
 
         public override bool CanAcceptConfirm() { return true; }

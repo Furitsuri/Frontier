@@ -17,14 +17,14 @@ namespace Frontier.Combat
         /// <param name="target">回復の対象</param>
         /// <param name="useSkillID">使用する回復系のスキル</param>
         /// <returns>回復するHP量(0以上)</returns>
-        static public int Forecast( Character healer, Character target, SkillID useSkillID )
+        static public int Forecast( Character healer, Character target, ActiveSkillID useSkillID )
         {
-            if( !SkillsData.IsValidSkill( useSkillID ) ) { return 0; }
+            if( !ActiveSkillsData.IsValidSkill( useSkillID ) ) { return 0; }
 
             var status      = target.GetStatusRef;
             int lackingHp   = Mathf.Max( status.MaxHP - status.CurHP, 0 );
 
-            return Mathf.Min( SkillsData.data[( int ) useSkillID].HealAmount, lackingHp );
+            return Mathf.Min( ActiveSkillsData.data[( int ) useSkillID].HealAmount, lackingHp );
         }
     }
 }

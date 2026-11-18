@@ -6,7 +6,7 @@ namespace Frontier.Sequences
 {
     public class SkillActionSequenceParam
     {
-        public SkillID SkillID;
+        public ActiveSkillID SkillID;
         public SkillActionBase SkillAction;
         public Character Attacker;
         public Character Target;

@@ -66,7 +66,7 @@ namespace Frontier
             // パリィ使用時は被攻撃者を基点にする
             var cameraFromChara = attacker;
             var cameraToChara   = target;
-            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) )
+            if( 0 <= target.BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.PARRY ) )
             {
                 cameraFromChara = target;
                 cameraToChara   = attacker;

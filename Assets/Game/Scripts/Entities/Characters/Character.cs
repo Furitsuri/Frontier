@@ -163,9 +163,9 @@ namespace Frontier.Entities
 
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
-                SkillID skillID = GetEquipSkillID( i );
-                if( !SkillsData.IsValidSkill( skillID ) ) { continue; }
-                var skillData = SkillsData.data[( int ) skillID];
+                ActiveSkillID skillID = GetEquipSkillID( i );
+                if( !ActiveSkillsData.IsValidSkill( skillID ) ) { continue; }
+                var skillData = ActiveSkillsData.data[( int ) skillID];
 
                 // スキル使用ONの状態であればOFFにするだけなので、チェックする必要がない
                 if( BattleParams.TmpParam.IsSkillsToggledON[i] )
@@ -179,7 +179,7 @@ namespace Frontier.Entities
                 if( BattleParams.TmpParam.IsSkillsUsed[i] ||                                                                    // 既に使用済みのスキルは使用不可
                     ( SituationType.NONE != situationType && skillData.SituationType != situationType ) ||                      // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
                     !Methods.HasAnyFlag( useableActionTypeBit, skillData.ActionType ) ||                                      // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
-                    ( 0 <= equipSkillIndexTransitAction && SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) ||  // 対象選択に遷移するスキルの使用フラグがONの状態では、同様のスキルは使用不可
+                    ( 0 <= equipSkillIndexTransitAction && ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) ||  // 対象選択に遷移するスキルの使用フラグがONの状態では、同様のスキルは使用不可
                     _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost )                       // コストが現在のアクションゲージ値を越えていないかをチェック
                 {
                     continue;
@@ -190,7 +190,7 @@ namespace Frontier.Entities
                 // (移動を伴うスキルは攻撃対象が存在しなくても、着地可能なタイルがあれば使用可能とする)
                 // ( BattleLogicがまだ設定されていない場合(戦闘開始前のステータス反映時など)は、位置情報が不定のため判定をスキップする )
                 if( checkAttackTarget &&
-                    SkillsData.IsTransitionSkillActionType( skillData.ActionType ) &&
+                    ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType ) &&
                     null != _battleLogic &&
                     !_battleLogic.ActionRangeCtrl.IsSkillExecutableAt( BattleParams.TmpParam.CurrentTileIndex, skillID ) )
                 {
@@ -289,21 +289,21 @@ namespace Frontier.Entities
                 return false;
             }
 
-            SkillID skillID = GetEquipSkillID( skillIdx );
-            if( !SkillsData.IsValidSkill( skillID ) )                                   { return false; }
-            var skillData = SkillsData.data[( int ) skillID];
+            ActiveSkillID skillID = GetEquipSkillID( skillIdx );
+            if( !ActiveSkillsData.IsValidSkill( skillID ) )                                   { return false; }
+            var skillData = ActiveSkillsData.data[( int ) skillID];
             // コストが現在のアクションゲージ値を越えていないかをチェック
             if( _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost ) { return false; }
 
             return true;
         }
 
-        public SkillID GetEquipSkillID( int slotIdx )
+        public ActiveSkillID GetEquipSkillID( int slotIdx )
         {
             if( slotIdx < 0 || EQUIPABLE_ACTIVE_SKILL_MAX_NUM <= slotIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がスキルの装備範囲を超えています。" );
-                return SkillID.NONE;
+                return ActiveSkillID.NONE;
             }
             return _status.EquipSkills[slotIdx];
         }
@@ -312,16 +312,16 @@ namespace Frontier.Entities
         /// 指定のパッシブスキル枠に装備されているスキルを取得します
         /// </summary>
         /// <param name="slotIdx">パッシブスキル枠のインデックス(0〜EQUIPABLE_PASSIVE_SKILL_MAX_NUM-1)</param>
-        /// <returns>装備中のスキルID(未装備の場合はSkillID.NONE)</returns>
-        public SkillID GetPassiveSkillID( int slotIdx )
+        /// <returns>装備中のスキルID(未装備の場合はPassiveSkillID.NONE)</returns>
+        public PassiveSkillID GetPassiveSkillID( int slotIdx )
         {
             if( slotIdx < 0 || EQUIPABLE_PASSIVE_SKILL_MAX_NUM <= slotIdx )
             {
                 Debug.Assert( false, "指定されているスキルの装備インデックス値がパッシブスキルの装備範囲を超えています。" );
-                return SkillID.NONE;
+                return PassiveSkillID.NONE;
             }
             // MEMO : パッシブスキル枠追加以前のデータから生成されたステータスでは枠が未確保の場合があるため、未装備扱いとします
-            if( _status.PassiveSkills == null || _status.PassiveSkills.Length <= slotIdx ) { return SkillID.NONE; }
+            if( _status.PassiveSkills == null || _status.PassiveSkills.Length <= slotIdx ) { return PassiveSkillID.NONE; }
 
             return _status.PassiveSkills[slotIdx];
         }
@@ -332,9 +332,9 @@ namespace Frontier.Entities
         /// </summary>
         /// <param name="skillID">判定するスキルID</param>
         /// <returns>パッシブスキル枠のいずれかに装備しているか否か</returns>
-        public bool HasPassiveSkill( SkillID skillID )
+        public bool HasPassiveSkill( PassiveSkillID skillID )
         {
-            if( !SkillsData.IsValidSkill( skillID ) ) { return false; }
+            if( !PassiveSkillsData.IsValidSkill( skillID ) ) { return false; }
 
             for( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; ++i )
             {

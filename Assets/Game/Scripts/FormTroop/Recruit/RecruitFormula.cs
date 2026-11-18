@@ -46,10 +46,10 @@ namespace Frontier.FormTroop
             statusData.status.maxActionGauge += actMaxRandValue;
             statusData.status.CurActionGauge = statusData.status.maxActionGauge;
             statusData.status.recoveryActionGauge += actRecovRandValue;
-            statusData.status.EquipSkills[0] = SkillID.PARRY;           // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
-            statusData.status.EquipSkills[1] = SkillID.DOUBLE_STRIKE;   // 同上
-            statusData.status.EquipSkills[2] = SkillID.DASH_SLASH;      // 同上
-            statusData.status.EquipSkills[3] = SkillID.JUMP_SLASH;      // 同上
+            statusData.status.EquipSkills[0] = ActiveSkillID.PARRY;           // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
+            statusData.status.EquipSkills[1] = ActiveSkillID.DOUBLE_STRIKE;   // 同上
+            statusData.status.EquipSkills[2] = ActiveSkillID.DASH_SLASH;      // 同上
+            statusData.status.EquipSkills[3] = ActiveSkillID.JUMP_SLASH;      // 同上
 
             int employmentCost = CalcurateEmploymentCost( unitTypeIndex, statusData.status.Level, hpRandValue, atkRandValue, defRandValue, actMaxRandValue, actRecovRandValue );
 

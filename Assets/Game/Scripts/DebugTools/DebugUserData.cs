@@ -38,12 +38,12 @@ namespace Frontier.DebugTools
             public int    recoveryActionGauge = 10;
 
             /// <summary>
-            /// スキルID（整数値）の配列。-1 は SkillID.NONE（未装備）を表します。
+            /// スキルID（整数値）の配列。-1 は ActiveSkillID.NONE（未装備）を表します。
             /// </summary>
             public int[] equipSkills = new int[EQUIPABLE_ACTIVE_SKILL_MAX_NUM];
 
             /// <summary>
-            /// パッシブスキルのスキルID（整数値）の配列。-1 は SkillID.NONE（未装備）を表します。
+            /// パッシブスキルのスキルID（整数値）の配列。-1 は ActiveSkillID.NONE（未装備）を表します。
             /// </summary>
             public int[] passiveSkills = new int[] { -1, -1, -1 };
 
@@ -70,15 +70,15 @@ namespace Frontier.DebugTools
                 for ( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; i++ )
                 {
                     status.EquipSkills[i] = ( equipSkills != null && i < equipSkills.Length )
-                        ? (SkillID) equipSkills[i]
-                        : SkillID.NONE;
+                        ? (ActiveSkillID) equipSkills[i]
+                        : ActiveSkillID.NONE;
                 }
 
                 for ( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; i++ )
                 {
                     status.PassiveSkills[i] = ( passiveSkills != null && i < passiveSkills.Length )
-                        ? (SkillID) passiveSkills[i]
-                        : SkillID.NONE;
+                        ? (PassiveSkillID) passiveSkills[i]
+                        : PassiveSkillID.NONE;
                 }
 
                 return status;

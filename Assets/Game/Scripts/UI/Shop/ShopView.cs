@@ -12,7 +12,7 @@ namespace Frontier.UI
     /// </summary>
     public class ShopView : UiMonoBehaviour
     {
-        [Header( "商品行(SkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
+        [Header( "商品行(ActiveSkillID.NUM個分をあらかじめ用意し、使わない分は非表示にする)" )]
         [SerializeField] private SkillBoxUI[] _rowBoxes;
         [SerializeField] private TextMeshProUGUI[] _priceTexts;
         [SerializeField] private TextMeshProUGUI[] _stockTexts;
@@ -75,7 +75,7 @@ namespace Frontier.UI
         /// 指定行にスキル商品の内容を設定します。unavailableがtrueの場合(在庫切れ・アニマ不足等)は
         /// SkillBoxUI.SetUseableOrNot(false)と、価格・在庫テキストのグレー表示で購入不可であることを示します。
         /// </summary>
-        public void SetRowSkill( int rowIndex, SkillID skillID, int price, int stock, bool unavailable )
+        public void SetRowSkill( int rowIndex, ActiveSkillID skillID, int price, int stock, bool unavailable )
         {
             _rowBoxes[rowIndex].ApplySkillForEditing( skillID );
             _rowBoxes[rowIndex].SetUseableOrNot( !unavailable );

@@ -112,4 +112,8 @@ public enum LocKey
     // スキル説明文(追加分)
     // MEMO : LocKeyはPrefab等にint値でシリアライズされているため、途中に挿入せず末尾に追加すること
     EXPL_SKILL_HEAL,
+
+    // パッシブスキル説明文
+    EXPL_PASSIVE_ATK_UP,
+    EXPL_PASSIVE_DEF_UP,
 }

@@ -26,7 +26,7 @@ namespace Frontier.Battle
         // --- スキル設定 ---
 
         /// <summary>使用スキルID</summary>
-        public SkillID UseSkillID { get; }
+        public ActiveSkillID UseSkillID { get; }
 
         /// <summary>ターゲット選択モード</summary>
         public TargetingMode TargetingMode { get; }
@@ -79,7 +79,7 @@ namespace Frontier.Battle
             int                     attackerTileIndex,
             bool[]                  attackerSkillsToggledON,
             int                     actGaugeConsumption,
-            SkillID                 useSkillID,
+            ActiveSkillID                 useSkillID,
             TargetingMode           targetingMode,
             int                     currentRange,
             int                     maxRange,

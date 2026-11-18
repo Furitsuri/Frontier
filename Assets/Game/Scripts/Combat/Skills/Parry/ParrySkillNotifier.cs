@@ -40,7 +40,7 @@ namespace Frontier.Combat
         /// </summary>
         public void StartParryJudgeEvent()
         {
-            if( _skillUser.BattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) return;
+            if( _skillUser.BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.PARRY ) < 0 ) return;
 
             ParrySkillHandler parryCtrl = _combatSkillEventCtrl.CurrentSkillHandler as ParrySkillHandler;
             if( parryCtrl == null ) return;

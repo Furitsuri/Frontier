@@ -152,7 +152,7 @@ namespace Frontier.Entities.Ai
             foreach( var option in options )
             {
                 float value = EvaluateAttackOption( in option ) - EvaluateContestedTilePenalty( in option );
-                int cost    = SkillsData.IsValidSkill( option.SkillID ) ? SkillsData.data[( int ) option.SkillID].Cost : 0;
+                int cost    = ActiveSkillsData.IsValidSkill( option.SkillID ) ? ActiveSkillsData.data[( int ) option.SkillID].Cost : 0;
 
                 if( maxValue < value || ( maxValue == value && cost < minCost ) )
                 {

@@ -72,7 +72,7 @@ namespace Frontier.Entities.Ai
         /// <returns>評価値</returns>
         protected override float EvaluateAttackOption( in AttackOption option )
         {
-            if( SkillsData.IsAllyTargetSkill( option.SkillID ) ) { return EvaluateHealOption( in option ); }
+            if( ActiveSkillsData.IsAllyTargetSkill( option.SkillID ) ) { return EvaluateHealOption( in option ); }
 
             float evaluateValue = 0f;
             int actionGaugeCost = 0;
@@ -122,7 +122,7 @@ namespace Frontier.Entities.Ai
                 evaluateValue   += ( float ) heal / target.GetStatusRef.MaxHP * HEAL_RATIO_VALUE;
             }
 
-            int actionGaugeCost = _owner.BattleParams.TmpParam.ActGaugeConsumption + SkillsData.data[( int ) option.SkillID].Cost;
+            int actionGaugeCost = _owner.BattleParams.TmpParam.ActGaugeConsumption + ActiveSkillsData.data[( int ) option.SkillID].Cost;
             evaluateValue      -= actionGaugeCost * ACTION_GAUGE_COST_VALUE;
 
             return evaluateValue;

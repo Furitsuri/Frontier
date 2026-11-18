@@ -28,7 +28,7 @@ namespace Frontier.Sequences
             _handler.Regist( attackSeq );
         }
 
-        public void RegistSkillAction( Character attacker, Character target, SkillID skillID, List<CharacterKey> attackTargetCharaKeys )
+        public void RegistSkillAction( Character attacker, Character target, ActiveSkillID skillID, List<CharacterKey> attackTargetCharaKeys )
         {
             var factory         = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceCreator>( false );
             var param           = _hierarchyBld.InstantiateWithDiContainer<SkillActionSequenceParam>( false );
@@ -36,7 +36,7 @@ namespace Frontier.Sequences
             param.Target        = target;
             param.SkillID       = skillID;
             param.AttackTargetCharaKeys = attackTargetCharaKeys;
-            param.SkillAction   = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld );
+            param.SkillAction   = ActiveSkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld );
             ISequence skillActionSeq = factory.CreateSequence( param );
             _handler.Regist( skillActionSeq );
         }
@@ -56,12 +56,12 @@ namespace Frontier.Sequences
         /// <summary>
         /// 連携スキルの 1 エントリを生成します。
         /// </summary>
-        public CooperativeSkillEntry CreateCooperativeEntry( SkillID skillID, Character attacker, Character target, List<CharacterKey> attackTargetCharaKeys )
+        public CooperativeSkillEntry CreateCooperativeEntry( ActiveSkillID skillID, Character attacker, Character target, List<CharacterKey> attackTargetCharaKeys )
         {
             return new CooperativeSkillEntry
             {
                 SkillID               = skillID,
-                SkillAction           = SkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld ),
+                SkillAction           = ActiveSkillsData.CreateSkillAction( skillID, attacker, attackTargetCharaKeys, _hierarchyBld ),
                 Attacker              = attacker,
                 Target                = target,
                 AttackTargetCharaKeys = attackTargetCharaKeys,

@@ -17,18 +17,18 @@ namespace Frontier.Combat
         /// </summary>
         /// <param name="attacker">攻撃キャラクター</param>
         /// <param name="target">標的キャラクター</param>
-        /// <param name="useSkillID">攻撃時に使用するスキル。SkillID.NONEの場合は現在の状態のまま予測します</param>
+        /// <param name="useSkillID">攻撃時に使用するスキル。ActiveSkillID.NONEの場合は現在の状態のまま予測します</param>
         /// <returns>攻撃結果の予測</returns>
-        static public AttackForecast Forecast( Character attacker, Character target, SkillID useSkillID = SkillID.NONE )
+        static public AttackForecast Forecast( Character attacker, Character target, ActiveSkillID useSkillID = ActiveSkillID.NONE )
         {
             var attackerParams      = attacker.BattleParams;
             var skillModified       = attackerParams.SkillModifiedParam;
             int modifiedAtk         = attackerParams.ModifiedParam.Atk;
             int actGaugeCost        = attackerParams.TmpParam.ActGaugeConsumption;
 
-            if( SkillsData.IsValidSkill( useSkillID ) && !attackerParams.IsSkillApplied( useSkillID ) )
+            if( ActiveSkillsData.IsValidSkill( useSkillID ) && !attackerParams.IsSkillApplied( useSkillID ) )
             {
-                var skillData = SkillsData.data[( int ) useSkillID];
+                var skillData = ActiveSkillsData.data[( int ) useSkillID];
 
                 skillModified.AddAtkNum         += skillData.AddAtkNum;
                 skillModified.AtkMagnification  += skillData.AddAtkMag;

@@ -44,9 +44,9 @@ namespace Frontier
         /// (戦闘中のパラメータ表示等、未装備のスキル枠を詰めて表示したい場面向け)。
         /// 装備スキル設定画面のように、空枠であっても選択できるよう表示を維持したい場合はApplySkillForEditingを使用してください。
         /// </summary>
-        public void ApplySkill( SkillID skillID )
+        public void ApplySkill( ActiveSkillID skillID )
         {
-            bool isValid = SkillsData.IsValidSkill( skillID );
+            bool isValid = ActiveSkillsData.IsValidSkill( skillID );
             gameObject.SetActive( isValid );
             if( !isValid ) { return; }
 
@@ -58,29 +58,59 @@ namespace Frontier
         /// ゲームオブジェクトは非表示にせず、空枠として表示します(装備スキル設定画面で、
         /// 未装備の枠にもカーソルを合わせて新しくスキルを装備できるようにするため)。
         /// </summary>
-        public void ApplySkillForEditing( SkillID skillID )
+        public void ApplySkillForEditing( ActiveSkillID skillID )
         {
             gameObject.SetActive( true );
 
-            if( !SkillsData.IsValidSkill( skillID ) )
+            if( !ActiveSkillsData.IsValidSkill( skillID ) )
             {
-                // _textKeyも明示的にクリアする。ApplySkillForEditingは同一インスタンスが枠の使い回しで
-                // 再利用されるため、ここを省略すると直後のEnableRefreshText()が古い_textKeyを読み直し、
-                // 前に表示していたスキルの説明文でツールチップを上書きしてしまう。
-                _textKey = LocKey.None;
-                SetSkillName( "", GetSkillNameColorConfig()?.GetColor( SituationType.ATTACK ) ?? Color.white );
-                SetTooltipText( LocKey.None );
-                ShowSkillCostImage( 0 );
-                EnableRefreshText();
+                ApplyEmptyContent();
                 return;
             }
 
             ApplySkillContent( skillID );
         }
 
-        private void ApplySkillContent( SkillID skillID )
+        /// <summary>
+        /// ApplySkillForEditingのパッシブスキル版です。パッシブスキルは使用コストを持たないため、コスト表示は行いません。
+        /// </summary>
+        public void ApplyPassiveSkillForEditing( PassiveSkillID skillID )
         {
-            var skillData      = SkillsData.data[( int ) skillID];
+            gameObject.SetActive( true );
+
+            if( !PassiveSkillsData.IsValidSkill( skillID ) )
+            {
+                ApplyEmptyContent();
+                return;
+            }
+
+            var skillData   = PassiveSkillsData.data[( int ) skillID];
+            _textKey        = skillData.ExplainTextKey;
+            SetSkillName( skillData.Name, GetSkillNameColorConfig()?.GetPassiveColor() ?? Color.white );
+            SetTooltipText( _textKey );
+            ShowSkillCostImage( 0 );
+
+            EnableRefreshText();
+        }
+
+        /// <summary>
+        /// 未装備の空枠として表示します。
+        /// </summary>
+        private void ApplyEmptyContent()
+        {
+            // _textKeyも明示的にクリアする。ApplySkillForEditingは同一インスタンスが枠の使い回しで
+            // 再利用されるため、ここを省略すると直後のEnableRefreshText()が古い_textKeyを読み直し、
+            // 前に表示していたスキルの説明文でツールチップを上書きしてしまう。
+            _textKey = LocKey.None;
+            SetSkillName( "", GetSkillNameColorConfig()?.GetColor( SituationType.ATTACK ) ?? Color.white );
+            SetTooltipText( LocKey.None );
+            ShowSkillCostImage( 0 );
+            EnableRefreshText();
+        }
+
+        private void ApplySkillContent( ActiveSkillID skillID )
+        {
+            var skillData      = ActiveSkillsData.data[( int ) skillID];
             string skillName   = skillData.Name;
             _textKey           = skillData.ExplainTextKey;
             SetSkillName( skillName, ResolveSkillNameColor( skillData ) );
@@ -190,7 +220,7 @@ namespace Frontier
         /// スキルの種類と使用出来る場面から、スキル名の色を決定します(色の値は設定アセットで調整します)。
         /// 設定アセットが見つからない場合は白で表示します
         /// </summary>
-        private static Color ResolveSkillNameColor( in SkillsData.Data skillData )
+        private static Color ResolveSkillNameColor( in ActiveSkillsData.Data skillData )
         {
             var config = GetSkillNameColorConfig();
             return ( null != config ) ? config.GetColor( skillData ) : Color.white;

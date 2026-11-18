@@ -68,10 +68,10 @@ namespace Frontier.Combat
 
         // スキルIDごとのルール生成処理
         // 高さ情報やジャンプ力の参照など、StageController・使用者を必要とするルールがあるため生成時に受け取る
-        private static readonly Dictionary<SkillID, Func<StageController, Character, SkillRangeRules>> _factories = new Dictionary<SkillID, Func<StageController, Character, SkillRangeRules>>
+        private static readonly Dictionary<ActiveSkillID, Func<StageController, Character, SkillRangeRules>> _factories = new Dictionary<ActiveSkillID, Func<StageController, Character, SkillRangeRules>>
         {
-            { SkillID.DASH_SLASH, DashSlashSA.CreateRangeRules },
-            { SkillID.JUMP_SLASH, JumpSlashSA.CreateRangeRules },
+            { ActiveSkillID.DASH_SLASH, DashSlashSA.CreateRangeRules },
+            { ActiveSkillID.JUMP_SLASH, JumpSlashSA.CreateRangeRules },
         };
 
         public SkillRangeRules(
@@ -99,11 +99,11 @@ namespace Frontier.Combat
         /// スキル固有のルールが無い場合は、自軍を対象とするスキルであれば AllyDefault を、それ以外は Default を返します。
         /// </summary>
         /// <param name="owner">スキルの使用者</param>
-        public static SkillRangeRules Get( SkillID skillID, StageController stageCtrl, Character owner )
+        public static SkillRangeRules Get( ActiveSkillID skillID, StageController stageCtrl, Character owner )
         {
             if( _factories.TryGetValue( skillID, out var factory ) ) { return factory( stageCtrl, owner ); }
 
-            return SkillsData.IsAllyTargetSkill( skillID ) ? AllyDefault : Default;
+            return ActiveSkillsData.IsAllyTargetSkill( skillID ) ? AllyDefault : Default;
         }
     }
 }

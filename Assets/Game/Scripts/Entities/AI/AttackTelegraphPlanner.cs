@@ -7,7 +7,7 @@ using Zenject;
 namespace Frontier.Entities.Ai
 {
     /// <summary>
-    /// NPCの予兆を伴うスキル(移動を伴う攻撃・一定範囲への攻撃。SkillsData.IsTelegraphedSkill)の使用を、自軍のフェーズの終了時に予約し、
+    /// NPCの予兆を伴うスキル(移動を伴う攻撃・一定範囲への攻撃。ActiveSkillsData.IsTelegraphedSkill)の使用を、自軍のフェーズの終了時に予約し、
     /// 次の自軍のフェーズでその予約を実行出来るかを判定します。
     ///
     /// 予約:

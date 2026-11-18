@@ -1,0 +1,16 @@
+﻿{
+    "PassiveSkillsData": [
+        {
+            "Name": "ATK_UP",
+            "EffectType": 0,
+            "Grades": [ { "Value": 0.2 } ],
+            "ExplainTextKey": "EXPL_PASSIVE_ATK_UP"
+        },
+        {
+            "Name": "DEF_UP",
+            "EffectType": 1,
+            "Grades": [ { "Value": 0.2 } ],
+            "ExplainTextKey": "EXPL_PASSIVE_DEF_UP"
+        }
+    ]
+}

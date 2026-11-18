@@ -30,7 +30,7 @@ namespace Frontier.Entities
 protected Character _opponent                                       = null;
         protected ActionRangeController _actionRangeCtrl                    = null;                 // 行動範囲管理クラス
         protected BaseAi _baseAi                                            = null;                 // PlayerもAIに行動を任せる場合があるため、Characterに持たせる
-        protected Dictionary<SkillID, SkillNotifierBase> _reactiveNotifiers = new Dictionary<SkillID, SkillNotifierBase>();  // リアクション型スキルの通知(装備しているスキルのうち該当するものだけ格納)
+        protected Dictionary<ActiveSkillID, SkillNotifierBase> _reactiveNotifiers = new Dictionary<ActiveSkillID, SkillNotifierBase>();  // リアクション型スキルの通知(装備しているスキルのうち該当するものだけ格納)
         protected ThinkingType _thikType                                    = ThinkingType.BASE;    // 思考タイプ
         protected PARRY_PHASE _parryPhase                                   = PARRY_PHASE.NONE;
         protected ParameterWindowType _paramWinType;
@@ -49,7 +49,7 @@ protected Character _opponent                                       = null;
         /// <summary>
         /// 指定スキルのリアクション通知処理を取得します。装備していない、またはリアクション型でないスキルの場合はnullを返します
         /// </summary>
-        public T GetSkillNotifier<T>( SkillID skillID ) where T : SkillNotifierBase
+        public T GetSkillNotifier<T>( ActiveSkillID skillID ) where T : SkillNotifierBase
         {
             return _reactiveNotifiers.TryGetValue( skillID, out var notifier ) ? notifier as T : null;
         }
@@ -339,7 +339,7 @@ protected Character _opponent                                       = null;
                 if( !IsUsingEquipSkill( i ) ) { continue; }
 
                 var skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
-                var skillData = SkillsData.data[( int ) skillID];
+                var skillData = ActiveSkillsData.data[( int ) skillID];
                 if( skillData.ActionType == ActionType.BUFF )
                 {
                     skillNames.Add( skillData.Name );
@@ -359,9 +359,9 @@ protected Character _opponent                                       = null;
             {
                 if( IsEquipSkillToggledOn( i ) )
                 {
-                    SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
-                    var skillData = SkillsData.data[( int ) skillID];
-                    if( SkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
+                    ActiveSkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
+                    var skillData = ActiveSkillsData.data[( int ) skillID];
+                    if( ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType ) )
                     {
                         equipIndex = i;
 
@@ -379,7 +379,7 @@ protected Character _opponent                                       = null;
         /// </summary>
         /// <param name="skillID">指定スキルID</param>
         /// <returns>使用登録されているか否か</returns>
-        public int GetUsingSkillSlotIndexById( SkillID skillID )
+        public int GetUsingSkillSlotIndexById( ActiveSkillID skillID )
         {
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
@@ -518,8 +518,8 @@ protected Character _opponent                                       = null;
             var owner = _readOnlyOwner.Value;
             bool IsToggledToUse = owner.BattleParams.TmpParam.IsSkillsToggledON[index] = !owner.BattleParams.TmpParam.IsSkillsToggledON[index];
 
-            SkillID skillID = owner.GetEquipSkillID( index );
-            if( !SkillsData.IsValidSkill( skillID ) ) { return; }
+            ActiveSkillID skillID = owner.GetEquipSkillID( index );
+            if( !ActiveSkillsData.IsValidSkill( skillID ) ) { return; }
 
             if( IsToggledToUse )
             {
@@ -616,8 +616,8 @@ protected Character _opponent                                       = null;
 
             for( int i = 0; i < ( int ) EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
-                SkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
-                if( !SkillsData.ReactiveSkillNotifierFactory.TryGetValue( skillID, out var factory ) ) { continue; }
+                ActiveSkillID skillID = _readOnlyOwner.Value.GetEquipSkillID( i );
+                if( !ActiveSkillsData.ReactiveSkillNotifierFactory.TryGetValue( skillID, out var factory ) ) { continue; }
 
                 var notifier = factory();
                 notifier.Init( _readOnlyOwner.Value );

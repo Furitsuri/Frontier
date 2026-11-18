@@ -26,7 +26,7 @@ namespace Frontier.Battle
 
         [Inject] private SequenceFacade _sequenceFcd = null;
 
-        private SkillID _transitTargetSelectSkillID = SkillID.NONE;
+        private ActiveSkillID _transitTargetSelectSkillID = ActiveSkillID.NONE;
         private string[] _playerSkillNames          = null;
         private PlSelectSkillPhase _phase = PlSelectSkillPhase.PL_SELECT_SKILL;
 
@@ -37,7 +37,7 @@ namespace Frontier.Battle
         {
             base.Init( context);
 
-            _transitTargetSelectSkillID     = SkillID.NONE;
+            _transitTargetSelectSkillID     = ActiveSkillID.NONE;
             _playerSkillNames               = _plOwner.GetStatusRef.GetEquipSkillNames();
 
             // 装備されているスキルの枠のみをカーソル移動対象にする
@@ -174,11 +174,11 @@ namespace Frontier.Battle
                 if( _plOwner.BattleLogic.IsEquipSkillToggledOn( i ) )
                 {
                     var skillID     = _plOwner.GetEquipSkillID( i );
-                    var skillData = SkillsData.data[( int ) skillID];
+                    var skillData = ActiveSkillsData.data[( int ) skillID];
 
                     // ただし、ターゲット選択に遷移するスキルタイプのものがある場合は、そちらを優先して遷移させる
                     // ターゲット選択に遷移するスキルタイプのものがある場合は、他のスキルの使用フラグが立っていても攻撃可能な範囲にターゲットが存在しない可能性があるため、そちらをチェック
-                    bool isTransitionSkillActionType = SkillsData.IsTransitionSkillActionType( skillData.ActionType );
+                    bool isTransitionSkillActionType = ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType );
                     if( isTransitionSkillActionType )
                     {
                         isExistTransitionSkillActionType = true;
@@ -190,7 +190,7 @@ namespace Frontier.Battle
                 }
             }
 
-            if( isExistTransitionSkillActionType ) { return _transitTargetSelectSkillID != SkillID.NONE; }
+            if( isExistTransitionSkillActionType ) { return _transitTargetSelectSkillID != ActiveSkillID.NONE; }
 
             return isExistToggledOnSkill;
         }
@@ -225,7 +225,7 @@ namespace Frontier.Battle
 
             // ターゲット選択に遷移するスキルタイプのものがONになっている場合は、ターゲット選択に遷移
             // それ以外の場合(自身へのバフスキル等)は、スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
-            if( SkillID.NONE == _transitTargetSelectSkillID )
+            if( ActiveSkillID.NONE == _transitTargetSelectSkillID )
             {
                 // この場合はターゲット選択やオプション選択を挟まずそのまま実行が確定するため、この時点でSkillBoxUIを元の位置に戻す
                 _presenter.RevertSkillBoxesFromSelection( ParameterWindowType.Left );
@@ -285,10 +285,10 @@ namespace Frontier.Battle
             actionRangeCtrl.ClearActionableRangeDataWithRender();
 
             var skillID = _plOwner.GetEquipSkillID( _cmdIdxVal.value );
-            if( SkillID.NONE == skillID ) { return; }
+            if( ActiveSkillID.NONE == skillID ) { return; }
 
-            var skillData = SkillsData.data[( int ) skillID];
-            if( !SkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return; }
+            var skillData = ActiveSkillsData.data[( int ) skillID];
+            if( !ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) { return; }
 
             actionRangeCtrl.SetupAttackableRangeData( _plOwner.BattleParams.TmpParam.CurrentTileIndex, skillID );
             actionRangeCtrl.DrawAttackableRange();
@@ -300,8 +300,8 @@ namespace Frontier.Battle
 
             int index                           = _cmdIdxVal.value;
             var skillID                         = _plOwner.GetEquipSkillID( index );
-            var skillData                       = SkillsData.data[( int ) skillID];
-            bool isTransitionSkillActionType    = SkillsData.IsTransitionSkillActionType( skillData.ActionType );
+            var skillData                       = ActiveSkillsData.data[( int ) skillID];
+            bool isTransitionSkillActionType    = ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType );
 
             _plOwner.BattleLogic.ToggleEquipSkill( index );
             // 使用可能スキルの更新(このスキル選択画面内でのみ、対象不在のスキルを使用不可として扱う)
@@ -310,7 +310,7 @@ namespace Frontier.Battle
             // 場面遷移が必要なアクションスキルが選択されている場合
             if( isTransitionSkillActionType )
             {
-                _transitTargetSelectSkillID = SkillID.NONE;
+                _transitTargetSelectSkillID = ActiveSkillID.NONE;
 
                 // 効果範囲の表示自体はカーソル位置に応じてRefreshSkillRangeDisplay()で既に描画済みのため、
                 // ここではスキル使用フラグが立っている場合に、そのスキルが実行可能かどうかのみ判定する

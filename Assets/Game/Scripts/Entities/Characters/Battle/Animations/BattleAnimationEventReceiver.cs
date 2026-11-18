@@ -120,7 +120,7 @@ namespace Frontier.Entities
                     _readOnlyBattleLogic.Value.GetOpponent().AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if( _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD ) < 0 )
+                else if( _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.GUARD ) < 0 )
                 {
                     _readOnlyBattleLogic.Value.GetOpponent().AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );
                 }
@@ -151,7 +151,7 @@ namespace Frontier.Entities
                     _readOnlyBattleLogic.Value.GetOpponent().AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.DIE );
                 }
                 // ガードスキル使用時は死亡時以外はダメージモーションを再生しない
-                else if( _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( SkillID.GUARD ) < 0 )
+                else if( _readOnlyBattleLogic.Value.GetOpponent().BattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.GUARD ) < 0 )
                 {
                     _readOnlyBattleLogic.Value.GetOpponent().AnimCtrl.SetAnimator( AnimDatas.AnimeConditionsTag.GET_HIT );
                 }
@@ -188,9 +188,9 @@ namespace Frontier.Entities
             if( _readOnlyBattleLogic.Value.GetOpponent() == null ) { return; }
 
             var opponentBattleLogic = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic;
-            if( opponentBattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) { return; }
+            if( opponentBattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.PARRY ) < 0 ) { return; }
 
-            var parrySkillNotifier = opponentBattleLogic.GetSkillNotifier<ParrySkillNotifier>( SkillID.PARRY );
+            var parrySkillNotifier = opponentBattleLogic.GetSkillNotifier<ParrySkillNotifier>( ActiveSkillID.PARRY );
             NullCheck.AssertNotNull( parrySkillNotifier, nameof( parrySkillNotifier ) );
 
             parrySkillNotifier.StartParryJudgeEvent();
@@ -205,9 +205,9 @@ namespace Frontier.Entities
             if( _readOnlyBattleLogic.Value.GetOpponent() == null ) { return; }
 
             var opponentBattleLogic = _readOnlyBattleLogic.Value.GetOpponent().BattleLogic;
-            if( opponentBattleLogic.GetUsingSkillSlotIndexById( SkillID.PARRY ) < 0 ) { return; }
+            if( opponentBattleLogic.GetUsingSkillSlotIndexById( ActiveSkillID.PARRY ) < 0 ) { return; }
 
-            var parrySkillNotifier = opponentBattleLogic.GetSkillNotifier<ParrySkillNotifier>( SkillID.PARRY );
+            var parrySkillNotifier = opponentBattleLogic.GetSkillNotifier<ParrySkillNotifier>( ActiveSkillID.PARRY );
             NullCheck.AssertNotNull( parrySkillNotifier, nameof( parrySkillNotifier ) );
 
             parrySkillNotifier.ParryOpponentEvent();
