@@ -38,6 +38,11 @@ public class InputGuideBarUI : UiMonoBehaviour
         return _rectTransform.sizeDelta.x;
     }
 
+    /// <summary>
+    /// 背景(ガイドの表示領域)のRectTransformです。他のUIが入力ガイドと重ならないよう位置を調整する際に使用します。
+    /// </summary>
+    public RectTransform BackgroundRect => _rectTransform;
+
     public override void Setup()
     {
         base.Setup();

@@ -76,7 +76,7 @@ namespace Frontier.Presenter
 
             // ツールチップのテキストと位置を設定(テキストに応じてウィンドウの縦幅が変わるため、テキストを先に設定する)
             SetToolTipText( item );
-            SetToolTipPosition( item.GetRectTransform().anchoredPosition, item.GetRectTransform().sizeDelta, item.GetRectTransform().pivot );
+            SetToolTipPosition( item.GetRectTransform() );
         }
 
         public bool IsToolTipActive()
@@ -84,36 +84,39 @@ namespace Frontier.Presenter
             return _tooltipUi.gameObject.activeSelf;
         }
 
-        private void SetToolTipPosition( in Vector2 itemPos, in Vector2 itemSize, in Vector2 itemPivot )
+        /// <summary>
+        /// ツールチップを、選択中の項目の横に配置します。
+        /// 説明文の量やウィンドウの大きさによらず、画面外へのはみ出しや入力ガイドとの重なりが起きない位置に調整します。
+        /// </summary>
+        private void SetToolTipPosition( RectTransform itemRect )
         {
-            float itemPivotSizeX = itemSize.x * ( 1 - itemPivot.x );
-            float itemPivotSizeY = itemSize.y * ( 1 - itemPivot.y );
-            float posX = itemPos.x + itemPivotSizeX + TOOLTIP_WINDOW_SPACE_X;
-            float posY = itemPos.y + itemPivotSizeY + TOOLTIP_WINDOW_SPACE_Y;
+            var bounds = CalculateToolTipBounds();
+            var rect   = TooltipPlacement.Calculate( _tooltipUi.ToLocalRect( itemRect ), _tooltipUi.GetSize(), bounds, new Vector2( TOOLTIP_WINDOW_SPACE_X, TOOLTIP_WINDOW_SPACE_Y ) );
 
-            Vector2 toolTipSize     = _tooltipUi.GetSize();
-            Vector2 toolTipPivot    = _tooltipUi.GetPivot();
-            float toolTipRight      = posX + toolTipSize.x * ( 1 - toolTipPivot.x );   // ツールチップの右端
-            float toolTipBottom     = posY - toolTipSize.y * toolTipPivot.y;           // ツールチップの下端
+            _tooltipUi.SetLocalRect( rect );
+        }
 
-            var screenSize = _uiSystem.GeneralUi.GetScreenSize();
+        /// <summary>
+        /// ツールチップを表示してよい範囲を求めます。画面から余白を除き、入力ガイドが表示されている場合はその上端より上に限ります。
+        /// MEMO : 入力ガイドは表示内容に応じて横幅がアニメーションしながら変わるため、横方向の範囲によらず、
+        ///        ガイドの上端より下の帯全体を表示不可とします(表示中にガイドの幅が変わっても重ならないようにするため)。
+        /// </summary>
+        private Rect CalculateToolTipBounds()
+        {
+            var screenRect = _tooltipUi.ToLocalRect( _uiSystem.GeneralUi.GetComponentInParent<Canvas>().GetComponent<RectTransform>() );
+            float xMin = screenRect.xMin + TOOLTIP_WINDOW_SCREEN_MARGIN;
+            float xMax = screenRect.xMax - TOOLTIP_WINDOW_SCREEN_MARGIN;
+            float yMin = screenRect.yMin + TOOLTIP_WINDOW_SCREEN_MARGIN;
+            float yMax = screenRect.yMax - TOOLTIP_WINDOW_SCREEN_MARGIN;
 
-            bool isOverlapRight     = toolTipRight > screenSize.x * 0.5f;
-            bool isOverlapBottom    = toolTipBottom < - screenSize.y * 0.5f;
-
-            // 画面をはみ出てしまう場合は位置を修正
-            if( isOverlapRight )
+            var guide = _uiSystem.GeneralUi.InputGuideView;
+            if( guide != null && guide.isActiveAndEnabled && guide.BackgroundRect != null )
             {
-                // 項目の左側に表示する
-                posX -= ( 2 * itemPivotSizeX + toolTipSize.x + 2 * TOOLTIP_WINDOW_SPACE_X );
-            }
-            if( isOverlapBottom )
-            {
-                // 説明文の行数によって縦幅が変わるため、下端が画面の下端に揃うまで上へずらす
-                posY += ( - screenSize.y * 0.5f ) - toolTipBottom;
+                var guideRect = _tooltipUi.ToLocalRect( guide.BackgroundRect );
+                yMin = Mathf.Max( yMin, guideRect.yMax + TOOLTIP_WINDOW_SCREEN_MARGIN );
             }
 
-            _tooltipUi.SetPosition( new Vector2( posX, posY ) );
+            return Rect.MinMaxRect( xMin, yMin, xMax, yMax );
         }
 
         /// <summary>

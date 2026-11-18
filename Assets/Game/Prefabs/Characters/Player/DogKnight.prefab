@@ -1340,6 +1340,7 @@ MonoBehaviour:
     CurActionGauge: 0
     recoveryActionGauge: 0
     EquipSkills: 
+    PassiveSkills: 
   _btlParams:
     _modifiedParam:
       Atk: 0

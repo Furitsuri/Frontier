@@ -12,7 +12,6 @@ namespace Frontier.UI
 
         /// <summary>
         /// 説明文を設定します。説明文が収まるよう、ウィンドウの縦幅を伸ばします(Prefabで設定された縦幅より短くはしません)。
-        /// MEMO : ウィンドウのpivotは上端のため、縦幅は下方向へ伸びます。
         /// </summary>
         public void SetText( string text )
         {
@@ -29,19 +28,36 @@ namespace Frontier.UI
             _rectTransform.sizeDelta = size;
         }
 
-        public void SetPosition( Vector2 pos )
+        /// <summary>
+        /// ウィンドウを、親のローカル座標で指定した矩形の位置に配置します(大きさは変更しません)。
+        /// </summary>
+        public void SetLocalRect( Rect rect )
         {
-            _rectTransform.anchoredPosition = pos;
+            var pivot = _rectTransform.pivot;
+            var pos   = new Vector2( rect.xMin + rect.width * pivot.x, rect.yMin + rect.height * pivot.y );
+
+            _rectTransform.localPosition = new Vector3( pos.x, pos.y, _rectTransform.localPosition.z );
+        }
+
+        /// <summary>
+        /// 指定のRectTransformの矩形を、このウィンドウの親のローカル座標に変換して返します。
+        /// 項目・画面・入力ガイド等の位置を、ウィンドウの配置と同じ座標系で扱うために使用します。
+        /// </summary>
+        public Rect ToLocalRect( RectTransform target )
+        {
+            var corners = new Vector3[4];
+            target.GetWorldCorners( corners );
+
+            var parent  = _rectTransform.parent;
+            Vector2 min = parent.InverseTransformPoint( corners[0] );
+            Vector2 max = parent.InverseTransformPoint( corners[2] );
+
+            return Rect.MinMaxRect( Mathf.Min( min.x, max.x ), Mathf.Min( min.y, max.y ), Mathf.Max( min.x, max.x ), Mathf.Max( min.y, max.y ) );
         }
 
         public Vector2 GetSize()
         {
             return _rectTransform.sizeDelta;
-        }
-
-        public Vector2 GetPivot()
-        {
-            return _rectTransform.pivot;
         }
 
         public override void Setup()

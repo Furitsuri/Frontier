@@ -222,6 +222,8 @@ static public class Constants
     // ツールチップウィンドウを表示する際に用いるスペース
     public const float TOOLTIP_WINDOW_SPACE_X = 10f;
     public const float TOOLTIP_WINDOW_SPACE_Y = 0f;
+    // ツールチップウィンドウと画面端・入力ガイドとの間に最低限空ける余白
+    public const float TOOLTIP_WINDOW_SCREEN_MARGIN = 10f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
     // キャラクターのスナップショット撮影時の位置
