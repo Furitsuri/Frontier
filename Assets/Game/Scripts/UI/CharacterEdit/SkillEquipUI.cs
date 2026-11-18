@@ -20,11 +20,16 @@ namespace Frontier.UI
     /// 意味合いが異なるため、あえて実装せずSkillEquipUI固有のメソッドとしている。
     /// 開閉・選択状態・割り振りの判断はSkillEquipPresenterが行い、このクラスは表示指示を
     /// 受けて反映するだけに留める。
+    /// 左側の行番号は「アクティブ枠(_slotBoxes) → パッシブ枠(_passiveSlotBoxes) → OK」の順に通しで扱う
+    /// (SkillEquipPresenterの左側の行番号と一致させている)。
     /// </summary>
     public class SkillEquipUI : UiMonoBehaviour
     {
-        [Header( "左側: 装備枠(EQUIPABLE_ACTIVE_SKILL_MAX_NUM個)" )]
+        [Header( "左側: アクティブスキルの装備枠(EQUIPABLE_ACTIVE_SKILL_MAX_NUM個)" )]
         [SerializeField] private SkillBoxUI[] _slotBoxes;
+
+        [Header( "左側: パッシブスキルの装備枠(EQUIPABLE_PASSIVE_SKILL_MAX_NUM個)" )]
+        [SerializeField] private SkillBoxUI[] _passiveSlotBoxes;
 
         [Header( "左側: 決定(OK)項目" )]
         [SerializeField] private TextMeshProUGUI _okLabelText;
@@ -48,11 +53,18 @@ namespace Frontier.UI
 
         [Inject] private ILocalizationService _localization = null;
 
+        // 左側の行番号順(アクティブ枠→パッシブ枠)に並べた装備枠。要素数がそのままOK行の行番号になる
+        private SkillBoxUI[] _leftRowBoxes = System.Array.Empty<SkillBoxUI>();
+
         public override void Setup()
         {
             base.Setup();
 
-            foreach ( var box in _slotBoxes ) { box.Setup(); }
+            _leftRowBoxes = new SkillBoxUI[_slotBoxes.Length + _passiveSlotBoxes.Length];
+            _slotBoxes.CopyTo( _leftRowBoxes, 0 );
+            _passiveSlotBoxes.CopyTo( _leftRowBoxes, _slotBoxes.Length );
+
+            foreach ( var box in _leftRowBoxes ) { box.Setup(); }
             foreach ( var box in _inventorySkillBoxes ) { box.Setup(); }
 
             RefreshRemoveRowText();
@@ -74,27 +86,27 @@ namespace Frontier.UI
         public void Hide() => gameObject.SetActive( false );
 
         /// <summary>
-        /// 指定枠に表示するスキルを設定します(未装備の場合はSkillID.NONEを渡してください)。
+        /// 左側の指定行の枠に表示するスキルを設定します(未装備の場合はSkillID.NONEを渡してください)。
         /// </summary>
-        public void SetSlotSkill( int slotIndex, SkillID skillID )
+        public void SetSlotSkill( int row, SkillID skillID )
         {
-            _slotBoxes[slotIndex].ApplySkillForEditing( skillID );
+            _leftRowBoxes[row].ApplySkillForEditing( skillID );
         }
 
         /// <summary>
-        /// 左側(装備枠+OK)の通常のカーソル選択状態を反映します(0〜3:装備枠、4:OK、
+        /// 左側(装備枠+OK)の通常のカーソル選択状態を反映します(0〜:装備枠(アクティブ→パッシブの順)、末尾:OK、
         /// -1:左側は非選択(右側が選択中、またはまだ画面へ遷移していないプレビュー表示中))。
         /// ロック状態(SetLockedSlot)の解除にも使用します。
         /// </summary>
         public void SetSelectedSlot( int slotIndex )
         {
-            for ( int i = 0; i < _slotBoxes.Length; ++i )
+            for ( int i = 0; i < _leftRowBoxes.Length; ++i )
             {
-                _slotBoxes[i].SetCursorHighlighted( i == slotIndex, scaleUp: false );
-                _slotBoxes[i].SetUseableOrNot( true );
+                _leftRowBoxes[i].SetCursorHighlighted( i == slotIndex, scaleUp: false );
+                _leftRowBoxes[i].SetUseableOrNot( true );
             }
 
-            _okLabelText.color = ( slotIndex == _slotBoxes.Length ) ? _selectedColor : _normalColor;
+            _okLabelText.color = ( slotIndex == _leftRowBoxes.Length ) ? _selectedColor : _normalColor;
         }
 
         /// <summary>
@@ -103,11 +115,11 @@ namespace Frontier.UI
         /// </summary>
         public void SetLockedSlot( int activeSlotIndex )
         {
-            for ( int i = 0; i < _slotBoxes.Length; ++i )
+            for ( int i = 0; i < _leftRowBoxes.Length; ++i )
             {
                 bool isActive = ( i == activeSlotIndex );
-                _slotBoxes[i].SetCursorHighlighted( isActive, scaleUp: false );
-                _slotBoxes[i].SetUseableOrNot( isActive );
+                _leftRowBoxes[i].SetCursorHighlighted( isActive, scaleUp: false );
+                _leftRowBoxes[i].SetUseableOrNot( isActive );
             }
 
             _okLabelText.color = _lockedColor;

@@ -205,6 +205,14 @@ namespace Frontier.Combat
         }
 
         /// <summary>
+        /// 指定スキルが、指定種類の装備枠に装備可能な種類のスキルであるかを判定します
+        /// </summary>
+        static public bool IsSkillMatchSlotType( SkillID skillID, SkillSlotType slotType )
+        {
+            return ( slotType == SkillSlotType.PASSIVE ) ? IsPassiveSkill( skillID ) : IsActiveSkill( skillID );
+        }
+
+        /// <summary>
         /// 自軍(使用者自身を含む)を効果の対象とする種類のスキルであるかを判定します
         /// </summary>
         static public bool IsAllyTargetActionType( ActionType actType )
