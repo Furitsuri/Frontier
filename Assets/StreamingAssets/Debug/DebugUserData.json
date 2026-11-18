@@ -20,6 +20,11 @@
         6,
         7,
         8
+      ],
+      "passiveSkills": [
+        0,
+        -1,
+        -1
       ]
     },
     {
@@ -36,6 +41,11 @@
       "recoveryActionGauge": 1,
       "equipSkills": [
         2,
+        1,
+        -1,
+        -1
+      ],
+      "passiveSkills": [
         1,
         -1,
         -1
@@ -58,6 +68,11 @@
         0,
         -1,
         -1
+      ],
+      "passiveSkills": [
+        0,
+        -1,
+        -1
       ]
     },
     {
@@ -77,6 +92,11 @@
         6,
         -1,
         -1
+      ],
+      "passiveSkills": [
+        1,
+        -1,
+        -1
       ]
     },
     {
@@ -93,6 +113,11 @@
       "recoveryActionGauge": 1,
       "equipSkills": [
         7,
+        0,
+        -1,
+        -1
+      ],
+      "passiveSkills": [
         0,
         -1,
         -1
@@ -115,6 +140,11 @@
         -1,
         -1,
         -1
+      ],
+      "passiveSkills": [
+        1,
+        -1,
+        -1
       ]
     },
     {
@@ -132,6 +162,11 @@
       "equipSkills": [
         1,
         3,
+        -1,
+        -1
+      ],
+      "passiveSkills": [
+        0,
         -1,
         -1
       ]

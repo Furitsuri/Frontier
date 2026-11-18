@@ -128,6 +128,17 @@ namespace Frontier.Entities
         }
 
         /// <summary>
+        /// 装備中のパッシブスキルのみによる攻撃力の補正値を算出します(使用中のスキルの倍率は含みません)。
+        /// 常時の効果であるパッシブスキル分を、一時的なスキル効果と区別して表示する場合などに使用します。
+        /// </summary>
+        static public int CalculatePassiveModifiedAtk( in Status ownerStatus ) => CalculateModifiedAtk( ownerStatus, 0f );
+
+        /// <summary>
+        /// 装備中のパッシブスキルのみによる防御力の補正値を算出します(使用中のスキルの倍率は含みません)。
+        /// </summary>
+        static public int CalculatePassiveModifiedDef( in Status ownerStatus ) => CalculateModifiedDef( ownerStatus, 0f );
+
+        /// <summary>
         /// 防御力の補正値を算出します。スキルによる倍率に、装備中のパッシブスキルによる倍率を加算して求めます。
         /// </summary>
         /// <param name="ownerStatus">対象キャラクターのステータス</param>

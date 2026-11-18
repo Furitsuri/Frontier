@@ -307,8 +307,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
 
         _parameterUI.TMPMaxHPValue.text         = $"{status.MaxHP}";
         _parameterUI.TMPCurHPValue.text         = $"{status.CurHP}";
-        _parameterUI.TMPAtkValue.text           = $"{status.Atk}";
-        _parameterUI.TMPDefValue.text           = $"{status.Def}";
+        RenderAtkDefValues( status, modifiedParam );
         _parameterUI.TMPMovValue.text           = $"{status.moveRange}";
         _parameterUI.TMPJmpValue.text           = $"{status.jumpForce}";
 
@@ -324,22 +323,11 @@ public class CharacterParameterPresenter : PhasePresenterBase
             _parameterUI.TMPStatusPointValue.text = $"{status.StatusPoint}";
         }
 
-        if( null != _parameterUI.TMPAddAtkValue )
-        {
-            int addAtkValue                     = ( int ) ( modifiedParam.Atk );
-            var addAtkText                      = ( addAtkValue < 0 ) ? $"- {addAtkValue}" : $"+ {addAtkValue}";
-            _parameterUI.TMPAddAtkValue.text    = addAtkText;
-            _parameterUI.TMPAddAtkValue.color   = ( addAtkValue < 0 ) ? Color.blue : Color.green;
-            _parameterUI.TMPAddAtkValue.gameObject.SetActive( addAtkValue != 0 );
-        }
-        if( null != _parameterUI.TMPAddDefValue )
-        {
-            int addDefValue                     = ( int ) ( modifiedParam.Def );
-            var addDefText                      = ( addDefValue < 0 ) ? $"- {addDefValue}" : $"+ {addDefValue}";
-            _parameterUI.TMPAddDefValue.text    = addDefText;
-            _parameterUI.TMPAddDefValue.color   = ( addDefValue < 0 ) ? Color.blue : Color.green;
-            _parameterUI.TMPAddDefValue.gameObject.SetActive( addDefValue != 0 );
-        }
+        // 一時的なスキル効果による補正のみを「+ X」で示す(パッシブスキルによる常時の補正は、能力値自体に含めて文字色で示す)
+        int passiveAtk = BattleParameters.CalculatePassiveModifiedAtk( status );
+        int passiveDef = BattleParameters.CalculatePassiveModifiedDef( status );
+        RenderAddValue( _parameterUI.TMPAddAtkValue, modifiedParam.Atk - passiveAtk );
+        RenderAddValue( _parameterUI.TMPAddDefValue, modifiedParam.Def - passiveDef );
 
         _parameterUI.TMPActRecoveryValue.text   = $"+ {status.recoveryActionGauge}";
 
@@ -407,8 +395,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
     {
         _parameterUI.TMPMaxHPValue.text = $"{status.MaxHP}";
         _parameterUI.TMPCurHPValue.text = $"{status.CurHP}";
-        _parameterUI.TMPAtkValue.text   = $"{status.Atk}";
-        _parameterUI.TMPDefValue.text   = $"{status.Def}";
+        RenderAtkDefValues( status, modifiedParam );
         _parameterUI.TMPMovValue.text   = $"{status.moveRange}";
         _parameterUI.TMPJmpValue.text   = $"{status.jumpForce}";
 
@@ -459,6 +446,31 @@ public class CharacterParameterPresenter : PhasePresenterBase
         {
             _parameterUI.SkillBoxes[i].UpdateImageFlick();
         }
+    }
+
+    /// <summary>
+    /// 攻撃力・防御力を表示します。装備中のパッシブスキルによる補正がかかっている場合は、補正込みの値を
+    /// 補正がかかっていることを示す文字色で表示します(パッシブスキル分は「+ X」の表示には含めません)。
+    /// </summary>
+    private void RenderAtkDefValues( in Status status, in ModifiedParameter modifiedParam )
+    {
+        int passiveAtk = BattleParameters.CalculatePassiveModifiedAtk( status );
+        int passiveDef = BattleParameters.CalculatePassiveModifiedDef( status );
+
+        _parameterUI.SetAtkValue( status.Atk + passiveAtk, passiveAtk != 0 );
+        _parameterUI.SetDefValue( status.Def + passiveDef, passiveDef != 0 );
+    }
+
+    /// <summary>
+    /// 補正値(一時的なスキル効果分)を「+ X」/「- X」の形式で表示します。補正が無い場合は非表示にします。
+    /// </summary>
+    private static void RenderAddValue( TMPro.TextMeshProUGUI text, int addValue )
+    {
+        if( null == text ) { return; }
+
+        text.text   = ( addValue < 0 ) ? $"- {-addValue}" : $"+ {addValue}";
+        text.color  = ( addValue < 0 ) ? Color.blue : Color.green;
+        text.gameObject.SetActive( addValue != 0 );
     }
 
     private bool IsValidBlinkGaugeElement( int elemIndex, int currentActionGauge, int actGaugeConsumption )

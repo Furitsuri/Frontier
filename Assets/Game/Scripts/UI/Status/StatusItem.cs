@@ -6,6 +6,7 @@ namespace Frontier.UI
     public sealed class StatusItem : UIMonoBehaviourIncludingText, ITooltipContent
     {
         [SerializeField] private TextMeshProUGUI _valueText;
+        [SerializeField] private TextMeshProUGUI _bonusText;   // 基礎値に加算されている補正値(「+ 1」等)。基礎値の右隣に表示する。文字色はPrefab側で設定
 
         private string _tooltipText = string.Empty;
 
@@ -22,6 +23,17 @@ namespace Frontier.UI
             }
 
             EnableRefreshText();
+        }
+
+        /// <summary>
+        /// 補正値の表示を設定します。空文字列の場合は非表示にします。
+        /// </summary>
+        public void SetBonusText( string text )
+        {
+            if( null == _bonusText ) { return; }
+
+            _bonusText.text = text;
+            _bonusText.gameObject.SetActive( !string.IsNullOrEmpty( text ) );
         }
 
         public void SetTooltipText( LocKey text )

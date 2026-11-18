@@ -72,6 +72,18 @@ namespace Frontier
         }
 
         /// <summary>
+        /// ApplySkillのパッシブスキル版です。無効なPassiveSkillID(未装備枠)の場合はゲームオブジェクトを非表示にします。
+        /// </summary>
+        public void ApplyPassiveSkill( PassiveSkillID skillID )
+        {
+            bool isValid = PassiveSkillsData.IsValidSkill( skillID );
+            gameObject.SetActive( isValid );
+            if( !isValid ) { return; }
+
+            ApplyPassiveSkillContent( skillID );
+        }
+
+        /// <summary>
         /// ApplySkillForEditingのパッシブスキル版です。パッシブスキルは使用コストを持たないため、コスト表示は行いません。
         /// </summary>
         public void ApplyPassiveSkillForEditing( PassiveSkillID skillID )
@@ -84,6 +96,11 @@ namespace Frontier
                 return;
             }
 
+            ApplyPassiveSkillContent( skillID );
+        }
+
+        private void ApplyPassiveSkillContent( PassiveSkillID skillID )
+        {
             var skillData   = PassiveSkillsData.data[( int ) skillID];
             _textKey        = skillData.ExplainTextKey;
             SetSkillName( skillData.Name, GetSkillNameColorConfig()?.GetPassiveColor() ?? Color.white );

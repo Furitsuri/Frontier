@@ -61,6 +61,7 @@ namespace Frontier.CharacterEdit
             Active.CommitTo( status.EquipSkills, ( id, delta ) => _userDomain.AddSkill( id, delta ) );
             Passive.CommitTo( status.PassiveSkills, ( id, delta ) => _userDomain.AddSkill( id, delta ) );
 
+            Character.RefreshModifiedParam();
             Character.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
         }
     }

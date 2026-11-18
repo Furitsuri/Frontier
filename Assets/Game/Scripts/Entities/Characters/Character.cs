@@ -141,8 +141,20 @@ namespace Frontier.Entities
         {
             Status.ApplyParams( ref _status, in statusData );
 
+            // 装備中のパッシブスキルによる補正を、戦闘開始前(配置画面等)のパラメータ表示にも反映しておく
+            RefreshModifiedParam();
+
             // スキルの使用可否フラグを更新
             RefreshUseableSkillFlags( SituationType.NONE, 0xff );
+        }
+
+        /// <summary>
+        /// 現在のステータス(装備中のパッシブスキル等)から補正値(BattleParams.ModifiedParam)を算出し直します。
+        /// ステータスの設定・装備の変更後など、戦闘開始前でも補正値をパラメータ表示に反映したい場合に呼び出してください。
+        /// </summary>
+        public void RefreshModifiedParam()
+        {
+            _btlParams.RefreshModifiedParam( _status );
         }
 
         public void RegistParameterPresenter( CharacterParameterPresenter presenter )

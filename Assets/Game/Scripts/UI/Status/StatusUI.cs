@@ -23,6 +23,7 @@ namespace Frontier.UI
         [SerializeField] private RawImage _characterCameraImage = null;
         [SerializeField] private Image _selectCursor            = null;
         [SerializeField] private SkillBoxUI[] SkillBoxes;
+        [SerializeField] private SkillBoxUI[] PassiveSkillBoxes;     // パッシブスキルの表示枠(EQUIPABLE_PASSIVE_SKILL_MAX_NUM個)
         [SerializeField] private int _cameraAngleY              = 0;
         [SerializeField] private float _cameraLengthY = 1.0f;
         [SerializeField] private float _cameraLengthZ = 1.5f;
@@ -51,7 +52,9 @@ namespace Frontier.UI
             TMPJump.SetValueText( charaParam.jumpForce.ToString() );
             TMPAction.SetValueText( charaParam.maxActionGauge.ToString() );
             TMPAttack.SetValueText( charaParam.Atk.ToString() );
+            TMPAttack.SetBonusText( FormatBonusValue( chara.BattleParams.ModifiedParam.Atk ) );
             TMPDeffence.SetValueText( charaParam.Def.ToString() );
+            TMPDeffence.SetBonusText( FormatBonusValue( chara.BattleParams.ModifiedParam.Def ) );
 
             // _characterCameraImage.texture = chara.Snapshot;
             _characterCameraImage.texture = _targetTexture;
@@ -64,7 +67,23 @@ namespace Frontier.UI
                 SkillBoxes[i].ApplySkill( chara, i );
             }
 
+            // パッシブスキルの表示(未装備の枠は非表示)
+            for( int i = 0; i < PassiveSkillBoxes.Length; ++i )
+            {
+                PassiveSkillBoxes[i].ApplyPassiveSkill( chara.GetPassiveSkillID( i ) );
+            }
+
             InitStatusItemRectList();
+        }
+
+        /// <summary>
+        /// 基礎値に加算されている補正値を「+ 1」/「- 1」の形式で返します。補正が無い場合は空文字列(非表示)を返します。
+        /// </summary>
+        private static string FormatBonusValue( int bonusValue )
+        {
+            if( bonusValue == 0 ) { return string.Empty; }
+
+            return ( bonusValue < 0 ) ? $"- {-bonusValue}" : $"+ {bonusValue}";
         }
 
         public void SetSelectCursorRect( Vector2 pos, Vector2 size )
@@ -109,6 +128,13 @@ namespace Frontier.UI
                 _statusItemList.Add( item );
             }
 
+            // パッシブスキルもカーソルで選択し、説明文(ツールチップ)を確認出来るようにする
+            foreach( var item in PassiveSkillBoxes )
+            {
+                if( !item.gameObject.activeSelf ) { continue; }
+                _statusItemList.Add( item );
+            }
+
             // カーソルの初期位置をリストの先頭の要素で初期化
             SetSelectCursorRect( _statusItemList[0].GetRectTransform().anchoredPosition, _statusItemList[0].GetRectTransform().sizeDelta );
         }
@@ -119,6 +145,10 @@ namespace Frontier.UI
             LazyInject.GetOrCreate( ref _characterCamera, () => _hierarchyBld.InstantiateWithDiContainer<CharacterCamera>( false ) );
 
             foreach( var item in SkillBoxes )
+            {
+                item.Setup();
+            }
+            foreach( var item in PassiveSkillBoxes )
             {
                 item.Setup();
             }
