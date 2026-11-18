@@ -28,7 +28,9 @@ namespace Frontier.FormTroop
             int actRecovRandValue   = Random.Range( 0, 2 );
 
             CharacterDeployData statusData = unitLevelStats.Stats[unitTypeIndex].StatusDatas[levelIndex];
-            if ( statusData.status.EquipSkills == null ) { statusData.status.Setup(); }
+            // MEMO : CharacterDeployDataは構造体だが、内部の装備スキル配列は参照型のため、コピー元(unitLevelStats)と配列を共有してしまう。
+            //        候補ごとに独立した配列を持たせるため、常に新規確保する(既存の内容は直後に全枠上書きするため保持不要)。
+            statusData.status.Setup();
 
             // TODO : 仮実装
             string[] names = new string[] { "Joseph", "Micky", "Mark", "Tarner" };
