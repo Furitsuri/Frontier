@@ -26,12 +26,22 @@ public class InputCode
     // 例: 戦闘の早送り(CONFIRM)は、CONFIRMを受け付ける他の入力コードが1つも有効でない場面でのみ有効になる
     public bool AllowsSharedIcon = false;
     // 押しっぱなし状態でリピート入力(インターバル間隔での連続受付)を開始するまでの遅延時間(秒)。
-    // 既定でDIRECTION_INPUT_REPEAT_DELAYを持たせることで、明示設定しない入力コードにも
-    // 「本当に押しっぱなしか」を判断する猶予期間が自動的に効くようにしている。
+    // 明示設定しない場合は InputRepeatConfig アセット(Inspectorで編集可能)のうち、RepeatDelayTypeに
+    // 対応する値を参照することで、明示設定しない入力コードにも「本当に押しっぱなしか」を判断する
+    // 猶予期間が自動的に効くようにしている。
     // 0を明示指定した場合は遅延なしで即座にリピートを行う(マウスドラッグ等、押下継続がそのまま
     // 連続的な入力になるべきものに使用する)。負の値を明示指定した場合は、押しっぱなし継続中の
     // 受付を一切行わない(単発の新規押下のみ受け付ける)。
-    public float RepeatDelay = DIRECTION_INPUT_REPEAT_DELAY;
+    public float RepeatDelay
+    {
+        get => _repeatDelayOverride ?? InputRepeatConfig.GetRepeatDelay( RepeatDelayType );
+        set => _repeatDelayOverride = value;
+    }
+    // RepeatDelayを明示設定しない場合に、InputRepeatConfigのどの値を参照するか
+    public InputRepeatDelayType RepeatDelayType = InputRepeatDelayType.Default;
+    // RepeatDelayの明示指定値。nullの場合はInputRepeatConfigの値を都度参照する
+    // (Play中にInspectorで変更した値を即座に反映させるため、生成時に値を確定させない)
+    private float? _repeatDelayOverride = null;
     private float _inputLastTime;               // 入力処理を行った最後の時間
     // 現在の連続押下(hold)が開始した時刻。-1は「押されていない」ことを表す。
     // 複数のアイコンを1つの入力コードにまとめた場合(SUB3/SUB4等)に、押されていない側の判定が
@@ -162,7 +172,8 @@ public class InputCode
         );
 
         clone.IsGuideVisible = this.IsGuideVisible;
-        clone.RepeatDelay    = this.RepeatDelay;
+        clone._repeatDelayOverride = this._repeatDelayOverride;
+        clone.RepeatDelayType      = this.RepeatDelayType;
 
         return clone;
     }
@@ -314,7 +325,7 @@ public class InputCode
     /// 経過時間で間引くべきではないため)。
     /// 押しっぱなしが継続している間は、RepeatDelay経過後、InputIntervalの間隔で繰り返し受け付けます。
     /// RepeatDelayが0(明示指定)の場合は遅延なしで即座にリピートを開始します(マウスドラッグ等の連続入力向け)。
-    /// RepeatDelayが負の値(明示指定時のみ。既定値はDIRECTION_INPUT_REPEAT_DELAY)の場合は、
+    /// RepeatDelayが負の値(明示指定時のみ。既定値はInputRepeatConfigの設定値)の場合は、
     /// 押しっぱなし継続中の受付を一切行いません(単発の新規押下のみ受け付ける)。
     /// </summary>
     /// <param name="isHeld">このフレームで対応する入力が押されている状態かどうか</param>
