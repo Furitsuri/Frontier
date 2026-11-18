@@ -480,6 +480,8 @@ protected Character _opponent                                       = null;
             _isWalking    = false;
             _actionRangeCtrl.Init( _readOnlyOwner.Value );
             _readOnlyOwner.Value.BattleParams.Init();
+            // 装備中のパッシブスキルによる常時の補正を、戦闘開始時点から反映しておく
+            _readOnlyOwner.Value.BattleParams.RefreshModifiedParam( _readOnlyOwner.Value.GetStatusRef );
             _readOnlyOwner.Value.RefreshUseableSkillFlags( SituationType.NONE, 0xff );
 
             InitSkillNotifier();                                // スキルの通知クラスを初期化

@@ -103,10 +103,40 @@ namespace Frontier.Entities
             RefreshModifiedParam( ownerStatus );
         }
 
+        /// <summary>
+        /// 補正値(ModifiedParam)を、適用中のスキルの倍率と装備中のパッシブスキルの倍率から算出し直します。
+        /// MEMO : パッシブスキルの倍率は保持せず、ここで毎回ステータスの装備内容から求めます。
+        ///        そのため攻撃ごとのスキル効果のリセット(ResetAppliedSkills)でも消えず、装備の変更も常に反映されます。
+        /// </summary>
         public void RefreshModifiedParam( in Status ownerStatus )
         {
-            _modifiedParam.Atk = CalculateModifiedValue( ownerStatus.Atk, _skillModifiedParam.AtkMagnification );
-            _modifiedParam.Def = CalculateModifiedValue( ownerStatus.Def, _skillModifiedParam.DefMagnification );
+            _modifiedParam.Atk = CalculateModifiedAtk( ownerStatus, _skillModifiedParam.AtkMagnification );
+            _modifiedParam.Def = CalculateModifiedDef( ownerStatus, _skillModifiedParam.DefMagnification );
+        }
+
+        /// <summary>
+        /// 攻撃力の補正値を算出します。スキルによる倍率に、装備中のパッシブスキルによる倍率を加算して求めます。
+        /// 攻撃予測(AttackForecaster)等、実際の補正値と同じ算出方法で試算したい場合にも使用してください。
+        /// </summary>
+        /// <param name="ownerStatus">対象キャラクターのステータス</param>
+        /// <param name="skillAtkMagnification">スキルによる攻撃力倍率の加算値</param>
+        static public int CalculateModifiedAtk( in Status ownerStatus, float skillAtkMagnification )
+        {
+            float passiveMagnification = PassiveSkillsData.SumEffectValue( ownerStatus.PassiveSkills, PassiveEffectType.ATK_MAGNIFICATION );
+
+            return CalculateModifiedValue( ownerStatus.Atk, skillAtkMagnification + passiveMagnification );
+        }
+
+        /// <summary>
+        /// 防御力の補正値を算出します。スキルによる倍率に、装備中のパッシブスキルによる倍率を加算して求めます。
+        /// </summary>
+        /// <param name="ownerStatus">対象キャラクターのステータス</param>
+        /// <param name="skillDefMagnification">スキルによる防御力倍率の加算値</param>
+        static public int CalculateModifiedDef( in Status ownerStatus, float skillDefMagnification )
+        {
+            float passiveMagnification = PassiveSkillsData.SumEffectValue( ownerStatus.PassiveSkills, PassiveEffectType.DEF_MAGNIFICATION );
+
+            return CalculateModifiedValue( ownerStatus.Def, skillDefMagnification + passiveMagnification );
         }
 
         /// <summary>
