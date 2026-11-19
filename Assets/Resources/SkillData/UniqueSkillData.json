@@ -1,0 +1,31 @@
+﻿{
+    "GradeUpLevels": [ 10 ],
+    "UniqueSkillsData": [
+        {
+            "Name": "IRON_WILL",
+            "EffectType": 1,
+            "Grades": [ { "Value": 0.1 }, { "Value": 0.2 } ],
+            "ExplainTextKey": "EXPL_UNIQUE_IRON_WILL"
+        },
+        {
+            "Name": "KEEN_EYE",
+            "EffectType": 0,
+            "Grades": [ { "Value": 0.1 }, { "Value": 0.2 } ],
+            "ExplainTextKey": "EXPL_UNIQUE_KEEN_EYE"
+        },
+        {
+            "Name": "SOFT_BODY",
+            "EffectType": 1,
+            "Grades": [ { "Value": 0.1 }, { "Value": 0.2 } ],
+            "ExplainTextKey": "EXPL_UNIQUE_SOFT_BODY"
+        },
+        {
+            "Name": "HARD_SHELL",
+            "EffectType": 1,
+            "Grades": [ { "Value": 0.2 }, { "Value": 0.3 } ],
+            "ExplainTextKey": "EXPL_UNIQUE_HARD_SHELL"
+        }
+    ],
+    "PlayerSkills": [ "IRON_WILL", "KEEN_EYE" ],
+    "EnemySkills": [ "SOFT_BODY", "HARD_SHELL" ]
+}
