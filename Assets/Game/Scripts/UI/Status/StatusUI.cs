@@ -140,10 +140,10 @@ namespace Frontier.UI
             _statusItemList.Add( TMPAttack );
             _statusItemList.Add( TMPDeffence );
 
-            foreach( var item in SkillBoxes )
+            // スキルは画面の並び順(固有スキル→パッシブスキル→アクティブスキル)に合わせて選択対象とする
+            if( UniqueSkillBox != null && UniqueSkillBox.gameObject.activeSelf )
             {
-                if( !item.gameObject.activeSelf ) { continue; }
-                _statusItemList.Add( item );
+                _statusItemList.Add( UniqueSkillBox );
             }
 
             // パッシブスキルもカーソルで選択し、説明文(ツールチップ)を確認出来るようにする
@@ -153,10 +153,10 @@ namespace Frontier.UI
                 _statusItemList.Add( item );
             }
 
-            // 固有スキルも同様に選択対象とする
-            if( UniqueSkillBox != null && UniqueSkillBox.gameObject.activeSelf )
+            foreach( var item in SkillBoxes )
             {
-                _statusItemList.Add( UniqueSkillBox );
+                if( !item.gameObject.activeSelf ) { continue; }
+                _statusItemList.Add( item );
             }
 
             // カーソルの初期位置をリストの先頭の要素で初期化
