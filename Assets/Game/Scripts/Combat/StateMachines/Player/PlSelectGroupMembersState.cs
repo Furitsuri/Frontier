@@ -103,7 +103,7 @@ namespace Frontier.Battle
             int hashCode = GetInputCodeHash();
 
             _inputFcd.RegisterInputCodes(
-                (GuideIcon.ALL_CURSOR, "MOVE",     CanAcceptDefault, new AcceptContextInput( AcceptDirection ), GRID_DIRECTION_INPUT_INTERVAL, hashCode),
+                GridCursorInputCode.Create( "MOVE", CanAcceptDefault, AcceptDirection, hashCode ),
                 (GuideIcon.CONFIRM,    "DECISION", CanAcceptConfirm, new AcceptContextInput( AcceptConfirm ),   0.0f, hashCode),
                 (GuideIcon.CANCEL,     "BACK",     CanAcceptDefault, new AcceptContextInput( AcceptCancel ),    0.0f, hashCode),
                 (GuideIcon.OPT1, _inputOpt1StrWrapper, CanAcceptOpt1, new AcceptContextInput( AcceptOpt1 ), 0.0f, hashCode)

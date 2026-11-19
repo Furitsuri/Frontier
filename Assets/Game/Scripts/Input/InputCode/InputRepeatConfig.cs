@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using static Constants;
 
 /// <summary>
@@ -8,7 +9,7 @@ using static Constants;
 public enum InputRepeatDelayType
 {
     Default = 0,    // 個別の種別を指定していない全ての入力
-    PlayerMove,     // 戦闘中のプレイヤーキャラクターの移動操作(単体移動・グループ移動)
+    GridCursor,     // ステージ上のグリッドカーソルの移動(タイル選択・キャラクターの移動・スキルの対象タイル選択・配置等。GridCursorInputCodeで生成)
 }
 
 /// <summary>
@@ -26,9 +27,10 @@ public class InputRepeatConfig : ScriptableObject
     [Tooltip( "個別の種別を指定していない全ての入力(メニュー・カーソル操作等)" )]
     [Min( 0f )]
     [SerializeField] private float _defaultRepeatDelay      = DIRECTION_INPUT_REPEAT_DELAY;
-    [Tooltip( "戦闘中のプレイヤーキャラクターの移動操作(単体移動・グループ移動)" )]
+    [Tooltip( "ステージ上のグリッドカーソルの移動(タイル選択・キャラクターの移動・スキルの対象タイル選択・配置等)" )]
     [Min( 0f )]
-    [SerializeField] private float _playerMoveRepeatDelay   = PLAYER_MOVE_INPUT_REPEAT_DELAY;
+    [FormerlySerializedAs( "_playerMoveRepeatDelay" )]
+    [SerializeField] private float _gridCursorRepeatDelay   = GRID_CURSOR_INPUT_REPEAT_DELAY;
 
     private static InputRepeatConfig _instance  = null;
     private static bool _isLoaded               = false;
@@ -43,8 +45,8 @@ public class InputRepeatConfig : ScriptableObject
 
         switch( type )
         {
-            case InputRepeatDelayType.PlayerMove:
-                return ( config != null ) ? config._playerMoveRepeatDelay : PLAYER_MOVE_INPUT_REPEAT_DELAY;
+            case InputRepeatDelayType.GridCursor:
+                return ( config != null ) ? config._gridCursorRepeatDelay : GRID_CURSOR_INPUT_REPEAT_DELAY;
             default:
                 return ( config != null ) ? config._defaultRepeatDelay : DIRECTION_INPUT_REPEAT_DELAY;
         }
