@@ -111,6 +111,26 @@ namespace Frontier
         }
 
         /// <summary>
+        /// 固有スキルの内容を表示します。無効なUniqueSkillID(固有スキルが無い種別)の場合はゲームオブジェクトを非表示にします。
+        /// 固有スキルは使用コストを持たないため、コスト表示は行いません。
+        /// </summary>
+        public void ApplyUniqueSkill( UniqueSkillID skillID )
+        {
+            bool isValid = UniqueSkillsData.IsValidSkill( skillID );
+            gameObject.SetActive( isValid );
+            if( !isValid ) { return; }
+
+            var skillData   = UniqueSkillsData.data[( int ) skillID];
+            _textKey        = skillData.ExplainTextKey;
+            // 性質は常時効果のため、スキル名の色はパッシブスキルと同じにする
+            SetSkillName( skillData.Name, GetSkillNameColorConfig()?.GetPassiveColor() ?? Color.white );
+            SetTooltipText( _textKey );
+            ShowSkillCostImage( 0 );
+
+            EnableRefreshText();
+        }
+
+        /// <summary>
         /// 未装備の空枠として表示します。
         /// </summary>
         private void ApplyEmptyContent()

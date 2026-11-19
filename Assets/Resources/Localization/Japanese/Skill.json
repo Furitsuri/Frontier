@@ -3,5 +3,9 @@
     "EXPL_SKILL_JUMP_SLASH": "跳躍して相手を斬りつけます。より高い位置から攻撃することでダメージが増加します",
     "EXPL_SKILL_HEAL": "範囲内の味方のHPを10回復します",
     "EXPL_PASSIVE_ATK_UP": "攻撃力が20%上昇します",
-    "EXPL_PASSIVE_DEF_UP": "防御力が20%上昇します"
+    "EXPL_PASSIVE_DEF_UP": "防御力が20%上昇します",
+    "EXPL_UNIQUE_IRON_WILL": "防御力が10%上昇します(Lv10以上で20%)",
+    "EXPL_UNIQUE_KEEN_EYE": "攻撃力が10%上昇します(Lv10以上で20%)",
+    "EXPL_UNIQUE_SOFT_BODY": "防御力が10%上昇します(Lv10以上で20%)",
+    "EXPL_UNIQUE_HARD_SHELL": "防御力が20%上昇します(Lv10以上で30%)"
 }

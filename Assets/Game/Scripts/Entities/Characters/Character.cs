@@ -356,6 +356,16 @@ namespace Frontier.Entities
             return false;
         }
 
+        /// <summary>
+        /// キャラクターの種別ごとの固有スキルを取得します。固有スキルが無い種別の場合はNONEを返します。
+        /// </summary>
+        public UniqueSkillID GetUniqueSkillID() => UniqueSkillsData.GetSkillID( _status );
+
+        /// <summary>
+        /// 固有スキルの現在の強化段階(0が未強化)を取得します。レベルによって決まります。
+        /// </summary>
+        public int GetUniqueSkillGrade() => UniqueSkillsData.GetGrade( _status.Level );
+
         public CHARACTER_TAG GetCharacterTag()
         {
             return _status.characterTag;

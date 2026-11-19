@@ -3,5 +3,9 @@
     "EXPL_SKILL_JUMP_SLASH": "Jump Attack",
     "EXPL_SKILL_HEAL": "Restores 10 HP to allies in range",
     "EXPL_PASSIVE_ATK_UP": "Increases ATK by 20%",
-    "EXPL_PASSIVE_DEF_UP": "Increases DEF by 20%"
+    "EXPL_PASSIVE_DEF_UP": "Increases DEF by 20%",
+    "EXPL_UNIQUE_IRON_WILL": "Increases DEF by 10% (20% at Lv10+)",
+    "EXPL_UNIQUE_KEEN_EYE": "Increases ATK by 10% (20% at Lv10+)",
+    "EXPL_UNIQUE_SOFT_BODY": "Increases DEF by 10% (20% at Lv10+)",
+    "EXPL_UNIQUE_HARD_SHELL": "Increases DEF by 20% (30% at Lv10+)"
 }

@@ -8,23 +8,15 @@ namespace Frontier.Combat
     /// ActiveSkillsDataと同様、Resources/SkillData/PassiveSkillData.jsonを最初のアクセス時に一度だけ読み込み、
     /// 以後はシーンを跨いで保持します。
     /// スキル強化に備え、効果量は強化段階(Grade)ごとの配列(Grades)で保持します。Grades[0]が未強化の値です。
+    /// MEMO : キャラクターの種別ごとの固有スキルは、性質は同じ常時効果ですが別物として扱います(UniqueSkillsData参照)。
+    ///        効果の表現(PassiveEffect)のみを共有しています。
     /// </summary>
     static public class PassiveSkillsData
     {
-        /// <summary>
-        /// 強化段階1つ分のデータです
-        /// </summary>
-        [Serializable]
-        public struct GradeData
-        {
-            public float Value;     // 効果量(意味はEffectTypeによる)
-        }
-
         public struct Data
         {
             public string Name;                 // スキル名
-            public PassiveEffectType EffectType; // 効果の種類
-            public GradeData[] Grades;          // 強化段階ごとのデータ(Grades[0]が未強化)
+            public PassiveEffect Effect;        // 効果(種類と強化段階ごとの効果量)
             public LocKey ExplainTextKey;       // スキル説明文のテキストキー
         }
 
@@ -36,7 +28,7 @@ namespace Frontier.Combat
         {
             public string Name;
             public int EffectType;
-            public GradeData[] Grades;
+            public PassiveEffect.GradeData[] Grades;
             public string ExplainTextKey;
         }
 
@@ -77,11 +69,10 @@ namespace Frontier.Combat
             {
                 var fdata = container.PassiveSkillsData[i];
                 data[i].Name            = fdata.Name;
-                data[i].EffectType      = ( PassiveEffectType ) fdata.EffectType;
-                data[i].Grades          = fdata.Grades ?? Array.Empty<GradeData>();
+                data[i].Effect          = new PassiveEffect( ( PassiveEffectType ) fdata.EffectType, fdata.Grades );
                 data[i].ExplainTextKey  = ParseExplainTextKey( fdata.ExplainTextKey );
 
-                if ( data[i].Grades.Length == 0 )
+                if ( data[i].Effect.Grades.Length == 0 )
                 {
                     Debug.LogWarning( $"[PassiveSkillsData] 強化段階のデータがありません: {fdata.Name}" );
                 }
@@ -101,19 +92,6 @@ namespace Frontier.Combat
         static public bool IsValidSkill( PassiveSkillID skillID )
         {
             return PassiveSkillID.NONE < skillID && skillID < PassiveSkillID.NUM;
-        }
-
-        /// <summary>
-        /// 指定スキルの指定強化段階のデータを取得します。段階がデータの範囲を超える場合は、範囲内に丸めた段階のデータを返します。
-        /// </summary>
-        static public GradeData GetGradeData( PassiveSkillID skillID, int grade )
-        {
-            if ( !IsValidSkill( skillID ) ) { return default; }
-
-            var grades = data[( int ) skillID].Grades;
-            if ( grades == null || grades.Length == 0 ) { return default; }
-
-            return grades[Mathf.Clamp( grade, 0, grades.Length - 1 )];
         }
     }
 }

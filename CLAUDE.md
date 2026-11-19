@@ -97,6 +97,7 @@ RecruitMain (RecruitScene のエントリポイント)
 - アクティブスキルの定義は静的クラス **`ActiveSkillsData`** (`Assets/Game/Scripts/Combat/Skills/ActiveSkillsData.cs`、データは `Resources/SkillData/ActiveSkillData.json`) にあり、`ActiveSkillID` enum でインデックスされた `ActiveSkillsData.data[]` に格納されています。装備枠は `Status.EquipSkills` (`EQUIPABLE_ACTIVE_SKILL_MAX_NUM` 枠)。
 - 各アクティブスキルは `SituationType`、`ActionType`、`RangeShape`、`TargetingMode`、コスト・パラメータフィールドを持ちます。
 - パッシブスキルの定義は静的クラス **`PassiveSkillsData`** (`Resources/SkillData/PassiveSkillData.json`) にあり、`PassiveSkillID` enum でインデックスされます。装備枠は `Status.PassiveSkills` (`EQUIPABLE_PASSIVE_SKILL_MAX_NUM` 枠)。
+- キャラクターの種別(`Status.characterTag` + `Status.PrefabIndex`)ごとに1つの**固有スキル**を持ちます。性質は常時効果ですがパッシブスキルとは独立した別物で、ID は **`UniqueSkillID`**、定義と種別との対応表は **`UniqueSkillsData`** (`Resources/SkillData/UniqueSkillData.json`) にあります。効果の表現(`PassiveEffect`: 効果の種類+強化段階ごとの効果量)のみをパッシブスキルと共有します。強化段階はレベルから決まり(`GradeUpLevels`、全種別共通)、固有スキル・段階とも Status には保存せず毎回求めます。型が別のため、所持・装備枠・売買の対象には構造上なりません。
 - スキルIDは「系統」を表し、強化版(例: 攻撃力アップ+)は別IDにせず強化段階で表現します(同一系統の複数装備禁止をIDの比較で判定するため)。パッシブスキルのデータは強化段階ごとの配列 `Grades` を持ちます。
 - `SkillNotifierBase` がスキルごとの通知を担い、ファクトリは `ActiveSkillsData.BuildSkillNotifierFactory()` で一度だけ構築されます。
 - スキルアクションは `SkillActionBase` を継承します。

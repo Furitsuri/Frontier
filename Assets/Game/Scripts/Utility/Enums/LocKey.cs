@@ -116,4 +116,10 @@ public enum LocKey
     // パッシブスキル説明文
     EXPL_PASSIVE_ATK_UP,
     EXPL_PASSIVE_DEF_UP,
+
+    // 固有スキル説明文
+    EXPL_UNIQUE_IRON_WILL,
+    EXPL_UNIQUE_KEEN_EYE,
+    EXPL_UNIQUE_SOFT_BODY,
+    EXPL_UNIQUE_HARD_SHELL,
 }

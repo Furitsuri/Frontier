@@ -1,7 +1,7 @@
 ﻿namespace Frontier.Combat
 {
     /// <summary>
-    /// パッシブスキルの効果の種類です。効果量は強化段階ごとにPassiveSkillsData.GradeData.Valueで指定します。
+    /// パッシブスキルの効果の種類です。パッシブスキル・固有スキルで共通です。効果量は強化段階ごとにPassiveEffect.GradeData.Valueで指定します。
     /// PassiveSkillData.jsonにはint値で記載するため、途中に挿入せず末尾に追加してください。
     /// </summary>
     public enum PassiveEffectType : int

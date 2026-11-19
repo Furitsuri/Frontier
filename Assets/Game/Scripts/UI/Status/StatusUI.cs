@@ -24,6 +24,8 @@ namespace Frontier.UI
         [SerializeField] private Image _selectCursor            = null;
         [SerializeField] private SkillBoxUI[] SkillBoxes;
         [SerializeField] private SkillBoxUI[] PassiveSkillBoxes;     // パッシブスキルの表示枠(EQUIPABLE_PASSIVE_SKILL_MAX_NUM個)
+        [SerializeField] private SkillBoxUI UniqueSkillBox;          // 固有スキルの表示枠
+        [SerializeField] private GameObject UniqueSkillLabel;        // 固有スキルの見出し(固有スキルが無い種別の場合は枠と共に非表示)
         [SerializeField] private int _cameraAngleY              = 0;
         [SerializeField] private float _cameraLengthY = 1.0f;
         [SerializeField] private float _cameraLengthZ = 1.5f;
@@ -71,6 +73,13 @@ namespace Frontier.UI
             for( int i = 0; i < PassiveSkillBoxes.Length; ++i )
             {
                 PassiveSkillBoxes[i].ApplyPassiveSkill( chara.GetPassiveSkillID( i ) );
+            }
+
+            // 固有スキルの表示(固有スキルが無い種別の場合は非表示)
+            if( UniqueSkillBox != null )
+            {
+                UniqueSkillBox.ApplyUniqueSkill( chara.GetUniqueSkillID() );
+                if( UniqueSkillLabel != null ) { UniqueSkillLabel.SetActive( UniqueSkillBox.gameObject.activeSelf ); }
             }
 
             InitStatusItemRectList();
@@ -144,6 +153,12 @@ namespace Frontier.UI
                 _statusItemList.Add( item );
             }
 
+            // 固有スキルも同様に選択対象とする
+            if( UniqueSkillBox != null && UniqueSkillBox.gameObject.activeSelf )
+            {
+                _statusItemList.Add( UniqueSkillBox );
+            }
+
             // カーソルの初期位置をリストの先頭の要素で初期化
             SetSelectCursorRect( _statusItemList[0].GetRectTransform().anchoredPosition, _statusItemList[0].GetRectTransform().sizeDelta );
         }
@@ -161,6 +176,7 @@ namespace Frontier.UI
             {
                 item.Setup();
             }
+            if( UniqueSkillBox != null ) { UniqueSkillBox.Setup(); }
 
             _selectCursor.gameObject.SetActive( false );
             gameObject.SetActive( false );

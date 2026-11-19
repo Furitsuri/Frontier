@@ -6,25 +6,29 @@ namespace Frontier.UI
     public class TooltipUI : UiMonoBehaviour
     {
         [SerializeField] TextMeshProUGUI _explanation;
+        [SerializeField] float _maxWidth = 480f;    // 横幅の最大値。説明文がこれを超える場合は折り返す
 
         RectTransform _rectTransform = null;
+        float _minWidth = 0f;                       // 横幅の最小値(Prefabで設定された横幅)
 
         /// <summary>
-        /// 説明文を設定します。ウィンドウの縦幅は、説明文の行数(最終行まで)に合わせて伸縮します。
+        /// 説明文を設定します。ウィンドウの横幅は、最も長い行が折り返さずに収まるよう伸ばし(Prefabで設定された横幅～_maxWidth)、
+        /// 縦幅は説明文の行数(最終行まで)に合わせて伸縮します。
         /// </summary>
         public void SetText( string text )
         {
             _explanation.text = text;
 
-            // 説明文はウィンドウに対して上下左右の余白を持って伸縮する(anchor:stretch)ため、その余白分を加えた縦幅にする
-            var explanationRect = _explanation.rectTransform;
-            float textWidth     = _rectTransform.sizeDelta.x + explanationRect.sizeDelta.x;
-            float verticalSpace = -explanationRect.sizeDelta.y;
-            float textHeight    = _explanation.GetPreferredValues( text, textWidth, 0f ).y;
+            // 説明文はウィンドウに対して上下左右の余白を持って伸縮する(anchor:stretch)ため、その余白分を加えた大きさにする
+            var explanationRect     = _explanation.rectTransform;
+            float horizontalSpace   = -explanationRect.sizeDelta.x;
+            float verticalSpace     = -explanationRect.sizeDelta.y;
 
-            var size = _rectTransform.sizeDelta;
-            size.y = textHeight + verticalSpace;
-            _rectTransform.sizeDelta = size;
+            float unwrappedWidth    = _explanation.GetPreferredValues( text, float.PositiveInfinity, 0f ).x;
+            float width             = Mathf.Clamp( unwrappedWidth + horizontalSpace, _minWidth, Mathf.Max( _minWidth, _maxWidth ) );
+            float textHeight        = _explanation.GetPreferredValues( text, width - horizontalSpace, 0f ).y;
+
+            _rectTransform.sizeDelta = new Vector2( width, textHeight + verticalSpace );
         }
 
         /// <summary>
@@ -62,6 +66,7 @@ namespace Frontier.UI
         public override void Setup()
         {
             _rectTransform = GetComponent<RectTransform>();
+            if( _minWidth <= 0f ) { _minWidth = _rectTransform.sizeDelta.x; }
 
             gameObject.SetActive( false );
         }

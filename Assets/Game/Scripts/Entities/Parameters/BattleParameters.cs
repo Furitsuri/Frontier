@@ -141,18 +141,18 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 装備中のパッシブスキルのみによる攻撃力の補正値を算出します(使用中のスキルの倍率は含みません)。
+        /// 装備中のパッシブスキル及び固有スキルのみによる攻撃力の補正値を算出します(使用中のスキルの倍率は含みません)。
         /// 常時の効果であるパッシブスキル分を、一時的なスキル効果と区別して表示する場合などに使用します。
         /// </summary>
         static public int CalculatePassiveModifiedAtk( in Status ownerStatus ) => CalculatePassiveModifiedValue( ownerStatus, ownerStatus.Atk, PassiveEffectType.ATK_MAGNIFICATION );
 
         /// <summary>
-        /// 装備中のパッシブスキルのみによる防御力の補正値を算出します(使用中のスキルの倍率は含みません)。
+        /// 装備中のパッシブスキル及び固有スキルのみによる防御力の補正値を算出します(使用中のスキルの倍率は含みません)。
         /// </summary>
         static public int CalculatePassiveModifiedDef( in Status ownerStatus ) => CalculatePassiveModifiedValue( ownerStatus, ownerStatus.Def, PassiveEffectType.DEF_MAGNIFICATION );
 
         /// <summary>
-        /// 現在の攻撃力の補正値(ModifiedParam.Atk)の内訳を、要因(装備中のパッシブスキル→適用中のスキルの順)ごとに求めます。
+        /// 現在の攻撃力の補正値(ModifiedParam.Atk)の内訳を、要因(装備中のパッシブスキル→固有スキル→適用中のスキルの順)ごとに求めます。
         /// 内訳の合計はModifiedParam.Atkと一致します。
         /// </summary>
         public void GetAtkBreakdown( in Status ownerStatus, List<ModifierBreakdown.Entry> dest )
@@ -162,7 +162,7 @@ namespace Frontier.Entities
         }
 
         /// <summary>
-        /// 現在の防御力の補正値(ModifiedParam.Def)の内訳を、要因(装備中のパッシブスキル→適用中のスキルの順)ごとに求めます。
+        /// 現在の防御力の補正値(ModifiedParam.Def)の内訳を、要因(装備中のパッシブスキル→固有スキル→適用中のスキルの順)ごとに求めます。
         /// 内訳の合計はModifiedParam.Defと一致します。
         /// </summary>
         public void GetDefBreakdown( in Status ownerStatus, List<ModifierBreakdown.Entry> dest )
@@ -171,47 +171,76 @@ namespace Frontier.Entities
             CollectAppliedSkillBreakdown( ownerStatus.Def, false, CalculateModifiedValue( ownerStatus.Def, _skillModifiedParam.DefMagnification ), dest );
         }
 
+        /// <summary>
+        /// 装備中のパッシブスキル及び固有スキルによる補正値を、スキル1つずつ整数化して合計します。
+        /// </summary>
         static private int CalculatePassiveModifiedValue( in Status ownerStatus, int baseValue, PassiveEffectType effectType )
         {
-            if( ownerStatus.PassiveSkills == null ) { return 0; }
-
             int total = 0;
-            foreach( var skillID in ownerStatus.PassiveSkills )
+
+            if( ownerStatus.PassiveSkills != null )
             {
-                if( TryGetPassiveMagnification( skillID, effectType, out float magnification ) )
+                foreach( var skillID in ownerStatus.PassiveSkills )
                 {
-                    total += CalculateModifiedValue( baseValue, magnification );
+                    if( TryGetEquipPassiveMagnification( skillID, effectType, out float magnification ) )
+                    {
+                        total += CalculateModifiedValue( baseValue, magnification );
+                    }
                 }
+            }
+
+            if( TryGetUniqueMagnification( ownerStatus, effectType, out _, out float uniqueMagnification ) )
+            {
+                total += CalculateModifiedValue( baseValue, uniqueMagnification );
             }
 
             return total;
         }
 
+        /// <summary>
+        /// 装備中のパッシブスキル及び固有スキルによる補正値の内訳を追加します(装備枠の順→固有スキルの順)。
+        /// </summary>
         static private void CollectPassiveBreakdown( in Status ownerStatus, int baseValue, PassiveEffectType effectType, List<ModifierBreakdown.Entry> dest )
         {
-            if( ownerStatus.PassiveSkills == null ) { return; }
-
-            foreach( var skillID in ownerStatus.PassiveSkills )
+            if( ownerStatus.PassiveSkills != null )
             {
-                if( TryGetPassiveMagnification( skillID, effectType, out float magnification ) )
+                foreach( var skillID in ownerStatus.PassiveSkills )
                 {
-                    dest.Add( new ModifierBreakdown.Entry( PassiveSkillsData.data[( int ) skillID].Name, CalculateModifiedValue( baseValue, magnification ) ) );
+                    if( TryGetEquipPassiveMagnification( skillID, effectType, out float magnification ) )
+                    {
+                        dest.Add( new ModifierBreakdown.Entry( PassiveSkillsData.data[( int ) skillID].Name, CalculateModifiedValue( baseValue, magnification ) ) );
+                    }
                 }
+            }
+
+            if( TryGetUniqueMagnification( ownerStatus, effectType, out var uniqueSkillID, out float uniqueMagnification ) )
+            {
+                dest.Add( new ModifierBreakdown.Entry( UniqueSkillsData.data[( int ) uniqueSkillID].Name, CalculateModifiedValue( baseValue, uniqueMagnification ) ) );
             }
         }
 
         /// <summary>
-        /// 指定のパッシブスキルが指定の効果を持つ場合、その倍率を取得します。
+        /// 装備枠のパッシブスキルが指定の効果を持つ場合、その倍率を取得します。
         /// TODO : スキル強化の実装時に、装備枠ごとの強化段階を受け取り、その段階の効果量を用いるよう変更すること(現状は全て未強化として扱う)
         /// </summary>
-        static private bool TryGetPassiveMagnification( PassiveSkillID skillID, PassiveEffectType effectType, out float magnification )
+        static private bool TryGetEquipPassiveMagnification( PassiveSkillID skillID, PassiveEffectType effectType, out float magnification )
         {
             magnification = 0f;
             if( !PassiveSkillsData.IsValidSkill( skillID ) ) { return false; }
-            if( PassiveSkillsData.data[( int ) skillID].EffectType != effectType ) { return false; }
 
-            magnification = PassiveSkillsData.GetGradeData( skillID, 0 ).Value;
-            return true;
+            return PassiveSkillsData.data[( int ) skillID].Effect.TryGetMagnification( effectType, 0, out magnification );
+        }
+
+        /// <summary>
+        /// キャラクターの固有スキルが指定の効果を持つ場合、レベルに応じた強化段階での倍率を取得します。
+        /// </summary>
+        static private bool TryGetUniqueMagnification( in Status ownerStatus, PassiveEffectType effectType, out UniqueSkillID skillID, out float magnification )
+        {
+            magnification = 0f;
+            skillID = UniqueSkillsData.GetSkillID( ownerStatus );
+            if( !UniqueSkillsData.IsValidSkill( skillID ) ) { return false; }
+
+            return UniqueSkillsData.data[( int ) skillID].Effect.TryGetMagnification( effectType, UniqueSkillsData.GetGrade( ownerStatus.Level ), out magnification );
         }
 
         /// <summary>
