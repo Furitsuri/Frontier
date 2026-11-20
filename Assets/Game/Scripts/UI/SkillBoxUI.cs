@@ -112,7 +112,7 @@ namespace Frontier
 
         /// <summary>
         /// 固有スキルの内容を表示します。無効なUniqueSkillID(固有スキルが無い種別)の場合はゲームオブジェクトを非表示にします。
-        /// 固有スキルは使用コストを持たないため、コスト表示は行いません。
+        /// 固有スキルはコストを一切持たないため、コストがあるかのように見えないよう、コスト表示の枠ごと非表示にします。
         /// </summary>
         public void ApplyUniqueSkill( UniqueSkillID skillID )
         {
@@ -126,6 +126,7 @@ namespace Frontier
             SetSkillName( skillData.Name, GetSkillNameColorConfig()?.GetPassiveColor() ?? Color.white );
             SetTooltipText( _textKey );
             ShowSkillCostImage( 0 );
+            SetCostPanelVisible( false );
 
             EnableRefreshText();
         }
@@ -281,6 +282,9 @@ namespace Frontier
         /// <param name="cost">スキルコスト</param>
         private void ShowSkillCostImage( int cost )
         {
+            // 固有スキル表示(ApplyUniqueSkill)で非表示にした枠も、コストを持つスキルの表示時は元に戻す
+            SetCostPanelVisible( true );
+
             // アクションゲージの表示
             for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
             {
@@ -289,6 +293,14 @@ namespace Frontier
                 elem.gameObject.SetActive( i < cost );
                 elem.color = Color.green;
             }
+        }
+
+        /// <summary>
+        /// コスト表示の枠(ゲージの目盛りを並べるパネル)の表示・非表示を切り替えます。
+        /// </summary>
+        private void SetCostPanelVisible( bool visible )
+        {
+            if( PanelTransform != null ) { PanelTransform.gameObject.SetActive( visible ); }
         }
 
         public override void Setup()
