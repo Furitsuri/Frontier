@@ -81,7 +81,7 @@ namespace Frontier.StateMachine
 
             // 入力ガイドを登録
             _inputFcd.RegisterInputCodes(
-                ( GuideIcon.VERTICAL_CURSOR,    "SELECT",               CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
+                ( GuideIcon.ALL_CURSOR,         "SELECT",             CanAcceptDirection, new AcceptContextInput( AcceptDirection ), MENU_DIRECTION_INPUT_INTERVAL, hashCode),
                 ( GuideIcon.CANCEL,             "BACK",                 CanAcceptDefault, new AcceptContextInput( AcceptCancel ), 0.0f, hashCode ),
                 ( GuideIcon.INFO,               _inputInfoStrWrapper,   CanAcceptDefault, new AcceptContextInput( AcceptInfo ),   0.0f, hashCode )
             );
@@ -98,23 +98,17 @@ namespace Frontier.StateMachine
 
         protected override bool AcceptDirection( InputContext context )
         {
-            int addValue = 0;
-
             switch( context.Cursor )
             {
                 case Direction.FORWARD:
-                    addValue = -1;
-                    break;
                 case Direction.BACK:
-                    addValue = 1;
-                    break;
+                case Direction.RIGHT:
+                case Direction.LEFT:
+                    _statusPresenter.MoveSelectCursor( context.Cursor );
+                    return true;
                 default:
                     return false;
             }
-
-            _statusPresenter.AddSelectCursorItemIndex( addValue );
-
-            return true;
         }
 
         /// <summary>

@@ -33,7 +33,8 @@ namespace Frontier.UI
 
         private CharacterCamera _characterCamera;
         private RenderTexture _targetTexture;
-        private List<ITooltipContent> _statusItemList = new List<ITooltipContent>();
+        private List<ITooltipContent> _statusValueItemList  = new List<ITooltipContent>();   // 画面左側のステータス値の項目
+        private List<ITooltipContent> _skillItemList        = new List<ITooltipContent>();   // 画面右側のスキルの項目
 
         // 各スキル枠にスキルが装備されているか(未装備の空枠はカーソルの選択対象から外す)
         private bool[] _isSkillEquipped         = System.Array.Empty<bool>();
@@ -139,26 +140,51 @@ namespace Frontier.UI
             return ( _characterCameraImage.rectTransform.rect.width, _characterCameraImage.rectTransform.rect.height);
         }
 
-        public List<ITooltipContent> GetStatusItemList()
+        /// <summary>
+        /// 画面左側のステータス値の項目(上から順)を返します。
+        /// </summary>
+        public List<ITooltipContent> GetStatusValueItemList()
         {
-            return _statusItemList;
+            return _statusValueItemList;
+        }
+
+        /// <summary>
+        /// 画面右側のスキルの項目(固有→パッシブ→アクティブの順。未装備の空枠は含まない)を返します。
+        /// </summary>
+        public List<ITooltipContent> GetSkillItemList()
+        {
+            return _skillItemList;
+        }
+
+        /// <summary>
+        /// 項目の矩形を、ステータス画面のローカル座標系で返します。
+        /// 項目ごとに親階層が異なっていても、画面上の位置関係を比較出来るようにするためのものです。
+        /// </summary>
+        public Rect GetItemRect( ITooltipContent item )
+        {
+            var itemRect = item.GetRectTransform();
+            Vector2 min  = transform.InverseTransformPoint( itemRect.TransformPoint( itemRect.rect.min ) );
+            Vector2 max  = transform.InverseTransformPoint( itemRect.TransformPoint( itemRect.rect.max ) );
+
+            return Rect.MinMaxRect( min.x, min.y, max.x, max.y );
         }
 
         private void InitStatusItemRectList()
         {
-            _statusItemList.Clear();
-            _statusItemList.Add( TMPLevel );
-            _statusItemList.Add( TMPHP );
-            _statusItemList.Add( TMPMove );
-            _statusItemList.Add( TMPJump );
-            _statusItemList.Add( TMPAction );
-            _statusItemList.Add( TMPAttack );
-            _statusItemList.Add( TMPDeffence );
+            _statusValueItemList.Clear();
+            _statusValueItemList.Add( TMPLevel );
+            _statusValueItemList.Add( TMPHP );
+            _statusValueItemList.Add( TMPMove );
+            _statusValueItemList.Add( TMPJump );
+            _statusValueItemList.Add( TMPAction );
+            _statusValueItemList.Add( TMPAttack );
+            _statusValueItemList.Add( TMPDeffence );
 
             // スキルは画面の並び順(固有スキル→パッシブスキル→アクティブスキル)に合わせて選択対象とする
+            _skillItemList.Clear();
             if( UniqueSkillBox != null && UniqueSkillBox.gameObject.activeSelf )
             {
-                _statusItemList.Add( UniqueSkillBox );
+                _skillItemList.Add( UniqueSkillBox );
             }
 
             // パッシブスキルもカーソルで選択し、説明文(ツールチップ)を確認出来るようにする
@@ -166,17 +192,17 @@ namespace Frontier.UI
             for( int i = 0; i < PassiveSkillBoxes.Length; ++i )
             {
                 if( i < _isPassiveSkillEquipped.Length && !_isPassiveSkillEquipped[i] ) { continue; }
-                _statusItemList.Add( PassiveSkillBoxes[i] );
+                _skillItemList.Add( PassiveSkillBoxes[i] );
             }
 
             for( int i = 0; i < SkillBoxes.Length; ++i )
             {
                 if( i < _isSkillEquipped.Length && !_isSkillEquipped[i] ) { continue; }
-                _statusItemList.Add( SkillBoxes[i] );
+                _skillItemList.Add( SkillBoxes[i] );
             }
 
-            // カーソルの初期位置をリストの先頭の要素で初期化
-            SetSelectCursorRect( _statusItemList[0].GetRectTransform().anchoredPosition, _statusItemList[0].GetRectTransform().sizeDelta );
+            // カーソルの初期位置をステータス値の先頭の要素で初期化
+            SetSelectCursorRect( _statusValueItemList[0].GetRectTransform().anchoredPosition, _statusValueItemList[0].GetRectTransform().sizeDelta );
         }
 
         public override void Setup()

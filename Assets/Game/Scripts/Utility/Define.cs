@@ -224,6 +224,8 @@ static public class Constants
     public const float TOOLTIP_WINDOW_SPACE_Y = 0f;
     // ツールチップウィンドウと画面端・入力ガイドとの間に最低限空ける余白
     public const float TOOLTIP_WINDOW_SCREEN_MARGIN = 10f;
+    // ステータス画面のカーソルを左右に移す際、位置が同じとみなす許容差(同じ列・同じ行の判定に用いる)
+    public const float STATUS_CURSOR_POSITION_TOLERANCE = 1f;
     // 入力ガイドにおけるスプライトテキスト間の幅
     public const float SPRITE_TEXT_SPACING_ON_KEY_GUIDE = 10f;
     // キャラクターのスナップショット撮影時の位置

@@ -10,8 +10,21 @@ namespace Frontier.Presenter
 {
     public class StatusPresenter
     {
+        /// <summary>
+        /// カーソルが属する領域。領域ごとに操作体系が異なる
+        /// </summary>
+        private enum CursorArea
+        {
+            StatusValue,    // 画面左側のステータス値
+            Skill,          // 画面右側のスキル
+        }
+
         [Inject] private IUiSystem _uiSystem = null;
 
+        private readonly IStatusCursorNavigator _statusValueNavigator  = new StatusValueListNavigator();
+        private readonly IStatusCursorNavigator _skillNavigator        = new SkillGridNavigator();
+
+        private CursorArea _selectedArea = CursorArea.StatusValue;
         private int _selectedItemIndex = 0;
         private StatusUI _statusUi = null;
         private TooltipUI _tooltipUi = null;
@@ -28,7 +41,6 @@ namespace Frontier.Presenter
 
         public void OpenCharacterStatus( Character chara )
         {
-            _selectedItemIndex = 0;
             _statusUi.gameObject.SetActive( true );
             _statusUi.AssignCharacter( chara );
 
@@ -41,7 +53,7 @@ namespace Frontier.Presenter
             string defText = FormatBreakdown( breakdown );
             _statusUi.SetBonusBreakdownText( atkText, defText );
 
-            AddSelectCursorItemIndex( _selectedItemIndex );
+            SelectItem( CursorArea.StatusValue, 0 );
         }
 
         public void CloseCharacterStatus()
@@ -58,14 +70,100 @@ namespace Frontier.Presenter
             _statusUi.SetSelectCursorActive( toggledActive );
         }
 
-        public void AddSelectCursorItemIndex( int addValue )
+        /// <summary>
+        /// 方向入力に応じてカーソルを移動します。
+        /// 選択中の領域の操作体系で領域内の移動先を求め、領域内に移動先が無く、かつもう一方の領域へ向かう左右入力であれば、
+        /// もう一方の領域のうち縦位置が最も近い項目へ移ります(縦のずれに上限は設けません)。
+        /// </summary>
+        public void MoveSelectCursor( Direction dir )
         {
-            _selectedItemIndex += addValue;
-            int itemCount = _statusUi.GetStatusItemList().Count;
+            var items = GetAreaItems( _selectedArea );
+            if( _selectedItemIndex < 0 || items.Count <= _selectedItemIndex ) { return; }
 
-            _selectedItemIndex = ( _selectedItemIndex + itemCount ) % itemCount;
+            int next = GetNavigator( _selectedArea ).Move( ToItemRects( items ), _selectedItemIndex, dir );
+            if( 0 <= next )
+            {
+                SelectItem( _selectedArea, next );
+                return;
+            }
 
-            var itemList = _statusUi.GetStatusItemList();
+            if( !TryGetAdjacentArea( _selectedArea, dir, out var adjacentArea ) ) { return; }
+
+            int target = FindNearestItemInY( ToItemRects( GetAreaItems( adjacentArea ) ), _statusUi.GetItemRect( items[_selectedItemIndex] ) );
+            if( target < 0 ) { return; }
+
+            SelectItem( adjacentArea, target );
+        }
+
+        private List<ITooltipContent> GetAreaItems( CursorArea area )
+        {
+            return ( area == CursorArea.StatusValue ) ? _statusUi.GetStatusValueItemList() : _statusUi.GetSkillItemList();
+        }
+
+        private IStatusCursorNavigator GetNavigator( CursorArea area )
+        {
+            return ( area == CursorArea.StatusValue ) ? _statusValueNavigator : _skillNavigator;
+        }
+
+        /// <summary>
+        /// 指定の領域から、指定の方向に隣接する領域を返します(左側のステータス値の右隣がスキル、スキルの左隣がステータス値)。
+        /// </summary>
+        private static bool TryGetAdjacentArea( CursorArea area, Direction dir, out CursorArea adjacentArea )
+        {
+            adjacentArea = area;
+
+            if( area == CursorArea.StatusValue && dir == Direction.RIGHT ) { adjacentArea = CursorArea.Skill; return true; }
+            if( area == CursorArea.Skill && dir == Direction.LEFT )        { adjacentArea = CursorArea.StatusValue; return true; }
+
+            return false;
+        }
+
+        private List<Rect> ToItemRects( List<ITooltipContent> items )
+        {
+            var rects = new List<Rect>( items.Count );
+            foreach( var item in items )
+            {
+                rects.Add( _statusUi.GetItemRect( item ) );
+            }
+
+            return rects;
+        }
+
+        /// <summary>
+        /// 縦位置が最も近い項目の添字を返します。縦の距離が同じ項目が複数ある場合は、横の距離が近い方を選びます。項目が無い場合は -1 を返します。
+        /// </summary>
+        private static int FindNearestItemInY( List<Rect> itemRects, Rect from )
+        {
+            int bestIndex = -1;
+            float bestDy  = float.MaxValue;
+            float bestDx  = float.MaxValue;
+
+            for( int i = 0; i < itemRects.Count; ++i )
+            {
+                float dy = Mathf.Abs( itemRects[i].center.y - from.center.y );
+                float dx = Mathf.Abs( itemRects[i].center.x - from.center.x );
+                bool isCloserY = dy < bestDy - STATUS_CURSOR_POSITION_TOLERANCE;
+                bool isSameY   = Mathf.Abs( dy - bestDy ) <= STATUS_CURSOR_POSITION_TOLERANCE;
+                if( isCloserY || ( isSameY && dx < bestDx ) )
+                {
+                    bestIndex = i;
+                    bestDy    = dy;
+                    bestDx    = dx;
+                }
+            }
+
+            return bestIndex;
+        }
+
+        /// <summary>
+        /// 指定の領域の項目を選択し、カーソルとツールチップをその項目に合わせます。
+        /// </summary>
+        private void SelectItem( CursorArea area, int index )
+        {
+            _selectedArea      = area;
+            _selectedItemIndex = index;
+
+            var itemList = GetAreaItems( area );
             if( _selectedItemIndex < 0 || itemList.Count <= _selectedItemIndex )
             {
                 _statusUi.SetSelectCursorActive( false );
