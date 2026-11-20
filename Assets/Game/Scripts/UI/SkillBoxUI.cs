@@ -84,7 +84,7 @@ namespace Frontier
         }
 
         /// <summary>
-        /// ApplySkillForEditingのパッシブスキル版です。パッシブスキルは使用コストを持たないため、コスト表示は行いません。
+        /// ApplySkillForEditingのパッシブスキル版です。コスト表示には装備コストを表示します。
         /// </summary>
         public void ApplyPassiveSkillForEditing( PassiveSkillID skillID )
         {
@@ -105,7 +105,7 @@ namespace Frontier
             _textKey        = skillData.ExplainTextKey;
             SetSkillName( skillData.Name, GetSkillNameColorConfig()?.GetPassiveColor() ?? Color.white );
             SetTooltipText( _textKey );
-            ShowSkillCostImage( 0 );
+            ShowSkillCostImage( skillData.Cost );
 
             EnableRefreshText();
         }

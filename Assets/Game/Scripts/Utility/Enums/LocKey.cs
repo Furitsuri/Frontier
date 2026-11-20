@@ -122,4 +122,9 @@ public enum LocKey
     EXPL_UNIQUE_KEEN_EYE,
     EXPL_UNIQUE_SOFT_BODY,
     EXPL_UNIQUE_HARD_SHELL,
+
+    // 装備スキル設定画面の警告
+    // {0}に、使用出来ない(出来なくなる)アクティブスキル名(複数の場合は区切り文字で連結)が入る書式文字列です
+    UI_SKILL_EQUIP_WARNING_BECOME_UNUSABLE,
+    UI_SKILL_EQUIP_WARNING_UNUSABLE,
 }

@@ -357,7 +357,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
         {
             var elem = _actGaugeElems[i];
 
-            if( i <= status.maxActionGauge - 1 )
+            if( i <= status.EffectiveMaxActionGauge - 1 )
             {
                 elem.gameObject.SetActive( true );
 
@@ -422,7 +422,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
         {
             var elem = _actGaugeElems[i];
 
-            if( i <= status.maxActionGauge - 1 )
+            if( i <= status.EffectiveMaxActionGauge - 1 )
             {
                 if( i <= status.CurActionGauge - 1 )
                 {

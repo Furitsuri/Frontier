@@ -1,6 +1,8 @@
 ﻿using Frontier.Combat;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace Frontier.UI
@@ -25,6 +27,18 @@ namespace Frontier.UI
     /// </summary>
     public class SkillEquipUI : UiMonoBehaviour
     {
+        /// <summary>
+        /// アクションゲージ残量表示の目盛り1つ分の表示状態です。
+        /// </summary>
+        public enum ActionGaugePipState
+        {
+            Hidden = 0,     // 素のゲージ最大値を超える分(表示しない)
+            Available,      // 残っているゲージ
+            Consumed,       // パッシブスキルの装備コストとして消費しているゲージ
+            WillConsume,    // フォーカス中のパッシブスキルを装備すると消費されるゲージ(点滅)
+            WillRestore,    // フォーカス中の操作でパッシブスキルを外す(差し替える)と戻るゲージ(点滅)
+        }
+
         [Header( "左側: アクティブスキルの装備枠(EQUIPABLE_ACTIVE_SKILL_MAX_NUM個)" )]
         [SerializeField] private SkillBoxUI[] _slotBoxes;
 
@@ -46,6 +60,18 @@ namespace Frontier.UI
         [SerializeField] private GameObject _scrollUpIndicator;
         [SerializeField] private GameObject _scrollDownIndicator;
 
+        [Header( "アクションゲージの残量表示(目盛りはテンプレートをACTION_GAUGE_MAX個複製してコンテナへ並べる)" )]
+        [SerializeField] private RawImage _actGaugePipTemplate;
+        [SerializeField] private Transform _actGaugePipContainer;
+        [SerializeField] private TextMeshProUGUI _actGaugeValueText;
+        [SerializeField] private Color _pipAvailableColor   = Color.green;
+        [SerializeField] private Color _pipConsumedColor    = Color.gray;
+        [SerializeField] private float _pipBlinkDuration    = 0.5f;
+
+        [Header( "警告表示(装備によって使用出来なくなるアクティブスキルがある場合等)" )]
+        [SerializeField] private GameObject _warningPanel;
+        [SerializeField] private TextMeshProUGUI _warningText;
+
         [Header( "選択中スキルの説明文" )]
         [SerializeField] private GameObject _explanationPanel;
         [SerializeField] private TextMeshProUGUI _explanationText;
@@ -60,6 +86,13 @@ namespace Frontier.UI
         // 左側の行番号順(アクティブ枠→パッシブ枠)に並べた装備枠。要素数がそのままOK行の行番号になる
         private SkillBoxUI[] _leftRowBoxes = System.Array.Empty<SkillBoxUI>();
 
+        // 左側の各枠のスキルが使用可能か(アクションゲージ最大値の不足で使用出来ない場合はグレー表示する)
+        private bool[] _leftRowUseable = System.Array.Empty<bool>();
+
+        private readonly List<RawImage> _actGaugePips = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
+        private readonly List<ActionGaugePipState> _actGaugePipStates = new List<ActionGaugePipState>( Constants.ACTION_GAUGE_MAX );
+        private float _pipBlinkElapsedTime = 0f;
+
         public override void Setup()
         {
             base.Setup();
@@ -68,11 +101,49 @@ namespace Frontier.UI
             _slotBoxes.CopyTo( _leftRowBoxes, 0 );
             _passiveSlotBoxes.CopyTo( _leftRowBoxes, _slotBoxes.Length );
 
+            _leftRowUseable = new bool[_leftRowBoxes.Length];
+            for ( int i = 0; i < _leftRowUseable.Length; ++i ) { _leftRowUseable[i] = true; }
+
             foreach ( var box in _leftRowBoxes ) { box.Setup(); }
             foreach ( var box in _inventorySkillBoxes ) { box.Setup(); }
 
+            SetupActionGaugePips();
+            HideWarning();
+
             RefreshRemoveRowText();
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshRemoveRowText; }
+        }
+
+        private void SetupActionGaugePips()
+        {
+            if ( _actGaugePipTemplate == null || _actGaugePipContainer == null || 0 < _actGaugePips.Count ) { return; }
+
+            _actGaugePipTemplate.gameObject.SetActive( false );
+            for ( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            {
+                var pip = Instantiate( _actGaugePipTemplate, _actGaugePipContainer, false );
+                pip.name = $"{_actGaugePipTemplate.name}_{i}";
+                pip.gameObject.SetActive( false );
+                _actGaugePips.Add( pip );
+                _actGaugePipStates.Add( ActionGaugePipState.Hidden );
+            }
+        }
+
+        private void Update()
+        {
+            // 増減するゲージの目盛りを点滅させる(戦闘中のゲージ消費時の点滅と同じ表現)
+            _pipBlinkElapsedTime += Time.unscaledDeltaTime;
+            float alpha = ( 0f < _pipBlinkDuration ) ? Mathf.PingPong( _pipBlinkElapsedTime / _pipBlinkDuration, 1.0f ) : 1.0f;
+
+            for ( int i = 0; i < _actGaugePips.Count; ++i )
+            {
+                var state = _actGaugePipStates[i];
+                if ( state != ActionGaugePipState.WillConsume && state != ActionGaugePipState.WillRestore ) { continue; }
+
+                var color = _actGaugePips[i].color;
+                color.a = alpha;
+                _actGaugePips[i].color = color;
+            }
         }
 
         private void OnDestroy()
@@ -120,10 +191,57 @@ namespace Frontier.UI
             for ( int i = 0; i < _leftRowBoxes.Length; ++i )
             {
                 _leftRowBoxes[i].SetCursorHighlighted( i == slotIndex, scaleUp: false );
-                _leftRowBoxes[i].SetUseableOrNot( true );
+                _leftRowBoxes[i].SetUseableOrNot( _leftRowUseable[i] );
             }
 
             _okLabelText.color = ( slotIndex == _leftRowBoxes.Length ) ? _selectedColor : _normalColor;
+        }
+
+        /// <summary>
+        /// 左側の指定行の枠のスキルが使用可能かを設定します。使用出来ない場合はグレー表示にします
+        /// (右側ウィンドウの操作中(SetLockedSlot)は、編集対象以外の枠は使用可否によらずグレー表示になります)。
+        /// </summary>
+        public void SetSlotUseable( int row, bool useable )
+        {
+            _leftRowUseable[row] = useable;
+        }
+
+        /// <summary>
+        /// アクションゲージの残量表示を設定します。
+        /// </summary>
+        /// <param name="pipStates">目盛りごとの表示状態(ACTION_GAUGE_MAX個)</param>
+        /// <param name="remaining">残りゲージ(パッシブスキルの装備コストを差し引いた最大値)</param>
+        /// <param name="baseMax">素のゲージ最大値</param>
+        public void SetActionGauge( IReadOnlyList<ActionGaugePipState> pipStates, int remaining, int baseMax )
+        {
+            for ( int i = 0; i < _actGaugePips.Count; ++i )
+            {
+                var state = ( i < pipStates.Count ) ? pipStates[i] : ActionGaugePipState.Hidden;
+                _actGaugePipStates[i] = state;
+
+                var pip = _actGaugePips[i];
+                pip.gameObject.SetActive( state != ActionGaugePipState.Hidden );
+                // 消費されるゲージは残っている色で、戻るゲージは消費中の色で点滅させる
+                pip.color = ( state == ActionGaugePipState.Available || state == ActionGaugePipState.WillConsume ) ? _pipAvailableColor : _pipConsumedColor;
+            }
+
+            _pipBlinkElapsedTime = 0f;
+
+            if ( _actGaugeValueText != null ) { _actGaugeValueText.text = $"{remaining} / {baseMax}"; }
+        }
+
+        /// <summary>
+        /// 警告文を表示します。
+        /// </summary>
+        public void ShowWarning( string text )
+        {
+            if ( _warningText != null ) { _warningText.text = text; }
+            if ( _warningPanel != null ) { _warningPanel.SetActive( true ); }
+        }
+
+        public void HideWarning()
+        {
+            if ( _warningPanel != null ) { _warningPanel.SetActive( false ); }
         }
 
         /// <summary>

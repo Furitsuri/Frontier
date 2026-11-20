@@ -184,7 +184,7 @@ namespace Frontier.Entities.Ai
             if( ai == null || !ai.CanTakeAction() ) { return false; }    // 待ち構えていてまだ行動を開始していない場合等は予約しない
 
             var status          = chara.GetStatusRef;
-            int expectedGauge   = System.Math.Min( status.CurActionGauge + status.recoveryActionGauge, status.maxActionGauge );
+            int expectedGauge   = System.Math.Min( status.CurActionGauge + status.recoveryActionGauge, status.EffectiveMaxActionGauge );
             var options         = _collector.CollectTelegraphOptions( chara, expectedGauge );
 
             return ai.TrySelectTelegraphOption( options, out selected );

@@ -188,6 +188,17 @@ namespace Frontier.Combat
         }
 
         /// <summary>
+        /// 指定スキルの使用コストが、指定したアクションゲージ最大値以内であるかを返します。
+        /// 最大値を超えるスキルはゲージを満タンにしても使用出来ません。無効なID(未装備枠)の場合はtrueを返します。
+        /// </summary>
+        static public bool IsCostWithinMaxActionGauge( ActiveSkillID skillID, int maxActionGauge )
+        {
+            if( !IsValidSkill( skillID ) ) { return true; }
+
+            return data[( int ) skillID].Cost <= maxActionGauge;
+        }
+
+        /// <summary>
         /// 自軍(使用者自身を含む)を効果の対象とする種類のスキルであるかを判定します
         /// </summary>
         static public bool IsAllyTargetActionType( ActionType actType )

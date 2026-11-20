@@ -35,6 +35,7 @@ namespace Frontier.CharacterEdit
         private const int REMOVE_ROW_VALUE = 0;
 
         private readonly SkillEquipUI _view;
+        private readonly ILocalizationService _localization;
         private SkillEquipContext _context;
         private Pane _currentPane;
 
@@ -55,10 +56,14 @@ namespace Frontier.CharacterEdit
         // 右側の所持スキル一覧で、表示範囲の先頭にある一覧のindex(スクロール位置)
         private int _rightScrollTop = 0;
 
+        // アクションゲージ残量表示の目盛りごとの状態(使い回し用)
+        private readonly List<SkillEquipUI.ActionGaugePipState> _pipStates = new List<SkillEquipUI.ActionGaugePipState>( ACTION_GAUGE_MAX );
+
         [Inject]
-        public SkillEquipPresenter( SkillEquipUI view )
+        public SkillEquipPresenter( SkillEquipUI view, ILocalizationService localization )
         {
-            _view = view;
+            _view           = view;
+            _localization   = localization;
         }
 
         /// <summary>
@@ -83,7 +88,7 @@ namespace Frontier.CharacterEdit
             _view.SetSelectedSlot( _leftCmdIdxVal.index );
             RefreshRightList();
             _view.SetRightSelectedRow( -2 );
-            RefreshExplanation();
+            RefreshFocusDisplay();
             _view.Show();
         }
 
@@ -104,6 +109,7 @@ namespace Frontier.CharacterEdit
             RefreshRightList();
             _view.SetRightSelectedRow( -2 );
             _view.HideExplanation();
+            RefreshActionGaugeAndWarning();
             _view.Show();
         }
 
@@ -140,7 +146,7 @@ namespace Frontier.CharacterEdit
                 }
             }
 
-            if ( moved ) { RefreshExplanation(); }
+            if ( moved ) { RefreshFocusDisplay(); }
 
             return moved;
         }
@@ -173,7 +179,7 @@ namespace Frontier.CharacterEdit
             // 左側は編集対象の枠のみ通常表示のまま、他をグレーアウトして「どの枠を編集中か」を示す
             _view.SetLockedSlot( _editingRow );
             RefreshRightSelectionDisplay();
-            RefreshExplanation();
+            RefreshFocusDisplay();
 
             return true;
         }
@@ -190,7 +196,7 @@ namespace Frontier.CharacterEdit
             _view.SetSelectedSlot( _leftCmdIdxVal.index );
             _rightScrollTop = 0;
             RefreshRightList();
-            RefreshExplanation();
+            RefreshFocusDisplay();
         }
 
         /// <summary>
@@ -233,7 +239,7 @@ namespace Frontier.CharacterEdit
             {
                 int listIndex = _rightCmdIdxVal.value - 1;
                 succeeded = ( slotType == SkillSlotType.PASSIVE )
-                    ? _context.Passive.Equip( slotIndex, _rightPassiveIds[listIndex] )
+                    ? _context.EquipPassive( slotIndex, _rightPassiveIds[listIndex] )
                     : _context.Active.Equip( slotIndex, _rightActiveIds[listIndex] );
             }
 
@@ -263,7 +269,7 @@ namespace Frontier.CharacterEdit
         /// <summary>
         /// 右側の所持スキル一覧の指定行を選択不可(グレー表示)にすべきかどうかを判定します。
         /// 編集中の枠がある場合はその枠へ装備出来ないスキル(所持数0、既にその枠に装備されている、
-        /// 他の枠に同一スキルを装備済み等。SkillEquipSlotGroup.CanEquip参照)、
+        /// 他の枠に同一スキルを装備済み、パッシブスキルの装備コストが足りない等。SkillEquipSlotGroup.CanEquip、SkillEquipContext.CanEquipPassive参照)、
         /// 編集中でない場合は所持数が0のスキルを選択不可とします。
         /// </summary>
         private bool IsRightRowUnavailable( int listIndex )
@@ -273,7 +279,7 @@ namespace Frontier.CharacterEdit
             if ( _rightListType == SkillSlotType.PASSIVE )
             {
                 var skillID = _rightPassiveIds[listIndex];
-                return isEditing ? !_context.Passive.CanEquip( slotIndex, skillID ) : _context.Passive.GetTentativeCount( skillID ) <= 0;
+                return isEditing ? !_context.CanEquipPassive( slotIndex, skillID ) : _context.Passive.GetTentativeCount( skillID ) <= 0;
             }
             else
             {
@@ -287,10 +293,13 @@ namespace Frontier.CharacterEdit
             for ( int i = 0; i < _context.Active.SlotCount; ++i )
             {
                 _view.SetSlotSkill( i, _context.Active.GetEquippedSkill( i ) );
+                // パッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回る場合はグレー表示にする
+                _view.SetSlotUseable( i, _context.IsActiveSlotWithinMaxActionGauge( i ) );
             }
             for ( int i = 0; i < _context.Passive.SlotCount; ++i )
             {
                 _view.SetSlotSkill( PASSIVE_FIRST_ROW + i, _context.Passive.GetEquippedSkill( i ) );
+                _view.SetSlotUseable( PASSIVE_FIRST_ROW + i, true );
             }
         }
 
@@ -354,6 +363,115 @@ namespace Frontier.CharacterEdit
         {
             int value = _rightCmdIdxVal.value;
             _view.SetRightSelectedRow( value == REMOVE_ROW_VALUE ? -1 : value - 1 - _rightScrollTop );
+        }
+
+        /// <summary>
+        /// フォーカスの移動に応じて変わる表示(スキル説明文、アクションゲージ残量のプレビュー、警告)をまとめて更新します。
+        /// </summary>
+        private void RefreshFocusDisplay()
+        {
+            RefreshExplanation();
+            RefreshActionGaugeAndWarning();
+        }
+
+        /// <summary>
+        /// アクションゲージの残量表示と警告表示を更新します。
+        /// 右側でパッシブスキル(または「スキルを外す」)にフォーカスしている場合は、確定した場合のゲージの増減を点滅で示し、
+        /// 新たに使用出来なくなるアクティブスキルがあればその警告を表示します。アクティブスキルにフォーカスしている場合は、
+        /// そのスキルの使用コストが現在のゲージ最大値を超えていれば警告を表示します。
+        /// それ以外(左側の操作中等)は、仮の装備構成で既に使用出来ないアクティブスキルがあればその警告を表示します。
+        /// </summary>
+        private void RefreshActionGaugeAndWarning()
+        {
+            int baseMax     = _context.Character.GetStatusRef.maxActionGauge;
+            int maxNow      = _context.TentativeMaxActionGauge;
+            int maxAfter    = maxNow;
+            List<ActiveSkillID> becomingUnusable = null;
+
+            if ( TryGetFocusedRightChange( out var slotType, out var slotIndex, out var passiveID, out var activeID ) )
+            {
+                if ( slotType == SkillSlotType.PASSIVE )
+                {
+                    maxAfter         = _context.GetMaxActionGaugeAfterPassiveChange( slotIndex, passiveID );
+                    becomingUnusable = _context.GetActiveSkillsBecomingUnusableByPassiveChange( slotIndex, passiveID );
+                }
+                else if ( ActiveSkillsData.IsValidSkill( activeID ) && !_context.IsActiveSkillWithinMaxActionGauge( activeID ) )
+                {
+                    becomingUnusable = new List<ActiveSkillID> { activeID };
+                }
+            }
+
+            BuildActionGaugePipStates( baseMax, maxNow, maxAfter );
+            _view.SetActionGauge( _pipStates, maxAfter, baseMax );
+
+            if ( becomingUnusable != null && 0 < becomingUnusable.Count )
+            {
+                _view.ShowWarning( string.Format( _localization.Get( LocKey.UI_SKILL_EQUIP_WARNING_BECOME_UNUSABLE ), JoinSkillNames( becomingUnusable ) ) );
+                return;
+            }
+
+            var unusable = _context.GetActiveSkillsOverMaxActionGauge();
+            if ( 0 < unusable.Count )
+            {
+                _view.ShowWarning( string.Format( _localization.Get( LocKey.UI_SKILL_EQUIP_WARNING_UNUSABLE ), JoinSkillNames( unusable ) ) );
+                return;
+            }
+
+            _view.HideWarning();
+        }
+
+        /// <summary>
+        /// 右側ウィンドウで確定可能な項目にフォーカスしている場合に、確定した場合の変更内容(対象の枠と新しいスキル)を取得します。
+        /// 「スキルを外す」の場合、新しいスキルはNONEになります。
+        /// </summary>
+        private bool TryGetFocusedRightChange( out SkillSlotType slotType, out int slotIndex, out PassiveSkillID passiveID, out ActiveSkillID activeID )
+        {
+            passiveID = PassiveSkillID.NONE;
+            activeID  = ActiveSkillID.NONE;
+
+            if ( !TryGetSlot( _editingRow, out slotType, out slotIndex ) ) return false;
+            if ( !CanConfirmRightSelection() ) return false;
+
+            int listIndex = _rightCmdIdxVal.value - 1;
+            if ( 0 <= listIndex )
+            {
+                if ( slotType == SkillSlotType.PASSIVE ) { passiveID = _rightPassiveIds[listIndex]; }
+                else                                     { activeID  = _rightActiveIds[listIndex]; }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// アクションゲージ残量表示の目盛りごとの状態を求めます。
+        /// 素の最大値までを表示し、変更後も残る分は「残り」、変更で減る分は「消費される(点滅)」、
+        /// 変更で戻る分は「戻る(点滅)」、それ以外はパッシブスキルの装備コストとして「消費中」とします。
+        /// </summary>
+        private void BuildActionGaugePipStates( int baseMax, int maxNow, int maxAfter )
+        {
+            _pipStates.Clear();
+            for ( int i = 0; i < ACTION_GAUGE_MAX; ++i )
+            {
+                SkillEquipUI.ActionGaugePipState state;
+                if ( baseMax <= i )                     { state = SkillEquipUI.ActionGaugePipState.Hidden; }
+                else if ( i < maxNow && i < maxAfter )  { state = SkillEquipUI.ActionGaugePipState.Available; }
+                else if ( i < maxNow )                  { state = SkillEquipUI.ActionGaugePipState.WillConsume; }
+                else if ( i < maxAfter )                { state = SkillEquipUI.ActionGaugePipState.WillRestore; }
+                else                                    { state = SkillEquipUI.ActionGaugePipState.Consumed; }
+
+                _pipStates.Add( state );
+            }
+        }
+
+        private static string JoinSkillNames( List<ActiveSkillID> skillIDs )
+        {
+            var names = new List<string>( skillIDs.Count );
+            foreach ( var skillID in skillIDs )
+            {
+                names.Add( ActiveSkillsData.data[( int ) skillID].Name.Replace( "_", " " ) );
+            }
+
+            return string.Join( ", ", names );
         }
 
         /// <summary>

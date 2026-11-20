@@ -41,5 +41,7 @@
     "UI_FIELD_STAGE_TITLE": "Stage {0}",
     "UI_FACILITY_SHOP": "Shop",
     "UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS": "Select units to move together",
-    "UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE": "{0} can no longer undo the move.\nProceed?"
+    "UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE": "{0} can no longer undo the move.\nProceed?",
+    "UI_SKILL_EQUIP_WARNING_BECOME_UNUSABLE": "Equipping this leaves too little action gauge to use: {0}",
+    "UI_SKILL_EQUIP_WARNING_UNUSABLE": "Not enough action gauge to use: {0}"
 }

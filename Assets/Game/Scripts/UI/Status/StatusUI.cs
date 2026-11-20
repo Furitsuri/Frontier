@@ -52,7 +52,7 @@ namespace Frontier.UI
             TMPHP.SetValueText( $"{charaParam.CurHP} / {charaParam.MaxHP}" );
             TMPMove.SetValueText( charaParam.moveRange.ToString() );
             TMPJump.SetValueText( charaParam.jumpForce.ToString() );
-            TMPAction.SetValueText( charaParam.maxActionGauge.ToString() );
+            TMPAction.SetValueText( charaParam.EffectiveMaxActionGauge.ToString() );
             TMPAttack.SetValueText( charaParam.Atk.ToString() );
             TMPAttack.SetBonusText( FormatBonusValue( chara.BattleParams.ModifiedParam.Atk ) );
             TMPDeffence.SetValueText( charaParam.Def.ToString() );
@@ -67,6 +67,8 @@ namespace Frontier.UI
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
                 SkillBoxes[i].ApplySkill( chara, i );
+                // パッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回り、使用出来ないスキルはグレー表示にする(戦闘中のゲージ不足と同じ表現)
+                SkillBoxes[i].SetUseableOrNot( charaParam.IsEquipSkillWithinMaxActionGauge( i ) );
             }
 
             // パッシブスキルの表示(未装備の枠は非表示)

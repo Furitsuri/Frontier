@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Frontier.Combat
@@ -16,6 +17,7 @@ namespace Frontier.Combat
         public struct Data
         {
             public string Name;                 // スキル名
+            public int Cost;                    // 装備コスト(装備中はこの分だけアクションゲージの最大値が減少する)
             public PassiveEffect Effect;        // 効果(種類と強化段階ごとの効果量)
             public LocKey ExplainTextKey;       // スキル説明文のテキストキー
         }
@@ -27,6 +29,7 @@ namespace Frontier.Combat
         private struct FileData
         {
             public string Name;
+            public int Cost;
             public int EffectType;
             public PassiveEffect.GradeData[] Grades;
             public string ExplainTextKey;
@@ -69,6 +72,7 @@ namespace Frontier.Combat
             {
                 var fdata = container.PassiveSkillsData[i];
                 data[i].Name            = fdata.Name;
+                data[i].Cost            = fdata.Cost;
                 data[i].Effect          = new PassiveEffect( ( PassiveEffectType ) fdata.EffectType, fdata.Grades );
                 data[i].ExplainTextKey  = ParseExplainTextKey( fdata.ExplainTextKey );
 
@@ -92,6 +96,27 @@ namespace Frontier.Combat
         static public bool IsValidSkill( PassiveSkillID skillID )
         {
             return PassiveSkillID.NONE < skillID && skillID < PassiveSkillID.NUM;
+        }
+
+        /// <summary>
+        /// 指定スキルの装備コストを取得します。無効なID(未装備枠)の場合は0を返します。
+        /// </summary>
+        static public int GetCost( PassiveSkillID skillID )
+        {
+            return IsValidSkill( skillID ) ? data[( int ) skillID].Cost : 0;
+        }
+
+        /// <summary>
+        /// 指定した装備枠に装備されているパッシブスキルの装備コストの合計を取得します。
+        /// </summary>
+        static public int GetTotalCost( IEnumerable<PassiveSkillID> skillIDs )
+        {
+            int total = 0;
+            if ( skillIDs == null ) { return total; }
+
+            foreach ( var skillID in skillIDs ) { total += GetCost( skillID ); }
+
+            return total;
         }
     }
 }
