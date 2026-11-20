@@ -28,7 +28,7 @@ static public class Constants
     // キャラクターが装備出来るアクティブスキル(戦闘中に能動的に使用するスキル)の最大数
     public const int EQUIPABLE_ACTIVE_SKILL_MAX_NUM = 4;
     // キャラクターが装備出来るパッシブスキル(装備しているだけで常時効果を持つスキル)の最大数
-    public const int EQUIPABLE_PASSIVE_SKILL_MAX_NUM = 3;
+    public const int EQUIPABLE_PASSIVE_SKILL_MAX_NUM = 2;
     // キャラクターレベルの最大値
     public const int MAX_LEVEL = 99;
     // Status.StatusPoint(未使用の成長ポイント)の最大値

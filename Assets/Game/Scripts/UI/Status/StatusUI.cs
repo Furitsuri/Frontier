@@ -35,6 +35,10 @@ namespace Frontier.UI
         private RenderTexture _targetTexture;
         private List<ITooltipContent> _statusItemList = new List<ITooltipContent>();
 
+        // 各スキル枠にスキルが装備されているか(未装備の空枠はカーソルの選択対象から外す)
+        private bool[] _isSkillEquipped         = System.Array.Empty<bool>();
+        private bool[] _isPassiveSkillEquipped  = System.Array.Empty<bool>();
+
         private void Update()
         {
             if( _characterCamera != null )
@@ -63,18 +67,27 @@ namespace Frontier.UI
             _characterCamera.Init( "StatusCamera", LAYER_MASK_INDEX_CHARACTER_STATUS, _cameraAngleY, ref _characterCameraImage );
             _characterCamera.AssignCharacter( chara, LAYER_MASK_INDEX_CHARACTER_STATUS );
 
-            // スキルボックスUIの表示
-            for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
+            // スキルボックスUIの表示(未装備の枠も、文字・コスト表示の無い空枠として表示する)
+            _isSkillEquipped = new bool[SkillBoxes.Length];
+            for( int i = 0; i < SkillBoxes.Length; ++i )
             {
-                SkillBoxes[i].ApplySkill( chara, i );
-                // パッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回り、使用出来ないスキルはグレー表示にする(戦闘中のゲージ不足と同じ表現)
-                SkillBoxes[i].SetUseableOrNot( charaParam.IsEquipSkillWithinMaxActionGauge( i ) );
+                var skillID = chara.GetEquipSkillID( i );
+                _isSkillEquipped[i] = Frontier.Combat.ActiveSkillsData.IsValidSkill( skillID );
+                SkillBoxes[i].ApplySkillForEditing( skillID );
+                // 未装備の空枠、及びパッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回り使用出来ないスキルは、
+                // グレー表示にする(戦闘中のゲージ不足と同じ表現)
+                SkillBoxes[i].SetUseableOrNot( _isSkillEquipped[i] && charaParam.IsEquipSkillWithinMaxActionGauge( i ) );
             }
 
-            // パッシブスキルの表示(未装備の枠は非表示)
+            // パッシブスキルの表示(未装備の枠も、文字・コスト表示の無い空枠として表示する)
+            _isPassiveSkillEquipped = new bool[PassiveSkillBoxes.Length];
             for( int i = 0; i < PassiveSkillBoxes.Length; ++i )
             {
-                PassiveSkillBoxes[i].ApplyPassiveSkill( chara.GetPassiveSkillID( i ) );
+                var skillID = chara.GetPassiveSkillID( i );
+                _isPassiveSkillEquipped[i] = Frontier.Combat.PassiveSkillsData.IsValidSkill( skillID );
+                PassiveSkillBoxes[i].ApplyPassiveSkillForEditing( skillID );
+                // 未装備の空枠はグレー表示にする
+                PassiveSkillBoxes[i].SetUseableOrNot( _isPassiveSkillEquipped[i] );
             }
 
             // 固有スキルの表示(固有スキルが無い種別の場合は非表示)
@@ -149,16 +162,17 @@ namespace Frontier.UI
             }
 
             // パッシブスキルもカーソルで選択し、説明文(ツールチップ)を確認出来るようにする
-            foreach( var item in PassiveSkillBoxes )
+            // (未装備の空枠は説明文が無いため選択対象から外す)
+            for( int i = 0; i < PassiveSkillBoxes.Length; ++i )
             {
-                if( !item.gameObject.activeSelf ) { continue; }
-                _statusItemList.Add( item );
+                if( i < _isPassiveSkillEquipped.Length && !_isPassiveSkillEquipped[i] ) { continue; }
+                _statusItemList.Add( PassiveSkillBoxes[i] );
             }
 
-            foreach( var item in SkillBoxes )
+            for( int i = 0; i < SkillBoxes.Length; ++i )
             {
-                if( !item.gameObject.activeSelf ) { continue; }
-                _statusItemList.Add( item );
+                if( i < _isSkillEquipped.Length && !_isSkillEquipped[i] ) { continue; }
+                _statusItemList.Add( SkillBoxes[i] );
             }
 
             // カーソルの初期位置をリストの先頭の要素で初期化

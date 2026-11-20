@@ -177,10 +177,15 @@ public class UserDomain
         Members.Clear();
         Members.AddRange( data.Members );
 
-        // パッシブスキル枠追加以前のセーブデータ等、装備スキル枠の数が現行と異なるデータを補完する
+        // パッシブスキル枠追加以前のセーブデータ等、装備スキル枠の数が現行と異なるデータを補完する。
+        // 枠数が減った場合に切り捨てられる枠に装備されていたスキルは、失われないよう所持スキルへ戻す
+        var overflowActiveSkills  = new List<ActiveSkillID>();
+        var overflowPassiveSkills = new List<PassiveSkillID>();
         for ( int i = 0; i < Members.Count; ++i )
         {
             var status = Members[i];
+            CollectOverflowSkills( status.EquipSkills, Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM, ActiveSkillsData.IsValidSkill, overflowActiveSkills );
+            CollectOverflowSkills( status.PassiveSkills, Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM, PassiveSkillsData.IsValidSkill, overflowPassiveSkills );
             status.EnsureSkillSlots();
             Members[i] = status;
         }
@@ -188,5 +193,21 @@ public class UserDomain
         if ( data.SkillInventory != null ) { ActiveSkillInventory.AddRange( data.SkillInventory ); }
         PassiveSkillInventory.Clear();
         if ( data.PassiveSkillInventory != null ) { PassiveSkillInventory.AddRange( data.PassiveSkillInventory ); }
+
+        foreach ( var skillID in overflowActiveSkills )  { AddSkill( skillID, 1 ); }
+        foreach ( var skillID in overflowPassiveSkills ) { AddSkill( skillID, 1 ); }
+    }
+
+    /// <summary>
+    /// 装備枠の配列のうち、現行の枠数(slotNum)を超える位置に装備されている有効なスキルをdestへ追加します。
+    /// </summary>
+    static private void CollectOverflowSkills<T>( T[] slots, int slotNum, Func<T, bool> isValidSkill, List<T> dest )
+    {
+        if ( slots == null ) { return; }
+
+        for ( int i = slotNum; i < slots.Length; ++i )
+        {
+            if ( isValidSkill( slots[i] ) ) { dest.Add( slots[i] ); }
+        }
     }
 }
