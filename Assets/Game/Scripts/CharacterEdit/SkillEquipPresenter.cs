@@ -78,14 +78,11 @@ namespace Frontier.CharacterEdit
             _rightListType = SkillSlotType.ACTIVE;
             _rightScrollTop = 0;
 
-            var indices = new List<int>();
-            for ( int i = 0; i <= OK_ROW; ++i ) { indices.Add( i ); }
-
             _leftCmdIdxVal = new CommandList.CommandIndexedValue( 0, 0 );
-            _leftCommandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _leftCmdIdxVal );
+            RebuildLeftCommandList( 0 );
 
             RefreshLeftSlots();
-            _view.SetSelectedSlot( _leftCmdIdxVal.index );
+            _view.SetSelectedSlot( _leftCmdIdxVal.value );
             RefreshRightList();
             _view.SetRightSelectedRow( -2 );
             RefreshFocusDisplay();
@@ -125,7 +122,7 @@ namespace Frontier.CharacterEdit
                 moved = _leftCommandList.OperateListCursor( dir );
                 if ( moved )
                 {
-                    _view.SetSelectedSlot( _leftCmdIdxVal.index );
+                    _view.SetSelectedSlot( _leftCmdIdxVal.value );
 
                     // フォーカス中の枠の種類が変わった場合は、右側の一覧もその種類の所持スキルへ切り替える
                     if ( TryGetSlot( _leftCmdIdxVal.value, out var slotType, out _ ) && slotType != _rightListType )
@@ -193,7 +190,7 @@ namespace Frontier.CharacterEdit
             _editingRow = -1;
 
             _view.SetRightSelectedRow( -2 );
-            _view.SetSelectedSlot( _leftCmdIdxVal.index );
+            _view.SetSelectedSlot( _leftCmdIdxVal.value );
             _rightScrollTop = 0;
             RefreshRightList();
             RefreshFocusDisplay();
@@ -255,8 +252,9 @@ namespace Frontier.CharacterEdit
 
             if ( !succeeded ) return false;
 
+            // 装備・解除で選択可能な空き枠が変わるため、左側の選択対象を作り直す
             RefreshLeftSlots();
-            _leftCommandList.SetCurrentValue( destRow );
+            RebuildLeftCommandList( destRow );
             ExitRightPane();
 
             return true;
@@ -304,14 +302,45 @@ namespace Frontier.CharacterEdit
             for ( int i = 0; i < _context.Active.SlotCount; ++i )
             {
                 _view.SetSlotSkill( i, _context.Active.GetEquippedSkill( i ) );
-                // パッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回る場合はグレー表示にする
-                _view.SetSlotUseable( i, _context.IsActiveSlotWithinMaxActionGauge( i ) );
+                // パッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回る場合、
+                // 及び選択出来ない空き枠(先頭以外の空き枠)はグレー表示にする
+                _view.SetSlotUseable( i, IsLeftRowSelectable( i ) && _context.IsActiveSlotWithinMaxActionGauge( i ) );
             }
             for ( int i = 0; i < _context.Passive.SlotCount; ++i )
             {
                 _view.SetSlotSkill( PASSIVE_FIRST_ROW + i, _context.Passive.GetEquippedSkill( i ) );
-                _view.SetSlotUseable( PASSIVE_FIRST_ROW + i, true );
+                _view.SetSlotUseable( PASSIVE_FIRST_ROW + i, IsLeftRowSelectable( PASSIVE_FIRST_ROW + i ) );
             }
+        }
+
+        /// <summary>
+        /// 左側の指定行をカーソルで選択出来るかを返します。
+        /// 装備スキルは先頭の枠から詰めて並ぶため(Status.PackSkillSlots参照)、空き枠のうち装備して意味があるのは先頭の空き枠のみです。
+        /// それ以降の空き枠は選択出来ません。装備済みの枠とOKは常に選択出来ます。
+        /// </summary>
+        private bool IsLeftRowSelectable( int row )
+        {
+            if ( !TryGetSlot( row, out var slotType, out var slotIndex ) ) { return true; }
+
+            int equippedCount = ( slotType == SkillSlotType.PASSIVE ) ? _context.Passive.EquippedCount : _context.Active.EquippedCount;
+
+            return slotIndex <= equippedCount;
+        }
+
+        /// <summary>
+        /// 左側の選択対象(選択出来る装備枠+OK)でCommandListを作り直し、カーソルを指定行へ合わせます。
+        /// 指定行が選択出来ない場合は先頭の行へ合わせます。
+        /// </summary>
+        private void RebuildLeftCommandList( int selectRow )
+        {
+            var indices = new List<int>();
+            for ( int row = 0; row <= OK_ROW; ++row )
+            {
+                if ( IsLeftRowSelectable( row ) ) { indices.Add( row ); }
+            }
+
+            _leftCommandList.Init( ref indices, CommandList.CommandDirection.VERTICAL, false, _leftCmdIdxVal );
+            _leftCommandList.SetCurrentValue( selectRow );
         }
 
         private void RefreshRightList()
