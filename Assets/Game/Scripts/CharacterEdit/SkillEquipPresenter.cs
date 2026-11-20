@@ -229,23 +229,34 @@ namespace Frontier.CharacterEdit
             if ( !TryGetSlot( _editingRow, out var slotType, out var slotIndex ) ) return false;
 
             bool succeeded;
+            int destRow = _editingRow;
             if ( _rightCmdIdxVal.value == REMOVE_ROW_VALUE )
             {
+                // 外した枠には後ろの枠のスキルが詰められるため、カーソルは同じ枠のままとする
                 succeeded = ( slotType == SkillSlotType.PASSIVE )
                     ? _context.Passive.Unequip( slotIndex )
                     : _context.Active.Unequip( slotIndex );
             }
             else
             {
+                // 空き枠への装備は先頭の空き枠に詰めて入るため、カーソルを実際に装備された枠へ合わせる
                 int listIndex = _rightCmdIdxVal.value - 1;
-                succeeded = ( slotType == SkillSlotType.PASSIVE )
-                    ? _context.EquipPassive( slotIndex, _rightPassiveIds[listIndex] )
-                    : _context.Active.Equip( slotIndex, _rightActiveIds[listIndex] );
+                if ( slotType == SkillSlotType.PASSIVE )
+                {
+                    destRow   = PASSIVE_FIRST_ROW + _context.Passive.GetEquipDestination( slotIndex );
+                    succeeded = _context.EquipPassive( slotIndex, _rightPassiveIds[listIndex] );
+                }
+                else
+                {
+                    destRow   = _context.Active.GetEquipDestination( slotIndex );
+                    succeeded = _context.Active.Equip( slotIndex, _rightActiveIds[listIndex] );
+                }
             }
 
             if ( !succeeded ) return false;
 
             RefreshLeftSlots();
+            _leftCommandList.SetCurrentValue( destRow );
             ExitRightPane();
 
             return true;

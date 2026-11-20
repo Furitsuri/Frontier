@@ -98,11 +98,37 @@ namespace Frontier.Entities
         /// 装備スキル枠が未確保、または枠数が定数と一致しない場合に、枠数を揃えます。
         /// 既存の装備内容は保持し、不足する枠はNONEで補完します(超過分は切り捨てます)。
         /// パッシブスキル枠追加以前のセーブデータ・敵データJSON等、該当フィールドを持たないデータを読み込んだ際の補完に用います。
+        /// 併せて、装備スキルを先頭の枠から詰めて並べます(途中に空き枠がある古いデータへの対応。PackSkillSlots参照)。
         /// </summary>
         public void EnsureSkillSlots()
         {
             EquipSkills     = ResizeSkillSlots( EquipSkills, Constants.EQUIPABLE_ACTIVE_SKILL_MAX_NUM, ActiveSkillID.NONE );
             PassiveSkills   = ResizeSkillSlots( PassiveSkills, Constants.EQUIPABLE_PASSIVE_SKILL_MAX_NUM, PassiveSkillID.NONE );
+
+            PackSkillSlots( EquipSkills, ActiveSkillsData.IsValidSkill, ActiveSkillID.NONE );
+            PackSkillSlots( PassiveSkills, PassiveSkillsData.IsValidSkill, PassiveSkillID.NONE );
+        }
+
+        /// <summary>
+        /// 装備スキルを、並び順を保ったまま先頭の枠から詰めて並べます(配列を直接書き換えます)。
+        /// 仕様として、装備スキルは必ず先頭から連番で並び、途中に空き枠を持ちません
+        /// (例:4つ装備した状態で3つ目を外すと、4つ目が3つ目の枠へ移ります)。
+        /// 無効なスキルIDは未装備(none)として扱います。
+        /// </summary>
+        static public void PackSkillSlots<T>( T[] slots, Func<T, bool> isValidSkill, T none ) where T : struct, Enum
+        {
+            if( slots == null ) { return; }
+
+            int writeIdx = 0;
+            for( int readIdx = 0; readIdx < slots.Length; ++readIdx )
+            {
+                if( !isValidSkill( slots[readIdx] ) ) { continue; }
+                slots[writeIdx++] = slots[readIdx];
+            }
+            for( ; writeIdx < slots.Length; ++writeIdx )
+            {
+                slots[writeIdx] = none;
+            }
         }
 
         static private T[] CreateEmptySkillSlots<T>( int slotNum, T none ) where T : struct, Enum

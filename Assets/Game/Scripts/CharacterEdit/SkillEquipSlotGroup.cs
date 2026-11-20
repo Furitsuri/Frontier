@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Frontier.Entities;
 
 namespace Frontier.CharacterEdit
 {
@@ -38,6 +39,8 @@ namespace Frontier.CharacterEdit
             {
                 _tentativeSlots[i] = ( equippedSlots != null && i < equippedSlots.Length ) ? equippedSlots[i] : none;
             }
+            // 装備スキルは必ず先頭の枠から詰めて並べる(Status.PackSkillSlots参照)
+            Status.PackSkillSlots( _tentativeSlots, _isValidSkill, _none );
 
             _originalCounts = new Dictionary<TSkillID, int>();
             foreach ( var entry in inventory )
@@ -112,13 +115,43 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
+        /// 装備されているスキルの数です。装備スキルは先頭から詰めて並ぶため、先頭の空き枠の位置とも一致します。
+        /// </summary>
+        public int EquippedCount
+        {
+            get
+            {
+                int count = 0;
+                foreach ( var skillID in _tentativeSlots )
+                {
+                    if ( _isValidSkill( skillID ) ) { ++count; }
+                }
+
+                return count;
+            }
+        }
+
+        /// <summary>
+        /// 指定枠へ装備した場合に、実際にスキルが入る枠を返します。
+        /// 装備済みの枠であればその枠(入れ替え)、空き枠であれば先頭の空き枠(詰めた位置)になります。
+        /// </summary>
+        public int GetEquipDestination( int slotIndex )
+        {
+            if ( _isValidSkill( _tentativeSlots[slotIndex] ) ) { return slotIndex; }
+
+            return Math.Min( slotIndex, EquippedCount );
+        }
+
+        /// <summary>
         /// 指定枠へ指定スキルを仮に装備します。既に別のスキルが入っていた場合はそのスキルの
         /// 所持数を1戻し、新しいスキルの所持数を1消費します。装備出来ない場合(CanEquip参照)は何もせずfalseを返します。
+        /// 空き枠を指定した場合は、途中に空き枠が出来ないよう先頭の空き枠へ装備します(GetEquipDestination参照)。
         /// </summary>
         public bool Equip( int slotIndex, TSkillID newSkillID )
         {
             if ( !CanEquip( slotIndex, newSkillID ) ) { return false; }
 
+            slotIndex = GetEquipDestination( slotIndex );
             var oldSkillID = _tentativeSlots[slotIndex];
             if ( _isValidSkill( oldSkillID ) )
             {
@@ -133,6 +166,7 @@ namespace Frontier.CharacterEdit
 
         /// <summary>
         /// 指定枠の装備を仮に解除します。装備されていたスキルの所持数を1戻します。
+        /// 後ろの枠に装備されているスキルは、途中に空き枠が出来ないよう1つずつ前の枠へ詰めます。
         /// 元々未装備だった場合は何もせずfalseを返します。
         /// </summary>
         public bool Unequip( int slotIndex )
@@ -142,6 +176,7 @@ namespace Frontier.CharacterEdit
 
             _tentativeCounts[oldSkillID] = GetTentativeCount( oldSkillID ) + 1;
             _tentativeSlots[slotIndex] = _none;
+            Status.PackSkillSlots( _tentativeSlots, _isValidSkill, _none );
 
             return true;
         }
