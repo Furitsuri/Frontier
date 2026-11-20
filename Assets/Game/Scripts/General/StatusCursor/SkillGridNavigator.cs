@@ -2,7 +2,7 @@
 using UnityEngine;
 using static Constants;
 
-namespace Frontier.Presenter
+namespace Frontier.StatusCursor
 {
     /// <summary>
     /// ステータス画面右側(スキル枠が行・列に揃って並ぶ表)の操作体系です。

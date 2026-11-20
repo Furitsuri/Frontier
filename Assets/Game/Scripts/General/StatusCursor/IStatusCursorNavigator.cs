@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Frontier.Presenter
+namespace Frontier.StatusCursor
 {
     /// <summary>
     /// ステータス画面の1つの領域(左側のステータス値・右側のスキル)内における、カーソルの移動先を決める操作体系です。

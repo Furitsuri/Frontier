@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Frontier.Presenter
+namespace Frontier.StatusCursor
 {
     /// <summary>
     /// ステータス画面左側(ステータス値の縦1列)の操作体系です。

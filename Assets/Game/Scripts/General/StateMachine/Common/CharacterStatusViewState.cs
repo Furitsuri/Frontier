@@ -1,5 +1,6 @@
 ﻿using Frontier.Entities;
 using Frontier.Presenter;
+using Frontier.StatusCursor;
 using Zenject;
 using static Constants;
 
@@ -16,6 +17,7 @@ namespace Frontier.StateMachine
         private string[] _inputInfoStrings;
         private Character _targetChara = null;
         private StatusPresenter _statusPresenter = null;
+        private StatusCursorController _statusCursorCtrl = null;   // ツールチップ用カーソルの移動先の判断を担う
         private InputCodeStringWrapper _inputInfoStrWrapper = null;
 
         public override void Init( object context )
@@ -24,6 +26,8 @@ namespace Frontier.StateMachine
 
             LazyInject.GetOrCreate( ref _statusPresenter, () => _hierarchyBld.InstantiateWithDiContainer<StatusPresenter>( false ) );
             _statusPresenter.Init();
+            LazyInject.GetOrCreate( ref _statusCursorCtrl, () => _hierarchyBld.InstantiateWithDiContainer<StatusCursorController>( false ) );
+            _statusCursorCtrl.Init( _statusPresenter );
 
             // INFOアイコンの文字列を設定
             _inputInfoStrings = new string[]
@@ -37,6 +41,7 @@ namespace Frontier.StateMachine
             NullCheck.AssertNotNull( _targetChara, nameof( _targetChara ) );
             _targetChara.gameObject.SetLayerRecursively( LAYER_MASK_INDEX_CHARACTER_STATUS );
             _statusPresenter.OpenCharacterStatus( _targetChara );
+            _statusCursorCtrl.ResetSelection();
 
             // ステータス画面表示中はステージ上のカメラ操作と競合させない
             _btlCameraCtrl?.SetInputEnabled( false );
@@ -104,7 +109,7 @@ namespace Frontier.StateMachine
                 case Direction.BACK:
                 case Direction.RIGHT:
                 case Direction.LEFT:
-                    _statusPresenter.MoveSelectCursor( context.Cursor );
+                    _statusCursorCtrl.Move( context.Cursor );
                     return true;
                 default:
                     return false;
