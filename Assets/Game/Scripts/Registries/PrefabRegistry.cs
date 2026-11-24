@@ -45,6 +45,7 @@ namespace Frontier.Registries
         [SerializeField] public GameObject BuffCirclePrefab;            // バフサークル用プレハブ
         [SerializeField] public GameObject BuffAuraPrefab;              // バフオーラ用プレハブ
         [SerializeField] public GameObject CooperativeConvergingLinesPrefab; // 連携演出用集中線プレハブ
+        [SerializeField] public GameObject HealEffectPrefab;            // 回復エフェクト用プレハブ(EffectEventTimelineで回復の適用タイミングを指定)
 
         [Header( "Option関連" )]
         [SerializeField] public GameObject SliderOptionItemPrefab;      // スライダー形式のオプション項目プレハブ

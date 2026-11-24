@@ -1,5 +1,6 @@
 ﻿using Frontier.Battle;
 using Frontier.Entities;
+using Frontier.Registries;
 using Frontier.Stage;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,19 +12,25 @@ namespace Frontier.Combat
     /// <summary>
     /// 範囲内の自軍(使用者自身を含む)のHPを回復するスキルの実行処理です。
     /// 回復量はスキルデータのHealAmount(汎用パラメータ1)で、最大HPを超えては回復しません。
-    /// MEMO : 回復用のモーション・エフェクトはまだ用意されていないため、現状は待ち時間を挟んで回復量を表示するのみです
+    /// 対象ごとに回復エフェクト(PrefabRegistry.HealEffectPrefab)を再生し、エフェクト内に設定された
+    /// EffectEventID.APPLY_EFFECT のタイミングで回復を適用・回復量を表示します(タイミングはプレハブのEffectEventTimelineで調整)。
+    /// MEMO : 使用者側の回復用モーションはまだ用意されていません
     /// </summary>
     public class HealSA : SkillActionBase
     {
         private enum HealSAState
         {
-            WAIT_APPLY,
+            WAIT_EFFECT,
             WAIT_END,
             END,
         }
 
+        [Inject] private HierarchyBuilderBase _hierarchyBld = null;
+        [Inject] private PrefabRegistry _prefabReg          = null;
+
         private BattleCharacterCoordinator _btlCharaCdr = null;
         private StageController _stageCtrl              = null;
+        private List<EffectEventTimeline> _effects      = new List<EffectEventTimeline>();
 
         private HealSAState _state;
         private float _elapsedTime;
@@ -62,8 +69,16 @@ namespace Frontier.Combat
                 target.BattleParams.TmpParam.SetExpectedHpChange( heal, heal );
             }
 
+            // HPが全快の対象など、実際には回復しない対象にはエフェクトを再生しない(回復量が0のため適用・表示も不要)
+            foreach( var target in _targetCharacters )
+            {
+                if( target.BattleParams.TmpParam.ExpectedHpChange <= 0 ) { continue; }
+
+                PlayHealEffect( target );
+            }
+
             _elapsedTime    = 0f;
-            _state          = HealSAState.WAIT_APPLY;
+            _state          = HealSAState.WAIT_EFFECT;
         }
 
         protected override void UpdateAction()
@@ -74,14 +89,10 @@ namespace Frontier.Combat
 
             switch( _state )
             {
-                case HealSAState.WAIT_APPLY:
-                    if( HEAL_SKILL_APPLY_DELAY <= _elapsedTime )
+                case HealSAState.WAIT_EFFECT:
+                    // 回復の適用はエフェクトのイベントから行われるため、ここでは全エフェクトの再生完了のみを待つ
+                    if( _effects.TrueForAll( effect => effect == null || effect.IsFinished ) )
                     {
-                        foreach( var target in _targetCharacters )
-                        {
-                            ApplyHealToTarget( target );
-                        }
-
                         _elapsedTime    = 0f;
                         _state          = HealSAState.WAIT_END;
                     }
@@ -101,6 +112,12 @@ namespace Frontier.Combat
         {
             base.EndAction();
 
+            foreach( var effect in _effects )
+            {
+                if( effect != null ) { UnityEngine.Object.Destroy( effect.gameObject ); }
+            }
+            _effects.Clear();
+
             _stageCtrl.UnbindGridCursor();
             _stageCtrl.ApplyGridCursor2CharacterTile( _owner );
             _stageCtrl.SetActiveGridCursor( true );
@@ -110,6 +127,38 @@ namespace Frontier.Combat
         protected override bool IsFinished()
         {
             return _state == HealSAState.END;
+        }
+
+        /// <summary>
+        /// 対象の足元に回復エフェクトを再生し、エフェクトのイベントで回復を適用するよう登録します。
+        /// エフェクトのプレハブが未設定の場合は、演出無しで即座に回復を適用します。
+        /// </summary>
+        private void PlayHealEffect( Character target )
+        {
+            if( _prefabReg == null || _prefabReg.HealEffectPrefab == null )
+            {
+                ApplyHealToTarget( target );
+                return;
+            }
+
+            var effectObj = _hierarchyBld.CreateGameObject( _prefabReg.HealEffectPrefab, true, "HealEffect" );
+            effectObj.transform.SetParent( target.transform, false );
+
+            var timeline = effectObj.GetComponent<EffectEventTimeline>();
+            if( timeline == null )
+            {
+                Debug.LogWarning( "HealEffectPrefab に EffectEventTimeline が付いていないため、即座に回復を適用します。" );
+                UnityEngine.Object.Destroy( effectObj );
+                ApplyHealToTarget( target );
+                return;
+            }
+
+            timeline.OnEffectEvent += id =>
+            {
+                if( id == EffectEventID.APPLY_EFFECT ) { ApplyHealToTarget( target ); }
+            };
+            timeline.Play();
+            _effects.Add( timeline );
         }
 
         /// <summary>
