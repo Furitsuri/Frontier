@@ -161,8 +161,8 @@ static public class Constants
     // 自身にバフをかける処理の待ち時間
     public const float SELF_BUFF_DISP_NAME_TIME = 0.5f;
     public const float SELF_BUFF_EXE_TIME = 0.75f;
-    // 回復系のスキルの演出の待ち時間(回復の適用タイミングはエフェクト側のEffectEventTimelineで設定)
-    public const float HEAL_SKILL_END_WAIT_TIME     = 0.5f;     // 回復エフェクトの再生完了後、スキルを終了するまで
+    // 回復系のスキルの演出の待ち時間(回復の適用タイミングはエフェクトのTimeline上のEffectEventMarkerで設定)
+    public const float HEAL_SKILL_END_WAIT_TIME     = 0.2f;     // 回復エフェクトの再生完了後、スキルを終了するまで
     // NPCの行動(通常攻撃・スキル・回復等)のうち、プレイヤーが介入する手立てが無いものを、確認の入力を待たずに実行するまでの、行動の内容の表示時間
     public const float NPC_ACTION_AUTO_EXECUTE_DISPLAY_TIME = 1.0f;
     // 攻撃時に向きを定める際の待ち時間

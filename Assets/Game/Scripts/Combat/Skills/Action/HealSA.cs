@@ -13,7 +13,7 @@ namespace Frontier.Combat
     /// 範囲内の自軍(使用者自身を含む)のHPを回復するスキルの実行処理です。
     /// 回復量はスキルデータのHealAmount(汎用パラメータ1)で、最大HPを超えては回復しません。
     /// 対象ごとに回復エフェクト(PrefabRegistry.HealEffectPrefab)を再生し、エフェクト内に設定された
-    /// EffectEventID.APPLY_EFFECT のタイミングで回復を適用・回復量を表示します(タイミングはプレハブのEffectEventTimelineで調整)。
+    /// EffectEventID.APPLY_EFFECT のタイミングで回復を適用・回復量を表示します(タイミングはエフェクトのTimeline上のEffectEventMarkerで調整)。
     /// MEMO : 使用者側の回復用モーションはまだ用意されていません
     /// </summary>
     public class HealSA : SkillActionBase
@@ -30,7 +30,7 @@ namespace Frontier.Combat
 
         private BattleCharacterCoordinator _btlCharaCdr = null;
         private StageController _stageCtrl              = null;
-        private List<EffectEventTimeline> _effects      = new List<EffectEventTimeline>();
+        private List<TimelineEffectPlayer> _effects     = new List<TimelineEffectPlayer>();
 
         private HealSAState _state;
         private float _elapsedTime;
@@ -144,21 +144,21 @@ namespace Frontier.Combat
             var effectObj = _hierarchyBld.CreateGameObject( _prefabReg.HealEffectPrefab, true, "HealEffect" );
             effectObj.transform.SetParent( target.transform, false );
 
-            var timeline = effectObj.GetComponent<EffectEventTimeline>();
-            if( timeline == null )
+            var player = effectObj.GetComponent<TimelineEffectPlayer>();
+            if( player == null )
             {
-                Debug.LogWarning( "HealEffectPrefab に EffectEventTimeline が付いていないため、即座に回復を適用します。" );
+                Debug.LogWarning( "HealEffectPrefab に TimelineEffectPlayer が付いていないため、即座に回復を適用します。" );
                 UnityEngine.Object.Destroy( effectObj );
                 ApplyHealToTarget( target );
                 return;
             }
 
-            timeline.OnEffectEvent += id =>
+            player.OnEffectEvent += id =>
             {
                 if( id == EffectEventID.APPLY_EFFECT ) { ApplyHealToTarget( target ); }
             };
-            timeline.Play();
-            _effects.Add( timeline );
+            player.Play();
+            _effects.Add( player );
         }
 
         /// <summary>
