@@ -24,7 +24,7 @@ namespace Frontier.Combat
             var attackerParams      = attacker.BattleParams;
             var skillModified       = attackerParams.SkillModifiedParam;
             int modifiedAtk         = attackerParams.ModifiedParam.Atk;
-            int actGaugeCost        = attackerParams.TmpParam.ActGaugeConsumption;
+            int skillGaugeCost        = attackerParams.TmpParam.SkillGaugeConsumption;
 
             if( ActiveSkillsData.IsValidSkill( useSkillID ) && !attackerParams.IsSkillApplied( useSkillID ) )
             {
@@ -34,7 +34,7 @@ namespace Frontier.Combat
                 skillModified.AtkMagnification  += skillData.AddAtkMag;
                 // BattleParameters.RefreshModifiedParamと同じ算出方法(装備中のパッシブスキルの倍率を含む)で補正値を求める
                 modifiedAtk                     = BattleParameters.CalculateModifiedAtk( attacker.GetStatusRef, skillModified.AtkMagnification );
-                actGaugeCost                    += skillData.Cost;
+                skillGaugeCost                    += skillData.Cost;
             }
 
             int targetDef   = target.GetStatusRef.Def + target.BattleParams.ModifiedParam.Def;
@@ -46,7 +46,7 @@ namespace Frontier.Combat
             forecast.TotalDamage        = Mathf.Max( damage * ( 1 + skillModified.AddAtkNum ), 0 );
             forecast.TargetCurrentHp    = target.GetStatusRef.CurHP;
             forecast.IsDefeat           = forecast.TargetCurrentHp <= forecast.TotalDamage;
-            forecast.ActionGaugeCost    = actGaugeCost;
+            forecast.SkillGaugeCost    = skillGaugeCost;
             forecast.SelfStatusEffects  = AttackForecast.EmptyStatusEffects;
 
             return forecast;

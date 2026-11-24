@@ -92,7 +92,7 @@ public class CharacterFactory
         chara.GetStatusRef = status;
 
         // 現在値が、パッシブスキルの装備コストを差し引いた最大値を超えている場合は切り詰める
-        chara.GetStatusRef.ClampActionGaugeToMax();
+        chara.GetStatusRef.ClampSkillGaugeToMax();
 
         // 装備中のパッシブスキルによる補正を、パラメータ表示に反映しておく(Character.Apply()と同様)
         chara.RefreshModifiedParam();

@@ -1535,9 +1535,9 @@ MonoBehaviour:
     moveRange: 0
     jumpForce: 0
     attackRange: 0
-    maxActionGauge: 0
-    CurActionGauge: 0
-    recoveryActionGauge: 0
+    maxSkillGauge: 0
+    CurSkillGauge: 0
+    recoverySkillGauge: 0
     EquipSkills: 
     PassiveSkills: 
   _btlParams:
@@ -1545,7 +1545,7 @@ MonoBehaviour:
       Atk: 0
       Def: 0
       moveRange: 0
-      recoveryActionGauge: 0
+      recoverySkillGauge: 0
     _skillModifiedParam:
       AddAtkNum: 0
       AtkMagnification: 0

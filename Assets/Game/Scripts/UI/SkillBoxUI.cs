@@ -14,13 +14,13 @@ namespace Frontier
     {
         [SerializeField] private TextMeshProUGUI TMPSkillName;
         [SerializeField] private RectTransform PanelTransform;
-        [SerializeField] private RawImage ActGaugeElemImage;
+        [SerializeField] private RawImage SkillGaugeElemImage;
         [SerializeField] private Image CurtainImage;
         [SerializeField] private GameObject CursorFrame;
 
         private string _tooltipText;
         private ColorFlicker<ImageColorAdapter> _imageFlicker;
-        private List<RawImage> _actGaugeElems;
+        private List<RawImage> _skillGaugeElems;
         private Image _uiImage;
         private Color _initialColor;
 
@@ -285,10 +285,10 @@ namespace Frontier
             // 固有スキル表示(ApplyUniqueSkill)で非表示にした枠も、コストを持つスキルの表示時は元に戻す
             SetCostPanelVisible( true );
 
-            // アクションゲージの表示
-            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            // スキルゲージの表示
+            for( int i = 0; i < Constants.SKILL_GAUGE_MAX; ++i )
             {
-                var elem = _actGaugeElems[i];
+                var elem = _skillGaugeElems[i];
 
                 elem.gameObject.SetActive( i < cost );
                 elem.color = Color.green;
@@ -305,18 +305,18 @@ namespace Frontier
 
         public override void Setup()
         {
-            LazyInject.GetOrCreate( ref _actGaugeElems, () => new List<RawImage>( Constants.ACTION_GAUGE_MAX ) );
+            LazyInject.GetOrCreate( ref _skillGaugeElems, () => new List<RawImage>( Constants.SKILL_GAUGE_MAX ) );
             LazyInject.GetOrCreate( ref _uiImage, () => GetComponent<Image>() );
             LazyInject.GetOrCreate( ref _imageFlicker, () => new ColorFlicker<ImageColorAdapter>( new ImageColorAdapter( _uiImage ) ) );
 
             _initialColor = _uiImage.color;
 
-            if( 0 < _actGaugeElems.Count ) { return; }
+            if( 0 < _skillGaugeElems.Count ) { return; }
 
-            for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            for( int i = 0; i < Constants.SKILL_GAUGE_MAX; ++i )
             {
-                var elem = Instantiate( ActGaugeElemImage );
-                _actGaugeElems.Add( elem );
+                var elem = Instantiate( SkillGaugeElemImage );
+                _skillGaugeElems.Add( elem );
                 elem.gameObject.SetActive( false );
                 elem.transform.SetParent( PanelTransform, false );
             }

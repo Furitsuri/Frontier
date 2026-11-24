@@ -33,7 +33,7 @@ namespace Frontier.Battle
 
             // 前の敵のフェーズの終了時に予約した攻撃(予兆を伴うスキル)を、現在の盤面で実行出来るかを判定する。
             // 実行出来る敵はその攻撃を決定済みの行動とし(軍全体の調整役が最初に行動させる)、実行出来ない敵は一回休みとする
-            // MEMO : アクションゲージの回復(上記のターン開始時の処理)より後、かつ最初に行動する敵を求めるより前に行うこと
+            // MEMO : スキルゲージの回復(上記のターン開始時の処理)より後、かつ最初に行動する敵を求めるより前に行うこと
             foreach( var enemy in _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY ).ToList() )
             {
                 _telegraphPlanner.TryPrepareReservedAction( enemy );
@@ -41,7 +41,7 @@ namespace Frontier.Battle
 
             // 選択グリッドを、このフェーズで最初に行動する敵(軍全体の調整役が最初に選ぶ敵。行動する敵がいない場合は1番目の敵)のグリッド位置に合わせ、
             // カメラの注視対象もグリッドカーソルへ切り替える(前のフェーズの最後の行動で、注視対象がターゲットカーソルのまま終わっている場合があるため)
-            // MEMO : 最初に行動する敵を求める際にAIが行動を決定するため、アクションゲージの回復等(上記のターン開始時の処理)より後に行うこと
+            // MEMO : 最初に行動する敵を求める際にAIが行動を決定するため、スキルゲージの回復等(上記のターン開始時の処理)より後に行うこと
             if( 0 < _btlRtnCtrl.BtlCharaCdr.GetCharacterCount( CHARACTER_TAG.ENEMY ) )
             {
                 var enemies = _btlRtnCtrl.BtlCharaCdr.GetCharacterEnumerable( CHARACTER_TAG.ENEMY );

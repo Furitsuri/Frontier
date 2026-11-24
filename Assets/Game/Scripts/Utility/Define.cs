@@ -33,8 +33,8 @@ static public class Constants
     public const int MAX_LEVEL = 99;
     // Status.StatusPoint(未使用の成長ポイント)の最大値
     public const int STATUS_POINT_MAX = 999;
-    // キャラクターのアクションゲージの最大数
-    public const int ACTION_GAUGE_MAX = 10;
+    // キャラクターのスキルゲージの最大数
+    public const int SKILL_GAUGE_MAX = 10;
     // 1グリッドに隣接するグリッドの最大数
     public const int NEIGHBORING_GRID_MAX_NUM = 4;
     // 経路探索におけるルートインデックス最大保持数
@@ -74,8 +74,8 @@ static public class Constants
     public const int COEFFICIENT_RECRUIT_COST_HP = 1;
     public const int COEFFICIENT_RECRUIT_COST_ATK = 1;
     public const int COEFFICIENT_RECRUIT_COST_DEF = 1;
-    public const int COEFFICIENT_RECRUIT_COST_ACT_MAX   = 5;
-    public const int COEFFICIENT_RECRUIT_COST_ACT_RECOV = 8;
+    public const int COEFFICIENT_RECRUIT_COST_SKILL_GAUGE_MAX   = 5;
+    public const int COEFFICIENT_RECRUIT_COST_SKILL_GAUGE_RECOV = 8;
 
     // グリッドサイズ（カーソル・エンティティスケール共通の値域）
     public const int GRID_SIZE_MIN = 1;

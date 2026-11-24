@@ -53,10 +53,10 @@ MonoBehaviour:
     Def: 0
     moveRange: 0
     attackRange: 0
-    maxActionGauge: 0
-    curActionGauge: 0
-    recoveryActionGauge: 0
-    consumptionActionGauge: 0
+    maxSkillGauge: 0
+    curSkillGauge: 0
+    recoverySkillGauge: 0
+    consumptionSkillGauge: 0
     initGridIndex: 0
     initDir: 0
     equipSkills: 

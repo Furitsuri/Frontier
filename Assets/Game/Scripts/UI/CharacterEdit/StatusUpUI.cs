@@ -7,7 +7,7 @@ namespace Frontier.UI
     /// キャラクター編集画面から遷移するステータス上昇画面の見た目のみを担当するView。
     /// LevelUpUIを踏襲しつつ、レベル・所持ポイント・次のレベルに必要なポイントの表示は
     /// 現在/割り振り後のStatusPoint表示に置き換え、能力値もMaxHP/Atk/Defに加えて
-    /// MoveRange/JumpForce/MaxActionGaugeの6種を対象とする(各行に1ポイント上げるために
+    /// MoveRange/JumpForce/MaxSkillGaugeの6種を対象とする(各行に1ポイント上げるために
     /// 必要なStatusPointの表示を追加する)。
     /// 開閉・選択状態・割り振りの判断はStatusUpPresenterが行い、このクラスは表示指示を
     /// 受けて反映するだけに留める。
@@ -48,17 +48,17 @@ namespace Frontier.UI
         [SerializeField] private TextMeshProUGUI _jumpForceTentativeText;
         [SerializeField] private TextMeshProUGUI _jumpForceCostText;
 
-        [Header( "MaxActionGauge行(ラベル/現在値/仮の値/必要SP)" )]
-        [SerializeField] private TextMeshProUGUI _maxActionGaugeLabelText;
-        [SerializeField] private TextMeshProUGUI _maxActionGaugeCurrentText;
-        [SerializeField] private TextMeshProUGUI _maxActionGaugeTentativeText;
-        [SerializeField] private TextMeshProUGUI _maxActionGaugeCostText;
+        [Header( "MaxSkillGauge行(ラベル/現在値/仮の値/必要SP)" )]
+        [SerializeField] private TextMeshProUGUI _maxSkillGaugeLabelText;
+        [SerializeField] private TextMeshProUGUI _maxSkillGaugeCurrentText;
+        [SerializeField] private TextMeshProUGUI _maxSkillGaugeTentativeText;
+        [SerializeField] private TextMeshProUGUI _maxSkillGaugeCostText;
 
-        [Header( "RecoveryActionGauge行(ラベル/現在値/仮の値/必要SP)" )]
-        [SerializeField] private TextMeshProUGUI _recoveryActionGaugeLabelText;
-        [SerializeField] private TextMeshProUGUI _recoveryActionGaugeCurrentText;
-        [SerializeField] private TextMeshProUGUI _recoveryActionGaugeTentativeText;
-        [SerializeField] private TextMeshProUGUI _recoveryActionGaugeCostText;
+        [Header( "RecoverySkillGauge行(ラベル/現在値/仮の値/必要SP)" )]
+        [SerializeField] private TextMeshProUGUI _recoverySkillGaugeLabelText;
+        [SerializeField] private TextMeshProUGUI _recoverySkillGaugeCurrentText;
+        [SerializeField] private TextMeshProUGUI _recoverySkillGaugeTentativeText;
+        [SerializeField] private TextMeshProUGUI _recoverySkillGaugeCostText;
 
         [Header( "決定(OK)項目" )]
         [SerializeField] private TextMeshProUGUI _okLabelText;
@@ -92,11 +92,11 @@ namespace Frontier.UI
         public void SetJumpForceValues( int current, int tentative, int cost, bool insufficient, bool isMaxed )
             => SetRow( _jumpForceCurrentText, _jumpForceTentativeText, _jumpForceCostText, current, tentative, cost, insufficient, isMaxed );
 
-        public void SetMaxActionGaugeValues( int current, int tentative, int cost, bool insufficient, bool isMaxed )
-            => SetRow( _maxActionGaugeCurrentText, _maxActionGaugeTentativeText, _maxActionGaugeCostText, current, tentative, cost, insufficient, isMaxed );
+        public void SetMaxSkillGaugeValues( int current, int tentative, int cost, bool insufficient, bool isMaxed )
+            => SetRow( _maxSkillGaugeCurrentText, _maxSkillGaugeTentativeText, _maxSkillGaugeCostText, current, tentative, cost, insufficient, isMaxed );
 
-        public void SetRecoveryActionGaugeValues( int current, int tentative, int cost, bool insufficient, bool isMaxed )
-            => SetRow( _recoveryActionGaugeCurrentText, _recoveryActionGaugeTentativeText, _recoveryActionGaugeCostText, current, tentative, cost, insufficient, isMaxed );
+        public void SetRecoverySkillGaugeValues( int current, int tentative, int cost, bool insufficient, bool isMaxed )
+            => SetRow( _recoverySkillGaugeCurrentText, _recoverySkillGaugeTentativeText, _recoverySkillGaugeCostText, current, tentative, cost, insufficient, isMaxed );
 
         /// <summary>
         /// isMaxedがtrueの場合、既に最大値に達しているものとして必要SPの代わりに"(-)"を表示します。
@@ -111,7 +111,7 @@ namespace Frontier.UI
 
         /// <summary>
         /// 選択中の行を表示(ラベルの色)に反映します
-        /// (0:MaxHP, 1:Atk, 2:Def, 3:MoveRange, 4:JumpForce, 5:MaxActionGauge, 6:RecoveryActionGauge, 7:OK)。
+        /// (0:MaxHP, 1:Atk, 2:Def, 3:MoveRange, 4:JumpForce, 5:MaxSkillGauge, 6:RecoverySkillGauge, 7:OK)。
         /// </summary>
         public void SetSelectedRow( int rowIndex )
         {
@@ -120,8 +120,8 @@ namespace Frontier.UI
             _defLabelText.color                 = ( rowIndex == 2 ) ? _selectedColor : _normalColor;
             _moveRangeLabelText.color           = ( rowIndex == 3 ) ? _selectedColor : _normalColor;
             _jumpForceLabelText.color           = ( rowIndex == 4 ) ? _selectedColor : _normalColor;
-            _maxActionGaugeLabelText.color      = ( rowIndex == 5 ) ? _selectedColor : _normalColor;
-            _recoveryActionGaugeLabelText.color = ( rowIndex == 6 ) ? _selectedColor : _normalColor;
+            _maxSkillGaugeLabelText.color      = ( rowIndex == 5 ) ? _selectedColor : _normalColor;
+            _recoverySkillGaugeLabelText.color = ( rowIndex == 6 ) ? _selectedColor : _normalColor;
             _okLabelText.color                  = ( rowIndex == 7 ) ? _selectedColor : _normalColor;
         }
     }

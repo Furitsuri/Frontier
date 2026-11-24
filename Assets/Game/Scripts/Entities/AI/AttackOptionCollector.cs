@@ -77,19 +77,19 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 予兆を伴うスキル(ActiveSkillsData.IsTelegraphedSkill)による攻撃の候補を、現在の位置から使用する場合に限って列挙します。
         /// 次の自軍のフェーズで使用する予約の候補を求めるためのものであり、次のフェーズの開始時点の状態を想定して、
-        /// このフェーズでの行動の終了状態・スキルの使用済み状態は考慮せず、アクションゲージは指定の値(次のフェーズの開始時の見込み)で判定します。
+        /// このフェーズでの行動の終了状態・スキルの使用済み状態は考慮せず、スキルゲージは指定の値(次のフェーズの開始時の見込み)で判定します。
         /// 攻撃対象が1体以上存在する候補のみを列挙します(移動のみを目的とした使用や、攻撃対象のいない範囲への使用は行わないため)
         /// </summary>
         /// <param name="owner">スキルを使用するキャラクター</param>
-        /// <param name="expectedActionGauge">次のフェーズの開始時点で見込まれるアクションゲージ</param>
+        /// <param name="expectedSkillGauge">次のフェーズの開始時点で見込まれるスキルゲージ</param>
         /// <returns>攻撃の候補</returns>
-        public List<AttackOption> CollectTelegraphOptions( Character owner, int expectedActionGauge )
+        public List<AttackOption> CollectTelegraphOptions( Character owner, int expectedSkillGauge )
         {
             var options     = new List<AttackOption>();
             int standTileIdx = owner.BattleParams.TmpParam.CurrentTileIndex;
             var tileData    = new ActionableTileData();
 
-            foreach( var skillID in CollectTelegraphSkills( owner, expectedActionGauge ) )
+            foreach( var skillID in CollectTelegraphSkills( owner, expectedSkillGauge ) )
             {
                 EnumerateSkillAttack( owner, standTileIdx, skillID, tileData, option => { options.Add( option ); return false; } );
             }
@@ -98,7 +98,7 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 予兆を伴うスキルを1つ以上装備しているかを取得します(アクションゲージ等の使用条件は問いません)
+        /// 予兆を伴うスキルを1つ以上装備しているかを取得します(スキルゲージ等の使用条件は問いません)
         /// </summary>
         public static bool HasTelegraphSkill( Character owner )
         {
@@ -113,7 +113,7 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 予約した攻撃を、現在の盤面で実行出来るかを判定し、実行する場合の攻撃対象等を求め直します。
         /// 予約時と同じ位置・スキル・向き(または範囲の中心)で範囲を計算し直し、以下のいずれかに該当する場合は実行出来ないものとします。
-        ///   ・予約時の位置に立っていない / スキルを装備していない / アクションゲージが足りない
+        ///   ・予約時の位置に立っていない / スキルを装備していない / スキルゲージが足りない
         ///   ・(移動を伴うスキル)着地先が予約時から変わった(塞がれた等)
         ///   ・(一定範囲を対象とするスキル)範囲の中心が攻撃可能な範囲から外れた
         /// 予兆を示した以上は必ず実行するため、範囲内に攻撃対象が1体も存在しない場合も実行出来るものとします
@@ -132,7 +132,7 @@ namespace Frontier.Entities.Ai
 
             var tmpParam = owner.BattleParams.TmpParam;
             if( tmpParam.IsEndCommand[( int ) COMMAND_TAG.ATTACK] || tmpParam.IsEndCommand[( int ) COMMAND_TAG.SKILL] ) { return false; }
-            if( !CollectTelegraphSkills( owner, owner.GetStatusRef.CurActionGauge - tmpParam.ActGaugeConsumption ).Contains( reserved.SkillID ) ) { return false; }
+            if( !CollectTelegraphSkills( owner, owner.GetStatusRef.CurSkillGauge - tmpParam.SkillGaugeConsumption ).Contains( reserved.SkillID ) ) { return false; }
 
             var skillData   = ActiveSkillsData.data[( int ) reserved.SkillID];
             var tileData    = new ActionableTileData();
@@ -179,9 +179,9 @@ namespace Frontier.Entities.Ai
         }
 
         /// <summary>
-        /// 装備しているスキルのうち、予兆を伴うスキルで、指定のアクションゲージで使用出来るものを求めます
+        /// 装備しているスキルのうち、予兆を伴うスキルで、指定のスキルゲージで使用出来るものを求めます
         /// </summary>
-        private List<ActiveSkillID> CollectTelegraphSkills( Character owner, int actionGauge )
+        private List<ActiveSkillID> CollectTelegraphSkills( Character owner, int skillGauge )
         {
             var skillIDs = new List<ActiveSkillID>( EQUIPABLE_ACTIVE_SKILL_MAX_NUM );
 
@@ -190,7 +190,7 @@ namespace Frontier.Entities.Ai
                 ActiveSkillID skillID = owner.GetEquipSkillID( i );
                 if( !ActiveSkillsData.IsTelegraphedSkill( skillID ) ) { continue; }
                 if( ActiveSkillsData.data[( int ) skillID].SituationType != SituationType.ATTACK ) { continue; }
-                if( actionGauge < ActiveSkillsData.data[( int ) skillID].Cost ) { continue; }
+                if( skillGauge < ActiveSkillsData.data[( int ) skillID].Cost ) { continue; }
                 if( skillIDs.Contains( skillID ) ) { continue; }
 
                 skillIDs.Add( skillID );
@@ -294,7 +294,7 @@ namespace Frontier.Entities.Ai
 
         /// <summary>
         /// 装備しているスキルのうち、候補となるスキルを求めます。
-        /// 攻撃シチュエーションで使用する攻撃用のスキル(及び、指定時は回復スキル)で、未使用かつアクションゲージが足りているもののみが対象です。
+        /// 攻撃シチュエーションで使用する攻撃用のスキル(及び、指定時は回復スキル)で、未使用かつスキルゲージが足りているもののみが対象です。
         /// MEMO : サポートスキルは、AIでの評価の方法が未定のため対象外としています
         /// </summary>
         /// <param name="includeAllyTargetSkills">回復など自軍を対象とするスキルも含めるか</param>
@@ -317,7 +317,7 @@ namespace Frontier.Entities.Ai
                 if( skillData.SituationType != SituationType.ATTACK ||
                     !isTargetActionType ||
                     tmpParam.IsSkillsUsed[i] ||
-                    owner.GetStatusRef.CurActionGauge < tmpParam.ActGaugeConsumption + skillData.Cost )
+                    owner.GetStatusRef.CurSkillGauge < tmpParam.SkillGaugeConsumption + skillData.Cost )
                 {
                     continue;
                 }

@@ -13,7 +13,7 @@ namespace Frontier.Entities.Ai
     /// 予約:
     ///   予兆を伴うスキルを装備しているNPCのみを対象に、現在の位置から(移動せずに)使用した場合に攻撃対象が1体以上存在する候補を求め、
     ///   AIの評価で最も高いものを予約します(AttackTelegraphRegistryへ登録し、予兆を表示します)。候補が無ければ予約しません。
-    ///   アクションゲージは、次のフェーズの開始時の回復を見込んで判定します。
+    ///   スキルゲージは、次のフェーズの開始時の回復を見込んで判定します。
     ///
     /// 処理の負荷:
     ///   範囲の計算は現在の位置1か所のみから行うため、通常の行動の決定(移動先の全タイルから候補を列挙)と比べて軽量ですが、
@@ -184,7 +184,7 @@ namespace Frontier.Entities.Ai
             if( ai == null || !ai.CanTakeAction() ) { return false; }    // 待ち構えていてまだ行動を開始していない場合等は予約しない
 
             var status          = chara.GetStatusRef;
-            int expectedGauge   = System.Math.Min( status.CurActionGauge + status.recoveryActionGauge, status.EffectiveMaxActionGauge );
+            int expectedGauge   = System.Math.Min( status.CurSkillGauge + status.recoverySkillGauge, status.EffectiveMaxSkillGauge );
             var options         = _collector.CollectTelegraphOptions( chara, expectedGauge );
 
             return ai.TrySelectTelegraphOption( options, out selected );

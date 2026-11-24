@@ -20,8 +20,8 @@ namespace Frontier.Battle
         /// <summary>予約時点でのスキル切替フラグ（コピー）</summary>
         public bool[] AttackerSkillsToggledON { get; }
 
-        /// <summary>予約時点でのアクションゲージ消費量</summary>
-        public int ActGaugeConsumption { get; }
+        /// <summary>予約時点でのスキルゲージ消費量</summary>
+        public int SkillGaugeConsumption { get; }
 
         // --- スキル設定 ---
 
@@ -78,7 +78,7 @@ namespace Frontier.Battle
             CharacterKey            attackerKey,
             int                     attackerTileIndex,
             bool[]                  attackerSkillsToggledON,
-            int                     actGaugeConsumption,
+            int                     skillGaugeConsumption,
             ActiveSkillID                 useSkillID,
             TargetingMode           targetingMode,
             int                     currentRange,
@@ -96,7 +96,7 @@ namespace Frontier.Battle
             AttackerKey                   = attackerKey;
             AttackerTileIndex             = attackerTileIndex;
             AttackerSkillsToggledON       = ( bool[] ) attackerSkillsToggledON.Clone();
-            ActGaugeConsumption           = actGaugeConsumption;
+            SkillGaugeConsumption           = skillGaugeConsumption;
             UseSkillID                    = useSkillID;
             TargetingMode                 = targetingMode;
             CurrentRange                  = currentRange;
@@ -129,7 +129,7 @@ namespace Frontier.Battle
             var remainingTotalExpectedHpChange = TargetTotalExpectedHpChange.Where( pair => pair.Key != deadTargetKey ).ToDictionary( pair => pair.Key, pair => pair.Value );
 
             return new SkillActionReservationData(
-                AttackerKey, AttackerTileIndex, AttackerSkillsToggledON, ActGaugeConsumption,
+                AttackerKey, AttackerTileIndex, AttackerSkillsToggledON, SkillGaugeConsumption,
                 UseSkillID, TargetingMode, CurrentRange, MaxRange, IsAdjustableRange, IsMovingSkill,
                 remainingTargets, newFocusedKey,
                 AttackerExpectedHpChange, AttackerTotalExpectedHpChange, remainingExpectedHpChange, remainingTotalExpectedHpChange,

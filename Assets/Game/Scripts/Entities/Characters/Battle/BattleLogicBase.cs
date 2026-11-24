@@ -227,35 +227,35 @@ protected Character _opponent                                       = null;
         }
 
         /// <summary>
-        /// 自身の保留中のアクションゲージ消費量(TmpParam.ActGaugeConsumption)を消費します
+        /// 自身の保留中のスキルゲージ消費量(TmpParam.SkillGaugeConsumption)を消費します
         /// </summary>
-        public void ConsumeActionGauge()
+        public void ConsumeSkillGauge()
         {
-            ConsumeActionGauge( _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption );
+            ConsumeSkillGauge( _readOnlyOwner.Value.BattleParams.TmpParam.SkillGaugeConsumption );
         }
 
         /// <summary>
-        /// 指定した量のアクションゲージを消費させ、ゲージのUIの表示を更新します。
-        /// 予約データ等、TmpParam.ActGaugeConsumptionとは別に既に確定している消費量を反映したい場合は、
+        /// 指定した量のスキルゲージを消費させ、ゲージのUIの表示を更新します。
+        /// 予約データ等、TmpParam.SkillGaugeConsumptionとは別に既に確定している消費量を反映したい場合は、
         /// 直接この引数ありのオーバーロードを使用してください。
         /// </summary>
-        public void ConsumeActionGauge( int amount )
+        public void ConsumeSkillGauge( int amount )
         {
-            _readOnlyOwner.Value.GetStatusRef.CurActionGauge -= amount;
-            _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption = 0;
+            _readOnlyOwner.Value.GetStatusRef.CurSkillGauge -= amount;
+            _readOnlyOwner.Value.BattleParams.TmpParam.SkillGaugeConsumption = 0;
 
             _presenter.StopAllSkillBoxFlick( _paramWinType );
         }
 
         /// <summary>
-        /// スキルによるアクションゲージの消費を反映し、ゲージのUIの表示を更新します
+        /// スキルによるスキルゲージの消費を反映し、ゲージのUIの表示を更新します
         /// </summary>
-        public void ConsumeActionGaugeForSkill()
+        public void ConsumeSkillGaugeForSkill()
         {
             Character owner = _readOnlyOwner.Value;
 
-            owner.GetStatusRef.CurActionGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.ActGaugeConsumption;
-            owner.BattleParams.TmpParam.ActGaugeConsumption = 0;
+            owner.GetStatusRef.CurSkillGauge -= _readOnlyOwner.Value.BattleParams.TmpParam.SkillGaugeConsumption;
+            owner.BattleParams.TmpParam.SkillGaugeConsumption = 0;
 
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i )
             {
@@ -444,7 +444,7 @@ protected Character _opponent                                       = null;
                 }
             }
 
-            owner.BattleParams.TmpParam.ActGaugeConsumption = 0;
+            owner.BattleParams.TmpParam.SkillGaugeConsumption = 0;
         }
 
         /// <summary>

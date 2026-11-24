@@ -30,16 +30,16 @@ namespace Frontier.Battle
             {
                 attacker.BattleParams.TmpParam.IsSkillsToggledON[i] = data.AttackerSkillsToggledON[i];
             }
-            attacker.BattleParams.TmpParam.ActGaugeConsumption = data.ActGaugeConsumption;
+            attacker.BattleParams.TmpParam.SkillGaugeConsumption = data.SkillGaugeConsumption;
             attacker.BattleParams.TmpParam.IsSkillQueued        = false;
 
             attacker.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.QUEUED );
-            attacker.BattleLogic.ConsumeActionGaugeForSkill();
+            attacker.BattleLogic.ConsumeSkillGaugeForSkill();
 
             var target = data.FocusedTargetCharaKey.IsValid()
                 ? btlCharaCdr.GetCharacter( data.FocusedTargetCharaKey )
                 : null;
-            if( target != null ) { target.BattleLogic.ConsumeActionGauge(); }
+            if( target != null ) { target.BattleLogic.ConsumeSkillGauge(); }
 
             if( attacker.BattleLogic.RegistSelfBuffSequences() )
             {

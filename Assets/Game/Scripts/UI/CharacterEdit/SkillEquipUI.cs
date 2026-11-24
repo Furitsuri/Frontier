@@ -28,9 +28,9 @@ namespace Frontier.UI
     public class SkillEquipUI : UiMonoBehaviour
     {
         /// <summary>
-        /// アクションゲージ残量表示の目盛り1つ分の表示状態です。
+        /// スキルゲージ残量表示の目盛り1つ分の表示状態です。
         /// </summary>
-        public enum ActionGaugePipState
+        public enum SkillGaugePipState
         {
             Hidden = 0,     // 素のゲージ最大値を超える分(表示しない)
             Available,      // 残っているゲージ
@@ -60,10 +60,10 @@ namespace Frontier.UI
         [SerializeField] private GameObject _scrollUpIndicator;
         [SerializeField] private GameObject _scrollDownIndicator;
 
-        [Header( "アクションゲージの残量表示(目盛りはテンプレートをACTION_GAUGE_MAX個複製してコンテナへ並べる)" )]
-        [SerializeField] private RawImage _actGaugePipTemplate;
-        [SerializeField] private Transform _actGaugePipContainer;
-        [SerializeField] private TextMeshProUGUI _actGaugeValueText;
+        [Header( "スキルゲージの残量表示(目盛りはテンプレートをSKILL_GAUGE_MAX個複製してコンテナへ並べる)" )]
+        [SerializeField] private RawImage _skillGaugePipTemplate;
+        [SerializeField] private Transform _skillGaugePipContainer;
+        [SerializeField] private TextMeshProUGUI _skillGaugeValueText;
         [SerializeField] private Color _pipAvailableColor   = Color.green;
         [SerializeField] private Color _pipConsumedColor    = Color.gray;
         [SerializeField] private float _pipBlinkDuration    = 0.5f;
@@ -86,11 +86,11 @@ namespace Frontier.UI
         // 左側の行番号順(アクティブ枠→パッシブ枠)に並べた装備枠。要素数がそのままOK行の行番号になる
         private SkillBoxUI[] _leftRowBoxes = System.Array.Empty<SkillBoxUI>();
 
-        // 左側の各枠のスキルが使用可能か(アクションゲージ最大値の不足で使用出来ない場合はグレー表示する)
+        // 左側の各枠のスキルが使用可能か(スキルゲージ最大値の不足で使用出来ない場合はグレー表示する)
         private bool[] _leftRowUseable = System.Array.Empty<bool>();
 
-        private readonly List<RawImage> _actGaugePips = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
-        private readonly List<ActionGaugePipState> _actGaugePipStates = new List<ActionGaugePipState>( Constants.ACTION_GAUGE_MAX );
+        private readonly List<RawImage> _skillGaugePips = new List<RawImage>( Constants.SKILL_GAUGE_MAX );
+        private readonly List<SkillGaugePipState> _skillGaugePipStates = new List<SkillGaugePipState>( Constants.SKILL_GAUGE_MAX );
         private float _pipBlinkElapsedTime = 0f;
 
         public override void Setup()
@@ -107,25 +107,25 @@ namespace Frontier.UI
             foreach ( var box in _leftRowBoxes ) { box.Setup(); }
             foreach ( var box in _inventorySkillBoxes ) { box.Setup(); }
 
-            SetupActionGaugePips();
+            SetupSkillGaugePips();
             HideWarning();
 
             RefreshRemoveRowText();
             if ( _localization != null ) { _localization.OnLanguageChanged += RefreshRemoveRowText; }
         }
 
-        private void SetupActionGaugePips()
+        private void SetupSkillGaugePips()
         {
-            if ( _actGaugePipTemplate == null || _actGaugePipContainer == null || 0 < _actGaugePips.Count ) { return; }
+            if ( _skillGaugePipTemplate == null || _skillGaugePipContainer == null || 0 < _skillGaugePips.Count ) { return; }
 
-            _actGaugePipTemplate.gameObject.SetActive( false );
-            for ( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+            _skillGaugePipTemplate.gameObject.SetActive( false );
+            for ( int i = 0; i < Constants.SKILL_GAUGE_MAX; ++i )
             {
-                var pip = Instantiate( _actGaugePipTemplate, _actGaugePipContainer, false );
-                pip.name = $"{_actGaugePipTemplate.name}_{i}";
+                var pip = Instantiate( _skillGaugePipTemplate, _skillGaugePipContainer, false );
+                pip.name = $"{_skillGaugePipTemplate.name}_{i}";
                 pip.gameObject.SetActive( false );
-                _actGaugePips.Add( pip );
-                _actGaugePipStates.Add( ActionGaugePipState.Hidden );
+                _skillGaugePips.Add( pip );
+                _skillGaugePipStates.Add( SkillGaugePipState.Hidden );
             }
         }
 
@@ -135,14 +135,14 @@ namespace Frontier.UI
             _pipBlinkElapsedTime += Time.unscaledDeltaTime;
             float alpha = ( 0f < _pipBlinkDuration ) ? Mathf.PingPong( _pipBlinkElapsedTime / _pipBlinkDuration, 1.0f ) : 1.0f;
 
-            for ( int i = 0; i < _actGaugePips.Count; ++i )
+            for ( int i = 0; i < _skillGaugePips.Count; ++i )
             {
-                var state = _actGaugePipStates[i];
-                if ( state != ActionGaugePipState.WillConsume && state != ActionGaugePipState.WillRestore ) { continue; }
+                var state = _skillGaugePipStates[i];
+                if ( state != SkillGaugePipState.WillConsume && state != SkillGaugePipState.WillRestore ) { continue; }
 
-                var color = _actGaugePips[i].color;
+                var color = _skillGaugePips[i].color;
                 color.a = alpha;
-                _actGaugePips[i].color = color;
+                _skillGaugePips[i].color = color;
             }
         }
 
@@ -207,27 +207,27 @@ namespace Frontier.UI
         }
 
         /// <summary>
-        /// アクションゲージの残量表示を設定します。
+        /// スキルゲージの残量表示を設定します。
         /// </summary>
-        /// <param name="pipStates">目盛りごとの表示状態(ACTION_GAUGE_MAX個)</param>
+        /// <param name="pipStates">目盛りごとの表示状態(SKILL_GAUGE_MAX個)</param>
         /// <param name="remaining">残りゲージ(パッシブスキルの装備コストを差し引いた最大値)</param>
         /// <param name="baseMax">素のゲージ最大値</param>
-        public void SetActionGauge( IReadOnlyList<ActionGaugePipState> pipStates, int remaining, int baseMax )
+        public void SetSkillGauge( IReadOnlyList<SkillGaugePipState> pipStates, int remaining, int baseMax )
         {
-            for ( int i = 0; i < _actGaugePips.Count; ++i )
+            for ( int i = 0; i < _skillGaugePips.Count; ++i )
             {
-                var state = ( i < pipStates.Count ) ? pipStates[i] : ActionGaugePipState.Hidden;
-                _actGaugePipStates[i] = state;
+                var state = ( i < pipStates.Count ) ? pipStates[i] : SkillGaugePipState.Hidden;
+                _skillGaugePipStates[i] = state;
 
-                var pip = _actGaugePips[i];
-                pip.gameObject.SetActive( state != ActionGaugePipState.Hidden );
+                var pip = _skillGaugePips[i];
+                pip.gameObject.SetActive( state != SkillGaugePipState.Hidden );
                 // 消費されるゲージは残っている色で、戻るゲージは消費中の色で点滅させる
-                pip.color = ( state == ActionGaugePipState.Available || state == ActionGaugePipState.WillConsume ) ? _pipAvailableColor : _pipConsumedColor;
+                pip.color = ( state == SkillGaugePipState.Available || state == SkillGaugePipState.WillConsume ) ? _pipAvailableColor : _pipConsumedColor;
             }
 
             _pipBlinkElapsedTime = 0f;
 
-            if ( _actGaugeValueText != null ) { _actGaugeValueText.text = $"{remaining} / {baseMax}"; }
+            if ( _skillGaugeValueText != null ) { _skillGaugeValueText.text = $"{remaining} / {baseMax}"; }
         }
 
         /// <summary>

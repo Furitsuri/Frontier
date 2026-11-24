@@ -56,8 +56,8 @@ namespace Frontier.CharacterEdit
         // 右側の所持スキル一覧で、表示範囲の先頭にある一覧のindex(スクロール位置)
         private int _rightScrollTop = 0;
 
-        // アクションゲージ残量表示の目盛りごとの状態(使い回し用)
-        private readonly List<SkillEquipUI.ActionGaugePipState> _pipStates = new List<SkillEquipUI.ActionGaugePipState>( ACTION_GAUGE_MAX );
+        // スキルゲージ残量表示の目盛りごとの状態(使い回し用)
+        private readonly List<SkillEquipUI.SkillGaugePipState> _pipStates = new List<SkillEquipUI.SkillGaugePipState>( SKILL_GAUGE_MAX );
 
         [Inject]
         public SkillEquipPresenter( SkillEquipUI view, ILocalizationService localization )
@@ -106,7 +106,7 @@ namespace Frontier.CharacterEdit
             RefreshRightList();
             _view.SetRightSelectedRow( -2 );
             _view.HideExplanation();
-            RefreshActionGaugeAndWarning();
+            RefreshSkillGaugeAndWarning();
             _view.Show();
         }
 
@@ -302,9 +302,9 @@ namespace Frontier.CharacterEdit
             for ( int i = 0; i < _context.Active.SlotCount; ++i )
             {
                 _view.SetSlotSkill( i, _context.Active.GetEquippedSkill( i ) );
-                // パッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回る場合、
+                // パッシブスキルの装備コストでスキルゲージ最大値が使用コストを下回る場合、
                 // 及び選択出来ない空き枠(先頭以外の空き枠)はグレー表示にする
-                _view.SetSlotUseable( i, IsLeftRowSelectable( i ) && _context.IsActiveSlotWithinMaxActionGauge( i ) );
+                _view.SetSlotUseable( i, IsLeftRowSelectable( i ) && _context.IsActiveSlotWithinMaxSkillGauge( i ) );
             }
             for ( int i = 0; i < _context.Passive.SlotCount; ++i )
             {
@@ -406,25 +406,25 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// フォーカスの移動に応じて変わる表示(スキル説明文、アクションゲージ残量のプレビュー、警告)をまとめて更新します。
+        /// フォーカスの移動に応じて変わる表示(スキル説明文、スキルゲージ残量のプレビュー、警告)をまとめて更新します。
         /// </summary>
         private void RefreshFocusDisplay()
         {
             RefreshExplanation();
-            RefreshActionGaugeAndWarning();
+            RefreshSkillGaugeAndWarning();
         }
 
         /// <summary>
-        /// アクションゲージの残量表示と警告表示を更新します。
+        /// スキルゲージの残量表示と警告表示を更新します。
         /// 右側でパッシブスキル(または「スキルを外す」)にフォーカスしている場合は、確定した場合のゲージの増減を点滅で示し、
         /// 新たに使用出来なくなるアクティブスキルがあればその警告を表示します。アクティブスキルにフォーカスしている場合は、
         /// そのスキルの使用コストが現在のゲージ最大値を超えていれば警告を表示します。
         /// それ以外(左側の操作中等)は、仮の装備構成で既に使用出来ないアクティブスキルがあればその警告を表示します。
         /// </summary>
-        private void RefreshActionGaugeAndWarning()
+        private void RefreshSkillGaugeAndWarning()
         {
-            int baseMax     = _context.Character.GetStatusRef.maxActionGauge;
-            int maxNow      = _context.TentativeMaxActionGauge;
+            int baseMax     = _context.Character.GetStatusRef.maxSkillGauge;
+            int maxNow      = _context.TentativeMaxSkillGauge;
             int maxAfter    = maxNow;
             List<ActiveSkillID> becomingUnusable = null;
 
@@ -432,17 +432,17 @@ namespace Frontier.CharacterEdit
             {
                 if ( slotType == SkillSlotType.PASSIVE )
                 {
-                    maxAfter         = _context.GetMaxActionGaugeAfterPassiveChange( slotIndex, passiveID );
+                    maxAfter         = _context.GetMaxSkillGaugeAfterPassiveChange( slotIndex, passiveID );
                     becomingUnusable = _context.GetActiveSkillsBecomingUnusableByPassiveChange( slotIndex, passiveID );
                 }
-                else if ( ActiveSkillsData.IsValidSkill( activeID ) && !_context.IsActiveSkillWithinMaxActionGauge( activeID ) )
+                else if ( ActiveSkillsData.IsValidSkill( activeID ) && !_context.IsActiveSkillWithinMaxSkillGauge( activeID ) )
                 {
                     becomingUnusable = new List<ActiveSkillID> { activeID };
                 }
             }
 
-            BuildActionGaugePipStates( baseMax, maxNow, maxAfter );
-            _view.SetActionGauge( _pipStates, maxAfter, baseMax );
+            BuildSkillGaugePipStates( baseMax, maxNow, maxAfter );
+            _view.SetSkillGauge( _pipStates, maxAfter, baseMax );
 
             if ( becomingUnusable != null && 0 < becomingUnusable.Count )
             {
@@ -450,7 +450,7 @@ namespace Frontier.CharacterEdit
                 return;
             }
 
-            var unusable = _context.GetActiveSkillsOverMaxActionGauge();
+            var unusable = _context.GetActiveSkillsOverMaxSkillGauge();
             if ( 0 < unusable.Count )
             {
                 _view.ShowWarning( string.Format( _localization.Get( LocKey.UI_SKILL_EQUIP_WARNING_UNUSABLE ), JoinSkillNames( unusable ) ) );
@@ -483,21 +483,21 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// アクションゲージ残量表示の目盛りごとの状態を求めます。
+        /// スキルゲージ残量表示の目盛りごとの状態を求めます。
         /// 素の最大値までを表示し、変更後も残る分は「残り」、変更で減る分は「消費される(点滅)」、
         /// 変更で戻る分は「戻る(点滅)」、それ以外はパッシブスキルの装備コストとして「消費中」とします。
         /// </summary>
-        private void BuildActionGaugePipStates( int baseMax, int maxNow, int maxAfter )
+        private void BuildSkillGaugePipStates( int baseMax, int maxNow, int maxAfter )
         {
             _pipStates.Clear();
-            for ( int i = 0; i < ACTION_GAUGE_MAX; ++i )
+            for ( int i = 0; i < SKILL_GAUGE_MAX; ++i )
             {
-                SkillEquipUI.ActionGaugePipState state;
-                if ( baseMax <= i )                     { state = SkillEquipUI.ActionGaugePipState.Hidden; }
-                else if ( i < maxNow && i < maxAfter )  { state = SkillEquipUI.ActionGaugePipState.Available; }
-                else if ( i < maxNow )                  { state = SkillEquipUI.ActionGaugePipState.WillConsume; }
-                else if ( i < maxAfter )                { state = SkillEquipUI.ActionGaugePipState.WillRestore; }
-                else                                    { state = SkillEquipUI.ActionGaugePipState.Consumed; }
+                SkillEquipUI.SkillGaugePipState state;
+                if ( baseMax <= i )                     { state = SkillEquipUI.SkillGaugePipState.Hidden; }
+                else if ( i < maxNow && i < maxAfter )  { state = SkillEquipUI.SkillGaugePipState.Available; }
+                else if ( i < maxNow )                  { state = SkillEquipUI.SkillGaugePipState.WillConsume; }
+                else if ( i < maxAfter )                { state = SkillEquipUI.SkillGaugePipState.WillRestore; }
+                else                                    { state = SkillEquipUI.SkillGaugePipState.Consumed; }
 
                 _pipStates.Add( state );
             }

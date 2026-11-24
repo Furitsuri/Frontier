@@ -817,7 +817,7 @@ GameObject:
   - component: {fileID: 8187384839138482428}
   - component: {fileID: 839785689095534488}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1052,7 +1052,7 @@ GameObject:
   - component: {fileID: 2938336365838516680}
   - component: {fileID: 8585297740728427889}
   m_Layer: 0
-  m_Name: RecoveryActionGaugeCurrentText
+  m_Name: RecoverySkillGaugeCurrentText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1956,7 +1956,7 @@ GameObject:
   - component: {fileID: 2052419419979306117}
   - component: {fileID: 3022569539324971585}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2867,7 +2867,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 4807376920479468129}
   PanelTransform: {fileID: 8294128496541196780}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 2854107442406724003}
   CursorFrame: {fileID: 828007032573263984}
 --- !u!1 &1245163777492915532
@@ -3487,7 +3487,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ACT GAUGE
+  m_text: SKILL GAUGE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 0}
@@ -3702,7 +3702,7 @@ GameObject:
   - component: {fileID: 8393518407673340767}
   - component: {fileID: 7950761854769191404}
   m_Layer: 0
-  m_Name: RecoveryActionGaugeLabel
+  m_Name: RecoverySkillGaugeLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3755,7 +3755,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ACT RCV
+  m_text: SKL RCV
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -3920,7 +3920,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 9178755735583961926}
   PanelTransform: {fileID: 8128545850482617790}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 4687843123712672848}
   CursorFrame: {fileID: 7321415129423879256}
 --- !u!1 &1496433190637707325
@@ -4756,7 +4756,7 @@ GameObject:
   - component: {fileID: 1415004882922509478}
   - component: {fileID: 2126120094679632465}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5252,7 +5252,7 @@ GameObject:
   - component: {fileID: 6150412273710937082}
   - component: {fileID: 3166352513052803531}
   m_Layer: 0
-  m_Name: MaxActionGaugeLabel
+  m_Name: MaxSkillGaugeLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5305,7 +5305,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ACT
+  m_text: SKL
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -5841,7 +5841,7 @@ GameObject:
   - component: {fileID: 2723282138432034538}
   - component: {fileID: 1334302461980799401}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5943,7 +5943,7 @@ GameObject:
   - component: {fileID: 4550599129994026881}
   - component: {fileID: 8159762583907622910}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6178,7 +6178,7 @@ GameObject:
   - component: {fileID: 6912207369922841941}
   - component: {fileID: 3535483021599206098}
   m_Layer: 5
-  m_Name: ActGaugeElemTemplate
+  m_Name: SkillGaugeElemTemplate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6972,7 +6972,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 2940201829837764863}
   PanelTransform: {fileID: 8312920168724482893}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 2142896994512742400}
   CursorFrame: {fileID: 8040110504826441066}
 --- !u!1 &2395101436801180193
@@ -7405,7 +7405,7 @@ GameObject:
   - component: {fileID: 2755625087854702747}
   - component: {fileID: 7047846647682357207}
   m_Layer: 0
-  m_Name: MaxActionGaugeCostText
+  m_Name: MaxSkillGaugeCostText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7621,7 +7621,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 1386952362154334729}
   PanelTransform: {fileID: 2203288290753298319}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 812303564471845995}
   CursorFrame: {fileID: 0}
 --- !u!1 &2587943030996024095
@@ -8256,7 +8256,7 @@ GameObject:
   - component: {fileID: 1691791754629313688}
   - component: {fileID: 2262518525962238908}
   m_Layer: 0
-  m_Name: MaxActionGaugeCurrentText
+  m_Name: MaxSkillGaugeCurrentText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8505,12 +8505,12 @@ MonoBehaviour:
   TMPAddAtkValue: {fileID: 0}
   TMPAddDefValue: {fileID: 0}
   TMPDiffHPValue: {fileID: 4197540450445189268}
-  TMPActRecoveryValue: {fileID: 2661912162805150974}
+  TMPSkillGaugeRecoveryValue: {fileID: 2661912162805150974}
   TMPExpValue: {fileID: 4551588073373098967}
   TMPStatusPointValue: {fileID: 4982010076084073560}
   TargetImage: {fileID: 2090931921496524952}
   IncomingTargetImage: {fileID: 3202298840281548091}
-  ActGaugeElemImage: {fileID: 3535483021599206098}
+  SkillGaugeElemImage: {fileID: 3535483021599206098}
   PanelTransform: {fileID: 2983388332771959607}
   SkillBoxes:
   - {fileID: 8742984251600569275}
@@ -8875,7 +8875,7 @@ GameObject:
   - component: {fileID: 8257405602023316593}
   - component: {fileID: 5040294574858742131}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10027,7 +10027,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 4059243145419959994}
   PanelTransform: {fileID: 7884657794211039892}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 1997864195339123815}
   CursorFrame: {fileID: 8791847155801967344}
 --- !u!1 &3932356120031841047
@@ -10519,7 +10519,7 @@ GameObject:
   - component: {fileID: 4338722276013486774}
   - component: {fileID: 7801202272247673104}
   m_Layer: 0
-  m_Name: RecoveryActionGaugeTentativeText
+  m_Name: RecoverySkillGaugeTentativeText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10869,7 +10869,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 4241937264213559161}
   PanelTransform: {fileID: 6976818143335332494}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 3635039152215508929}
   CursorFrame: {fileID: 0}
 --- !u!1 &4364340807667891568
@@ -11044,7 +11044,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 105280146196244650}
   PanelTransform: {fileID: 6692452400400565710}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 4615175397882685142}
   CursorFrame: {fileID: 7517331159031608219}
 --- !u!1 &4503684451082882973
@@ -11328,7 +11328,7 @@ GameObject:
   - component: {fileID: 3338070010677242935}
   - component: {fileID: 905748532936542231}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11698,7 +11698,7 @@ GameObject:
   - component: {fileID: 6049550256741579832}
   - component: {fileID: 6251021664598245803}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11800,7 +11800,7 @@ GameObject:
   - component: {fileID: 5074638450137859644}
   - component: {fileID: 9061132742479758345}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11984,7 +11984,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 8956273964007939220}
   PanelTransform: {fileID: 7789425133484099720}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 9100988225444744540}
   CursorFrame: {fileID: 4085069565615748772}
 --- !u!1 &4901713721930467181
@@ -12216,7 +12216,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 3474501873369852176}
   PanelTransform: {fileID: 2622728755203677021}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 4083176978358629704}
   CursorFrame: {fileID: 3741793501315617438}
 --- !u!1 &5051471058679589411
@@ -13017,7 +13017,7 @@ GameObject:
   - component: {fileID: 6475869783869830295}
   - component: {fileID: 1854854914175425651}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13947,7 +13947,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 6900529467204028152}
   PanelTransform: {fileID: 3415571899114481561}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 6956374461265046684}
   CursorFrame: {fileID: 2485293166475373759}
 --- !u!1 &5728629367813608615
@@ -14925,7 +14925,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 900390247947562789}
   PanelTransform: {fileID: 8553007204357108104}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 4434468319620357692}
   CursorFrame: {fileID: 5763728032505450890}
 --- !u!1 &6299900041568148735
@@ -15291,7 +15291,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 8764613831027336631}
   PanelTransform: {fileID: 380167276851223709}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 8933475830938240682}
   CursorFrame: {fileID: 8046955472919114651}
 --- !u!1 &6389550580952304887
@@ -15992,7 +15992,7 @@ GameObject:
   - component: {fileID: 3788277870664729938}
   - component: {fileID: 7981980334059716494}
   m_Layer: 0
-  m_Name: RecoveryActionGaugeCostText
+  m_Name: RecoverySkillGaugeCostText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16699,7 +16699,7 @@ GameObject:
   - component: {fileID: 7086763269242671733}
   - component: {fileID: 4958981460096375000}
   m_Layer: 0
-  m_Name: ActGaugePanel
+  m_Name: SkillGaugePanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16861,7 +16861,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 6311201333412351533}
   PanelTransform: {fileID: 2350134535422839408}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 160448303576350407}
   CursorFrame: {fileID: 1961020390549720659}
 --- !u!1 &7321415129423879256
@@ -16951,7 +16951,7 @@ GameObject:
   - component: {fileID: 8730631598893683037}
   - component: {fileID: 656335719684644950}
   m_Layer: 0
-  m_Name: MaxActionGaugeTentativeText
+  m_Name: MaxSkillGaugeTentativeText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17085,7 +17085,7 @@ GameObject:
   - component: {fileID: 2845981612471662224}
   - component: {fileID: 4762233207844029212}
   m_Layer: 0
-  m_Name: ActLabel
+  m_Name: SkillGaugeLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17138,7 +17138,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ACT
+  m_text: SKL
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -17788,7 +17788,7 @@ GameObject:
   - component: {fileID: 3152474437297036799}
   - component: {fileID: 7031347119980716033}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18023,7 +18023,7 @@ GameObject:
   - component: {fileID: 6718391423687207902}
   - component: {fileID: 1985777624096855610}
   m_Layer: 0
-  m_Name: MaxActionGaugeArrow
+  m_Name: MaxSkillGaugeArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18498,7 +18498,7 @@ GameObject:
   - component: {fileID: 6152350826178386092}
   - component: {fileID: 6254661411519519918}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18734,7 +18734,7 @@ GameObject:
   - component: {fileID: 8843389593375409124}
   - component: {fileID: 8215584476279559265}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18906,9 +18906,9 @@ MonoBehaviour:
   - {fileID: 1929240619641690503}
   _scrollUpIndicator: {fileID: 8487186278163110191}
   _scrollDownIndicator: {fileID: 2262340923862599196}
-  _actGaugePipTemplate: {fileID: 1869665011640847686}
-  _actGaugePipContainer: {fileID: 6728320520122727524}
-  _actGaugeValueText: {fileID: 8884776636405879862}
+  _skillGaugePipTemplate: {fileID: 1869665011640847686}
+  _skillGaugePipContainer: {fileID: 6728320520122727524}
+  _skillGaugeValueText: {fileID: 8884776636405879862}
   _pipAvailableColor: {r: 0, g: 1, b: 0, a: 1}
   _pipConsumedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   _pipBlinkDuration: 0.5
@@ -19016,7 +19016,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 2460012876139124820}
   PanelTransform: {fileID: 8999965348213277052}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 622378291334930083}
   CursorFrame: {fileID: 7569343710312261067}
 --- !u!1 &8019576692855986253
@@ -20002,7 +20002,7 @@ GameObject:
   - component: {fileID: 160846432882805216}
   - component: {fileID: 3093940885442055035}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20261,7 +20261,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 8428799854357662017}
   PanelTransform: {fileID: 7631331005377557281}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 2838830504301083503}
   CursorFrame: {fileID: 5615941547044685400}
 --- !u!1 &8573308530749830722
@@ -20760,7 +20760,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 2155460900067556561}
   PanelTransform: {fileID: 7014058194077445004}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 6779561804988498728}
   CursorFrame: {fileID: 0}
 --- !u!1 &8689879251839235966
@@ -20913,14 +20913,14 @@ MonoBehaviour:
   _jumpForceCurrentText: {fileID: 2184683670475148377}
   _jumpForceTentativeText: {fileID: 936673096387918906}
   _jumpForceCostText: {fileID: 1644378437099752829}
-  _maxActionGaugeLabelText: {fileID: 3166352513052803531}
-  _maxActionGaugeCurrentText: {fileID: 2262518525962238908}
-  _maxActionGaugeTentativeText: {fileID: 656335719684644950}
-  _maxActionGaugeCostText: {fileID: 7047846647682357207}
-  _recoveryActionGaugeLabelText: {fileID: 7950761854769191404}
-  _recoveryActionGaugeCurrentText: {fileID: 8585297740728427889}
-  _recoveryActionGaugeTentativeText: {fileID: 7801202272247673104}
-  _recoveryActionGaugeCostText: {fileID: 7981980334059716494}
+  _maxSkillGaugeLabelText: {fileID: 3166352513052803531}
+  _maxSkillGaugeCurrentText: {fileID: 2262518525962238908}
+  _maxSkillGaugeTentativeText: {fileID: 656335719684644950}
+  _maxSkillGaugeCostText: {fileID: 7047846647682357207}
+  _recoverySkillGaugeLabelText: {fileID: 7950761854769191404}
+  _recoverySkillGaugeCurrentText: {fileID: 8585297740728427889}
+  _recoverySkillGaugeTentativeText: {fileID: 7801202272247673104}
+  _recoverySkillGaugeCostText: {fileID: 7981980334059716494}
   _okLabelText: {fileID: 4492230889662673165}
   _normalColor: {r: 1, g: 1, b: 1, a: 1}
   _selectedColor: {r: 1, g: 0, b: 0, a: 1}
@@ -20938,7 +20938,7 @@ GameObject:
   - component: {fileID: 4742572527026921142}
   - component: {fileID: 451499882849252741}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21121,7 +21121,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 38000860434289916}
   PanelTransform: {fileID: 6114389214507101515}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 5616084254816285491}
   CursorFrame: {fileID: 0}
 --- !u!1 &8760047554368042308
@@ -21137,7 +21137,7 @@ GameObject:
   - component: {fileID: 4366501147279966807}
   - component: {fileID: 4679377283867761981}
   m_Layer: 0
-  m_Name: ActGaugePanel
+  m_Name: SkillGaugePanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21913,7 +21913,7 @@ GameObject:
   - component: {fileID: 6124979867071959850}
   - component: {fileID: 5169139797851042438}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22015,7 +22015,7 @@ GameObject:
   - component: {fileID: 1525486933682278742}
   - component: {fileID: 203470010043693516}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22200,7 +22200,7 @@ MonoBehaviour:
   _textKey: 0
   TMPSkillName: {fileID: 1930203724575305007}
   PanelTransform: {fileID: 9152513657800708983}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 2109335598126811450}
   CursorFrame: {fileID: 1865237325557121284}
 --- !u!1 &9087995455482727200
@@ -22216,7 +22216,7 @@ GameObject:
   - component: {fileID: 8847174920476263953}
   - component: {fileID: 6590911040799151022}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22585,7 +22585,7 @@ GameObject:
   - component: {fileID: 6839004964664252853}
   - component: {fileID: 7335946988644822424}
   m_Layer: 0
-  m_Name: RecoveryActionGaugeArrow
+  m_Name: RecoverySkillGaugeArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

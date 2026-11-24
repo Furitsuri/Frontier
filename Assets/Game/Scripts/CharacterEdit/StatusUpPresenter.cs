@@ -7,7 +7,7 @@ namespace Frontier.CharacterEdit
     /// <summary>
     /// ステータス上昇画面のViewへの窓口となるPresenter。
     /// 割り振り状態の実データ(仮のStatusPoint・能力値)はStatusUpContext(StatusUpHandlerが所有)が持ち、
-    /// このクラスはメニューカーソル(MaxHP/Atk/Def/MoveRange/JumpForce/MaxActionGauge/RecoveryActionGauge/OKの
+    /// このクラスはメニューカーソル(MaxHP/Atk/Def/MoveRange/JumpForce/MaxSkillGauge/RecoverySkillGauge/OKの
     /// 8項目、その場限りの添字)をCommandListで管理しつつ、画面のどこに何を表示するかの判断
     /// (不足時の赤色表示等)を行う。Viewは指示された内容をそのまま適用するだけの薄い層とする。
     /// </summary>
@@ -20,8 +20,8 @@ namespace Frontier.CharacterEdit
             Def,
             MoveRange,
             JumpForce,
-            MaxActionGauge,
-            RecoveryActionGauge,
+            MaxSkillGauge,
+            RecoverySkillGauge,
             OK,
 
             NUM,
@@ -104,8 +104,8 @@ namespace Frontier.CharacterEdit
                 case Row.Def:            return StatusUpContext.StatKind.Def;
                 case Row.MoveRange:      return StatusUpContext.StatKind.MoveRange;
                 case Row.JumpForce:      return StatusUpContext.StatKind.JumpForce;
-                case Row.MaxActionGauge:      return StatusUpContext.StatKind.MaxActionGauge;
-                case Row.RecoveryActionGauge: return StatusUpContext.StatKind.RecoveryActionGauge;
+                case Row.MaxSkillGauge:      return StatusUpContext.StatKind.MaxSkillGauge;
+                case Row.RecoverySkillGauge: return StatusUpContext.StatKind.RecoverySkillGauge;
                 default:                      return StatusUpContext.StatKind.MaxHP;
             }
         }
@@ -121,8 +121,8 @@ namespace Frontier.CharacterEdit
             RefreshRow( status, StatusUpContext.StatKind.Def,            _view.SetDefValues );
             RefreshRow( status, StatusUpContext.StatKind.MoveRange,      _view.SetMoveRangeValues );
             RefreshRow( status, StatusUpContext.StatKind.JumpForce,      _view.SetJumpForceValues );
-            RefreshRow( status, StatusUpContext.StatKind.MaxActionGauge,      _view.SetMaxActionGaugeValues );
-            RefreshRow( status, StatusUpContext.StatKind.RecoveryActionGauge, _view.SetRecoveryActionGaugeValues );
+            RefreshRow( status, StatusUpContext.StatKind.MaxSkillGauge,      _view.SetMaxSkillGaugeValues );
+            RefreshRow( status, StatusUpContext.StatKind.RecoverySkillGauge, _view.SetRecoverySkillGaugeValues );
         }
 
         private delegate void SetRowValues( int current, int tentative, int cost, bool insufficient, bool isMaxed );

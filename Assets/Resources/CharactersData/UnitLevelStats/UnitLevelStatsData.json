@@ -2,16 +2,16 @@
   "Stats": [
     {
       "StatusDatas" : [
-        { "status": { "MaxHP": 20, "Atk": 5, "Def": 3, "moveRange": 4, "jumpForce": 3, "attackRange": 1, "maxActionGauge": 2, "recoveryActionGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
-        { "status": { "MaxHP": 22, "Atk": 6, "Def": 3, "moveRange": 4, "jumpForce": 3, "attackRange": 1, "maxActionGauge": 2, "recoveryActionGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
-        { "status": { "MaxHP": 25, "Atk": 7, "Def": 4, "moveRange": 4, "jumpForce": 3, "attackRange": 1, "maxActionGauge": 2, "recoveryActionGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } }
+        { "status": { "MaxHP": 20, "Atk": 5, "Def": 3, "moveRange": 4, "jumpForce": 3, "attackRange": 1, "maxSkillGauge": 2, "recoverySkillGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
+        { "status": { "MaxHP": 22, "Atk": 6, "Def": 3, "moveRange": 4, "jumpForce": 3, "attackRange": 1, "maxSkillGauge": 2, "recoverySkillGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
+        { "status": { "MaxHP": 25, "Atk": 7, "Def": 4, "moveRange": 4, "jumpForce": 3, "attackRange": 1, "maxSkillGauge": 2, "recoverySkillGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } }
       ]
     },
     {
       "StatusDatas" : [
-        { "status": { "MaxHP": 18, "Atk": 4, "Def": 2, "moveRange": 4, "jumpForce": 4, "attackRange": 2, "maxActionGauge": 3, "recoveryActionGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
-        { "status": { "MaxHP": 20, "Atk": 5, "Def": 3, "moveRange": 4, "jumpForce": 4, "attackRange": 2, "maxActionGauge": 3, "recoveryActionGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
-        { "status": { "MaxHP": 23, "Atk": 6, "Def": 3, "moveRange": 4, "jumpForce": 4, "attackRange": 2, "maxActionGauge": 3, "recoveryActionGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } }
+        { "status": { "MaxHP": 18, "Atk": 4, "Def": 2, "moveRange": 4, "jumpForce": 4, "attackRange": 2, "maxSkillGauge": 3, "recoverySkillGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
+        { "status": { "MaxHP": 20, "Atk": 5, "Def": 3, "moveRange": 4, "jumpForce": 4, "attackRange": 2, "maxSkillGauge": 3, "recoverySkillGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } },
+        { "status": { "MaxHP": 23, "Atk": 6, "Def": 3, "moveRange": 4, "jumpForce": 4, "attackRange": 2, "maxSkillGauge": 3, "recoverySkillGauge": 1, "EquipSkills" : [ -1 , -1, -1, -1 ] } }
       ]
     }
   ]

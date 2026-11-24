@@ -56,39 +56,39 @@ namespace Frontier.CharacterEdit
         public int TentativePassiveSkillsCost => PassiveSkillsData.GetTotalCost( Passive.Slots );
 
         /// <summary>
-        /// 仮の装備構成における、実際のアクションゲージ最大値です(素の最大値 - パッシブスキルの装備コストの合計)。
+        /// 仮の装備構成における、実際のスキルゲージ最大値です(素の最大値 - パッシブスキルの装備コストの合計)。
         /// </summary>
-        public int TentativeMaxActionGauge => Status.CalcEffectiveMaxActionGauge( Character.GetStatusRef.maxActionGauge, TentativePassiveSkillsCost );
+        public int TentativeMaxSkillGauge => Status.CalcEffectiveMaxSkillGauge( Character.GetStatusRef.maxSkillGauge, TentativePassiveSkillsCost );
 
         /// <summary>
-        /// 指定枠のパッシブスキルを指定スキルへ差し替えた(NONEの場合は外した)場合の、実際のアクションゲージ最大値を返します。
+        /// 指定枠のパッシブスキルを指定スキルへ差し替えた(NONEの場合は外した)場合の、実際のスキルゲージ最大値を返します。
         /// </summary>
-        public int GetMaxActionGaugeAfterPassiveChange( int slotIndex, PassiveSkillID newSkillID )
+        public int GetMaxSkillGaugeAfterPassiveChange( int slotIndex, PassiveSkillID newSkillID )
         {
             int cost = TentativePassiveSkillsCost
                 - PassiveSkillsData.GetCost( Passive.GetEquippedSkill( slotIndex ) )
                 + PassiveSkillsData.GetCost( newSkillID );
 
-            return Status.CalcEffectiveMaxActionGauge( Character.GetStatusRef.maxActionGauge, cost );
+            return Status.CalcEffectiveMaxSkillGauge( Character.GetStatusRef.maxSkillGauge, cost );
         }
 
         /// <summary>
-        /// 仮の装備構成で、指定枠のアクティブスキルがアクションゲージ最大値の範囲内で使用出来るかを返します(未装備枠はtrue)。
+        /// 仮の装備構成で、指定枠のアクティブスキルがスキルゲージ最大値の範囲内で使用出来るかを返します(未装備枠はtrue)。
         /// </summary>
-        public bool IsActiveSlotWithinMaxActionGauge( int slotIndex )
+        public bool IsActiveSlotWithinMaxSkillGauge( int slotIndex )
         {
-            return ActiveSkillsData.IsCostWithinMaxActionGauge( Active.GetEquippedSkill( slotIndex ), TentativeMaxActionGauge );
+            return ActiveSkillsData.IsCostWithinMaxSkillGauge( Active.GetEquippedSkill( slotIndex ), TentativeMaxSkillGauge );
         }
 
         /// <summary>
-        /// 仮の装備構成で、アクションゲージ最大値が使用コストを下回っていて使用出来ないアクティブスキルを返します。
+        /// 仮の装備構成で、スキルゲージ最大値が使用コストを下回っていて使用出来ないアクティブスキルを返します。
         /// </summary>
-        public List<ActiveSkillID> GetActiveSkillsOverMaxActionGauge()
+        public List<ActiveSkillID> GetActiveSkillsOverMaxSkillGauge()
         {
             var result = new List<ActiveSkillID>();
             for ( int i = 0; i < Active.SlotCount; ++i )
             {
-                if ( !IsActiveSlotWithinMaxActionGauge( i ) ) { result.Add( Active.GetEquippedSkill( i ) ); }
+                if ( !IsActiveSlotWithinMaxSkillGauge( i ) ) { result.Add( Active.GetEquippedSkill( i ) ); }
             }
 
             return result;
@@ -99,13 +99,13 @@ namespace Frontier.CharacterEdit
         /// </summary>
         public List<ActiveSkillID> GetActiveSkillsBecomingUnusableByPassiveChange( int slotIndex, PassiveSkillID newSkillID )
         {
-            int maxAfter = GetMaxActionGaugeAfterPassiveChange( slotIndex, newSkillID );
+            int maxAfter = GetMaxSkillGaugeAfterPassiveChange( slotIndex, newSkillID );
 
             var result = new List<ActiveSkillID>();
             for ( int i = 0; i < Active.SlotCount; ++i )
             {
                 var skillID = Active.GetEquippedSkill( i );
-                if ( IsActiveSlotWithinMaxActionGauge( i ) && !ActiveSkillsData.IsCostWithinMaxActionGauge( skillID, maxAfter ) )
+                if ( IsActiveSlotWithinMaxSkillGauge( i ) && !ActiveSkillsData.IsCostWithinMaxSkillGauge( skillID, maxAfter ) )
                 {
                     result.Add( skillID );
                 }
@@ -115,16 +115,16 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 指定アクティブスキルが、仮の装備構成でのアクションゲージ最大値の範囲内で使用出来るかを返します。
+        /// 指定アクティブスキルが、仮の装備構成でのスキルゲージ最大値の範囲内で使用出来るかを返します。
         /// </summary>
-        public bool IsActiveSkillWithinMaxActionGauge( ActiveSkillID skillID )
+        public bool IsActiveSkillWithinMaxSkillGauge( ActiveSkillID skillID )
         {
-            return ActiveSkillsData.IsCostWithinMaxActionGauge( skillID, TentativeMaxActionGauge );
+            return ActiveSkillsData.IsCostWithinMaxSkillGauge( skillID, TentativeMaxSkillGauge );
         }
 
         /// <summary>
         /// 指定パッシブスキルを指定枠へ装備出来るかを返します。SkillEquipSlotGroup.CanEquipの条件に加え、
-        /// 装備コストの合計が素のアクションゲージ最大値を超える場合は装備出来ません(枠に既に入っているスキルのコストは差し替えとして差し引きます)。
+        /// 装備コストの合計が素のスキルゲージ最大値を超える場合は装備出来ません(枠に既に入っているスキルのコストは差し替えとして差し引きます)。
         /// </summary>
         public bool CanEquipPassive( int slotIndex, PassiveSkillID skillID )
         {
@@ -134,7 +134,7 @@ namespace Frontier.CharacterEdit
                 - PassiveSkillsData.GetCost( Passive.GetEquippedSkill( slotIndex ) )
                 + PassiveSkillsData.GetCost( skillID );
 
-            return costAfterEquip <= Character.GetStatusRef.maxActionGauge;
+            return costAfterEquip <= Character.GetStatusRef.maxSkillGauge;
         }
 
         /// <summary>
@@ -156,13 +156,13 @@ namespace Frontier.CharacterEdit
             status.EnsureSkillSlots();
 
             // 装備変更前にゲージが満タンだった場合は、変更後も満タンとする(外した分だけ最大値と共に現在値も戻す)
-            bool wasGaugeFull = status.EffectiveMaxActionGauge <= status.CurActionGauge;
+            bool wasGaugeFull = status.EffectiveMaxSkillGauge <= status.CurSkillGauge;
 
             Active.CommitTo( status.EquipSkills, ( id, delta ) => _userDomain.AddSkill( id, delta ) );
             Passive.CommitTo( status.PassiveSkills, ( id, delta ) => _userDomain.AddSkill( id, delta ) );
 
-            int maxActionGauge      = status.EffectiveMaxActionGauge;
-            status.CurActionGauge   = wasGaugeFull ? maxActionGauge : UnityEngine.Mathf.Min( status.CurActionGauge, maxActionGauge );
+            int maxSkillGauge      = status.EffectiveMaxSkillGauge;
+            status.CurSkillGauge   = wasGaugeFull ? maxSkillGauge : UnityEngine.Mathf.Min( status.CurSkillGauge, maxSkillGauge );
 
             Character.RefreshModifiedParam();
             Character.RefreshUseableSkillFlags( SituationType.NONE, 0xff );

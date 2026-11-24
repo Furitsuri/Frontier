@@ -3,7 +3,7 @@
     "UI_STATUS_HP": "体力",
     "UI_STATUS_MOVE": "移動力",
     "UI_STATUS_JUMP": "ジャンプ力",
-    "UI_STATUS_ACTION": "アクション",
+    "UI_STATUS_SKILL_GAUGE": "スキルゲージ",
     "UI_STATUS_ATTACK": "攻撃力",
     "UI_STATUS_DEFFENCE": "防御力",
     "UI_CMD_ATTACK": "攻撃",
@@ -42,6 +42,6 @@
     "UI_FACILITY_SHOP": "ショップ",
     "UI_BATTLE_GUIDE_SELECT_GROUP_MEMBERS": "一緒に移動させるキャラクターを選んでください",
     "UI_CONFIRM_BLOCK_UNDO_MOVE_MESSAGE": "{0}が移動前の位置に戻せなくなります。\nよろしいですか？",
-    "UI_SKILL_EQUIP_WARNING_BECOME_UNUSABLE": "装備すると、アクションゲージが足りず次のスキルが使用できなくなります: {0}",
-    "UI_SKILL_EQUIP_WARNING_UNUSABLE": "アクションゲージが足りないため、次のスキルは使用できません: {0}"
+    "UI_SKILL_EQUIP_WARNING_BECOME_UNUSABLE": "装備すると、スキルゲージが足りず次のスキルが使用できなくなります: {0}",
+    "UI_SKILL_EQUIP_WARNING_UNUSABLE": "スキルゲージが足りないため、次のスキルは使用できません: {0}"
 }

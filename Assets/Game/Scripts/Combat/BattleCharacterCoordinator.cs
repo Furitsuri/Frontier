@@ -217,7 +217,7 @@ namespace Frontier.Battle
                 var attacker = GetPlayer( reservation.AttackerKey );
                 if( attacker == null ) { continue; }
 
-                attacker.BattleLogic.ConsumeActionGauge( reservation.ActGaugeConsumption );
+                attacker.BattleLogic.ConsumeSkillGauge( reservation.SkillGaugeConsumption );
 
                 attacker.SetGhostActive( false );
                 attacker.BattleLogic.ActionRangeCtrl.ClearMoveDirectionArrows();
@@ -735,7 +735,7 @@ namespace Frontier.Battle
             foreach( var c in _characterDict.GetCharacterList( tag ) )
             {
                 c.BattleLogic.RemoveBuffEffect();
-                c.GetStatusRef.RecoveryActionGauge();
+                c.GetStatusRef.RecoverySkillGauge();
             }
         }
 

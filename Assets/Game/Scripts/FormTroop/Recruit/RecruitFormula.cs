@@ -24,8 +24,8 @@ namespace Frontier.FormTroop
             int hpRandValue         = Random.Range( -3, 4 );
             int atkRandValue        = Random.Range( -2, 3 );
             int defRandValue        = Random.Range( -2, 3 );
-            int actMaxRandValue     = Random.Range( 4, 6 );
-            int actRecovRandValue   = Random.Range( 0, 2 );
+            int skillGaugeMaxRandValue     = Random.Range( 4, 6 );
+            int skillGaugeRecovRandValue   = Random.Range( 0, 2 );
 
             CharacterDeployData statusData = unitLevelStats.Stats[unitTypeIndex].StatusDatas[levelIndex];
             // MEMO : CharacterDeployDataは構造体だが、内部の装備スキル配列は参照型のため、コピー元(unitLevelStats)と配列を共有してしまう。
@@ -43,15 +43,15 @@ namespace Frontier.FormTroop
             statusData.status.CurHP = statusData.status.MaxHP;
             statusData.status.Atk += atkRandValue;
             statusData.status.Def += defRandValue;
-            statusData.status.maxActionGauge += actMaxRandValue;
-            statusData.status.CurActionGauge = statusData.status.maxActionGauge;
-            statusData.status.recoveryActionGauge += actRecovRandValue;
+            statusData.status.maxSkillGauge += skillGaugeMaxRandValue;
+            statusData.status.CurSkillGauge = statusData.status.maxSkillGauge;
+            statusData.status.recoverySkillGauge += skillGaugeRecovRandValue;
             statusData.status.EquipSkills[0] = ActiveSkillID.PARRY;           // TODO : 仮で0を入れているが、スキルの種類が決まり次第、ユニットタイプやレベルに応じてスキルを割り当てること
             statusData.status.EquipSkills[1] = ActiveSkillID.DOUBLE_STRIKE;   // 同上
             statusData.status.EquipSkills[2] = ActiveSkillID.DASH_SLASH;      // 同上
             statusData.status.EquipSkills[3] = ActiveSkillID.JUMP_SLASH;      // 同上
 
-            int employmentCost = CalcurateEmploymentCost( unitTypeIndex, statusData.status.Level, hpRandValue, atkRandValue, defRandValue, actMaxRandValue, actRecovRandValue );
+            int employmentCost = CalcurateEmploymentCost( unitTypeIndex, statusData.status.Level, hpRandValue, atkRandValue, defRandValue, skillGaugeMaxRandValue, skillGaugeRecovRandValue );
 
             return ( unitTypeIndex, employmentCost, statusData );
         }
@@ -59,7 +59,7 @@ namespace Frontier.FormTroop
         /// <summary>
         /// キャラクターの雇用コストを、
         /// ユニットタイプとレベル、及び、
-        /// 各パラメータに加算される乱数値(HP, 攻撃力, 防御力, アクションゲージ最大値及び回復値)
+        /// 各パラメータに加算される乱数値(HP, 攻撃力, 防御力, スキルゲージ最大値及び回復値)
         /// から計算します
         /// </summary>
         /// <param name="unitType"></param>
@@ -67,10 +67,10 @@ namespace Frontier.FormTroop
         /// <param name="hp"></param>
         /// <param name="atk"></param>
         /// <param name="def"></param>
-        /// <param name="actMax"></param>
-        /// <param name="actRecov"></param>
+        /// <param name="skillGaugeMax"></param>
+        /// <param name="skillGaugeRecov"></param>
         /// <returns></returns>
-        static private int CalcurateEmploymentCost( int unitType, int level, int hp, int atk, int def, int actMax, int actRecov )
+        static private int CalcurateEmploymentCost( int unitType, int level, int hp, int atk, int def, int skillGaugeMax, int skillGaugeRecov )
         {
             // TODO : 仮で5としているが、ユニットタイプの総数が決まり次第、定数に変更し、尚且つファイル読込からコストを取得すること
             int[] unitCost = new int[5] { 10, 13, 15, 18, 20 }; 
@@ -81,8 +81,8 @@ namespace Frontier.FormTroop
                 hp * COEFFICIENT_RECRUIT_COST_HP + 
                 atk * COEFFICIENT_RECRUIT_COST_ATK + 
                 def * COEFFICIENT_RECRUIT_COST_DEF + 
-                actMax * COEFFICIENT_RECRUIT_COST_ACT_MAX + 
-                actRecov * COEFFICIENT_RECRUIT_COST_ACT_RECOV;
+                skillGaugeMax * COEFFICIENT_RECRUIT_COST_SKILL_GAUGE_MAX + 
+                skillGaugeRecov * COEFFICIENT_RECRUIT_COST_SKILL_GAUGE_RECOV;
         }
 
         static private int SelectBalancedTypeIndex( List<CharacterCandidate> candidatedMercenaries )

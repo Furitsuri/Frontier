@@ -94,7 +94,7 @@ MonoBehaviour:
   _textKey: 
   TMPSkillName: {fileID: 5351298087402773170}
   PanelTransform: {fileID: 549397382508739451}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   CurtainImage: {fileID: 4250480515538126555}
   CursorFrame: {fileID: 0}
 --- !u!1 &2734051027321270113
@@ -110,7 +110,7 @@ GameObject:
   - component: {fileID: 8713269223610538684}
   - component: {fileID: 3086883907725798799}
   m_Layer: 5
-  m_Name: ActGaugeCost
+  m_Name: SkillGaugeCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

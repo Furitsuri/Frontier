@@ -17,7 +17,7 @@ namespace Frontier.UI
         [SerializeField] private StatusItem TMPHP;
         [SerializeField] private StatusItem TMPMove;
         [SerializeField] private StatusItem TMPJump;
-        [SerializeField] private StatusItem TMPAction;
+        [SerializeField] private StatusItem TMPSkillGauge;
         [SerializeField] private StatusItem TMPAttack;
         [SerializeField] private StatusItem TMPDeffence;
         [SerializeField] private RawImage _characterCameraImage = null;
@@ -57,7 +57,7 @@ namespace Frontier.UI
             TMPHP.SetValueText( $"{charaParam.CurHP} / {charaParam.MaxHP}" );
             TMPMove.SetValueText( charaParam.moveRange.ToString() );
             TMPJump.SetValueText( charaParam.jumpForce.ToString() );
-            TMPAction.SetValueText( charaParam.EffectiveMaxActionGauge.ToString() );
+            TMPSkillGauge.SetValueText( charaParam.EffectiveMaxSkillGauge.ToString() );
             TMPAttack.SetValueText( charaParam.Atk.ToString() );
             TMPAttack.SetBonusText( FormatBonusValue( chara.BattleParams.ModifiedParam.Atk ) );
             TMPDeffence.SetValueText( charaParam.Def.ToString() );
@@ -75,9 +75,9 @@ namespace Frontier.UI
                 var skillID = chara.GetEquipSkillID( i );
                 _isSkillEquipped[i] = Frontier.Combat.ActiveSkillsData.IsValidSkill( skillID );
                 SkillBoxes[i].ApplySkillForEditing( skillID );
-                // 未装備の空枠、及びパッシブスキルの装備コストでアクションゲージ最大値が使用コストを下回り使用出来ないスキルは、
+                // 未装備の空枠、及びパッシブスキルの装備コストでスキルゲージ最大値が使用コストを下回り使用出来ないスキルは、
                 // グレー表示にする(戦闘中のゲージ不足と同じ表現)
-                SkillBoxes[i].SetUseableOrNot( _isSkillEquipped[i] && charaParam.IsEquipSkillWithinMaxActionGauge( i ) );
+                SkillBoxes[i].SetUseableOrNot( _isSkillEquipped[i] && charaParam.IsEquipSkillWithinMaxSkillGauge( i ) );
             }
 
             // パッシブスキルの表示(未装備の枠も、文字・コスト表示の無い空枠として表示する)
@@ -176,7 +176,7 @@ namespace Frontier.UI
             _statusValueItemList.Add( TMPHP );
             _statusValueItemList.Add( TMPMove );
             _statusValueItemList.Add( TMPJump );
-            _statusValueItemList.Add( TMPAction );
+            _statusValueItemList.Add( TMPSkillGauge );
             _statusValueItemList.Add( TMPAttack );
             _statusValueItemList.Add( TMPDeffence );
 

@@ -289,7 +289,7 @@ namespace Frontier.Battle
 
         /// <summary>
         /// 指定側パラメータパネルの全SkillBoxUIの明滅を停止します。
-        /// アクションゲージ消費時(BattleLogicBase.ConsumeActionGauge)に呼ばれます。
+        /// スキルゲージ消費時(BattleLogicBase.ConsumeSkillGauge)に呼ばれます。
         /// </summary>
         public void StopAllSkillBoxFlick( ParameterWindowType winType )
         {

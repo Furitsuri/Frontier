@@ -43,8 +43,8 @@ namespace Frontier.DebugTools.StageEditor
             public int EnemyMoveRange     = 4;
             public int EnemyJumpForce     = 2;
             public int EnemyAtkRange      = 1;
-            public int EnemyActGaugeMax   = 100;
-            public int EnemyActRecovery   = 10;
+            public int EnemySkillGaugeMax   = 100;
+            public int EnemySkillGaugeRecovery   = 10;
             public int EnemyPrefab        = 0;
             public int EnemyThinkType     = 0;
             public int EnemyInterceptType    = ( int ) InterceptType.SOLO;  // ThinkType が INTERCEPT の場合のみ有効
@@ -192,7 +192,7 @@ namespace Frontier.DebugTools.StageEditor
             public static readonly string[] EnemyParamNames =
             {
                 "Prefab", "Level", "MaxHP", "Atk", "Def", "MoveRange",
-                "JumpForce", "AtkRange", "ActGaugeMax", "ActRecovery",
+                "JumpForce", "AtkRange", "SkillGaugeMax", "SkillGaugeRecovery",
                 "ThinkType", "InterceptType", "InterceptGroupId", "InitGridIndex", "InitDir",
                 "Skill1", "Skill2", "Skill3", "Skill4"
             };
@@ -209,8 +209,8 @@ namespace Frontier.DebugTools.StageEditor
                     ( int ) EditorEnemyParamTag.MOVE_RANGE     => EnemyMoveRange,
                     ( int ) EditorEnemyParamTag.JUMP_FORCE     => EnemyJumpForce,
                     ( int ) EditorEnemyParamTag.ATK_RANGE      => EnemyAtkRange,
-                    ( int ) EditorEnemyParamTag.ACT_GAUGE_MAX  => EnemyActGaugeMax,
-                    ( int ) EditorEnemyParamTag.ACT_RECOVERY   => EnemyActRecovery,
+                    ( int ) EditorEnemyParamTag.SKILL_GAUGE_MAX  => EnemySkillGaugeMax,
+                    ( int ) EditorEnemyParamTag.SKILL_GAUGE_RECOVERY   => EnemySkillGaugeRecovery,
                     ( int ) EditorEnemyParamTag.THINK_TYPE     => EnemyThinkType,
                     ( int ) EditorEnemyParamTag.INTERCEPT_TYPE => EnemyInterceptType,
                     ( int ) EditorEnemyParamTag.INTERCEPT_GROUP_ID => EnemyInterceptGroupId,
@@ -534,8 +534,8 @@ namespace Frontier.DebugTools.StageEditor
             status.moveRange            = _refParams.EnemyMoveRange;
             status.jumpForce            = _refParams.EnemyJumpForce;
             status.attackRange          = _refParams.EnemyAtkRange;
-            status.CurActionGauge       = status.maxActionGauge = Math.Min( _refParams.EnemyActGaugeMax, Constants.ACTION_GAUGE_MAX );
-            status.recoveryActionGauge  = _refParams.EnemyActRecovery;
+            status.CurSkillGauge       = status.maxSkillGauge = Math.Min( _refParams.EnemySkillGaugeMax, Constants.SKILL_GAUGE_MAX );
+            status.recoverySkillGauge  = _refParams.EnemySkillGaugeRecovery;
             status.PrefabIndex          = _refParams.EnemyPrefab;
             status.EquipSkills          = new ActiveSkillID[] { ( ActiveSkillID ) _refParams.EnemySkill1, ( ActiveSkillID ) _refParams.EnemySkill2, ( ActiveSkillID ) _refParams.EnemySkill3, ( ActiveSkillID ) _refParams.EnemySkill4 };
 
@@ -587,8 +587,8 @@ namespace Frontier.DebugTools.StageEditor
             data.status.moveRange           = _refParams.EnemyMoveRange;
             data.status.jumpForce           = _refParams.EnemyJumpForce;
             data.status.attackRange         = _refParams.EnemyAtkRange;
-            data.status.CurActionGauge      = data.status.maxActionGauge = Math.Min( _refParams.EnemyActGaugeMax, Constants.ACTION_GAUGE_MAX );
-            data.status.recoveryActionGauge = _refParams.EnemyActRecovery;
+            data.status.CurSkillGauge      = data.status.maxSkillGauge = Math.Min( _refParams.EnemySkillGaugeMax, Constants.SKILL_GAUGE_MAX );
+            data.status.recoverySkillGauge = _refParams.EnemySkillGaugeRecovery;
             data.status.PrefabIndex         = _refParams.EnemyPrefab;
             data.ThinkType     = _refParams.EnemyThinkType;
             data.InterceptType    = _refParams.EnemyInterceptType;
@@ -658,8 +658,8 @@ namespace Frontier.DebugTools.StageEditor
             _refParams.EnemyMoveRange     = data.status.moveRange;
             _refParams.EnemyJumpForce     = data.status.jumpForce;
             _refParams.EnemyAtkRange      = data.status.attackRange;
-            _refParams.EnemyActGaugeMax   = data.status.maxActionGauge;
-            _refParams.EnemyActRecovery   = data.status.recoveryActionGauge;
+            _refParams.EnemySkillGaugeMax   = data.status.maxSkillGauge;
+            _refParams.EnemySkillGaugeRecovery   = data.status.recoverySkillGauge;
             _refParams.EnemyPrefab        = data.status.PrefabIndex;
             _refParams.EnemyThinkType     = data.ThinkType;
             _refParams.EnemyInterceptType    = data.InterceptType;

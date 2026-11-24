@@ -211,9 +211,9 @@ namespace Frontier.Battle
             // (暫定移動の表示が攻撃演出中も残り続けないようにするため)
             _plOwner.ClearCommandHistory();
 
-            _plOwner.BattleLogic.ConsumeActionGauge();  // キャラクターのアクションゲージを消費
+            _plOwner.BattleLogic.ConsumeSkillGauge();  // キャラクターのスキルゲージを消費
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
-            _targetCharacter.BattleLogic.ConsumeActionGauge();
+            _targetCharacter.BattleLogic.ConsumeSkillGauge();
 
             FinalizeTargetSelection( ParameterWindowType.Left, false );                   // カメラズームの解除は攻撃シーケンス側で行う
             UnregisterInputCodes( Hash.GetStableHash( GetType().Name ) );                 // 現在の入力コードを登録解除

@@ -532,9 +532,9 @@ namespace Frontier.Battle
             // カーソルハイライト(黄色の外枠フレーム)を解除する(元の位置に戻った後も枠が残ったままにならないようにするため)
             _presenter.SetSkillBoxCursorIndex( ParameterWindowType.Left, -1 );
 
-            _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+            _plOwner.BattleLogic.ConsumeSkillGaugeForSkill();
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
-            _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();
+            _targetSelector.TargetCharacter?.BattleLogic.ConsumeSkillGauge();
 
             FinalizeTargetSelection( ParameterWindowType.Left );
 
@@ -568,7 +568,7 @@ namespace Frontier.Battle
                 _plOwner.GetCharacterKey(),
                 _plOwner.BattleParams.TmpParam.CurrentTileIndex,
                 _plOwner.BattleParams.TmpParam.IsSkillsToggledON,
-                _plOwner.BattleParams.TmpParam.ActGaugeConsumption,
+                _plOwner.BattleParams.TmpParam.SkillGaugeConsumption,
                 _useSkillID,
                 _targetSelector.TargetingMode,
                 _targetSelector.CurrentRange,
@@ -648,9 +648,9 @@ namespace Frontier.Battle
                 entries.Add( _sequenceFcd.CreateCooperativeEntry( data.UseSkillID, attacker, target, new List<CharacterKey>( data.AttackTargetCharaKeys ) ) );
             }
 
-            _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+            _plOwner.BattleLogic.ConsumeSkillGaugeForSkill();
             _plOwner.BattleLogic.ActionRangeCtrl.ActionableRangeRdr.ClearTileMeshesByType( TileMapType.ATTACKABLE | TileMapType.TARGETABLE | TileMapType.QUEUED );
-            _targetSelector.TargetCharacter?.BattleLogic.ConsumeActionGauge();
+            _targetSelector.TargetCharacter?.BattleLogic.ConsumeSkillGauge();
 
             FinalizeTargetSelection( ParameterWindowType.Left );
 

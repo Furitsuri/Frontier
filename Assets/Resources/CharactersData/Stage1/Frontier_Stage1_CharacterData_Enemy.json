@@ -11,8 +11,8 @@
                 "moveRange": 2,
                 "jumpForce": 2,
                 "attackRange": 1,
-                "maxActionGauge": 0,
-                "recoveryActionGauge": 0,
+                "maxSkillGauge": 0,
+                "recoverySkillGauge": 0,
                 "EquipSkills": [
                     -1,
                     -1,
@@ -35,8 +35,8 @@
                 "moveRange": 2,
                 "jumpForce": 2,
                 "attackRange": 1,
-                "maxActionGauge": 0,
-                "recoveryActionGauge": 0,
+                "maxSkillGauge": 0,
+                "recoverySkillGauge": 0,
                 "EquipSkills": [
                     -1,
                     -1,
@@ -59,8 +59,8 @@
                 "moveRange": 2,
                 "jumpForce": 2,
                 "attackRange": 1,
-                "maxActionGauge": 0,
-                "recoveryActionGauge": 0,
+                "maxSkillGauge": 0,
+                "recoverySkillGauge": 0,
                 "EquipSkills": [
                     -1,
                     -1,
@@ -83,8 +83,8 @@
                 "moveRange": 3,
                 "jumpForce": 3,
                 "attackRange": 1,
-                "maxActionGauge": 2,
-                "recoveryActionGauge": 1,
+                "maxSkillGauge": 2,
+                "recoverySkillGauge": 1,
                 "EquipSkills": [
                     1,
                     -1,

@@ -208,17 +208,17 @@ namespace Frontier.Battle
         }
 
         /// <summary>
-        /// スキルを実行します(アクションゲージを消費し、スキルのシーケンスを登録します)
+        /// スキルを実行します(スキルゲージを消費し、スキルのシーケンスを登録します)
         /// </summary>
         private void ExecuteSkill()
         {
-            // キャラクターのアクションゲージを消費
-            _attackCharacter.BattleLogic.ConsumeActionGaugeForSkill();
+            // キャラクターのスキルゲージを消費
+            _attackCharacter.BattleLogic.ConsumeSkillGaugeForSkill();
             // 防御スキルを選択したプレイヤーは、使用分のゲージを消費し、使用ONのスキルを使用済みへ移す(通常攻撃(EmAttackState)と同様)
-            foreach( var defender in _interveningPlayers ) { defender.BattleLogic.ConsumeActionGaugeForSkill(); }
+            foreach( var defender in _interveningPlayers ) { defender.BattleLogic.ConsumeSkillGaugeForSkill(); }
             if( _targetCharacter != null && !( _targetCharacter is Player mainDefender && _interveningPlayers.Contains( mainDefender ) ) )
             {
-                _targetCharacter.BattleLogic.ConsumeActionGauge();
+                _targetCharacter.BattleLogic.ConsumeSkillGauge();
             }
 
             FinalizeTargetSelection( ParameterWindowType.Right );

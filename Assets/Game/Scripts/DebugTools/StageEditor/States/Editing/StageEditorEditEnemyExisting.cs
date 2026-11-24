@@ -41,7 +41,7 @@ namespace Frontier.DebugTools.StageEditor
         private int     _snapCursorTileIndex;
         private int     _snapLevel, _snapMaxHP, _snapAtk, _snapDef;
         private int     _snapMoveRange, _snapJumpForce, _snapAtkRange;
-        private int     _snapActGaugeMax, _snapActRecovery, _snapPrefab;
+        private int     _snapSkillGaugeMax, _snapSkillGaugeRecovery, _snapPrefab;
         private int     _snapThinkType, _snapInitGridIndex, _snapInitDir;
         private int     _snapInterceptType, _snapInterceptGroupId;
         private int     _snapSkill1, _snapSkill2, _snapSkill3, _snapSkill4;
@@ -70,8 +70,8 @@ namespace Frontier.DebugTools.StageEditor
             _snapMoveRange     = _refParams.EnemyMoveRange;
             _snapJumpForce     = _refParams.EnemyJumpForce;
             _snapAtkRange      = _refParams.EnemyAtkRange;
-            _snapActGaugeMax   = _refParams.EnemyActGaugeMax;
-            _snapActRecovery   = _refParams.EnemyActRecovery;
+            _snapSkillGaugeMax   = _refParams.EnemySkillGaugeMax;
+            _snapSkillGaugeRecovery   = _refParams.EnemySkillGaugeRecovery;
             _snapPrefab        = _refParams.EnemyPrefab;
             _snapThinkType     = _refParams.EnemyThinkType;
             _snapInterceptType    = _refParams.EnemyInterceptType;
@@ -102,8 +102,8 @@ namespace Frontier.DebugTools.StageEditor
                 _refParams.EnemyMoveRange    = _snapMoveRange;
                 _refParams.EnemyJumpForce    = _snapJumpForce;
                 _refParams.EnemyAtkRange     = _snapAtkRange;
-                _refParams.EnemyActGaugeMax  = _snapActGaugeMax;
-                _refParams.EnemyActRecovery  = _snapActRecovery;
+                _refParams.EnemySkillGaugeMax  = _snapSkillGaugeMax;
+                _refParams.EnemySkillGaugeRecovery  = _snapSkillGaugeRecovery;
                 _refParams.EnemyPrefab       = _snapPrefab;
                 _refParams.EnemyThinkType    = _snapThinkType;
                 _refParams.EnemyInterceptType    = _snapInterceptType;
@@ -167,8 +167,8 @@ namespace Frontier.DebugTools.StageEditor
             _params.Add( new ParamDescriptor { Name = "MoveRange",    Min = 1,            Max = 10,           Getter = () => _refParams.EnemyMoveRange,    Setter = v => _refParams.EnemyMoveRange    = v } );
             _params.Add( new ParamDescriptor { Name = "JumpForce",    Min = 0,            Max = 10,           Getter = () => _refParams.EnemyJumpForce,    Setter = v => _refParams.EnemyJumpForce    = v } );
             _params.Add( new ParamDescriptor { Name = "AtkRange",     Min = 1,            Max = 10,           Getter = () => _refParams.EnemyAtkRange,     Setter = v => _refParams.EnemyAtkRange     = v } );
-            _params.Add( new ParamDescriptor { Name = "ActGaugeMax",  Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyActGaugeMax,  Setter = v => _refParams.EnemyActGaugeMax  = v } );
-            _params.Add( new ParamDescriptor { Name = "ActRecovery",  Min = 0,            Max = 999,          Getter = () => _refParams.EnemyActRecovery,  Setter = v => _refParams.EnemyActRecovery  = v } );
+            _params.Add( new ParamDescriptor { Name = "SkillGaugeMax",  Min = 1,            Max = 9999,         Getter = () => _refParams.EnemySkillGaugeMax,  Setter = v => _refParams.EnemySkillGaugeMax  = v } );
+            _params.Add( new ParamDescriptor { Name = "SkillGaugeRecovery",  Min = 0,            Max = 999,          Getter = () => _refParams.EnemySkillGaugeRecovery,  Setter = v => _refParams.EnemySkillGaugeRecovery  = v } );
             _params.Add( new ParamDescriptor { Name = "ThinkType", Min = 0, Max = ( int ) ThinkingType.NUM - 1, Getter = () => _refParams.EnemyThinkType, Setter = v => _refParams.EnemyThinkType = v } );
             // InterceptType / InterceptGroupId は ThinkType が INTERCEPT の場合のみ有効(無効な間は PREV/NEXT で読み飛ばされる)
             _params.Add( new ParamDescriptor { Name = "InterceptType", Min = 0, Max = ( int ) InterceptType.NUM - 1, Getter = () => _refParams.EnemyInterceptType, Setter = v => _refParams.EnemyInterceptType = v } );

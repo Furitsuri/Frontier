@@ -14,12 +14,12 @@ namespace Frontier.Entities
         public int Def;
         // 移動レンジ
         public int moveRange;
-        // アクションゲージ回復値
-        public int recoveryActionGauge;
+        // スキルゲージ回復値
+        public int recoverySkillGauge;
 
         public void Init()
         {
-            Atk = 0; Def = 0; moveRange = 0; recoveryActionGauge = 0;
+            Atk = 0; Def = 0; moveRange = 0; recoverySkillGauge = 0;
         }
 
         public void Reset()

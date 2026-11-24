@@ -17,7 +17,7 @@ namespace Frontier.Combat
         public struct Data
         {
             public string Name;                 // スキル名
-            public int Cost;                    // 装備コスト(装備中はこの分だけアクションゲージの最大値が減少する)
+            public int Cost;                    // 装備コスト(装備中はこの分だけスキルゲージの最大値が減少する)
             public PassiveEffect Effect;        // 効果(種類と強化段階ごとの効果量)
             public LocKey ExplainTextKey;       // スキル説明文のテキストキー
         }

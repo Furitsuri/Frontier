@@ -73,7 +73,7 @@ namespace Frontier.CharacterEdit
         }
 
         /// <summary>
-        /// 上下でメニューカーソル(MaxHP/Atk/Def/MoveRange/JumpForce/MaxActionGauge/OK)を移動し、
+        /// 上下でメニューカーソル(MaxHP/Atk/Def/MoveRange/JumpForce/MaxSkillGauge/OK)を移動し、
         /// 左右で選択中の能力値の仮割り振りを増減します(OK選択中は左右とも無効)。
         /// </summary>
         private bool AcceptDirection( InputContext context )
@@ -121,8 +121,8 @@ namespace Frontier.CharacterEdit
             status.Def            += _context.GetAllocated( StatusUpContext.StatKind.Def );
             status.moveRange           += _context.GetAllocated( StatusUpContext.StatKind.MoveRange );
             status.jumpForce           += _context.GetAllocated( StatusUpContext.StatKind.JumpForce );
-            status.maxActionGauge      += _context.GetAllocated( StatusUpContext.StatKind.MaxActionGauge );
-            status.recoveryActionGauge += _context.GetAllocated( StatusUpContext.StatKind.RecoveryActionGauge );
+            status.maxSkillGauge      += _context.GetAllocated( StatusUpContext.StatKind.MaxSkillGauge );
+            status.recoverySkillGauge += _context.GetAllocated( StatusUpContext.StatKind.RecoverySkillGauge );
 
             status.AddStatusPoint( _context.TentativeStatusPoint - _context.OriginalStatusPoint );
         }

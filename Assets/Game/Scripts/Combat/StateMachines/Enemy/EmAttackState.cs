@@ -189,11 +189,11 @@ namespace Frontier.Battle
         /// </summary>
         private void ExecuteAttack()
         {
-            // キャラクターのアクションゲージを消費
-            _attackCharacter.BattleLogic.ConsumeActionGauge();
+            // キャラクターのスキルゲージを消費
+            _attackCharacter.BattleLogic.ConsumeSkillGauge();
             // 防御側は防御スキルの使用分を消費し、使用ONのスキルを使用済みへ移す
             // (攻撃シーケンス中のガードモーション・パリィ等の判定は使用済みのスキルを参照するため)
-            _targetCharacter.BattleLogic.ConsumeActionGaugeForSkill();
+            _targetCharacter.BattleLogic.ConsumeSkillGaugeForSkill();
 
             FinalizeTargetSelection( ParameterWindowType.Right, false );          // カメラズームの解除は攻撃シーケンス側で行う
             _btlRtnCtrl.BtlCharaCdr.ClearAllTileMeshes();               // タイルメッシュの描画をすべてクリア

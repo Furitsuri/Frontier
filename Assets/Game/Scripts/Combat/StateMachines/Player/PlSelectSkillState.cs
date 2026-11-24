@@ -232,7 +232,7 @@ namespace Frontier.Battle
 
                 // スキル使用フラグが立っているスキルの消費分だけ行動ゲージを減らす
                 // (一時保存パラメータに保存することで、キャンセルによって消費前に戻せる形に)
-                _plOwner.BattleLogic.ConsumeActionGaugeForSkill();
+                _plOwner.BattleLogic.ConsumeSkillGaugeForSkill();
                 // スキルを使用した場合は以前の状態には戻せないため、行動履歴をクリア
                 _plOwner.ClearCommandHistory();
             }

@@ -36,7 +36,30 @@ public class UserSaveHandler : ISlotSaveHandler<UserSaveData>
         if ( !Exists( slot ) ) return null;
 
         string json = File.ReadAllText( _filePaths[slot] );
-        return JsonUtility.FromJson<UserSaveData>( json );
+        return JsonUtility.FromJson<UserSaveData>( MigrateLegacyKeys( json ) );
+    }
+
+    // 旧名称(アクションゲージ)で保存されたセーブデータのキーと、現行名称(スキルゲージ)のキーの対応表。
+    // JsonUtilityはキー名が一致しないフィールドを読み飛ばす(値が0になる)ため、読み込み前にキー名を置き換える。
+    private static readonly (string Legacy, string Current)[] LegacyKeyRenames =
+    {
+        ( "\"maxActionGauge\":",      "\"maxSkillGauge\":" ),
+        ( "\"CurActionGauge\":",      "\"CurSkillGauge\":" ),
+        ( "\"recoveryActionGauge\":", "\"recoverySkillGauge\":" ),
+    };
+
+    /// <summary>
+    /// 旧名称のキーで保存されたセーブデータを、現行のキー名へ置き換えます。
+    /// 次回のセーブ時に現行のキー名で書き出されるため、置き換えは読み込みの度に行うだけで足ります。
+    /// </summary>
+    private static string MigrateLegacyKeys( string json )
+    {
+        foreach ( var (legacy, current) in LegacyKeyRenames )
+        {
+            json = json.Replace( legacy, current );
+        }
+
+        return json;
     }
 
     public void Delete( int slot )

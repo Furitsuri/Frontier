@@ -20,7 +20,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
     private CharacterCamera _characterCamera;
     private CharacterParameterUI _parameterUI;
     private RenderTexture _targetTexture;
-    private List<RawImage> _actGaugeElems = new List<RawImage>( Constants.ACTION_GAUGE_MAX );
+    private List<RawImage> _skillGaugeElems = new List<RawImage>( Constants.SKILL_GAUGE_MAX );
     private float _alpha;
     private float _blinkingElapsedTime;
 
@@ -71,10 +71,10 @@ public class CharacterParameterPresenter : PhasePresenterBase
             _characterCamera?.Init( "CharaParamCamera_" + layerToName, _layerMaskIndex, _cameraAngleY, ref _parameterUI.TargetImage );
         }
 
-        for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+        for( int i = 0; i < Constants.SKILL_GAUGE_MAX; ++i )
         {
-            var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( _parameterUI.ActGaugeElemImage.gameObject, true );
-            _actGaugeElems.Add( elem );
+            var elem = _hierarchyBld.CreateComponentAndOrganize<RawImage>( _parameterUI.SkillGaugeElemImage.gameObject, true );
+            _skillGaugeElems.Add( elem );
             elem.gameObject.SetActive( false );
             elem.transform.SetParent( _parameterUI.PanelTransform, false );
         }
@@ -303,7 +303,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
 
     public void RefreshParamRender( Character selectCharacter, in Status status, in ModifiedParameter modifiedParam )
     {
-        Debug.Assert( selectCharacter.BattleParams.TmpParam.ActGaugeConsumption <= status.CurActionGauge );
+        Debug.Assert( selectCharacter.BattleParams.TmpParam.SkillGaugeConsumption <= status.CurSkillGauge );
 
         _parameterUI.TMPMaxHPValue.text         = $"{status.MaxHP}";
         _parameterUI.TMPCurHPValue.text         = $"{status.CurHP}";
@@ -329,7 +329,7 @@ public class CharacterParameterPresenter : PhasePresenterBase
         RenderAddValue( _parameterUI.TMPAddAtkValue, modifiedParam.Atk - passiveAtk );
         RenderAddValue( _parameterUI.TMPAddDefValue, modifiedParam.Def - passiveDef );
 
-        _parameterUI.TMPActRecoveryValue.text   = $"+ {status.recoveryActionGauge}";
+        _parameterUI.TMPSkillGaugeRecoveryValue.text   = $"+ {status.recoverySkillGauge}";
 
         int hpChange, totalHpChange;
         selectCharacter.BattleParams.TmpParam.AssignExpectedHpChange( out hpChange, out totalHpChange );
@@ -352,21 +352,21 @@ public class CharacterParameterPresenter : PhasePresenterBase
         // テキストの色を反映
         _parameterUI.ApplyTextColor( totalHpChange );
 
-        // アクションゲージの表示
-        for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+        // スキルゲージの表示
+        for( int i = 0; i < Constants.SKILL_GAUGE_MAX; ++i )
         {
-            var elem = _actGaugeElems[i];
+            var elem = _skillGaugeElems[i];
 
-            if( i <= status.EffectiveMaxActionGauge - 1 )
+            if( i <= status.EffectiveMaxSkillGauge - 1 )
             {
                 elem.gameObject.SetActive( true );
 
-                if( i <= status.CurActionGauge - 1 )
+                if( i <= status.CurSkillGauge - 1 )
                 {
                     elem.color = Color.green;
 
-                    // アクションゲージ使用時の点滅開始
-                    if( IsValidBlinkGaugeElement( i, status.CurActionGauge, selectCharacter.BattleParams.TmpParam.ActGaugeConsumption ) )
+                    // スキルゲージ使用時の点滅開始
+                    if( IsValidBlinkGaugeElement( i, status.CurSkillGauge, selectCharacter.BattleParams.TmpParam.SkillGaugeConsumption ) )
                     {
                         _blinkingElapsedTime = 0f;
                     }
@@ -417,17 +417,17 @@ public class CharacterParameterPresenter : PhasePresenterBase
             _parameterUI.TMPDiffHPValue.text = "";
         }
 
-        // アクションゲージの表示
-        for( int i = 0; i < Constants.ACTION_GAUGE_MAX; ++i )
+        // スキルゲージの表示
+        for( int i = 0; i < Constants.SKILL_GAUGE_MAX; ++i )
         {
-            var elem = _actGaugeElems[i];
+            var elem = _skillGaugeElems[i];
 
-            if( i <= status.EffectiveMaxActionGauge - 1 )
+            if( i <= status.EffectiveMaxSkillGauge - 1 )
             {
-                if( i <= status.CurActionGauge - 1 )
+                if( i <= status.CurSkillGauge - 1 )
                 {
-                    // アクションゲージ使用時は点滅させる
-                    if( IsValidBlinkGaugeElement( i, status.CurActionGauge, selectCharacter.BattleParams.TmpParam.ActGaugeConsumption ) )
+                    // スキルゲージ使用時は点滅させる
+                    if( IsValidBlinkGaugeElement( i, status.CurSkillGauge, selectCharacter.BattleParams.TmpParam.SkillGaugeConsumption ) )
                     {
                         _blinkingElapsedTime += DeltaTimeProvider.DeltaTime;
                         _alpha      = Mathf.PingPong( _blinkingElapsedTime / _blinkingDuration, 1.0f );
@@ -473,8 +473,8 @@ public class CharacterParameterPresenter : PhasePresenterBase
         text.gameObject.SetActive( addValue != 0 );
     }
 
-    private bool IsValidBlinkGaugeElement( int elemIndex, int currentActionGauge, int actGaugeConsumption )
+    private bool IsValidBlinkGaugeElement( int elemIndex, int currentSkillGauge, int skillGaugeConsumption )
     {
-        return ( currentActionGauge - actGaugeConsumption ) <= elemIndex;
+        return ( currentSkillGauge - skillGaugeConsumption ) <= elemIndex;
     }
 }

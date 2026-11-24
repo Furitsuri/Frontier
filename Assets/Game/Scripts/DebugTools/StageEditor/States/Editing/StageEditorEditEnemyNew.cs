@@ -84,8 +84,8 @@ namespace Frontier.DebugTools.StageEditor
             _params.Add( new ParamDescriptor { Name = "MoveRange",   Min = 1,            Max = 10,           Getter = () => _refParams.EnemyMoveRange,   Setter = v => _refParams.EnemyMoveRange   = v } );
             _params.Add( new ParamDescriptor { Name = "JumpForce",   Min = 0,            Max = 10,           Getter = () => _refParams.EnemyJumpForce,   Setter = v => _refParams.EnemyJumpForce   = v } );
             _params.Add( new ParamDescriptor { Name = "AtkRange",    Min = 1,            Max = 10,           Getter = () => _refParams.EnemyAtkRange,    Setter = v => _refParams.EnemyAtkRange    = v } );
-            _params.Add( new ParamDescriptor { Name = "ActGaugeMax", Min = 1,            Max = 9999,         Getter = () => _refParams.EnemyActGaugeMax, Setter = v => _refParams.EnemyActGaugeMax = v } );
-            _params.Add( new ParamDescriptor { Name = "ActRecovery", Min = 0,            Max = 999,          Getter = () => _refParams.EnemyActRecovery, Setter = v => _refParams.EnemyActRecovery = v } );
+            _params.Add( new ParamDescriptor { Name = "SkillGaugeMax", Min = 1,            Max = 9999,         Getter = () => _refParams.EnemySkillGaugeMax, Setter = v => _refParams.EnemySkillGaugeMax = v } );
+            _params.Add( new ParamDescriptor { Name = "SkillGaugeRecovery", Min = 0,            Max = 999,          Getter = () => _refParams.EnemySkillGaugeRecovery, Setter = v => _refParams.EnemySkillGaugeRecovery = v } );
             _params.Add( new ParamDescriptor { Name = "ThinkType", Min = 0, Max = ( int ) ThinkingType.NUM - 1, Getter = () => _refParams.EnemyThinkType, Setter = v => _refParams.EnemyThinkType = v } );
             // InterceptType / InterceptGroupId は ThinkType が INTERCEPT の場合のみ有効(無効な間は PREV/NEXT で読み飛ばされる)
             _params.Add( new ParamDescriptor { Name = "InterceptType", Min = 0, Max = ( int ) InterceptType.NUM - 1, Getter = () => _refParams.EnemyInterceptType, Setter = v => _refParams.EnemyInterceptType = v } );

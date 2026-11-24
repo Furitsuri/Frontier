@@ -20,8 +20,8 @@ namespace Frontier.CharacterEdit
             Def,
             MoveRange,
             JumpForce,
-            MaxActionGauge,
-            RecoveryActionGauge,
+            MaxSkillGauge,
+            RecoverySkillGauge,
 
             NUM,
         }
@@ -64,8 +64,8 @@ namespace Frontier.CharacterEdit
                 case StatKind.Def:                 return status.Def;
                 case StatKind.MoveRange:           return status.moveRange;
                 case StatKind.JumpForce:           return status.jumpForce;
-                case StatKind.MaxActionGauge:       return status.maxActionGauge;
-                case StatKind.RecoveryActionGauge: return status.recoveryActionGauge;
+                case StatKind.MaxSkillGauge:       return status.maxSkillGauge;
+                case StatKind.RecoverySkillGauge: return status.recoverySkillGauge;
                 default:                           return 0;
             }
         }
@@ -80,8 +80,8 @@ namespace Frontier.CharacterEdit
                 case StatKind.Def:                 return data.Def;
                 case StatKind.MoveRange:           return data.moveRange;
                 case StatKind.JumpForce:           return data.jumpForce;
-                case StatKind.MaxActionGauge:       return data.maxActionGauge;
-                case StatKind.RecoveryActionGauge: return data.recoveryActionGauge;
+                case StatKind.MaxSkillGauge:       return data.maxSkillGauge;
+                case StatKind.RecoverySkillGauge: return data.recoverySkillGauge;
                 default:                           return default;
             }
         }

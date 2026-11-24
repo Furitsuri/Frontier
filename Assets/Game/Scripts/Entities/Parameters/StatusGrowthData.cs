@@ -26,8 +26,8 @@ namespace Frontier.Entities
             public StatRange Def;
             public StatRange moveRange;
             public StatRange jumpForce;
-            public StatRange maxActionGauge;
-            public StatRange recoveryActionGauge;
+            public StatRange maxSkillGauge;
+            public StatRange recoverySkillGauge;
         }
 
         private const string ResourcesPath = "StatusGrowthData/StatusGrowthData";

@@ -151,7 +151,7 @@ namespace Frontier.Entities
             }
 
             _readOnlyOwner.Value.BattleLogic.RemoveBuffEffect();
-            _readOnlyOwner.Value.GetStatusRef.CurActionGauge += totalCost;
+            _readOnlyOwner.Value.GetStatusRef.CurSkillGauge += totalCost;
         }
 
         /// <summary>

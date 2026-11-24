@@ -677,7 +677,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Act
+  m_text: 'Skl
 
 '
   m_isRightToLeft: 0
@@ -1505,7 +1505,7 @@ GameObject:
   - component: {fileID: 572692665192827771}
   - component: {fileID: 982644167239262947}
   m_Layer: 5
-  m_Name: ActGaugePanel
+  m_Name: SkillGaugePanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2625,9 +2625,9 @@ MonoBehaviour:
   TMPAddAtkValue: {fileID: 3314674718696362113}
   TMPAddDefValue: {fileID: 1089318006735132531}
   TMPDiffHPValue: {fileID: 5950143828147103735}
-  TMPActRecoveryValue: {fileID: 7810105340773358080}
+  TMPSkillGaugeRecoveryValue: {fileID: 7810105340773358080}
   TargetImage: {fileID: 4641150019702966576}
-  ActGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
+  SkillGaugeElemImage: {fileID: 4745313940355866525, guid: 6e8c282aefc62124b818c7413ab22981, type: 3}
   PanelTransform: {fileID: 424562847963127913}
   SkillBoxes:
   - {fileID: 9192106447898983088}

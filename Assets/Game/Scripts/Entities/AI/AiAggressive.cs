@@ -18,7 +18,7 @@ namespace Frontier.Entities.Ai
         // 撃破 > (撃破出来ない場合)ダメージ割合 > コスト の順に優先されるよう、各値の大きさに十分な差を設けている
         private const float DEFEAT_VALUE            = 1000f;    // 攻撃対象1体を撃破出来る場合の加算値
         private const float DAMAGE_RATIO_VALUE      = 100f;     // ダメージ割合(残りHPに対する与ダメージの割合。最大100%)が100%の場合の加算値
-        private const float ACTION_GAUGE_COST_VALUE = 1f;       // 消費するアクションゲージ1あたりの減算値
+        private const float SKILL_GAUGE_COST_VALUE = 1f;       // 消費するスキルゲージ1あたりの減算値
         // 回復の候補の評価に用いる値(攻撃の候補と比較出来るよう、ダメージ割合と同じ尺度とする)
         private const float HEAL_RATIO_VALUE        = 100f;     // 回復割合(最大HPに対する回復量の割合)が100%の場合の加算値
 
@@ -64,7 +64,7 @@ namespace Frontier.Entities.Ai
         /// <summary>
         /// 攻撃の候補を評価します。
         /// 攻撃対象1体ごとに、撃破出来る場合は撃破の評価を、そうでない場合はダメージ割合の評価を加算し(範囲攻撃の場合は合計)、
-        /// 消費するアクションゲージに応じて減算します。
+        /// 消費するスキルゲージに応じて減算します。
         /// これにより、通常攻撃で撃破出来る相手 > スキルを使用すれば撃破出来る相手 > ダメージ割合が最も大きい攻撃 の順に選択されます
         /// MEMO : 攻撃によって自身に付与される状態効果(AttackForecast.SelfStatusEffects)は、仕組みが未実装のため評価していません
         /// </summary>
@@ -75,7 +75,7 @@ namespace Frontier.Entities.Ai
             if( ActiveSkillsData.IsAllyTargetSkill( option.SkillID ) ) { return EvaluateHealOption( in option ); }
 
             float evaluateValue = 0f;
-            int actionGaugeCost = 0;
+            int skillGaugeCost = 0;
 
             foreach( var key in option.AttackTargetKeys )
             {
@@ -83,7 +83,7 @@ namespace Frontier.Entities.Ai
                 if( target == null ) { continue; }
 
                 var forecast    = AttackForecaster.Forecast( _owner, target, option.SkillID );
-                actionGaugeCost = forecast.ActionGaugeCost;
+                skillGaugeCost = forecast.SkillGaugeCost;
 
                 if( forecast.IsDefeat )
                 {
@@ -97,14 +97,14 @@ namespace Frontier.Entities.Ai
                 }
             }
 
-            evaluateValue -= actionGaugeCost * ACTION_GAUGE_COST_VALUE;
+            evaluateValue -= skillGaugeCost * SKILL_GAUGE_COST_VALUE;
 
             return evaluateValue;
         }
 
         /// <summary>
         /// 回復スキルの使用の候補を評価します。
-        /// 対象1体ごとに、最大HPに対する実際の回復量(最大HPを超える分は含まない)の割合を加算し、消費するアクションゲージに応じて減算します。
+        /// 対象1体ごとに、最大HPに対する実際の回復量(最大HPを超える分は含まない)の割合を加算し、消費するスキルゲージに応じて減算します。
         /// 攻撃の候補のダメージ割合と同じ尺度とすることで、撃破出来る攻撃 > 回復割合とダメージ割合の大きい方 の順に選択されます
         /// </summary>
         /// <param name="option">評価する回復の候補</param>
@@ -122,8 +122,8 @@ namespace Frontier.Entities.Ai
                 evaluateValue   += ( float ) heal / target.GetStatusRef.MaxHP * HEAL_RATIO_VALUE;
             }
 
-            int actionGaugeCost = _owner.BattleParams.TmpParam.ActGaugeConsumption + ActiveSkillsData.data[( int ) option.SkillID].Cost;
-            evaluateValue      -= actionGaugeCost * ACTION_GAUGE_COST_VALUE;
+            int skillGaugeCost = _owner.BattleParams.TmpParam.SkillGaugeConsumption + ActiveSkillsData.data[( int ) option.SkillID].Cost;
+            evaluateValue      -= skillGaugeCost * SKILL_GAUGE_COST_VALUE;
 
             return evaluateValue;
         }

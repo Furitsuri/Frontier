@@ -25,9 +25,9 @@ namespace Frontier.Entities
         public int moveRange;               // 移動レンジ
         public int jumpForce;               // ジャンプレンジ
         public int attackRange;             // 攻撃レンジ( 高低差にもそのまま適用される )
-        public int maxActionGauge;          // 素のアクションゲージ最大値(パッシブスキルの装備コストを差し引く前の値。実際の最大値はEffectiveMaxActionGaugeを参照)
-        public int CurActionGauge;          // アクションゲージ現在値
-        public int recoveryActionGauge;     // アクションゲージ回復値
+        public int maxSkillGauge;          // 素のスキルゲージ最大値(パッシブスキルの装備コストを差し引く前の値。実際の最大値はEffectiveMaxSkillGaugeを参照)
+        public int CurSkillGauge;          // スキルゲージ現在値
+        public int recoverySkillGauge;     // スキルゲージ回復値
         public ActiveSkillID[] EquipSkills;     // 装備しているアクティブスキル(EQUIPABLE_ACTIVE_SKILL_MAX_NUM枠)
         public PassiveSkillID[] PassiveSkills;  // 装備しているパッシブスキル(EQUIPABLE_PASSIVE_SKILL_MAX_NUM枠)
 
@@ -42,16 +42,16 @@ namespace Frontier.Entities
             status = fdata.status;
             status.EnsureSkillSlots();
             status.CurHP           = status.MaxHP;
-            status.CurActionGauge  = status.EffectiveMaxActionGauge;
+            status.CurSkillGauge  = status.EffectiveMaxSkillGauge;
         }
 
         /// <summary>
-        /// アクションゲージの現在値が実際の最大値(EffectiveMaxActionGauge)を超えている場合に、最大値まで切り詰めます。
+        /// スキルゲージの現在値が実際の最大値(EffectiveMaxSkillGauge)を超えている場合に、最大値まで切り詰めます。
         /// パッシブスキルの装備コスト導入以前のセーブデータ等、現在値が素の最大値のまま保存されている場合の補正に用います。
         /// </summary>
-        public void ClampActionGaugeToMax()
+        public void ClampSkillGaugeToMax()
         {
-            CurActionGauge = Mathf.Min( CurActionGauge, EffectiveMaxActionGauge );
+            CurSkillGauge = Mathf.Min( CurSkillGauge, EffectiveMaxSkillGauge );
         }
 
         /// <summary>
@@ -60,28 +60,28 @@ namespace Frontier.Entities
         public int PassiveSkillsCost => PassiveSkillsData.GetTotalCost( PassiveSkills );
 
         /// <summary>
-        /// 実際のアクションゲージ最大値です。素の最大値(maxActionGauge)から、装備中のパッシブスキルの装備コストの合計を差し引いた値になります。
-        /// 戦闘中のゲージ上限・表示等、ゲージの最大値はこちらを参照してください(ステータス強化の対象はmaxActionGaugeです)。
+        /// 実際のスキルゲージ最大値です。素の最大値(maxSkillGauge)から、装備中のパッシブスキルの装備コストの合計を差し引いた値になります。
+        /// 戦闘中のゲージ上限・表示等、ゲージの最大値はこちらを参照してください(ステータス強化の対象はmaxSkillGaugeです)。
         /// </summary>
-        public int EffectiveMaxActionGauge => CalcEffectiveMaxActionGauge( maxActionGauge, PassiveSkillsCost );
+        public int EffectiveMaxSkillGauge => CalcEffectiveMaxSkillGauge( maxSkillGauge, PassiveSkillsCost );
 
         /// <summary>
-        /// 指定枠に装備しているアクティブスキルが、実際のアクションゲージ最大値の範囲内で使用出来るかを返します。
+        /// 指定枠に装備しているアクティブスキルが、実際のスキルゲージ最大値の範囲内で使用出来るかを返します。
         /// パッシブスキルの装備コストによって最大値が使用コストを下回った場合はfalseになります(未装備枠はtrue)。
         /// </summary>
-        public bool IsEquipSkillWithinMaxActionGauge( int slotIdx )
+        public bool IsEquipSkillWithinMaxSkillGauge( int slotIdx )
         {
             if( EquipSkills == null || slotIdx < 0 || EquipSkills.Length <= slotIdx ) { return true; }
 
-            return ActiveSkillsData.IsCostWithinMaxActionGauge( EquipSkills[slotIdx], EffectiveMaxActionGauge );
+            return ActiveSkillsData.IsCostWithinMaxSkillGauge( EquipSkills[slotIdx], EffectiveMaxSkillGauge );
         }
 
         /// <summary>
-        /// 素のアクションゲージ最大値とパッシブスキルの装備コストの合計から、実際のアクションゲージ最大値を求めます。
+        /// 素のスキルゲージ最大値とパッシブスキルの装備コストの合計から、実際のスキルゲージ最大値を求めます。
         /// </summary>
-        static public int CalcEffectiveMaxActionGauge( int baseMaxActionGauge, int passiveSkillsCost )
+        static public int CalcEffectiveMaxSkillGauge( int baseMaxSkillGauge, int passiveSkillsCost )
         {
-            return Math.Max( 0, baseMaxActionGauge - passiveSkillsCost );
+            return Math.Max( 0, baseMaxSkillGauge - passiveSkillsCost );
         }
 
         /// <summary>
@@ -167,19 +167,19 @@ namespace Frontier.Entities
             moveRange           = 0;
             jumpForce           = 0;
             attackRange         = 0;
-            maxActionGauge      = 0;
-            CurActionGauge      = 0;
-            recoveryActionGauge = 0;
+            maxSkillGauge      = 0;
+            CurSkillGauge      = 0;
+            recoverySkillGauge = 0;
 
         }
 
         /// <summary>
-        /// アクションゲージをrecoveryActionGaugeの分だけ回復します
+        /// スキルゲージをrecoverySkillGaugeの分だけ回復します
         /// 基本的に自ターン開始時に呼びます
         /// </summary>
-        public void RecoveryActionGauge()
+        public void RecoverySkillGauge()
         {
-            CurActionGauge = Mathf.Clamp( CurActionGauge + recoveryActionGauge, 0, EffectiveMaxActionGauge );
+            CurSkillGauge = Mathf.Clamp( CurSkillGauge + recoverySkillGauge, 0, EffectiveMaxSkillGauge );
         }
 
         /// <summary>

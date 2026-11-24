@@ -20,8 +20,8 @@ namespace Frontier.Entities
         public bool[] IsUseableSkill;
         // 現在位置を示すタイルインデックス
         public int CurrentTileIndex;
-        // アクションゲージ消費値
-        public int ActGaugeConsumption;
+        // スキルゲージ消費値
+        public int SkillGaugeConsumption;
         // 1回の攻撃におけるHPの予測変動量(複数回攻撃におけるダメージ総量を考慮しない)
         public int ExpectedHpChange;
         // 全ての攻撃におけるHPの予測総変動量(複数回攻撃におけるダメージ総量を考慮する)
@@ -55,7 +55,7 @@ namespace Frontier.Entities
             }
 
             IsSkillQueued = false;
-            TotalExpectedHpChange = ExpectedHpChange = ActGaugeConsumption = 0;
+            TotalExpectedHpChange = ExpectedHpChange = SkillGaugeConsumption = 0;
             RemainingCooperativeHits = 0;
         }
 

@@ -10,8 +10,8 @@
                 "moveRange": 5,
                 "jumpForce": 3,
                 "attackRange": 1,
-                "maxActionGauge": 2,
-                "recoveryActionGauge": 1,
+                "maxSkillGauge": 2,
+                "recoverySkillGauge": 1,
                 "PrefabIndex": 0,
                 "EquipSkills": [
                     0,
@@ -34,8 +34,8 @@
                 "moveRange": 4,
                 "jumpForce": 4,
                 "attackRange": 3,
-                "maxActionGauge": 3,
-                "recoveryActionGauge": 2,
+                "maxSkillGauge": 3,
+                "recoverySkillGauge": 2,
                 "PrefabIndex": 1,
                 "EquipSkills": [
                     3,
@@ -58,8 +58,8 @@
                 "moveRange": 2,
                 "jumpForce": 2,
                 "attackRange": 1,
-                "maxActionGauge": 3,
-                "recoveryActionGauge": 1,
+                "maxSkillGauge": 3,
+                "recoverySkillGauge": 1,
                 "PrefabIndex": 0,
                 "EquipSkills": [
                     1,

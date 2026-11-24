@@ -22,8 +22,8 @@ namespace Frontier
         public const int MoveRange   = 4;
         public const int JumpForce   = 2;
         public const int AtkRange    = 1;
-        public const int ActGaugeMax = 100;
-        public const int ActRecovery = 10;
+        public const int SkillGaugeMax = 100;
+        public const int SkillGaugeRecovery = 10;
 
         /// <summary>
         /// デフォルトステータスを反映した PLAYER 用 Status を生成して返します。
@@ -46,8 +46,8 @@ namespace Frontier
             status.moveRange           = MoveRange;
             status.jumpForce           = JumpForce;
             status.attackRange         = AtkRange;
-            status.CurActionGauge      = status.maxActionGauge = Math.Min( ActGaugeMax, Constants.ACTION_GAUGE_MAX );
-            status.recoveryActionGauge = ActRecovery;
+            status.CurSkillGauge      = status.maxSkillGauge = Math.Min( SkillGaugeMax, Constants.SKILL_GAUGE_MAX );
+            status.recoverySkillGauge = SkillGaugeRecovery;
             for( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; ++i ) { status.EquipSkills[i] = ActiveSkillID.NONE; }
             for( int i = 0; i < EQUIPABLE_PASSIVE_SKILL_MAX_NUM; ++i ) { status.PassiveSkills[i] = PassiveSkillID.NONE; }
 

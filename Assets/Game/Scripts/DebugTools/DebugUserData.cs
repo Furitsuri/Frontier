@@ -34,8 +34,8 @@ namespace Frontier.DebugTools
             public int    moveRange          = 4;
             public int    jumpForce          = 2;
             public int    attackRange        = 1;
-            public int    maxActionGauge     = 100;
-            public int    recoveryActionGauge = 10;
+            public int    maxSkillGauge     = 100;
+            public int    recoverySkillGauge = 10;
 
             /// <summary>
             /// スキルID（整数値）の配列。-1 は ActiveSkillID.NONE（未装備）を表します。
@@ -63,8 +63,8 @@ namespace Frontier.DebugTools
                 status.moveRange            = moveRange;
                 status.jumpForce            = jumpForce;
                 status.attackRange          = attackRange;
-                status.CurActionGauge       = status.maxActionGauge = Math.Min( maxActionGauge, Constants.ACTION_GAUGE_MAX );
-                status.recoveryActionGauge  = recoveryActionGauge;
+                status.CurSkillGauge       = status.maxSkillGauge = Math.Min( maxSkillGauge, Constants.SKILL_GAUGE_MAX );
+                status.recoverySkillGauge  = recoverySkillGauge;
                 status.StatusPoint          = Constants.STATUS_POINT_MAX;
 
                 for ( int i = 0; i < EQUIPABLE_ACTIVE_SKILL_MAX_NUM; i++ )

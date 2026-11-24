@@ -192,8 +192,8 @@ namespace Frontier.Entities
                     ( SituationType.NONE != situationType && skillData.SituationType != situationType ) ||                      // 同一のシチュエーションでない場合は使用不可(攻撃シチュエーション時に防御スキルは使用出来ない等)
                     !Methods.HasAnyFlag( useableActionTypeBit, skillData.ActionType ) ||                                      // スキルの種類が、使用可能なスキルの種類のビットフラグに含まれていない場合は使用不可
                     ( 0 <= equipSkillIndexTransitAction && ActiveSkillsData.IsTransitionSkillActionType( skillData.ActionType ) ) ||  // 対象選択に遷移するスキルの使用フラグがONの状態では、同様のスキルは使用不可
-                    _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost ||                      // コストが現在のアクションゲージ値を越えていないかをチェック
-                    !_status.IsEquipSkillWithinMaxActionGauge( i ) )                                                            // パッシブスキルの装備コストでゲージ最大値が使用コストを下回っている場合は使用不可(戦闘外で現在値が最大値を下回っていない場合も含めて明示的に判定する)
+                    _status.CurSkillGauge < BattleParams.TmpParam.SkillGaugeConsumption + skillData.Cost ||                      // コストが現在のスキルゲージ値を越えていないかをチェック
+                    !_status.IsEquipSkillWithinMaxSkillGauge( i ) )                                                            // パッシブスキルの装備コストでゲージ最大値が使用コストを下回っている場合は使用不可(戦闘外で現在値が最大値を下回っていない場合も含めて明示的に判定する)
                 {
                     continue;
                 }
@@ -305,8 +305,8 @@ namespace Frontier.Entities
             ActiveSkillID skillID = GetEquipSkillID( skillIdx );
             if( !ActiveSkillsData.IsValidSkill( skillID ) )                                   { return false; }
             var skillData = ActiveSkillsData.data[( int ) skillID];
-            // コストが現在のアクションゲージ値を越えていないかをチェック
-            if( _status.CurActionGauge < BattleParams.TmpParam.ActGaugeConsumption + skillData.Cost ) { return false; }
+            // コストが現在のスキルゲージ値を越えていないかをチェック
+            if( _status.CurSkillGauge < BattleParams.TmpParam.SkillGaugeConsumption + skillData.Cost ) { return false; }
 
             return true;
         }
