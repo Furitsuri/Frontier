@@ -83,7 +83,7 @@ namespace Frontier.Stage
             {
                 foreach ( var prop in _lastLoadedStagePropData )
                 {
-                    _stageDataProvider.CurrentData.Tiles[prop.TileIndex].SetImpassable();
+                    SetStagePropTilesImpassable( prop );
                     SpawnStageProp( prop );
                 }
             }
@@ -112,6 +112,29 @@ namespace Frontier.Stage
                 if ( prop != null ) UnityEngine.Object.Destroy( prop.gameObject );
             }
             _spawnedStagePropVisuals.Clear();
+        }
+
+        /// <summary>
+        /// StageProp が占有する全タイル(TileIndex を左上とした Size×Size の範囲)を侵入不可にします。
+        /// 基準タイルのみを侵入不可にすると、Size が2以上の StageProp(家など)の残りのタイルへ侵入出来てしまうため
+        /// </summary>
+        private void SetStagePropTilesImpassable( StagePropDataSerializer.StagePropStatusData data )
+        {
+            var stgData = _stageDataProvider.CurrentData;
+            int colNum  = stgData.TileColNum;
+            int baseX   = data.TileIndex % colNum;
+
+            for ( int dy = 0; dy < data.Size; ++dy )
+            {
+                for ( int dx = 0; dx < data.Size; ++dx )
+                {
+                    int idx = data.TileIndex + dx + dy * colNum;
+                    // ステージ外(右端の折り返し・奥側の範囲外)のタイルは対象外
+                    if ( colNum <= baseX + dx || stgData.Tiles.Length <= idx ) { continue; }
+
+                    stgData.Tiles[idx].SetImpassable();
+                }
+            }
         }
 
         private void SpawnStageProp( StagePropDataSerializer.StagePropStatusData data )
